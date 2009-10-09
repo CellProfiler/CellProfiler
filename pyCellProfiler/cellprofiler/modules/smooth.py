@@ -1,15 +1,31 @@
-'''smooth.py - smooth an image
+'''<b>Smooth</b> smooths (i.e., blurs) images
+<hr>
 
-CellProfiler is distributed under the GNU General Public License.
-See the accompanying file LICENSE for details.
 
-Developed by the Broad Institute
-Copyright 2003-2009
-
-Please see the AUTHORS file for credits.
-
-Website: http://www.cellprofiler.org
+    
+    What is the size of your objects? 
+    This is the approximate diameter of the features to be removed by
+    the smoothing algorithm (Gaussian, Median and Smooth keeping edges)
+    
+    What are the differences in intensity in the edges that you
+    want to preserve?
+    Edges are locations where the intensity changes precipitously.
+    Use this setting to adjust the rough magnitude of these changes. A lower
+    number will preserve more edges. A higher number will smooth more edges.
+    Values should be between zero and one. This setting is only show for
+    Smooth keeping edges.
+    
 '''
+#CellProfiler is distributed under the GNU General Public License.
+#See the accompanying file LICENSE for details.
+#
+#Developed by the Broad Institute
+#Copyright 2003-2009
+#
+#Please see the AUTHORS file for credits.
+#
+#Website: http://www.cellprofiler.org
+
 __version__="$Revision$"
 
 import numpy as np
@@ -30,80 +46,66 @@ GAUSSIAN_FILTER = 'Gaussian Filter'
 SMOOTH_KEEPING_EDGES = 'Smooth Keeping Edges'
 
 class Smooth(cpm.CPModule):
-    '''SHORT DESCRIPTION:
-    Smooths (blurs) images
-    *******************************************************
-    This module smooths images using one of several filters:
-    * Fit Polynomial - This method treats the intensity of the image pixels
-                       as a polynomial function of the x and y position of
-                       each pixel. It fits the intensity to the polynomial,
-                       A x*x + B y*y + C x*y + D x + E y + F
-                       Fit Polynomial will produce an image that is a gradient
-                       from the edges of the image to the center and back out
-                       to the edges again.
-    * Gaussian Filter - This method convolves the image with a Gaussian whose
-                       full width at half maximum is the object size entered.
-                       The effect of the filter is to blur and obscure features
-                       smaller than the object size and spread bright or
-                       dim features over a radius of the object size.
-    * Median Filter -  This method finds the median pixel value within the
-                       diameter specified by the object size. The effect is
-                       to remove bright or dim features that are much smaller
-                       than the object size.
-    * Smooth keeping edges - This method uses a bilateral filter which
-                       limits Gaussian smoothing across an edge while 
-                       applying smoothing perpendicular to an edge. The effect
-                       is to respect edges in an image while smoothing other
-                       features.
-                       Smooth keeping edges will filter an image with reasonable
-                       speed for object sizes greater than 10 and for
-                       intensity differences greater than .1. The algorithm
-                       will consume more memory and operate more slowly as
-                       you lower these numbers.
     
-    Settings:
-    What did you call the image to be smoothed?
-    This is the name of the image to be smoothed.
-    
-    What do you want to call the smoothed image?
-    This is the name of the image produced by the module.
-    
-    Enter the smoothing method you would like to use.
-    This is one of the above choices of filters.
-    
-    Do you want to choose the object size automatically?
-    If you check this, the module will choose an object size based on
-    the size of the image. The minimum size it will choose is 30 pixels,
-    otherwise the size is 1/40 of the size of the image.
-    
-    What is the size of your objects? 
-    This is the approximate diameter of the features to be removed by
-    the smoothing algorithm (Gaussian, Median and Smooth keeping edges)
-    
-    What are the differences in intensity in the edges that you
-    want to preserve?
-    Edges are locations where the intensity changes precipitously.
-    Use this setting to adjust the rough magnitude of these changes. A lower
-    number will preserve more edges. A higher number will smooth more edges.
-    Values should be between zero and one. This setting is only show for
-    Smooth keeping edges.
-     
-    '''
     category = "Image Processing"
     variable_revision_number = 1
      
     def create_settings(self):
         self.module_name = 'Smooth'
-        self.image_name = cps.ImageNameSubscriber('What did you call the image to be smoothed?','None')
-        self.filtered_image_name = cps.ImageNameProvider('What do you want to call the smoothed image?','FilteredImage')
+        self.image_name = cps.ImageNameSubscriber('Select the input image','None')
+        self.filtered_image_name = cps.ImageNameProvider('Name the output image','FilteredImage')
         self.smoothing_method = cps.Choice('Enter the smoothing method you would like to use.',
                                            [FIT_POLYNOMIAL,
                                             GAUSSIAN_FILTER,
                                             MEDIAN_FILTER,
-                                            SMOOTH_KEEPING_EDGES])
-        self.wants_automatic_object_size = cps.Binary('Do you want to choose the object size automatically?',True)
-        self.object_size = cps.Float('What is the size of your objects?',16.0)
-        self.sigma_range = cps.Float('What are the differences in intensity in the edges that you want to preserve?', .1)
+                                            SMOOTH_KEEPING_EDGES],doc="""
+            This module smooths images using one of several filters:
+            <ul>
+            <li><i>Fit Polynomial:</i> This method treats the intensity of the image pixels
+            as a polynomial function of the x and y position of
+            each pixel. It fits the intensity to the polynomial,
+            <i>A x<sup>2</sup> + B y<sup>2</sup> + C x*y + D x + E y + F</i>.
+            <i>Fit Polynomial</i> will produce an image that is a gradient
+            from the edges of the image to the center and back out
+            to the edges again.</li>
+            <li><i>Gaussian Filter:</i> This method convolves the image with a Gaussian whose
+            full width at half maximum is the object size entered.
+            The effect of the filter is to blur and obscure features
+            smaller than the object size and spread bright or
+            dim features over a radius of the object size.</li>
+            <li><i>Median Filter:</i> This method finds the median pixel value within the
+            diameter specified by the object size. The effect is
+            to remove bright or dim features that are much smaller
+            than the object size.</li>
+            <li><i>Smooth Keeping Edges:</i> This method uses a bilateral filter which
+            limits Gaussian smoothing across an edge while 
+            applying smoothing perpendicular to an edge. The effect
+            is to respect edges in an image while smoothing other
+            features. <i>Smooth Keeping Edges</i> will filter an image with reasonable
+            speed for object sizes greater than 10 and for
+            intensity differences greater than 0.1. The algorithm
+            will consume more memory and operate more slowly as
+            you lower these numbers.</li>
+            </ul>""")
+        
+        self.wants_automatic_object_size = cps.Binary('Do you want to choose the object size automatically?',True,doc="""
+            <i>(Only used if Gaussian, Median or Smooth Keeping Edges is selected)</i>
+            <p>If this box is checked, the module will choose an object size based on
+            the size of the image. The minimum size it will choose is 30 pixels,
+            otherwise the size is 1/40 of the size of the image.""")
+        
+        self.object_size = cps.Float('What is the size of your objects?',16.0,doc="""
+            <i>(Only used if chosing the object size automatically is unchecked)</i>
+            <p>Enter the typical size of the objects to be smoothed. This value is 
+            used to calculate the size of the spatial filer. To measure 
+            distances easily in an open image, use <i>Tools > Show pixel data</i>. 
+            Once this tool is activated, you can draw a line across objects in 
+            your image and the length of the line will be shown in pixel units.""")
+        
+        self.sigma_range = cps.Float('What are the differences in intensity in the edges that you want to preserve?', .1,doc="""
+            <i>(Only used if Smooth Keeping Edges is selected)</i>
+            <p>Enter the intensity step that is indicative of an edge in an image.
+            To view pixel intensities in an open image, use <i>Tools > Show pixel data</i>.""")
 
     def backwards_compatibilize(self, setting_values, variable_revision_number, 
                                 module_name, from_matlab):

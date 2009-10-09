@@ -1,15 +1,29 @@
-"""correctillumination_calculate.py - correct illumination module pt I
+'''<b>CorrectIllumination_Calculate</b> - Calculates an illumination function, used to correct uneven
+illumination/lighting/shading or to reduce uneven background in images.
+<hr>
+This module calculates an illumination function which can be saved to the
+hard drive for later use, or it can be immediately applied to images later in the
+pipeline. This will correct for the uneven illumination of each image.  
+If saving, select '.mat' format in <b>SaveImages</b>.  
+Use the CorrectIllumination_Apply module to apply the
+function to the image to be corrected.
 
-CellProfiler is distributed under the GNU General Public License.
-See the accompanying file LICENSE for details.
+Illumination correction is challenging and we are writing a paper on it
+which should help clarify it (TR Jones, AE Carpenter, P Golland, in
+preparation). In the meantime, please be patient in trying to understand
+this module.
 
-Developed by the Broad Institute
-Copyright 2003-2009
-
-Please see the AUTHORS file for credits.
-
-Website: http://www.cellprofiler.org
-"""
+See also <b>CorrectIllumination_Apply</b> and <b>SmoothOrEnhance</b> modules.
+'''
+#CellProfiler is distributed under the GNU General Public License.
+#See the accompanying file LICENSE for details.
+#
+#Developed by the Broad Institute
+#Copyright 2003-2009
+#
+#Please see the AUTHORS file for credits.
+#
+#Website: http://www.cellprofiler.org
 
 __version__="$Revision$"
 
@@ -49,110 +63,7 @@ FI_MANUALLY        = "Manually"
 ROBUST_FACTOR      = .02 # For rescaling, take 2nd percentile value
 
 class CorrectIllumination_Calculate(cpm.CPModule):
-    """SHORT DESCRIPTION:
-Calculates an illumination function, used to correct uneven
-illumination/lighting/shading or to reduce uneven background in images.
-*************************************************************************
-
-This module calculates an illumination function which can be saved to the
-hard drive for later use (you should save in .mat format using the Save
-Images module), or it can be immediately applied to images later in the
-pipeline (using the CorrectIllumination_Apply module). This will correct
-for uneven illumination of each image.
-
-Illumination correction is challenging and we are writing a paper on it
-which should help clarify it (TR Jones, AE Carpenter, P Golland, in
-preparation). In the meantime, please be patient in trying to understand
-this module.
-
-Settings:
-
-* Regular or Background intensities?
-
-Regular intensities:
-If you have objects that are evenly dispersed across your image(s) and
-cover most of the image, then you can choose Regular intensities. Regular
-intensities makes the illumination function based on the intensity at
-each pixel of the image (or group of images if you are in All mode) and
-is most often rescaled (see below) and applied by division using
-CorrectIllumination_Apply. Note that if you are in Each mode or using a
-small set of images with few objects, there will be regions in the
-average image that contain no objects and smoothing by median filtering
-is unlikely to work well.
-Note: it does not make sense to choose (Regular + no smoothing + Each)
-because the illumination function would be identical to the original
-image and applying it will yield a blank image. You either need to smooth
-each image or you need to use All images.
-
-Background intensities:
-If you think that the background (dim points) between objects show the
-same pattern of illumination as your objects of interest, you can choose
-Background intensities. Background intensities finds the minimum pixel
-intensities in blocks across the image (or group of images if you are in
-All mode) and is most often applied by subtraction using the
-CorrectIllumination_Apply module.
-Note: if you will be using the Subtract option in the
-CorrectIllumination_Apply module, you almost certainly do NOT want to
-Rescale! See below!!
-
-* Each or All?
-Enter Each to calculate an illumination function for each image
-individually, or enter All to calculate the illumination function from
-all images at each pixel location. All is more robust, but depends on the
-assumption that the illumination patterns are consistent across all the
-images in the set and that the objects of interest are randomly
-positioned within each image. Applying illumination correction on each
-image individually may make intensity measures not directly comparable
-across different images.
-
-* Dilation:
-For some applications, the incoming images are binary and each object
-should be dilated with a gaussian filter in the final averaged
-(projection) image. This is for a sophisticated method of illumination
-correction where model objects are produced.
-
-* Smoothing Method:
-If requested, the resulting image is smoothed. See the help for the
-Smooth module for more details. If you are using Each mode, this is
-almost certainly necessary. If you have few objects in each image or a
-small image set, you may want to smooth. The goal is to smooth to the
-point where the illumination function resembles a believable pattern.
-That is, if it is a lamp illumination problem you are trying to correct,
-you would apply smoothing until you obtain a fairly smooth pattern
-without sharp bright or dim regions.  Note that smoothing is a
-time-consuming process, and fitting a polynomial is fastest but does not
-allow a very tight fit as compared to the slower median and gaussian 
-filtering methods. We typically recommend median vs. gaussian because median 
-is less sensitive to outliers, although the results are also slightly 
-less smooth and the fact that images are in the range of 0 to 1 means that
-outliers typically will not dominate too strongly anyway. A less commonly
-used option is to *completely* smooth the entire image by choosing
-"Smooth to average", which will create a flat, smooth image where every
-pixel of the image is the average of what the illumination function would
-otherwise have been.
-
-* Approximate width of objects:
-For certain smoothing methods, this will be used to calculate an adequate
-filter size. If you don't know the width of your objects, you can use the
-ShowOrHidePixelData image tool to find out or leave the word 'Automatic'
-to calculate a smoothing filter simply based on the size of the image.
-
-
-Rescaling:
-The illumination function can be rescaled so that the pixel intensities
-are all equal to or greater than one. This is recommended if you plan to
-use the division option in CorrectIllumination_Apply so that the
-corrected images are in the range 0 to 1. It is NOT recommended if you
-plan to use the Subtract option in CorrectIllumination_Apply! Note that
-as a result of the illumination function being rescaled from 1 to
-infinity, if there is substantial variation across the field of view, the
-rescaling of each image might be dramatic, causing the corrected images
-to be very dark.
-
-See also Average, CorrectIllumination_Apply, and Smooth modules.
-
-    """
-
+    
     variable_revision_number = 1
     category = "Image Processing"
     
@@ -164,19 +75,69 @@ See also Average, CorrectIllumination_Apply, and Smooth modules.
         self.illumination_image_name = cps.ImageNameProvider("What do you want to call the illumination function?","IllumBlue")
         self.intensity_choice = cps.Choice("Do you want to calculate using regular intensities or background intensities?",
                                            [IC_REGULAR, IC_BACKGROUND],
-                                           IC_REGULAR)
-        self.dilate_objects = cps.Binary("Do you want to dilate objects in the final averaged image?",False)
+                                           IC_REGULAR, doc = '''<ul><li>Regular: If you have objects that are evenly dispersed across your image(s) and
+                                            cover most of the image, then you can choose Regular intensities. Regular
+                                            intensities makes the illumination function based on the intensity at
+                                            each pixel of the image (or group of images if you are in All mode) and
+                                            is most often rescaled (see below) and applied by division using
+                                            CorrectIllumination_Apply. Note that if you are in Each mode or using a
+                                            small set of images with few objects, there will be regions in the
+                                            average image that contain no objects and smoothing by median filtering
+                                            is unlikely to work well.
+                                            Note: it does not make sense to choose (Regular + no smoothing + Each)
+                                            because the illumination function would be identical to the original
+                                            image and applying it will yield a blank image. You either need to smooth
+                                            each image or you need to use All images.
+                                            <li>Background intensities:
+                                            If you think that the background (dim points) between objects show the
+                                            same pattern of illumination as your objects of interest, you can choose
+                                            Background intensities. Background intensities finds the minimum pixel
+                                            intensities in blocks across the image (or group of images if you are in
+                                            All mode) and is most often applied by subtraction using the
+                                            CorrectIllumination_Apply module.
+                                            Note: if you will be using the Subtract option in the
+                                            CorrectIllumination_Apply module, you almost certainly do NOT want to
+                                            Rescale! See below!! </ul> ''')
+        self.dilate_objects = cps.Binary("Do you want to dilate objects in the final averaged image?",False, doc = '''For some applications, the incoming images are binary and each object
+                                            should be dilated with a gaussian filter in the final averaged
+                                            (projection) image. This is for a sophisticated method of illumination
+                                            correction where model objects are produced.''')
         self.object_dilation_radius = cps.Integer("Enter the radius (roughly equal to the original radius of the objects).",1,0)
         self.block_size = cps.Integer("Enter the block size, which should be large enough that every square block of pixels is likely to contain some background pixels, where no objects are located.",60,1)
-        self.rescale_option = cps.Choice("""Do you want to rescale the illumination function so that the pixel intensities are all equal to or greater than one (Y or N)? This is recommended if you plan to use the division option in CorrectIllumination_Apply so that the resulting images will be in the range 0 to 1. The "Median" option chooses the median value in the image to rescale so that division increases some values and decreases others.""",
-                                         [cps.YES, cps.NO, RE_MEDIAN])
+        self.rescale_option = cps.Choice("""Do you want to rescale the illumination function so that the pixel intensities are all equal to or greater than one?""",
+                                         [cps.YES, cps.NO, RE_MEDIAN], doc = '''The illumination function can be rescaled so that the pixel intensities
+                                        are all equal to or greater than one. This is recommended if you plan to
+                                        use the division option in CorrectIllumination_Apply so that the
+                                        corrected images are in the range 0 to 1. It is NOT recommended if you
+                                        plan to use the Subtract option in CorrectIllumination_Apply! Note that
+                                        as a result of the illumination function being rescaled from 1 to
+                                        infinity, if there is substantial variation across the field of view, the
+                                        rescaling of each image might be dramatic, causing the corrected images
+                                        to be very dark. The <i>Median</i> option chooses the median value in the image to rescale so that division increases some values an decreases others.''')
         self.each_or_all = cps.Choice("Enter Each to calculate an illumination function for Each image individually (in which case, choose Pipeline mode in the next box) or All to calculate an illumination function based on All the specified images to be corrected. See the help for details.",
                                       [EA_EACH,EA_ALL])
         self.smoothing_method = cps.Choice("Enter the smoothing method you would like to use, if any.",
                                            [SM_NONE, SM_FIT_POLYNOMIAL, 
                                             SM_MEDIAN_FILTER, 
                                             SM_GAUSSIAN_FILTER,
-                                            SM_TO_AVERAGE])
+                                            SM_TO_AVERAGE], doc = '''If requested, the resulting image is smoothed. See the help for the
+                                            <b>SmoothOrEnhance</b> module for more details. If you are using Each mode, this is
+                                            almost certainly necessary. If you have few objects in each image or a
+                                            small image set, you may want to smooth. The goal is to smooth to the
+                                            point where the illumination function resembles a believable pattern.
+                                            That is, if it is a lamp illumination problem you are trying to correct,
+                                            you would apply smoothing until you obtain a fairly smooth pattern
+                                            without sharp bright or dim regions.  Note that smoothing is a
+                                            time-consuming process, and fitting a polynomial is fastest but does not
+                                            allow a very tight fit as compared to the slower median and gaussian 
+                                            filtering methods. We typically recommend median vs. gaussian because median 
+                                            is less sensitive to outliers, although the results are also slightly 
+                                            less smooth and the fact that images are in the range of 0 to 1 means that
+                                            outliers typically will not dominate too strongly anyway. A less commonly
+                                            used option is to <b>completely</b> smooth the entire image by choosing
+                                            "Smooth to average", which will create a flat, smooth image where every
+                                            pixel of the image is the average of what the illumination function would
+                                            otherwise have been.''')
         self.automatic_object_width = cps.Choice("Calculate the smoothing filter size automatically, relative to the width of artifacts to be smoothed or use a manually entered value?",
                                                  [FI_AUTOMATIC, FI_OBJECT_SIZE, FI_MANUALLY])
         self.object_width = cps.Integer("What is the approximate width of the artifacts to be smoothed (in pixels)?",10)

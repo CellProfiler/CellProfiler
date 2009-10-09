@@ -833,7 +833,7 @@ class Pipeline(object):
                                   else terminating_module.module_num)
         if self.__measurement_columns.has_key(terminating_module_num):
             return self.__measurement_columns[terminating_module_num]
-        columns = [(cpmeas.IMAGE, IMAGE_NUMBER, cpmeas.COLTYPE_INTEGER)]
+        columns = []
         should_write_columns = True
         for module in self.modules():
             if (terminating_module is not None and 

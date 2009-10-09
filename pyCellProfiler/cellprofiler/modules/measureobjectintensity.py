@@ -11,28 +11,28 @@ object, with no numbers skipped. So, if some objects were discarded from
 the label matrix image, the image should be converted to binary and
 re-made into a label matrix image before feeding it to this module.
 
-
-<ul><li>IntegratedIntensity - The sum of the pixel intensities within an
+Features that can be measured by this module:
+<ul><li><i>IntegratedIntensity:</i> The sum of the pixel intensities within an
  object.</li>
-<li>MeanIntensity - The average pixel intensity within an object.</li>
-<li>StdIntensity - The standard deviation of the pixel intensities within
+<li><i>MeanIntensity:</i> The average pixel intensity within an object.</li>
+<li><i>StdIntensity:</i> The standard deviation of the pixel intensities within
  an object.</li>
-<li>MaxIntensity - The maximal pixel intensity within an object.</li>
-<li>MinIntensity - The minimal pixel intensity within an object.</li>
-<li>IntegratedIntensityEdge - The sum of the edge pixel intensities of an
+<li><i>MaxIntensity:</i> The maximal pixel intensity within an object.</li>
+<li><i>MinIntensity:</i> The minimal pixel intensity within an object.</li>
+<li><i>IntegratedIntensityEdge:</i> The sum of the edge pixel intensities of an
  object.</li>
-<li>MeanIntensityEdge - The average edge pixel intensity of an object.</li>
-<li>StdIntensityEdge - The standard deviation of the edge pixel intensities
+<li><i>MeanIntensityEdge:</i> The average edge pixel intensity of an object.</li>
+<li><i>StdIntensityEdge:</i> The standard deviation of the edge pixel intensities
  of an object.</li>
-<li>MaxIntensityEdge - The maximal edge pixel intensity of an object.</li>
-<li>MinIntensityEdge - The minimal edge pixel intensity of an object.</li>
-<li>MassDisplacement - The distance between the centers of gravity in the
+<li><i>MaxIntensityEdge:</i> The maximal edge pixel intensity of an object.</li>
+<li><i>MinIntensityEdge:</i> The minimal edge pixel intensity of an object.</li>
+<li><i>MassDisplacement:</i> The distance between the centers of gravity in the
  gray-level representation of the object and the binary representation of
  the object.</li>
-<li>LowerQuartileIntensity - the intensity value of the pixel for which 25%
+<li><i>LowerQuartileIntensity:</i> The intensity value of the pixel for which 25%
  of the pixels in the object have lower values.</li>
-<li>MedianIntensity - the median intensity value within the object</li>
-<li>UpperQuartileIntensity - the intensity value of the pixel for which 75%
+<li><i>MedianIntensity:</i> The median intensity value within the object</li>
+<li><i>UpperQuartileIntensity:</i> The intensity value of the pixel for which 75%
  of the pixels in the object have lower values.</li></ul>
 
 For publication purposes, it is important to note that the units of

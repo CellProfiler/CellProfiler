@@ -1,20 +1,9 @@
 '''<b>Smooth</b> smooths (i.e., blurs) images
 <hr>
-
-
-    
-    What is the size of your objects? 
-    This is the approximate diameter of the features to be removed by
-    the smoothing algorithm (Gaussian, Median and Smooth keeping edges)
-    
-    What are the differences in intensity in the edges that you
-    want to preserve?
-    Edges are locations where the intensity changes precipitously.
-    Use this setting to adjust the rough magnitude of these changes. A lower
-    number will preserve more edges. A higher number will smooth more edges.
-    Values should be between zero and one. This setting is only show for
-    Smooth keeping edges.
-    
+Note that smoothing is a time-consuming process, and fitting a polynomial
+is fastest but does not allow a very tight fit as compared to the slower
+median filtering method. Artifacts with widths over ~50 take substantial
+mounts of time to process.
 '''
 #CellProfiler is distributed under the GNU General Public License.
 #See the accompanying file LICENSE for details.
@@ -96,16 +85,22 @@ class Smooth(cpm.CPModule):
         
         self.object_size = cps.Float('What is the size of your objects?',16.0,doc="""
             <i>(Only used if chosing the object size automatically is unchecked)</i>
-            <p>Enter the typical size of the objects to be smoothed. This value is 
-            used to calculate the size of the spatial filer. To measure 
-            distances easily in an open image, use <i>Tools > Show pixel data</i>. 
-            Once this tool is activated, you can draw a line across objects in 
-            your image and the length of the line will be shown in pixel units.""")
+            <p>Enter the approximate diameter of the features to be removed by
+            the smoothing algorithm. This value is used to calculate the size of 
+            the spatial filer. To measure distances easily in an open image, use 
+            <i>Tools > Show pixel data</i>. When you move your mouse over the image,
+            the pixel intensities will appear in the bottom bar of the figure window.""")
         
         self.sigma_range = cps.Float('What are the differences in intensity in the edges that you want to preserve?', .1,doc="""
             <i>(Only used if Smooth Keeping Edges is selected)</i>
             <p>Enter the intensity step that is indicative of an edge in an image.
-            To view pixel intensities in an open image, use <i>Tools > Show pixel data</i>.""")
+            Edges are locations where the intensity changes precipitously, so this
+            setting is used to adjust the rough magnitude of these changes. A lower
+            number will preserve more edges. A higher number will smooth more edges.
+            Values should be between zero and one. To view pixel intensities in 
+            an open image, use <i>Tools > Show pixel data</i>. When you move 
+            your mouse over the image,the pixel intensities will appear in the 
+            bottom bar of the figure window.""")
 
     def backwards_compatibilize(self, setting_values, variable_revision_number, 
                                 module_name, from_matlab):

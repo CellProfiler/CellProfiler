@@ -8,16 +8,8 @@ within a given radius to the lowest value within that radius, then uses
 a grayscale dilation to restore objects larger than the radius to an
 approximation of their former shape. The white top-hat filter enhances 
 speckles by subtracting the effects of opening from the original image.
-
-Do you want to enhance or suppress speckles?
-Choose "Enhance" to get an image whose intensity is largely composed of
-the speckles. Choose "Suppress" to get an image with the speckles
-removed.
-
-What is the size of the speckles?
-
-
 '''
+
 #CellProfiler is distributed under the GNU General Public License.
 #See the accompanying file LICENSE for details.
 #

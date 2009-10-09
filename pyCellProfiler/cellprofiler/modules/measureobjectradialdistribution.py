@@ -1,15 +1,37 @@
-'''measureobjectradialdistribution.py - Measure object's radial distribution
+"""<b>Measure Object Radial Distribution</b>- measures the radial distribution 
+of intensities within an object.
+<hr>
+Given an image with objects identified, this module measures the
+intensity distribution from the center of those objects to their
+boundary within a user-controlled number of bins, for each object.
 
-CellProfiler is distributed under the GNU General Public License.
-See the accompanying file LICENSE for details.
+The distribution can be measured within a single identified object,
+in which case it is relative to the "center" of the object (as
+defined as the point farthest from the boundary), or another object
+can be used as the center, an example of which would be using Nuclei
+for centers within Cells.
 
-Developed by the Broad Institute
-Copyright 2003-2009
+Features that can be measured by this module:
+<ul>
+<li><i>FracAtD</i>: Fraction of total stain in an object at a given radius.
+<li><i>MeanFrac:</i> Mean fractional intensity at a given radius. Calculated
+as fraction of total intenstiy normalized by fraction of pixels at a given radius).</li>
+<li><i>RadialCV:</i> Coefficient of variation of intensity within a ring, calculated 
+over 8 slices.</li>
+</ul>
+  
+See also <b>MeasureObjectIntensity</b>.
+"""
 
-Please see the AUTHORS file for credits.
-
-Website: http://www.cellprofiler.org
-'''
+#CellProfiler is distributed under the GNU General Public License.
+#See the accompanying file LICENSE for details.
+#
+#Developed by the Broad Institute
+#Copyright 2003-2009
+#
+#Please see the AUTHORS file for credits.
+#
+#Website: http://www.cellprofiler.org
 
 __version__="$Revision$"
 
@@ -56,27 +78,7 @@ MF_MEAN_FRAC = '_'.join((M_CATEGORY,FF_MEAN_FRAC))
 MF_RADIAL_CV = '_'.join((M_CATEGORY,FF_RADIAL_CV))
 
 class MeasureObjectRadialDistribution(cpm.CPModule):
-    '''SHORT DESCRIPTION:
-Measures radial distribution of one or more proteins within a cell.
-*************************************************************************
-
-Given an image with objects identified, this module measures the
-intensity distribution from the center of those objects to their
-boundary within a user-controlled number of bins, for each object.
-
-The distribution can be measured within a single identified object,
-in which case it is relative to the "center" of the object (as
-defined as the point farthest from the boundary), or another object
-can be used as the center, an example of which would be using Nuclei
-for centers within Cells.
-
-Three features are measured for each object:
-- FracAtD: Fraction of total stain in an object at a given radius.
-- MeanFrac: Mean fractional intensity at a given radius (Fraction of total 
-   intenstiy normalized by fraction of pixels at a given radius).
-- RadialCV: Coefficient of variation of intensity within a ring, calculated 
-  over 8 slices.
-'''
+ 
     category = "Measurement"
     variable_revision_number = 1
     
@@ -105,8 +107,7 @@ Three features are measured for each object:
             def __init__(self, images):
                 self.key = uuid.uuid4()
                 self.image_name = cps.ImageNameSubscriber(
-                    "What did you call the image from which you want to "
-                    "measure the intensity distribution?", "None")
+                    "Select the input image", "None")
                 if can_remove:
                     def remove(images=images, key = self.key):
                         index = [x.key for x in images].index(key)
@@ -132,13 +133,25 @@ Three features are measured for each object:
             def __init__(self, objects):
                 self.key = uuid.uuid4()
                 self.object_name = cps.ObjectNameSubscriber(
-                    "What did you call the objects from which you want "
-                    "to measure the intensity distribution?", "None")
+                    "Select the input objects", "None")
                 self.center_choice = cps.Choice(
-                    "Do you want to measure distribution from the center "
-                    "of these objects or some other objects?", C_ALL)
+                    "What objects do you want to use as centers?", C_ALL,doc="""
+                    There are two options for the center of the radial measurement:
+                    <ul>
+                    <li><i>These objects</i>:Use the object centers for the 
+                    radial measurement.</li> 
+                    <li><i>Other objects</i>: Use the centers of other objects
+                    for the radial measurement.</li>
+                    </ul>
+                    For example, if measuring the radial distribution in a Cell
+                    object, you can use the center of the Cell objects (<i>These
+                    objects</i>) or you can use previously identified Nuclei objects as 
+                    the centers (<i>Other objects</i>).""")
                 self.center_object_name = cps.ObjectNameSubscriber(
-                    "What objects do you want to use as centers?", "None")
+                    "What objects do you want to use as centers?", "None",doc="""
+                    Select the object to use as the center, or select <i>None</i> to
+                    use the input object centers (which is the same as selecting
+                    <i>These objects</i> for the object centers.""")
                 if can_remove:
                     def remove(objects = objects, key = self.key):
                         index = [x.key for x in objects].index(key)
@@ -169,7 +182,14 @@ Three features are measured for each object:
                 self.key = uuid.uuid4()
                 self.bin_count = cps.Integer(
                     "How many bins do you want to use to store "
-                        "the distribution?",4, 2)
+                        "the distribution?",4, 2, doc="""
+                        The radial distribution is measured with respect to a series
+                        of concentric rings starting from the object center (or 
+                        more generally, between contours at a normalized distance
+                        from the object center). This number
+                        specifies the number of rings that the distribution is to
+                        be divided into. Additional ring counts can be specified
+                        by clicking the <i>Add another bin count</i> button below.""")
                 if can_remove:
                     def remove(bin_counts = bin_counts, key = self.key):
                         index = [x.key for x in bin_counts].index(key)

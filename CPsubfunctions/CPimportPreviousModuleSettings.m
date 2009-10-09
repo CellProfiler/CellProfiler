@@ -543,3 +543,15 @@ if strcmp(CurrentModuleName, 'PauseCellProfiler')
         IsModuleModified = true;
     end
 end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Changes to Morph
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if strcmp(CurrentModuleName, 'Morph')
+    if SavedVarRevNum == 1      % Adding setting 15
+        Settings.VariableValues{ModuleNum-Skipped,15} = 'No';
+        Settings.NumbersOfVariables(ModuleNum-Skipped) = Settings.NumbersOfVariables(ModuleNum-Skipped) + 1;
+        SavedVarRevNum = 2;
+        IsModuleModified = true;
+    end
+end

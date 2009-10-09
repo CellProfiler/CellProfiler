@@ -1,15 +1,24 @@
-""" LoadImages.py - module to load images from files
+'''<b>Load Images</b> allows you to specify which images or movies are to be loaded and in
+which order. Groups of images will be loaded per cycle of CellProfiler processing.
+<hr>
+Tells CellProfiler where to retrieve images and gives each image a
+meaningful name for the other modules to access. When used in combination
+with a <b>SaveImages</b> module, you can load images in one file format and
+save in another file format, making CellProfiler work as a file format
+converter.
 
-CellProfiler is distributed under the GNU General Public License.
-See the accompanying file LICENSE for details.
+See also <b>LoadSingleImage</b>,<b>SaveImages</b>
+'''
+#CellProfiler is distributed under the GNU General Public License.
+#See the accompanying file LICENSE for details.
+#
+#Developed by the Broad Institute
+#Copyright 2003-2009
+#
+#Please see the AUTHORS file for credits.
+#
+#Website: http://www.cellprofiler.org
 
-Developed by the Broad Institute
-Copyright 2003-2009
-
-Please see the AUTHORS file for credits.
-
-Website: http://www.cellprofiler.org
-"""
 __version__="$Revision$"
 
 import cgi
@@ -103,22 +112,142 @@ def default_cpimage_name(index):
     return 'Channel%d'%(index+1)
 
 class LoadImages(cpmodule.CPModule):
-    """Load images from files.  This is the help text that will be displayed
-       to the user.
-    """
+
     def create_settings(self):
         self.module_name = "LoadImages"
         
         # Settings
-        self.file_types = cps.Choice('What type of files are you loading?', FF)
-        self.match_method = cps.Choice('How do you want to load these files?', [MS_EXACT_MATCH, MS_REGEXP, MS_ORDER])
-        self.exclude = cps.Binary('Do you want to exclude certain files?', False)
-        self.match_exclude = cps.Text('Type the text that the excluded images have in common', cps.DO_NOT_USE)
-        self.order_group_size = cps.Integer('How many images are there in each group?', 3)
-        self.descend_subdirectories = cps.Binary('Analyze all subfolders within the selected folder?', False)
-        self.check_images = cps.Binary('Do you want to check image sets for missing or duplicate files?',True)
-        self.group_by_metadata = cps.Binary('Do you want to group image sets by metadata?',False)
-        self.metadata_fields = cps.MultiChoice('What metadata fields do you want to group by?',[])
+        self.file_types = cps.Choice('What type of files are you loading?', FF, doc="""
+                The following image file types are permissible for input into CellProfiler:
+                <ul>
+                <li><i>Individual images:</i>Each file represents a single image. 
+                Some methods of file compression sacrifice image quality ("lossy") and should be avoided for automated image analysis 
+                if at all possible (e.g., .jpg). Other file compression formats retain exactly the original image information but in 
+                a smaller file ("lossless") so they are perfectly acceptable for image analysis (e.g., .png, .tif, .gif). 
+                Uncompressed file formats are also fine for image analysis (e.g., .bmp)</li>
+                <li><i>AVI movies:</i>An AVI (Audio Video Interleave) file is a type of movie file. Only uncompressed AVIs are supported.
+                Files are opened as a stack of images.</li>
+                <li><i>TIF,TIFF,FLEX movies:</i>A TIF/TIFF movie is a file in which a series of images are contained as individual frames. 
+                The same is true for the FLEX file format (used by Evotec Opera automated microscopes). Files are opened as a stack of images.</li>
+                <li><i>STK movies:</i> STKs are a proprietary image format used by MetaMorph (Molecular Devices). It is typically
+                used to encode 3D image data, e.g. from confocal microscopy, and is a special version of the TIF format. </li>
+                </ul>
+                For the movie formats, the files are opened as a stack of images and each image is processed individually.""")
+        
+        self.match_method = cps.Choice('How do you want to load these files?', [MS_EXACT_MATCH, MS_REGEXP, MS_ORDER],doc="""
+                Three options are available:
+                <ul>
+                <li><i>Order:</i> Used when images (or movies) are present in a repeating order,
+                like <i>DAPI, FITC, Red, DAPI, FITC, Red</i>, and so on, where images are
+                selected based on how many images are in each group and what position
+                within each group a particular color is located (e.g. three images per
+                group, DAPI is always first).
+                <li><i>Text - Exact match:</i> Used to load images (or movies) that have a particular piece of
+                text in the name. The specific text that is entered will be searched for in the filenames and
+                the images that contain that text exactly will be loaded. The search for the text is case-sensitive so
+                keep that in mind.
+                <li><i>Text - Regular expressions:</i> When regular expressions is selected, patterns are specified using
+                combinations of metacharacters and literal characters. There are a few
+                classes of metacharacters, partially listed below. A more extensive
+                explanation can be found <a href="http://www.python.org/doc/2.3/lib/re-syntax.html">here</a>
+                and a helpful quick reference can be found <a href="http://www.addedbytes.com/cheat-sheets/regular-expressions-cheat-sheet/">here</a>.
+                <p>The following metacharacters match exactly one character from its respective set of characters:
+                <table border="1">
+                <tr><th>Metacharacter</th><th>Meaning</th></tr>
+                <tr><td>.</td><td>Any character</td></tr>
+                <tr><td>[]</td><td>Any character contained within the brackets</td></tr>
+                <tr><td>[^]</td><td>Any character not contained within the brackets</td></tr>
+                <tr><td>\w</td><td>A word character [a-z_A-Z0-9]</td></tr>
+                <tr><td>\W</td><td>Not a word character [^a-z_A-Z0-9]</td></tr>
+                <tr><td>\d</td><td>A digit [0-9]</td></tr>
+                <tr><td>\D</td><td>Not a digit [^0-9]</td></tr>
+                <tr><td>\s</td><td>Whitespace [ \\t\\r\\n\\f\\v]</td></tr>
+                <tr><td>\S</td><td>Not whitespace [^ \\t\\r\\n\\f\\v]</td></tr>
+                </table>
+        
+                <p>The following metacharacters are used to logically group subexpressions
+                or to specify context for a position in the match. These metacharacters
+                do not match any characters in the string:
+                <table border="1">
+                <tr><th>Metacharacter</th><th>Meaning</th></tr>
+                <tr><td>( )</td><td>Group subexpression</td></tr>
+                <tr><td>|</td><td>Match subexpression before or after the |</td></tr>
+                <tr><td>^</td><td>Match expression at the start of string</td></tr>
+                <tr><td>$</td><td>Match expression at the end of string</td></tr>
+                <tr><td>\\< </td><td>Match expression at the start of a word</td></tr>
+                <tr><td>\> </td><td>Match expression at the end of a word</td></tr>
+                </table>
+                
+                <p>The following metacharacters specify the number of times the previous
+                metacharacter or grouped subexpression may be matched:
+                <table border="1">
+                <tr><th>Metacharacter</th><th>Meaning</th></tr>
+                <tr><td>*</td><td>Match zero or more occurrences</td></tr>
+                <tr><td>+</td><td>Match one or more occurrences</td></tr>
+                <tr><td>?</td><td>Match zero or one occurrence</td></tr>
+                <tr><td>{n,m}</td><td>Match between n and m occurrences</td></tr>
+                </table>
+                
+                <p>Characters that are not special metacharacters are all treated literally
+                in a match. To match a character that is a special metacharacter, escape
+                that character with a '\\'. For example '.' matches any character, so to
+                match a '.' specifically, use '\.' in your pattern.
+                
+                Examples:
+                <ul>
+                <li>[trm]ail matches 'tail' or 'rail' or 'mail'</li>
+                <li>[0-9] matches any digit between 0 to 9</li>
+                <li>[^Q-S] matches any character other than 'Q' or 'R' or 'S'</li>
+                <li>[[]A-Z] matches any upper case alphabet along with square brackets</li>
+                <li>[ag-i-9] matches characters 'a' or 'g' or 'h' or 'i' or '-' or '9'</li>
+                <li>[a-p]* matches '' or 'a' or 'aab' or 'p' etc.</li>
+                <li>[a-p]+ matches  'a' or 'abc' or 'p' etc.</li>
+                <li>[^0-9] matches any string that is not a number</li>
+                <li>^[0-9]*$ matches any string that is a natural number or ''</li>
+                <li>^-[0-9]+$|^\+?[0-9]+$ matches any integer</li>
+                </ul>
+                </ul>""")
+        
+        self.exclude = cps.Binary('Do you want to exclude certain files?', False,doc="""
+                <i>(Only used if loading files using Text-Exact match is selected)</i> 
+                <p>The image/movie files specified with the <i>Text</i> options may also include
+                files that you want to exclude from analysis (such as thumbnails created 
+                by an imaging system).""")
+        
+        self.match_exclude = cps.Text('Type the text that the excluded images have in common', cps.DO_NOT_USE,doc="""
+                <i>(Only used if file exclusion is selected)</i> 
+                <p>Here you can specify text that mark files for exclusion. This text is treated as a 
+                exact match within the filename and not as a regular expression. """)
+        
+        self.order_group_size = cps.Integer('How many images are there in each group?', 3,doc="""
+                <i>(Only used when Order is used for file loading)</i>
+                <p>Enter the number of images that comprise a group. For example, for images given in the order:
+                <i>DAPI, FITC, Red, DAPI, FITC, Red</i>, and so on, the number would be 3.""")
+        
+        self.descend_subdirectories = cps.Binary('Analyze all subfolders within the selected folder?', False, doc="""
+                If this box is checked, all the subfolders under the image directory location that you specify will be
+                searched for images matching the criteria above.""")
+        
+        self.check_images = cps.Binary('Do you want to check image sets for missing or duplicate files?',True,doc="""
+                Selecting this option will examine the filenames for 
+                unmatched or duplicate files based on the filename prefix (such as those 
+                generated by HCS systems).""")
+        
+        self.group_by_metadata = cps.Binary('Do you want to group image sets by metadata?',False,doc="""
+                In some instances, you may want to process as a group those images that share a particular
+                metadata tag. For example, if performing per-plate illumination correction, and the
+                plate metadata is part of the image filename, using image grouping will you to
+                process those images that have the same plate field together (the alternative would be
+                to place the images from each plate in a separate directory). The next setting allows you
+                to select the metadata tags by which to group.""")
+        
+        self.metadata_fields = cps.MultiChoice('What metadata fields do you want to group by?',[],doc="""
+                <i>(Only used if grouping image sets by metadata)</i> 
+                <p>Select the fields that you want group the image files by here. Multiple tags may be selected. For
+                example, if a set of images had metadata for <i>Run</i>,<i>Plate</i>,<i>Well</i> and
+                <i>Site</i>, selecting <i>Run</i> and <i>Plate</i> will create groups containing 
+                images that share the same [<i>Run</i>,<i>Plate</i>] pair of fields.""")
+        
         # Add the first image to the images list
         self.images = []
         self.add_imagecb()
@@ -127,25 +256,123 @@ class LoadImages(cpmodule.CPModule):
         
         # Location settings
         self.location = cps.CustomChoice('Where are the images located?',
-                                        [DIR_DEFAULT_IMAGE, DIR_DEFAULT_OUTPUT, DIR_OTHER])
-        self.location_other = cps.DirectoryPath("Where are the images located?", '')
+                                        [DIR_DEFAULT_IMAGE, DIR_DEFAULT_OUTPUT, DIR_OTHER],doc="""
+                You have the choice of loading the image files from the Default Input folder, the Default Output
+                folder or another location entirely.""")
+        self.location_other = cps.DirectoryPath("Where are the images located?", '',doc="""
+                <i>(Only used if your images are located Elsewhere)</i> 
+                <p>Type the full path to where the images are located. Note that this
+                path is fixed with respect to your local machine, which means that transfering
+                your pipeline to another machine may cause it to fail if it does not share the
+                same mapping to the same location. We recommend using Default Input/Output
+                folders since these locations are set relative to the local machine.""")
 
     def add_imagecb(self):
         'Adds another image to the settings'
         img_index = len(self.images)
         new_uuid = uuid.uuid1()
         fd = { FD_KEY:new_uuid,
-               FD_COMMON_TEXT:cps.Text('Type the text that these images have in common', ''),
-               FD_ORDER_POSITION:cps.Integer('What is the position of this image in each group', img_index+1),
+               FD_COMMON_TEXT:cps.Text('Type the text that these images have in common', '',doc="""
+                        <i>(Only used for the Text options for image loading)</i>
+                        <p>For <i>Text-Exact match</i>, type the text string that all the images have in common. For example,
+                        if all the images for the given channel end with the text <i>D.TIF</i>, type <i>D.TIF</i> here.
+                        <p>For <i>Text-Regular expression</i>, type the regular expression that would capture all
+                        the images for this channel."""),
+               FD_ORDER_POSITION:cps.Integer('What is the position of this image in each group?', img_index+1,doc="""
+                        <i>(Only used for the Order option for image loading)</i>
+                        <p>Enter the number in the image order that this image channel occupies. For example, if 
+                        the order is <i>DAPI, FITC, Red, DAPI, FITC, Red</i>, and so on, the <i>DAPI</i> channel
+                        would occupy position 1."""),
                FD_IMAGE_NAME:cps.FileImageNameProvider('What do you want to call this image in CellProfiler?', 
-                                                       default_cpimage_name(img_index)),
+                                                       default_cpimage_name(img_index),doc="""
+                        Give your images a meaningful name that you will use when referring to
+                        these images in later modules.  Keep the following points in mind when deciding 
+                        on an image name:
+                        <ul>
+                        <li>Image names must begin with a letter, which may be followed by any 
+                        combination of letters, digits, and underscores. The following names are all invalid:
+                        <ul>
+                        <li>My.Cells</li>
+                        <li>1stCells</li>
+                        <li>1+1=3</li>
+                        <li>@MyCell</li>
+                        </ul>
+                        </li>
+                        <li>Names are not case senstive. Therefore, <i>OrigBlue</i>, <i>origblue</i>, and <i>ORIGBLUE</i>
+                        will correspond to the same name, and unexpected results may ensue.</li>
+                        <li>Although the names can be of any length in CellProfiler, you may want to avoid 
+                        making the name too long especially if you are uploading to a database. The name is used
+                        to generate the column header for a given measurement, and in MySQL, the total bytes used
+                        for the column headers cannot exceed 64K. A warning will be generated later if this limit
+                        has been exceeded.</li>
+                        </ul>"""),
                FD_METADATA_CHOICE:cps.Choice('Do you want to extract metadata from the file name, the subdirectory path or both?',
                                              [M_NONE, M_FILE_NAME, 
-                                              M_PATH, M_BOTH]),
+                                              M_PATH, M_BOTH],doc="""
+                        Metadata fields can be specified from the image filename, the image path, or both. 
+                        The metadata entered here can be used for image grouping (see the  
+                        <i>Do you want to group image sets by metadata?</i> setting) or simply used as 
+                        additional columns in the exported measurements (see the <b>ExportToExcel</b> module)"""),
                FD_FILE_METADATA: cps.RegexpText('Type the regular expression that finds metadata in the file name:',
-                                                '^(?P<Plate>.+)_(?P<WellRow>[A-P])(?P<WellColumn>[0-9]{1,2})_(?P<Site>[0-9])'),
+                                                '^(?P<Plate>.*)_(?P<Well>[A-P][0-9]{2})_s(?P<Site>[0-9])',doc="""
+                        <i>(Only used if you want to extract metadata from the file name)</i>
+                        <p>The regular expression to extract the metadata from the file name is entered here. Note that
+                        this field is available whether you have selected <i>Text-Regular expressions</i> to load
+                        the files or not. Please see the module help for more information on construction of
+                        a regular expression.
+                        <p>Clicking the magnifying glass icon to the right will bring up a tool that will allow you to
+                        check the accuracy of your regular expression. The regular expression syntax can be used to 
+                        name different parts of your expression. The syntax for this is <i>(?&lt;fieldname&gt;expr)</i> to
+                        extract whatever matches <i>expr</i> and assign it to the measurement,<i>fieldname</i> for the image.
+                        <p>For instance, a researcher uses plate names composed of a string of letters and numbers,
+                        followed by an underbar, then the well, followed by another underbar, followed by an "s" and a digit
+                        representing the site taken within the well (e.g.,<i>TE12345_A05_s1.tif</i>).
+                        The following regular expression will capture the plate, well and site in the fields, <i>Plate</i>, 
+                        <i>Well</i> and <i>Site</i>:<br>
+                        <table border = "1">
+                        <tr><td colspan = "2">^(?P&lt;Plate&gt;.*)_(?P&lt;Well&gt;[A-P][0-9]{1,2})_s(?P&lt;Site&gt;[0-9])</td></tr>
+                        <tr><td>^</td><td>Only start at beginning of the file name</td></tr>
+                        <tr><td>(?P&lt;Plate&gt;</td><td>Name the captured field, <i>Plate</i></td></tr>
+                        <tr><td>.*</td><td>Capture as many characters that follow</td></tr>
+                        <tr><td>_</td><td>Discard the underbar separating plate from well</td></tr>
+                        <tr><td>(?P&lt;Well&gt;</td><td>Name the captured field, <i>Well</i></td></tr>
+                        <tr><td>[A-P]</td><td>Capture exactly one letter between A and P</td></tr>
+                        <tr><td>[0-9]{2}</td><td>Capture exactly two digits that follow</td></tr>
+                        <tr><td>_s</td><td>Discard the underbar followed by <i>s</s> separating well from site</td></tr>
+                        <tr><td>(?P&lt;Site&gt;</td><td>Name the captured field, <i>Site</i></td></tr>
+                        <tr><td>[0-9]</td><td>Capture one digit following</td></tr>
+                        </table>
+                        <p>The regular expression can be typed in the upper text box, with a sample file name given in the lower
+                        text box. Provided the syntax is correct, the corresponding fields will be highlighted in the same
+                        color in the two boxes. Press <i>Submit</i> to accept the typed regular expression."""),
                FD_PATH_METADATA: cps.RegexpText('Type the regular expression that finds metadata in the subdirectory path:',
-                                          '(?P<Year>[0-9]{4})-(?P<Month>[0-9]{2})-(?P<Day>[0-9]{2})'),
+                                          '.*[\\\\/](?P<Date>.*)[\\\\/](?P<Run>.*)$',doc="""
+                        <i>(Only used if you want to extract metadata from the path)</i>
+                        <p>The regular expression to extract the metadata from the path is entered here. Note that
+                        this field is available whether you have selected <i>Text-Regular expressions</i> to load
+                        the files or not. Please see the module help for more information on construction of
+                        a regular expression.
+                        <p>Clicking the magnifying glass icon to the right will bring up a tool that will allow you to
+                        check the accuracy of your regular expression. The regular expression syntax can be used to 
+                        name different parts of your expression. The syntax for this is <i>(?&lt;fieldname&gt;expr)</i> to
+                        extract whatever matches <i>expr</i> and assign it to the measurement, <i>fieldname</i> for the image.
+                        <p>For instance, a researcher uses directory names with the date and subfolders containing the
+                        images with the run ID (e.g., <i>./2009_10_02/1234/</i>)
+                        The following regular expression will capture the plate, well and site in the fields 
+                        <i>Date</i> and <i>Run</i>:<br>
+                        <table border = "1">
+                        <tr><td colspan = "2">.*[\\\/](?P&lt;Date&gt;.*)[\\\\/](?P&lt;Run&gt;.*)$</td></tr>
+                        <tr><td>.*[\\\\/]</td><td>Skip characters at the beginning of the pathname until either a slash (/) or
+                        backslash (\\) is encountered (depending on the OS)</td></tr>
+                        <tr><td>(?P&lt;Date&gt;</td><td>Name the captured field, <i>Date</i></td></tr>
+                        <tr><td>.*</td><td>Capture as many characters that follow</td></tr>
+                        <tr><td>[\\\\/]</td><td>Discard the slash/backslash character</td></tr>
+                        <tr><td>(?P&lt;Run&gt;</td><td>Name the captured field, <i>Run</i></td></tr>
+                        <tr><td>.*</td><td>Capture as many characters that follow</td></tr>
+                        <tr><td>$</td><td>The <i>Run</i> field must be at the end of the path string, i.e. the
+                        last folder on the path. This also means that the <i>Date</i> field contains the parent
+                        directory of the <i>Date</i> folder.</td></tr>
+                        </table>"""),
                FD_REMOVE_IMAGE:cps.DoSomething('Remove this image...', 'Remove',self.remove_imagecb, new_uuid)
                }
         self.images.append(fd)

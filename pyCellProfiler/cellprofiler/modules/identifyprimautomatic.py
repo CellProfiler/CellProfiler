@@ -256,16 +256,16 @@ class IdentifyPrimAutomatic(cpmi.Identify):
             objects that are not fully within the field of view (because, for
             example, the area would not be accurate).''')
         self.threshold_method = cps.Choice(
-            'Select an automatic, manual or binary image-based thresholding method',
+            'Select the thresholding method',
             cpthresh.TM_METHODS, doc='''\
-            The threshold affects the stringency of the lines between the objects and the background. You
-            can have the threshold automatically calculated using several methods,
-            or you can enter an absolute number between 0 and 1 for the threshold
-            (to see the pixel intensities for your images in the appropriate range
-            of 0 to 1, use the CellProfiler Image Tool, 'ShowOrHidePixelData', in
-            a window showing your image). There are advantages either way. An
-            absolute number treats every image identically, but is not robust to
-            slight changes in lighting/staining conditions between images. An
+            The threshold affects the stringency of the lines between the objects 
+            and the background. You can have the threshold automatically calculated 
+            using several methods, or you can enter an absolute number between 0 
+            and 1 for the threshold (to see the pixel intensities for your images 
+            in the appropriate range of 0 to 1, use <i>Tools > Show pixel data</i> 
+            in a window showing your image). There are advantages either way. 
+            An absolute number treats every image identically, but is not robust 
+            to slight changes in lighting/staining conditions between images. An
             automatically calculated threshold adapts to changes in
             lighting/staining conditions between images and is usually more
             robust/accurate, but it can occasionally produce a poor threshold for

@@ -1,4 +1,4 @@
-'''<b>Measure Object AreaShape </b> several area and shape features of identified objects
+'''<b>Measure Object AreaShape </b> measures several area and shape features of identified objects
 <hr>
 Given an image with identified objects (e.g. nuclei or cells), this
 module extracts area and shape features of each object. Note that these
@@ -7,30 +7,6 @@ image borders, so you may wish to exclude objects touching the edge of
 the image using <b>IdentifyPrimAutomatic</b>.
 
 Features that can be measured by this module:
-<ul>
-<li>Area</li>
-<li>Perimeter</li>
-<li>FormFactor</li>
-<li>Eccentricity</li>
-<li>Solidity</li>
-<li>Extent</li>
-<li>EulerNumber</li>
-<li>MajorAxisLength</li>
-<li>MinorAxisLength</li>
-<li>Orientation:</li>
-<li>Zernike shape features</li> 
-</ul>
-
-<h2>Technical notes:</h2>
-
-<p>This module retrieves objects in label matrix format and measures them.
-The label matrix image should be "compacted": that is, each number should
-correspond to an object, with no numbers skipped. So, if some objects
-were discarded from the label matrix image, the image should be converted
-to binary and re-made into a label matrix image before feeding into this
-module.
-
-A more descriptive list of feature definitions:
 <ul>
 <li><i>Area:</i> The actual number of pixels in the region.</li>
 
@@ -78,6 +54,15 @@ calculated, giving in total 30 measurements. While there is no limit to
 the order which can be calculated (and indeed users could add more by
 adjusting the code), the higher order polynomials carry less information.</li>
 </ul>
+
+<h2>Technical notes:</h2>
+
+<p>This module retrieves objects in label matrix format and measures them.
+The label matrix image should be "compacted": that is, each number should
+correspond to an object, with no numbers skipped. So, if some objects
+were discarded from the label matrix image, the image should be converted
+to binary and re-made into a label matrix image before feeding into this
+module.
 
 See also <b>MeasureImageAreaOccupied</b>
 '''

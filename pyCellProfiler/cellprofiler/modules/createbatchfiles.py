@@ -1,15 +1,30 @@
-'''createbatchfiles.py - implements the CreateBatchFiles module
+'''<b>Create Batch Files</b> produces files that allow individual batches of images to be processed
+separately on a cluster of computers.
+<hr>
+This module creates a file that can be submitted in parallel to a
+cluster for faster processing. This module should be placed at the end of
+an image processing pipeline.
 
-CellProfiler is distributed under the GNU General Public License.
-See the accompanying file LICENSE for details.
-
-Developed by the Broad Institute
-Copyright 2003-2009
-
-Please see the AUTHORS file for credits.
-
-Website: http://www.cellprofiler.org
+If your computer mounts the file system differently than the cluster computers,
+<b>CreateBatchFiles</b> can replace the neccesary parts of the paths to the 
+image and output files. For instance, at the Broad, our Windows machines may 
+access files images by mounting the file system using a drive letter, like this:
+<i>Z:\imaging_analysis</i>
+and our cluster computers access the same file system like this:
+<i>/imaging/analysis</i>
+In this case, the local root path is <i>Z:\imaging_analysis</i> and the cluster 
+root path is <i>/imaging/analysis</i>.
 '''
+#CellProfiler is distributed under the GNU General Public License.
+#See the accompanying file LICENSE for details.
+#
+#Developed by the Broad Institute
+#Copyright 2003-2009
+#
+#Please see the AUTHORS file for credits.
+#
+#Website: http://www.cellprofiler.org
+
 __version__="$Revision$"
 
 import os
@@ -34,49 +49,7 @@ S_PER_MAPPING = 2
 F_BATCH_DATA = 'Batch_data.mat'
 
 class CreateBatchFiles(cpm.CPModule):
-    '''SHORT DESCRIPTION:
-Produces files that allow individual batches of images to be processed
-separately on a cluster of computers.
-***********************************************************************
-This module creates a set of files that can be submitted in parallel to a
-cluster for faster processing. This module should be placed at the end of
-an image processing pipeline.
 
-CreateBatchFiles can rewrite the paths to image and output files if your
-computer mounts the file system differently than the cluster computers.
-For instance, at the Broad, our Windows machines access files images by
-mounting the file system using a drive letter, like this:
-Z:\imaging_analysis
-and our cluster computers access the same file system like this:
-/imaging/analysis
-The local root path is "Z:\imaging_analysis" and the cluster root path is
-"/imaging/analysis"
-
-Settings:
-
-* Do you want to store the batch files in the default output directory?
-Check this box to store batch files in the default output directory. Uncheck
-the box to enter the path to the directory that will be used to store
-these files.
-
-* Are the cluster computers running Windows?
-Check this box if the cluster computers are running one of the Microsoft
-Windows operating systems. If you check this box, CreateBatchFiles will
-modify all paths to use the Windows file separator (backslash). If you
-leave the box unchecked, CreateBatchFiles will modify all paths to use
-the Unix or Macintosh file separator (slash).
-
-* What is the path to files on this computer?
-This is the local root path as described above. If CreateBatchFiles finds
-any path that matches the local root path at the start, it will replace the
-start with the cluster root path.
-
-* What is the path to files on the cluster?
-This is the cluster root path.
-
-* Add another path?
-Press this button to add another path mapping.
-'''
     #
     # How it works:
     #
@@ -94,13 +67,23 @@ Press this button to add another path mapping.
     def create_settings(self):
         '''Create the module settings and name the module'''
         self.module_name = "CreateBatchFiles"
-        self.wants_default_output_directory = cps.Binary("Do you want to store the batch files in the default output directory?", True)
+        self.wants_default_output_directory = cps.Binary("Do you want to store the batch files in the default output directory?", True,doc="""
+                Check this box to store batch files in the Default Output directory. Uncheck
+                the box to enter the path to the directory that will be used to store
+                these files.""")
+        
         self.custom_output_directory = cps.Text("What is the path to the output directory?",
                                                 cpprefs.get_default_output_directory())
         # Worded this way not because I am windows-centric but because it's
         # easier than listing every other OS in the universe except for VMS
         self.remote_host_is_windows = cps.Binary("Are the cluster computers running Windows?",
-                                                 False)
+                                                 False,doc="""
+                Check this box if the cluster computers are running one of the Microsoft
+                Windows operating systems. If you check this box, <b>CreateBatchFiles</b> will
+                modify all paths to use the Windows file separator (backslash, &#92;). If you
+                leave the box unchecked, <b>CreateBatchFiles</b> will modify all paths to use
+                the Unix or Macintosh file separator (slash,&#47;).""")
+        
         self.batch_mode = cps.Binary("Hidden: in batch mode", False)
         self.pickled_image_set_list = cps.Setting("Hidden: contents of image set list","")
         self.default_image_directory = cps.Setting("Hidden: default image directory at time of save",
@@ -110,16 +93,35 @@ Press this button to add another path mapping.
         self.mappings = []
         self.add_mapping()
         self.add_mapping_button = cps.DoSomething("Add another path?","Add",
-                                                  self.add_mapping)
+                                                  self.add_mapping, doc="""
+                Press this button to add another path mapping.""")
     
     def add_mapping(self):
         class Mapping(object):
             def __init__(self, mappings):
                 self.key = uuid.uuid4()
                 self.local_directory = cps.Text("What is the path to files on this computer?",
-                                                cpprefs.get_default_image_directory())
+                                                cpprefs.get_default_image_directory(),doc="""
+                        This is the root path on the local machine (i.e., the computer setting up
+                        the batch file). If <b>CreateBatchFiles</b> finds
+                        any pathname that matches the local root path at the begining, it will replace the
+                        start with the cluster root path.
+                        <p>For example, if you have mapped the remote cluster machine as:<br><br>
+                        <i>Z:\your_data\images</i> (on a Windows machine, for instance)<br><br>
+                        and the cluster machine sees the same directory as:<br><br>
+                        <i>/server_name/your_name/your_data/images</i><br><br>
+                        you would want to put <i>Z:</i> here and <i>/server_name/your_name/</i> 
+                        for the cluster path in the next setting.""")
                 self.remote_directory = cps.Text("What is the path to files on the cluster?",
-                                                 cpprefs.get_default_image_directory())
+                                                 cpprefs.get_default_image_directory(),doc="""
+                        This is the cluster root path, i.e, how the cluster machine sees the
+                        top-most directory where your input/output files are stored.
+                        <p>For example, if you have mapped the remote cluster machine as:<br><br>
+                        <i>Z:\your_data\images</i> (on a Windows machine, for instance)<br><br>
+                        and the cluster machine sees the same directory as:<br><br>
+                        <i>/server_name/your_name/your_data/images</i><br><br>
+                        you would want to put <i>Z:</i> in the previous setting for the
+                        local machine path and <i>/server_name/your_name/</i> here. """)
                 def remove_fn(key = self.key, mappings = mappings):
                     index = [mapping.key for mapping in mappings].index(key)
                     del mappings[index]

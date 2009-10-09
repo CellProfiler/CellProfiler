@@ -1,15 +1,64 @@
-'''measureobjectneighbors.py - MeasureObjectNeighbors module
+'''<b>Identify Object Neighbors</b> calculates how many neighbors each object has.
+<hr>
+Given an image with objects identified (e.g. nuclei or cells), this
+module determines how many neighbors each object has. The user selects
+the distance within which objects should be considered neighbors. The
+module can measure the number of neighbors each object has if every
+object were expanded up until the point where it hits another object; to
+use this option, enter 0 (the number zero) for the pixel distance. If you
+want your objects to be touching before you count neighbors (for 
+instance, in an image of tissue), use the ExpandOrShrink module to expand
+your objects beforehand.
 
-CellProfiler is distributed under the GNU General Public License.
-See the accompanying file LICENSE for details.
+Features that can be measured by this module:
+<ul>
+<li><i>NumberOfNeighbors:</i> Number of neighbor objects
+<li><i>PercentTouching:</i> Percent of pixels within the measured distance</li>
+<li><i>FirstClosestObjectNumber:</i> The index of the closest object.</li>
+<li><i>FirstClosestXVector:</i> The difference between these object's X locations.</li>
+<li><i>FirstClosestYVector:</i> The difference between these object's Y locations.</li>
+<li><i>SecondClosestObjectNumber:</i> The index of the second closest object.</li>
+<li><i>SecondClosestXVector:</i> The difference between these objects' X locations.</li>
+<li><i>SecondClosestYVector:</i> The difference between these objects' Y locations.</li>
+<li><i>AngleBetweenNeighbors:</i> The angle formed with the object center as the 
+vertex and the first and second closest object centers along the vectors.</li>
+</ul>
 
-Developed by the Broad Institute
-Copyright 2003-2009
+There are three modes of object expansion:
 
-Please see the AUTHORS file for credits.
+How it works: Retrieves objects in label matrix format. The objects
+are expanded by the number of pixels the user specifies, and then
+the module counts up how many other objects the object is
+overlapping.  PercentTouching, if computed, is defined as the number
+of boundary pixels on an object not obscured when other objects are
+dilated by the Neighbor distance limit (or 2 pixels if this distance
+is set to 0 for the maximum expansion option detailed above).
 
-Website: http://www.cellprofiler.org
+Interpreting the module output:
+In the color image output of the module, there is a color spectrum used
+to determine which objects have neighbors, and how many. According to the
+indices on the spectrum, the background is -1, objects with no neighbors
+are 0, and objects with neighbors are greater than 0, with the increasing
+index corresponding to more neighbors.
+
+You can save the image of objects colored by numbers of neighbors.
+CellProfiler creates a color image using the color map you choose. Use
+the <b>SaveImages</b> module to save the image to a file.
+
+You can also save the image of objects colored by the percent of pixels
+that are touching other objects.
 '''
+
+#CellProfiler is distributed under the GNU General Public License.
+#See the accompanying file LICENSE for details.
+#
+#Developed by the Broad Institute
+#Copyright 2003-2009
+#
+#Please see the AUTHORS file for credits.
+#
+#Website: http://www.cellprofiler.org
+
 __version = "$Revision$"
 
 import numpy as np
@@ -50,88 +99,50 @@ S_EXPANDED = 'Expanded'
 S_ADJACENT = 'Adjacent'
 
 class MeasureObjectNeighbors(cpm.CPModule):
-    '''SHORT DESCRIPTION:
-    Calculates how many neighbors each object has.
-    *************************************************************************
     
-    Given an image with objects identified (e.g. nuclei or cells), this
-    module determines how many neighbors each object has. The user selects
-    the distance within which objects should be considered neighbors. The
-    module can measure the number of neighbors each object has if every
-    object were expanded up until the point where it hits another object; to
-    use this option, enter 0 (the number zero) for the pixel distance. If you
-    want your objects to be touching before you count neighbors (for 
-    instance, in an image of tissue), use the ExpandOrShrink module to expand
-    your objects beforehand.
-    
-    Features measured (per object):
-    NumberOfNeighbors         # of neighbor objects
-    PercentTouching           percent of pixels within the measured distance
-    FirstClosestObjectNumber  The index of the closest object
-    FirstClosestXVector       The difference between these objects' X locations
-    FirstClosestYVector       The difference between these objects' Y locations
-    SecondClosestObjectNumber The index of the second closest object
-    SecondClosestXVector      The difference between these objects' X locations
-    SecondClosestYVector      The difference between these objects' Y locations
-    AngleBetweenNeighbors     The angle formed with the object center as the
-                              vertex and the first and second closest object
-                              centers along the vectors. 
-    
-    There are three modes of object expansion:
-    * Objects are not expanded (Adjacent) - in this mode, two objects must
-      have adjacent pixels to be touching. PercentTouching measures the percent
-      of adjacent pixels.
-    * Objects are expanded until adjacent - in this mode, pixels in the
-      background are assigned to the nearest object, expanding each object
-      until all border pixels are touching some other object. Two objects
-      are touching if they have adjacent pixels. PercentTouching measures
-      the percent of adjacent pixels.
-    * Objects are expanded a manually-entered number of pixels - in this mode,
-      each object is expanded in-turn by the number of pixels entered by the
-      user. Two objects are touching if pixels of one object are within
-      the specified distance of pixels in the other object. PercentTouching
-      measures the percent of pixels in an object that overlap nearby objects
-      when those objects are expanded.
-    How it works: Retrieves objects in label matrix format. The objects
-    are expanded by the number of pixels the user specifies, and then
-    the module counts up how many other objects the object is
-    overlapping.  PercentTouching, if computed, is defined as the number
-    of boundary pixels on an object not obscured when other objects are
-    dilated by the Neighbor distance limit (or 2 pixels if this distance
-    is set to 0 for the maximum expansion option detailed above).
-    
-    Interpreting the module output:
-    In the color image output of the module, there is a color spectrum used
-    to determine which objects have neighbors, and how many. According to the
-    indices on the spectrum, the background is -1, objects with no neighbors
-    are 0, and objects with neighbors are greater than 0, with the increasing
-    index corresponding to more neighbors.
-    
-    You can save the image of objects colored by numbers of neighbors.
-    CellProfiler creates a color image using the color map you choose. Use
-    the SaveImages module to save the image to a file.
-    
-    You can also save the image of objects colored by the percent of pixels
-    that are touching other objects.
-    '''
-
     category = "Measurement"
     variable_revision_number = 1
 
     def create_settings(self):
         self.module_name = 'MeasureObjectNeighbors'
-        self.object_name = cps.ObjectNameSubscriber('What did you call the objects whose neighbors you want to measure?','None')
+        self.object_name = cps.ObjectNameSubscriber('Select input objects','None')
         self.distance_method = cps.Choice('How do you want to determine whether objects are touching?',
-                                          D_ALL, D_EXPAND)
-        self.distance = cps.Integer('Within what distance (in pixels) are objects to be considered neighbors?',
-                                    5,1)
+                                          D_ALL, D_EXPAND,doc="""
+            <ul>
+            <li><i>Adjacent</i>: In this mode, two objects must have adjacent 
+            boundary pixels to be touching. 
+            <li><i>Expand until adjacent</i>: The objects are expanded until all
+            pixels on the object boundaries are touching another. Two objects are 
+            touching if their any of their boundary pixels are adjacent after 
+            expansion.
+            <li><i>Within a specified distance</i>: Each object is expanded by 
+            the number of pixels entered by the user. Two objects are  
+            touching if they have adjacent pixels after expansion. </li>
+            </ul>
+            
+            <p>For <i>Adjacent</i> and <i>Expand until adjacent</i>, 
+            PercentTouching measures the percentage of pixels on the boundary 
+            of an object that touch adjacent objects. For <i>Within a specified 
+            distance</i>, two objects are touching if their any of their boundary 
+            pixels are adjacent after expansion and PercentTouching measures the 
+            percentage of boundary pixels of an <i>expanded</i> object that 
+            touch adjacent objects.""")
+        self.distance = cps.Integer('Within what distance are objects considered neighbors (in pixels) ?',
+                                    5,1,doc="""
+            <i>(Only used when "Within a specified distance" is selected)</i> The
+            number of pixels that each object is expanded for the neighbor 
+            calculation. Expanded objects that touch are considered neighbors.""")
         self.wants_count_image = cps.Binary('Do you want to save the image of objects colored by numbers of neighbors?',
-                                            False)
+                                            False, doc="""
+             The image of the objects colored by numbers of neighbors can be 
+             saved for later export. See <b>SaveImages</b> for more details.""")
         self.count_image_name = cps.ImageNameProvider('What do you want to call the image of objects colored by numbers of neighbors?',
                                                       'ObjectNeighborCount')
         self.count_colormap = cps.Colormap('What colormap do you want to use to color the above image?')
         self.wants_percent_touching_image = cps.Binary('Do you want to save the image of objects colored by percent of touching pixels?',
-                                                       False)
+                                                       False, doc="""
+             The image of the objects colored by percent of touching pixels can be 
+             saved for later export. See <b>SaveImages</b> for more details.""")
         self.touching_image_name = cps.ImageNameProvider('What do you want to call the image of objects colored by percent of touching pixels?',
                                                          'PercentTouching')
         self.touching_colormap = cps.Colormap('What colormap do you want to use to color the above image?')

@@ -1,15 +1,24 @@
-'''filterbyobjectmeasurement.py - Filter objects by measurements
+'''<b>FilterByObjectMeasurement:</b> Eliminates objects based on their measurements (e.g. area, shape,
+texture, intensity).
+<hr>
+This module removes objects based on their measurements produced by
+another module (e.g. MeasureObjectAreaShape, MeasureObjectIntensity,
+MeasureTexture). All objects outside of the specified parameters will be
+discarded.
 
-CellProfiler is distributed under the GNU General Public License.
-See the accompanying file LICENSE for details.
-
-Developed by the Broad Institute
-Copyright 2003-2009
-
-Please see the AUTHORS file for credits.
-
-Website: http://www.cellprofiler.org
+See also See also <b>MeasureObjectAreaShape</b>, <b>MeasureObjectIntensity</b>, <b>MeasureTexture</b>,
+<b>MeasureCorrelation</b>, <b>CalculateRatios</b>, and <b>MeasureObjectNeighbors modules</b>.
 '''
+#CellProfiler is distributed under the GNU General Public License.
+#See the accompanying file LICENSE for details.
+#
+#Developed by the Broad Institute
+#Copyright 2003-2009
+#
+#Please see the AUTHORS file for credits.
+#
+#Website: http://www.cellprofiler.org
+
 __version = "$Revision$"
 
 import numpy as np
@@ -54,94 +63,6 @@ ADDITIONAL_OBJECT_SETTING_COUNT = 4
 FF_PARENT = "Parent_%s"
 
 class FilterByObjectMeasurement(cpm.CPModule):
-    '''SHORT DESCRIPTION:
-Eliminates objects based on their measurements (e.g. area, shape,
-texture, intensity).
-*************************************************************************
-
-This module removes objects based on their measurements produced by
-another module (e.g. MeasureObjectAreaShape, MeasureObjectIntensity,
-MeasureTexture). All objects outside of the specified parameters will be
-discarded.
-
-Settings:
-What do you want to call the filtered objects?
-This will be the name for the collection of objects that meet the filter
-criteria.
-
-Which object do you want to filter by, or if using a Ratio, what is the
-numerator object?
-This setting controls which objects will be filtered to generate the
-filtered objects. It also controls the measurement choices for filtering:
-you can only filter on measurements made on these objects. The values
-for ratio measurements are assigned to the numerator object, so you have
-to select the numerator object to access a ratio measurement.
-
-What category of measurement do you want to use?
-This choice box contains a list of available categories of measurements
-for your chosen object. Examples are, "AreaShape" for measurements made
-by the MeasureObjectAreaShape module or "Intensity" for measurements made
-by the MeasureObjectIntensity module. See the help for your measurement of 
-choice to find the appropriate category.
-
-What feature do you want to use?
-Generally, the feature is the kind of measurement taken or algorithm used
-to calculate the measurement. For instance, "MeanIntensity", is the feature
-name used when finding the average intensity within an object.
-
-What image do you want to use?
-Some features are calculated on the pixels in an image, for instance
-"MeanIntensity" might be calculated on both a nuclear and cytoplasm stain
-image. This setting allows you to pick the image for the measurement in
-cases where there might be ambiguity.
-
-What scale do you want to use?
-Some features may be calculated at multiple scales (for instance, texture).
-This setting lets you choose one of the measured scales in cases where there
-might be ambiguity.
-
-How do you want to filter objects?
-The choices are:
-* Maximal - only keep the object with the maximum value for the measurement
-            of interest. Keep one object per image with an arbitrary choice
-            on ties.
-* Minimal - only keep the object with the minimum value for the measurement
-            of interest. Keep one object per image with an arbitrary choice
-            on ties.
-* Maximal per object - This option requires a choice of a set of container
-            objects. The container objects might contain several objects of
-            choice (for instance, mitotic spindles within a cell or FISH
-            probe spots within a nucleus). This option will keep only the
-            object with the maximum value for the measurement among the
-            set of objects within the container objects.
-* Minimal per object - same as Maximal per object, except use minimum to filter.
-* Limits - keep an object if its measurement value falls between a minimum
-           and maximum limit.
-
-What are the objects that enclose the objects to be filtered?
-This setting chooses the container objects for the "Maximal per object" and
-"Minimal per object" filtering choices.
-
-What additional object do you want to receive the same labels as the filtered
-objects?
-This setting lets you propagate the filtering of your objects to the objects
-that your objects were derived from and to the objects that derived from your
-object.
-
-What do you want to rename the relabeled objects?
-Enter the name to be given to the relabeled objects after filtering and
-relabeling.
-
-Remove above object:
-Press this button to remove the object above from the list of ones to be
-renumbered.
-
-Add an object to be relabeled similarly to the filtered object:
-Press this button to add another object to the list of ones to be relabeled. 
-
-See also MeasureObjectAreaShape, MeasureObjectIntensity, MeasureTexture,
-MeasureCorrelation, CalculateRatios, and MeasureObjectNeighbors modules.
-    '''
 
     category = "Object Processing"
     variable_revision_number = 1
@@ -149,19 +70,43 @@ MeasureCorrelation, CalculateRatios, and MeasureObjectNeighbors modules.
     def create_settings(self):
         '''Create the initial settings and name the module'''
         self.module_name = 'FilterByObjectMeasurement'
-        self.target_name = cps.ObjectNameProvider('What do you want to call the filtered objects?','FilteredBlue')
-        self.object_name = cps.ObjectNameSubscriber('What object would you like to filter by, or if using a Ratio, what is the numerator object?','None')
+        self.target_name = cps.ObjectNameProvider('What do you want to call the filtered objects?','FilteredBlue',
+                                                  doc = '''This will be the name for the collection of objects that meet the filter
+                                                    criteria.''')
+        self.object_name = cps.ObjectNameSubscriber('What object would you like to filter by, or if using a Ratio, what is the numerator object?','None',
+                                                    doc = '''This setting controls which objects will be filtered to generate the
+                                                    filtered objects. It also controls the measurement choices for filtering:
+                                                    you can only filter on measurements made on these objects. The values
+                                                    for ratio measurements are assigned to the numerator object, so you have
+                                                    to select the numerator object to access a ratio measurement.''')
         self.measurement = cps.Measurement('What measurement do you want to use?',
                                            self.object_name.get_value,
-                                           "AreaShape_Area")
+                                           "AreaShape_Area", doc ='''See the help of the Measurements modules
+                                           for more information on the features measured by each Module.''')
         self.filter_choice = cps.Choice('How do you want to filter objects?',
-                                        FI_ALL, FI_LIMITS)
+                                        FI_ALL, FI_LIMITS, doc = '''There are five different ways to filter objects:
+                                        <ul><li>Maximal: only keep the object with the maximum value for the measurement
+                                        of interest. Keep one object per image with an arbitrary choice
+                                        on ties.</li>
+                                        <li>Minimal: only keep the object with the minimum value for the measurement
+                                        of interest. Keep one object per image with an arbitrary choice
+                                        on ties.</li>
+                                        <li>Maximal per object: This option requires a choice of a set of container
+                                        objects. The container objects might contain several objects of
+                                        choice (for instance, mitotic spindles within a cell or FISH
+                                        probe spots within a nucleus). This option will keep only the
+                                        object with the maximum value for the measurement among the
+                                        set of objects within the container objects.</li>
+                                        <li>Minimal per object: same as Maximal per object, except use minimum to filter.</li>
+                                        <li>Limits: keep an object if its measurement value falls between a minimum
+                                        and maximum limit.</li></ul>''')
         self.wants_minimum = cps.Binary('Do you want a minimum acceptable value for the measurement?', True)
         self.min_limit = cps.Float('Enter the minimum acceptable value for the measurement:',0)
         self.wants_maximum = cps.Binary('Do you want a maximum acceptable value for the measurement?', True)
         self.max_limit = cps.Float('Enter the maximum acceptable value for the measurement:',1)
         self.enclosing_object_name = cps.ObjectNameSubscriber('What did you call the objects that contain the filtered objects?',
-                                                              'None')
+                                                              'None', doc = '''This setting chooses the container objects for the "Maximal per object" and
+                                                                "Minimal per object" filtering choices.''')
         self.wants_outlines = cps.Binary('Do you want to save outlines for the filtered image?', False)
         self.outlines_name = cps.ImageNameProvider('What do you want to call the outline image?','FilteredBlue')
         self.additional_objects = []

@@ -93,7 +93,9 @@ elseif ColorFlag ==4
           fieldname = ['FileList', ImageName];
           FileList = handles.Pipeline.(fieldname);
           idx = handles.Current.SetBeingAnalyzed;
-          Image = imread(fullfile(Pathname,char(FileList(idx))));
+          try
+              Image = imread(fullfile(Pathname,char(FileList(idx))));
+          end
       end
     if islogical(Image)==0
            error(['Image processing was canceled in the ', ModuleName, ' module because it requires an input image that is binary, but the image loaded does not fit this requirement. This may be because the image is grayscale.']);

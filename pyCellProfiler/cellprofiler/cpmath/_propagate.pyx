@@ -1,5 +1,8 @@
-"""propagate.pyz - cython implementation of propagate algorithm
+"""propagate.pyx - cython implementation of propagate algorithm
 """
+cdef extern from "numpy/arrayobject.h":
+        cdef void import_array()
+import_array()
 
 import numpy as np
 import struct

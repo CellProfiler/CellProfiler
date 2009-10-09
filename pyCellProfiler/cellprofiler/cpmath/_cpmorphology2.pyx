@@ -26,6 +26,8 @@ cdef extern from "numpy/arrayobject.h":
     cdef void import_array()
     cdef int  PyArray_ITEMSIZE(np.ndarray)
 
+import_array()
+
 @cython.boundscheck(False)
 def skeletonize_loop(np.ndarray[dtype=np.uint8_t, ndim=2, 
                                 negative_indices=False, mode='c'] result,

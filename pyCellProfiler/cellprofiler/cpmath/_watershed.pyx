@@ -11,6 +11,10 @@ Please see the AUTHORS file for credits.
 Website: http://www.cellprofiler.org
 """
 
+cdef extern from "numpy/arrayobject.h":
+        cdef void import_array()
+import_array()
+
 import numpy as np
 cimport numpy as np
 cimport cython

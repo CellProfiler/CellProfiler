@@ -1,15 +1,42 @@
-"""ExportToDatabase -  export measurements to database
+'''<b>ExportToDatabase:</b>  Exports data directly to a database, or in database readable format, including an importing file
+with column names and a CellProfiler Analyst properties file, if desired.
+<hr>
 
-CellProfiler is distributed under the GNU General Public License.
-See the accompanying file LICENSE for details.
+This module exports measurements directly to a database, or to a SQL compatible format. 
+It allows you to create MySQL and associated data files which will create a
+database and import the data into it and gives you the option of creating
+a properties file for use with CellProfiler Analyst. Optionally, you can create
+an SQLite DB file if you do not have a server on which to run MySQL.
+ 
+This module must be run at the end of a pipeline, or second to last if 
+you are using the CreateBatchFiles module. If you forget this module, you
+can also run the ExportDatabase data tool after processing is complete; 
+its functionality is the same.
 
-Developed by the Broad Institute
-Copyright 2003-2009
+The database is set up with two primary tables. These tables are the
+Per_Image table and the Per_Object table (which may have a prefix if you
+specify). The Per_Image table consists of all the Image measurements and
+the Mean and Standard Deviation of the object measurements. There is one
+Per_Image row for every image. The Per_Object table contains all the
+measurements for individual objects. There is one row of object
+measurements per object identified. The two tables are connected with the
+primary key column ImageNumber. The Per_Object table has another primary
+key called ObjectNumber, which is unique per image.
 
-Please see the AUTHORS file for credits.
+Oracle is not currently supported; you can create your own Oracle DB using
+the .csv output option, and writing a simple script to upload to the DB.
 
-Website: http://www.cellprofiler.org
-"""
+
+'''
+#CellProfiler is distributed under the GNU General Public License.
+#See the accompanying file LICENSE for details.
+#
+#Developed by the Broad Institute
+#Copyright 2003-2009
+#
+#Please see the AUTHORS file for credits.
+#
+#Website: http://www.cellprofiler.org
 
 __version__="$Revision$"
 
@@ -75,155 +102,23 @@ def connect_sqlite(db_file):
     
     
 class ExportToDatabase(cpm.CPModule):
-    """% SHORT DESCRIPTION:
-Exports data in database readable format, including an importing file
-with column names and a CellProfiler Analyst properties file, if desired.
-*************************************************************************
-
-This module exports measurements to a SQL compatible format. It creates
-MySQL or Oracle scripts and associated data files which will create a
-database and import the data into it and gives you the option of creating
-a properties file for use with CellProfiler Analyst. 
  
-This module must be run at the end of a pipeline, or second to last if 
-you are using the CreateBatchFiles module. If you forget this module, you
-can also run the ExportDatabase data tool after processing is complete; 
-its functionality is the same.
-
-The database is set up with two primary tables. These tables are the
-Per_Image table and the Per_Object table (which may have a prefix if you
-specify). The Per_Image table consists of all the Image measurements and
-the Mean and Standard Deviation of the object measurements. There is one
-Per_Image row for every image. The Per_Object table contains all the
-measurements for individual objects. There is one row of object
-measurements per object identified. The two tables are connected with the
-primary key column ImageNumber. The Per_Object table has another primary
-key called ObjectNumber, which is unique per image.
-
-The Oracle database has an extra table called Column_Names. This table is
-necessary because Oracle has the unfortunate limitation of not being able
-to handle column names longer than 32 characters. Since we must
-distinguish many different objects and measurements, our column names are
-very long. This required us to create a separate table which contains a
-short name and corresponding long name. The short name is simply "col"
-with an attached number, such as "col1" "col2" "col3" etc. The short name
-has a corresponding long name such as "Nuclei_AreaShape_Area". Each of
-the Per_Image and Per_Object columnnames are loaded as their "short name"
-but the long name can be determined from the Column_Names table.
-
-Settings:
-
-Database Type: 
-You can choose to export MySQL or Oracle database scripts. The exported
-data is the same for each type, but the setup files for MySQL and Oracle
-are different.
-
-Database Name: 
-  In MySQL, you can enter the name of a database to create or the name of
-an existing database. When using the script, if the database already
-exists, the database creation step will be skipped so the existing
-database will not be overwritten but new tables will be added. Do be
-careful, however, in choosing the Table Prefix. If you use an existing
-table name, you might unintentionally overwrite the data in that table.
-  In Oracle, when you log in you must choose a database to work with, so
-there is no need to specify the database name in this module. This also
-means it is impossible to create/destroy a database with these
-CellProfiler scripts.
-
-Table Prefix: 
-Here you can choose what to append to the table names Per_Image and
-Per_Object. If you choose "Do not use", no prefix will be appended. If you choose
-a prefix, the tables will become PREFIX_Per_Image and PREFIX_Per_Object
-in the database. If you are using the same database for all of your
-experiments, the table prefix is necessary and will be the only way to
-distinguish different experiments. If you are creating a new database for
-every experiment, then it may be easier to keep the generic Per_Image and
-Per_Object table names. Be careful when choosing the table prefix, since
-you may unintentionally overwrite existing tables.
-
-SQL File Prefix: All the CSV files will start with this prefix.
-
-Create a CellProfiler Analyst properties file: Generate a template
-properties for using your new database in CellProfiler Analyst (a data
-exploration tool which can also be downloaded from
-http://www.cellprofiler.org/)
- 
-If creating a properties file for use with CellProfiler Analyst (CPA): 
-The module will attempt to fill in as many as the entries as possible 
-based on the current handles structure. However, entries such as the 
-server name, username and password are omitted. Hence, opening the 
-properties file in CPA will produce an error since it won't be able to
-connect to the server. However, you can still edit the file in CPA and
-then fill in the required information.
-
-Do you want to calculate the aggregate mean / median / standard deviation
-of the values of each object measurement per image?
-
-ExportToDatabase can calculate statistics over all the objects in each image
-and store the results as columns in the database. For instance, if
-you are measuring the area of the Nuclei objects and you check the aggregate
-mean box in this module, ExportToDatabase will create a column in the Per_Image
-table called Mean_Nuclei_AreaShape_Area. You may not want to use 
-ExportToDatabase to calculate these measurements if your pipeline generates
-a large number of per-object measurements; doing so might exceed database
-column limits. These columns can be created manually for selected measurements.
-For instance, the following SQL creates the Mean_Nuclei_AreaShape_Area column:
-
-    ALTER TABLE Per_Image ADD (Mean_Nuclei_AreaShape_Area);
-    UPDATE Per_Image SET Mean_Nuclei_AreaShape_Area = 
-        (SELECT AVG(Nuclei_AreaShape_Area)
-         FROM Per_Object
-         WHERE Per_Image.ImageNumber = Per_Object.ImageNumber);
-
-
-********************* How To Import MySQL *******************************
-Step 1: Log onto the server where the database will be located.
-
-Step 2: From within a terminal logged into that server, navigate to folder 
-where the CSV output files and the SETUP script is located.
-
-Step 3: Type the following within the terminal to log into MySQL on the 
-server where the database will be located:
-   mysql -uUsername -pPassword -hHost
-
-Step 4: Type the following within the terminal to run SETUP script: 
-     \. DefaultDB_SETUP.SQL
-
-The SETUP file will do everything necessary to load the database.
-
-********************* How To Import Oracle ******************************
-Step 1: Using a terminal, navigate to folder where the CSV output files
-and the SETUP script is located.
-
-Step 2: Log into SQLPlus: "sqlplus USERNAME/PASSWORD@DATABASESCRIPT"
-You may need to ask your IT department the name of DATABASESCRIPT.
-
-Step 3: Run SETUP script: "@DefaultDB_SETUP.SQL"
-
-Step 4: Exit SQLPlus: "exit"
-
-Step 5: Load data files (for columnames, images, and objects):
-
-sqlldr USERNAME/PASSWORD@DATABASESCRIPT control=DefaultDB_LOADCOLUMNS.CTL
-sqlldr USERNAME/PASSWORD@DATABASESCRIPT control=DefaultDB_LOADIMAGE.CTL
-sqlldr USERNAME/PASSWORD@DATABASESCRIPT control=DefaultDB_LOADOBJECT.CTL
-
-Step 6: Log into SQLPlus: "sqlplus USERNAME/PASSWORD@DATABASESCRIPT"
-
-Step 7: Run FINISH script: "@DefaultDB_FINISH.SQL"
-"""
-
     variable_revision_number = 8
     category = "File Processing"
 
     def create_settings(self):
         self.module_name = "ExportToDatabase"
         self.db_type = cps.Choice("What type of database do you want to use?",
-                                  [DB_MYSQL,DB_ORACLE,DB_SQLITE], DB_MYSQL)
+                                  [DB_MYSQL,DB_ORACLE,DB_SQLITE], DB_MYSQL, doc = '''<ul><li><i>MySQL</i>
+                                  will allow you to write directly to the database.  <li><i>Oracle</i> is currently
+                                  not supported, but writing your data to .csv files will allow you to upload your
+                                  data to an Oracle database with a simple script. <li><i>SQLite</i> will write 
+                                  sqlite files directly.  More information about sqlite can be found at <a href="http://www.sqlite.org/"> http://www.sqlite.org/</a> </ul>''')
         self.db_name = cps.Text(
             "What is the name of the database you want to use?", "DefaultDB")
         self.want_table_prefix = cps.Binary(
-            "Do you want to add a prefix to your table names?", False)
+            "Do you want to add a prefix to your table names?", False, doc = '''This gives you the option to append text to your table names
+            (Per_Image and Per_Object).  CellProfiler will warn you before overwriting an existing table.''')
         self.table_prefix = cps.Text(
             "What is the table prefix you want to use?", "Expt_")
         self.sql_file_prefix = cps.Text(
@@ -234,11 +129,20 @@ Step 7: Run FINISH script: "@DefaultDB_FINISH.SQL"
             "What directory should be used to save files?", ".")
         self.save_cpa_properties = cps.Binary(
             "Do you want to create a CellProfilerAnalyst properties file?", 
-            False)
+            False, doc = '''Generate a template
+            properties for using your new database in CellProfiler Analyst (a data
+            exploration tool which can also be downloaded from
+            <a href="http://www.cellprofiler.org/"> http://www.cellprofiler.org/ </a>). The module will attempt to fill in as many as the entries as possible 
+            based on the current handles structure. However, entries such as the 
+            server name, username and password are omitted. Hence, opening the 
+            properties file in CPA will produce an error since it won't be able to
+            connect to the server. However, you can still edit the file in CPA and
+            then fill in the required information.''')
         self.store_csvs = cps.Binary(
-            "Store the database in CSV files? (This will write per_image and "
-            "per_object tables as a series of CSV files along with an SQL file "
-            "that can be used with those files to create the database.)", False)
+            "Store the database in CSV files? ", False, doc = '''This will write per_image and 
+            per_object tables as a series of CSV files along with an SQL file 
+            that can be used with those files to create the database.  You can also look at the csv
+            files in a spreadsheet program, such as Excel.''')
         self.db_host = cps.Text("What is the database host?", "imgdb01")
         self.db_user = cps.Text("What is the database username?", "cpuser")
         self.db_passwd = cps.Text("What is the database password?", "cPus3r")
@@ -247,7 +151,21 @@ Step 7: Run FINISH script: "@DefaultDB_FINISH.SQL"
             "DefaultDB.db")
         self.wants_agg_mean = cps.Binary(
             "Do you want to calculate the aggregate mean value of each "
-            "object measurement per image?", True)
+            "object measurement per image?", True, doc = '''ExportToDatabase can calculate statistics over all the objects in each image
+            and store the results as columns in the database. For instance, if
+            you are measuring the area of the Nuclei objects and you check the aggregate
+            mean box in this module, ExportToDatabase will create a column in the Per_Image
+            table called Mean_Nuclei_AreaShape_Area. You may not want to use 
+            ExportToDatabase to calculate these measurements if your pipeline generates
+            a large number of per-object measurements; doing so might exceed database
+            column limits. These columns can be created manually for selected measurements.
+            For instance, the following SQL creates the Mean_Nuclei_AreaShape_Area column:
+            
+                ALTER TABLE Per_Image ADD (Mean_Nuclei_AreaShape_Area);
+                UPDATE Per_Image SET Mean_Nuclei_AreaShape_Area = 
+                    (SELECT AVG(Nuclei_AreaShape_Area)
+                     FROM Per_Object
+                     WHERE Per_Image.ImageNumber = Per_Object.ImageNumber);''')
         self.wants_agg_median = cps.Binary(
             "Do you want to calculate the aggregate median value of each "
             "object measurement per image?", False)

@@ -92,7 +92,6 @@ def CreateJobRecord(run_id, job_id):
     
     Create a job record with the given run_id and job_id
     """
-    print "Creating job record for run id %d, job id %d"%(run_id, job_id)
     cursor = connection.cursor()
     sql="""
     insert into job (job_id, run_id) values ('%s','%s')"""%(job_id,run_id)

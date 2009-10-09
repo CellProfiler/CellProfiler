@@ -1,15 +1,24 @@
-"""correctillumination_apply.py - apply image correction
+'''<b>CorrectIllumination_Apply:</b> Applies an illumination function, created by
+CorrectIllumination_Calculate, to an image in order to correct for uneven
+illumination (uneven shading).
+<hr>
 
-CellProfiler is distributed under the GNU General Public License.
-See the accompanying file LICENSE for details.
+This module applies a previously created illumination correction function,
+either loaded by <b>LoadSingleImage</b> or created by <b>CorrectIllumination_Calculate</b>.
+This module corrects each image in the pipeline using the function you specify. 
 
-Developed by the Broad Institute
-Copyright 2003-2009
+See also <b>CorrectIllumination_Calculate, RescaleIntensity</b>.'''
 
-Please see the AUTHORS file for credits.
+#CellProfiler is distributed under the GNU General Public License.
+#See the accompanying file LICENSE for details.
+#
+#Developed by the Broad Institute
+#Copyright 2003-2009
+#
+#Please see the AUTHORS file for credits.
+#
+#Website: http://www.cellprofiler.org
 
-Website: http://www.cellprofiler.org
-"""
 __version__="$Revision$"
 
 import numpy as np
@@ -25,58 +34,7 @@ RE_STRETCH = "Stretch 0 to 1"
 RE_MATCH = "Match maximums"
 
 class CorrectIllumination_Apply(cpm.CPModule):
-    """Help for the Correct Illumination Apply module:
-Category: Image Processing
 
-SHORT DESCRIPTION:
-Applies an illumination function, created by
-CorrectIllumination_Calculate, to an image in order to correct for uneven
-illumination (uneven shading).
-*************************************************************************
-
-This module corrects for uneven illumination of each image. An
-illumination function image that represents the variation in
-illumination across the field of view is either made by a previous
-module or loaded by a previous module in the pipeline.  This module
-then applies the illumination function to each image coming through
-the pipeline to produce the corrected image.
-
-Settings:
-
-Divide or Subtract:
-This module either divides each image by the illumination function,
-or the illumination function is subtracted from each image. The
-choice depends on how the illumination function was calculated and
-on your physical model of how illumination variation affects the
-background of images relative to the objects in images. If the
-background is significant relative to the real signal coming from
-cells (a somewhat empirical decision), then the Subtract option may be
-preferable. If, in contrast, the signal to background ratio is quite
-high (the cells are stained strongly), then the Divide option is
-probably preferable. Typically, Subtract is used if the illumination
-function was calculated using the background option in the
-CORRECTILLUMINATION_CALCULATE module and divide is used if the
-illumination function was calculated using the regular option.
-
-Rescaling:
-If subtracting the illumination function, any pixels that end up
-negative are set to zero, so no rescaling of the corrected image is
-necessary. If dividing, the resulting corrected image may be in a
-very different range of intensity values relative to the original,
-depending on the values of the illumination function. If you are not
-rescaling, you should confirm that the illumination function is in a
-reasonable range (e.g. 1 to some number), so that the resulting
-image is in a reasonable range (0 to 1). Otherwise, you have two
-options to rescale the resulting image: either stretch the image
-so that the minimum is zero and the maximum is one, or match the
-maximum of the corrected image to the the maximum of the original.
-Either of these options has the potential to disturb the brightness
-of images relative to other images in the set, so caution should be
-used in interpreting intensity measurements from images that have
-been rescaled. See the help for the Rescale Intensity module for details.
-
-See also CorrectIllumination_Calculate, RescaleIntensity.
-"""
     category = "Image Processing"
     variable_revision_number = 1
     
@@ -87,9 +45,20 @@ See also CorrectIllumination_Calculate, RescaleIntensity.
         self.corrected_image_name = cps.ImageNameProvider("What do you want to call the corrected image?","CorrBlue")
         self.illum_correct_function_image_name = cps.ImageNameSubscriber("What did you call the illumination correction function image to be used to carry out the correction (produced by another module or loaded as a .mat format image using Load Single Image)?","None")
         self.divide_or_subtract = cps.Choice("How do you want to apply the illumination correction function?",
-                                             [DOS_DIVIDE, DOS_SUBTRACT])
+                                             [DOS_DIVIDE, DOS_SUBTRACT], doc = '''This choice depends on how the illumination function was calculated
+                                             and on your physical model of how illumination variation affects the background of images relative to 
+                                             the objects in images. <ul><li>Subtract: Use <i>Subtract</i> if the background signal is significant relative to the real signal
+                                             coming from the cells (a somewhat empirical decision).  If you created the illumination correction function using <i>Background</i>,
+                                             then you will want to choose <i>Subtract</i> here.</li><li>Divide: Use <i>Divide</i> if the the signal to background ratio 
+                                             is quite high (the cells are stained very strongly).  If you created the illumination correction function using <i>Regular</i>,
+                                             then you will want to choose <i>Divide</i> here.</ul>''')
         self.rescale_option = cps.Choice("Choose rescaling method",
-                                         [RE_NONE, RE_STRETCH, RE_MATCH])
+                                         [RE_NONE, RE_STRETCH, RE_MATCH], doc = '''<ul><li>Subtract: Any pixels that end up negative are set to zero, so no rescaling is necessary.
+                                         <li>Divide: The resulting image may be in a very different range of intensity values relative to the original image.
+                                         If the illumination correction function is in the range 1 to infinity, <i>Divide</i> will usually yield an image in a reasonable
+                                         range (0 to 1).  However, if the image is not in this range, or the intensity gradient within the image is still very great,
+                                         you may want to rescale the image.  There are two:<ul><li>Stretch the image from 0 to 1.<li>Match the maximum of the corrected image
+                                         to the maximum of the original image.</ul></ul>''')
 
     def settings(self):
         """Return the settings in the file load/save order"""

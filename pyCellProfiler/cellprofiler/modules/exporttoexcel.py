@@ -1,16 +1,22 @@
-'''exporttoexcel.py - export measurements to a CSV file
+'''<b>ExportToExcel</b>: Exports measurements into a comma-delimited text file which can be
+opened in Excel or other spreadsheets.
+<hr>
 
-CellProfiler is distributed under the GNU General Public License.
-See the accompanying file LICENSE for details.
+This module will convert the measurements to a comma-delimited form and
+either combine measurements from separate objects into one table or
+output per-object tables to separate files. In addition, you can save
+both image and experiment measurements.
 
-Developed by the Broad Institute
-Copyright 2003-2009
-
-Please see the AUTHORS file for credits.
-
-Website: http://www.cellprofiler.org
 '''
-
+#CellProfiler is distributed under the GNU General Public License.
+#See the accompanying file LICENSE for details.
+#
+#Developed by the Broad Institute
+#Copyright 2003-2009
+#
+#Please see the AUTHORS file for credits.
+#
+#Website: http://www.cellprofiler.org
 __version__="$Revision$"
 
 import csv
@@ -68,53 +74,6 @@ IMAGE_NUMBER = "ImageNumber"
 OBJECT_NUMBER = "ObjectNumber"
 
 class ExportToExcel(cpm.CPModule):
-    '''Exports measurements into a tab-delimited text file which can be
-opened in Excel or other spreadsheets
-***********************************************************************
-
-This module will convert the measurements to a tab-delimited form and
-either combine measurements from separate objects into one table or
-output per-object tables to separate files. In addition, you can save
-both image and experiment measurements.
-
-Settings:
-
-What delimiter do you want to use?
-This is the character that separates columns in the file. Your choices
-are comma (","), tab or you can type in your own choice of delimiter.
-
-What data do you want to export?
-This is a list of all of the possible data sources which include
-experiment-wide data, per-image measurements and per-object measurements.
-
-Do you want to combine the measurements with this object with those of
-the previous object?
-This checkbox appears if you pick a data source that is an object and the
-data source above it (if there is one) is also an object. If you check the
-checkbox, ExportToExcel will create a table that concatenates the columns of
-measurements for the previous object with the measurements of the following
-object. You can use this if there is a one-to-one relationship between the
-two objects, for instance if the second objects were created from the first
-using IdentifySecondary, to create a table which has cells or other segmented
-objects as the rows and measurements taken from the different compartments
-in the columns.
-
-What is the name of the file that will hold the data?
-ExportToExcel will store the data in a file with this name. You can use "."
-as the first character in the path to store the data in the default output
-directory and "&" to store the data in the default image directory.
-
-ExportToExcel has an advanced feature that works in conjunction with
-the metadata associated with your image. You can segregate image and object
-measurements associated with metadata tags by including those metadata tags
-in the file name. The syntax for a tag is "\g<tag-name>" where "tag-name"
-is the name of your metadata tag as collected by LoadImages or LoadText.
-For instance, to export all data in a well to a single file for an experiment
-with metadata of "plate", "well_row" and "well_column", you might use
-a file name like: "\g<plate>_\g<well_row>\g<well_column>.csv". If you have
-a plate named "XZ29" and a well named "A01", you will then get a file
-named, "XZ29_A01.csv".
-'''
 
     category = 'File Processing'
     variable_revision_number = 2
@@ -122,12 +81,24 @@ named, "XZ29_A01.csv".
     def create_settings(self):
         self.module_name = 'ExportToExcel'
         self.delimiter = cps.CustomChoice('What delimiter do you want to use?',
-                                          DELIMITERS)
-        self.prepend_output_filename = cps.Binary("Do you want to prepend the output file name to the data file names? This can be useful if you want to run a pipeline multiple times without overwriting the old results.", True)
-        self.add_metadata = cps.Binary("Do you want to add image metadata columns to your object data?",False)
-        self.add_indexes = cps.Binary("Do you want to add an image set number column to your image data and image set number and object number columns to your object data?", False)
-        self.excel_limits = cps.Binary("Do you want to limit output to what is allowed in Excel?", False)
-        self.pick_columns = cps.Binary("Do you want to pick the columns to output?", False)
+                                          DELIMITERS, doc = '''This is the character that separates columns in a file. The
+                                          two choices are tab and comma, but you can add any single character delimiter you like.''')
+        self.prepend_output_filename = cps.Binary("Do you want to prepend the output file name to the data file names?", True,
+                                                  doc = '''This can be useful if you want to run a pipeline multiple 
+                                                  times without overwriting the old results''')
+        self.add_metadata = cps.Binary("Do you want to add image metadata columns to your object data?",False,
+                                       doc = '''Unless you check <i>Yes</i>, all the Image_Metadata_ columns
+                                       only appear in the Image data output.''')
+        self.add_indexes = cps.Binary("Do you want to add an image set number column to your image data and image set number and object number columns to your object data?", False,
+                                      doc = '''The ImageNumber and ObjectNumber will always be output, but if you would like
+                                      to know which image set (cycle) the data is from, check <i>Yes</i> for this setting.''')
+        self.excel_limits = cps.Binary("Do you want to limit output to what is allowed in Excel?", False,
+                                       doc = '''If your output has more than 256 columns, a window will open
+                                       which allows you to select which columns you'd like to export. If your output exceeds
+                                       65,000 rows, you can still open the .csv in Excel, but not all rows will be visible.''')
+        self.pick_columns = cps.Binary("Do you want to pick the columns to output?", False,
+                                       doc = '''Choosing <i>Yes</i> for this setting will open up a window
+                                       that allows you to select which columns to output.''')
         self.wants_aggregate_means = cps.Binary(
             "Do you want to compute the aggregate mean value for object measurements?", 
             False,

@@ -1,15 +1,22 @@
-'''findedges.py - Edge finding filters
+'''<b>FindEdges:</b> Identifies edges in an image, which can be used as the basis for object
+identification or other downstream image processing.
+<hr>
+This module enhances the edges of objects in a grayscale image. All methods
+other than Canny produce a grayscale image that can be thresholded using
+the ApplyThreshold module to produce a mask of edges. The Canny algorithm
+produces a binary image consisting of the edge pixels.
 
-CellProfiler is distributed under the GNU General Public License.
-See the accompanying file LICENSE for details.
-
-Developed by the Broad Institute
-Copyright 2003-2009
-
-Please see the AUTHORS file for credits.
-
-Website: http://www.cellprofiler.org
 '''
+#CellProfiler is distributed under the GNU General Public License.
+#See the accompanying file LICENSE for details.
+#
+#Developed by the Broad Institute
+#Copyright 2003-2009
+#
+#Please see the AUTHORS file for credits.
+#
+#Website: http://www.cellprofiler.org
+
 __version__ = "$Revision$"
 
 import numpy as np
@@ -37,56 +44,6 @@ E_HORIZONTAL = "Horizontal"
 E_VERTICAL = "Vertical"
 
 class FindEdges(cpm.CPModule):
-    '''
-SHORT DESCRIPTION:
-Identifies edges in an image, which can be used as the basis for object
-identification or other downstream image processing.
-*************************************************************************
-
-This module enhances the edges of objects in a grayscale image. All methods
-other than Canny produce a grayscale image that can be thresholded using
-the ApplyThreshold module to produce a mask of edges. The Canny algorithm
-produces a binary image consisting of the edge pixels.
-
-Settings:
-
-Threshold: For Canny, enter the desired threshold or have CellProfiler 
-calculate one automatically. Automatic thresholding is done using a three-
-category Otsu algorithm performed on the Sobel transform of the image. 
-
-Threshold Adjustment Factor: This value will be multiplied by the
-threshold (the numerical value you entered, or the automatically
-calculated one if desired) used for edge detection.
-
-Method: There are several methods that can be used to identify edges:
-  Sobel Method - finds edges using the Sobel approximation to the
-                 derivative. The Sobel method derives a horizontal and
-                 vertical gradient measure and returns the square-root
-                 of the sum of the two squared signals.
-  Prewitt Method - finds edges using the Prewitt approximation to the
-                 derivative.
-  Roberts Method - finds edges using the Roberts approximation to the
-                 derivative. The Roberts method looks for gradients in
-                 the diagonal and anti-diagonal directions and returns
-                 the square-root of the sum of the two squared signals.
-                 The method is fast, but it creates diagonal artifacts
-                 that may need to be removed by smoothing. 
-  LoG Method -   This method applies a Laplacian of Gaussian filter
-                 to the image.
-  Canny Method - The Canny method finds edges by looking for local maxima
-                 of the gradient of the image. The image is first smoothed
-                 with a Gaussian whose
-
-Size of smoothing filter (for Canny algorithm): A square of NxN will 
-be used for the filter, where N is the size you specify here. 
-See method description above for further information.
-
-Direction (for Sobel and Prewitt methods): It gives you the option of
-identifying all edges, or just those that are predominantly horizontal or
-vertical.
-
-Sigma (LoG and Canny): Standard deviation of the gaussian filter.
-    '''
 
     category = "Image Processing"
     variable_revision_number = 2
@@ -95,14 +52,36 @@ Sigma (LoG and Canny): Standard deviation of the gaussian filter.
         self.module_name = "FindEdges"
         self.image_name = cps.ImageNameSubscriber("What did you call the image in which you want to find the edges?","None")
         self.output_image_name = cps.ImageNameProvider("What do you want to call the image with edges identified?","EdgedImage")
-        self.wants_automatic_threshold = cps.Binary("Do you want to automatically calculate the threshold?", True)
-        self.manual_threshold = cps.Float("Enter an absolute threshold between 0 and 1:",.2,0,1)
+        self.wants_automatic_threshold = cps.Binary("Do you want to automatically calculate the threshold?", True,
+                                                    doc = '''Automatic thresholding is done using a three-
+                                                    category Otsu algorithm performed on the Sobel transform of the image.''')
+        self.manual_threshold = cps.Float("Enter an absolute threshold between 0 and 1:",.2,0,1, doc = '''Alternatively,
+                                                    you can pick a threshold.''')
         self.threshold_adjustment_factor = cps.Float("Enter the threshold adjustment factor (1 = no adjustment)",1)
         self.method = cps.Choice("Choose an edge-finding method:",
                                  [M_SOBEL, M_PREWITT, M_ROBERTS,
-                                  M_LOG, M_CANNY])
+                                  M_LOG, M_CANNY], doc = '''There are several methods that can be used to identify edges:
+                                  <ul><li>Sobel Method: finds edges using the Sobel approximation to the derivative. 
+                                  The Sobel method derives a horizontal and vertical gradient measure and returns the 
+                                  square-root of the sum of the two squared signals.</li>
+                                  <li>Prewitt Method: finds edges using the Prewitt approximation to the derivative.
+                                  It returns edges at those points where the gradient of the image is maximum.</li>
+                                  <li>Roberts Method: finds edges using the Roberts approximation to the derivative. 
+                                  The Roberts method looks for gradients in the diagonal and anti-diagonal directions 
+                                  and returns the square-root of the sum of the two squared signals. The method is fast,
+                                   but it creates diagonal artifacts that may need to be removed by smoothing.</li> 
+                                  <li>LoG Method: This method applies a Laplacian of Gaussian filter to the image 
+                                  and finds zero crossings. </li>
+                                  <li>Canny Method - The Canny method finds edges by looking for local maxima 
+                                  of the gradient of the image. The gradient is calculated using the derivative
+                                   of a Gaussian filter. The method uses two thresholds, to detect strong and weak 
+                                   edges, and includes the weak edges in the output only if they are connected to 
+                                   strong edges. This method is therefore less likely than the others to be fooled 
+                                   by noise, and more likely to detect true weak edges.</li></ul>''')
         self.direction = cps.Choice("Which edges do you want to find?",
-                                    [ E_ALL, E_HORIZONTAL, E_VERTICAL])
+                                    [ E_ALL, E_HORIZONTAL, E_VERTICAL], doc = '''This is the direction of the edges
+                                    are you are identifying in the image (predominantly horizontal, predominantly vertical,
+                                    or both).''')
         self.wants_automatic_sigma = cps.Binary("Do you want the Gaussian's sigma calculated automatically?", True)
         self.sigma = cps.Float("Enter the value for the Gaussian's sigma:", 10)
         self.wants_automatic_low_threshold = cps.Binary("Do you want the value for the low threshold to be calculated automatically?", True)

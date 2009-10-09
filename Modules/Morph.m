@@ -241,7 +241,13 @@ Functions{6} = char(handles.Settings.VariableValues{CurrentModuleNum,13});
 %defaultVAR14 = 1
 FunctionVariables{6} = char(handles.Settings.VariableValues{CurrentModuleNum,14});
 
-%%%VariableRevisionNumber = 1
+%textVAR15 = (SKEL only) Do you want to clean up the extraneous branchpoints in the skeleton?
+%choiceVAR15 = No
+%choiceVAR15 = Yes
+SkelClean = char(handles.Settings.VariableValues{CurrentModuleNum,15});
+%inputtypeVAR15 = popupmenu
+
+%%%VariableRevisionNumber = 2
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
@@ -275,6 +281,10 @@ drawnow
 
 for i = 1:length(Functions)
     Images{i+1} = bwmorph(Images{i},Functions{i},str2double(FunctionVariables{i}));
+    
+    if strcmp('Yes',SkelClean) && strcmp('skel',Functions{i}) && strcmp('skel',FunctionVariables{i})
+        skel = CPcleanskeleton(skel);
+    end
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%

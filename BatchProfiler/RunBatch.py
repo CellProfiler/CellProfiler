@@ -92,6 +92,7 @@ def CreateJobRecord(run_id, job_id):
     
     Create a job record with the given run_id and job_id
     """
+    print "Creating job record for run id %d, job id %d"%(run_id, job_id)
     cursor = connection.cursor()
     sql="""
     insert into job (job_id, run_id) values ('%s','%s')"""%(job_id,run_id)
@@ -173,10 +174,12 @@ def RunOne(my_batch,run):
     x=my_batch.copy()
     x.update(run)
     x["write_data_yes"]=(my_batch["write_data"]!=0 and "yes") or "no"
-    x["memory_limit_kb"]=int(my_batch["memory_limit"]*1000)
+    x["memory_limit_gb"]=max(1,int(my_batch["memory_limit"]/1000))
+    x["memory_limit_gb2"]=x["memory_limit_gb"]*2
     cmd=["bsub",
          "-q","%(queue)s"%(x),
-         "-M","%(memory_limit_kb)d"%(x),
+         "-M","%(memory_limit_gb2)d"%(x),
+         "-R",'"rusage[mem=%(memory_limit_gb)d]"'%(x),
          "-P","%(project)s"%(x),
          "-g","/imaging/batch/%(batch_id)d"%(x),
          "-J","/imaging/batch/%(batch_id)d/%(start)s_to_%(end)s"%(x),

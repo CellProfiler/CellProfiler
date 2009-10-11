@@ -369,8 +369,8 @@ fclose(fid);
 [Object,FeatureOnly] = strtok(Feature,'_');
 FeatureOnly = cellfun(@(x) x(2:end),FeatureOnly,'UniformOutput',0);
 
-% numObj = max(LabelMatrixImage(:));
-% numFeat = length(FeatureOnly);
+%% Note: If there are no objects, FeatureVal will be empty below and skipped
+%% so we don't need to handle it here
 WeightTotalClass1 = zeros(numObj,1);
 WeightTotalClass2 = zeros(numObj,1);
 
@@ -379,13 +379,14 @@ WeightTotalClass2 = zeros(numObj,1);
 for iFeat = 1:length(FeatureOnly)
     FeatureVal = Measurements.(Object{iFeat}).(char(FeatureOnly(iFeat))){SetBeingAnalyzed};
     %% Assumes two classes (for now)
-    WeightTotalClass1 = WeightTotalClass1 + ...
-        (FeatureVal > Threshold(iFeat)).*WeightYes1(iFeat) + ...
-        (FeatureVal <= Threshold(iFeat)).*WeightNo1(iFeat);
-    WeightTotalClass2 = WeightTotalClass2 + ...
-        (FeatureVal > Threshold(iFeat)).*WeightYes2(iFeat) + ...
-        (FeatureVal <= Threshold(iFeat)).*WeightNo2(iFeat);
+    if ~isempty(FeatureVal)
+        WeightTotalClass1 = WeightTotalClass1 + ...
+            (FeatureVal > Threshold(iFeat)).*WeightYes1(iFeat) + ...
+            (FeatureVal <= Threshold(iFeat)).*WeightNo1(iFeat);
+        WeightTotalClass2 = WeightTotalClass2 + ...
+            (FeatureVal > Threshold(iFeat)).*WeightYes2(iFeat) + ...
+            (FeatureVal <= Threshold(iFeat)).*WeightNo2(iFeat);
+    end
 end
-% end
 
 ToBeFilteredOut = find(WeightTotalClass1 < WeightTotalClass2);

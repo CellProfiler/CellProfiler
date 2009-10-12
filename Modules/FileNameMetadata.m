@@ -195,10 +195,18 @@ if ~isempty(PathFieldNames)
         RegularExpressionPathname = strrep(RegularExpressionPathname,'|',filesep);
     end
     Metadata = cat(1,Metadata, regexp(PathName,RegularExpressionPathname,'names'));
+	if isempty(Metadata),	% Assign to the fieldnames, 'cause later code acts funny if you don't
+		f = fieldnames(Metadata);
+		for i = 1:length(f)
+			Metadata(1).(f{i}) = {};
+		end
+	end
 end
 
 if (isempty(Metadata) && ~isempty(PathFieldNames)) || (~isempty(Metadata) && all(structfun(@isempty,Metadata)))
-    error([ 'Image processing was canceled in the ', ModuleName, ' module. The path "',PathName,'" doesn''t match the regular expression "',RegularExpressionPathname,'"']);
+	if ~isempty(FileName) 
+		error([ 'Image processing was canceled in the ', ModuleName, ' module. The path "',PathName,'" doesn''t match the regular expression "',RegularExpressionPathname,'"']);
+	end
 end
 
 if ~isempty(FileFieldNames)

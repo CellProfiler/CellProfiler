@@ -65,7 +65,7 @@ def run_sql_file(batch_id, sql_path, stdout_path, queue="broad", project="imagin
          "-H",
          "-q","%(queue)s"%(locals()),
          "-g","/imaging/batch/%(batch_id)d"%(locals()),
-         "-M","500000",
+         "-M","1",
          "-P","%(project)s"%(locals()),
          "-L","/bin/bash",
          "-o",stdout_path,

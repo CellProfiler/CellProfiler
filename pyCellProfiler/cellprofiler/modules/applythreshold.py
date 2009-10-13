@@ -193,7 +193,7 @@ class ApplyThreshold(Identify):
             else:
                 labels = None
             local_thresh,ignore = self.get_threshold(pixels,input.mask,labels)
-            pixels = ((pixels > local_thresh) & input.mask).astype(float)
+            pixels = (pixels > local_thresh) & input.mask
         else:
             if self.low.value:
                 thresholded_pixels = pixels < self.low_threshold.value

@@ -59,9 +59,27 @@ import cellprofiler.settings as cps
 import cellprofiler.preferences as cpp
 import cellprofiler.measurements as cpmeas
 
+##############################################
+#
+# Database options for the db_type setting
+#
+##############################################
 DB_MYSQL = "MySQL"
 DB_ORACLE = "Oracle"
 DB_SQLITE = "SQLite"
+
+##############################################
+#
+# Choices for which objects to include
+#
+##############################################
+
+'''Put all objects in the database'''
+O_ALL = "All"
+'''Don't put any objects in the database'''
+O_NONE = "None"
+'''Select the objects you want from a list'''
+O_SELECT = "Select..."
 
 def execute(cursor, query, return_result=True):
     print query
@@ -103,7 +121,7 @@ def connect_sqlite(db_file):
     
 class ExportToDatabase(cpm.CPModule):
  
-    variable_revision_number = 8
+    variable_revision_number = 9
     category = "File Processing"
 
     def create_settings(self):
@@ -172,7 +190,22 @@ class ExportToDatabase(cpm.CPModule):
         self.wants_agg_std_dev = cps.Binary(
             "Do you want to calculate the standard deviation of the values "
             "of each object measurement per image?", False)
-    
+        self.objects_choice = cps.Choice(
+            "Do you want to add all object measurements to the database?",
+            [O_ALL, O_NONE, O_SELECT],
+            doc="""This option lets you choose the objects that will have
+                   their measurements saved in the Per_Object database table.
+                   <ul><li><b>All:</b> save measurements from all objects</li>
+                       <li><b>None:</b> don't make a Per_Object table, save
+                              only image measurements.</li>
+                       <li><b>Select:</b> select the objects you want from a list</li><ul""")
+        self.objects_list = cps.ObjectSubscriberMultiChoice(
+            "Choose the objects to include",
+            doc="""Choose one or more objects from this list. The list includes
+            the objects that were created by prior modules. If you choose an
+            object, its measurements will be written out to the Per_Object
+            table, otherwise, the object's measurements will be skipped.""")
+                                                            
     def visible_settings(self):
         needs_default_output_directory =\
             (self.db_type != DB_MYSQL or self.store_csvs.value or
@@ -202,8 +235,9 @@ class ExportToDatabase(cpm.CPModule):
             if not self.use_default_output_directory.value:
                 result += [self.output_directory]
         result += [self.wants_agg_mean, self.wants_agg_median,
-                   self.wants_agg_std_dev]
-
+                   self.wants_agg_std_dev, self.objects_choice]
+        if self.objects_choice == O_SELECT:
+            result += [self.objects_list]
         return result
     
     def settings(self):
@@ -213,7 +247,8 @@ class ExportToDatabase(cpm.CPModule):
                 self.save_cpa_properties, self.store_csvs, self.db_host, 
                 self.db_user, self.db_passwd, self.sqlite_file,
                 self.wants_agg_mean, self.wants_agg_median,
-                self.wants_agg_std_dev]
+                self.wants_agg_std_dev, self.objects_choice,
+                self.objects_list]
     
     def backwards_compatibilize(self,setting_values,variable_revision_number,
                                 module_name, from_matlab):
@@ -237,7 +272,69 @@ class ExportToDatabase(cpm.CPModule):
             else:
                 new_setting_values.append(cps.NO)
             from_matlab = False
+            variable_revision_number = 6
             setting_values = new_setting_values
+        elif from_matlab and variable_revision_number == 10:
+            new_setting_values = setting_values[0:2]
+            if setting_values[2] == cps.DO_NOT_USE:
+                new_setting_values.append(cps.NO)
+                new_setting_values.append("Expt_")
+            else:
+                new_setting_values.append(cps.YES)
+                new_setting_values.append(setting_values[2])
+            new_setting_values.append(setting_values[3])
+            if setting_values[4] == '.':
+                new_setting_values.append(cps.YES)
+                new_setting_values.append(setting_values[4])
+            else:
+                new_setting_values.append(cps.NO)
+                new_setting_values.append(setting_values[4])
+            if setting_values[18][:3]==cps.YES:
+                new_setting_values.append(cps.YES)
+            else:
+                new_setting_values.append(cps.NO)
+            #
+            # store_csvs
+            #
+            new_setting_values.append(cps.YES)
+            #
+            # DB host / user / password
+            #
+            new_setting_values += [ 'imgdb01','cpuser','cPus3r']
+            #
+            # SQLite file name
+            #
+            new_setting_values += [ 'DefaultDB.db' ]
+            #
+            # Aggregate mean, median & std dev
+            wants_mean = cps.NO
+            wants_std_dev = cps.NO
+            wants_median = cps.NO
+            for setting in setting_values[5:8]:
+                if setting == "Median":
+                    wants_median = cps.YES
+                elif setting == "Mean":
+                    wants_mean = cps.YES
+                elif setting == "Standard deviation":
+                    wants_std_dev = cps.YES
+            new_setting_values += [wants_mean, wants_median, wants_std_dev]
+            #
+            # Object export
+            #
+            if setting_values[8] == "All objects":
+                new_setting_values += [ O_ALL, ""]
+            else:
+                objects_list = []
+                for setting in setting_values[8:15]:
+                    if setting not in (cpmeas.IMAGE, cps.DO_NOT_USE):
+                        objects_list.append(setting)
+                if len(objects_list) > 0:
+                    new_setting_values += [ O_SELECT, ",".join(objects_list)]
+                else:
+                    new_setting_values += [ O_NONE, ""]
+            setting_values = new_setting_values
+            from_matlab = False
+            variable_revision_number = 9
             
         if (not from_matlab) and variable_revision_number == 6:
             # Append default values for store_csvs, db_host, db_user, 
@@ -251,6 +348,12 @@ class ExportToDatabase(cpm.CPModule):
             # which were all automatically calculated in version 7
             new_setting_values = setting_values + [True, True, True]
             variable_revision_number = 8
+            
+        if (not from_matlab) and variable_revision_number == 8:
+            # Made it possible to choose objects to save
+            #
+            setting_values += [ O_ALL, ""]
+            variable_revision_number = 9
             
         return setting_values, variable_revision_number, from_matlab
     
@@ -274,6 +377,12 @@ class ExportToDatabase(cpm.CPModule):
         else:
             if not re.match("^[A-Za-z][A-Za-z0-9_]+$", self.sql_file_prefix.value):
                 raise cps.ValidationError('Invalid SQL file prefix', self.sql_file_prefix)
+        
+        self.objects_list.load_choices(pipeline)
+        if (self.objects_choice == O_SELECT and
+            len(self.objects_list.choices) == 0):
+            raise cps.ValidationError("Please choose at least one object",
+                                      self.objects_choice)
             
     def prepare_run(self, pipeline, image_set_list, frame):
         if self.db_type == DB_ORACLE:
@@ -291,7 +400,8 @@ class ExportToDatabase(cpm.CPModule):
                 object_table = self.get_table_prefix()+'Per_Object'
                 image_table = self.get_table_prefix()+'Per_Image'
                 r = execute(self.cursor, 'SELECT * FROM %s LIMIT 1'%(image_table))
-                r = execute(self.cursor, 'SELECT * FROM %s LIMIT 1'%(object_table))
+                if self.objects_choice != O_NONE:
+                    r = execute(self.cursor, 'SELECT * FROM %s LIMIT 1'%(object_table))
                 import wx
                 dlg = wx.MessageDialog(frame, 'ExportToDatabase will overwrite your tables "%s" and "%s". OK?'%(image_table, object_table),
                                     'Overwrite per_image and per_object table?', style=wx.OK|wx.CANCEL|wx.ICON_QUESTION)
@@ -299,8 +409,15 @@ class ExportToDatabase(cpm.CPModule):
                     return False
             except:
                 pass
+            column_defs = pipeline.get_measurement_columns()
+            if self.objects_choice != O_ALL:
+                onames = [cpmeas.EXPERIMENT, cpmeas.IMAGE, cpmeas.NEIGHBORS]
+                if self.objects_choice == O_SELECT:
+                    onames += self.objects_list.selections
+                column_defs = [column for column in column_defs
+                               if column[0] in onames]
             self.create_database_tables(self.cursor, 
-                                        pipeline.get_measurement_columns(),
+                                        column_defs,
                                         not pipeline.in_batch_mode())
         return True
     
@@ -406,33 +523,34 @@ class ExportToDatabase(cpm.CPModule):
         # Create the database
         if self.db_type==DB_MYSQL and create_database:
             execute(cursor, 'CREATE DATABASE IF NOT EXISTS %s'%(self.db_name.value))
-        execute(cursor, 'USE %s'% self.db_name.value)
+            execute(cursor, 'USE %s'% self.db_name.value)
         
-        # Object table
-        ob_tables = set([obname for obname, _, _ in column_defs 
-                         if obname!=cpmeas.IMAGE and obname!=cpmeas.EXPERIMENT])
-        statement = 'CREATE TABLE '+object_table+' (\n'
-        statement += 'ImageNumber INTEGER,\n'
-        statement += 'ObjectNumber INTEGER'
-        agg_column_defs = []
-        c = 2
-        for ob_table in ob_tables:
-            for obname, feature, ftype in column_defs:
-                if obname==ob_table and not self.ignore_feature(obname, feature):
-                    feature_name = '%s_%s'%(obname, feature)
-                    # create per_image aggregate column defs 
-                    for aggname in self.agg_names:
-                        agg_column_defs += [(cpmeas.IMAGE,
-                                             '%s_%s'%(aggname,feature_name),
-                                             cpmeas.COLTYPE_FLOAT)]
-                    self.object_col_order[feature_name] = c
-                    c+=1
-                    statement += ',\n%s %s'%(feature_name, ftype)
-        statement += ',\nPRIMARY KEY (ImageNumber, ObjectNumber) )'
-        
-        if create_database:
-            execute(cursor, 'DROP TABLE IF EXISTS %s'%(object_table))
-            execute(cursor, statement)
+        if self.objects_choice != O_NONE:
+            # Object table
+            ob_tables = set([obname for obname, _, _ in column_defs 
+                             if obname!=cpmeas.IMAGE and obname!=cpmeas.EXPERIMENT])
+            statement = 'CREATE TABLE '+object_table+' (\n'
+            statement += 'ImageNumber INTEGER,\n'
+            statement += 'ObjectNumber INTEGER'
+            agg_column_defs = []
+            c = 2
+            for ob_table in ob_tables:
+                for obname, feature, ftype in column_defs:
+                    if obname==ob_table and not self.ignore_feature(obname, feature):
+                        feature_name = '%s_%s'%(obname, feature)
+                        # create per_image aggregate column defs 
+                        for aggname in self.agg_names:
+                            agg_column_defs += [(cpmeas.IMAGE,
+                                                 '%s_%s'%(aggname,feature_name),
+                                                 cpmeas.COLTYPE_FLOAT)]
+                        self.object_col_order[feature_name] = c
+                        c+=1
+                        statement += ',\n%s %s'%(feature_name, ftype)
+            statement += ',\nPRIMARY KEY (ImageNumber, ObjectNumber) )'
+            
+            if create_database:
+                execute(cursor, 'DROP TABLE IF EXISTS %s'%(object_table))
+                execute(cursor, statement)
         
         # Image table
         statement = 'CREATE TABLE '+image_table+' (\n'
@@ -505,20 +623,21 @@ class ExportToDatabase(cpm.CPModule):
         #
         # Write out the per-object table
         #
-        fid.write("""CREATE TABLE %sPer_Object(
+        if self.objects_choice != O_NONE:
+            fid.write("""CREATE TABLE %sPer_Object(
 ImageNumber INTEGER,
 ObjectNumber INTEGER"""%(self.get_table_prefix()))
-        for object_name in workspace.measurements.get_object_names():
-            if object_name == 'Image':
-                continue
-            for feature in measurements.get_feature_names(object_name):
-                if self.ignore_feature(object_name, feature, measurements):
+            for object_name in workspace.measurements.get_object_names():
+                if object_name == 'Image':
                     continue
-                feature_name = '%s_%s'%(object_name,feature)
-                fid.write(",\n%s FLOAT NOT NULL"%(mappings[feature_name]))
-                per_object[feature_name]=per_object_idx
-                per_object_idx += 1
-        fid.write(""",
+                for feature in measurements.get_feature_names(object_name):
+                    if self.ignore_feature(object_name, feature, measurements):
+                        continue
+                    feature_name = '%s_%s'%(object_name,feature)
+                    fid.write(",\n%s FLOAT NOT NULL"%(mappings[feature_name]))
+                    per_object[feature_name]=per_object_idx
+                    per_object_idx += 1
+            fid.write(""",
 PRIMARY KEY (ImageNumber, ObjectNumber));
 
 LOAD DATA LOCAL INFILE '%s_image.CSV' REPLACE INTO TABLE %sPer_Image 
@@ -540,7 +659,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
         """The base for the output file name"""
         m = workspace.measurements
         first = m.image_set_start_number
-        last = m.image_set_number + 1
+        last = m.image_set_number
         return '%s%d_%d'%(self.sql_file_prefix, first, last)
     
     
@@ -592,10 +711,13 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                                       '%s_image.CSV'%(self.base_name(workspace)))
         object_filename = os.path.join(self.get_output_directory(),
                                        '%s_object.CSV'%(self.base_name(workspace)))
-        fid_per_image = open(image_filename,"wt")
-        csv_per_image = csv.writer(fid_per_image, quoting=csv.QUOTE_NONNUMERIC)
-        fid_per_object = open(object_filename,"wt")
-        csv_per_object = csv.writer(fid_per_object)
+        fid_per_image = open(image_filename,"wb")
+        csv_per_image = csv.writer(fid_per_image, 
+                                   quoting=csv.QUOTE_NONNUMERIC,
+                                   lineterminator='\n')
+        if self.objects_choice != O_NONE:
+            fid_per_object = open(object_filename,"wb")
+            csv_per_object = csv.writer(fid_per_object, lineterminator='\n')
         
         per_image_cols = max(per_image.values())+1
         per_object_cols = max(per_object.values())+1
@@ -650,27 +772,31 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                 #
                 # Loop through the objects, collecting their values
                 #
-                for object_name in measurements.get_object_names():
-                    if object_name == 'Image':
-                        continue
-                    for feature in measurements.get_feature_names(object_name):
-                        if self.ignore_feature(object_name, feature, measurements):
+                if self.objects_choice != O_NONE:
+                    for object_name in measurements.get_object_names():
+                        if (object_name == 'Image' or
+                            (self.objects_choice == O_SELECT and
+                             object_name not in self.objects_list.selections)):
                             continue
-                        feature_name = "%s_%s"%(object_name, feature)
-                        values = measurements.get_measurement(object_name, feature, i)
-                        values[np.logical_not(np.isfinite(values))] = 0
-                        nvalues = np.product(values.shape)
-                        if (nvalues < max_count):
-                            sys.stderr.write("Warning: too few measurements for %s in image set #%d, got %d, expected %d\n"%(feature_name,image_number,nvalues,max_count))
-                        elif nvalues > max_count:
-                            sys.stderr.write("Warning: too many measurements for %s in image set #%d, got %d, expected %d\n"%(feature_name,image_number,nvalues,max_count))
-                            values = values[:max_count]
-                        object_rows[:nvalues,per_object[feature_name]] = values
-                for row in range(max_count):
-                    csv_per_object.writerow(object_rows[row,:])
+                        for feature in measurements.get_feature_names(object_name):
+                            if self.ignore_feature(object_name, feature, measurements):
+                                continue
+                            feature_name = "%s_%s"%(object_name, feature)
+                            values = measurements.get_measurement(object_name, feature, i)
+                            values[np.logical_not(np.isfinite(values))] = 0
+                            nvalues = np.product(values.shape)
+                            if (nvalues < max_count):
+                                sys.stderr.write("Warning: too few measurements for %s in image set #%d, got %d, expected %d\n"%(feature_name,image_number,nvalues,max_count))
+                            elif nvalues > max_count:
+                                sys.stderr.write("Warning: too many measurements for %s in image set #%d, got %d, expected %d\n"%(feature_name,image_number,nvalues,max_count))
+                                values = values[:max_count]
+                            object_rows[:nvalues,per_object[feature_name]] = values
+                    for row in range(max_count):
+                        csv_per_object.writerow(object_rows[row,:])
             csv_per_image.writerow(image_row)
         fid_per_image.close()
-        fid_per_object.close()
+        if self.objects_choice != O_NONE:
+            fid_per_object.close()
         
         
     def write_data_to_db(self, workspace, mappings):
@@ -781,11 +907,16 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                  ','.join(object_cols),
                  ','.join(['%s']*len(object_cols))))
 
-        # Write 25 rows at a time (to get under the max_allowed_packet limit)
-        for i in range(0,len(object_rows), 25):
-            my_rows = object_rows[i:min(i+25, len(object_rows))]
-            self.cursor.executemany(stmt,[ [ str(v) for v,t in ob_row] 
-                                           for ob_row in my_rows])
+        if self.db_type == DB_MYSQL:
+            # Write 25 rows at a time (to get under the max_allowed_packet limit)
+            for i in range(0,len(object_rows), 25):
+                my_rows = object_rows[i:min(i+25, len(object_rows))]
+                self.cursor.executemany(stmt,[ [ str(v) for v,t in ob_row] 
+                                               for ob_row in my_rows])
+        else:
+            for row in object_rows:
+                row_stmt = stmt % tuple([str(v) for v,t in row])
+                self.cursor.execute(row_stmt)
         self.connection.commit()
         
     

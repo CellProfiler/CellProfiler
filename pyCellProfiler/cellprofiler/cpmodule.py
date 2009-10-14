@@ -436,8 +436,12 @@ class CPModule(object):
     variable_revision_number = property(__internal_get_variable_revision_number)
     
     def settings(self):
-        """A module's settings
+        """Return the settings to be loaded or saved to/from the pipeline
         
+        These are the settings (from cellprofiler.settings) that are
+        either read from the strings in the pipeline or written out
+        to the pipeline. The settings should appear in a consistent
+        order so they can be matched to the strings in the pipeline.
         """
         return self.__settings
 

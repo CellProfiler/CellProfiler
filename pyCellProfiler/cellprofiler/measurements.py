@@ -31,6 +31,10 @@ NEIGHBORS = "Neighbors"
 
 COLTYPE_INTEGER = "integer"
 COLTYPE_FLOAT = "float"
+'''SQL format for a varchar column
+
+To get a varchar column of width X: COLTYPE_VARCHAR_FORMAT % X
+'''
 COLTYPE_VARCHAR_FORMAT = "varchar(%d)"
 COLTYPE_VARCHAR_FILE_NAME = COLTYPE_VARCHAR_FORMAT % 128
 COLTYPE_VARCHAR_PATH_NAME = COLTYPE_VARCHAR_FORMAT % 128

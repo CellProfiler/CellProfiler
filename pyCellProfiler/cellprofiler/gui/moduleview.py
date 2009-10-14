@@ -392,9 +392,12 @@ class ModuleView:
     
     def make_multichoice_control(self, v, control_name, control):
         selections = v.selections
+        assert isinstance(v, cps.MultiChoice)
+        if isinstance(v, cps.SubscriberMultiChoice):
+            # Get the choices from the providers
+            v.load_choices(self.__pipeline)
         choices = v.choices + [selection for selection in selections
                                if selection not in v.choices]
-        assert isinstance(v, cps.MultiChoice)
         if not control:
             control = wx.ListBox(self.__module_panel, -1, choices=choices,
                                  style = wx.LB_EXTENDED,

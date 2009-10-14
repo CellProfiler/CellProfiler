@@ -28,6 +28,12 @@ NO = 'No'
 LEAVE_BLANK = 'Leave blank'
 DEFAULT = 'Default'
 
+'''Names providers and subscribers of images'''
+IMAGE_GROUP = 'imagegroup'
+
+'''Names providers and subscribers of objects'''
+OBJECT_GROUP = 'objectgroup'
+
 class Setting(object):
     """A module setting which holds a single string value
     
@@ -587,7 +593,7 @@ class ImageNameProvider(NameProvider):
     """A setting that provides an image name
     """
     def __init__(self, text, value=DO_NOT_USE, *args, **kwargs):
-        super(ImageNameProvider,self).__init__(text, 'imagegroup', value,
+        super(ImageNameProvider,self).__init__(text, IMAGE_GROUP, value,
                                                *args, **kwargs)
 
 class FileImageNameProvider(ImageNameProvider):
@@ -605,7 +611,7 @@ class ObjectNameProvider(NameProvider):
     """A setting that provides an image name
     """
     def __init__(self, text, value=DO_NOT_USE, *args, **kwargs):
-        super(ObjectNameProvider,self).__init__(text, 'objectgroup', value,
+        super(ObjectNameProvider,self).__init__(text, OBJECT_GROUP, value,
                                                 *args, **kwargs)
 
 class OutlineNameProvider(ImageNameProvider):
@@ -641,19 +647,7 @@ class NameSubscriber(Setting):
         choices = []
         if self.__can_be_blank:
             choices.append(self.__blank_text)
-        for module in pipeline.modules():
-            module_choices = module.get_name_providers(self.group)
-            for setting in module.visible_settings():
-                if setting.key() == self.key():
-                    choices = np.unique(choices).tolist()
-                    choices.sort()
-                    return choices
-                if (isinstance(setting, NameProvider) and 
-                    setting != DO_NOT_USE and
-                    self.matches(setting)):
-                    module_choices.append(setting.value)
-            choices += module_choices
-        assert False, "Setting not among visible settings in pipeline"
+        return choices + get_name_provider_choices(pipeline, self, self.group)
     
     def get_is_blank(self):
         """True if the selected choice is the blank one"""
@@ -670,12 +664,35 @@ class NameSubscriber(Setting):
         if self.value not in self.get_choices(pipeline):
             raise ValidationError("%s not in %s"%(self.value,reduce(lambda x,y: "%s,%s"%(x,y),self.get_choices(pipeline))),self)
 
+def get_name_provider_choices(pipeline, last_setting, group):
+    '''Scan the pipeline to find name providers for the given group
+    
+    pipeline - pipeline to scan
+    last_setting - scan the modules in order until you arrive at this setting
+    group - the name of the group of providers to scan
+    returns a list of provider values
+    '''
+    choices = []
+    for module in pipeline.modules():
+        module_choices = module.get_name_providers(group)
+        for setting in module.visible_settings():
+            if setting.key() == last_setting.key():
+                choices = np.unique(choices).tolist()
+                choices.sort()
+                return choices
+            if (isinstance(setting, NameProvider) and 
+                setting != DO_NOT_USE and
+                last_setting.matches(setting)):
+                module_choices.append(setting.value)
+        choices += module_choices
+    assert False, "Setting not among visible settings in pipeline"
+        
 class ImageNameSubscriber(NameSubscriber):
     """A setting that provides an image name
     """
     def __init__(self, text, value=None, can_be_blank = False,
                  blank_text=LEAVE_BLANK, *args, **kwargs):
-        super(ImageNameSubscriber,self).__init__(text, 'imagegroup', value,
+        super(ImageNameSubscriber,self).__init__(text, IMAGE_GROUP, value,
                                                  can_be_blank, blank_text,
                                                  *args, **kwargs)
 
@@ -708,7 +725,7 @@ class ObjectNameSubscriber(NameSubscriber):
     """
     def __init__(self, text, value=DO_NOT_USE, can_be_blank=False,
                  blank_text=LEAVE_BLANK, *args, **kwargs):
-        super(ObjectNameSubscriber,self).__init__(text, 'objectgroup', value,
+        super(ObjectNameSubscriber,self).__init__(text, OBJECT_GROUP, value,
                                                   can_be_blank, blank_text,
                                                   *args, **kwargs)
 
@@ -850,11 +867,11 @@ class MultiChoice(Setting):
         value - a list of selected choices or a comma-separated string list
         '''
         super(MultiChoice,self).__init__(text, 
-                                         self.__parse_value(value),
+                                         self.parse_value(value),
                                          *args, **kwargs)
         self.__choices = choices
 
-    def __parse_value(self, value):
+    def parse_value(self, value):
         if value is None:
             return ''
         elif isinstance(value, str) or isinstance(value, unicode):
@@ -885,7 +902,7 @@ class MultiChoice(Setting):
         value is either a single string, a comma-separated string of
         multiple choices or a list of strings
         '''
-        super(MultiChoice,self).set_value(self.__parse_value(value))
+        super(MultiChoice,self).set_value(self.parse_value(value))
     
     def get_selections(self):
         '''Return the currently selected values'''
@@ -906,6 +923,46 @@ class MultiChoice(Setting):
                                               (x,y),self.choices)),
                                       self)
 
+class SubscriberMultiChoice(MultiChoice):
+    '''A multi-choice setting that gets its choices through providers
+    
+    This setting operates similarly to the name subscribers. It gets
+    its choices from the name providers for the subscriber's group.
+    It displays a list of choices and the user can select multiple
+    choices.
+    '''
+    def __init__(self, text, group, value=None, *args, **kwargs):
+        super(SubscriberMultiChoice,self).__init__(text, [], value,
+                                                   *args, **kwargs)
+        self.group = group
+    
+    def load_choices(self, pipeline):
+        '''Get the choice list from name providers'''
+        self.choices = get_name_provider_choices(pipeline, self, self.group)
+    
+    def matches(self, provider):
+        '''Return true if the provider is compatible with this subscriber
+        
+        This method can be used to be more particular about the providers
+        that are selected. For instance, if you want a list of only
+        FileImageNameProviders (images loaded from files), you can
+        check that here.
+        '''
+        return provider.group == self.group
+    
+    def test_valid(self, pipeline):
+        self.load_choices(pipeline)
+        super(SubscriberMultiChoice, self).test_valid(pipeline)
+    
+class ObjectSubscriberMultiChoice(SubscriberMultiChoice):
+    '''A multi-choice setting that displays objects
+    
+    This setting displays a list of objects taken from ObjectNameProviders.
+    '''
+    def __init__(self, text, value=None, *args, **kwargs):
+        super(ObjectSubscriberMultiChoice, self).__init__(text, OBJECT_GROUP,
+                                                          value, *args, **kwargs)
+        
 class DoSomething(Setting):
     """Do something in response to a button press
     """

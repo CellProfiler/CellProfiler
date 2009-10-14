@@ -68,6 +68,7 @@ MODULE_REVISION_NUMBERS   = 'ModuleRevisionNumbers'
 MODULE_NOTES              = 'ModuleNotes'
 CURRENT_MODULE_NUMBER     = 'CurrentModuleNumber'
 SHOW_FRAME                = 'ShowFrame'
+BATCH_STATE               = 'BatchState'
 SETTINGS_DTYPE = np.dtype([(VARIABLE_VALUES, '|O4'), 
                            (VARIABLE_INFO_TYPES, '|O4'), 
                            (MODULE_NAMES, '|O4'), 
@@ -76,7 +77,8 @@ SETTINGS_DTYPE = np.dtype([(VARIABLE_VALUES, '|O4'),
                            (VARIABLE_REVISION_NUMBERS, '|O4'), 
                            (MODULE_REVISION_NUMBERS, '|O4'), 
                            (MODULE_NOTES, '|O4'),
-                           (SHOW_FRAME, '|O4')])
+                           (SHOW_FRAME, '|O4'),
+                           (BATCH_STATE, '|O4')])
 CURRENT_DTYPE = make_cell_struct_dtype([ NUMBER_OF_IMAGE_SETS,
                                          SET_BEING_ANALYZED, NUMBER_OF_MODULES, 
                                          SAVE_OUTPUT_HOW_OFTEN,TIME_STARTED, 
@@ -260,6 +262,11 @@ class Pipeline(object):
         setting[MODULE_NOTES] =             new_string_cell_array((1,module_count))
         setting[SHOW_FRAME] =               np.ndarray((1,module_count),
                                                        dtype=np.dtype('uint8'))
+        setting[BATCH_STATE] = np.ndarray((1,module_count),
+                                          dtype=np.dtype('object'))
+        for i in range(module_count):
+            setting[BATCH_STATE][0,i] = np.zeros((0,),np.uint8)
+            
         for module in self.modules():
             module.save_to_handles(handles)
         return handles

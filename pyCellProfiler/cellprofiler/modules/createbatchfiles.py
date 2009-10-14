@@ -27,11 +27,13 @@ root path is <i>/imaging/analysis</i>.
 
 __version__="$Revision$"
 
+import numpy as np
 import os
 import re
 import sys
 import wx
 import uuid
+import zlib
 
 import cellprofiler.cpimage as cpi
 import cellprofiler.cpmodule as cpm
@@ -41,7 +43,7 @@ import cellprofiler.preferences as cpprefs
 from cellprofiler.utilities.get_revision import get_revision
 
 '''# of settings aside from the mappings'''
-S_FIXED_COUNT = 7
+S_FIXED_COUNT = 6
 '''# of settings per mapping'''
 S_PER_MAPPING = 2
 
@@ -62,7 +64,7 @@ class CreateBatchFiles(cpm.CPModule):
     #     from pickled_image_set_list.
     #
     category = 'File Processing'
-    variable_revision_number = 3
+    variable_revision_number = 4
     
     def create_settings(self):
         '''Create the module settings and name the module'''
@@ -85,7 +87,6 @@ class CreateBatchFiles(cpm.CPModule):
                 the Unix or Macintosh file separator (slash,&#47;).""")
         
         self.batch_mode = cps.Binary("Hidden: in batch mode", False)
-        self.pickled_image_set_list = cps.Setting("Hidden: contents of image set list","")
         self.default_image_directory = cps.Setting("Hidden: default image directory at time of save",
                                                    cpprefs.get_default_image_directory())
         self.revision = cps.Integer("Hidden: SVN revision number",
@@ -140,7 +141,7 @@ class CreateBatchFiles(cpm.CPModule):
     def settings(self):
         result = [self.wants_default_output_directory,
                   self.custom_output_directory, self.remote_host_is_windows,
-                  self.batch_mode, self.pickled_image_set_list,
+                  self.batch_mode, 
                   self.default_image_directory, self.revision]
         for mapping in self.mappings:
             result += mapping.settings()
@@ -200,6 +201,12 @@ class CreateBatchFiles(cpm.CPModule):
                               [get_revision()] +
                               setting_values[6:])
             variable_revision_number = 3
+        if (not from_matlab) and variable_revision_number == 3:
+            # Pickled image list is now the batch state
+            self.batch_state = np.fromstring(zlib.compress(setting_values[4]),
+                                             np.uint8)
+            setting_values = setting_values[:4]+setting_values[5:]
+            variable_revision_number = 4
         return setting_values, variable_revision_number, from_matlab
     
     def prepare_run(self, pipeline, image_set_list, frame):
@@ -231,7 +238,9 @@ class CreateBatchFiles(cpm.CPModule):
         pipeline.prepare_to_create_batch(image_set_list, self.alter_path)
         bizarro_self = pipeline.module(self.module_num)
         assert isinstance(bizarro_self, CreateBatchFiles)
-        bizarro_self.pickled_image_set_list.value = image_set_list.save_state()
+        state = image_set_list.save_state()
+        state = zlib.compress(state)
+        bizarro_self.batch_state = np.fromstring(state, np.uint8)
         if self.wants_default_output_directory:
             bizarro_self.custom_output_directory.value = \
                         self.alter_path(cpprefs.get_default_output_directory())
@@ -260,7 +269,8 @@ class CreateBatchFiles(cpm.CPModule):
         '''Restore the image set list from its setting as we go into batch mode'''
         assert isinstance(image_set_list, cpi.ImageSetList)
         assert isinstance(pipeline, cpp.Pipeline)
-        image_set_list.load_state(self.pickled_image_set_list.value)
+        state = zlib.decompress(self.batch_state.tostring())
+        image_set_list.load_state(state)
         cpprefs.set_default_output_directory(self.custom_output_directory.value)
         cpprefs.set_default_image_directory(self.default_image_directory.value)
     
@@ -270,7 +280,7 @@ class CreateBatchFiles(cpm.CPModule):
         This call restores the module to an editable state.
         '''
         self.batch_mode.value = False
-        self.pickled_image_set_list.value = ""
+        self.batch_state = np.zeros((0,),np.uint8)
     
     def alter_path(self, path, **varargs):
         '''Modify the path passed so that it can be executed on the remote host

@@ -18,7 +18,7 @@ import re
 import os
 import sys
 
-import numpy
+import numpy as np
 
 import cellprofiler.settings as cps
 import cellprofiler.cpimage
@@ -58,6 +58,7 @@ class CPModule(object):
                  and for writing out results.
     post_run - use this to perform operations on the results of the experiment,
                for instance on all measurements
+    
     """
     
     def __init__(self):
@@ -69,6 +70,7 @@ class CPModule(object):
         self.__variable_revision_number = 0
         self.__annotation_dict = None
         self.__show_frame = True
+        self.batch_state = np.zeros((0,),np.uint8)
         # Set the name of the module based on the class name.  A
         # subclass can override this either by declaring a module_name
         # attribute in the class definition or by assigning to it in
@@ -113,13 +115,15 @@ class CPModule(object):
             self.__notes = []
         if settings.dtype.fields.has_key(cpp.SHOW_FRAME):
             self.__show_frame = settings[cpp.SHOW_FRAME][0,idx] != 0
+        if settings.dtype.fields.has_key(cpp.BATCH_STATE):
+            self.batch_state = settings[cpp.BATCH_STATE][0,idx]
         setting_count=settings[cpp.NUMBERS_OF_VARIABLES][0,idx]
         variable_revision_number = settings[cpp.VARIABLE_REVISION_NUMBERS][0,idx]
         module_name = settings[cpp.MODULE_NAMES][0,idx][0]
         for i in range(0,setting_count):
             value_cell = settings[cpp.VARIABLE_VALUES][idx,i]
-            if isinstance(value_cell,numpy.ndarray):
-                if numpy.product(value_cell.shape) == 0:
+            if isinstance(value_cell,np.ndarray):
+                if np.product(value_cell.shape) == 0:
                     setting_values.append('')
                 else:
                     setting_values.append(str(value_cell[0]))
@@ -299,7 +303,7 @@ class CPModule(object):
         module_idx = self.module_num-1
         setting = handles[cpp.SETTINGS][0,0]
         setting[cpp.MODULE_NAMES][0,module_idx] = unicode(self.module_class())
-        setting[cpp.MODULE_NOTES][0,module_idx] = numpy.ndarray(shape=(len(self.notes()),1),dtype='object')
+        setting[cpp.MODULE_NOTES][0,module_idx] = np.ndarray(shape=(len(self.notes()),1),dtype='object')
         for i in range(0,len(self.notes())):
             setting[cpp.MODULE_NOTES][0,module_idx][i,0]=self.notes()[i]
         setting[cpp.NUMBERS_OF_VARIABLES][0,module_idx] = len(self.settings())
@@ -320,6 +324,7 @@ class CPModule(object):
         setting[cpp.VARIABLE_REVISION_NUMBERS][0,module_idx] = self.variable_revision_number
         setting[cpp.MODULE_REVISION_NUMBERS][0,module_idx] = 0
         setting[cpp.SHOW_FRAME][0,module_idx] = 1 if self.show_frame else 0
+        setting[cpp.BATCH_STATE][0,module_idx] = self.batch_state
     
     def in_batch_mode(self):
         '''Return True if the module knows that the pipeline is in batch mode'''

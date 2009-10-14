@@ -1098,7 +1098,7 @@ class LoadImages(cpmodule.CPModule):
                     row.append("")
             statistics.append(row)
         if workspace.frame:
-            figure = workspace.create_or_find_figure(title="Load images, image set #%d"%(workspace.measurements.image_set_number+1),
+            figure = workspace.create_or_find_figure(title="Load images, image set #%d"%(workspace.measurements.image_set_number),
                                                      subplots=(1,1))
             figure.subplot_table(0,0,statistics,ratio=ratio)
 

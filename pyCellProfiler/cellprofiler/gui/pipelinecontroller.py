@@ -319,8 +319,8 @@ class PipelineController:
             #
             for module in self.__pipeline.modules():
                 setting = event.get_setting()
-                if setting in module.settings():
-                    if module.check_for_prepare_run_setting(event.get_setting()):
+                if setting.key() in [x.key() for x in module.settings()]:
+                    if module.check_for_prepare_run_setting(setting):
                         self.stop_debugging()
             
     def on_analyze_images(self,event):
@@ -365,6 +365,7 @@ class PipelineController:
         self.__keys, self.__groupings = self.__pipeline.get_groupings(
             self.__debug_image_set_list)
         self.__grouping_index = 0
+        self.__within_group_index = 0
         self.__pipeline.prepare_group(self.__debug_image_set_list,
                                       self.__groupings[0][0],
                                       self.__groupings[0][1])
@@ -443,7 +444,15 @@ class PipelineController:
             self.__movie_viewer.on_step_failed()
         
     def on_debug_next_image_set(self, event):
-        self.__debug_measurements.next_image_set()
+        #
+        # We have two indices, one into the groups and one into
+        # the image indexes within the groups
+        #
+        keys, image_numbers = self.__groupings[self.__grouping_index]
+        self.__within_group_index = ((self.__within_group_index + 1) % 
+                                     len(image_numbers))
+        image_number = image_numbers[self.__within_group_index]
+        self.__debug_measurements.next_image_set(image_number)
         self.__pipeline_list_view.select_one_module(1)
         self.__movie_viewer.slider.value = 0
         self.__debug_outlines = {}
@@ -452,9 +461,13 @@ class PipelineController:
         if self.__grouping_index is not None:
             self.__grouping_index = ((self.__grouping_index + 1 ) % 
                                      len(self.__groupings))
+            self.__within_group_index = 0
             self.__pipeline.prepare_group(self.__debug_image_set_list,
                                           self.__groupings[self.__grouping_index][0],
                                           self.__groupings[self.__grouping_index][1])
+            key, image_numbers = self.__groupings[self.__grouping_index]
+            image_number = image_numbers[self.__within_group_index]
+            self.__debug_measurements.next_image_set(image_number)
             self.__pipeline_list_view.select_one_module(1)
             self.__movie_viewer.slider.value = 0
             self.__debug_outlines = {}

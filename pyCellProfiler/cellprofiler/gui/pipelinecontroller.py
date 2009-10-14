@@ -204,16 +204,54 @@ class PipelineController:
     
     def __on_close(self, event):
         if self.__dirty_pipeline and event.CanVeto():
-            answer = wx.MessageBox("You have unsaved changes in your pipeline, "
-                                   "do you want to save it (Cancel will "
-                                   "return you to CellProfiler)?",
-                                   "Closing CellProfiler",
-                                   wx.YES | wx.NO | wx.CANCEL | wx.ICON_QUESTION)
-            if answer == wx.YES:
+            #
+            # Create a dialog box asking the user what to do.
+            #
+            dialog = wx.Dialog(self.__frame,
+                               title = "Closing CellProfiler")
+            super_sizer = wx.BoxSizer(wx.VERTICAL)
+            dialog.SetSizer(super_sizer)
+            #
+            # This is the main window with the icon and question
+            #
+            sizer = wx.BoxSizer(wx.HORIZONTAL)
+            super_sizer.Add(sizer, 1, wx.EXPAND|wx.ALL, 5)
+            question_mark = wx.ArtProvider.GetBitmap(wx.ART_HELP,
+                                                     wx.ART_MESSAGE_BOX)
+            icon = wx.StaticBitmap(dialog, -1, question_mark)
+            sizer.Add(icon, 0, wx.EXPAND | wx.ALL, 5)
+            text = wx.StaticText(dialog, label = "Do you want to save the current pipeline?")
+            sizer.Add(text, 0, wx.EXPAND | wx.ALL, 5)
+            super_sizer.Add(wx.StaticLine(dialog), 0, wx.EXPAND | wx.LEFT | wx.RIGHT, 20)
+            #
+            # These are the buttons
+            #
+            button_sizer = wx.BoxSizer(wx.HORIZONTAL)
+            super_sizer.Add(button_sizer, 0, wx.ALIGN_CENTER_HORIZONTAL|wx.ALL, 5)
+            SAVE_ID = wx.NewId()
+            DONT_SAVE_ID = wx.NewId()
+            RETURN_TO_CP_ID = wx.NewId()
+            answer = [RETURN_TO_CP_ID]
+            for button_id, text, set_default in (
+                (SAVE_ID, "Save", True),
+                (RETURN_TO_CP_ID, "Return to CellProfiler", False),
+                (DONT_SAVE_ID, "Don't Save", False)):
+                button = wx.Button(dialog, button_id, text)
+                if set_default:
+                    button.SetDefault()
+                button_sizer.Add(button, 0, wx.EXPAND | wx.ALL, 5)
+                def on_button(event, button_id = button_id):
+                    dialog.SetReturnCode(button_id)
+                    answer[0] = button_id
+                    dialog.Close()
+                dialog.Bind(wx.EVT_BUTTON, on_button, button,button_id)
+            dialog.Fit()
+            dialog.ShowModal()
+            if answer[0] == SAVE_ID:
                 if not self.do_save_pipeline():
                     '''Cancel the closing if the user fails to save'''
                     return
-            elif answer == wx.CANCEL:
+            elif answer[0] == RETURN_TO_CP_ID:
                 return
         self.__frame.Destroy()
     

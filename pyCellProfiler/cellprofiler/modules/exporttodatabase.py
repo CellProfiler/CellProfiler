@@ -378,11 +378,11 @@ class ExportToDatabase(cpm.CPModule):
             if not re.match("^[A-Za-z][A-Za-z0-9_]+$", self.sql_file_prefix.value):
                 raise cps.ValidationError('Invalid SQL file prefix', self.sql_file_prefix)
         
-        self.objects_list.load_choices(pipeline)
-        if (self.objects_choice == O_SELECT and
-            len(self.objects_list.choices) == 0):
-            raise cps.ValidationError("Please choose at least one object",
-                                      self.objects_choice)
+        if self.objects_choice == O_SELECT:
+            self.objects_list.load_choices(pipeline)
+            if len(self.objects_list.choices) == 0:
+                raise cps.ValidationError("Please choose at least one object",
+                                          self.objects_choice)
             
     def prepare_run(self, pipeline, image_set_list, frame):
         if self.db_type == DB_ORACLE:

@@ -36,6 +36,10 @@ ID_FILE_SAVE_PIPELINE=wx.NewId()
 ID_FILE_CLEAR_PIPELINE=wx.NewId()
 ID_FILE_ANALYZE_IMAGES=wx.NewId()
 ID_FILE_STOP_ANALYSIS=wx.NewId()
+ID_FILE_PRINT=wx.NewId()
+
+ID_EDIT_SELECT_ALL = wx.NewId()
+ID_EDIT_COPY = wx.NewId()
 
 ID_OPTIONS_PREFERENCES = wx.NewId()
 
@@ -186,28 +190,98 @@ class CPFrame(wx.Frame):
     def do_help_module(self, module_name, help_text):
         helpframe = wx.Frame(self,-1,'Help for module, "%s"' %
                              (module_name),size=(640,480))
+        helpframe.MenuBar = wx.MenuBar()
+        ####################################################
+        #
+        # Add the HTML window
+        #
+        ####################################################
+        
         sizer = wx.BoxSizer()
         helpframe.SetSizer(sizer)
-        if False:
-            font = wx.SystemSettings.GetFont(wx.SYS_SYSTEM_FIXED_FONT)
-            bgcolor = wx.SystemSettings.GetColour(wx.SYS_COLOUR_LISTBOX)
-            panel = wx.lib.scrolledpanel.ScrolledPanel(helpframe,-1,style=wx.SUNKEN_BORDER)
-            panel.SetBackgroundColour(bgcolor)
-            sizer.Add(panel,1,wx.EXPAND)
-            statictext = wx.StaticText(panel,-1, help_text)
-            statictext.SetFont(font)
-            statictext.SetBackgroundColour(bgcolor)
-            sizer = wx.BoxSizer()
-            sizer.Add(statictext,1,wx.EXPAND|wx.ALL,5)
-            panel.SetSizer(sizer)
-            panel.SetupScrolling()
-        else:
-            window = wx.html.HtmlWindow(helpframe)
-            sizer.Add(window,1,wx.EXPAND)
-            window.AppendToPage(help_text)
+        window = wx.html.HtmlWindow(helpframe)
+        sizer.Add(window,1,wx.EXPAND)
+        window.AppendToPage(help_text)
+
+        ################################################
+        #
+        # Add a file menu for the frame
+        #
+        ################################################
+        menu = wx.Menu()
+        menu.Append(ID_FILE_SAVE_PIPELINE, "&Save...")
+        menu.Append(ID_FILE_PRINT, "&Print...")
+        menu.Append(ID_FILE_EXIT, "E&xit")
+        def on_save(event):
+            self.save_help(event, module_name, help_text)
+        
+        def on_print(event):
+            self.print_help(event, module_name, help_text)
+            
+        def on_exit(event):
+            helpframe.Close()
+        
+        helpframe.MenuBar.Append(menu, '&File')
+        helpframe.Bind(wx.EVT_MENU, on_save, id=ID_FILE_SAVE_PIPELINE)
+        helpframe.Bind(wx.EVT_MENU, on_print, id=ID_FILE_PRINT)
+        helpframe.Bind(wx.EVT_MENU, on_exit, id = ID_FILE_EXIT)
+        
+        ####################################################
+        #
+        # Add an edit menu
+        #
+        ####################################################
+        menu = wx.Menu()
+        copy_menu_item = menu.Append(ID_EDIT_COPY, "Copy")
+        copy_menu_item.Enable(False)
+        menu.Append(ID_EDIT_SELECT_ALL, "Select All")
+        
+        def on_idle(event):
+            copy_menu_item.Enable(len(window.SelectionToText()) > 0)
+        
+        def on_edit_select_all(event):
+            window.SelectAll()
+        
+        def on_copy(event):
+            data_object = wx.TextDataObject(window.SelectionToText())
+            if wx.TheClipboard.Open():
+                try:
+                    wx.TheClipboard.SetData(data_object)
+                finally:
+                    wx.TheClipboard.Close()
+            else:
+                wx.MessageBox("Failed to copy to the clipboard","Error",
+                              wx.OK | wx.ICON_ERROR)
+        helpframe.MenuBar.Append(menu, '&Edit')
+        helpframe.Bind(wx.EVT_MENU, on_copy, id=ID_EDIT_COPY)
+        helpframe.Bind(wx.EVT_MENU, on_edit_select_all, id= ID_EDIT_SELECT_ALL)
+        helpframe.Bind(wx.EVT_IDLE, on_idle)
+        
         helpframe.SetIcon(get_icon())
         helpframe.Layout()
         helpframe.Show()
+    
+    def print_help(self, event, module_name, help_text):
+        '''Print the help text for a module'''
+        printer = wx.html.HtmlEasyPrinting("Printing %s"%module_name,
+                                           event.GetEventObject())
+        printer.GetPrintData().SetPaperId(wx.PAPER_LETTER)
+        printer.PrintText(help_text)
+    
+    def save_help(self, event, module_name, help_text):
+        '''Save the help text for a module'''
+        save_dlg = wx.FileDialog(event.GetEventObject(),
+                                 message = "Save help for %s to file"%module_name,
+                                 defaultFile = "%s.html"%module_name,
+                                 wildcard = "*.html",
+                                 style = wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT)
+        result = save_dlg.ShowModal()
+        if result == wx.ID_OK:
+            pathname = os.path.join(save_dlg.GetDirectory(),
+                                    save_dlg.GetFilename())
+            fd = open(pathname, "wt")
+            fd.write(help_text)
+            fd.close()
         
     def __attach_views(self):
         self.__pipeline_list_view = PipelineListView(self.__module_list_panel)

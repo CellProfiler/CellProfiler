@@ -71,8 +71,8 @@ class CorrectIllumination_Calculate(cpm.CPModule):
         """Create the setting variables
         """
         self.module_name = "CorrectIllumination_Calculate"
-        self.image_name = cps.ImageNameSubscriber("What did you call the images to be used to calculate the illumination function?","None")
-        self.illumination_image_name = cps.ImageNameProvider("What do you want to call the illumination function?","IllumBlue")
+        self.image_name = cps.ImageNameSubscriber("Select the input image","None", doc = '''What did you call the images to be used to calculate the illumination function?''')
+        self.illumination_image_name = cps.ImageNameProvider("Select the output image","IllumBlue", doc = '''What do you want to call the illumination function?''')
         self.intensity_choice = cps.Choice("Do you want to calculate using regular intensities or background intensities?",
                                            [IC_REGULAR, IC_BACKGROUND],
                                            IC_REGULAR, doc = '''<ul><li>Regular: If you have objects that are evenly dispersed across your image(s) and
@@ -104,7 +104,7 @@ class CorrectIllumination_Calculate(cpm.CPModule):
                                             correction where model objects are produced.''')
         self.object_dilation_radius = cps.Integer("Enter the radius (roughly equal to the original radius of the objects).",1,0)
         self.block_size = cps.Integer("Enter the block size, which should be large enough that every square block of pixels is likely to contain some background pixels, where no objects are located.",60,1)
-        self.rescale_option = cps.Choice("""Do you want to rescale the illumination function so that the pixel intensities are all equal to or greater than one?""",
+        self.rescale_option = cps.Choice("""Do you want to rescale the illumination function?""",
                                          [cps.YES, cps.NO, RE_MEDIAN], doc = '''The illumination function can be rescaled so that the pixel intensities
                                         are all equal to or greater than one. This is recommended if you plan to
                                         use the division option in CorrectIllumination_Apply so that the
@@ -114,8 +114,12 @@ class CorrectIllumination_Calculate(cpm.CPModule):
                                         infinity, if there is substantial variation across the field of view, the
                                         rescaling of each image might be dramatic, causing the corrected images
                                         to be very dark. The <i>Median</i> option chooses the median value in the image to rescale so that division increases some values an decreases others.''')
-        self.each_or_all = cps.Choice("Enter Each to calculate an illumination function for Each image individually (in which case, choose Pipeline mode in the next box) or All to calculate an illumination function based on All the specified images to be corrected. See the help for details.",
-                                      [EA_EACH,EA_ALL])
+        self.each_or_all = cps.Choice("Calculate a separate function for each image, or one for all the images?",
+                                      [EA_EACH,EA_ALL], doc = '''Select Each to calculate an illumination function for Each image 
+                                      individually or All to calculate an illumination function based on All the specified images 
+                                      to be corrected.  All will cycle through all the images in the image set, creating an averaged image,
+                                      plus any smoothing you select.  The first cycle will be longer, but subsequent cycles will be processed
+                                      more quickly.''')
         self.smoothing_method = cps.Choice("Enter the smoothing method you would like to use, if any.",
                                            [SM_NONE, SM_FIT_POLYNOMIAL, 
                                             SM_MEDIAN_FILTER, 
@@ -140,11 +144,15 @@ class CorrectIllumination_Calculate(cpm.CPModule):
                                             otherwise have been.''')
         self.automatic_object_width = cps.Choice("Calculate the smoothing filter size automatically, relative to the width of artifacts to be smoothed or use a manually entered value?",
                                                  [FI_AUTOMATIC, FI_OBJECT_SIZE, FI_MANUALLY])
-        self.object_width = cps.Integer("What is the approximate width of the artifacts to be smoothed (in pixels)?",10)
-        self.size_of_smoothing_filter = cps.Integer("What is the size of the smoothing filter (in pixels)?",10)
-        self.save_average_image = cps.Binary("Do you want to save the averaged image  (prior to dilation or smoothing)? (This is an image produced during the calculations - it is typically not needed for downstream modules)",False)
+        self.object_width = cps.Integer("Approximate width of the artifacts to be smoothed (in pixels)?",10)
+        self.size_of_smoothing_filter = cps.Integer("Size of the smoothing filter (in pixels)?",10)
+        self.save_average_image = cps.Binary("Do you want to save the averaged image?", False, doc = '''This is the illumination function
+                                        prior to dilation or smoothing. It is an image produced during the calculations, not typically
+                                        needed for downstream modules.''')
         self.average_image_name = cps.ImageNameProvider("What is the name of the averaged image?","IllumBlueAvg")
-        self.save_dilated_image = cps.Binary("Do you want to save the image after dilation but prior to smoothing? (This is an image produced during the calculations - it is typically not needed for downstream modules)", False)
+        self.save_dilated_image = cps.Binary("Do you want to save the dilated image?", False, doc = '''This is the illumination function
+                                        after dilation but prior to smoothing. It is an image produced during the calculations, not typically 
+                                        needed for downstream modules.''')
         self.dilated_image_name = cps.ImageNameProvider("What is the name of the dilated image?","IllumBlueDilated")
 
     def settings(self):

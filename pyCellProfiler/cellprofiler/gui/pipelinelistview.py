@@ -254,6 +254,7 @@ class PipelineListView(object):
         self.__grid.InsertRows(event.module_num-1)
         self.__populate_row(module)
         self.__adjust_rows()
+        self.select_one_module(event.module_num)
     
     def __on_module_removed(self,pipeline,event):
         self.__grid.DeleteRows(event.module_num-1,1)

@@ -11,16 +11,29 @@
 <ul>
   <li><a href="#intro">Introduction</a></li>
   <li><a href="#installation">Installation</a></li>
-  <li><a href="#python">Python code</a></li>
+  <li><a href="#python">Python Code</a></li>
 	<ul>
-		<li><a href="#python-style_guide">Style guide</a></li>
+		<li><a href="#python-style_guide">Style Guide</a></li>
         <ul>
         	<li><a href="#python-style_guide-module_help">Module Help</a></li>
             <li><a href="#python-style_guide-settings_help">Settings Help</a></li>
         </ul>
-	  <li><a href="#python-module_simplification">Module simplification</a></li>
-
+	  <li><a href="#python-module_simplification">Module Simplification</a></li>
+      <li><a href="#python-storing_retrieving_data">Storing and Retrieving Data</a></li>
+      <ul>
+        	<li><a href="#python-cpimage"><em>cpimage</em></a></li>
+            <li><a href="#python-cpmodule"><em>cpmodule</em></a></li>
+            <li><a href="#python-settings"><em>settings</em></a></li>
+            <li><a href="#python-preferences"><em>preferences</em></a></li>
+            <li><a href="#python-pipeline"><em>pipeline</em></a></li>
+        <li><a href="#python-workspace"><em>workspace</em></a></li>
+            <li><a href="#python-measurements"><em>measurements</em></a></li>
+      </ul>
+      <li><a href="#python-error_handling">Error Handling</a></li>
+      <li><a href="#python-displaying_results">Displaying Results</a></li>
+      <li><a href="#python-debugging_hints">Debugging Hints</a></li>
 	</ul>
+    <li><a href="#python-running_cp_headless">Running CellProfiler Without the Graphical User Interface</a></li>
 </ul>
 
 <h1><a name="intro"></a>Introduction</h1>
@@ -28,9 +41,29 @@
 <p>This document describes the code standards for CellProfiler, and gives tips
    for CellProfiler developers.</p>
 
-<h1><a name="#python"></a>Python code</h1>
+<h1><a name="#python"></a>Installation</h1>
+<p><em>For PC</em><br />
+Install the following packages:
+<ul>
+<li><a href="http://www.python.org/download/releases/2.5.4/">Python 2.5.4</a>, the final version of Python 2.5</li>
+<li><a href="http://cython.org/#download">Cython</a><br />
+After installing Cython, create a configuration file for distutils (distutils.cfg) in your Python installation directory under the /Lib/distutils/ folder which contains the following:<br />
+<pre>[build]
+compiler=mingw32</pre>
+</li>
+<li><a href="http://sourceforge.net/project/showfiles.php?group_id=22307">MySQLDB</a></li>
+<li><a href="http://www.wxpython.org/">WxPython</a></li>
+<li><a href="http://sourceforge.net/projects/numpy/files/NumPy/">NumPy</a></li>
+<li><a href="http://sourceforge.net/projects/scipy/files/">SciPy</a></li>
+<li><a href="http://sourceforge.net/projects/matplotlib/files/matplotlib/matplotlib-0.99.1/">MatplotLib</a></li>
+<li><a href="http://www.pythonware.com/products/pil/">PIL</a></li>
+</ul>
+Most of these have .exe installers for Windows, but you may need to look around a bit. After installation, </p> double-clicking <em>CellProfiler.py</em> will start the GUI.
+<p><em>For Mac</em></p>
 
-<h2><a name="python-style_guide"></a>Style guide</h2>
+<h1><a name="#python"></a>Python Code</h1>
+
+<h2><a name="python-style_guide"></a>Style Guide</h2>
 
 <h3><a name="python-style_guide-module_help"></a>Module Help</h3>
 <p>The Module Help window (which also constitutes a section of the   CellProfiler manual) is populated by the documentation string of the   module's code, and contains the following: </p>
@@ -52,7 +85,7 @@
   <li>License information follows and is commented out using #</li>
   <li>The help for the settings is obtained from the code itself (see below) and hence, does not need to be written out here</li>
 </ol>
-<h3><a name="python-style_guide-settings_help"></a>Settings help</h3>
+<h3><a name="python-style_guide-settings_help"></a>Settings Help</h3>
 <p>In general, settings descriptions (which are displayed to the user in   the GUI) should be as concise as possible. For example,  <em>Enter the threshold scaling   factor</em> becomes <em>Threshold scaling factor</em>.</p>
 <p>Some common standardized settings descriptions: </p>
 <ul>
@@ -75,7 +108,7 @@ Note that the text for the setting is indented to line up at least after the per
   <li>References that are mentioned should be <em>&lt;i&gt; italicized &lt;/i&gt;</em></li>
 </ul>
 
-<h2><a name="python-module_simplification"></a>Module simplification</h2>
+<h2><a name="python-module_simplification"></a>Module Simplification</h2>
 <p> See <em>imagemath.py</em> for an example. 
 <ul>
 <li>The order of the methods in each module should be: 
@@ -94,6 +127,21 @@ backwards_compatibilize</pre></blockquote>
 	<li>Use cps.Divider to insert spaces between settings</li>
     <li>If code is going to use a setting's value more than once or twice, extract it to a local variable to avoid having to type self.setting.value too many times. (see the opval local variable in imagemath's <em>run()</em> method)</li>
     </ul></li></ul> </p>
+    
+<h2><a name="python-storing_retrieving_data"></a>Storing and Retrieving data</h2>
+<h3><a name="python-cpimage"></a><em>cpimage</em></h3>
+<h3><a name="python-cpmodule"></a><em>cpmodule</em></h3>
+<h3><a name="python-settings"></a><em>settings</em></h3>
+<h3><a name="python-preferences"></a><em>preferences</em></h3>
+<h3><a name="python-pipeline"></a><em>pipeline</em></h3>
+<h3><a name="python-workspace"></a><em>workspace</em></h3>
+<h3><a name="python-measurements"></a><em>measurements</em></h3>
+
+<h2><a name="python-error_handling"></a>Error Handling</h2>
+<h2><a name="python-displaying_results"></a>Displaying Results</h2>
+<h2><a name="python-debugging_hints"></a>Debugging Hints</h2>
+
+<h1><a name="python-running_cp_headless"></a>Running CellProfiler without the graphical user interface</h1>
 </div>
 </body>
 

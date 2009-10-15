@@ -51,10 +51,7 @@ FN_SEQUENTIAL  = "Sequential numbers"
 FN_SINGLE_NAME = "Single name"
 SINGLE_NAME_TEXT = "What is the single file name?"
 FN_WITH_METADATA = "Name with metadata"
-METADATA_NAME_TEXT = ("""What is the file name? (Example metadata substitution: """
-                      """Illum_\g<plate>_\g<well_row>\g<well_column>" produces"""
-                      """ "Illum_XG45_A01" for plate="XG45", well_row="A" """
-                      """and well_column="01".)""")
+METADATA_NAME_TEXT = ("""What is the file name with metadata?""")
 SEQUENTIAL_NUMBER_TEXT = "What is the file prefix for sequentially numbered files?"
 FF_BMP         = "bmp"
 FF_GIF         = "gif"
@@ -137,7 +134,15 @@ class SaveImages(cpm.CPModule):
                                                            "None",doc="""
                 Select an image loaded using <b>LoadImages</b> or <b>LoadText</b>. The orginal filename will be
                 used as the prefix for the output filename.""")
-        self.single_file_name = cps.Text(SINGLE_NAME_TEXT, "OrigBlue")
+        self.single_file_name = cps.Text(SINGLE_NAME_TEXT, "OrigBlue",doc="""
+                If you are constructing the filenames using:<br>
+                <ul>
+                <li><i>Single name:</i> Enter the filename text here</li>
+                <li><i>Custom with metadata:</i> Enter the filename text with the metdata tags in the form <i>\g&lt;metadata-tag&gt</i>.  
+                For example, if the <i>plate</i>, <i>well_row</i> and <i>well_column</i> tags have the values <i>XG45</i>, <i>A</i>
+                and <i>01</i>, respectively, the string <i>Illum_\g&lt;plate&gt;_\g&lt;well_row&gt;\g&lt;well_column&gt;</i>
+                produces the output filename <i>Illum_XG45_A01</i>.</li>
+                </ul>""")
         self.file_name_suffix = cps.Text("Enter text to append to the image name:",cps.DO_NOT_USE,doc="""
                 Enter the text that will be appended to the filename specified above.""")
         self.file_format = cps.Choice("What file format do you want to use to save images?",

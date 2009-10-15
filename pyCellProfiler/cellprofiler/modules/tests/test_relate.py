@@ -186,10 +186,6 @@ class TestRelate(unittest.TestCase):
                                                 CHILD_OBJECTS)
         self.assertEqual(np.product(child_count.shape), 1)
         self.assertEqual(child_count[0],1)
-        sub_object_flag = m.get_current_measurement(CHILD_OBJECTS,
-                                                    "SubObjectFlag")
-        self.assertEqual(len(sub_object_flag), 1)
-        self.assertEqual(sub_object_flag[0], 1)
         self.features_and_columns_match(workspace)
     
     def test_03_01_mean(self):

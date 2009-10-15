@@ -122,10 +122,7 @@ class TestPipeline(unittest.TestCase):
         module.my_variable.value = "foo"
         x.add_module(module)
         columns = x.get_measurement_columns()
-        self.assertEqual(len(columns), 4)
-        self.assertTrue(any([column[0] == 'Image' and 
-                             column[1] == 'ImageNumber'
-                             for column in columns]))
+        self.assertEqual(len(columns), 3)
         self.assertTrue(any([column[0] == 'Image' and 
                              column[1] == 'ModuleError_01MyClassForTest0801'
                              for column in columns]))
@@ -136,18 +133,18 @@ class TestPipeline(unittest.TestCase):
         self.assertTrue(any([column[1] == "foo" for column in columns]))
         module.my_variable.value = "bar"
         columns = x.get_measurement_columns()
-        self.assertEqual(len(columns), 4)
+        self.assertEqual(len(columns), 3)
         self.assertTrue(any([column[1] == "bar" for column in columns]))
         module = MyClassForTest0801()
         module.module_num = 2
         module.my_variable.value = "foo"
         x.add_module(module)
         columns = x.get_measurement_columns()
-        self.assertEqual(len(columns), 7)
+        self.assertEqual(len(columns), 6)
         self.assertTrue(any([column[1] == "foo" for column in columns]))
         self.assertTrue(any([column[1] == "bar" for column in columns]))
         columns = x.get_measurement_columns(module)
-        self.assertEqual(len(columns), 4)
+        self.assertEqual(len(columns), 3)
         self.assertTrue(any([column[1] == "bar" for column in columns]))
     
     def test_10_01_all_groups(self):

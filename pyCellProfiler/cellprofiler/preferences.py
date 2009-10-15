@@ -105,12 +105,16 @@ def set_module_directory(value):
 def module_extension():
     return '.m'
 
+__default_image_directory = None
 def get_default_image_directory():
+    global __default_image_directory
+    if __default_image_directory is not None:
+        return __default_image_directory
     if not get_config().Exists(DEFAULT_IMAGE_DIRECTORY):
         return os.path.abspath(os.path.expanduser('~'))
     default_image_directory = get_config().Read(DEFAULT_IMAGE_DIRECTORY)
     if os.path.isdir(default_image_directory):
-        return str(get_proper_case_filename(default_image_directory))
+        __default_image_directory = str(get_proper_case_filename(default_image_directory))
     else:
         sys.stderr.write("Warning: current path of %s is not a valid directory. Switching to current directory\n"%
                          (default_image_directory))
@@ -119,7 +123,9 @@ def get_default_image_directory():
         return str(get_proper_case_filename(default_image_directory))
 
 def set_default_image_directory(path):
+    global __default_image_directory
     path = str(path)
+    __default_image_directory = path
     get_config().Write(DEFAULT_IMAGE_DIRECTORY,path)
     for listener in __image_directory_listeners:
         listener(DirectoryChangedEvent(path))
@@ -142,15 +148,22 @@ class DirectoryChangedEvent:
     def __init__(self, path):
         self.image_directory = path
 
+__default_output_directory = None
 def get_default_output_directory():
+    global __default_output_directory
+    if __default_output_directory is not None:
+        return __default_output_directory
     if not get_config().Exists(DEFAULT_OUTPUT_DIRECTORY):
         return os.path.abspath(os.path.expanduser('~'))
-    default_output_directory = get_config().Read(DEFAULT_OUTPUT_DIRECTORY)
-    return str(get_proper_case_filename(default_output_directory))
+    __default_output_directory = get_config().Read(DEFAULT_OUTPUT_DIRECTORY)
+    __default_output_directory = str(get_proper_case_filename(__default_output_directory))
+    return __default_output_directory
 
 def set_default_output_directory(path):
+    global __default_output_directory
     path=str(path)
     assert os.path.isdir(path),'Default output directory, "%s", is not a directory'%(path)
+    __default_output_directory = path
     get_config().Write(DEFAULT_OUTPUT_DIRECTORY,path)
     for listener in __output_directory_listeners:
         listener(DirectoryChangedEvent(path))

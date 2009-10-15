@@ -802,52 +802,7 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         self.assertNotEqual(objects.segmented[12,7],objects.segmented[4,7])
     
     def test_03_01_run_inside_pipeline(self):
-        pipeline = cellprofiler.pipeline.Pipeline()
-        inject_image = InjectImage("my_image", two_cell_image())
-        inject_image.set_module_num(1)
-        pipeline.add_module(inject_image)
-        ipm = ID.IdentifyPrimAutomatic()
-        ipm.set_module_num(2)
-        ipm.object_name.value = "my_object"
-        ipm.image_name.value = "my_image"
-        ipm.exclude_size.value = False
-        ipm.watershed_method.value = ID.WA_NONE
-        pipeline.add_module(ipm)
-        measurements = pipeline.run()
-        (matfd,matpath) = tempfile.mkstemp('.mat')
-        matfh = os.fdopen(matfd,'wb')
-        matfh.close()
-        pipeline.save_measurements(matpath, measurements)
-        matlab = get_matlab_instance()
-        handles = matlab.load(matpath)
-        handles = handles.handles
-        self.assertEquals(matlab.num2str(matlab.isfield(handles,"Measurements")),'1','handles is missing Measurements')
-        self.assertEquals(matlab.num2str(matlab.isfield(handles.Measurements,"Image")),'1')
-        self.assertEquals(matlab.num2str(matlab.isfield(handles.Measurements.Image,"Threshold_FinalThreshold_my_object")),'1')
-        thresholds = handles.Measurements.Image.Threshold_FinalThreshold_my_object
-        threshold = thresholds._[0][0,0]
-        #self.assertTrue(threshold < .6)
-        self.assertEquals(matlab.num2str(matlab.isfield(handles.Measurements.Image,"Count_my_object")),'1')
-        counts = handles.Measurements.Image.Count_my_object
-        count = counts._[0][0,0]
-        self.assertEqual(count,2)
-        self.assertEquals(matlab.num2str(matlab.isfield(handles.Measurements,"my_object")),'1')
-        self.assertEquals(matlab.num2str(matlab.isfield(handles.Measurements.my_object,"Location_Center_Y")),'1')
-        location_center_y = matlab.cell2mat(handles.Measurements.my_object.Location_Center_Y[0])
-        self.assertTrue(isinstance(location_center_y,np.ndarray))
-        self.assertEqual(np.product(location_center_y.shape),2)
-        self.assertTrue(location_center_y[0,0]>8)
-        self.assertTrue(location_center_y[0,0]<12)
-        self.assertTrue(location_center_y[1,0]>28)
-        self.assertTrue(location_center_y[1,0]<32)
-        self.assertEquals(matlab.num2str(matlab.isfield(handles.Measurements.my_object,"Location_Center_X")),'1')
-        location_center_x = matlab.cell2mat(handles.Measurements.my_object.Location_Center_X[0])
-        self.assertTrue(isinstance(location_center_x,np.ndarray))
-        self.assertEqual(np.product(location_center_x.shape),2)
-        self.assertTrue(location_center_x[0,0]>33)
-        self.assertTrue(location_center_x[0,0]<37)
-        self.assertTrue(location_center_x[1,0]>13)
-        self.assertTrue(location_center_x[1,0]<16)
+        pass # No longer supported
 
     def test_04_01_load_matlab_12(self):
         """Test loading a Matlab version 12 IdentifyPrimAutomatic pipeline

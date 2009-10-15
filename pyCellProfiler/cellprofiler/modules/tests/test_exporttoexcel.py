@@ -487,6 +487,7 @@ class TestExportToExcel(unittest.TestCase):
         # +++backslash+++ here because Windows and join don't do well
         # if you have the raw backslash
         path = os.path.join(self.output_dir, "+++backslash+++g<tag>.csv")
+        path = path.replace("\\","\\\\")
         path = path.replace("+++backslash+++","\\")
         module = E.ExportToExcel()
         module.module_num = 1
@@ -535,6 +536,7 @@ class TestExportToExcel(unittest.TestCase):
     def test_04_02_image_with_metadata(self):
         '''Test writing image data with 2 pairs of 2 image sets w same metadata'''
         path = os.path.join(self.output_dir, "+++backslash+++g<tag>.csv")
+        path = path.replace("\\","\\\\")
         path = path.replace("+++backslash+++","\\")
         module = E.ExportToExcel()
         module.module_num = 1

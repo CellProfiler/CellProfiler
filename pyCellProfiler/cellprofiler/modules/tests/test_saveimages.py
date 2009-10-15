@@ -621,10 +621,10 @@ class TestSaveImages(unittest.TestCase):
         '''
         cmodule = cpm_c.CreateBatchFiles()
         module = cpm_si.SaveImages()
-        module.pathname.value = '.Outlines\\\\g<Run>_\\g<Plate>'
+        module.pathname.value = '.\\\\\\g<Test>Outlines\\\\g<Run>_\\g<Plate>'
         module.pathname_choice.value = cpm_si.PC_WITH_METADATA
         module.prepare_to_create_batch(None,None, cmodule.alter_path)
-        self.assertEqual(module.pathname.value, '.Outlines/\\g<Run>_\\g<Plate>')
+        self.assertEqual(module.pathname.value, './\\g<Test>Outlines/g<Run>_\\g<Plate>')
     
     def test_03_01_get_measurement_columns(self):
         module = cpm_si.SaveImages()

@@ -48,7 +48,7 @@ IMAGE_SETTING_COUNT = 3
 
 class MeasureImageAreaOccupied(cpm.CPModule):
     category = "Measurement"
-    variable_revision_number = 1
+    variable_revision_number = 2
     
     def create_settings(self):
         """Create the settings variables here and name the module
@@ -84,6 +84,10 @@ class MeasureImageAreaOccupied(cpm.CPModule):
             raise NotImplementedError("The MeasureImageArea module has changed substantially. \n"
                                       "You should threshold your image using IdentifyPrimAutomatic\n"
                                       "and then measure the resulting objects' area using this module.")
+        if variable_revision_number == 1:
+            # We added the ability to process multiple objects in v2, but
+            # the settings for v1 miraculously map to v2
+            variable_revision_number = 2
         return setting_values, variable_revision_number, from_matlab
 
     def settings(self):
@@ -115,7 +119,7 @@ class MeasureImageAreaOccupied(cpm.CPModule):
         assert value_count % IMAGE_SETTING_COUNT == 0
         object_count = value_count / IMAGE_SETTING_COUNT
         # always keep the first object
-        del self.images[1:]
+        del self.objects[1:]
         while len(self.objects) < object_count:
             self.add_object()
             
@@ -169,9 +173,11 @@ class MeasureImageAreaOccupied(cpm.CPModule):
         '''Return column definitions for measurements made by this module'''
         columns = []
         for object in self.get_non_redundant_object_measurements():
-            for feature, coltype in ((cpmeas.IMAGE,F_AREA_OCCUPIED, cpmeas.COLTYPE_FLOAT),
+            for feature, coltype in ((F_AREA_OCCUPIED, cpmeas.COLTYPE_FLOAT),
                                      (F_TOTAL_AREA, cpmeas.COLTYPE_FLOAT)):
-                columns.append((cpmeas.IMAGE, object.object_name.value(feature), coltype))
+                columns.append((cpmeas.IMAGE, 
+                                feature % object.object_name.value, 
+                                coltype))
         return columns
        
     def get_categories(self, pipeline, object_name):

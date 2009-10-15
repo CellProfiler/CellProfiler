@@ -15,7 +15,7 @@ __version__="$Revison: 1 $"
 
 import base64
 import numpy as np
-import StringIO
+from StringIO import StringIO
 import unittest
 import zlib
 
@@ -40,7 +40,7 @@ class TestMeasureImageArea(unittest.TestCase):
         pipeline = cpp.Pipeline()
         module = mia.MeasureImageAreaOccupied()
         module.module_num = 1
-        module.object_name.value = OBJECTS_NAME
+        module.objects[0].object_name.value = OBJECTS_NAME
         pipeline.add_module(module)
         image_set_list = cpi.ImageSetList()
         workspace = cpw.Workspace(pipeline, module, 
@@ -56,7 +56,7 @@ class TestMeasureImageArea(unittest.TestCase):
         module.run(workspace)
         m = workspace.measurements
         def mn(x):
-            return "AreaOccupied_%s_%s"%(x, module.object_name.value)
+            return "AreaOccupied_%s_%s"%(x, module.objects[0].object_name.value)
         
         self.assertEqual(m.get_current_measurement("Image",mn("AreaOccupied"))[0], 0)
         self.assertEqual(m.get_current_measurement("Image",mn("TotalArea"))[0],100)
@@ -76,7 +76,7 @@ class TestMeasureImageArea(unittest.TestCase):
         module.run(workspace)
         m = workspace.measurements
         def mn(x):
-            return "AreaOccupied_%s_%s"%(x, module.object_name.value)
+            return "AreaOccupied_%s_%s"%(x, module.objects[0].object_name.value)
         
         self.assertEqual(m.get_current_measurement("Image",mn("AreaOccupied"))[0], area_occupied)
         self.assertEqual(m.get_current_measurement("Image",mn("TotalArea"))[0],100)
@@ -94,14 +94,14 @@ class TestMeasureImageArea(unittest.TestCase):
         module.run(workspace)
         m = workspace.measurements
         def mn(x):
-            return "AreaOccupied_%s_%s"%(x, module.object_name.value)
+            return "AreaOccupied_%s_%s"%(x, module.objects[0].object_name.value)
         
         self.assertEqual(m.get_current_measurement("Image",mn("AreaOccupied"))[0], area_occupied)
         self.assertEqual(m.get_current_measurement("Image",mn("TotalArea"))[0],total_area)
         
     def test_02_01_get_measurement_columns(self):
         module = mia.MeasureImageAreaOccupied()
-        module.object_name.value = OBJECTS_NAME
+        module.objects[0].object_name.value = OBJECTS_NAME
         columns = module.get_measurement_columns(None)
         expected = ((cpmm.IMAGE, "AreaOccupied_AreaOccupied_%s"%OBJECTS_NAME,
                      cpmm.COLTYPE_FLOAT),
@@ -142,8 +142,50 @@ class TestMeasureImageArea(unittest.TestCase):
         def callback(caller,event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
         pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(zlib.decompress(base64.b64decode(data))))
+        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 3)
         module = pipeline.modules()[2]
         self.assertTrue(isinstance(module, mia.MeasureImageAreaOccupied))
-        self.assertEqual(module.object_name.value, "Nuclei")
+        self.assertEqual(module.objects[0].object_name.value, "Nuclei")
+
+    def test_03_02_load_v2(self):
+        data = ('eJztW92P2kYQN4Q79RopujylqhrJj7n2QOYalMupvUCg16KGDwWUKIrSds9e'
+                'YCuzi+z13dEqUh/7p/Yxj33sLtjYbM3ZGJuPxJYsmPH+9rczO7szGLtR6b6o'
+                'PJdLBUVuVLr5HtKh3NYB7RFjeCZjeixXDQgo1GSCz+TuwJJbKpWLJbmonJWe'
+                'nBUV+URRnkrRjky9cY99nH4vSfvs8zN2Zu1Le7ac8Zxc7kBKEe6be1JO+sLW'
+                'f2DnK2AgcKnDV0C3oOlSOPo67pHueDS71CCapcMmGHobs6NpDS+hYbZ6DtC+'
+                '3EY3UO+gP6BggtPsJbxCJiLYxtv9i9oZL6ECb2dAri8MNhyh/+eAqoMOZTMw'
+                'r+d+G33l+i0j+C3HzocePW//k+S2z/n4+b6n/aEtI6yhK6RZQJfREPRno+b9'
+                'KQH93Znr745Ua1YmuNMA3L4wDi43LVWHSIoFXw7AHwp4fnbhDc3/cANY8A/5'
+                'lKzDjj0Bz+Uq1HUzpP+zc/is1CThcJk5XEb6Voo+3qJy/FiRwvn9roDnctsg'
+                'I9AHlC2iiT7qONgSQjjkOD4X8FyuERkTKlumvQ6jxP8btnrC8B8I/FyujikZ'
+                '6cAcSi7/tsbPIlyQ3X7z36KmJf+ok0ugh/b7Iv6g/e+BwM/lGuwBS6dynW9+'
+                'cg0ZUKXEGK80/8viigUllrj38u4LeOdw8Af2Z5zzFiX/KAVlchwX7S+ecUW1'
+                'Z93zFoTLzeFy3ObiJuxLcn7CrNOikuy8Rt3PwsxPSFwpLvviXL9++aaOKcQm'
+                'omNPP1HiowNVgjVgjFsW1RFeWD8uY0/QPuithw9tuToAGEP9JE5/LLvOFJ/9'
+                'IMl17dTbcazDMPHdJBgmaZ9YlxYj4p6ExIXZL+K0L4w/46wz/fJ295rIKqsz'
+                'TXulrmLvXwH8Pwv8XP7l0bP2d/wGBDwvfHP0K5des5L1Jbk+f1vJt98dOZoq'
+                '0a0hPn+r5J+++7N4fPJ+2riDGHKiPJqNI8gPYev9KPvfa4j6A3775IrfKMCq'
+                '8zN+Fb8OAsZxKoyDy9w3byAwbIc9fn+U56oGwXRg605sXQ2MXU2S8efn9wti'
+                'wL5BLKyt7qcV8kSo/B6mTtzW/O73e3JX7F12vz+JaF+c+Xob8kSS+XoX88Im'
+                '8//HuN9vcp0kWUcrhdLGx5n0/Zo4675147alLtu2eU66vtr2dfux7UtiXVPa'
+                '0Dj//tLFZQSc3/+O64zvyZ+UPMBH4fvx2w/J5e9QpW5Hcfazzn3Owy8jrMFR'
+                'gv3t4jrbRDzu6riD+kk6/lPcdsbFrtib4lJcilsdV/bgwj4/5e4b07Jhl+z9'
+                '1PwbxJ/mhRSXBK4sbTbuU9yniStLadyluDTvpbgUl+JSXIpLcbuE+zfj4jIC'
+                'jsve5154+988PH55/mtP+0NbVqGujwzC3480CsPJS3xmQSdAm74VV3jBvtY9'
+                'L8hxnlEAT1ngKS/iQRrEFPXGI4OxWZQMAUVqoW5r20xbcbScdxDA6/e8yK28'
+                'pvMQ94xz9lg357sJ4LsQ+C4W8Q0hMC0DTlwKDAiIqlojBLVCY3ph4uAKu9Cy'
+                'L/w/bg58+L3zn2XSg4f392+LN0majzM3/j48i8KXy2Wz96T55xHvBuBy0nzc'
+                'c/w/0nJx/uiW9o6N29x+WT9n2LGqn1ye3GxM0/63s/1/UENheQ==')
+        pipeline = cpp.Pipeline()
+        def callback(caller,event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
+        self.assertEqual(len(pipeline.modules()), 4)
+        module = pipeline.modules()[3]
+        self.assertTrue(isinstance(module, mia.MeasureImageAreaOccupied))
+        self.assertEqual(len(module.objects), 2)
+        self.assertEqual(module.objects[0].object_name.value, "Nuclei")
+        self.assertEqual(module.objects[1].object_name.value, "Cells")
+        

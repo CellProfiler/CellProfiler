@@ -247,6 +247,7 @@ class CPFrame(wx.Frame):
             if wx.TheClipboard.Open():
                 try:
                     wx.TheClipboard.SetData(data_object)
+                    wx.TheClipboard.Flush()
                 finally:
                     wx.TheClipboard.Close()
             else:

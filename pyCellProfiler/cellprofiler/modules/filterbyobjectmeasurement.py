@@ -70,11 +70,12 @@ class FilterByObjectMeasurement(cpm.CPModule):
     def create_settings(self):
         '''Create the initial settings and name the module'''
         self.module_name = 'FilterByObjectMeasurement'
-        self.target_name = cps.ObjectNameProvider('What do you want to call the filtered objects?','FilteredBlue',
-                                                  doc = '''This will be the name for the collection of objects that meet the filter
+        self.target_name = cps.ObjectNameProvider('Name the output objects','FilteredBlue',
+                                                  doc = '''What do you want to call the filtered objects? This will be the name for the collection of objects that meet the filter
                                                     criteria.''')
-        self.object_name = cps.ObjectNameSubscriber('What object would you like to filter by, or if using a Ratio, what is the numerator object?','None',
-                                                    doc = '''This setting controls which objects will be filtered to generate the
+        self.object_name = cps.ObjectNameSubscriber('Select the object to filter by','None',
+                                                    doc = '''What object would you like to filter by, or if using a Ratio, what is the numerator object?
+                                                    This setting controls which objects will be filtered to generate the
                                                     filtered objects. It also controls the measurement choices for filtering:
                                                     you can only filter on measurements made on these objects. The values
                                                     for ratio measurements are assigned to the numerator object, so you have

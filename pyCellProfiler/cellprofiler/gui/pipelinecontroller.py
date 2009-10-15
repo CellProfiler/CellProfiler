@@ -257,7 +257,20 @@ class PipelineController:
     
     def __on_pipeline_event(self,caller,event):
         if isinstance(event,cellprofiler.pipeline.RunExceptionEvent):
-            message = "Error while processing %s: %s\nDo you want to stop processing?"%(event.module.module_name,event.error.message)
+            error_msg = None
+            try:
+                import MySQLdb
+                if (isinstance(event.error, MySQLdb.OperationalError) and
+                    len(event.error.args) > 1):
+                    #
+                    # The informative error is in args[1] for MySQL
+                    #
+                    error_msg = event.error.args[1]
+            except:
+                pass
+            if error_msg is None:
+                error_msg = event.error.message
+            message = "Error while processing %s: %s\nDo you want to stop processing?"%(event.module.module_name,error_msg)
             if wx.MessageBox(message,"Pipeline error",wx.YES_NO | wx.ICON_ERROR,self.__frame) == wx.NO:
                 event.cancel_run = False
         elif isinstance(event, cellprofiler.pipeline.LoadExceptionEvent):

@@ -15,7 +15,7 @@ __version__ = "$Revision: 1$"
 import os
 
 import unittest
-import numpy
+import numpy as np
 import numpy.lib.index_tricks
 import cStringIO
 
@@ -37,8 +37,8 @@ def module_directory():
     return os.path.join(d,'Modules')
 
 def image_with_one_cell():
-    img = numpy.zeros((100,100))
-    mgrid = numpy.lib.index_tricks.nd_grid()
+    img = np.zeros((100,100))
+    mgrid = np.lib.index_tricks.nd_grid()
     g=mgrid[0:100,0:100]-50                              # the manhattan distance from 50,50
     dist = g[0,:,:]*g[0,:,:]+g[1,:,:]*g[1,:,:]           # the 2-d distance (forgot the fancy name)
     img[ dist < 25] = (25.0-dist.astype(float)[dist<25])/25 # A circle in the middle of it
@@ -165,7 +165,7 @@ class TestPipeline(unittest.TestCase):
             self.assertEqual(expects_state, 'PrepareGroup')
             for image_number in image_numbers:
                 i = image_number-1
-                image = cellprofiler.cpimage.Image(numpy.ones((10,10)) / (i+1))
+                image = cellprofiler.cpimage.Image(np.ones((10,10)) / (i+1))
                 image_set = image_set_list.get_image_set(i)
                 image_set.add('image', image)
             for key in keys:
@@ -184,7 +184,7 @@ class TestPipeline(unittest.TestCase):
             self.assertEqual(expects_state, 'Run')
             self.assertEqual(expects_image_number, image_number)
             image = workspace.image_set.get_image('image')
-            self.assertTrue(numpy.all(image.pixel_data == 1.0 / image_number))
+            self.assertTrue(np.all(image.pixel_data == 1.0 / image_number))
             if image_number == 1:
                 expects[0],expects[1] = ('Run', 3)
             elif image_number == 2:
@@ -218,7 +218,7 @@ class TestPipeline(unittest.TestCase):
         self.assertEqual(expects[0], 'Done')
         image_numbers = measurements.get_all_measurements("Image","ImageNumber")
         self.assertEqual(len(image_numbers), 4)
-        self.assertTrue(numpy.all(image_numbers == numpy.array([1,3,2,4])))
+        self.assertTrue(np.all(image_numbers == np.array([1,3,2,4])))
          
     def test_10_02_one_group(self):
         '''Test running a pipeline on one group'''
@@ -238,7 +238,7 @@ class TestPipeline(unittest.TestCase):
             expects_state, expects_grouping = expects
             self.assertEqual(expects_state, 'PrepareGroup')
             for i in range(6):
-                image = cellprofiler.cpimage.Image(numpy.ones((10,10)) / (i+1))
+                image = cellprofiler.cpimage.Image(np.ones((10,10)) / (i+1))
                 image_set = image_set_list.get_image_set(i)
                 image_set.add('image', image)
             for key in keys:
@@ -256,7 +256,7 @@ class TestPipeline(unittest.TestCase):
             self.assertEqual(expects_state, 'Run')
             self.assertEqual(expects_image_number, image_number)
             image = workspace.image_set.get_image('image')
-            self.assertTrue(numpy.all(image.pixel_data == 1.0 / image_number))
+            self.assertTrue(np.all(image.pixel_data == 1.0 / image_number))
             if image_number == 2:
                 expects[0],expects[1] = ('Run', 5)
             elif image_number == 5:
@@ -284,7 +284,24 @@ class TestPipeline(unittest.TestCase):
         self.assertEqual(expects[0], 'Done')
         image_numbers = measurements.get_all_measurements("Image","ImageNumber")
         self.assertEqual(len(image_numbers), 2)
-        self.assertTrue(numpy.all(image_numbers == numpy.array([2,5])))
+        self.assertTrue(np.all(image_numbers == np.array([2,5])))
+    
+    def test_11_01_catch_operational_error(self):
+        '''Make sure that a pipeline can catch an operational error
+        
+        This is a regression test of IMG-277
+        '''
+        module = MyClassForTest1101()
+        module.module_num = 1
+        pipeline = cellprofiler.pipeline.Pipeline()
+        pipeline.add_module(module)
+        should_be_true = [False]
+        def callback(caller, event):
+            if isinstance(event, cellprofiler.pipeline.RunExceptionEvent):
+                should_be_true[0] = True
+        pipeline.add_listener(callback)
+        pipeline.run()
+        self.assertTrue(should_be_true[0])
 
 class MyClassForTest0801(cellprofiler.cpmodule.CPModule):
     def create_settings(self):
@@ -301,6 +318,31 @@ class MyClassForTest0801(cellprofiler.cpmodule.CPModule):
         return [(cellprofiler.measurements.IMAGE,
                  self.my_variable.value,
                  "varchar(255)")]
+
+class MyClassForTest1101(cellprofiler.cpmodule.CPModule):
+    def create_settings(self):
+        self.my_variable = cellprofiler.settings.Text('','')
+    def settings(self):
+        return [self.my_variable]
+    module_name = "MyClassForTest1101"
+    variable_revision_number = 1
+    
+    def module_class(self):
+        return "cellprofiler.tests.Test_Pipeline.MyClassForTest1101"
+
+    def prepare_run(self, pipeline, image_set_list, *args):
+        image_set = image_set_list.get_image_set(0)
+        return True
+        
+    def prepare_group(self, pipeline, image_set_list, *args):
+        image_set = image_set_list.get_image_set(0)
+        image = cellprofiler.cpimage.Image(np.zeros((5,5)))
+        image_set.add("dummy", image)
+        return True
+    
+    def run(self, *args):
+        import MySQLdb
+        raise MySQLdb.OperationalError("Bogus error")
 
 class GroupModule(cellprofiler.cpmodule.CPModule):
     module_name = "Group"

@@ -218,7 +218,7 @@ class IdentifyPrimAutomatic(cpmi.Identify):
             applied to the image is based on the minimum size of the objects. The units
             here are pixels so that it is easy to zoom in on objects and determine
             typical diameters. To measure distances easily in an open image, use
-            <i>Tools > Show pixel data</i>. Once this tool is activated, you can
+            <i>Tools &gt; Show pixel data</i>. Once this tool is activated, you can
             draw a line across objects in your image and the length of the line 
             will be shown in pixel units. Note that for non-round objects, the 
             diameter here is actually the 'equivalent diameter', i.e.
@@ -242,10 +242,10 @@ class IdentifyPrimAutomatic(cpmi.Identify):
             smaller than the specified Minimum diameter and tries to merge them with
             other surrounding objects. This is helpful in cases when an object was
             incorrectly split into two objects, one of which is actually just a tiny
-            piece of the larger object. However, this could be dangerous if you have
-            selected poor settings which produce many tiny objects - the module
-            will take a very long time and you will not realize that it is because
-            the tiny objects are being merged. It is therefore a good idea to run the
+            piece of the larger object. However, this could be problematic if you have
+            poor settings which produce many tiny objects - the module
+            will take a very long time due to tiny objects are being merged, with
+            no warning that this is the case. It is therefore a good idea to run the
             module first without merging objects to make sure the settings are
             reasonably effective.''')
         self.exclude_border_objects = cps.Binary(
@@ -254,7 +254,7 @@ class IdentifyPrimAutomatic(cpmi.Identify):
             You can choose to discard objects that touch the border of the image.
             This is useful in cases when you do not want to make measurements of
             objects that are not fully within the field of view (because, for
-            example, the area would not be accurate).''')
+            example, the morphological measurements would not be accurate).''')
         self.threshold_method = cps.Choice(
             'Select the thresholding method',
             cpthresh.TM_METHODS, doc='''\
@@ -262,7 +262,7 @@ class IdentifyPrimAutomatic(cpmi.Identify):
             and the background. You can have the threshold automatically calculated 
             using several methods, or you can enter an absolute number between 0 
             and 1 for the threshold (to see the pixel intensities for your images 
-            in the appropriate range of 0 to 1, use <i>Tools > Show pixel data</i> 
+            in the appropriate range of 0 to 1, use <i>Tools &gt; Show pixel data</i> 
             in a window showing your image). There are advantages either way. 
             An absolute number treats every image identically, but is not robust 
             to slight changes in lighting/staining conditions between images. An
@@ -277,7 +277,7 @@ class IdentifyPrimAutomatic(cpmi.Identify):
             one of your images, you might check whether the automatically calculated
             threshold was unusually high or low compared to the other images.
             
-            <p>There are five methods for finding thresholds automatically:
+            <p>There are six methods for finding thresholds automatically:
             <ul><li><i>Otsu:</i> This method is probably best if you don't know 
             anything about the image, or if the percent of the image covered by 
             objects varies substantially from image to image. Our implementation 
@@ -333,7 +333,7 @@ class IdentifyPrimAutomatic(cpmi.Identify):
             </ul>
             
             <p>You can also choose between <i>Global</i>, <i>Adaptive</i>, and 
-            <i>Per-Object</i> thresholding:
+            <i>Per-Object</i> thresholding for the automatic methods:
             <ul>
             <li><i>Global:</i> One threshold is used for the entire image (fast)</li>
             <li><i>Adaptive:</i> The threshold varies across the image - a bit slower but
@@ -343,15 +343,25 @@ class IdentifyPrimAutomatic(cpmi.Identify):
             <i>within</i> parent objects, the per object method will calculate a distinct
             threshold for each parent object. This is especially helpful, for
             example, when the background brightness varies substantially among the
-            parent objects. Important: the per-object method requires that you run an
+            parent objects. 
+            <p>Important: the per-object method requires that you run an
             IdentifyPrimAutomatic module to identify the parent objects upstream in the
             pipeline. After the parent objects are identified in the pipeline, you
-            must then also run a <b>Crop</b> module as follows: the image to be cropped is the one
-            that you will want to use within this module to identify the children
-            objects (e.g., ChildrenStainedImage), and the shape in which to crop
-            is the name of the parent objects (e.g., Nuclei). Then, set this
-            IdentifyPrimAutomatic module to identify objects within the
-            CroppedChildrenStainedImage.</ul>''')
+            must then also run a <b>Crop</b> module with the following inputs: 
+            <ul>
+            <li>The input image is the image containing the sub-objects to be identified.</li>
+            <li>Select <i>Objects</i> as the shape to crop into.</li>
+            <li>Select the parent objects (e.g., Nuclei) as the objects to use as a cropping mask.</li>
+            </ul>
+            Finally, in the IdentifyPrimAutomatic module, select the cropped image as input image.</ul>
+            
+            <p>Selecting manual thresholding allows you to enter a single value between 0 and 1
+            as the threshold value. This setting can be useful when you are certain what the
+            cutoff should be. Also, in the case of a binary image (where the foreground is 1 and 
+            the background is 0), a manual value of 0.5 will identify the objects.
+            
+            <p>Selecting a binary image will essentially use the binary image as a mask for the
+            input image.''')
 
         self.threshold_correction_factor = cps.Float('Threshold correction factor', 1,
                                                 doc="""\
@@ -377,13 +387,14 @@ class IdentifyPrimAutomatic(cpmi.Identify):
             ['0.01','0.1','0.2','0.3', '0.4','0.5','0.6','0.7', '0.8','0.9',
              '0.99'], doc="""\
             <i>(Only used when applying the Mixture of Gaussian thresholding method)</i>
-            An estimate of how much of the image is covered with objects. This
-            information is currently only used in the MoG (Mixture of Gaussian)
-            thresholding but may be used for other thresholding methods in the future.""")
+            <p>An estimate of how much of the image is covered with objects, which
+            is used to estimate the distribution of pixel intensities.""")
         self.unclump_method = cps.Choice(
             'Method to distinguish clumped objects', 
             [UN_INTENSITY, UN_SHAPE, UN_LOG, UN_NONE], doc="""\
-            Note: To choose between these methods, you can try each of them in test mode.
+            This setting allows you to choose the method that is used to segment
+            objects, i.e, "declump" a large, merged objects into the appropriate  
+            objects of interest. To decide between these methods, you can try each of them in Test mode.
             <ul>
             <li><i>Intensity:</i> For objects that tend to have only one peak of brightness
             per object (e.g. objects that are brighter towards their interiors), this
@@ -419,6 +430,9 @@ class IdentifyPrimAutomatic(cpmi.Identify):
         self.watershed_method = cps.Choice(
             'Method to draw dividing lines between clumped objects', 
             [WA_INTENSITY,WA_DISTANCE,WA_NONE], doc="""\
+            This setting allows you to choose the method that is used to draw the line
+            bewteen segmented objects, provided that you chosen to declump the objects first.
+            To decide between these methods, you can try each of them in Test mode.
             <ul><li><i>Intensity:</i> Works best where the dividing lines between clumped
             objects are dim. Technical description: watershed on the intensity image.</li>
             <li><i>Distance:</i> Dividing lines between clumped objects are based on the
@@ -448,8 +462,8 @@ class IdentifyPrimAutomatic(cpmi.Identify):
         self.smoothing_filter_size = cps.Integer(
             'Size of smoothing filter, in pixel units', 
             10, doc="""\
-            <i>(Only used when distinguishing between clumped objects)</i> This setting,
-            along with the suppress local maxima setting, affects whether objects
+            <i>(Only used when distinguishing between clumped objects)</i> 
+            <p>This setting, along with the <i>Suppress local maxima</i> setting, affects whether objects
             close to each other are considered a single object or multiple objects.
             It does not affect the dividing lines between an object and the
             background. If you see too many objects merged that ought to be separated
@@ -485,8 +499,8 @@ class IdentifyPrimAutomatic(cpmi.Identify):
         self.maxima_suppression_size = cps.Integer(
             'Suppress local maxima within this distance (in pixel units)', 
             7, doc="""\
-            <i>(Only used when distinguishing between clumped objects)</i> This setting,
-            along with the size of the smoothing filter, affects whether objects
+            <i>(Only used when distinguishing between clumped objects)</i>
+            <p>This setting, along with the size of the smoothing filter, affects whether objects
             close to each other are considered a single object or multiple objects.
             It is a positive integer, and does not affect the dividing lines between 
             an object and the background. This setting looks for the maximum intensity in the size 
@@ -506,8 +520,8 @@ class IdentifyPrimAutomatic(cpmi.Identify):
         self.low_res_maxima = cps.Binary(
             'Speed up by using lower-resolution image to find local maxima?', 
             True, doc="""\
-            <i>(Only used when distinguishing between clumped objects)</i> If you have
-            entered a minimum object diameter of 10 or less, setting this option to
+            <i>(Only used when distinguishing between clumped objects)</i> 
+            <p>If you have entered a minimum object diameter of 10 or less, setting this option to
             <i>Yes</i> will have no effect.""")
 
         self.should_save_outlines = cps.Binary(
@@ -530,7 +544,7 @@ class IdentifyPrimAutomatic(cpmi.Identify):
         self.manual_threshold = cps.Float("What is the manual threshold?", 
                                           value=0.0, minval=0.0, maxval=1.0,doc="""\
             <i>(Only used if Manual selected for thresholding method)</i>
-            Enter the value that will act as an absolute threshold for the image""")
+            <p>Enter the value that will act as an absolute threshold for the image""")
         
         self.binary_image = cps.ImageNameSubscriber(
             "What is the binary thresholding image?", "None")
@@ -545,17 +559,19 @@ class IdentifyPrimAutomatic(cpmi.Identify):
         self.two_class_otsu = cps.Choice(
             'Does your image have two classes of intensity value or three?',
             [cpmi.O_TWO_CLASS, cpmi.O_THREE_CLASS],doc="""
-            <i>(Only used for the Otsu thresholding method)</i> Select <i>Two</i>
-            if the grayscale levels are readily distinguishable into foregound 
+            <i>(Only used for the Otsu thresholding method)</i> 
+            <p>Select <i>Two</i> if the grayscale levels are readily distinguishable into foregound 
             (i.e., objects) and background. Select <i>Three</i> if there is an 
             middle set of grayscale levels which belong to neither the
             foreground nor background. 
             <p>For example, three-class thresholding may
             be useful for images in which you have nuclear staining along with a
-            low-intesnity non-specific cell staining. Where two-class thresholding
+            low-intensity non-specific cell staining. Where two-class thresholding
             might incorrectly assign this intemediate staining to the nuclei 
             objects, three-class thresholding allows you to assign it to the 
-            foreground or background as desired.""")
+            foreground or background as desired. However, in extreme cases where either 
+            there are almost no objects or the entire field of view is covered with 
+            objects, three-class thresholding may perform worse than two-class.""")
         
         self.use_weighted_variance = cps.Choice(
             'Do you want to minimize the weighted variance or the entropy?',
@@ -565,7 +581,7 @@ class IdentifyPrimAutomatic(cpmi.Identify):
             'Assign pixels in the middle intensity class to the foreground '
             'or the background?', [cpmi.O_FOREGROUND, cpmi.O_BACKGROUND],doc="""
             <i>Only used for the Otsu thresholding method with three-class thresholding)</i>
-            Select whether you want the middle grayscale intensities to be assigned 
+            <p>Select whether you want the middle grayscale intensities to be assigned 
             to the foreground pixels or the background pixels.""")
         
         self.wants_automatic_log_diameter = cps.Binary(
@@ -573,7 +589,7 @@ class IdentifyPrimAutomatic(cpmi.Identify):
             'for the Laplacian of Gaussian filter?', True,
             doc="""\
             <i>(Only used when applying the Laplacian of Gaussian thresholding method)</i>
-            Check this box to use the filtering diameter range above 
+            <p>Check this box to use the filtering diameter range above 
             when constructing the Laplacian of Gaussian filter. Uncheck the
             box in order to enter a size that is not related to the filtering 
             size. You may want to specify a custom size if you want to filter 
@@ -584,7 +600,7 @@ class IdentifyPrimAutomatic(cpmi.Identify):
             5, minval=1, maxval=100,
             doc="""\
             <i>(Only used when applying the Laplacian of Gaussian thresholding method)</i>
-            This is the size used when calculating the Laplacian of 
+            <p>This is the size used when calculating the Laplacian of 
             Gaussian filter. The filter enhances the local maxima of objects 
             whose diameters are roughly the entered number or smaller.""")
 

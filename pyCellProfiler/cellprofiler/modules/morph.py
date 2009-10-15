@@ -1,15 +1,315 @@
-'''morph - morphological operations performed on images
-
-CellProfiler is distributed under the GNU General Public License.
-See the accompanying file LICENSE for details.
-
-Developed by the Broad Institute
-Copyright 2003-2009
-
-Please see the AUTHORS file for credits.
-
-Website: http://www.cellprofiler.org
 '''
+<b>Morph</b> performs low-level morphological operations on binary or grayscale images
+<hr>
+This module performs a series of morphological operations on a binary
+image or grayscale image, resulting in an image of the same type.
+    
+<p>The following operations are supported:<br>
+<table border=1>
+
+<tr><td><b>Operation</b></td><td><b>Description</b></td><td><b>Input image supported</b></td></tr>
+
+<tr>
+<td><i>Bothat</i></td>
+<td>Bottom-hat filter: A bottom-hat filter enhances black spots in a white background. 
+It subtracts the morphological "close" of the image from the image.</td>
+<td>Binary, grayscale</td>
+</tr>
+
+<tr>
+<td><i>Bridge</i></td>
+<td>Set a pixel to one if it has two non-zero neighbors that are on opposite 
+sides of this pixel:<br>
+<table> 
+<tr>
+<td><table border="1">
+<tr><td>1</td><td>0</td><td>0</td></tr>    
+<tr><td>0</td><td>0</td><td>0</td></tr>  
+<tr><td>0</td><td>0</td><td>1</td></tr>      
+</table></td>
+<td>&rarr;</td>
+<td><table border="1">
+<tr><td>1</td><td>0</td><td>0</td></tr>
+<tr><td>0</td><td>1</td><td>0</td></tr>
+<tr><td>0</td><td>0</td><td>1</td></tr>
+</table></td>
+</tr>
+</table>
+</td>
+<td>Binary</td>
+</tr>
+
+<tr>
+<td><i>Clean</i></td>
+<td>Remove isolated pixels:<br>
+<table> 
+<tr>
+<td><table border=1>
+<tr><td>0</td><td>0</td><td>0</td></tr>    
+<tr><td>0</td><td>0</td><td>0</td></tr>  
+<tr><td>0</td><td>0</td><td>0</td></tr>      
+</table></td>
+<td>&rarr;</td>
+<td><table border=1>
+<tr><td>0</td><td>0</td><td>0</td></tr>
+<tr><td>0</td><td>1</td><td>0</td></tr>
+<tr><td>0</td><td>0</td><td>0</td></tr>
+</table></td>
+</tr>
+</table>
+</td>
+<td>Binary</td>
+</tr>
+
+<tr>
+<td><i>Close</i></td>
+<td>Performs a dilation followed by an erosion. The effect is to
+fill holes and join nearby objects.
+</td>
+<td>Binary, grayscale</td>
+</tr>
+
+<tr>
+<td><i>Diag</i></td>
+<td>Fill in pixels whose neighbors are diagnonally connected to 4-connect 
+pixels that are 8-connected:<br>
+<table>
+<tr>
+<td><table border=1>
+<tr><td>0</td><td>1</td></tr>
+<tr><td>1</td><td>0</td></tr>
+</table></td>
+<td>&rarr;</td>
+<td><table border=1>
+<tr><td>1</td><td>1</td></tr>
+<tr><td>1</td><td>1</td></tr>
+</table></td>
+<td>&nbsp;,&nbsp;</td>
+<td><table border=1>
+<tr><td>0</td><td>1</td></tr>
+<tr><td>1</td><td>1</td></tr>
+</table></td>
+<td>&rarr;</td>
+<td><table border=1>
+<tr><td>1</td><td>1</td></tr>
+<tr><td>1</td><td>1</td></tr>
+</table></td>
+</tr>
+</table>
+</td>
+<td>Binary</td>
+</tr>
+
+<tr>
+<td><i>Dilate</i></td>
+<td>For binary, any 0 pixel is replaced by 1 if any of its neighbors is 1. 
+For grayscale, each pixel is replaced by the maximum of its neighbors and itself.</td>
+<td>Binary, grayscale</td>
+</tr>
+
+<tr>        
+<td><i>Erode</i></td>
+<td>For binary, any 1 pixel is replaced by 0 if any of its neighbors is 0. 
+For grayscale, each pixel is replaced by the minimum of its neighbors and itself.</td>
+<td>Binary, grayscale</td>
+</tr>
+<tr>
+<td>Fill</td>
+<td>Set a pixel to 1 if all of its neighbors are 1:<br>
+<table>
+<tr>
+<td><table border=1>
+<tr><td>1</td><td>1</td><td>1</td></tr>
+<tr><td>1</td><td>0</td><td>1</td></tr>
+<tr><td>1</td><td>1</td><td>1</td></tr>
+</table></td>
+<td>&rarr;</td>
+<td><table border=1>
+<tr><td>1</td><td>1</td><td>1</td></tr>
+<tr><td>1</td><td>1</td><td>1</td></tr>
+<tr><td>1</td><td>1</td><td>1</td></tr>
+</table></td>
+</tr>
+</table>
+</td>
+<td>Binary</td>
+</tr>
+
+<tr>
+<td><i>Hbreak</i></td><td>Removes pixels that form vertical bridges between horizontal lines:<br>
+<table>
+<tr>
+<td><table border=1>
+<tr><td>1</td><td>1</td><td>1</td></tr>
+<tr><td>0</td><td>1</td><td>0</td></tr>
+<tr><td>1</td><td>1</td><td>1</td></tr>
+</table></td>
+<td>&rarr;</td>
+<td><table border=1>
+<tr><td>1</td><td>1</td><td>1</td></tr>
+<tr><td>0</td><td>0</td><td>0</td></tr>
+<tr><td>1</td><td>1</td><td>1</td></tr>
+</table></td>
+</tr>
+</table>
+</td>
+<td>Binary</td>
+</tr>
+
+<tr>
+<td><i>Majority</i></td>
+<td>Each pixel takes on the value of the majority that surround it 
+(keep pixel value to break ties):<br>
+<table>
+<tr>
+<td><table border=1>
+<tr><td>1</td><td>1</td><td>1</td></tr>
+<tr><td>1</td><td>0</td><td>1</td></tr>
+<tr><td>0</td><td>0</td><td>0</td></tr>
+</table></td>
+<td>&rarr;</td>
+<td><table border=1>
+<tr><td>1</td><td>1</td><td>1</td></tr>
+<tr><td>1</td><td>1</td><td>1</td></tr>
+<tr><td>0</td><td>0</td><td>0</td></tr>
+</table></td>
+</tr>
+</table>
+</td>
+<td>Binary</td>
+</tr>
+<tr>
+<td><i>Open</i></td><td>Performs an erosion followed by a dilation. The effect is to
+break bridges between objects and remove single pixels.</td>
+<td>Binary, grayscale</td>
+</tr>
+
+<tr>
+<td><i>Remove</i></td>
+<td>Removes pixels that are otherwise surrounded by others (4 connected). 
+The effect is to be left with the perimeter of a solid object:<br>
+<table>
+<tr>
+<td><table border=1>
+<tr><td>0</td><td>1</td><td>0</td></tr>
+<tr><td>1</td><td>1</td><td>1</td></tr>
+<tr><td>0</td><td>1</td><td>0</td></tr>
+</table></td>
+<td>&rarr;</td>
+<td><table border=1>
+<tr><td>0</td><td>1</td><td>0</td></tr>
+<tr><td>1</td><td>0</td><td>1</td></tr>
+<tr><td>0</td><td>1</td><td>0</td></tr>
+</table></td>
+</tr>
+</table>
+</td>
+<td>Binary</td>
+</tr>
+
+<tr>
+<td><i>Shrink</i></td>
+<td>Perform a thinning operation that erodes unless that operation
+would change the image's Euler number. This means that blobs are reduced to single 
+points and blobs with holes are reduced to rings if shrunken indefinitely.</td>
+<td>Binary</td>
+</tr>
+
+<tr>
+<td><i>Skel</i></td>
+<td>Perform a skeletonizing operation (medial axis transform). Preserves 
+the points at the edges of objects but erodes everything else to lines that connect those edges.
+See <a href="http://homepages.inf.ed.ac.uk/rbf/HIPR2/skeleton.htm">here</a> for a description.</td>
+<td>Binary</td>
+</tr>
+
+<tr>
+<td><i>Spur</i></td>
+<td>Remove spur pixels. These are pixels that are only diagonally
+connected to other pixels and connected in only one direction:<br>
+<table>
+<tr>
+<td><table border=1>
+<tr><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td>0</td><td>1</td><td>0</td><td>0</td></tr>
+<tr><td>0</td><td>0</td><td>1</td><td>0</td></tr>
+<tr><td>1</td><td>1</td><td>1</td><td>1</td></tr>
+</table></td>
+<td>&rarr;</td>
+<td><table border=1>
+<tr><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td>0</td><td>0</td><td>1</td><td>0</td></tr>
+<tr><td>1</td><td>1</td><td>1</td><td>1</td></tr>
+</table></td>
+</tr>
+</table>
+</td>
+<td>Binary</td>
+</tr>
+
+<tr>
+<td><i>Thicken</i></td>
+<td>Dilate the exteriors of objects where that dilation does not
+8-connect the object with another. The image is labeled and the labeled objects are filled. 
+Unlabeled points adjacent to uniquely labeled points change from background to foreground.</td>
+<td>Binary</td>
+</tr>
+
+<tr>
+<td><i>Thin</i></td>
+<td>Thin lines preserving the Euler number using the thinning algorithm # 1 described in 
+<i>Guo, "Parallel Thinning with Two Subiteration Algorithms", Communications of the ACM, Vol 32 #3</i>
+page 359. The result generally preserves the lines in an image while eroding their thickness.</td>
+<td>Binary</td>
+</tr>
+
+<tr>
+<td><i>Tophat</i></td>
+<td>Subtract the morphological opening of the image from the image. This enhances white spots 
+in a black background.</td>
+<td>Binary, grayscale</td>
+</tr>
+
+<tr>
+<td><i>Vbreak</i></td>
+<td>Removes pixels that form horizontal bridges between vertical lines:<br>
+<table>
+<tr>
+<td><table border=1>
+<tr><td>1</td><td>0</td><td>1</td></tr>
+<tr><td>1</td><td>1</td><td>1</td></tr>
+<tr><td>1</td><td>0</td><td>1</td></tr>
+</table></td>
+<td>&rarr;</td>
+<td><table border=1>
+<tr><td>1</td><td>0</td><td>1</td></tr>
+<tr><td>1</td><td>0</td><td>1</td></tr>
+<tr><td>1</td><td>0</td><td>1</td></tr>
+</table></td>
+</tr>
+</table>
+</td>
+<td>Binary</td>
+</tr>
+
+</table>
+</p>
+<p>The algorithms minimize the interference of masked pixels; for instance,
+the dilate operation will only consider unmasked pixels in the neighborhood
+of a pixel when determining the maximum within that neighborhood.</p>
+'''
+
+#CellProfiler is distributed under the GNU General Public License.
+#See the accompanying file LICENSE for details.
+#
+#Developed by the Broad Institute
+#Copyright 2003-2009
+#
+#Please see the AUTHORS file for credits.
+#
+#Website: http://www.cellprofiler.org
+
 __version__ = "$Revision$"
 
 import numpy as np
@@ -52,172 +352,27 @@ R_CUSTOM = 'Custom'
 R_ALL = [R_ONCE, R_FOREVER, R_CUSTOM]
 
 class Morph(cpm.CPModule):
-    '''SHORT DESCRIPTION:
-    Perform low-level morphological operations on binary or grayscale images
-    ************************************************************************
-    This module performs a series of morphological operations on a binary
-    image, resulting in another binary image or on a grayscale image,
-    resulting in another grayscale image.
-    
-    The following operations are supported:
-    
-    bothat - Bottom-hat filter: A bottom-hat filter enhances black spots
-             in a white background. It subtracts the morphological "close"
-             of the image from the image.
-             Supported for grayscale and binary images
-    bridge - Set a pixel to one if it has two non-zero neighbors that are
-             on opposite sides of this pixel:
-             1  0  0     1  0  0
-             0  0? 0  -> 0  1  0 
-             0  0  1     0  0  1
-             Supported for binary images
-    clean -  Remove isolated pixels
-             
-             0  0  0     0   0   0
-             0  1  0  -> 0   0   0
-             0  0  0     0   0   0
-             Supported for binary.
-    
-    close -  Performs a dilation followed by an erosion. The effect is to
-             fill holes and join nearby objects.
-             Supported for binary and grayscale images.
-    
-    diag -   Fill in pixels whose neighbors are diagnonally connected to
-             to 4-connect pixels that are 8-connected.
-             0  1    1  1    0  1     0  1
-             1  0 -> 1  1    1  1  -> 1  1
-             Supported for binary images
-    
-    dilate - For binary, any 0 pixel is replaced by 1 if any of its neighbors
-             is 1. For grayscale, each pixel is replaced by the maximum
-             of its neighbors and itself.
-             
-    erode  - For binary, any 1 pixel is replaced by 0 if any of its neighbors
-             is 0. For grayscale, each pixel is replaced by the minimum of
-             its neighbors and itself.
-    
-    fill   - Set a pixel to 1 if all of its neighbors are 1
-              
-             1  1  1    1  1  1
-             1  0  1 -> 1  1  1 
-             1  1  1    1  1  1
-             Supported for binary images.
-    
-    hbreak - Removes pixels that form vertical bridges between horizontal
-             lines:
-             1  1  1    1  1  1
-             0  1  0 -> 0  0  0  (only this pattern)
-             1  1  1    1  1  1
-             Supported for binary images
-    
-    majority Each pixel takes on the value of the majority that surround it
-             (keep pixel value to break ties):
-             1  1  1    1  1  1
-             1  0  1 -> 1  1  1
-             0  0  0    0  0  0
-             Supported for binary images
-    
-    open   - Performs an erosion followed by a dilation. The effect is to
-             break bridges between objects and remove single pixels.
-             Supported for binary and grayscale images.
-    
-    remove - Removes pixels that are otherwise surrounded by others
-             (4 connected). The effect is to be left with the perimeter of
-             a solid object:
-             0  1  0    0  1  0
-             1  1  1 -> 1  0  1
-             0  1  0    0  1  0
-             Supported for binary images
-    
-    shrink - Perform a thinning operation that erodes unless that operation
-             would change the image's Euler number. This means that blobs
-             are reduced to single points and blobs with holes are reduced
-             to rings if shrunken indefinitely.
-             Supported for binary images
-    
-    skel   - Perform a skeletonizing operation (medial axis transform). Skel
-             preserves the points at the edges of objects but erodes everything
-             else to lines that connect those edges.
-             See http://homepages.inf.ed.ac.uk/rbf/HIPR2/skeleton.htm
-             for a description.
-             Supported for binary images
-    
-    spur   - Remove spur pixels. These are pixels that are only diagonally
-             connected to other pixels and connected in only one direction.
-             For instance:
-             
-             0 0 0 0    0 0 0 0
-             0 1 0 0 -> 0 0 0 0
-             0 0 1 0    0 0 1 0
-             1 1 1 1    1 1 1 1
-             Supported for binary images
-    
-    thicken - Dilate the exteriors of objects where that dilation does not
-             8-connect the object with another. The image is labeled and
-             the labeled objects are filled. Unlabeled points adjacent to
-             uniquely labeled points change from background to foreground.
-             Supported for binary images
-    
-    thin -   Thin lines preserving the Euler number using the thinning
-             algorithm # 1 described in Guo, "Parallel Thinning with Two
-             Subiteration Algorithms", Communications of the ACM, Vol 32 #3
-             page 359. The result generally preserves the lines in an image
-             while eroding their thickness.
-             Supported for binary images
-    
-    tophat - Subtract the morphological opening of the image from the image.
-             This enhances white spots in a black background.
-             Supported for binary and grayscale images.
-    
-    vbreak - Removes pixels that form horizontal bridges between vertical
-             lines:
-             1  0  1    1  0  1
-             1  1  1 -> 1  0  1
-             1  0  1    1  0  1
-             Supported for binary images
-    
-    The algorithms minimize the interference of masked pixels; for instance,
-    the dilate operation will only consider unmasked pixels in the neighborhood
-    of a pixel when determining the maximum within that neighborhood.
-    
-    Settings:
-    What image do you want to morph?
-    This is the input image to the module. A grayscale image can be
-    converted to binary using the ApplyThreshold module. Objects can be
-    converted to binary using the ConvertToImage module.
-    
-    What do you want to call the resulting image?
-    This is the output of the module. It will be of the same type as the
-    input image.
-    
-    What function do you want to perform?
-    This is one of the functions above.
-    
-    How many times do you want to repeat the function?
-    Once - perform one transformation on the image
-    Forever - perform the transformation on the image until successive
-              transformations yield the same image.
-    Custom - perform the transformation a custom number of times.
-    
-    Add another function:
-    Press this button to add a function that will be applied to the
-    image resulting from the previous transformation. The module repeats
-    the previous transformation the number of times indicated by the
-    instructions before applying the function added by this button.
-    
-    Remove the above function:
-    Press this button to remove a function from the list.
-    '''
 
     category="Image Processing"
     variable_revision_number = 1
     
     def create_settings(self):
         self.module_name = "Morph"
-        self.image_name = cps.ImageNameSubscriber("What image do you want to morph?","None")
-        self.output_image_name = cps.ImageNameProvider("What do you want to call the resulting image?","MorphBlue")
-        self.add_button = cps.DoSomething("Add another function:","Add",
-                                          self.add_function)
+        self.image_name = cps.ImageNameSubscriber("What image do you want to morph?","None",doc="""
+            This is the input image to the module. A grayscale image can be
+            converted to binary using the <b>ApplyThreshold</b> module. Objects can be
+            converted to binary using the <b>ConvertToImage module</b>.""")
+        
+        self.output_image_name = cps.ImageNameProvider("What do you want to call the resulting image?","MorphBlue",doc="""
+            This is the output of the module. It will be of the same type as the
+            input image.""")
+        
+        self.add_button = cps.DoSomething("Add another operation:","Add",
+                                          self.add_function,doc="""                                    
+            Press this button to add an operation that will be applied to the
+            image resulting from the previous transformation. The module repeats
+            the previous transformation the number of times indicated by the
+            instructions before applying the operation added by this button.""")
         self.functions = []
         self.add_function()
     
@@ -226,10 +381,20 @@ class Morph(cpm.CPModule):
             '''Represents the variables needed to run a function'''
             def __init__(self, functions):
                 self.key = uuid.uuid4()
-                self.function = cps.Choice("What function do you want to perform?",
-                                           F_ALL, F_OPEN)
-                self.repeats_choice = cps.Choice("How many times do you want to repeat the function?",
-                                                 R_ALL)
+                self.function = cps.Choice("What operation do you want to perform?",
+                                           F_ALL, F_OPEN,doc="""
+                    This is one of the functions listed in the module Help.""")
+                
+                self.repeats_choice = cps.Choice("How many times do you want to repeat the operation?",
+                                                 R_ALL,doc="""
+                    This setting controls the number of times that the same operation is applied
+                    successively to the image.
+                    <ul>
+                    <li><i>Once:</i> Perform one transformation on the image</li>
+                    <li><i>Forever:</i> Perform the transformation on the image until successive
+                    transformations yield the same image.</li>
+                    <li><i>Custom:</i> Perform the transformation a custom number of times.</li>
+                    </ul>""")
                 self.custom_repeats = cps.Integer("Custom # of repeats",2,1)
                 def remove(functions = functions, key = self.key):
                     '''Remove this function from the function list'''
@@ -237,9 +402,10 @@ class Morph(cpm.CPModule):
                     del functions[index]
                 
                 self.remove = remove    
-                self.remove_button = cps.DoSomething("Remove the above function:",
+                self.remove_button = cps.DoSomething("Remove the above operation:",
                                                      "Remove",
-                                                     self.remove)
+                                                     self.remove,doc="""
+                                                     Press this button to remove a operation from the list.""")
             
             def settings(self):
                 '''The settings to be saved in the pipeline'''

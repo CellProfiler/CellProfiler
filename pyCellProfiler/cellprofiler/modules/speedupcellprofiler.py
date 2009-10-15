@@ -1,15 +1,21 @@
-'''speedupcellprofiler - Speed up cellprofiler by removing images from memory
+'''<b>Speed Up CellProfiler</b> speeds up cellprofiler by removing images from memory
+<hr>
+This module removes images from memory which can speed up processing and
+prevent memory errors.
 
-CellProfiler is distributed under the GNU General Public License.
-See the accompanying file LICENSE for details.
-
-Developed by the Broad Institute
-Copyright 2003-2009
-
-Please see the AUTHORS file for credits.
-
-Website: http://www.cellprofiler.org
+Note: CellProfiler 1.0's SpeedUpCellProfiler had an option that let the user
+choose how often the output file (DefaultOUT.mat) was saved. This option has been
+moved to the preferences settings.
 '''
+#CellProfiler is distributed under the GNU General Public License.
+#See the accompanying file LICENSE for details.
+#
+#Developed by the Broad Institute
+#Copyright 2003-2009
+#
+#Please see the AUTHORS file for credits.
+#
+#Website: http://www.cellprofiler.org
 
 __version__="$Revision$"
 
@@ -30,29 +36,16 @@ S_NUMBER_OF_PER_MODULE_SETTINGS = 1
 S_NUMBER_OF_SETTINGS_PER_IMAGE = 1
 
 class SpeedUpCellProfiler(cpm.CPModule):
-    '''SHORT DESCRIPTION:
-Speeds up CellProfiler processing and conserves memory.
-*************************************************************************
 
-This module removes images from memory which can speed up processing and
-prevent memory errors.
-
-Settings:
-* Do you want to choose the images to be removed or the images to keep?
-  Choose "remove" to remove some images from memory and keep the rest.
-  Choose "keep" to keep some images and remove the rest.
-
-Note: CellProfiler 1.0's SpeedUpCellProfiler had an option that let you
-      choose how often the results file was saved. This option has been
-      moved to the preferences settings.
-'''
     category = 'Other'
     variable_revision_number = 1
     
     def create_settings(self):
         self.module_name = "SpeedUpCellProfiler"
         self.how_to_remove = cps.Choice("Do you want to choose the images to be removed or the images to keep?",
-                                        C_ALL)
+                                        C_ALL,doc="""
+            Choose <i>Remove</i> to remove some images from memory and keep the rest.
+            Choose <i>Keep</i> to keep some images and remove the rest.""")
         
         self.image_names = []
         self.add_image(False)

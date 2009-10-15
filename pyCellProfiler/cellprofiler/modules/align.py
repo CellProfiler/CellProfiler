@@ -59,12 +59,11 @@ A_SEPARATELY = 'Separately'
 MEASUREMENT_FORMAT = "Align_%sshift_%s_vs_%s"
 
 class Align(cpm.CPModule):
-    
+    module_name = "Align"
     category = 'Image Processing'
     variable_revision_number = 1
 
     def create_settings(self):
-        self.module_name = "Align"
         self.first_input_image = cps.ImageNameSubscriber("What is the name of the first image to align?",
                                                          "None")
         self.first_output_image = cps.ImageNameProvider("What do you want to call the aligned first image?",

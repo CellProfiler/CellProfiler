@@ -302,6 +302,21 @@ class TestPipeline(unittest.TestCase):
         pipeline.add_listener(callback)
         pipeline.run()
         self.assertTrue(should_be_true[0])
+        
+    def test_12_01_img_286(self):
+        '''Regression test for img-286: module name in class'''
+        cellprofiler.modules.fill_modules()
+        success = True
+        all_keys = list(cellprofiler.modules.all_modules.keys())
+        all_keys.sort()
+        for k in all_keys:
+            v = cellprofiler.modules.all_modules[k]
+            try:
+                v.module_name
+            except:
+                print "%s needs to define module_name as a class variable"%k
+                success = False
+        self.assertTrue(success)
 
 class MyClassForTest0801(cellprofiler.cpmodule.CPModule):
     def create_settings(self):

@@ -14,6 +14,27 @@ __version__="$Revision$"
 
 import cellprofiler.gui.cpfigure as cpf
 
+'''Continue to run the pipeline
+
+Set workspace.disposition to DISPOSITION_CONTINUE to go to the next module.
+This is the default.
+'''
+DISPOSITION_CONTINUE = "Continue"
+'''Skip remaining modules
+
+Set workspace.disposition to DISPOSITION_SKIP to skip to the next image set
+in the pipeline.
+'''
+DISPOSITION_SKIP = "Skip"
+'''Pause and let the UI run
+
+Set workspace.disposition to DISPOSITION_PAUSE to pause the UI. Set
+it back to DISPOSITION_CONTINUE to resume.
+'''
+DISPOSITION_PAUSE = "Pause"
+'''Cancel running the pipeline'''
+DISPOSITION_CANCEL = "Cancel"
+
 class Workspace(object):
     """The workspace contains the processing information and state for
     a pipeline run on an image set
@@ -49,6 +70,7 @@ class Workspace(object):
         self.__outlines = outlines
         self.__windows_used = []
         self.__create_new_window = create_new_window
+        self.disposition = DISPOSITION_CONTINUE
     
     def refresh(self):
         """Refresh any windows created during use"""

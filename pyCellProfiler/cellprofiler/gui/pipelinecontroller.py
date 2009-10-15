@@ -441,6 +441,7 @@ class PipelineController:
         self.__debug_object_set = None
         self.__debug_outlines = None
         self.__pipeline_list_view.on_stop_debugging()
+        self.__pipeline.end_run()
     
     def on_debug_step(self, event):
         modules = self.__pipeline_list_view.get_selected_modules()

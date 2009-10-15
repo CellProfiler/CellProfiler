@@ -429,6 +429,7 @@ class Pipeline(object):
         """
         image_set_list = self.prepare_run(frame)
         if image_set_list == None:
+            self.end_run()            
             return
         
         keys, groupings = self.get_groupings(image_set_list)
@@ -468,6 +469,7 @@ class Pipeline(object):
                     if not self.prepare_group(image_set_list, 
                                               grouping_keys,
                                               image_numbers):
+                        self.end_run()
                         return
                     prepare_group_has_run = True
                 if first_set:
@@ -519,6 +521,7 @@ class Pipeline(object):
                         event = RunExceptionEvent(instance,module)
                         self.notify_listeners(event)
                         if event.cancel_run:
+                            self.end_run()                            
                             return
                         
                     # Paradox: ExportToDatabase must write these columns in order 
@@ -536,13 +539,28 @@ class Pipeline(object):
                                                      execution_time_measurement,
                                                      np.array([delta_sec]))
                     yield measurements
+                    while (workspace.disposition == cpw.DISPOSITION_PAUSE and
+                           frame is not None):
+                        yield measurements
+                    if workspace.disposition == cpw.DISPOSITION_SKIP:
+                        break
+                    elif workspace.disposition == cpw.DISPOSITION_CANCEL:
+                        self.end_run()
+                        return
                 first_set = False
                 image_set_list.purge_image_set(image_number-1)
             if prepare_group_has_run:
                 if not self.post_group(workspace, grouping_keys):
+                    self.end_run()
                     return
                 
         self.post_run(measurements, image_set_list, frame)
+        self.end_run()
+        return
+    
+    def end_run(self):
+        '''Tell everyone that a run is ending'''
+        self.notify_listeners(EndRunEvent())
         
     def prepare_run(self, frame):
         """Do "prepare_run" on each module to initialize the image_set_list
@@ -978,6 +996,11 @@ class LoadExceptionEvent(AbstractPipelineEvent):
     
     def event_type(self):
         return "Pipeline load exception"
+    
+class EndRunEvent(AbstractPipelineEvent):
+    """A run ended"""
+    def event_type(self):
+        return "Run ended"
 
 def AddHandlesImages(handles,image_set):
     """Add any images from the handles to the image set

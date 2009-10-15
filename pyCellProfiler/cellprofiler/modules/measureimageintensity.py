@@ -82,11 +82,11 @@ class MeasureImageIntensity(cpm.CPModule):
             '''
             def __init__(self, uber_self):
                 self.__key = uuid.uuid4() 
-                self.__image_name = cps.ImageNameSubscriber("What did you call the images whose intensity you want to measure?",
-                                                            "None")
+                self.__image_name = cps.ImageNameSubscriber("Select the image to measure",
+                                                            "None", doc = '''What did you call the images whose intensity you want to measure?''')
                 self.__wants_objects = cps.Binary("Do you want to measure intensity only from areas of the image that contain objects you've identified?",
                                                   False)
-                self.__object_name = cps.ObjectNameSubscriber("What is the name of the objects to use?","None")
+                self.__object_name = cps.ObjectNameSubscriber("Select the objects to measure","None", doc = '''What is the name of the objects to use?''')
                 self.remove_button = cps.DoSomething("Remove this image from the list of images to be measured", 
                                                      "Remove image",
                                                      uber_self.remove_image_measurement,

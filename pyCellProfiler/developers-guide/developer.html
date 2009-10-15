@@ -119,7 +119,8 @@ visible_settings
 prepare_to_set_values
 run
 backwards_compatibilize</pre></blockquote>
-<p>This list isn't exhaustive. <em>backwards_compatibilize</em> should definitely be last. Use judgment with others. Helper methods should be near the method they help. (see <em>imagemath</em>'s add_image).</li>
+<p>This list isn't exhaustive. <em>backwards_compatibilize</em> should definitely be last. Use judgment with others. Helper methods should be near the method they help. (see <em>imagemath</em>'s add_image). Th most useful thing is to add a comment wherever something isn't obvious from the code.  In the <em>run()</em> methods, in particular, block
+comments (see imagemath.py) are useful for keeping other users oriented.</li>
 <li><em>module_name</em> should be a class variable (not set in create_settings) </li>
 <li>Settings
 <ul>

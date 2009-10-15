@@ -10,7 +10,9 @@ function real_skel = CPcleanskeleton(skel)
 [all_skel num_skel]=bwlabel(skel);
 real_skel=zeros(size(skel));
 for i=1:num_skel
-    disp(num_skel - i)
+%     if rem(num_skel-i,5) == 0
+%         disp(num_skel - i)
+%     end
     in_skel=zeros(size(skel));
     in_skel(all_skel==i)=1;
     eul=bweuler(in_skel);

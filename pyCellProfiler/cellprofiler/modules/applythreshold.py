@@ -45,10 +45,10 @@ class ApplyThreshold(Identify):
         threshold_methods = [method for method in TM_METHODS
                              if method != TM_BINARY_IMAGE]
         self.module_name = self.__class__.__name__
-        self.image_name = cpsetting.NameSubscriber("Which image do you want to threshold?",
-                                                   "imagegroup", "None")
-        self.thresholded_image_name = cpsetting.NameProvider("What do you want to call the thresholded image?",
-                                                             "imagegroup", "ThreshBlue")
+        self.image_name = cpsetting.NameSubscriber("Select the input image",
+                                                   "imagegroup", "None", doc = '''Which image do you want to threshold?''')
+        self.thresholded_image_name = cpsetting.NameProvider("Name the output image",
+                                                             "imagegroup", "ThreshBlue", doc = '''What do you want to call the thresholded image?''')
         self.binary = cpsetting.Choice("What kind of image would you like to produce?", [GRAYSCALE, BINARY], doc = '''
         <ul><li>Grayscale: In a grayscale image, the pixels that you retain will have their original intensity values.
         You can choose to either set all other pixels to zero, or shift them by some value.</li>
@@ -77,14 +77,16 @@ class ApplyThreshold(Identify):
         self.manual_threshold = cpsetting.Float("Set pixels below this value to zero and set pixels at least this value to one.",
                                                 0.5,doc = ''' Use this setting to create a binary thresholded image, which disregards intensity
                                                 information for both bright and dim pixels by setting them equal to one and zero, respectively.''')
-        self.threshold_method = cpsetting.Choice('''Select an automatic thresholding method or choose "Manual" to enter a threshold manually.  To choose a binary image, select "Binary image".''',
-                                                 threshold_methods, doc = '''This setting allows you to access the same automatic thresholding methods used in the <b>Identify</b> modules.  
-                                                 The output will be a binary image, rather than objects.  For more help on thresholding, see the Identify modules.''')
+        self.threshold_method = cpsetting.Choice('''Select a thresholding method.''',
+                                                 threshold_methods, doc = '''This setting allows you to access the same automatic thresholding 
+                                                 methods used in the <b>Identify</b> modules.  You may select any of these automatic thresholding 
+                                                 methods, or choose "Manual" to enter a threshold manually.  To choose a binary image, select "Binary image". 
+                                                 The output of <b>ApplyThreshold</b> be a binary image, rather than objects.  For more help on thresholding, see the Identify modules.''')
         self.threshold_range = cpsetting.FloatRange('Enter the lower and upper bounds for the threshold',(0,1),0,1)
         self.threshold_correction_factor = cpsetting.Float('Threshold correction factor', 1)
-        self.object_fraction = cpsetting.CustomChoice('For MoG thresholding, what is the approximate fraction of image covered by objects?',
+        self.object_fraction = cpsetting.CustomChoice('What is the approximate fraction of image covered by objects?',
                                                       ['0.01','0.1','0.2','0.3','0.4','0.5','0.6','0.7','0.8','0.9','0.99'])
-        self.enclosing_objects_name = cpsetting.ObjectNameSubscriber("What is the name of the objects to be used for per-object thresholding","None")
+        self.enclosing_objects_name = cpsetting.ObjectNameSubscriber("What is the name of the objects?","None")
         self.two_class_otsu = cpsetting.Choice('Does your image have two classes of intensity value or three?',
                                                [O_TWO_CLASS, O_THREE_CLASS])
         self.use_weighted_variance = cpsetting.Choice('Do you want to minimize the weighted variance or the entropy?',

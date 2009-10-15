@@ -46,13 +46,6 @@ SeedObjectsLabelMatrix = CPretrieveimage(handles,['Segmented', SeedObjects],Modu
 %%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-% [branch_points, branch_dist_tab] = CPbranch_dist(Skeleton,SeedObjectsLabelMatrix);
-
-% function [branch_points, branch_dist_tab] = CPbranch_dist(SkeletonImg,SeedObjectsLabelMatrix)
-% Finds skeleton branch point distances from SeedObjectsLabelMatrix
-
-%assume SkeletonImg and SeedObjectsLabelMatrix labeled the same
-
 %% create new skeleton with 'holes' at nuclei
 combined_skel=or(SkeletonImg,SeedObjectsLabelMatrix);
 seed_center=imerode(SeedObjectsLabelMatrix,strel('disk',2));
@@ -109,13 +102,6 @@ b(nonZeroBranches) = 0;
 
 visRGB = cat(3,r,g,b);
 
-% r_nonzero_branches(branch_points) = 0;
-% g_nonzero_branches(branch_points & (DistanceMap > 0)) = 1;
-% b_nonzero_branches(branch_points) = 0;
-% 
-% visRGB = cat(3,r_combined_skel,g_combined_skel,b_combined_skel);
-% visRGB = cat(3,visRGB(:,:,1)+r_nonzero_branches, visRGB(:,:,2)+g_nonzero_branches, visRGB(:,:,3)+b_nonzero_branches);
-
 drawnow
 
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
@@ -124,14 +110,11 @@ ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule
 if any(findobj == ThisModuleFigureNumber)
     %%% Activates the appropriate figure window.
     CPfigure(handles,'Image',ThisModuleFigureNumber);
-    if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
-%         CPresizefigure(OrigImage,'TwoByOne',ThisModuleFigureNumber)
-    end
-    %%% A subplot of the figure window is set to display the original image.
-%     hAx=subplot(2,1,1,'Parent',ThisModuleFigureNumber); 
+
+    %%% A subplot of the figure window is set to display the original
+    %%% image.
     [hImage,hAx] = CPimagesc(visRGB,handles,ThisModuleFigureNumber);
     title(hAx,['Branchpoints (Distance=0 are red, other branches green) cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
-
 end
 
 
@@ -140,7 +123,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-%%% Saves measurements to the handles structure.
+%% Saves measurements to the handles structure.
 %   handles = CPaddmeasurements(handles,ObjectName,FeatureName,Data);
 handles = CPaddmeasurements(handles, SkeletonName, ...
     'Neurons_NumTrunks', NumTrunks');
@@ -148,6 +131,6 @@ handles = CPaddmeasurements(handles, SkeletonName, ...
     'Neurons_NumNonTrunkBranches', NumNonTrunkBranches');
 
         
-% %% Save Branchpoint Image
+%% Save Branchpoint Image
 BranchpointLabelSeedSkeletonName = [SeedObjects '_' SkeletonName];
 handles = CPaddimages(handles,BranchpointLabelSeedSkeletonName,visRGB);

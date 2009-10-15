@@ -32,7 +32,6 @@ CYTHON           = "Cython-0.10.3.zip"
 MATPLOTLIB_SPEC  = "matplotlib>=0.98.5.2"
 MATPLOTLIB       = "matplotlib-0.98.5.2.tar.gz"
 JPYPE            = "JPype-0.5.4.zip"
-MLABWRAP         = "mlabwrap-1.0.tar.gz"
 PYLINT           = "pylint-0.15.2.zip"
 NOSE_SPEC        = "nose"
 NOSEXUNIT_SPEC   = "NoseXUnit"
@@ -377,16 +376,6 @@ if False:
         os.chdir(os.path.join(jpype_dir,jpype_pkg))
         command = "python setup.py %s install"%(BUILD)
         run_command(command)
-try:
-    import mlabwrap
-except:
-    mlabwrap_pkg, mlabwrap_dir = unpack_package(MLABWRAP)
-    # Copy a specially modded setup.py over
-    shutil.copy(os.path.join(package_path,'mlabwrap','setup.py'),
-                os.path.join(mlabwrap_dir,mlabwrap_pkg,'setup.py'))
-    os.chdir(os.path.join(mlabwrap_dir,mlabwrap_pkg))
-    command = "python setup.py %s install"%(BUILD)
-    run_command(command)
 
 #
 # Need to install pylint separately from Nose because the windows

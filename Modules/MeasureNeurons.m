@@ -62,7 +62,7 @@ drawnow
 combined_skel=or(SkeletonImg,SeedObjectsLabelMatrix);
 seed_center=imerode(SeedObjectsLabelMatrix,strel('disk',2));
 combined_skel=xor(combined_skel,seed_center);
-seed_edge=xor(SeedObjectsLabelMatrix,seed_center);
+% seed_edge=xor(SeedObjectsLabelMatrix,seed_center);
 
 %% thin a second time to avoid faulty branch points
 combined_skel=bwmorph(combined_skel,'thin',Inf);
@@ -86,8 +86,8 @@ NumTrunks = [];
 NumNonTrunkBranches = [];
 for i=num_seeds:-1:1
     branch_dist_tab{i}=DistanceMap(lab_branch_map==i);
-    NumTrunks(i) = length(branch_dist_tab{i} == 0);
-    NumNonTrunkBranches(i) = length(branch_dist_tab{i} > 0);
+    NumTrunks(i) = sum(branch_dist_tab{i} == 0);
+    NumNonTrunkBranches(i) = sum(branch_dist_tab{i} > 0);
 end
 
 

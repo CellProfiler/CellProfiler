@@ -65,10 +65,10 @@ class ExpandOrShrink(cpm.CPModule):
     variable_revision_number = 1
     def create_settings(self):
         self.module_name = 'ExpandOrShrink'
-        self.object_name = cps.ObjectNameSubscriber("What did you call the objects you want to expand or shrink?",
-                                                    "None")
-        self.output_object_name = cps.ObjectNameProvider("What do you want to call the resulting objects?", 
-                                                         "ShrunkenNuclei")
+        self.object_name = cps.ObjectNameSubscriber("Select the input objects",
+                                                    "None", doc = '''What did you call the objects you want to expand or shrink?''')
+        self.output_object_name = cps.ObjectNameProvider("Name the output objects", 
+                                                         "ShrunkenNuclei", doc = '''What do you want to call the resulting objects?''')
         self.operation = cps.Choice("What operation do you want to perform?",
                                     O_ALL,  doc = '''
                                     <ul><li>Shrink objects to a point: Remove all pixels but one from filled objects. Thin objects
@@ -92,7 +92,7 @@ class ExpandOrShrink(cpm.CPModule):
                                     The algorithm reduces spur size by the number of pixels indicated in the
                                     setting "Enter the number of pixels by which to expand or shrink."</li> </ul>              
                                     ''')
-        self.iterations = cps.Integer("Enter the number of pixels by which to expand or shrink",
+        self.iterations = cps.Integer("Number of pixels by which to expand or shrink",
                                       1, minval=1)
         self.wants_fill_holes = cps.Binary("Do you want to fill holes in objects so that all objects shrink to a single point?",
                                            False, doc=DOC_FILL_HOLES)

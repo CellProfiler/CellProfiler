@@ -892,7 +892,9 @@ class ModuleView:
     def make_help_control(self, content, title="Help"):
         control = wx.Button(self.__module_panel, -1, '?', style=wx.BU_EXACTFIT)
         def callback(event):
-            HTMLDialog(self.__module_panel, title, content).Show()
+            dialog = HTMLDialog(self.__module_panel, title, content)
+            dialog.CentreOnParent()
+            dialog.Show()
         self.module_panel.Bind(wx.EVT_BUTTON, callback, control)
         return control
 

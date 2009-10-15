@@ -246,6 +246,7 @@ class PipelineController:
                     dialog.Close()
                 dialog.Bind(wx.EVT_BUTTON, on_button, button,button_id)
             dialog.Fit()
+            dialog.CentreOnParent()
             dialog.ShowModal()
             if answer[0] == SAVE_ID:
                 if not self.do_save_pipeline():
@@ -299,6 +300,10 @@ class PipelineController:
                           style=wx.OK|wx.ICON_INFORMATION)
         
     def __on_add_module(self,event):
+        if not self.__add_module_frame.IsShownOnScreen():
+            x, y = self.__frame.GetPositionTuple()
+            x = max(x - self.__add_module_frame.GetSize().width, 0)
+            self.__add_module_frame.SetPosition((x, y))
         self.__add_module_frame.Show()
         self.__add_module_frame.Raise()
     

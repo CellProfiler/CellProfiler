@@ -56,8 +56,8 @@ class RescaleIntensity(cpm.CPModule):
     
     def create_settings(self):
         self.module_name = "RescaleIntensity"
-        self.image_name = cps.ImageNameSubscriber("What did you call the image to be rescaled?","None")
-        self.rescaled_image_name = cps.ImageNameProvider("What do you want to call the rescaled image?","RescaledBlue")
+        self.image_name = cps.ImageNameSubscriber("Select the input image","None", doc = '''What did you call the image to be rescaled?''')
+        self.rescaled_image_name = cps.ImageNameProvider("Name the output image","RescaledBlue", doc = '''What do you want to call the rescaled image?''')
         self.rescale_method = cps.Choice('Which rescaling method do you want to use?',
                                          choices=M_ALL, doc='''There are nine options for rescaling the input image: 
                                          <ul><li>Stretch each image to use the full intensity range: Find the minimum and maximum values within the unmasked part of the image 
@@ -86,7 +86,7 @@ class RescaleIntensity(cpm.CPModule):
                                         or can be a value loaded by the LoadText module.</li>
                                         <li>Match the image's maximum to another image's maximum: Scale an image so that its maximum value is the same as the maximum value
                                         within the target image.</li>
-                                        <li>Conver to 8-bit: Images in CellProfiler are normally stored as a floating point number in
+                                        <li>Convert to 8-bit: Images in CellProfiler are normally stored as a floating point number in
                                         the range of 0 to 1. This option converts these images to class uint8, 
                                         meaning an 8 bit integer in the range of 0 to 255.  This is useful to
                                         reduce the amount of memory required to store the image. Warning: Most

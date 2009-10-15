@@ -40,7 +40,7 @@ def configuration():
             }
     return dict
 
-if __name__ == '__main__':
+if __name__ == '__main__' and False:
     if '/' in __file__:
         os.chdir(os.path.dirname(__file__))
     setup(**configuration())

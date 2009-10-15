@@ -81,6 +81,9 @@ branch_points = and(IgnoreLabels,branch_points);
 num_seeds=max(SeedObjectsLabelMatrix(:));
 % lab_branch_map=max(SkeletonImg,SeedObjectsLabelMatrix).*branch_points; %% original code
 lab_branch_map=max(IgnoreLabels,SeedObjectsLabelMatrix).*branch_points;
+
+NumTrunks = [];
+NumNonTrunkBranches = [];
 for i=num_seeds:-1:1
     branch_dist_tab{i}=DistanceMap(lab_branch_map==i);
     NumTrunks(i) = length(branch_dist_tab{i} == 0);

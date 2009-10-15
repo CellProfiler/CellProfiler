@@ -208,9 +208,8 @@ class PipelineListView(object):
                     self.__grid.IsInSelection(i, MODULE_NAME_COLUMN))]
     
     def __on_grid_left_click(self, event):
-        if event.Col == MODULE_NAME_COLUMN:
-            self.select_one_module(event.Row+1)
-        elif event.Col == EYE_COLUMN:
+        self.select_one_module(event.Row+1)
+        if event.Col == EYE_COLUMN:
             if len(self.__pipeline.modules()) > event.Row:
                 module = self.__pipeline.modules()[event.Row]
                 module.show_frame = not module.show_frame

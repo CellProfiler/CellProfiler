@@ -46,19 +46,22 @@ class InvertForPrinting(cpm.CPModule):
             "Do you want to load an image for the red channel?",
             True)
         self.red_input_image = cps.ImageNameSubscriber(
-            "What did you call the red image?",
-            "None")
+            "Select the red image",
+            "None", doc = '''What did you call the red image?''')
         self.wants_green_input = cps.Binary(
             "Do you want to load an image for the green channel?",
             True)
         self.green_input_image = cps.ImageNameSubscriber(
-            "What did you call the green image?", "None")
+            "Select the green image", "None",
+            doc = '''What did you call the green image?''')
         self.wants_blue_input = cps.Binary(
             "Do you want to load an image for the blue channel?", True)
         self.blue_input_image = cps.ImageNameSubscriber(
-            "What did you call the blue image?", "None")
+            "Select the blue image", "None", 
+            doc = '''What did you call the blue image?''')
         self.color_input_image = cps.ImageNameSubscriber(
-            "What did you call the color image?", "None")
+            "Select the color image", "None",
+            doc = '''What did you call the color image?''')
         
         # output settings
         self.output_color_choice = cps.Choice(
@@ -68,20 +71,22 @@ class InvertForPrinting(cpm.CPModule):
             "Do you want to produce an image for the red channel?",
             True)
         self.red_output_image = cps.ImageNameProvider(
-            "What do you want to call the red image?",
-            "InvertedRed")
+            "Name the red image",
+            "InvertedRed", doc = '''What do you want to call the red image?''')
         self.wants_green_output = cps.Binary(
             "Do you want to produce an image for the green channel?",
             True)
         self.green_output_image = cps.ImageNameProvider(
-            "What do you want to call the green image?", "InvertedGreen")
+            "Name the green image", "InvertedGreen",
+            doc = '''What do you want to call the green image?''')
         self.wants_blue_output = cps.Binary(
             "Do you want to produce an image for the blue channel?", True)
         self.blue_output_image = cps.ImageNameProvider(
-            "What do you want to call the blue image?", "InvertedBlue")
+            "Name the blue image", "InvertedBlue",
+            doc = '''What do you want to call the blue image?''')
         self.color_output_image = cps.ImageNameProvider(
-            "What do you want to call the inverted color image?",
-            "InvertedColor")
+            "Name the inverted color image",
+            "InvertedColor", doc = '''What do you want to call the inverted color image?''')
         
     def settings(self):
         '''Return the settings as saved in the pipeline'''

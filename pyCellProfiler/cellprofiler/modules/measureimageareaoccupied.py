@@ -42,6 +42,10 @@ F_AREA_OCCUPIED = "AreaOccupied_AreaOccupied_%s"
 '''Measure feature name format for the TotalArea measurement'''
 F_TOTAL_AREA = "AreaOccupied_TotalArea_%s"
 
+# The number of settings per image
+IMAGE_SETTING_COUNT = 3
+
+
 class MeasureImageAreaOccupied(cpm.CPModule):
     category = "Measurement"
     variable_revision_number = 1
@@ -50,17 +54,23 @@ class MeasureImageAreaOccupied(cpm.CPModule):
         """Create the settings variables here and name the module
         
         """
+        self.divider_top = cps.Divider(line=False)
+        self.objects = []
+        self.add_object(False)
         self.module_name = "MeasureImageAreaOccupied"
-        self.object_name = cps.ObjectNameSubscriber("Select the object name","None",
-            doc='''What is the name of the object for which you want to measure the occupied image area? 
-            This is the object name that was specified in one of the Identify modules from earlier 
-            in the pipeline.''')
-        self.should_save_image = cps.Binary("Save object labels as a binary image?",False,
-            doc='''You can check the checkbox for this option and fill in a name in the text box that 
-            appears below the checkbox if you want to create a binary image of the labeled pixels being 
-            processed by this  module.''')
-        self.image_name = cps.ImageNameProvider("Name the output binary image",
-            "Stain",doc='''What do you want to call the output binary image showing the area occupied by objects?''')
+        self.add_button = cps.DoSomething("Add another object","Add object", self.add_object, True)
+        self.divider_bottom = cps.Divider(line=False)
+        
+    def add_object(self, removable=True):
+        # The text for these settings will be replaced in renumber_settings()
+        group = cps.SettingsGroup()
+        group.append("object_name", cps.ObjectNameSubscriber("Select the object name", "None"))
+        group.append("should_save_image", cps.Binary("Save object labels as a binary image?", False))
+        group.append("image_name", cps.ImageNameSubscriber("Name the output binary image", "Stain"))
+        if removable:
+            group.append("remover", cps.RemoveSettingButton("Remove the object above", "Remove", self.objects, group))
+        group.append("divider", cps.Divider())
+        self.objects.append(group)        
 
     def backwards_compatibilize(self, setting_values, variable_revision_number, 
                                 module_name, from_matlab):
@@ -80,56 +90,90 @@ class MeasureImageAreaOccupied(cpm.CPModule):
         """The settings as saved in the pipeline file
         
         """
-        return [self.object_name, self.should_save_image, self.image_name]
+        result = []
+        for object in self.objects:
+            result += [object.object_name, object.should_save_image,object.image_name]
+        return result
 
     def visible_settings(self):
         """The settings, in the order that they should be displayed in the UI
         
         """
-        result = [self.object_name, self.should_save_image]
-        if self.should_save_image.value:
-            result += [self.image_name]
+        result = []
+        for index, object in enumerate(self.objects):
+            result += [object.object_name, object.should_save_image]
+            if object.should_save_image.value:
+                result += [object.image_name]
+            remover = getattr(object, "remover", None)
+            if remover is not None:
+                result.append(remover) 
+        result += [self.add_button, self.divider_bottom]
         return result
-
+    
+    def prepare_to_set_values(self, setting_values):
+        value_count = len(setting_values)
+        assert value_count % IMAGE_SETTING_COUNT == 0
+        object_count = value_count / IMAGE_SETTING_COUNT
+        # always keep the first object
+        del self.images[1:]
+        while len(self.objects) < object_count:
+            self.add_object()
+            
+    def get_non_redundant_object_measurements(self):
+        '''Return a non-redundant sequence of object measurement objects'''
+        dict = {}
+        for object in self.objects:
+            key = ((object.object_name, object.image_name) if object.should_save_image.value
+                   else (object.object_name,))
+            dict[key] = object
+        return dict.values()
 
     def run(self, workspace):
-        objects = workspace.get_objects(self.object_name.value)
+        statistics = [["Area occupied","Total area"]]
+        for object in self.get_non_redundant_object_measurements():
+            statistics += self.measure(object,workspace)
+#        if workspace.frame != None:
+#            figure = workspace.create_or_find_figure(subplots=(2,1))
+#            figure.subplot_imshow_labels(0,0,objects.segmented,
+#                                         title="Object labels: %s"%(object))
+#            figure.subplot_table(1,0,statistics)
+            
+    def measure(self, object, workspace):
+        '''Performs the measurements on the requested objects'''
+        objects = workspace.get_objects(object.object_name.value)
         if objects.has_parent_image:
             area_occupied = np.sum(objects.segmented[objects.parent_image.mask]>0)
             total_area = np.sum(objects.parent_image.mask)
         else:
             area_occupied = np.sum(objects.segmented > 0)
             total_area = np.product(objects.segmented.shape)
-        if workspace.frame != None:
-            figure = workspace.create_or_find_figure(subplots=(2,1))
-            statistics = (("Area occupied","%d pixels"%(area_occupied)),
-                          ("Total area", "%d pixels"%(total_area)))
-            figure.subplot_imshow_labels(0,0,objects.segmented,
-                                         title="Object labels: %s"%(self.object_name.value))
-            figure.subplot_table(1,0,statistics)
+        
         
         m = workspace.measurements
-        m.add_image_measurement(F_AREA_OCCUPIED%(self.object_name.value),
+        m.add_image_measurement(F_AREA_OCCUPIED%(object.object_name.value),
                                 np.array([area_occupied], dtype=float ))
-        m.add_image_measurement(F_TOTAL_AREA%(self.object_name.value),
+        m.add_image_measurement(F_TOTAL_AREA%(object.object_name.value),
                                 np.array([total_area], dtype=float))
-        if self.should_save_image.value:
+        if object.should_save_image.value:
             binary_pixels = objects.segmented > 0
             output_image = cpi.Image(binary_pixels,
                                      parent_image = objects.parent_image)
-            workspace.image_set.add(self.image_name.value,
+            workspace.image_set.add(object.image_name.value,
                                     output_image)
+        return[[object.object_name.value, object.image_name.value if object.should_save_image.value else "",
+                feature_name, str(value)]
+                for feature_name, value in (('Area Occupied', area_occupied),
+                                            ('Total Area', total_area))]
     
     def get_measurement_columns(self, pipeline):
         '''Return column definitions for measurements made by this module'''
-        return [(cpmeas.IMAGE,
-                 F_AREA_OCCUPIED % (self.object_name.value),
-                 cpmeas.COLTYPE_FLOAT),
-                (cpmeas.IMAGE,
-                 F_TOTAL_AREA % (self.object_name.value),
-                 cpmeas.COLTYPE_FLOAT)
-                 ]
-
+        columns = []
+        for object in self.get_non_redundant_object_measurements():
+            for feature, coltype in ((cpmeas.IMAGE,F_AREA_OCCUPIED, cpmeas.COLTYPE_FLOAT),
+                                     (F_TOTAL_AREA, cpmeas.COLTYPE_FLOAT)):
+                columns.append((cpmeas.IMAGE, object.object_name.value(feature), coltype))
+        return columns
+       
     def get_categories(self, pipeline, object_name):
         """The categories output by this module for the given object (or Image)
         
@@ -152,5 +196,5 @@ class MeasureImageAreaOccupied(cpm.CPModule):
         """
         if (object_name == "Image" and category == "AreaOccupied" and
             measurement in ("AreaOccupied","TotalArea")):
-            return [ self.object_name.value ]
+            return [ object.object_name.value for object in self.objects ]
         return []

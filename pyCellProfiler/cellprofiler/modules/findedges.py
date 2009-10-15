@@ -50,8 +50,10 @@ class FindEdges(cpm.CPModule):
 
     def create_settings(self):
         self.module_name = "FindEdges"
-        self.image_name = cps.ImageNameSubscriber("What did you call the image in which you want to find the edges?","None")
-        self.output_image_name = cps.ImageNameProvider("What do you want to call the image with edges identified?","EdgedImage")
+        self.image_name = cps.ImageNameSubscriber("Select the input image","None", 
+                                                  doc = '''What did you call the image in which you want to find the edges?''')
+        self.output_image_name = cps.ImageNameProvider("Name the output image","EdgedImage",
+                                                    doc = '''What do you want to call the image with edges identified?''')
         self.wants_automatic_threshold = cps.Binary("Do you want to automatically calculate the threshold?", True,
                                                     doc = '''Automatic thresholding is done using a three-
                                                     category Otsu algorithm performed on the Sobel transform of the image.''')

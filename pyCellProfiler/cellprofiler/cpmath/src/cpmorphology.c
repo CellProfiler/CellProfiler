@@ -240,7 +240,8 @@ cpmaximum(PyObject *self, PyObject *args)
 }
 
 static PyMethodDef methods[] = {
-    {"cpmaximum", (PyCFunction)cpmaximum, METH_VARARGS, NULL}
+    {"cpmaximum", (PyCFunction)cpmaximum, METH_VARARGS, NULL},
+    { NULL, NULL, 0, NULL}
 };
 
 PyMODINIT_FUNC init_cpmorphology(void)

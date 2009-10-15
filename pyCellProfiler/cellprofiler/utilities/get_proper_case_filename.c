@@ -84,7 +84,8 @@ static PyMethodDef methods[] = {
      METH_VARARGS, 
      "Adjust the file name's case to the case recorded in the file system\n\n"
      "For instance, get_proper_case_filename(""c:\\program files"") returns "
-     """c:\\Program Files""."}
+     """c:\\Program Files""."},
+     { NULL, NULL, 0, NULL }
 };
 
 PyMODINIT_FUNC init_get_proper_case_filename(void)

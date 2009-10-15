@@ -145,13 +145,13 @@ class CPFrame(wx.Frame):
         wx.EVT_MENU(self,ID_HELP_MODULE,self.__on_help_module)
         wx.EVT_MENU(self,ID_OPTIONS_PREFERENCES, self.__on_preferences)
         wx.EVT_MENU(self,ID_WINDOW_CLOSE_ALL, self.__on_close_all)
-        accelerator_table = wx.AcceleratorTable([(wx.ACCEL_CTRL,ord('N'),ID_FILE_ANALYZE_IMAGES),
-                                                 (wx.ACCEL_CTRL,ord('P'),ID_FILE_LOAD_PIPELINE),
-                                                 (wx.ACCEL_CTRL|wx.ACCEL_SHIFT,ord('S'),ID_FILE_SAVE_PIPELINE),
-                                                 (wx.ACCEL_CTRL,ord('L'),ID_WINDOW_CLOSE_ALL),
-                                                 (wx.ACCEL_CTRL,ord('Q'),ID_FILE_EXIT),
+        accelerator_table = wx.AcceleratorTable([(wx.ACCEL_CMD,ord('N'),ID_FILE_ANALYZE_IMAGES),
+                                                 (wx.ACCEL_CMD,ord('P'),ID_FILE_LOAD_PIPELINE),
+                                                 (wx.ACCEL_CMD|wx.ACCEL_SHIFT,ord('S'),ID_FILE_SAVE_PIPELINE),
+                                                 (wx.ACCEL_CMD,ord('L'),ID_WINDOW_CLOSE_ALL),
+                                                 (wx.ACCEL_CMD,ord('Q'),ID_FILE_EXIT),
                                                  (wx.ACCEL_NORMAL,wx.WXK_F5,ID_DEBUG_START),
-                                                 (wx.ACCEL_CTRL,wx.WXK_F5,ID_DEBUG_STOP),
+                                                 (wx.ACCEL_CMD,wx.WXK_F5,ID_DEBUG_STOP),
                                                  (wx.ACCEL_NORMAL,wx.WXK_F6,ID_DEBUG_STEP),
                                                  (wx.ACCEL_NORMAL,wx.WXK_F7,ID_DEBUG_NEXT_IMAGE_SET),
                                                  (wx.ACCEL_NORMAL,wx.WXK_F8,ID_DEBUG_NEXT_GROUP)])

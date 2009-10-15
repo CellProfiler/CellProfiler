@@ -66,9 +66,11 @@ class CorrectIllumination_Apply(cpm.CPModule):
     
     def add_image(self, can_delete = True):
         '''Add an image and its settings to the list of images'''
-        image_name = cps.ImageNameSubscriber("What did you call the image to be corrected?","None")
-        corrected_image_name = cps.ImageNameProvider("What do you want to call the corrected image?","CorrBlue")
-        illum_correct_function_image_name = cps.ImageNameSubscriber("What did you call the illumination correction function image to be used to carry out the correction (produced by another module or loaded as a .mat format image using Load Single Image)?","None")
+        image_name = cps.ImageNameSubscriber("Select the input image","None", doc = '''What did you call the image to be corrected?''')
+        corrected_image_name = cps.ImageNameProvider("Name the output image","CorrBlue", doc = '''What do you want to call the corrected image?''')
+        illum_correct_function_image_name = cps.ImageNameSubscriber("Select the illumination function","None", doc = '''What did you call the 
+                                        illumination correction function image to be used to carry out the correction (produced by another module 
+                                        or loaded as a .mat format image using Load Single Image)?''')
         divide_or_subtract = cps.Choice("How do you want to apply the illumination correction function?",
                                         [DOS_DIVIDE, DOS_SUBTRACT], doc = '''This choice depends on how the illumination function was calculated
                                         and on your physical model of how illumination variation affects the background of images relative to 

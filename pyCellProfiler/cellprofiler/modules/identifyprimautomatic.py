@@ -200,8 +200,8 @@ BINARY_IMAGE_VAR                = 21
 class IdentifyPrimAutomatic(cpmi.Identify):
             
     variable_revision_number = 4
-
     category =  "Object Processing"
+    module_name = "IdentifyPrimAutomatic"
     
     def create_settings(self):
         self.image_name = cps.ImageNameSubscriber(

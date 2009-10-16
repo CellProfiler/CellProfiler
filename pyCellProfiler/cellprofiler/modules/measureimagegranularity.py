@@ -190,6 +190,7 @@ class MeasureImageGranularity(cpm.CPModule):
         #
         ero[~mask] = 0
         currentmean = startmean
+        startmean = max(startmean, np.finfo(float).eps)
         
         footprint = np.array([[False,True,False],
                               [True ,True,True],

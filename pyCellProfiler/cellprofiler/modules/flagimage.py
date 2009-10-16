@@ -68,6 +68,7 @@ class FlagImage(cpm.CPModule):
    
     category = "Image Processing"
     variable_revision_number = 1
+    module_name = "FlagImage"
     
     def create_settings(self):
         self.flags = []

@@ -50,6 +50,7 @@ class FlipAndRotate(cpm.CPModule):
  
     category = 'Image Processing'
     variable_revision_number = 2
+    module_name = 'FlipAndRotate'
     
     def create_settings(self):
         self.image_name = cps.ImageNameSubscriber(

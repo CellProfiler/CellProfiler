@@ -26,8 +26,8 @@ import uuid
 import cellprofiler.cpmodule as cpm
 import cellprofiler.settings as cps
 
-C_REMOVE = "remove"
-C_KEEP = "keep"
+C_REMOVE = "Remove"
+C_KEEP = "Keep"
 C_ALL = [C_REMOVE, C_KEEP]
 
 '''# of settings in a module independent of the image settings'''
@@ -44,8 +44,9 @@ class SpeedUpCellProfiler(cpm.CPModule):
         self.module_name = "SpeedUpCellProfiler"
         self.how_to_remove = cps.Choice("Do you want to choose the images to be removed or the images to keep?",
                                         C_ALL,doc="""
-            Choose <i>Remove</i> to remove some images from memory and keep the rest.
-            Choose <i>Keep</i> to keep some images and remove the rest.""")
+            Choose <i>%s</i> to remove some images from memory and keep the rest.
+            Choose <i>%s</i> to keep some images and remove the rest."""%
+                                (C_REMOVE, C_KEEP))
         
         self.image_names = []
         self.add_image(False)

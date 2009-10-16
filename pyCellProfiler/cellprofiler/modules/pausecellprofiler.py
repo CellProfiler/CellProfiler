@@ -1,4 +1,4 @@
-'''<b>PauseCellProfiler</b>: Pauses CellProfiler.
+'''<b>Pause Cell Profiler</b> pauses CellProfiler.
 <hr>
 
 This module pauses CellProfiler while analyzing and waits for you to
@@ -43,15 +43,16 @@ class PauseCellProfiler(cpm.CPModule):
         """
         self.action = cps.Choice("Do you want to pause here or skip subsequent modules?",
                                  [cpw.DISPOSITION_PAUSE, cpw.DISPOSITION_SKIP],
-                                 doc = """Choose <i>%s</s> to pause CellProfiler
-        at this module. The pipeline will stop and a window with a "Resume"
-        button will appear. You can examine the module figures at this point.
-        The pipeline will continue when you hit the "Resume" button or will
-        stop if you hit the "Stop analysis" button on the main window.
-        <p>
-        Choose <i>%s</s> to skip the modules following this one. CellProfiler
-        will still pause as described above. CellProfiler will advance to
-        the next image set, if any, and the first module after you resume.""" %
+                                 doc = """
+            Choose <i>%s</i> to pause CellProfiler
+            at this module. The pipeline will stop and a window with a <i>Resume</i>
+            button will appear. You can examine the module figures at this point.
+            The pipeline will continue when you hit the <i>Resume</i> button or will
+            stop if you hit the <i>Stop analysis</i> button on the main window.
+            <p>
+            Choose <i>%s</i> to skip the modules following this one. CellProfiler
+            will still pause as described above. CellProfiler will advance to
+            the next image set, if any, and the first module after you resume.""" %
                                 (cpw.DISPOSITION_PAUSE, cpw.DISPOSITION_SKIP))
     
     def settings(self):

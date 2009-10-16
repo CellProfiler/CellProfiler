@@ -1,15 +1,50 @@
-'''measure_correlation.py - Measure correlation between two images
+'''<b>MeasureCorrelation</b>: Measures the correlation between intensities in different images (e.g.
+different color channels) on a pixel by pixel basis, within identified
+objects or across an entire image.
+<hr>
+Given two or more images, calculates the correlation between the
+pixel intensities. The correlation can be measured for entire
+images, or individual correlation measurements can be made within each
+individual object. For example:
 
-CellProfiler is distributed under the GNU General Public License.
-See the accompanying file LICENSE for details.
-
-Developed by the Broad Institute
-Copyright 2003-2009
-
-Please see the AUTHORS file for credits.
-
-Website: http://www.cellprofiler.org
+<table border="1">
+<tr>
+<td></td>
+<td></td>
+<td>Image overall:</td>
+<td>In Nuclei:</td>
+</tr>
+<tr>
+<td>OrigBlue_OrigGreen</td>
+<td>Correlation:</td>
+<td>0.49955</td>
+<td>-0.07395</td>
+</tr>
+<tr>
+<td>OrigGreen_OrigRed </td>
+<td>Correlation:</td>
+<td>0.83605 </td>
+<td>0.68489</td>
+</tr>
+<tr>
+<td>OrigBlue_OrigRed</td>
+<td>Correlation:</td>
+<td>0.59886 </td>
+<td>-0.02752</td>
+</tr>
+</table>
+          
 '''
+#CellProfiler is distributed under the GNU General Public License.
+#See the accompanying file LICENSE for details.
+#
+#Developed by the Broad Institute
+#Copyright 2003-2009
+#
+#Please see the AUTHORS file for credits.
+#
+#Website: http://www.cellprofiler.org
+
 __version__="$Revision$"
 
 import numpy as np
@@ -34,22 +69,6 @@ F_CORRELATION_FORMAT = "Correlation_Correlation_%s_%s"
 F_SLOPE_FORMAT = "Correlation_Slope_%s_%s"
 
 class MeasureCorrelation(cpm.CPModule):
-    '''SHORT DESCRIPTION:
-    Measures the correlation between intensities in different images (e.g.
-    different color channels) on a pixel by pixel basis, within identified
-    objects or across an entire image.
-    *************************************************************************
-    
-    Given two or more images, calculates the correlation between the
-    pixel intensities. The correlation can be measured for the entire
-    images, or individual correlation measurements can be made within each
-    individual object. For example:
-                                         Image overall:  In Nuclei:
-    OrigBlue_OrigGreen    Correlation:    0.49955        -0.07395
-    OrigBlue_OrigRed      Correlation:    0.59886        -0.02752
-    OrigGreen_OrigRed     Correlation:    0.83605         0.68489
-    
-    '''
 
     category = 'Measurement'
     variable_revision_number = 1
@@ -64,7 +83,10 @@ class MeasureCorrelation(cpm.CPModule):
         self.add_image_button = cps.DoSomething('Add another image','Add image',
                                                 self.add_image)
         self.images_or_objects = cps.Choice('Do you want to measure the correlation within objects, over the whole image or both within objects and over the whole image?',
-                                            M_ALL)
+                                            M_ALL, doc = '''Both methods measure correlation on a pixel by pixel basis.
+                                            Selecting <i>Objects</i> will measure correlation only in those pixels previously
+                                            identified as an object (the user can then specify which object).  Selecting <i>Images</i> will measure correlation
+                                            across all pixels in the images.<i>Images and objects</i> will return both measurements.''')
         self.object_groups = []
         self.add_object(can_delete = False)
         self.object_count = cps.HiddenCount(self.object_groups)
@@ -80,7 +102,8 @@ class MeasureCorrelation(cpm.CPModule):
         class ImageSettings(object):
             def __init__(self, image_groups, can_delete):
                 self.can_delete = can_delete
-                self.image_name = cps.ImageNameSubscriber('What is the name of the image to be measured?','None')
+                self.image_name = cps.ImageNameSubscriber('Select an image to measure:','None',
+                                                          doc = '''What is the name of the image to be measured?''')
                 if self.can_delete:
                     self.key = uuid.uuid4()
                     def remove(key = self.key, image_groups = image_groups):
@@ -102,7 +125,8 @@ class MeasureCorrelation(cpm.CPModule):
         class ObjectSettings(object):
             def __init__(self, object_groups, can_delete):
                 self.can_delete = can_delete
-                self.object_name = cps.ObjectNameSubscriber('What is the name of the objects to be measured?','None')
+                self.object_name = cps.ObjectNameSubscriber('Select the object to measure:','None',
+                                                            doc = '''What is the name of the objects to be measured?''')
                 if self.can_delete:
                     self.key = uuid.uuid4()
                     def remove(key = self.key, object_groups = object_groups):

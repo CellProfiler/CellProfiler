@@ -21,6 +21,7 @@ import scipy.io.matlab.mio
 import cpframe
 import cellprofiler.pipeline
 import cellprofiler.preferences
+import cellprofiler.cpimage as cpi
 import cellprofiler.measurements as cpm
 import cellprofiler.workspace as cpw
 import cellprofiler.objects as cpo
@@ -62,6 +63,8 @@ class PipelineController:
         wx.EVT_MENU(frame,cpframe.ID_DEBUG_STEP,self.on_debug_step)
         wx.EVT_MENU(frame,cpframe.ID_DEBUG_NEXT_IMAGE_SET,self.on_debug_next_image_set)
         wx.EVT_MENU(frame,cpframe.ID_DEBUG_NEXT_GROUP, self.on_debug_next_group)
+        wx.EVT_MENU(frame, cpframe.ID_DEBUG_CHOOSE_GROUP, self.on_debug_choose_group)
+        wx.EVT_MENU(frame,cpframe.ID_DEBUG_CHOOSE_IMAGE_SET, self.on_debug_choose_image_set)
         wx.EVT_MENU(frame,cpframe.ID_DEBUG_RELOAD, self.on_debug_reload)
         
         wx.EVT_MENU(frame,cpframe.ID_WINDOW_SHOW_ALL_FRAMES, self.on_show_all_frames)
@@ -516,18 +519,89 @@ class PipelineController:
     
     def on_debug_next_group(self, event):
         if self.__grouping_index is not None:
-            self.__grouping_index = ((self.__grouping_index + 1 ) % 
-                                     len(self.__groupings))
-            self.__within_group_index = 0
-            self.__pipeline.prepare_group(self.__debug_image_set_list,
-                                          self.__groupings[self.__grouping_index][0],
-                                          self.__groupings[self.__grouping_index][1])
-            key, image_numbers = self.__groupings[self.__grouping_index]
-            image_number = image_numbers[self.__within_group_index]
+            self.debug_choose_group(((self.__grouping_index + 1 ) % 
+                               len(self.__groupings)))
+    
+    def debug_choose_group(self, index):
+        self.__grouping_index = index
+        self.__within_group_index = 0
+        self.__pipeline.prepare_group(self.__debug_image_set_list,
+                                      self.__groupings[self.__grouping_index][0],
+                                      self.__groupings[self.__grouping_index][1])
+        key, image_numbers = self.__groupings[self.__grouping_index]
+        image_number = image_numbers[self.__within_group_index]
+        self.__debug_measurements.next_image_set(image_number)
+        self.__pipeline_list_view.select_one_module(1)
+        self.__movie_viewer.slider.value = 0
+        self.__debug_outlines = {}
+            
+    def on_debug_choose_group(self, event):
+        '''Choose a group'''
+        if len(self.__groupings) < 2:
+            wx.MessageBox("There is only one group and it is currently running in test mode","Choose image group")
+            return
+        dialog = wx.Dialog(self.__frame, title="Choose an image group")
+        super_sizer = wx.BoxSizer(wx.VERTICAL)
+        dialog.SetSizer(super_sizer)
+        super_sizer.Add(wx.StaticText(dialog, label = "Select a group set for testing:"),0,wx.EXPAND|wx.ALL,5)
+        choices = []
+        
+        for grouping, image_numbers in self.__groupings:
+            text = ["%s=%s"%(k,v) for k,v in grouping.iteritems()]
+            text = ', '.join(text)
+            choices.append(text)
+        lb = wx.ListBox(dialog, -1, choices=choices)
+        lb.Select(0)
+        super_sizer.Add(lb, 1, wx.EXPAND|wx.ALL, 10)
+        super_sizer.Add(wx.StaticLine(dialog),0,wx.EXPAND|wx.ALL,5)
+        btnsizer = wx.StdDialogButtonSizer()
+        btnsizer.AddButton(wx.Button(dialog, wx.ID_OK))
+        btnsizer.AddButton(wx.Button(dialog, wx.ID_CANCEL))
+        btnsizer.Realize()
+        super_sizer.Add(btnsizer)
+        dialog.Fit()
+        if dialog.ShowModal() == wx.ID_OK:
+            self.debug_choose_group(lb.Selection)
+    
+    def on_debug_choose_image_set(self, event):
+        '''Choose one of the current image sets
+        
+        '''
+        dialog = wx.Dialog(self.__frame, title="Choose an image set")
+        super_sizer = wx.BoxSizer(wx.VERTICAL)
+        dialog.SetSizer(super_sizer)
+        super_sizer.Add(wx.StaticText(dialog, label = "Select an image set for testing:"),0,wx.EXPAND|wx.ALL,5)
+        choices = []
+        indexes = []
+        for image_number in self.__groupings[self.__grouping_index][1]:
+            indexes.append(image_number)
+            image_set = self.__debug_image_set_list.get_image_set(image_number-1)
+            assert isinstance(image_set, cpi.ImageSet)
+            text = []
+            for provider in image_set.providers:
+                if hasattr(provider, "get_filename"):
+                    text.append(provider.get_name()+":"+provider.get_filename())
+            text = ', '.join(text)
+            choices.append(text)
+        if len(choices) == 0:
+            wx.MessageBox("Sorry, there are no available image sets. Check your LoadImages module's settings",
+                          "Can't choose image set")
+            return
+        lb = wx.ListBox(dialog, -1, choices=choices)
+        lb.Select(0)
+        super_sizer.Add(lb, 1, wx.EXPAND|wx.ALL, 10)
+        super_sizer.Add(wx.StaticLine(dialog),0,wx.EXPAND|wx.ALL,5)
+        btnsizer = wx.StdDialogButtonSizer()
+        btnsizer.AddButton(wx.Button(dialog, wx.ID_OK))
+        btnsizer.AddButton(wx.Button(dialog, wx.ID_CANCEL))
+        btnsizer.Realize()
+        super_sizer.Add(btnsizer)
+        dialog.Fit()
+        if dialog.ShowModal() == wx.ID_OK:
+            image_number = indexes[lb.Selection]
             self.__debug_measurements.next_image_set(image_number)
             self.__pipeline_list_view.select_one_module(1)
             self.__movie_viewer.slider.value = 0
-            self.__debug_outlines = {}
             
     def on_debug_reload(self, event):
         self.__pipeline.reload_modules()

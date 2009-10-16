@@ -48,6 +48,8 @@ ID_DEBUG_STOP = wx.NewId()
 ID_DEBUG_STEP = wx.NewId()
 ID_DEBUG_NEXT_IMAGE_SET = wx.NewId()
 ID_DEBUG_NEXT_GROUP = wx.NewId()
+ID_DEBUG_CHOOSE_GROUP = wx.NewId()
+ID_DEBUG_CHOOSE_IMAGE_SET = wx.NewId()
 ID_DEBUG_RELOAD = wx.NewId()
 
 ID_WINDOW = wx.NewId()
@@ -122,12 +124,16 @@ class CPFrame(wx.Frame):
         self.__menu_debug.Append(ID_DEBUG_STEP,'Ste&p to next module\tF6','Execute the currently selected module')
         self.__menu_debug.Append(ID_DEBUG_NEXT_IMAGE_SET,'&Next image set\tF7','Advance to the next image set')
         self.__menu_debug.Append(ID_DEBUG_NEXT_GROUP, 'Next &group\tF8','Advance to the next group in the image set')
+        self.__menu_debug.Append(ID_DEBUG_CHOOSE_GROUP, 'Choose group', 'Choose which image set group to process in test-mode')
+        self.__menu_debug.Append(ID_DEBUG_CHOOSE_IMAGE_SET, 'Choose image set','Choose any of the available image sets in the current image set list')
         if not hasattr(sys, 'frozen'):
             self.__menu_debug.Append(ID_DEBUG_RELOAD, "Reload modules' source")
         self.__menu_debug.Enable(ID_DEBUG_STOP,False)
         self.__menu_debug.Enable(ID_DEBUG_STEP,False)
         self.__menu_debug.Enable(ID_DEBUG_NEXT_IMAGE_SET,False)
         self.__menu_debug.Enable(ID_DEBUG_NEXT_GROUP, False)
+        self.__menu_debug.Enable(ID_DEBUG_CHOOSE_GROUP, False)
+        self.__menu_debug.Enable(ID_DEBUG_CHOOSE_IMAGE_SET, False)
         self.__menu_bar.Append(self.__menu_debug,'&Test')
         self.__menu_window = wx.Menu()
         self.__menu_window.Append(ID_WINDOW_CLOSE_ALL, "Close &all\tctrl+L", 
@@ -168,6 +174,8 @@ class CPFrame(wx.Frame):
         self.__menu_debug.Enable(ID_DEBUG_STEP,enable)
         self.__menu_debug.Enable(ID_DEBUG_NEXT_IMAGE_SET,enable)
         self.__menu_debug.Enable(ID_DEBUG_NEXT_GROUP, enable)
+        self.__menu_debug.Enable(ID_DEBUG_CHOOSE_GROUP, enable)
+        self.__menu_debug.Enable(ID_DEBUG_CHOOSE_IMAGE_SET, enable)
         
     def __on_widget_inspector(self, evt):
         try:

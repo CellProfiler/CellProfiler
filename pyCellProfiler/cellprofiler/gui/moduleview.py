@@ -542,7 +542,8 @@ class ModuleView:
             text_ctrl.Bind(wx.EVT_KILL_FOCUS, on_kill_focus)
         else:
             text_control = control.FindWindowByName(text_control_name(v))
-            text_control.Value = v.value
+            if v.value != text_control.Value:
+                text_control.Value = v.value
         return control
      
     def make_text_control(self, v, control_name, control):

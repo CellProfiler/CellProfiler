@@ -134,6 +134,13 @@ class Measurements(object):
             else:
                 assert False,"Adding a feature for a second time: %s.%s"%(object_name,feature_name)
         else:
+            if self.__can_overwrite:
+                if not self.__dictionary.has_key(object_name):
+                    self.__dictionary[object_name] = {}
+                object_dict = self.__dictionary[object_name]
+                if not object_dict.has_key(feature_name):
+                    object_dict[feature_name] = [ None] * (self.image_set_index+1)
+                
             assert self.__dictionary.has_key(object_name),\
                    ("Object %s requested for the first time on pass # %d" %
                     (object_name,self.image_set_index))

@@ -1,15 +1,88 @@
-'''measureimagequality.py - Measurements of saturation and blur
+'''MeasureImageQuality: This module measures features that indicate image quality. This includes the
+percentage of pixels in the image that are saturated. Measurements of blur 
+(poor focus) are also calculated.
+<hr>
 
-CellProfiler is distributed under the GNU General Public License.
-See the accompanying file LICENSE for details.
+Features measured:   
+<ul><li>FocusScore: a measure of the intensity variance across image</li>
+<li>LocalFocusScore: a measure of the intensity variance between image parts</li>
+<li>PercentSaturation: percent of pixels with a value of 1</li>
+<li>PercentMaximal: percent of pixels at the maximum intensity value</li>
+<li>Threshold: calculated threshold for image</li></ul>
 
-Developed by the Broad Institute
-Copyright 2003-2009
+<h3>Saturation and PercentMaximal</h3> Saturation means that 
+the pixel's intensity value is equal to the maximum possible intensity value 
+for that image type. Sometimes images have undergone some kind of transformation
+ such that no pixels ever reach the maximum possible intensity value of 
+the image type. For this reason, the percentage of pixels at that <i>individual</i>
+image's maximum intensity value is also calculated. Given noise in images, 
+this should typically be a low percentage but if the images were saturated
+during imaging, a higher than usual PercentMaximal will be observed.
 
-Please see the AUTHORS file for credits.
+<h3>Focus Score (Blur)</h3> The module can also measure blur by calculating a focus score
+(higher = better focus). This calculation is slow, so it is optional. The score 
+is calculated using the normalized variance. We used this algorithm because it
+was ranked best in this paper:
+Sun, Y., Duthaler, S., Nelson, B. "Autofocusing in Computer Microscopy:
+   Selecting the optimals focus algorithm." Microscopy Research and
+   Technique 65:139-149 (2004)
 
-Website: http://www.cellprofiler.org
-'''
+The calculation of the focus score is as follows:
+[m,n] = size(Image);
+MeanImageValue = mean(Image(:));
+SquaredNormalizedImage = (Image-MeanImageValue).^2;
+FocusScore{ImageNumber} = ...
+   sum(SquaredNormalizedImage(:))/(m*n*MeanImageValue);
+
+The above score is to measure a relative score given a focus setting of 
+a certain microscope. Using this, one can calibrate the microscope's
+focus setting. However it doesn't necessarily tell you how well an image
+was focused when taken. That means these scores obtained from many different
+images probably taken in different situations and with different cell
+contents can not be used for focus comparison.
+
+<h3>Local Focus Score</h3>
+The LocalFocusScore is a local version of the original FocusScore. 
+LocalFocusScore was just named after the original one to be consistent 
+with naming. Note that these focus scores do not necessarily 
+represent the qualities of focusing between different images. 
+LocalFocusScore was added to differentiate good segmentation and bad 
+segmentation images in the cases when bad segmentation images usually 
+contain no cell objects with high background noise.
+
+Example Output:
+<table border="1">
+<tr>
+<td>Percent of pixels that are Saturated:</td>
+<td>RescaledOrig: </td>
+<td>0.002763</td>
+</tr>
+<tr>
+<td>Percent of pixels that are in the Maximal Intensity:</td>
+<td>RescaledOrig: </td>
+<td>0.0002763</td>
+</tr>
+<tr>
+<td>Focus Score:</td>
+<td>RescaledOrig:</td>
+<td> 0.016144</td>
+</tr>
+<tr>
+<td>Suggested Threshold:</td>
+<td>Orig: </td>
+<td>0.0022854</td>
+</tr>
+</table>'''
+
+#CellProfiler is distributed under the GNU General Public License.
+#See the accompanying file LICENSE for details.
+#
+#Developed by the Broad Institute
+#Copyright 2003-2009
+#
+#Please see the AUTHORS file for credits.
+#
+#Website: http://www.cellprofiler.org
 
 __version__="$Revision$"
 
@@ -34,98 +107,6 @@ MEDIAN_THRESH_ALL_IMAGES = 'MedianThresh_AllImages'
 STD_THRESH_ALL_IMAGES = 'StdThresh_AllImages'
 SETTINGS_PER_GROUP = 7
 class MeasureImageQuality(cpm.CPModule):
-    '''SHORT DESCRIPTION:
-Measures features that indicate image quality.
-*************************************************************************
-
-This module measures features that indicate image quality. This includes the
-percentage of pixels in the image that are saturated. Measurements of blur 
-(poor focus) are also calculated.
-
-Features measured:   
-FocusScore           a measure of the intensity variance across image
-LocalFocusScore      a measure of the intensity variance between image parts
-PercentSaturation    percent of pixels with a value of 1
-PercentMaximal       percent of pixels at the maximum intensity value
-Threshold            calculated threshold for image
-
-More about Saturation and PercentMaximal: Saturation means that 
-the pixel's intensity value is equal to the maximum possible intensity value 
-for that image type). Sometimes images have undergone some kind of transform-
-ation such that no pixels ever reach the maximum possible intensity value of 
-the image type. For this reason, the percentage of pixels at that *individual*
-image's maximum intensity value is also calculated. Given noise in images, 
-this should typically be a low percentage but if the images were saturated
-during imaging, a higher than usual PercentMaximal will be observed.
-
-More about Blur: The module can also measure blur by calculating a focus score
-(higher = better focus). This calculation is slow, so it is optional. The score 
-is calculated using the normalized variance. We used this algorithm because it
-was ranked best in this paper:
-Sun, Y., Duthaler, S., Nelson, B. "Autofocusing in Computer Microscopy:
-   Selecting the optimals focus algorithm." Microscopy Research and
-   Technique 65:139-149 (2004)
-
-The calculation of the focus score is as follows:
-[m,n] = size(Image);
-MeanImageValue = mean(Image(:));
-SquaredNormalizedImage = (Image-MeanImageValue).^2;
-FocusScore{ImageNumber} = ...
-   sum(SquaredNormalizedImage(:))/(m*n*MeanImageValue);
-
-The above score is to measure a relative score given a focus setting of 
-a certain microscope. Using this, one can calibrate the microscope's
-focus setting. However it doesn't necessarily tell you how well an image
-was focused when taken. That means these scores obtained from many different
-images probably taken in different situations and with different cell
-contents can not be used for focus comparison.
-
-The LocalFocusScore is a local version of the original FocusScore. 
-LocalFocusScore was just named after the original one to be consistent 
-with naming. Note that these focus scores do not necessarily 
-represent the qualities of focusing between different images. 
-LocalFocusScore was added to differentiate good segmentation and bad 
-segmentation images in the cases when bad segmentation images usually 
-contain no cell objects with high background noise.
-
-Example Output:
-
-Percent of pixels that are Saturated:
-RescaledOrig:     0.002763
-
-Percent of pixels that are in the Maximal
-Intensity:
-RescaledOrig:     0.0002763
-
-
-Focus Score:
-RescaledOrig: 0.016144
-
-Suggested Threshold:
-Orig: 0.0022854
-
-Settings:
-You may specify any number of images by using the "Add" button to add
-more images to the list. Each image can have its focus, saturation and/or
-threshold measured.
-
-The local focus score measures the variance between areas of the image by
-dividing the image up into windows. If you choose to calculate blur / focus,
-you'll have an opportunity to set the window size - the window size should
-be twice the maximum size of the objects you are trying to segment. You
-can measure the local focus score over multiple windows by adding an image
-to the list more than once and by setting different window sizes for
-each image.
-
-If you choose to measure the threshold, you will be able to select the
-thresholding method from a list. Please see IdentifyPrimAutomatic for
-a description of thresholding methods. Only the global threshold is calculated.
-The mixture of Gaussians method uses the expected fraction of pixels that
-are foreground to determine whether to assign the pixels in the middle
-Gaussian distribution to foreground or background. You'll be asked to specify
-fraction in the question, "What fraction of the image is composed of objects?" 
-'''
-
     module_name = "MeasureImageQuality"
     category = "Measurement"
     variable_revision_number = 1
@@ -140,18 +121,28 @@ fraction in the question, "What fraction of the image is composed of objects?"
         class ImageGroup(object):
             def __init__(self, image_groups):
                 self.__key = uuid.uuid4() 
-                self.__image_name = cps.ImageNameSubscriber("What did you call the grayscale images whose quality you want to measure?","None")
-                self.__check_blur = cps.Binary("Would you like to check for blur?",
-                                               True)
-                self.__window_size = cps.Integer("The local focus score is measured within an NxN pixel window applied to the image. What value of N would you like to use? A suggested value is twice the typical object diameter.",
-                                                 20, minval =1)
-                self.__check_saturation = cps.Binary("Would you like to check for saturation?",
-                                                     True)
-                self.__calculate_threshold = cps.Binary("Would you like to calculate a suggested threshold?",
-                                                        True)
-                self.__threshold_method = cps.Choice("What thresholding method would you like to use?",
+                self.__image_name = cps.ImageNameSubscriber("Select an image to measure","None", doc = '''What did you call the grayscale images whose quality you want to measure?''')
+                self.__check_blur = cps.Binary("Check for blur:",
+                                               True, doc = '''Would you like to check for blur? Blur is measured by calculating a focus score
+                                                (higher = better focus).''')
+                self.__window_size = cps.Integer("Window Size:",
+                                                 20, minval =1,
+                                                 doc = '''The local focus score is measured within an NxN pixel window 
+                                                 applied to the image. What value of N would you like to use? A suggested 
+                                                 value is twice the typical object diameter. You
+                                                can measure the local focus score over multiple windows by adding an image
+                                                to the list more than once and by setting different window sizes for
+                                                each image.''')
+                self.__check_saturation = cps.Binary("Check for saturation:",
+                                                     True, doc = '''Would you like to check for saturation?''')
+                self.__calculate_threshold = cps.Binary("Calculate threshold:",
+                                                        True, doc = '''Would you like to calculate a suggested threshold?''')
+                self.__threshold_method = cps.Choice("Select a thresholding method:",
                                                      cpthresh.TM_GLOBAL_METHODS,
-                                                     cpthresh.TM_OTSU_GLOBAL)
+                                                     cpthresh.TM_OTSU_GLOBAL, doc = '''This setting allows you to access the same automatic thresholding 
+                                                 methods used in the <b>Identify</b> modules.  You may select any of these automatic thresholding 
+                                                 methods, or choose "Manual" to enter a threshold manually.  To choose a binary image, select "Binary image". 
+                                                 The output of <b>MeasureImageQuality</b> will be a numerical threshold, rather than objects.  For more help on thresholding, see the Identify modules.''')
                 self.__object_fraction = cps.Float("What fraction of the image is composed of objects?",
                                                    0.1,0,1)
                 self.__remove_button = cps.DoSomething("Remove this image:",

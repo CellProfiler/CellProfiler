@@ -1,15 +1,42 @@
-'''flagimage.py - FlagImage module: flag an image based on a measurement
+'''<b>FlagImage</b>: This module allows you to flag an image if it fails some quality control
+measurement you specify. 
+<hr>
 
-CellProfiler is distributed under the GNU General Public License.
-See the accompanying file LICENSE for details.
+This module allows the user to assign a flag if
+an image fails some quality control measurement the user specifies.  The
+value of the measurement is '1' if the image has failed QC, and '0' if it
+has passed. The flag can be used in post-processing to filter out images
+the user does not want to analyze in CPAnalyst. Additionally, you can
+use ExportToExcel to generate a file that includes the measurement as metadata
+associated with the images. This file can then be used by the LoadText 
+module to put images that pass QC into one group and the images that fail 
+into another. If you plan to use a flag in LoadText, give it a category of
+"Metadata" so that it can be used in grouping.
 
-Developed by the Broad Institute
-Copyright 2003-2009
+The flag is stored in a measurement whose name is a combination of the
+flag's category and feature name. For instance, the default category is
+"Metadata" and the default feature name is "QCFlag". The default
+measurement name is "Metadata_QCFlag".
 
-Please see the AUTHORS file for credits.
+A flag can be based on one or more measurements. If you create a flag based
+on more than one measurement, you'll have to choose between setting the
+flag if all measurements are outside the bounds or if one of the measurements
+is outside of the bounds.
 
-Website: http://www.cellprofiler.org
+This module requires the measurement modules be placed prior to this
+module in the pipeline.
+
 '''
+
+#CellProfiler is distributed under the GNU General Public License.
+#See the accompanying file LICENSE for details.
+#
+#Developed by the Broad Institute
+#Copyright 2003-2009
+#
+#Please see the AUTHORS file for credits.
+#
+#Website: http://www.cellprofiler.org
 
 __version__="$Revision$"
 
@@ -38,35 +65,7 @@ N_FIXED_SETTINGS_PER_FLAG = 4
 N_SETTINGS_PER_MEASUREMENT = 7
 
 class FlagImage(cpm.CPModule):
-    '''SHORT DESCRIPTION:
-This module allows you to flag an image if it fails some quality control
-measurement you specify. 
-*************************************************************************
-
-This module allows the user to assign a flag (a per-image measurement) if
-an image fails some quality control measurement the user specifies.  The
-value of the measurement is '1' if the image has failed QC, and '0' if it
-has passed. The flag can be used in post-processing to filter out images
-the user does not want to analyze in CP Analyst, for example. You can
-use ExportToExcel to generate a file that includes the measurement as metadata
-associated with the images. This file can then be used by the LoadText 
-module to put images that pass QC into one group and the images that fail 
-into another. If you plan to use a flag in LoadText, give it a category of
-"Metadata" so that it can be used in grouping.
-
-The flag is stored in a measurement whose name is a combination of the
-flag's category and feature name. For instance, the default category is
-"Metadata" and the default feature name is "QCFlag". The default
-measurement name is "Metadata_QCFlag".
-
-A flag can be based on one or more measurements. If you create a flag based
-on more than one measurement, you'll have to choose between setting the
-flag if all measurements are outside the bounds or if one of the measurements
-is outside of the bounds.
-
-This module requires the measurement modules be placed prior to this
-module in the pipeline.
-'''
+   
     category = "Image Processing"
     variable_revision_number = 1
     
@@ -252,10 +251,14 @@ class MeasurementSettings(object):
         self.source_choice = cps.Choice(
             "Do you want to filter on an image measurement, "
             "on the average value of an object measurement, or "
-            "on the values of all objects for the image set?", S_ALL)
+            "on the values of all objects in the image?", S_ALL, doc = '''<ul><li>Image: This will flag an image based
+            on a per-image measurement, such as intensity or granularity.</li><li>Average for objects: This will flag
+            an image based on the average of all object measurements in an image.</li>
+            <li>All objects: This will flag an image based on all the object measurements in an image, without averaging.
+             </li></ul>''')
         self.object_name = cps.ObjectNameSubscriber(
-            "What is the name of the object you want to measure?",
-            "None")
+            "Select the object to filter by",
+            "None", doc = '''What did you call the objects whose measurements you want to filter by?''')
         def object_fn():
             if self.source_choice == S_IMAGE:
                 return cpmeas.IMAGE
@@ -264,10 +267,10 @@ class MeasurementSettings(object):
         self.measurement = cps.Measurement("What measurement do you want to use?",
                                            object_fn)
         self.wants_minimum = cps.Binary("Do you want to flag images based on low values?",
-                                        True)
+                                        True, doc = '''Low values: Images with measurements below this cutoff will be flagged.''')
         self.minimum_value = cps.Float("What is the minimum value for the measurement?", 0)
         self.wants_maximum = cps.Binary("Do you want to flag images based on high values?",
-                                        True)
+                                        True, doc = '''High values: Images with measurements above this cutoff will be flagged.''')
         self.maximum_value = cps.Float("What is the maximum value for the measurement?", 1)
         
         if self.can_delete:
@@ -306,13 +309,18 @@ class FlagSettings(object):
             del flags[index]
         self.measurement_count = cps.HiddenCount(self.measurement_settings)
         self.category = cps.Text("What is the flag's measurement category?",
-                                 "Metadata")
-        self.feature_name = cps.Text("What is the flag's feature name "
-                                     "(the name of the flag's measurement is "
-                                     "Metadata_QCFlag)","QCFlag")
+                                 "Metadata", doc = '''The default is 'Metadata', which allows you to group images
+                                 by quality if loading the QCFlag via LoadText.  Otherwise, the flag can be stored
+                                 in the 'Image' category.''')
+        self.feature_name = cps.Text("What is the flag's feature name ?"
+                                     ,"QCFlag", doc = "The default name of the flag's measurement is "
+                                     "Metadata_QCFlag.")
         self.combination_choice = cps.Choice(
             "Do you want to set the flag if any measurement fails to meet the criteria or if all measurements fail to meet the criteria?",
-            [ C_ANY, C_ALL])
+            [ C_ANY, C_ALL], doc = '''<ul><li>Any: An image will be assigned a flag if any of its measurements fail. This can be useful
+            for capturing images possessing varied QC flaws; for example, you can flag all bright images and all out of focus images with one flag.</li>
+            <li>All: A flag will only be assigned if all measurements fail.  This can be useful for capturing images that possess only a combination
+            of QC flaws; for example, you can flag only images that are both bright and out of focus.</li></ul>''')
         self.add_measurement_button = cps.DoSomething("Add another measurement",
                                                       "Add measurement",
                                                       self.add_measurement)

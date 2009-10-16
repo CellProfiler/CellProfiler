@@ -39,7 +39,7 @@ class SpeedUpCellProfiler(cpm.CPModule):
 
     module_name = "SpeedUpCellProfiler"
     category = 'Other'
-    variable_revision_number = 2
+    variable_revision_number = 1
     
     def create_settings(self):
         self.how_to_remove = cps.Choice("Do you want to choose the images to be removed or the images to keep?",
@@ -114,8 +114,13 @@ class SpeedUpCellProfiler(cpm.CPModule):
             variable_revision_number = 1
             from_matlab = False
         if (not from_matlab) and variable_revision_number == 1:
-                setting_values[0] = 'Remove' if (setting_values[0] == 'remove') else 'Keep'
-                variable_revision_number = 2
+            # There was some skew in the capitalization of the first
+            # setting.  We rewrite it, but we leave the revision
+            # number at 1.
+            remap = {'remove' : 'Remove', 'keep' : 'Keep'}
+            if setting_values[0] in remap:
+                setting_values[0] = remap[setting_values[0]]
+
         return setting_values, variable_revision_number, from_matlab
     
 class ImageSettings(object):

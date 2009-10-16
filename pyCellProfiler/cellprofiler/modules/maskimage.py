@@ -1,27 +1,6 @@
-"""maskimage.py - mask an image with object labels
-
-CellProfiler is distributed under the GNU General Public License.
-See the accompanying file LICENSE for details.
-
-Developed by the Broad Institute
-Copyright 2003-2009
-
-Please see the AUTHORS file for credits.
-
-Website: http://www.cellprofiler.org
-"""
-__version__="$Revision$"
-
-import numpy as np
-
-import cellprofiler.cpimage as cpi
-import cellprofiler.cpmodule as cpm
-import cellprofiler.settings as cps
-
-class MaskImage(cpm.CPModule):
-    """SHORT DESCRIPTION:
-Masks image and saves it for future use.
-*************************************************************************
+"""<b>MaskImage</b>:
+Masks an image and saves it for future use.
+<hr>
 
 This module masks an image and saves it in the handles structure for
 future use. The masked image is based on the original image and the
@@ -33,7 +12,28 @@ access the image's crop mask, or simply use the ApplyThreshold module
 instead of MaskImage.
 
 See also IdentifyPrimAutomatic, IdentifyPrimManual.
+
 """
+#CellProfiler is distributed under the GNU General Public License.
+#See the accompanying file LICENSE for details.
+#
+#Developed by the Broad Institute
+#Copyright 2003-2009
+#
+#Please see the AUTHORS file for credits.
+#
+#Website: http://www.cellprofiler.org
+
+__version__="$Revision$"
+
+import numpy as np
+
+import cellprofiler.cpimage as cpi
+import cellprofiler.cpmodule as cpm
+import cellprofiler.settings as cps
+
+class MaskImage(cpm.CPModule):
+
     category = "Image Processing"
     variable_revision_number = 1
     
@@ -42,10 +42,11 @@ See also IdentifyPrimAutomatic, IdentifyPrimManual.
         
         """
         self.module_name = "MaskImage"
-        self.object_name = cps.ObjectNameSubscriber("From which object would you like to make a mask","None")
-        self.image_name = cps.ImageNameSubscriber("Which image do you want to mask?","None")
-        self.masked_image_name = cps.ImageNameProvider("What do you want to call the masked image?",
-                                                       "MaskBlue")
+        self.object_name = cps.ObjectNameSubscriber("Select object for mask:","None",
+                                                    doc = '''From which object would you like to make a mask?''')
+        self.image_name = cps.ImageNameSubscriber("Select input image:","None", doc = '''Which image do you want to mask?''')
+        self.masked_image_name = cps.ImageNameProvider("Name output image:",
+                                                       "MaskBlue", doc = '''What do you want to call the masked image?''')
         self.invert_mask = cps.Binary("Do you want to invert the mask?",False)
 
     def settings(self):

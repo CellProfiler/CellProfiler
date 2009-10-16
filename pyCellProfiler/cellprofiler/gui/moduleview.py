@@ -987,10 +987,11 @@ class ModuleView:
                         self.__static_texts[idx].SetForegroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOWTEXT))
                         self.__static_texts[idx].Refresh()
                 except cps.ValidationError, instance:
+                    # always update the tooltip, in case the value changes to something that's still bad.
+                    self.__controls[idx].SetToolTipString(instance.message)
+                    for child in self.__controls[idx].GetChildren():
+                        child.SetToolTipString(instance.message)
                     if self.__static_texts[idx].GetForegroundColour() != ERROR_COLOR:
-                        self.__controls[idx].SetToolTipString(instance.message)
-                        for child in self.__controls[idx].GetChildren():
-                            child.SetToolTipString(instance.message)
                         self.__static_texts[idx].SetForegroundColour(ERROR_COLOR)
                         self.__static_texts[idx].Refresh()
     

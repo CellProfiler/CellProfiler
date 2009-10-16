@@ -88,7 +88,6 @@ __version__="$Revision$"
 
 import numpy as np
 import scipy.ndimage as scind
-import uuid
 
 from cellprofiler.cpmath.cpmorphology import fixup_scipy_ndimage_result as fix
 import cellprofiler.cpmodule as cpm
@@ -106,6 +105,7 @@ MEAN_THRESH_ALL_IMAGES = 'MeanThresh_AllImages'
 MEDIAN_THRESH_ALL_IMAGES = 'MedianThresh_AllImages'
 STD_THRESH_ALL_IMAGES = 'StdThresh_AllImages'
 SETTINGS_PER_GROUP = 7
+
 class MeasureImageQuality(cpm.CPModule):
     module_name = "MeasureImageQuality"
     category = "Measurement"
@@ -114,129 +114,48 @@ class MeasureImageQuality(cpm.CPModule):
     def create_settings(self):
         self.image_groups = []
         self.add_image_group()
+        self.bottom_spacer = cps.Divider(line=False)
         self.add_button = cps.DoSomething("Add another image for measurement:",
                                           "Add", self.add_image_group)
     
     def add_image_group(self):
-        class ImageGroup(object):
-            def __init__(self, image_groups):
-                self.__key = uuid.uuid4() 
-                self.__image_name = cps.ImageNameSubscriber("Select an image to measure","None", doc = '''What did you call the grayscale images whose quality you want to measure?''')
-                self.__check_blur = cps.Binary("Check for blur:",
-                                               True, doc = '''Would you like to check for blur? Blur is measured by calculating a focus score
-                                                (higher = better focus).''')
-                self.__window_size = cps.Integer("Window Size:",
-                                                 20, minval =1,
-                                                 doc = '''The local focus score is measured within an NxN pixel window 
-                                                 applied to the image. What value of N would you like to use? A suggested 
-                                                 value is twice the typical object diameter. You
-                                                can measure the local focus score over multiple windows by adding an image
-                                                to the list more than once and by setting different window sizes for
-                                                each image.''')
-                self.__check_saturation = cps.Binary("Check for saturation:",
-                                                     True, doc = '''Would you like to check for saturation?''')
-                self.__calculate_threshold = cps.Binary("Calculate threshold:",
-                                                        True, doc = '''Would you like to calculate a suggested threshold?''')
-                self.__threshold_method = cps.Choice("Select a thresholding method:",
-                                                     cpthresh.TM_GLOBAL_METHODS,
-                                                     cpthresh.TM_OTSU_GLOBAL, doc = '''This setting allows you to access the same automatic thresholding 
-                                                 methods used in the <b>Identify</b> modules.  You may select any of these automatic thresholding 
-                                                 methods, or choose "Manual" to enter a threshold manually.  To choose a binary image, select "Binary image". 
-                                                 The output of <b>MeasureImageQuality</b> will be a numerical threshold, rather than objects.  For more help on thresholding, see the Identify modules.''')
-                self.__object_fraction = cps.Float("What fraction of the image is composed of objects?",
-                                                   0.1,0,1)
-                self.__remove_button = cps.DoSomething("Remove this image:",
-                                                       "Remove",
-                                                       self.remove, 
-                                                       image_groups)
-            def str(self):
-                return "ImageGroup: %s, key=%s"%(self.image_name.value, 
-                                                 str(self.key))
-            @property
-            def key(self):
-                '''The unique key for this image group'''
-                return self.__key
-            
-            @property
-            def image_name(self):
-                '''The name setting of the image to be measured'''
-                return self.__image_name
-            
-            @property
-            def check_blur(self):
-                '''The setting for turning blur checking on and off'''
-                return self.__check_blur
-            
-            @property
-            def window_size(self):
-                '''The setting for the focus score window dimensions'''
-                return self.__window_size
-            
-            @property
-            def check_saturation(self):
-                '''The setting for turning saturation checking on and off'''
-                return self.__check_saturation
-            
-            @property
-            def calculate_threshold(self):
-                '''The setting for turning threshold calculation on and off'''
-                return self.__calculate_threshold
-            
-            @property
-            def threshold_method(self):
-                '''The setting for choosing the threshold method'''
-                return self.__threshold_method
-            
-            @property
-            def threshold_algorithm(self):
-                '''The thresholding algorithm to run'''
-                return self.threshold_method.value.split(' ')[0]
-            
-            @property
-            def threshold_feature_name(self):
-                '''The feature name of the threshold measurement generated'''
-                return "%s_%s%s_%s"%(IMAGE_QUALITY, THRESHOLD, 
-                                     self.threshold_algorithm,
-                                     self.image_name.value)
-                    
-            @property
-            def object_fraction(self):
-                '''The setting for specifying the amount of foreground pixels'''
-                return self.__object_fraction
-             
-            def remove(self, image_groups):
-                '''Remove ourself from the list of image groups'''
-                index = [x.key for x in image_groups].index(self.key)
-                assert index != -1, "%s is no longer present in its list"%self
-                del image_groups[index]
-            
-            def settings(self):
-                '''The settings in the order that they are loaded and saved'''
-                return [self.image_name, self.check_blur, self.window_size,
-                        self.check_saturation, self.calculate_threshold,
-                        self.threshold_method, self.object_fraction]
-            
-            def visible_settings(self):
-                '''The settings as displayed to the user'''
-                result = [self.image_name, self.check_blur ]
-                if self.check_blur.value:
-                    result.append(self.window_size)
-                result += [self.check_saturation, self.calculate_threshold]
-                if self.calculate_threshold.value:
-                    result.append(self.threshold_method)
-                    if self.threshold_method == cpthresh.TM_MOG_GLOBAL:
-                        result.append(self.object_fraction)
-                result.append(self.__remove_button)
-                return result
-        image_group = ImageGroup(self.image_groups)
-        self.image_groups.append(image_group)
+        group = MeasureImageQualitySettingsGroup() # helper class defined below
+        group.append("image_name", cps.ImageNameSubscriber("Select an image to measure","None", 
+                                                           doc = '''What did you call the grayscale images whose quality you want to measure?'''))
+        group.append("check_blur", cps.Binary("Check for blur:",
+                                              True, 
+                                              doc = '''Would you like to check for blur? Blur is measured by calculating a focus score
+                                                  (higher = better focus).'''))
+        group.append("window_size", cps.Integer("Window Size:",
+                                                20, minval =1,
+                                                doc = '''The local focus score is measured within an NxN pixel window 
+                                                  applied to the image. What value of N would you like to use? A suggested 
+                                                  value is twice the typical object diameter. You
+                                                  can measure the local focus score over multiple windows by adding an image
+                                                  to the list more than once and by setting different window sizes for
+                                                  each image.'''))
+        group.append("check_saturation", cps.Binary("Check for saturation:",
+                                                    True, doc = '''Would you like to check for saturation?'''))
+        group.append("calculate_threshold", cps.Binary("Calculate threshold:",
+                                                       True, doc = '''Would you like to calculate a suggested threshold?'''))
+        group.append("threshold_method", cps.Choice("Select a thresholding method:",
+                                                    cpthresh.TM_GLOBAL_METHODS,
+                                                    cpthresh.TM_OTSU_GLOBAL, 
+                                                    doc = '''This setting allows you to access the same automatic thresholding 
+                                                       methods used in the <b>Identify</b> modules.  You may select any of these automatic thresholding 
+                                                       methods, or choose "Manual" to enter a threshold manually.  To choose a binary image, select "Binary image". 
+                                                       The output of <b>MeasureImageQuality</b> will be a numerical threshold, rather than objects.  
+                                                       For more help on thresholding, see the Identify modules.'''))
+        group.append("object_fraction", cps.Float("What fraction of the image is composed of objects?", 0.1,0,1))
+        group.append("remove_button", cps.RemoveSettingButton("Remove the image above", "Remove", self.image_groups, group))
+        group.append("divider", cps.Divider())
+        self.image_groups.append(group)
 
     def prepare_to_set_values(self, setting_values):
         '''Adjust self.image_groups to account for the expected # of images'''
         assert len(setting_values) % SETTINGS_PER_GROUP == 0
         group_count = len(setting_values) / SETTINGS_PER_GROUP
-        while len(self.image_groups) > group_count:
-            self.image_groups[-1].remove()
+        del self.image_groups[group_count:]
         while len(self.image_groups) < group_count:
             self.add_image_group()
 
@@ -244,15 +163,29 @@ class MeasureImageQuality(cpm.CPModule):
         '''The settings in the save / load order'''
         result = []
         for image_group in self.image_groups:
-            result += image_group.settings()
+            result += [image_group.image_name, image_group.check_blur, image_group.window_size,
+                       image_group.check_saturation, image_group.calculate_threshold,
+                       image_group.threshold_method, image_group.object_fraction]
         return result
 
     def visible_settings(self):
         '''The settings as displayed to the user'''
         result = []
         for image_group in self.image_groups:
-            result += image_group.visible_settings()
-        result.append(self.add_button)
+            result += [image_group.image_name, image_group.check_blur]
+            if image_group.check_blur.value:
+                result += [image_group.window_size]
+            result += [image_group.check_saturation, image_group.calculate_threshold]
+            if image_group.calculate_threshold.value:
+                result += [image_group.threshold_method]
+                if image_group.threshold_method == cpthresh.TM_MOG_GLOBAL:
+                    result += [image_group.object_fraction]
+            result += [image_group.remove_button, image_group.divider]
+            
+        # remove the last divider
+        del result[-1]
+
+        result += [self.bottom_spacer, self.add_button]
         return result
 
     def test_valid(self, pipeline):
@@ -260,48 +193,36 @@ class MeasureImageQuality(cpm.CPModule):
         
         In particular, we make sure that no measurements are duplicated
         '''
+        # check for duplicated measurements
+        measurements, sources = self.get_measurement_columns(pipeline, return_sources=True)
         d = {}
-        for image_group in self.image_groups:
-            image_name = image_group.image_name.value
-            if not d.has_key(image_name):
-                d[image_name] = {}
-            dd = d[image_name]
-            for key_name, value in \
-                (("check_blur_%d"%image_group.window_size.value, image_group.check_blur.value),
-                 ("check_saturation", image_group.check_saturation.value),
-                 ("calculate_threshold_%s", (image_group.calculate_threshold.value,
-                                             image_group.threshold_algorithm))):
-                if value:
-                    if dd.has_key(key_name):
-                        raise cps.ValidationError("%s image specified twice"%
-                                                  image_name, 
-                                                  image_group.image_name)
-                else:
-                    dd[key_name] = True
-                    
-        return cpm.CPModule.test_valid(self, pipeline)
+        for m, s in zip(measurements, sources):
+            if m in d:
+                raise cps.ValidationError("%s measurement made twice."%(m[1]), s)
+            d[m] = True
 
-    @property
+        # validate individual settings
+        cpm.CPModule.test_valid(self, pipeline)
+
     def any_threshold(self):
         '''True if some image has its threshold calculated'''
         return any([ig.calculate_threshold.value 
                     for ig in self.image_groups])
     
-    @property
     def any_saturation(self):
         '''True if some image has its saturation calculated'''
         return any([ig.check_saturation.value
                      for ig in self.image_groups])
     
-    @property
     def any_blur(self):
         '''True if some image has its blur calculated'''
         return any([ig.check_blur.value
                     for ig in self.image_groups])
     
-    def get_measurement_columns(self, pipeline):
+    def get_measurement_columns(self, pipeline, return_sources=False):
         '''Return column definitions for all measurements'''
         columns = []
+        sources = []
         for ig in self.image_groups:
             if ig.check_blur.value:
                 for feature in (FOCUS_SCORE,LOCAL_FOCUS_SCORE):
@@ -310,30 +231,36 @@ class MeasureImageQuality(cpm.CPModule):
                                                    ig.image_name.value,
                                                    ig.window_size.value),
                                     cpmeas.COLTYPE_FLOAT))
+                    sources.append(ig.image_name)
             if ig.check_saturation.value:
                 for feature in (PERCENT_SATURATION, PERCENT_MAXIMAL):
                     columns.append((cpmeas.IMAGE,
                                     '%s_%s_%s'%(IMAGE_QUALITY, feature,
                                                 ig.image_name.value),
                                     cpmeas.COLTYPE_FLOAT))
+                    sources.append(ig.image_name)
             if ig.calculate_threshold.value:
                 feature = ig.threshold_feature_name
                 columns.append((cpmeas.IMAGE, feature, cpmeas.COLTYPE_FLOAT))
-        return columns
+                sources.append(ig.image_name)
+        if return_sources:
+            return columns, sources
+        else:
+            return columns
             
     def get_categories(self, pipeline, object_name):
         if object_name == cpmeas.IMAGE:
             return [IMAGE_QUALITY]
-        elif (object_name == cpmeas.EXPERIMENT and self.any_threshold):
+        elif (object_name == cpmeas.EXPERIMENT and self.any_threshold()):
             return [IMAGE_QUALITY]
         return [] 
 
     def get_measurements(self, pipeline, object_name, category):
         if object_name == cpmeas.IMAGE and category == IMAGE_QUALITY:
             result = []
-            if self.any_blur:
+            if self.any_blur():
                 result += [FOCUS_SCORE, LOCAL_FOCUS_SCORE]
-            if self.any_saturation:
+            if self.any_saturation():
                 result += [PERCENT_SATURATION, PERCENT_MAXIMAL]
             thresholds = set([THRESHOLD+ig.threshold_algorithm 
                               for ig in self.image_groups
@@ -407,8 +334,9 @@ class MeasureImageQuality(cpm.CPModule):
         '''Calculate a local blur measurement and a image-wide one
         
         '''
+        image_name = image_group.image_name.value
         window_size = image_group.window_size.value
-        image = workspace.image_set.get_image(image_group.image_name.value,
+        image = workspace.image_set.get_image(image_name,
                                               must_be_grayscale = True)
         pixel_data = image.pixel_data
         shape = image.pixel_data.shape
@@ -461,20 +389,20 @@ class MeasureImageQuality(cpm.CPModule):
         # Add the measurements
         #
         focus_score_name = "%s_%s_%s_%d"%(IMAGE_QUALITY,FOCUS_SCORE,
-                                          image_group.image_name.value,
+                                          image_name,
                                           window_size)
         workspace.add_measurement(cpmeas.IMAGE, focus_score_name,
                                   focus_score)
         
         local_focus_score_name = "%s_%s_%s_%d"%(IMAGE_QUALITY,
                                                 LOCAL_FOCUS_SCORE,
-                                                image_group.image_name.value,
+                                                image_name,
                                                 window_size)
         workspace.add_measurement(cpmeas.IMAGE, local_focus_score_name,
                                   local_focus_score)
-        return [["%s focus score @%d"%(image_group.image_name.value,
+        return [["%s focus score @%d"%(image_name,
                                        window_size), focus_score],
-                ["%s local focus score @%d"%(image_group.image_name.value,
+                ["%s local focus score @%d"%(image_name,
                                              window_size), local_focus_score]]
     
     def calculate_saturation(self, image_group, workspace):
@@ -620,3 +548,17 @@ class MeasureImageQuality(cpm.CPModule):
             variable_revision_number = 1
         return setting_values, variable_revision_number, from_matlab
 
+
+class MeasureImageQualitySettingsGroup(cps.SettingsGroup):
+    @property
+    def threshold_algorithm(self):
+        '''The thresholding algorithm to run'''
+        return self.threshold_method.value.split(' ')[0]
+
+    @property
+    def  threshold_feature_name(self):
+        '''The feature name of the threshold measurement generated'''
+        return "%s_%s%s_%s"%(IMAGE_QUALITY, THRESHOLD, 
+                             self.threshold_algorithm,
+                             self.image_name.value)
+                    

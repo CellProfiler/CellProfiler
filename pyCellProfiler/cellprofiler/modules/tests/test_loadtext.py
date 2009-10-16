@@ -275,6 +275,25 @@ class TestLoadText(unittest.TestCase):
                             'Failed to find %s'%colname)
         os.remove(filename)
     
+    def test_07_02_file_name_measurement_columns(self):
+        '''Regression test bug IMG-315
+        
+        A csv header of Image_FileName_Foo or Image_PathName_Foo should
+        yield column names of FileName_Foo and PathName_Foo
+        '''
+        colnames = ('Image_FileName_Foo','Image_PathName_Foo')
+        csv_text = '''"%s","%s"
+"Channel1-01.tif","/imaging/analysis/2500_01_01_Jones"
+"Channel1-02.tif","/imaging/analysis/2500_01_01_Jones"
+'''%colnames
+        pipeline, module, filename = self.make_pipeline(csv_text)
+        try:
+            columns = module.get_measurement_columns(None)
+            self.assertTrue('FileName_Foo' in [c[1] for c in columns])
+            self.assertTrue('PathName_Foo' in [c[1] for c in columns])
+        finally:
+            os.remove(filename)
+        
     def test_08_01_get_groupings(self):
         '''Test the get_groupings method'''
         dir = os.path.join(example_images_directory(), "ExampleSBSImages")

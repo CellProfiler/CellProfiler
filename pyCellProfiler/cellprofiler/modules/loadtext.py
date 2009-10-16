@@ -490,7 +490,7 @@ that can be processed by different nodes in a cluster.
         '''Return column definitions for measurements output by this module'''
         fd = open(self.csv_path, 'rb')
         reader = csv.reader(fd)
-        header = reader.next()
+        header = [header_to_column(x) for x in reader.next()]
         coltypes = [cpmeas.COLTYPE_INTEGER]*len(header)
         collen = [0]*len(header)
         for row in reader:

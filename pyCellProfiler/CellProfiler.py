@@ -98,7 +98,7 @@ if (not hasattr(sys, 'frozen')) and options.do_not_build:
     if sys.platform == 'win32':
         compile_scripts += [(os.path.join('cellprofiler','ffmpeg','setup.py'),
                              cellprofiler.ffmpeg.setup)]
-    current_directory = os.curdir
+    current_directory = os.path.abspath(os.curdir)
     for compile_script,my_module in compile_scripts:
         script_path, script_file = os.path.split(compile_script)
         os.chdir(os.path.join(root,script_path))

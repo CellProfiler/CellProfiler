@@ -56,6 +56,7 @@ ID_WINDOW_SHOW_ALL_FRAMES = wx.NewId()
 ID_WINDOW_HIDE_ALL_FRAMES = wx.NewId()
 
 ID_HELP_MODULE=wx.NewId()
+ID_HELP_DEVELOPERS_GUIDE = wx.NewId()
 
 class CPFrame(wx.Frame):
     def __init__(self, *args, **kwds):
@@ -138,11 +139,14 @@ class CPFrame(wx.Frame):
         self.__menu_bar.Append(self.__menu_window,"&Window")
         self.__menu_help = wx.Menu()
         self.__menu_help.Append(ID_HELP_MODULE,'Module help','Display help from the module''s .m file')
+        self.__menu_help.Append(ID_HELP_DEVELOPERS_GUIDE,"Developer's guide",
+                                "Launch the developer's guide webpage")
         self.__menu_bar.Append(self.__menu_help,'&Help')
         self.SetMenuBar(self.__menu_bar)
         wx.EVT_MENU(self,ID_FILE_EXIT,lambda event: self.Close())
         wx.EVT_MENU(self,ID_FILE_WIDGET_INSPECTOR,self.__on_widget_inspector)
         wx.EVT_MENU(self,ID_HELP_MODULE,self.__on_help_module)
+        wx.EVT_MENU(self,ID_HELP_DEVELOPERS_GUIDE, self.__on_help_developers_guide)
         wx.EVT_MENU(self,ID_OPTIONS_PREFERENCES, self.__on_preferences)
         wx.EVT_MENU(self,ID_WINDOW_CLOSE_ALL, self.__on_close_all)
         accelerator_table = wx.AcceleratorTable([(wx.ACCEL_CMD,ord('N'),ID_FILE_ANALYZE_IMAGES),
@@ -178,6 +182,11 @@ class CPFrame(wx.Frame):
     
     def __on_close_all(self, event):
         close_all(self)
+    
+    def __on_help_developers_guide(self, event):
+        import webbrowser
+        filename = os.path.abspath("developers-guide/developer.html")
+        webbrowser.open(filename)
         
     def __on_help_module(self,event):
         modules = self.__pipeline_list_view.get_selected_modules()

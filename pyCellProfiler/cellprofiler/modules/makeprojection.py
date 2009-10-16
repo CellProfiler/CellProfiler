@@ -1,15 +1,30 @@
-'''makeprojection.py implements the MakeProjection module
+'''<b>MakeProjection</b>: Makes a projection either by averaging or taking the maximum pixel value
+at each pixel position.
 
-CellProfiler is distributed under the GNU General Public License.
-See the accompanying file LICENSE for details.
+<hr>
 
-Developed by the Broad Institute
-Copyright 2003-2009
+This module averages a set of images by averaging the pixel intensities
+at each pixel position. When this module is used to average a Z-stack
+(3-D image stack), this process is known as making a projection.
 
-Please see the AUTHORS file for credits.
+The image is immediately available in subsequent modules. The complete
+projection is not complete until the last image in the image set is run.
 
-Website: http://www.cellprofiler.org
+To make a projection of all images in a directory, group the images 
+as such using metadata (extracted from the subdirectory path) in LoadImages.
+This achieves the same functionality as LoadImageDirectory.
+
 '''
+#CellProfiler is distributed under the GNU General Public License.
+#See the accompanying file LICENSE for details.
+#
+#Developed by the Broad Institute
+#Copyright 2003-2009
+#
+#Please see the AUTHORS file for credits.
+#
+#Website: http://www.cellprofiler.org
+
 __version__="$Revision$"
 
 import numpy as np
@@ -23,43 +38,19 @@ P_MAXIMUM = 'Maximum'
 P_ALL = [P_AVERAGE, P_MAXIMUM]
 
 class MakeProjection(cpm.CPModule):
-    '''SHORT DESCRIPTION:
-Makes a projection either by averaging or taking the maximum pixel value
-at each pixel position.
-
-*************************************************************************
-
-This module averages a set of images by averaging the pixel intensities
-at each pixel position. When this module is used to average a Z-stack
-(3-D image stack), this process is known as making a projection.
-
-The image is immediately available in subsequent modules. The complete
-projection is not complete until the last image in the image set is run.
-
-Settings:
-
-* What did you call the images to be made into a projection?:
-   Choose an image from among those loaded by a module or created by the
-pipeline, which will be made into a projection with the corresponding images of every
-image set.
-
-* What kind of projection would you like to make?:
-  If you choose Average, the average pixel intensity at each pixel
-  position will be used to created the final image.  If you choose
-  Maximum, the maximum pixel value at each pixel position will be used to
-  created the final image.
-* What do you want to call the projected image?:
-  This is the name that can be used to reference the image later in the pipeline.
-'''
+    
     category = 'Image Processing'
     variable_revision_number = 1
     def create_settings(self):
         self.module_name = 'MakeProjection'
-        self.image_name = cps.ImageNameSubscriber('What did you call the images to be made into a projection?','None')
+        self.image_name = cps.ImageNameSubscriber('Select the input image','None', doc = '''What did you call the images to be made into a projection?''')
         self.projection_type = cps.Choice('What kind of projection would you like to make?',
-                                          P_ALL)
-        self.projection_image_name = cps.ImageNameProvider('What do you want to call the projected image?',
-                                                           'ProjectionBlue')
+                                          P_ALL, doc = '''<ul><li>Average: The average pixel intensity at each pixel position
+                                          will be used to create the final image.</li>
+                                          <li>Maximum: The maximum pixel value at each pixel position will be used to
+                                          create the final image.</li></ul>''')
+        self.projection_image_name = cps.ImageNameProvider('Name the output image',
+                                                           'ProjectionBlue', doc = '''What do you want to call the projected image?''')
 
     def settings(self):
         return [self.image_name, self.projection_type, 

@@ -71,11 +71,11 @@ M_DISTANCE_B = "Distance - B"
 
 class IdentifySecondary(cpmi.Identify):
 
+    module_name = "IdentifySecondary"
     variable_revision_number = 2
     category = "Object Processing"
     
     def create_settings(self):
-        self.module_name = "IdentifySecondary"
         self.primary_objects = cps.ObjectNameSubscriber("Select the input objects","Nuclei",doc="""
             Each primary object is associated with exaqctly one secondary object and it 
             is assumed to be completely contained within it.""")

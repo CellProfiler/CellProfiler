@@ -63,12 +63,12 @@ class CreateBatchFiles(cpm.CPModule):
     #     pickled_image_set_list. If batch_mode is True, we load the state
     #     from pickled_image_set_list.
     #
+    module_name = "CreateBatchFiles"
     category = 'File Processing'
     variable_revision_number = 4
     
     def create_settings(self):
         '''Create the module settings and name the module'''
-        self.module_name = "CreateBatchFiles"
         self.wants_default_output_directory = cps.Binary("Do you want to store the batch files in the default output directory?", True,doc="""
                 Check this box to store batch files in the Default Output directory. Uncheck
                 the box to enter the path to the directory that will be used to store

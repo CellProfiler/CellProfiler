@@ -47,6 +47,7 @@ IMAGE_SETTING_COUNT = 3
 
 
 class MeasureImageAreaOccupied(cpm.CPModule):
+    module_name = "MeasureImageAreaOccupied"
     category = "Measurement"
     variable_revision_number = 2
     
@@ -57,7 +58,6 @@ class MeasureImageAreaOccupied(cpm.CPModule):
         self.divider_top = cps.Divider(line=False)
         self.objects = []
         self.add_object(False)
-        self.module_name = "MeasureImageAreaOccupied"
         self.add_button = cps.DoSomething("Add another object","Add object", self.add_object, True)
         self.divider_bottom = cps.Divider(line=False)
         

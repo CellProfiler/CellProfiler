@@ -64,12 +64,12 @@ TOTAL_AREA = 'TotalArea'
 
 class MeasureImageIntensity(cpm.CPModule):
 
+    module_name = 'MeasureImageIntensity'
     category = "Measurement"
     variable_revision_number = 1
     
     def create_settings(self):
         '''Create the settings & name the module'''
-        self.module_name = 'MeasureImageIntensity'
         self.images = []
         self.add_image_measurement()
         self.add_button = cps.DoSomething("Add another image","Add image",

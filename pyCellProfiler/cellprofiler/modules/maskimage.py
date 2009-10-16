@@ -34,6 +34,7 @@ import cellprofiler.settings as cps
 
 class MaskImage(cpm.CPModule):
 
+    module_name = "MaskImage"
     category = "Image Processing"
     variable_revision_number = 1
     
@@ -41,7 +42,6 @@ class MaskImage(cpm.CPModule):
         """Create the settings here and set the module name (initialization)
         
         """
-        self.module_name = "MaskImage"
         self.object_name = cps.ObjectNameSubscriber("Select object for mask:","None",
                                                     doc = '''From which object would you like to make a mask?''')
         self.image_name = cps.ImageNameSubscriber("Select input image:","None", doc = '''Which image do you want to mask?''')

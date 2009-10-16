@@ -128,11 +128,11 @@ def connect_sqlite(db_file):
     
 class ExportToDatabase(cpm.CPModule):
  
+    module_name = "ExportToDatabase"
     variable_revision_number = 9
     category = "File Processing"
 
     def create_settings(self):
-        self.module_name = "ExportToDatabase"
         self.db_type = cps.Choice("What type of database do you want to use?",
                                   [DB_MYSQL,DB_ORACLE,DB_SQLITE], DB_MYSQL, doc = '''<ul><li><i>MySQL</i>
                                   will allow you to write directly to the database.  <li><i>Oracle</i> is currently

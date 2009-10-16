@@ -131,11 +131,11 @@ F_ALL = [feature for feature, coltype in F_ALL_COLTYPE_ALL]
 
 class TrackObjects(cpm.CPModule):
     
+    module_name = 'TrackObjects'
     category = "Object Processing"
     variable_revision_number = 1
     
     def create_settings(self):
-        self.module_name = 'TrackObjects'
         self.tracking_method = cps.Choice('Choose a tracking method',
                                           TM_ALL, doc="""\
             Choose between the methods based on which is most consistent from frame

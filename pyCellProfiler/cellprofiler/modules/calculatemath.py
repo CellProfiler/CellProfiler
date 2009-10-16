@@ -59,11 +59,11 @@ Automatic naming.
 See also CalculateRatios, all Measure modules.
 '''
 
+    module_name = "CalculateMath"
     category="Measurement"
     variable_revision_number = 1
     
     def create_settings(self):
-        self.module_name = "CalculateMath"
         class Operand(object):
             '''Represents the collection of settings needed by each operand'''
             def __init__(self, index, operation):

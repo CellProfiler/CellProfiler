@@ -38,13 +38,13 @@ BINARY = "Binary (black and white)"
 
 class ApplyThreshold(Identify):
 
+    module_name = "ApplyThreshold"
     variable_revision_number = 3
     category = "Image Processing"
 
     def create_settings(self):
         threshold_methods = [method for method in TM_METHODS
                              if method != TM_BINARY_IMAGE]
-        self.module_name = self.__class__.__name__
         self.image_name = cpsetting.NameSubscriber("Select the input image",
                                                    "imagegroup", "None", doc = '''Which image do you want to threshold?''')
         self.thresholded_image_name = cpsetting.NameProvider("Name the output image",

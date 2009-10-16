@@ -91,11 +91,11 @@ ALL_MEASUREMENTS = [INTEGRATED_INTENSITY, MEAN_INTENSITY, STD_INTENSITY,
 
 class MeasureObjectIntensity(cpm.CPModule):
 
+    module_name = "MeasureObjectIntensity"
     variable_revision_number = 2
     category = "Measurement"
     
     def create_settings(self):
-        self.module_name = "MeasureObjectIntensity"
         self.image_keys =[uuid.uuid1()]
         self.image_names = [cps.ImageNameSubscriber("What did you call the grayscale images you want to process?","None")]
         self.image_names_remove_buttons = [cps.DoSomething("Remove above image",

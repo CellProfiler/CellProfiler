@@ -47,6 +47,7 @@ from cellprofiler.cpmath.outline import outline
 
 class IdentifyTertiarySubregion(cpm.CPModule):
 
+    module_name = "IdentifyTertiarySubregion"
     variable_revision_number = 1
     category = "Object Processing"
     
@@ -55,7 +56,6 @@ class IdentifyTertiarySubregion(cpm.CPModule):
         
         Create the settings for the module during initialization.
         """
-        self.module_name = "IdentifyTertiarySubregion"
         self.secondary_objects_name = cps.ObjectNameSubscriber("Select the larger identified objects?","None")
         self.primary_objects_name = cps.ObjectNameSubscriber("Select the smaller identified objects?","None")
         self.subregion_objects_name = cps.ObjectNameProvider("Name the identified subregion objects?","Cytoplasm",doc="""

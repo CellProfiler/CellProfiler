@@ -48,11 +48,11 @@ FF_MEAN = 'Mean_%s_%s'
 
 class Relate(cpm.CPModule):
 
+    module_name = 'Relate'
     category = "Object Processing"
     variable_revision_number = 1
     
     def create_settings(self):
-        self.module_name = 'Relate'
         self.sub_object_name = cps.ObjectNameSubscriber('Select the input child objects',
                                                         'None',doc="""
             The child objects are defined as those objects contained within the 

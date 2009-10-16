@@ -51,11 +51,11 @@ R_SET_TO_ONE = 'Set to one'
 
 class RescaleIntensity(cpm.CPModule):
 
+    module_name = "RescaleIntensity"
     category="Image Processing"
     variable_revision_number = 1
     
     def create_settings(self):
-        self.module_name = "RescaleIntensity"
         self.image_name = cps.ImageNameSubscriber("Select the input image","None", doc = '''What did you call the image to be rescaled?''')
         self.rescaled_image_name = cps.ImageNameProvider("Name the output image","RescaledBlue", doc = '''What do you want to call the rescaled image?''')
         self.rescale_method = cps.Choice('Which rescaling method do you want to use?',

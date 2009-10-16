@@ -113,9 +113,11 @@ def default_cpimage_name(index):
 
 class LoadImages(cpmodule.CPModule):
 
+    module_name = "LoadImages"
+    variable_revision_number = 4
+    category = "File Processing"
+
     def create_settings(self):
-        self.module_name = "LoadImages"
-        
         # Settings
         self.file_types = cps.Choice('What type of files are you loading?', FF, doc="""
                 The following image file types are permissible for input into CellProfiler:
@@ -629,8 +631,6 @@ class LoadImages(cpmodule.CPModule):
         new_values += setting_values[self.SLOT_FIRST_IMAGE_V3:]
         return (new_values, 4)
 
-    variable_revision_number = 4
-    
     def write_to_handles(self,handles):
         """Write out the module's state to the handles
         
@@ -1152,8 +1152,6 @@ class LoadImages(cpmodule.CPModule):
             tags += cpm.find_metadata_tokens(fd[FD_PATH_METADATA].value)
         return tags
     
-    category = "File Processing"
-
     def get_groupings(self, image_set_list):
         '''Return the groupings as indicated by the metadata_fields setting'''
         if self.group_by_metadata.value:

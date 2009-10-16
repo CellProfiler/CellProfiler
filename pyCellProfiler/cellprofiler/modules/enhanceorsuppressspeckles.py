@@ -34,11 +34,11 @@ SUPPRESS = 'Suppress'
 
 class EnhanceOrSuppressSpeckles(cpm.CPModule):
 
+    module_name = 'EnhanceOrSuppressSpeckles'
     category = "Image Processing"
     variable_revision_number = 1
     
     def create_settings(self):
-        self.module_name = 'EnhanceOrSuppressSpeckles'
         self.image_name = cps.ImageNameSubscriber('Select the input image',
                                                   'None')
         self.filtered_image_name = cps.ImageNameProvider('Name the output image',

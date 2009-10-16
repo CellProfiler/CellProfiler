@@ -100,11 +100,11 @@ S_ADJACENT = 'Adjacent'
 
 class MeasureObjectNeighbors(cpm.CPModule):
     
+    module_name = 'MeasureObjectNeighbors'
     category = "Measurement"
     variable_revision_number = 1
 
     def create_settings(self):
-        self.module_name = 'MeasureObjectNeighbors'
         self.object_name = cps.ObjectNameSubscriber('Select input objects','None')
         self.distance_method = cps.Choice('How do you want to determine whether objects are touching?',
                                           D_ALL, D_EXPAND,doc="""

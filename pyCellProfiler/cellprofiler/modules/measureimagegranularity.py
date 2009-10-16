@@ -81,10 +81,10 @@ import cellprofiler.cpmath.cpmorphology as morph
 C_GRANULARITY = "Granularity"
 
 class MeasureImageGranularity(cpm.CPModule):
+    module_name = 'MeasureImageGranularity'
     category = "Measurement"
     variable_revision_number = 1
     def create_settings(self):
-        self.module_name = 'MeasureImageGranularity'
         self.image_settings = []
         self.add_image_setting(False)
         self.add_image_button = cps.DoSomething(

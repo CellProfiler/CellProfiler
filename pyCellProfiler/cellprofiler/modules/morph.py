@@ -353,11 +353,11 @@ R_ALL = [R_ONCE, R_FOREVER, R_CUSTOM]
 
 class Morph(cpm.CPModule):
 
+    module_name = "Morph"
     category="Image Processing"
     variable_revision_number = 1
     
     def create_settings(self):
-        self.module_name = "Morph"
         self.image_name = cps.ImageNameSubscriber("What image do you want to morph?","None",doc="""
             This is the input image to the module. A grayscale image can be
             converted to binary using the <b>ApplyThreshold</b> module. Objects can be

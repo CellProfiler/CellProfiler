@@ -75,11 +75,11 @@ OBJECT_NUMBER = "ObjectNumber"
 
 class ExportToExcel(cpm.CPModule):
 
+    module_name = 'ExportToExcel'
     category = 'File Processing'
     variable_revision_number = 2
     
     def create_settings(self):
-        self.module_name = 'ExportToExcel'
         self.delimiter = cps.CustomChoice('What delimiter do you want to use?',
                                           DELIMITERS, doc = '''This is the character that separates columns in a file. The
                                           two choices are tab and comma, but you can add any single character delimiter you like.''')

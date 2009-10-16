@@ -70,12 +70,12 @@ F_SLOPE_FORMAT = "Correlation_Slope_%s_%s"
 
 class MeasureCorrelation(cpm.CPModule):
 
+    module_name = 'MeasureCorrelation'
     category = 'Measurement'
     variable_revision_number = 1
     
     def create_settings(self):
         '''Create the initial settings for the module'''
-        self.module_name = 'MeasureCorrelation'
         self.image_groups = []
         self.add_image(can_delete = False)
         self.add_image(can_delete = False)

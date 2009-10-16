@@ -105,6 +105,7 @@ class MeasureTexture(cpm.CPModule):
     orientations.
     """
 
+    module_name = "MeasureTexture"
     variable_revision_number = 1
     category = 'Measurement'
 
@@ -114,7 +115,6 @@ class MeasureTexture(cpm.CPModule):
         The module allows for an unlimited number of measured objects, each
         of which has an entry in self.object_groups.
         """ 
-        self.module_name = "MeasureTexture"
         self.image_groups = []
         self.object_groups = []
         self.scale_groups = []

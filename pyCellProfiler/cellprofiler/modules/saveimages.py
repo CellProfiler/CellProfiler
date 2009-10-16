@@ -81,11 +81,11 @@ CM_GRAY        = "gray"
 
 class SaveImages(cpm.CPModule):
 
+    module_name = "SaveImages"
     variable_revision_number = 2
     category = "File Processing"
     
     def create_settings(self):
-        self.module_name = "SaveImages"
         self.save_image_or_figure = cps.Choice("Do you want to save an image, the image's crop mask, the image's cropping, a movie or a figure window?",
                                                [IF_IMAGE, IF_MASK, IF_CROPPING, IF_MOVIE,IF_FIGURE],IF_IMAGE,doc="""
                 <ul>

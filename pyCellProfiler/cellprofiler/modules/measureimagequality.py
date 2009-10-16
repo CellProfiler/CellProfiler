@@ -126,11 +126,11 @@ Gaussian distribution to foreground or background. You'll be asked to specify
 fraction in the question, "What fraction of the image is composed of objects?" 
 '''
 
+    module_name = "MeasureImageQuality"
     category = "Measurement"
     variable_revision_number = 1
 
     def create_settings(self):
-        self.module_name = "MeasureImageQuality"
         self.image_groups = []
         self.add_image_group()
         self.add_button = cps.DoSomething("Add another image for measurement:",

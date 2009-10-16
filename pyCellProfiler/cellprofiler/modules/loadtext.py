@@ -169,11 +169,11 @@ This option can be used to break the image sets in an experiment into groups
 that can be processed by different nodes in a cluster.
 '''
 
+    module_name = "LoadText"
     category = 'File Processing'
     variable_revision_number = 2
 
     def create_settings(self):
-        self.module_name = "LoadText"
         self.uuid = uuid.uuid4()
         self.csv_directory_choice = cps.Choice("Where is the CSV file located?",
                                                DIR_ALL)

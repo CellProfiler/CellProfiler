@@ -64,13 +64,13 @@ ROBUST_FACTOR      = .02 # For rescaling, take 2nd percentile value
 
 class CorrectIllumination_Calculate(cpm.CPModule):
     
+    module_name = "CorrectIllumination_Calculate"
     variable_revision_number = 1
     category = "Image Processing"
     
     def create_settings(self):
         """Create the setting variables
         """
-        self.module_name = "CorrectIllumination_Calculate"
         self.image_name = cps.ImageNameSubscriber("Select the input image","None", doc = '''What did you call the images to be used to calculate the illumination function?''')
         self.illumination_image_name = cps.ImageNameProvider("Select the output image","IllumBlue", doc = '''What do you want to call the illumination function?''')
         self.intensity_choice = cps.Choice("Do you want to calculate using regular intensities or background intensities?",

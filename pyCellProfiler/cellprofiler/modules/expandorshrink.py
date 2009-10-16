@@ -61,10 +61,10 @@ to a single point.'''
 
 class ExpandOrShrink(cpm.CPModule):
 
+    module_name = 'ExpandOrShrink'
     category = 'Object Processing'
     variable_revision_number = 1
     def create_settings(self):
-        self.module_name = 'ExpandOrShrink'
         self.object_name = cps.ObjectNameSubscriber("Select the input objects",
                                                     "None", doc = '''What did you call the objects you want to expand or shrink?''')
         self.output_object_name = cps.ObjectNameProvider("Name the output objects", 

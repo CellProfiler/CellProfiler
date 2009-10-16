@@ -36,11 +36,11 @@ SMOOTH_KEEPING_EDGES = 'Smooth Keeping Edges'
 
 class Smooth(cpm.CPModule):
     
+    module_name = 'Smooth'
     category = "Image Processing"
     variable_revision_number = 1
      
     def create_settings(self):
-        self.module_name = 'Smooth'
         self.image_name = cps.ImageNameSubscriber('Select the input image','None')
         self.filtered_image_name = cps.ImageNameProvider('Name the output image','FilteredImage')
         self.smoothing_method = cps.Choice('Enter the smoothing method you would like to use.',

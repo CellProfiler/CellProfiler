@@ -64,12 +64,12 @@ FF_PARENT = "Parent_%s"
 
 class FilterByObjectMeasurement(cpm.CPModule):
 
+    module_name = 'FilterByObjectMeasurement'
     category = "Object Processing"
     variable_revision_number = 1
     
     def create_settings(self):
         '''Create the initial settings and name the module'''
-        self.module_name = 'FilterByObjectMeasurement'
         self.target_name = cps.ObjectNameProvider('Name the output objects','FilteredBlue',
                                                   doc = '''What do you want to call the filtered objects? This will be the name for the collection of objects that meet the filter
                                                     criteria.''')

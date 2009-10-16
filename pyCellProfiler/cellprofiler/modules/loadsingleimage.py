@@ -47,13 +47,13 @@ FD_REMOVE_BUTTON = "RemoveButton"
 
 class LoadSingleImage(cpm.CPModule):
 
+    module_name = "LoadSingleImage"
     category = "File Processing"
     variable_revision_number = 1
     def create_settings(self):
         """Create the settings during initialization
         
         """
-        self.module_name = "LoadSingleImage"
         self.dir_choice = cps.Choice("Which folder contains the image files?",
                                      [DIR_DEFAULT_IMAGE_FOLDER,
                                       DIR_DEFAULT_OUTPUT_FOLDER,

@@ -34,10 +34,10 @@ OFF_GREEN_ADJUSTMENT_FACTOR = 5
 OFF_BLUE_ADJUSTMENT_FACTOR = 6
 
 class GrayToColor(cpm.CPModule):
+    module_name = 'GrayToColor'
     variable_revision_number = 1
     category = "Image Processing"
     def create_settings(self):
-        self.module_name = 'GrayToColor'
         self.red_image_name = cps.ImageNameSubscriber("Select input image to be colored red",
                                                       can_be_blank = True,
                                                       blank_text = "Leave this black")

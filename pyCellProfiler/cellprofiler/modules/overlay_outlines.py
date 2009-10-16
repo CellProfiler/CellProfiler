@@ -44,11 +44,11 @@ COLOR_ORDER = ["Red", "Green", "Blue","Yellow","White","Black"]
 
 class OverlayOutlines(cpm.CPModule):
 
+    module_name = 'OverlayOutlines'
     variable_revision_number = 1
     category = "Image Processing"
     
     def create_settings(self):
-        self.module_name = 'OverlayOutlines'
         self.blank_image = cps.Binary("Do you want to display outlines on a blank image?",
                                       False, doc="""
                         If you check this setting, the module will produce an

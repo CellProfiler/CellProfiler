@@ -125,6 +125,7 @@ F_STANDARD = [ F_AREA, F_ECCENTRICITY, F_SOLIDITY, F_EXTENT,
                F_ORIENTATION ]
 class MeasureObjectAreaShape(cpm.CPModule):
 
+    module_name = "MeasureObjectAreaShape"
     variable_revision_number = 1
     category = 'Measurement'
     
@@ -134,7 +135,6 @@ class MeasureObjectAreaShape(cpm.CPModule):
         The module allows for an unlimited number of measured objects, each
         of which has an entry in self.object_groups.
         """ 
-        self.module_name = "MeasureObjectAreaShape"
         self.object_groups = []
         self.add_object_cb()
         self.add_objects = cps.DoSomething("Add another object","Add",self.add_object_cb)

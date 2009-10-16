@@ -38,11 +38,11 @@ SPLIT = "Split"
 
 class ColorToGray(cpm.CPModule):
 
+    module_name = "ColorToGray"
     variable_revision_number = 1
     category = "Image Processing"
     
     def create_settings(self):
-        self.module_name = "ColorToGray"
         self.image_name = cps.NameSubscriber("Select the input image",
                                              "imagegroup","None")
         self.combine_or_split = cps.Choice("Method",

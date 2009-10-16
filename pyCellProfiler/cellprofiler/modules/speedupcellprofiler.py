@@ -37,11 +37,11 @@ S_NUMBER_OF_SETTINGS_PER_IMAGE = 1
 
 class SpeedUpCellProfiler(cpm.CPModule):
 
+    module_name = "SpeedUpCellProfiler"
     category = 'Other'
-    variable_revision_number = 1
+    variable_revision_number = 2
     
     def create_settings(self):
-        self.module_name = "SpeedUpCellProfiler"
         self.how_to_remove = cps.Choice("Do you want to choose the images to be removed or the images to keep?",
                                         C_ALL,doc="""
             Choose <i>%s</i> to remove some images from memory and keep the rest.
@@ -113,6 +113,9 @@ class SpeedUpCellProfiler(cpm.CPModule):
             setting_values = new_setting_values
             variable_revision_number = 1
             from_matlab = False
+        if (not from_matlab) and variable_revision_number == 1:
+                setting_values[0] = 'Remove' if (setting_values[0] == 'remove') else 'Keep'
+                variable_revision_number = 2
         return setting_values, variable_revision_number, from_matlab
     
 class ImageSettings(object):

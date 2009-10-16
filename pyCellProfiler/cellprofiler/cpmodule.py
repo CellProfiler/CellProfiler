@@ -161,6 +161,8 @@ class CPModule(object):
                                          variable_revision_number,
                                          module_name,
                                          not '.' in module_name)
+        # we can't handle matlab settings anymore
+        assert not from_matlab, "Module %s's backwards_compatibilize returned from_matlab==True"%(module_name)
         self.prepare_to_set_values(setting_values)
         for v,value in zip(self.settings(),setting_values):
             v.value = value

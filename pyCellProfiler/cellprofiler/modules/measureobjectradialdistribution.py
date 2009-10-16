@@ -79,11 +79,11 @@ MF_RADIAL_CV = '_'.join((M_CATEGORY,FF_RADIAL_CV))
 
 class MeasureObjectRadialDistribution(cpm.CPModule):
  
+    module_name = "MeasureObjectRadialDistribution"
     category = "Measurement"
     variable_revision_number = 1
     
     def create_settings(self):
-        self.module_name = "MeasureObjectRadialDistribution"
         self.images = []
         self.objects = []
         self.bin_counts = []

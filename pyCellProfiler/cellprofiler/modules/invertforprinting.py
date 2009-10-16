@@ -33,12 +33,12 @@ CC_COLOR = "Color"
 CC_ALL = [CC_COLOR, CC_GRAYSCALE]
 class InvertForPrinting(cpm.CPModule):
    
+    module_name = "InvertForPrinting"
     category = 'Image Processing'
     variable_revision_number = 1
     
     def create_settings(self):
         # Input settings
-        self.module_name = "InvertForPrinting"
         self.input_color_choice = cps.Choice(
             "Do you want to combine grayscale images or load a single color image?",
             CC_ALL)

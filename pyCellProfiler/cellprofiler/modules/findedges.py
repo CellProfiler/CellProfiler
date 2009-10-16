@@ -45,11 +45,11 @@ E_VERTICAL = "Vertical"
 
 class FindEdges(cpm.CPModule):
 
+    module_name = "FindEdges"
     category = "Image Processing"
     variable_revision_number = 2
 
     def create_settings(self):
-        self.module_name = "FindEdges"
         self.image_name = cps.ImageNameSubscriber("Select the input image","None", 
                                                   doc = '''What did you call the image in which you want to find the edges?''')
         self.output_image_name = cps.ImageNameProvider("Name the output image","EdgedImage",

@@ -21,9 +21,10 @@ class InjectImage(cellprofiler.cpmodule.CPModule):
     """This module is intended for testing. It injects an image into the
     image set.
     """
+    module_name = "InjectImage"
+
     def __init__(self, image_name, image, mask=None):
         super(InjectImage,self).__init__()
-        self.set_module_name("InjectImage")
         self.__image_name = image_name
         self.__image = image
         self.__mask  = mask
@@ -112,10 +113,12 @@ class InjectImage(cellprofiler.cpmodule.CPModule):
         """Return a list of scales (eg for texture) at which a measurement was taken
         """
         return []
-        
+
 class InjectObjects(cellprofiler.cpmodule.CPModule):
     """Inject objects with labels into the pipeline"""
     
+    module_name = "InjectObjects"
+
     def __init__(self,object_name, segmented, unedited_segmented=None, small_removed_segmented=None):
         """Initialize the module with the objects for the object set
         
@@ -127,7 +130,6 @@ class InjectObjects(cellprofiler.cpmodule.CPModule):
                                   same as segmented
         """ 
         super(InjectObjects,self).__init__()
-        self.module_name = "InjectObjects"
         self.object_name = cellprofiler.settings.ObjectNameProvider("text",object_name)
         self.__segmented = segmented
         self.__unedited_segmented = unedited_segmented

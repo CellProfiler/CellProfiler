@@ -65,11 +65,11 @@ class ConvertToImage(cpm.CPModule):
     in the main CellProfiler window.
     '''
     
+    module_name = "ConvertToImage"
     category = "Object Processing"
     variable_revision_number = 1
     
     def create_settings(self):
-        self.module_name = "ConvertToImage"
         self.object_name = cps.ObjectNameSubscriber("What did you call the objects you want to convert to an image?","None")
         self.image_name = cps.ImageNameProvider("What do you want to call the resulting image?", "CellImage")
         self.image_mode = cps.Choice("What colors should the resulting image use?",

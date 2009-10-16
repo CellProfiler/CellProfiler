@@ -165,8 +165,13 @@ class MeasureImageGranularity(cpm.CPModule):
         back_pixels = morph.grey_erosion(back_pixels, radius, back_mask)
         back_pixels = morph.grey_dilation(back_pixels, radius, back_mask)
         if image_setting.image_sample_size.value < 1:
-            i,j = (np.mgrid[0:new_shape[0],0:new_shape[1]].astype(float) *
-                   image_setting.image_sample_size.value)
+            i,j = np.mgrid[0:new_shape[0],0:new_shape[1]].astype(float)
+            #
+            # Make sure the mapping only references the index range of
+            # back_pixels.
+            #
+            i *= float(back_shape[0]-1)/float(new_shape[0]-1)
+            j *= float(back_shape[1]-1)/float(new_shape[1]-1)
             back_pixels = scind.map_coordinates(back_pixels,(i,j), order=1)
         pixels -= back_pixels
         pixels[pixels < 0] = 0

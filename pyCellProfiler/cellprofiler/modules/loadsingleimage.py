@@ -91,28 +91,6 @@ class LoadSingleImage(cpm.CPModule):
         index = [d[FD_KEY] for d in self.file_settings].index(key)
         del self.file_settings[index]
         
-    def backwards_compatibilize(self, setting_values, variable_revision_number, module_name, from_matlab):
-        if from_matlab and variable_revision_number == 4:
-            new_setting_values = list(setting_values)
-            # The first setting was blank in Matlab. Now it contains
-            # the directory choice
-            if setting_values[1] == '.':
-                new_setting_values[0] = DIR_DEFAULT_IMAGE_FOLDER
-            elif setting_values[1] == '&':
-                new_setting_values[0] = DIR_DEFAULT_OUTPUT_FOLDER
-            else:
-                new_setting_values[0] = DIR_CUSTOM_FOLDER
-            #
-            # Remove "Do not use" images
-            #
-            for i in [8, 6, 4]:
-                if new_setting_values[i+1] == cps.DO_NOT_USE:
-                    del new_setting_values[i:i+2]
-            setting_values = new_setting_values
-            from_matlab = False
-            variable_revision_number = 1
-        return setting_values, variable_revision_number, from_matlab
-
     def settings(self):
         """Return the settings in the order in which they appear in a pipeline file"""
         result = [self.dir_choice, self.custom_directory]
@@ -186,3 +164,26 @@ class LoadSingleImage(cpm.CPModule):
             figure = workspace.create_or_find_figure(title=title,
                                                      subplots=(1,1))
             figure.subplot_table(0,0, statistics)
+    
+    def backwards_compatibilize(self, setting_values, variable_revision_number, module_name, from_matlab):
+        if from_matlab and variable_revision_number == 4:
+            new_setting_values = list(setting_values)
+            # The first setting was blank in Matlab. Now it contains
+            # the directory choice
+            if setting_values[1] == '.':
+                new_setting_values[0] = DIR_DEFAULT_IMAGE_FOLDER
+            elif setting_values[1] == '&':
+                new_setting_values[0] = DIR_DEFAULT_OUTPUT_FOLDER
+            else:
+                new_setting_values[0] = DIR_CUSTOM_FOLDER
+            #
+            # Remove "Do not use" images
+            #
+            for i in [8, 6, 4]:
+                if new_setting_values[i+1] == cps.DO_NOT_USE:
+                    del new_setting_values[i:i+2]
+            setting_values = new_setting_values
+            from_matlab = False
+            variable_revision_number = 1
+        return setting_values, variable_revision_number, from_matlab
+

@@ -106,26 +106,6 @@ class ExpandOrShrink(cpm.CPModule):
                 self.iterations, self.wants_fill_holes, self.wants_outlines,
                 self.outlines_name]
 
-    def backwards_compatibilize(self, setting_values, variable_revision_number, 
-                                module_name, from_matlab):
-        if from_matlab and variable_revision_number == 2:
-            inf = setting_values[4] == "Inf"
-            if setting_values[3] == "Expand":
-                operation = O_EXPAND_INF if inf else O_EXPAND
-            elif setting_values[3] == "Shrink":
-                operation = (O_SHRINK_INF if inf
-                             else O_DIVIDE if setting_values[4] == "0" 
-                             else O_SHRINK)
-            iterations = "1" if inf else setting_values[4]
-            wants_outlines = setting_values[5] != cps.DO_NOT_USE
-            setting_values = (setting_values[:2] + 
-                              [operation, iterations, cps.NO,
-                               cps.YES if wants_outlines else cps.NO,
-                               setting_values[5] ])
-            from_matlab = False
-            variable_revision_number = 1
-        return setting_values, variable_revision_number, from_matlab
-
     def visible_settings(self):
         result = [self.object_name, self.output_object_name, self.operation]
         if self.operation in (O_SHRINK, O_EXPAND, O_SPUR):
@@ -205,3 +185,23 @@ class ExpandOrShrink(cpm.CPModule):
             
 
     
+    def backwards_compatibilize(self, setting_values, variable_revision_number, 
+                                module_name, from_matlab):
+        if from_matlab and variable_revision_number == 2:
+            inf = setting_values[4] == "Inf"
+            if setting_values[3] == "Expand":
+                operation = O_EXPAND_INF if inf else O_EXPAND
+            elif setting_values[3] == "Shrink":
+                operation = (O_SHRINK_INF if inf
+                             else O_DIVIDE if setting_values[4] == "0" 
+                             else O_SHRINK)
+            iterations = "1" if inf else setting_values[4]
+            wants_outlines = setting_values[5] != cps.DO_NOT_USE
+            setting_values = (setting_values[:2] + 
+                              [operation, iterations, cps.NO,
+                               cps.YES if wants_outlines else cps.NO,
+                               setting_values[5] ])
+            from_matlab = False
+            variable_revision_number = 1
+        return setting_values, variable_revision_number, from_matlab
+

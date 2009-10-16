@@ -64,22 +64,6 @@ class Resize(cpm.CPModule):
                 self.resizing_factor, self.specific_width, 
                 self.specific_height, self.interpolation]
 
-    def backwards_compatibilize(self, setting_values, variable_revision_number, 
-                                module_name, from_matlab):
-        if from_matlab and variable_revision_number == 1:
-            width, height = setting_values[3].split(',')
-            size_method = R_BY_FACTOR if setting_values[2] != "1" else R_TO_SIZE
-            setting_values = [ setting_values[0], #image name
-                              setting_values[1],  #resized image name
-                              size_method,
-                              setting_values[2], # resizing factor
-                              width,
-                              height,
-                              setting_values[4]] #interpolation method
-            from_matlab = False
-            variable_revision_number = 1
-        return setting_values, variable_revision_number, from_matlab
-        
     def visible_settings(self):
         result = [self.image_name, self.resized_image_name, self.size_method]
         if self.size_method == R_BY_FACTOR:
@@ -144,3 +128,19 @@ class Resize(cpm.CPModule):
                                             title=self.resized_image_name.value)
                 
                 
+    def backwards_compatibilize(self, setting_values, variable_revision_number, 
+                                module_name, from_matlab):
+        if from_matlab and variable_revision_number == 1:
+            width, height = setting_values[3].split(',')
+            size_method = R_BY_FACTOR if setting_values[2] != "1" else R_TO_SIZE
+            setting_values = [ setting_values[0], #image name
+                              setting_values[1],  #resized image name
+                              size_method,
+                              setting_values[2], # resizing factor
+                              width,
+                              height,
+                              setting_values[4]] #interpolation method
+            from_matlab = False
+            variable_revision_number = 1
+        return setting_values, variable_revision_number, from_matlab
+        

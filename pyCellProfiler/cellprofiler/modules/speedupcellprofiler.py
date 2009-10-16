@@ -99,6 +99,10 @@ class SpeedUpCellProfiler(cpm.CPModule):
                 image_set.clear_image(name)
         gc.collect()
     
+    def test_valid(self, pipeline):
+        for image_setting in self.image_names:
+            image_setting.on_validate()
+
     def backwards_compatibilize(self, setting_values, variable_revision_number,
                                 module_name, from_matlab):
         if from_matlab and variable_revision_number == 5:
@@ -111,10 +115,6 @@ class SpeedUpCellProfiler(cpm.CPModule):
             from_matlab = False
         return setting_values, variable_revision_number, from_matlab
     
-    def test_valid(self, pipeline):
-        for image_setting in self.image_names:
-            image_setting.on_validate()
-
 class ImageSettings(object):
     def __init__(self, images, how_to_remove, can_delete):
         self.can_delete = can_delete

@@ -161,50 +161,6 @@ class ExportToExcel(cpm.CPModule):
         while len(self.object_groups) < group_count:
             self.add_object_group()
 
-    def backwards_compatibilize(self, setting_values, variable_revision_number,
-                                 module_name, from_matlab):
-        """Adjust the setting values based on the version that saved them
-        
-        """
-        if variable_revision_number == 1 and from_matlab:
-            # Added create subdirectories questeion
-            setting_values = list(setting_values)
-            setting_values.append(cps.NO)
-            variable_revision_number = 2
-        if variable_revision_number == 2 and from_matlab:
-            wants_subdirectories = (setting_values[8] == cps.YES)
-            object_names = [x for x in setting_values[:-1]
-                            if x != cps.DO_NOT_USE]
-            setting_values = [ DELIMITER_TAB, cps.YES, cps.NO, cps.NO, 
-                              cps.NO, cps.NO ]
-            for name in object_names:
-                setting_values.extend([name, cps.NO, "%s.csv"%(name)])
-            variable_revision_number = 1
-            from_matlab = False
-        if variable_revision_number == 3 and from_matlab:
-            #
-            # Variables 9 and 10 are the pathname and prefix and
-            # are not yet replicated in pyCP
-            #
-            if setting_values[8] != '.':
-                sys.stderr.write("Warning: pathname specification is not yet implemented in ExportToExcel")
-            if setting_values[9] != cps.DO_NOT_USE:
-                sys.stderr.write("Warning: prefix specification is not yet implemented in ExportToExcel")
-            object_names = [x for x in setting_values[:8]
-                            if x != cps.DO_NOT_USE]
-            setting_values = [ DELIMITER_TAB, cps.YES, cps.NO, cps.NO, 
-                              cps.NO, cps.NO ]
-            for name in object_names:
-                setting_values.extend([name, cps.NO, "%s.csv"%(name)])
-            variable_revision_number = 1
-            from_matlab = False
-        if variable_revision_number == 1 and not from_matlab:
-            # Added aggregate questions
-            setting_values = (setting_values[:6] + [cps.NO, cps.NO, cps.NO] + 
-                              setting_values[6:])
-            variable_revision_number = 2
-        return setting_values, variable_revision_number, from_matlab
-
     def settings(self):
         """Return the settings in the order used when storing """
         result = [self.delimiter, self.prepend_output_filename,
@@ -515,6 +471,50 @@ class ExportToExcel(cpm.CPModule):
             return [columns[i] for i in range(len(columns))
                     if list_box.IsChecked(i)] 
             
+    def backwards_compatibilize(self, setting_values, variable_revision_number,
+                                 module_name, from_matlab):
+        """Adjust the setting values based on the version that saved them
+        
+        """
+        if variable_revision_number == 1 and from_matlab:
+            # Added create subdirectories questeion
+            setting_values = list(setting_values)
+            setting_values.append(cps.NO)
+            variable_revision_number = 2
+        if variable_revision_number == 2 and from_matlab:
+            wants_subdirectories = (setting_values[8] == cps.YES)
+            object_names = [x for x in setting_values[:-1]
+                            if x != cps.DO_NOT_USE]
+            setting_values = [ DELIMITER_TAB, cps.YES, cps.NO, cps.NO, 
+                              cps.NO, cps.NO ]
+            for name in object_names:
+                setting_values.extend([name, cps.NO, "%s.csv"%(name)])
+            variable_revision_number = 1
+            from_matlab = False
+        if variable_revision_number == 3 and from_matlab:
+            #
+            # Variables 9 and 10 are the pathname and prefix and
+            # are not yet replicated in pyCP
+            #
+            if setting_values[8] != '.':
+                sys.stderr.write("Warning: pathname specification is not yet implemented in ExportToExcel")
+            if setting_values[9] != cps.DO_NOT_USE:
+                sys.stderr.write("Warning: prefix specification is not yet implemented in ExportToExcel")
+            object_names = [x for x in setting_values[:8]
+                            if x != cps.DO_NOT_USE]
+            setting_values = [ DELIMITER_TAB, cps.YES, cps.NO, cps.NO, 
+                              cps.NO, cps.NO ]
+            for name in object_names:
+                setting_values.extend([name, cps.NO, "%s.csv"%(name)])
+            variable_revision_number = 1
+            from_matlab = False
+        if variable_revision_number == 1 and not from_matlab:
+            # Added aggregate questions
+            setting_values = (setting_values[:6] + [cps.NO, cps.NO, cps.NO] + 
+                              setting_values[6:])
+            variable_revision_number = 2
+        return setting_values, variable_revision_number, from_matlab
+
 def is_object_group(group):
     """True if the group's object name is not one of the static names"""
     return not group[OG_OBJECT_NAME].value in (IMAGE,EXPERIMENT)

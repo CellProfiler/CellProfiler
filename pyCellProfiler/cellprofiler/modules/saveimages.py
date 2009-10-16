@@ -237,74 +237,6 @@ class SaveImages(cpm.CPModule):
                 self.when_to_save_movie, self.rescale, self.colormap, 
                 self.update_file_names, self.create_subdirectories]
     
-    def backwards_compatibilize(self, setting_values, variable_revision_number, 
-                                module_name, from_matlab):
-        """Adjust the setting values to be backwards-compatible with old versions
-        
-        """
-        if from_matlab and variable_revision_number == 12:
-            # self.create_subdirectories.value is already False by default.
-            variable_revision_number = 13
-        if from_matlab and variable_revision_number == 13:
-            new_setting_values = list(setting_values)
-            for i in [3, 12]:
-                if setting_values[i] == '\\':
-                    new_setting_values[i] == cps.DO_NOT_USE
-            variable_revision_number = 14
-        if from_matlab and variable_revision_number == 14:
-            new_setting_values = []
-            if setting_values[0].isdigit():
-                new_setting_values.extend([IF_FIGURE,setting_values[1]])
-            elif setting_values[3] == 'avi':
-                new_setting_values.extend([IF_MOVIE, setting_values[0]])
-            elif setting_values[0].startswith("Cropping"):
-                new_setting_values.extend([IF_CROPPING, 
-                                           setting_values[0][len("Cropping"):]])
-            elif setting_values[0].startswith("CropMask"):
-                new_setting_values.extend([IF_MASK, 
-                                           setting_values[0][len("CropMask"):]])
-            else:
-                new_setting_values.extend([IF_IMAGE, setting_values[0]])
-            new_setting_values.append(new_setting_values[1])
-            if setting_values[1] == 'N':
-                new_setting_values.extend([FN_SEQUENTIAL,"None","None"])
-            elif setting_values[1][0] == '=':
-                new_setting_values.extend([FN_SINGLE_NAME,setting_values[1][1:],
-                                           setting_values[1][1:]])
-            else:
-                if len(cellprofiler.measurements.find_metadata_tokens(setting_values[1])):
-                    new_setting_values.extend([FN_WITH_METADATA, setting_values[1],
-                                               setting_values[1]])
-                else:
-                    new_setting_values.extend([FN_FROM_IMAGE, setting_values[1],
-                                               setting_values[1]])
-            new_setting_values.extend(setting_values[2:4])
-            if setting_values[4] == '.':
-                new_setting_values.extend([PC_DEFAULT, "None"])
-            elif setting_values[4] == '&':
-                new_setting_values.extend([PC_WITH_IMAGE, "None"])
-            else:
-                if len(cellprofiler.measurements.find_metadata_tokens(setting_values[1])):
-                    new_setting_values.extend([PC_WITH_METADATA,
-                                               setting_values[4]])
-                else:
-                    new_setting_values.extend([PC_CUSTOM, setting_values[4]])
-            new_setting_values.extend(setting_values[5:11])
-            new_setting_values.extend(setting_values[12:])
-            setting_values = new_setting_values
-            from_matlab = False
-            variable_revision_number = 1
-            
-        if not from_matlab and variable_revision_number == 1:
-            # The logic of the question about overwriting was reversed.            
-            if setting_values[11] == cps.YES:
-                setting_values[11] = cps.NO
-            else: 
-                setting_values[11] = cps.YES       
-            variable_revision_number = 2
-
-        return setting_values, variable_revision_number, from_matlab
-    
     def visible_settings(self):
         """Return only the settings that should be shown"""
         result = [self.save_image_or_figure]
@@ -555,3 +487,72 @@ class SaveImages(cpm.CPModule):
         if self.file_format == FF_TIF:
             return FF_TIFF
         return self.file_format.value
+    
+    def backwards_compatibilize(self, setting_values, variable_revision_number, 
+                                module_name, from_matlab):
+        """Adjust the setting values to be backwards-compatible with old versions
+        
+        """
+        if from_matlab and variable_revision_number == 12:
+            # self.create_subdirectories.value is already False by default.
+            variable_revision_number = 13
+        if from_matlab and variable_revision_number == 13:
+            new_setting_values = list(setting_values)
+            for i in [3, 12]:
+                if setting_values[i] == '\\':
+                    new_setting_values[i] == cps.DO_NOT_USE
+            variable_revision_number = 14
+        if from_matlab and variable_revision_number == 14:
+            new_setting_values = []
+            if setting_values[0].isdigit():
+                new_setting_values.extend([IF_FIGURE,setting_values[1]])
+            elif setting_values[3] == 'avi':
+                new_setting_values.extend([IF_MOVIE, setting_values[0]])
+            elif setting_values[0].startswith("Cropping"):
+                new_setting_values.extend([IF_CROPPING, 
+                                           setting_values[0][len("Cropping"):]])
+            elif setting_values[0].startswith("CropMask"):
+                new_setting_values.extend([IF_MASK, 
+                                           setting_values[0][len("CropMask"):]])
+            else:
+                new_setting_values.extend([IF_IMAGE, setting_values[0]])
+            new_setting_values.append(new_setting_values[1])
+            if setting_values[1] == 'N':
+                new_setting_values.extend([FN_SEQUENTIAL,"None","None"])
+            elif setting_values[1][0] == '=':
+                new_setting_values.extend([FN_SINGLE_NAME,setting_values[1][1:],
+                                           setting_values[1][1:]])
+            else:
+                if len(cellprofiler.measurements.find_metadata_tokens(setting_values[1])):
+                    new_setting_values.extend([FN_WITH_METADATA, setting_values[1],
+                                               setting_values[1]])
+                else:
+                    new_setting_values.extend([FN_FROM_IMAGE, setting_values[1],
+                                               setting_values[1]])
+            new_setting_values.extend(setting_values[2:4])
+            if setting_values[4] == '.':
+                new_setting_values.extend([PC_DEFAULT, "None"])
+            elif setting_values[4] == '&':
+                new_setting_values.extend([PC_WITH_IMAGE, "None"])
+            else:
+                if len(cellprofiler.measurements.find_metadata_tokens(setting_values[1])):
+                    new_setting_values.extend([PC_WITH_METADATA,
+                                               setting_values[4]])
+                else:
+                    new_setting_values.extend([PC_CUSTOM, setting_values[4]])
+            new_setting_values.extend(setting_values[5:11])
+            new_setting_values.extend(setting_values[12:])
+            setting_values = new_setting_values
+            from_matlab = False
+            variable_revision_number = 1
+            
+        if not from_matlab and variable_revision_number == 1:
+            # The logic of the question about overwriting was reversed.            
+            if setting_values[11] == cps.YES:
+                setting_values[11] = cps.NO
+            else: 
+                setting_values[11] = cps.YES       
+            variable_revision_number = 2
+
+        return setting_values, variable_revision_number, from_matlab
+    

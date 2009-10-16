@@ -147,33 +147,6 @@ class MeasureCorrelation(cpm.CPModule):
         while len(self.object_groups) < object_count:
             self.add_object()
 
-    def backwards_compatibilize(self, setting_values, variable_revision_number, 
-                                module_name, from_matlab):
-        '''Adjust the setting values for pipelines saved under old revisions'''
-        if from_matlab and variable_revision_number == 3:
-            image_names = [x for x in setting_values[:4]
-                           if x.upper() != cps.DO_NOT_USE.upper()]
-            wants_image_measured = np.any([x==cpmeas.IMAGE 
-                                           for x in setting_values[4:]])
-            object_names = [x for x in setting_values[4:]
-                            if not x in (cpmeas.IMAGE, cps.DO_NOT_USE)]
-            if wants_image_measured:
-                if len(object_names):
-                    m = M_IMAGES_AND_OBJECTS
-                else:
-                    m = M_IMAGES
-            elif len(object_names):
-                m = M_OBJECTS
-            else:
-                raise ValueError("Must either measure texture over images or over some set of objects")
-            if len(object_names) == 0:
-                object_names = ['None']
-            setting_values = ([str(len(image_names)), str(len(object_names))] +
-                              image_names + [m] + object_names)
-            from_matlab = False
-            variable_revision_number = 1
-        return setting_values, variable_revision_number, from_matlab
-
     def visible_settings(self):
         result = []
         for image_group in self.image_groups:
@@ -397,3 +370,31 @@ class MeasureCorrelation(cpm.CPModule):
         if measurement in self.get_measurements(pipeline, object_name, category):
             return ["%s_%s"%x for x in self.get_image_pairs()]
         return []
+    
+    def backwards_compatibilize(self, setting_values, variable_revision_number, 
+                                module_name, from_matlab):
+        '''Adjust the setting values for pipelines saved under old revisions'''
+        if from_matlab and variable_revision_number == 3:
+            image_names = [x for x in setting_values[:4]
+                           if x.upper() != cps.DO_NOT_USE.upper()]
+            wants_image_measured = np.any([x==cpmeas.IMAGE 
+                                           for x in setting_values[4:]])
+            object_names = [x for x in setting_values[4:]
+                            if not x in (cpmeas.IMAGE, cps.DO_NOT_USE)]
+            if wants_image_measured:
+                if len(object_names):
+                    m = M_IMAGES_AND_OBJECTS
+                else:
+                    m = M_IMAGES
+            elif len(object_names):
+                m = M_OBJECTS
+            else:
+                raise ValueError("Must either measure texture over images or over some set of objects")
+            if len(object_names) == 0:
+                object_names = ['None']
+            setting_values = ([str(len(image_names)), str(len(object_names))] +
+                              image_names + [m] + object_names)
+            from_matlab = False
+            variable_revision_number = 1
+        return setting_values, variable_revision_number, from_matlab
+

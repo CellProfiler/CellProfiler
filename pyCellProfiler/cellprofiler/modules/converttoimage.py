@@ -78,13 +78,6 @@ class ConvertToImage(cpm.CPModule):
                                    COLORMAPS)
 
 
-    def backwards_compatibilize(self, setting_values, variable_revision_number, 
-                                module_name, from_matlab):
-        if variable_revision_number == 1 and from_matlab:
-            from_matlab = False
-        return setting_values, variable_revision_number, from_matlab
-
-
     def settings(self):
         return [self.object_name, self.image_name, self.image_mode, 
                 self.colormap]
@@ -145,3 +138,11 @@ class ConvertToImage(cpm.CPModule):
         image = cpi.Image(pixel_data, parent_image = objects.parent_image,
                           convert = convert)
         workspace.image_set.add(self.image_name.value, image)
+    
+    def backwards_compatibilize(self, setting_values, variable_revision_number, 
+                                module_name, from_matlab):
+        if variable_revision_number == 1 and from_matlab:
+            from_matlab = False
+        return setting_values, variable_revision_number, from_matlab
+
+

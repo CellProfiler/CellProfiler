@@ -238,21 +238,6 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
             while len(sequence) < count:
                 add_fn()
     
-    def backwards_compatibilize(self,setting_values,variable_revision_number,
-                                module_name,from_matlab):
-        if from_matlab and variable_revision_number == 1:
-            image_name, object_name, center_name, bin_count = setting_values[:4]
-            if center_name == cps.DO_NOT_USE:
-                center_choice = C_SELF
-            else:
-                center_choice = C_OTHER
-            setting_values = ["1","1","1",image_name, 
-                              object_name, center_choice, center_name,
-                              bin_count]
-            variable_revision_number = 1
-            from_matlab = False
-        return setting_values, variable_revision_number, from_matlab
-    
     def run(self, workspace):
         stats = [("Image","Objects","Bin #","Bin count","Fraction","Intensity","COV")]
         d = {}
@@ -480,3 +465,18 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
                     for bin_count in self.bin_counts
                     for bin in range(1, bin_count.bin_count.value+1)]
             
+    def backwards_compatibilize(self,setting_values,variable_revision_number,
+                                module_name,from_matlab):
+        if from_matlab and variable_revision_number == 1:
+            image_name, object_name, center_name, bin_count = setting_values[:4]
+            if center_name == cps.DO_NOT_USE:
+                center_choice = C_SELF
+            else:
+                center_choice = C_OTHER
+            setting_values = ["1","1","1",image_name, 
+                              object_name, center_choice, center_name,
+                              bin_count]
+            variable_revision_number = 1
+            from_matlab = False
+        return setting_values, variable_revision_number, from_matlab
+    

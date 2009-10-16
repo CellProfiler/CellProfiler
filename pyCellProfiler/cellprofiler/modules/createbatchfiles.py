@@ -170,45 +170,6 @@ class CreateBatchFiles(cpm.CPModule):
         result += [self.add_mapping_button]
         return result
     
-    def backwards_compatibilize(self, setting_values, variable_revision_number,
-                                module_name, from_matlab):
-        if from_matlab and variable_revision_number == 8:
-            batch_save_path, old_pathname, new_pathname = setting_values[:3]
-            if batch_save_path == '.':
-                wants_default_output_directory = cps.YES
-                batch_save_path = cpprefs.get_default_output_directory()
-            else:
-                wants_default_output_directory = cps.NO
-            old_pathnames = old_pathname.split(',')
-            new_pathnames = new_pathname.split(',')
-            if len(old_pathnames) != len(new_pathnames):
-                raise ValueError("Number of pathnames does not match. "
-                                 "%d local pathnames, but %d remote pathnames" %
-                                 (len(old_pathnames), len(new_pathnames)))
-            setting_values = [wants_default_output_directory, batch_save_path,
-                              cps.NO, cps.NO, ""]
-            for old_pathname, new_pathname in zip(old_pathnames, new_pathnames):
-                setting_values += [old_pathname, new_pathname]
-            from_matlab = False
-            variable_revision_number = 1
-        if (not from_matlab) and variable_revision_number == 1:
-            setting_values = (setting_values[:5] + 
-                              [cpprefs.get_default_image_directory()] +
-                              setting_values[5:])
-            variable_revision_number = 2
-        if (not from_matlab) and variable_revision_number == 2:
-            setting_values = (setting_values[:6] + 
-                              [get_revision()] +
-                              setting_values[6:])
-            variable_revision_number = 3
-        if (not from_matlab) and variable_revision_number == 3:
-            # Pickled image list is now the batch state
-            self.batch_state = np.fromstring(zlib.compress(setting_values[4]),
-                                             np.uint8)
-            setting_values = setting_values[:4]+setting_values[5:]
-            variable_revision_number = 4
-        return setting_values, variable_revision_number, from_matlab
-    
     def prepare_run(self, pipeline, image_set_list, frame):
         '''Invoke the image_set_list pickling mechanism and save the pipeline'''
         if self.batch_mode.value:
@@ -309,3 +270,42 @@ class CreateBatchFiles(cpm.CPModule):
         return path
         
             
+    def backwards_compatibilize(self, setting_values, variable_revision_number,
+                                module_name, from_matlab):
+        if from_matlab and variable_revision_number == 8:
+            batch_save_path, old_pathname, new_pathname = setting_values[:3]
+            if batch_save_path == '.':
+                wants_default_output_directory = cps.YES
+                batch_save_path = cpprefs.get_default_output_directory()
+            else:
+                wants_default_output_directory = cps.NO
+            old_pathnames = old_pathname.split(',')
+            new_pathnames = new_pathname.split(',')
+            if len(old_pathnames) != len(new_pathnames):
+                raise ValueError("Number of pathnames does not match. "
+                                 "%d local pathnames, but %d remote pathnames" %
+                                 (len(old_pathnames), len(new_pathnames)))
+            setting_values = [wants_default_output_directory, batch_save_path,
+                              cps.NO, cps.NO, ""]
+            for old_pathname, new_pathname in zip(old_pathnames, new_pathnames):
+                setting_values += [old_pathname, new_pathname]
+            from_matlab = False
+            variable_revision_number = 1
+        if (not from_matlab) and variable_revision_number == 1:
+            setting_values = (setting_values[:5] + 
+                              [cpprefs.get_default_image_directory()] +
+                              setting_values[5:])
+            variable_revision_number = 2
+        if (not from_matlab) and variable_revision_number == 2:
+            setting_values = (setting_values[:6] + 
+                              [get_revision()] +
+                              setting_values[6:])
+            variable_revision_number = 3
+        if (not from_matlab) and variable_revision_number == 3:
+            # Pickled image list is now the batch state
+            self.batch_state = np.fromstring(zlib.compress(setting_values[4]),
+                                             np.uint8)
+            setting_values = setting_values[:4]+setting_values[5:]
+            variable_revision_number = 4
+        return setting_values, variable_revision_number, from_matlab
+    

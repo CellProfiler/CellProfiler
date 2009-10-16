@@ -83,28 +83,6 @@ class Relate(cpm.CPModule):
                 self.wants_per_parent_means]
 
 
-    def backwards_compatibilize(self, setting_values, variable_revision_number, module_name, from_matlab):
-        if from_matlab and variable_revision_number == 2:
-            setting_values = [setting_values[0],
-                              setting_values[1],
-                              setting_values[2],
-                              cps.YES,
-                              cps.YES]
-            variable_revision_number = 3
-            
-        if from_matlab and variable_revision_number == 3:
-            setting_values = list(setting_values)
-            setting_values[2] = (D_MINIMUM if setting_values[2] == cps.YES 
-                                 else D_NONE)
-            variable_revision_number = 4
-                
-        if from_matlab and variable_revision_number == 4:
-            if setting_values[2] in (D_CENTROID, D_BOTH):
-                sys.stderr.write("Warning: the Relate module doesn't currently support the centroid distance measurement\n")
-            from_matlab = False
-            variable_revision_number = 1
-        return setting_values, variable_revision_number, from_matlab
-
     def visible_settings(self):
         # Currently, we don't support measuring distances, so those questions
         # are not shown.
@@ -192,3 +170,26 @@ class Relate(cpm.CPModule):
         elif object_name == self.sub_object_name.value and category == "Parent":
             return [ self.parent_name.value ]
         return []
+    
+    def backwards_compatibilize(self, setting_values, variable_revision_number, module_name, from_matlab):
+        if from_matlab and variable_revision_number == 2:
+            setting_values = [setting_values[0],
+                              setting_values[1],
+                              setting_values[2],
+                              cps.YES,
+                              cps.YES]
+            variable_revision_number = 3
+            
+        if from_matlab and variable_revision_number == 3:
+            setting_values = list(setting_values)
+            setting_values[2] = (D_MINIMUM if setting_values[2] == cps.YES 
+                                 else D_NONE)
+            variable_revision_number = 4
+                
+        if from_matlab and variable_revision_number == 4:
+            if setting_values[2] in (D_CENTROID, D_BOTH):
+                sys.stderr.write("Warning: the Relate module doesn't currently support the centroid distance measurement\n")
+            from_matlab = False
+            variable_revision_number = 1
+        return setting_values, variable_revision_number, from_matlab
+

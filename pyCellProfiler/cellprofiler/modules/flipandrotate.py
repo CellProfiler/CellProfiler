@@ -121,44 +121,6 @@ class FlipAndRotate(cpm.CPModule):
                                       self.rotate_choice.value)
         return result
     
-    def backwards_compatibilize(self,setting_values,variable_revision_number,
-                               module_name,from_matlab):
-        if from_matlab and variable_revision_number == 1:
-            if setting_values[2] == cps.YES:
-                if setting_values[3] == cps.YES:
-                    flip_choice = FLIP_BOTH
-                else:
-                    flip_choice = FLIP_LEFT_TO_RIGHT
-            elif setting_values[3] == cps.YES:
-                flip_choice = FLIP_TOP_TO_BOTTOM
-            else:
-                flip_choice = FLIP_NONE
-            setting_values = [
-                setting_values[0],       # image_name
-                setting_values[1],       # output_name
-                flip_choice,
-                setting_values[4],       # rotate_choice
-                setting_values[5],       # wants crop
-                setting_values[6],       # how often
-                setting_values[8],       # first_pixel
-                setting_values[9],       # second_pixel
-                setting_values[7],       # horiz_or_vert
-                setting_values[10]]      # angle
-            from_matlab = False
-            variable_revision_number = 1
-        if (not from_matlab) and variable_revision_number == 1:
-            # Text for ROTATE_MOUSE changed from "mouse" to "Use mouse"
-            if setting_values[3] == "Mouse":
-                setting_values[3] = ROTATE_MOUSE
-            elif setting_values[3] == "None":
-                setting_values[3] = ROTATE_NONE
-            elif setting_values[3] == "Coordinates":
-                setting_values[3] = ROTATE_COORDINATES
-            elif setting_values[3] == "Angle":
-                setting_values[3] = ROTATE_ANGLE
-            variable_revision_number = 2
-        return setting_values, variable_revision_number, from_matlab
-
     def prepare_group(self, pipeline, image_set_list, grouping,
                       image_numbers):
         '''Initialize the angle if appropriate'''
@@ -379,6 +341,44 @@ class FlipAndRotate(cpm.CPModule):
             return []
         return [self.output_name.value]
         
+    def backwards_compatibilize(self,setting_values,variable_revision_number,
+                               module_name,from_matlab):
+        if from_matlab and variable_revision_number == 1:
+            if setting_values[2] == cps.YES:
+                if setting_values[3] == cps.YES:
+                    flip_choice = FLIP_BOTH
+                else:
+                    flip_choice = FLIP_LEFT_TO_RIGHT
+            elif setting_values[3] == cps.YES:
+                flip_choice = FLIP_TOP_TO_BOTTOM
+            else:
+                flip_choice = FLIP_NONE
+            setting_values = [
+                setting_values[0],       # image_name
+                setting_values[1],       # output_name
+                flip_choice,
+                setting_values[4],       # rotate_choice
+                setting_values[5],       # wants crop
+                setting_values[6],       # how often
+                setting_values[8],       # first_pixel
+                setting_values[9],       # second_pixel
+                setting_values[7],       # horiz_or_vert
+                setting_values[10]]      # angle
+            from_matlab = False
+            variable_revision_number = 1
+        if (not from_matlab) and variable_revision_number == 1:
+            # Text for ROTATE_MOUSE changed from "mouse" to "Use mouse"
+            if setting_values[3] == "Mouse":
+                setting_values[3] = ROTATE_MOUSE
+            elif setting_values[3] == "None":
+                setting_values[3] = ROTATE_NONE
+            elif setting_values[3] == "Coordinates":
+                setting_values[3] = ROTATE_COORDINATES
+            elif setting_values[3] == "Angle":
+                setting_values[3] = ROTATE_ANGLE
+            variable_revision_number = 2
+        return setting_values, variable_revision_number, from_matlab
+
 def affine_offset(shape, transform):
     '''Calculate an offset given an array's shape and an affine transform
     

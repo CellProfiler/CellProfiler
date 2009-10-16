@@ -207,22 +207,6 @@ class TrackObjects(cpm.CPModule):
                 self.pixel_radius, self.display_type, self.wants_image,
                 self.image_name]
 
-    def backwards_compatibilize(self, setting_values, variable_revision_number, 
-                                module_name, from_matlab):
-        if from_matlab and variable_revision_number == 3:
-            wants_image = setting_values[10] != cps.DO_NOT_USE
-            measurement =  '_'.join(setting_values[2:6])
-            setting_values = [ setting_values[0], # tracking method
-                               setting_values[1], # object name
-                               measurement,
-                               setting_values[6], # pixel_radius
-                               setting_values[7], # display_type
-                               wants_image,
-                               setting_values[10]]
-            variable_revision_number = 1
-            from_matlab = False
-        return setting_values, variable_revision_number, from_matlab
-
     def visible_settings(self):
         result = [self.tracking_method, self.object_name]
         if self.tracking_method == TM_MEASUREMENTS:
@@ -599,3 +583,19 @@ class TrackObjects(cpm.CPModule):
         return []
         
     
+    def backwards_compatibilize(self, setting_values, variable_revision_number, 
+                                module_name, from_matlab):
+        if from_matlab and variable_revision_number == 3:
+            wants_image = setting_values[10] != cps.DO_NOT_USE
+            measurement =  '_'.join(setting_values[2:6])
+            setting_values = [ setting_values[0], # tracking method
+                               setting_values[1], # object name
+                               measurement,
+                               setting_values[6], # pixel_radius
+                               setting_values[7], # display_type
+                               wants_image,
+                               setting_values[10]]
+            variable_revision_number = 1
+            from_matlab = False
+        return setting_values, variable_revision_number, from_matlab
+

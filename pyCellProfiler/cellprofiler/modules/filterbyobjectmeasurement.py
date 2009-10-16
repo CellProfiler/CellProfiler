@@ -187,73 +187,6 @@ class FilterByObjectMeasurement(cpm.CPModule):
         while len(self.additional_objects) < additional_object_count:
             self.add_additional_object()
 
-    def backwards_compatibilize(self, setting_values, variable_revision_number, 
-                                module_name, from_matlab):
-        '''Account for old save formats
-        
-        setting_values - the strings for the settings as saved in the pipeline
-        variable_revision_number - the variable revision number at the time
-                                   of saving
-        module_name - this is either FilterByObjectMeasurement for pyCP
-                      and Matlab's FilterByObjectMeasurement module or
-                      it is KeepLargestObject for Matlab's module of that
-                      name.
-        from_matlab - true if file was saved by Matlab CP
-        '''
-        if (module_name == 'KeepLargestObject' and from_matlab
-            and variable_revision_number == 1):
-            #
-            # This is a specialized case:
-            # The filtering method is FI_MAXIMAL_PER_OBJECT to pick out
-            # the largest. The measurement is AreaShape_Area.
-            # The slots are as follows:
-            # 0 - the source objects name
-            # 1 - the enclosing objects name
-            # 2 - the target objects name 
-            setting_values = [ setting_values[1],
-                              setting_values[2],
-                              "AreaShape_Area",
-                              FI_MAXIMAL_PER_OBJECT,
-                              setting_values[0],
-                              cps.YES, "0", cps.YES, "1",
-                              cps.NO, "None" ]
-            from_matlab = False
-            variable_revision_number = 1
-            module_name = self.module_name
-        if (module_name == 'FilterByObjectMeasurement' and from_matlab and
-            variable_revision_number == 6):
-            # The measurement may not be correct here - it will display
-            # as an error, though
-            measurement = '_'.join((setting_values[2],setting_values[3]))
-            if setting_values[6] == 'No minimum':
-                wants_minimum = cps.NO
-                min_limit = "0"
-            else:
-                wants_minimum = cps.YES
-                min_limit = setting_values[6]
-            if setting_values[7] == 'No maximum':
-                wants_maximum = cps.NO
-                max_limit = "1"
-            else:
-                wants_maximum = cps.YES
-                max_limit = setting_values[7]
-            if setting_values[8] == cps.DO_NOT_USE:
-                wants_outlines = cps.NO
-                outlines_name = "None"
-            else:
-                wants_outlines = cps.YES
-                outlines_name = setting_values[8]
-                
-            setting_values = [setting_values[0], setting_values[1],
-                              measurement, FI_LIMITS, "None", 
-                              wants_minimum, min_limit,
-                              wants_maximum, max_limit,
-                              wants_outlines, outlines_name]
-            from_matlab = False
-            variable_revision_number = 1 
-                                  
-        return setting_values, variable_revision_number, from_matlab
-
     def settings(self):
         result =[self.target_name, self.object_name, self.measurement,
                  self.filter_choice, self.enclosing_object_name,
@@ -515,3 +448,71 @@ class FilterByObjectMeasurement(cpm.CPModule):
                             cpmeas.COLTYPE_INTEGER))
             columns += get_object_measurement_columns(target_name)
         return columns
+    
+    def backwards_compatibilize(self, setting_values, variable_revision_number, 
+                                module_name, from_matlab):
+        '''Account for old save formats
+        
+        setting_values - the strings for the settings as saved in the pipeline
+        variable_revision_number - the variable revision number at the time
+                                   of saving
+        module_name - this is either FilterByObjectMeasurement for pyCP
+                      and Matlab's FilterByObjectMeasurement module or
+                      it is KeepLargestObject for Matlab's module of that
+                      name.
+        from_matlab - true if file was saved by Matlab CP
+        '''
+        if (module_name == 'KeepLargestObject' and from_matlab
+            and variable_revision_number == 1):
+            #
+            # This is a specialized case:
+            # The filtering method is FI_MAXIMAL_PER_OBJECT to pick out
+            # the largest. The measurement is AreaShape_Area.
+            # The slots are as follows:
+            # 0 - the source objects name
+            # 1 - the enclosing objects name
+            # 2 - the target objects name 
+            setting_values = [ setting_values[1],
+                              setting_values[2],
+                              "AreaShape_Area",
+                              FI_MAXIMAL_PER_OBJECT,
+                              setting_values[0],
+                              cps.YES, "0", cps.YES, "1",
+                              cps.NO, "None" ]
+            from_matlab = False
+            variable_revision_number = 1
+            module_name = self.module_name
+        if (module_name == 'FilterByObjectMeasurement' and from_matlab and
+            variable_revision_number == 6):
+            # The measurement may not be correct here - it will display
+            # as an error, though
+            measurement = '_'.join((setting_values[2],setting_values[3]))
+            if setting_values[6] == 'No minimum':
+                wants_minimum = cps.NO
+                min_limit = "0"
+            else:
+                wants_minimum = cps.YES
+                min_limit = setting_values[6]
+            if setting_values[7] == 'No maximum':
+                wants_maximum = cps.NO
+                max_limit = "1"
+            else:
+                wants_maximum = cps.YES
+                max_limit = setting_values[7]
+            if setting_values[8] == cps.DO_NOT_USE:
+                wants_outlines = cps.NO
+                outlines_name = "None"
+            else:
+                wants_outlines = cps.YES
+                outlines_name = setting_values[8]
+                
+            setting_values = [setting_values[0], setting_values[1],
+                              measurement, FI_LIMITS, "None", 
+                              wants_minimum, min_limit,
+                              wants_maximum, max_limit,
+                              wants_outlines, outlines_name]
+            from_matlab = False
+            variable_revision_number = 1 
+                                  
+        return setting_values, variable_revision_number, from_matlab
+

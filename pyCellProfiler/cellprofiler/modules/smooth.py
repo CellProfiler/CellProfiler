@@ -102,28 +102,6 @@ class Smooth(cpm.CPModule):
             your mouse over the image,the pixel intensities will appear in the 
             bottom bar of the figure window.""")
 
-    def backwards_compatibilize(self, setting_values, variable_revision_number, 
-                                module_name, from_matlab):
-        if (module_name == 'SmoothOrEnhance' and from_matlab and
-            variable_revision_number == 5):
-            if setting_values[2] in ('Remove BrightRoundSpeckles',
-                                     'Enhance BrightRoundSpeckles (Tophat Filter)'):
-                raise ValueError('The Smooth module does not support speckles operations. Please use EnhanceOrSuppressSpeckles instead')
-            setting_values = [setting_values[0], # image name
-                              setting_values[1], # result name
-                              setting_values[2], # smoothing method
-                              cps.YES if setting_values[3] == 'Automatic'
-                              else cps.NO,       # wants smoothing
-                              '16.0' if  setting_values[3] == 'Automatic'
-                              else (setting_values[6]
-                                    if setting_values[2] == SMOOTH_KEEPING_EDGES
-                                    else setting_values[3]),
-                              setting_values[7]]
-            module_name = 'Smooth'
-            from_matlab = False
-            variable_revision_number = 1
-        return setting_values, variable_revision_number, from_matlab
-
     def settings(self):
         return [self.image_name, self.filtered_image_name, 
                 self.smoothing_method, self.wants_automatic_object_size,
@@ -178,3 +156,26 @@ class Smooth(cpm.CPModule):
             figure.subplot_imshow_grayscale(0,1, output_pixels,
                                             "Filtered: %s" %
                                             self.filtered_image_name.value)
+    
+    def backwards_compatibilize(self, setting_values, variable_revision_number, 
+                                module_name, from_matlab):
+        if (module_name == 'SmoothOrEnhance' and from_matlab and
+            variable_revision_number == 5):
+            if setting_values[2] in ('Remove BrightRoundSpeckles',
+                                     'Enhance BrightRoundSpeckles (Tophat Filter)'):
+                raise ValueError('The Smooth module does not support speckles operations. Please use EnhanceOrSuppressSpeckles instead')
+            setting_values = [setting_values[0], # image name
+                              setting_values[1], # result name
+                              setting_values[2], # smoothing method
+                              cps.YES if setting_values[3] == 'Automatic'
+                              else cps.NO,       # wants smoothing
+                              '16.0' if  setting_values[3] == 'Automatic'
+                              else (setting_values[6]
+                                    if setting_values[2] == SMOOTH_KEEPING_EDGES
+                                    else setting_values[3]),
+                              setting_values[7]]
+            module_name = 'Smooth'
+            from_matlab = False
+            variable_revision_number = 1
+        return setting_values, variable_revision_number, from_matlab
+

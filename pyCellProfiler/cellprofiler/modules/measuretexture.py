@@ -142,36 +142,6 @@ class MeasureTexture(cpm.CPModule):
         result += [self.gabor_angles]
         return result
 
-    def backwards_compatibilize(self,setting_values,variable_revision_number,
-                                module_name,from_matlab):
-        """Adjust the setting_values for older save file versions
-        
-        setting_values - a list of strings representing the settings for
-                         this module.
-        variable_revision_number - the variable revision number of the module
-                                   that saved the settings
-        module_name - the name of the module that saved the settings
-        from_matlab - true if it was a Matlab module that saved the settings
-        
-        returns the modified settings, revision number and "from_matlab" flag
-        """
-        if from_matlab and variable_revision_number == 2:
-            #
-            # The first 3 settings are:
-            # image count (1 for legacy)
-            # object count (calculated)
-            # scale_count (calculated)
-            #
-            object_names = [name for name in setting_values[1:7]
-                            if name.upper() != cps.DO_NOT_USE.upper()] 
-            scales = setting_values[7].split(',')
-            setting_values = ([ "1", str(len(object_names)), str(len(scales)),
-                               setting_values[0]] + object_names + scales +
-                              ["4"])
-            variable_revision_number = 1
-            from_matlab = False
-        return setting_values, variable_revision_number, from_matlab
-
     def prepare_to_set_values(self,setting_values):
         """Adjust the number of object groups based on the number of
         setting_values"""
@@ -481,3 +451,34 @@ class MeasureTexture(cpm.CPModule):
                        feature_name, scale, 
                        "%.2f"%(result)]]
         return statistics
+    
+    def backwards_compatibilize(self,setting_values,variable_revision_number,
+                                module_name,from_matlab):
+        """Adjust the setting_values for older save file versions
+        
+        setting_values - a list of strings representing the settings for
+                         this module.
+        variable_revision_number - the variable revision number of the module
+                                   that saved the settings
+        module_name - the name of the module that saved the settings
+        from_matlab - true if it was a Matlab module that saved the settings
+        
+        returns the modified settings, revision number and "from_matlab" flag
+        """
+        if from_matlab and variable_revision_number == 2:
+            #
+            # The first 3 settings are:
+            # image count (1 for legacy)
+            # object count (calculated)
+            # scale_count (calculated)
+            #
+            object_names = [name for name in setting_values[1:7]
+                            if name.upper() != cps.DO_NOT_USE.upper()] 
+            scales = setting_values[7].split(',')
+            setting_values = ([ "1", str(len(object_names)), str(len(scales)),
+                               setting_values[0]] + object_names + scales +
+                              ["4"])
+            variable_revision_number = 1
+            from_matlab = False
+        return setting_values, variable_revision_number, from_matlab
+

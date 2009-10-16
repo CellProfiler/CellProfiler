@@ -103,33 +103,6 @@ class ColorToGray(cpm.CPModule):
                 self.use_blue, self.blue_name
                 ]
     
-    def backwards_compatibilize(self,
-                                setting_values,
-                                variable_revision_number,
-                                module_name,
-                                from_matlab):
-        if from_matlab and variable_revision_number == 1:
-            new_setting_values = [ setting_values[0],  # image name
-                                    setting_values[1],  # combine or split
-                                                         # blank slot for text: "Combine options"
-                                    setting_values[3],  # grayscale name
-                                    setting_values[4],  # red contribution
-                                    setting_values[5],  # green contribution
-                                    setting_values[6]   # blue contribution
-                                                         # blank slot for text: "Split options"
-                                    ]
-            for i in range(3):
-                vv = setting_values[i+8]
-                use_it = ((vv == cps.DO_NOT_USE or vv == "N") and cps.NO) or cps.YES
-                new_setting_values.append(use_it)
-                new_setting_values.append(vv)
-            setting_values = new_setting_values
-            module_name = self.module_class()
-            variable_revision_number = 1
-            from_matlab = False
-            
-        return setting_values, variable_revision_number, from_matlab
-        
     def should_combine(self):
         """True if we are supposed to combine RGB to gray"""
         return self.combine_or_split == COMBINE
@@ -238,4 +211,31 @@ class ColorToGray(cpm.CPModule):
             output_axes.clear()
             output_axes.imshow(disp[0],matplotlib.cm.Greys_r)
             output_axes.set_title("%s image"%(disp[1]))
+        
+    def backwards_compatibilize(self,
+                                setting_values,
+                                variable_revision_number,
+                                module_name,
+                                from_matlab):
+        if from_matlab and variable_revision_number == 1:
+            new_setting_values = [ setting_values[0],  # image name
+                                    setting_values[1],  # combine or split
+                                                         # blank slot for text: "Combine options"
+                                    setting_values[3],  # grayscale name
+                                    setting_values[4],  # red contribution
+                                    setting_values[5],  # green contribution
+                                    setting_values[6]   # blue contribution
+                                                         # blank slot for text: "Split options"
+                                    ]
+            for i in range(3):
+                vv = setting_values[i+8]
+                use_it = ((vv == cps.DO_NOT_USE or vv == "N") and cps.NO) or cps.YES
+                new_setting_values.append(use_it)
+                new_setting_values.append(vv)
+            setting_values = new_setting_values
+            module_name = self.module_class()
+            variable_revision_number = 1
+            from_matlab = False
+            
+        return setting_values, variable_revision_number, from_matlab
         

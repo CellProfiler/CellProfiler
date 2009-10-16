@@ -257,113 +257,6 @@ class ExportToDatabase(cpm.CPModule):
                 self.wants_agg_std_dev, self.objects_choice,
                 self.objects_list]
     
-    def backwards_compatibilize(self,setting_values,variable_revision_number,
-                                module_name, from_matlab):
-        if from_matlab and variable_revision_number == 6:
-            new_setting_values = [setting_values[0],setting_values[1]]
-            if setting_values[2] == cps.DO_NOT_USE:
-                new_setting_values.append(cps.NO)
-                new_setting_values.append("Expt_")
-            else:
-                new_setting_values.append(cps.YES)
-                new_setting_values.append(setting_values[2])
-            new_setting_values.append(setting_values[3])
-            if setting_values[4] == '.':
-                new_setting_values.append(cps.YES)
-                new_setting_values.append(setting_values[4])
-            else:
-                new_setting_values.append(cps.NO)
-                new_setting_values.append(setting_values[4])
-            if setting_values[5][:3]==cps.YES:
-                new_setting_values.append(cps.YES)
-            else:
-                new_setting_values.append(cps.NO)
-            from_matlab = False
-            variable_revision_number = 6
-            setting_values = new_setting_values
-        elif from_matlab and variable_revision_number == 10:
-            new_setting_values = setting_values[0:2]
-            if setting_values[2] == cps.DO_NOT_USE:
-                new_setting_values.append(cps.NO)
-                new_setting_values.append("Expt_")
-            else:
-                new_setting_values.append(cps.YES)
-                new_setting_values.append(setting_values[2])
-            new_setting_values.append(setting_values[3])
-            if setting_values[4] == '.':
-                new_setting_values.append(cps.YES)
-                new_setting_values.append(setting_values[4])
-            else:
-                new_setting_values.append(cps.NO)
-                new_setting_values.append(setting_values[4])
-            if setting_values[18][:3]==cps.YES:
-                new_setting_values.append(cps.YES)
-            else:
-                new_setting_values.append(cps.NO)
-            #
-            # store_csvs
-            #
-            new_setting_values.append(cps.YES)
-            #
-            # DB host / user / password
-            #
-            new_setting_values += [ 'imgdb01','cpuser','cPus3r']
-            #
-            # SQLite file name
-            #
-            new_setting_values += [ 'DefaultDB.db' ]
-            #
-            # Aggregate mean, median & std dev
-            wants_mean = cps.NO
-            wants_std_dev = cps.NO
-            wants_median = cps.NO
-            for setting in setting_values[5:8]:
-                if setting == "Median":
-                    wants_median = cps.YES
-                elif setting == "Mean":
-                    wants_mean = cps.YES
-                elif setting == "Standard deviation":
-                    wants_std_dev = cps.YES
-            new_setting_values += [wants_mean, wants_median, wants_std_dev]
-            #
-            # Object export
-            #
-            if setting_values[8] == "All objects":
-                new_setting_values += [ O_ALL, ""]
-            else:
-                objects_list = []
-                for setting in setting_values[8:15]:
-                    if setting not in (cpmeas.IMAGE, cps.DO_NOT_USE):
-                        objects_list.append(setting)
-                if len(objects_list) > 0:
-                    new_setting_values += [ O_SELECT, ",".join(objects_list)]
-                else:
-                    new_setting_values += [ O_NONE, ""]
-            setting_values = new_setting_values
-            from_matlab = False
-            variable_revision_number = 9
-            
-        if (not from_matlab) and variable_revision_number == 6:
-            # Append default values for store_csvs, db_host, db_user, 
-            #  db_passwd, and sqlite_file to update to revision 7 
-            new_setting_values = settings_values
-            new_setting_values += [False, 'imgdb01', 'cpuser', '', 'DefaultDB.db']
-            variable_revision_number = 7
-        
-        if (not from_matlab) and variable_revision_number == 7:
-            # Added ability to selectively turn on aggregate measurements
-            # which were all automatically calculated in version 7
-            new_setting_values = setting_values + [True, True, True]
-            variable_revision_number = 8
-            
-        if (not from_matlab) and variable_revision_number == 8:
-            # Made it possible to choose objects to save
-            #
-            setting_values += [ O_ALL, ""]
-            variable_revision_number = 9
-            
-        return setting_values, variable_revision_number, from_matlab
-    
     def test_valid(self,pipeline):
         if self.want_table_prefix.value:
             if not re.match("^[A-Za-z][A-Za-z0-9_]+$",self.table_prefix.value):
@@ -1115,6 +1008,113 @@ image_channel_colors = %(image_channel_colors)s
         if not d.has_key(D_MEASUREMENT_COLUMNS):
             d[D_MEASUREMENT_COLUMNS] = pipeline.get_measurement_columns()
         return d[D_MEASUREMENT_COLUMNS]
+    
+    def backwards_compatibilize(self,setting_values,variable_revision_number,
+                                module_name, from_matlab):
+        if from_matlab and variable_revision_number == 6:
+            new_setting_values = [setting_values[0],setting_values[1]]
+            if setting_values[2] == cps.DO_NOT_USE:
+                new_setting_values.append(cps.NO)
+                new_setting_values.append("Expt_")
+            else:
+                new_setting_values.append(cps.YES)
+                new_setting_values.append(setting_values[2])
+            new_setting_values.append(setting_values[3])
+            if setting_values[4] == '.':
+                new_setting_values.append(cps.YES)
+                new_setting_values.append(setting_values[4])
+            else:
+                new_setting_values.append(cps.NO)
+                new_setting_values.append(setting_values[4])
+            if setting_values[5][:3]==cps.YES:
+                new_setting_values.append(cps.YES)
+            else:
+                new_setting_values.append(cps.NO)
+            from_matlab = False
+            variable_revision_number = 6
+            setting_values = new_setting_values
+        elif from_matlab and variable_revision_number == 10:
+            new_setting_values = setting_values[0:2]
+            if setting_values[2] == cps.DO_NOT_USE:
+                new_setting_values.append(cps.NO)
+                new_setting_values.append("Expt_")
+            else:
+                new_setting_values.append(cps.YES)
+                new_setting_values.append(setting_values[2])
+            new_setting_values.append(setting_values[3])
+            if setting_values[4] == '.':
+                new_setting_values.append(cps.YES)
+                new_setting_values.append(setting_values[4])
+            else:
+                new_setting_values.append(cps.NO)
+                new_setting_values.append(setting_values[4])
+            if setting_values[18][:3]==cps.YES:
+                new_setting_values.append(cps.YES)
+            else:
+                new_setting_values.append(cps.NO)
+            #
+            # store_csvs
+            #
+            new_setting_values.append(cps.YES)
+            #
+            # DB host / user / password
+            #
+            new_setting_values += [ 'imgdb01','cpuser','cPus3r']
+            #
+            # SQLite file name
+            #
+            new_setting_values += [ 'DefaultDB.db' ]
+            #
+            # Aggregate mean, median & std dev
+            wants_mean = cps.NO
+            wants_std_dev = cps.NO
+            wants_median = cps.NO
+            for setting in setting_values[5:8]:
+                if setting == "Median":
+                    wants_median = cps.YES
+                elif setting == "Mean":
+                    wants_mean = cps.YES
+                elif setting == "Standard deviation":
+                    wants_std_dev = cps.YES
+            new_setting_values += [wants_mean, wants_median, wants_std_dev]
+            #
+            # Object export
+            #
+            if setting_values[8] == "All objects":
+                new_setting_values += [ O_ALL, ""]
+            else:
+                objects_list = []
+                for setting in setting_values[8:15]:
+                    if setting not in (cpmeas.IMAGE, cps.DO_NOT_USE):
+                        objects_list.append(setting)
+                if len(objects_list) > 0:
+                    new_setting_values += [ O_SELECT, ",".join(objects_list)]
+                else:
+                    new_setting_values += [ O_NONE, ""]
+            setting_values = new_setting_values
+            from_matlab = False
+            variable_revision_number = 9
+            
+        if (not from_matlab) and variable_revision_number == 6:
+            # Append default values for store_csvs, db_host, db_user, 
+            #  db_passwd, and sqlite_file to update to revision 7 
+            new_setting_values = settings_values
+            new_setting_values += [False, 'imgdb01', 'cpuser', '', 'DefaultDB.db']
+            variable_revision_number = 7
+        
+        if (not from_matlab) and variable_revision_number == 7:
+            # Added ability to selectively turn on aggregate measurements
+            # which were all automatically calculated in version 7
+            new_setting_values = setting_values + [True, True, True]
+            variable_revision_number = 8
+            
+        if (not from_matlab) and variable_revision_number == 8:
+            # Made it possible to choose objects to save
+            #
+            setting_values += [ O_ALL, ""]
+            variable_revision_number = 9
+            
+        return setting_values, variable_revision_number, from_matlab
     
 class ColumnNameMapping:
     """Represents a mapping of feature name to column name"""

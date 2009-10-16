@@ -445,31 +445,6 @@ class Morph(cpm.CPModule):
         while len(self.functions) < function_count:
             self.add_function()
 
-    def backwards_compatibilize(self, setting_values, 
-                                variable_revision_number, module_name, 
-                                from_matlab):
-        '''Adjust the setting_values of previous revisions to match this one'''
-        if from_matlab and variable_revision_number == 1:
-            # Settings:
-            # image name
-            # resulting image name
-            # (function, count) repeated 6 times
-            new_setting_values = [setting_values[0], setting_values[1]]
-            for i in range(6):
-                if setting_values[i*2+2] != cps.DO_NOT_USE:
-                    new_setting_values.append(setting_values[i*2+2])
-                    if (setting_values[i*2+3].isdigit() and  
-                        int(setting_values[i*2+3])== 1):
-                        new_setting_values += [R_ONCE, "1"]
-                    elif setting_values[i*2+3].lower() == "inf":
-                        new_setting_values += [R_FOREVER,"2"]
-                    else:
-                        new_setting_values += [R_CUSTOM, setting_values[i*2+3]]
-            setting_values = new_setting_values
-            from_matlab = False
-            variable_revision_number = 1
-        return setting_values, variable_revision_number, from_matlab
-                        
     def settings(self):
         '''Return the settings as saved in the pipeline file'''
         result = [self.image_name, self.output_image_name]
@@ -615,3 +590,29 @@ class Morph(cpm.CPModule):
                     break;
                 pixel_data = new_pixel_data
             return pixel_data
+    
+    def backwards_compatibilize(self, setting_values, 
+                                variable_revision_number, module_name, 
+                                from_matlab):
+        '''Adjust the setting_values of previous revisions to match this one'''
+        if from_matlab and variable_revision_number == 1:
+            # Settings:
+            # image name
+            # resulting image name
+            # (function, count) repeated 6 times
+            new_setting_values = [setting_values[0], setting_values[1]]
+            for i in range(6):
+                if setting_values[i*2+2] != cps.DO_NOT_USE:
+                    new_setting_values.append(setting_values[i*2+2])
+                    if (setting_values[i*2+3].isdigit() and  
+                        int(setting_values[i*2+3])== 1):
+                        new_setting_values += [R_ONCE, "1"]
+                    elif setting_values[i*2+3].lower() == "inf":
+                        new_setting_values += [R_FOREVER,"2"]
+                    else:
+                        new_setting_values += [R_CUSTOM, setting_values[i*2+3]]
+            setting_values = new_setting_values
+            from_matlab = False
+            variable_revision_number = 1
+        return setting_values, variable_revision_number, from_matlab
+                        

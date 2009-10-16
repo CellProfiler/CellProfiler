@@ -72,24 +72,6 @@ class MeasureImageAreaOccupied(cpm.CPModule):
         group.append("divider", cps.Divider())
         self.objects.append(group)        
 
-    def backwards_compatibilize(self, setting_values, variable_revision_number, 
-                                module_name, from_matlab):
-        """Account for the save-format of previous versions of this module
-        
-        We check for the Matlab version which did the thresholding as well
-        as the measurement; this duplicated the functionality in the Identify
-        modules.
-        """
-        if from_matlab:
-            raise NotImplementedError("The MeasureImageArea module has changed substantially. \n"
-                                      "You should threshold your image using IdentifyPrimAutomatic\n"
-                                      "and then measure the resulting objects' area using this module.")
-        if variable_revision_number == 1:
-            # We added the ability to process multiple objects in v2, but
-            # the settings for v1 miraculously map to v2
-            variable_revision_number = 2
-        return setting_values, variable_revision_number, from_matlab
-
     def settings(self):
         """The settings as saved in the pipeline file
         
@@ -204,3 +186,22 @@ class MeasureImageAreaOccupied(cpm.CPModule):
             measurement in ("AreaOccupied","TotalArea")):
             return [ object.object_name.value for object in self.objects ]
         return []
+    
+    def backwards_compatibilize(self, setting_values, variable_revision_number, 
+                                module_name, from_matlab):
+        """Account for the save-format of previous versions of this module
+        
+        We check for the Matlab version which did the thresholding as well
+        as the measurement; this duplicated the functionality in the Identify
+        modules.
+        """
+        if from_matlab:
+            raise NotImplementedError("The MeasureImageArea module has changed substantially. \n"
+                                      "You should threshold your image using IdentifyPrimAutomatic\n"
+                                      "and then measure the resulting objects' area using this module.")
+        if variable_revision_number == 1:
+            # We added the ability to process multiple objects in v2, but
+            # the settings for v1 miraculously map to v2
+            variable_revision_number = 2
+        return setting_values, variable_revision_number, from_matlab
+

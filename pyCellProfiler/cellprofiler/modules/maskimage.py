@@ -48,17 +48,6 @@ See also IdentifyPrimAutomatic, IdentifyPrimManual.
                                                        "MaskBlue")
         self.invert_mask = cps.Binary("Do you want to invert the mask?",False)
 
-    def backwards_compatibilize(self, setting_values, 
-                                variable_revision_number, 
-                                module_name, from_matlab):
-        """Adjust the setting_values to upgrade from a previous version
-        
-        """
-        if from_matlab and variable_revision_number == 3:
-            from_matlab = False
-            variable_revision_number = 1
-        return setting_values, variable_revision_number, from_matlab
-
     def settings(self):
         """Return the settings in the order that they will be saved or loaded
         
@@ -93,3 +82,15 @@ See also IdentifyPrimAutomatic, IdentifyPrimManual.
             figure.subplot_imshow_grayscale(1,0,masked_pixels,
                                             "Masked image: %s"%(self.masked_image_name.value))
         workspace.image_set.add(self.masked_image_name.value, masked_image)
+    
+    def backwards_compatibilize(self, setting_values, 
+                                variable_revision_number, 
+                                module_name, from_matlab):
+        """Adjust the setting_values to upgrade from a previous version
+        
+        """
+        if from_matlab and variable_revision_number == 3:
+            from_matlab = False
+            variable_revision_number = 1
+        return setting_values, variable_revision_number, from_matlab
+

@@ -143,26 +143,6 @@ class OverlayOutlines(cpm.CPModule):
             result += outline.settings()
         return result
 
-    def backwards_compatibilize(self, setting_values, variable_revision_number, 
-                                module_name, from_matlab):
-        if from_matlab and variable_revision_number == 2:
-            # Order is
-            # image_name
-            # outline name
-            # max intensity
-            # output_image_name
-            # color
-            setting_values = [cps.YES if setting_values[0]=="Blank" else cps.NO,
-                              setting_values[0],
-                              setting_values[3],
-                              WANTS_COLOR,
-                              setting_values[2],
-                              setting_values[1],
-                              setting_values[4]]
-            from_matlab = False
-            variable_revision_number = 1
-        return setting_values, variable_revision_number, from_matlab
-
     def visible_settings(self):
         result = [self.blank_image]
         if not self.blank_image.value:
@@ -261,3 +241,24 @@ class OverlayOutlines(cpm.CPModule):
             for i in range(3):
                 pixel_data[:,:,i][mask] = float(color[i])/255.0
         return pixel_data
+    
+    def backwards_compatibilize(self, setting_values, variable_revision_number, 
+                                module_name, from_matlab):
+        if from_matlab and variable_revision_number == 2:
+            # Order is
+            # image_name
+            # outline name
+            # max intensity
+            # output_image_name
+            # color
+            setting_values = [cps.YES if setting_values[0]=="Blank" else cps.NO,
+                              setting_values[0],
+                              setting_values[3],
+                              WANTS_COLOR,
+                              setting_values[2],
+                              setting_values[1],
+                              setting_values[4]]
+            from_matlab = False
+            variable_revision_number = 1
+        return setting_values, variable_revision_number, from_matlab
+

@@ -240,60 +240,6 @@ fraction in the question, "What fraction of the image is composed of objects?"
         image_group = ImageGroup(self.image_groups)
         self.image_groups.append(image_group)
 
-    def backwards_compatibilize(self, setting_values, variable_revision_number, 
-                                module_name, from_matlab):
-        '''Upgrade from previous versions of setting formats'''
-        
-        if from_matlab and variable_revision_number == 1:
-            # Slot 0 asked if blur should be checked on all images
-            # Slot 1 had the window size for all images
-            # Slots 2-4, 5-7, 8-10, 11-13 contain triples of:
-            # image name for blur and saturation
-            # image name for threshold calculation
-            # threshold method
-            #
-            # So here, we save the answer to the blur question and 
-            # the window size and apply those to every image. We
-            # collect images in dictionaries that tell how the image
-            # should be checked.
-            #
-            d = {}
-            check_blur = setting_values[0]
-            window_size = setting_values[1]
-            for i in range(2,14,3):
-                saturation_image = setting_values[i]
-                threshold_image = setting_values[i+1]
-                threshold_method = setting_values[i+2]
-                if saturation_image != cps.DO_NOT_USE: 
-                    if not d.has_key(saturation_image):
-                        d[saturation_image] = {"check_blur":check_blur,
-                                               "check_saturation":cps.YES,
-                                               "check_threshold":cps.NO,
-                                               "threshold_method":threshold_method}
-                    else:
-                        d[saturation_image]["check_blur"] = check_blur
-                        d[saturation_image]["check_saturation"] = cps.YES
-                if threshold_image != cps.DO_NOT_USE:
-                    if not d.has_key(threshold_image):
-                        d[threshold_image] = {"check_blur":cps.NO,
-                                               "check_saturation":cps.NO,
-                                               "check_threshold":cps.YES,
-                                               "threshold_method":threshold_method}
-                    else:
-                        d[threshold_image]["check_threshold"] = cps.YES
-                        d[threshold_image]["threshold_method"]= threshold_method
-            setting_values = []
-            for image_name in d.keys():
-                dd = d[image_name]
-                setting_values += [image_name, dd["check_blur"], window_size,
-                                   dd["check_saturation"], 
-                                   dd["check_threshold"],
-                                   dd["threshold_method"],
-                                   ".10"]
-            from_matlab = False
-            variable_revision_number = 1
-        return setting_values, variable_revision_number, from_matlab
-
     def prepare_to_set_values(self, setting_values):
         '''Adjust self.image_groups to account for the expected # of images'''
         assert len(setting_values) % SETTINGS_PER_GROUP == 0
@@ -628,3 +574,58 @@ fraction in the question, "What fraction of the image is composed of objects?"
                                                             image_group.threshold_algorithm),
                                str(std_threshold)])
         return statistics
+    
+    def backwards_compatibilize(self, setting_values, variable_revision_number, 
+                                module_name, from_matlab):
+        '''Upgrade from previous versions of setting formats'''
+        
+        if from_matlab and variable_revision_number == 1:
+            # Slot 0 asked if blur should be checked on all images
+            # Slot 1 had the window size for all images
+            # Slots 2-4, 5-7, 8-10, 11-13 contain triples of:
+            # image name for blur and saturation
+            # image name for threshold calculation
+            # threshold method
+            #
+            # So here, we save the answer to the blur question and 
+            # the window size and apply those to every image. We
+            # collect images in dictionaries that tell how the image
+            # should be checked.
+            #
+            d = {}
+            check_blur = setting_values[0]
+            window_size = setting_values[1]
+            for i in range(2,14,3):
+                saturation_image = setting_values[i]
+                threshold_image = setting_values[i+1]
+                threshold_method = setting_values[i+2]
+                if saturation_image != cps.DO_NOT_USE: 
+                    if not d.has_key(saturation_image):
+                        d[saturation_image] = {"check_blur":check_blur,
+                                               "check_saturation":cps.YES,
+                                               "check_threshold":cps.NO,
+                                               "threshold_method":threshold_method}
+                    else:
+                        d[saturation_image]["check_blur"] = check_blur
+                        d[saturation_image]["check_saturation"] = cps.YES
+                if threshold_image != cps.DO_NOT_USE:
+                    if not d.has_key(threshold_image):
+                        d[threshold_image] = {"check_blur":cps.NO,
+                                               "check_saturation":cps.NO,
+                                               "check_threshold":cps.YES,
+                                               "threshold_method":threshold_method}
+                    else:
+                        d[threshold_image]["check_threshold"] = cps.YES
+                        d[threshold_image]["threshold_method"]= threshold_method
+            setting_values = []
+            for image_name in d.keys():
+                dd = d[image_name]
+                setting_values += [image_name, dd["check_blur"], window_size,
+                                   dd["check_saturation"], 
+                                   dd["check_threshold"],
+                                   dd["threshold_method"],
+                                   ".10"]
+            from_matlab = False
+            variable_revision_number = 1
+        return setting_values, variable_revision_number, from_matlab
+

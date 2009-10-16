@@ -200,29 +200,6 @@ that can be processed by different nodes in a cluster.
                 self.row_range, self.wants_image_groupings, 
                 self.metadata_fields]
 
-    def backwards_compatibilize(self, setting_values, variable_revision_number, 
-                                module_name, from_matlab):
-        if from_matlab and variable_revision_number == 2:
-            sys.stderr.write("Warning: the format and purpose of LoadText has changed substantially\n")
-            text_file_name = setting_values[0]
-            field_name = setting_values[1]
-            path_name = setting_values[2]
-            if path_name=='.':
-                path_choice = DIR_DEFAULT_IMAGE
-            elif path_name == '&':
-                path_choice = DIR_DEFAULT_OUTPUT
-            else:
-                path_choice = DIR_OTHER
-            setting_values = [path_choice, path_name, text_file_name,
-                              cps.NO, DIR_DEFAULT_IMAGE, '.',
-                              cps.NO, "1,100000"]
-            from_matlab = False
-            variable_revision_number = 1
-        if (not from_matlab) and variable_revision_number == 1:
-            setting_values = setting_values + [cps.NO, ""]
-            variable_revision_number = 2
-        return setting_values, variable_revision_number, from_matlab 
-
     def test_valid(self, pipeline):
         super(LoadText, self).test_valid(pipeline)
         csv_path = self.csv_path
@@ -549,6 +526,29 @@ that can be processed by different nodes in a cluster.
         if self.wants_images or setting == self.wants_images:
             return True
         return False
+
+    def backwards_compatibilize(self, setting_values, variable_revision_number, 
+                                module_name, from_matlab):
+        if from_matlab and variable_revision_number == 2:
+            sys.stderr.write("Warning: the format and purpose of LoadText has changed substantially\n")
+            text_file_name = setting_values[0]
+            field_name = setting_values[1]
+            path_name = setting_values[2]
+            if path_name=='.':
+                path_choice = DIR_DEFAULT_IMAGE
+            elif path_name == '&':
+                path_choice = DIR_DEFAULT_OUTPUT
+            else:
+                path_choice = DIR_OTHER
+            setting_values = [path_choice, path_name, text_file_name,
+                              cps.NO, DIR_DEFAULT_IMAGE, '.',
+                              cps.NO, "1,100000"]
+            from_matlab = False
+            variable_revision_number = 1
+        if (not from_matlab) and variable_revision_number == 1:
+            setting_values = setting_values + [cps.NO, ""]
+            variable_revision_number = 2
+        return setting_values, variable_revision_number, from_matlab 
 
 def best_cast(sequence):
     '''Return the best cast (integer, float or string) of the sequence

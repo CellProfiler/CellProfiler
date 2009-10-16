@@ -142,23 +142,6 @@ class MeasureImageIntensity(cpm.CPModule):
         idx = [x.key for x in self.images].index(key)
         del self.images[idx]
 
-    def backwards_compatibilize(self, setting_values, 
-                                variable_revision_number, 
-                                module_name, from_matlab):
-        '''Account for prior versions when loading
-        
-        We handle Matlab revision # 2 here. We don't support thresholding
-        because it was generally unused. The first setting is the image name.
-        '''
-        if from_matlab and variable_revision_number == 2:
-            setting_values = [setting_values[0], # image name
-                              cps.NO,            # wants objects
-                              "None" ]           # object name
-            variable_revision_number = 1
-            from_matlab = False
-        return setting_values, variable_revision_number, from_matlab
-
-
     def prepare_to_set_values(self, setting_values):
         assert len(setting_values) % SETTINGS_PER_IMAGE == 0
         image_count = len(setting_values) / SETTINGS_PER_IMAGE
@@ -287,3 +270,21 @@ class MeasureImageIntensity(cpm.CPModule):
                             MIN_INTENSITY, MAX_INTENSITY, TOTAL_AREA]):
             return [im.image_name.value for im in self.images]
         return []
+    
+    def backwards_compatibilize(self, setting_values, 
+                                variable_revision_number, 
+                                module_name, from_matlab):
+        '''Account for prior versions when loading
+        
+        We handle Matlab revision # 2 here. We don't support thresholding
+        because it was generally unused. The first setting is the image name.
+        '''
+        if from_matlab and variable_revision_number == 2:
+            setting_values = [setting_values[0], # image name
+                              cps.NO,            # wants objects
+                              "None" ]           # object name
+            variable_revision_number = 1
+            from_matlab = False
+        return setting_values, variable_revision_number, from_matlab
+
+

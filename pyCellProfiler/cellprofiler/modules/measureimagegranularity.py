@@ -99,14 +99,6 @@ class MeasureImageGranularity(cpm.CPModule):
             result += image_setting.settings()
         return result
     
-    def backwards_compatibilize(self,setting_values,variable_revision_number,
-                                module_name, from_matlab):
-        if from_matlab and variable_revision_number == 1:
-            # Matlab and pyCP v1 are identical
-            from_matlab = False
-            variable_revision_number = 1
-        return setting_values, variable_revision_number, from_matlab
-    
     def prepare_to_set_values(self, setting_values):
         '''Adjust self.image_groups to account for the expected # of images'''
         assert len(setting_values) % ImageSetting.setting_count == 0
@@ -251,6 +243,14 @@ class MeasureImageGranularity(cpm.CPModule):
                     result.append(image_setting.image_name.value)
         return result
         
+    def backwards_compatibilize(self,setting_values,variable_revision_number,
+                                module_name, from_matlab):
+        if from_matlab and variable_revision_number == 1:
+            # Matlab and pyCP v1 are identical
+            from_matlab = False
+            variable_revision_number = 1
+        return setting_values, variable_revision_number, from_matlab
+    
 class ImageSetting(object):
     setting_count = 5
     def __init__(self, image_settings, can_delete):

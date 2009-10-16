@@ -61,16 +61,6 @@ image set.
         self.projection_image_name = cps.ImageNameProvider('What do you want to call the projected image?',
                                                            'ProjectionBlue')
 
-    def backwards_compatibilize(self, setting_values, 
-                                variable_revision_number, 
-                                module_name, from_matlab):
-        if from_matlab and variable_revision_number == 3:
-            setting_values = setting_values[:3]
-            from_matlab = False
-            variable_revision_number = 1
-        return setting_values, variable_revision_number, from_matlab
-
-
     def settings(self):
         return [self.image_name, self.projection_type, 
                 self.projection_image_name]
@@ -110,6 +100,16 @@ image set.
                                          self.image_name.value)
                 figure.subplot_imshow_bw(1,0,provider_image.pixel_data,
                                          self.projection_image_name.value)
+
+    def backwards_compatibilize(self, setting_values, 
+                                variable_revision_number, 
+                                module_name, from_matlab):
+        if from_matlab and variable_revision_number == 3:
+            setting_values = setting_values[:3]
+            from_matlab = False
+            variable_revision_number = 1
+        return setting_values, variable_revision_number, from_matlab
+
 
 class ImageProvider(cpi.AbstractImageProvider):
     """Provide the image after averaging but before dilation and smoothing"""

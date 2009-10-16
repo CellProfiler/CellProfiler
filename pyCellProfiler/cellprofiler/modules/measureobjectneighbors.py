@@ -153,23 +153,6 @@ class MeasureObjectNeighbors(cpm.CPModule):
                 self.count_colormap, self.wants_percent_touching_image,
                 self.touching_image_name, self.touching_colormap]
 
-    def backwards_compatibilize(self, setting_values, variable_revision_number, module_name, from_matlab):
-        if from_matlab and variable_revision_number == 5:
-            wants_image = setting_values[2] != cps.DO_NOT_USE
-            distance_method =  D_EXPAND if setting_values[1] == "0" else D_WITHIN
-            setting_values = [setting_values[0],
-                              distance_method,
-                              setting_values[1],
-                              cps.YES if wants_image else cps.NO,
-                              setting_values[2],
-                              cps.DEFAULT,
-                              cps.NO,
-                              "PercentTouching",
-                              cps.DEFAULT]
-            from_matlab = False
-            variable_revision_number = 1
-        return setting_values, variable_revision_number, from_matlab
-    
     def visible_settings(self):
         result = [self.object_name, self.distance_method]
         if self.distance_method == D_WITHIN:
@@ -428,6 +411,23 @@ class MeasureObjectNeighbors(cpm.CPModule):
                 raise ValueError("Unknown distance method: %s"%
                                  self.distance_method.value)
         return []
+    
+    def backwards_compatibilize(self, setting_values, variable_revision_number, module_name, from_matlab):
+        if from_matlab and variable_revision_number == 5:
+            wants_image = setting_values[2] != cps.DO_NOT_USE
+            distance_method =  D_EXPAND if setting_values[1] == "0" else D_WITHIN
+            setting_values = [setting_values[0],
+                              distance_method,
+                              setting_values[1],
+                              cps.YES if wants_image else cps.NO,
+                              setting_values[2],
+                              cps.DEFAULT,
+                              cps.NO,
+                              "PercentTouching",
+                              cps.DEFAULT]
+            from_matlab = False
+            variable_revision_number = 1
+        return setting_values, variable_revision_number, from_matlab
     
 def get_colormap(name):
     '''Get colormap, accounting for possible request for default'''

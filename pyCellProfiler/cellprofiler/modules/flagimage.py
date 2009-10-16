@@ -99,49 +99,6 @@ class FlagImage(cpm.CPModule):
             assert isinstance(flag, FlagSettings)
             setting_values = flag.prepare_to_set_values(setting_values)
     
-    def backwards_compatibilize(self, setting_values, variable_revision_number,
-                                module_name, from_matlab):
-        if from_matlab and variable_revision_number == 1:
-            image_name, category, feature_num_or_name, min_value, max_value, \
-                      new_or_append, new_name, old_name = setting_values
-            measurement_name = '_'.join((category, feature_num_or_name,
-                                         image_name))
-            if min_value == 'No minimum':
-                wants_minimum = cps.NO
-                min_value = "0"
-            else:
-                wants_minimum = cps.YES
-            if max_value == 'No maximum':
-                wants_maximum = cps.NO
-                max_value = "1"
-            else:
-                wants_maximum = cps.YES
-            if new_or_append == "Append existing flag":
-                sys.stderr.write("WARNING: CellProfiler 2.0 can't combine flags from multiple FlagImageForQC modules imported from version 1.0\n")
-            
-            new_name_split = new_name.find('_')
-            if new_name_split == -1:
-                flag_category = 'Metadata'
-                flag_feature = new_name
-            else:
-                flag_category = new_name[:new_name_split]
-                flag_feature = new_name[new_name_split+1:]
-            setting_values = ["1", # of flags in module
-                              "1", # of measurements in the flag
-                              flag_category,
-                              flag_feature,
-                              C_ANY, # combination choice
-                              S_IMAGE, # measurement source
-                              "None", # object name
-                              measurement_name,
-                              wants_minimum,
-                              min_value,
-                              wants_maximum,
-                              max_value]
-            from_matlab = False
-            variable_revision_number = 1
-        return setting_values, variable_revision_number, from_matlab
-    
     def visible_settings(self):
         result = []
         for flag in self.flags:
@@ -240,6 +197,49 @@ class FlagImage(cpm.CPModule):
         return [flag.feature_name.value for flag in self.flags
                 if flag.category.value == category]
 
+    def backwards_compatibilize(self, setting_values, variable_revision_number,
+                                module_name, from_matlab):
+        if from_matlab and variable_revision_number == 1:
+            image_name, category, feature_num_or_name, min_value, max_value, \
+                      new_or_append, new_name, old_name = setting_values
+            measurement_name = '_'.join((category, feature_num_or_name,
+                                         image_name))
+            if min_value == 'No minimum':
+                wants_minimum = cps.NO
+                min_value = "0"
+            else:
+                wants_minimum = cps.YES
+            if max_value == 'No maximum':
+                wants_maximum = cps.NO
+                max_value = "1"
+            else:
+                wants_maximum = cps.YES
+            if new_or_append == "Append existing flag":
+                sys.stderr.write("WARNING: CellProfiler 2.0 can't combine flags from multiple FlagImageForQC modules imported from version 1.0\n")
+            
+            new_name_split = new_name.find('_')
+            if new_name_split == -1:
+                flag_category = 'Metadata'
+                flag_feature = new_name
+            else:
+                flag_category = new_name[:new_name_split]
+                flag_feature = new_name[new_name_split+1:]
+            setting_values = ["1", # of flags in module
+                              "1", # of measurements in the flag
+                              flag_category,
+                              flag_feature,
+                              C_ANY, # combination choice
+                              S_IMAGE, # measurement source
+                              "None", # object name
+                              measurement_name,
+                              wants_minimum,
+                              min_value,
+                              wants_maximum,
+                              max_value]
+            from_matlab = False
+            variable_revision_number = 1
+        return setting_values, variable_revision_number, from_matlab
+    
 class MeasurementSettings(object):
     '''Represents the settings for one flag measurement '''
     def __init__(self, measurements, can_delete = True):

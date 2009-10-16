@@ -116,37 +116,6 @@ class FindEdges(cpm.CPModule):
                 settings += [self.low_threshold]
         return settings
     
-    def backwards_compatibilize(self, setting_values, variable_revision_number,
-                                module_name, from_matlab):
-        if from_matlab and variable_revision_number == 3:
-            setting_values = [
-                              setting_values[0], # ImageName
-                              setting_values[1], # OutputName
-                              setting_values[2] == cps.DO_NOT_USE, # Threshold
-                              setting_values[2] 
-                              if setting_values[2] != cps.DO_NOT_USE
-                              else .5,
-                              setting_values[3], # Threshold adjustment factor
-                              setting_values[4], # Method
-                              setting_values[5], # Filter size
-                              setting_values[8], # Direction 
-                              setting_values[9] == cps.DO_NOT_USE, # Sigma
-                              setting_values[9] 
-                              if setting_values[9] != cps.DO_NOT_USE
-                              else 5,
-                              setting_values[10] == cps.DO_NOT_USE, # Low threshold
-                              setting_values[10] 
-                              if setting_values[10] != cps.DO_NOT_USE
-                              else .5]
-            from_matlab = False
-            variable_revision_number = 1
-        
-        if from_matlab == False and variable_revision_number == 1:
-            # Ratio removed / filter size removed
-            setting_values = setting_values[:6]+setting_values[7:]
-            variable_revision_number = 2
-        return setting_values, variable_revision_number, from_matlab
-    
     def run(self, workspace):
         image = workspace.image_set.get_image(self.image_name.value,
                                               must_be_grayscale = True)
@@ -229,4 +198,35 @@ class FindEdges(cpm.CPModule):
                 raise NotImplementedError("Automatic sigma not supported for method %s."%self.method.value)
         else:
             return self.sigma.value
+    
+    def backwards_compatibilize(self, setting_values, variable_revision_number,
+                                module_name, from_matlab):
+        if from_matlab and variable_revision_number == 3:
+            setting_values = [
+                              setting_values[0], # ImageName
+                              setting_values[1], # OutputName
+                              setting_values[2] == cps.DO_NOT_USE, # Threshold
+                              setting_values[2] 
+                              if setting_values[2] != cps.DO_NOT_USE
+                              else .5,
+                              setting_values[3], # Threshold adjustment factor
+                              setting_values[4], # Method
+                              setting_values[5], # Filter size
+                              setting_values[8], # Direction 
+                              setting_values[9] == cps.DO_NOT_USE, # Sigma
+                              setting_values[9] 
+                              if setting_values[9] != cps.DO_NOT_USE
+                              else 5,
+                              setting_values[10] == cps.DO_NOT_USE, # Low threshold
+                              setting_values[10] 
+                              if setting_values[10] != cps.DO_NOT_USE
+                              else .5]
+            from_matlab = False
+            variable_revision_number = 1
+        
+        if from_matlab == False and variable_revision_number == 1:
+            # Ratio removed / filter size removed
+            setting_values = setting_values[:6]+setting_values[7:]
+            variable_revision_number = 2
+        return setting_values, variable_revision_number, from_matlab
     

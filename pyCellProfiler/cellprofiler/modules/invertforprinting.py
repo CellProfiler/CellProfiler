@@ -101,31 +101,6 @@ class InvertForPrinting(cpm.CPModule):
                 self.wants_blue_output, self.blue_output_image,
                 self.color_output_image]
     
-    def backwards_compatibilize(self, setting_values, variable_revision_number,
-                                module_name, from_matlab):
-        if from_matlab and variable_revision_number == 1:
-            setting_values = [
-                CC_GRAYSCALE,                # input_color_choice
-                setting_values[0] != 'None', # wants_red_input
-                setting_values[0],           # red_input_image
-                setting_values[1] != 'None',
-                setting_values[1],
-                setting_values[2] != 'None',
-                setting_values[2],
-                'None',                      # color
-                CC_GRAYSCALE,                # output_color_choice
-                setting_values[3] != 'None',
-                setting_values[3],
-                setting_values[4] != 'None',
-                setting_values[4],
-                setting_values[5] != 'None',
-                setting_values[5],
-                'InvertedColor']
-            from_matlab = False
-            variable_revision_number = 1
-            
-        return setting_values, variable_revision_number, from_matlab
-        
     def visible_settings(self):
         '''Return the settings as displayed in the UI'''
         result = [self.input_color_choice]
@@ -229,3 +204,29 @@ class InvertForPrinting(cpm.CPModule):
             figure = workspace.create_or_find_figure(subplots=(2,1))
             figure.subplot_imshow_color(0,0,color_image, "Original image")
             figure.subplot_imshow_color(1,0,inverted_color, "Color-inverted image")
+    
+    def backwards_compatibilize(self, setting_values, variable_revision_number,
+                                module_name, from_matlab):
+        if from_matlab and variable_revision_number == 1:
+            setting_values = [
+                CC_GRAYSCALE,                # input_color_choice
+                setting_values[0] != 'None', # wants_red_input
+                setting_values[0],           # red_input_image
+                setting_values[1] != 'None',
+                setting_values[1],
+                setting_values[2] != 'None',
+                setting_values[2],
+                'None',                      # color
+                CC_GRAYSCALE,                # output_color_choice
+                setting_values[3] != 'None',
+                setting_values[3],
+                setting_values[4] != 'None',
+                setting_values[4],
+                setting_values[5] != 'None',
+                setting_values[5],
+                'InvertedColor']
+            from_matlab = False
+            variable_revision_number = 1
+            
+        return setting_values, variable_revision_number, from_matlab
+        

@@ -171,37 +171,6 @@ See also CalculateRatios, all Measure modules.
                 self.operands[0].settings() + self.operands[1].settings() + 
                 [self.wants_log, self.final_multiplicand, self.final_exponent])
 
-    def backwards_compatibilize(self, setting_values, variable_revision_number,
-                                module_name, from_matlab):
-        if from_matlab and variable_revision_number == 6:
-            new_setting_values = [setting_values[16], # output feature name
-                                  setting_values[15]] # operation
-            for i,multiply_factor_idx in ((0,11),(5,12)):
-                object_name = setting_values[i]
-                category = setting_values[i+1]
-                feature = setting_values[i+2]
-                measurement_image = setting_values[i+3]
-                scale = setting_values[i+4]
-                measurement = category+'_'+feature
-                if len(measurement_image):
-                    measurement += '_' + measurement_image
-                if len(scale):
-                    measurement += '_' + scale
-                object_choice = (MC_IMAGE if object_name == cpmeas.IMAGE
-                                 else MC_OBJECT) 
-                new_setting_values += [object_choice,
-                                       object_name,
-                                       measurement,
-                                       setting_values[multiply_factor_idx],
-                                       "1"] # exponent
-            new_setting_values += [setting_values[10], # wants log
-                                   setting_values[14], # final multiplier
-                                   setting_values[13]] # final exponent
-            setting_values = new_setting_values
-            from_matlab = False
-            variable_revision_number = 1
-        return setting_values, variable_revision_number, from_matlab
-
     def on_post_load(self, pipeline):
         '''Fixup any measurement names that might have been ambiguously loaded
         
@@ -310,3 +279,34 @@ See also CalculateRatios, all Measure modules.
             return [self.output_feature_name.value]
         return []
     
+    def backwards_compatibilize(self, setting_values, variable_revision_number,
+                                module_name, from_matlab):
+        if from_matlab and variable_revision_number == 6:
+            new_setting_values = [setting_values[16], # output feature name
+                                  setting_values[15]] # operation
+            for i,multiply_factor_idx in ((0,11),(5,12)):
+                object_name = setting_values[i]
+                category = setting_values[i+1]
+                feature = setting_values[i+2]
+                measurement_image = setting_values[i+3]
+                scale = setting_values[i+4]
+                measurement = category+'_'+feature
+                if len(measurement_image):
+                    measurement += '_' + measurement_image
+                if len(scale):
+                    measurement += '_' + scale
+                object_choice = (MC_IMAGE if object_name == cpmeas.IMAGE
+                                 else MC_OBJECT) 
+                new_setting_values += [object_choice,
+                                       object_name,
+                                       measurement,
+                                       setting_values[multiply_factor_idx],
+                                       "1"] # exponent
+            new_setting_values += [setting_values[10], # wants log
+                                   setting_values[14], # final multiplier
+                                   setting_values[13]] # final exponent
+            setting_values = new_setting_values
+            from_matlab = False
+            variable_revision_number = 1
+        return setting_values, variable_revision_number, from_matlab
+

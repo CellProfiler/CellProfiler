@@ -70,22 +70,6 @@ class GrayToColor(cpm.CPModule):
                 self.rgb_image_name, self.red_adjustment_factor, 
                 self.green_adjustment_factor, self.blue_adjustment_factor]
     
-    def backwards_compatibilize(self,setting_values,variable_revision_number,
-                                module_name,from_matlab):
-        if from_matlab and variable_revision_number==1:
-            # Blue and red were switched: it was BGR
-            temp = list(setting_values)
-            temp[OFF_RED_IMAGE_NAME] = setting_values[OFF_BLUE_IMAGE_NAME]
-            temp[OFF_BLUE_IMAGE_NAME] = setting_values[OFF_RED_IMAGE_NAME]
-            temp[OFF_RED_ADJUSTMENT_FACTOR] = setting_values[OFF_BLUE_ADJUSTMENT_FACTOR]
-            temp[OFF_BLUE_ADJUSTMENT_FACTOR] = setting_values[OFF_RED_ADJUSTMENT_FACTOR]
-            setting_values = temp
-            variable_revision_number = 2
-        if from_matlab and variable_revision_number == 2:
-            from_matlab = False
-            variable_revision_number = 1
-        return setting_values, variable_revision_number, from_matlab
-    
     def visible_settings(self):
         result = [self.red_image_name, self.green_image_name, 
                   self.blue_image_name, self.rgb_image_name]
@@ -196,3 +180,20 @@ class GrayToColor(cpm.CPModule):
         ##############
         rgb_image = cpi.Image(rgb_pixel_data, parent_image = parent_image)
         imgset.add(self.rgb_image_name.value, rgb_image)
+    
+    def backwards_compatibilize(self,setting_values,variable_revision_number,
+                                module_name,from_matlab):
+        if from_matlab and variable_revision_number==1:
+            # Blue and red were switched: it was BGR
+            temp = list(setting_values)
+            temp[OFF_RED_IMAGE_NAME] = setting_values[OFF_BLUE_IMAGE_NAME]
+            temp[OFF_BLUE_IMAGE_NAME] = setting_values[OFF_RED_IMAGE_NAME]
+            temp[OFF_RED_ADJUSTMENT_FACTOR] = setting_values[OFF_BLUE_ADJUSTMENT_FACTOR]
+            temp[OFF_BLUE_ADJUSTMENT_FACTOR] = setting_values[OFF_RED_ADJUSTMENT_FACTOR]
+            setting_values = temp
+            variable_revision_number = 2
+        if from_matlab and variable_revision_number == 2:
+            from_matlab = False
+            variable_revision_number = 1
+        return setting_values, variable_revision_number, from_matlab
+    

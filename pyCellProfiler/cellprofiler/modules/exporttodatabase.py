@@ -81,6 +81,13 @@ O_NONE = "None"
 '''Select the objects you want from a list'''
 O_SELECT = "Select..."
 
+##############################################
+#
+# Keyword for the cached measurement columns
+#
+##############################################
+D_MEASUREMENT_COLUMNS = "MeasurementColumns"
+
 def execute(cursor, query, return_result=True):
     print query
     cursor.execute(query)
@@ -409,7 +416,8 @@ class ExportToDatabase(cpm.CPModule):
                     return False
             except:
                 pass
-            column_defs = pipeline.get_measurement_columns()
+            column_defs = self.get_pipeline_measurement_columns(pipeline, 
+                                                                image_set_list)
             if self.objects_choice != O_ALL:
                 onames = [cpmeas.EXPERIMENT, cpmeas.IMAGE, cpmeas.NEIGHBORS]
                 if self.objects_choice == O_SELECT:
@@ -576,7 +584,8 @@ class ExportToDatabase(cpm.CPModule):
     def write_mysql_table_defs(self, workspace, mappings):
         """Returns dictionaries mapping per-image and per-object column names to column #s"""
         
-        m_cols = workspace.pipeline.get_measurement_columns()
+        m_cols = self.get_pipeline_measurement_columns(workspace.pipeline, 
+                                                       workspace.image_set_list)
         
         per_image = {"ImageNumber":0}
         per_object = {"ImageNumber":0,"ObjectNumber":1}
@@ -805,7 +814,8 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
         mappings  - map a feature name to a column name
         """
         measurements = workspace.measurements
-        measurement_cols = workspace.pipeline.get_measurement_columns()
+        measurement_cols = self.get_pipeline_measurement_columns(workspace.pipeline,
+                                                                 workspace.image_set_list)
         index = measurements.image_set_index
         
         # TODO:
@@ -1098,6 +1108,13 @@ image_channel_colors = %(image_channel_colors)s
         if self.want_table_prefix.value:
             return self.table_prefix.value
         return ""
+    
+    def get_pipeline_measurement_columns(self, pipeline, image_set_list):
+        '''Get the measurement columns for this pipeline, possibly cached'''
+        d = self.get_dictionary(image_set_list)
+        if not d.has_key(D_MEASUREMENT_COLUMNS):
+            d[D_MEASUREMENT_COLUMNS] = pipeline.get_measurement_columns()
+        return d[D_MEASUREMENT_COLUMNS]
     
 class ColumnNameMapping:
     """Represents a mapping of feature name to column name"""

@@ -56,13 +56,21 @@ class IdentifyTertiarySubregion(cpm.CPModule):
         
         Create the settings for the module during initialization.
         """
-        self.secondary_objects_name = cps.ObjectNameSubscriber("Select the larger identified objects?","None")
-        self.primary_objects_name = cps.ObjectNameSubscriber("Select the smaller identified objects?","None")
+        self.secondary_objects_name = cps.ObjectNameSubscriber("Select the larger identified objects?","None",doc="""
+            What did you call the larger identified objects?""")
+        
+        self.primary_objects_name = cps.ObjectNameSubscriber("Select the smaller identified objects?","None",doc="""
+            What did you call the smaller identified objects?""")
+        
         self.subregion_objects_name = cps.ObjectNameProvider("Name the identified subregion objects?","Cytoplasm",doc="""
-        The new tertiary subregion will consist of the primary object subtracted from the secondary object.""")
+            What do you want to call the new subregions? The new tertiary subregion 
+            will consist of the primary object subtracted from the secondary object.""")
+        
         self.use_outlines = cps.Binary("Save outlines of the identified objects?",False)
+        
         self.outlines_name = cps.OutlineNameProvider("Name the outline image","CytoplasmOutlines", doc="""\
-            The outlines of the identified objects may be used by modules downstream,
+            <i>(Only used if outlines are to be saved)</i>
+            <p>The outlines of the identified objects may be used by modules downstream,
             by selecting them from any drop-down image list.""") 
 
     def settings(self):

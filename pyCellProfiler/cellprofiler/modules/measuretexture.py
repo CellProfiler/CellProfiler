@@ -1,16 +1,93 @@
 """
-Measure texture features for an object.
+<b>Measure Texture</b> measures the degree and nature of textures within objects 
+using several different metrics.
+<hr>
 
-CellProfiler is distributed under the GNU General Public License.
-See the accompanying file LICENSE for details.
+Note that texture measurements are affected by the overall intensity of 
+the object (or image). For example, if Image1 = Image2 + 0.2, then the 
+texture measurements should be the same for Image1 and Image2. However, 
+if the images are scaled differently, for example Image1 = 0.9*Image2, 
+then this will be reflected in the texture measurements, and they will be
+different. For example, in the extreme case of Image1 = 0*Image2 it is
+obvious that the texture measurements must be different. To make the
+measurements useful (both intensity, texture, etc.), it must be ensured
+that the images are scaled similarly. In other words, if differences in
+intensity are seen between two images or objects, the differences in
+texture cannot be trusted as being completely independent of the
+intensity difference.
 
-Developed by the Broad Institute
-Copyright 2003-2009
+Features that can be measured by this module:
+<ul>
+<li>
+<i>Haralick Features:</i> Haralick texture features are derived from the co-occurrence matrix, 
+which contains information about how image intensities in pixels with a 
+certain position in relation to each other occur together. For example, 
+how often does a pixel with intensity 0.12 have a neighbor 2 pixels to 
+the right with intensity 0.15? The current implementation in CellProfiler
+uses a shift of 1 pixel to the right for calculating the co-occurence 
+matrix. A different set of measurements is obtained for larger shifts, 
+measuring texture on a larger scale. The original reference for the 
+Haralick features is <i>Haralick et al. (1973) Textural Features for Image
+Classification. IEEE Transaction on Systems Man, Cybernetics,
+SMC-3(6):610-621</i>, where 14 features are described:
+<ul>
+<li><i>H1:</i> Angular Second Moment</li>
+<li><i>H2:</i> Contrast</li>
+<li><i>H3:</i> Correlation</li>
+<li><i>H4:</i> Sum of Squares: Variation</li>
+<li><i>H5:</i> Inverse Difference Moment</li>
+<li><i>H6:</i> Sum Average</li>
+<li><i>H7:</i> Sum Variance</li>
+<li><i>H8:</i> Sum Entropy</li>
+<li><i>H9:</i> Entropy</li>
+<li><i>H10:</i> Difference Variance</li>
+<li><i>H11:</i> Difference Entropy</li>
+<li><i>H12:</i> Information Measure of Correlation 1</li>
+<li><i>H13:</i> Information Measure of Correlation 2</li>
+</ul>
+</li>
+<li>
+<i>Gabor "wavelet" features:</i> These features are similar to wavelet features, and they are obtained by
+applying so-called Gabor filters to the image. The Gabor filters measure
+the frequency content in different orientations. They are very similar to
+wavelets, and in the current context they work exactly as wavelets, but
+they are not wavelets by a strict mathematical definition. The Gabor
+features detect correlated bands of intensities, for instance, images of
+Venetian blinds would have high scores in the horizontal orientation.
 
-Please see the AUTHORS file for credits.
-
-Website: http://www.cellprofiler.org
+<p>MeasureTexture performs the following algorithm to compute a score
+at each scale using the Gabor filter:
+<ul>
+<li>Divide the half-circle from 0 to 180 degrees by the number of desired
+angles. For instance, if the user choses two angles, MeasureTexture
+uses 0 degrees and 90 degrees (horizontal and vertical) for the filter
+orientations. This is the Theta value from the reference paper.</li>
+<li>For each angle, compute the Gabor filter for each object in the image
+at two phases separated by 90 degrees in order to account for texture
+features whose peaks fall on even or odd quarter-wavelengths.</li>
+<li>Multiply the image times each Gabor filter and sum over the pixels
+in each object.</li>
+<li>Take the square-root of the sum of the squares of the two filter scores.
+This results in one score per Theta.</li>
+<li>Save the maximum score over all Theta as the score at the desired scale.</li>
+</ul>
+    
+The original reference is <i>Gabor, D. (1946). "Theory of communication" 
+Journal of the Institute of Electrical Engineers, 93:429-441.</i>
+</li>
+</ul>
 """
+
+#CellProfiler is distributed under the GNU General Public License.
+#See the accompanying file LICENSE for details.
+#
+#Developed by the Broad Institute
+#Copyright 2003-2009
+#
+#Please see the AUTHORS file for credits.
+#
+#Website: http://www.cellprofiler.org
+
 
 __version__="$Revision: 1 $"
 
@@ -40,70 +117,6 @@ DifferenceVariance DifferenceEntropy InfoMeas1 InfoMeas2""".split()
 F_GABOR = "Gabor"
 
 class MeasureTexture(cpm.CPModule):
-    """SHORT DESCRIPTION
-    The MeasureTexture module measures the degree and nature of textures
-    within objects using several different metrics.
-    *************************************************************
-    Haralick Features:
-    Haralick texture features are derived from the co-occurrence matrix, 
-    which contains information about how image intensities in pixels with a 
-    certain position in relation to each other occur together. For example, 
-    how often does a pixel with intensity 0.12 have a neighbor 2 pixels to 
-    the right with intensity 0.15? The current implementation in CellProfiler
-    uses a shift of 1 pixel to the right for calculating the co-occurence 
-    matrix. A different set of measurements is obtained for larger shifts, 
-    measuring texture on a larger scale. The original reference for the 
-    Haralick features is Haralick et al. (1973) Textural Features for Image
-    Classification. IEEE Transaction on Systems Man, Cybernetics,
-    SMC-3(6):610-621, where 14 features are described:
-    H1. Angular Second Moment
-    H2. Contrast
-    H3. Correlation
-    H4. Sum of Squares: Variation
-    H5. Inverse Difference Moment
-    H6. Sum Average
-    H7. Sum Variance
-    H8. Sum Entropy
-    H9. Entropy
-    H10. Difference Variance
-    H11. Difference Entropy
-    H12. Information Measure of Correlation 1
-    H13. Information Measure of Correlation 2
-    
-    Gabor "wavelet" features:
-    These features are similar to wavelet features, and they are obtained by
-    applying so-called Gabor filters to the image. The Gabor filters measure
-    the frequency content in different orientations. They are very similar to
-    wavelets, and in the current context they work exactly as wavelets, but
-    they are not wavelets by a strict mathematical definition. The Gabor
-    features detect correlated bands of intensities, for instance, images of
-    Venetian blinds would have high scores in the horizontal orientation.
-    
-    MeasureTexture performs the following algorithm to compute a score
-    at each scale using the Gabor filter:
-    * Divide the half-circle from 0 to 180 degrees by the number of desired
-      angles. For instance, if the user choses two angles, MeasureTexture
-      uses 0 degrees and 90 degrees (horizontal and vertical) for the filter
-      orientations. This is the Theta value from the reference paper.
-    * For each angle, compute the Gabor filter for each object in the image
-      at two phases separated by 90 degrees in order to account for texture
-      features whose peaks fall on even or odd quarter-wavelengths.
-    * Multiply the image times each Gabor filter and sum over the pixels
-      in each object.
-    * Take the square-root of the sum of the squares of the two filter scores.
-      This results in one score per Theta.
-    * Save the maximum score over all Theta as the score at the desired scale.
-    
-    The original reference is Gabor, D. (1946). "Theory of communication" 
-    Journal of the Institute of Electrical Engineers, 93:429-441.
-
-    Settings:
-    Enter at least one image, at least one object and at least one scale. The
-    scale is the distance between correlated intensities in the image in 
-    pixels. Enter the number of angles to compute for Gabor. The default is
-    four which detects bands in the horizontal, vertical and diagonal
-    orientations.
-    """
 
     module_name = "MeasureTexture"
     variable_revision_number = 1
@@ -130,7 +143,11 @@ class MeasureTexture(cpm.CPModule):
         self.add_scale_cb()
         self.add_scales = cps.DoSomething("Add another scale", "Add",
                                           self.add_scale_cb)
-        self.gabor_angles = cps.Integer("How many angles do you want to use for each Gabor measurement?",4,2)
+        
+        self.gabor_angles = cps.Integer("How many angles do you want to use for each Gabor measurement?",4,2, doc="""
+            Enter the number of angles to compute for Gabor. The default is
+            four which detects bands in the horizontal, vertical and diagonal
+            orientations.""")
 
     def settings(self):
         """The settings as they appear in the save file."""
@@ -175,7 +192,9 @@ class MeasureTexture(cpm.CPModule):
                     index = [x.key for x in sequence].index(key)
                     del sequence[index]
                 
-                self.image_name = cps.ImageNameSubscriber("What did you call the images you want to measure?","None")
+                self.image_name = cps.ImageNameSubscriber("Select an input image","None", doc="""
+                    What did you call the greyscale images you want to measure?""")
+                
                 self.remove_button = cps.DoSomething("Remove the above image",
                                                      "Remove",remove)
             def settings(self):
@@ -193,7 +212,9 @@ class MeasureTexture(cpm.CPModule):
                     index = [x.key for x in sequence].index(key)
                     del sequence[index]
                 
-                self.object_name = cps.ObjectNameSubscriber("What did you call the objects you want to measure?","None")
+                self.object_name = cps.ObjectNameSubscriber("Select the input objects","None",doc="""
+                    What did you call the objects that you want to measure?""")
+                
                 self.remove_button = cps.DoSomething("Remove the above objects",
                                                      "Remove",remove)
             def settings(self):
@@ -212,8 +233,18 @@ class MeasureTexture(cpm.CPModule):
                     index = [x.key for x in sequence].index(key)
                     del sequence[index]
                 
-                self.scale = cps.Integer("What is the scale of the texture?",
-                                         len(sequence)+3)
+                self.scale = cps.Integer("Enter the texture scale",
+                                len(sequence)+3,doc="""
+                                The scale of texture measured is chosen by the user, in pixel units, 
+                                and is the distance between correlated intensities in the image. A 
+                                higher number for the scale of texture measures larger patterns of 
+                                texture whereas smaller numbers measure more localized patterns of 
+                                texture. It is best to measure texture on a scale smaller than your 
+                                objects' sizes, so be sure that the value entered for scale of texture is 
+                                smaller than most of your objects. For very small objects (smaller than 
+                                the scale of texture you are measuring), the texture cannot be measured 
+                                and will result in a undefined value in the output file.""")
+                
                 self.remove_button = cps.DoSomething("Remove the above scale",
                                                      "Remove",remove)
             def settings(self):

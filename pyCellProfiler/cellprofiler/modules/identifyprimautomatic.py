@@ -205,10 +205,12 @@ class IdentifyPrimAutomatic(cpmi.Identify):
     
     def create_settings(self):
         self.image_name = cps.ImageNameSubscriber(
-            "Select the input image")
+            "Select the input image",doc="""
+            What did you call the images you want to process?""")
         self.object_name = cps.ObjectNameProvider(
             "Name the identified primary objects",
-            "Nuclei")
+            "Nuclei",doc="""
+            What do you want to call the objects identified by this module?""")
         self.size_range = cps.IntegerRange(
             "Typical diameter of objects, in pixel units (Min,Max):", 
             (10,40), minval=1, doc='''\
@@ -529,7 +531,8 @@ class IdentifyPrimAutomatic(cpmi.Identify):
         
         self.save_outlines = cps.OutlineNameProvider(
             'Name the outline image',"PrimaryOutlines", doc="""\
-            The outlines of the identified objects may be used by modules downstream,
+            <i>(Only used if outlines are to be saved)</i>
+            <p>The outlines of the identified objects may be used by modules downstream,
             by selecting them from any drop-down image list.""")
         
         self.fill_holes = cps.Binary(

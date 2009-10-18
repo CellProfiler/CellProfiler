@@ -129,11 +129,8 @@ See also SubtractBackground, RescaleIntensity.
 
         if single_image:
             result[-1] = self.divider_bottom # this looks better when there's just one image
-            
-        if not single_image:
+        else:
             result += [self.add_button, self.divider_bottom]
-
-            
 
         result += [self.output_image_name, self.exponent, self.after_factor, 
                    self.addend, self.truncate_low, self.truncate_high]

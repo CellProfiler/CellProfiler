@@ -21,14 +21,12 @@ __version__="$Revision$"
 
 import gc
 import numpy as np
-import uuid
 
 import cellprofiler.cpmodule as cpm
 import cellprofiler.settings as cps
 
 C_REMOVE = "Remove"
 C_KEEP = "Keep"
-C_ALL = [C_REMOVE, C_KEEP]
 
 '''# of settings in a module independent of the image settings'''
 S_NUMBER_OF_PER_MODULE_SETTINGS = 1
@@ -43,56 +41,60 @@ class SpeedUpCellProfiler(cpm.CPModule):
     
     def create_settings(self):
         self.how_to_remove = cps.Choice("Do you want to choose the images to be removed or the images to keep?",
-                                        C_ALL,doc="""
+                                        [C_REMOVE, C_KEEP], 
+                                        doc="""
             Choose <i>%s</i> to remove some images from memory and keep the rest.
             Choose <i>%s</i> to keep some images and remove the rest."""%
                                 (C_REMOVE, C_KEEP))
-        
+        self.spacer_top = cps.Divider(line=False)
         self.image_names = []
-        self.add_image(False)
-        self.add_image_button = cps.DoSomething("Add another image",
+        self.add_image()
+        self.spacer_bottom = cps.Divider(line=False)
+        self.add_image_button = cps.DoSomething("Add another entry",
                                                 "Add",
                                                 self.add_image)
     
-    def add_image(self, can_delete=True):
-        '''Add an image to the list of image names
-        
-        can_delete = True to add GUI elements that let the user delete the image
-                   = False if the user should never delete it
-        '''
-        self.image_names.append(ImageSettings(self.image_names,
-                                              self.how_to_remove,
-                                              can_delete))
+
+    def query(self):
+        if self.how_to_remove == C_REMOVE:
+            return "What did you call the image that you want to remove from memory?"
+        else:
+            return "What did you call the image that you want to keep in memory"
+
+    def add_image(self):
+        '''Add an image to the list of image names'''
+        group = cps.SettingsGroup()
+        group.append("image_name", cps.ImageNameSubscriber(self.query(), "None"))
+        group.append("remover", cps.RemoveSettingButton("Remove the entry above",
+                                                        "Remove",
+                                                        self.image_names,
+                                                        group))
+        self.image_names.append(group)
     
     def settings(self):
-        result = [self.how_to_remove]
-        for image_setting in self.image_names:
-            result.extend(image_setting.settings())
-        return result
+        return [self.how_to_remove] + [im.image_name for im in self.image_names]
     
     def prepare_to_set_values(self, setting_values):
         image_count = ((len(setting_values) - S_NUMBER_OF_PER_MODULE_SETTINGS) /
                        S_NUMBER_OF_SETTINGS_PER_IMAGE)
-        while image_count < len(self.image_names):
-            del self.image_names[-1]
-        
+        del self.image_names[image_count:]
         while image_count > len(self.image_names):
             self.add_image()
     
     def visible_settings(self):
-        result = [self.how_to_remove]
+        result = [self.how_to_remove, self.spacer_top]
+
         for image_setting in self.image_names:
-            result.extend(image_setting.visible_settings())
-        result.append(self.add_image_button)
+            result += image_setting.unpack_group()
+        result += [self.spacer_bottom, self.add_image_button]
         return result
     
     def run(self, workspace):
         image_set = workspace.image_set
         image_names = [x.image_name.value for x in self.image_names]
         if self.how_to_remove == C_KEEP:
-            names = set([x.name for x in image_set.providers])
-            names.difference_update(image_names)
-            for name in names:
+            all_names = [x.name for x in image_set.providers]
+            for name in set(all_names) - set(image_names):
                 image_set.clear_image(name)
         else:
             for name in image_names:
@@ -100,8 +102,9 @@ class SpeedUpCellProfiler(cpm.CPModule):
         gc.collect()
     
     def test_valid(self, pipeline):
+        # if the remove method has changed, we need to update the text.
         for image_setting in self.image_names:
-            image_setting.on_validate()
+            image_setting.image_name.text = self.query()
 
     def backwards_compatibilize(self, setting_values, variable_revision_number,
                                 module_name, from_matlab):
@@ -123,35 +126,3 @@ class SpeedUpCellProfiler(cpm.CPModule):
 
         return setting_values, variable_revision_number, from_matlab
     
-class ImageSettings(object):
-    def __init__(self, images, how_to_remove, can_delete):
-        self.can_delete = can_delete
-        self.how_to_remove = how_to_remove
-        self.key = uuid.uuid4()
-        self.image_name = cps.ImageNameSubscriber(self.image_text, "None")
-        if can_delete:
-            def remove(images=images, key = self.key):
-                index = [x.key for x in images].index(key)
-                del images[index]
-            self.remove_button = cps.DoSomething("Remove image from list", 
-                                                 "Remove",
-                                                 remove)
-    def settings(self):
-        return [self.image_name]
-    
-    def visible_settings(self):
-        if self.can_delete:
-            return [self.image_name, self.remove_button]
-        else:
-            return [self.image_name]
-    
-    @property
-    def image_text(self):
-        if self.how_to_remove == C_REMOVE:
-            return "What did you call the image that you want to remove from memory?"
-        else:
-            return "What did you call the image that you want to keep in memory"
-    
-    def on_validate(self):
-        self.image_name.text = self.image_text
-        

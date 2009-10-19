@@ -81,6 +81,7 @@ class MeasureCorrelation(cpm.CPModule):
         
         self.add_image_button = cps.DoSomething('Add another image','Add image',
                                                 self.add_image)
+        self.spacer = cps.Divider(line=False)
         self.images_or_objects = cps.Choice('Do you want to measure the correlation within objects, over the whole image or both within objects and over the whole image?',
                                             [M_IMAGES, M_OBJECTS, M_IMAGES_AND_OBJECTS], 
                                             doc = '''Both methods measure correlation on a pixel by pixel basis.
@@ -107,7 +108,7 @@ class MeasureCorrelation(cpm.CPModule):
                                                           doc = '''What is the name of the image to be measured?'''))
         if can_delete:
             group.append("remover", 
-                         cps.RemoveSettingButton('Remove this image',
+                         cps.RemoveSettingButton('Remove the image above',
                                                  'Remove', self.image_groups, group))
         self.image_groups.append(group)
 
@@ -116,6 +117,7 @@ class MeasureCorrelation(cpm.CPModule):
         group = cps.SettingsGroup()
         group.append("object_name", cps.ObjectNameSubscriber('Select the object to measure:','None',
                                                             doc = '''What is the name of the objects to be measured?'''))
+        group.append("remover", cps.RemoveSettingButton('Remove the object above', 'Remove', self.object_groups, group))
         self.object_groups.append(group)
 
     def settings(self):
@@ -145,7 +147,7 @@ class MeasureCorrelation(cpm.CPModule):
         result = []
         for image_group in self.image_groups:
             result += image_group.unpack_group()
-        result += [self.add_image_button, self.images_or_objects]
+        result += [self.add_image_button, self.spacer, self.images_or_objects]
         if self.wants_objects():
             for object_group in self.object_groups:
                 result += object_group.unpack_group()

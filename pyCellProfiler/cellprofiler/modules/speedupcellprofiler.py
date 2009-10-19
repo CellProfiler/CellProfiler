@@ -105,6 +105,7 @@ class SpeedUpCellProfiler(cpm.CPModule):
         # if the remove method has changed, we need to update the text.
         for image_setting in self.image_names:
             image_setting.image_name.text = self.query()
+        super(SpeedUpCellProfiler, self).test_valid(pipeline)
 
     def backwards_compatibilize(self, setting_values, variable_revision_number,
                                 module_name, from_matlab):

@@ -1,814 +1,150 @@
-<html xmlns:o="urn:schemas-microsoft-com:office:office"
-xmlns:w="urn:schemas-microsoft-com:office:word"
-xmlns:m="http://schemas.microsoft.com/office/2004/12/omml"
-xmlns="http://www.w3.org/TR/REC-html40">
-
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-<meta name=Title content="Developer's Guide :: CellProfiler :: cellprofiler.org">
-<meta name=Keywords content="">
-<meta http-equiv=Content-Type content="text/html; charset=utf-8">
-<meta name=ProgId content=Word.Document>
-<meta name=Generator content="Microsoft Word 2008">
-<meta name=Originator content="Microsoft Word 2008">
-<link rel=File-List href="developer_files/filelist.xml">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <title>Developer's Guide :: CellProfiler :: cellprofiler.org</title>
-<!--[if gte mso 9]><xml>
- <o:DocumentProperties>
-  <o:Author>Anne Carpenter</o:Author>
-  <o:Template>Normal.dotm</o:Template>
-  <o:LastAuthor>Anne Carpenter</o:LastAuthor>
-  <o:Revision>2</o:Revision>
-  <o:TotalTime>0</o:TotalTime>
-  <o:Created>2009-10-16T21:31:00Z</o:Created>
-  <o:LastSaved>2009-10-16T21:38:00Z</o:LastSaved>
-  <o:Pages>1</o:Pages>
-  <o:Words>927</o:Words>
-  <o:Characters>5286</o:Characters>
-  <o:Company>Broad Institute Imaging Platform</o:Company>
-  <o:Lines>44</o:Lines>
-  <o:Paragraphs>10</o:Paragraphs>
-  <o:CharactersWithSpaces>6491</o:CharactersWithSpaces>
-  <o:Version>12.0</o:Version>
- </o:DocumentProperties>
- <o:OfficeDocumentSettings>
-  <o:AllowPNG/>
- </o:OfficeDocumentSettings>
-</xml><![endif]--><!--[if gte mso 9]><xml>
- <w:WordDocument>
-  <w:Zoom>125</w:Zoom>
-  <w:SpellingState>Clean</w:SpellingState>
-  <w:GrammarState>Clean</w:GrammarState>
-  <w:TrackMoves>false</w:TrackMoves>
-  <w:TrackFormatting/>
-  <w:ValidateAgainstSchemas/>
-  <w:SaveIfXMLInvalid>false</w:SaveIfXMLInvalid>
-  <w:IgnoreMixedContent>false</w:IgnoreMixedContent>
-  <w:AlwaysShowPlaceholderText>false</w:AlwaysShowPlaceholderText>
-  <w:Compatibility>
-   <w:SplitPgBreakAndParaMark/>
-   <w:DontVertAlignCellWithSp/>
-   <w:DontBreakConstrainedForcedTables/>
-   <w:DontVertAlignInTxbx/>
-   <w:Word11KerningPairs/>
-   <w:CachedColBalance/>
-   <w:UseFELayout/>
-  </w:Compatibility>
- </w:WordDocument>
-</xml><![endif]--><!--[if gte mso 9]><xml>
- <w:LatentStyles DefLockedState="false" LatentStyleCount="276">
- </w:LatentStyles>
-</xml><![endif]-->
-<style>
-<!--
- /* Font Definitions */
-@font-face
-	{font-family:"Courier New";
-	panose-1:2 7 3 9 2 2 5 2 4 4;
-	mso-font-charset:0;
-	mso-generic-font-family:auto;
-	mso-font-pitch:variable;
-	mso-font-signature:3 0 0 0 1 0;}
-@font-face
-	{font-family:Times;
-	panose-1:2 0 5 0 0 0 0 0 0 0;
-	mso-font-charset:0;
-	mso-generic-font-family:auto;
-	mso-font-pitch:variable;
-	mso-font-signature:3 0 0 0 1 0;}
-@font-face
-	{font-family:Wingdings;
-	panose-1:5 2 1 2 1 8 4 8 7 8;
-	mso-font-charset:2;
-	mso-generic-font-family:auto;
-	mso-font-pitch:variable;
-	mso-font-signature:0 0 65536 0 -2147483648 0;}
- /* Style Definitions */
-p.MsoNormal, li.MsoNormal, div.MsoNormal
-	{mso-style-parent:"";
-	margin:0in;
-	margin-bottom:.0001pt;
-	mso-pagination:widow-orphan;
-	font-size:10.0pt;
-	font-family:"Times New Roman";
-	mso-ascii-font-family:Times;
-	mso-fareast-font-family:"Times New Roman";
-	mso-fareast-theme-font:minor-fareast;
-	mso-hansi-font-family:Times;
-	mso-bidi-font-family:"Times New Roman";
-	mso-bidi-theme-font:minor-bidi;}
-h1
-	{mso-style-link:"Heading 1 Char";
-	margin:0in;
-	margin-bottom:.0001pt;
-	mso-pagination:widow-orphan;
-	mso-outline-level:1;
-	font-size:24.0pt;
-	mso-bidi-font-size:10.0pt;
-	font-family:"Times New Roman";
-	mso-ascii-font-family:Times;
-	mso-hansi-font-family:Times;
-	mso-bidi-font-family:"Times New Roman";
-	mso-bidi-theme-font:minor-bidi;
-	font-weight:bold;
-	mso-bidi-font-weight:normal;}
-h2
-	{mso-style-link:"Heading 2 Char";
-	margin:0in;
-	margin-bottom:.0001pt;
-	mso-pagination:widow-orphan;
-	mso-outline-level:2;
-	font-size:18.0pt;
-	mso-bidi-font-size:10.0pt;
-	font-family:"Times New Roman";
-	mso-ascii-font-family:Times;
-	mso-hansi-font-family:Times;
-	mso-bidi-font-family:"Times New Roman";
-	mso-bidi-theme-font:minor-bidi;
-	font-weight:bold;
-	mso-bidi-font-weight:normal;}
-h3
-	{mso-style-link:"Heading 3 Char";
-	margin:0in;
-	margin-bottom:.0001pt;
-	mso-pagination:widow-orphan;
-	mso-outline-level:3;
-	font-size:13.5pt;
-	mso-bidi-font-size:10.0pt;
-	font-family:"Times New Roman";
-	mso-ascii-font-family:Times;
-	mso-hansi-font-family:Times;
-	mso-bidi-font-family:"Times New Roman";
-	mso-bidi-theme-font:minor-bidi;
-	font-weight:bold;
-	mso-bidi-font-weight:normal;}
-a:link, span.MsoHyperlink
-	{color:blue;
-	text-decoration:underline;
-	text-underline:single;}
-a:visited, span.MsoHyperlinkFollowed
-	{color:blue;
-	text-decoration:underline;
-	text-underline:single;}
-p
-	{margin:0in;
-	margin-bottom:.0001pt;
-	mso-pagination:widow-orphan;
-	font-size:10.0pt;
-	font-family:"Times New Roman";
-	mso-ascii-font-family:Times;
-	mso-fareast-font-family:"Times New Roman";
-	mso-fareast-theme-font:minor-fareast;
-	mso-hansi-font-family:Times;
-	mso-bidi-font-family:"Times New Roman";}
-pre
-	{mso-style-link:"HTML Preformatted Char";
-	margin:0in;
-	margin-bottom:.0001pt;
-	mso-pagination:widow-orphan;
-	tab-stops:45.8pt 91.6pt 137.4pt 183.2pt 229.0pt 274.8pt 320.6pt 366.4pt 412.2pt 458.0pt 503.8pt 549.6pt 595.4pt 641.2pt 687.0pt 732.8pt;
-	font-size:10.0pt;
-	font-family:Courier;
-	mso-fareast-font-family:"Times New Roman";
-	mso-fareast-theme-font:minor-fareast;
-	mso-bidi-font-family:Courier;}
-span.Heading1Char
-	{mso-style-name:"Heading 1 Char";
-	mso-style-locked:yes;
-	mso-style-link:"Heading 1";
-	mso-ansi-font-size:16.0pt;
-	mso-bidi-font-size:16.0pt;
-	font-family:Calibri;
-	mso-ascii-font-family:Calibri;
-	mso-ascii-theme-font:major-latin;
-	mso-fareast-font-family:"Times New Roman";
-	mso-fareast-theme-font:major-fareast;
-	mso-hansi-font-family:Calibri;
-	mso-hansi-theme-font:major-latin;
-	mso-bidi-font-family:"Times New Roman";
-	mso-bidi-theme-font:major-bidi;
-	color:#345A8A;
-	font-weight:bold;}
-span.HTMLPreformattedChar
-	{mso-style-name:"HTML Preformatted Char";
-	mso-style-noshow:yes;
-	mso-style-locked:yes;
-	mso-style-link:"HTML Preformatted";
-	mso-ansi-font-size:10.0pt;
-	mso-bidi-font-size:10.0pt;
-	font-family:"Courier New";
-	mso-ascii-font-family:"Courier New";
-	mso-hansi-font-family:"Courier New";}
-span.Heading2Char
-	{mso-style-name:"Heading 2 Char";
-	mso-style-noshow:yes;
-	mso-style-locked:yes;
-	mso-style-link:"Heading 2";
-	mso-ansi-font-size:13.0pt;
-	mso-bidi-font-size:13.0pt;
-	font-family:Calibri;
-	mso-ascii-font-family:Calibri;
-	mso-ascii-theme-font:major-latin;
-	mso-fareast-font-family:"Times New Roman";
-	mso-fareast-theme-font:major-fareast;
-	mso-hansi-font-family:Calibri;
-	mso-hansi-theme-font:major-latin;
-	mso-bidi-font-family:"Times New Roman";
-	mso-bidi-theme-font:major-bidi;
-	color:#4F81BD;
-	font-weight:bold;}
-span.Heading3Char
-	{mso-style-name:"Heading 3 Char";
-	mso-style-noshow:yes;
-	mso-style-locked:yes;
-	mso-style-link:"Heading 3";
-	mso-ansi-font-size:10.0pt;
-	mso-bidi-font-size:10.0pt;
-	font-family:Calibri;
-	mso-ascii-font-family:Calibri;
-	mso-ascii-theme-font:major-latin;
-	mso-fareast-font-family:"Times New Roman";
-	mso-fareast-theme-font:major-fareast;
-	mso-hansi-font-family:Calibri;
-	mso-hansi-theme-font:major-latin;
-	mso-bidi-font-family:"Times New Roman";
-	mso-bidi-theme-font:major-bidi;
-	color:#4F81BD;
-	font-weight:bold;}
-span.SpellE
-	{mso-style-name:"";
-	mso-spl-e:yes;}
-span.GramE
-	{mso-style-name:"";
-	mso-gram-e:yes;}
-@page Section1
-	{size:8.5in 11.0in;
-	margin:1.0in 1.25in 1.0in 1.25in;
-	mso-header-margin:.5in;
-	mso-footer-margin:.5in;
-	mso-paper-source:0;}
-div.Section1
-	{page:Section1;}
- /* List Definitions */
-@list l0
-	{mso-list-id:244650250;
-	mso-list-template-ids:-757269458;}
-@list l0:level1
-	{mso-level-number-format:bullet;
-	mso-level-text:;
-	mso-level-tab-stop:.5in;
-	mso-level-number-position:left;
-	text-indent:-.25in;
-	mso-ansi-font-size:10.0pt;
-	font-family:Symbol;}
-@list l0:level2
-	{mso-level-number-format:bullet;
-	mso-level-text:o;
-	mso-level-tab-stop:1.0in;
-	mso-level-number-position:left;
-	text-indent:-.25in;
-	mso-ansi-font-size:10.0pt;
-	font-family:"Courier New";}
-@list l1
-	{mso-list-id:264265796;
-	mso-list-template-ids:-1748570572;}
-@list l2
-	{mso-list-id:374622582;
-	mso-list-template-ids:-653517540;}
-@list l2:level1
-	{mso-level-number-format:bullet;
-	mso-level-text:;
-	mso-level-tab-stop:.5in;
-	mso-level-number-position:left;
-	text-indent:-.25in;
-	mso-ansi-font-size:10.0pt;
-	font-family:Symbol;}
-@list l3
-	{mso-list-id:709497423;
-	mso-list-template-ids:639695618;}
-@list l3:level1
-	{mso-level-number-format:bullet;
-	mso-level-text:;
-	mso-level-tab-stop:.5in;
-	mso-level-number-position:left;
-	text-indent:-.25in;
-	mso-ansi-font-size:10.0pt;
-	font-family:Symbol;}
-@list l4
-	{mso-list-id:835921684;
-	mso-list-template-ids:-279252228;}
-@list l4:level1
-	{mso-level-number-format:bullet;
-	mso-level-text:;
-	mso-level-tab-stop:.5in;
-	mso-level-number-position:left;
-	text-indent:-.25in;
-	mso-ansi-font-size:10.0pt;
-	font-family:Symbol;}
-@list l4:level2
-	{mso-level-number-format:bullet;
-	mso-level-text:o;
-	mso-level-tab-stop:1.0in;
-	mso-level-number-position:left;
-	text-indent:-.25in;
-	mso-ansi-font-size:10.0pt;
-	font-family:"Courier New";}
-@list l4:level3
-	{mso-level-number-format:bullet;
-	mso-level-text:;
-	mso-level-tab-stop:1.5in;
-	mso-level-number-position:left;
-	text-indent:-.25in;
-	mso-ansi-font-size:10.0pt;
-	font-family:Wingdings;}
-@list l5
-	{mso-list-id:2104522542;
-	mso-list-template-ids:-808843724;}
-@list l5:level1
-	{mso-level-number-format:bullet;
-	mso-level-text:;
-	mso-level-tab-stop:.5in;
-	mso-level-number-position:left;
-	text-indent:-.25in;
-	mso-ansi-font-size:10.0pt;
-	font-family:Symbol;}
-ol
-	{margin-bottom:0in;}
-ul
-	{margin-bottom:0in;}
--->
-</style>
-<!--[if gte mso 10]>
-<style>
- /* Style Definitions */
-table.MsoNormalTable
-	{mso-style-name:"Table Normal";
-	mso-tstyle-rowband-size:0;
-	mso-tstyle-colband-size:0;
-	mso-style-noshow:yes;
-	mso-style-parent:"";
-	mso-padding-alt:0in 5.4pt 0in 5.4pt;
-	mso-para-margin:0in;
-	mso-para-margin-bottom:.0001pt;
-	mso-pagination:widow-orphan;
-	font-size:12.0pt;
-	font-family:"Times New Roman";
-	mso-ascii-font-family:Cambria;
-	mso-ascii-theme-font:minor-latin;
-	mso-hansi-font-family:Cambria;
-	mso-hansi-theme-font:minor-latin;}
-</style>
-<![endif]-->
 </head>
 
-<body bgcolor=white lang=EN-US link=blue vlink=blue style='tab-interval:.5in'>
-
-<div class=Section1>
-
-<div id=mainContent>
-
-<h1 style='margin-top:.1pt;margin-right:0in;margin-bottom:.1pt;margin-left:
-0in'>Developer's Guide</h1>
-
-<ul style='margin-top:0in' type=disc>
- <li class=MsoNormal style='margin-top:.1pt;margin-bottom:.1pt;mso-list:l4 level1 lfo1;
-     tab-stops:list .5in'><a href="#intro">Introduction</a></li>
- <li class=MsoNormal style='margin-top:.1pt;margin-bottom:.1pt;mso-list:l4 level1 lfo1;
-     tab-stops:list .5in'><a href="#installation">Installation</a></li>
- <li class=MsoNormal style='margin-top:.1pt;margin-bottom:.1pt;mso-list:l4 level1 lfo1;
-     tab-stops:list .5in'><a href="#python">Python Code</a></li>
+<body>
+<div id="mainContent">
+<h1>WARNING: DO NOT EDIT. MAKE ALL CHANGES ON THE WIKI <a href="http://dev.broadinstitute.org/imaging/privatewiki/index.php/CellProfiler_Developer%27s_Guide">PAGE</a></h1>
+<h1>Developer's Guide</h1>
+<ul>
+  <li><a href="#intro">Introduction</a></li>
+  <li><a href="#installation">Installation</a></li>
+  <li><a href="#python">Python Code</a></li>
+	<ul>
+		<li><a href="#python-style_guide">Style Guide</a></li>
+        <ul>
+        	<li><a href="#python-style_guide-module_help">Module Help</a></li>
+            <li><a href="#python-style_guide-settings_help">Settings Help</a></li>
+        </ul>
+	  <li><a href="#python-module_simplification">Module Simplification</a></li>
+      <li><a href="#python-storing_retrieving_data">Storing and Retrieving Data</a></li>
+      <ul>
+        	<li><a href="#python-cpimage"><em>cpimage</em></a></li>
+            <li><a href="#python-cpmodule"><em>cpmodule</em></a></li>
+            <li><a href="#python-settings"><em>settings</em></a></li>
+            <li><a href="#python-preferences"><em>preferences</em></a></li>
+            <li><a href="#python-pipeline"><em>pipeline</em></a></li>
+        <li><a href="#python-workspace"><em>workspace</em></a></li>
+            <li><a href="#python-measurements"><em>measurements</em></a></li>
+      </ul>
+      <li><a href="#python-error_handling">Error Handling</a></li>
+      <li><a href="#python-displaying_results">Displaying Results</a></li>
+      <li><a href="#python-debugging_hints">Debugging Hints</a></li>
+	</ul>
+    <li><a href="#python-running_cp_headless">Running CellProfiler Without the Graphical User Interface</a></li>
 </ul>
 
-<ul style='margin-top:0in' type=disc>
- <ul style='margin-top:0in' type=circle>
-  <li class=MsoNormal style='margin-top:.1pt;margin-bottom:.1pt;mso-list:l4 level2 lfo1;
-      tab-stops:list 1.0in'><a href="#python-style_guide">Style Guide</a></li>
- </ul>
+<h1><a name="intro"></a>Introduction</h1>
+
+<p>This document describes the code standards for CellProfiler, and gives tips
+   for CellProfiler developers.</p>
+
+<h1><a name="#python"></a>Installation</h1>
+<p><em>For PC</em><br />
+Install the following packages:
+<ul>
+<li><a href="http://www.python.org/download/releases/2.5.4/">Python 2.5.4</a>, the final version of Python 2.5</li>
+<li><a href="http://cython.org/#download">Cython</a><br />
+After installing Cython, create a configuration file for distutils (distutils.cfg) in your Python installation directory under the /Lib/distutils/ folder which contains the following:<br />
+<pre>[build]
+compiler=mingw32</pre>
+</li>
+<li><a href="http://sourceforge.net/project/showfiles.php?group_id=22307">MySQLDB</a></li>
+<li><a href="http://www.wxpython.org/">WxPython</a></li>
+<li><a href="http://sourceforge.net/projects/numpy/files/NumPy/">NumPy</a></li>
+<li><a href="http://sourceforge.net/projects/scipy/files/">SciPy</a></li>
+<li><a href="http://sourceforge.net/projects/matplotlib/files/matplotlib/matplotlib-0.99.1/">MatplotLib</a></li>
+<li><a href="http://www.pythonware.com/products/pil/">PIL</a></li>
 </ul>
+Most of these have .exe installers for Windows, but you may need to look around a bit. After installation, </p> double-clicking <em>CellProfiler.py</em> will start the GUI.
+<p><em>For Mac</em></p>
 
-<ul style='margin-top:0in' type=disc>
- <ul style='margin-top:0in' type=circle>
-  <ul style='margin-top:0in' type=square>
-   <li class=MsoNormal style='margin-top:.1pt;margin-bottom:.1pt;mso-list:l4 level3 lfo1;
-       tab-stops:list 1.5in'><a href="#python-style_guide-module_help">Module
-       Help</a></li>
-   <li class=MsoNormal style='margin-top:.1pt;margin-bottom:.1pt;mso-list:l4 level3 lfo1;
-       tab-stops:list 1.5in'><a href="#python-style_guide-settings_help">Settings
-       Help</a></li>
-  </ul>
- </ul>
-</ul>
+<h1><a name="#python"></a>Python Code</h1>
 
-<ul style='margin-top:0in' type=disc>
- <ul style='margin-top:0in' type=circle>
-  <li class=MsoNormal style='margin-top:.1pt;margin-bottom:.1pt;mso-list:l4 level2 lfo1;
-      tab-stops:list 1.0in'><a href="#python-module_simplification">Module
-      Simplification</a></li>
-  <li class=MsoNormal style='margin-top:.1pt;margin-bottom:.1pt;mso-list:l4 level2 lfo1;
-      tab-stops:list 1.0in'><a href="#python-storing_retrieving_data">Storing
-      and Retrieving Data</a></li>
- </ul>
-</ul>
+<h2><a name="python-style_guide"></a>Style Guide</h2>
 
-<ul style='margin-top:0in' type=disc>
- <ul style='margin-top:0in' type=circle>
-  <ul style='margin-top:0in' type=square>
-   <li class=MsoNormal style='margin-top:.1pt;margin-bottom:.1pt;mso-list:l4 level3 lfo1;
-       tab-stops:list 1.5in'><a href="#python-cpimage"><span class=SpellE><span
-       class=GramE><em><span style='font-family:Times'>cpimage</span></em></span></span></a></li>
-   <li class=MsoNormal style='margin-top:.1pt;margin-bottom:.1pt;mso-list:l4 level3 lfo1;
-       tab-stops:list 1.5in'><a href="#python-cpmodule"><span class=SpellE><span
-       class=GramE><em><span style='font-family:Times'>cpmodule</span></em></span></span></a></li>
-   <li class=MsoNormal style='margin-top:.1pt;margin-bottom:.1pt;mso-list:l4 level3 lfo1;
-       tab-stops:list 1.5in'><a href="#python-settings"><span class=GramE><em><span
-       style='font-family:Times'>settings</span></em></span></a></li>
-   <li class=MsoNormal style='margin-top:.1pt;margin-bottom:.1pt;mso-list:l4 level3 lfo1;
-       tab-stops:list 1.5in'><a href="#python-preferences"><span class=GramE><em><span
-       style='font-family:Times'>preferences</span></em></span></a></li>
-   <li class=MsoNormal style='margin-top:.1pt;margin-bottom:.1pt;mso-list:l4 level3 lfo1;
-       tab-stops:list 1.5in'><a href="#python-pipeline"><span class=GramE><em><span
-       style='font-family:Times'>pipeline</span></em></span></a></li>
-   <li class=MsoNormal style='margin-top:.1pt;margin-bottom:.1pt;mso-list:l4 level3 lfo1;
-       tab-stops:list 1.5in'><a href="#python-workspace"><span class=GramE><em><span
-       style='font-family:Times'>workspace</span></em></span></a></li>
-   <li class=MsoNormal style='margin-top:.1pt;margin-bottom:.1pt;mso-list:l4 level3 lfo1;
-       tab-stops:list 1.5in'><a href="#python-measurements"><span class=GramE><em><span
-       style='font-family:Times'>measurements</span></em></span></a></li>
-  </ul>
- </ul>
-</ul>
-
-<ul style='margin-top:0in' type=disc>
- <ul style='margin-top:0in' type=circle>
-  <li class=MsoNormal style='margin-top:.1pt;margin-bottom:.1pt;mso-list:l4 level2 lfo1;
-      tab-stops:list 1.0in'><a href="#python-error_handling">Error Handling</a></li>
-  <li class=MsoNormal style='margin-top:.1pt;margin-bottom:.1pt;mso-list:l4 level2 lfo1;
-      tab-stops:list 1.0in'><a href="#python-displaying_results">Displaying
-      Results</a></li>
-  <li class=MsoNormal style='margin-top:.1pt;margin-bottom:.1pt;mso-list:l4 level2 lfo1;
-      tab-stops:list 1.0in'><a href="#python-debugging_hints">Debugging Hints</a></li>
- </ul>
-</ul>
-
-<ul style='margin-top:0in' type=disc>
- <li class=MsoNormal style='margin-top:.1pt;margin-bottom:.1pt;mso-list:l4 level1 lfo1;
-     tab-stops:list .5in'><a href="#python-running_cp_headless">Running <span
-     class=SpellE>CellProfiler</span> Without the Graphical User Interface</a></li>
-</ul>
-
-<h1 style='margin-top:.1pt;margin-right:0in;margin-bottom:.1pt;margin-left:
-0in'><a name=intro></a>Introduction</h1>
-
-<p style='margin-top:.1pt;margin-right:0in;margin-bottom:.1pt;margin-left:0in'>This
-document describes the code standards for <span class=SpellE>CellProfiler</span>,
-and gives tips for <span class=SpellE>CellProfiler</span> developers.</p>
-
-<h1 style='margin-top:.1pt;margin-right:0in;margin-bottom:.1pt;margin-left:
-0in'>Installation</h1>
-
-<p style='margin-top:.1pt;margin-right:0in;margin-bottom:.1pt;margin-left:0in'><em><span
-style='font-family:Times'>For PC</span></em><br>
-Install the following packages: </p>
-
-<ul style='margin-top:0in' type=disc>
- <li class=MsoNormal style='margin-top:.1pt;margin-bottom:.1pt;mso-list:l2 level1 lfo2;
-     tab-stops:list .5in'><a
-     href="http://www.python.org/download/releases/2.5.4/">Python 2.5.4</a>,
-     the final version of Python 2.5</li>
- <li class=MsoNormal style='margin-top:.1pt;margin-bottom:.1pt;mso-list:l2 level1 lfo2;
-     tab-stops:list .5in'><a href="http://cython.org/#download"><span
-     class=SpellE>Cython</span></a><br>
-     After installing <span class=SpellE>Cython</span>, create a configuration
-     file for <span class=SpellE>distutils</span> (<span class=SpellE>distutils.cfg</span>)
-     in your Python installation directory under the /Lib/<span class=SpellE>distutils</span>/
-     folder which contains the following:</li>
-</ul>
-
-<pre style='margin-left:.5in;text-indent:-.25in;mso-list:l2 level1 lfo2'><![if !supportLists]><span
-style='font-family:Symbol;mso-fareast-font-family:Symbol;mso-bidi-font-family:
-Symbol'><span style='mso-list:Ignore'>·<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span></span><![endif]>[<span
-class=GramE>build</span>]</pre><pre style='margin-left:.5in'> <span
-class=GramE>compiler</span>=mingw32</pre>
-
-<ul style='margin-top:0in' type=disc>
- <li class=MsoNormal style='margin-top:.1pt;margin-bottom:.1pt;mso-list:l2 level1 lfo2;
-     tab-stops:list .5in'><a
-     href="http://sourceforge.net/project/showfiles.php?group_id=22307"><span
-     class=SpellE>MySQLDB</span></a></li>
- <li class=MsoNormal style='margin-top:.1pt;margin-bottom:.1pt;mso-list:l2 level1 lfo2;
-     tab-stops:list .5in'><a href="http://www.wxpython.org/"><span
-     class=SpellE>WxPython</span></a></li>
- <li class=MsoNormal style='margin-top:.1pt;margin-bottom:.1pt;mso-list:l2 level1 lfo2;
-     tab-stops:list .5in'><a
-     href="http://sourceforge.net/projects/numpy/files/NumPy/"><span
-     class=SpellE>NumPy</span></a></li>
- <li class=MsoNormal style='margin-top:.1pt;margin-bottom:.1pt;mso-list:l2 level1 lfo2;
-     tab-stops:list .5in'><a href="http://sourceforge.net/projects/scipy/files/"><span
-     class=SpellE>SciPy</span></a></li>
- <li class=MsoNormal style='margin-top:.1pt;margin-bottom:.1pt;mso-list:l2 level1 lfo2;
-     tab-stops:list .5in'><a
-     href="http://sourceforge.net/projects/matplotlib/files/matplotlib/matplotlib-0.99.1/"><span
-     class=SpellE>MatplotLib</span></a></li>
- <li class=MsoNormal style='margin-top:.1pt;margin-bottom:.1pt;mso-list:l2 level1 lfo2;
-     tab-stops:list .5in'><a href="http://www.pythonware.com/products/pil/">PIL</a></li>
-</ul>
-
-<p class=MsoNormal>Most of these have .exe installers for Windows, but you may
-need to look around a bit. After installation, </p>
-
-<p class=MsoNormal><span class=GramE>double</span>-clicking <span class=SpellE><em><span
-style='font-family:Times'>CellProfiler.py</span></em></span> will start the
-GUI. </p>
-
-<p style='margin-top:.1pt;margin-right:0in;margin-bottom:.1pt;margin-left:0in'><em><span
-style='font-family:Times'>For Mac</span></em></p>
-
-<h1 style='margin-top:.1pt;margin-right:0in;margin-bottom:.1pt;margin-left:
-0in'><a name="#python"></a>Python Code</h1>
-
-<h2 style='margin-top:.1pt;margin-right:0in;margin-bottom:.1pt;margin-left:
-0in'><a name="python-style_guide"></a>Style Guide</h2>
-
-<h3 style='margin-top:.1pt;margin-right:0in;margin-bottom:.1pt;margin-left:
-0in'><a name="python-style_guide-module_help"></a>Module Help</h3>
-
-<p style='margin-top:.1pt;margin-right:0in;margin-bottom:.1pt;margin-left:0in'>The
-Module Help window (which also constitutes a section of the <span class=SpellE>CellProfiler</span>
-manual) is populated by the documentation string of the module's code, and
-contains the following: </p>
-
-<ol style='margin-top:0in' start=1 type=1>
- <li class=MsoNormal style='margin-top:.1pt;margin-bottom:.1pt;mso-list:l1 level1 lfo3;
-     tab-stops:list .5in'><strong><span style='font-family:Times'>The module's
-     name:</span></strong> This is printed as a title automatically and is not
-     specified within the code for the module.</li>
- <li class=MsoNormal style='margin-top:.1pt;margin-bottom:.1pt;mso-list:l1 level1 lfo3;
-     tab-stops:list .5in'><strong><span style='font-family:Times'>'''&lt;<span
-     class=GramE>b</span>&gt; Module name &lt;/b&gt; phrase description</span></strong>.<br>
-     <em><span style='font-family:Times'>Example:</span></em> <strong><span
-     style='font-family:Times'>Identify Prim Automatic</span></strong>
-     identifies objects via <span class=SpellE>thresholding</span> and
-     contouring.<br>
-     The section begins with <span class=SpellE>threee</span> single quotes.
-     While the module's official name has no spaces, in this case use spaces
-     and sentence case to make it comprehensible. The phrase description is
-     something like: &quot;identifies primary objects...&quot; or &quot;places
-     outlines of objects...&quot;</li>
- <li class=MsoNormal style='margin-top:.1pt;margin-bottom:.1pt;mso-list:l1 level1 lfo3;
-     tab-stops:list .5in'><strong><span style='font-family:Times'>&lt;<span
-     class=GramE>hr</span>&gt;</span></strong>: Creates a horizontal line</li>
- <li class=MsoNormal style='margin-top:.1pt;margin-bottom:.1pt;mso-list:l1 level1 lfo3;
-     tab-stops:list .5in'><strong><span style='font-family:Times'>Full
-     description/explanation of the module's function.</span></strong> Use
-     headings, usually level &lt;h2&gt;, when needed</li>
- <li class=MsoNormal style='margin-top:.1pt;margin-bottom:.1pt;mso-list:l1 level1 lfo3;
-     tab-stops:list .5in'><strong><span style='font-family:Times'>Features that
-     can be measured by this module</span></strong>: Provide as an unordered
-     list, like this</li>
+<h3><a name="python-style_guide-module_help"></a>Module Help</h3>
+<p>The Module Help window (which also constitutes a section of the   CellProfiler manual) is populated by the documentation string of the   module's code, and contains the following: </p>
+<ol>
+  <li> <strong>The module's name:</strong> This is printed as a title automatically and is not specified within   the code for the module.</li>
+  <li> <strong>'''&lt;b&gt; Module name &lt;/b&gt; phrase description</strong>.<br />
+      <em>Example:</em> <strong>Identify Prim Automatic</strong> identifies objects via thresholding and contouring.<br />
+    The section begins with threee single quotes. While the module's official name has no spaces, in this case use spaces and   sentence case to make it comprehensible. The phrase description is   something like:  &quot;identifies primary objects...&quot;  or &quot;places outlines   of objects...&quot;</li>
+  <li><strong>&lt;hr&gt;</strong>: Creates a horizontal line</li>
+  <li><strong>Full description/explanation of the module's function.</strong> Use headings, usually level &lt;h2&gt;, when needed</li>
+  <li><strong>Features that can be measured by this module</strong>: Provide as an unordered list, like this<br />
+      <pre>&lt;ul&gt;<br />
+    &lt;li&gt;&lt;i&gt;First measurement:&lt;/i&gt; Description of first measurement&lt;/li&gt; <br />
+    &lt;li&gt;&lt;i&gt;Second measurement:&lt;/i&gt; Descrption of second measurement &lt;/li&gt; <br />
+&lt;/ul&gt;</pre>
+    This creates a bulleted list of measurements that the module can make.   We say &quot;can&quot; because depending on the user's settings, not all   measurements will be made by a module during a run. We will eventually   make modules self-aware so that the list of possible measurements that   can be made will be generated by the code of the module itself.</li>
+  <li><strong>See also: &lt;b&gt;OtherModuleName&lt;/b&gt;: </strong>Other relevant/related modules are listed here</li>
+  <li> <strong>''' (end quotes): </strong>The general module help section ends with three single quotes</li>
+  <li>License information follows and is commented out using #</li>
+  <li>The help for the settings is obtained from the code itself (see below) and hence, does not need to be written out here</li>
 </ol>
-
-<pre style='margin-left:.5in;text-indent:-.25in;mso-list:l1 level1 lfo3'><![if !supportLists]><span
-style='mso-fareast-font-family:Courier'><span style='mso-list:Ignore'>6.<span
-style='font:7.0pt "Times New Roman"'>&nbsp; </span></span></span><![endif]>&lt;<span
-class=SpellE><span class=GramE>ul</span></span>&gt;<br style='mso-special-character:
-line-break'>
-<![if !supportLineBreakNewLine]><br style='mso-special-character:line-break'>
-<![endif]></pre><pre style='margin-left:.5in;text-indent:-.25in;mso-list:l1 level1 lfo3'><![if !supportLists]><span
-style='mso-fareast-font-family:Courier'><span style='mso-list:Ignore'>7.<span
-style='font:7.0pt "Times New Roman"'>&nbsp; </span></span></span><![endif]><span style="mso-spacerun: yes">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>&lt;<span
-class=SpellE><span class=GramE>li</span></span>&gt;&lt;<span class=SpellE>i</span>&gt;First measurement:&lt;/<span
-class=SpellE>i</span>&gt; Description of first measurement&lt;/<span
-class=SpellE>li</span>&gt; <br style='mso-special-character:line-break'>
-<![if !supportLineBreakNewLine]><br style='mso-special-character:line-break'>
-<![endif]></pre><pre style='margin-left:.5in;text-indent:-.25in;mso-list:l1 level1 lfo3'><![if !supportLists]><span
-style='mso-fareast-font-family:Courier'><span style='mso-list:Ignore'>8.<span
-style='font:7.0pt "Times New Roman"'>&nbsp; </span></span></span><![endif]><span style="mso-spacerun: yes">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>&lt;<span
-class=SpellE><span class=GramE>li</span></span>&gt;&lt;<span class=SpellE>i</span>&gt;Second measurement:&lt;/<span
-class=SpellE>i</span>&gt; <span class=SpellE>Descrption</span> of second measurement &lt;/<span
-class=SpellE>li</span>&gt; <br style='mso-special-character:line-break'>
-<![if !supportLineBreakNewLine]><br style='mso-special-character:line-break'>
-<![endif]></pre><pre style='margin-left:.5in'><span style="mso-spacerun: yes">&nbsp;</span>&lt;/<span
-class=SpellE>ul</span>&gt;</pre>
-
-<p class=MsoNormal style='margin-top:.1pt;margin-right:0in;margin-bottom:.1pt;
-margin-left:.5in'>This creates a bulleted list of measurements that the module
-can make. <span class=GramE>We say &quot;can&quot; because depending on the user's
-settings, not all measurements will be made by a module</span> during a run. We
-will eventually make modules self-aware so that the list of possible
-measurements that can be made will be generated by the code of the module
-itself.</p>
-
-<ol style='margin-top:0in' start=9 type=1>
- <li class=MsoNormal style='margin-top:.1pt;margin-bottom:.1pt;mso-list:l1 level1 lfo3;
-     tab-stops:list .5in'><strong><span style='font-family:Times'>See also:
-     &lt;b&gt;<span class=SpellE>OtherModuleName</span>&lt;/b&gt;: </span></strong>Other
-     relevant/related modules are listed here</li>
- <li class=MsoNormal style='margin-top:.1pt;margin-bottom:.1pt;mso-list:l1 level1 lfo3;
-     tab-stops:list .5in'><strong><span style='font-family:Times'>''' (<span
-     class=GramE>end</span> quotes): </span></strong>The general module help
-     section ends with three single quotes</li>
- <li class=MsoNormal style='margin-top:.1pt;margin-bottom:.1pt;mso-list:l1 level1 lfo3;
-     tab-stops:list .5in'>License information follows and is commented out
-     using #</li>
- <li class=MsoNormal style='margin-top:.1pt;margin-bottom:.1pt;mso-list:l1 level1 lfo3;
-     tab-stops:list .5in'>The help for the settings is obtained from the code
-     itself (see below) and hence, does not need to be written out here</li>
-</ol>
-
-<h3 style='margin-top:.1pt;margin-right:0in;margin-bottom:.1pt;margin-left:
-0in'><a name="python-style_guide-settings_help"></a>Settings Descriptions and Help</h3>
-
-<p style='margin-top:.1pt;margin-right:0in;margin-bottom:.1pt;margin-left:0in'>In
-general, settings <b style='mso-bidi-font-weight:normal'>descriptions</b>
-(which are displayed to the user in the GUI) should be as concise as possible.
-For example, <em><span style='font-family:Times'>Enter the <span class=GramE>threshold
-scaling</span> factor</span></em> should instead be <em><span style='font-family:
-Times'>Threshold scaling factor</span></em>.</p>
-
-<p style='margin-top:.1pt;margin-right:0in;margin-bottom:.1pt;margin-left:0in'>Some
-common standardized settings descriptions: </p>
-
-<ul style='margin-top:0in' type=disc>
- <li class=MsoNormal style='margin-top:.1pt;margin-bottom:.1pt;mso-list:l5 level1 lfo4;
-     tab-stops:list .5in'><em><span style='font-family:Times'>Select the input
-     image</span></em></li>
- <li class=MsoNormal style='margin-top:.1pt;margin-bottom:.1pt;mso-list:l5 level1 lfo4;
-     tab-stops:list .5in'><em><span style='font-family:Times'>Name the output
-     image</span></em></li>
- <li class=MsoNormal style='margin-top:.1pt;margin-bottom:.1pt;mso-list:l5 level1 lfo4;
-     tab-stops:list .5in'><em><span style='font-family:Times'>Name the
-     identified objects</span></em></li>
+<h3><a name="python-style_guide-settings_help"></a>Settings Help</h3>
+<p>In general, settings descriptions (which are displayed to the user in   the GUI) should be as concise as possible. For example,  <em>Enter the threshold scaling   factor</em> becomes <em>Threshold scaling factor</em>.</p>
+<p>Some common standardized settings descriptions: </p>
+<ul>
+  <li><em>Select the input image</em></li>
+  <li><em>Name the output image</em></li>
+  <li><em>Name the identified objects</em></li>
 </ul>
-
-<p class=MsoNormal>Settings <b style='mso-bidi-font-weight:normal'>help</b> (that
-which is displayed when clicking the “?” button next to a setting’s description
-can be wordier, like, “<em><span style='font-family:Times'>What do you want to
-call...?</span></em>”</p>
-
-<p style='margin-top:.1pt;margin-right:0in;margin-bottom:.1pt;margin-left:0in'>The
-text for each setting's help is grabbed from the module's code, where it looks
-like this: </p>
-
-<pre><span class=GramE>def</span> <span class=SpellE>create_settings</span>(...):<span style="mso-spacerun: yes">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span><br
-style='mso-special-character:line-break'>
-<![if !supportLineBreakNewLine]><br style='mso-special-character:line-break'>
-<![endif]></pre><pre><span style="mso-spacerun: yes">&nbsp;&nbsp;&nbsp;&nbsp; </span><span
-class=SpellE><span class=GramE>self.foo</span></span> = <span class=SpellE>cps.Bar</span>(&quot;<span
-class=SpellE>Quox</span>&quot;, True, doc = '''</pre><pre><span style="mso-spacerun: yes">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>Setting help is here <span
-class=SpellE>bla</span> <span class=SpellE>bla</span>,</pre><pre><span style="mso-spacerun: yes">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span><span
-class=SpellE><span class=GramE>bla</span></span> <span class=SpellE>bla</span> <span
-class=SpellE>bla</span> </pre><pre><span style="mso-spacerun: yes">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span
-class=SpellE><span class=GramE>bla</span></span> <span class=SpellE>bla</span>''') </pre>
-
-<p class=MsoNormal>Note that the text for the setting is indented to line up at
-least after the period within <span class=SpellE><em><span style='font-family:
-Times'>self.foo</span></em></span>. </p>
-
-<p style='margin-top:.1pt;margin-right:0in;margin-bottom:.1pt;margin-left:0in'>General
-stylistic notes</p>
-
-<ul style='margin-top:0in' type=disc>
- <li class=MsoNormal style='margin-top:.1pt;margin-bottom:.1pt;mso-list:l3 level1 lfo5;
-     tab-stops:list .5in'>Other module names that are mentioned in the help
-     should be <strong><span style='font-family:Times'>&lt;b&gt; bold
-     &lt;/b&gt;</span></strong>. We will add <span class=SpellE>hyperlinking</span>
-     function to go to the other module's help eventually.</li>
- <li class=MsoNormal style='margin-top:.1pt;margin-bottom:.1pt;mso-list:l3 level1 lfo5;
-     tab-stops:list .5in'>References that are mentioned should be <em><span
-     style='font-family:Times'>&lt;<span class=SpellE>i</span>&gt; italicized
-     &lt;/<span class=SpellE>i</span>&gt;</span></em><em><span
-     style='font-family:Times;font-style:normal'><o:p></o:p></span></em></li>
- <li class=MsoNormal style='margin-top:.1pt;margin-bottom:.1pt;mso-list:l3 level1 lfo5;
-     tab-stops:list .5in'><em><span style='font-family:Times;font-style:normal'>We
-     decided not to use ToolTips throughout <span class=SpellE>CellProfiler</span>
-     because they are not uniformly reliable on different platforms.</span></em></li>
-</ul>
-
-<h3 style='margin-top:.1pt;margin-right:0in;margin-bottom:.1pt;margin-left:
-0in'><a name="python-module_simplification"></a>Module code</h3>
-
-<p style='margin-top:.1pt;margin-right:0in;margin-bottom:.1pt;margin-left:0in'>See
-<span class=SpellE><em><span style='font-family:Times'>imagemath.py</span></em></span>
-for an example. The order of the methods in each module should be: </p>
-
-<pre style='margin-left:.5in;text-indent:-.25in;mso-list:l0 level1 lfo6'><![if !supportLists]><span
-style='font-family:Symbol;mso-fareast-font-family:Symbol;mso-bidi-font-family:
-Symbol'><span style='mso-list:Ignore'>·<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span></span><![endif]><span style="mso-spacerun: yes">&nbsp;</span><span
-class=SpellE><span class=GramE>create</span>_settings</span></pre><pre
-style='margin-left:.5in;text-indent:-.25in;mso-list:l0 level1 lfo6'><![if !supportLists]><span
-style='font-family:Symbol;mso-fareast-font-family:Symbol;mso-bidi-font-family:
-Symbol'><span style='mso-list:Ignore'>·<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span></span><![endif]><span style="mso-spacerun: yes">&nbsp;</span><span
-class=GramE>settings</span></pre><pre style='margin-left:.5in;text-indent:-.25in;
-mso-list:l0 level1 lfo6'><![if !supportLists]><span style='font-family:Symbol;
-mso-fareast-font-family:Symbol;mso-bidi-font-family:Symbol'><span
-style='mso-list:Ignore'>·<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span></span><![endif]><span style="mso-spacerun: yes">&nbsp;</span><span
-class=SpellE><span class=GramE>visible</span>_settings</span></pre><pre
-style='margin-left:.5in;text-indent:-.25in;mso-list:l0 level1 lfo6'><![if !supportLists]><span
-style='font-family:Symbol;mso-fareast-font-family:Symbol;mso-bidi-font-family:
-Symbol'><span style='mso-list:Ignore'>·<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span></span><![endif]><span style="mso-spacerun: yes">&nbsp;</span><span
-class=SpellE><span class=GramE>prepare</span>_to_set_values</span></pre><pre
-style='margin-left:.5in;text-indent:-.25in;mso-list:l0 level1 lfo6'><![if !supportLists]><span
-style='font-family:Symbol;mso-fareast-font-family:Symbol;mso-bidi-font-family:
-Symbol'><span style='mso-list:Ignore'>·<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span></span><![endif]><span style="mso-spacerun: yes">&nbsp;</span><span
-class=GramE>run</span></pre><pre style='margin-left:.5in;text-indent:-.25in;
-mso-list:l0 level1 lfo6'><![if !supportLists]><span style='font-family:Symbol;
-mso-fareast-font-family:Symbol;mso-bidi-font-family:Symbol'><span
-style='mso-list:Ignore'>·<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span></span><![endif]><span style="mso-spacerun: yes">&nbsp;</span><span
-class=SpellE><span class=GramE>backwards</span>_compatibilize</span></pre>
-
-<p style='margin-top:.1pt;margin-right:0in;margin-bottom:.1pt;margin-left:0in'>This
-list isn't exhaustive. <span class=SpellE><span class=GramE><em><span
-style='font-family:Times'>backwards</span></em></span><em><span
-style='font-family:Times'>_compatibilize</span></em></span> should definitely
-be last. Use judgment with others. Helper methods should be near the method
-they help. (<span class=GramE>see</span> <span class=SpellE><em><span
-style='font-family:Times'>imagemath</span></em>'s</span> <span class=SpellE>add_image</span>).
+In these cases, copy the existing wordy description (e.g., <em>What do you want    to call...?</em>) to the first part of the help for that setting.
+<p>The text for each setting's help is grabbed from the module's code, where   it looks like this: <br />
 </p>
-
-<p style='margin-top:.1pt;margin-right:0in;margin-bottom:.1pt;margin-left:0in'>Be
-generous in commenting to explain what code actually does, because we want <span
-class=SpellE>CellProfiler</span> to be accessible to new programmers. In the <span
-class=GramE><em><span style='font-family:Times'>run(</span></em></span><em><span
-style='font-family:Times'>)</span></em> methods, in particular, block comments
-(see <span class=SpellE>imagemath.py</span>) are useful for keeping other users
-oriented.</p>
-
-<ul style='margin-top:0in' type=disc>
- <li class=MsoNormal style='margin-top:.1pt;margin-bottom:.1pt;mso-list:l0 level1 lfo6;
-     tab-stops:list .5in'><span class=SpellE><span class=GramE><em><span
-     style='font-family:Times'>module</span></em></span><em><span
-     style='font-family:Times'>_name</span></em></span> should be a class
-     variable (not set in <span class=SpellE>create_settings</span>) </li>
- <li class=MsoNormal style='margin-top:.1pt;margin-bottom:.1pt;mso-list:l0 level1 lfo6;
-     tab-stops:list .5in'>Settings </li>
+<pre>def create_settings(...):       <br />
+    self.foo = cps.Bar(&quot;Quox&quot;, True, doc = '''
+          Setting help is here bla bla,
+          bla bla bla 
+          bla bla''') </pre>
+Note that the text for the setting is indented to line up at least after the period within <em>self.foo</em>.
+<p>General stylistic notes</p>
+<ul>
+  <li> Other module names that are mentioned in the help should be <strong>&lt;b&gt; bold   &lt;/b&gt;</strong>. We will add hyperlinking function to go the other module's help   eventually.</li>
+  <li>References that are mentioned should be <em>&lt;i&gt; italicized &lt;/i&gt;</em></li>
 </ul>
 
-<ul style='margin-top:0in' type=disc>
- <ul style='margin-top:0in' type=circle>
-  <li class=MsoNormal style='margin-top:.1pt;margin-bottom:.1pt;mso-list:l0 level2 lfo6;
-      tab-stops:list 1.0in'>Dynamic groups of settings should use <span
-      class=SpellE><span class=GramE>cps.SettingsGroup</span></span> (see <span
-      class=SpellE>imagemath.py</span> for how to do this)</li>
-  <li class=MsoNormal style='margin-top:.1pt;margin-bottom:.1pt;mso-list:l0 level2 lfo6;
-      tab-stops:list 1.0in'>Use <span class=SpellE><span class=GramE>cps.Divider</span></span>
-      to insert spaces between settings</li>
-  <li class=MsoNormal style='margin-top:.1pt;margin-bottom:.1pt;mso-list:l0 level2 lfo6;
-      tab-stops:list 1.0in'>If code is going to use a setting's value more than
-      once or twice, extract it to a local variable to avoid having to type <span
-      class=SpellE>self.setting.value</span> too many times (see the <span
-      class=SpellE>opval</span> local variable in <span class=SpellE>imagemath's</span>
-      <span class=GramE><em><span style='font-family:Times'>run(</span></em></span><em><span
-      style='font-family:Times'>)</span></em> method).</li>
- </ul>
-</ul>
+<h2><a name="python-module_simplification"></a>Module Simplification</h2>
+<p> See <em>imagemath.py</em> for an example. 
+<ul>
+<li>The order of the methods in each module should be: 
+<blockquote><pre>
+create_settings
+settings
+visible_settings
+prepare_to_set_values
+run
+backwards_compatibilize</pre></blockquote>
+<p>This list isn't exhaustive. <em>backwards_compatibilize</em> should definitely be last. Use judgment with others. Helper methods should be near the method they help. (see <em>imagemath</em>'s add_image). Th most useful thing is to add a comment wherever something isn't obvious from the code.  In the <em>run()</em> methods, in particular, block
+comments (see imagemath.py) are useful for keeping other users oriented.</li>
+<li><em>module_name</em> should be a class variable (not set in create_settings) </li>
+<li>Settings
+<ul>
+	<li>Dynamic groups of settings should use cps.SettingsGroup (see imagemath.py for how to do this)</li>
+	<li>Use cps.Divider to insert spaces between settings</li>
+    <li>If code is going to use a setting's value more than once or twice, extract it to a local variable to avoid having to type self.setting.value too many times. (see the opval local variable in imagemath's <em>run()</em> method)</li>
+    </ul></li></ul> </p>
+    
+<h2><a name="python-storing_retrieving_data"></a>Storing and Retrieving data</h2>
+<h3><a name="python-cpimage"></a><em>cpimage</em></h3>
+<h3><a name="python-cpmodule"></a><em>cpmodule</em></h3>
+<h3><a name="python-settings"></a><em>settings</em></h3>
+<h3><a name="python-preferences"></a><em>preferences</em></h3>
+<h3><a name="python-pipeline"></a><em>pipeline</em></h3>
+<h3><a name="python-workspace"></a><em>workspace</em></h3>
+<h3><a name="python-measurements"></a><em>measurements</em></h3>
 
-<h2 style='margin-top:.1pt;margin-right:0in;margin-bottom:.1pt;margin-left:
-0in'><a name="python-storing_retrieving_data"></a>Storing and Retrieving data</h2>
+<h2><a name="python-error_handling"></a>Error Handling</h2>
+<h2><a name="python-displaying_results"></a>Displaying Results</h2>
+<h2><a name="python-debugging_hints"></a>Debugging Hints</h2>
 
-<h3 style='margin-top:.1pt;margin-right:0in;margin-bottom:.1pt;margin-left:
-0in'><a name=python-cpimage></a><span class=SpellE><span class=GramE><em><span
-style='font-family:Times'>cpimage</span></em></span></span></h3>
-
-<h3 style='margin-top:.1pt;margin-right:0in;margin-bottom:.1pt;margin-left:
-0in'><a name=python-cpmodule></a><span class=SpellE><span class=GramE><em><span
-style='font-family:Times'>cpmodule</span></em></span></span></h3>
-
-<h3 style='margin-top:.1pt;margin-right:0in;margin-bottom:.1pt;margin-left:
-0in'><a name=python-settings></a><span class=GramE><em><span style='font-family:
-Times'>settings</span></em></span></h3>
-
-<h3 style='margin-top:.1pt;margin-right:0in;margin-bottom:.1pt;margin-left:
-0in'><a name=python-preferences></a><span class=GramE><em><span
-style='font-family:Times'>preferences</span></em></span></h3>
-
-<h3 style='margin-top:.1pt;margin-right:0in;margin-bottom:.1pt;margin-left:
-0in'><a name=python-pipeline></a><span class=GramE><em><span style='font-family:
-Times'>pipeline</span></em></span></h3>
-
-<h3 style='margin-top:.1pt;margin-right:0in;margin-bottom:.1pt;margin-left:
-0in'><a name=python-workspace></a><span class=GramE><em><span style='font-family:
-Times'>workspace</span></em></span></h3>
-
-<h3 style='margin-top:.1pt;margin-right:0in;margin-bottom:.1pt;margin-left:
-0in'><a name=python-measurements></a><span class=GramE><em><span
-style='font-family:Times'>measurements</span></em></span></h3>
-
-<h2 style='margin-top:.1pt;margin-right:0in;margin-bottom:.1pt;margin-left:
-0in'><a name="python-error_handling"></a>Error Handling</h2>
-
-<h2 style='margin-top:.1pt;margin-right:0in;margin-bottom:.1pt;margin-left:
-0in'><a name="python-displaying_results"></a>Displaying Results</h2>
-
-<h2 style='margin-top:.1pt;margin-right:0in;margin-bottom:.1pt;margin-left:
-0in'><a name="python-debugging_hints"></a>Debugging Hints</h2>
-
-<h1 style='margin-top:.1pt;margin-right:0in;margin-bottom:.1pt;margin-left:
-0in'><a name="python-running_cp_headless"></a>Running <span class=SpellE>CellProfiler</span>
-without the graphical user interface</h1>
-
+<h1><a name="python-running_cp_headless"></a>Running CellProfiler without the graphical user interface</h1>
 </div>
-
-</div>
-
 </body>
 
 </html>

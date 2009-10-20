@@ -451,7 +451,7 @@ class IdentifyPrimAutomatic(cpmi.Identify):
             question.</li></ul>""")
         
         self.automatic_smoothing = cps.Binary(
-            'Automatically calculate size of smoothing filter when separating lumped objects', 
+            'Automatically calculate size of smoothing filter when separating clumped objects', 
             True, doc="""\
             <i>(Only used when distinguishing between clumped objects)</i> This setting,
             along with the suppress local maxima setting, affects whether objects

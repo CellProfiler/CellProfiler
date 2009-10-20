@@ -86,20 +86,20 @@ class FilterByObjectMeasurement(cpm.CPModule):
                                            for more information on the features measured by each Module.''')
         self.filter_choice = cps.Choice('How do you want to filter objects?',
                                         FI_ALL, FI_LIMITS, doc = '''There are five different ways to filter objects:
-                                        <ul><li>Maximal: only keep the object with the maximum value for the measurement
+                                        <ul><li><i>Maximal:</i> only keep the object with the maximum value for the measurement
                                         of interest. Keep one object per image with an arbitrary choice
                                         on ties.</li>
-                                        <li>Minimal: only keep the object with the minimum value for the measurement
+                                        <li><i>Minimal:</i> only keep the object with the minimum value for the measurement
                                         of interest. Keep one object per image with an arbitrary choice
                                         on ties.</li>
-                                        <li>Maximal per object: This option requires a choice of a set of container
+                                        <li><i>Maximal per object:</i> This option requires a choice of a set of container
                                         objects. The container objects might contain several objects of
                                         choice (for instance, mitotic spindles within a cell or FISH
                                         probe spots within a nucleus). This option will keep only the
                                         object with the maximum value for the measurement among the
                                         set of objects within the container objects.</li>
-                                        <li>Minimal per object: same as Maximal per object, except use minimum to filter.</li>
-                                        <li>Limits: keep an object if its measurement value falls between a minimum
+                                        <li><i>Minimal per object:</i> same as Maximal per object, except use minimum to filter.</li>
+                                        <li><i>Limits:</i> keep an object if its measurement value falls between a minimum
                                         and maximum limit.</li></ul>''')
         self.wants_minimum = cps.Binary('Do you want a minimum acceptable value for the measurement?', True)
         self.min_limit = cps.Float('Enter the minimum acceptable value for the measurement:',0)

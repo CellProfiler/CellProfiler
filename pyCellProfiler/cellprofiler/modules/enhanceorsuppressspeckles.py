@@ -40,17 +40,25 @@ class EnhanceOrSuppressSpeckles(cpm.CPModule):
     
     def create_settings(self):
         self.image_name = cps.ImageNameSubscriber('Select the input image',
-                                                  'None')
+                                                'None',doc="""
+            What did you call the image with speckles to be enhanced or suppressed?""")
+        
         self.filtered_image_name = cps.ImageNameProvider('Name the output image',
-                                                         'FilteredBlue')
+                                                        'FilteredBlue',doc="""
+            What do you want to call the speckle-enhanced or suppressed image?""")
+        
         self.method = cps.Choice('Do you want to enhance or suppress speckles?',
                                  [ ENHANCE, SUPPRESS],doc="""
             Choose <i>Enhance</i> to get an image whose intensity is largely composed of
             the speckles. Choose <i>Suppress</i> to get an image with the speckles
             removed.""")
+        
         self.object_size = cps.Integer('What is the speckle size?',
                                        10,1,doc="""
-            This is the diameter of the largest speckle to be enhanced or suppressed.""")
+            This is the diameter of the largest speckle to be enhanced or suppressed, which
+            will be used to calculate an adequate filter size. If you don't know the width 
+            of your objects, you can use the <i>Tools &lt; Show pixel data</i> image tool 
+            in the image window menu to find out.""")
 
     def settings(self):
         return [ self.image_name, self.filtered_image_name,

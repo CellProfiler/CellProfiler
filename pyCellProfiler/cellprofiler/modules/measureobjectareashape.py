@@ -138,11 +138,11 @@ class MeasureObjectAreaShape(cpm.CPModule):
         self.object_groups = []
         self.add_object_cb()
         self.add_objects = cps.DoSomething("Add another object","Add",self.add_object_cb)
-        self.calculate_zernikes = cps.Binary('Would you like to calculate the Zernike features for each object '
-                                             '(with lots of objects, this can be very slow)?',True, doc="""
-                                            Check this box to calculayte the Zernike shape features. Since the
+        self.calculate_zernikes = cps.Binary('Calculate the Zernike features?',True, doc="""
+                                            Check this box to calculate the Zernike shape features. Since the
                                             first ten Zernike polynomials (from order 0 to order 9) are
-                                            calculated, this operation can be time consuming.""")
+                                            calculated, this operation can be time-consuming if the image
+                                            contains a lot of objects.""")
     
     def settings(self):
         """The settings as they appear in the save file"""
@@ -170,7 +170,8 @@ class MeasureObjectAreaShape(cpm.CPModule):
     def add_object_cb(self):
         """Add a slot for another object"""
         new_uuid = uuid.uuid1()
-        self.object_groups.append({OG_NAME:cps.ObjectNameSubscriber("What did you call the objects you want to measure?","None"),
+        self.object_groups.append({OG_NAME:cps.ObjectNameSubscriber("Select the input objects","None",doc="""
+                                                What did you call the objects you want to measure?"""),
                                    OG_REMOVE:cps.DoSomething("Remove the above objects","Remove",self.remove_object_cb,new_uuid),
                                    OG_UUID:new_uuid})
         

@@ -187,8 +187,8 @@ class MeasureImageAreaOccupied(cpm.CPModule):
             return [ object.object_name.value for object in self.objects ]
         return []
     
-    def backwards_compatibilize(self, setting_values, variable_revision_number, 
-                                module_name, from_matlab):
+    def upgrade_settings(self, setting_values, variable_revision_number, 
+                         module_name, from_matlab):
         """Account for the save-format of previous versions of this module
         
         We check for the Matlab version which did the thresholding as well

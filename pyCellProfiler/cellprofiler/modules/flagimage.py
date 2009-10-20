@@ -198,8 +198,8 @@ class FlagImage(cpm.CPModule):
         return [flag.feature_name.value for flag in self.flags
                 if flag.category.value == category]
 
-    def backwards_compatibilize(self, setting_values, variable_revision_number,
-                                module_name, from_matlab):
+    def upgrade_settings(self, setting_values, variable_revision_number,
+                         module_name, from_matlab):
         if from_matlab and variable_revision_number == 1:
             image_name, category, feature_num_or_name, min_value, max_value, \
                       new_or_append, new_name, old_name = setting_values

@@ -412,7 +412,7 @@ class MeasureObjectNeighbors(cpm.CPModule):
                                  self.distance_method.value)
         return []
     
-    def backwards_compatibilize(self, setting_values, variable_revision_number, module_name, from_matlab):
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name, from_matlab):
         if from_matlab and variable_revision_number == 5:
             wants_image = setting_values[2] != cps.DO_NOT_USE
             distance_method =  D_EXPAND if setting_values[1] == "0" else D_WITHIN

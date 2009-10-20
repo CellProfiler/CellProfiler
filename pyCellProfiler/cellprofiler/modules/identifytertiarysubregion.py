@@ -254,11 +254,11 @@ class IdentifyTertiarySubregion(cpm.CPModule):
         return columns
          
         
-    def backwards_compatibilize(self,
-                                setting_values,
-                                variable_revision_number,
-                                module_name,
-                                from_matlab):
+    def upgrade_settings(self,
+                         setting_values,
+                         variable_revision_number,
+                         module_name,
+                         from_matlab):
         """Adjust the setting values to make old pipelines compatible with new
         
         This function allows the caller to adjust the setting_values

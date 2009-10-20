@@ -35,7 +35,7 @@ class CPModule(object):
     settings - return the settings that will be loaded or saved from/to the
                pipeline.
     visible_settings - return the settings that will be displayed on the UI
-    backwards_compatibilize - adjusts settings while loading to account for
+    upgrade_settings - adjusts settings while loading to account for
                old revisions.
     run - to run the module, producing measurements, etc.
     
@@ -157,19 +157,19 @@ class CPModule(object):
         are in the list.
         """
         setting_values, variable_revision_number, from_matlab =\
-            self.backwards_compatibilize(setting_values,
-                                         variable_revision_number,
-                                         module_name,
-                                         not '.' in module_name)
+            self.upgrade_settings(setting_values,
+                                  variable_revision_number,
+                                  module_name,
+                                  not '.' in module_name)
         # we can't handle matlab settings anymore
-        assert not from_matlab, "Module %s's backwards_compatibilize returned from_matlab==True"%(module_name)
+        assert not from_matlab, "Module %s's upgrade_settings returned from_matlab==True"%(module_name)
         self.prepare_to_set_values(setting_values)
         for v,value in zip(self.settings(),setting_values):
             v.value = value
         self.upgrade_module_from_revision(variable_revision_number)
     
-    def backwards_compatibilize(self,setting_values,variable_revision_number,
-                                module_name,from_matlab):
+    def upgrade_settings(self,setting_values,variable_revision_number,
+                         module_name,from_matlab):
         '''Adjust setting values if they came from a previous revision
         
         setting_values - a sequence of strings representing the settings

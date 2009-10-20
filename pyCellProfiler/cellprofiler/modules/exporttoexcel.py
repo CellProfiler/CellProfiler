@@ -471,8 +471,8 @@ class ExportToExcel(cpm.CPModule):
             return [columns[i] for i in range(len(columns))
                     if list_box.IsChecked(i)] 
             
-    def backwards_compatibilize(self, setting_values, variable_revision_number,
-                                 module_name, from_matlab):
+    def upgrade_settings(self, setting_values, variable_revision_number,
+                         module_name, from_matlab):
         """Adjust the setting values based on the version that saved them
         
         """

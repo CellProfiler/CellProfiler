@@ -469,9 +469,9 @@ class Align(cpm.CPModule):
                          for target in targets]
         return columns
 
-    def backwards_compatibilize(self, setting_values, 
-                                variable_revision_number, 
-                                module_name, from_matlab):
+    def upgrade_settings(self, setting_values, 
+                         variable_revision_number, 
+                         module_name, from_matlab):
         if from_matlab and variable_revision_number == 5:
             #
             # The Matlab align module has the following layout

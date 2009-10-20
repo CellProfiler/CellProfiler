@@ -488,8 +488,8 @@ class SaveImages(cpm.CPModule):
             return FF_TIFF
         return self.file_format.value
     
-    def backwards_compatibilize(self, setting_values, variable_revision_number, 
-                                module_name, from_matlab):
+    def upgrade_settings(self, setting_values, variable_revision_number, 
+                         module_name, from_matlab):
         """Adjust the setting values to be backwards-compatible with old versions
         
         """

@@ -181,8 +181,8 @@ class GrayToColor(cpm.CPModule):
         rgb_image = cpi.Image(rgb_pixel_data, parent_image = parent_image)
         imgset.add(self.rgb_image_name.value, rgb_image)
     
-    def backwards_compatibilize(self,setting_values,variable_revision_number,
-                                module_name,from_matlab):
+    def upgrade_settings(self,setting_values,variable_revision_number,
+                         module_name,from_matlab):
         if from_matlab and variable_revision_number==1:
             # Blue and red were switched: it was BGR
             temp = list(setting_values)

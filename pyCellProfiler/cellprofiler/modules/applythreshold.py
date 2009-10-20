@@ -130,9 +130,9 @@ class ApplyThreshold(Identify):
                 self.two_class_otsu, self.use_weighted_variance,
                 self.assign_middle_to_foreground]
     
-    def backwards_compatibilize(self, setting_values,
-                                variable_revision_number, module_name,
-                                from_matlab):
+    def upgrade_settings(self, setting_values,
+                         variable_revision_number, module_name,
+                         from_matlab):
         if from_matlab and variable_revision_number < 4:
             raise NotImplementedError, ("TODO: Handle Matlab CP pipelines for "
                                         "ApplyThreshold with revision < 4")

@@ -465,8 +465,8 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
                     for bin_count in self.bin_counts
                     for bin in range(1, bin_count.bin_count.value+1)]
             
-    def backwards_compatibilize(self,setting_values,variable_revision_number,
-                                module_name,from_matlab):
+    def upgrade_settings(self,setting_values,variable_revision_number,
+                         module_name,from_matlab):
         if from_matlab and variable_revision_number == 1:
             image_name, object_name, center_name, bin_count = setting_values[:4]
             if center_name == cps.DO_NOT_USE:

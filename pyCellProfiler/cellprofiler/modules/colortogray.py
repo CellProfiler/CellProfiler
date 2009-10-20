@@ -212,11 +212,11 @@ class ColorToGray(cpm.CPModule):
             output_axes.imshow(disp[0],matplotlib.cm.Greys_r)
             output_axes.set_title("%s image"%(disp[1]))
         
-    def backwards_compatibilize(self,
-                                setting_values,
-                                variable_revision_number,
-                                module_name,
-                                from_matlab):
+    def upgrade_settings(self,
+                         setting_values,
+                         variable_revision_number,
+                         module_name,
+                         from_matlab):
         if from_matlab and variable_revision_number == 1:
             new_setting_values = [ setting_values[0],  # image name
                                     setting_values[1],  # combine or split

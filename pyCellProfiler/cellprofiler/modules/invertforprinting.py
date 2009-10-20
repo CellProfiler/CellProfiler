@@ -205,8 +205,8 @@ class InvertForPrinting(cpm.CPModule):
             figure.subplot_imshow_color(0,0,color_image, "Original image")
             figure.subplot_imshow_color(1,0,inverted_color, "Color-inverted image")
     
-    def backwards_compatibilize(self, setting_values, variable_revision_number,
-                                module_name, from_matlab):
+    def upgrade_settings(self, setting_values, variable_revision_number,
+                         module_name, from_matlab):
         if from_matlab and variable_revision_number == 1:
             setting_values = [
                 CC_GRAYSCALE,                # input_color_choice

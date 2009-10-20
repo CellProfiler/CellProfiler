@@ -279,8 +279,8 @@ See also CalculateRatios, all Measure modules.
             return [self.output_feature_name.value]
         return []
     
-    def backwards_compatibilize(self, setting_values, variable_revision_number,
-                                module_name, from_matlab):
+    def upgrade_settings(self, setting_values, variable_revision_number,
+                         module_name, from_matlab):
         if from_matlab and variable_revision_number == 6:
             new_setting_values = [setting_values[16], # output feature name
                                   setting_values[15]] # operation

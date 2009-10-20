@@ -27,7 +27,7 @@ O_INVERT = "Invert"
 O_LOG_TRANSFORM = "Log transform (base 2)"
 O_AVERAGE = "Average"
 O_NONE = "None"
-# Combine is now obsolete - done by Add now, but we need the string for backwards_compatibilize
+# Combine is now obsolete - done by Add now, but we need the string for upgrade_settings
 O_COMBINE = "Combine"
 
 
@@ -255,8 +255,8 @@ See also SubtractBackground, RescaleIntensity.
                                              display_pixel_data[i],
                                              title=display_names[i])
 
-    def backwards_compatibilize(self, setting_values, variable_revision_number, 
-                                module_name, from_matlab):
+    def upgrade_settings(self, setting_values, variable_revision_number, 
+                         module_name, from_matlab):
         if from_matlab and variable_revision_number == 2:
             image_names = [setting_values[0]]
             input_factors = [float(setting_values[4])]

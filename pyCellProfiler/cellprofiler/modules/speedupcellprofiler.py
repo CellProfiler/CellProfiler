@@ -107,8 +107,8 @@ class SpeedUpCellProfiler(cpm.CPModule):
             image_setting.image_name.text = self.query()
         cpm.CPModule.test_valid(self, pipeline)
 
-    def backwards_compatibilize(self, setting_values, variable_revision_number,
-                                module_name, from_matlab):
+    def upgrade_settings(self, setting_values, variable_revision_number,
+                         module_name, from_matlab):
         if from_matlab and variable_revision_number == 5:
             new_setting_values = [ C_REMOVE ]
             for image_name in setting_values[2:]:

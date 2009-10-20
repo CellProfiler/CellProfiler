@@ -199,8 +199,8 @@ class FindEdges(cpm.CPModule):
         else:
             return self.sigma.value
     
-    def backwards_compatibilize(self, setting_values, variable_revision_number,
-                                module_name, from_matlab):
+    def upgrade_settings(self, setting_values, variable_revision_number,
+                         module_name, from_matlab):
         if from_matlab and variable_revision_number == 3:
             setting_values = [
                               setting_values[0], # ImageName

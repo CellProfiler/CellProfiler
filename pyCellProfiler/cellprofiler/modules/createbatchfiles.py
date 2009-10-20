@@ -270,8 +270,8 @@ class CreateBatchFiles(cpm.CPModule):
         return path
         
             
-    def backwards_compatibilize(self, setting_values, variable_revision_number,
-                                module_name, from_matlab):
+    def upgrade_settings(self, setting_values, variable_revision_number,
+                         module_name, from_matlab):
         if from_matlab and variable_revision_number == 8:
             batch_save_path, old_pathname, new_pathname = setting_values[:3]
             if batch_save_path == '.':

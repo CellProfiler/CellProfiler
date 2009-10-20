@@ -271,9 +271,9 @@ class MeasureImageIntensity(cpm.CPModule):
             return [im.image_name.value for im in self.images]
         return []
     
-    def backwards_compatibilize(self, setting_values, 
-                                variable_revision_number, 
-                                module_name, from_matlab):
+    def upgrade_settings(self, setting_values, 
+                         variable_revision_number, 
+                         module_name, from_matlab):
         '''Account for prior versions when loading
         
         We handle Matlab revision # 2 here. We don't support thresholding

@@ -354,8 +354,8 @@ class MeasureCorrelation(cpm.CPModule):
             return ["%s_%s"%x for x in self.get_image_pairs()]
         return []
 
-    def backwards_compatibilize(self, setting_values, variable_revision_number, 
-                                module_name, from_matlab):
+    def upgrade_settings(self, setting_values, variable_revision_number, 
+                         module_name, from_matlab):
         '''Adjust the setting values for pipelines saved under old revisions'''
         if from_matlab and variable_revision_number == 3:
             image_names = [x for x in setting_values[:4]

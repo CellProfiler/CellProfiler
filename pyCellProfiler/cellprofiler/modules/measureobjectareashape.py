@@ -362,8 +362,8 @@ class MeasureObjectAreaShape(cpm.CPModule):
             
         
         
-    def backwards_compatibilize(self,setting_values,variable_revision_number,
-                                module_name,from_matlab):
+    def upgrade_settings(self,setting_values,variable_revision_number,
+                         module_name,from_matlab):
         """Adjust the setting_values for older save file versions
         
         setting_values - a list of strings representing the settings for

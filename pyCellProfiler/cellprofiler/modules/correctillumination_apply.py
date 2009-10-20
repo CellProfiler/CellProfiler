@@ -264,8 +264,8 @@ class CorrectIllumination_Apply(cpm.CPModule):
                                             "Final image: %s" %
                                             corrected_image_name)
 
-    def backwards_compatibilize(self, setting_values, variable_revision_number, 
-                                module_name, from_matlab):
+    def upgrade_settings(self, setting_values, variable_revision_number, 
+                         module_name, from_matlab):
         """Adjust settings based on revision # of save file
         
         setting_values - sequence of string values as they appear in the

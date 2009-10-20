@@ -1009,8 +1009,8 @@ image_channel_colors = %(image_channel_colors)s
             d[D_MEASUREMENT_COLUMNS] = pipeline.get_measurement_columns()
         return d[D_MEASUREMENT_COLUMNS]
     
-    def backwards_compatibilize(self,setting_values,variable_revision_number,
-                                module_name, from_matlab):
+    def upgrade_settings(self,setting_values,variable_revision_number,
+                         module_name, from_matlab):
         if from_matlab and variable_revision_number == 6:
             new_setting_values = [setting_values[0],setting_values[1]]
             if setting_values[2] == cps.DO_NOT_USE:

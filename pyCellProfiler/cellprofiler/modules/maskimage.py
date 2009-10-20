@@ -84,9 +84,9 @@ class MaskImage(cpm.CPModule):
                                             "Masked image: %s"%(self.masked_image_name.value))
         workspace.image_set.add(self.masked_image_name.value, masked_image)
     
-    def backwards_compatibilize(self, setting_values, 
-                                variable_revision_number, 
-                                module_name, from_matlab):
+    def upgrade_settings(self, setting_values, 
+                         variable_revision_number, 
+                         module_name, from_matlab):
         """Adjust the setting_values to upgrade from a previous version
         
         """

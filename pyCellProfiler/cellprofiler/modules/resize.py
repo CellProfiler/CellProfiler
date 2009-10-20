@@ -129,8 +129,8 @@ class Resize(cpm.CPModule):
                                             title=self.resized_image_name.value)
                 
                 
-    def backwards_compatibilize(self, setting_values, variable_revision_number, 
-                                module_name, from_matlab):
+    def upgrade_settings(self, setting_values, variable_revision_number, 
+                         module_name, from_matlab):
         if from_matlab and variable_revision_number == 1:
             width, height = setting_values[3].split(',')
             size_method = R_BY_FACTOR if setting_values[2] != "1" else R_TO_SIZE

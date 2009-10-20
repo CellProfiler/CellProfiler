@@ -625,8 +625,8 @@ class IdentifyPrimAutomatic(cpmi.Identify):
                 self.assign_middle_to_foreground,
                 self.wants_automatic_log_diameter, self.log_diameter]
     
-    def backwards_compatibilize(self, setting_values, variable_revision_number, 
-                                module_name, from_matlab):
+    def upgrade_settings(self, setting_values, variable_revision_number, 
+                         module_name, from_matlab):
         """Upgrade the strings in setting_values dependent on saved revision
         
         """

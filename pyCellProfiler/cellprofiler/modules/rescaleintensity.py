@@ -363,8 +363,8 @@ class RescaleIntensity(cpm.CPModule):
             mask = np.all(mask,2)
         return rescaled_image, mask
             
-    def backwards_compatibilize(self, setting_values, variable_revision_number, 
-                                module_name, from_matlab):
+    def upgrade_settings(self, setting_values, variable_revision_number, 
+                         module_name, from_matlab):
         if from_matlab and variable_revision_number == 4:
             new_setting_values = (setting_values[:2] +
                                   [M_STRETCH, # 2: rescale_method,

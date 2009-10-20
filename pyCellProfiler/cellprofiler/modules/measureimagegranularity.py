@@ -249,8 +249,8 @@ class MeasureImageGranularity(cpm.CPModule):
                     result.append(image_setting.image_name.value)
         return result
         
-    def backwards_compatibilize(self,setting_values,variable_revision_number,
-                                module_name, from_matlab):
+    def upgrade_settings(self,setting_values,variable_revision_number,
+                         module_name, from_matlab):
         if from_matlab and variable_revision_number == 1:
             # Matlab and pyCP v1 are identical
             from_matlab = False

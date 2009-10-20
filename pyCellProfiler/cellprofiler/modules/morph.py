@@ -591,9 +591,9 @@ class Morph(cpm.CPModule):
                 pixel_data = new_pixel_data
             return pixel_data
     
-    def backwards_compatibilize(self, setting_values, 
-                                variable_revision_number, module_name, 
-                                from_matlab):
+    def upgrade_settings(self, setting_values, 
+                         variable_revision_number, module_name, 
+                         from_matlab):
         '''Adjust the setting_values of previous revisions to match this one'''
         if from_matlab and variable_revision_number == 1:
             # Settings:

@@ -422,8 +422,8 @@ class CorrectIllumination_Calculate(cpm.CPModule):
         output_image = cpi.Image(output_pixels, parent_image = orig_image)
         return output_image
     
-    def backwards_compatibilize(self, setting_values, variable_revision_number, 
-                                module_name, from_matlab):
+    def upgrade_settings(self, setting_values, variable_revision_number, 
+                         module_name, from_matlab):
         """Adjust the setting values of old versions
         
         setting_values - sequence of strings that are the values for our settings

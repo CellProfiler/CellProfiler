@@ -449,8 +449,8 @@ class FilterByObjectMeasurement(cpm.CPModule):
             columns += get_object_measurement_columns(target_name)
         return columns
     
-    def backwards_compatibilize(self, setting_values, variable_revision_number, 
-                                module_name, from_matlab):
+    def upgrade_settings(self, setting_values, variable_revision_number, 
+                         module_name, from_matlab):
         '''Account for old save formats
         
         setting_values - the strings for the settings as saved in the pipeline

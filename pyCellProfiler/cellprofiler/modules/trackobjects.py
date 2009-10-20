@@ -583,8 +583,8 @@ class TrackObjects(cpm.CPModule):
         return []
         
     
-    def backwards_compatibilize(self, setting_values, variable_revision_number, 
-                                module_name, from_matlab):
+    def upgrade_settings(self, setting_values, variable_revision_number, 
+                         module_name, from_matlab):
         if from_matlab and variable_revision_number == 3:
             wants_image = setting_values[10] != cps.DO_NOT_USE
             measurement =  '_'.join(setting_values[2:6])

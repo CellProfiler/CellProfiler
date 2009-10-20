@@ -143,8 +143,8 @@ class PauseCellProfiler(cpm.CPModule):
         frame.Bind(wx.EVT_BUTTON, on_cancel, id=cancel_id)
         frame.Show()
     
-    def backwards_compatibilize(self,setting_values,variable_revision_number,
-                                module_name,from_matlab):
+    def upgrade_settings(self,setting_values,variable_revision_number,
+                         module_name,from_matlab):
         '''Adjust setting values if they came from a previous revision
         
         setting_values - a sequence of strings representing the settings

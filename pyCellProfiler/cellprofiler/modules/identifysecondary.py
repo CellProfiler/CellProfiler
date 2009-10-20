@@ -219,11 +219,11 @@ class IdentifySecondary(cpmi.Identify):
             result.append(self.outlines_name)
         return result
     
-    def backwards_compatibilize(self,
-                                setting_values,
-                                variable_revision_number,
-                                module_name,
-                                from_matlab):
+    def upgrade_settings(self,
+                         setting_values,
+                         variable_revision_number,
+                         module_name,
+                         from_matlab):
         if from_matlab and variable_revision_number==1:
             NotImplementedError("Sorry, Matlab variable revision # 1 is not supported")
         if from_matlab and variable_revision_number==2:

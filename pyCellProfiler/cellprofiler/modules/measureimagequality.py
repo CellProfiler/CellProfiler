@@ -494,8 +494,8 @@ class MeasureImageQuality(cpm.CPModule):
                                str(std_threshold)])
         return statistics
     
-    def backwards_compatibilize(self, setting_values, variable_revision_number, 
-                                module_name, from_matlab):
+    def upgrade_settings(self, setting_values, variable_revision_number, 
+                         module_name, from_matlab):
         '''Upgrade from previous versions of setting formats'''
         
         if from_matlab and variable_revision_number == 1:

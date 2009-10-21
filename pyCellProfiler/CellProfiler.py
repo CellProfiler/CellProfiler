@@ -11,6 +11,7 @@ Website: http://www.cellprofiler.org
 """
 __version__ = "$Revision$"
 
+import cellprofiler.cpmath.propagate
 import sys
 import os
 root = os.path.split(__file__)[0]

@@ -1480,7 +1480,7 @@ def calculate_perimeters(labels, indexes):
         iend = (i==1 and labels.shape[0]-1) or labels.shape[0] 
         for j in range(-1,2):
             jlow = (j==-1 and 1) or 1
-            jend = (j==1 and labels.shape[0]-1) or labels.shape[0] 
+            jend = (j==1 and labels.shape[1]-1) or labels.shape[1] 
             m[ilow:iend,jlow:jend] = \
                 (m[ilow:iend,jlow:jend] +
                  (labels[ilow:iend,jlow:jend] == 

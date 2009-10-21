@@ -311,7 +311,7 @@ class FilterByObjectMeasurement(cpm.CPModule):
             if src_objects.has_parent_image:
                 image = src_objects.parent_image
         else:
-            image = workspace.get_objects(image_name)
+            image = workspace.image_set.get_image(image_name)
         if image is None:
             # Oh so sad - no image, just display the old and new labels
             figure = workspace.create_or_find_figure(subplots=(2,1))

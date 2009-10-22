@@ -231,6 +231,10 @@ switch lower(SmoothingMethod)
         SmoothedImage(SmoothedImage > 1) = 1;
         SmoothedImage(SmoothedImage < 0) = 0;
         SizeOfSmoothingFilterUsed = SizeOfSmoothingFilter;
+	case 'enhance dark holes (fill-i)'
+        SmoothedImage = imsubtract(imfill(OrigImage,'holes'), OrigImage);
+		SmoothedImage(SmoothedImage > 1) = 1;
+        SmoothedImage(SmoothedImage < 0) = 0;
     otherwise
         if ~strcmp(SmoothingMethod,'N');
             error('The smoothing method you specified is not valid. This error should not have occurred. Check the code in the module or tool you are using or let the CellProfiler team know.');

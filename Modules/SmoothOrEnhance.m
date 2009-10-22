@@ -37,6 +37,10 @@ function handles = SmoothOrEnhance(handles)
 % The algorithm applied is Orig+tophat(Orig)-bottomhat(Orig), from 
 % Zhang et al., 2007, J. Neuroscience Methods.
 %
+% ENHANCE DARK HOLES: This method fills in dark holes surrounded by a
+% bright ring. The result is an image in which the holes appear as bright
+% spots.
+%
 % SMOOTH KEEPING EDGES: 'Smooth Keeping Edges' smooths the images while
 % preserving the edges. It uses the Bilateral Filter, as implemented by 
 % Jiawen Chen.
@@ -140,10 +144,11 @@ SmoothedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %choiceVAR03 = Enhance BrightRoundSpeckles (Tophat Filter)
 %choiceVAR03 = Smooth Keeping Edges
 %choiceVAR03 = Enhance Neurites (I+Tophat-Bothat)
+%choiceVAR03 = Enhance Dark Holes (Fill-I)
 SmoothingMethod = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %inputtypeVAR03 = popupmenu
 
-%textVAR04 = If you choose any setting besides 'Fit Polynomial' as your smoothing method, please specify the approximate width of the objects in your image (in pixels). This will be used to calculate an adequate filter size. If you don't know the width of your objects, you can use the ShowOrHidePixelData image tool to find out or leave the word 'Automatic'.
+%textVAR04 = If you choose any setting besides 'Fit Polynomial' or 'Enhance Dark Holes' as your smoothing method, please specify the approximate width of the objects in your image (in pixels). This will be used to calculate an adequate filter size. If you don't know the width of your objects, you can use the ShowOrHidePixelData image tool to find out or leave the word 'Automatic'.
 %defaultVAR04 = Automatic
 ObjectWidth = handles.Settings.VariableValues{CurrentModuleNum,4};
 

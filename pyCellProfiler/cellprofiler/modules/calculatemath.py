@@ -176,7 +176,7 @@ class CalculateMath(cpm.CPModule):
                 self.operands[0].settings() + self.operands[1].settings() + 
                 [self.wants_log, self.final_multiplicand, self.final_exponent])
 
-    def on_post_load(self, pipeline):
+    def post_pipeline_load(self, pipeline):
         '''Fixup any measurement names that might have been ambiguously loaded
         
         pipeline - for access to other module's measurements

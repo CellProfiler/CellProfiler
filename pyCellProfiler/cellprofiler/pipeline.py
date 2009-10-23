@@ -223,7 +223,7 @@ class Pipeline(object):
                 self.__modules.append(module)
                 real_module_num += 1
         for module in self.__modules:
-            module.on_post_load(self)
+            module.post_pipeline_load(self)
             
         self.notify_listeners(PipelineLoadedEvent())
     

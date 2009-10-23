@@ -30,14 +30,19 @@ class CPModule(object):
     """ Derive from the abstract module class to create your own module in Python
     
     You need to implement the following in the derived class:
-    create_settings - fill in the module_name and create the settings that
-               configure the module.
+    create_settings - create the settings that configure the module.
     settings - return the settings that will be loaded or saved from/to the
                pipeline.
-    visible_settings - return the settings that will be displayed on the UI
-    upgrade_settings - adjusts settings while loading to account for
-               old revisions.
     run - to run the module, producing measurements, etc.
+
+    These methods are optional:
+    prepare_settings - adjust the internal state of a module to accept a set of 
+               stored settings, (e.g., to create the right number of image
+               entries in the module's settings.)
+    visible_settings - return the settings that will be displayed on the UI
+               (default is to use the output of settings())
+    upgrade_settings - rewrite a group of settings from a previous version to 
+               be compatible with the latest version of a module.
     
     Implement these if you produce measurements:
     get_categories - The category of measurement produced, for instance AreaShape
@@ -47,18 +52,19 @@ class CPModule(object):
     get_measurement_columns - the measurements stored in the database
     
     The pipeline calls hooks in the module before and after runs and groups.
-    If your module requires state across image_sets, think of storing that 
-    state in the image_set_list's legacy_fields dictionary instead
-    of the module. 
-    
     The hooks are:
     prepare_run - before run: useful for setting up image sets
     prepare_group - before group: useful for initializing aggregation
     post_group - after group: useful for calculating final aggregation steps
-                 and for writing out results.
+               and for writing out results.
     post_run - use this to perform operations on the results of the experiment,
                for instance on all measurements
-    
+    post_pipeline_load - use this to update any settings that require the pipeline
+                to be available before they can be adjusted.
+
+    If your module requires state across image_sets, think of storing that 
+    state in the image_set_list's legacy_fields dictionary instead
+    of the module. 
     """
     
     def __init__(self):
@@ -189,7 +195,7 @@ class CPModule(object):
         '''
         return setting_values, variable_revision_number, from_matlab
     
-    def on_post_load(self, pipeline):
+    def post_pipeline_load(self, pipeline):
         """This is a convenient place to do things to your module after the 
            settings have been loaded or initialized"""
         pass

@@ -42,7 +42,7 @@ import_array()
 
 cdef extern from "jni.h":
     enum:
-       JNI_VERSION_1_6
+       JNI_VERSION_1_4
        JNI_COMMIT
        JNI_ABORT
     ctypedef struct _jobject
@@ -285,7 +285,7 @@ def get_default_java_vm_init_args():
     cdef:
         JavaVMInitArgs args
         jint result
-    args.version = JNI_VERSION_1_6
+    args.version = JNI_VERSION_1_4
     result = JNI_GetDefaultJavaVMInitArgs(<void *>&args)
     return (args.version, [args.options[i].optionString for i in range(args.nOptions)])
 
@@ -412,7 +412,7 @@ cdef class JB_Env:
         cdef:
             JavaVMInitArgs args
 
-        args.version = JNI_VERSION_1_6
+        args.version = JNI_VERSION_1_4
         args.nOptions = len(options)
         args.options = <JavaVMOption *>malloc(sizeof(JavaVMOption)*args.nOptions)
         if args.options == NULL:

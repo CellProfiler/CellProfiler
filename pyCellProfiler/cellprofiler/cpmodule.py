@@ -330,16 +330,6 @@ class CPModule(object):
         """
         return self.__module__+'.'+self.module_name
     
-    def get_variable_revision_number(self):
-        """The version number, as parsed out of the .m file, saved in the handles or rewritten using an import rule
-        """
-        raise NotImplementedError("Please implement SettingRevisionNumber in the derived class")
-    
-    def __internal_get_variable_revision_number(self):
-        """The revision number for the setting format for this module"""
-        return self.get_variable_revision_number()
-    variable_revision_number = property(__internal_get_variable_revision_number)
-    
     def settings(self):
         """Return the settings to be loaded or saved to/from the pipeline
         

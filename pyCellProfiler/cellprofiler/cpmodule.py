@@ -68,7 +68,6 @@ class CPModule(object):
         self.__settings = []
         self.__notes = []
         self.__variable_revision_number = 0
-        self.__annotation_dict = None
         self.__show_frame = True
         self.batch_state = np.zeros((0,),np.uint8)
         # Set the name of the module based on the class name.  A
@@ -233,12 +232,6 @@ class CPModule(object):
             variable = self.settings()[i]
             if len(str(variable)) > 0:
                 setting[cpp.VARIABLE_VALUES][module_idx,i] = unicode(str(variable))
-            try: # matlab & old-style through annotations
-                annotations = self.setting_annotations(variable.key())
-                if annotations.has_key('infotype'):
-                    setting[cpp.VARIABLE_INFO_TYPES][module_idx,i] = unicode(annotations['infotype'][0].value)
-            except:
-                pass
             if isinstance(variable,cps.NameProvider):
                 setting[cpp.VARIABLE_INFO_TYPES][module_idx,i] = unicode("%s indep"%(variable.group))
             elif isinstance(variable,cps.NameSubscriber):
@@ -296,21 +289,6 @@ class CPModule(object):
         are provided by the module's provider settings.
         '''
         return []
-    
-    def setting_annotations(self,key):
-        """Return annotations for the setting with the given number
-        
-        """
-        if not self.__annotation_dict:
-            self.__annotation_dict = cps.get_annotations_as_dictionary(self.annotations())
-        if self.__annotation_dict.has_key(key):
-            return self.__annotation_dict[key]
-        indexes = [index+1 for setting,index in zip(self.settings(),range(len(self.settings()))) if setting.key()==key]
-        if len(indexes):
-            alt_key = indexes[0]
-            if self.__annotation_dict.has_key(alt_key):
-                return self.__annotation_dict[alt_key]
-        return {}
     
     def get_module_num(self):
         """Get the module's index number
@@ -394,15 +372,6 @@ class CPModule(object):
     
     show_frame = property(get_show_frame, set_show_frame)
 
-    def annotations(self):
-        """Return the setting annotations, as read out of the module file.
-        
-        Return the setting annotations, as read out of the module file.
-        Each annotation is an instance of the cps.Annotation
-        class.
-        """
-        raise NotImplementedError("Please implement Annotations in your derived class")
-    
     def delete(self):
         """Delete the module, notifying listeners that it's going away
         

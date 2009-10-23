@@ -41,15 +41,6 @@ class InjectImage(cellprofiler.cpmodule.CPModule):
             
     variable_revision_number = 1
     
-    def annotations(self):
-        """Return the setting annotations, as read out of the module file.
-        
-        Return the setting annotations, as read out of the module file.
-        Each annotation is an instance of the Cellprofiler.Settings.Annotation
-        class.
-        """
-        return []
-    
     def write_to_handles(self,handles):
         """Write out the module's state to the handles
         

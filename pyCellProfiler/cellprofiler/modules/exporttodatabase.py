@@ -52,7 +52,8 @@ try:
     from MySQLdb.cursors import SSCursor
     HAS_MYSQL_DB=True
 except:
-    sys.stderr.write("WARNING: MySQL direct insert can't run within MySQLdb package")
+    sys.stderr.write("WARNING: MySQL could not be loaded.\n")
+    HAS_MYSQL_DB=False
 
 import cellprofiler.cpmodule as cpm
 import cellprofiler.settings as cps
@@ -168,6 +169,8 @@ class ExportToDatabase(cpm.CPModule):
             per_object tables as a series of CSV files along with an SQL file 
             that can be used with those files to create the database.  You can also look at the csv
             files in a spreadsheet program, such as Excel.''')
+        self.mysql_not_available = cps.Divider("Cannot write to MySQL directly - CSV file output only", line=False, 
+            doc="The MySQLdb python module could not be loaded.  MySQLdb is necessary for direct export.")
         self.db_host = cps.Text("What is the database host?", "imgdb01")
         self.db_user = cps.Text("What is the database username?", "cpuser")
         self.db_passwd = cps.Text("What is the database password?", "cPus3r")
@@ -221,7 +224,9 @@ class ExportToDatabase(cpm.CPModule):
         if self.db_type==DB_MYSQL:
             if HAS_MYSQL_DB:
                 result += [self.store_csvs]
-            if self.store_csvs.value:
+            else:
+                result += [self.mysql_not_available]
+            if self.store_csvs.value or not HAS_MYSQL_DB:
                 result += [self.sql_file_prefix]
                 result += [self.db_name]
             else:

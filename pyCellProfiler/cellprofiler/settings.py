@@ -989,8 +989,8 @@ class RemoveSettingButton(DoSomething):
 
 class Divider(Setting):
     """The divider setting inserts a vertical space, possibly with a horizontal line, in the GUI"""
-    def __init__(self, text = "", line=True):
-        super(Divider, self).__init__(text, 'n/a')
+    def __init__(self, text = "", line=True, doc=None):
+        super(Divider, self).__init__(text, 'n/a', doc=doc)
         self.line=line
 
 class Measurement(Setting):

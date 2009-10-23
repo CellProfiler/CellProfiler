@@ -826,11 +826,11 @@ class Pipeline(object):
     def remove_listener(self,listener):
         self.__listeners.remove(listener)
 
-    def is_source_loaded(self, image_name):
+    def is_image_from_file(self, image_name):
         """Return True if any module in the pipeline claims to be
-        loading this image name from file."""
+        loading this image name from a file."""
         for module in self.modules():
-            if module.is_source_loaded(image_name):
+            if module.is_image_from_file(image_name):
                 return True
         return False
     

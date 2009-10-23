@@ -132,7 +132,7 @@ class CPModule(object):
         self.set_setting_values(setting_values, variable_revision_number, 
                                  module_name)
     
-    def prepare_to_set_values(self,setting_values):
+    def prepare_settings(self,setting_values):
         """Do any sort of adjustment to the settings required for the given values
         
         setting_values - the values for the settings just prior to mapping
@@ -163,7 +163,7 @@ class CPModule(object):
                                   not '.' in module_name)
         # we can't handle matlab settings anymore
         assert not from_matlab, "Module %s's upgrade_settings returned from_matlab==True"%(module_name)
-        self.prepare_to_set_values(setting_values)
+        self.prepare_settings(setting_values)
         for v,value in zip(self.settings(),setting_values):
             v.value = value
         self.upgrade_module_from_revision(variable_revision_number)

@@ -33,12 +33,6 @@ class InjectImage(cellprofiler.cpmodule.CPModule):
     def visible_settings(self):
         return [self.image_name]
     
-    def upgrade_module_from_revision(self,variable_revision_number):
-        """Possibly rewrite the settings in the module to upgrade it to its current revision number
-        
-        """
-        raise NotImplementedError("Please implement UpgradeModuleFromRevision")
-    
     def get_help(self):
         """Return help text for the module
         

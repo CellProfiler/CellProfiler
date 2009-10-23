@@ -166,7 +166,6 @@ class CPModule(object):
         self.prepare_settings(setting_values)
         for v,value in zip(self.settings(),setting_values):
             v.value = value
-        self.upgrade_module_from_revision(variable_revision_number)
     
     def upgrade_settings(self,setting_values,variable_revision_number,
                          module_name,from_matlab):
@@ -196,20 +195,6 @@ class CPModule(object):
            settings have been loaded or initialized"""
         pass
 
-    def upgrade_module_from_revision(self,variable_revision_number):
-        """Possibly rewrite the settings in the module to upgrade it to its 
-        current revision number.
-        
-        Most modules use BackwardsCompatibilize instead of this.
-        """
-        if variable_revision_number != self.variable_revision_number:
-            raise NotImplementedError(
-                "Please implement upgrade_module_from_revision or "
-                "backwards_compatiblize to upgrade module %s from "
-                "revision %d to revision %d"%(self.module_name, 
-                                              variable_revision_number, 
-                                              self.variable_revision_number))
-    
     def get_help(self):
         """Return help text for the module
         

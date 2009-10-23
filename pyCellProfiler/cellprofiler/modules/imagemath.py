@@ -136,7 +136,7 @@ See also SubtractBackground, RescaleIntensity.
                    self.addend, self.truncate_low, self.truncate_high]
         return result
 
-    def prepare_to_set_values(self, setting_values):
+    def prepare_settings(self, setting_values):
         value_count = len(setting_values)
         assert (value_count - FIXED_SETTING_COUNT) % IMAGE_SETTING_COUNT == 0
         image_count = (value_count - FIXED_SETTING_COUNT) / IMAGE_SETTING_COUNT

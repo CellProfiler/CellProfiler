@@ -150,7 +150,7 @@ class MeasureObjectAreaShape(cpm.CPModule):
         result.append(self.calculate_zernikes)
         return result
     
-    def prepare_to_set_values(self,setting_values):
+    def prepare_settings(self,setting_values):
         """Adjust the number of object groups based on the number of setting_values"""
         object_group_count = len(setting_values)-1
         while len(self.object_groups) > object_group_count:

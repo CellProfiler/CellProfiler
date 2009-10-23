@@ -96,7 +96,7 @@ class MeasureImageAreaOccupied(cpm.CPModule):
         result += [self.add_button, self.divider_bottom]
         return result
     
-    def prepare_to_set_values(self, setting_values):
+    def prepare_settings(self, setting_values):
         value_count = len(setting_values)
         assert value_count % IMAGE_SETTING_COUNT == 0
         object_count = value_count / IMAGE_SETTING_COUNT

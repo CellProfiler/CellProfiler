@@ -436,7 +436,7 @@ class Morph(cpm.CPModule):
         function = Function(self.functions)
         self.functions.append(function)
 
-    def prepare_to_set_values(self, setting_values):
+    def prepare_settings(self, setting_values):
         '''Adjust the # of functions to match the # of setting values'''
         assert (len(setting_values)-2)%3 == 0
         function_count = (len(setting_values)-2) / 3

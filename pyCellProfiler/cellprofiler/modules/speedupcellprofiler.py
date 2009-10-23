@@ -74,7 +74,7 @@ class SpeedUpCellProfiler(cpm.CPModule):
     def settings(self):
         return [self.how_to_remove] + [im.image_name for im in self.image_names]
     
-    def prepare_to_set_values(self, setting_values):
+    def prepare_settings(self, setting_values):
         image_count = ((len(setting_values) - S_NUMBER_OF_PER_MODULE_SETTINGS) /
                        S_NUMBER_OF_SETTINGS_PER_IMAGE)
         del self.image_names[image_count:]

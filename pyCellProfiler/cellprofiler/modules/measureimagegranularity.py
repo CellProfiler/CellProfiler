@@ -99,7 +99,7 @@ class MeasureImageGranularity(cpm.CPModule):
             result += image_setting.settings()
         return result
     
-    def prepare_to_set_values(self, setting_values):
+    def prepare_settings(self, setting_values):
         '''Adjust self.image_groups to account for the expected # of images'''
         assert len(setting_values) % ImageSetting.setting_count == 0
         group_count = len(setting_values) / ImageSetting.setting_count

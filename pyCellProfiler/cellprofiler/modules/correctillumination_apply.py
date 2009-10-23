@@ -139,7 +139,7 @@ class CorrectIllumination_Apply(cpm.CPModule):
         result.append(self.add_image_button)
         return result
 
-    def prepare_to_set_values(self, setting_values):
+    def prepare_settings(self, setting_values):
         """Do any sort of adjustment to the settings required for the given values
         
         setting_values - the values for the settings just prior to mapping

@@ -142,7 +142,7 @@ class MeasureImageIntensity(cpm.CPModule):
         idx = [x.key for x in self.images].index(key)
         del self.images[idx]
 
-    def prepare_to_set_values(self, setting_values):
+    def prepare_settings(self, setting_values):
         assert len(setting_values) % SETTINGS_PER_IMAGE == 0
         image_count = len(setting_values) / SETTINGS_PER_IMAGE
         while image_count > len(self.images):

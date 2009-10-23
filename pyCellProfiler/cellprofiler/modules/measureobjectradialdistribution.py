@@ -225,7 +225,7 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
             result += [add_button]
         return result
     
-    def prepare_to_set_values(self, setting_values):
+    def prepare_settings(self, setting_values):
         '''Adjust the numbers of images, objects and bin counts'''
         image_count, objects_count, bin_counts_count = \
                    [int(x) for x in setting_values[:3]]

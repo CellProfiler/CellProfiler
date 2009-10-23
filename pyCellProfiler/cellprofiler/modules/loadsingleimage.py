@@ -99,7 +99,7 @@ class LoadSingleImage(cpm.CPModule):
                        file_setting[FD_IMAGE_NAME]]
         return result
 
-    def prepare_to_set_values(self, setting_values):
+    def prepare_settings(self, setting_values):
         """Adjust the file_settings depending on how many files there are"""
         count = (len(setting_values)-2)/2
         while len(self.file_settings) > count:

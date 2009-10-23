@@ -174,7 +174,7 @@ class FilterByObjectMeasurement(cpm.CPModule):
         idx = [x.key for x in self.additional_objects].index(key)
         del self.additional_objects[idx]
 
-    def prepare_to_set_values(self, setting_values):
+    def prepare_settings(self, setting_values):
         '''Make sure the # of slots for additional objects matches 
            the anticipated number of additional objects'''
         setting_count = len(setting_values)

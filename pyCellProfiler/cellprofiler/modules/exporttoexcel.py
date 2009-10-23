@@ -148,7 +148,7 @@ class ExportToExcel(cpm.CPModule):
         index = [x[OG_KEY] for x in self.object_groups].index(key)
         del self.object_groups[index]
         
-    def prepare_to_set_values(self, setting_values):
+    def prepare_settings(self, setting_values):
         """Add enough object groups to capture the settings"""
         setting_count = len(setting_values)
         assert ((setting_count - SETTING_OG_OFFSET) % 

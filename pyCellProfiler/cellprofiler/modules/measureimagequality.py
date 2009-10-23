@@ -151,7 +151,7 @@ class MeasureImageQuality(cpm.CPModule):
         group.append("divider", cps.Divider())
         self.image_groups.append(group)
 
-    def prepare_to_set_values(self, setting_values):
+    def prepare_settings(self, setting_values):
         '''Adjust self.image_groups to account for the expected # of images'''
         assert len(setting_values) % SETTINGS_PER_GROUP == 0
         group_count = len(setting_values) / SETTINGS_PER_GROUP

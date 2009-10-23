@@ -130,7 +130,7 @@ class OverlayOutlines(cpm.CPModule):
                     return [self.outline_name, self.remove_button]
         self.outlines.append(OutlineSettings(self.outlines))
     
-    def prepare_to_set_values(self, setting_values):
+    def prepare_settings(self, setting_values):
         assert (len(setting_values) - 5) % 2 == 0
         self.outlines = []
         for i in range((len(setting_values) - 5)/2):

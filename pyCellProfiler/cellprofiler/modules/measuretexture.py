@@ -159,7 +159,7 @@ class MeasureTexture(cpm.CPModule):
         result += [self.gabor_angles]
         return result
 
-    def prepare_to_set_values(self,setting_values):
+    def prepare_settings(self,setting_values):
         """Adjust the number of object groups based on the number of
         setting_values"""
         for count, sequence, fn in\

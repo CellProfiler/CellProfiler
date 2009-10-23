@@ -126,7 +126,7 @@ class Align(cpm.CPModule):
         result += [self.alignment_method, self.wants_cropping]
         return result
 
-    def prepare_to_set_values(self, setting_values):
+    def prepare_settings(self, setting_values):
         assert (len(setting_values)-6)% 3 == 0
         n_additional = (len(setting_values)-6)/3
         while len(self.additional_images) > n_additional:

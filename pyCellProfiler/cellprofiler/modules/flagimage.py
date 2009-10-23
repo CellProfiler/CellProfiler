@@ -87,7 +87,7 @@ class FlagImage(cpm.CPModule):
             result += flag.settings()
         return result
     
-    def prepare_to_set_values(self, setting_values):
+    def prepare_settings(self, setting_values):
         '''Construct the correct number of flags'''
         flag_count = int(setting_values[0])
         while len(self.flags) > flag_count:
@@ -98,7 +98,7 @@ class FlagImage(cpm.CPModule):
         setting_values = setting_values[N_FIXED_SETTINGS:]
         for flag in self.flags:
             assert isinstance(flag, FlagSettings)
-            setting_values = flag.prepare_to_set_values(setting_values)
+            setting_values = flag.prepare_settings(setting_values)
     
     def visible_settings(self):
         result = []
@@ -346,7 +346,7 @@ class FlagSettings(object):
             result += measurement_setting.settings()
         return result
     
-    def prepare_to_set_values(self, setting_values):
+    def prepare_settings(self, setting_values):
         '''Create the appropriate number of measurements
         
         setting_values - the setting values, starting from those for this flag

@@ -147,7 +147,7 @@ class CreateBatchFiles(cpm.CPModule):
             result += mapping.settings()
         return result
     
-    def prepare_to_set_values(self, setting_values):
+    def prepare_settings(self, setting_values):
         if (len(setting_values) - S_FIXED_COUNT) % S_PER_MAPPING != 0:
             raise ValueError("# of mapping settings (%d) "
                              "is not a multiple of %d" %

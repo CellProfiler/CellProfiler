@@ -128,7 +128,7 @@ class MeasureCorrelation(cpm.CPModule):
         result += [object_group.object_name for object_group in self.object_groups]
         return result
 
-    def prepare_to_set_values(self, setting_values):
+    def prepare_settings(self, setting_values):
         '''Make sure there are the right number of image and object slots for the incoming settings'''
         image_count = int(setting_values[0])
         object_count = int(setting_values[1])

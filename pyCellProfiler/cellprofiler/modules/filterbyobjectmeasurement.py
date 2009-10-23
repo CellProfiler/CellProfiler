@@ -218,14 +218,13 @@ class FilterByObjectMeasurement(cpm.CPModule):
         result += [self.additional_object_button]
         return result
 
-    def test_valid(self, pipeline):
+    def validate_module(self, pipeline):
         '''Make sure that the user has selected some limits when filtering'''
         if (self.filter_choice == FI_LIMITS and
             self.wants_minimum.value == False and
             self.wants_maximum.value == False):
             raise cps.ValidationError('Please enter a minimum and/or maximum limit for your measurement',
                                       self.wants_minimum)
-        super(FilterByObjectMeasurement,self).test_valid(pipeline)
 
     def run(self, workspace):
         '''Filter objects for this image set, display results'''

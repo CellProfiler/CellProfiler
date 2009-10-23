@@ -188,7 +188,7 @@ class MeasureImageQuality(cpm.CPModule):
         result += [self.bottom_spacer, self.add_button]
         return result
 
-    def test_valid(self, pipeline):
+    def validate_module(self, pipeline):
         '''Make sure settings are compatible
         
         In particular, we make sure that no measurements are duplicated
@@ -200,9 +200,6 @@ class MeasureImageQuality(cpm.CPModule):
             if m in d:
                 raise cps.ValidationError("%s measurement made twice."%(m[1]), s)
             d[m] = True
-
-        # validate individual settings
-        cpm.CPModule.test_valid(self, pipeline)
 
     def any_threshold(self):
         '''True if some image has its threshold calculated'''

@@ -202,11 +202,10 @@ class ExportToExcel(cpm.CPModule):
         result += [ self.add_button ]
         return result
     
-    def test_valid(self, pipeline):
+    def validate_module(self, pipeline):
         '''Test the module settings to make sure they are internally consistent
         
         '''
-        super(ExportToExcel, self).test_valid(pipeline)
         if (len(self.delimiter.value) != 1 and
             not self.delimiter.value in (DELIMITER_TAB, DELIMITER_COMMA)):
             raise cps.ValidationError("The CSV field delimiter must be a single character", self.delimiter)
@@ -220,6 +219,10 @@ class ExportToExcel(cpm.CPModule):
         else:
             return self.delimiter.value
     
+    def run(self, workspace):
+        # all of the work is done in post_run()
+        pass
+
     def post_run(self, workspace):
         object_names = []
         #

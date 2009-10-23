@@ -34,7 +34,7 @@ class CPModule(object):
     settings - return the settings that will be loaded or saved from/to the
                pipeline.
     run - to run the module, producing measurements, etc.
-
+    
     These methods are optional:
     prepare_settings - adjust the internal state of a module to accept a set of 
                stored settings, (e.g., to create the right number of image
@@ -61,7 +61,7 @@ class CPModule(object):
                for instance on all measurements
     post_pipeline_load - use this to update any settings that require the pipeline
                 to be available before they can be adjusted.
-
+                
     If your module requires state across image_sets, think of storing that 
     state in the image_set_list's legacy_fields dictionary instead
     of the module. 
@@ -550,8 +550,6 @@ class CPModule(object):
         """
         return []
     
-    def needs_matlab(self):
-        return False
 
     def is_image_from_file(self, image_name):
         """Return True if this module loads this image name from a file."""

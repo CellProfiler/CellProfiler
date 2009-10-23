@@ -101,11 +101,10 @@ class SpeedUpCellProfiler(cpm.CPModule):
                 image_set.clear_image(name)
         gc.collect()
     
-    def test_valid(self, pipeline):
+    def validate_module(self, pipeline):
         # if the remove method has changed, we need to update the text.
         for image_setting in self.image_names:
             image_setting.image_name.text = self.query()
-        cpm.CPModule.test_valid(self, pipeline)
 
     def upgrade_settings(self, setting_values, variable_revision_number,
                          module_name, from_matlab):

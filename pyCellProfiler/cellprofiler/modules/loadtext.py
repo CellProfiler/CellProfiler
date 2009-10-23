@@ -200,8 +200,7 @@ that can be processed by different nodes in a cluster.
                 self.row_range, self.wants_image_groupings, 
                 self.metadata_fields]
 
-    def test_valid(self, pipeline):
-        super(LoadText, self).test_valid(pipeline)
+    def validate_module(self, pipeline):
         csv_path = self.csv_path
         if not os.path.isfile(csv_path):
             raise cps.ValidationError("No such CSV file: %s"%csv_path,

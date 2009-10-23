@@ -179,13 +179,16 @@ class CreateBatchFiles(cpm.CPModule):
             self.save_pipeline(pipeline, image_set_list, frame)
             return False
     
-    def test_valid(self, pipeline):
+    def run(self, workspace):
+        # all the actual work is done in prepare_run
+        pass
+
+    def validate_module(self, pipeline):
         '''Make sure this is the last module in the pipeline'''
         if self.module_num != len(pipeline.modules()):
             raise cps.ValidationError("The CreateBatchFiles module must be "
                                       "the last in the pipeline.",
                                       self.wants_default_output_directory)
-        return cpm.CPModule.test_valid(self, pipeline)
     
     def save_pipeline(self, pipeline, image_set_list, frame):
         '''Save the pipeline in Batch_data.mat

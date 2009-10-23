@@ -12,6 +12,8 @@ Website: http://www.cellprofiler.org
 """
 __version__="$Revision$"
 
+from cellprofiler.cpmodule import CPModule
+
 # python modules and their corresponding cellprofiler.module classes
 pymodule_to_cpmodule = {'align' : 'Align',
                         'applythreshold' : 'ApplyThreshold',
@@ -72,11 +74,26 @@ substitutions = {'FlagImageForQC' : 'FlagImage',
 
 all_modules = {}
 pymodules = []
+
+do_not_override = ['__init__', 'set_settings', 'create_from_handles', 'test_valid', 'module_class']
+should_override = ['create_settings', 'settings', 'run']
+
+def check_module(module, name):
+    if hasattr(module, 'do_not_check'):
+        return
+    assert name == module.module_name, "Module %s should have module_name %s (is %s)"%(name, name, module.module_name)
+    for method_name in do_not_override:
+        assert getattr(module, method_name) == getattr(CPModule, method_name), "Module %s should not override method %s"%(name, method_name)
+    for method_name in should_override:
+        assert getattr(module, method_name) != getattr(CPModule, method_name), "Module %s should override method %s"%(name, method_name)
+    
+
 def fill_modules():
     del pymodules[:]
     for mod, name in pymodule_to_cpmodule.items():
         m = __import__('cellprofiler.modules.' + mod, globals(), locals(), [name])
         pymodules.append(m)
+        check_module(m.__dict__[name], name)
         all_modules[name] = m.__dict__[name]
 fill_modules()
     

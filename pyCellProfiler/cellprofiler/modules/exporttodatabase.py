@@ -262,7 +262,7 @@ class ExportToDatabase(cpm.CPModule):
                 self.wants_agg_std_dev, self.objects_choice,
                 self.objects_list]
     
-    def test_valid(self,pipeline):
+    def validate_module(self,pipeline):
         if self.want_table_prefix.value:
             if not re.match("^[A-Za-z][A-Za-z0-9_]+$",self.table_prefix.value):
                 raise cps.ValidationError("Invalid table prefix",self.table_prefix)

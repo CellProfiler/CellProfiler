@@ -1,0 +1,869 @@
+'''javabridge - a Python/Java bridge via JNI
+
+javabridge is designed to wrap JNI at the lowest level. The bridge can create
+an environment and can make calls on the environment. However, it's up to
+higher-level code to combine primitives into more concise operations.
+
+Javabridge implements several classes:
+
+JB_Env: represents a Java VM and environment as returned by
+         JNI_CreateJavaVM.
+
+JB_Object: represents a Java object.
+
+Java array objects are handled as numpy arrays
+'''
+
+import numpy as np
+cimport numpy as np
+cimport cython
+
+cdef extern from "Python.h":
+    ctypedef int Py_intptr_t
+
+cdef extern from "stdlib.h":
+    ctypedef unsigned long size_t
+    void free(void *ptr)
+    void *malloc(size_t size)
+
+cdef extern from "string.h":
+    void *memset(void *, int, int)
+    void *memcpy(void *, void *, int)
+
+cdef extern from "numpy/arrayobject.h":
+    ctypedef class numpy.ndarray [object PyArrayObject]:
+        cdef char *data
+        cdef Py_intptr_t *dimensions
+        cdef Py_intptr_t *strides
+    cdef void import_array()
+    cdef int  PyArray_ITEMSIZE(np.ndarray)
+
+import_array()
+
+cdef extern from "jni.h":
+    enum:
+       JNI_VERSION_1_6
+       JNI_COMMIT
+       JNI_ABORT
+    ctypedef struct _jobject
+    ctypedef struct _jmethodID
+    ctypedef struct _jfieldID
+    
+    ctypedef long jint
+    ctypedef unsigned char jboolean
+    ctypedef unsigned char jbyte
+    ctypedef unsigned short jchar
+    ctypedef short jshort
+    ctypedef long jlong
+    ctypedef float jfloat
+    ctypedef double jdouble
+    ctypedef jint jsize
+
+    ctypedef _jobject *jobject
+    ctypedef jobject jclass
+    ctypedef jobject jthrowable
+    ctypedef jobject jstring
+    ctypedef jobject jarray
+    ctypedef jarray jbooleanArray
+    ctypedef jarray jbyteArray
+    ctypedef jarray jcharArray
+    ctypedef jarray jshortArray
+    ctypedef jarray jintArray
+    ctypedef jarray jlongArray
+    ctypedef jarray jfloatArray
+    ctypedef jarray jdoubleArray
+    ctypedef jarray jobjectArray
+    ctypedef union jvalue:
+        jboolean z
+        jbyte b
+        jchar c
+        jshort s
+        jint i
+        jlong j
+        jfloat f
+        jdouble d
+        jobject l
+    ctypedef jvalue jvalue
+    ctypedef _jmethodID *jmethodID
+    ctypedef _jfieldID *jfieldID
+
+    ctypedef struct JNIInvokeInterface_
+
+    ctypedef JNIInvokeInterface_ *JavaVM
+
+    ctypedef struct JNIInvokeInterface_:
+         jint (*DestroyJavaVM)(JavaVM *vm)
+
+    struct JavaVMOption:
+        char *optionString
+        void *extraInfo
+    ctypedef JavaVMOption JavaVMOption
+
+    struct JavaVMInitArgs:
+        jint version
+        jint nOptions
+        JavaVMOption *options
+        jboolean ignoreUnrecognized
+    ctypedef JavaVMInitArgs JavaVMInitArgs
+
+    struct JNIEnv_
+    struct JNINativeInterface_
+    ctypedef JNINativeInterface_ *JNIEnv
+
+    struct JNINativeInterface_:
+        jint (* GetVersion)(JNIEnv *env)
+        jclass (* FindClass)(JNIEnv *env, char *name)
+        jclass (* GetObjectClass)(JNIEnv *env, jobject obj)
+        jclass (* NewGlobalRef)(JNIEnv *env, jobject lobj)
+        void (* DeleteGlobalRef)(JNIEnv *env, jobject gref)
+        void (* DeleteLocalRef)(JNIEnv *env, jobject obj)
+        #
+        # Exception handling
+        #
+        jobject (* ExceptionOccurred)(JNIEnv *env)
+        void (* ExceptionDescribe)(JNIEnv *env)
+        void (* ExceptionClear)(JNIEnv *env)
+        #
+        # Method IDs
+        #
+        jmethodID (*GetMethodID)(JNIEnv *env, jclass clazz, char *name, char *sig)
+        jmethodID (*GetStaticMethodID)(JNIEnv *env, jclass clazz, char *name, char *sig)
+        #
+        # New object
+        #
+        jobject (* NewObjectA)(JNIEnv *env, jclass clazz, jmethodID id, jvalue *args)
+        #
+        # Methods for object calls
+        #
+        jboolean (* CallBooleanMethodA)(JNIEnv *env, jobject obj, jmethodID methodID, jvalue *args)
+        jbyte (* CallByteMethodA)(JNIEnv *env, jobject obj, jmethodID methodID, jvalue *args)
+        jchar (* CallCharMethodA)(JNIEnv *env, jobject obj, jmethodID methodID, jvalue *args)
+        jshort (* CallShortMethodA)(JNIEnv *env, jobject obj, jmethodID methodID, jvalue *args)
+        jint (* CallIntMethodA)(JNIEnv *env, jobject obj, jmethodID methodID, jvalue *args)
+        jlong (* CallLongMethodA)(JNIEnv *env, jobject obj, jmethodID methodID, jvalue *args)
+        jfloat (* CallFloatMethodA)(JNIEnv *env, jobject obj, jmethodID methodID, jvalue *args)
+        jdouble (* CallDoubleMethodA)(JNIEnv *env, jobject obj, jmethodID methodID, jvalue *args)
+        void (* CallVoidMethodA)(JNIEnv *env, jobject obj, jmethodID methodID, jvalue *args)
+        jobject (* CallObjectMethodA)(JNIEnv *env, jobject obj, jmethodID methodID, jvalue *args)
+        #
+        # Methods for static class calls
+        #
+        jboolean (* CallStaticBooleanMethodA)(JNIEnv *env, jclass clazz, jmethodID methodID, jvalue *args)
+        jbyte (* CallStaticByteMethodA)(JNIEnv *env, jclass clazz, jmethodID methodID, jvalue *args)
+        jchar (* CallStaticCharMethodA)(JNIEnv *env, jclass clazz, jmethodID methodID, jvalue *args)
+        jshort (* CallStaticShortMethodA)(JNIEnv *env, jclass clazz, jmethodID methodID, jvalue *args)
+        jint (* CallStaticIntMethodA)(JNIEnv *env, jclass clazz, jmethodID methodID, jvalue *args)
+        jlong (* CallStaticLongMethodA)(JNIEnv *env, jclass clazz, jmethodID methodID, jvalue *args)
+        jfloat (* CallStaticFloatMethodA)(JNIEnv *env, jclass clazz, jmethodID methodID, jvalue *args)
+        jdouble (* CallStaticDoubleMethodA)(JNIEnv *env, jclass clazz, jmethodID methodID, jvalue *args)
+        void (* CallStaticVoidMethodA)(JNIEnv *env, jclass clazz, jmethodID methodID, jvalue *args)
+        jobject (* CallStaticObjectMethodA)(JNIEnv *env, jclass clazz, jmethodID methodID, jvalue *args)
+        #
+        # Methods for fields
+        #
+        jfieldID (* GetFieldID)(JNIEnv *env, jclass clazz, char *name, char *sig)
+        jobject (* GetObjectField)(JNIEnv *env, jobject obj, jfieldID fieldID)
+        jboolean (* GetBooleanField)(JNIEnv *env, jobject obj, jfieldID fieldID)
+        jbyte (* GetByteField)(JNIEnv *env, jobject obj, jfieldID fieldID)
+        jchar (* GetCharField)(JNIEnv *env, jobject obj, jfieldID fieldID)
+        jshort (* GetShortField)(JNIEnv *env, jobject obj, jfieldID fieldID)
+        jint (* GetIntField)(JNIEnv *env, jobject obj, jfieldID fieldID)
+        jlong (* GetLongField)(JNIEnv *env, jobject obj, jfieldID fieldID)
+        jfloat (*GetFloatField)(JNIEnv *env, jobject obj, jfieldID fieldID)
+        jdouble (*GetDoubleField)(JNIEnv *env, jobject obj, jfieldID fieldID)
+
+        void (* SetObjectField)(JNIEnv *env, jobject obj, jfieldID fieldID, jobject val)
+        void (* SetBooleanField)(JNIEnv *env, jobject obj, jfieldID fieldID, jboolean val)
+        void (* SetByteField)(JNIEnv *env, jobject obj, jfieldID fieldID, jbyte val)
+        void (* SetCharField)(JNIEnv *env, jobject obj, jfieldID fieldID, jchar val)
+        void (*SetShortField)(JNIEnv *env, jobject obj, jfieldID fieldID, jshort val)
+        void (*SetIntField)(JNIEnv *env, jobject obj, jfieldID fieldID, jint val)
+        void (*SetLongField)(JNIEnv *env, jobject obj, jfieldID fieldID, jlong val)
+        void (*SetFloatField)(JNIEnv *env, jobject obj, jfieldID fieldID, jfloat val)
+        void (*SetDoubleField)(JNIEnv *env, jobject obj, jfieldID fieldID, jdouble val)
+
+        jfieldID (*GetStaticFieldID)(JNIEnv *env, jclass clazz, char *name, char *sig)
+        jobject (* GetStaticObjectField)(JNIEnv *env, jclass clazz, jfieldID fieldID)
+        jboolean (* GetStaticBooleanField)(JNIEnv *env, jclass clazz, jfieldID fieldID)
+        jbyte (* GetStaticByteField)(JNIEnv *env, jclass clazz, jfieldID fieldID)
+        jchar (* GetStaticCharField)(JNIEnv *env, jclass clazz, jfieldID fieldID)
+        jshort (* GetStaticShortField)(JNIEnv *env, jclass clazz, jfieldID fieldID)
+        jint (* GetStaticIntField)(JNIEnv *env, jclass clazz, jfieldID fieldID)
+        jlong (* GetStaticLongField)(JNIEnv *env, jclass clazz, jfieldID fieldID)
+        jfloat (*GetStaticFloatField)(JNIEnv *env, jclass clazz, jfieldID fieldID)
+        jdouble (* GetStaticDoubleField)(JNIEnv *env, jclass clazz, jfieldID fieldID)
+
+        void (*SetStaticObjectField)(JNIEnv *env, jclass clazz, jfieldID fieldID, jobject value)
+        void (*SetStaticBooleanField)(JNIEnv *env, jclass clazz, jfieldID fieldID, jboolean value)
+        void (*SetStaticByteField)(JNIEnv *env, jclass clazz, jfieldID fieldID, jbyte value)
+        void (*SetStaticCharField)(JNIEnv *env, jclass clazz, jfieldID fieldID, jchar value)
+        void (*SetStaticShortField)(JNIEnv *env, jclass clazz, jfieldID fieldID, jshort value)
+        void (*SetStaticIntField)(JNIEnv *env, jclass clazz, jfieldID fieldID, jint value)
+        void (*SetStaticLongField)(JNIEnv *env, jclass clazz, jfieldID fieldID, jlong value)
+        void (*SetStaticFloatField)(JNIEnv *env, jclass clazz, jfieldID fieldID, jfloat value)
+        void (*SetStaticDoubleField)(JNIEnv *env, jclass clazz, jfieldID fieldID, jdouble value)
+        #
+        # Methods for handling strings
+        #
+        jobject (* NewStringUTF)(JNIEnv *env, char *utf)
+        char *(* GetStringUTFChars)(JNIEnv *env, jobject str, jboolean *is_copy)
+        void (* ReleaseStringUTFChars)(JNIEnv *env, jobject str, char *chars)
+        #
+        # Methods for making arrays (which I am not distinguishing from jobjects here)
+        #
+        jsize (* GetArrayLength)(JNIEnv *env, jobject array)
+        jobject (* NewObjectArray)(JNIEnv *env, jsize len, jclass clazz, jobject init)
+        jobject (* GetObjectArrayElement)(JNIEnv *env, jobject array, jsize index)
+        void (* SetObjectArrayElement)(JNIEnv *env, jobject array, jsize index, jobject val)
+
+        jobject (* NewBooleanArray)(JNIEnv *env, jsize len)
+        jobject (* NewByteArray)(JNIEnv *env, jsize len)
+        jobject (* NewCharArray)(JNIEnv *env, jsize len)
+        jobject (* NewShortArray)(JNIEnv *env, jsize len)
+        jobject (* NewIntArray)(JNIEnv *env, jsize len)
+        jobject (*NewLongArray)(JNIEnv *env, jsize len)
+        jobject (* NewFloatArray)(JNIEnv *env, jsize len)
+        jobject (* NewDoubleArray)(JNIEnv *env, jsize len)
+
+        jboolean * (* GetBooleanArrayElements)(JNIEnv *env, jobject array, jboolean *isCopy)
+        jbyte * (* GetByteArrayElements)(JNIEnv *env, jobject array, jboolean *isCopy)
+        jchar * (*GetCharArrayElements)(JNIEnv *env, jobject array, jboolean *isCopy)
+        jshort * (*GetShortArrayElements)(JNIEnv *env, jobject array, jboolean *isCopy)
+        jint * (* GetIntArrayElements)(JNIEnv *env, jobject array, jboolean *isCopy)
+        jlong * (* GetLongArrayElements)(JNIEnv *env, jobject array, jboolean *isCopy)
+        jfloat * (* GetFloatArrayElements)(JNIEnv *env, jobject array, jboolean *isCopy)
+        jdouble * (* GetDoubleArrayElements)(JNIEnv *env, jobject array, jboolean *isCopy)
+
+        void (*ReleaseBooleanArrayElements)(JNIEnv *env, jobject array, jboolean *elems, jint mode)
+        void (*ReleaseByteArrayElements)(JNIEnv *env, jobject array, jbyte *elems, jint mode)
+        void (*ReleaseCharArrayElements)(JNIEnv *env, jobject array, jchar *elems, jint mode)
+        void (*ReleaseShortArrayElements)(JNIEnv *env, jobject array, jshort *elems, jint mode)
+        void (*ReleaseIntArrayElements)(JNIEnv *env, jobject array, jint *elems, jint mode)
+        void (*ReleaseLongArrayElements)(JNIEnv *env, jobject array, jlong *elems, jint mode)
+        void (*ReleaseFloatArrayElements)(JNIEnv *env, jobject array, jfloat *elems, jint mode)
+        void (*ReleaseDoubleArrayElements)(JNIEnv *env, jobject array, jdouble *elems, jint mode)
+
+        void (* GetBooleanArrayRegion)(JNIEnv *env, jobject array, jsize start, 
+                                       jsize l, jboolean *buf)
+        void (* GetByteArrayRegion)(JNIEnv *env, jobject array, jsize start, 
+                                    jsize len, jbyte *buf)
+        void (*GetCharArrayRegion)(JNIEnv *env, jobject array, jsize start, 
+                                   jsize len, jchar *buf)
+        void (* GetShortArrayRegion)(JNIEnv *env, jobject array, jsize start,
+                                     jsize len, jshort *buf)
+        void (* GetIntArrayRegion)(JNIEnv *env, jobject array, jsize start,
+                                   jsize len, jint *buf)
+        void (* GetLongArrayRegion)(JNIEnv *env, jobject array, jsize start,
+                                    jsize len, jlong *buf)
+        void (* GetFloatArrayRegion)(JNIEnv *env, jobject array, jsize start,
+                                     jsize len, jfloat *buf)
+        void (* GetDoubleArrayRegion)(JNIEnv *env, jobject array, jsize start,
+                                      jsize len, jdouble *buf)
+
+        void (*SetBooleanArrayRegion)(JNIEnv *env, jobject array, jsize start, 
+                                      jsize l, jboolean *buf)
+        void (*SetByteArrayRegion)(JNIEnv *env, jobject array, jsize start,
+                                   jsize len, jbyte *buf)
+        void (*SetCharArrayRegion)(JNIEnv *env, jobject array, jsize start, jsize len,
+                                   char *buf)
+        void (*SetShortArrayRegion)(JNIEnv *env, jobject array, jsize start, jsize len,
+                                    jshort *buf)
+        void (*SetIntArrayRegion)(JNIEnv *env, jobject array, jsize start, jsize len,
+                                  jint *buf)
+        void (*SetLongArrayRegion)(JNIEnv *env, jobject array, jsize start, jsize len,
+                                   jlong *buf)
+        void (*SetFloatArrayRegion)(JNIEnv *env, jobject array, jsize start, jsize len,
+                                    jfloat *buf)
+        void (*SetDoubleArrayRegion)(JNIEnv *env, jobject array, jsize start, jsize len,
+                                     jdouble *buf)
+
+    jint JNI_CreateJavaVM(JavaVM **pvm, void **penv, void *args)
+    jint JNI_GetDefaultJavaVMInitArgs(void *args)
+
+def get_default_java_vm_init_args():
+    '''Return the version and default option strings as a tuple'''
+    cdef:
+        JavaVMInitArgs args
+        jint result
+    args.version = JNI_VERSION_1_6
+    result = JNI_GetDefaultJavaVMInitArgs(<void *>&args)
+    return (args.version, [args.options[i].optionString for i in range(args.nOptions)])
+
+cdef class JB_Object:
+    '''A Java object'''
+    cdef:
+        jobject o
+    def __cinit__(self):
+        self.o = NULL
+    def __repr__(self):
+        return "<Java object at 0x%x>"%<int>(self.o)
+
+cdef class JB_Class:
+    '''A Java class'''
+    cdef:
+        jclass c
+    def __cinit__(self):
+        self.c = NULL
+    def __repr__(self):
+        return "<Java class at 0x%x>"%<int>(self.c)
+
+cdef class __JB_MethodID:
+    '''A method ID as returned by get_method_id'''
+    cdef:
+        jmethodID id
+        sig
+        is_static
+    def __cinit__(self):
+        self.id = NULL
+        self.sig = ''
+        self.is_static = False
+
+    def __repr__(self):
+        return "<Java method with sig=%s at 0x%x>"%(self.sig,<int>(self.id))
+        
+cdef class __JB_FieldID:
+    '''A field ID as returned by get_field_id'''
+    cdef:
+        jfieldID id
+        sig
+        is_static
+    def __cinit__(self):
+        self.id = NULL
+        self.sig = ''
+        self.is_static = False
+        
+    def __repr__(self):
+        return "<Java field with sig=%s at 0x%x>"%(self.sig, <int>(self.id))
+
+cdef void fill_values(orig_sig, args, jvalue **pvalues):
+    cdef:
+        jvalue *values
+        int i
+        JB_Object jbobject
+        JB_Class jbclass
+
+    sig = orig_sig
+    values = <jvalue *>malloc(sizeof(jvalue)*len(args))
+    pvalues[0] = values
+    for i,arg in enumerate(args):
+        if len(sig) == 0:
+            free(<void *>values)
+            raise ValueError("# of arguments (%d) in call did not match signature (%s)"%
+                             (len(args), orig_sig))
+        if sig[0] == 'Z': #boolean
+            values[i].z = 1 if arg else 0
+            sig = sig[1:]
+        elif sig[0] == 'B': #byte
+            values[i].b = int(arg)
+            sig = sig[1:]
+        elif sig[0] == 'C': #char
+            values[i].c = str(arg)[0]
+            sig = sig[1:]
+        elif sig[0] == 'S': #short
+            values[i].s = int(arg)
+            sig = sig[1:]
+        elif sig[0] == 'I': #int
+            values[i].i = int(arg) 
+            sig = sig[1:]
+        elif sig[0] == 'J': #long
+            values[i].j = int(arg)
+            sig = sig[1:]
+        elif sig[0] == 'F': #float
+            values[i].f = float(arg)
+            sig = sig[1:]
+        elif sig[0] == 'D': #double
+            values[i].d = float(arg)
+            sig = sig[1:]
+        elif sig[0] == 'L' or sig[0] == '[': #object
+            if isinstance(arg, JB_Object):
+                 jbobject = arg
+                 values[i].l = jbobject.o
+            elif isinstance(arg, JB_Class):
+                 jbclass = arg
+                 values[i].l = jbclass.c
+            else:
+                 free(<void *>values)
+                 raise ValueError("%s is not a Java object"%str(arg))
+            if sig[0] == '[':
+                 if len(sig) == 1:
+                     raise ValueError("Bad signature: %s"%orig_sig)
+                 if sig[1] != 'L':
+                     # An array of primitive type:
+                     sig = sig[2:]
+                     continue
+            sig = sig[sig.find(';')+1:]
+        else:
+            raise ValueError("Unhandled signature: %s"%orig_sig)
+    if len(sig) > 0:
+        raise ValueError("Too few arguments (%d) for signature (%s)"%
+                         (len(args), orig_sig))
+
+cdef class JB_Env:
+    '''Represents the Java VM and the Java execution environment'''
+    cdef:
+        JNIEnv *env
+        JavaVM *vm
+    def __dealloc__(self):
+        if self.vm:
+            print "Destroying VM: 0x%x"%<int>(self.vm)
+            self.vm[0].DestroyJavaVM(self.vm)
+
+    def create(self, options):
+        cdef:
+            JavaVMInitArgs args
+
+        args.version = JNI_VERSION_1_6
+        args.nOptions = len(options)
+        args.options = <JavaVMOption *>malloc(sizeof(JavaVMOption)*args.nOptions)
+        if args.options == NULL:
+            raise MemoryError("Failed to allocate JavaVMInitArgs")
+        options = [str(option) for option in options]
+        for i, option in enumerate(options):
+            args.options[i].optionString = option
+        result = JNI_CreateJavaVM(&self.vm, <void **>&self.env, &args)
+        free(args.options)
+        if result != 0:
+            raise RuntimeError("Failed to create Java VM")
+        
+    def get_version(self):
+        '''Return the version number as a major / minor version tuple'''
+        cdef:
+            int version
+        version = self.env[0].GetVersion(self.env)
+        return (int(version / 65536), version % 65536)
+
+    def find_class(self, char *name):
+        '''Find a Java class by name
+
+        name - the class name with "/" as the path separator, e.g. "java/lang/String"
+        Returns a wrapped class object
+        '''
+        cdef:
+            jclass c
+            JB_Class result
+        c = self.env[0].FindClass(self.env, name)
+        print "Class address: %x"%<int>c
+        if c == NULL:
+            print "Failed to get class "+name
+            return
+        result = JB_Class()
+        result.c = c
+        return result
+
+    def get_object_class(self, JB_Object o):
+        '''Return the class for an object
+        
+        o - a Java object
+        '''
+        cdef:
+            jclass c
+            JB_Class result
+        c = self.env[0].GetObjectClass(self.env, o.o)
+        result = JB_Class()
+        result.c = c
+        return result
+
+    def new_global_ref(self, JB_Object o):
+        '''Return a global reference to a Java object
+
+        Return a reference to the object that must be explicitly
+        disposed of using delete_global_reference.
+        '''
+        cdef:
+            jobject result
+        result = self.env[0].NewGlobalRef(self.env, o.o)
+        if result == NULL:
+            return
+        ref = JB_Object()
+        ref.o = o
+        return ref
+
+    def delete_global_ref(self, JB_Object o):
+        '''Delete a global reference created by new_global_ref'''
+        self.env[0].DeleteGlobalRef(self.env, o.o)
+
+    def delete_local_ref(self, JB_Object o):
+        '''Delete an object on the local stack frame'''
+        self.env[0].DeleteLocalRef(self.env, o.o)
+
+    def exception_occurred(self):
+        '''Return a throwable if an exception occurred or None'''
+        cdef:
+            jobject t
+            JB_Object o
+        t = self.env[0].ExceptionOccurred(self.env)
+        if t == NULL:
+            return
+        o = JB_Object()
+        o.o = t
+        return 0
+
+    def exception_describe(self):
+        '''Print a stack trace of the last exception to stderr'''
+        self.env[0].ExceptionDescribe(self.env)
+
+    def exception_clear(self):
+        '''Clear the current exception'''
+        self.env[0].ExceptionClear(self.env)
+
+    def get_method_id(self, JB_Class c, char *name, char *sig):
+        '''Find the method ID for a method on a class
+
+        c - a class retrieved by find_class or get_object_class
+        name - the method name
+        sig - the calling signature, e.g. "(ILjava/lang/String;)D" is
+              a function that returns a double and takes an integer,
+              a long and a string as arguments.
+        '''
+        cdef:
+            jmethodID id
+            __JB_MethodID result
+        id = self.env[0].GetMethodID(self.env, c.c, name, sig)
+        if id == NULL:
+            return
+        result = __JB_MethodID()
+        result.id = id
+        result.sig = sig
+        result.is_static = False
+        return result
+
+    def get_static_method_id(self, JB_Class c, char *name, char *sig):
+        '''Find the method ID for a static method on a class
+
+        c - a class retrieved by find_class or get_object_class
+        name - the method name
+        sig - the calling signature, e.g. "(ILjava/lang/String;)D" is
+              a function that returns a double and takes an integer,
+              a long and a string as arguments.
+        '''
+        cdef:
+            jmethodID id
+            __JB_MethodID result
+        id = self.env[0].GetStaticMethodID(self.env, c.c, name, sig)
+        if id == NULL:
+            return
+        result = __JB_MethodID()
+        result.id = id
+        result.sig = sig
+        result.is_static = True
+        return result
+
+    def call_method(self, JB_Object o, __JB_MethodID m, *args):
+        '''Call a method on an object with arguments
+
+        o - object in question
+        m - the method ID
+        *args - the arguments to the method call. Arguments should
+                appear in the same order as the signature. Arguments will
+                be coerced into the type of the signature.
+        '''
+        cdef:
+            jvalue *values
+            jobject oresult
+            JB_Object jbresult
+        
+        if m.is_static:
+            raise ValueError("call_method called with a static method. Use call_static_method instead")
+        sig = m.sig
+        if sig[0] != '(':
+            raise ValueError("Bad function signature: %s"%m.sig)
+        arg_end = sig.find(')')
+        if arg_end == -1:
+            raise ValueError("Bad function signature: %s"%m.sig)
+        arg_sig = sig[1:arg_end]
+        fill_values(arg_sig, args, &values)
+        sig = sig[arg_end+1:]
+        #
+        # Dispatch based on return code at end of sig
+        #
+        if sig == 'Z':
+            result = self.env[0].CallBooleanMethodA(self.env, o.o, m.id, values) != 0
+        elif sig == 'B':
+            result = self.env[0].CallByteMethodA(self.env, o.o, m.id, values)
+        elif sig == 'C':
+            result = self.env[0].CallCharMethodA(self.env, o.o, m.id, values)
+        elif sig == 'S':
+            result = self.env[0].CallShortMethodA(self.env, o.o, m.id, values)
+        elif sig == 'I':
+            result = self.env[0].CallIntMethodA(self.env, o.o, m.id, values)
+        elif sig == 'J':
+            result = self.env[0].CallLongMethodA(self.env, o.o, m.id, values)
+        elif sig == 'F':
+            result = self.env[0].CallFloatMethodA(self.env, o.o, m.id, values)
+        elif sig == 'D':
+            result = self.env[0].CallDoubleMethodA(self.env, o.o, m.id, values)
+        elif sig[0] == 'L' or sig[0] == '[':
+            oresult = self.env[0].CallObjectMethodA(self.env, o.o, m.id, values)
+            if oresult == NULL:
+                result = None
+            else:
+                jbresult = JB_Object()
+                jbresult.o = oresult
+                result = jbresult
+        elif sig == 'V':
+            self.env[0].CallVoidMethodA(self.env, o.o, m.id, values)
+            result = None
+        else:
+            free(<void *>values)
+            raise ValueError("Unhandled return type. Signature = %s"%m.sig)
+        free(<void *>values)
+        return result
+
+    def call_static_method(self, JB_Class c, __JB_MethodID m, *args):
+        '''Call a static method on a class with arguments
+
+        c - class holding the method
+        m - the method ID
+        *args - the arguments to the method call. Arguments should
+                appear in the same order as the signature. Arguments will
+                be coerced into the type of the signature.
+        '''
+        cdef:
+            jvalue *values
+            jobject oresult
+            JB_Object jbresult
+        
+        if not m.is_static:
+            raise ValueError("static_call_method called with an object method. Use call_method instead")
+        sig = m.sig
+        if sig[0] != '(':
+            raise ValueError("Bad function signature: %s"%m.sig)
+        arg_end = sig.find(')')
+        if arg_end == -1:
+            raise ValueError("Bad function signature: %s"%m.sig)
+        arg_sig = sig[1:arg_end]
+        fill_values(arg_sig, args, &values)
+        sig = sig[arg_end+1:]
+        #
+        # Dispatch based on return code at end of sig
+        #
+        if sig == 'Z':
+            result = self.env[0].CallStaticBooleanMethodA(self.env, c.c, m.id, values) != 0
+        elif sig == 'B':
+            result = self.env[0].CallStaticByteMethodA(self.env, c.c, m.id, values)
+        elif sig == 'C':
+            result = self.env[0].CallStaticCharMethodA(self.env, c.c, m.id, values)
+        elif sig == 'S':
+            result = self.env[0].CallShortMethodA(self.env, c.c, m.id, values)
+        elif sig == 'I':
+            result = self.env[0].CallIntMethodA(self.env, c.c, m.id, values)
+        elif sig == 'J':
+            result = self.env[0].CallLongMethodA(self.env, c.c, m.id, values)
+        elif sig == 'F':
+            result = self.env[0].CallFloatMethodA(self.env, c.c, m.id, values)
+        elif sig == 'D':
+            result = self.env[0].CallDoubleMethodA(self.env, c.c, m.id, values)
+        elif sig[0] == 'L' or sig[0] == '[':
+            oresult = self.env[0].CallObjectMethodA(self.env, c.c, m.id, values)
+            if oresult == NULL:
+                result = None
+            else:
+                jbresult = JB_Object()
+                jbresult.o = oresult
+                result = jbresult
+        elif sig == 'V':
+            self.env[0].CallVoidMethodA(self.env, c.c, m.id, values)
+            result = None
+        else:
+            free(<void *>values)
+            raise ValueError("Unhandled return type. Signature = %s"%m.sig)
+        free(<void *>values)
+        return result
+
+    def get_field_id(self, JB_Class c, char *name, char *sig):
+        '''Get a field ID for a class
+        
+        c - class (from find_class or similar)
+        name - name of field
+        sig - signature of field (e.g. Ljava/lang/String;)
+        '''
+        cdef:
+            jfieldID id
+            __JB_FieldID jbid
+        
+        id = self.env[0].GetFieldID(self.env, c.c, name, sig)
+        if id == NULL:
+            return None
+        jbid = __JB_FieldID()
+        jbid.id = id
+        jbid.sig = sig
+        jbid.is_static = False
+        return jbid
+        
+    def get_object_field(self, JB_Object o, __JB_FieldID field):
+        '''Return an object field'''
+        cdef:
+            jobject subo
+            JB_Object jbo
+        subo = self.env[0].GetObjectField(self.env, o.o, field.id)
+        if subo == NULL:
+            return
+        jbo = JB_Object()
+        jbo.o = subo
+        return jbo
+        
+    def get_boolean_field(self, JB_Object o, __JB_FieldID field):
+        '''Return a boolean field's value'''
+        return self.env[0].GetBooleanField(self.env, o.o, field.id) != 0
+        
+    def get_byte_field(self, JB_Object o, __JB_FieldID field):
+        '''Return a byte field's value'''
+        return self.env[0].GetByteField(self.env, o.o, field.id)
+        
+    def get_short_field(self, JB_Object o, __JB_FieldID field):
+        '''Return a short field's value'''
+        return self.env[0].GetShortField(self.env, o.o, field.id)
+        
+    def get_int_field(self, JB_Object o, __JB_FieldID field):
+        '''Return an int field's value'''
+        return self.env[0].GetIntField(self.env, o.o, field.id)
+        
+    def get_long_field(self, JB_Object o, __JB_FieldID field):
+        '''Return a long field's value'''
+        return self.env[0].GetLongField(self.env, o.o, field.id)
+        
+    def get_float_field(self, JB_Object o, __JB_FieldID field):
+        '''Return a float field's value'''
+        return self.env[0].GetFloatField(self.env, o.o, field.id)
+        
+    def get_double_field(self, JB_Object o, __JB_FieldID field):
+        '''Return a double field's value'''
+        return self.env[0].GetDoubleField(self.env, o.o, field.id)
+        
+    def get_static_field_id(self, JB_Class c, char *name, char *sig):
+        '''Look up a static field ID on a class'''
+        cdef:
+            jfieldID id
+            __JB_FieldID jbid
+        
+        id = self.env[0].GetStaticFieldID(self.env, c.c, name, sig)
+        if id == NULL:
+            return None
+        jbid = __JB_FieldID()
+        jbid.id = id
+        jbid.sig = sig
+        jbid.is_static = False
+        return jbid
+        
+    def get_static_object_field(self, JB_Class c, __JB_FieldID field):
+        '''Return an object field on a class'''
+        cdef:
+            jobject o
+            JB_Object jbo
+        o = self.env[0].GetStaticObjectField(self.env, c.c, field.id)
+        if o == NULL:
+            return
+        jbo = JB_Object()
+        jbo.o = o
+        return jbo
+        
+    def get_static_boolean_field(self, JB_Class c, __JB_FieldID field):
+        '''Return a boolean static field's value'''
+        return self.env[0].GetStaticBooleanField(self.env, c.c, field.id) != 0
+        
+    def get_static_byte_field(self, JB_Class c, __JB_FieldID field):
+        '''Return a byte static field's value'''
+        return self.env[0].GetStaticByteField(self.env, c.c, field.id)
+        
+    def get_static_short_field(self, JB_Class c, __JB_FieldID field):
+        '''Return a short static field's value'''
+        return self.env[0].GetStaticShortField(self.env, c.c, field.id)
+        
+    def get_static_int_field(self, JB_Class c, __JB_FieldID field):
+        '''Return an int field's value'''
+        return self.env[0].GetStaticIntField(self.env, c.c, field.id)
+        
+    def get_static_long_field(self, JB_Class c, __JB_FieldID field):
+        '''Return a long field's value'''
+        return self.env[0].GetStaticLongField(self.env, c.c, field.id)
+        
+    def get_static_float_field(self, JB_Class c, __JB_FieldID field):
+        '''Return a float field's value'''
+        return self.env[0].GetStaticFloatField(self.env, c.c, field.id)
+        
+    def get_static_double_field(self, JB_Class c, __JB_FieldID field):
+        '''Return a double field's value'''
+        return self.env[0].GetStaticDoubleField(self.env, c.c, field.id)
+
+    def new_object(self, JB_Class c, __JB_MethodID m, *args):
+        '''Call a class constructor with arguments
+
+        c - class in question
+        m - the method ID. You can get this by calling get_method_id with a
+            name of "<init>" and a return type of V
+        *args - the arguments to the method call. Arguments should
+                appear in the same order as the signature. Arguments will
+                be coerced into the type of the signature.
+        '''
+        cdef:
+            jvalue *values
+            jobject oresult
+            JB_Object result
+
+        sig = m.sig
+        if sig[0] != '(':
+            raise ValueError("Bad function signature: %s"%m.sig)
+        arg_end = sig.find(')')
+        if arg_end == -1:
+            raise ValueError("Bad function signature: %s"%m.sig)
+        arg_sig = sig[1:arg_end]
+        fill_values(arg_sig, args, &values)
+        oresult = self.env[0].NewObjectA(self.env, c.c, m.id, values)
+        free(values)
+        result = JB_Object()
+        result.o = oresult
+        return result
+
+    def new_string_utf(self, char *s):
+        '''Turn a Python string into a Java string object'''
+        cdef:
+            jobject o
+            JB_Object jbo
+        o = self.env[0].NewStringUTF(self.env, s)
+        jbo = JB_Object()
+        jbo.o = o
+        return jbo
+
+    def get_string_utf(self, JB_Object s):
+        '''Turn a Java string object into a Python string'''
+        cdef:
+            char *chars
+        chars = self.env[0].GetStringUTFChars(self.env, s.o, NULL)
+        result = chars
+        self.env[0].ReleaseStringUTFChars(self.env, s.o, chars)
+        return result
+
+    def get_byte_array_elements(self, JB_Object array):
+        '''Return the contents of a Java byte array as a numpy array
+
+        array - a Java "byte []" array
+        returns a 1-d numpy array of np.uint8s
+        '''
+        cdef:
+            np.ndarray[dtype=np.uint8_t, ndim=1, negative_indices=False, mode='c'] result
+            char *data
+            jsize alen = self.env[0].GetArrayLength(self.env, array.o)
+
+        result = np.zeros(shape=(alen,),dtype=np.uint8)
+        data = result.data
+        self.env[0].GetByteArrayRegion(self.env, array.o, 0, alen, <jbyte *>data)
+        return result
+    
+    def get_object_array_elements(self, JB_Object array):
+        '''Return the contents of a Java object array as a list of wrapped objects'''
+        cdef:
+            jobject o
+            JB_Object jbo
+            jsize nobjects = self.env[0].GetArrayLength(self.env, array.o)
+            int i
+        result = []
+        for i in range(nobjects):
+            o = self.env[0].GetObjectArrayElement(self.env, array.o, i)
+            if o == NULL:
+                result.append(None)
+            else:
+                jbo = JB_Object()
+                jbo.o = o
+                result.append(jbo)
+        return result
+        

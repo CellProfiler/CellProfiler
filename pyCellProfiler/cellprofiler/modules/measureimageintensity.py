@@ -44,104 +44,68 @@ import cellprofiler.measurements as cpmeas
 '''Number of settings saved/loaded per image measured'''
 SETTINGS_PER_IMAGE = 3
 
-'''Measurement category for this module'''
-INTENSITY = 'Intensity'
+'''Measurement feature name format for the TotalIntensity measurement'''
+F_TOTAL_INTENSITY = "Intensity_TotalIntensity_%s"
 
-'''Name for the measurement that's the sum of all measured pixels'''
-TOTAL_INTENSITY = 'TotalIntensity'
+'''Measurement feature name format for the MeanIntensity measurement'''
+F_MEAN_INTENSITY = 'Intensity_MeanIntensity_%s'
 
-'''Name for the measurement that's the mean of all measured pixels'''
-MEAN_INTENSITY = 'MeanIntensity'
+'''Measurement feature name format for the MaxIntensity measurement'''
+F_MAX_INTENSITY = 'Intensity_MaxIntensity_%s'
 
-'''Name for the measurement that is the maximum of all measured pixels'''
-MAX_INTENSITY = 'MaxIntensity'
+'''Measurement feature name format for the MinIntensity measurement'''
+F_MIN_INTENSITY = 'Intensity_MinIntensity_%s'
 
-'''Name for the measurement that is the minimum of all measured pixels'''
-MIN_INTENSITY = 'MinIntensity'
-
-'''Name for the measurement that's the number of measured pixels'''
-TOTAL_AREA = 'TotalArea'
+'''Measurement feature name format for the TotalArea measurement'''
+F_TOTAL_AREA = 'Intensity_TotalArea_%s'
 
 class MeasureImageIntensity(cpm.CPModule):
 
     module_name = 'MeasureImageIntensity'
     category = "Measurement"
-    variable_revision_number = 1
+    variable_revision_number = 2
     
     def create_settings(self):
         '''Create the settings & name the module'''
+        self.divider_top = cps.Divider(line=False)
         self.images = []
         self.add_image_measurement()
         self.add_button = cps.DoSomething("Add another image","Add image",
                                           self.add_image_measurement)
+        self.divider_bottom = cps.Divider(line=False)
     
-    def add_image_measurement(self):
-        class ImageMeasurement(object):
-            '''Represents the information needed to take an image measurement
+    def add_image_measurement(self, removable = True):
+        group = cps.SettingsGroup()
+        group.append("image_name", cps.ImageNameSubscriber("Select the image to measure",
+                                                            "None", doc = '''What did you call the images whose intensity you want to measure?'''))
+        group.append("wants_objects", cps.Binary("Do you want to measure intensity only from areas of the image that contain objects you've identified?",
+                                                  False))
+        group.append("object_name",cps.ObjectNameSubscriber("Select the objects to measure","None", 
+                                                           doc = '''What is the name of the objects to use?'''))
+        if removable:
+            group.append("remover", cps.RemoveSettingButton("Remove this image from the list of images to be measured", 
+                                                            "Remove", self.images, group))
+        group.append("divider", cps.Divider())
+        self.images.append(group)
+                    
+    def settings(self):
+        result = []
+        for image in self.images:
+            result += [image.image_name, image.wants_objects, image.object_name]
+        return result
             
-            '''
-            def __init__(self, uber_self):
-                self.__key = uuid.uuid4() 
-                self.__image_name = cps.ImageNameSubscriber("Select the image to measure",
-                                                            "None", doc = '''What did you call the images whose intensity you want to measure?''')
-                self.__wants_objects = cps.Binary("Do you want to measure intensity only from areas of the image that contain objects you've identified?",
-                                                  False)
-                self.__object_name = cps.ObjectNameSubscriber("Select the objects to measure","None", doc = '''What is the name of the objects to use?''')
-                self.remove_button = cps.DoSomething("Remove this image from the list of images to be measured", 
-                                                     "Remove image",
-                                                     uber_self.remove_image_measurement,
-                                                     self.__key)
-            
-            def name(self, feature):
-                '''Return the feature name produced by this measurement'''  
-                if self.wants_objects.value:
-                    return '_'.join([INTENSITY, feature,
-                                     self.image_name.value,
-                                     self.object_name.value])
-                else:
-                    return '_'.join([INTENSITY, feature, self.image_name.value])
-                
-            @property
-            def key(self):
-                '''The key that uniquely identifies this image measurement
-                
-                Use this to find the image within the list of images
-                when removing.
-                '''
-                return self.__key
-            
-            @property
-            def image_name(self):
-                '''The setting that holds the name of the image to measure'''
-                return self.__image_name
-            
-            @property
-            def wants_objects(self):
-                '''The setting that chooses to restrict measurement to objects'''
-                return self.__wants_objects
-            
-            @property
-            def object_name(self):
-                '''The setting that holds the name of the restricting object'''
-                return self.__object_name
-            
-            def settings(self):
-                '''The settings that should be saved or loaded from pipeline'''
-                return [ self.image_name, self.wants_objects, self.object_name ]
-            
-            def visible_settings(self):
-                '''The settings seen by the user'''
-                return ([ self.image_name, self.wants_objects] +
-                        ([self.object_name] if self.wants_objects.value
-                         else []) + [self.remove_button])
-            
-        self.images.append(ImageMeasurement(self))
+    def visible_settings(self):
+        result = [self.divider_top]
+        for index, image in enumerate(self.images):
+            result += [image.image_name, image.wants_objects]
+            if image.wants_objects:
+                result += [image.object_name]
+            remover = getattr(image, "remover", None)
+            if remover is not None:
+                result.append(remover) 
+        result += [self.add_button, self.divider_bottom]
+        return result
     
-    def remove_image_measurement(self, key):
-        '''Remove an image measurement from the image list'''
-        idx = [x.key for x in self.images].index(key)
-        del self.images[idx]
-
     def prepare_settings(self, setting_values):
         assert len(setting_values) % SETTINGS_PER_IMAGE == 0
         image_count = len(setting_values) / SETTINGS_PER_IMAGE
@@ -149,17 +113,6 @@ class MeasureImageIntensity(cpm.CPModule):
             self.add_image_measurement()
         while image_count < len(self.images):
             self.remove_image_measurement(self.images[-1].key)
-
-    def settings(self):
-        '''The settings as saved and loaded from the pipeline'''
-        return reduce(lambda x,y: x+y,
-                      [x.settings() for x in self.images])
-
-    def visible_settings(self):
-        '''The settings as seen by the user'''
-        return (reduce(lambda x,y: x+y,
-                       [x.visible_settings() for x in self.images]) +
-                [self.add_button])
 
     def get_non_redundant_image_measurements(self):
         '''Return a non-redundant sequence of image measurement objects'''
@@ -213,11 +166,11 @@ class MeasureImageIntensity(cpm.CPModule):
             pixel_min = np.min(pixels)
             pixel_max = np.max(pixels)
         m = workspace.measurements
-        m.add_image_measurement(im.name(TOTAL_INTENSITY), pixel_sum)
-        m.add_image_measurement(im.name(MEAN_INTENSITY), pixel_mean)
-        m.add_image_measurement(im.name(MAX_INTENSITY), pixel_max)
-        m.add_image_measurement(im.name(MIN_INTENSITY), pixel_min)
-        m.add_image_measurement(im.name(TOTAL_AREA), pixel_count)
+        m.add_image_measurement(F_TOTAL_INTENSITY%(im.image_name.value), pixel_sum)
+        m.add_image_measurement(F_MEAN_INTENSITY%(im.image_name.value), pixel_mean)
+        m.add_image_measurement(F_MAX_INTENSITY%(im.image_name.value), pixel_max)
+        m.add_image_measurement(F_MIN_INTENSITY%(im.image_name.value), pixel_min)
+        m.add_image_measurement(F_TOTAL_AREA%(im.image_name.value), pixel_count)
         return [[im.image_name.value, 
                  im.object_name.value if im.wants_objects.value else "",
                  feature_name, str(value)]
@@ -231,33 +184,33 @@ class MeasureImageIntensity(cpm.CPModule):
         '''Return column definitions for measurements made by this module'''
         columns = []
         for im in self.get_non_redundant_image_measurements():
-            for feature, coltype in ((TOTAL_INTENSITY, cpmeas.COLTYPE_FLOAT),
-                                     (MEAN_INTENSITY, cpmeas.COLTYPE_FLOAT),
-                                     (MIN_INTENSITY, cpmeas.COLTYPE_FLOAT),
-                                     (MAX_INTENSITY, cpmeas.COLTYPE_FLOAT),
-                                     (TOTAL_AREA, cpmeas.COLTYPE_INTEGER)):
-                columns.append((cpmeas.IMAGE, im.name(feature), coltype))
+            for feature, coltype in ((F_TOTAL_INTENSITY, cpmeas.COLTYPE_FLOAT),
+                                     (F_MEAN_INTENSITY, cpmeas.COLTYPE_FLOAT),
+                                     (F_MIN_INTENSITY, cpmeas.COLTYPE_FLOAT),
+                                     (F_MAX_INTENSITY, cpmeas.COLTYPE_FLOAT),
+                                     (F_TOTAL_AREA, cpmeas.COLTYPE_INTEGER)):
+                columns.append((cpmeas.IMAGE, feature % im.image_name.value, coltype))
         return columns
                         
     def get_categories(self, pipeline, object_name):
         if object_name == cpmeas.IMAGE:
-            return [INTENSITY]
+            return ["Intensity"]
         else:
             return []
 
     def get_measurements(self, pipeline, object_name, category):
         if (object_name == cpmeas.IMAGE and
-            category == INTENSITY):
-            return [TOTAL_INTENSITY, MEAN_INTENSITY, MIN_INTENSITY, 
-                    MAX_INTENSITY, TOTAL_AREA]
+            category == "Intensity"):
+            return ["TotalIntensity", "MeanIntensity", "MinIntensity", 
+                    "MaxIntensity", "TotalArea"]
         return []
 
     def get_measurement_objects(self, pipeline, object_name, 
                                 category, measurement):
         if (object_name == cpmeas.IMAGE and
-            category == INTENSITY and
-            measurement in [TOTAL_INTENSITY, MEAN_INTENSITY, MIN_INTENSITY,
-                            MAX_INTENSITY, TOTAL_AREA]):
+            category == "Intensity" and
+            measurement in ["TotalIntensity", "MeanIntensity", "MinIntensity", 
+                    "MaxIntensity", "TotalArea"]):
             return [ im.object_name.value for im in self.images
                     if im.wants_objects.value]
         return []
@@ -265,9 +218,9 @@ class MeasureImageIntensity(cpm.CPModule):
     def get_measurement_images(self, pipeline, object_name, 
                                category, measurement):
         if (object_name == cpmeas.IMAGE and
-            category == INTENSITY and
-            measurement in [TOTAL_INTENSITY, MEAN_INTENSITY, 
-                            MIN_INTENSITY, MAX_INTENSITY, TOTAL_AREA]):
+            category == "Intensity" and
+            measurement in ["TotalIntensity", "MeanIntensity", "MinIntensity", 
+                    "MaxIntensity", "TotalArea"]):
             return [im.image_name.value for im in self.images]
         return []
     
@@ -285,6 +238,8 @@ class MeasureImageIntensity(cpm.CPModule):
                               "None" ]           # object name
             variable_revision_number = 1
             from_matlab = False
+        if variable_revision_number == 1:
+            variable_revision_number = 2
         return setting_values, variable_revision_number, from_matlab
 
 

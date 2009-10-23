@@ -66,54 +66,6 @@ class TestPipeline(unittest.TestCase):
         x.add_module(module)
         x.run()
     
-    def test_07_01_InfogroupNotAfter(self):
-        x = cellprofiler.pipeline.Pipeline()
-        class MyClass(cellprofiler.cpmodule.CPModule):
-            def __init__(self):
-                super(MyClass,self).__init__()
-                self.set_module_name("whatever")
-                self.create_from_annotations()
-
-            def annotations(self):
-                a  = cellprofiler.settings.indep_group_annotation(1, 'independent', 'whatevergroup')
-                a += cellprofiler.settings.group_annotation(2,'dependent','whatevergroup')
-                return a
-        module = MyClass()
-        module.set_module_num(1)
-        x.add_module(module)
-        module.settings()[0].value = "Hello"
-        choices = module.settings()[1].get_choices(x)
-        self.assertEqual(len(choices),0)
-         
-    def test_07_02_InfogroupAfter(self):
-        x = cellprofiler.pipeline.Pipeline()
-        class MyClass1(cellprofiler.cpmodule.CPModule):
-            def __init__(self):
-                super(MyClass1,self).__init__()
-                self.set_module_name("provider")
-                self.create_from_annotations()
-
-            def annotations(self):
-                return cellprofiler.settings.indep_group_annotation(1, 'independent', 'whatevergroup')
-        class MyClass2(cellprofiler.cpmodule.CPModule):
-            def __init__(self):
-                super(MyClass2,self).__init__()
-                self.set_module_name("subscriber")
-                self.create_from_annotations()
-
-            def annotations(self):
-                return cellprofiler.settings.group_annotation(1,'dependent','whatevergroup')
-        module1 = MyClass1()
-        module1.set_module_num(1)
-        x.add_module(module1)
-        module2 = MyClass2()
-        module2.set_module_num(2)
-        x.add_module(module2)
-        module1.settings()[0].value = "Hello"
-        choices = module2.settings()[0].get_choices(x)
-        self.assertEqual(len(choices),1)
-        self.assertEqual(choices[0],"Hello")
-    
     def test_09_01_get_measurement_columns(self):
         '''Test the get_measurement_columns method'''
         x = cellprofiler.pipeline.Pipeline()

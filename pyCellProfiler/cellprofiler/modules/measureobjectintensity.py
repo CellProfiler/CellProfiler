@@ -156,7 +156,7 @@ class MeasureObjectIntensity(cpm.CPModule):
         result.extend(self.object_names)
         return result
 
-    def set_setting_values(self,setting_values,variable_revision_number,module_name):
+    def set_settings_from_values(self,setting_values,variable_revision_number,module_name):
         """Adjust the number of object_names according to the number of
         setting values, then call the superclass to set the object names
         to the variable values
@@ -189,7 +189,7 @@ class MeasureObjectIntensity(cpm.CPModule):
             self.remove_cb(len(self.object_names)-1)
         while len(self.object_names) < object_count:
             self.add_cb()
-        super(MeasureObjectIntensity,self).set_setting_values(setting_values, 
+        super(MeasureObjectIntensity,self).set_settings_from_values(setting_values, 
                                                               variable_revision_number, 
                                                               module_name)
 

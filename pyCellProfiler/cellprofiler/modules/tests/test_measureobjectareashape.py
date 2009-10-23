@@ -49,7 +49,7 @@ class TestMeasureObjectAreaShape(unittest.TestCase):
         object_set.add_objects(objects, "SomeObjects")
         module = cpmoas.MeasureObjectAreaShape()
         settings = ["SomeObjects","Yes"]
-        module.set_setting_values(settings, 1, module.module_name)
+        module.set_settings_from_values(settings, 1, module.module_name)
         module.module_num = 1
         image_set_list = cpi.ImageSetList()
         measurements = cpmeas.Measurements()
@@ -81,7 +81,7 @@ class TestMeasureObjectAreaShape(unittest.TestCase):
         object_set.add_objects(objects, "OtherObjects")
         module = cpmoas.MeasureObjectAreaShape()
         settings = ["SomeObjects","OtherObjects","Yes"]
-        module.set_setting_values(settings, 1, module.module_name)
+        module.set_settings_from_values(settings, 1, module.module_name)
         module.module_num = 1
         image_set_list = cpi.ImageSetList()
         measurements = cpmeas.Measurements()
@@ -116,7 +116,7 @@ class TestMeasureObjectAreaShape(unittest.TestCase):
     def test_02_01_categories(self):
         module = cpmoas.MeasureObjectAreaShape()
         settings = ["SomeObjects","OtherObjects","Yes"]
-        module.set_setting_values(settings, 1, module.module_name)
+        module.set_settings_from_values(settings, 1, module.module_name)
         for object_name in settings[:-1]:
             categories = module.get_categories(None, object_name)
             self.assertEqual(len(categories),1)
@@ -126,7 +126,7 @@ class TestMeasureObjectAreaShape(unittest.TestCase):
     def test_02_02_measurements_zernike(self):
         module = cpmoas.MeasureObjectAreaShape()
         settings = ["SomeObjects","OtherObjects","Yes"]
-        module.set_setting_values(settings, 1, module.module_name)
+        module.set_settings_from_values(settings, 1, module.module_name)
         for object_name in settings[:-1]:
             measurements = module.get_measurements(None,object_name,'AreaShape')
             for measurement in cpmoas.F_STANDARD:
@@ -136,7 +136,7 @@ class TestMeasureObjectAreaShape(unittest.TestCase):
     def test_02_03_measurements_no_zernike(self):
         module = cpmoas.MeasureObjectAreaShape()
         settings = ["SomeObjects","OtherObjects","No"]
-        module.set_setting_values(settings, 1, module.module_name)
+        module.set_settings_from_values(settings, 1, module.module_name)
         for object_name in settings[:-1]:
             measurements = module.get_measurements(None,object_name,'AreaShape')
             for measurement in cpmoas.F_STANDARD:

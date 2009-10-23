@@ -129,14 +129,14 @@ class CPModule(object):
                     setting_values.append(str(value_cell[0]))
             else:
                 setting_values.append(value_cell)
-        self.set_setting_values(setting_values, variable_revision_number, 
+        self.set_settings_from_values(setting_values, variable_revision_number, 
                                  module_name)
     
     def prepare_settings(self,setting_values):
         """Do any sort of adjustment to the settings required for the given values
         
         setting_values - the values for the settings just prior to mapping
-                         as done by set_setting_values
+                         as done by set_settings_from_values
         This method allows a module to specialize itself according to
         the number of settings and their value. For instance, a module that
         takes a variable number of images or objects can increase or decrease
@@ -146,7 +146,7 @@ class CPModule(object):
         """
         pass
     
-    def set_setting_values(self, setting_values, variable_revision_number, 
+    def set_settings_from_values(self, setting_values, variable_revision_number, 
                             module_name):
         """Set the settings in a module, given a list of values
         

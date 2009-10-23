@@ -143,7 +143,7 @@ class CorrectIllumination_Apply(cpm.CPModule):
         """Do any sort of adjustment to the settings required for the given values
         
         setting_values - the values for the settings just prior to mapping
-                         as done by set_setting_values
+                         as done by set_settings_from_values
         This method allows a module to specialize itself according to
         the number of settings and their value. For instance, a module that
         takes a variable number of images or objects can increase or decrease

@@ -489,7 +489,7 @@ class LoadImages(cpmodule.CPModule):
                 self.images[i][FD_PATH_METADATA]
         return varlist
     
-    def set_setting_values(self,setting_values,variable_revision_number,module_name):
+    def set_settings_from_values(self,setting_values,variable_revision_number,module_name):
         """Interpret the setting values as saved by the given revision number
         """
         if variable_revision_number == 1 and module_name == 'LoadImages':
@@ -525,7 +525,7 @@ class LoadImages(cpmodule.CPModule):
             self.remove_imagecb(self.image_keys[0])
         while len(self.images) < image_count:
             self.add_imagecb()
-        super(LoadImages,self).set_setting_values(setting_values, variable_revision_number, module_name)
+        super(LoadImages,self).set_settings_from_values(setting_values, variable_revision_number, module_name)
     
     def upgrade_1_to_2(self, setting_values):
         """Upgrade rev 1 LoadImages to rev 2

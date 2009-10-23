@@ -310,20 +310,6 @@ class CPModule(object):
     
     module_num = property(get_module_num, set_module_num)
     
-    def get_module_name(self):
-        """The name shown to the user in the Add Modules box.
-        Deprecated in favor of accessing the attribute directly."""
-        if self.__module_name is None:
-            return re.sub('([^A-Z])([A-Z])', '\\1 \\2', 
-                          self.__class__.__name__)
-        else:
-            return self.__module_name
-    
-    def set_module_name(self, module_name):
-        """Deprecated in favor of setting the attribute directly.  Can
-        be removed once all modules have been updated."""
-        self.module_name = module_name
-    
     def module_class(self):
         """The class to instantiate, except for the special case of matlab modules.
         

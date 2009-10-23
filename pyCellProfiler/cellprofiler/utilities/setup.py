@@ -38,6 +38,7 @@ def configuration():
     java_home = find_javahome()
     jdk_home = find_jdk()
     print "Using jdk_home = %s"%jdk_home
+    include_dirs = [get_include()]
     if sys.platform.startswith('win'):
         #
         # Build libjvm from jvm.dll on Windows
@@ -51,15 +52,20 @@ def configuration():
             p = subprocess.Popen(cmd)
             p.communicate()
     
-    include_dirs = [get_include()]
-    if jdk_home is not None:
-        jdk_include = os.path.join(jdk_home, "include")
-        jdk_include_plat = os.path.join(jdk_include, sys.platform)
-        include_dirs += [jdk_include, jdk_include_plat]
+        if jdk_home is not None:
+            jdk_include = os.path.join(jdk_home, "include")
+            jdk_include_plat = os.path.join(jdk_include, sys.platform)
+            include_dirs += [jdk_include, jdk_include_plat]
+        library_dirs = [os.path.abspath(".")]
+        libraries = ["jvm"]
+    elif sys.platform == 'darwin':
+        include_dirs += ['/System/Library/Frameworks/JavaVM.framework/Headers']
+        library_dirs = ['/System/Library/Frameworks/JavaVM.framework/Libraries']
+        libraries = ['jvm_compat']
     extensions += [Extension(name="javabridge",
                              sources=["javabridge.pyx"],
-                             libraries=["jvm"],
-                             library_dirs=[os.path.abspath(".")],
+                             libraries=libraries,
+                             library_dirs=library_dirs,
                              include_dirs=include_dirs)]
     dict = { "name":"utilities",
              "description":"utility module for CellProfiler",

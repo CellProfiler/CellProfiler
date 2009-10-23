@@ -379,7 +379,7 @@ class PipelineController:
             for module in self.__pipeline.modules():
                 setting = event.get_setting()
                 if setting.key() in [x.key() for x in module.settings()]:
-                    if module.check_for_prepare_run_setting(setting):
+                    if module.change_causes_prepare_run(setting):
                         self.stop_debugging()
             
     def on_analyze_images(self,event):

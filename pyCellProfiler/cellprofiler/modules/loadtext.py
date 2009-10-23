@@ -514,7 +514,7 @@ that can be processed by different nodes in a cluster.
         except:
             return []
         
-    def check_for_prepare_run_setting(self, setting):
+    def change_causes_prepare_run(self, setting):
         '''Check to see if changing the given setting means you have to restart
         
         Some settings, esp in modules like LoadImages, affect more than

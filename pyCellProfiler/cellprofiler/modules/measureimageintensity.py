@@ -144,7 +144,10 @@ class MeasureImageIntensity(cpm.CPModule):
         image = workspace.image_set.get_image(im.image_name.value,
                                               must_be_grayscale=True)
         pixels = image.pixel_data
+
+        measurement_name = im.image_name.value
         if im.wants_objects.value:
+            measurement_name += "_" + im.object_name.value
             objects = workspace.get_objects(im.object_name.value)
             if image.has_mask:
                 pixels = pixels[np.logical_and(objects.segmented != 0,
@@ -153,6 +156,7 @@ class MeasureImageIntensity(cpm.CPModule):
                 pixels = pixels[objects.segmented != 0]
         elif image.has_mask:
             pixels = pixels[image.mask]
+
 
         pixel_count = np.product(pixels.shape)
         if pixel_count == 0:
@@ -166,11 +170,11 @@ class MeasureImageIntensity(cpm.CPModule):
             pixel_min = np.min(pixels)
             pixel_max = np.max(pixels)
         m = workspace.measurements
-        m.add_image_measurement(F_TOTAL_INTENSITY%(im.image_name.value), pixel_sum)
-        m.add_image_measurement(F_MEAN_INTENSITY%(im.image_name.value), pixel_mean)
-        m.add_image_measurement(F_MAX_INTENSITY%(im.image_name.value), pixel_max)
-        m.add_image_measurement(F_MIN_INTENSITY%(im.image_name.value), pixel_min)
-        m.add_image_measurement(F_TOTAL_AREA%(im.image_name.value), pixel_count)
+        m.add_image_measurement(F_TOTAL_INTENSITY%(measurement_name), pixel_sum)
+        m.add_image_measurement(F_MEAN_INTENSITY%(measurement_name), pixel_mean)
+        m.add_image_measurement(F_MAX_INTENSITY%(measurement_name), pixel_max)
+        m.add_image_measurement(F_MIN_INTENSITY%(measurement_name), pixel_min)
+        m.add_image_measurement(F_TOTAL_AREA%(measurement_name), pixel_count)
         return [[im.image_name.value, 
                  im.object_name.value if im.wants_objects.value else "",
                  feature_name, str(value)]
@@ -189,7 +193,8 @@ class MeasureImageIntensity(cpm.CPModule):
                                      (F_MIN_INTENSITY, cpmeas.COLTYPE_FLOAT),
                                      (F_MAX_INTENSITY, cpmeas.COLTYPE_FLOAT),
                                      (F_TOTAL_AREA, cpmeas.COLTYPE_INTEGER)):
-                columns.append((cpmeas.IMAGE, feature % im.image_name.value, coltype))
+                measurement_name = im.image_name.value + ("_" + im.object_name.value if im.wants_objects.value else "")
+                columns.append((cpmeas.IMAGE, feature % measurement_name, coltype))
         return columns
                         
     def get_categories(self, pipeline, object_name):

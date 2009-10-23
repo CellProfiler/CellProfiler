@@ -342,12 +342,13 @@ class TestMeasureImageIntensity(unittest.TestCase):
         columns = module.get_measurement_columns(None)
         self.assertTrue(all([column[0] == cpmeas.IMAGE for column in columns]))
         for expected_suffix in expected_suffixes:
-            for feature, coltype in ((M.TOTAL_INTENSITY, cpmeas.COLTYPE_FLOAT),
-                                     (M.MEAN_INTENSITY, cpmeas.COLTYPE_FLOAT),
-                                     (M.MIN_INTENSITY, cpmeas.COLTYPE_FLOAT),
-                                     (M.MAX_INTENSITY, cpmeas.COLTYPE_FLOAT),
-                                     (M.TOTAL_AREA, cpmeas.COLTYPE_INTEGER)):
-                feature_name = "%s_%s_%s"%(M.INTENSITY,feature, expected_suffix)
+            for feature, coltype in ((M.F_TOTAL_INTENSITY, cpmeas.COLTYPE_FLOAT),
+                                     (M.F_MEAN_INTENSITY, cpmeas.COLTYPE_FLOAT),
+                                     (M.F_MIN_INTENSITY, cpmeas.COLTYPE_FLOAT),
+                                     (M.F_MAX_INTENSITY, cpmeas.COLTYPE_FLOAT),
+                                     (M.F_TOTAL_AREA, cpmeas.COLTYPE_INTEGER)):
+                # feature names are now formatting strings
+                feature_name = feature % expected_suffix
                 self.assertTrue(any([(column[1] == feature_name and
                                      column[2] == coltype)
                                     for column in columns]))

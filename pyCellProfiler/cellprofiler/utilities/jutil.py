@@ -32,6 +32,13 @@ if sys.platform.startswith('win'):
     java_home = find_javahome()
     jvm_dir = os.path.join(java_home,'bin','client')
     os.environ['PATH'] = os.environ['PATH'] +';'+jvm_dir
+elif sys.platform == 'darwin':
+    #
+    # Put the jvm library on the path, hoping it is always in the same place
+    #
+    import os
+    jvm_dir = '/System/Library/Frameworks/JavaVM.framework/Libraries'
+    os.environ['PATH'] = os.environ['PATH'] + ':' + jvm_dir
 import javabridge
     
 

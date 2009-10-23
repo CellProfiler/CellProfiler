@@ -1,15 +1,36 @@
-'''calculatemath.py - the CalculateMath module
+'''<b>Calculate Math</b> takes measurements produced by previous modules and
+performs basic arithmetic operations
+<hr>
+The arithmetic operations available in this module include addition,
+subtraction, multiplication and division. The operation can be chosen
+by adjusting the operations setting. The resulting data can also be
+log-transformed or raised to a power. This data can then be used in other
+calculations.
 
-CellProfiler is distributed under the GNU General Public License.
-See the accompanying file LICENSE for details.
+<p>This module currently works on an object-by-object basis (it calculates
+the requested operation for each object) but can also apply the operation
+for measurements made for entire images.
 
-Developed by the Broad Institute
-Copyright 2003-2009
+<p>The math measurements are stored as <i>Math_&lt;MeasurementName&gt;</i>. 
+If both measures are image-based, then a single calculation (per cycle) will 
+be stored as <i>Image</i> data. If one measure is object-based and one 
+image-based, then the calculations will be stored associated with the object, 
+one calculation per object. If both are objects, then the calculations are 
+stored with both objects.
 
-Please see the AUTHORS file for credits.
-
-Website: http://www.cellprofiler.org
+See also all <b>Measure</b> modules.
 '''
+
+#CellProfiler is distributed under the GNU General Public License.
+#See the accompanying file LICENSE for details.
+#
+#Developed by the Broad Institute
+#Copyright 2003-2009
+#
+#Please see the AUTHORS file for credits.
+#
+#Website: http://www.cellprofiler.org
+
 __version__="$Revision$"
 
 import numpy as np
@@ -30,34 +51,6 @@ MC_OBJECT = "Object"
 MC_ALL = [MC_IMAGE, MC_OBJECT]
 
 class CalculateMath(cpm.CPModule):
-    '''SHORT DESCRIPTION:
-This module can take measurements produced by previous modules and
-performs basic arithmetic operations.
-*************************************************************************
-
-The arithmetic operations available in this module include addition,
-subtraction, multiplication and division. The operation can be chosen
-by adjusting the operations setting. The resulting data can also be
-logged or raised to a power. This data can then be used in other
-calculations and can be used in Classify Objects.
-
-This module currently works on an object-by-object basis (it calculates
-the requested operation for each object) but can also apply the operation
-for measurements made for entire images.
-
-Saving:
-The math measurements are stored as 'Math_...'. If both measures are 
-image-based, then a single calculation (per cycle) will be stored as 'Image' data.  
-If one measure is object-based and one image-based, then the calculations will
-be stored associated with the object, one calculation per object.  If both are 
-objects, then the calculations are stored with both objects.
-
-Note: If you want to use the output of this module in a subsequesnt
-calculation, we suggest you specify the output name rather than use
-Automatic naming.
-
-See also CalculateRatios, all Measure modules.
-'''
 
     module_name = "CalculateMath"
     category="Measurement"
@@ -69,12 +62,19 @@ See also CalculateRatios, all Measure modules.
             def __init__(self, index, operation):
                 self.__index = index
                 self.__operation = operation
-                self.__operand_choice = cps.Choice(self.operand_choice_text(), MC_ALL)
-                self.__operand_objects = cps.ObjectNameSubscriber(self.operand_objects_text(),"None")
+                self.__operand_choice = cps.Choice(self.operand_choice_text(), MC_ALL,doc="""
+                                            Is the operand an image or object measurement?""")
+                self.__operand_objects = cps.ObjectNameSubscriber(self.operand_objects_text(),"None",doc="""
+                                            Which objects do you want to measure for this operation?""")
                 self.__operand_measurement = cps.Measurement(self.operand_measurement_text(),
-                                                             self.object_fn)
-                self.__multiplicand = cps.Float("What number would you like to multiply the above operand by?",1)
-                self.__exponent = cps.Float("What power would you like to raise the above operand to?",1)
+                                            self.object_fn,doc="""
+                                            Enter the category that was used to create the measurement. You
+                                            will be prompted to add additional information depending on 
+                                            the type of measurement that is requested.""")
+                self.__multiplicand = cps.Float("Multiply the above operand by",1,doc="""
+                                            What number would you like to multiply the above operand by?""")
+                self.__exponent = cps.Float("Raise the power of above operand by",1,doc="""
+                                            What power would you like to raise the above operand to?""")
             
             @property
             def operand_choice(self):
@@ -131,16 +131,16 @@ See also CalculateRatios, all Measure modules.
                             "denominator")
             
             def operand_choice_text(self):
-                return self.operand_text("Is the %s an image or object measurement?") 
+                return self.operand_text("Type of measurement for %s") 
             
             def operand_objects_text(self):
-                return self.operand_text("Which objects do you want to measure for the %s?")
+                return self.operand_text("Objects to measure for the %s?")
             
             def operand_text(self, format):
                 return format % self.operand_name()
                 
             def operand_measurement_text(self): 
-                return self.operand_text("What measurement do you want to use for the %s?")
+                return self.operand_text("Measurement to use for %s?")
             
             def settings(self):
                 '''The operand settings to be saved in the output file'''
@@ -157,14 +157,19 @@ See also CalculateRatios, all Measure modules.
                           else []) +
                         [self.operand_measurement,self.multiplicand, self.exponent])
             
-        self.output_feature_name = cps.Text("What do you want to call the measurement calculated by this module?",
-                                            "Measurement")
-        self.operation = cps.Choice("What operation would you like to perform?",
-                                    O_ALL)
+        self.output_feature_name = cps.Text("Name the output measurements",
+                                            "Measurement",doc="""
+                                            What do you want to call the measurement calculated by this module?""")
+        self.operation = cps.Choice("Operation",
+                                    O_ALL,doc="""
+                                    What arithmetic operation would you like to perform?""")
         self.operands = (Operand(0, self.operation), Operand(1, self.operation))
-        self.wants_log = cps.Binary("Do you want the log (base 10) of the ratio?", False)
-        self.final_multiplicand = cps.Float("What number would you like to multiply the result by?",1)
-        self.final_exponent = cps.Float("What power would you like to raise the result to?",1)
+        self.wants_log = cps.Binary("Take log10 of result?", False,doc="""
+                                    Do you want the log (base 10) of the result?""")
+        self.final_multiplicand = cps.Float("Multiply the result by",1,doc="""
+                                    What number would you like to multiply the result by?""")
+        self.final_exponent = cps.Float("Raise the power of result by",1,doc="""
+                                    What power would you like to raise the result to?""")
             
     def settings(self):
         return ([self.output_feature_name, self.operation] +

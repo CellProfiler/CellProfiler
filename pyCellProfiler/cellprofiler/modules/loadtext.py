@@ -267,7 +267,7 @@ that can be processed by different nodes in a cluster.
         fd.close()
         return [header_to_column(column) for column in header]
         
-    def get_name_providers(self, group):
+    def other_providers(self, group):
         '''Get name providers from the CSV header'''
         if group=='imagegroup' and self.wants_images.value:
             try:
@@ -394,7 +394,7 @@ that can be processed by different nodes in a cluster.
     def prepare_group(self, pipeline, image_set_list, grouping, image_numbers):
         dictionary = image_set_list.legacy_fields[self.legacy_field_key]
         path_base = self.image_path
-        image_names = self.get_name_providers('imagegroup')
+        image_names = self.other_providers('imagegroup')
         if self.wants_images.value:
             for image_number in image_numbers:
                 index = image_number -1
@@ -438,7 +438,7 @@ that can be processed by different nodes in a cluster.
         #
         # Calculate the MD5 hash of every image
         #
-        for image_name in self.get_name_providers('imagegroup'):
+        for image_name in self.other_providers('imagegroup'):
             md5 = hashlib.md5()
             pixel_data = workspace.image_set.get_image(image_name).pixel_data
             md5.update(np.ascontiguousarray(pixel_data).data)
@@ -487,7 +487,7 @@ that can be processed by different nodes in a cluster.
                 if collen[index] < len(field):
                     collen[index] = len(field)
                     coltypes[index] = cpmeas.COLTYPE_VARCHAR_FORMAT%len(field)
-        image_names = self.get_name_providers('imagegroup')
+        image_names = self.other_providers('imagegroup')
         return ([(cpmeas.IMAGE, colname, coltype)
                  for colname, coltype in zip(header, coltypes)] +
                 [(cpmeas.IMAGE, 'MD5Digest_'+image_name,

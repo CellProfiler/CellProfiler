@@ -673,7 +673,7 @@ def get_name_provider_choices(pipeline, last_setting, group):
     '''
     choices = []
     for module in pipeline.modules():
-        module_choices = module.get_name_providers(group)
+        module_choices = module.other_providers(group)
         for setting in module.visible_settings():
             if setting.key() == last_setting.key():
                 choices = np.unique(choices).tolist()

@@ -232,9 +232,21 @@ switch lower(SmoothingMethod)
         SmoothedImage(SmoothedImage < 0) = 0;
         SizeOfSmoothingFilterUsed = SizeOfSmoothingFilter;
 	case 'enhance dark holes (fill-i)'
-        SmoothedImage = imsubtract(imfill(OrigImage,'holes'), OrigImage);
+		%SmoothedImage = imfill(OrigImage) - OrigImage;
+		SPECKLE_RADIUS = round(SizeOfSmoothingFilter/2);
+        disk_radius = round(SPECKLE_RADIUS);
+		SE = strel('disk', 1);
+        invertedOrigImage = imcomplement(OrigImage);
+		[ErodedImage,SmoothedImage,PreviousReconstructedImage] = deal(invertedOrigImage);
+		for i = 2 : disk_radius 
+			ErodedImage = imerode(ErodedImage,SE);
+			ReconstructedImage = imreconstruct(ErodedImage,invertedOrigImage,4);
+			SmoothedImage = PreviousReconstructedImage - ReconstructedImage;
+			PreviousReconstructedImage = ReconstructedImage;
+		end
 		SmoothedImage(SmoothedImage > 1) = 1;
         SmoothedImage(SmoothedImage < 0) = 0;
+		SizeOfSmoothingFilterUsed = SizeOfSmoothingFilter;
     otherwise
         if ~strcmp(SmoothingMethod,'N');
             error('The smoothing method you specified is not valid. This error should not have occurred. Check the code in the module or tool you are using or let the CellProfiler team know.');

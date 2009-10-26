@@ -11,8 +11,14 @@ Website: http://www.cellprofiler.org
 """
 __version__ = "$Revision$"
 
-import cellprofiler.cpmath.propagate
 import sys
+if sys.platform.startswith('win'):
+    try:
+        import cellprofiler.cpmath.propagate
+    except:
+        print "Propagate module doesn't exist yet."
+        print "CellProfiler will compile it, but may crash soon after."
+        print "Restart CellProfiler and it will probably work."
 import os
 root = os.path.split(__file__)[0]
 if len(root) == 0:

@@ -85,13 +85,39 @@ def call(env, o, method_name, sig, *args):
     method_id = env.get_method_id(klass, method_name, sig)
     if method_id is None:
         raise JavaError('Could not find method name = "%s" '
-                        'with signature = "%s' % (method_name, sig))
-    result = env.call_method(o, method_id, *args)
+                        'with signature = "%s"' % (method_name, sig))
+    args_sig = split_sig(sig[1:sig.find(')')])
+    ret_sig = sig[sig.find(')')+1:]
+    nice_args = get_nice_args(env, args, args_sig)
+    result = env.call_method(o, method_id, *nice_args)
     if env.exception_occurred() is not None:
         raise JavaException(env)
-    ret_sig = sig[sig.find(')')+1:]
     return get_nice_result(env,result,ret_sig)
+
+def static_call(env, class_name, method_name, sig, *args):
+    '''Call a static method on a class
     
+    env - JVM environment
+    class_name - name of the class, using slashes
+    method_name - name of the static method
+    sig - signature of the static method
+    '''
+    klass = env.find_class(class_name)
+    if klass is None:
+        raise JavaException(env)
+    
+    method_id = env.get_static_method_id(klass, method_name, sig)
+    if method_id is None:
+        raise JavaError('Could not find method name = %s '
+                        'with signature = %s' %(method_name, sig))
+    args_sig = split_sig(sig[1:sig.find(')')])
+    ret_sig = sig[sig.find(')')+1:]
+    nice_args = get_nice_args(env, args, args_sig)
+    result = env.call_static_method(klass, method_id,*nice_args)
+    if env.exception_occurred() is not None:
+        raise JavaException(env)
+    return get_nice_result(env, result, ret_sig)
+
 def make_method(env, klass, name, sig, doc='No documentation'):
     '''Return a class method for the given Java class
     

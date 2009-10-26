@@ -20,6 +20,8 @@ cimport cython
 
 cdef extern from "Python.h":
     ctypedef int Py_intptr_t
+    ctypedef short Py_UNICODE
+    Py_UNICODE *PyUnicode_AS_UNICODE(object)
 
 cdef extern from "stdlib.h":
     ctypedef unsigned long size_t
@@ -54,7 +56,7 @@ cdef extern from "jni.h":
     ctypedef unsigned char jbyte
     ctypedef unsigned short jchar
     ctypedef short jshort
-    ctypedef long jlong
+    ctypedef long long jlong
     ctypedef float jfloat
     ctypedef double jdouble
     ctypedef jint jsize
@@ -335,12 +337,13 @@ cdef class __JB_FieldID:
     def __repr__(self):
         return "<Java field with sig=%s at 0x%x>"%(self.sig, <int>(self.id))
 
-cdef void fill_values(orig_sig, args, jvalue **pvalues):
+cdef fill_values(orig_sig, args, jvalue **pvalues):
     cdef:
         jvalue *values
         int i
         JB_Object jbobject
         JB_Class jbclass
+        Py_UNICODE *usz
 
     sig = orig_sig
     values = <jvalue *>malloc(sizeof(jvalue)*len(args))
@@ -348,8 +351,8 @@ cdef void fill_values(orig_sig, args, jvalue **pvalues):
     for i,arg in enumerate(args):
         if len(sig) == 0:
             free(<void *>values)
-            raise ValueError("# of arguments (%d) in call did not match signature (%s)"%
-                             (len(args), orig_sig))
+            return ValueError("# of arguments (%d) in call did not match signature (%s)"%
+                              (len(args), orig_sig))
         if sig[0] == 'Z': #boolean
             values[i].z = 1 if arg else 0
             sig = sig[1:]
@@ -357,7 +360,8 @@ cdef void fill_values(orig_sig, args, jvalue **pvalues):
             values[i].b = int(arg)
             sig = sig[1:]
         elif sig[0] == 'C': #char
-            values[i].c = str(arg)[0]
+            usz = PyUnicode_AS_UNICODE(unicode(arg))
+            values[i].c = usz[0]
             sig = sig[1:]
         elif sig[0] == 'S': #short
             values[i].s = int(arg)
@@ -383,7 +387,7 @@ cdef void fill_values(orig_sig, args, jvalue **pvalues):
                  values[i].l = jbclass.c
             else:
                  free(<void *>values)
-                 raise ValueError("%s is not a Java object"%str(arg))
+                 return ValueError("%s is not a Java object"%str(arg))
             if sig[0] == '[':
                  if len(sig) == 1:
                      raise ValueError("Bad signature: %s"%orig_sig)
@@ -393,9 +397,9 @@ cdef void fill_values(orig_sig, args, jvalue **pvalues):
                      continue
             sig = sig[sig.find(';')+1:]
         else:
-            raise ValueError("Unhandled signature: %s"%orig_sig)
+            return ValueError("Unhandled signature: %s"%orig_sig)
     if len(sig) > 0:
-        raise ValueError("Too few arguments (%d) for signature (%s)"%
+        return ValueError("Too few arguments (%d) for signature (%s)"%
                          (len(args), orig_sig))
 
 cdef class JB_Env:
@@ -405,7 +409,6 @@ cdef class JB_Env:
         JavaVM *vm
     def __dealloc__(self):
         if self.vm:
-            print "Destroying VM: 0x%x"%<int>(self.vm)
             self.vm[0].DestroyJavaVM(self.vm)
 
     def create(self, options):
@@ -442,7 +445,6 @@ cdef class JB_Env:
             jclass c
             JB_Class result
         c = self.env[0].FindClass(self.env, name)
-        print "Class address: %x"%<int>c
         if c == NULL:
             print "Failed to get class "+name
             return
@@ -471,11 +473,12 @@ cdef class JB_Env:
         '''
         cdef:
             jobject result
+            JB_Object ref
         result = self.env[0].NewGlobalRef(self.env, o.o)
         if result == NULL:
             return
         ref = JB_Object()
-        ref.o = o
+        ref.o = result
         return ref
 
     def delete_global_ref(self, JB_Object o):
@@ -496,7 +499,7 @@ cdef class JB_Env:
             return
         o = JB_Object()
         o.o = t
-        return 0
+        return o
 
     def exception_describe(self):
         '''Print a stack trace of the last exception to stderr'''
@@ -518,6 +521,8 @@ cdef class JB_Env:
         cdef:
             jmethodID id
             __JB_MethodID result
+        if c is None:
+            raise ValueError("Class = None on call to get_method_id")
         id = self.env[0].GetMethodID(self.env, c.c, name, sig)
         if id == NULL:
             return
@@ -562,6 +567,8 @@ cdef class JB_Env:
             jobject oresult
             JB_Object jbresult
         
+        if m is None:
+            raise ValueError("Method ID is None - check your method ID call")
         if m.is_static:
             raise ValueError("call_method called with a static method. Use call_static_method instead")
         sig = m.sig
@@ -571,7 +578,9 @@ cdef class JB_Env:
         if arg_end == -1:
             raise ValueError("Bad function signature: %s"%m.sig)
         arg_sig = sig[1:arg_end]
-        fill_values(arg_sig, args, &values)
+        error = fill_values(arg_sig, args, &values)
+        if error is not None:
+            raise error
         sig = sig[arg_end+1:]
         #
         # Dispatch based on return code at end of sig
@@ -582,6 +591,7 @@ cdef class JB_Env:
             result = self.env[0].CallByteMethodA(self.env, o.o, m.id, values)
         elif sig == 'C':
             result = self.env[0].CallCharMethodA(self.env, o.o, m.id, values)
+            result = str(unichr(result))
         elif sig == 'S':
             result = self.env[0].CallShortMethodA(self.env, o.o, m.id, values)
         elif sig == 'I':
@@ -623,6 +633,8 @@ cdef class JB_Env:
             jobject oresult
             JB_Object jbresult
         
+        if m is None:
+            raise ValueError("Method ID is None - check your method ID call")
         if not m.is_static:
             raise ValueError("static_call_method called with an object method. Use call_method instead")
         sig = m.sig
@@ -632,7 +644,9 @@ cdef class JB_Env:
         if arg_end == -1:
             raise ValueError("Bad function signature: %s"%m.sig)
         arg_sig = sig[1:arg_end]
-        fill_values(arg_sig, args, &values)
+        error = fill_values(arg_sig, args, &values)
+        if error is not None:
+            raise error
         sig = sig[arg_end+1:]
         #
         # Dispatch based on return code at end of sig
@@ -643,6 +657,7 @@ cdef class JB_Env:
             result = self.env[0].CallStaticByteMethodA(self.env, c.c, m.id, values)
         elif sig == 'C':
             result = self.env[0].CallStaticCharMethodA(self.env, c.c, m.id, values)
+            result = str(unichr(result))
         elif sig == 'S':
             result = self.env[0].CallShortMethodA(self.env, c.c, m.id, values)
         elif sig == 'I':
@@ -807,7 +822,9 @@ cdef class JB_Env:
         if arg_end == -1:
             raise ValueError("Bad function signature: %s"%m.sig)
         arg_sig = sig[1:arg_end]
-        fill_values(arg_sig, args, &values)
+        error = fill_values(arg_sig, args, &values)
+        if error is not None:
+            raise error
         oresult = self.env[0].NewObjectA(self.env, c.c, m.id, values)
         free(values)
         result = JB_Object()
@@ -872,11 +889,13 @@ cdef class JB_Env:
         cdef:
             jobject o
             JB_Object jbo
-            jsize alen = array.dimensions[0]
+            jsize alen = array.shape[0]
+            jbyte *data = <jbyte *>(array.data)
         
         o = self.env[0].NewByteArray(self.env, alen)
         if o == NULL:
             raise MemoryError("Failed to allocate byte array of size %d"%alen)
+        self.env[0].SetByteArrayRegion(self.env, o, 0, alen, data)
         jbo = JB_Object()
         jbo.o = o
         return jbo

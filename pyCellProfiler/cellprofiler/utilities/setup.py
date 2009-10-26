@@ -62,6 +62,11 @@ def configuration():
         include_dirs += ['/System/Library/Frameworks/JavaVM.framework/Headers']
         library_dirs = ['/System/Library/Frameworks/JavaVM.framework/Libraries']
         libraries = ['jvm_compat']
+    elif sys.platform.startswith('linux'):
+        include_dirs += [os.path.join(java_home,'include'),
+                         os.path.join(java_home,'include','linux')]
+        library_dirs = [os.path.join(java_home,'jre','lib','amd64','server')]
+        libraries = ["jvm"]
     extensions += [Extension(name="javabridge",
                              sources=["javabridge.pyx"],
                              libraries=libraries,

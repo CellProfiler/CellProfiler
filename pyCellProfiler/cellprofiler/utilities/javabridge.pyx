@@ -867,3 +867,17 @@ cdef class JB_Env:
                 result.append(jbo)
         return result
         
+    def make_byte_array(self, np.ndarray[dtype=np.uint8_t, ndim=1, negative_indices=False, mode='c'] array):
+        '''Create a java byte [] array from the contents of a numpy array'''
+        cdef:
+            jobject o
+            JB_Object jbo
+            jsize alen = array.dimensions[0]
+        
+        o = self.env[0].NewByteArray(self.env, alen)
+        if o == NULL:
+            raise MemoryError("Failed to allocate byte array of size %d"%alen)
+        jbo = JB_Object()
+        jbo.o = o
+        return jbo
+        

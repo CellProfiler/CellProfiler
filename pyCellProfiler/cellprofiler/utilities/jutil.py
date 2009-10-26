@@ -39,6 +39,18 @@ elif sys.platform == 'darwin':
     import os
     jvm_dir = '/System/Library/Frameworks/JavaVM.framework/Libraries'
     os.environ['PATH'] = os.environ['PATH'] + ':' + jvm_dir
+elif sys.platform.startswith('linux'):
+    #
+    # The Broad's libjvm is here, but yours may be different if your
+    # processor is not x86-64
+    #
+    from setup import find_javahome
+    import os
+    java_home = find_javahome()
+    if java_home is None:
+        raise RuntimeError("Could not find JAVA_HOME environment variable.")
+    jvm_dir = os.path.join(java_home, 'jre','lib','amd64','server')
+    os.environ['LD_LIBRARY_PATH'] = os.environ['LD_LIBRARY_PATH'] + ':' + jvm_dir
 import javabridge
     
 

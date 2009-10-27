@@ -52,7 +52,7 @@ end
 
 %%% If we are NOT using the polynomial method and the user set the Size of
 %%% Smoothing Filter to be 0, no smoothing will be done.
-if SizeOfSmoothingFilter == 0 && ~strncmp(SmoothingMethod,'P',1)
+if all(SizeOfSmoothingFilter == 0) && ~strncmp(SmoothingMethod,'P',1)
     %%% No blurring is done.
     return;
 end
@@ -67,12 +67,12 @@ end
 %%% If the SizeOfSmoothingFilter is greather than
 %%% LARGESIZE_OF_SMOOTHINGFILTER, then we resize the original image
 %%% Tip: Smoothing with filter size LARGESIZE_OF_SMOOTHINGFILTER is the slowest.
-if (SizeOfSmoothingFilter >= LARGESIZE_OF_SMOOTHINGFILTER) && HasMask == 0
-    ResizingFactor = LARGESIZE_OF_SMOOTHINGFILTER/SizeOfSmoothingFilter;
+if (max(SizeOfSmoothingFilter) >= LARGESIZE_OF_SMOOTHINGFILTER) && HasMask == 0
+    ResizingFactor = LARGESIZE_OF_SMOOTHINGFILTER./SizeOfSmoothingFilter;
     original_row = size(OrigImage,1);
     original_col = size(OrigImage,2);
     OrigImage = imresize(OrigImage, ResizingFactor);
-    SizeOfSmoothingFilter = LARGESIZE_OF_SMOOTHINGFILTER; % equal to SizeOfSmoothingFilter * ResizingFactor;
+    SizeOfSmoothingFilter = SizeOfSmoothingFilter.*ResizingFactor;
     Resized = 1;
 else
     Resized = 0;
@@ -237,11 +237,15 @@ switch lower(SmoothingMethod)
         disk_radius = round(SPECKLE_RADIUS);
 		SE = strel('disk', 1);
         invertedOrigImage = imcomplement(OrigImage);
-		[ErodedImage,SmoothedImage,PreviousReconstructedImage] = deal(invertedOrigImage);
-		for i = 2 : disk_radius 
+		[ErodedImage,PreviousReconstructedImage] = deal(invertedOrigImage);
+		SmoothedImage = zeros(size(OrigImage));
+		for i = 2 : max(disk_radius)
 			ErodedImage = imerode(ErodedImage,SE);
 			ReconstructedImage = imreconstruct(ErodedImage,invertedOrigImage,4);
-			SmoothedImage = PreviousReconstructedImage - ReconstructedImage;
+			output_image = PreviousReconstructedImage - ReconstructedImage;
+			if ismember(i,disk_radius(1):disk_radius(end))
+				SmoothedImage = SmoothedImage + output_image;
+			end
 			PreviousReconstructedImage = ReconstructedImage;
 		end
 		SmoothedImage(SmoothedImage > 1) = 1;

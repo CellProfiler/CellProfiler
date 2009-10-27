@@ -39,7 +39,8 @@ function handles = SmoothOrEnhance(handles)
 %
 % ENHANCE DARK HOLES: This method fills in dark holes surrounded by a
 % bright ring. The result is an image in which the holes appear as bright
-% spots.
+% spots. A range of filter sizes can be provided to capture variations in
+% ring diameter.
 %
 % SMOOTH KEEPING EDGES: 'Smooth Keeping Edges' smooths the images while
 % preserving the edges. It uses the Bilateral Filter, as implemented by 
@@ -144,11 +145,11 @@ SmoothedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %choiceVAR03 = Enhance BrightRoundSpeckles (Tophat Filter)
 %choiceVAR03 = Smooth Keeping Edges
 %choiceVAR03 = Enhance Neurites (I+Tophat-Bothat)
-%choiceVAR03 = Enhance Dark Holes (Fill-I)
+%choiceVAR03 = Enhance Dark Holes
 SmoothingMethod = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %inputtypeVAR03 = popupmenu
 
-%textVAR04 = If you choose any setting besides 'Fit Polynomial' or 'Enhance Dark Holes' as your smoothing method, please specify the approximate width of the objects in your image (in pixels). This will be used to calculate an adequate filter size. If you don't know the width of your objects, you can use the ShowOrHidePixelData image tool to find out or leave the word 'Automatic'.
+%textVAR04 = If you choose any setting besides 'Fit Polynomial' as your smoothing method, please specify the approximate width of the objects in your image (in pixels). This will be used to calculate an adequate filter size. If you don't know the width of your objects, you can use the ShowOrHidePixelData image tool to find out or leave the word 'Automatic'. For 'Enhance Dark Holes', a range of values may be used, separated by a hyphen. 
 %defaultVAR04 = Automatic
 ObjectWidth = handles.Settings.VariableValues{CurrentModuleNum,4};
 
@@ -225,19 +226,30 @@ if ~strcmp(SizeOfSmoothingFilter,'Do not use')
         WidthFlg = 0;
     end
 else
-    if ~strcmpi(ObjectWidth,'Automatic')
-        ObjectWidth = str2double(ObjectWidth);
-        if isnan(ObjectWidth) || ObjectWidth < 0
-            if isempty(findobj('Tag',['Msgbox_' ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Object width invalid']))
-                CPwarndlg(['The object width you specified  in the ', ModuleName, ' module is invalid, it is being reset to Automatic.'],[ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Object width invalid'],'replace');
-            end
-            SizeOfSmoothingFilter = 'A';
-            WidthFlg = 0;
-        else
-            SizeOfSmoothingFilter = 2*floor(ObjectWidth/2);
-            WidthFlg = 1;
-        end
-    else
+    if ~isempty(regexp(ObjectWidth,'\d+','once')) 
+        ObjectWidth = str2double(regexp(ObjectWidth,'\d+','match'));
+		if length(ObjectWidth) == 1  % Single number,
+			if isnan(ObjectWidth) || ObjectWidth < 0
+				if isempty(findobj('Tag',['Msgbox_' ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Object width invalid']))
+					CPwarndlg(['The object width you specified  in the ', ModuleName, ' module is invalid, it is being reset to Automatic.'],[ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Object width invalid'],'replace');
+				end
+				SizeOfSmoothingFilter = 'A';
+				WidthFlg = 0;
+			else
+				SizeOfSmoothingFilter = 2*floor(ObjectWidth/2);
+				WidthFlg = 1;
+			end
+		else % Range of numbers
+			if isempty(strfind(SmoothingMethod,'Dark Holes'))
+				CPwarndlg(['The object width you specified  in the ', ModuleName, ' module is not appropriate for Enhance Dark Holes, it is being reset to Automatic.'],[ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Object width invalid'],'replace');
+				SizeOfSmoothingFilter = 'A';
+				WidthFlg = 0;
+			else
+				SizeOfSmoothingFilter = 2*floor(ObjectWidth/2);
+				WidthFlg = 1;
+			end
+		end
+	else
         SizeOfSmoothingFilter = 'A';
         WidthFlg = 0;
     end

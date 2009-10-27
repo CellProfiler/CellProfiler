@@ -1,15 +1,40 @@
-'''imagemath.py - the ImageMath module
+'''<b>Image Math<b/> performs simple mathematical operations on image intensities.
+<hr>
+<ul>
+ImageMath can perform addition, subtraction, multiplication, division, or averaging
+of two or more images, as well as inversion, log transform, or scaling by 
+a constant for individual images.
 
-CellProfiler is distributed under the GNU General Public License.
-See the accompanying file LICENSE for details.
+<li><i>Average</i> calculates the mean intensity of the images loaded in the module.  
+This is equivalent to the "add" option divided by the number of images loaded 
+by this module.  If you would like to average many images (all of the images in 
+an entire pipeline, i.e. across cycles), please use the CorrectIllumination_Calculate module 
+and choose the 'All' (vs. 'Each') option.</li>
 
-Developed by the Broad Institute
-Copyright 2003-2009
+<li><i>Invert</i> subtracts the image intensities from 1. This makes the darkest
+color the brightest and vice-versa.</li>
 
-Please see the AUTHORS file for credits.
+<li><i>Multiply factors</i> The final image may have a substantially different range of pixel
+intensities than the originals, so each image can be multiplied by a 
+factor prior to the operation. This factor can be any real number.</li>
 
-Website: http://www.cellprofiler.org
+<li><i>Do you want values in the image to be set to zero/one?</i>
+Values outside the range 0 to 1 might not be handled well by other
+modules. Here, you have the option of setting negative values to 0, and values greater than 1 to a maximum value of 1.
+See the Rescale Intensity module for more scaling options.</li>
+
+See also SubtractBackground, RescaleIntensity, CorrectIllumination_Calculate.
 '''
+#CellProfiler is distributed under the GNU General Public License.
+#See the accompanying file LICENSE for details.
+#
+#Developed by the Broad Institute
+#Copyright 2003-2009
+#
+#Please see the AUTHORS file for credits.
+#
+#Website: http://www.cellprofiler.org
+
 __version__="$Revision$"
 
 import numpy as np
@@ -39,37 +64,7 @@ FIXED_SETTING_COUNT = 7
 
 
 class ImageMath(cpm.CPModule):
-    '''SHORT DESCRIPTION:
-Performs simple mathematical operations on image intensities.
-*************************************************************************
-
-Operation:
-
-Average in the ImageMath module is the numerical average of the 
-images loaded in the module.  If you would like to average many images 
-(all of the images in an entire pipeline), please use the 
-CorrectIllumination_Calculate module and chose the option 
-"(For 'All' mode only) What do you want to call the averaged image (prior 
-to dilation or smoothing)? (This is an image produced during the 
-calculations - it is typically not needed for downstream modules)"
-This will be an average over all images.
-
-Invert subtracts the image intensities from 1. This makes the darkest
-color the lightest and vice-versa.
-
-Multiply factors:
-The final image may have a substantially different range of pixel
-intensities than the originals, so each image can be multiplied by a 
-factor prior to the operation. This factor can be any real number.
-
-Do you want values in the image to be set to zero/one?:
-Values outside the range of 0 to 1 might not be handled well by other
-modules. Here, you have the option of setting negative values to 0.
-For other options (e.g. setting values over 1 to equal 1), see the
-Rescale Intensity module.
-
-See also SubtractBackground, RescaleIntensity.
-'''
+    
     category = "Image Processing"
     variable_revision_number = 1
     module_name = "ImageMath"
@@ -82,15 +77,16 @@ See also SubtractBackground, RescaleIntensity.
         self.add_image()
 
         # other settings
-        self.operation = cps.Choice("What operation would you like performed?", 
-                                    [O_ADD, O_SUBTRACT, O_MULTIPLY, O_DIVIDE, O_INVERT, O_LOG_TRANSFORM, O_AVERAGE, O_NONE])
+        self.operation = cps.Choice("Operation", 
+                                    [O_ADD, O_SUBTRACT, O_MULTIPLY, O_DIVIDE, O_INVERT, O_LOG_TRANSFORM, O_AVERAGE, O_NONE], doc=
+                                    """What operation would you like performed?""")
         self.divider_top = cps.Divider(line=False)
-        self.exponent = cps.Float("Enter an exponent to raise the the result to *after* the chosen operation:", 1)
-        self.after_factor = cps.Float("Enter a factor to multiply the result by *after* the chosen operation:", 1)
-        self.addend = cps.Float("Enter a number to add to the result *after* the chosen operation:", 0)
-        self.truncate_low = cps.Binary("Do you want negative values in the image to be set to zero?", True)
-        self.truncate_high = cps.Binary("Do you want values greater than one to be set to one?", True)
-        self.output_image_name = cps.ImageNameProvider("What do you want to call the resulting image?", "ImageAfterMath")
+        self.exponent = cps.Float("Raise to exponent", 1, doc="""Enter an exponent to raise the result to *after* the chosen operation""")
+        self.after_factor = cps.Float("Multiply by", 1, doc="""Enter a factor to multiply the result by *after* the chosen operation""")
+        self.addend = cps.Float("Add to result", 0, doc ="""Enter a number to add to the result *after* the chosen operation""")
+        self.truncate_low = cps.Binary("Set values<0 to 0?", True, doc="""Do you want negative values in the image to be set to zero?""")
+        self.truncate_high = cps.Binary("Set values>1 to 1?", True, doc ="""Do you want values greater than one to be set to one?""")
+        self.output_image_name = cps.ImageNameProvider("Name the output image", "ImageAfterMath", doc="""What do you want to call the resulting image?""")
         self.add_button = cps.DoSomething("Add another image","Add image", self.add_image, True)
         self.divider_bottom = cps.Divider(line=False)
     

@@ -1241,6 +1241,11 @@ class LoadImages(cpmodule.CPModule):
         """
         if not is_image(filename):
             return None
+        if ((True and is_movie(filename)) != 
+            (True and (self.file_types in (FF_AVI_MOVIES, FF_STK_MOVIES, 
+                                           FF_OTHER_MOVIES)))):
+            return None
+                                                    
         if self.text_to_exclude() != cps.DO_NOT_USE and \
             filename.find(self.text_to_exclude()) >=0:
             return None
@@ -1300,7 +1305,10 @@ def is_image(filename):
     if PILImage.EXTENSION.has_key(ext):
         return True
     return ext in ('.avi', '.mpeg', '.mat', '.stk')
-    
+
+def is_movie(filename):
+    ext = os.path.splitext(filename)[1].lower()
+    return ext in ('.avi', '.mpeg', '.stk')
 
 
 class LoadImagesImageProvider(cpimage.AbstractImageProvider):

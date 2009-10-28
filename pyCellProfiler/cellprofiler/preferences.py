@@ -115,6 +115,7 @@ def get_default_image_directory():
     default_image_directory = get_config().Read(DEFAULT_IMAGE_DIRECTORY)
     if os.path.isdir(default_image_directory):
         __default_image_directory = str(get_proper_case_filename(default_image_directory))
+        return __default_image_directory
     else:
         sys.stderr.write("Warning: current path of %s is not a valid directory. Switching to current directory\n"%
                          (default_image_directory))

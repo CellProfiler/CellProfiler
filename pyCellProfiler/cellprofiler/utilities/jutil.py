@@ -66,13 +66,27 @@ class JavaException(BaseException):
     def __init__(self, env):
         '''Initialize by calling exception_occurred'''
         self.throwable = env.exception_occurred()
-        if self.throwable is None:
-            raise ValueError("Tried to create a JavaException but there was no current exception")
-        env.exception_clear()
-        message = call(env, self.throwable, 'getMessage', '()Ljava/lang/String;')
-        if message is not None:
-            message = env.get_string_utf(message)
-            super(BaseException, self).__init__(message)
+        try:
+            if self.throwable is None:
+                raise ValueError("Tried to create a JavaException but there was no current exception")
+            #
+            # The following has to be done by hand because the exception can't be
+            # cleared at this point
+            #
+            klass = env.get_object_class(self.throwable)
+            method_id = env.get_method_id(klass, 'getMessage', 
+                                          '()Ljava/lang/String;')
+            if method_id is not None:
+                message = env.call_method(self.throwable, method_id)
+                if message is not None:
+                    message = env.get_string_utf(message)
+                    super(BaseException, self).__init__(message)
+                else:
+                    env.exception_describe()
+            else:
+                env.exception_describe()
+        finally:
+            env.exception_clear()
 
 def call(env, o, method_name, sig, *args):
     '''Call a method on an object
@@ -346,7 +360,7 @@ def make_instance(env, class_name, sig, *args):
         raise JavaError('Could not find constructor with signature = %s'%sig)
     args_sig = split_sig(sig[1:sig.find(')')])
     result = env.new_object(klass, method_id, *get_nice_args(env, args, args_sig))
-    if env.exception_occurred() is not None:
+    if env.exception_occurred() is not None or result is None:
         raise JavaException(env)
     return result
 

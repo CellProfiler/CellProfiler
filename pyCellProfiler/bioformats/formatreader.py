@@ -22,14 +22,18 @@ import os
 import cellprofiler.utilities.jutil as jutil
 import cellprofiler.utilities.javabridge as javabridge
 
+__env = None
 def get_env():
     '''Get a Java environment with the loci_tools jar on the classpath'''
+    global __env
     
+    if __env is not None:
+        return __env
     path = os.path.abspath(os.path.split(__file__)[0])
     loci_jar = os.path.join(path, "loci_tools.jar")
-    env = javabridge.JB_Env()
-    env.create(["-Djava.class.path="+loci_jar])
-    return env
+    __env = javabridge.JB_Env()
+    __env.create(["-Djava.class.path="+loci_jar])
+    return __env
 
 def make_format_tools_class(env):
     '''Get a wrapper for the loci/formats/FormatTools class
@@ -77,6 +81,10 @@ def make_iformat_reader_class(env, klass_arg):
         getMetadata = jutil.make_method(env, klass, 'getMetadata',
                                               '()Ljava/util/Hashtable;',
                                               'Obtains the hashtable containing the metadata field/value pairs')
+        getMetadataValue = jutil.make_method(env, klass, 'getMetadataValue',
+                                             '(Ljava/lang/String;)'
+                                             'Ljava/lang/Object;',
+                                             'Look up a specific metadata value from the store')
         getImageCount = jutil.make_method(env, klass, 'getImageCount',
                                           '()I','Determines the number of images in the current file')
         getIndex = jutil.make_method(env, klass, 'getIndex', '(III)I',
@@ -113,18 +121,31 @@ def make_iformat_reader_class(env, klass_arg):
 def make_image_reader_class(env):
     '''Return an image reader class for the given Java environment'''
     klass = env.find_class('loci/formats/ImageReader')
+    base_klass = env.find_class('loci/formats/IFormatReader')
     assert klass is not None
+    assert base_klass is not None
     IFormatReader = make_iformat_reader_class(env, klass)
-
+    #
+    # This uses the reader.txt file from inside the loci_tools.jar
+    #
+    class_list = jutil.make_instance(env, "loci/formats/ClassList", 
+                                     "(Ljava/lang/String;"
+                                     "Ljava/lang/Class;" # base
+                                     "Ljava/lang/Class;)V", # location in jar
+                                     "readers.txt", base_klass, klass)
     class ImageReader(IFormatReader):
-        new_fn = jutil.make_new(env, klass, '()V')
+        new_fn = jutil.make_new(env, klass, '(Lloci/formats/ClassList;)V')
         def __init__(self):
-            self.new_fn()
+            self.new_fn(class_list)
         setId = jutil.make_method(env, klass, 'setId', '(Ljava/lang/String;)V',
                                   'Set the name of the data file')
+        getFormat = jutil.make_method(env, klass, 'getFormat',
+                                      '()Ljava/lang/String;',
+                                      'Get a string describing the format of this file')
+        getReader = jutil.make_method(env, klass, 'getReader',
+                                      '()Lloci/formats/IFormatReader;')
     return ImageReader
         
-
 def make_reader_wrapper_class(env, class_name):
     '''Make an ImageReader wrapper class
     
@@ -150,6 +171,68 @@ def make_reader_wrapper_class(env, class_name):
                                   'Set the name of the data file')
     return ReaderWrapper
 
+def make_format_writer_class(env, class_name):
+    '''Make a FormatWriter wrapper class
+    
+    class_name - the name of a class that implements loci.formats.FormatWriter
+                 Known names in the loci.formats.out package:
+                     APNGWriter, AVIWriter, EPSWriter, ICSWriter, ImageIOWriter,
+                     JPEG2000Writer, JPEGWriter, LegacyQTWriter, OMETiffWriter,
+                     OMEXMLWriter, QTWriter, TiffWriter
+    '''
+    klass = env.find_class(class_name)
+    assert klass is not None
+    new_fn = jutil.make_new(env, klass, 
+                            '(Ljava/lang/String;Ljava/lang/String;)V')
+    class FormatWriter(object):
+        __doc__ = '''A wrapper for %s implementing loci.formats.FormatWriter
+        See http://hudson.openmicroscopy.org.uk/job/LOCI/javadoc/loci/formats/FormatWriter'''%class_name
+        def __init__(self):
+            self.new_fn()
+            
+        canDoStacks = jutil.make_method(env, klass, 'canDoStacks','()Z',
+                                        'Reports whether the writer can save multiple images to a single file')
+        getColorModel = jutil.make_method(env, klass, 'getColorModel',
+                                          '()Ljava/awt/image/ColorModel;',
+                                          'Gets the color model')
+        getCompression = jutil.make_method(env, klass, 'getCompression',
+                                           '()Ljava/lang/String;',
+                                           'Gets the current compression type')
+        getCompressionTypes = jutil.make_method(env, klass, 'getCompressionTypes',
+                                                '()[Ljava/lang/String;',
+                                                'Gets the available compression types')
+        getFramesPerSecond = jutil.make_method(env, klass, 'getFramesPerSecond',
+                                               '()I', "Gets the frames per second to use when writing")
+        getMetadataRetrieve = jutil.make_method(env, klass, 'getMetadataRetrieve',
+                                                '()Lloci/formats/meta/MetadataRetrieve;',
+                                                'Retrieves the current metadata retrieval object for this writer.')
+        
+        getPixelTypes = jutil.make_method(env, klass, 'getPixelTypes',
+                                          '()[I')
+        isInterleaved = jutil.make_method(env, klass, 'isInterleaved','()Z',
+                                          'Gets whether or not the channels in an image are interleaved')
+        isSupportedType = jutil.make_method(env, klass, 'isSupportedType','(I)Z',
+                                            'Checks if the given pixel type is supported')
+        saveBytes = jutil.make_method(env, klass, 'saveBytes', '([BZ)V',
+                                      'Saves the given byte array to the current file')
+        setColorModel = jutil.make_method(env, klass, 'setColorModel',
+                                          '(Ljava/awt/image/ColorModel;)V',
+                                          'Sets the color model')
+        setCompression = jutil.make_method(env, klass, 'setCompression',
+                                           '(Ljava/lang/String;)V',
+                                           'Sets the current compression type')
+        setFramesPerSecond = jutil.make_method(env, klass, 'setFramesPerSecond',
+                                               '(I)V',
+                                               'Sets the frames per second to use when writing')
+        setId = jutil.make_method(env, klass, 'setId','(Ljava/lang/String;)V',
+                                  'Sets the current file name')
+        setInterleaved = jutil.make_method(env, klass, 'setInterleaved', '(Z)V',
+                                           'Sets whether or not the channels in an image are interleaved')
+        setMetadataRetrieve = jutil.make_method(env, klass, 'setMetadataRetrieve',
+                                                '(Lloci/formats/meta/MetadataRetrieve;)V',
+                                                'Sets the metadata retrieval object from which to retrieve standardized metadata')
+    return FormatWriter
+        
 if __name__ == "__main__":
     import wx
     import matplotlib.backends.backend_wxagg as mmmm
@@ -165,12 +248,15 @@ if __name__ == "__main__":
             if dlg.ShowModal()==wx.ID_OK:
                 rdr = ImageReader()
                 rdr.setId(dlg.Path)
+                print "Format = %s"%rdr.getFormat()
                 w = rdr.getSizeX()
                 h = rdr.getSizeY()
                 pixel_type = rdr.getPixelType()
                 little_endian = rdr.isLittleEndian()
                 metadata = rdr.getMetadata()
-                print jutil.jdictionary_to_string_dictionary(my_env, metadata)
+                d = jutil.jdictionary_to_string_dictionary(my_env, metadata)
+                for key in d.keys():
+                    print key+"="+d[key]
                 if pixel_type == FormatTools.INT8:
                     dtype = np.char
                 elif pixel_type == FormatTools.UINT8:

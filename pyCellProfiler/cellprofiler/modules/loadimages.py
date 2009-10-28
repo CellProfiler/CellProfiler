@@ -21,17 +21,28 @@ See also <b>LoadSingleImage</b>,<b>SaveImages</b>
 
 __version__="$Revision$"
 
+import numpy as np
 import cgi
 import hashlib
 import os
 import re
+import sys
 import wx
 import wx.html
 
+try:
+    import bioformats.formatreader as formatreader
+    env = formatreader.get_env()
+    FormatTools = formatreader.make_format_tools_class(env)
+    ImageReader = formatreader.make_image_reader_class(env)
+    ChannelSeparator = formatreader.make_reader_wrapper_class(
+        env,"loci/formats/ChannelSeparator")
+    has_bioformats = True
+except:
+    has_bioformats = False
 import Image as PILImage
 import TiffImagePlugin as TIFF
 import cellprofiler.dib
-import numpy
 import matplotlib.image
 import scipy.io.matlab.mio
 import uuid
@@ -62,10 +73,9 @@ FF_INDIVIDUAL_IMAGES = 'individual images'
 FF_STK_MOVIES = 'stk movies'
 FF_AVI_MOVIES = 'avi movies'
 FF_OTHER_MOVIES = 'tif,tiff,flex movies'
-try:
-    import cellprofiler.ffmpeg.ffmpeg as ffmpeg
+if has_bioformats:
     FF = [FF_INDIVIDUAL_IMAGES, FF_STK_MOVIES, FF_AVI_MOVIES, FF_OTHER_MOVIES]
-except ImportError:
+else:
     FF = [FF_INDIVIDUAL_IMAGES, FF_STK_MOVIES]
 
 DIR_DEFAULT_IMAGE = 'Default Image Directory'
@@ -683,7 +693,7 @@ class LoadImages(cpmodule.CPModule):
                 raise RuntimeError("Image %s has %d files, but image %s has %d files" %
                                    (image_names[0], image_set_count,
                                     name.value, len(x)))
-        list_of_lists = numpy.array(list_of_lists)
+        list_of_lists = np.array(list_of_lists)
         root = self.image_directory()
         for i in range(0,image_set_count):
             image_set = image_set_list.get_image_set(i)
@@ -846,14 +856,14 @@ class LoadImages(cpmodule.CPModule):
             elif provider == P_MOVIES:
                 if version != V_MOVIES:
                     raise NotImplementedError("Can't restore file information: file image provider version %d not supported"%version)
-                pathname, frame, video_stream = values[2:]
+                pathname, frame = values[2:]
                 path,filename = os.path.split(pathname)
                 if self.file_types == FF_STK_MOVIES:
                     p = LoadImagesSTKFrameProvider(image_name, path, filename,
                                                    frame)
                 elif self.file_types == FF_AVI_MOVIES:
                     p = LoadImagesMovieFrameProvider(image_name, path, filename,
-                                                     int(frame), video_stream)
+                                                     int(frame))
                 else:
                     raise NotImplementedError("File type %s not supported"%self.file_types.value)
                 
@@ -1004,28 +1014,23 @@ class LoadImages(cpmodule.CPModule):
         list_of_lists = [[] for x in image_names]
         for pathname,image_index in files:
             pathname = os.path.join(self.image_directory(), pathname)
-            if self.file_types == FF_STK_MOVIES:
-                video_stream = None
-                frame_count = self.get_frame_count(pathname)
-            else:
-                video_stream = ffmpeg.VideoStream(pathname)
-                frame_count = video_stream.frame_count
+            frame_count = self.get_frame_count(pathname)
             if frame_count == 0:
                 print "Warning - no frame count detected"
                 frame_count = 256
             for i in range(frame_count):
-                list_of_lists[image_index].append((pathname,i,video_stream))
+                list_of_lists[image_index].append((pathname,i))
         image_set_count = len(list_of_lists[0])
         for x,name in zip(list_of_lists[1:],image_names):
             if len(x) != image_set_count:
                 raise RuntimeError("Image %s has %d frames, but image %s has %d frames"%(image_names[0],image_set_count,name.value,len(x)))
-        list_of_lists = numpy.array(list_of_lists,dtype=object)
+        list_of_lists = np.array(list_of_lists,dtype=object)
         for i in range(0,image_set_count):
             image_set = image_set_list.get_image_set(i)
             d = self.get_dictionary(image_set)
-            for name, (file, frame, video_stream) \
+            for name, (file, frame) \
                 in zip(image_names, list_of_lists[:,i]):
-                d[name.value] = (P_MOVIES, V_MOVIES, file, frame, video_stream)
+                d[name.value] = (P_MOVIES, V_MOVIES, file, frame)
         for name in image_names:
             image_set_list.legacy_fields['Pathname%s'%(name.value)]=root
     
@@ -1081,7 +1086,7 @@ class LoadImages(cpmodule.CPModule):
             m.add_measurement('Image','PathName_'+name, full_path)
             pixel_data = provider.provide_image(workspace.image_set).pixel_data
             digest = hashlib.md5()
-            digest.update(numpy.ascontiguousarray(pixel_data).data)
+            digest.update(np.ascontiguousarray(pixel_data).data)
             m.add_measurement('Image','MD5Digest_'+name, digest.hexdigest())
             for key in metadata:
                 measurement = 'Metadata_%s'%(key)
@@ -1120,16 +1125,14 @@ class LoadImages(cpmodule.CPModule):
         
     def get_frame_count(self, pathname):
         """Return the # of frames in a movie"""
-        if self.file_types in (FF_AVI_MOVIES,FF_OTHER_MOVIES):
-            f = ffmpeg.open(path)
-            index = f.get_frame_types().index["video"]
-            if index == 0:
-                raise ValueError("No video stream in %s"%pathname)
-            frame_count = f.get_frame_count(0)
-            return frame_count
-        elif self.file_types == FF_STK_MOVIES:
-            f = PILImage.open(pathname)
-            return len(f.ifd[UIC2_TAG])
+        if self.file_types in (FF_AVI_MOVIES,FF_OTHER_MOVIES,FF_STK_MOVIES):
+            rdr = ImageReader()
+            rdr.setId(pathname)
+            if self.file_types == FF_STK_MOVIES:
+                return rdr.getSizeZ()
+            else:
+                return rdr.getSizeT()
+            
         raise NotImplementedError("get_frame_count not implemented for %s"%(self.file_types))
     
     def get_metadata_tags(self, fd=None):
@@ -1315,6 +1318,8 @@ class LoadImagesImageProvider(cpimage.AbstractImageProvider):
             imgdata = scipy.io.matlab.mio.loadmat(self.get_full_name(),
                                                   struct_as_record=True)
             return cpimage.Image(imgdata["Image"])
+        elif has_bioformats:
+            img = load_using_bioformats(self.get_full_name())
         elif self.__filename.lower().endswith(".dib"):
             img = cpimage.readc01(self.get_full_name())
         else:
@@ -1357,9 +1362,9 @@ def load_using_PIL(path, index=0, seekfn=None):
         # 16-bit image
         # deal with the endianness explicitly... I'm not sure
         # why PIL doesn't get this right.
-        imgdata = numpy.fromstring(img.tostring(),numpy.uint8)
+        imgdata = np.fromstring(img.tostring(),np.uint8)
         imgdata.shape=(int(imgdata.shape[0]/2),2)
-        imgdata = imgdata.astype(numpy.uint16)
+        imgdata = imgdata.astype(np.uint16)
         hi,lo = (0,1) if img.tag.prefix == 'MM' else (1,0)
         imgdata = imgdata[:,hi]*256 + imgdata[:,lo]
         img_size = list(img.size)
@@ -1368,7 +1373,7 @@ def load_using_PIL(path, index=0, seekfn=None):
         # The magic # for maximum sample value is 281
         if img.tag.has_key(281):
             img = new_img.astype(float) / img.tag[281][0]
-        elif numpy.max(new_img) < 4096:
+        elif np.max(new_img) < 4096:
             img = new_img.astype(float) / 4095.
         else:
             img = new_img.astype(float) / 65535.
@@ -1380,21 +1385,84 @@ def load_using_PIL(path, index=0, seekfn=None):
         img = img.transpose(PILImage.FLIP_TOP_BOTTOM)
         img = matplotlib.image.pil_to_array(img)
     return img
+
+def load_using_bioformats(path, z=0, t=0):
+    '''Load the given image file using the Bioformats library
+    
+    path: path to the file
+    z: the frame index in the z (depth) dimension.
+    t: the frame index in the time dimension.
+    
+    Returns either a 2-d (grayscale) or 3-d (2-d + 3 RGB planes) image
+    '''
+    rdr = ImageReader()
+    rdr.setId(path)
+    width = rdr.getSizeX()
+    height = rdr.getSizeY()
+    pixel_type = rdr.getPixelType()
+    little_endian = rdr.isLittleEndian()
+    if pixel_type == FormatTools.INT8:
+        dtype = np.char
+        scale = 255
+    elif pixel_type == FormatTools.UINT8:
+        dtype = np.uint8
+        scale = 255
+    elif pixel_type == FormatTools.UINT16:
+        dtype = '<u2' if little_endian else '>u2'
+        scale = 65536
+    elif pixel_type == FormatTools.INT16:
+        dtype = '<i2' if little_endian else '>i2'
+        scale = 65536
+    elif pixel_type == FormatTools.UINT32:
+        dtype = '<u4' if little_endian else '>u4'
+        scale = 2**32
+    elif pixel_type == FormatTools.INT32:
+        dtype = '<i4' if little_endian else '>i4'
+        scale = 2**32
+    elif pixel_type == FormatTools.FLOAT:
+        dtype = '<f4' if little_endian else '>f4'
+        scale = 1
+    elif pixel_type == FormatTools.DOUBLE:
+        dtype = '<f8' if little_endian else '>f8'
+        scale = 1
+    max_sample_value = rdr.getMetadataValue('MaxSampleValue')
+    if max_sample_value is not None:
+        try:
+            scale = formatreader.jutil.call(env, max_sample_value, 
+                                            'intValue', '()I')
+        except:
+            sys.stderr.write("WARNING: failed to get MaxSampleValue for image. Intensities may be improperly scaled\n")
+    if rdr.getRGBChannelCount() > 1:
+        rdr.close()
+        rdr = ChannelSeparator(ImageReader())
+        rdr.setId(path)
+        red_image, green_image, blue_image = [
+            np.frombuffer(rdr.openBytes(rdr.getIndex(z,i,t)),dtype)
+            for i in range(3)]
+        image = np.dstack((red_image, green_image, blue_image))
+        image.shape=(height,width,3)
+    else:
+        index = rdr.getIndex(z,0,t)
+        image = np.frombuffer(rdr.openBytes(index),dtype)
+        image.shape = (height,width)
+    rdr.close()
+    image = image.astype(float) / float(scale)
+    return image
     
 class LoadImagesMovieFrameProvider(cpimage.AbstractImageProvider):
     """Provide an image by filename:frame, loading the file as it is requested
     """
-    def __init__(self,name,pathname,filename,frame,video_stream):
+    def __init__(self,name,pathname,filename,frame):
         self.__name = name
         self.__pathname = pathname
         self.__filename = filename
         self.__frame    = frame
-        self.__video_stream = video_stream
     
     def provide_image(self, image_set):
         """Load an image from a movie frame
         """
-        pixel_data = self.__video_stream.read_rgb8().astype(float)/255.
+        pixel_data = load_using_bioformats(self.get_full_name(), 0, 
+                                           self.__frame)
         image = cpimage.Image(pixel_data, path_name = self.get_pathname(),
                               file_name = self.get_filename())
         return image
@@ -1427,30 +1495,34 @@ class LoadImagesSTKFrameProvider(cpimage.AbstractImageProvider):
         self.__frame    = frame
         
     def provide_image(self, image_set):
-        def seekfn(img, index):
-            '''Seek in an STK file to a given stack frame
-            
-            The stack frames are of constant size and follow each other.
-            The tiles contain offsets which need to be incremented by
-            the size of a stack frame. The following is from 
-            Molecular Devices' STK file format document:
-            StripOffsets
-            The strips for all the planes of the stack are stored 
-            contiguously at this location. The following pseudocode fragment 
-            shows how to find the offset of a specified plane planeNum.
-            LONG	planeOffset = planeNum *
-		(stripOffsets[stripsPerImage - 1] +
-		stripByteCounts[stripsPerImage - 1] - stripOffsets[0]);
-            Note that the planeOffset must be added to the stripOffset[0]
-            to find the image data for the specific plane in the file.
-            '''
-            plane_offset = long(index) * (img.ifd[TIFF.STRIPOFFSETS][-1] +
-                                          img.ifd[TIFF.STRIPBYTECOUNTS][-1] -
-                                          img.ifd[TIFF.STRIPOFFSETS][0])
-            img.tile = [(coding, location, offset+plane_offset, format)
-                        for coding, location, offset, format in img.tile]
-            
-        img = load_using_PIL(self.get_full_name(), self.__frame, seekfn)
+        if has_bioformats:
+            img = load_using_bioformats(self.get_full_name(),
+                                         z=self.__frame)
+        else:
+            def seekfn(img, index):
+                '''Seek in an STK file to a given stack frame
+                
+                The stack frames are of constant size and follow each other.
+                The tiles contain offsets which need to be incremented by
+                the size of a stack frame. The following is from 
+                Molecular Devices' STK file format document:
+                StripOffsets
+                The strips for all the planes of the stack are stored 
+                contiguously at this location. The following pseudocode fragment 
+                shows how to find the offset of a specified plane planeNum.
+                LONG	planeOffset = planeNum *
+                    (stripOffsets[stripsPerImage - 1] +
+                    stripByteCounts[stripsPerImage - 1] - stripOffsets[0]);
+                Note that the planeOffset must be added to the stripOffset[0]
+                to find the image data for the specific plane in the file.
+                '''
+                plane_offset = long(index) * (img.ifd[TIFF.STRIPOFFSETS][-1] +
+                                              img.ifd[TIFF.STRIPBYTECOUNTS][-1] -
+                                              img.ifd[TIFF.STRIPOFFSETS][0])
+                img.tile = [(coding, location, offset+plane_offset, format)
+                            for coding, location, offset, format in img.tile]
+                
+            img = load_using_PIL(self.get_full_name(), self.__frame, seekfn)
         return cpimage.Image(img,
                              path_name = self.get_pathname(),
                              file_name = self.get_filename())

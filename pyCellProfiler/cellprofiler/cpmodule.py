@@ -87,13 +87,9 @@ class CPModule(object):
     def create_settings(self):
         """Create your settings by subclassing this function
         
-        create_settings is called at the end of initialization. You should
-        name your module in this routine:
+        create_settings is called at the end of initialization.
         
-            # Set the name that will appear in the "AddModules" window
-            self.module_name = "My module"
-        
-        You should also create the setting variables for your module:
+        You should create the setting variables for your module here:
             # Ask the user for the input image
             self.image_name = cellprofiler.settings.ImageNameSubscriber(...)
             # Ask the user for the name of the output image
@@ -113,7 +109,8 @@ class CPModule(object):
         idx = module_num-1
         settings = handles[cpp.SETTINGS][0,0]
         setting_values = []
-        if settings.dtype.fields.has_key(cpp.MODULE_NOTES):
+        if (settings.dtype.fields.has_key(cpp.MODULE_NOTES) and
+            settings[cpp.MODULE_NOTES].shape[1] > idx):
             n=settings[cpp.MODULE_NOTES][0,idx]
             self.__notes = [str(n[i,0][0]) for i in range(0,n.size)]
         else:

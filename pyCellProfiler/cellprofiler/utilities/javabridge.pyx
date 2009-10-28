@@ -130,6 +130,8 @@ cdef extern from "jni.h":
         #
         jmethodID (*GetMethodID)(JNIEnv *env, jclass clazz, char *name, char *sig)
         jmethodID (*GetStaticMethodID)(JNIEnv *env, jclass clazz, char *name, char *sig)
+        jmethodID (*FromReflectedMethod)(JNIEnv *env, jobject method)
+        jmethodID (*FromReflectedField)(JNIEnv *env, jobject field)
         #
         # New object
         #
@@ -426,7 +428,7 @@ cdef class JB_Env:
         result = JNI_CreateJavaVM(&self.vm, <void **>&self.env, &args)
         free(args.options)
         if result != 0:
-            raise RuntimeError("Failed to create Java VM")
+            raise RuntimeError("Failed to create Java VM. Return code = %d"%result)
         
     def get_version(self):
         '''Return the version number as a major / minor version tuple'''
@@ -553,6 +555,25 @@ cdef class JB_Env:
         result.is_static = True
         return result
 
+    def from_reflected_method(self, JB_Object method, char *sig, is_static):
+        '''Get a method_id given an instance of java.lang.reflect.Method
+        
+        method - a method, e.g. as retrieved from getDeclaredMethods
+        sig - signature of method
+        is_static - true if this is a static method
+        '''
+        cdef:
+            jmethodID id
+            __JB_MethodID result
+        id = self.env[0].FromReflectedMethod(self.env, method.o)
+        if id == NULL:
+            return
+        result = __JB_MethodID()
+        result.id = id
+        result.sig = sig
+        result.is_static = is_static
+        return result
+        
     def call_method(self, JB_Object o, __JB_MethodID m, *args):
         '''Call a method on an object with arguments
 
@@ -827,6 +848,8 @@ cdef class JB_Env:
             raise error
         oresult = self.env[0].NewObjectA(self.env, c.c, m.id, values)
         free(values)
+        if oresult == NULL:
+            return
         result = JB_Object()
         result.o = oresult
         return result

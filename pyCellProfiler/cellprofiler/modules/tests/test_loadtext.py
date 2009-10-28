@@ -177,7 +177,7 @@ class TestLoadText(unittest.TestCase):
             self.assertTrue(isinstance(m, cpmeas.Measurements))
             self.assertTrue(c0_ran[0])
             hexdigest = m.get_current_image_measurement('MD5Digest_DNA')
-            self.assertEqual(hexdigest, 'c55554be83a1c928c1ae9268486a94b3')
+            self.assertEqual(hexdigest, '489b769a9d6e54114b5f8c382c603eb2')
             self.assertTrue('PathName_DNA' in m.get_feature_names(cpmeas.IMAGE))
             self.assertEqual(m.get_current_image_measurement('PathName_DNA'),
                              dir)

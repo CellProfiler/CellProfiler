@@ -781,7 +781,7 @@ class testLoadImages(unittest.TestCase):
         self.assertTrue('MyImage' in image_set.get_names())
         image = image_set.get_image('MyImage')
         img1 = image.pixel_data
-        self.assertEqual(tuple(img1.shape), (264,544,3))
+        self.assertEqual(tuple(img1.shape), (264,542,3))
         image_set = image_set_list.get_image_set(1)
         m = measurements.Measurements()
         workspace = W.Workspace(pipeline, module, image_set,
@@ -791,7 +791,7 @@ class testLoadImages(unittest.TestCase):
         self.assertTrue('MyImage' in image_set.get_names())
         image = image_set.get_image('MyImage')
         img2 = image.pixel_data
-        self.assertEqual(tuple(img2.shape), (264,544,3))
+        self.assertEqual(tuple(img2.shape), (264,542,3))
         self.assertTrue(numpy.any(img1!=img2))
     
     def test_09_02_load_stk(self):

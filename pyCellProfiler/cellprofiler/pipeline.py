@@ -506,14 +506,15 @@ class Pipeline(object):
                                                   image_set_list,
                                                   frame_if_shown,
                                                   outlines = outlines)
-                        t0 = datetime.datetime.now()
+                        start_time = datetime.datetime.now()
+                        t0 = sum(os.times()[:-1])
                         module.run(workspace)
-                        t1 = datetime.datetime.now()
-                        delta = t1-t0
-                        delta_sec = (delta.days * 24 * 60 *60 + delta.seconds +
-                                     float(delta.microseconds) / 1000. / 1000.)
+                        t1 = sum(os.times()[:-1])
+                        delta_sec = max(0,t1-t0)
                         print ("%s: Image # %d, module %s # %d: %.2f sec" %
-                               (t0.ctime(), image_number, module.module_name, module.module_num, delta_sec))
+                               (start_time.ctime(), image_number, 
+                                module.module_name, module.module_num, 
+                                delta_sec))
                         workspace.refresh()
                         failure = 0
                     except Exception,instance:
@@ -532,9 +533,6 @@ class Pipeline(object):
                         measurements.add_measurement('Image',
                                                      module_error_measurement,
                                                      np.array([failure]));
-                        delta = t1-t0
-                        delta_sec = (delta.days * 24 * 60 *60 + delta.seconds +
-                                     float(delta.microseconds) / 1000. / 1000.)
                         measurements.add_measurement('Image',
                                                      execution_time_measurement,
                                                      np.array([delta_sec]))

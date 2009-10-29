@@ -665,7 +665,10 @@ class Pipeline(object):
                                   module.module_num,
                                   module.module_name))
         if groupings is None:
-            return ((), (((),range(1, image_set_list.count()+1)),))
+            if image_set_list is not None:
+                return ((), (((),range(1, image_set_list.count()+1)),))
+            else:
+                raise ValueError("No image sets defined for current pipeline!")
         return groupings
     
     def prepare_group(self, image_set_list, grouping, image_numbers):

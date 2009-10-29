@@ -234,7 +234,6 @@ class SliderCtl(wx.Panel):
         dc.Clear()
         self.draw_groove(dc)
         self.draw_ticks(dc)
-        self.draw_stop(dc)
         self.draw_marker(dc)
         event.Skip()
     
@@ -329,7 +328,7 @@ class SliderCtl(wx.Panel):
         bitmap = wx.BitmapFromImage(image)
         button = wx.BitmapButton(self, -1, bitmap)
         return button
-        
+
 class MovieSlider(wx.Panel):
     """A control that uses the metaphor of a movie player to control selection
     
@@ -372,17 +371,18 @@ class MovieSlider(wx.Panel):
                                 start_value = start_value,
                                 stop_value = stop_value,
                                 value_names = value_names,
+                                size=(50, -1),
                                 style=wx.SL_VERTICAL|wx.SL_AUTOTICKS)
         sizer.Add(self.slider,1,wx.EXPAND)
-        controls_sizer = wx.BoxSizer(wx.HORIZONTAL)
-        sizer.Add(controls_sizer,0,wx.ALIGN_CENTER_HORIZONTAL)
+        #controls_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        # sizer.Add(controls_sizer,0,wx.ALIGN_CENTER_HORIZONTAL)
         #self.skip_start_button = self.make_bitmap_button(BUTTON_SKIPSTART)
         #controls_sizer.Add(self.skip_start_button,0,wx.SHAPED)
-        self.play_button = self.make_bitmap_button(BUTTON_PLAY)
-        controls_sizer.Add(self.play_button, 0, wx.SHAPED | wx.ALIGN_CENTER_HORIZONTAL)
+        # self.play_button = self.make_bitmap_button(BUTTON_PLAY)
+        #controls_sizer.Add(self.play_button, 0, wx.SHAPED | wx.ALIGN_CENTER_HORIZONTAL)
         #self.skip_end_button = self.make_bitmap_button(BUTTON_SKIPEND)
         #controls_sizer.Add(self.skip_end_button,0,wx.SHAPED)
-        self.Bind(wx.EVT_BUTTON, self.on_play_pressed, self.play_button)
+        #self.Bind(wx.EVT_BUTTON, self.on_play_pressed, self.play_button)
         self.Bind(EVT_VALUE_CHANGED, self.on_slider_value_changed, self.slider)
         self.state = STATE_PAUSED 
     

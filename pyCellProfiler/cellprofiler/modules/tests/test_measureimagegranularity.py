@@ -27,6 +27,10 @@ import cellprofiler.objects as cpo
 import cellprofiler.workspace as cpw
 import cellprofiler.modules.measureimagegranularity as M
 
+
+import sys
+print sys.path
+
 IMAGE_NAME = 'myimage'
 class TestMeasureImageGranularity(unittest.TestCase):
     def test_01_01_load_matlab(self):

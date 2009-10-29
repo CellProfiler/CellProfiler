@@ -83,7 +83,6 @@ class PipelineController:
         """
         self.__pipeline_list_view = pipeline_list_view
         self.__movie_viewer = movie_viewer
-        self.__frame.Bind(EVT_TAKE_STEP, self.on_take_step, movie_viewer)
         
     def attach_to_module_view(self,module_view):
         """Listen for setting changes from the module view
@@ -126,7 +125,38 @@ class PipelineController:
         self.__module_controls_panel.Bind(wx.EVT_BUTTON, self.on_remove_module,self.__mcp_remove_module_button)
         self.__module_controls_panel.Bind(wx.EVT_BUTTON, self.on_module_up,self.__mcp_module_up_button)
         self.__module_controls_panel.Bind(wx.EVT_BUTTON, self.on_module_down,self.__mcp_module_down_button)
+
+    def attach_to_test_controls_panel(self, test_controls_panel):
+        """Attach the pipeline controller to the test controls panel
         
+        Attach the pipeline controller to the test controls panel.
+        In addition, the PipelineController gets to add whatever buttons it wants to the
+        panel.
+        """
+        self.__test_controls_panel = test_controls_panel
+        self.__tcp_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        self.__tcp_continue = wx.Button(test_controls_panel, -1, ">||", (0,0), (50,25))
+        self.__tcp_next_imageset = wx.Button(test_controls_panel, -1, ">>|", (0,0), (50,25))
+        self.__tcp_prev_imageset = wx.Button(test_controls_panel, -1, "|<<", (0,0), (50,25))
+        self.__tcp_next_group = wx.Button(test_controls_panel, -1, ">>>", (0,0), (50,25))
+        self.__tcp_prev_group = wx.Button(test_controls_panel, -1, "<<<", (0,0), (50,25))
+        self.__tcp_sizer.AddMany([(button, 0, wx.EXPAND) 
+                                  for button in 
+                                  [self.__tcp_continue, 
+                                   self.__tcp_next_imageset, self.__tcp_prev_imageset,
+                                   self.__tcp_next_group, self.__tcp_prev_group]])
+        self.__test_controls_panel.SetSizer(self.__tcp_sizer)
+        self.__tcp_continue.SetToolTip(wx.ToolTip("Continue to next pause"))
+        self.__tcp_next_imageset.SetToolTip(wx.ToolTip("Next image set"))
+        self.__tcp_prev_imageset.SetToolTip(wx.ToolTip("Previous image set"))
+        self.__tcp_next_group.SetToolTip(wx.ToolTip("Next group"))
+        self.__tcp_prev_group.SetToolTip(wx.ToolTip("Previous group"))
+        self.__test_controls_panel.Bind(wx.EVT_BUTTON, self.on_debug_continue, self.__tcp_continue)
+        self.__test_controls_panel.Bind(wx.EVT_BUTTON, self.on_debug_next_image_set, self.__tcp_next_imageset)
+        self.__test_controls_panel.Bind(wx.EVT_BUTTON, self.on_debug_prev_image_set, self.__tcp_prev_imageset)
+        self.__test_controls_panel.Bind(wx.EVT_BUTTON, self.on_debug_next_group, self.__tcp_next_group)
+        self.__test_controls_panel.Bind(wx.EVT_BUTTON, self.on_debug_prev_group, self.__tcp_prev_group)
+
     def __on_load_pipeline(self,event):
         dlg = wx.FileDialog(self.__frame,"Choose a pipeline file to open",wildcard="*.mat")
         if dlg.ShowModal()==wx.ID_OK:
@@ -413,16 +443,27 @@ class PipelineController:
     
     def on_debug_start(self, event):
         self.__pipeline_list_view.select_one_module(1)
+        self.__movie_viewer.Value = 0
         self.start_debugging()
     
     def start_debugging(self):
+        self.__pipeline_list_view.set_debug_mode(True)
+        self.__test_controls_panel.Show()
+        self.__test_controls_panel.GetParent().GetSizer().Layout()
         self.__debug_measurements = cpm.Measurements(can_overwrite=True)
         self.__debug_object_set = cpo.ObjectSet(can_overwrite=True)
         self.__frame.enable_debug_commands()
         assert isinstance(self.__pipeline, cellprofiler.pipeline.Pipeline)
-        self.__debug_image_set_list = self.__pipeline.prepare_run(self.__frame)
-        self.__keys, self.__groupings = self.__pipeline.get_groupings(
-            self.__debug_image_set_list)
+        try:
+            self.__debug_image_set_list = self.__pipeline.prepare_run(self.__frame)
+            self.__keys, self.__groupings = self.__pipeline.get_groupings(
+                self.__debug_image_set_list)
+        except ValueError, v:
+            message = "Error while preparing for run:\n%s"%(v)
+            wx.MessageBox(message, "Pipeline error", wx.OK | wx.ICON_ERROR, self.__frame)
+            self.stop_debugging()
+            return False
+
         self.__grouping_index = 0
         self.__within_group_index = 0
         self.__pipeline.prepare_group(self.__debug_image_set_list,
@@ -438,6 +479,9 @@ class PipelineController:
         self.stop_debugging()
 
     def stop_debugging(self):
+        self.__pipeline_list_view.set_debug_mode(False)
+        self.__test_controls_panel.Hide()
+        self.__test_controls_panel.GetParent().GetSizer().Layout()
         self.__frame.enable_debug_commands(False)
         self.__debug_image_set_list = None
         self.__debug_measurements = None
@@ -447,6 +491,7 @@ class PipelineController:
         self.__pipeline.end_run()
     
     def on_debug_step(self, event):
+        
         modules = self.__pipeline_list_view.get_selected_modules()
         module = modules[0]
         self.do_step(module)
@@ -490,19 +535,35 @@ class PipelineController:
                                                       failure);
         return failure==0
     
-    def on_take_step(self, event):
-        if not self.is_in_debug_mode():
-            if not self.start_debugging():
-                self.__movie_viewer.on_step_failed()
-                return
-        module_idx = self.__movie_viewer.slider.value
-        module = self.__pipeline.modules()[module_idx]
-        success = self.do_step(module)
-        if success:
-            self.__movie_viewer.on_step_taken()
+    def current_debug_module(self):
+        assert self.is_in_debug_mode()
+        module_idx = self.__movie_viewer.Value
+        return self.__pipeline.modules()[module_idx]
+
+    def next_debug_module(self):
+        if self.__movie_viewer.Value < len(self.__pipeline.modules()) - 1:
+            self.__movie_viewer.Value += 1
+            self.__movie_viewer.Refresh()
+            return True
         else:
-            self.__movie_viewer.on_step_failed()
+            return False
+
+    def on_debug_step(self, event):
+        success = self.do_step(self.current_debug_module())
+        if success:
+            self.next_debug_module()
         
+    def on_debug_continue(self, event):
+        while True:
+            module = self.current_debug_module()
+            success = self.do_step(module)
+            if not success:
+                return
+            if not self.next_debug_module():
+                return
+            if self.current_debug_module().wants_pause:
+                return
+
     def on_debug_next_image_set(self, event):
         #
         # We have two indices, one into the groups and one into
@@ -514,12 +575,28 @@ class PipelineController:
         image_number = image_numbers[self.__within_group_index]
         self.__debug_measurements.next_image_set(image_number)
         self.__pipeline_list_view.select_one_module(1)
-        self.__movie_viewer.slider.value = 0
+        self.__movie_viewer.Value = 0
         self.__debug_outlines = {}
-    
+
+    def on_debug_prev_image_set(self, event):
+        keys, image_numbers = self.__groupings[self.__grouping_index]
+        self.__within_group_index = ((self.__within_group_index + len(image_numbers) - 1) % 
+                                     len(image_numbers))
+        image_number = image_numbers[self.__within_group_index]
+        self.__debug_measurements.next_image_set(image_number)
+        self.__pipeline_list_view.select_one_module(1)
+        self.__movie_viewer.Value = 0
+        self.__debug_outlines = {}
+
+
     def on_debug_next_group(self, event):
         if self.__grouping_index is not None:
-            self.debug_choose_group(((self.__grouping_index + 1 ) % 
+            self.debug_choose_group(((self.__grouping_index + 1) % 
+                               len(self.__groupings)))
+    
+    def on_debug_prev_group(self, event):
+        if self.__grouping_index is not None:
+            self.debug_choose_group(((self.__grouping_index + len(self.__groupings) - 1) % 
                                len(self.__groupings)))
     
     def debug_choose_group(self, index):
@@ -532,7 +609,7 @@ class PipelineController:
         image_number = image_numbers[self.__within_group_index]
         self.__debug_measurements.next_image_set(image_number)
         self.__pipeline_list_view.select_one_module(1)
-        self.__movie_viewer.slider.value = 0
+        self.__movie_viewer.Value = 0
         self.__debug_outlines = {}
             
     def on_debug_choose_group(self, event):
@@ -601,7 +678,7 @@ class PipelineController:
             image_number = indexes[lb.Selection]
             self.__debug_measurements.next_image_set(image_number)
             self.__pipeline_list_view.select_one_module(1)
-            self.__movie_viewer.slider.value = 0
+            self.__movie_viewer.Value = 0
             
     def on_debug_reload(self, event):
         self.__pipeline.reload_modules()

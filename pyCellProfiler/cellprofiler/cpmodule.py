@@ -75,6 +75,7 @@ class CPModule(object):
         self.__notes = []
         self.__variable_revision_number = 0
         self.__show_frame = True
+        self.__wants_pause = False
         self.batch_state = np.zeros((0,),np.uint8)
         # Set the name of the module based on the class name.  A
         # subclass can override this either by declaring a module_name
@@ -348,8 +349,18 @@ class CPModule(object):
     
     def set_show_frame(self, show_frame):
         self.__show_frame = show_frame
-    
+
     show_frame = property(get_show_frame, set_show_frame)
+
+    def get_wants_pause(self):
+        '''True if the user wants to pause at this module while debugging'''
+        return self.__wants_pause
+
+    def set_wants_pause(self, wants_pause):
+        self.__wants_pause = wants_pause
+
+    wants_pause = property(get_wants_pause, set_wants_pause)
+
 
     def delete(self):
         """Delete the module, notifying listeners that it's going away

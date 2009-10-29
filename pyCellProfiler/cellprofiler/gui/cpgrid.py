@@ -42,6 +42,9 @@ class GridButtonRenderer(wx.grid.PyGridCellRenderer):
             bv     = ((state == BU_NORMAL and BV_UP) or
                       BV_DOWN)
             rect   = draw_bevel(dc, rect, self.__bevel_width, bv)
+        else:
+            bw = self.__bevel_width
+            rect = wx.Rect(rect.Left+bw, rect.Top+bw, rect.width-2*bw, rect.height-2*bw)
         dc.SetClippingRect(rect)
         dc.Clear()
         if bitmap:
@@ -57,7 +60,7 @@ class GridButtonRenderer(wx.grid.PyGridCellRenderer):
             size = wx.Size(0,0)
         return wx.Size(size[0]+2*self.__bevel_width,
                        size[1]+2*self.__bevel_width)
-        
+
     def Clone(self):
         return GridButtonRenderer(self.__bitmap_dictionary, self.__bevel_width)
     
@@ -143,7 +146,7 @@ def hook_grid_button_column(grid, col, bitmap_dictionary, bevel_width=2,
     for bitmap in bitmap_dictionary.values():
         width = max(bitmap.Width,width)
     width += bevel_width * 2
-    grid.SetColSize(col, width) 
+    grid.SetColSize(col, width)
 
     def on_left_down(event):
         x = event.GetX()
@@ -208,7 +211,7 @@ def hook_grid_button_column(grid, col, bitmap_dictionary, bevel_width=2,
         event_handler.Bind(wx.EVT_LEFT_UP, on_left_up, grid.GridWindow)
         event_handler.Bind(wx.EVT_MOTION, on_mouse_move, grid.GridWindow)
         event_handler.Bind(wx.EVT_MOUSE_CAPTURE_LOST, on_capture_lost, grid.GridWindow)
-    return renderer
+    return renderer, width
 
 if __name__ == "__main__":
     import wx.lib.inspection

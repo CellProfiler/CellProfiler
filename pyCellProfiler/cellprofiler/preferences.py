@@ -225,20 +225,14 @@ def get_background_color():
     the background for all frames and dialogs
     '''
     if not get_config().Exists(BACKGROUND_COLOR):
-        r = random.Random()
-        return wx.Colour(red = r.randint(0,255),
-                         green = r.randint(0,255),
-                         blue = r.randint(0,255))
+        return wx.Colour(red=143,green=188,blue=143) # darkseagreen
     else:
         try:
             color = [int(x) 
                      for x in get_config().Read(BACKGROUND_COLOR).split(',')]
             return wx.Colour(*tuple(color))
         except:
-            r = random.Random()
-            return wx.Colour(red = r.randint(0,255),
-                             green = r.randint(0,255),
-                             blue = r.randint(0,255))
+            return wx.Colour(red=143,green=188,blue=143) # darkseagreen
 
 def set_background_color(color):
     '''Set the color to be used for window backgrounds

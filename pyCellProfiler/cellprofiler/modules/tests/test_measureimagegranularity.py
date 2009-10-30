@@ -57,9 +57,9 @@ class TestMeasureImageGranularity(unittest.TestCase):
         self.assertEqual(len(pipeline.modules()), 2)
         module = pipeline.modules()[1]
         self.assertTrue(isinstance(module,M.MeasureImageGranularity))
-        self.assertEqual(len(module.image_settings), 1)
-        image_setting = module.image_settings[0]
-        self.assertTrue(isinstance(image_setting, M.ImageSetting))
+        self.assertEqual(len(module.images), 1)
+        image_setting = module.images[0]
+        #self.assertTrue(isinstance(image_setting, M.MeasureImageGranularity))
         self.assertEqual(image_setting.image_name.value, 'OrigBlue')
         self.assertAlmostEqual(image_setting.subsample_size.value, .33)
         self.assertAlmostEqual(image_setting.image_sample_size.value, .166)
@@ -94,11 +94,11 @@ class TestMeasureImageGranularity(unittest.TestCase):
         self.assertEqual(len(pipeline.modules()), 2)
         module = pipeline.modules()[1]
         self.assertTrue(isinstance(module,M.MeasureImageGranularity))
-        self.assertEqual(len(module.image_settings), 2)
+        self.assertEqual(len(module.images), 2)
         for image_setting, image_name, subsample_size, bsize, elsize, glen in\
-            ((module.image_settings[0], 'DNA', .25, .25, 10, 16),
-             (module.image_settings[1], 'Actin', .33, .50, 12, 20)):
-            self.assertTrue(isinstance(image_setting, M.ImageSetting))
+            ((module.images[0], 'DNA', .25, .25, 10, 16),
+             (module.images[1], 'Actin', .33, .50, 12, 20)):
+            #self.assertTrue(isinstance(image_setting, M.MeasureImageGranularity))
             self.assertEqual(image_setting.image_name, image_name)
             self.assertAlmostEqual(image_setting.subsample_size.value, subsample_size)
             self.assertAlmostEqual(image_setting.image_sample_size.value, bsize)
@@ -116,8 +116,8 @@ class TestMeasureImageGranularity(unittest.TestCase):
         '''
         module = M.MeasureImageGranularity()
         module.module_num = 1
-        image_setting = module.image_settings[0]
-        assert isinstance(image_setting, M.ImageSetting)
+        image_setting = module.images[0]
+        #assert isinstance(image_setting, M.MeasureImageGranularity)
         image_setting.image_name.value = IMAGE_NAME
         image_setting.subsample_size.value = subsample_size
         image_setting.image_sample_size.value = image_sample_size
@@ -146,7 +146,7 @@ class TestMeasureImageGranularity(unittest.TestCase):
         m = workspace.measurements
         self.assertTrue(isinstance(m, cpmeas.Measurements))
         for i in range(1,16):
-            feature = module.image_settings[0].granularity_feature(i)
+            feature = module.images[0].granularity_feature(i)
             self.assertTrue(feature in m.get_feature_names(cpmeas.IMAGE))
             value = m.get_current_image_measurement(feature)
             self.assertAlmostEqual(value, 0)
@@ -166,7 +166,7 @@ class TestMeasureImageGranularity(unittest.TestCase):
         m = workspace.measurements
         self.assertTrue(isinstance(m, cpmeas.Measurements))
         for i in range(1,16):
-            feature = module.image_settings[0].granularity_feature(i)
+            feature = module.images[0].granularity_feature(i)
             self.assertTrue(feature in m.get_feature_names(cpmeas.IMAGE))
             value = m.get_current_image_measurement(feature)
             self.assertAlmostEqual(value, expected[i-1])
@@ -190,7 +190,7 @@ class TestMeasureImageGranularity(unittest.TestCase):
         m = workspace.measurements
         self.assertTrue(isinstance(m, cpmeas.Measurements))
         for i in range(1,16):
-            feature = module.image_settings[0].granularity_feature(i)
+            feature = module.images[0].granularity_feature(i)
             self.assertTrue(feature in m.get_feature_names(cpmeas.IMAGE))
             value = m.get_current_image_measurement(feature)
             self.assertAlmostEqual(value, expected[i-1])
@@ -218,7 +218,7 @@ class TestMeasureImageGranularity(unittest.TestCase):
         m = workspace.measurements
         self.assertTrue(isinstance(m, cpmeas.Measurements))
         for i in range(1,16):
-            feature = module.image_settings[0].granularity_feature(i)
+            feature = module.images[0].granularity_feature(i)
             self.assertTrue(feature in m.get_feature_names(cpmeas.IMAGE))
             value = m.get_current_image_measurement(feature)
             self.assertAlmostEqual(value, expected[i-1])
@@ -263,7 +263,7 @@ class TestMeasureImageGranularity(unittest.TestCase):
         m = workspace.measurements
         self.assertTrue(isinstance(m, cpmeas.Measurements))
         for i in range(1,16):
-            feature = module.image_settings[0].granularity_feature(i)
+            feature = module.images[0].granularity_feature(i)
             self.assertTrue(feature in m.get_feature_names(cpmeas.IMAGE))
             value = m.get_current_image_measurement(feature)
             self.assertAlmostEqual(value, expected[i-1])

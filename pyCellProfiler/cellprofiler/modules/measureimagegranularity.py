@@ -301,4 +301,6 @@ class MeasureImageGranularity(cpm.CPModule):
             variable_revision_number = 2    
         return setting_values, variable_revision_number, from_matlab
     
-
+class ImageSetting(cps.SettingsGroup):
+    def granularity_feature(self, length):
+       return C_GRANULARITY%(length,self.image.image_name.value)

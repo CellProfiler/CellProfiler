@@ -193,7 +193,10 @@ class PipelineController:
         self.__setting_errors = {}
         
     def __on_save_pipeline(self,event):
-        self.do_save_pipeline()
+        try:
+            self.do_save_pipeline()
+        except Exception, e:
+            wx.MessageBox('Exception:\n%s'%(e), 'Could not save pipeline...', wx.ICON_ERROR|wx.OK, self.__frame)
     
     def do_save_pipeline(self):
         '''Save the pipeline, asking the user for the name

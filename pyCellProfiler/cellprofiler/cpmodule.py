@@ -277,9 +277,12 @@ class CPModule(object):
         
         Throw a ValidationError exception with an explanation if a module is not valid.
         """
-        for setting in self.visible_settings():
-            setting.test_valid(pipeline)
-        self.validate_module(pipeline)
+        try:
+            for setting in self.visible_settings():
+                setting.test_valid(pipeline)
+            self.validate_module(pipeline)
+        except Exception, e:
+            raise cps.ValidationError("Exception in cpmodule.test_valid %s" % e, self)
     
     def validate_module(self,pipeline):
         pass

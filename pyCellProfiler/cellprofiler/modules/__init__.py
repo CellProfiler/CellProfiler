@@ -39,6 +39,7 @@ pymodule_to_cpmodule = {'align' : 'Align',
                         'imagemath' : 'ImageMath',
                         'invertforprinting' : 'InvertForPrinting',
                         'loadimages' : 'LoadImages',
+                        'loadimagesnew' : 'LoadImagesNew',
                         'loadsingleimage' : 'LoadSingleImage',
                         'loadtext' : 'LoadText',
                         'makeprojection' : 'MakeProjection',
@@ -74,6 +75,7 @@ substitutions = {'FlagImageForQC' : 'FlagImage',
 
 all_modules = {}
 pymodules = []
+badmodules = []
 
 do_not_override = ['__init__', 'set_settings', 'create_from_handles', 'test_valid', 'module_class']
 should_override = ['create_settings', 'settings', 'run']
@@ -90,11 +92,19 @@ def check_module(module, name):
 
 def fill_modules():
     del pymodules[:]
+    del badmodules[:]
     for mod, name in pymodule_to_cpmodule.items():
-        m = __import__('cellprofiler.modules.' + mod, globals(), locals(), [name])
+        try:
+            m = __import__('cellprofiler.modules.' + mod, globals(), locals(), [name])
+        except Exception, e:
+            badmodules.append((mod, e))
+            continue
         pymodules.append(m)
         check_module(m.__dict__[name], name)
         all_modules[name] = m.__dict__[name]
+    if len(badmodules) > 0:
+        print "could not load these modules", badmodules
+        
 fill_modules()
     
 __all__ = ['instantiate_module', 'get_module_classes', 'reload_modules']

@@ -171,6 +171,19 @@ class FilenameText(Text):
     def __init__(self, text, value, *args, **kwargs):
         super(FilenameText,self).__init__(text, value, *args, **kwargs)
 
+class ImageFileSpecifier(Text):
+    """A setting for choosing an image file, including switching between substring, file globbing, and regular expressions,
+    and choosing different directories (or common defaults).
+    """
+    def __init__(self, text, value, *args, **kwargs):
+        if 'regexp' in kwargs:
+            self.regexp = kwargs['regexp']
+            del kwargs['regexp']
+        if 'default_dir' in kwargs:
+            self.default_dir = kwargs['default_dir']
+            del kwargs['default_dir']
+        super(ImageFileSpecifier,self).__init__(text, value, *args, **kwargs)
+
 class Integer(Text):
     """A setting that allows only integer input
     
@@ -990,7 +1003,7 @@ class Divider(Setting):
     """The divider setting inserts a vertical space, possibly with a horizontal line, in the GUI"""
     def __init__(self, text = "", line=True, doc=None):
         super(Divider, self).__init__(text, 'n/a', doc=doc)
-        self.line=line
+        self.line = line and (text == "")
 
 class Measurement(Setting):
     '''A measurement done on a class of objects (or Experiment or Image)

@@ -246,7 +246,15 @@ class Pipeline(object):
         setting = settings[0,0]
         # The variables are a (modules,max # of variables) array of cells (objects)
         # where an empty cell is a (1,0) array of float64
-        variable_count = max([len(module.settings()) for module in self.modules()])
+
+        try:
+            variable_count = max([len(module.settings()) for module in self.modules()])
+        except:
+            for module in self.modules():
+                if not isinstance(module.settings(), list):
+                    raise ValueError('Module %s.settings() did not return a list\n value: %s'%(module.module_name, module.settings()))
+                raise
+
         module_count = len(self.modules())
         setting[VARIABLE_VALUES] =          new_string_cell_array((module_count,variable_count))
         # The variable info types are similarly shaped

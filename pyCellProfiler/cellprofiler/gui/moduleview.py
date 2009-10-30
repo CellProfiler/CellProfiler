@@ -247,6 +247,13 @@ class ModuleView:
             self.__static_texts = []
             data                = []
             settings            = self.__module.visible_settings()
+            try:
+                assert len(settings) > 0
+            except:
+                wx.MessageBox("Module %s.visible_settings() did not return a list!\n  value: %s"%(self.__module.module_name, settings),
+                              "Pipeline Error", wx.ICON_ERROR, self.__module_panel)
+                settings = []
+                
             if self.__sizer is None:
                 self.__sizer = ModuleSizer(len(settings), 3)
                 self.module_panel.SetSizer(self.__sizer)
@@ -976,26 +983,29 @@ class ModuleView:
                 self.__module.test_valid(self.__pipeline)
             except cps.ValidationError, instance:
                 validation_error = instance
-            for idx, setting in enumerate(self.__module.visible_settings()):
-                try:
-                    if validation_error and validation_error.setting.key() == setting.key():
-                        raise validation_error
-                    setting.test_valid(self.__pipeline)
-                    if self.__static_texts[idx].GetForegroundColour() == ERROR_COLOR:
-                        self.__controls[idx].SetToolTipString('')
+            try:
+                for idx, setting in enumerate(self.__module.visible_settings()):
+                    try:
+                        if validation_error and validation_error.setting.key() == setting.key():
+                            raise validation_error
+                        setting.test_valid(self.__pipeline)
+                        if self.__static_texts[idx].GetForegroundColour() == ERROR_COLOR:
+                            self.__controls[idx].SetToolTipString('')
+                            for child in self.__controls[idx].GetChildren():
+                                child.SetToolTipString('')
+                            self.__static_texts[idx].SetForegroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOWTEXT))
+                            self.__static_texts[idx].Refresh()
+                    except cps.ValidationError, instance:
+                        # always update the tooltip, in case the value changes to something that's still bad.
+                        self.__controls[idx].SetToolTipString(instance.message)
                         for child in self.__controls[idx].GetChildren():
-                            child.SetToolTipString('')
-                        self.__static_texts[idx].SetForegroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOWTEXT))
-                        self.__static_texts[idx].Refresh()
-                except cps.ValidationError, instance:
-                    # always update the tooltip, in case the value changes to something that's still bad.
-                    self.__controls[idx].SetToolTipString(instance.message)
-                    for child in self.__controls[idx].GetChildren():
-                        child.SetToolTipString(instance.message)
-                    if self.__static_texts[idx].GetForegroundColour() != ERROR_COLOR:
-                        self.__static_texts[idx].SetForegroundColour(ERROR_COLOR)
-                        self.__static_texts[idx].Refresh()
-    
+                            child.SetToolTipString(instance.message)
+                        if self.__static_texts[idx].GetForegroundColour() != ERROR_COLOR:
+                            self.__static_texts[idx].SetForegroundColour(ERROR_COLOR)
+                            self.__static_texts[idx].Refresh()
+            except:
+                pass
+
     def reset_view(self):
         """Redo all of the controls after something has changed
         

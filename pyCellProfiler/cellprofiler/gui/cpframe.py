@@ -337,6 +337,7 @@ class CPFrame(wx.Frame):
                          (self.__file_list_panel,0,wx.EXPAND),
                          (self.__preferences_panel,0,wx.EXPAND)])
         self.__sizer.set_ignore_height(0,1) # Ignore the best height for the file list panel
+        self.__sizer.set_ignore_width(0,1) # Ignore the best width for the file list panel
         self.__sizer.set_ignore_height(0,0) # Ignore the best height for the module list panel
         self.SetSizer(self.__sizer)
         self.Layout()

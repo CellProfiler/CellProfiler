@@ -329,8 +329,8 @@ if ~strcmp(RotateMethod,'None')
         Xcrop = floor(abs((x*sin(theta) - y*cos(theta))*cos(theta)*sin(theta)/(sin(theta)^2-cos(theta)^2)));
         Ycrop = max(1,Ycrop);
         Xcrop = max(1,Xcrop);
-        [lengthX lengthY] = size(BeforeCropRotatedImage);
-        RotatedImage = BeforeCropRotatedImage(Xcrop:lengthX-Xcrop,Ycrop:lengthY-Ycrop);
+        [lengthX,lengthY,ignore] = size(BeforeCropRotatedImage);
+        RotatedImage = BeforeCropRotatedImage(Xcrop:lengthX-Xcrop,Ycrop:lengthY-Ycrop,:);
     else
         error(['Image processing was canceled in the ', ModuleName, ' module because the value of CropEdges is not recognized.']);
     end

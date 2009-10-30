@@ -95,7 +95,7 @@ class MeasureImageGranularity(cpm.CPModule):
         self.divider_bottom = cps.Divider(line=False)
         
     def add_image(self):    
-        group = cps.SettingsGroup() 
+        group = GranularitySettingsGroup()
         group.append("image_name",cps.ImageNameSubscriber("Select the input image","None"))
         group.append("subsample_size",cps.Float(
             "Subsampling factor for granularity measurements",
@@ -300,7 +300,8 @@ class MeasureImageGranularity(cpm.CPModule):
             # ordering of any of the settings
             variable_revision_number = 2    
         return setting_values, variable_revision_number, from_matlab
-    
-class ImageSetting(cps.SettingsGroup):
+
+class GranularitySettingsGroup(cps.SettingsGroup):
     def granularity_feature(self, length):
-       return C_GRANULARITY%(length,self.image.image_name.value)
+       return C_GRANULARITY%(length, self.image_name.value)
+

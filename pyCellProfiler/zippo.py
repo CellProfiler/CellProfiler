@@ -21,7 +21,7 @@ print
 print "import base64"
 
 for filename in sys.argv[2:]:
-    with open(filename) as f:
+    with open(filename,"rb") as f:
         data = f.read()
     encoded = base64.b64encode(data)
     name = re.sub(r'[^a-zA-Z0-9_]', '_', os.path.basename(filename).rsplit('.', 1)[0])

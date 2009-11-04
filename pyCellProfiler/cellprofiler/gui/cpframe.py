@@ -347,8 +347,12 @@ class CPFrame(wx.Frame):
         import cStringIO
         sizer = wx.BoxSizer(wx.HORIZONTAL)
         
-        from cellprofiler.icons import CP_logo
-        stream = cStringIO.StringIO(CP_logo)
+        try:
+            from cellprofiler.icons import CP_logo
+            stream = cStringIO.StringIO(CP_logo)
+        except:
+            fd = open('CellProfilerIcon.ico','rb')
+            stream = cStringIO.StringIO(fd.read())
         bitmap = wx.BitmapFromImage(wx.ImageFromStream(stream))
         logopic = wx.StaticBitmap(self.__logo_panel,-1,bitmap)
         sizer.Add(logopic)

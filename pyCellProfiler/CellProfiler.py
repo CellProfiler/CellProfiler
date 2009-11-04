@@ -72,7 +72,7 @@ parser.add_option("-g","--group",
                         'process only the group of image sets that match '
                         'the keys.'))
 parser.add_option("-b","--do-not_build",
-                  dest="do_not_build",
+                  dest="build_extensions",
                   default=True,
                   action="store_false",
                   help="Do not build C and Cython extensions")
@@ -89,7 +89,7 @@ import subprocess
 from matplotlib import use as mpluse
 mpluse('WXAgg')
 
-if (not hasattr(sys, 'frozen')) and options.do_not_build:
+if (not hasattr(sys, 'frozen')) and options.build_extensions:
     import cellprofiler.cpmath.setup
     if sys.platform == 'win32':
         import cellprofiler.ffmpeg.setup
@@ -106,7 +106,7 @@ if (not hasattr(sys, 'frozen')) and options.do_not_build:
         compile_scripts += [(os.path.join('cellprofiler','ffmpeg','setup.py'),
                              cellprofiler.ffmpeg.setup)]
     current_directory = os.path.abspath(os.curdir)
-    for compile_script,my_module in compile_scripts:
+    for compile_script, my_module in compile_scripts:
         script_path, script_file = os.path.split(compile_script)
         os.chdir(os.path.join(root,script_path))
         configuration = my_module.configuration()
@@ -128,6 +128,17 @@ if (not hasattr(sys, 'frozen')) and options.do_not_build:
                                   "build_ext","-i"])
         p.communicate()
     os.chdir(current_directory)
+    # build icon files
+    if options.show_gui:
+        import glob
+        zippo_script = os.path.join(root, 'zippo.py')
+        zippo_outfile = os.path.join(root, "cellprofiler", "icons", "__init__.py")
+        icon_files = glob.glob(os.path.join(root, "cellprofiler", "icons", "*.png"))
+        print "packing icons", " ".join([os.path.basename(f) for f in icon_files])
+        p = subprocess.Popen(["python", zippo_script, zippo_outfile] + icon_files)
+        p.communicate()
+
+    
 
 from cellprofiler.cellprofilerapp import CellProfilerApp
 from cellprofiler.pipeline import Pipeline

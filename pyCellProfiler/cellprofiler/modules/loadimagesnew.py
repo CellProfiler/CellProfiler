@@ -177,7 +177,7 @@ class LoadImagesNew(cpmodule.CPModule):
                         has been exceeded.</li>
                         </ul>"""))
         group.append("image_specifier", 
-                     cps.ImageFileSpecifier("What substring defines these images?", "", regexp=False, default_dir='image'))
+                     cps.ImageFileSpecifier("What substring defines these images?", "", regexp=False, default_dir=cps.DefaultImageDirectory))
         group.append("remover", cps.RemoveSettingButton("Remove the image above", "Remove", self.images, group))
         group.append("divider", cps.Divider(line=False))
         self.images.append(group)

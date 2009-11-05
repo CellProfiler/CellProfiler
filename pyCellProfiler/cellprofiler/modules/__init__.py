@@ -18,6 +18,7 @@ from cellprofiler.cpmodule import CPModule
 pymodule_to_cpmodule = {'align' : 'Align',
                         'applythreshold' : 'ApplyThreshold',
                         'calculatemath' : 'CalculateMath',
+                        'calculatestatistics' : 'CalculateStatistics',
                         'colortogray' : 'ColorToGray',
                         'converttoimage' : 'ConvertToImage',
                         'correctillumination_calculate' : 'CorrectIllumination_Calculate',

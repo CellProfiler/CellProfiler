@@ -288,6 +288,7 @@ that can be processed by different nodes in a cluster.
         if self.wants_rows.value:
             # skip initial rows
             n_to_skip = self.row_range.min-1
+            i=0
             for i in range(n_to_skip):
                 reader.next()
             i += 1

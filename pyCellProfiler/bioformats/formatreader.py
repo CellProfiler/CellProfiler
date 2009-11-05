@@ -145,6 +145,7 @@ def make_image_reader_class(env):
         getReader = jutil.make_method(env, klass, 'getReader',
                                       '()Lloci/formats/IFormatReader;')
     return ImageReader
+
         
 def make_reader_wrapper_class(env, class_name):
     '''Make an ImageReader wrapper class

@@ -104,7 +104,8 @@ def call(env, o, method_name, sig, *args):
     ret_sig = sig[sig.find(')')+1:]
     nice_args = get_nice_args(env, args, args_sig)
     result = env.call_method(o, method_id, *nice_args)
-    if env.exception_occurred() is not None:
+    x = env.exception_occurred()
+    if x is not None:
         raise JavaException(env)
     return get_nice_result(env,result,ret_sig)
 
@@ -162,7 +163,8 @@ def make_method(env, klass, name, sig, doc='No documentation'):
     def method(self, *args):
         nice_args = get_nice_args(env, args, args_sig)
         result = env.call_method(self.o, method_id, *nice_args)
-        if env.exception_occurred() is not None:
+        jexception = env.exception_occurred()
+        if jexception is not None:
             raise JavaException(env)
         if result is None:
             return

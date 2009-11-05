@@ -139,19 +139,22 @@ if (not hasattr(sys, 'frozen')) and options.build_extensions:
         p.communicate()
 
     
-
-from cellprofiler.cellprofilerapp import CellProfilerApp
-from cellprofiler.pipeline import Pipeline
+#
+# Important to go headless ASAP
+#
 import cellprofiler.preferences as cpprefs
-import cellprofiler.gui.cpframe as cpgframe
-from cellprofiler.utilities.get_revision import get_revision
-
-print "Subversion revision: %d"%get_revision()
 if not options.show_gui:
     cpprefs.set_headless()
     # What's there to do but run if you're running headless?
     # Might want to change later if there's some headless setup 
     options.run_pipeline = True
+
+from cellprofiler.cellprofilerapp import CellProfilerApp
+from cellprofiler.pipeline import Pipeline
+import cellprofiler.gui.cpframe as cpgframe
+from cellprofiler.utilities.get_revision import get_revision
+
+print "Subversion revision: %d"%get_revision()
 if options.run_pipeline and not options.pipeline_filename:
     raise ValueError("You must specify a pipeline filename to run")
 

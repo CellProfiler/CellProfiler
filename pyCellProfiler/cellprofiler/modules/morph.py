@@ -567,7 +567,7 @@ class Morph(cpm.CPModule):
                                              iterations=count,
                                              mask=mask)
             elif function_name == F_ENDPOINTS:
-                return morph.endpoints(image, mask)
+                return morph.endpoints(pixel_data, mask)
             elif function_name == F_ERODE:
                 return scind.binary_erosion(pixel_data, np.ones((3,3),bool),
                                             iterations = count,

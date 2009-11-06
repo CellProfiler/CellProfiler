@@ -200,11 +200,27 @@ class ExportToDatabase(cpm.CPModule):
         self.wants_agg_std_dev = cps.Binary(
             "Do you want to calculate the standard deviation of the values "
             "of each object measurement per image?", False)
+        self.wants_agg_mean_well = cps.Binary(
+            "Do you want to calculate the aggregate mean value of each "
+            "object measurement per well?", False, doc = '''ExportToDatabase can calculate statistics 
+            over all the objects in each well and store the results as columns in per_well tables in the database. 
+            For instance, if you are measuring the area of the Nuclei objects and you check the aggregate
+            mean box in this module, ExportToDatabase will create a table in database called
+            Per_Well_Mean, with a column called Mean_Nuclei_AreaShape_Area. NOTE: this option is only
+            available if you have extracted plate and well metadata from the filename or via a LoadText module.
+            This option will write out a .SQL file with the statements necessary to create the per_well
+            table, regardless of the option chosen above.''')
+        self.wants_agg_median_well = cps.Binary(
+            "Do you want to calculate the aggregate median value of each "
+            "object measurement per well?", False)
+        self.wants_agg_std_dev_well = cps.Binary(
+            "Do you want to calculate the standard deviation of the values "
+            "of each object measurement per well?", False)
         self.objects_choice = cps.Choice(
             "Do you want to add all object measurements to the database?",
             [O_ALL, O_NONE, O_SELECT],
             doc="""This option lets you choose the objects that will have
-                   their measurements saved in the Per_Object database table.
+                   their measurements saved in the Per_Object and Per_Well(s) database tables.
                    <ul><li><b>All:</b> save measurements from all objects</li>
                        <li><b>None:</b> don't make a Per_Object table, save
                               only image measurements.</li>
@@ -213,8 +229,9 @@ class ExportToDatabase(cpm.CPModule):
             "Choose the objects to include",
             doc="""Choose one or more objects from this list. The list includes
             the objects that were created by prior modules. If you choose an
-            object, its measurements will be written out to the Per_Object
-            table, otherwise, the object's measurements will be skipped.""")
+            object, its measurements will be written out to the Per_Object and/or
+            Per_Well(s) tables, otherwise, the object's measurements will be skipped.""")
+        
                                                             
     def visible_settings(self):
         needs_default_output_directory =\
@@ -247,7 +264,9 @@ class ExportToDatabase(cpm.CPModule):
             if not self.use_default_output_directory.value:
                 result += [self.output_directory]
         result += [self.wants_agg_mean, self.wants_agg_median,
-                   self.wants_agg_std_dev, self.objects_choice]
+                   self.wants_agg_std_dev, self.wants_agg_mean_well, 
+                   self.wants_agg_median_well, self.wants_agg_std_dev_well,
+                   self.objects_choice]
         if self.objects_choice == O_SELECT:
             result += [self.objects_list]
         return result
@@ -259,8 +278,9 @@ class ExportToDatabase(cpm.CPModule):
                 self.save_cpa_properties, self.store_csvs, self.db_host, 
                 self.db_user, self.db_passwd, self.sqlite_file,
                 self.wants_agg_mean, self.wants_agg_median,
-                self.wants_agg_std_dev, self.objects_choice,
-                self.objects_list]
+                self.wants_agg_std_dev, self.wants_agg_mean_well, 
+                self.wants_agg_median_well, self.wants_agg_std_dev_well,
+                self.objects_choice, self.objects_list]
     
     def validate_module(self,pipeline):
         if self.want_table_prefix.value:
@@ -340,17 +360,21 @@ class ExportToDatabase(cpm.CPModule):
     def post_run(self, workspace):
         if self.save_cpa_properties.value:
             self.write_properties(workspace)
-        if not self.store_csvs.value:
-            # commit changes to db here or in run?
-            print 'Commit'
-            self.connection.commit()
-            return
         mappings = self.get_column_name_mappings(workspace)
         if self.db_type == DB_MYSQL:
             per_image, per_object = self.write_mysql_table_defs(workspace, mappings)
         else:
             per_image, per_object = self.write_oracle_table_defs(workspace, mappings)
+        if self.wants_agg_mean_well.value:
+            per_well = self.write_mysql_table_per_well(workspace, mappings)
+        if not self.store_csvs.value:
+            # commit changes to db here or in run?
+            print 'Commit'
+            self.connection.commit()
+            return
         self.write_data(workspace, mappings, per_image, per_object)
+        if self.wants_agg_mean_well.value:
+            self.write_data(workspace, mappings, per_well)
     
     def should_stop_writing_measurements(self):
         '''All subsequent modules should not write measurements'''
@@ -395,6 +419,17 @@ class ExportToDatabase(cpm.CPModule):
                     (cpmeas.AGG_MEDIAN, self.wants_agg_median),
                     (cpmeas.AGG_STD_DEV, self.wants_agg_std_dev))
                 if setting.value]
+        
+    @property
+    def agg_well_names(self):
+        '''The list of selected aggregate names'''
+        return [name
+                for name, setting
+                in (('avg', self.wants_agg_mean_well),
+                    ('median', self.wants_agg_median_well),
+                    ('std', self.wants_agg_std_dev_well))
+                if setting.value]
+        
     #
     # Create per_image and per_object tables in MySQL
     #
@@ -527,6 +562,7 @@ class ExportToDatabase(cpm.CPModule):
                     per_image[feature_name] = per_image_idx
                     per_image_idx += 1
         fid.write(");\n\n")
+        
         #
         # Write out the per-object table
         #
@@ -556,8 +592,30 @@ FIELDS TERMINATED BY ','
 OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
 """%(self.base_name(workspace),self.get_table_prefix(),
      self.base_name(workspace),self.get_table_prefix()))
-        fid.close()
         return per_image, per_object
+    
+    def write_mysql_table_per_well(self, workspace, mappings):
+        file_name = "%s_Per_Well_SETUP.SQL"%(self.sql_file_prefix)
+        path_name = os.path.join(self.get_output_directory(), file_name)
+        fid = open(path_name,"wt")
+        fid.write("CREATE DATABASE IF NOT EXISTS %s;\n"%(self.db_name.value))
+        fid.write("USE %s;\n"%(self.db_name.value))
+
+        for aggname in self.agg_well_names:
+            measurements = workspace.measurements
+            fid.write("CREATE TABLE %sPer_Well_%s AS SELECT "%(self.get_table_prefix(), aggname))
+            for object_name in workspace.measurements.get_object_names():
+                    if object_name == 'Image':
+                        continue
+                    for feature in measurements.get_feature_names(object_name):
+                        if self.ignore_feature(object_name, feature, measurements):
+                            continue
+                        feature_name = "%s_%s"%(object_name,feature)
+                        colname = mappings[feature_name]
+                        fid.write("%s(%s),\n"%(aggname,colname))
+            fid.write("Image_Metadata_Plate, Image_Metadata_Well\n"
+                                  "FROM %sPer_Object GROUP BY Image_Metadata_Plate, Image_Metadata_Well;\n\n"%(self.get_table_prefix()))
+        fid.close()
     
     def write_oracle_table_defs(self, workspace, mappings):
         raise NotImplementedError("Writing to an Oracle database is not yet supported")

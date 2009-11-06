@@ -4,18 +4,39 @@
 This module performs a series of morphological operations on a binary
 image or grayscale image, resulting in an image of the same type.
     
-<p>The following operations are supported:<br>
-<table border=1>
-
-<tr><td><b>Operation</b></td><td><b>Description</b></td><td><b>Input image supported</b></td></tr>
-
+The following operations are supported:<br>
+<table border="1">
+<tr><td><b>Operation</b></td><td><b>Description</b></td>
+<td><b>Input image supported</b></td></tr>
 <tr>
 <td><i>Bothat</i></td>
 <td>Bottom-hat filter: A bottom-hat filter enhances black spots in a white background. 
 It subtracts the morphological "close" of the image from the image.</td>
 <td>Binary, grayscale</td>
 </tr>
-
+<tr><td><i>Branchpoints</i></td>
+<td>Remove all pixels except those that are the branchpoints of a skeleton.
+This operation should be applied to an image after skeletonizing. It leaves
+only those pixels that are at the intersection of branches.<br>
+<table>
+<tr><td><table border="1">
+<tr><td>1</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>    
+<tr><td>0</td><td>1</td><td>0</td><td>0</td><td>0</td></tr>    
+<tr><td>0</td><td>0</td><td>1</td><td>0</td><td>0</td></tr>  
+<tr><td>0</td><td>1</td><td>0</td><td>1</td><td>0</td></tr>      
+<tr><td>1</td><td>0</td><td>0</td><td>0</td><td>1</td></tr>    
+</table></td>
+<td>&rarr;</td>
+<td><table border="1">
+<tr><td>?</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>    
+<tr><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>    
+<tr><td>0</td><td>0</td><td>1</td><td>0</td><td>0</td></tr>  
+<tr><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>      
+<tr><td>?</td><td>0</td><td>0</td><td>0</td><td>?</td></tr>    
+</table></td></tr>
+</table></td>
+<td>Binary
+</td></tr>
 <tr>
 <td><i>Bridge</i></td>
 <td>Set a pixel to one if it has two non-zero neighbors that are on opposite 
@@ -38,7 +59,6 @@ sides of this pixel:<br>
 </td>
 <td>Binary</td>
 </tr>
-
 <tr>
 <td><i>Clean</i></td>
 <td>Remove isolated pixels:<br>
@@ -60,7 +80,6 @@ sides of this pixel:<br>
 </td>
 <td>Binary</td>
 </tr>
-
 <tr>
 <td><i>Close</i></td>
 <td>Performs a dilation followed by an erosion. The effect is to
@@ -68,7 +87,6 @@ fill holes and join nearby objects.
 </td>
 <td>Binary, grayscale</td>
 </tr>
-
 <tr>
 <td><i>Diag</i></td>
 <td>Fill in pixels whose neighbors are diagnonally connected to 4-connect 
@@ -99,19 +117,42 @@ pixels that are 8-connected:<br>
 </td>
 <td>Binary</td>
 </tr>
-
 <tr>
 <td><i>Dilate</i></td>
 <td>For binary, any 0 pixel is replaced by 1 if any of its neighbors is 1. 
 For grayscale, each pixel is replaced by the maximum of its neighbors and itself.</td>
 <td>Binary, grayscale</td>
 </tr>
-
 <tr>        
 <td><i>Erode</i></td>
 <td>For binary, any 1 pixel is replaced by 0 if any of its neighbors is 0. 
 For grayscale, each pixel is replaced by the minimum of its neighbors and itself.</td>
 <td>Binary, grayscale</td>
+</tr>
+<tr>
+<td>Endpoints</td>
+<td>Remove all pixels except the ones that are at the end of a skeleton:<br>
+<table>
+<tr>
+<td><table border=1>
+<tr><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>    
+<tr><td>0</td><td>1</td><td>0</td><td>1</td><td>0</td></tr>    
+<tr><td>0</td><td>0</td><td>1</td><td>0</td><td>0</td></tr>  
+<tr><td>0</td><td>1</td><td>0</td><td>1</td><td>0</td></tr>      
+<tr><td>0</td><td>1</td><td>0</td><td>0</td><td>1</td></tr>    
+</table></td>
+<td>&rarr;</td>
+<td><table border="1">
+<tr><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>    
+<tr><td>0</td><td>1</td><td>0</td><td>1</td><td>0</td></tr>    
+<tr><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>  
+<tr><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>      
+<tr><td>0</td><td>?</td><td>0</td><td>0</td><td>?</td></tr>    
+</table></td>
+</tr>
+</table>
+</td>
+<td>Binary</td>
 </tr>
 <tr>
 <td>Fill</td>
@@ -134,9 +175,9 @@ For grayscale, each pixel is replaced by the minimum of its neighbors and itself
 </td>
 <td>Binary</td>
 </tr>
-
 <tr>
-<td><i>Hbreak</i></td><td>Removes pixels that form vertical bridges between horizontal lines:<br>
+<td><i>Hbreak</i></td>
+<td>Removes pixels that form vertical bridges between horizontal lines:<br>
 <table>
 <tr>
 <td><table border=1>
@@ -155,7 +196,6 @@ For grayscale, each pixel is replaced by the minimum of its neighbors and itself
 </td>
 <td>Binary</td>
 </tr>
-
 <tr>
 <td><i>Majority</i></td>
 <td>Each pixel takes on the value of the majority that surround it 
@@ -183,7 +223,6 @@ For grayscale, each pixel is replaced by the minimum of its neighbors and itself
 break bridges between objects and remove single pixels.</td>
 <td>Binary, grayscale</td>
 </tr>
-
 <tr>
 <td><i>Remove</i></td>
 <td>Removes pixels that are otherwise surrounded by others (4 connected). 
@@ -206,7 +245,6 @@ The effect is to be left with the perimeter of a solid object:<br>
 </td>
 <td>Binary</td>
 </tr>
-
 <tr>
 <td><i>Shrink</i></td>
 <td>Perform a thinning operation that erodes unless that operation
@@ -214,7 +252,6 @@ would change the image's Euler number. This means that blobs are reduced to sing
 points and blobs with holes are reduced to rings if shrunken indefinitely.</td>
 <td>Binary</td>
 </tr>
-
 <tr>
 <td><i>Skel</i></td>
 <td>Perform a skeletonizing operation (medial axis transform). Preserves 
@@ -222,7 +259,6 @@ the points at the edges of objects but erodes everything else to lines that conn
 See <a href="http://homepages.inf.ed.ac.uk/rbf/HIPR2/skeleton.htm">here</a> for a description.</td>
 <td>Binary</td>
 </tr>
-
 <tr>
 <td><i>Spur</i></td>
 <td>Remove spur pixels. These are pixels that are only diagonally
@@ -247,7 +283,6 @@ connected to other pixels and connected in only one direction:<br>
 </td>
 <td>Binary</td>
 </tr>
-
 <tr>
 <td><i>Thicken</i></td>
 <td>Dilate the exteriors of objects where that dilation does not
@@ -255,7 +290,6 @@ connected to other pixels and connected in only one direction:<br>
 Unlabeled points adjacent to uniquely labeled points change from background to foreground.</td>
 <td>Binary</td>
 </tr>
-
 <tr>
 <td><i>Thin</i></td>
 <td>Thin lines preserving the Euler number using the thinning algorithm # 1 described in 
@@ -263,38 +297,33 @@ Unlabeled points adjacent to uniquely labeled points change from background to f
 page 359. The result generally preserves the lines in an image while eroding their thickness.</td>
 <td>Binary</td>
 </tr>
-
 <tr>
 <td><i>Tophat</i></td>
 <td>Subtract the morphological opening of the image from the image. This enhances white spots 
 in a black background.</td>
 <td>Binary, grayscale</td>
 </tr>
-
 <tr>
-<td><i>Vbreak</i></td>
-<td>Removes pixels that form horizontal bridges between vertical lines:<br>
-<table>
-<tr>
-<td><table border=1>
-<tr><td>1</td><td>0</td><td>1</td></tr>
-<tr><td>1</td><td>1</td><td>1</td></tr>
-<tr><td>1</td><td>0</td><td>1</td></tr>
-</table></td>
-<td>&rarr;</td>
-<td><table border=1>
-<tr><td>1</td><td>0</td><td>1</td></tr>
-<tr><td>1</td><td>0</td><td>1</td></tr>
-<tr><td>1</td><td>0</td><td>1</td></tr>
-</table></td>
+  <td><i>Vbreak</i></td>
+  <td>Removes pixels that form horizontal bridges between vertical lines:<br>
+    <table>
+      <tr>
+        <td><table border=1>
+          <tr><td>1</td><td>0</td><td>1</td></tr>
+          <tr><td>1</td><td>1</td><td>1</td></tr>
+          <tr><td>1</td><td>0</td><td>1</td></tr>
+        </table></td>
+        <td>&rarr;</td>
+        <td><table border=1>
+          <tr><td>1</td><td>0</td><td>1</td></tr>
+          <tr><td>1</td><td>0</td><td>1</td></tr>
+          <tr><td>1</td><td>0</td><td>1</td></tr>
+        </table></td>
+      </tr>
+    </table></td>
+  <td>Binary</td>
 </tr>
 </table>
-</td>
-<td>Binary</td>
-</tr>
-
-</table>
-</p>
 <p>The algorithms minimize the interference of masked pixels; for instance,
 the dilate operation will only consider unmasked pixels in the neighborhood
 of a pixel when determining the maximum within that neighborhood.</p>
@@ -323,11 +352,13 @@ import cellprofiler.cpimage as cpi
 import cellprofiler.cpmath.cpmorphology as morph
 
 F_BOTHAT = 'bothat'
+F_BRANCHPOINTS = 'branchpoints'
 F_BRIDGE = 'bridge'
 F_CLEAN  = 'clean'
 F_CLOSE  = 'close'
 F_DIAG   = 'diag'
 F_DILATE = 'dilate'
+F_ENDPOINTS = 'endpoints'
 F_ERODE  = 'erode'
 F_FILL   = 'fill'
 F_HBREAK = 'hbreak'
@@ -342,7 +373,8 @@ F_THICKEN = 'thicken'
 F_THIN   = 'thin'
 F_TOPHAT = 'tophat'
 F_VBREAK = 'vbreak'
-F_ALL = [F_BOTHAT, F_BRIDGE, F_CLEAN, F_CLOSE, F_DIAG, F_DILATE, F_ERODE,
+F_ALL = [F_BOTHAT, F_BRANCHPOINTS, F_BRIDGE, F_CLEAN, F_CLOSE, F_DIAG, 
+         F_DILATE, F_ENDPOINTS, F_ERODE,
          F_FILL, F_HBREAK, F_LIFE, F_MAJORITY, F_OPEN, F_REMOVE, F_SHRINK, 
          F_SKEL, F_SPUR, F_THICKEN, F_THIN, F_TOPHAT, F_VBREAK]
 
@@ -492,7 +524,8 @@ class Morph(cpm.CPModule):
     def run_function(self, function_name, pixel_data, mask, count):
         '''Apply the function once to the image, returning the result'''
         is_binary =  pixel_data.dtype.kind == 'b'
-        if (function_name in (F_BRIDGE, F_CLEAN, F_DIAG, F_FILL,
+        if (function_name in (F_BRANCHPOINTS, F_BRIDGE, F_CLEAN, F_DIAG, 
+                              F_ENDPOINTS, F_FILL,
                               F_HBREAK, F_LIFE, F_MAJORITY, F_REMOVE, F_SHRINK,
                               F_SKEL, F_SPUR, F_THICKEN, F_THIN, F_VBREAK) and
             not is_binary):
@@ -501,13 +534,17 @@ class Morph(cpm.CPModule):
                              function_name)
             pixel_data = pixel_data != 0
 
-        if (function_name in (F_BRIDGE, F_CLEAN, F_DIAG, F_FILL,
+        if (function_name in (F_BRANCHPOINTS, F_BRIDGE, F_CLEAN, F_DIAG, 
+                              F_ENDPOINTS, F_FILL,
                               F_HBREAK, F_LIFE, F_MAJORITY, F_REMOVE, F_SHRINK,
                               F_SKEL, F_SPUR, F_THICKEN, F_THIN, F_VBREAK) or
             (is_binary and
              function_name in (F_CLOSE, F_DILATE, F_ERODE, F_OPEN))):
-            # All of these have an iterations argument
-            if function_name == F_BRIDGE:
+            # All of these have an iterations argument or it makes no
+            # sense to iterate
+            if function_name == F_BRANCHPOINTS:
+                return morph.branchpoints(pixel_data, mask)
+            elif function_name == F_BRIDGE:
                 return morph.bridge(pixel_data, mask, count)
             elif function_name == F_CLEAN:
                 return morph.clean(pixel_data, mask, count)
@@ -529,6 +566,8 @@ class Morph(cpm.CPModule):
                                              np.ones((3,3),bool),
                                              iterations=count,
                                              mask=mask)
+            elif function_name == F_ENDPOINTS:
+                return morph.endpoints(image, mask)
             elif function_name == F_ERODE:
                 return scind.binary_erosion(pixel_data, np.ones((3,3),bool),
                                             iterations = count,

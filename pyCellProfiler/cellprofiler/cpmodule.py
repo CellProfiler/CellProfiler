@@ -206,7 +206,7 @@ class CPModule(object):
         """
         doc = self.__doc__.replace("\r","").replace("\n\n","<p>")
         doc = doc.replace("\n"," ")
-        result = "<html><body><h1>%s</h1>" % self.module_name + doc
+        result = "<html><body><h1>%s</h1><div>" % self.module_name + doc
         first_setting_doc = True
         seen_setting_docs = set()
         for setting in self.settings():
@@ -219,8 +219,7 @@ class CPModule(object):
                         first_setting_doc = False
                     result = (result + "<h4>" + setting.text + "</h4><div>" +
                               setting.doc + "</div>")
-        if not first_setting_doc:
-            result += "</div>"
+        result += "</div>"
         result += "</body></html>"
         return result
             

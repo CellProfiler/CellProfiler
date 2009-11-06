@@ -2179,6 +2179,39 @@ def make_table(value, pattern, care=np.ones((3,3),bool)):
                      else not value
                      for i in range(512)], bool)
 
+'''The table for computing the branchpoints of a skeleton'''
+#
+# A skeleton will only contain 3-connected pixels if the connected
+# pixels are on three separate branches. The operation is subtractive
+# so the middle pixel must always be on.
+# Removing the middle pixel should create three objects after labeling
+# using 4-connectivity.
+#
+branchpoints_table = np.array([pattern_of(index)[1,1] and
+                               scind.label(pattern_of(index-16))[1] > 2
+                               for index in range(512)])
+
+def branchpoints(image, mask=None):
+    '''Remove all pixels from an image except for branchpoints
+    
+    image - a skeletonized image
+    mask -  a mask of pixels excluded from consideration
+    
+    1 0 1    ? 0 ?
+    0 1 0 -> 0 1 0
+    0 1 0    0 ? 0
+    '''
+    global branchpoints_table
+    if mask is None:
+        masked_image = image
+    else:
+        masked_image = image.astype(bool).copy()
+        masked_image[~mask] = False
+    result = table_lookup(masked_image, branchpoints_table, False, 1)
+    if not mask is None:
+        result[~mask] = image[~mask]
+    return result
+
 '''The table for computing binary bridge'''
 #
 # Either the center is already true or, if you label the pattern,
@@ -2285,6 +2318,34 @@ def diag(image, mask=None, iterations=1):
 fill_table = (make_table(True, np.array([[0,0,0],[0,1,0],[0,0,0]],bool),
                          np.array([[0,0,0],[0,1,0],[0,0,0]],bool)) |
               make_table(True, np.array([[1,1,1],[1,0,1],[1,1,1]],bool)))
+
+#
+# Endpoints are on and have at most one neighbor.
+#
+endpoints_table = np.array([pattern_of(index)[1,1] and
+                            np.sum(pattern_of(index)) <= 2
+                            for index in range(512)])
+
+def endpoints(image, mask=None):
+    '''Remove all pixels from an image except for endpoints
+    
+    image - a skeletonized image
+    mask -  a mask of pixels excluded from consideration
+    
+    1 0 0    ? 0 0
+    0 1 0 -> 0 1 0
+    0 0 0    0 0 0
+    '''
+    global endpoints_table
+    if mask is None:
+        masked_image = image
+    else:
+        masked_image = image.astype(bool).copy()
+        masked_image[~mask] = False
+    result = table_lookup(masked_image, endpoints_table, False, 1)
+    if not mask is None:
+        result[~mask] = image[~mask]
+    return result
 
 def fill(image, mask=None, iterations=1):
     '''Fill isolated black pixels

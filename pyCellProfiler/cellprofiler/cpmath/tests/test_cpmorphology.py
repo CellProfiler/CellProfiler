@@ -1717,6 +1717,45 @@ class TestClosing(unittest.TestCase):
         expected = np.array([[.9,.8,.8],[.9,.8,.8],[.9,.8,.8]])
         self.assertTrue(np.all(np.abs(result - expected)<.00000001))
 
+class TestBranchpoints(unittest.TestCase):
+    def test_00_00_zeros(self):
+        '''Test branchpoints on an array of all zeros'''
+        result = morph.branchpoints(np.zeros((9,11), bool))
+        self.assertTrue(np.all(result == False))
+        
+    def test_00_01_zeros_masked(self):
+        '''Test branchpoints on an array that is completely masked'''
+        result = morph.branchpoints(np.zeros((10,10),bool),
+                                    np.zeros((10,10),bool))
+        self.assertTrue(np.all(result==False))
+    
+    def test_01_01_branchpoints_positive(self):
+        '''Test branchpoints on positive cases'''
+        image = np.array([[1,0,0,1,0,1,0,1,0,1,0,0,1],
+                          [0,1,0,1,0,0,1,0,1,0,1,1,0],
+                          [1,0,1,0,1,1,0,1,1,1,0,0,1]],bool)
+        result = morph.branchpoints(image)
+        self.assertTrue(np.all(image[1,:] == result[1,:]))
+    
+    def test_01_02_branchpoints_negative(self):
+        '''Test branchpoints on negative cases'''
+        image = np.array([[1,0,0,0,1,0,0,0,1,0,1,0,1],
+                          [0,1,0,0,1,0,1,1,1,0,0,1,0],
+                          [0,0,1,0,1,0,0,0,0,0,0,0,0]],bool)
+        result = morph.branchpoints(image)
+        self.assertTrue(np.all(result==False))
+        
+    def test_02_01_branchpoints_masked(self):
+        '''Test that masking defeats branchpoints'''
+        image = np.array([[1,0,0,1,0,1,0,1,1,1,0,0,1],
+                          [0,1,0,1,0,0,1,0,1,0,1,1,0],
+                          [1,0,1,1,0,1,0,1,1,1,0,0,1]],bool)
+        mask  = np.array([[0,1,1,1,1,1,1,0,0,0,1,1,0],
+                          [1,1,1,1,1,1,1,1,1,1,1,1,1],
+                          [1,1,1,0,1,0,1,1,0,0,1,1,1]],bool)
+        result = morph.branchpoints(image, mask)
+        self.assertTrue(np.all(result[mask]==False))
+        
 class TestBridge(unittest.TestCase):
     def test_00_00_zeros(self):
         '''Test bridge on an array of all zeros'''
@@ -1882,7 +1921,46 @@ class TestDiag(unittest.TestCase):
                           [0,1,1]],bool)
         result= morph.diag(image,mask)
         self.assertEqual(result[1,1], True)
-
+        
+class TestEndpoints(unittest.TestCase):
+    def test_00_00_zeros(self):
+        '''Test endpoints on an array of all zeros'''
+        result = morph.endpoints(np.zeros((9,11), bool))
+        self.assertTrue(np.all(result == False))
+        
+    def test_00_01_zeros_masked(self):
+        '''Test endpoints on an array that is completely masked'''
+        result = morph.endpoints(np.zeros((10,10),bool),
+                                 np.zeros((10,10),bool))
+        self.assertTrue(np.all(result==False))
+    
+    def test_01_01_positive(self):
+        '''Test positive endpoint cases'''
+        image = np.array([[0,0,0,1,0,1,0,0,0,0,0],
+                          [0,1,0,1,0,0,1,0,1,0,1],
+                          [1,0,0,0,0,0,0,0,0,1,0]],bool)
+        result = morph.endpoints(image)
+        self.assertTrue(np.all(image[1,:] == result[1,:]))
+    
+    def test_01_02_negative(self):
+        '''Test negative endpoint cases'''
+        image = np.array([[0,0,1,0,0,1,0,0,0,0,0,1],
+                          [0,1,0,1,0,1,0,0,1,1,0,1],
+                          [1,0,0,0,1,0,0,1,0,0,1,0]],bool)
+        result = morph.endpoints(image)
+        self.assertTrue(np.all(result[1,:] == False))
+        
+    def test_02_02_mask(self):
+        '''Test that masked positive pixels don't change the endpoint determination'''
+        image = np.array([[0,0,1,1,0,1,0,1,0,1,0],
+                          [0,1,0,1,0,0,1,0,1,0,1],
+                          [1,0,0,0,1,0,0,0,0,1,0]],bool)
+        mask  = np.array([[1,1,0,1,1,1,1,0,1,0,1],
+                          [1,1,1,1,1,1,1,1,1,1,1],
+                          [1,1,1,1,0,1,1,1,1,1,1]],bool)
+        result = morph.endpoints(image, mask)
+        self.assertTrue(np.all(image[1,:] == result[1,:]))
+    
 class TestFill(unittest.TestCase):
     def test_00_00_zeros(self):
         '''Test fill on an array of all zeros'''

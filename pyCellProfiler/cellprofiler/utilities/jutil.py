@@ -63,9 +63,10 @@ class JavaError(ValueError):
         
 class JavaException(BaseException):
     '''Represents a Java exception thrown inside the JVM'''
-    def __init__(self, env):
+    def __init__(self, env, throwable):
         '''Initialize by calling exception_occurred'''
-        self.throwable = env.exception_occurred()
+        env.exception_describe()
+        self.throwable = throwable
         try:
             if self.throwable is None:
                 raise ValueError("Tried to create a JavaException but there was no current exception")
@@ -81,10 +82,6 @@ class JavaException(BaseException):
                 if message is not None:
                     message = env.get_string_utf(message)
                     super(BaseException, self).__init__(message)
-                else:
-                    env.exception_describe()
-            else:
-                env.exception_describe()
         finally:
             env.exception_clear()
 
@@ -106,7 +103,7 @@ def call(env, o, method_name, sig, *args):
     result = env.call_method(o, method_id, *nice_args)
     x = env.exception_occurred()
     if x is not None:
-        raise JavaException(env)
+        raise JavaException(env, x)
     return get_nice_result(env,result,ret_sig)
 
 def static_call(env, class_name, method_name, sig, *args):
@@ -119,7 +116,7 @@ def static_call(env, class_name, method_name, sig, *args):
     '''
     klass = env.find_class(class_name)
     if klass is None:
-        raise JavaException(env)
+        raise JavaException(env, env.exception_occurred())
     
     method_id = env.get_static_method_id(klass, method_name, sig)
     if method_id is None:
@@ -129,8 +126,9 @@ def static_call(env, class_name, method_name, sig, *args):
     ret_sig = sig[sig.find(')')+1:]
     nice_args = get_nice_args(env, args, args_sig)
     result = env.call_static_method(klass, method_id,*nice_args)
-    if env.exception_occurred() is not None:
-        raise JavaException(env)
+    jexception = env.exception_occurred() 
+    if jexception is not None:
+        raise JavaException(env, jexception)
     return get_nice_result(env, result, ret_sig)
 
 def make_method(env, klass, name, sig, doc='No documentation'):
@@ -165,7 +163,7 @@ def make_method(env, klass, name, sig, doc='No documentation'):
         result = env.call_method(self.o, method_id, *nice_args)
         jexception = env.exception_occurred()
         if jexception is not None:
-            raise JavaException(env)
+            raise JavaException(env, jexception)
         if result is None:
             return
         return get_nice_result(env, result, ret_sig)
@@ -341,8 +339,9 @@ def make_new(env, klass, sig):
     def constructor(self, *args):
         result = env.new_object(klass, method_id, 
                                 *get_nice_args(env, args, args_sig))
-        if env.exception_occurred() is not None:
-            raise JavaException(env)
+        jexception = env.exception_occurred() 
+        if jexception is not None:
+            raise JavaException(env, jexception)
         self.o = result
         return result
     return constructor
@@ -362,8 +361,9 @@ def make_instance(env, class_name, sig, *args):
         raise JavaError('Could not find constructor with signature = %s'%sig)
     args_sig = split_sig(sig[1:sig.find(')')])
     result = env.new_object(klass, method_id, *get_nice_args(env, args, args_sig))
-    if env.exception_occurred() is not None or result is None:
-        raise JavaException(env)
+    jexception = env.exception_occurred() 
+    if jexception is not None or result is None:
+        raise JavaException(env, jexception)
     return result
 
 def get_class_wrapper(env, obj):

@@ -32,7 +32,8 @@ def get_env():
     path = os.path.abspath(os.path.split(__file__)[0])
     loci_jar = os.path.join(path, "loci_tools.jar")
     __env = javabridge.JB_Env()
-    __env.create(["-Djava.class.path="+loci_jar])
+    __env.create(["-Djava.class.path="+loci_jar,
+                  "-Djava.awt.headless=true"])
     return __env
 
 def make_format_tools_class(env):
@@ -107,6 +108,8 @@ def make_iformat_reader_class(env, klass_arg):
                                            '()Z','Return True if the data is in little endian order')
         isRGB = jutil.make_method(env, klass, 'isRGB', '()Z',
                                   'Return True if images in the file are RGB')
+        isInterleaved = jutil.make_method(env, klass, 'isInterleaved', '()Z',
+                                          'Return True if image colors are interleaved within a plane')
         openBytes = jutil.make_method(env, klass, 'openBytes','(I)[B',
                                       'Get the specified image plane as a byte array')
         openBytesXYWH = jutil.make_method(env, klass, 'openBytes','(IIIII)[B',

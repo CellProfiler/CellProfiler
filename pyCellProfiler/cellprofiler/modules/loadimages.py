@@ -1440,7 +1440,11 @@ def load_using_bioformats(path, z=0, t=0):
                                             'intValue', '()I')
         except:
             sys.stderr.write("WARNING: failed to get MaxSampleValue for image. Intensities may be improperly scaled\n")
-    if rdr.getRGBChannelCount() > 1:
+    if rdr.isRGB() and rdr.isInterleaved():
+        index = rdr.getIndex(z,0,t)
+        image = np.frombuffer(rdr.openBytes(index), dtype)
+        image.shape = (height, width, 3)
+    elif rdr.getRGBChannelCount() > 1:
         rdr.close()
         rdr = ChannelSeparator(ImageReader())
         rdr.setId(path)

@@ -154,6 +154,9 @@ class TestMorph(unittest.TestCase):
     def test_02_01_binary_bothat(self):
         self.binary_tteesstt('bothat',cpmorph.black_tophat)
         
+    def test_02_015_binary_branchpoints(self):
+        self.binary_tteesstt('branchpoints', cpmorph.branchpoints)
+        
     def test_02_02_binary_bridge(self):
         self.binary_tteesstt('bridge', cpmorph.bridge)
     
@@ -168,6 +171,9 @@ class TestMorph(unittest.TestCase):
     
     def test_02_06_binary_dilate(self):
         self.binary_tteesstt('dilate', lambda x: scind.binary_dilation(x, np.ones((3,3),bool)))
+    
+    def test_02_065_binary_endpoints(self):
+        self.binary_tteesstt('endpoints', cpmorph.endpoints)
     
     def test_02_07_binary_erode(self):
         self.binary_tteesstt('erode', lambda x: scind.binary_erosion(x, np.ones((3,3),bool)))

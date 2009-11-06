@@ -238,7 +238,7 @@ class CalculateStatistics(cpm.CPModule):
             if dose_value.wants_save_figure:
                 result += [dose_value.figure_name, dose_value.pathname_choice]
                 if dose_value.pathname_choice == PC_CUSTOM:
-                    result += dose_value.pathname
+                    result += [dose_value.pathname]
             result += [dose_value.remover]
         result += [self.add_dose_button]
         return result
@@ -358,13 +358,15 @@ class CalculateStatistics(cpm.CPModule):
             data_name = setting_values[0]
             logarithmic = setting_values[1]
             figure_name = setting_values[2]
-            wants_save_figure = (cps.no if figure_name == cps.DO_NOT_USE 
-                                 else cps.yes)
+            wants_save_figure = (cps.NO if figure_name == cps.DO_NOT_USE 
+                                 else cps.YES)
             setting_values = [data_name,
+                              data_name,
                               logarithmic,
                               wants_save_figure,
                               figure_name,
-                              data_name]
+                              PC_DEFAULT,
+                              cps.DO_NOT_USE]
             variable_revision_number = 1
             from_matlab = False
         return setting_values, variable_revision_number, from_matlab                              

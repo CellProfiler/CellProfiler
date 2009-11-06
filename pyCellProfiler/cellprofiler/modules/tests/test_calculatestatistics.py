@@ -13,10 +13,13 @@ Website: http://www.cellprofiler.org
 
 __version__="$Revision$"
 
+import base64
 import numpy as np
 import os
+from StringIO import StringIO
 import tempfile
 import unittest
+import zlib
 from scipy.io.matlab import loadmat
 
 import cellprofiler.cpmodule as cpm
@@ -31,6 +34,88 @@ import cellprofiler.preferences as cpprefs
 import cellprofiler.modules.calculatestatistics as C
 
 class TestCalculateStatistics(unittest.TestCase):
+    def test_01_01_load_matlab(self):
+        data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0s'
+                'SU1RyM+zUnArylTwyy9TMDBTMLCwMjKzMrZQMDIwsFQgGTAwevryMzAwZDEy'
+                'MFTM2Rp00Ouwg8DcJZmhE7Y9WMru2D+v654Nl5ZGhtayL/t81VIVz057tyzE'
+                'X+6vSn9d2/zH6/IunY3yjSqYljjz5vd7PMa32Rr61Ry87+2+FPtj27I+2cOh'
+                'MgsETOZ+UKu4cPln+Utlo+Upcx50qEgWaeicv7/MUNrubNfyarFUzl8pWU1L'
+                'f94s6Sm26yheVFe3wNuH6VdPwDaZbx3cpzS9TeNf3765SE847O62L+LppuzH'
+                'ZzXP8j58QvuP5ZoP92btfCvxY11f8rFfivE1H/21f8R1vj8o+vjHfJvtR4oP'
+                'pges9l9+pHgB/9cK+18yLNe7rt8u4P9ZGxiYz3/qd0ChC8vMM5Fmtx2WJ78s'
+                '8ZmbPMvNQvtraPj27Jday4ONHJ0jXu45+P7zxu8Rz+fPsoqVvW8oxFuoKfJ/'
+                'WVN9wsfQGs9JBt4dBxwEHHcuUNT/ZfjfdfWi+vB5bsm76yu2pdqW++7VmqfO'
+                'L/dWXuueds62+ZPtP+zM7f7Pstg39TAAo3nSDA==')
+        pipeline = cpp.Pipeline()
+        def callback(caller,event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
+        self.assertEqual(len(pipeline.modules()), 2)
+        module = pipeline.modules()[-1]
+        self.assertTrue(isinstance(module, C.CalculateStatistics))
+        self.assertEqual(module.grouping_values.value, "Dose")
+        self.assertEqual(len(module.dose_values), 1)
+        self.assertEqual(module.dose_values[0].measurement, "Dose")
+        self.assertFalse(module.dose_values[0].log_transform)
+        self.assertTrue(module.dose_values[0].wants_save_figure)
+        self.assertEqual(module.dose_values[0].figure_name, "DOSE")
+        self.assertEqual(module.dose_values[0].pathname_choice, C.PC_DEFAULT)
+    
+    def test_01_02_load_v1(self):
+        data = ('eJztWNFu2jAUdWhA7SYmtJfx6KdpD12Wom5qUaUN6KohAasW1G5PlZuYNpKD'
+                'Uewwui/Y5+1xn9FPmN0mJHGhIQX2RFCU3Ot7zrn32kpiuo1+p9GE7w0Tdhv9'
+                'twOXYHhKEB9Q36vDId+FLR8jjh1Ih3V44ruwR8fQ/ADNg/q+Wa8dwJppHoKn'
+                'HVq7+0Jc/lQAKInrtjgL4VAxtLXEKW0Lc+4Or1gR6KAa+m/FeYZ8F10SfIZI'
+                'gFksEfnbwwHt34ymQ13qBAT3kJcMFkcv8C6xz74OImA4fOpOMLHcX1gpIQr7'
+                'hscuc+kwxIf8qneqS7mia13Tnye+SEfhbyJuX1tczEDaL/s2KcV905S+yT6W'
+                'E34Z/wXE8fqMPr9KxFdC+xgPUEA4bHvoCsNj18c2p/7NQnwvFT5pdzFHDuLo'
+                'wmpaFw5lURskn5nBp6X4NGAsWFfePA4y+LYVPmnvmfuHhs3Gi9RRSOELoEcX'
+                'q38rhdsCP0TSy+itej0k8ygpfNER8e2AuN/rmvcqSOdfTeRPAz4KOHSiAtbZ'
+                '/3n559Xb263d4T5l4MogXbe0p+v9HBOyoP461+kq18f/1tNTejo4/9zpLKOX'
+                '9bwpgfR8SrsVME69h/muW9d4J6u9x/8t5nv/rGI+NrgNboPb4Da49eOkc97z'
+                'Xf0+kPHfEzqz3ievE/GV0LbF58jIp3Lf6Rve3eaIGYQih+MJNzripi9u7vlH'
+                'GfxHCv/RPH4bETsQm1zMxMbKZdy1mdGKfNbUN6t/OzN0k30oiN+z8uN9V/sd'
+                'z8Ptx6foFbSHes8zcHrYQYn7DfLN85tH4qPalonPW7+mLV9HrKNPcwIg/j8i'
+                'b/w/eRPZpA==')
+        pipeline = cpp.Pipeline()
+        def callback(caller,event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
+        #
+        # The CalculateStatistics module has the following settings:
+        #
+        # grouping measurement: Metadata_SBS_doses
+        # dose_values[0]:
+        #    measurement: Metadata_SBS_doses
+        #    log transform: False
+        #    wants_save_figure: False
+        #
+        # dose_values[1]:
+        #    measurement: Metadata_Well
+        #    log transform: True
+        #    wants_save_figure: True
+        #    pathname_choice: PC_DEFAULT
+        #    pathname: ./WELL
+        #
+        self.assertEqual(len(pipeline.modules()), 2)
+        module = pipeline.modules()[-1]
+        self.assertTrue(isinstance(module, C.CalculateStatistics))
+        self.assertEqual(module.grouping_values, "Metadata_SBS_doses")
+        self.assertEqual(len(module.dose_values), 2)
+        dose_value = module.dose_values[0]
+        self.assertEqual(dose_value.measurement, "Metadata_SBS_doses")
+        self.assertFalse(dose_value.log_transform)
+        self.assertFalse(dose_value.wants_save_figure)
+        
+        dose_value = module.dose_values[1]
+        self.assertEqual(dose_value.measurement, "Metadata_Well")
+        self.assertTrue(dose_value.log_transform)
+        self.assertTrue(dose_value.wants_save_figure)
+        self.assertEqual(dose_value.pathname_choice, C.PC_CUSTOM)
+        self.assertEqual(dose_value.pathname, './WELL')
+        
     def test_02_01_compare_to_matlab(self):
         expected = {
             'EC50_DistCytoplasm_Correlation_Correlation_CorrGreenCorrBlue':3.982812,
@@ -284,64 +369,69 @@ class TestCalculateStatistics(unittest.TestCase):
             'Zfactor_ThresholdedCells_Texture_Variance_CorrGreen_1':0.481393
         }            
         temp_dir = tempfile.mkdtemp()
-        cpprefs.set_headless()
-        cpprefs.set_default_output_directory(temp_dir)
-        print "Writing output to %s"%temp_dir
-        path = os.path.split(__file__)[0]
-        measurements = loadmat(os.path.join(path,'calculatestatistics.mat'),
-                               struct_as_record = True)
-        measurements = measurements['m']
-        image_set_list = cpi.ImageSetList()
-        image_set = image_set_list.get_image_set(0)
-        m = cpmeas.Measurements()
-        doses = [0 ,0 ,1 ,2 ,3 ,4 ,5 ,6 ,7 ,8 ,9 ,10,
-                 0 ,0 ,1 ,2 ,3 ,4 ,5 ,6 ,7 ,8 ,9 ,10,
-                 0 ,0 ,1 ,2 ,3 ,4 ,5 ,6 ,7 ,8 ,9 ,10,
-                 0 ,0 ,1 ,2 ,3 ,4 ,5 ,6 ,7 ,8 ,9 ,10,
-                 10,0 ,1 ,2 ,3 ,4 ,5 ,6 ,7 ,8 ,9 ,0,
-                 10,0 ,1 ,2 ,3 ,4 ,5 ,6 ,7 ,8 ,9 ,0,
-                 10,0 ,1 ,2 ,3 ,4 ,5 ,6 ,7 ,8 ,9 ,0,
-                 10,0 ,1 ,2 ,3 ,4 ,5 ,6 ,7 ,8 ,9 ,0]
-        for i,dose in enumerate(doses):
-            m.add_image_measurement("Dose",dose)
-            for object_name in measurements.dtype.fields:
-                omeasurements = measurements[object_name][0,0]
-                for feature_name in omeasurements.dtype.fields:
-                    data = omeasurements[feature_name][0,0][0,i]
-                    m.add_measurement(object_name, feature_name, data)
-            if i < len(doses)-1:
-                m.next_image_set()
-        pipeline = cpp.Pipeline()
-        module = C.CalculateStatistics()
-        module.grouping_values.value = "Dose"
-        module.dose_values[0].log_transform.value = False
-        module.dose_values[0].measurement.value = "Dose"
-        module.dose_values[0].wants_save_figure.value = True
-        module.dose_values[0].figure_name.value = "EC49_"
-        module.module_num = 1
-        pipeline.add_module(module)
-        def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.RunExceptionEvent))
-        workspace = cpw.Workspace(pipeline, module, image_set,
-                                  cpo.ObjectSet(), m,
-                                  image_set_list)
-        module.post_run(workspace)
-        for feature_name in m.get_feature_names(cpmeas.EXPERIMENT):
-            if not expected.has_key(feature_name):
-                print "Missing measurement: %s"%feature_name
-                continue
-            value = m.get_experiment_measurement(feature_name)
-            e_value = expected[feature_name]
-            diff = abs(value-e_value) *2 /abs(value+e_value)
-            self.assertTrue(diff < .05, "%s: Matlab: %f, Python: %f diff: %f" %
-                            (feature_name, e_value, value, diff))
-            if diff > .01:
-                print ("Warning: > 1%% difference for %s: Matlab: %f, Python: %f diff: %f" %
-                       (feature_name, e_value, value, diff))
-            if feature_name.startswith("EC50"):
-                filename = "EC49_"+feature_name[5:]+".m"
-                self.assertTrue(os.path.isfile(os.path.join(temp_dir, filename)))
-            
+        try:
+            cpprefs.set_headless()
+            cpprefs.set_default_output_directory(temp_dir)
+            print "Writing output to %s"%temp_dir
+            path = os.path.split(__file__)[0]
+            measurements = loadmat(os.path.join(path,'calculatestatistics.mat'),
+                                   struct_as_record = True)
+            measurements = measurements['m']
+            image_set_list = cpi.ImageSetList()
+            image_set = image_set_list.get_image_set(0)
+            m = cpmeas.Measurements()
+            doses = [0 ,0 ,1 ,2 ,3 ,4 ,5 ,6 ,7 ,8 ,9 ,10,
+                     0 ,0 ,1 ,2 ,3 ,4 ,5 ,6 ,7 ,8 ,9 ,10,
+                     0 ,0 ,1 ,2 ,3 ,4 ,5 ,6 ,7 ,8 ,9 ,10,
+                     0 ,0 ,1 ,2 ,3 ,4 ,5 ,6 ,7 ,8 ,9 ,10,
+                     10,0 ,1 ,2 ,3 ,4 ,5 ,6 ,7 ,8 ,9 ,0,
+                     10,0 ,1 ,2 ,3 ,4 ,5 ,6 ,7 ,8 ,9 ,0,
+                     10,0 ,1 ,2 ,3 ,4 ,5 ,6 ,7 ,8 ,9 ,0,
+                     10,0 ,1 ,2 ,3 ,4 ,5 ,6 ,7 ,8 ,9 ,0]
+            for i,dose in enumerate(doses):
+                m.add_image_measurement("Dose",dose)
+                for object_name in measurements.dtype.fields:
+                    omeasurements = measurements[object_name][0,0]
+                    for feature_name in omeasurements.dtype.fields:
+                        data = omeasurements[feature_name][0,0][0,i]
+                        m.add_measurement(object_name, feature_name, data)
+                if i < len(doses)-1:
+                    m.next_image_set()
+            pipeline = cpp.Pipeline()
+            module = C.CalculateStatistics()
+            module.grouping_values.value = "Dose"
+            module.dose_values[0].log_transform.value = False
+            module.dose_values[0].measurement.value = "Dose"
+            module.dose_values[0].wants_save_figure.value = True
+            module.dose_values[0].figure_name.value = "EC49_"
+            module.module_num = 1
+            pipeline.add_module(module)
+            def callback(caller, event):
+                self.assertFalse(isinstance(event, cpp.RunExceptionEvent))
+            workspace = cpw.Workspace(pipeline, module, image_set,
+                                      cpo.ObjectSet(), m,
+                                      image_set_list)
+            module.post_run(workspace)
+            for feature_name in m.get_feature_names(cpmeas.EXPERIMENT):
+                if not expected.has_key(feature_name):
+                    print "Missing measurement: %s"%feature_name
+                    continue
+                value = m.get_experiment_measurement(feature_name)
+                e_value = expected[feature_name]
+                diff = abs(value-e_value) *2 /abs(value+e_value)
+                self.assertTrue(diff < .05, "%s: Matlab: %f, Python: %f diff: %f" %
+                                (feature_name, e_value, value, diff))
+                if diff > .01:
+                    print ("Warning: > 1%% difference for %s: Matlab: %f, Python: %f diff: %f" %
+                           (feature_name, e_value, value, diff))
+                if feature_name.startswith("EC50"):
+                    filename = "EC49_"+feature_name[5:]+".m"
+                    self.assertTrue(os.path.isfile(os.path.join(temp_dir, filename)))
+        finally:
+            for filename in os.listdir(temp_dir):
+                path = os.path.join(temp_dir, filename)
+                os.remove(path)
+            os.rmdir(temp_dir)
         
         
         

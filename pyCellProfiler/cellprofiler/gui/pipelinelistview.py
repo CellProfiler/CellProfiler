@@ -172,7 +172,7 @@ class PipelineListView(object):
         self.__adjust_rows()
 
     def set_debug_mode(self, mode):
-        self.__grid.SetGridCursor(-1,-1)
+        self.__grid.SetGridCursor(0,0)
         self.__debug_mode = mode
         self.__pipeline_slider.Show(mode)
         self.__sizer.Layout()

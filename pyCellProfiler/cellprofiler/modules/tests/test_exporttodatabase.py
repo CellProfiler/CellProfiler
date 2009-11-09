@@ -172,6 +172,71 @@ class TestExportToDatabase(unittest.TestCase):
         self.assertEqual(len(module.objects_list.selections), 1)
         self.assertEqual(module.objects_list.selections[0], "Cells")
 
+    def test_01_03_load_v10(self):
+        data = ('eJztW91v2zYQl10nW9phSB+GbRgK6LEdYkFOmizJhtZ27CwG/LXabVAEWUZb'
+                'tM1BFgWJSu0N/X/2p+0xj3scacuRzMqVLH8jEiDYd+KPv7vj6USJUilTL2ay'
+                '4qEki6VMPdlCKhSrKiAtbHRPRY3siWcGBAQqItZOxRLWxDK+FeUTUT4+PTg6'
+                'PTwQ92X5RAi3xQqlr+nPPz8Lwjb9/ZLucfvQli3HXDuTa5AQpLXNLSEhfGfr'
+                '7+j+DhgINFT4DqgWNB2Kkb6gtXC9r98fKmHFUmEZdN2N6Va2ug1omJXWCGgf'
+                'rqIeVGvoL8i5MGr2Bt4iE2HNxtv989p7Xkw43loHfzg3qDlc/1lAmp0aoSMw'
+                'rmdx6/3gxC3GxS1B92cuPWt/ITjtEx5xfupqv2vLSFPQLVIsoIqoC9r3VrP+'
+                'ZJ/+Ho3190jIlTMD3LEPbpuzg8llq6lCJATCb3F4Jpf6td+Ktt1pH/wuh2d7'
+                'HfZIMt8DTSJ22ZDMw49p4/eeRj8sbxHCfD0XjDc2ho8JB0L4uKfkvZey8Cnv'
+                'NocfbSP8jv0bxN74GG9cKONg4/yYs5fJOSxqmIiWCYPzTxqnsP6GiXO+p5Ob'
+                'GeM1D9w8xzUxxpcQ6Bl8E6SOfcvFh8k52AKWSsQCK2JiDhmwSbDRX8n4Lpsv'
+                '7cP3hIsXkyvEtMRfVdwAqqfd8/SXrzfSHOMUBJeS5JXUp7C4MNdxWZIH217K'
+                '/jPB/nX2e9p6QX1OLbIOfyGMx5nJqNtWGnJqoefrDsfL5IJGoGYi0nf1syi/'
+                'veYXTZ1eMo3w9p91gKZBdT+56XGoWuaBMdv8eNrzIyXP5mfah+8rzk8m29fT'
+                'XFZSGqN+pq3zqZC4nzxwy7j++sXJKx/P2Q215tzXreN8Y1K97fngLjh/mfy7'
+                'fSJfpZL718krOXly/ff+x+Tz19VfLvPF4s2byuWrq0zy4vqFozurFN+Wyq9G'
+                'jV9IBLUWNX9fRtw6Prhjzm4ms2C8h8Cwo/Dy4zA+JayRjhOZgS4H+o5mk/Jp'
+                'U+bLD51v1eMnzzgfT/vwedXpGlTpHaEkSRPsXuR9bRlrcNnzlEnPoTYlj5aN'
+                'W/Z5uY7+ydLhyu1c9HOP+gcsNlVgmvaT7k3y98LHX6/nApcQtTtseeeWLWRo'
+                'zUnz1HX2O+3jt9c88RwbsG1gS1M2z9+HXpf4+8HDFdl5972Di3E4r/W3Zeb3'
+                'YLGOJbgevB+veogbf9J5kdPRptQ1l90i0hSoz8GOCBfhIlyEi3ARLsJFuIeC'
+                'S7twQd+Xcuafw+nXJvkb4R4mLi1EeR7hIlyEW496E/S5zqb4G+EiXISLcBEu'
+                'wm0y7r+Yg+PXfZjsfr+Dtf/DxeN1nf/R1X7XlptQVXUDs+/xDKk7+GjMlFQM'
+                'lOFXWFKR/i24PshiPLoPT5rjSU/iQQrUCGr1dYOyWQR3AUFNqWBrq1SbGWkZ'
+                'r997glmONzuJtwuBaRlwuHYDDCp1gA6l0lBdGagzVF1jasfvjg//Ecd/NIkf'
+                '9nRsEIIVQEADmFDKDxR1nLMVn+bNjgefe/zjVHr6LP7N5/JNEMbzzMm/u9dh'
+                '+BKJ2GOGc78X9MQHlxDG857h/xWmy/Pnn2k/8nGd208b5xjdZo2Tw5O4t2nY'
+                '/3q2/x/7Ruk9')
+        pipeline = cpp.Pipeline()
+        def callback(caller,event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
+        #
+        # Export to database is the last module of four
+        #
+        # MySQL database
+        # Don't store in CSV file
+        # DB name = LeeETD 
+        # host is imgdb01
+        # user name is cpuser
+        # don't add a prefix
+        # calculate only aggregate mean per image
+        # calculate only aggregate median per well
+        # Select objects to include
+        # include nuclei
+        #
+        self.assertEqual(len(pipeline.modules()), 4)
+        module = pipeline.modules()[-1]
+        self.assertTrue(isinstance(module, E.ExportToDatabase))
+        self.assertEqual(module.db_type, E.DB_MYSQL)
+        self.assertEqual(module.db_host, "imgdb01")
+        self.assertEqual(module.db_name, "LeeETD")
+        self.assertEqual(module.db_user, "cpuser")
+        self.assertFalse(module.want_table_prefix)
+        self.assertTrue(module.wants_agg_mean)
+        self.assertFalse(module.wants_agg_median)
+        self.assertFalse(module.wants_agg_std_dev)
+        self.assertFalse(module.wants_agg_mean_well)
+        self.assertTrue(module.wants_agg_median_well)
+        self.assertFalse(module.wants_agg_std_dev_well)
+        self.assertEqual(module.objects_choice, E.O_SELECT)
+        self.assertEqual(module.objects_list.value, "Nuclei")
+        
     def make_workspace(self, wants_files):
         '''Make a measurements structure with image and object measurements'''
         class TestModule(cpm.CPModule):

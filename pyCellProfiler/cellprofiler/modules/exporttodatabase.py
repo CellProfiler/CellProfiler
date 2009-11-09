@@ -130,7 +130,7 @@ def connect_sqlite(db_file):
 class ExportToDatabase(cpm.CPModule):
  
     module_name = "ExportToDatabase"
-    variable_revision_number = 9
+    variable_revision_number = 10
     category = "File Processing"
 
     def create_settings(self):
@@ -1176,7 +1176,14 @@ image_channel_colors = %(image_channel_colors)s
             #
             setting_values += [ O_ALL, ""]
             variable_revision_number = 9
-            
+        
+        if (not from_matlab) and variable_revision_number == 9:
+            # Added aggregate per well choices
+            # 
+            setting_values = (setting_values[:-2] + 
+                              [False, False, False] +
+                              setting_values[-2:])
+            variable_revision_number = 10
         return setting_values, variable_revision_number, from_matlab
     
 class ColumnNameMapping:

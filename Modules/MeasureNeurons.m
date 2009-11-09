@@ -140,10 +140,10 @@ drawnow
 
 %% Saves measurements to the handles structure.
 %   handles = CPaddmeasurements(handles,ObjectName,FeatureName,Data);
-handles = CPaddmeasurements(handles, SkeletonName, ...
-    'Neurons_NumTrunks', NumTrunks');
-handles = CPaddmeasurements(handles, SkeletonName, ...
-    'Neurons_NumNonTrunkBranches', NumNonTrunkBranches');
+handles = CPaddmeasurements(handles, SeedObjects, ...
+    ['NumberTrunks_' SkeletonName], NumTrunks');
+handles = CPaddmeasurements(handles, SeedObjects, ...
+    ['NumberNonTrunkBranches_' SkeletonName], NumNonTrunkBranches');
 
         
 %% Save Branchpoint Image

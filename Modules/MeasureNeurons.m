@@ -95,8 +95,8 @@ end
 %%% DISPLAY RESULTS %%%
 %%%%%%%%%%%%%%%%%%%%%%%
 
-trunks = branch_points & (DistanceMap == 0);
-nonZeroBranches = branch_points & (DistanceMap > 0);
+trunks = branch_points & (DistanceMap <=1);
+nonZeroBranches = branch_points & (DistanceMap > 1);
 
 % Skeleton is blue
 r = zeros(size(combined_skel));

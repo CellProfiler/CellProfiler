@@ -1129,7 +1129,7 @@ class LoadImages(cpmodule.CPModule):
             rdr = ImageReader()
             rdr.setId(pathname)
             if self.file_types == FF_STK_MOVIES:
-                return rdr.getSizeZ()
+                return rdr.getSizeT()
             else:
                 return rdr.getSizeT()
             
@@ -1509,7 +1509,7 @@ class LoadImagesSTKFrameProvider(cpimage.AbstractImageProvider):
     def provide_image(self, image_set):
         if has_bioformats:
             img = load_using_bioformats(self.get_full_name(),
-                                         z=self.__frame)
+                                         t=self.__frame)
         else:
             def seekfn(img, index):
                 '''Seek in an STK file to a given stack frame

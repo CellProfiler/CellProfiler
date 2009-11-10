@@ -324,7 +324,7 @@ if ~strcmp(RotateMethod,'None')
     elseif strcmp(CropEdges,'Yes')
         BeforeCropRotatedImage = imrotate(FlippedImage, AngleToRotateDegrees);
         theta = AngleToRotateDegrees * pi/180;
-        [x y] = size(OrigImage);
+        [x y,ignore] = size(OrigImage);
         Ycrop = floor(abs((y*sin(theta) - x*cos(theta))*cos(theta)*sin(theta)/(sin(theta)^2-cos(theta)^2)));
         Xcrop = floor(abs((x*sin(theta) - y*cos(theta))*cos(theta)*sin(theta)/(sin(theta)^2-cos(theta)^2)));
         Ycrop = max(1,Ycrop);
@@ -348,7 +348,7 @@ end
 drawnow
 
 %%% Figure must be displayed for this module.
-CPfigure(FigureHandle);
+%CPfigure(FigureHandle);
 
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
 if any(findobj == ThisModuleFigureNumber)

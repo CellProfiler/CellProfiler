@@ -88,6 +88,6 @@ for i = 1:length(ObjectFields)
         handles.Measurements.Experiment.(CPtruncatefeaturename(CPjoinstrings('OneTailedZfactor', ObjectName, MeasureFeatureName))) = z_one_tailed;
     end
     %%% Update waitbar
-    CPwaitbar(i./length(ObjectFields),waitbarhandle);
+    CPwaitbar(i./length(ObjectFields),waitbarhandle,'Calc Stats progress');
 end
 close(waitbarhandle)

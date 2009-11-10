@@ -143,7 +143,7 @@ class ExportToDatabase(cpm.CPModule):
         self.db_name = cps.Text(
             "What is the name of the database you want to use?", "DefaultDB")
         self.want_table_prefix = cps.Binary(
-            "Do you want to add a prefix to your table names?", False, doc = '''This gives you the option to append text to your table names
+            "Do you want to add a prefix to your table names?", False, doc = '''This gives you the option to prepend text to your table names
             (Per_Image and Per_Object).  CellProfiler will warn you before overwriting an existing table.''')
         self.table_prefix = cps.Text(
             "What is the table prefix you want to use?", "Expt_")

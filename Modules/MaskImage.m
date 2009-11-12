@@ -111,7 +111,7 @@ if any(findobj == ThisModuleFigureNumber)
 
     %%% A subplot of the Masked image.
     hAx=subplot(2,1,2,'Parent',ThisModuleFigureNumber);
-    CPimagesc(CropMask,handles,hAx);
+    CPimagesc(MaskedImage,handles,hAx);
     title(hAx,[MaskedImageName ' from ' ObjectName]);
 end
 

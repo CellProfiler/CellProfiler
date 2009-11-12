@@ -327,8 +327,26 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-% TODO add display of numbers, as in CalculateRatios, and remove CPclosefigure
-
-%%% The figure window display is unnecessary for this module, so it is
-%%% closed during the starting image cycle.
-CPclosefigure(handles,CurrentModule)
+ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
+if any(findobj == ThisModuleFigureNumber);
+    % Remove uicontrols from last cycle
+    delete(findobj(ThisModuleFigureNumber,'tag','TextUIControl'));
+    
+    if SetBeingAnalyzed == handles.Current.StartingImageSet
+        CPresizefigure('','NarrowText',ThisModuleFigureNumber)
+    end
+    
+    %%% Activates the appropriate figure window.
+    currentfig = CPfigure(handles,'Text',ThisModuleFigureNumber);
+    TextString = {['Image Set #' num2str(SetBeingAnalyzed)];...
+        [TruncFeatureName ' = ' num2str(FinalMeasurements)]};
+    
+    uicontrol(currentfig,'style','text',...
+        'units','normalized',...
+        'fontsize',handles.Preferences.FontSize,...
+        'HorizontalAlignment','left',...
+        'string',TextString,...
+        'position',[.05 .85 .95 .1],...
+        'BackgroundColor',[.7 .7 .9],...
+        'tag','TextUIControl');
+end

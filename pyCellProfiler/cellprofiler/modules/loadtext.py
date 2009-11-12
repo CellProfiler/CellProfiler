@@ -182,7 +182,7 @@ that can be processed by different nodes in a cluster.
         self.csv_file_name = cps.FilenameText("What is the name of the CSV file?",
                                               "None")
         self.wants_images = cps.Binary("Load images from CSV data?", True)
-        self.image_directory_choice = cps.Choice("Where area the images located?",
+        self.image_directory_choice = cps.Choice("Where are the images located?",
                                                  DIR_ALL)
         self.image_custom_directory = cps.DirectoryPath("What is the name of the image directory?",
                                                         ".")

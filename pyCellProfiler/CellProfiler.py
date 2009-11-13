@@ -204,3 +204,10 @@ else:
         fd = open(options.done_file,"wt")
         fd.write("Done\n")
         fd.close()
+try:
+    import cellprofiler.utilities.jutil as jutil
+    jutil.kill_vm()
+except:
+    import traceback
+    traceback.print_exc()
+    print "Caught exception while killing VM"

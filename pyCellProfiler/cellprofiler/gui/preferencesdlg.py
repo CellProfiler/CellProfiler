@@ -80,7 +80,7 @@ class PreferencesDlg(wx.Dialog):
             elif ui_info == COLOR:
                 def on_press(event, ctl=ctl, parent=self):
                     color = wx.GetColourFromUser(self, ctl.BackgroundColour)
-                    if any([x != -1 for x in color.asTuple()]):
+                    if any([x != -1 for x in color.Get()]):
                         ctl.BackgroundColour = color
                         ctl.Refresh()
             else:

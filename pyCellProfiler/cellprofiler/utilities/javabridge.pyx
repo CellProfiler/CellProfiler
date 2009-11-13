@@ -485,8 +485,16 @@ cdef class JB_Env:
         
         DON'T call this externally.
         '''
+        cdef:
+            JB_Object safer_object
         if self.defer_fn is not None:
-            self.defer_fn(jbo)
+            #
+            # jbo might be gc, so gen a new object that will survive
+            #
+            safer_object=JB_Object()
+            safer_object.o = jbo.o
+            safer_object.env = self
+            self.defer_fn(safer_object)
         elif (jbo.env is not None) and self.env != NULL:
             self.env[0].DeleteGlobalRef(self.env, jbo.o)
             jbo.env = None

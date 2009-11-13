@@ -236,7 +236,7 @@ class IdentifyTertiarySubregion(cpm.CPModule):
         #
         if self.use_outlines.value:
             out_img = cpi.Image(tertiary_outlines.astype(bool),
-                                tertiary_image)
+                                parent_image = tertiary_image)
             workspace.image_set.add(self.outlines_name.value, out_img)
             
     def get_measurement_columns(self, pipeline):

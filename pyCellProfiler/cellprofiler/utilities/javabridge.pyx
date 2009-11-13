@@ -15,6 +15,7 @@ Java array objects are handled as numpy arrays
 '''
 
 import numpy as np
+import sys
 cimport numpy as np
 cimport cython
 
@@ -95,6 +96,10 @@ cdef extern from "jni.h":
 
     ctypedef struct JNIInvokeInterface_:
          jint (*DestroyJavaVM)(JavaVM *vm)
+         jint (*AttachCurrentThread)(JavaVM *vm, void **penv, void *args)
+         jint (*DetachCurrentThread)(JavaVM *vm)
+         jint (*GetEnv)(JavaVM *vm, void **penv, jint version)
+         jint (*AttachCurrentThreadAsDaemon)(JavaVM *vm, void *penv, void *args)
 
     struct JavaVMOption:
         char *optionString
@@ -283,7 +288,7 @@ cdef extern from "jni.h":
 
     jint JNI_CreateJavaVM(JavaVM **pvm, void **penv, void *args)
     jint JNI_GetDefaultJavaVMInitArgs(void *args)
-
+    
 def get_default_java_vm_init_args():
     '''Return the version and default option strings as a tuple'''
     cdef:
@@ -297,10 +302,16 @@ cdef class JB_Object:
     '''A Java object'''
     cdef:
         jobject o
+        env
     def __cinit__(self):
         self.o = NULL
+        self.env = None
     def __repr__(self):
         return "<Java object at 0x%x>"%<int>(self.o)
+        
+    def __dealloc__(self):
+        if self.env is not None:
+            self.env.dealloc_jobject(self)
 
 cdef class JB_Class:
     '''A Java class'''
@@ -335,7 +346,7 @@ cdef class __JB_FieldID:
         self.id = NULL
         self.sig = ''
         self.is_static = False
-        
+    
     def __repr__(self):
         return "<Java field with sig=%s at 0x%x>"%(self.sig, <int>(self.id))
 
@@ -404,18 +415,16 @@ cdef fill_values(orig_sig, args, jvalue **pvalues):
         return ValueError("Too few arguments (%d) for signature (%s)"%
                          (len(args), orig_sig))
 
-cdef class JB_Env:
-    '''Represents the Java VM and the Java execution environment'''
-    cdef:
-        JNIEnv *env
-        JavaVM *vm
-    def __dealloc__(self):
-        if self.vm:
-            self.vm[0].DestroyJavaVM(self.vm)
-
+cdef class JB_VM:
+    '''Represents the Java virtual machine'''
+    cdef JavaVM *vm
+            
     def create(self, options):
+        '''Create the Java VM'''
         cdef:
             JavaVMInitArgs args
+            JNIEnv *env
+            JB_Env jenv
 
         args.version = JNI_VERSION_1_4
         args.nOptions = len(options)
@@ -425,10 +434,63 @@ cdef class JB_Env:
         options = [str(option) for option in options]
         for i, option in enumerate(options):
             args.options[i].optionString = option
-        result = JNI_CreateJavaVM(&self.vm, <void **>&self.env, &args)
+        result = JNI_CreateJavaVM(&self.vm, <void **>&env, &args)
         free(args.options)
         if result != 0:
             raise RuntimeError("Failed to create Java VM. Return code = %d"%result)
+        jenv = JB_Env()
+        jenv.env = env
+        return jenv
+            
+    def attach(self):
+        '''Attach this thread to the VM returning an environment'''
+        cdef:
+            JNIEnv *env
+            JB_Env jenv
+        result = self.vm[0].AttachCurrentThread(self.vm, <void **>&env, NULL)
+        if result != 0:
+            raise RuntimeError("Failed to attach to current thread. Return code = %d"%result)
+        jenv = JB_Env()
+        jenv.env = env
+        return jenv
+        
+    def detach(self):
+        '''Detach this thread from the VM'''
+        self.vm[0].DetachCurrentThread(self.vm)
+    
+    def destroy(self):
+        if self.vm != NULL:
+            self.vm[0].DestroyJavaVM(self.vm)
+            self.vm = NULL
+    
+cdef class JB_Env:
+    '''Represents the Java VM and the Java execution environment'''
+    cdef:
+        JNIEnv *env
+        defer_fn
+
+    def __init__(self):
+        self.defer_fn = None
+        
+    def __dealloc__(self):
+        self.env = NULL
+        
+    def set_defer_fn(self, defer_fn):
+        '''The defer function defers object deallocation, running it on the main Java thread'''
+        self.defer_fn = defer_fn
+        self.env = NULL
+        
+    def dealloc_jobject(self, JB_Object jbo):
+        '''Deallocate an object as it goes out of scope
+        
+        DON'T call this externally.
+        '''
+        if self.defer_fn is not None:
+            self.defer_fn(jbo)
+        elif (jbo.env is not None) and self.env != NULL:
+            self.env[0].DeleteGlobalRef(self.env, jbo.o)
+            jbo.env = None
+
         
     def get_version(self):
         '''Return the version number as a major / minor version tuple'''
@@ -467,40 +529,16 @@ cdef class JB_Env:
         result.c = c
         return result
 
-    def new_global_ref(self, JB_Object o):
-        '''Return a global reference to a Java object
-
-        Return a reference to the object that must be explicitly
-        disposed of using delete_global_reference.
-        '''
-        cdef:
-            jobject result
-            JB_Object ref
-        result = self.env[0].NewGlobalRef(self.env, o.o)
-        if result == NULL:
-            return
-        ref = JB_Object()
-        ref.o = result
-        return ref
-
-    def delete_global_ref(self, JB_Object o):
-        '''Delete a global reference created by new_global_ref'''
-        self.env[0].DeleteGlobalRef(self.env, o.o)
-
-    def delete_local_ref(self, JB_Object o):
-        '''Delete an object on the local stack frame'''
-        self.env[0].DeleteLocalRef(self.env, o.o)
-
     def exception_occurred(self):
         '''Return a throwable if an exception occurred or None'''
         cdef:
             jobject t
-            JB_Object o
         t = self.env[0].ExceptionOccurred(self.env)
         if t == NULL:
             return
-        o = JB_Object()
-        o.o = t
+        o, e = make_jb_object(self, t)
+        if e is not None:
+            raise e
         return o
 
     def exception_describe(self):
@@ -586,7 +624,6 @@ cdef class JB_Env:
         cdef:
             jvalue *values
             jobject oresult
-            JB_Object jbresult
         
         if m is None:
             raise ValueError("Method ID is None - check your method ID call")
@@ -628,9 +665,9 @@ cdef class JB_Env:
             if oresult == NULL:
                 result = None
             else:
-                jbresult = JB_Object()
-                jbresult.o = oresult
-                result = jbresult
+                result, e = make_jb_object(self, oresult)
+                if e is not None:
+                    raise e
         elif sig == 'V':
             self.env[0].CallVoidMethodA(self.env, o.o, m.id, values)
             result = None
@@ -652,7 +689,6 @@ cdef class JB_Env:
         cdef:
             jvalue *values
             jobject oresult
-            JB_Object jbresult
         
         if m is None:
             raise ValueError("Method ID is None - check your method ID call")
@@ -694,9 +730,9 @@ cdef class JB_Env:
             if oresult == NULL:
                 result = None
             else:
-                jbresult = JB_Object()
-                jbresult.o = oresult
-                result = jbresult
+                result, e = make_jb_object(self, oresult)
+                if e is not None:
+                    raise e
         elif sig == 'V':
             self.env[0].CallVoidMethodA(self.env, c.c, m.id, values)
             result = None
@@ -730,13 +766,13 @@ cdef class JB_Env:
         '''Return an object field'''
         cdef:
             jobject subo
-            JB_Object jbo
         subo = self.env[0].GetObjectField(self.env, o.o, field.id)
         if subo == NULL:
             return
-        jbo = JB_Object()
-        jbo.o = subo
-        return jbo
+        result, e = make_jb_object(self, subo)
+        if e is not None:
+            raise e
+        return result
         
     def get_boolean_field(self, JB_Object o, __JB_FieldID field):
         '''Return a boolean field's value'''
@@ -785,13 +821,13 @@ cdef class JB_Env:
         '''Return an object field on a class'''
         cdef:
             jobject o
-            JB_Object jbo
         o = self.env[0].GetStaticObjectField(self.env, c.c, field.id)
         if o == NULL:
             return
-        jbo = JB_Object()
-        jbo.o = o
-        return jbo
+        result, e = make_jb_object(self, o)
+        if e is not None:
+            raise e
+        return result
         
     def get_static_boolean_field(self, JB_Class c, __JB_FieldID field):
         '''Return a boolean static field's value'''
@@ -834,7 +870,6 @@ cdef class JB_Env:
         cdef:
             jvalue *values
             jobject oresult
-            JB_Object result
 
         sig = m.sig
         if sig[0] != '(':
@@ -850,18 +885,21 @@ cdef class JB_Env:
         free(values)
         if oresult == NULL:
             return
-        result = JB_Object()
-        result.o = oresult
+        result, e = make_jb_object(self, oresult)
+        if e is not None:
+            raise e
         return result
 
     def new_string_utf(self, char *s):
         '''Turn a Python string into a Java string object'''
         cdef:
             jobject o
-            JB_Object jbo
         o = self.env[0].NewStringUTF(self.env, s)
-        jbo = JB_Object()
-        jbo.o = o
+        if o == NULL:
+            raise MemoryError("Failed to allocate string")
+        jbo, e = make_jb_object(self, o)
+        if e is not None:
+             raise e
         return jbo
 
     def get_string_utf(self, JB_Object s):
@@ -893,7 +931,6 @@ cdef class JB_Env:
         '''Return the contents of a Java object array as a list of wrapped objects'''
         cdef:
             jobject o
-            JB_Object jbo
             jsize nobjects = self.env[0].GetArrayLength(self.env, array.o)
             int i
         result = []
@@ -902,16 +939,16 @@ cdef class JB_Env:
             if o == NULL:
                 result.append(None)
             else:
-                jbo = JB_Object()
-                jbo.o = o
-                result.append(jbo)
+                sub, e = make_jb_object(self, o)
+                if e is not None:
+                    raise e
+                result.append(sub)
         return result
         
     def make_byte_array(self, np.ndarray[dtype=np.uint8_t, ndim=1, negative_indices=False, mode='c'] array):
         '''Create a java byte [] array from the contents of a numpy array'''
         cdef:
             jobject o
-            JB_Object jbo
             jsize alen = array.shape[0]
             jbyte *data = <jbyte *>(array.data)
         
@@ -919,7 +956,27 @@ cdef class JB_Env:
         if o == NULL:
             raise MemoryError("Failed to allocate byte array of size %d"%alen)
         self.env[0].SetByteArrayRegion(self.env, o, 0, alen, data)
-        jbo = JB_Object()
-        jbo.o = o
-        return jbo
+        result, e = make_jb_object(self, o)
+        if e is not None:
+            raise e
+        return result
         
+cdef make_jb_object(JB_Env env, jobject o):
+    '''Wrap a Java object in a JB_Object with appropriate reference handling
+    
+    The idea here is to take a temporary reference on the current local
+    frame, get a global reference that will persist and can be accessed
+    across threads, and then delete the local reference.
+    '''
+    cdef:
+        jobject oref
+        JB_Object jbo
+    
+    oref = env.env[0].NewGlobalRef(env.env, o)
+    if oref == NULL:
+        return (None, MemoryError("Failed to make new global reference"))
+    env.env[0].DeleteLocalRef(env.env, o)
+    jbo = JB_Object()
+    jbo.o = oref
+    jbo.env = env
+    return (jbo, None)

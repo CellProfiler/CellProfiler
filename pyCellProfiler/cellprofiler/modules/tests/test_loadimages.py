@@ -12,8 +12,9 @@ Website: http://www.cellprofiler.org
 """
 __version__="$Revision$"
 import base64
+import gc
 import hashlib
-import numpy
+import numpy as np
 import os
 import re
 import unittest
@@ -31,6 +32,7 @@ import cellprofiler.objects as cpo
 import cellprofiler.measurements as measurements
 import cellprofiler.pipeline as P
 import cellprofiler.workspace as W
+from cellprofiler.modules.tests import example_images_directory
 
 class testLoadImages(unittest.TestCase):
     def error_callback(self, calller, event):
@@ -260,10 +262,10 @@ class testLoadImages(unittest.TestCase):
                 image = workspace.image_set.get_image('Orig')
                 matfh.close()
                 pixel_data = image.pixel_data
-                pixel_data = (pixel_data * 255+.5).astype(numpy.uint8)
+                pixel_data = (pixel_data * 255+.5).astype(np.uint8)
                 check_data = base64.b64decode(T.raw_8_1)
-                check_image = numpy.fromstring(check_data,numpy.uint8).reshape(T.raw_8_1_shape)
-                outer_self.assertTrue(numpy.all(pixel_data ==check_image))
+                check_image = np.fromstring(check_data,np.uint8).reshape(T.raw_8_1_shape)
+                outer_self.assertTrue(np.all(pixel_data ==check_image))
                 digest = hashlib.md5()
                 digest.update((check_image.astype(float)/255).data)
                 hexdigest = workspace.measurements.get_current_image_measurement('MD5Digest_Orig')
@@ -300,10 +302,10 @@ class testLoadImages(unittest.TestCase):
                 image = workspace.image_set.get_image('Orig')
                 matfh.close()
                 pixel_data = image.pixel_data
-                pixel_data = (pixel_data * 255+.5).astype(numpy.uint8)
+                pixel_data = (pixel_data * 255+.5).astype(np.uint8)
                 check_data = base64.b64decode(T.raw_8_1)
-                check_image = numpy.fromstring(check_data,numpy.uint8).reshape(T.raw_8_1_shape)
-                outer_self.assertTrue(numpy.all(pixel_data ==check_image))
+                check_image = np.fromstring(check_data,np.uint8).reshape(T.raw_8_1_shape)
+                outer_self.assertTrue(np.all(pixel_data ==check_image))
         check_image = CheckImage()
         check_image.module_num = 2
         pipeline = P.Pipeline()
@@ -336,10 +338,10 @@ class testLoadImages(unittest.TestCase):
                 image = workspace.image_set.get_image('Orig')
                 matfh.close()
                 pixel_data = image.pixel_data
-                pixel_data = (pixel_data * 255+.5).astype(numpy.uint8)
+                pixel_data = (pixel_data * 255+.5).astype(np.uint8)
                 check_data = base64.b64decode(T.raw_8_1)
-                check_image = numpy.fromstring(check_data,numpy.uint8).reshape(T.raw_8_1_shape)
-                outer_self.assertTrue(numpy.all(pixel_data ==check_image))
+                check_image = np.fromstring(check_data,np.uint8).reshape(T.raw_8_1_shape)
+                outer_self.assertTrue(np.all(pixel_data ==check_image))
         check_image = CheckImage()
         check_image.module_num = 2
         pipeline = P.Pipeline()
@@ -373,12 +375,12 @@ class testLoadImages(unittest.TestCase):
                                                       must_be_grayscale=True)
                 pixel_data = image.pixel_data
                 matfh.close()
-                pixel_data = (pixel_data * 255).astype(numpy.uint8)
+                pixel_data = (pixel_data * 255).astype(np.uint8)
                 check_data = base64.b64decode(T.raw_8_1)
-                check_image = numpy.fromstring(check_data,numpy.uint8).reshape(T.raw_8_1_shape)
+                check_image = np.fromstring(check_data,np.uint8).reshape(T.raw_8_1_shape)
                 # JPEG is lossy, apparently even when you ask for no compression
                 epsilon = 1
-                outer_self.assertTrue(numpy.all(numpy.abs(pixel_data.astype(int) 
+                outer_self.assertTrue(np.all(np.abs(pixel_data.astype(int) 
                                                           - check_image.astype(int) <=
                                                           epsilon)))
         check_image = CheckImage()
@@ -792,12 +794,15 @@ class testLoadImages(unittest.TestCase):
         image = image_set.get_image('MyImage')
         img2 = image.pixel_data
         self.assertEqual(tuple(img2.shape), (264,542,3))
-        self.assertTrue(numpy.any(img1!=img2))
+        self.assertTrue(np.any(img1!=img2))
     
     def test_09_02_load_stk(self):
         path = '//iodine/imaging_analysis/2009_03_12_CellCycle_WolthuisLab_RobWolthuis/2009_09_19/Images/09_02_11-OA 10nM'
         if not os.path.isdir(path):
             path = '/imaging/analysis/2009_03_12_CellCycle_WolthuisLab_RobWolthuis/2009_09_19/Images/09_02_11-OA 10nM'
+            if not os.path.isdir(path):
+                sys.stderr.write("WARNING: unknown path to stk file. Test not run.\n")
+                return
         module = LI.LoadImages()
         module.file_types.value = LI.FF_STK_MOVIES
         module.images[0][LI.FD_COMMON_TEXT].value = 'stk'
@@ -831,7 +836,38 @@ class testLoadImages(unittest.TestCase):
         image = image_set.get_image('MyImage')
         img2 = image.pixel_data
         self.assertEqual(tuple(img2.shape), (1040,1388))
-        self.assertTrue(numpy.any(img1!=img2))
+        self.assertTrue(np.any(img1!=img2))
+    
+    def test_10_1_load_many(self):
+        '''Load an image many times to ensure that memory is freed each time'''
+        path = os.path.join(example_images_directory(), "ExampleSBSImages")
+        for i in range(3):
+            module = LI.LoadImages()
+            module.file_types.value = LI.FF_INDIVIDUAL_IMAGES
+            module.images[0][LI.FD_COMMON_TEXT].value = 'Channel1-'
+            module.images[0][LI.FD_IMAGE_NAME].value = 'MyImage'
+            module.location.value = LI.DIR_OTHER
+            module.location_other.value = path
+            module.module_num = 1
+            pipeline = P.Pipeline()
+            pipeline.add_module(module)
+            pipeline.add_listener(self.error_callback)
+            image_set_list = I.ImageSetList()
+            module.prepare_run(pipeline, image_set_list, None)
+            module.prepare_group(pipeline, image_set_list, (), np.arange(96))
+            for j in range(96):
+                image_set = image_set_list.get_image_set(j)
+                m = measurements.Measurements()
+                workspace = W.Workspace(pipeline, module, image_set,
+                                        cpo.ObjectSet(), m,
+                                        image_set_list)
+                module.run(workspace)
+                self.assertTrue('MyImage' in image_set.get_names())
+                image = image_set.get_image('MyImage')
+                self.assertEqual(image.pixel_data.shape[0], 640)
+                self.assertEqual(image.pixel_data.shape[1], 640)
+                image_set_list.purge_image_set(j)
+                gc.collect()
 
 if __name__=="main":
     unittest.main()

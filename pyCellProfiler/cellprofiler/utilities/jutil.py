@@ -22,6 +22,9 @@ and self.o to store the Java object instance.
 '''
 __version__ = "$Revision: 1 %"
 
+import atexit
+import gc
+import threading
 import sys
 if sys.platform.startswith('win'):
     #
@@ -51,9 +54,8 @@ elif sys.platform.startswith('linux'):
         raise RuntimeError("Could not find JAVA_HOME environment variable.")
     jvm_dir = os.path.join(java_home, 'jre','lib','amd64','server')
     os.environ['LD_LIBRARY_PATH'] = os.environ['LD_LIBRARY_PATH'] + ':' + jvm_dir
-import javabridge
-    
 
+import javabridge
 import re
 
 class JavaError(ValueError):
@@ -63,8 +65,9 @@ class JavaError(ValueError):
         
 class JavaException(BaseException):
     '''Represents a Java exception thrown inside the JVM'''
-    def __init__(self, env, throwable):
+    def __init__(self, throwable):
         '''Initialize by calling exception_occurred'''
+        env = get_env()
         env.exception_describe()
         self.throwable = throwable
         try:
@@ -85,35 +88,176 @@ class JavaException(BaseException):
         finally:
             env.exception_clear()
 
-def call(env, o, method_name, sig, *args):
+__vm = None
+__wake_event = threading.Event()
+__dead_event = threading.Event()
+__thread_local_env = threading.local()
+__kill = [False]
+__dead_objects = []
+
+def start_vm(args):
+    '''Start the Java VM'''
+    global __vm
+    
+    if __vm is not None:
+        return
+    start_event = threading.Event()
+    pt = [] # holds the thread... eventually
+    
+    def start_thread():
+        global __vm
+        global __wake_event
+        global __dead_event
+        global __thread_local_env
+        global __kill
+        global __dead_objects
+        
+        __vm = javabridge.JB_VM()
+        #
+        # We get local copies here and bind them in a closure to guarantee
+        # that they exist past atexit.
+        #
+        vm = __vm
+        wake_event = __wake_event
+        dead_event = __dead_event
+        kill = __kill
+        dead_objects = __dead_objects
+        thread_local_env = __thread_local_env
+        ptt = pt # needed to bind to pt inside exit_fn
+        def exit_fn():
+            if vm is not None:
+                if getattr(thread_local_env,"env",None) is not None:
+                    print "Must detach at exit"
+                    detach()
+                kill[0] = True
+                wake_event.set()
+                ptt[0].join()
+        atexit.register(exit_fn)
+        try:
+            env = vm.create(args)
+            __thread_local_env.env = env
+        finally:
+            start_event.set()
+        wake_event.clear()
+        while True:
+            wake_event.wait()
+            wake_event.clear()
+            while(len(dead_objects)):
+                dead_object = dead_objects.pop()
+                if isinstance(dead_object, javabridge.JB_Object):
+                    # Object may have been totally GC'ed
+                    env.dealloc_jobject(dead_object)
+            if kill[0]:
+                break
+        def null_defer_fn(jbo):
+            '''Install a "do nothing" defer function in our env'''
+            pass
+        env.set_defer_fn(null_defer_fn)
+        vm.destroy()
+        __vm = None
+        dead_event.set()
+        
+    t = threading.Thread(target=start_thread)
+    pt.append(t)
+    t.start()
+    start_event.wait()
+
+#
+# We make kill_vm as a closure here to bind local copies of the global objects
+#
+def make_kill_vm():
+    '''Kill the currently-running Java environment'''
+    global __wake_event
+    global __dead_event
+    global __kill
+    global __thread_local_env
+    wake_event = __wake_event
+    dead_event = __dead_event
+    kill = __kill
+    thread_local_env = __thread_local_env
+    def kill_vm():
+        if thread_local_env.env is not None:
+            detach()
+        kill[0] = True
+        wake_event.set()
+        dead_event.wait()
+    return kill_vm
+
+kill_vm = make_kill_vm()
+    
+def attach():
+    '''Attach to the VM, receiving the thread's environment'''
+    global __thread_local_env
+    global __vm
+    assert isinstance(__vm, javabridge.JB_VM)
+    __thread_local_env.env = __vm.attach()
+    return __thread_local_env.env
+    
+def get_env():
+    '''Return the thread's environment
+    
+    Note: call start_vm() and attach() before calling this
+    '''
+    global __thread_local_env
+    return __thread_local_env.env
+
+def detach():
+    '''Detach from the VM, releasing the thread's environment'''
+    global __vm
+    global __thread_local_env
+    global __dead_objects
+    global __wake_event
+    global __kill
+    
+    env = __thread_local_env.env
+    dead_objects = __dead_objects
+    wake_event = __wake_event
+    kill = __kill
+    def defer_fn(jbo):
+        '''Do deallocation on the JVM's thread after detach'''
+        if not kill[0]:
+            dead_objects.append(jbo)
+            wake_event.set()
+    env.set_defer_fn(defer_fn)
+    __thread_local_env.env = None
+    __vm.detach()
+
+def call(o, method_name, sig, *args):
     '''Call a method on an object
     
     o - object in question
     method_name - name of method on object's class
     sig - calling signature
     '''
+    env = get_env()
     klass = env.get_object_class(o)
+    jexception = get_env().exception_occurred()
+    if jexception is not None:
+        raise JavaException(jexception)
     method_id = env.get_method_id(klass, method_name, sig)
+    jexception = get_env().exception_occurred()
     if method_id is None:
+        if jexception is not None:
+            raise JavaException(jexception)
         raise JavaError('Could not find method name = "%s" '
                         'with signature = "%s"' % (method_name, sig))
     args_sig = split_sig(sig[1:sig.find(')')])
     ret_sig = sig[sig.find(')')+1:]
-    nice_args = get_nice_args(env, args, args_sig)
+    nice_args = get_nice_args(args, args_sig)
     result = env.call_method(o, method_id, *nice_args)
     x = env.exception_occurred()
     if x is not None:
-        raise JavaException(env, x)
-    return get_nice_result(env,result,ret_sig)
+        raise JavaException(x)
+    return get_nice_result(result,ret_sig)
 
-def static_call(env, class_name, method_name, sig, *args):
+def static_call(class_name, method_name, sig, *args):
     '''Call a static method on a class
     
-    env - JVM environment
     class_name - name of the class, using slashes
     method_name - name of the static method
     sig - signature of the static method
     '''
+    env = get_env()
     klass = env.find_class(class_name)
     if klass is None:
         raise JavaException(env, env.exception_occurred())
@@ -124,18 +268,16 @@ def static_call(env, class_name, method_name, sig, *args):
                         'with signature = %s' %(method_name, sig))
     args_sig = split_sig(sig[1:sig.find(')')])
     ret_sig = sig[sig.find(')')+1:]
-    nice_args = get_nice_args(env, args, args_sig)
+    nice_args = get_nice_args(args, args_sig)
     result = env.call_static_method(klass, method_id,*nice_args)
     jexception = env.exception_occurred() 
     if jexception is not None:
         raise JavaException(env, jexception)
-    return get_nice_result(env, result, ret_sig)
+    return get_nice_result(result, ret_sig)
 
-def make_method(env, klass, name, sig, doc='No documentation'):
+def make_method(name, sig, doc='No documentation'):
     '''Return a class method for the given Java class
     
-    env - a Java environment from javabridge
-    klass - a Java class from javabridge.find_class or other
     sig - a calling signature. 
           See http://java.sun.com/j2se/1.4.2/docs/guide/jni/spec/types.htm
           An example: "(ILjava/lang/String;)I[" takes an integer and
@@ -151,32 +293,33 @@ def make_method(env, klass, name, sig, doc='No documentation'):
           D - double
           L - class (e.g. Lmy/class;)
           [ - array of (e.g. [B = byte array)
+    
+    Note - this assumes that the JNI object is stored in self.o. Use like this:
+    
+    class Integer:
+        new_fn = make_new("java/lang/Integer", "(I)V")
+        def __init__(self, i):
+            self.new_fn(i)
+        intValue = make_method("intValue", "()I","Retrieve the integer value")
+    i = Integer(435)
+    if i.intValue() == 435:
+        print "It worked"
     '''
-    method_id = env.get_method_id(klass, name, sig)
-    if method_id is None:
-        raise JavaError('Could not find method name = "%s" '
-                        'with signature = "%s' % (name, sig))
-    args_sig = split_sig(sig[1:sig.find(')')])
-    ret_sig = sig[sig.find(')')+1:]
+    
     def method(self, *args):
-        nice_args = get_nice_args(env, args, args_sig)
-        result = env.call_method(self.o, method_id, *nice_args)
-        jexception = env.exception_occurred()
-        if jexception is not None:
-            raise JavaException(env, jexception)
-        if result is None:
-            return
-        return get_nice_result(env, result, ret_sig)
+        assert isinstance(self.o, javabridge.JB_Object)
+        return call(self.o, name, sig, *args)
     method.__doc__ = doc
     return method
 
-def get_static_field(env, klass, name, sig):
+def get_static_field(klass, name, sig):
     '''Get the value for a static field on a class
     
     klass - the class or string name of class
     name - the name of the field
     sig - the signature, typically, 'I' or 'Ljava/lang/String;'
     '''
+    env = get_env()
     if isinstance(klass, javabridge.JB_Object):
         # Get the object's class
         klass = env.get_object_class(klass)
@@ -215,16 +358,17 @@ def split_sig(sig):
         sig=sig[match.end():]
     return split
         
-def get_nice_args(env, args, sig):
+def get_nice_args(args, sig):
     '''Convert arguments to Java types where appropriate
     
     returns a list of possibly converted arguments
     '''
-    return [get_nice_arg(env, arg, subsig)
+    return [get_nice_arg(arg, subsig)
             for arg, subsig in zip(args, sig)]
 
-def get_nice_arg(env, arg, sig):
+def get_nice_arg(arg, sig):
     '''Convert an argument into a Java type when appropriate'''
+    env = get_env()
     if sig[0] == 'L' and not (isinstance(arg, javabridge.JB_Object) or
                                 isinstance(arg, javabridge.JB_Class)):
         #
@@ -237,8 +381,9 @@ def get_nice_arg(env, arg, sig):
         return env.new_string_utf(str(arg))
     return arg
 
-def get_nice_result(env, result, sig):
+def get_nice_result(result, sig):
     '''Convert a result that may be a java object into a string'''
+    env = get_env()
     if sig == 'Ljava/lang/String;':
         return env.get_string_utf(result)
     elif sig == '[B':
@@ -246,143 +391,137 @@ def get_nice_result(env, result, sig):
         return env.get_byte_array_elements(result)
     return result
 
-def to_string(env, jobject):
+def to_string(jobject):
     '''Call the toString method on any object'''
+    env = get_env()
     if not isinstance(jobject, javabridge.JB_Object):
         return str(jobject)
-    return call(env, jobject, 'toString', '()Ljava/lang/String;')
+    return call(jobject, 'toString', '()Ljava/lang/String;')
 
-def get_dictionary_wrapper(env, dictionary):
+def get_dictionary_wrapper(dictionary):
     '''Return a wrapper of java.util.Dictionary
     
     Given a JB_Object that implements java.util.Dictionary, return a wrapper
     that implements the class methods.
     '''
+    env = get_env()
     class Dictionary(object):
-        klass = env.get_object_class(dictionary)
         def __init__(self):
             self.o = dictionary
-        size = make_method(env, klass, 'size', '()I',
+        size = make_method('size', '()I',
                            'Returns the number of entries in this dictionary')
-        isEmpty = make_method(env, klass, 'isEmpty', '()Z',
+        isEmpty = make_method('isEmpty', '()Z',
                               'Tests if this dictionary has no entries')
-        keys = make_method(env, klass, 'keys', '()Ljava/util/Enumeration;',
+        keys = make_method('keys', '()Ljava/util/Enumeration;',
                            'Returns an enumeration of keys in this dictionary')
-        elements = make_method(env, klass, 'elements',
+        elements = make_method('elements',
                                '()Ljava/util/Enumeration;',
                                'Returns an enumeration of elements in this dictionary')
-        get = make_method(env, klass, 'get',
+        get = make_method('get',
                           '(Ljava/lang/Object;)Ljava/lang/Object;',
                           'Return the value associated with a key or None if no value')
     return Dictionary()
 
-def jdictionary_to_string_dictionary(env, hashtable):
+def jdictionary_to_string_dictionary(hashtable):
     '''Convert a Java dictionary to a Python dictionary
     
     Convert each key and value in the Java dictionary to
     a string and construct a Python dictionary from the result.
     '''
-    jhashtable = get_dictionary_wrapper(env, hashtable)
+    jhashtable = get_dictionary_wrapper(hashtable)
     jkeys = jhashtable.keys()
-    keys = jenumeration_to_string_list(env, jkeys)
+    keys = jenumeration_to_string_list(jkeys)
     result = {}
     for key in keys:
-        result[key] = to_string(env, jhashtable.get(key))
+        result[key] = to_string(jhashtable.get(key))
     return result
 
-def get_enumeration_wrapper(env, enumeration):
+def get_enumeration_wrapper(enumeration):
     '''Return a wrapper of java.util.Enumeration
     
     Given a JB_Object that implements java.util.Enumeration,
     return an object that wraps the class methods.
     '''
+    env = get_env()
     class Enumeration(object):
-        klass = env.get_object_class(enumeration)
-        assert klass is not None
         def __init__(self):
             '''Call the init method with the JB_Object'''
             self.o = enumeration
-        hasMoreElements = make_method(env, klass, 'hasMoreElements', '()Z',
+        hasMoreElements = make_method('hasMoreElements', '()Z',
                                       'Return true if the enumeration has more elements to retrieve')
-        nextElement = make_method(env, klass, 'nextElement', 
+        nextElement = make_method('nextElement', 
                                   '()Ljava/lang/Object;')
     return Enumeration()
         
-def jenumeration_to_string_list(env, enumeration):
+def jenumeration_to_string_list(enumeration):
     '''Convert a Java enumeration to a Python list of strings
     
     Convert each element in an enumeration to a string and store
     in a Python list.
     '''
-    jenumeration = get_enumeration_wrapper(env, enumeration)
+    jenumeration = get_enumeration_wrapper(enumeration)
     result = []
     while jenumeration.hasMoreElements():
-        result.append(to_string(env, jenumeration.nextElement()))
+        result.append(to_string(jenumeration.nextElement()))
     return result
 
-def make_new(env, klass, sig):
+def make_new(class_name, sig):
     '''Make a function that creates a new instance of the class
     
     A typical init function looks like this:
-    new_fn = make_new(env, klass, '(I)V')
+    new_fn = make_new("java/lang/Integer", '(I)V')
     def __init__(self, i):
         self.o = new_fn(i)
     
     It's important to store the object in self.o because it's expected to be
     there by make_method, etc.
     '''
-    method_id = env.get_method_id(klass, '<init>', sig)
-    if method_id is None:
-        raise JavaError('Could not find constructor '
-                        'with signature = "%s' % sig)
-    args_sig = split_sig(sig[1:sig.find(')')])
     def constructor(self, *args):
-        result = env.new_object(klass, method_id, 
-                                *get_nice_args(env, args, args_sig))
-        jexception = env.exception_occurred() 
-        if jexception is not None:
-            raise JavaException(env, jexception)
-        self.o = result
-        return result
+        self.o = make_instance(class_name, sig, *args)
     return constructor
 
-def make_instance(env, class_name, sig, *args):
+def make_instance(class_name, sig, *args):
     '''Create an instance of a class
     
     class_name - name of class
     sig - signature of constructor
     args - arguments to constructor
     '''
-    klass = env.find_class(class_name)
-    if klass is None:
-        raise ValueError("Could not find class %s"%class_name)
-    method_id = env.get_method_id(klass, '<init>', sig)
-    if method_id is None:
-        raise JavaError('Could not find constructor with signature = %s'%sig)
     args_sig = split_sig(sig[1:sig.find(')')])
-    result = env.new_object(klass, method_id, *get_nice_args(env, args, args_sig))
-    jexception = env.exception_occurred() 
-    if jexception is not None or result is None:
-        raise JavaException(env, jexception)
+    klass = get_env().find_class(class_name)
+    jexception = get_env().exception_occurred()
+    if jexception is not None:
+        raise JavaException(jexception)
+    method_id = get_env().get_method_id(klass, '<init>', sig)
+    jexception = get_env().exception_occurred()
+    if method_id is None:
+        if jexception is None:
+            raise JavaError('Could not find constructor '
+                            'with signature = "%s' % sig)
+        else:
+            raise JavaException(jexception)
+    result = get_env().new_object(klass, method_id, 
+                                  *get_nice_args(args, args_sig))
+    jexception = get_env().exception_occurred() 
+    if jexception is not None:
+        raise JavaException(jexception)
     return result
 
-def get_class_wrapper(env, obj):
+def get_class_wrapper(obj):
     '''Return a wrapper for an object's class (e.g. for reflection)
     
     '''
-    class_object = call(env, obj, 'getClass','()Ljava/lang/Class;')
-    klass1 = env.get_object_class(class_object)
+    class_object = call(obj, 'getClass','()Ljava/lang/Class;')
     class Klass(object):
-        klass = klass1
         def __init__(self):
             self.o = class_object
-        getClasses = make_method(env, klass, 'getClasses','()[Ljava/lang/Class;',
+        getClasses = make_method('getClasses','()[Ljava/lang/Class;',
                                  'Returns an array containing Class objects representing all the public classes and interfaces that are members of the class represented by this Class object.')
-        getConstructors = make_method(env, klass, 'getConstructors','()[Ljava/lang/reflect/Constructor;')
-        getFields = make_method(env, klass, 'getFields','()[Ljava/lang/reflect/Field;')
-        getField = make_method(env, klass, 'getField','(Ljava/lang/String;)Ljava/lang/reflect/Field;')
-        getMethod = make_method(env, klass, 'getMethod','(Ljava/lang/String;[Ljava/lang/Class;)Ljava/lang/reflect/Method;')
-        getMethods = make_method(env, klass, 'getMethods','()[Ljava/lang/reflect/Method;')
+        getConstructors = make_method('getConstructors','()[Ljava/lang/reflect/Constructor;')
+        getFields = make_method('getFields','()[Ljava/lang/reflect/Field;')
+        getField = make_method('getField','(Ljava/lang/String;)Ljava/lang/reflect/Field;')
+        getMethod = make_method('getMethod','(Ljava/lang/String;[Ljava/lang/Class;)Ljava/lang/reflect/Method;')
+        getMethods = make_method('getMethods','()[Ljava/lang/reflect/Method;')
     return Klass()
 
 

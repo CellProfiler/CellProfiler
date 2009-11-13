@@ -17,15 +17,19 @@ import numpy as np
 import os
 import unittest
 
-import bioformats.formatreader as F
 import cellprofiler.utilities.jutil as J
+import bioformats.formatreader as F
 from cellprofiler.modules.tests import example_images_directory
 
-env = F.get_env()
-
 class TestFormatReader(unittest.TestCase):
+    def setUp(self):
+        J.attach()
+        
+    def tearDown(self):
+        J.detach()
+        
     def test_01_01_make_format_tools_class(self):
-        FormatTools = F.make_format_tools_class(env)
+        FormatTools = F.make_format_tools_class()
         self.assertEqual(FormatTools.CAN_GROUP, 1)
         self.assertEqual(FormatTools.CANNOT_GROUP, 2)
         self.assertEqual(FormatTools.DOUBLE, 7)
@@ -40,12 +44,12 @@ class TestFormatReader(unittest.TestCase):
     def test_02_01_make_image_reader(self):
         path = os.path.join(example_images_directory(), 'ExampleSBSImages',
                             'Channel1-01-A-01.tif')
-        ImageReader = F.make_image_reader_class(env)
-        FormatTools = F.make_format_tools_class(env)
+        ImageReader = F.make_image_reader_class()
+        FormatTools = F.make_format_tools_class()
         reader = ImageReader()
         reader.setId(path)
         self.assertEqual(reader.getDimensionOrder(), "XYCZT")
-        metadata = J.jdictionary_to_string_dictionary(env, reader.getMetadata())
+        metadata = J.jdictionary_to_string_dictionary(reader.getMetadata())
         self.assertEqual(int(metadata["ImageWidth"]), reader.getSizeX())
         self.assertEqual(int(metadata["ImageLength"]), reader.getSizeY())
         self.assertEqual(reader.getImageCount(), 1)
@@ -58,8 +62,8 @@ class TestFormatReader(unittest.TestCase):
     def test_03_01_read_tif(self):
         path = os.path.join(example_images_directory(), 'ExampleSBSImages',
                             'Channel1-01-A-01.tif')
-        ImageReader = F.make_image_reader_class(env)
-        FormatTools = F.make_format_tools_class(env)
+        ImageReader = F.make_image_reader_class()
+        FormatTools = F.make_format_tools_class()
         reader = ImageReader()
         reader.setId(path)
         data = reader.openBytes(0)

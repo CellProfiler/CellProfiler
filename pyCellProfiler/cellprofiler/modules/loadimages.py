@@ -32,12 +32,15 @@ import wx.html
 
 try:
     import bioformats.formatreader as formatreader
-    env = formatreader.get_env()
-    FormatTools = formatreader.make_format_tools_class(env)
-    ImageReader = formatreader.make_image_reader_class(env)
-    ChannelSeparator = formatreader.make_reader_wrapper_class(
-        env,"loci/formats/ChannelSeparator")
-    has_bioformats = True
+    formatreader.jutil.attach()
+    try:
+        FormatTools = formatreader.make_format_tools_class()
+        ImageReader = formatreader.make_image_reader_class()
+        ChannelSeparator = formatreader.make_reader_wrapper_class(
+            "loci/formats/ChannelSeparator")
+        has_bioformats = True
+    finally:
+        formatreader.jutil.detach()
 except:
     has_bioformats = False
 import Image as PILImage
@@ -1126,12 +1129,16 @@ class LoadImages(cpmodule.CPModule):
     def get_frame_count(self, pathname):
         """Return the # of frames in a movie"""
         if self.file_types in (FF_AVI_MOVIES,FF_OTHER_MOVIES,FF_STK_MOVIES):
-            rdr = ImageReader()
-            rdr.setId(pathname)
-            if self.file_types == FF_STK_MOVIES:
-                return rdr.getSizeT()
-            else:
-                return rdr.getSizeT()
+            formatreader.jutil.attach()
+            try:
+                rdr = ImageReader()
+                rdr.setId(pathname)
+                if self.file_types == FF_STK_MOVIES:
+                    return rdr.getSizeT()
+                else:
+                    return rdr.getSizeT()
+            finally:
+                formatreader.jutil.detach()
             
         raise NotImplementedError("get_frame_count not implemented for %s"%(self.file_types))
     
@@ -1403,62 +1410,72 @@ def load_using_bioformats(path, z=0, t=0):
     
     Returns either a 2-d (grayscale) or 3-d (2-d + 3 RGB planes) image
     '''
-    rdr = ImageReader()
-    rdr.setId(path)
-    width = rdr.getSizeX()
-    height = rdr.getSizeY()
-    pixel_type = rdr.getPixelType()
-    little_endian = rdr.isLittleEndian()
-    if pixel_type == FormatTools.INT8:
-        dtype = np.char
-        scale = 255
-    elif pixel_type == FormatTools.UINT8:
-        dtype = np.uint8
-        scale = 255
-    elif pixel_type == FormatTools.UINT16:
-        dtype = '<u2' if little_endian else '>u2'
-        scale = 65536
-    elif pixel_type == FormatTools.INT16:
-        dtype = '<i2' if little_endian else '>i2'
-        scale = 65536
-    elif pixel_type == FormatTools.UINT32:
-        dtype = '<u4' if little_endian else '>u4'
-        scale = 2**32
-    elif pixel_type == FormatTools.INT32:
-        dtype = '<i4' if little_endian else '>i4'
-        scale = 2**32
-    elif pixel_type == FormatTools.FLOAT:
-        dtype = '<f4' if little_endian else '>f4'
-        scale = 1
-    elif pixel_type == FormatTools.DOUBLE:
-        dtype = '<f8' if little_endian else '>f8'
-        scale = 1
-    max_sample_value = rdr.getMetadataValue('MaxSampleValue')
-    if max_sample_value is not None:
-        try:
-            scale = formatreader.jutil.call(env, max_sample_value, 
-                                            'intValue', '()I')
-        except:
-            sys.stderr.write("WARNING: failed to get MaxSampleValue for image. Intensities may be improperly scaled\n")
-    if rdr.isRGB() and rdr.isInterleaved():
-        index = rdr.getIndex(z,0,t)
-        image = np.frombuffer(rdr.openBytes(index), dtype)
-        image.shape = (height, width, 3)
-    elif rdr.getRGBChannelCount() > 1:
-        rdr.close()
-        rdr = ChannelSeparator(ImageReader())
+    try:
+        formatreader.jutil.attach()
+        rdr = ImageReader()
         rdr.setId(path)
-        red_image, green_image, blue_image = [
-            np.frombuffer(rdr.openBytes(rdr.getIndex(z,i,t)),dtype)
-            for i in range(3)]
-        image = np.dstack((red_image, green_image, blue_image))
-        image.shape=(height,width,3)
-    else:
-        index = rdr.getIndex(z,0,t)
-        image = np.frombuffer(rdr.openBytes(index),dtype)
-        image.shape = (height,width)
-    rdr.close()
-    image = image.astype(float) / float(scale)
+        width = rdr.getSizeX()
+        height = rdr.getSizeY()
+        pixel_type = rdr.getPixelType()
+        little_endian = rdr.isLittleEndian()
+        if pixel_type == FormatTools.INT8:
+            dtype = np.char
+            scale = 255
+        elif pixel_type == FormatTools.UINT8:
+            dtype = np.uint8
+            scale = 255
+        elif pixel_type == FormatTools.UINT16:
+            dtype = '<u2' if little_endian else '>u2'
+            scale = 65536
+        elif pixel_type == FormatTools.INT16:
+            dtype = '<i2' if little_endian else '>i2'
+            scale = 65536
+        elif pixel_type == FormatTools.UINT32:
+            dtype = '<u4' if little_endian else '>u4'
+            scale = 2**32
+        elif pixel_type == FormatTools.INT32:
+            dtype = '<i4' if little_endian else '>i4'
+            scale = 2**32
+        elif pixel_type == FormatTools.FLOAT:
+            dtype = '<f4' if little_endian else '>f4'
+            scale = 1
+        elif pixel_type == FormatTools.DOUBLE:
+            dtype = '<f8' if little_endian else '>f8'
+            scale = 1
+        max_sample_value = rdr.getMetadataValue('MaxSampleValue')
+        if max_sample_value is not None:
+            try:
+                scale = formatreader.jutil.call(max_sample_value, 
+                                                'intValue', '()I')
+            except:
+                sys.stderr.write("WARNING: failed to get MaxSampleValue for image. Intensities may be improperly scaled\n")
+        if rdr.isRGB() and rdr.isInterleaved():
+            index = rdr.getIndex(z,0,t)
+            image = np.frombuffer(rdr.openBytes(index), dtype)
+            image.shape = (height, width, 3)
+        elif rdr.getRGBChannelCount() > 1:
+            rdr.close()
+            rdr = ChannelSeparator(ImageReader())
+            rdr.setId(path)
+            red_image, green_image, blue_image = [
+                np.frombuffer(rdr.openBytes(rdr.getIndex(z,i,t)),dtype)
+                for i in range(3)]
+            image = np.dstack((red_image, green_image, blue_image))
+            image.shape=(height,width,3)
+        else:
+            index = rdr.getIndex(z,0,t)
+            image = np.frombuffer(rdr.openBytes(index),dtype)
+            image.shape = (height,width)
+        rdr.close()
+        del rdr
+        #
+        # Run the Java garbage collector here.
+        #
+        formatreader.jutil.static_call("java/lang/System",
+                                       "gc","()V")
+        image = image.astype(float) / float(scale)
+    finally:
+        formatreader.jutil.detach()
     return image
     
 class LoadImagesMovieFrameProvider(cpimage.AbstractImageProvider):

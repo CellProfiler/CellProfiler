@@ -138,6 +138,46 @@ class TestTrackObjects(unittest.TestCase):
         self.assertTrue(module.wants_image.value)
         self.assertEqual(module.image_name.value, "TrackedObjs")
     
+    def test_01_03_load_v2(self):
+        data = ('eJztWnFv2kYUPwjJlnWaMk1T90+l+7PZgmWzsrXRlEJh3dAKQQW1qqquvdhH'
+                'uO3wIftMwqZK/Qj7OPtY/QjzGRvMxYmNSYB2tmKZ93y/93v37t3z+eJmtfuk'
+                '+giWFRU2q91ij1AM2xTxHrMGh9DkB7BmYcSxAZl5CJvMhC02gtoP7t+hVjrU'
+                'yrCkqg9AuiPXaH7hXv5RANhxr5+6Z96/te3LudAp5A7mnJin9jYogG98/Xv3'
+                'fIYsgk4ofoaog+0ZRaBvmD3WHQ+nt5rMcChuoUG4sXu0nMEJtuzjXgD0b7fJ'
+                'OaYd8heWuhA0e4pHxCbM9PG+fVk75WVc4u302dljy3VHsv8Icb3f4e4IzOtF'
+                '3N59PYtbTorblnveCelF+1/BrH0hIs5fhtrv+TIxDTIihoMoJAN0OvVa2FNj'
+                '7G3N2dsC9VbVw92PwX0i+SHk4xG2KBp6+EoMfk/Ci7OLz3nx53OkczgQIU3i'
+                'x45kR8gtR6eYgET9iMPHxS83h8+B70Ey3m2JV8iaenBPBcl4C3P4AmgxEyeJ'
+                '+2cSr5DrDJqMQ8f28zdN3rxwsy4JLj+Hy4NSORmfjGux5XBxcYrKzxqjzILI'
+                'NOCkViSZr7clO0Ku4x5yKIcNMVlhnVhY58warzTuUfHbkXDBEeB2/WuS+N2S'
+                '+i3kY2478BfKThBNbOdzyY6QuxbS/8RGDVNqB3ZuKm4yTlPUdDg1HS7wM81z'
+                'QVVU7zjQ/B/+/Zv0P+08leuZ67u2TH7eVF7vgvk4C7lhcmzahI+vgT/uuRFe'
+                'R+z5cq2PTBPT0ib4n3a9sWheaerN+ik/17WUuB8jcNfp52XrgOuoh4v4+S6G'
+                '7zcwn3dC/v3uw/ZP4kUGHynf7b8W0nO3pj9lZ0cvq8X2q/1A4z54nYF59FIt'
+                'Pnj1t3ZQejtp3CEu0lPuT/2oxPiRZv2zSBz6Mfz3JX4hi768wMjyO3jv7X5R'
+                'qNwXOd73dSVfV0fjmWYd47xEfbpQz1fhbyWGL6oe1sacDSmyByE7q/Z70TpT'
+                'SumnGrGe2YT6lAT3IdanVa/TP/Z6tKp1iqqU1+JnJcbPqPes7hmDulu/bH8n'
+                'aB1+p3lfeY7JaV9sY47Ehp2p45C9TYt71DriMbPwqcUc01if3x/L/JOfb+Ul'
+                '+f79arF92FXmjbdpKxJnuDz/KucrO/kD69xzHBLTwMMF4hBVt0L21haHDJfh'
+                'NhlXAVfPq6h961l9mUzTD6m/GS7DbTKuArL5mOGy/Mlw2XhuMq4Crh6XTX0v'
+                'y3AZLsNluP87bpib4eT9O3lfU7R/E+KJqvffgvl6L2QdUzq0mPi+1lIG3keg'
+                'tkIZMiZfVSpP3J+N0AeWnl8xPBWJp3IZDzGwyUlvPLRcNoezAeJEVxq+tu1q'
+                'q4E2Sf8UiVe5jJeLj6kmO2+24n1ZdTwRLo7XbgRPOO55V7p9Z/fKcZbHdzbu'
+                '7x+m4SsU8hf+L30rBlcI+SQOb38YLJZfd69oH/Rxle0XjVsul1u63zOewtSn'
+                'if3VtP8PaZbd5A==')
+        pipeline = cpp.Pipeline()
+        def callback(caller,event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))        
+        module = pipeline.modules()[2]
+        self.assertTrue(isinstance(module, T.TrackObjects))
+        self.assertEqual(module.tracking_method, T.TM_OVERLAP)
+        self.assertEqual(module.object_name.value, "Nuclei")
+        self.assertEqual(module.pixel_radius.value, 25)
+        self.assertEqual(module.display_type.value, "Color and Number")
+        self.assertFalse(module.wants_image)
+        
     def runTrackObjects(self, labels_list, fn = None, measurement = None):
         '''Run two cycles of TrackObjects
         

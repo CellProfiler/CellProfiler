@@ -1,15 +1,76 @@
-"""trackobjects.py - Track objects in successive images
+"""<b>Track Objects</b> allows tracking objects throughout sequential frames of a movie, so that
+each object maintains a unique identity in the output measurements.
+<hr>
+This module must be run after the object to be tracked has been 
+identified using an Identification module (e.g., <b>IdentifyPrimAutomatic</b>).
 
-CellProfiler is distributed under the GNU General Public License.
-See the accompanying file LICENSE for details.
+Since the image sequence (whether a series of images or a movie file) is processed 
+sequentially by frame, to process a collection of images/movies, you will need to 
+group the input in <b>LoadImages</b> to make sure that each image sequence is
+handled individually.
 
-Developed by the Broad Institute
-Copyright 2003-2009
+Features that can be measured by this module:
+<ul>
+<li><i>Object features</i></li>
+<li>
+<ul>
+<li><i>Label:</i> Each tracked object is assigned a unique identifier (label). 
+Results of splits or merges are seen as new objects and assigned a new
+label.</li>
 
-Please see the AUTHORS file for credits.
+<li><i>Parent:</i> The label of the object in the last frame. For a split, each
+child object will have the label of the object it split from. For a merge,
+the child will have the label of the closest parent.</li>
 
-Website: http://www.cellprofiler.org
+<li><i>TrajectoryX, TrajectoryY:</i> The direction of motion (in x and y coordinates) of the 
+object from the previous frame to the curent frame.</li>
+
+<li><i>DistanceTraveled:</i> The distance traveled by the object from the 
+previous frame to the curent frame (calculated as the magnititude of 
+the distance traveled vector).</li>
+
+<li><i>IntegratedDistance:</i> The total distance traveled by the object during
+the lifetime of the object</li>
+
+<li><i>Linearity:</i> A measure of how linear the object trajectity is during the
+object lifetime. Calculated as (distance from initial to final 
+location)/(integrated object distance). Value is in range of [0,1].</li>
+
+<li><i>Lifetime:</i> The duration (in frames) of the object. The lifetime begins 
+at the frame when an object appears and is ouput as a measurement when
+the object disappears. At the final frame of the image set/movie, the 
+lifetimes of all remaining objects are ouput.</li>
+</ul>
+</li>
+<li><i>Image features</i></li>
+<ul>
+<li><i>LostObjectCount:</i> Number of objects that appear in the previous frame
+but have no identifiable child in the current frame</li>
+
+<li><i>NewObjectCount:</i> Number of objects that appear in the current frame but
+have no identifiable parent in the previous frame </li>
+
+<li><i>DaughterObjectCount:</i>Number of objects in the current frame which 
+resulted from a split from a parent object in the previous frame.</li>
+
+<li><i>MergedObjectCount:</i>Number of objects in the current frame which 
+resulted from the merging of child objects in the previous frame.</li>
+</ul>
+</li>
+</ul>
+
+See also: Any of the <b>Measure*</b> modules, <b>IdentifyPrimAutomatic</b>, <b>LoadImages</b>
 """
+#CellProfiler is distributed under the GNU General Public License.
+#See the accompanying file LICENSE for details.
+#
+#Developed by the Broad Institute
+#Copyright 2003-2009
+#
+#Please see the AUTHORS file for credits.
+#
+#Website: http://www.cellprofiler.org
+
 __version__="$Revision$"
 
 import numpy as np
@@ -50,6 +111,15 @@ F_INTEGRATED_DISTANCE = "IntegratedDistance"
 F_LINEARITY = "Linearity"
 F_LIFETIME = "Lifetime"
 
+'''# of objects in the current frame without parents in the previous frame'''
+F_NEW_OBJECT_COUNT = "NewObjectCount"
+'''# of objects in the previous frame without parents in the new frame'''
+F_LOST_OBJECT_COUNT = "LostObjectCount"
+'''# of objects in the current frame that have siblings'''
+F_DAUGHTER_OBJECT_COUNT = "DaughterObjectCount"
+'''# of objects in the current frame that are children of more than one parent'''
+F_MERGED_OBJECT_COUNT = "MergedObjectCount"
+
 F_ALL_COLTYPE_ALL = [(F_LABEL, cpmeas.COLTYPE_INTEGER),
                      (F_PARENT, cpmeas.COLTYPE_INTEGER),
                      (F_TRAJECTORY_X, cpmeas.COLTYPE_INTEGER),
@@ -62,151 +132,81 @@ F_ALL_COLTYPE_ALL = [(F_LABEL, cpmeas.COLTYPE_INTEGER),
 F_ALL = [feature for feature, coltype in F_ALL_COLTYPE_ALL]
 
 class TrackObjects(cpm.CPModule):
-    '''SHORT DESCRIPTION:
-Allows tracking objects throughout sequential frames of a movie, so that
-each object maintains a unique identity in the output measurements.
-*************************************************************************
-This module must be run after the object to be tracked has been 
-identified using an Identification module (e.g., IdentifyPrimAutomatic).
-
-Settings:
-
-Tracking method:
-Choose between the methods based on which is most consistent from frame
-to frame of your movie. For each, the maximum search distance that a 
-tracked object will looked for is specified with the Neighborhood setting
-below:
-
-Overlap - Compare the amount of overlaps between identified objects in 
-the previous frame with those in the current frame. The object with the
-greatest amount of overlap will be assigned the same label. Recommended
-for movies with high frame rates as compared to object motion.
-
-Distance - Compare the distance between the centroid of each identified
-object in the previous frame with that of the current frame. The 
-closest objects to each other will be assigned the same label.
-Distances are measured from the perimeter of each object. Recommended
-for movies with lower frame rates as compared to object motion, but
-the objects are clearly separable.
-
-Measurement - Compare the specified measurement of each object in the 
-current frame with that of objects in the previous frame. The object 
-with the closest measurement will be selected as a match and will be 
-assigned the same label. This selection requires that you run the 
-specified Measurement module previous to this module in the pipeline so
-that the measurement values can be used to track the objects. 
-
-Catagory/Feature Name or Number/Image/Scale:
-Specifies which type of measurement (catagory) and which feature from the
-Measure module will be used for tracking. Select the feature name from 
-the popup box or see each Measure module's help for the numbered list of
-the features measured by that module. Additional details such as the 
-image that the measurements originated from and the scale used as
-specified below if neccesary.
-
-Neighborhood:
-This indicates the region (in pixels) within which objects in the
-next frame are to be compared. To determine pixel distances, you can look
-at the markings on the side of each image (shown in pixel units) or
-using the ShowOrHidePixelData Image tool (under the Image Tools menu of 
-any CellProfiler figure window)
-
-How do you want to display the tracked objects?
-The objects can be displayed as a color image, in which an object with a 
-unique label is assigned a unique color. This same color is maintained
-throughout the object's lifetime. If desired, a number identifiying the 
-object is superimposed on the object.
-
-What number do you want displayed?
-The displayed number is the unique label assigned to the object or the
-progeny identifier.
-
-Do you want to calculate statistics:
-Select whether you want statistics on the tracked objects to be added to
-the measurements for that object. The current statistics are collected:
-
-Features measured:
-TrajectoryX
-TrajectoryY
-DistanceTraveled
-IntegratedDistance
-Linearity
-Parent
-Label
-Lifetime
-
-Desscription of each feature:
-Label: Each tracked object is assigned a unique identifier (label). 
-Results of splits or merges are seen as new objects and assigned a new
-label.
-
-Parent: The label of the object in the last frame. For a split, each
-child object will have the label of the object it split from. For a merge,
-the child will have the label of the closest parent.
-
-Trajectory: The direction of motion (in x and y coordinates) of the 
-object from the previous frame to the curent frame.
-
-Distance traveled: The distance traveled by the object from the 
-previous frame to the curent frame (calculated as the magnititude of 
-the distance traveled vector).
-
-Lifetime: The duration (in frames) of the object. The lifetime begins 
-at the frame when an object appears and is ouput as a measurement when
-the object disappears. At the final frame of the image set/movie, the 
-lifetimes of all remaining objects are ouput.
-
-Integrated distance: The total distance traveled by the object during
-the lifetime of the object
-
-Linearity: A measure of how linear the object trajectity is during the
-object lifetime. Calculated as (distance from initial to final 
-location)/(integrated object distance). Value is in range of [0,1].
-
-What do you want to call the image with the tracked objects?
-Specify a name to give the image showing the tracked objects. This image
-can be saved with a SaveImages module placed after this module.
-
-Additional notes:
-
-In the figure window, a popupmenu allows you to display the objects as a
-solid color or as an outline with the current objects in color and the
-previous objects in white.
-
-Since the movie is processed sequentially by frame, it cannot be broken
-up into batches for execution on a distributed cluster.
-
-If running on a cluster and saving the colored image with text labels,
-the labels will not show up in the final result. This is a limitation of
-using MATLAB's hardcopy command.
-
-See also: Any of the Measure* modules, IdentifyPrimAutomatic
-'''
+    
+    module_name = 'TrackObjects'
     category = "Object Processing"
     variable_revision_number = 2
-    module_name = 'TrackObjects'
     
     def create_settings(self):
         self.tracking_method = cps.Choice('Choose a tracking method',
-                                          TM_ALL)
+                                          TM_ALL, doc="""\
+            Choose between the methods based on which is most consistent from frame
+            to frame of your movie. For each, the maximum search distance that a 
+            tracked object will looked for is specified with the Distance setting
+            below:
+            
+            <ul>
+            <li><i>Overlap:</i>Compare the amount of overlaps between identified objects in 
+            the previous frame with those in the current frame. The object with the
+            greatest amount of overlap will be assigned the same label. Recommended
+            for movies with high frame rates as compared to object motion.</li>
+            
+            <li><i>Distance:</i> Compare the distance between the centroid of each identified
+            object in the previous frame with that of the current frame. The 
+            closest objects to each other will be assigned the same label.
+            Distances are measured from the perimeter of each object. Recommended
+            for movies with lower frame rates as compared to object motion, but
+            the objects are clearly separable.</li>
+            
+            <li><i>Measurement:</i> Compare the specified measurement of each object in the 
+            current frame with that of objects in the previous frame. The object 
+            with the closest measurement will be selected as a match and will be 
+            assigned the same label. This selection requires that you run the 
+            specified Measurement module previous to this module in the pipeline so
+            that the measurement values can be used to track the objects.</li>
+            </ul>""")
+        
         self.object_name = cps.ObjectNameSubscriber(
             'What did you call the objects you want to track?','None')
+        
         self.measurement = cps.Measurement(
             'What measurement do you want to use?',
-            lambda : self.object_name.value)
+            lambda : self.object_name.value, doc="""\
+            <i>(Only used if Measurement is chosen as the tracking method)</i>
+            <p>Specifies which type of measurement (category) and which feature from the
+            Measure module will be used for tracking. Select the feature name from 
+            the popup box or see each <b>Measure</b> module's help for the list of
+            the features measured by that module. Additional details such as the 
+            image that the measurements originated from and the scale used are
+            specified if neccesary.""")
+        
         self.pixel_radius = cps.Integer(
             'Within what pixel distance will objects be considered to find '
-            'a potential match?',50,minval=1)
+            'a potential match?',50,minval=1,doc="""\
+            This indicates the region (in pixels) within which objects in the
+            next frame are to be compared. To determine pixel distances, you can look
+            at the axis increments on each image (shown in pixel units) or
+            using the <i>Tools > Show pixel data</i> of any CellProfiler figure window""")
+        
 	self.born_cost = cps.Integer(
 	    'What is the cost of an object being born?', 100, minval=1)
+        
 	self.die_cost = cps.Integer(
 	    'What is the cost of an object dying?', 100, minval=1)
+        
         self.display_type = cps.Choice(
             'How do you want to display the tracked objects?',
-            DT_ALL)
+            DT_ALL, doc="""\
+            The output image can be saved as either a color-labelled image, with each tracked
+            object assigned a unique color, or a color-labelled image with the tracked object 
+            number superimposed.""")
+        
         self.wants_image = cps.Binary(
             "Do you want to save the image with tracked, color-coded objects?",
-            False)
+            False,doc="""
+            Specify a name to give the image showing the tracked objects. This image
+            can be saved with a <b>SaveImages</b> module placed after this module.""")
+        
         self.image_name = cps.ImageNameProvider(
             "What do you want to call the images?", "TrackedCells")
 
@@ -214,25 +214,6 @@ See also: Any of the Measure* modules, IdentifyPrimAutomatic
         return [self.tracking_method, self.object_name, self.measurement,
                 self.pixel_radius, self.display_type, self.wants_image,
                 self.image_name, self.born_cost, self.die_cost]
-
-    def backwards_compatibilize(self, setting_values, variable_revision_number, 
-                                module_name, from_matlab):
-        if from_matlab and variable_revision_number == 3:
-            wants_image = setting_values[10] != cps.DO_NOT_USE
-            measurement =  '_'.join(setting_values[2:6])
-            setting_values = [ setting_values[0], # tracking method
-                               setting_values[1], # object name
-                               measurement,
-                               setting_values[6], # pixel_radius
-                               setting_values[7], # display_type
-                               wants_image,
-                               setting_values[10]]
-            variable_revision_number = 1
-            from_matlab = False
-	if (not from_matlab) and variable_revision_number == 1:
-	    setting_values += [100,100]
-	    variable_revision_number = 2
-        return setting_values, variable_revision_number, from_matlab
 
     def visible_settings(self):
         result = [self.tracking_method, self.object_name]
@@ -595,7 +576,8 @@ See also: Any of the Measure* modules, IdentifyPrimAutomatic
         # Record the new objects' parents
         #
         parents = old_of_new.copy()
-        parents[parents != 0] = old_object_numbers[old_of_new[parents!=0]-1]
+        parents[parents != 0] =\
+               old_object_numbers[(old_of_new[parents!=0]-1)].astype(parents.dtype)
         self.add_measurement(workspace, F_PARENT, parents)
         #
         # Assign object IDs to the new objects if unambiguous
@@ -606,7 +588,7 @@ See also: Any of the Measure* modules, IdentifyPrimAutomatic
                                                 old_of_new,
                                                 np.arange(old_count)+1))
             one_to_one = new_per_old == 1
-            mapping[new_of_old[one_to_one]-1] = old_object_numbers[one_to_one]
+            mapping[(new_of_old[one_to_one]-1)] = old_object_numbers[one_to_one]
             miss_count = np.sum(mapping == 0)
         else:
             miss_count = new_count
@@ -685,4 +667,23 @@ See also: Any of the Measure* modules, IdentifyPrimAutomatic
             return [str(self.pixel_radius.value)]
         return []
         
+    def upgrade_settings(self, setting_values, variable_revision_number, 
+                                module_name, from_matlab):
+        if from_matlab and variable_revision_number == 3:
+            wants_image = setting_values[10] != cps.DO_NOT_USE
+            measurement =  '_'.join(setting_values[2:6])
+            setting_values = [ setting_values[0], # tracking method
+                               setting_values[1], # object name
+                               measurement,
+                               setting_values[6], # pixel_radius
+                               setting_values[7], # display_type
+                               wants_image,
+                               setting_values[10]]
+            variable_revision_number = 1
+            from_matlab = False
+	if (not from_matlab) and variable_revision_number == 1:
+	    setting_values += [100,100]
+	    variable_revision_number = 2
+        return setting_values, variable_revision_number, from_matlab
+
     

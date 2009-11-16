@@ -242,16 +242,17 @@ def relabel(image):
     # Build a label table that converts an old label # into
     # labels using the new numbering scheme
     #
-    unique_labels = np.unique(image)
-    consecutive_labels = np.array(range(len(unique_labels)+1))
-    label_table = np.ndarray(((unique_labels[-1]+1),),int)
-    for old,new in zip(unique_labels,consecutive_labels):
-        label_table[old]=new
+    unique_labels = np.unique(image[image!=0])
+    if len(unique_labels) == 0:
+        return (image,0)
+    consecutive_labels = np.arange(len(unique_labels))+1
+    label_table = np.zeros(unique_labels.max()+1, int)
+    label_table[unique_labels] = consecutive_labels
     #
     # Use the label table to remap all of the labels
     #
     new_image = label_table[image]
-    return (new_image,len(unique_labels)-1)
+    return (new_image,len(unique_labels))
 
 def convex_hull(labels, indexes=None):
     """Given a labeled image, return a list of points per object ordered by

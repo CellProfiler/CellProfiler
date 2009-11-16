@@ -176,7 +176,7 @@ def make_kill_vm():
     kill = __kill
     thread_local_env = __thread_local_env
     def kill_vm():
-        if thread_local_env.env is not None:
+        if getattr(thread_local_env,"env",None) is not None:
             detach()
         kill[0] = True
         wake_event.set()

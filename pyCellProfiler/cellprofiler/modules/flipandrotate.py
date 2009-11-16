@@ -156,14 +156,14 @@ class FlipAndRotate(cpm.CPModule):
                 
         if self.rotate_choice != ROTATE_NONE:
             if self.rotate_choice == ROTATE_ANGLE:
-                angle = self.angle.value * np.pi / 180.0
+                angle = self.angle.value
             elif self.rotate_choice == ROTATE_COORDINATES:
                 xdiff = self.second_pixel.x - self.first_pixel.x
                 ydiff = self.second_pixel.y - self.first_pixel.y
                 if self.horiz_or_vert == C_VERTICALLY:
-                    angle = np.arctan2(ydiff, xdiff)
+                    angle = -np.arctan2(ydiff, xdiff) * 180.0 / np.pi
                 elif self.horiz_or_vert == C_HORIZONTALLY:
-                    angle = -np.arctan2(xdiff, ydiff)
+                    angle = np.arctan2(xdiff, ydiff) * 180.0 / np.pi
                 else:
                     raise NotImplementedError("Unknown axis: %s" %
                                               self.horiz_or_vert.value)
@@ -172,33 +172,48 @@ class FlipAndRotate(cpm.CPModule):
             else:
                 raise NotImplementedError("Unknown rotation method: %s" %
                                           self.rotate_choice.value)
-            transform = np.array([[np.cos(angle),-np.sin(angle)],
-                                  [np.sin(angle),np.cos(angle)]])
-            # Make it rotate about the center
-            offset = affine_offset(pixel_data.shape, transform)
-            mask = scind.affine_transform(mask.astype(float), 
-                                          transform, offset) > .5
-            crop = scind.affine_transform(np.ones(pixel_data.shape[:2]),
-                                          transform, offset) > .5
+            rangle = angle * np.pi / 180.0
+            mask = scind.rotate(mask.astype(float), angle, 
+                                reshape = True) > .50
+            crop = scind.rotate(np.ones(pixel_data.shape[:2]), angle,
+                                reshape = True) > .50
             mask = mask & crop
-            
-            if pixel_data.ndim == 2:
-                pixel_data = scind.affine_transform(pixel_data, transform, 
-                                                    offset)
-            else:
-                for k in range(pixel_data.shape[2]):
-                    pixel_data[:,:,k] = scind.affine_transform(pixel_data[:,:,k],
-                                                               transform,
-                                                               offset)
+            pixel_data = scind.rotate(pixel_data, angle, reshape = True)
             if self.wants_crop.value:
-                i,j = pixel_data.shape[0:2]
-                i_crop = np.ceil(np.abs((i*np.sin(angle) - j*np.cos(angle)) * 
-                                        np.cos(angle) * np.sin(angle) /
-                                        (np.sin(angle)**2-np.cos(angle)**2)))
-                j_crop = np.ceil(np.abs((j*np.sin(angle) - i*np.cos(angle)) * 
-                                        np.cos(angle)*np.sin(angle) /
-                                        (np.sin(angle)**2-np.cos(angle)**2)));
-                ii = np.index_exp[i_crop:i-i_crop,j_crop:j-j_crop]
+                #
+                # We want to find the largest rectangle that fits inside
+                # the crop. The cumulative sum in the i and j direction gives
+                # the length of the rectangle in each direction and
+                # multiplying them gives you the area.
+                #
+                # The left and right halves are symmetric, so we compute
+                # on just two of the quadrants.
+                #
+                half = (np.array(crop.shape)/2).astype(int)
+                #
+                # Operate on the lower right
+                #
+                quartercrop = crop[half[0]:,half[1]:]
+                ci = np.cumsum(quartercrop,0)
+                cj = np.cumsum(quartercrop,1)
+                carea_d = ci*cj
+                carea_d[quartercrop==0] = 0
+                #
+                # Operate on the upper right by flipping I
+                #
+                quartercrop = crop[crop.shape[0]-half[0]-1::-1,half[1]:]
+                ci = np.cumsum(quartercrop,0)
+                cj = np.cumsum(quartercrop,1)
+                carea_u = ci*cj
+                carea_u[quartercrop==0] = 0
+                carea = carea_d + carea_u
+                max_carea = np.max(carea)
+                max_area = np.argwhere(carea == max_carea)[0] + half
+                min_i = max(crop.shape[0]-max_area[0]-1,0)
+                max_i = max_area[0]+1
+                min_j = max(crop.shape[1]-max_area[1]-1,0)
+                max_j = max_area[1]+1
+                ii = np.index_exp[min_i:max_i, min_j:max_j]
                 crop = np.zeros(pixel_data.shape, bool)
                 crop[ii] = True
                 mask = mask[ii]
@@ -211,20 +226,35 @@ class FlipAndRotate(cpm.CPModule):
         output_image = cpi.Image(pixel_data, mask, crop, image)
         image_set.add(self.output_name.value, output_image)
         workspace.measurements.add_image_measurement(
-            M_ROTATION_F % self.output_name.value, angle * 180.0 / np.pi)
+            M_ROTATION_F % self.output_name.value, angle)
         
         if workspace.frame is not None:
             figure = workspace.create_or_find_figure(subplots=(2,1))
+            vmin = min(np.min(image.pixel_data), 
+                       np.min(output_image.pixel_data[output_image.mask]))
+            vmax = max(np.max(image.pixel_data), 
+                       np.max(output_image.pixel_data[output_image.mask]))
+            if vmin==vmax:
+                vmin = 0
+                vmax = 1
             if pixel_data.ndim == 2:
                 figure.subplot_imshow_grayscale(0,0, image.pixel_data,
-                                                title = self.image_name.value)
+                                                title = self.image_name.value,
+                                                vmin = vmin, vmax=vmax)
                 figure.subplot_imshow_grayscale(1,0, output_image.pixel_data,
-                                                title = self.output_name.value)
+                                                title = self.output_name.value,
+                                                vmin=vmin, vmax = vmax)
             else:
                 figure.subplot_imshow_color(0,0, image.pixel_data,
-                                            title = self.image_name.value)
+                                            title = self.image_name.value,
+                                            normalize=False,
+                                            vmin=vmin,
+                                            vmax=vmax)
                 figure.subplot_imshow_color(1,0, output_image.pixel_data,
-                                            title = self.output_name.value)
+                                            title = self.output_name.value,
+                                            normalize=False,
+                                            vmin=vmin,
+                                            vmax=vmax)
     def angle_from_mouse(self, workspace, pixel_data):
         '''Run a UI that gets an angle from the user'''
         if self.how_often == IO_ONCE:
@@ -285,7 +315,7 @@ class FlipAndRotate(cpm.CPModule):
             center = np.array(canvas.Size) / 2
             point = np.array(event.GetPositionTuple())
             offset = point - center
-            return np.arctan2(offset[1],offset[0])
+            return np.arctan2(offset[1],offset[0]) * 180.0 / np.pi
         
         def on_mouse_down(event):
             canvas.Cursor = hand_cursor

@@ -388,7 +388,7 @@ class CPFigureFrame(wx.Frame):
         return result
     
     def subplot_imshow_color(self, x, y, image, title=None, clear=True, 
-                             normalize=True):
+                             normalize=True, vmin=None,vmax=None):
         if clear:
             self.clear_subplot(x, y)
         if normalize:
@@ -402,7 +402,7 @@ class CPFigureFrame(wx.Frame):
         elif image.dtype.type == np.float64:
             image = image.astype(np.float32)
         subplot = self.subplot(x,y)
-        result = subplot.imshow(image)
+        result = subplot.imshow(image,vmin=vmin, vmax=vmax)
         if title != None:
             self.set_subplot_title(title, x, y)
         return result

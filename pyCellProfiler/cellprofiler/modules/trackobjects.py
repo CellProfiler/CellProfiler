@@ -184,9 +184,9 @@ See also: Any of the Measure* modules, IdentifyPrimAutomatic
 '''
     category = "Object Processing"
     variable_revision_number = 2
+    module_name = 'TrackObjects'
     
     def create_settings(self):
-        self.module_name = 'TrackObjects'
         self.tracking_method = cps.Choice('Choose a tracking method',
                                           TM_ALL)
         self.object_name = cps.ObjectNameSubscriber(

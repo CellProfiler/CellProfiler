@@ -36,6 +36,9 @@ class GridButtonRenderer(wx.grid.PyGridCellRenderer):
         self.__bevel_width = bevel_width
     
     def Draw(self, grid, attr, dc, rect, row, col, isSelected):
+        dc.SetClippingRect(rect)
+        dc.Clear()
+        dc.DestroyClippingRegion()
         bitmap = self.get_bitmap(grid, attr, dc, row, col)
         state = self.get_state(grid, row, col)
         if state != None:
@@ -46,7 +49,6 @@ class GridButtonRenderer(wx.grid.PyGridCellRenderer):
             bw = self.__bevel_width
             rect = wx.Rect(rect.Left+bw, rect.Top+bw, rect.width-2*bw, rect.height-2*bw)
         dc.SetClippingRect(rect)
-        dc.Clear()
         if bitmap:
             dc.DrawBitmap(bitmap, rect.Left, rect.Top,True)
         dc.DestroyClippingRegion()

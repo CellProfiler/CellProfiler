@@ -143,6 +143,7 @@ class PipelineListView(object):
         grid.CreateGrid(0, NUM_COLUMNS)
         grid.SetColLabelSize(0)
         grid.SetRowLabelSize(0)
+        grid.SetBackgroundColour('white')
         error_bitmap      = plv_get_bitmap(IMG_ERROR)
         ok_bitmap         = plv_get_bitmap(IMG_OK)
         eye_bitmap        = plv_get_bitmap(IMG_EYE)

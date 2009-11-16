@@ -1410,6 +1410,11 @@ def load_using_bioformats(path, z=0, t=0):
     
     Returns either a 2-d (grayscale) or 3-d (2-d + 3 RGB planes) image
     '''
+    #
+    # Bioformats is more picky about slashes than Python
+    #
+    if sys.platform.startswith("win"):
+        path = path.replace("/",os.path.sep)
     try:
         formatreader.jutil.attach()
         rdr = ImageReader()

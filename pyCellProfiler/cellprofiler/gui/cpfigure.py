@@ -418,7 +418,7 @@ class CPFigureFrame(wx.Frame):
             image = image.astype(np.float32)
         return self.subplot_imshow(x, y, image, title, clear, 
                                    matplotlib.cm.Greys_r,
-                                   vmin, vmax)
+                                   vmin=vmin, vmax=vmax)
     
     def subplot_imshow_bw(self, x,y,image, title=None, clear=True):
         return self.subplot_imshow(x, y, image, title, clear, 

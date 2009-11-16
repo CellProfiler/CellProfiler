@@ -273,7 +273,15 @@ class CorrectIllumination_Calculate(cpm.CPModule):
         figure = workspace.create_or_find_figure(subplots=(2,2))
         figure.subplot_imshow_grayscale(0, 0, avg_image.pixel_data, 
                                         "Averaged image")
-        figure.subplot_imshow_grayscale(0, 1, output_image.pixel_data,
+        #
+        # For the polynomial method, the display is disconcerting if much
+        # of the image is masked.
+        #
+        pixel_data = output_image.pixel_data
+        if self.smoothing_method == SM_FIT_POLYNOMIAL and output_image.has_mask:
+            pixel_data = pixel_data.copy()
+            pixel_data[~ output_image.mask] = np.min(pixel_data)
+        figure.subplot_imshow_grayscale(0, 1, pixel_data,
                                         "Final illumination function")
         figure.subplot_imshow_grayscale(1, 0, dilated_image.pixel_data,
                                         "Dilated image")

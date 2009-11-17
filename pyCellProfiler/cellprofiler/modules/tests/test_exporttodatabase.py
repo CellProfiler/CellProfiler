@@ -47,6 +47,9 @@ OBJECT_NAME = 'myobject'
 IMAGE_NAME = 'myimage'
 OBJECT_COUNT_MEASUREMENT = 'Count_%s'%OBJECT_NAME
 
+ALTOBJECT_NAME = 'altobject'
+ALTOBJECT_COUNT_MEASUREMENT = 'Count_%s'%ALTOBJECT_NAME
+
 INT_VALUE = 10
 FLOAT_VALUE = 15.5
 STRING_VALUE = "Hello, world"
@@ -237,7 +240,7 @@ class TestExportToDatabase(unittest.TestCase):
         self.assertEqual(module.objects_choice, E.O_SELECT)
         self.assertEqual(module.objects_list.value, "Nuclei")
         
-    def make_workspace(self, wants_files):
+    def make_workspace(self, wants_files, alt_object=False):
         '''Make a measurements structure with image and object measurements'''
         class TestModule(cpm.CPModule):
             module_name = "TestModule"
@@ -250,28 +253,37 @@ class TestExportToDatabase(unittest.TestCase):
                 return [self.image_name, self.objects_name]
             
             def get_measurement_columns(self, pipeline):
-                return [(cpmeas.IMAGE, INT_IMG_MEASUREMENT, cpmeas.COLTYPE_INTEGER),
-                        (cpmeas.IMAGE, FLOAT_IMG_MEASUREMENT, cpmeas.COLTYPE_FLOAT),
-                        (cpmeas.IMAGE, STRING_IMG_MEASUREMENT, 
-                         cpmeas.COLTYPE_VARCHAR_FORMAT % 40),
-                        (cpmeas.IMAGE, OBJECT_COUNT_MEASUREMENT, cpmeas.COLTYPE_INTEGER),
-                        (OBJECT_NAME, OBJ_MEASUREMENT, cpmeas.COLTYPE_FLOAT)]
+                columns = [(cpmeas.IMAGE, INT_IMG_MEASUREMENT, cpmeas.COLTYPE_INTEGER),
+                           (cpmeas.IMAGE, FLOAT_IMG_MEASUREMENT, cpmeas.COLTYPE_FLOAT),
+                           (cpmeas.IMAGE, STRING_IMG_MEASUREMENT, 
+                            cpmeas.COLTYPE_VARCHAR_FORMAT % 40),
+                           (cpmeas.IMAGE, OBJECT_COUNT_MEASUREMENT, cpmeas.COLTYPE_INTEGER),
+                           (OBJECT_NAME, OBJ_MEASUREMENT, cpmeas.COLTYPE_FLOAT)]
+                if alt_object:
+                    columns += [(cpmeas.IMAGE, ALTOBJECT_COUNT_MEASUREMENT, cpmeas.COLTYPE_INTEGER),
+                                (ALTOBJECT_NAME, OBJ_MEASUREMENT, cpmeas.COLTYPE_FLOAT)]
+                return columns
             
             def get_categories(self, pipeline, object_name):
                 return ([M_CATEGORY] 
-                        if object_name == OBJECT_NAME
+                        if (object_name == OBJECT_NAME or 
+                            ((object_name == ALTOBJECT_NAME) and alt_object))
                         else [M_CATEGORY, "Count"] 
                         if object_name == cpmeas.IMAGE
                         else [])
             
             def get_measurements(self, pipeline, object_name, category):
                 if category == M_CATEGORY:
-                    if object_name == OBJECT_NAME:
+                    if (object_name == OBJECT_NAME or 
+                        ((object_name == ALTOBJECT_NAME) and alt_object)):
                         return [OBJ_FEATURE]
                     else:
                         return [INT_IMG_FEATURE, FLOAT_IMG_FEATURE, STRING_IMG_FEATURE]
                 elif category == "Count" and object_name == cpmeas.IMAGE:
-                    return OBJECT_NAME
+                    result = [OBJECT_NAME]
+                    if alt_object:
+                        result += [ALTOBJECT_NAME]
+                    return result
                 return []
             
         m = cpmeas.Measurements()
@@ -280,6 +292,10 @@ class TestExportToDatabase(unittest.TestCase):
         m.add_image_measurement(STRING_IMG_MEASUREMENT, STRING_VALUE)
         m.add_image_measurement(OBJECT_COUNT_MEASUREMENT, len(OBJ_VALUE))
         m.add_measurement(OBJECT_NAME, OBJ_MEASUREMENT, OBJ_VALUE)
+        if alt_object:
+            m.add_image_measurement(ALTOBJECT_COUNT_MEASUREMENT, 100)
+            m.add_measurement(ALTOBJECT_NAME, OBJ_MEASUREMENT,
+                              np.arange(100))
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
         image_set.add(IMAGE_NAME, cpi.Image(np.zeros((10,10))))
@@ -287,6 +303,10 @@ class TestExportToDatabase(unittest.TestCase):
         objects = cpo.Objects()
         objects.segmented = np.array([[0,1,2,3],[0,1,2,3]])
         object_set.add_objects(objects, OBJECT_NAME)
+        if alt_object:
+            objects = cpo.Objects()
+            objects.segmented = np.array([[0,1,2,3],[0,1,2,3]])
+            object_set.add_objects(objects, ALTOBJECT_NAME)
         test_module = TestModule()
         pipeline = cpp.Pipeline()
         def callback_handler(caller, event):
@@ -385,6 +405,72 @@ class TestExportToDatabase(unittest.TestCase):
                 except:
                     print "Failed to drop table %s"%table_name
     
+    def test_02_015_write_mysql_db_filter_objs(self):
+        workspace, module, output_dir, finally_fn = self.make_workspace(True, True)
+        os.chdir(output_dir)
+        try:
+            self.assertTrue(isinstance(module, E.ExportToDatabase))
+            module.db_type = E.DB_MYSQL
+            module.store_csvs.value = True
+            module.wants_agg_mean.value = False
+            module.wants_agg_median.value = False
+            module.wants_agg_std_dev.value = False
+            module.objects_choice.value = E.O_SELECT
+            module.objects_list.choices = [OBJECT_NAME, ALTOBJECT_NAME]
+            module.objects_list.value = OBJECT_NAME
+            module.post_run(workspace)
+            sql_file = os.path.join(output_dir, "SQL__SETUP.SQL")
+            base_name = "SQL_1_1"
+            image_file = os.path.join(output_dir, base_name+"_image.CSV")
+            object_file = os.path.join(output_dir, base_name+"_object.CSV")
+            for filename in (sql_file, image_file, object_file):
+                self.assertTrue(os.path.isfile(filename))
+            fd = open(sql_file,'rt')
+            sql_text = fd.read()
+            fd.close()
+            for statement in sql_text.split(';'):
+                if len(statement.strip()) == 0:
+                    continue
+                self.cursor.execute(statement)
+            #
+            # Now read the image file from the database
+            #
+            image_table = module.table_prefix.value + "Per_Image"
+            statement = ("select ImageNumber, Image_%s, Image_%s, Image_%s, Image_Count_%s "
+                         "from %s" %
+                         (INT_IMG_MEASUREMENT, FLOAT_IMG_MEASUREMENT,
+                          STRING_IMG_MEASUREMENT, OBJECT_NAME, image_table))
+            self.cursor.execute(statement)
+            row = self.cursor.fetchone()
+            self.assertEqual(len(row), 5)
+            self.assertEqual(row[0],1)
+            self.assertAlmostEqual(row[1], INT_VALUE)
+            self.assertAlmostEqual(row[2], FLOAT_VALUE)
+            self.assertEqual(row[3], STRING_VALUE)
+            self.assertEqual(row[4], len(OBJ_VALUE))
+            self.assertRaises(StopIteration, self.cursor.next)
+            statement = ("select ImageNumber, ObjectNumber, %s_%s "
+                         "from %sPer_Object order by ObjectNumber"%
+                         (OBJECT_NAME, OBJ_MEASUREMENT, module.table_prefix.value))
+            self.cursor.execute(statement)
+            for i, value in enumerate(OBJ_VALUE):
+                row = self.cursor.fetchone()
+                self.assertEqual(len(row), 3)
+                self.assertEqual(row[0], 1)
+                self.assertEqual(row[1], i+1)
+                self.assertAlmostEqual(row[2], value)
+            self.assertRaises(StopIteration, self.cursor.next)
+        finally:
+            os.chdir(output_dir)
+            finally_fn()
+            for table_suffix in ("Per_Image","Per_Object"):
+                table_name = module.table_prefix.value + table_suffix
+                try:
+                    self.cursor.execute("drop table %s.%s" %
+                                        (module.db_name.value, table_name))
+                except:
+                    print "Failed to drop table %s"%table_name
+
     def test_02_02_mysql_direct(self):
         '''Write directly to the mysql DB, not to a file'''
         workspace, module = self.make_workspace(False)

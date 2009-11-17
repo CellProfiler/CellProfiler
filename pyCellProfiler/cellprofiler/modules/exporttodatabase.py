@@ -380,14 +380,24 @@ class ExportToDatabase(cpm.CPModule):
         '''All subsequent modules should not write measurements'''
         return True
     
-    def ignore_object(self,object_name):
-        """Ignore objects (other than 'Image') if this returns true"""
+    def ignore_object(self,object_name, strict = False):
+        """Ignore objects (other than 'Image') if this returns true
+        
+        If strict is True, then we ignore objects based on the object selection
+        """
         if object_name in ('Experiment','Neighbors'):
             return True
-        
-    def ignore_feature(self, object_name, feature_name, measurements=None):
+        if strict and self.objects_choice == O_NONE:
+            return True
+        if (strict and self.objects_choice == O_SELECT and
+            object_name != cpmeas.IMAGE):
+            return object_name not in self.objects_list.selections
+        return False
+
+    def ignore_feature(self, object_name, feature_name, measurements=None,
+                       strict = False):
         """Return true if we should ignore a feature"""
-        if (self.ignore_object(object_name) or 
+        if (self.ignore_object(object_name, strict) or 
             feature_name.startswith('Description_') or 
             feature_name.startswith('ModuleError_') or 
             feature_name.startswith('TimeElapsed_') or 
@@ -574,7 +584,7 @@ ObjectNumber INTEGER"""%(self.get_table_prefix()))
                 if object_name == 'Image':
                     continue
                 for feature in measurements.get_feature_names(object_name):
-                    if self.ignore_feature(object_name, feature, measurements):
+                    if self.ignore_feature(object_name, feature, measurements, True):
                         continue
                     feature_name = '%s_%s'%(object_name,feature)
                     fid.write(",\n%s FLOAT NOT NULL"%(mappings[feature_name]))
@@ -698,6 +708,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
             # The individual feature measurements
             #
             max_count = 0
+            max_rows = 0
             for feature in measurements.get_feature_names('Image'):
                 if self.ignore_feature('Image', feature, measurements):
                     continue
@@ -708,8 +719,11 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                 if isinstance(value, unicode) or isinstance(value, str):
                     value = MySQLdb.escape_string(value)
                 image_row[per_image[feature_name]] = value
-                if feature_name.find('Count') != -1:
+                if feature_name.startswith('Image_Count_'):
                     max_count = max(max_count,int(value))
+                    object_name = feature_name[len('Image_Count_'):]
+                    if not self.ignore_object(object_name, True):
+                        max_rows = max(max_rows, int(value))
             if max_count == 0:
                 for object_name in measurements.get_object_names():
                     if object_name == 'Image':
@@ -737,11 +751,10 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                 #
                 # Loop through the objects, collecting their values
                 #
-                if self.objects_choice != O_NONE:
+                if self.objects_choice != O_NONE and max_rows > 0:
                     for object_name in measurements.get_object_names():
                         if (object_name == 'Image' or
-                            (self.objects_choice == O_SELECT and
-                             object_name not in self.objects_list.selections)):
+                            self.ignore_object(object_name, True)):
                             continue
                         for feature in measurements.get_feature_names(object_name):
                             if self.ignore_feature(object_name, feature, measurements):
@@ -750,13 +763,13 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                             values = measurements.get_measurement(object_name, feature, i)
                             values[np.logical_not(np.isfinite(values))] = 0
                             nvalues = np.product(values.shape)
-                            if (nvalues < max_count):
-                                sys.stderr.write("Warning: too few measurements for %s in image set #%d, got %d, expected %d\n"%(feature_name,image_number,nvalues,max_count))
+                            if (nvalues < max_rows):
+                                sys.stderr.write("Warning: too few measurements for %s in image set #%d, got %d, expected %d\n"%(feature_name,image_number,nvalues,max_rows))
                             elif nvalues > max_count:
-                                sys.stderr.write("Warning: too many measurements for %s in image set #%d, got %d, expected %d\n"%(feature_name,image_number,nvalues,max_count))
-                                values = values[:max_count]
+                                sys.stderr.write("Warning: too many measurements for %s in image set #%d, got %d, expected %d\n"%(feature_name,image_number,nvalues,max_rows))
+                                values = values[:max_rows]
                             object_rows[:nvalues,per_object[feature_name]] = values
-                    for row in range(max_count):
+                    for row in range(max_rows):
                         csv_per_object.writerow(object_rows[row,:])
             csv_per_image.writerow(image_row)
         fid_per_image.close()
@@ -787,6 +800,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
         
         # Fill image row with non-aggregate cols    
         max_count = 0
+        max_rows = 0
         image_number = index + measurements.image_set_start_number
         image_row = [None for k in range(len(self.image_col_order)+1)]
         image_row[0] = (image_number, cpmeas.COLTYPE_INTEGER, 'ImageNumber')
@@ -801,8 +815,11 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                 if feature_name in self.image_col_order.keys():
                     image_row[self.image_col_order[feature_name]] =\
                              (value, m_col[2], feature_name)
-                    if feature_name.find('Count') != -1:
+                    if feature_name.startswith('Image_Count_'):
                         max_count = max(max_count,int(value))
+                        object_name = feature_name[len('Image_Count_'):]
+                        if not self.ignore_object(object_name, True):
+                            max_rows = max(max_rows, int(value))
         
         # The object columns in order
         object_cols = (['ImageNumber','ObjectNumber'] + 
@@ -830,8 +847,10 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                     image_row[self.image_col_order[feature_name]] =\
                              (value, cpmeas.COLTYPE_FLOAT, feature_name)
             
-            object_rows = np.zeros((max_count, len(self.object_col_order)+2), dtype=object)
-            for i in xrange(max_count):
+            object_rows = np.zeros((max_rows, len(self.object_col_order)+2), 
+                                   dtype=object)
+            
+            for i in xrange(max_rows):
                 object_rows[i,0] = (image_number, cpmeas.COLTYPE_INTEGER)
                 object_rows[i,1] = (i+1, cpmeas.COLTYPE_INTEGER)
 
@@ -844,15 +863,15 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                     values = measurements.get_measurement(obname, feature, index)
                     values[np.logical_not(np.isfinite(values))] = 0
                     nvalues = np.product(values.shape)
-                    if (nvalues < max_count):
-                        sys.stderr.write("Warning: too few measurements for %s in image set #%d, got %d, expected %d\n"%(feature_name,image_number,nvalues,max_count))
-                        new_values = np.zeros(max_count, dtype=values.dtype)
+                    if (nvalues < max_rows):
+                        sys.stderr.write("Warning: too few measurements for %s in image set #%d, got %d, expected %d\n"%(feature_name,image_number,nvalues,max_rows))
+                        new_values = np.zeros(max_rows, dtype=values.dtype)
                         new_values[:nvalues] = values.flatten()
                         values = new_values
-                    elif nvalues > max_count:
+                    elif nvalues > max_rows:
                         sys.stderr.write("Warning: too many measurements for %s in image set #%d, got %d, expected %d\n"%(feature_name,image_number,nvalues,max_count))
-                        values = values[:max_count]
-                    for i in xrange(max_count):
+                        values = values[:max_rows]
+                    for i in xrange(max_rows):
                         object_rows[i,self.object_col_order[feature_name]] = (values[i], cpmeas.COLTYPE_FLOAT)
         
         # wrap non-numeric types in quotes

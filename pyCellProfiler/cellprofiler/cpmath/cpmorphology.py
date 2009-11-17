@@ -1804,16 +1804,17 @@ def grey_erosion(image, radius=None, mask=None, footprint=None):
             footprint = strel_disk(radius)==1
     else:
         radius = max(1, np.max(np.array(footprint.shape) / 2))
+    iradius = int(np.ceil(radius))
     #
     # Do a grey_erosion with masked pixels = 1 so they don't participate
     #
-    big_image = np.ones(np.array(image.shape)+radius*2)
-    big_image[radius:-radius,radius:-radius] = image
+    big_image = np.ones(np.array(image.shape)+iradius*2)
+    big_image[iradius:-iradius,iradius:-iradius] = image
     if not mask is None:
         not_mask = np.logical_not(mask)
-        big_image[radius:-radius,radius:-radius][not_mask] = 1
+        big_image[iradius:-iradius,iradius:-iradius][not_mask] = 1
     processed_image = scind.grey_erosion(big_image, footprint=footprint)
-    final_image = processed_image[radius:-radius,radius:-radius]
+    final_image = processed_image[iradius:-iradius,iradius:-iradius]
     if not mask is None:
         final_image[not_mask] = image[not_mask]
     return final_image
@@ -1831,16 +1832,17 @@ def grey_dilation(image, radius=None, mask=None, footprint=None):
     else:
         footprint_size = footprint.shape
         radius = max(np.max(np.array(footprint.shape) / 2),1)
+    iradius = int(np.ceil(radius))
     #
     # Do a grey_dilation with masked pixels = 0 so they don't participate
     #
-    big_image = np.zeros(np.array(image.shape)+radius*2)
-    big_image[radius:-radius,radius:-radius] = image
+    big_image = np.zeros(np.array(image.shape)+iradius*2)
+    big_image[iradius:-iradius,iradius:-iradius] = image
     if not mask is None:
         not_mask = np.logical_not(mask)
-        big_image[radius:-radius,radius:-radius][not_mask] = 0
+        big_image[iradius:-iradius,iradius:-iradius][not_mask] = 0
     processed_image = scind.grey_dilation(big_image, footprint=footprint)
-    final_image = processed_image[radius:-radius,radius:-radius]
+    final_image = processed_image[iradius:-iradius,iradius:-iradius]
     if not mask is None:
         final_image[not_mask] = image[not_mask]
     return final_image

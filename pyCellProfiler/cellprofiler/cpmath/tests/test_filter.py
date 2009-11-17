@@ -1137,3 +1137,28 @@ class TestVPrewitt(unittest.TestCase):
         result = F.vprewitt(image)
         eps = .000001
         self.assertTrue(np.all(np.abs(result) < eps))
+
+class TestEnhanceDarkHoles(unittest.TestCase):
+    def test_00_00_zeros(self):
+        result = F.enhance_dark_holes(np.zeros((15,19)),1,5)
+        self.assertTrue(np.all(result == 0))
+    
+    def test_01_01_positive(self):
+        '''See if we pick up holes of given sizes'''
+        
+        i,j = np.mgrid[-25:26,-25:26].astype(float)
+        for r in range(5,11):
+            image = (np.abs(np.sqrt(i**2+j**2)-r) <= .5).astype(float)
+            eimg = F.enhance_dark_holes(image,r-1, r)
+            self.assertTrue(np.all(eimg[np.sqrt(i**2+j**2) < r-1] == 1))
+            self.assertTrue(np.all(eimg[np.sqrt(i**2+j**2) >= r] == 0))
+            
+    def test_01_01_negative(self):
+        '''See if we miss holes of the wrong size'''
+        i,j = np.mgrid[-25:26,-25:26].astype(float)
+        for r in range(5,11):
+            image = (np.abs(np.sqrt(i**2+j**2)-r) <= .5).astype(float)
+            for lo,hi in ((r-3,r-2),(r+1,r+2)):
+                eimg = F.enhance_dark_holes(image,lo, hi)
+                self.assertTrue(np.all(eimg==0))
+        

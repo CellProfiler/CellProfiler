@@ -23,6 +23,7 @@ from scipy.ndimage import generate_binary_structure
 from smooth import smooth_with_function_and_mask
 from cpmorphology import fixup_scipy_ndimage_result as fix
 from cpmorphology import centers_of_labels
+from cpmorphology import grey_erosion, grey_reconstruction
 
 def stretch(image, mask=None):
     '''Normalize an image to make the minimum zero and maximum one
@@ -666,3 +667,34 @@ def gabor(image, labels, frequency, theta):
     g = np.zeros(mask.shape,dtype=np.complex)
     g[mask] = i_norm *g_cos+i_norm * g_sin*1j
     return g
+
+def enhance_dark_holes(image, min_radius, max_radius, mask=None):
+    '''Enhance dark holes using a rolling ball filter
+
+    image - grayscale 2-d image
+    radii - a vector of radii: we enhance holes at each given radius
+    '''
+    #
+    # Do 4-connected erosion
+    #
+    se = np.array([[False, True, False],
+                   [True, True, True],
+                   [False, True, False]])
+    #
+    # Invert the intensities
+    #
+    inverted_image = image.max() - image
+    previous_reconstructed_image = inverted_image
+    eroded_image = inverted_image
+    smoothed_image = np.zeros(image.shape)
+    for i in range(max_radius+1):
+        eroded_image = grey_erosion(eroded_image, mask=mask, footprint = se)
+        reconstructed_image = grey_reconstruction(eroded_image, inverted_image,
+                                                  footprint = se)
+        output_image = previous_reconstructed_image - reconstructed_image
+        if i >= min_radius:
+            smoothed_image += output_image
+        previous_reconstructed_image = reconstructed_image
+    smoothed_image[smoothed_image > 1] = 1
+    smoothed_image[smoothed_image < 0] = 0
+    return smoothed_image

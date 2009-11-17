@@ -69,6 +69,7 @@ MODULE_NOTES              = 'ModuleNotes'
 CURRENT_MODULE_NUMBER     = 'CurrentModuleNumber'
 SHOW_FRAME                = 'ShowFrame'
 BATCH_STATE               = 'BatchState'
+EXIT_STATUS               = 'Exit_Status'
 SETTINGS_DTYPE = np.dtype([(VARIABLE_VALUES, '|O4'), 
                            (VARIABLE_INFO_TYPES, '|O4'), 
                            (MODULE_NAMES, '|O4'), 
@@ -551,15 +552,20 @@ class Pipeline(object):
                     if workspace.disposition == cpw.DISPOSITION_SKIP:
                         break
                     elif workspace.disposition == cpw.DISPOSITION_CANCEL:
+                        measurements.add_experiment_measurement(EXIT_STATUS,
+                                                                "Failure")
                         self.end_run()
                         return
                 first_set = False
                 image_set_list.purge_image_set(image_number-1)
             if prepare_group_has_run:
                 if not self.post_group(workspace, grouping_keys):
+                    measurements.add_experiment_measurement(EXIT_STATUS,
+                                                            "Failure")
                     self.end_run()
                     return
-                
+        
+        measurements.add_experiment_measurement(EXIT_STATUS, "Complete")
         self.post_run(measurements, image_set_list, frame)
         self.end_run()
         return

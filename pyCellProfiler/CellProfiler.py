@@ -150,9 +150,10 @@ if not options.show_gui:
     options.run_pipeline = True
 
 from cellprofiler.cellprofilerapp import CellProfilerApp
-from cellprofiler.pipeline import Pipeline
+from cellprofiler.pipeline import Pipeline, EXIT_STATUS
 import cellprofiler.gui.cpframe as cpgframe
 from cellprofiler.utilities.get_revision import get_revision
+import cellprofiler.measurements as cpmeas
 
 print "Subversion revision: %d"%get_revision()
 if options.run_pipeline and not options.pipeline_filename:
@@ -201,8 +202,13 @@ else:
     if len(args) > 0:
         pipeline.save_measurements(args[0], measurements)
     if options.done_file is not None:
+        if (measurements is not None and 
+            measurements.has_feature(cpmeas.EXPERIMENT, EXIT_STATUS)):
+            done_text = measurements.get_experiment_measurement(EXIT_STATUS)
+        else:
+            done_text = "Failure"
         fd = open(options.done_file,"wt")
-        fd.write("Done\n")
+        fd.write("%s\n"%done_text)
         fd.close()
 try:
     import cellprofiler.utilities.jutil as jutil

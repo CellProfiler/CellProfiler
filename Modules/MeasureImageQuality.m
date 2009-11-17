@@ -92,7 +92,7 @@ function handles = MeasureImageQuality(handles,varargin)
 % Orig: 0.0022854
 %
 %
-% Note: This module replaces the outdated "MeasureImageSaturationAndBlur".
+% Note: This module replaces the outdated "MeasureImageSaturationBlur".
 %
 %
 % CellProfiler is distributed under the GNU General Public License.

@@ -129,7 +129,7 @@ class PreferencesDlg(wx.Dialog):
                   If it is "dirbrowse", put a directory browse button
                   to the right of the edit box.
         '''
-        cmaps = list(matplotlib.cm.cmapnames)
+        cmaps = list(matplotlib.cm.datad.keys())
         cmaps.sort()
         return [["Matlab module directory",cpprefs.module_directory, cpprefs.set_module_directory,DIRBROWSE],
                 ["Default image directory",cpprefs.get_default_image_directory, cpprefs.set_default_image_directory,DIRBROWSE],

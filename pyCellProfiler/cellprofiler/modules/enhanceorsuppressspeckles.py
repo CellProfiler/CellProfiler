@@ -107,6 +107,7 @@ class EnhanceOrSuppressSpeckles(cpm.CPModule):
                        else self.object_size]
         else:
             result += self.object_size
+        return result
             
     def run(self, workspace):
         image = workspace.image_set.get_image(self.image_name.value,

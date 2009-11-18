@@ -36,11 +36,12 @@ drawnow
 
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
-%textVAR01 = This module pauses CellProfiler until the dialog box is clicked.  The SKIP setting is useful when testing your pipeline, so that you can leave subsequent modules (e.g. CreateBatchFiles or Export modules) in place while testing.
+%textVAR01 = This module pauses CellProfiler until the dialog box is clicked.  The SKIP setting is useful when testing your pipeline, so that you can leave subsequent modules (e.g. CreateBatchFiles or Export modules) in place while testing. The CONTINUE setting ignores the module entirely.
 
-%textVAR02 = Do you want to pause here (PAUSE) or skip subsequent modules (SKIP)?
+%textVAR02 = Do you want to pause here (PAUSE), skip subsequent modules (SKIP), or continue without prompting (CONTINUE)?
 %choiceVAR02 = Pause
 %choiceVAR02 = Skip
+%choiceVAR02 = Continue
 SkipChoice = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %inputtypeVAR02 = popupmenu
 
@@ -64,18 +65,20 @@ else
     SkipTxt = '';
 end
 
-ButtonName = CPquestdlg({['Continue processing' SkipTxt '?'];'';'Note: Press Ctrl+C to interact with CellProfiler windows while paused.'},...
-    'PauseCellProfiler',...
-    'Continue','Cancel',...
-    'Continue');
+if any(strcmp(SkipChoice,{'Skip','Pause'}))
+	ButtonName = CPquestdlg({['Continue processing' SkipTxt '?'];'';'Note: Press Ctrl+C to interact with CellProfiler windows while paused.'},...
+		'PauseCellProfiler',...
+		'Continue','Cancel',...
+		'Continue');
 
-switch ButtonName
-    case 'Continue'
+	switch ButtonName
+		case 'Continue'
 
-    case 'Cancel'
+		case 'Cancel'
 
-        %%% This should cause a cancel so no further processing is done
-        %%% on this machine.
-        set(handles.timertexthandle,'string','Canceling after current module')
+			%%% This should cause a cancel so no further processing is done
+			%%% on this machine.
+			set(handles.timertexthandle,'string','Canceling after current module')
+	end
 end
 

@@ -129,8 +129,8 @@ cdef inline double distance(double *image,
     cdef double v2
     cdef double manhattan_distance
 
-    for delta_i in -1 <= delta_i <= 1:
-        for delta_j in -1 <= delta_j <= 1:
+    for delta_i from -1 <= delta_i <= 1:
+        for delta_j from -1 <= delta_j <= 1:
             v1 = clamped_fetch(image,i1+delta_i,j1+delta_j,m,n)
             v2 = clamped_fetch(image,i2+delta_i,j2+delta_j,m,n)
             if v1 > v2:

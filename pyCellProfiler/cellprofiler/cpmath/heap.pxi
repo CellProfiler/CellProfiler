@@ -7,7 +7,7 @@ cdef extern from "stdlib.h":
    ctypedef unsigned long size_t
    void free(void *ptr)
    void *malloc(size_t size)
-   void *realloc(void *ptr, size_t size)
+   void *realloc(void *ptr, size_t size) nogil
 
 cdef struct Heap:
     unsigned int items
@@ -38,7 +38,7 @@ cdef inline void heap_done(Heap *heap):
    free(heap.ptrs)
    free(heap)
 
-cdef inline int smaller(unsigned int a, unsigned int b, Heap *h):
+cdef inline int smaller(unsigned int a, unsigned int b, Heap *h) nogil:
     cdef unsigned int k
     cdef np.int32_t *ap = h.ptrs[a]
     cdef np.int32_t *bp = h.ptrs[b]
@@ -54,7 +54,7 @@ cdef inline int smaller(unsigned int a, unsigned int b, Heap *h):
        return 1
     return 0
 
-cdef inline void swap(unsigned int a, unsigned int b, Heap *h):
+cdef inline void swap(unsigned int a, unsigned int b, Heap *h) nogil:
     h.ptrs[a], h.ptrs[b] = h.ptrs[b], h.ptrs[a]
 
 
@@ -66,7 +66,7 @@ cdef inline void swap(unsigned int a, unsigned int b, Heap *h):
 # Note: heap ordering is the same as python heapq, i.e., smallest first.
 ######################################################
 cdef inline void heappop(Heap *heap,
-                  np.int32_t *dest):
+                  np.int32_t *dest) nogil:
     cdef unsigned int i, smallest, l, r # heap indices
     cdef unsigned int k
     
@@ -120,7 +120,7 @@ cdef inline void heappop(Heap *heap,
 # Note: heap ordering is the same as python heapq, i.e., smallest first.
 ##################################################
 cdef inline void heappush(Heap *heap,
-                          np.int32_t *new_elem):
+                          np.int32_t *new_elem) nogil:
   cdef unsigned int child         = heap.items
   cdef unsigned int parent
   cdef unsigned int k

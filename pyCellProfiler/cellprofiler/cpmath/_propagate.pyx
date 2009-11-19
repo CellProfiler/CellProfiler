@@ -9,7 +9,7 @@ import struct
 cimport numpy as np
 cimport cython
 cdef extern from "stdlib.h":
-    double sqrt(double)
+    double sqrt(double) nogil
 
 DTYPE_INT32 = np.int32
 ctypedef np.int32_t DTYPE_INT32_t
@@ -20,14 +20,12 @@ ctypedef np.int8_t DTYPE_BOOL_t
 
 include "heap.pxi"
 
-cdef int is_little_endian_flag
+cdef int little_endian_flag
 
-cdef inline int is_little_endian():
-    global is_little_endian_flag
-    if is_little_endian_flag == 0:
-        x = struct.pack("BBBB",1,0,0,0)
-        is_little_endian_flag = (struct.unpack("I",x)[0]==1 and 1) or -1
-    return is_little_endian_flag
+cdef inline void set_little_endian_flag():
+    global little_endian_flag
+    x = struct.pack("BBBB",1,0,0,0)
+    little_endian_flag = (struct.unpack("I",x)[0]==1 and 1) or -1
 
 ###############################################################
 #
@@ -37,10 +35,10 @@ cdef inline int is_little_endian():
 #
 # returns - most significant part of double (first 32 bits)
 ###############################################################
-cdef inline int get_most_significant(double value):
+cdef inline int get_most_significant(double value) nogil:
     cdef unsigned int *pValue = <unsigned int *>&value
     cdef unsigned int ivalue
-    if is_little_endian()==1:
+    if little_endian_flag==1:
         ivalue = pValue[1]
     else:
         ivalue = pValue[0]
@@ -59,11 +57,11 @@ cdef inline int get_most_significant(double value):
 #
 ##############################################################
 
-cdef inline int get_least_significant(double value):
+cdef inline int get_least_significant(double value) nogil:
     cdef unsigned int *pValue = <unsigned int *>&value
     cdef unsigned int ivalue1
     cdef unsigned int ivalue2
-    if is_little_endian()==1:
+    if little_endian_flag==1:
         ivalue1=pValue[1]
         ivalue2=pValue[0]
     else:
@@ -99,7 +97,7 @@ cdef inline double clamped_fetch(double *image,
                                  int i,
                                  int j,
                                  int m,
-                                 int n):
+                                 int n) nogil:
     if i<0:
        i=0
     elif i>=m:
@@ -123,7 +121,7 @@ cdef inline double distance(double *image,
                             int j2,
                             int m,
                             int n,
-                            double weight):
+                            double weight) nogil:
     cdef int delta_i
     cdef int delta_j
     cdef double pixel_diff = 0
@@ -147,7 +145,7 @@ cdef inline double distance(double *image,
         manhattan_distance += j1-j2
     else:
         manhattan_distance += j2-j1
-    return sqrt(pixel_diff * pixel_diff+manhattan_distance * weight * weight)
+    return sqrt(pixel_diff*pixel_diff + manhattan_distance*weight*weight)
 
 ##############################################################
 #
@@ -185,39 +183,42 @@ def propagate(np.ndarray[DTYPE_DOUBLE_t,ndim=2,negative_indices=False, mode='c']
     cdef DTYPE_INT32_t j2=0
     cdef DTYPE_INT32_t m = image.shape[0]
     cdef DTYPE_INT32_t n = image.shape[1]
-    cdef DTYPE_DOUBLE_t d
+    cdef DTYPE_DOUBLE_t d, d0
 
-    while hp.items > 0:
-        heappop(hp, <np.int32_t *> elem.data)
-        i1 = elem[3]
-        j1 = elem[4]
-        if labels[i1,j1] == 0:
-            #
-            # i,j has not yet been done. 
-            #
-            label=elem[2]
-            labels[i1,j1]=label
-            d0 = distances[i1,j1]
-            #
-            # For each 8-connected neighbor, push
-            #
-            for idx in range(8):
-                i2 = i1+delta_i[idx]
-                j2 = j1+delta_j[idx]
-                if i2 < 0 or i2 >= m or j2 < 0 or j2 >= n:
-                    continue
-                if labels[i2,j2] > 0:
-                    continue
-                if not mask[i2,j2]:
-                    continue
-                d = distance(<double *>(image.data), i1, j1, i2, j2, m, n, weight)+d0
-                if distances[i2,j2] == -1 or distances[i2,j2] > d:
-                    # push the point if no distance recorded or ours is the best
-                    distances[i2,j2] = d
-                    new_elem[0] = get_most_significant(d)
-                    new_elem[1] = get_least_significant(d)
-                    new_elem[2] = label
-                    new_elem[3] = i2
-                    new_elem[4] = j2
-                    heappush(hp, <np.int32_t *>new_elem.data)
+    set_little_endian_flag()
+
+    with nogil:
+        while hp.items > 0:
+            heappop(hp, <np.int32_t *> elem.data)
+            i1 = elem[3]
+            j1 = elem[4]
+            if labels[i1,j1] == 0:
+                #
+                # i,j has not yet been done. 
+                #
+                label=elem[2]
+                labels[i1,j1]=label
+                d0 = distances[i1,j1]
+                #
+                # For each 8-connected neighbor, push
+                #
+                for idx in range(8):
+                    i2 = i1+delta_i[idx]
+                    j2 = j1+delta_j[idx]
+                    if i2 < 0 or i2 >= m or j2 < 0 or j2 >= n:
+                        continue
+                    if labels[i2,j2] > 0:
+                        continue
+                    if not mask[i2,j2]:
+                        continue
+                    d = distance(<double *>(image.data), i1, j1, i2, j2, m, n, weight)+d0
+                    if distances[i2,j2] == -1 or distances[i2,j2] > d:
+                        # push the point if no distance recorded or ours is the best
+                        distances[i2,j2] = d
+                        new_elem[0] = get_most_significant(d)
+                        new_elem[1] = get_least_significant(d)
+                        new_elem[2] = label
+                        new_elem[3] = i2
+                        new_elem[4] = j2
+                        heappush(hp, <np.int32_t *>new_elem.data)
     heap_done(hp)

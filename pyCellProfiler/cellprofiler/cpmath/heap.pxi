@@ -27,9 +27,9 @@ cdef inline Heap *heap_from_numpy2(object np_heap):
     heap.data = <np.int32_t *> malloc(heap.space * heap.width * sizeof(np.int32_t))
     heap.ptrs = <np.int32_t **> malloc(heap.space * sizeof(np.int32_t *))
     tmp = np_heap.astype(np.int32).flatten('C')
-    for k in range(heap.items * heap.width):
+    for k from 0 <= k < heap.items * heap.width:
         heap.data[k] = <np.int32_t> tmp[k]
-    for k in range(heap.space):
+    for k from 0 <= k < heap.space:
         heap.ptrs[k] = heap.data + k * heap.width
     return heap
 
@@ -43,7 +43,7 @@ cdef inline int smaller(unsigned int a, unsigned int b, Heap *h) nogil:
     cdef np.int32_t *ap = h.ptrs[a]
     cdef np.int32_t *bp = h.ptrs[b]
     if ap[0] == bp[0]:
-        for k in range(1, h.width):
+        for k from 1 <= k < h.width:
             if ap[k] == bp[k]:
                 continue
             if ap[k] < bp[k]:
@@ -73,7 +73,7 @@ cdef inline void heappop(Heap *heap,
     #
     # Start by copying the first element to the destination
     #
-    for k in range(heap.width):
+    for k from 0 <= k < heap.width:
         dest[k] = heap.ptrs[0][k]
     heap.items -= 1
 
@@ -131,15 +131,15 @@ cdef inline void heappush(Heap *heap,
       heap.space = heap.space * 2
       new_data = <np.int32_t *> realloc(<void *> heap.data, <size_t> (heap.space * heap.width * sizeof(np.int32_t)))
       heap.ptrs = <np.int32_t **> realloc(<void *> heap.ptrs, <size_t> (heap.space * sizeof(np.int32_t *)))
-      for k in range(heap.items):
+      for k from 0 <= k < heap.items:
           heap.ptrs[k] = new_data + (heap.ptrs[k] - heap.data)
-      for k in range(heap.items, heap.space):
+      for k from heap.items <= k <  heap.space:
           heap.ptrs[k] = new_data + k * heap.width
       heap.data = new_data
 
   # insert new data at child
   
-  for k in range(heap.width):
+  for k from 0 <= k < heap.width:
       heap.ptrs[child][k] = new_elem[k]
   heap.items += 1
 

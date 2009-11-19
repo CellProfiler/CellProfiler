@@ -129,8 +129,8 @@ cdef inline double distance(double *image,
     cdef double v2
     cdef double manhattan_distance
 
-    for delta_i in range(-1,2):
-        for delta_j in range(-1,2):
+    for delta_i in -1 <= delta_i <= 1:
+        for delta_j in -1 <= delta_j <= 1:
             v1 = clamped_fetch(image,i1+delta_i,j1+delta_j,m,n)
             v2 = clamped_fetch(image,i2+delta_i,j2+delta_j,m,n)
             if v1 > v2:
@@ -202,7 +202,8 @@ def propagate(np.ndarray[DTYPE_DOUBLE_t,ndim=2,negative_indices=False, mode='c']
                 #
                 # For each 8-connected neighbor, push
                 #
-                for idx in range(8):
+                
+                for idx from 0 <= idx < 8:
                     i2 = i1+delta_i[idx]
                     j2 = j1+delta_j[idx]
                     if i2 < 0 or i2 >= m or j2 < 0 or j2 >= n:

@@ -13,6 +13,7 @@ Website: http://www.cellprofiler.org
 __version__="$Revision$"
 
 import cellprofiler.gui.cpfigure as cpf
+from cellprofiler.cpgridinfo import CPGridInfo
 
 '''Continue to run the pipeline
 
@@ -70,6 +71,7 @@ class Workspace(object):
         self.__outlines = outlines
         self.__windows_used = []
         self.__create_new_window = create_new_window
+        self.__grid = {}
         self.disposition = DISPOSITION_CONTINUE
     
     def refresh(self):
@@ -130,6 +132,16 @@ class Workspace(object):
         """
         self.measurements.add_measurement(object_name, feature_name, data)
 
+    def get_grid(self, grid_name):
+        '''Return a grid with the given name'''
+        if not self.__grid.has_key(grid_name):
+            raise ValueError("Could not find grid %s"%grid_name)
+        return self.__grid[grid_name]
+    
+    def set_grid(self, grid_name, grid_info):
+        '''Add a grid to the workspace'''
+        self.__grid[grid_name] = grid_info
+        
     def get_frame(self):
         """The frame is CellProfiler's gui window
 

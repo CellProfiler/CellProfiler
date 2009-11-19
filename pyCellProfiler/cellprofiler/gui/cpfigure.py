@@ -19,6 +19,8 @@ import matplotlib.cm
 import matplotlib.patches
 import matplotlib.colorbar
 import matplotlib.backends.backend_wxagg
+import scipy.misc
+from cStringIO import StringIO
 import sys
 
 from cellprofiler.gui import get_icon
@@ -471,6 +473,17 @@ def renumber_labels_for_display(labels):
     renumber = np.random.permutation(np.max(label_copy))
     label_copy[label_copy != 0] = renumber[label_copy[label_copy!=0]-1]+1
     return label_copy
+
+def figure_to_image(figure):
+    '''Convert a figure to a numpy array'''
+    #
+    # Save the figure as a .PNG and then load it using scipy.misc.imread
+    #
+    fd = StringIO()
+    figure.savefig(fd, format='png')
+    fd.seek(0)
+    image = scipy.misc.imread(fd)
+    return image[:,:,:3]
 
 if __name__ == "__main__":
     import numpy as np

@@ -34,6 +34,9 @@ IMAGE_GROUP = 'imagegroup'
 '''Names providers and subscribers of objects'''
 OBJECT_GROUP = 'objectgroup'
 
+'''Names providers and subscribers of grid information'''
+GRID_GROUP = 'gridgroup'
+
 class Setting(object):
     """A module setting which holds a single string value
     
@@ -630,8 +633,15 @@ class OutlineNameProvider(ImageNameProvider):
     '''A setting that provides an object outline name
     '''
     def __init__(self, text, value=DO_NOT_USE, *args, **kwargs):
-        super(OutlineNameProvider,self).__init__(text, value, *args,
-                                                 **kwargs)
+        super(OutlineNameProvider,self).__init__(text, value, 
+                                                 *args, **kwargs)
+
+class GridNameProvider(NameProvider):
+    """A setting that provides a GridInfo object
+    """
+    def __init__(self, text, value="Grid", *args, **kwargs):
+        super(GridNameProvider, self).__init__(text, GRID_GROUP, value, 
+                                               *args, **kwargs)
 
 class NameSubscriber(Setting):
     """A setting that takes its value from one made available by name providers
@@ -733,7 +743,7 @@ class CroppingNameSubscriber(ImageNameSubscriber):
         return isinstance(setting, CroppingNameProvider)
 
 class ObjectNameSubscriber(NameSubscriber):
-    """A setting that provides an image name
+    """A setting that subscribes to the list of available object names
     """
     def __init__(self, text, value=DO_NOT_USE, can_be_blank=False,
                  blank_text=LEAVE_BLANK, *args, **kwargs):
@@ -742,7 +752,7 @@ class ObjectNameSubscriber(NameSubscriber):
                                                   *args, **kwargs)
 
 class OutlineNameSubscriber(ImageNameSubscriber):
-    '''A setting that provides a list of available object outline names
+    '''A setting that subscribes to the list of available object outline names
     '''
     def __init__(self, text, value="None", can_be_blank=False, 
                  blank_text=LEAVE_BLANK, *args, **kwargs):
@@ -755,7 +765,7 @@ class OutlineNameSubscriber(ImageNameSubscriber):
         return isinstance(setting, OutlineNameProvider)
 
 class FigureSubscriber(Setting):
-    """A setting that provides a figure indicator
+    """A setting that subscribes to a figure indicator provider
     """
     def __init(self,text,value=DO_NOT_USE, *args, **kwargs):
         super(Setting,self).__init(text, value, *args, **kwargs)
@@ -769,6 +779,15 @@ class FigureSubscriber(Setting):
             choices.append("%d: %s"%(module.module_num, module.module_name))
         assert False, "Setting not among visible settings in pipeline"
 
+class GridNameSubscriber(NameSubscriber):
+    """A setting that subscribes to grid information providers
+    """
+    def __init__(self, text, value=DO_NOT_USE, can_be_blank=False,
+                 blank_text=LEAVE_BLANK, *args, **kwargs):
+        super(ObjectNameSubscriber,self).__init__(text, GRID_GROUP, value,
+                                                  can_be_blank, blank_text,
+                                                  *args, **kwargs)
+        
 class Binary(Setting):
     """A setting that is represented as either true or false
     The underlying value stored in the settings slot is "Yes" or "No"

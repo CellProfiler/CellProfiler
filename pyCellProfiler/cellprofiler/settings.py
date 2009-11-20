@@ -490,6 +490,7 @@ class Float(Text):
     def __init__(self, text, value=0, minval=None, maxval=None, *args,
                  **kwargs):
         super(Float,self).__init__(text, str(value), *args, **kwargs)
+        self.__default = float(value)
         self.__minval = minval
         self.__maxval = maxval
     
@@ -500,9 +501,12 @@ class Float(Text):
         super(Float,self).set_value(str_value)
         
     def get_value(self):
-        """Return the value of the setting as an integer
+        """Return the value of the setting as a float
         """
-        return float(super(Float,self).get_value())
+        try:
+            return float(super(Float,self).get_value())
+        except ValueError:
+            return self.__default
     
     def test_valid(self,pipeline):
         """Return true only if the text value is float

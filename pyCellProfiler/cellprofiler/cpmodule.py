@@ -403,7 +403,7 @@ class CPModule(object):
         """
         return True
     
-    def is_interactive():
+    def is_interactive(self):
         """If true, the module will be run in the background.
         Background threads cannot safely manipulate the GUI.  See
         display()."""

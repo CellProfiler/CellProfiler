@@ -51,6 +51,7 @@ S_PER_MAPPING = 2
 F_BATCH_DATA = 'Batch_data.mat'
 
 class CreateBatchFiles(cpm.CPModule):
+    # XXX needs to use cps.SettingsGroup
 
     #
     # How it works:

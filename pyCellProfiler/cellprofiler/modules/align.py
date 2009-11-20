@@ -62,7 +62,7 @@ class Align(cpm.CPModule):
     module_name = "Align"
     category = 'Image Processing'
     variable_revision_number = 1
-
+    # XXX needs cps.SettingsGroup
     def create_settings(self):
         self.first_input_image = cps.ImageNameSubscriber("What is the name of the first image to align?",
                                                          "None")

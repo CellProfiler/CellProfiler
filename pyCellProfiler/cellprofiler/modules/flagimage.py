@@ -242,6 +242,7 @@ class FlagImage(cpm.CPModule):
         return setting_values, variable_revision_number, from_matlab
     
 class MeasurementSettings(object):
+    # XXX needs to use cps.SettingsGroup
     '''Represents the settings for one flag measurement '''
     def __init__(self, measurements, can_delete = True):
         self.can_delete = can_delete

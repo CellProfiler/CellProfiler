@@ -57,6 +57,7 @@ class CalculateMath(cpm.CPModule):
     variable_revision_number = 1
     
     def create_settings(self):
+        #XXX needs to use cps.SettingsGroup
         class Operand(object):
             '''Represents the collection of settings needed by each operand'''
             def __init__(self, index, operation):

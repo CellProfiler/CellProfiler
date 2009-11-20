@@ -116,6 +116,7 @@ class FilterByObjectMeasurement(cpm.CPModule):
                                                         self.add_additional_object)
     
     def add_additional_object(self):
+        # XXX needs to use cps.SettingsGroup
         class AdditionalObject(object):
             '''An object related to the one being filtered that should be relabeled'''
             def __init__(self, remove_fn):

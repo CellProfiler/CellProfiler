@@ -103,6 +103,7 @@ class MakeProjection(cpm.CPModule):
 
 
 class ImageProvider(cpi.AbstractImageProvider):
+    # XXX needs to use cps.SettingsGroup?
     """Provide the image after averaging but before dilation and smoothing"""
     def __init__(self, name, how_to_accumulate):
         """Construct using a parent provider that does the real work

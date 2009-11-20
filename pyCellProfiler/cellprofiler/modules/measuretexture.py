@@ -185,6 +185,7 @@ class MeasureTexture(cpm.CPModule):
 
     def add_image_cb(self):
         """Add a slot for another image"""
+        #XXX needs to use cps.SettingsGroup
         class ImageSettings(object):
             def __init__(self, sequence):
                 self.key = uuid.uuid4()

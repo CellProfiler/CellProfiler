@@ -92,6 +92,7 @@ class OverlayOutlines(cpm.CPModule):
         self.add_outline_button = cps.DoSomething("Add another outline","Add", self.add_outline)
 
     def add_outline(self):
+        # XXX needs to use cps.SettingsGroup
         class OutlineSettings(object):
             '''The settings for a single outline'''
             def __init__(self, outlines):

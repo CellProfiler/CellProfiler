@@ -102,6 +102,7 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
     
     def add_image(self, can_remove = True):
         '''Add an image to be measured'''
+        # XXX needs to use cps.SettingGroup
         class ImageSettings(object):
             '''Settings describing an image to be measured'''
             def __init__(self, images):

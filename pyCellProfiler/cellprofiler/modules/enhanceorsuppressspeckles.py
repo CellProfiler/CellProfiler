@@ -49,48 +49,52 @@ class EnhanceOrSuppressSpeckles(cpm.CPModule):
             What did you call the image with speckles to be enhanced or suppressed?""")
         
         self.filtered_image_name = cps.ImageNameProvider('Name the output image',
-                                                        'FilteredBlue',doc="""
-            What do you want to call the speckle-enhanced or suppressed image?""")
+                                        'FilteredBlue',doc="""
+                                        What do you want to call the speckle-enhanced or suppressed image?""")
         
-        self.method = cps.Choice('Do you want to enhance or suppress speckles?',
-                                 [ ENHANCE, SUPPRESS],doc="""
-            Choose <i>Enhance</i> to get an image whose intensity is largely composed of
-            the speckles. Choose <i>Suppress</i> to get an image with the speckles
-            removed.""")
+        self.method = cps.Choice('Speckle operation to perform',
+                                        [ ENHANCE, SUPPRESS],doc="""
+                                        Do you want to enhance or suppress speckles?
+                                        Choose <i>Enhance</i> to get an image whose intensity is largely composed of
+                                        the speckles. Choose <i>Suppress</i> to get an image with the speckles
+                                        removed.""")
         
-        self.enhance_method = cps.Choice('What kind of speckles do you have?',
-                                         [E_SPECKLES, E_NEURITES, E_DARK_HOLES],
-                                         doc="""
-            This module can enhance three kinds of objects:
-            <ul><li><i>Speckles</i>: A speckle is an area of enhanced intensity
-            relative to its immediate neighborhood. The module enhances
-            speckles using a white tophat filter (the image minus the
-            morphological grayscale opening of the image)</li>
-            <li><i>Neurites</i>: The module takes the difference of the
-            white and black tophat filters. The effect is to enhance lines
-            whose width is the "speckle size".</li>
-            <li><i>Dark holes</i>: The module uses morphological reconstruction 
-            (the rolling-ball algorithm) to identify dark holes within brighter
-            rings. The image is inverted so that the dark holes turn into
-            bright peaks. The image is successively eroded and the eroded image
-            is reconstructed at each step, resulting in an image which is
-            missing the peaks. Finally, the reconstructed image is subtracted
-            from the previous reconstructed image. This leaves circular bright
-            spots with a radius equal to the number of iterations performed.
-            </li></ul>""")
+        self.enhance_method = cps.Choice('Speckle type',
+                                        [E_SPECKLES, E_NEURITES, E_DARK_HOLES],
+                                        doc="""
+                                        This module can enhance three kinds of objects:
+                                        <ul><li><i>Speckles</i>: A speckle is an area of enhanced intensity
+                                        relative to its immediate neighborhood. The module enhances
+                                        speckles using a white tophat filter (the image minus the
+                                        morphological grayscale opening of the image)</li>
+                                        <li><i>Neurites</i>: The module takes the difference of the
+                                        white and black tophat filters. The effect is to enhance lines
+                                        whose width is the "speckle size".</li>
+                                        <li><i>Dark holes</i>: The module uses morphological reconstruction 
+                                        (the rolling-ball algorithm) to identify dark holes within brighter
+                                        rings. The image is inverted so that the dark holes turn into
+                                        bright peaks. The image is successively eroded and the eroded image
+                                        is reconstructed at each step, resulting in an image which is
+                                        missing the peaks. Finally, the reconstructed image is subtracted
+                                        from the previous reconstructed image. This leaves circular bright
+                                        spots with a radius equal to the number of iterations performed.
+                                        </li></ul>""")
         
-        self.object_size = cps.Integer('What is the speckle size?',
-                                       10,1,doc="""
-            This is the diameter of the largest speckle to be enhanced or suppressed, which
-            will be used to calculate an adequate filter size. If you don't know the width 
-            of your objects, you can use the <i>Tools &lt; Show pixel data</i> image tool 
-            in the image window menu to find out.""")
+        self.object_size = cps.Integer('Speckle size',
+                                        10,1,doc="""
+                                        <i>(Used if speckles or neurites are selected)</i><br>
+                                        What is the speckle size? 
+                                        This is the diameter of the largest speckle to be enhanced or suppressed, which
+                                        will be used to calculate an adequate filter size. If you don't know the width 
+                                        of your objects, you can use the <i>Tools &lt; Show pixel data</i> image tool 
+                                        in the image window menu to find out.""")
         
-        self.hole_size = cps.IntegerRange('What is the range of hole sizes?',
-                                          value=(1,10),minval=1, doc="""
-            This is the range of hole sizes to be enhanced. The algorithm will
-            only identify holes whose diameters fall between these two 
-            values""")
+        self.hole_size = cps.IntegerRange('Range of hole sizes?',
+                                        value=(1,10),minval=1, doc="""
+                                        <i>(Used if dark hole detection is selected)</i><br>
+                                        This is the range of hole sizes to be enhanced. The algorithm will
+                                        only identify holes whose diameters fall between these two 
+                                        values""")
 
     def settings(self):
         return [ self.image_name, self.filtered_image_name,

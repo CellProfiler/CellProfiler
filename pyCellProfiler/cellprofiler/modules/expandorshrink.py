@@ -1,4 +1,4 @@
-'''<b>ExpandOrShrink</b> - Expands or shrinks objects by a defined distance
+'''<b>Expand Or Shrink</b> expands or shrinks objects by a defined distance
 <hr>
 The module expands or shrinks objects by adding or removing border
 pixels. You can specify a certain number of border pixels to be
@@ -66,40 +66,52 @@ class ExpandOrShrink(cpm.CPModule):
     variable_revision_number = 1
     def create_settings(self):
         self.object_name = cps.ObjectNameSubscriber("Select the input objects",
-                                                    "None", doc = '''What did you call the objects you want to expand or shrink?''')
+                                    "None", doc = '''
+                                    What did you call the objects you want to expand or shrink?''')
+        
         self.output_object_name = cps.ObjectNameProvider("Name the output objects", 
-                                                         "ShrunkenNuclei", doc = '''What do you want to call the resulting objects?''')
-        self.operation = cps.Choice("What operation do you want to perform?",
+                                    "ShrunkenNuclei", doc = '''
+                                    What do you want to call the resulting objects?''')
+        
+        self.operation = cps.Choice("Operation",
                                     O_ALL,  doc = '''
-                                    <ul><li>Shrink objects to a point: Remove all pixels but one from filled objects. Thin objects
+                                    What operation do you want to perform?
+                                    <ul>
+                                    <li><i>Shrink objects to a point:</i> Remove all pixels but one from filled objects. Thin objects
                                     with holes to loops unless the "fill" option is checked.</li>
-                                    <li>Expand objects until touching: Expand objects, assigning every pixel in the image to an
+                                    <li><i>Expand objects until touching:</i> Expand objects, assigning every pixel in the image to an
                                     object. Background pixels are assigned to the nearest object.</li>
-                                    <li>Add partial dividing lines between objects: Remove pixels from an object that are adjacent to another
+                                    <li><i>Add partial dividing lines between objects:</i> Remove pixels from an object that are adjacent to another
                                     object's pixels unless doing so would change the object's Euler number
                                     (break an object in two, remove the object completely or open a hole in
                                     an object).</li>
-                                    <li>Shrink objects by a specified number of pixels: Remove pixels around the perimeter of an object unless doing
+                                    <li><i>Shrink objects by a specified number of pixels:</i> Remove pixels around the perimeter of an object unless doing
                                     so would break the object in two, remove the object completely or open
                                     a hole in the object. The user can choose the number of times to remove
                                     perimeter pixels. Processing stops automatically when there are no more
                                     pixels to remove.</li>
-                                    <li>Expand objects by a specified number of pixels: Expand each object by adding background pixels adjacent to the
+                                    <li><i>Expand objects by a specified number of pixels:</i> Expand each object by adding background pixels adjacent to the
                                     image. The user can choose the number of times to expand. Processing stops
                                     automatically if there are no more background pixels.</li>
-                                    <li>Skeletonize each object: Erode each object to its skeleton.</li>
-                                    <li>Remove spurs: Remove or reduce the length of spurs in a skeletonized image.
+                                    <li><i>Skeletonize each object:</i> Erode each object to its skeleton.</li>
+                                    <li><i>Remove spurs:<i> Remove or reduce the length of spurs in a skeletonized image.
                                     The algorithm reduces spur size by the number of pixels indicated in the
                                     setting "Enter the number of pixels by which to expand or shrink."</li> </ul>              
                                     ''')
-        self.iterations = cps.Integer("Number of pixels by which to expand or shrink",
+        
+        self.iterations = cps.Integer("Enter the number of pixels by which to expand or shrink",
                                       1, minval=1)
+        
         self.wants_fill_holes = cps.Binary("Do you want to fill holes in objects so that all objects shrink to a single point?",
-                                           False, doc=DOC_FILL_HOLES)
-        self.wants_outlines = cps.Binary("Do you want to save the outlines of the identified objects",
-                                         False)
-        self.outlines_name = cps.OutlineNameProvider("What do you want to call the outlines of the identified objects?",
-                                                     "ShrunkenNucleiOutlines")
+                                    False, doc=DOC_FILL_HOLES)
+        
+        self.wants_outlines = cps.Binary("Save outlines of the identified objects?",
+                                    False)
+        
+        self.outlines_name = cps.OutlineNameProvider("Name the outline image",
+                                    "ShrunkenNucleiOutlines", doc = """
+                                    <i>(Only used if outlines are to be saved)</i>
+                                    What do you want to call the outlines of the identified objects?""")
 
     def settings(self):
         return [self.object_name, self.output_object_name, self.operation,

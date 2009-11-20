@@ -457,6 +457,7 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
     def get_measurement_images(self, pipeline, object_name, category, feature):
         if feature in self.get_measurements(pipeline, object_name, category):
             return [image.image_name.value for image in self.images]
+        return []
     
     def get_measurement_scales(self, pipeline, object_name, category, feature,
                                image_name):
@@ -465,6 +466,7 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
             return [FF_SCALE % (bin,bin_count.bin_count.value)
                     for bin_count in self.bin_counts
                     for bin in range(1, bin_count.bin_count.value+1)]
+        return []
             
     def upgrade_settings(self,setting_values,variable_revision_number,
                          module_name,from_matlab):

@@ -1,4 +1,4 @@
-"""<b>LoadSingleImage:</b> Loads a single image, which will be used for all image cycles.
+"""<b>LoadSingleImage</b> loads a single image, which will be used for all image cycles.
 <hr>
 Note: for most purposes, you will probably want to use the Load Images
 module, not this one.

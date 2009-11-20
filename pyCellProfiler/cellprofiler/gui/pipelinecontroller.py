@@ -695,6 +695,7 @@ class PipelineController:
         if self.__running_pipeline and not self.__inside_running_pipeline:
             self.__inside_running_pipeline = True
             try:
+                self.__running_pipeline.next()
                 self.__pipeline_measurements = self.__running_pipeline.next()
                 if USE_TIMER:
                     wx.CallLater(1,self.on_idle, None)

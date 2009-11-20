@@ -24,6 +24,7 @@ import sys
 import tempfile
 import datetime
 import traceback
+import threading
 import cellprofiler.cpmodule
 import cellprofiler.preferences
 import cellprofiler.cpimage
@@ -162,11 +163,23 @@ def add_all_measurements(handles, measurements):
             feature_measurements[0,0] = measurements.get_experiment_measurement(feature_name)
             experiment_measurements[feature_name][0,0] = feature_measurements
 
+
 class Pipeline(object):
     """A pipeline represents the modules that a user has put together
     to analyze their images.
     
     """
+
+    # These are defined here so that
+    # cellprofiler.gui.pipelinecontroller can get at them.  They are
+    # initialized by run_with_yield() because that method is allowed
+    # to require wx.  (The rest of this module should not.)
+
+    EVT_MODULERUNNER_DONE_ID = None
+
+    def EVT_MODULERUNNER_DONE(win, func):
+        win.Connect(-1, -1, Pipeline.EVT_MODULERUNNER_DONE_ID, func)
+
     def __init__(self):
         self.__modules = [];
         self.__listeners = [];
@@ -423,6 +436,8 @@ class Pipeline(object):
                    grouping to run or None to run all groupings
         """
         measurements = cellprofiler.measurements.Measurements()
+        # XXX: Should not call run_with_yield because run_with_yield
+        # depends on wx whereas run() shouldn't.
         for m in self.run_with_yield(frame, 
                                      image_set_start, 
                                      image_set_end,
@@ -438,6 +453,36 @@ class Pipeline(object):
         
         Run the pipeline, returning the measurements made
         """
+
+        class ModuleRunner(threading.Thread):
+            """Worker thread that executes the run() method of a module."""
+            def __init__(self, module, workspace, notify_window):
+                super(ModuleRunner, self).__init__()
+                self.module = module
+                self.workspace = workspace
+                self.notify_window = notify_window
+            def run(self):
+                import wx
+
+                class ModuleRunnerDoneEvent(wx.PyEvent):
+                    """In spite of its name, this event is posted both when a module
+                    runner is done (i.e., when the module's run() method is finished)
+                    and then again when run_with_yield has displayed the module's
+                    results and collected its measurements."""
+                    def __init__(self):
+                        wx.PyEvent.__init__(self)
+                        self.SetEventType(Pipeline.EVT_MODULERUNNER_DONE_ID)
+                    def RequestMore(self):
+                        "For now, make this work with code written for IdleEvent."
+                        pass
+
+                self.module.run(self.workspace)
+                wx.PostEvent(self.notify_window, ModuleRunnerDoneEvent())
+
+        if Pipeline.EVT_MODULERUNNER_DONE_ID is None:
+            import wx
+            Pipeline.EVT_MODULERUNNER_DONE_ID = wx.NewId()
+
         with self.prepared_run(self, frame) as image_set_list:
             if image_set_list == None:
                 return
@@ -505,7 +550,11 @@ class Pipeline(object):
                                                       outlines = outlines)
                             start_time = datetime.datetime.now()
                             t0 = sum(os.times()[:-1])
+                            #worker = Pipeline.ModuleRunner(module, workspace, 
+                            #                               frame)
+                            #worker.start()
                             module.run(workspace)
+                            yield None
                             t1 = sum(os.times()[:-1])
                             delta_sec = max(0,t1-t0)
                             print ("%s: Image # %d, module %s # %d: %.2f sec" %
@@ -535,6 +584,7 @@ class Pipeline(object):
                         yield measurements
                         while (workspace.disposition == cpw.DISPOSITION_PAUSE and
                                frame is not None):
+                            yield None
                             yield measurements
                         if workspace.disposition == cpw.DISPOSITION_SKIP:
                             break

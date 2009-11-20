@@ -63,6 +63,8 @@ N_FIXED_SETTINGS_PER_FLAG = 4
 '''Number of settings per measurement'''
 N_SETTINGS_PER_MEASUREMENT = 7
 
+# XXX - needs some Dividers to space things out
+
 class FlagImage(cpm.CPModule):
    
     category = "Image Processing"
@@ -123,7 +125,7 @@ class FlagImage(cpm.CPModule):
                 "None", doc = '''What did you call the objects whose measurements you want to filter by?'''))
 
         def object_fn():
-            if self.source_choice == S_IMAGE:
+            if group.source_choice == S_IMAGE:
                 return cpmeas.IMAGE
             return self.object_name.value
 
@@ -183,8 +185,8 @@ class FlagImage(cpm.CPModule):
             result += [m_g.wants_maximum]
             if m_g.wants_maximum.value:
                 result += [m_g.maximum_value]
-            if m_g.can_delete:
-                result += [m_g.remove_button]
+            if hasattr(m_g, "remover"):
+                result += [m_g.remover]
             return result
 
         def flag_visibles(flag):
@@ -194,8 +196,8 @@ class FlagImage(cpm.CPModule):
             for measurement_settings in flag.measurement_settings:
                 result += measurement_visibles(measurement_settings)
             result += [flag.add_measurement_button]
-            if flag.can_delete:
-                result += [flag.remove_button]
+            if hasattr(flag, "remover"):
+                result += [flag.remover]
             return result
 
         result = []

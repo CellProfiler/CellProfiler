@@ -40,7 +40,7 @@ class SpeedUpCellProfiler(cpm.CPModule):
     variable_revision_number = 1
     
     def create_settings(self):
-        self.how_to_remove = cps.Choice("Do you want to choose the images to be removed or the images to keep?",
+        self.how_to_remove = cps.Choice("Select images to remove or images to keep?",
                                         [C_REMOVE, C_KEEP], 
                                         doc="""
             Choose <i>%s</i> to remove some images from memory and keep the rest.
@@ -57,9 +57,9 @@ class SpeedUpCellProfiler(cpm.CPModule):
 
     def query(self):
         if self.how_to_remove == C_REMOVE:
-            return "What did you call the image that you want to remove from memory?"
+            return "Select image to remove:"
         else:
-            return "What did you call the image that you want to keep in memory"
+            return "Select image to keep:"
 
     def add_image(self):
         '''Add an image to the list of image names'''

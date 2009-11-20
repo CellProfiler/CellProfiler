@@ -167,12 +167,12 @@ class TrackObjects(cpm.CPModule):
             </ul>""")
         
         self.object_name = cps.ObjectNameSubscriber(
-            'What did you call the objects you want to track?','None')
+            'Select the objects to track','None', """What did you call the objects you want to track?""")
         
         self.measurement = cps.Measurement(
-            'What measurement do you want to use?',
+            'Select measurement to use',
             lambda : self.object_name.value, doc="""\
-            <i>(Only used if Measurement is chosen as the tracking method)</i>
+            <i>What measurement do you want to use?</i>
             <p>Specifies which type of measurement (category) and which feature from the
             Measure module will be used for tracking. Select the feature name from 
             the popup box or see each <b>Measure</b> module's help for the list of
@@ -181,34 +181,36 @@ class TrackObjects(cpm.CPModule):
             specified if neccesary.""")
         
         self.pixel_radius = cps.Integer(
-            'Within what pixel distance will objects be considered to find '
-            'a potential match?',50,minval=1,doc="""\
-            This indicates the region (in pixels) within which objects in the
+            'Select pixel distance',50,minval=1,doc="""\
+            Within what pixel distance will objects be considered to find 
+            a potential match? This indicates the region (in pixels) within which objects in the
             next frame are to be compared. To determine pixel distances, you can look
             at the axis increments on each image (shown in pixel units) or
             using the <i>Tools > Show pixel data</i> of any CellProfiler figure window""")
         
 	self.born_cost = cps.Integer(
-	    'What is the cost of an object being born?', 100, minval=1)
+	    'Cost of being born', 100, minval=1, doc = '''What is the cost of an object being born?''')
         
 	self.die_cost = cps.Integer(
-	    'What is the cost of an object dying?', 100, minval=1)
+	    'Cost of dying', 100, minval=1, doc = '''What is the cost of an object dying?''')
         
         self.display_type = cps.Choice(
-            'How do you want to display the tracked objects?',
+            'Select display option',
             DT_ALL, doc="""\
+            How do you want to display the tracked objects?
             The output image can be saved as either a color-labelled image, with each tracked
             object assigned a unique color, or a color-labelled image with the tracked object 
             number superimposed.""")
         
         self.wants_image = cps.Binary(
-            "Do you want to save the image with tracked, color-coded objects?",
+            "Save color-coded image?",
             False,doc="""
+            Do you want to save the image with tracked, color-coded objects?
             Specify a name to give the image showing the tracked objects. This image
             can be saved with a <b>SaveImages</b> module placed after this module.""")
         
         self.image_name = cps.ImageNameProvider(
-            "What do you want to call the images?", "TrackedCells")
+            "Name the output image", "TrackedCells", doc = '''What do you want to call the images?''')
 
     def settings(self):
         return [self.tracking_method, self.object_name, self.measurement,

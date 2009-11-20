@@ -65,15 +65,19 @@ class CalculateMath(cpm.CPModule):
                 self.__operation = operation
                 self.__operand_choice = cps.Choice(self.operand_choice_text(), MC_ALL,doc="""
                                             Is the operand an image or object measurement?""")
+                
                 self.__operand_objects = cps.ObjectNameSubscriber(self.operand_objects_text(),"None",doc="""
                                             Which objects do you want to measure for this operation?""")
+                
                 self.__operand_measurement = cps.Measurement(self.operand_measurement_text(),
                                             self.object_fn,doc="""
                                             Enter the category that was used to create the measurement. You
                                             will be prompted to add additional information depending on 
                                             the type of measurement that is requested.""")
+                
                 self.__multiplicand = cps.Float("Multiply the above operand by",1,doc="""
                                             What number would you like to multiply the above operand by?""")
+                
                 self.__exponent = cps.Float("Raise the power of above operand by",1,doc="""
                                             What power would you like to raise the above operand to?""")
             
@@ -132,16 +136,16 @@ class CalculateMath(cpm.CPModule):
                             "denominator")
             
             def operand_choice_text(self):
-                return self.operand_text("Type of measurement for %s") 
+                return self.operand_text("Select the %s measurement type") 
             
             def operand_objects_text(self):
-                return self.operand_text("Objects to measure for the %s?")
+                return self.operand_text("Select the %s objects")
             
             def operand_text(self, format):
                 return format % self.operand_name()
                 
             def operand_measurement_text(self): 
-                return self.operand_text("Measurement to use for %s?")
+                return self.operand_text("Select the %s measurement")
             
             def settings(self):
                 '''The operand settings to be saved in the output file'''
@@ -161,14 +165,19 @@ class CalculateMath(cpm.CPModule):
         self.output_feature_name = cps.Text("Name the output measurements",
                                             "Measurement",doc="""
                                             What do you want to call the measurement calculated by this module?""")
+        
         self.operation = cps.Choice("Operation",
                                     O_ALL,doc="""
                                     What arithmetic operation would you like to perform?""")
+        
         self.operands = (Operand(0, self.operation), Operand(1, self.operation))
+        
         self.wants_log = cps.Binary("Take log10 of result?", False,doc="""
                                     Do you want the log (base 10) of the result?""")
+        
         self.final_multiplicand = cps.Float("Multiply the result by",1,doc="""
                                     What number would you like to multiply the result by?""")
+        
         self.final_exponent = cps.Float("Raise the power of result by",1,doc="""
                                     What power would you like to raise the result to?""")
             

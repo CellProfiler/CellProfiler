@@ -2,11 +2,11 @@
 <b> Color to Gray</b> converts an image with 3 color channels to 1 <i>or</i> 3 grayscale images.
 <hr>
 Converts RGB (Red, Green, Blue) color images to grayscale. All channels
-can be merged into one grayscale image (<b>combine</b> option) or each channel 
-can be extracted into a separate grayscale image (<b>split</b>  option). If using <i>combine</i>, 
-the <i>relative weights</i> will adjust the contribution of the colors relative to each other.<br>
+can be merged into one grayscale image (<i>Combine</i> option) or each channel 
+can be extracted into a separate grayscale image (<i>Split</i>  option). If using <i>Combine</i>, 
+the relative weights will adjust the contribution of the colors relative to each other.<br>
 <br>
-<b>Note:</b>  this module is helpful as all identify modules require grayscale images.
+<b>Note:</b> This module is helpful as all <b>Identify</b> modules require grayscale images.
 <br>
 See also <b>GrayToColor</b>.
 '''
@@ -45,35 +45,46 @@ class ColorToGray(cpm.CPModule):
     def create_settings(self):
         self.image_name = cps.NameSubscriber("Select the input image",
                                              "imagegroup","None")
-        self.combine_or_split = cps.Choice("Method",
-                                           [COMBINE,SPLIT],doc='''<b>How do you want to convert the color image? Split:</b> takes a color image and 
-            splits the three channels (red, green, blue) into three separate grayscale images. <b>Combine:</b>
-            takes a color image and converts it to a grayscale image by combining the three channels (red, 
-            green, blue) together.''')
+        self.combine_or_split = cps.Choice("Conversion method",
+                                           [COMBINE,SPLIT],doc='''
+                                           How do you want to convert the color image? 
+                                           <ul>
+                                           <li><i>Split:</i> Takes a color image and splits the three channels
+                                           (red, green, blue) into three separate grayscale images. </li>
+                                           <li><i>Combine:</i> Takes a color image and converts it to a grayscale 
+                                           image by combining the three channels (red, green, blue) together.</li>
+                                           </ul>''')
         
         # The following settings are used for the combine option
         self.grayscale_name = cps.NameProvider("Name the output image",
                                                "imagegroup","OrigGray")
         self.red_contribution = cps.Float("Relative weight of the red channel:",
-                                          1,0,doc='''Relative weights: If all relative weights are equal, all three 
-            colors contribute equally in the final image. To weight colors relative to each other, the relative
-            weights can be increased or decreased.''')
+                                          1,0,doc='''
+                                          Relative weights: If all relative weights are equal, all three 
+                                          colors contribute equally in the final image. To weight colors relative 
+                                          to each other, the relative weights can be increased or decreased.''')
+        
         self.green_contribution = cps.Float("Relative weight of the green channel:",
-                                            1,0,doc='''Relative weights: If all relative weights are equal, all three 
-            colors contribute equally in the final image. To weight colors relative to each other, the relative
-            weights can be increased or decreased.''')
+                                            1,0,doc='''
+                                            Relative weights: If all relative weights are equal, all three 
+                                            colors contribute equally in the final image. To weight colors relative 
+                                            to each other, the relative weights can be increased or decreased.''')
+        
         self.blue_contribution = cps.Float("Relative weight of the blue channel:",
-                                           1,0,doc='''Relative weights: If all relative weights are equal, all three 
-            colors contribute equally in the final image. To weight colors relative to each other, the relative
-            weights can be increased or decreased.''')
+                                           1,0,doc='''
+                                           Relative weights: If all relative weights are equal, all three 
+                                           colors contribute equally in the final image. To weight colors relative 
+                                           to each other, the relative weights can be increased or decreased.''')
         
         # The following settings are used for the split option
         self.use_red = cps.Binary('Convert red to gray?',True)
         self.red_name = cps.NameProvider('Name the output image',
                                          "imagegroup","OrigRed")
+        
         self.use_green = cps.Binary('Convert green to gray?',True)
         self.green_name = cps.NameProvider('Name the output image',
                                          "imagegroup","OrigGreen")
+        
         self.use_blue = cps.Binary('Convert blue to gray?',True)
         self.blue_name = cps.NameProvider('Name the output image',
                                          "imagegroup","OrigBlue")

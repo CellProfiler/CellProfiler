@@ -443,15 +443,9 @@ class Pipeline(object):
                 return
 
             keys, groupings = self.get_groupings(image_set_list)
-            if grouping is not None:
-                for key in grouping.keys():
-                    if key not in keys:
-                        raise ValueError("The grouping key, %s, is not in the list of keys that specify a group: %s"%
-                                         (key, keys))
-                for key in keys:
-                    if key not in grouping.keys():
-                        raise ValueError("The key, %s, is missing from the list of keys that specify a group: %s"%
-                                         (key, keys))
+            if grouping is not None and set(keys) != set(grouping.keys()):
+                raise ValueError("The grouping keys specified on the command line (%s) must be the same as those defined by the modules in the pipeline (%s)"%(
+                        ", ".join(grouping.keys()), ", ".join(keys)))
             measurements = None
             first_set = True
 

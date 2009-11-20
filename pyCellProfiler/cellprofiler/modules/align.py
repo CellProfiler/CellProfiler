@@ -62,16 +62,18 @@ class Align(cpm.CPModule):
     module_name = "Align"
     category = 'Image Processing'
     variable_revision_number = 1
-    # XXX needs cps.SettingsGroup
+
     def create_settings(self):
         self.first_input_image = cps.ImageNameSubscriber("What is the name of the first image to align?",
                                                          "None")
         self.first_output_image = cps.ImageNameProvider("What do you want to call the aligned first image?",
                                                         "AlignedRed")
+        self.separator_1 = cps.Divider(line=False)
         self.second_input_image = cps.ImageNameSubscriber("What is the name of the second image to align?",
                                                           "None")
         self.second_output_image = cps.ImageNameProvider("What do you want to call the aligned second image?",
                                                          "AlignedGreen")
+        self.separator_2 = cps.Divider(line=False)
         self.additional_images = []
         self.add_button = cps.DoSomething("Add another image","Add",
                                           self.add_image)
@@ -93,52 +95,40 @@ class Align(cpm.CPModule):
     
     def add_image(self):
         '''Add an image + associated questions and buttons'''
-        class AdditionalImage(object):
-            '''Holds the settings for an image other than the first two'''
-            def __init__(self, additional_images):
-                self.key = uuid.uuid4()
-                def remove(additional_images = additional_images, 
-                           key=self.key):
-                    index = [x.key for x in additional_images].index(key)
-                    del additional_images[index]
-                self.input_image_name = cps.ImageNameSubscriber("What is the name of the additional image to align?",
-                                                                "None")
-                self.output_image_name = cps.ImageNameProvider("What do you want to call the aligned image?",
-                                                               "AlignedBlue")
-                self.align_choice = cps.Choice("Do you want to align this image similarly to the second one or do you want to calculate a separate alignment to the first image?",
-                                               [A_SIMILARLY, A_SEPARATELY])
-                self.remove_button = cps.DoSomething("Remove the above image","Remove", remove)
-            def settings(self):
-                '''Return the settings to save in the pipeline'''
-                return [self.input_image_name, self.output_image_name,
-                        self.align_choice]
-            def visible_settings(self):
-                '''Return the settings to be displayed'''
-                return [self.input_image_name, self.output_image_name,
-                        self.align_choice, self.remove_button]
-        self.additional_images.append(AdditionalImage(self.additional_images))
+        group = cps.SettingsGroup()
+        group.append("input_image_name", 
+                     cps.ImageNameSubscriber("What is the name of the additional image to align?",
+                                             "None"))
+        group.append("output_image_name",
+                     cps.ImageNameProvider("What do you want to call the aligned image?",
+                                           "AlignedBlue"))
+        group.append("align_choice",
+                     cps.Choice("Do you want to align this image similarly to the second one or do you want to calculate a separate alignment to the first image?",
+                                [A_SIMILARLY, A_SEPARATELY]))
+        group.append("remover", cps.RemoveSettingButton("", "Remove above image", self.additional_images, group))
+        group.append("divider", cps.Divider(line=False))
+        self.additional_images.append(group)
 
     def settings(self):
         result = [self.first_input_image, self.first_output_image,
                   self.second_input_image, self.second_output_image]
         for additional in self.additional_images:
-            result += additional.settings()
+            result += [additional.input_image_name, additional.output_image_name, additional.align_choice]
         result += [self.alignment_method, self.wants_cropping]
         return result
 
     def prepare_settings(self, setting_values):
         assert (len(setting_values)-6)% 3 == 0
         n_additional = (len(setting_values)-6)/3
-        while len(self.additional_images) > n_additional:
-            del self.additional_images[-1]
+        del self.additional_images[:]
         while len(self.additional_images) < n_additional:
             self.add_image()
 
     def visible_settings(self):
-        result = [self.first_input_image, self.first_output_image,
-                  self.second_input_image, self.second_output_image]
+        result = [self.first_input_image, self.first_output_image, self.separator_1,
+                  self.second_input_image, self.second_output_image, self.separator_2]
         for additional in self.additional_images:
-            result += additional.visible_settings()
+            result += additional.unpack_group()
         result += [self.add_button, self.alignment_method, self.wants_cropping]
         return result
 

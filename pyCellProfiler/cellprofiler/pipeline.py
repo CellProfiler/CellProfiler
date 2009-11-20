@@ -447,18 +447,12 @@ class Pipeline(object):
                 raise ValueError("The grouping keys specified on the command line (%s) must be the same as those defined by the modules in the pipeline (%s)"%(
                         ", ".join(grouping.keys()), ", ".join(keys)))
             measurements = None
-            first_set = True
 
             for grouping_keys, image_numbers in groupings:
                 #
                 # Loop over groups
                 #
-                match = True
-                for key in keys:
-                    if grouping is not None and grouping[key] != grouping_keys[key]:
-                        match = False
-                        break
-                if not match:
+                if grouping is not None and grouping != grouping_keys:
                     continue
                 prepare_group_has_run = False
                 for image_number in image_numbers:
@@ -475,9 +469,9 @@ class Pipeline(object):
                                                   image_numbers):
                             return
                         prepare_group_has_run = True
-                    if first_set:
+                    if measurements is None:
                         measurements = cpmeas.Measurements(
-                            image_set_start=image_number-1)
+                            image_set_start=image_number - 1)
                     else:
                         measurements.next_image_set(image_number)
                     measurements.add_image_measurement(IMAGE_NUMBER, image_number)
@@ -548,7 +542,6 @@ class Pipeline(object):
                             measurements.add_experiment_measurement(EXIT_STATUS,
                                                                     "Failure")
                             return
-                    first_set = False
                     image_set_list.purge_image_set(image_number-1)
                 if prepare_group_has_run:
                     if not self.post_group(workspace, grouping_keys):

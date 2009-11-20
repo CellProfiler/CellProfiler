@@ -137,7 +137,7 @@ class HiddenCount(Setting):
         if count == len(self.__sequence):
             # The value was "inadvertantly" set, but is correct
             return
-        raise NotImplementedError("The count should be inferred, not set")
+        raise NotImplementedError("The count should be inferred, not set  - actual: %d, set: %d"%(len(self.__sequence), count))
 
     def get_value(self):
         return len(self.__sequence)

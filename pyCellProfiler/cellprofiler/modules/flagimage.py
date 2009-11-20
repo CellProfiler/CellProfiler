@@ -42,7 +42,6 @@ __version__="$Revision$"
 
 import numpy as np
 import sys
-import uuid
 
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
@@ -79,31 +78,130 @@ class FlagImage(cpm.CPModule):
         self.add_flag(False)
         
     def add_flag(self, can_delete=True):
-        self.flags.append(FlagSettings(self.flags, can_delete))
+        group = cps.SettingsGroup()
+        group.append("measurement_settings", [])
+        group.append("measurement_count", cps.HiddenCount(group.measurement_settings))
+        group.append("category", cps.Text("What is the flag's measurement category?",
+                                 "Metadata", doc = '''The default is 'Metadata', which allows you to group images
+                                 by quality if loading the QCFlag via LoadText.  Otherwise, the flag can be stored
+                                 in the 'Image' category.'''))
+        group.append("feature_name", cps.Text("What is the flag's feature name ?"
+                                     ,"QCFlag", doc = "The default name of the flag's measurement is "
+                                     "Metadata_QCFlag."))
+        group.append("combination_choice",
+                     cps.Choice(
+                "Do you want to set the flag if any measurement fails to meet the criteria or if all measurements fail to meet the criteria?",
+                [ C_ANY, C_ALL], doc = '''<ul><li>Any: An image will be assigned a flag if any of its measurements fail. This can be useful
+                for capturing images possessing varied QC flaws; for example, you can flag all bright images and all out of focus images with one flag.</li>
+                <li>All: A flag will only be assigned if all measurements fail.  This can be useful for capturing images that possess only a combination
+                of QC flaws; for example, you can flag only images that are both bright and out of focus.</li></ul>'''))
+        group.append("add_measurement_button", 
+                     cps.DoSomething("Add another measurement",
+                                     "Add measurement",
+                                     self.add_measurement, group))
+        self.add_measurement(group, False)
+        if can_delete:
+            group.append("remover", cps.RemoveSettingButton("", "Remove this flag", self.flags, group))
+        self.flags.append(group)
+
+    def add_measurement(self, flag_settings, can_delete=True):
+        measurement_settings = flag_settings.measurement_settings
+
+        group = cps.SettingsGroup()
+        group.append("source_choice",
+                     cps.Choice(
+                "Do you want to filter on an image measurement, "
+                "on the average value of an object measurement, or "
+                "on the values of all objects in the image?", S_ALL, doc = '''<ul><li>Image: This will flag an image based
+                on a per-image measurement, such as intensity or granularity.</li><li>Average for objects: This will flag
+                an image based on the average of all object measurements in an image.</li>
+                <li>All objects: This will flag an image based on all the object measurements in an image, without averaging.
+                </li></ul>'''))
+        group.append("object_name",
+                     cps.ObjectNameSubscriber(
+                "Select the object to filter by",
+                "None", doc = '''What did you call the objects whose measurements you want to filter by?'''))
+
+        def object_fn():
+            if self.source_choice == S_IMAGE:
+                return cpmeas.IMAGE
+            return self.object_name.value
+
+        group.append("measurement", cps.Measurement("What measurement do you want to use?",
+                                                    object_fn))
+        group.append("wants_minimum",
+                     cps.Binary("Do you want to flag images based on low values?",
+                                True, doc = '''Low values: Images with measurements below this cutoff will be flagged.'''))
+        group.append("minimum_value", cps.Float("What is the minimum value for the measurement?", 0))
+        group.append("wants_maximum",
+                     cps.Binary("Do you want to flag images based on high values?",
+                                True, doc = '''High values: Images with measurements above this cutoff will be flagged.'''))
+        group.append("maximum_value", cps.Float("What is the maximum value for the measurement?", 1))
+        
+        if can_delete:
+            group.append("remover", cps.RemoveSettingButton("", "Remove this measurement", measurement_settings, group))
+
+        measurement_settings.append(group)
+
     
     def settings(self):
         result = [self.flag_count]
         for flag in self.flags:
-            result += flag.settings()
+            result += [flag.measurement_count, flag.category, flag.feature_name, 
+                       flag.combination_choice]
+            for mg in flag.measurement_settings:
+                result += [mg.source_choice, mg.object_name, mg.measurement,
+                           mg.wants_minimum, mg.minimum_value,
+                           mg.wants_maximum, mg.maximum_value]
         return result
     
     def prepare_settings(self, setting_values):
         '''Construct the correct number of flags'''
         flag_count = int(setting_values[0])
-        while len(self.flags) > flag_count:
-            del self.flags[-1]
+        del self.flags[:]
+        self.add_flag(can_delete=False)
         while len(self.flags) < flag_count:
             self.add_flag()
             
         setting_values = setting_values[N_FIXED_SETTINGS:]
         for flag in self.flags:
-            assert isinstance(flag, FlagSettings)
-            setting_values = flag.prepare_settings(setting_values)
+            count = int(setting_values[0])
+            # Adding a flag adds the first measurement automatically
+            while len(flag.measurement_settings) < count:
+                self.add_measurement(flag, can_delete=True)
+            setting_values = setting_values[N_FIXED_SETTINGS_PER_FLAG +
+                                            count * N_SETTINGS_PER_MEASUREMENT:]
     
     def visible_settings(self):
+        def measurement_visibles(m_g):
+            result = [m_g.source_choice]
+            if m_g.source_choice != S_IMAGE:
+                result += [m_g.object_name]
+            result += [m_g.measurement, m_g.wants_minimum]
+            if m_g.wants_minimum.value:
+                result += [m_g.minimum_value]
+            result += [m_g.wants_maximum]
+            if m_g.wants_maximum.value:
+                result += [m_g.maximum_value]
+            if m_g.can_delete:
+                result += [m_g.remove_button]
+            return result
+
+        def flag_visibles(flag):
+            result = [flag.category, flag.feature_name]
+            if len(flag.measurement_settings) > 1:
+                result += [flag.combination_choice]
+            for measurement_settings in flag.measurement_settings:
+                result += measurement_visibles(measurement_settings)
+            result += [flag.add_measurement_button]
+            if flag.can_delete:
+                result += [flag.remove_button]
+            return result
+
         result = []
         for flag in self.flags:
-            result += flag.visible_settings()
+            result += flag_visibles(flag)
+
         result += [self.add_flag_button]
         return result
     
@@ -117,14 +215,16 @@ class FlagImage(cpm.CPModule):
             figure.subplot_table(0,0, statistics,
                                  (.25,.25,.25,.125,.125))
 
+    def measurement_name(self, flag):
+        return "_".join((flag.category.value, flag.feature_name.value))
+
     def run_flag(self, workspace, flag):
-        assert isinstance(flag, FlagSettings)
         ok, stats = self.eval_measurement(workspace, 
                                           flag.measurement_settings[0])
-        statistics = [tuple([flag.measurement_name] + list(stats))]
+        statistics = [tuple([self.measurement_name(flag)] + list(stats))]
         for measurement_setting in flag.measurement_settings[1:]:
             ok_1, stats = self.eval_measurement(workspace, measurement_setting)
-            statistics += [tuple([flag.measurement_name] + list(stats))]
+            statistics += [tuple([self.measurement_name(flag)] + list(stats))]
             if flag.combination_choice == C_ALL:
                 ok = ok or ok_1
             elif flag.combination_choice == C_ANY:
@@ -134,14 +234,14 @@ class FlagImage(cpm.CPModule):
                                           flag.combination_choice.value)
         m = workspace.measurements
         assert isinstance(m, cpmeas.Measurements)
-        m.add_image_measurement(flag.measurement_name, 0 if ok else 1)
+        m.add_image_measurement(self.measurement_name(flag), 0 if ok else 1)
         return statistics
         
     def eval_measurement(self, workspace, ms):
         '''Evaluate a measurement
         
         workspace - holds the measurements to be evaluated
-        ms - the MeasurementSettings indicating how to evaluate
+        ms - the measurement settings indicating how to evaluate
         
         returns a tuple
            first tuple element is True = pass, False = Fail
@@ -150,7 +250,6 @@ class FlagImage(cpm.CPModule):
         '''
         m = workspace.measurements
         assert isinstance(m, cpmeas.Measurements)
-        assert isinstance(ms, MeasurementSettings)
         if ms.source_choice == S_IMAGE:
             value = m.get_current_image_measurement(ms.measurement.value)
             min_value = max_value = value
@@ -184,7 +283,7 @@ class FlagImage(cpm.CPModule):
     
     def get_measurement_columns(self, pipeline):
         '''Return column definitions for each flag mesurment in the module'''
-        return [(cpmeas.IMAGE, flag.measurement_name, cpmeas.COLTYPE_INTEGER)
+        return [(cpmeas.IMAGE, self.measurement_name(flag), cpmeas.COLTYPE_INTEGER)
                 for flag in self.flags]
     
     def get_categories(self, pipeline, object_name):
@@ -241,134 +340,3 @@ class FlagImage(cpm.CPModule):
             variable_revision_number = 1
         return setting_values, variable_revision_number, from_matlab
     
-class MeasurementSettings(object):
-    # XXX needs to use cps.SettingsGroup
-    '''Represents the settings for one flag measurement '''
-    def __init__(self, measurements, can_delete = True):
-        self.can_delete = can_delete
-        self.key = uuid.uuid4()
-        def remove(measurements = measurements):
-            index = [x.key for x in measurements].index(self.key)
-            del measurements[index]
-        self.source_choice = cps.Choice(
-            "Do you want to filter on an image measurement, "
-            "on the average value of an object measurement, or "
-            "on the values of all objects in the image?", S_ALL, doc = '''<ul><li>Image: This will flag an image based
-            on a per-image measurement, such as intensity or granularity.</li><li>Average for objects: This will flag
-            an image based on the average of all object measurements in an image.</li>
-            <li>All objects: This will flag an image based on all the object measurements in an image, without averaging.
-             </li></ul>''')
-        self.object_name = cps.ObjectNameSubscriber(
-            "Select the object to filter by",
-            "None", doc = '''What did you call the objects whose measurements you want to filter by?''')
-        def object_fn():
-            if self.source_choice == S_IMAGE:
-                return cpmeas.IMAGE
-            return self.object_name.value
-        
-        self.measurement = cps.Measurement("What measurement do you want to use?",
-                                           object_fn)
-        self.wants_minimum = cps.Binary("Do you want to flag images based on low values?",
-                                        True, doc = '''Low values: Images with measurements below this cutoff will be flagged.''')
-        self.minimum_value = cps.Float("What is the minimum value for the measurement?", 0)
-        self.wants_maximum = cps.Binary("Do you want to flag images based on high values?",
-                                        True, doc = '''High values: Images with measurements above this cutoff will be flagged.''')
-        self.maximum_value = cps.Float("What is the maximum value for the measurement?", 1)
-        
-        if self.can_delete:
-            self.remove_button = cps.DoSomething("Remove this measurement",
-                                                 "Remove measurement",
-                                                 remove)
-    def settings(self):
-        '''Return the settings to save or load from a pipeline'''
-        return [self.source_choice, self.object_name, self.measurement,
-                self.wants_minimum, self.minimum_value,
-                self.wants_maximum, self.maximum_value]
-    
-    def visible_settings(self):
-        '''Return the settings to show the user'''
-        result = [self.source_choice]
-        if self.source_choice != S_IMAGE:
-            result += [self.object_name]
-        result += [self.measurement, self.wants_minimum]
-        if self.wants_minimum.value:
-            result += [self.minimum_value]
-        result += [self.wants_maximum]
-        if self.wants_maximum.value:
-            result += [self.maximum_value]
-        if self.can_delete:
-            result += [self.remove_button]
-        return result
-    
-class FlagSettings(object):
-    '''Represents the settings for a QC flag in the FlagImages module'''
-    def __init__(self, flags, can_delete = True):
-        self.measurement_settings = []
-        self.can_delete = can_delete
-        self.key = uuid.uuid4()
-        def remove(flags=flags):
-            index = [x.key for x in flags].index(self.key)
-            del flags[index]
-        self.measurement_count = cps.HiddenCount(self.measurement_settings)
-        self.category = cps.Text("What is the flag's measurement category?",
-                                 "Metadata", doc = '''The default is 'Metadata', which allows you to group images
-                                 by quality if loading the QCFlag via LoadText.  Otherwise, the flag can be stored
-                                 in the 'Image' category.''')
-        self.feature_name = cps.Text("What is the flag's feature name ?"
-                                     ,"QCFlag", doc = "The default name of the flag's measurement is "
-                                     "Metadata_QCFlag.")
-        self.combination_choice = cps.Choice(
-            "Do you want to set the flag if any measurement fails to meet the criteria or if all measurements fail to meet the criteria?",
-            [ C_ANY, C_ALL], doc = '''<ul><li>Any: An image will be assigned a flag if any of its measurements fail. This can be useful
-            for capturing images possessing varied QC flaws; for example, you can flag all bright images and all out of focus images with one flag.</li>
-            <li>All: A flag will only be assigned if all measurements fail.  This can be useful for capturing images that possess only a combination
-            of QC flaws; for example, you can flag only images that are both bright and out of focus.</li></ul>''')
-        self.add_measurement_button = cps.DoSomething("Add another measurement",
-                                                      "Add measurement",
-                                                      self.add_measurement)
-        self.add_measurement(False)
-        if can_delete:
-            self.remove_button = cps.DoSomething("Remove this flag",
-                                                 "Remove flag",
-                                                 remove)
-    @property
-    def measurement_name(self):
-        '''The name to use when storing the flag in measurements'''
-        return "_".join((self.category.value, self.feature_name.value))
-    
-    def add_measurement(self, can_delete = True):
-        self.measurement_settings.append(
-            MeasurementSettings(self.measurement_settings, can_delete))
-        
-    def settings(self):
-        result = [self.measurement_count, self.category, self.feature_name, 
-                  self.combination_choice]
-        for measurement_setting in self.measurement_settings:
-            result += measurement_setting.settings()
-        return result
-    
-    def prepare_settings(self, setting_values):
-        '''Create the appropriate number of measurements
-        
-        setting_values - the setting values, starting from those for this flag
-        
-        returns a sequence of setting values not consumed by this flag
-        '''
-        count = int(setting_values[0])
-        while len(self.measurement_settings) > count:
-            del self.measurement_settings[-1]
-        while len(self.measurement_settings) < count:
-            self.add_measurement()
-        return setting_values[N_FIXED_SETTINGS_PER_FLAG +
-                              count * N_SETTINGS_PER_MEASUREMENT:]
-    
-    def visible_settings(self):
-        result = [self.category, self.feature_name]
-        if len(self.measurement_settings) > 1:
-            result += [self.combination_choice]
-        for measurement_setting in self.measurement_settings:
-            result += measurement_setting.visible_settings()
-        result += [self.add_measurement_button]
-        if self.can_delete:
-            result += [self.remove_button]
-        return result

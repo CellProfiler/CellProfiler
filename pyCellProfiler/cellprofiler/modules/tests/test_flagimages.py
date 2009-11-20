@@ -71,10 +71,10 @@ class TestFlagImages(unittest.TestCase):
         self.assertTrue(isinstance(module, F.FlagImage))
         self.assertEqual(len(module.flags), 1)
         flag = module.flags[0]
-        self.assertTrue(isinstance(flag, F.FlagSettings))
+        self.assertTrue(isinstance(flag, cps.SettingsGroup))
         self.assertEqual(len(flag.measurement_settings), 1)
         ms = flag.measurement_settings[0]
-        self.assertTrue(isinstance(ms, F.MeasurementSettings))
+        self.assertTrue(isinstance(ms, cps.SettingsGroup))
         self.assertEqual(ms.measurement.value, "AreaShape_Area_OrigBlue")
         self.assertEqual(ms.source_choice, F.S_IMAGE)
         self.assertTrue(ms.wants_minimum.value)
@@ -87,10 +87,10 @@ class TestFlagImages(unittest.TestCase):
         self.assertTrue(isinstance(module, F.FlagImage))
         self.assertEqual(len(module.flags), 1)
         flag = module.flags[0]
-        self.assertTrue(isinstance(flag, F.FlagSettings))
+        self.assertTrue(isinstance(flag, cps.SettingsGroup))
         self.assertEqual(len(flag.measurement_settings), 1)
         ms = flag.measurement_settings[0]
-        self.assertTrue(isinstance(ms, F.MeasurementSettings))
+        self.assertTrue(isinstance(ms, cps.SettingsGroup))
         self.assertEqual(ms.measurement.value, "ImageQuality_LocalFocus_OrigBlue")
         self.assertEqual(ms.source_choice, F.S_IMAGE)
         self.assertFalse(ms.wants_minimum.value)
@@ -153,7 +153,7 @@ class TestFlagImages(unittest.TestCase):
         self.assertEqual(len(expected),module.flag_count.value)
         for flag, (feature_name, combine, measurements) \
             in zip(module.flags, expected):
-            self.assertTrue(isinstance(flag, F.FlagSettings))
+            self.assertTrue(isinstance(flag, cps.SettingsGroup))
             self.assertEqual(flag.category, "Metadata")
             self.assertEqual(flag.feature_name, feature_name)
             if combine is not None:
@@ -161,7 +161,7 @@ class TestFlagImages(unittest.TestCase):
             self.assertEqual(len(measurements), flag.measurement_count.value)
             for measurement, (measurement_name, min_value, max_value) \
                 in zip(flag.measurement_settings,measurements):
-                self.assertTrue(isinstance(measurement, F.MeasurementSettings))
+                self.assertTrue(isinstance(measurement, cps.SettingsGroup))
                 self.assertEqual(measurement.measurement, measurement_name)
                 self.assertEqual(measurement.wants_minimum.value, min_value is not None)
                 if measurement.wants_minimum.value:
@@ -195,7 +195,7 @@ class TestFlagImages(unittest.TestCase):
                                          object_measurement_name(i),
                                          np.array(object_measurements))
         flag = module.flags[0]
-        self.assertTrue(isinstance(flag, F.FlagSettings))
+        self.assertTrue(isinstance(flag, cps.SettingsGroup))
         flag.category.value = MEASUREMENT_CATEGORY
         flag.feature_name.value = MEASUREMENT_FEATURE
         module.module_num = 1
@@ -213,9 +213,9 @@ class TestFlagImages(unittest.TestCase):
     def test_02_01_positive_image_measurement(self):
         module, workspace = self.make_workspace([1],[])
         flag = module.flags[0]
-        self.assertTrue(isinstance(flag, F.FlagSettings))
+        self.assertTrue(isinstance(flag, cps.SettingsGroup))
         measurement = flag.measurement_settings[0]
-        self.assertTrue(isinstance(measurement, F.MeasurementSettings))
+        self.assertTrue(isinstance(measurement, cps.SettingsGroup))
         measurement.measurement.value = image_measurement_name(0)
         measurement.wants_minimum.value = False
         measurement.wants_maximum.value = True
@@ -229,9 +229,9 @@ class TestFlagImages(unittest.TestCase):
     def test_02_02_negative_image_measurement(self):
         module, workspace = self.make_workspace([1],[])
         flag = module.flags[0]
-        self.assertTrue(isinstance(flag, F.FlagSettings))
+        self.assertTrue(isinstance(flag, cps.SettingsGroup))
         measurement = flag.measurement_settings[0]
-        self.assertTrue(isinstance(measurement, F.MeasurementSettings))
+        self.assertTrue(isinstance(measurement, cps.SettingsGroup))
         measurement.measurement.value = image_measurement_name(0)
         measurement.wants_minimum.value = True
         measurement.minimum_value.value = .1
@@ -246,9 +246,9 @@ class TestFlagImages(unittest.TestCase):
         for case in ("minimum", "maximum"):
             module, workspace = self.make_workspace([],[[.1,.2,.3,.4]])
             flag = module.flags[0]
-            self.assertTrue(isinstance(flag, F.FlagSettings))
+            self.assertTrue(isinstance(flag, cps.SettingsGroup))
             measurement = flag.measurement_settings[0]
-            self.assertTrue(isinstance(measurement, F.MeasurementSettings))
+            self.assertTrue(isinstance(measurement, cps.SettingsGroup))
             measurement.source_choice.value = F.S_AVERAGE_OBJECT
             measurement.object_name.value = OBJECT_NAME
             measurement.measurement.value = object_measurement_name(0)
@@ -270,9 +270,9 @@ class TestFlagImages(unittest.TestCase):
         for case in ("minimum", "maximum"):
             module, workspace = self.make_workspace([],[[.1,.2,.3,.4]])
             flag = module.flags[0]
-            self.assertTrue(isinstance(flag, F.FlagSettings))
+            self.assertTrue(isinstance(flag, cps.SettingsGroup))
             measurement = flag.measurement_settings[0]
-            self.assertTrue(isinstance(measurement, F.MeasurementSettings))
+            self.assertTrue(isinstance(measurement, cps.SettingsGroup))
             measurement.source_choice.value = F.S_AVERAGE_OBJECT
             measurement.object_name.value = OBJECT_NAME
             measurement.measurement.value = object_measurement_name(0)
@@ -294,9 +294,9 @@ class TestFlagImages(unittest.TestCase):
         for case in ("minimum","maximum"):
             module, workspace = self.make_workspace([],[[.1,.2,.3,.4]])
             flag = module.flags[0]
-            self.assertTrue(isinstance(flag, F.FlagSettings))
+            self.assertTrue(isinstance(flag, cps.SettingsGroup))
             measurement = flag.measurement_settings[0]
-            self.assertTrue(isinstance(measurement, F.MeasurementSettings))
+            self.assertTrue(isinstance(measurement, cps.SettingsGroup))
             measurement.source_choice.value = F.S_ALL_OBJECTS
             measurement.object_name.value = OBJECT_NAME
             measurement.measurement.value = object_measurement_name(0)
@@ -318,9 +318,9 @@ class TestFlagImages(unittest.TestCase):
         for case in ("minimum","maximum"):
             module, workspace = self.make_workspace([],[[.1,.2,.3,.4]])
             flag = module.flags[0]
-            self.assertTrue(isinstance(flag, F.FlagSettings))
+            self.assertTrue(isinstance(flag, cps.SettingsGroup))
             measurement = flag.measurement_settings[0]
-            self.assertTrue(isinstance(measurement, F.MeasurementSettings))
+            self.assertTrue(isinstance(measurement, cps.SettingsGroup))
             measurement.source_choice.value = F.S_ALL_OBJECTS
             measurement.object_name.value = OBJECT_NAME
             measurement.measurement.value = object_measurement_name(0)
@@ -345,12 +345,12 @@ class TestFlagImages(unittest.TestCase):
                                        ((1,1),1)):
             module, workspace = self.make_workspace(measurements,[])
             flag = module.flags[0]
-            self.assertTrue(isinstance(flag, F.FlagSettings))
+            self.assertTrue(isinstance(flag, cps.SettingsGroup))
             flag.combination_choice.value = F.C_ANY
-            flag.add_measurement()
+            module.add_measurement(flag)
             for i in range(2):
                 measurement = flag.measurement_settings[i]
-                self.assertTrue(isinstance(measurement, F.MeasurementSettings))
+                self.assertTrue(isinstance(measurement, cps.SettingsGroup))
                 measurement.measurement.value = image_measurement_name(i)
                 measurement.wants_minimum.value = False
                 measurement.wants_maximum.value = True
@@ -369,12 +369,12 @@ class TestFlagImages(unittest.TestCase):
                                        ((1,1),1)):
             module, workspace = self.make_workspace(measurements,[])
             flag = module.flags[0]
-            self.assertTrue(isinstance(flag, F.FlagSettings))
+            self.assertTrue(isinstance(flag, cps.SettingsGroup))
             flag.combination_choice.value = F.C_ALL
-            flag.add_measurement()
+            module.add_measurement(flag)
             for i in range(2):
                 measurement = flag.measurement_settings[i]
-                self.assertTrue(isinstance(measurement, F.MeasurementSettings))
+                self.assertTrue(isinstance(measurement, cps.SettingsGroup))
                 measurement.measurement.value = image_measurement_name(i)
                 measurement.wants_minimum.value = False
                 measurement.wants_maximum.value = True

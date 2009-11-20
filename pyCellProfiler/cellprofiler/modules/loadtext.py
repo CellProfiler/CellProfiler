@@ -1,15 +1,65 @@
-'''loadtext.py - The LoadText module
+'''<b>LoadText</b> loads metadata to be associated with image sets.
+<hr>
+The LoadText module loads a CSV file that supplies metadata values for
+image sets, e.g. the plate name, well or treatment associated
+with a given image, and possibly even the image filename itself.
 
-CellProfiler is distributed under the GNU General Public License.
-See the accompanying file LICENSE for details.
+A CSV (or comma-separated value) file is organized into rows and
+columns. The lines of the file represent the rows (technically, each row
+is terminated by a newline character: ASCII 10). Each field in a row is
+separated by a comma. Text values may be optionally enclosed by double
+quotes.
 
-Developed by the Broad Institute
-Copyright 2003-2009
+The LoadText module uses the first row of the file as a header. The fields
+in this row provide the labels for each metadata column. Subsequent rows
+provide the values for the image set. Certain fields have special connotations
+that affect downstream processing:
 
-Please see the AUTHORS file for credits.
+<b>Labels that start with Image_FileName.</b>
+A label that starts with "Image_FileName" supplies the file name of an image.
+The image's name within CellProfiler appears afterward. For instance,
+"Image_FileName_CY3", would supply the file name for the CY3-stained image.
 
-Website: http://www.cellprofiler.org
+<b>Labels that start with Image_PathName</b>.
+A label that starts with "Image_PathName" supplies the path name of an image
+relative to the base directory. The image's name within CellProfiler appears
+afterward. For instance, "Image_PathName_CY3", would supply the path name
+for the CY3-stained image.
+
+<b>Labels that start with Metadata</b>.
+A label that starts with "Metadata" can be used to match files loaded by
+LoadImages. For instance, an experiment might require images created on
+the same day to use an illumination correction image calculated from all
+images from that day. Each row would have a "Metadata_Date" field and the
+LoadImages module might extract the Metadata_Date field from the image
+file name. The pipeline will match image sets with corresponding illumination
+correction images based on matching Metadata_Date fields.
+
+An example CSV file:
+Image_FileName_FITC, Image_PathName_FITC, Metadata_Plate, Titration_NaCl_uM
+"04923_d1.tif","2009-07-08","P-12345",750
+"51265_d1.tif","2009-07-09","P-12345",2750
+
+The first row loads the file, "2009-07-08/04923_d1.tif" for the FITC image.
+The plate metadata is 'P-12345' and the NaCl titration used in the well
+is 750 uM.
+The second row has values, "2009-07-09/51265_d1.tif", 'P-12345' and 2750 uM.
+
+The NaCl titration for the image will be recorded in the database and is
+available for modules that use numeric metadata, such as CalculateStatistics.
+
+See also <b>LoadImages</b>
 '''
+#CellProfiler is distributed under the GNU General Public License.
+#See the accompanying file LICENSE for details.
+#
+#Developed by the Broad Institute
+#Copyright 2003-2009
+#
+#Please see the AUTHORS file for credits.
+#
+#Website: http://www.cellprofiler.org
+
 __version = "$Revision$"
 
 import csv
@@ -87,109 +137,54 @@ def make_file_name_feature(image):
     return FILE_NAME+'_'+image
     
 class LoadText(cpm.CPModule):
-    '''Short description:
-The LoadText module loads metadata to be associated with image sets.
-*********************************************************************
-The LoadText module loads a CSV file that supplies metadata values for
-image sets, for instance, the plate name, well or treatment associated
-with a given image.
-
-A CSV (or comma-separated value) file is a file organized into rows and
-columns. The lines of the file represent the rows (technically, each row
-is terminated by a newline character: ASCII 10). Each field in a row is
-separated by a comma. Text values may be optionally enclosed by double
-quotes.
-
-The LoadText module uses the first row of the file as a header. The fields
-in this row provide the labels for each metadata column. Subsequent rows
-provide the values for the image set. Certain fields have special connotations
-that affect downstream processing:
-
-Labels that start with Image_FileName.
-A label that starts with "Image_FileName" supplies the file name of an image.
-The image's name within CellProfiler appears afterward. For instance,
-"Image_FileName_CY3", would supply the file name for the CY3-stained image.
-
-Labels that start with Image_PathName.
-A label that starts with "Image_PathName" supplies the path name of an image
-relative to the base directory. The image's name within CellProfiler appears
-afterward. For instance, "Image_PathName_CY3", would supply the path name
-for the CY3-stained image.
-
-Labels that start with Metadata.
-A label that starts with "Metadata" can be used to match files loaded by
-LoadImages. For instance, an experiment might require images created on
-the same day to use an illumination correction image calculated from all
-images from that day. Each row would have a "Metadata_Date" field and the
-LoadImages module might extract the Metadata_Date field from the image
-file name. The pipeline will match image sets with corresponding illumination
-correction images based on matching Metadata_Date fields.
-
-An example CSV file:
-Image_FileName_FITC, Image_PathName_FITC, Metadata_Plate, Titration_NaCl_uM
-"04923_d1.tif","2009-07-08","P-12345",750
-"51265_d1.tif","2009-07-09","P-12345",2750
-
-The first row loads the file, "2009-07-08/04923_d1.tif" for the FITC image.
-The plate metadata is 'P-12345' and the NaCl titration used in the well
-is 750 uM.
-The second row has values, "2009-07-09/51265_d1.tif", 'P-12345' and 2750 uM.
-
-The NaCl titration for the image will be recorded in the database and is
-available for modules that use numeric metadata, such as CalculateStatistics.
-
-Settings:
-Where is the CSV file located?
-This is the folder that contains the CSV file. Choose "Default Image Directory"
-if the CSV file is in the default image directory. Choose "Default Output
-Directory" if the CSV file is in the default output directory. Choose
-"Elsewhere..." to specify a custom directory name. Custom directory names
-that start with "." are relative to the default image directory. Names that
-start with "&" are relative to the default output directory.
-
-What is the name of the CSV file?
-This is the file name of the CSV file containing the data.
-
-Load images from CSV data?
-Check this box to have LoadText load images using the Image_FileName and,
-if it appears in the CSV file, the Image_PathName fields.
-
-Where are the images located?
-This is the base directory used for paths to images. Path names to image
-files are relative to this directory. Choose "Default Image Directory" to
-make the default image directory the base directory. Choose "Default Output
-Directory" to make the default output directory the base directory. Choose
-"Elsewhere..." to specify a custom directory name.
-
-Do you want to specify a range of rows to be processed?
-Check this box if you want to process only some of the rows in the CSV file.
-Rows are numbered starting at 1. LoadText will process up to and including
-the end row.
-This option can be used to break the image sets in an experiment into groups
-that can be processed by different nodes in a cluster.
-'''
-
+    
     module_name = "LoadText"
     category = 'File Processing'
     variable_revision_number = 2
 
     def create_settings(self):
         self.uuid = uuid.uuid4()
-        self.csv_directory_choice = cps.Choice("Where is the CSV file located?",
-                                               DIR_ALL)
+        self.csv_directory_choice = cps.Choice("Where is the CSV file located?", DIR_ALL, doc="""
+            This is the folder that contains the CSV file. Choose "Default Image Directory"
+            if the CSV file is in the default image directory. Choose "Default Output
+            Directory" if the CSV file is in the default output directory. Choose
+            "Elsewhere..." to specify a custom directory name. 
+            
+            Custom directory names that start with "." are relative to the default image directory. Names that
+            start with "&" are relative to the default output directory.
+            For example '&/../My_directory' looks in a directory called 'My_directory'
+            at the same level as the output directory""")
         self.csv_custom_directory = cps.DirectoryPath("What is the name of the CSV file's directory?",
                                                       ".")
         self.csv_file_name = cps.FilenameText("What is the name of the CSV file?",
-                                              "None")
-        self.wants_images = cps.Binary("Load images from CSV data?", True)
+                                              "None",doc="""
+            This is the file name of the CSV file containing the data.""")
+        self.wants_images = cps.Binary("Load images from CSV data?", True, doc="""
+            Check this box to have LoadText load images using the Image_FileName field and,
+            if it appears in the CSV file, the Image_PathName fields.""")
         self.image_directory_choice = cps.Choice("Where are the images located?",
-                                                 DIR_ALL)
+                                                 DIR_ALL, doc="""
+            This is the base directory used for paths to images. Path names to image
+            files are relative to this directory. Choose "Default Image Directory" to
+            make the default image directory the base directory. Choose "Default Output
+            Directory" to make the default output directory the base directory. Choose
+            "Elsewhere..." to specify a custom directory name.
+            
+            Custom directory names that start with "." are relative to the default image directory. Names that
+            start with "&" are relative to the default output directory.
+            For example '&/../My_directory' looks in a directory called 'My_directory'
+            at the same level as the output directory""")
         self.image_custom_directory = cps.DirectoryPath("What is the name of the image directory?",
                                                         ".")
         self.wants_image_groupings = cps.Binary("Do you want to group images by metadata?", False)
         self.metadata_fields = cps.MultiChoice("What metadata fields should be used to group?", None)
         self.wants_rows = cps.Binary("Do you want to specify a range of rows to be processed?",
-                                     False)
+                                     False, doc="""
+            Check this box if you want to process a subset of the rows in the CSV file.
+            Rows are numbered starting at 1 (but do not count the header line). 
+            LoadText will process up to and including the end row.
+            This option can be used to break the image sets in an experiment into groups
+            that can be processed by different nodes on a computing cluster.""")
         self.row_range = cps.IntegerRange("Enter the row numbers of the first and last row to be processed",
                                           (1,100000),1)
 

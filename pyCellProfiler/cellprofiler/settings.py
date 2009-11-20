@@ -1300,7 +1300,8 @@ class SettingsGroup(object):
         '''Return a list of the settings in the group, in the order
         they were added to the group.
         '''
-        return self.settings
+        # return a copy
+        return list(self.settings)
         
 
 class ChangeSettingEvent(object):

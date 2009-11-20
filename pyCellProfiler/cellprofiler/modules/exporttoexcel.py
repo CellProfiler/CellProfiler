@@ -521,7 +521,7 @@ class ExportToExcel(cpm.CPModule):
 def is_object_group(group):
     """True if the group's object name is not one of the static names"""
     return not group[OG_OBJECT_NAME].value in (IMAGE,EXPERIMENT)
-# XXX needs to use cps.SettingsGroup? or is this a special case  
+
 class EEObjectNameSubscriber(cps.ObjectNameSubscriber):
     """ExportToExcel needs to prepend "Image" and "Experiment" to the list of objects
     

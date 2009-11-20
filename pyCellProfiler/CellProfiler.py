@@ -94,6 +94,7 @@ if (not hasattr(sys, 'frozen')) and options.build_extensions:
     if sys.platform == 'win32':
         import cellprofiler.ffmpeg.setup
     import cellprofiler.utilities.setup
+    import contrib.setup
     from distutils.dep_util import newer_group
     #
     # Check for dependencies and compile if necessary
@@ -101,7 +102,9 @@ if (not hasattr(sys, 'frozen')) and options.build_extensions:
     compile_scripts = [(os.path.join('cellprofiler','cpmath','setup.py'),
                         cellprofiler.cpmath.setup),
                        (os.path.join('cellprofiler','utilities','setup.py'),
-                        cellprofiler.utilities.setup)]
+                        cellprofiler.utilities.setup),
+                       (os.path.join('contrib','setup.py'),
+                        contrib.setup)]
     if sys.platform == 'win32':
         compile_scripts += [(os.path.join('cellprofiler','ffmpeg','setup.py'),
                              cellprofiler.ffmpeg.setup)]

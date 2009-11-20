@@ -1,6 +1,6 @@
-'''<b>Align</b>: Aligns images relative to each other, for example to correct 
-   shifts in the optical path of a microscope in each channel of a multi-channel 
-   set of images.
+'''<b>Align</b> aligns images relative to each other, for example to correct 
+shifts in the optical path of a microscope in each channel of a multi-channel 
+set of images.
 <hr>
 
 For two or more input images, this module determines the optimal alignment 
@@ -9,7 +9,6 @@ intensities in one channel based on objects identified in another channel,
 for example. Alignment is often needed when the microscope is not perfectly 
 calibrated. It can also be useful to align images in a time-lapse series of 
 images.
-
 
 Some important notes for proper use of this module:
 <ul> 
@@ -64,30 +63,37 @@ class Align(cpm.CPModule):
     variable_revision_number = 1
 
     def create_settings(self):
-        self.first_input_image = cps.ImageNameSubscriber("What is the name of the first image to align?",
-                                                         "None")
-        self.first_output_image = cps.ImageNameProvider("What do you want to call the aligned first image?",
-                                                        "AlignedRed")
+        self.first_input_image = cps.ImageNameSubscriber("Select the first input image",
+                                                         "None",doc="""
+                                                         What is the name of the first image to align?""")
+        self.first_output_image = cps.ImageNameProvider("Name the first output image",
+                                                        "AlignedRed",doc="""
+                                                        What do you want to call the aligned first image?""")
         self.separator_1 = cps.Divider(line=False)
-        self.second_input_image = cps.ImageNameSubscriber("What is the name of the second image to align?",
-                                                          "None")
-        self.second_output_image = cps.ImageNameProvider("What do you want to call the aligned second image?",
-                                                         "AlignedGreen")
+        self.second_input_image = cps.ImageNameSubscriber("Select the second input image",
+                                                          "None",doc="""
+                                                          What is the name of the second image to align?""")
+        self.second_output_image = cps.ImageNameProvider("Name the second output image",
+                                                         "AlignedGreen",doc="""
+                                                         What do you want to call the aligned second image?""")
         self.separator_2 = cps.Divider(line=False)
         self.additional_images = []
         self.add_button = cps.DoSomething("Add another image","Add",
                                           self.add_image)
-        self.alignment_method = cps.Choice("Which alignment method would you like to use?",
+        self.alignment_method = cps.Choice("Select the alignment method",
                                            M_ALL, doc='''
-             <ul> <li> Mutual Information method: With this method, alignment works whether the 
+             Which alignment method would you like to use? Two options are available:<br>
+             <ul>
+             <li><i>Mutual Information method:</i> With this method, alignment works whether the 
              images are correlated (bright in one = bright in the other) or 
              anti-correlated (bright in one = dim in the other). </li>
-             <li> Normalized Cross Correlation method: With this method, alignment works only 
+             <li><i>Normalized Cross Correlation method:</i> With this method, alignment works only 
              when the images are correlated (bright in one = bright in the 
              other). When using the cross correlation method, the second 
              image should serve as a template and be smaller than the first 
-             image selected.</li></ul>''')
-        self.wants_cropping = cps.Binary("Crop all images to the size of the smallest?",
+             image selected.</li>
+             </ul>''')
+        self.wants_cropping = cps.Binary("Crop output mages to the smallest input image size?",
                                          True, doc='''
              If you select this option, all output images are cropped to the 
              size of the smallest image after alignment. If not, the unaligned 
@@ -97,14 +103,25 @@ class Align(cpm.CPModule):
         '''Add an image + associated questions and buttons'''
         group = cps.SettingsGroup()
         group.append("input_image_name", 
-                     cps.ImageNameSubscriber("What is the name of the additional image to align?",
-                                             "None"))
+                     cps.ImageNameSubscriber("Select the additional image?",
+                                            "None",doc="""
+                                            What is the name of the additional image to align?"""))
         group.append("output_image_name",
-                     cps.ImageNameProvider("What do you want to call the aligned image?",
-                                           "AlignedBlue"))
+                     cps.ImageNameProvider("Name the output image",
+                                            "AlignedBlue",doc="""
+                                            What do you want to call the aligned image?"""))
         group.append("align_choice",
-                     cps.Choice("Do you want to align this image similarly to the second one or do you want to calculate a separate alignment to the first image?",
-                                [A_SIMILARLY, A_SEPARATELY]))
+                     cps.Choice("Select how the alignment is to be applied",
+                                               [A_SIMILARLY, A_SEPARATELY],doc="""
+                                               Do you want to align this image similarly to the second one or do you 
+                                               want to calculate a separate alignment to the first image?<br>
+                                               <ul>
+                                               <li><i>Similarly:</i> The same alignment measurements obtained from
+                                               the first two input images are applied to this additional image.</li>
+                                               <li><i>Separately:</i> A new set of alignment measurements are
+                                               calculated for this additional image using the alignment method
+                                               specified with respect to the first input image.</li>
+                                               </ul>"""))
         group.append("remover", cps.RemoveSettingButton("", "Remove above image", self.additional_images, group))
         group.append("divider", cps.Divider(line=False))
         self.additional_images.append(group)

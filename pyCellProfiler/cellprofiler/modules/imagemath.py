@@ -1,27 +1,13 @@
 '''<b>Image Math<b/> performs simple mathematical operations on image intensities.
 <hr>
-<ul>
 ImageMath can perform addition, subtraction, multiplication, division, or averaging
-of two or more images, as well as inversion, log transform, or scaling by 
-a constant for individual images.
+of two or more images' intensities, as well as inversion, log transform, or scaling by 
+a constant for individual image intensities.
 
-<li><i>Average</i> calculates the mean intensity of the images loaded in the module.  
-This is equivalent to the "add" option divided by the number of images loaded 
-by this module.  If you would like to average many images (all of the images in 
-an entire pipeline, i.e. across cycles), please use the CorrectIllumination_Calculate module 
-and choose the 'All' (vs. 'Each') option.</li>
-
-<li><i>Invert</i> subtracts the image intensities from 1. This makes the darkest
-color the brightest and vice-versa.</li>
-
-<li><i>Multiply factors</i> The final image may have a substantially different range of pixel
+<i>Multiply factors</i> The final image may have a substantially different range of pixel
 intensities than the originals, so each image can be multiplied by a 
-factor prior to the operation. This factor can be any real number.</li>
-
-<li><i>Do you want values in the image to be set to zero/one?</i>
-Values outside the range 0 to 1 might not be handled well by other
-modules. Here, you have the option of setting negative values to 0, and values greater than 1 to a maximum value of 1.
-See the Rescale Intensity module for more scaling options.</li>
+factor prior to the operation. This factor can be any real number.  
+See the Rescale Intensity module for more scaling options.
 
 See also SubtractBackground, RescaleIntensity, CorrectIllumination_Calculate.
 '''
@@ -79,13 +65,36 @@ class ImageMath(cpm.CPModule):
         # other settings
         self.operation = cps.Choice("Operation", 
                                     [O_ADD, O_SUBTRACT, O_MULTIPLY, O_DIVIDE, O_INVERT, O_LOG_TRANSFORM, O_AVERAGE, O_NONE], doc=
-                                    """What operation would you like performed?""")
+            """What operation would you like performed?
+                        
+            <ul>
+            <li><i>Subtract</i> subtracts the second image from the first.
+            
+            <li><i>Divide </i> divides the first image by the second.
+            
+            <li><i>Average</i> calculates the mean intensity of the images loaded in the module.  
+            This is equivalent to the "add" option divided by the number of images loaded 
+            by this module.  If you would like to average many images (all of the images in 
+            an entire pipeline, i.e. across cycles), please use the CorrectIllumination_Calculate module 
+            and choose the 'All' (vs. 'Each') option.</li>
+            
+            <li><i>Invert</i> subtracts the image intensities from 1. This makes the darkest
+            color the brightest and vice-versa.</li>
+
+            <i>None</i> is useful if you want to add, subtract, or exponentiate your image by a constant.
+            
+            <li> Note that <i>Invert</i>, <i>Log Transform</i>, and <i>None</i> operate only on a single image.
+            </ul>""")
         self.divider_top = cps.Divider(line=False)
         self.exponent = cps.Float("Raise to exponent", 1, doc="""Enter an exponent to raise the result to *after* the chosen operation""")
         self.after_factor = cps.Float("Multiply by", 1, doc="""Enter a factor to multiply the result by *after* the chosen operation""")
         self.addend = cps.Float("Add to result", 0, doc ="""Enter a number to add to the result *after* the chosen operation""")
-        self.truncate_low = cps.Binary("Set values<0 to 0?", True, doc="""Do you want negative values in the image to be set to zero?""")
-        self.truncate_high = cps.Binary("Set values>1 to 1?", True, doc ="""Do you want values greater than one to be set to one?""")
+        self.truncate_low = cps.Binary("Set values less than 0 equal to 0?", True, doc="""Do you want negative values to be set to zero?
+            Values outside the range 0 to 1 might not be handled well by other modules. 
+            Here, you have the option of setting negative values to 0.""")
+        self.truncate_high = cps.Binary("Set values greater than 1 equal to 1?", True, doc ="""Do you want values greater than one to be set to one?
+            Values outside the range 0 to 1 might not be handled well by other modules. 
+            Here, you have the option of setting values greater than 1 to a maximum value of 1.""")
         self.output_image_name = cps.ImageNameProvider("Name the output image", "ImageAfterMath", doc="""What do you want to call the resulting image?""")
         self.add_button = cps.DoSomething("Add another image","Add image", self.add_image, True)
         self.divider_bottom = cps.Divider(line=False)

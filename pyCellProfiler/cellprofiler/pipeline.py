@@ -10,6 +10,8 @@ Please see the AUTHORS file for credits.
 
 Website: http://www.cellprofiler.org
 """
+from __future__ import with_statement
+
 __version = "$Revision$"
 
 import hashlib
@@ -436,139 +438,141 @@ class Pipeline(object):
         
         Run the pipeline, returning the measurements made
         """
-        image_set_list = self.prepare_run(frame)
-        if image_set_list == None:
-            self.end_run()            
-            return
-        
-        keys, groupings = self.get_groupings(image_set_list)
-        if grouping is not None:
-            for key in grouping.keys():
-                if key not in keys:
-                    raise ValueError("The grouping key, %s, is not in the list of keys that specify a group: %s"%
-                                     (key, keys))
-            for key in keys:
-                if key not in grouping.keys():
-                    raise ValueError("The key, %s, is missing from the list of keys that specify a group: %s"%
-                                     (key, keys))
-        measurements = None
-        first_set = True
-        
-        for grouping_keys, image_numbers in groupings:
-            #
-            # Loop over groups
-            #
-            match = True
-            for key in keys:
-                if grouping is not None and grouping[key] != grouping_keys[key]:
-                    match = False
-                    break
-            if not match:
-                continue
-            prepare_group_has_run = False
-            for image_number in image_numbers:
+        with self.prepared_run(self, frame) as image_set_list:
+            if image_set_list == None:
+                return
+
+            keys, groupings = self.get_groupings(image_set_list)
+            if grouping is not None:
+                for key in grouping.keys():
+                    if key not in keys:
+                        raise ValueError("The grouping key, %s, is not in the list of keys that specify a group: %s"%
+                                         (key, keys))
+                for key in keys:
+                    if key not in grouping.keys():
+                        raise ValueError("The key, %s, is missing from the list of keys that specify a group: %s"%
+                                         (key, keys))
+            measurements = None
+            first_set = True
+
+            for grouping_keys, image_numbers in groupings:
                 #
-                # Loop over image sets within groups
+                # Loop over groups
                 #
-                if image_number < image_set_start:
-                    continue
-                if image_set_end is not None and image_number > image_set_end:
-                    continue
-                if not prepare_group_has_run:
-                    if not self.prepare_group(image_set_list, 
-                                              grouping_keys,
-                                              image_numbers):
-                        self.end_run()
-                        return
-                    prepare_group_has_run = True
-                if first_set:
-                    measurements = cpmeas.Measurements(
-                        image_set_start=image_number-1)
-                else:
-                    measurements.next_image_set(image_number)
-                measurements.add_image_measurement(IMAGE_NUMBER, image_number)
-                numberof_windows = 0;
-                slot_number = 0
-                object_set = cellprofiler.objects.ObjectSet()
-                image_set = image_set_list.get_image_set(image_number-1)
-                outlines = {}
-                should_write_measurements = True
-                for module in self.modules():
-                    gc.collect()
-                    if module.should_stop_writing_measurements():
-                        should_write_measurements = False
-                    else:
-                        module_error_measurement = ('ModuleError_%02d%s' %
-                                                    (module.module_num,
-                                                     module.module_name))
-                        execution_time_measurement = ('ExecutionTime_%02d%s' %
-                                                      (module.module_num,
-                                                       module.module_name))
-                    failure = 1
-                    try:
-                        frame_if_shown = frame if module.show_frame else None
-                        workspace = cpw.Workspace(self,
-                                                  module,
-                                                  image_set,
-                                                  object_set,
-                                                  measurements,
-                                                  image_set_list,
-                                                  frame_if_shown,
-                                                  outlines = outlines)
-                        start_time = datetime.datetime.now()
-                        t0 = sum(os.times()[:-1])
-                        module.run(workspace)
-                        t1 = sum(os.times()[:-1])
-                        delta_sec = max(0,t1-t0)
-                        print ("%s: Image # %d, module %s # %d: %.2f sec" %
-                               (start_time.ctime(), image_number, 
-                                module.module_name, module.module_num, 
-                                delta_sec))
-                        workspace.refresh()
-                        failure = 0
-                    except Exception,instance:
-                        traceback.print_exc()
-                        event = RunExceptionEvent(instance,module)
-                        self.notify_listeners(event)
-                        if event.cancel_run:
-                            self.end_run()                            
-                            return
-                        
-                    # Paradox: ExportToDatabase must write these columns in order 
-                    #  to complete, but in order to do so, the module needs to 
-                    #  have already completed. So we don't report them for it.
-                    if (module.module_name != 'Restart' and 
-                        should_write_measurements):
-                        measurements.add_measurement('Image',
-                                                     module_error_measurement,
-                                                     np.array([failure]));
-                        measurements.add_measurement('Image',
-                                                     execution_time_measurement,
-                                                     np.array([delta_sec]))
-                    yield measurements
-                    while (workspace.disposition == cpw.DISPOSITION_PAUSE and
-                           frame is not None):
-                        yield measurements
-                    if workspace.disposition == cpw.DISPOSITION_SKIP:
+                match = True
+                for key in keys:
+                    if grouping is not None and grouping[key] != grouping_keys[key]:
+                        match = False
                         break
-                    elif workspace.disposition == cpw.DISPOSITION_CANCEL:
+                if not match:
+                    continue
+                prepare_group_has_run = False
+                for image_number in image_numbers:
+                    #
+                    # Loop over image sets within groups
+                    #
+                    if image_number < image_set_start:
+                        continue
+                    if image_set_end is not None and image_number > image_set_end:
+                        continue
+                    if not prepare_group_has_run:
+                        if not self.prepare_group(image_set_list, 
+                                                  grouping_keys,
+                                                  image_numbers):
+                            return
+                        prepare_group_has_run = True
+                    if first_set:
+                        measurements = cpmeas.Measurements(
+                            image_set_start=image_number-1)
+                    else:
+                        measurements.next_image_set(image_number)
+                    measurements.add_image_measurement(IMAGE_NUMBER, image_number)
+                    numberof_windows = 0;
+                    slot_number = 0
+                    object_set = cellprofiler.objects.ObjectSet()
+                    image_set = image_set_list.get_image_set(image_number-1)
+                    outlines = {}
+                    should_write_measurements = True
+                    for module in self.modules():
+                        gc.collect()
+                        if module.should_stop_writing_measurements():
+                            should_write_measurements = False
+                        else:
+                            module_error_measurement = ('ModuleError_%02d%s' %
+                                                        (module.module_num,
+                                                         module.module_name))
+                            execution_time_measurement = ('ExecutionTime_%02d%s' %
+                                                          (module.module_num,
+                                                           module.module_name))
+                        failure = 1
+                        try:
+                            frame_if_shown = frame if module.show_frame else None
+                            workspace = cpw.Workspace(self,
+                                                      module,
+                                                      image_set,
+                                                      object_set,
+                                                      measurements,
+                                                      image_set_list,
+                                                      frame_if_shown,
+                                                      outlines = outlines)
+                            start_time = datetime.datetime.now()
+                            t0 = sum(os.times()[:-1])
+                            module.run(workspace)
+                            t1 = sum(os.times()[:-1])
+                            delta_sec = max(0,t1-t0)
+                            print ("%s: Image # %d, module %s # %d: %.2f sec" %
+                                   (start_time.ctime(), image_number, 
+                                    module.module_name, module.module_num, 
+                                    delta_sec))
+                            workspace.refresh()
+                            failure = 0
+                        except Exception,instance:
+                            traceback.print_exc()
+                            event = RunExceptionEvent(instance,module)
+                            self.notify_listeners(event)
+                            if event.cancel_run:
+                                return
+
+                        # Paradox: ExportToDatabase must write these columns in order 
+                        #  to complete, but in order to do so, the module needs to 
+                        #  have already completed. So we don't report them for it.
+                        if (module.module_name != 'Restart' and 
+                            should_write_measurements):
+                            measurements.add_measurement('Image',
+                                                         module_error_measurement,
+                                                         np.array([failure]));
+                            measurements.add_measurement('Image',
+                                                         execution_time_measurement,
+                                                         np.array([delta_sec]))
+                        yield measurements
+                        while (workspace.disposition == cpw.DISPOSITION_PAUSE and
+                               frame is not None):
+                            yield measurements
+                        if workspace.disposition == cpw.DISPOSITION_SKIP:
+                            break
+                        elif workspace.disposition == cpw.DISPOSITION_CANCEL:
+                            measurements.add_experiment_measurement(EXIT_STATUS,
+                                                                    "Failure")
+                            return
+                    first_set = False
+                    image_set_list.purge_image_set(image_number-1)
+                if prepare_group_has_run:
+                    if not self.post_group(workspace, grouping_keys):
                         measurements.add_experiment_measurement(EXIT_STATUS,
                                                                 "Failure")
-                        self.end_run()
                         return
-                first_set = False
-                image_set_list.purge_image_set(image_number-1)
-            if prepare_group_has_run:
-                if not self.post_group(workspace, grouping_keys):
-                    measurements.add_experiment_measurement(EXIT_STATUS,
-                                                            "Failure")
-                    self.end_run()
-                    return
-        
-        measurements.add_experiment_measurement(EXIT_STATUS, "Complete")
-        self.post_run(measurements, image_set_list, frame)
-        self.end_run()
-        return
+
+            measurements.add_experiment_measurement(EXIT_STATUS, "Complete")
+            self.post_run(measurements, image_set_list, frame)
+
+    class prepared_run:
+        def __init__(self, pipeline, frame):
+            self.pipeline = pipeline
+            self.frame = frame
+        def __enter__(self):
+            return self.pipeline.prepare_run(self.frame)
+        def __exit__(self, type, value, traceback):
+            self.pipeline.end_run()
     
     def end_run(self):
         '''Tell everyone that a run is ending'''

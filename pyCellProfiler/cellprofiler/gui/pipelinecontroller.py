@@ -29,8 +29,6 @@ from cellprofiler.gui.addmoduleframe import AddModuleFrame
 import cellprofiler.gui.moduleview
 from cellprofiler.gui.movieslider import EVT_TAKE_STEP
 
-'''Use a timer (wx.CallLater) to schedule running the pipeline in the UI'''
-USE_TIMER = False
 
 class PipelineController:
     """Controls the pipeline through the UI
@@ -74,8 +72,7 @@ class PipelineController:
         
         wx.EVT_CLOSE(frame, self.__on_close)
         
-        if not USE_TIMER:
-            wx.EVT_IDLE(frame,self.on_idle)
+        wx.EVT_IDLE(frame,self.on_idle)
     
     def attach_to_pipeline_list_view(self,pipeline_list_view, movie_viewer):
         """Glom onto events from the list box with all of the module names in it
@@ -426,8 +423,7 @@ class PipelineController:
             self.__output_path = output_path
             self.__frame.preferences_view.on_analyze_images()
             self.__running_pipeline = self.__pipeline.run_with_yield(self.__frame)
-            if USE_TIMER:
-                wx.CallLater(1,self.on_idle, None)
+            wx.CallLater(1,self.on_idle, None)
     
     def on_frame_menu_open(self, event):
         pass
@@ -697,10 +693,7 @@ class PipelineController:
             try:
                 self.__running_pipeline.next()
                 self.__pipeline_measurements = self.__running_pipeline.next()
-                if USE_TIMER:
-                    wx.CallLater(1,self.on_idle, None)
-                else:
-                    event.RequestMore()
+                event.RequestMore()
             except StopIteration:
                 self.stop_running()
                 if self.__pipeline_measurements != None:

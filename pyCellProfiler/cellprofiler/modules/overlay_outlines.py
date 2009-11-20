@@ -21,7 +21,6 @@ See also <b>IdentifyPrimAutomatic, IdentifySecondary, IdentifyTertiarySubregion<
 __version__="$Revision$"
 
 import numpy as np
-import uuid
 
 import cellprofiler.cpmodule as cpm
 import cellprofiler.cpimage as cpi
@@ -78,6 +77,7 @@ class OverlayOutlines(cpm.CPModule):
             up more space in memory. Grayscale outlines are displayed with
             either the highest possible intensity or the same intensity
             as the brightest pixel in the image.""")
+        self.spacer = cps.Divider(line=False)
         self.max_type = cps.Choice(
             "Select method to determine brightness of outlines:",
             [MAX_IMAGE, MAX_POSSIBLE],
@@ -93,45 +93,28 @@ class OverlayOutlines(cpm.CPModule):
         self.add_outline_button = cps.DoSomething("Add another outline","Add", self.add_outline)
 
     def add_outline(self):
-        # XXX needs to use cps.SettingsGroup
-        class OutlineSettings(object):
-            '''The settings for a single outline'''
-            def __init__(self, outlines):
-                self.key = uuid.uuid4()
-                def remove(key = self.key, outlines = outlines):
-                    index =  [x.key for x in outlines].index(key)
-                    del outlines[index]
-                
-                self.outline_name = cps.OutlineNameSubscriber(
-                    "Select outlines to display:",
-                    "None", doc="""
+        group = cps.SettingsGroup()
+        group.append("outline_name",
+                     cps.OutlineNameSubscriber(
+                "Select outlines to display:",
+                "None", doc="""
                     Choose an outline from a previous <b>IdentifyPrimAutomatic</b>,
                     <b>IdentifySecondary</b> or <b>IdentifyTertiarySubregion</b>
                     module. Each of the Identify modules has a checkbox that
                     determines whether the outlines are saved. If you check this,
                     you'll be asked to supply a name for the outline; you
                     can then select that name here.
-                    """)
-                default_color = (COLOR_ORDER[len(outlines)]
-                                 if len(outlines) < len(COLOR_ORDER)
-                                 else COLOR_ORDER[0])
-                self.color = cps.Choice(
-                    "Select outline color:",
-                    COLORS.keys(), default_color)
-                self.remove_button = cps.DoSomething("Remove the above outline",
-                                                     "Remove",
-                                                     remove)
-            
-            def settings(self):
-                return [self.outline_name, self.color]
+                    """))
+        default_color = (COLOR_ORDER[len(self.outlines)]
+                         if len(self.outlines) < len(COLOR_ORDER)
+                         else COLOR_ORDER[0])
+        group.append("color", cps.Choice(
+                "Select outline color:",
+                COLORS.keys(), default_color))
+        group.append("remover", cps.RemoveSettingButton("", "Remove this outline", self.outlines, group))
+        group.append("spacer", cps.Divider(line=False))
+        self.outlines.append(group)
 
-            def visible_settings(self, is_color):
-                if is_color:
-                    return [self.outline_name, self.color, self.remove_button]
-                else:
-                    return [self.outline_name, self.remove_button]
-        self.outlines.append(OutlineSettings(self.outlines))
-    
     def prepare_settings(self, setting_values):
         assert (len(setting_values) - 5) % 2 == 0
         self.outlines = []
@@ -142,20 +125,22 @@ class OverlayOutlines(cpm.CPModule):
         result = [self.blank_image, self.image_name, self.output_image_name,
                   self.wants_color, self.max_type]
         for outline in self.outlines:
-            result += outline.settings()
+            result += [outline.outline_name, outline.color]
         return result
 
     def visible_settings(self):
         result = [self.blank_image]
         if not self.blank_image.value:
             result += [self.image_name]
-        result += [self.output_image_name, self.wants_color]
+        result += [self.output_image_name, self.wants_color, self.spacer]
         if (self.wants_color.value == WANTS_GRAYSCALE and not
             self.blank_image.value):
             result += [self.max_type]
         for outline in self.outlines:
-            result += outline.visible_settings(self.wants_color.value ==
-                                               WANTS_COLOR)
+            if self.wants_color.value == WANTS_COLOR:
+                result += outline.unpack_group()
+            else:
+                result += [outline.outline_name, outline.remover, outline.spacer]
         result += [self.add_outline_button]
         return result
 

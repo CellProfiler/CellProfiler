@@ -54,11 +54,11 @@ class FindEdges(cpm.CPModule):
                                                   doc = '''What did you call the image in which you want to find the edges?''')
         self.output_image_name = cps.ImageNameProvider("Name the output image","EdgedImage",
                                                     doc = '''What do you want to call the image with edges identified?''')
-        self.wants_automatic_threshold = cps.Binary("Do you want to automatically calculate the threshold?", True,
+        self.wants_automatic_threshold = cps.Binary("Automatically calculate the threshold?", True,
                                                     doc = '''Automatic thresholding is done using a three-
                                                     category Otsu algorithm performed on the Sobel transform of the image.''')
-        self.manual_threshold = cps.Float("Enter an absolute threshold between 0 and 1:",.2,0,1, doc = '''Alternatively,
-                                                    you can pick a threshold.''')
+        self.manual_threshold = cps.Float("Enter an absolute threshold between:",.2,0,1, doc = '''You can enter a threshold
+        between 0 and 1.''')
         self.threshold_adjustment_factor = cps.Float("Enter the threshold adjustment factor (1 = no adjustment)",1)
         self.method = cps.Choice("Choose an edge-finding method:",
                                  [M_SOBEL, M_PREWITT, M_ROBERTS,
@@ -80,13 +80,13 @@ class FindEdges(cpm.CPModule):
                                    edges, and includes the weak edges in the output only if they are connected to 
                                    strong edges. This method is therefore less likely than the others to be fooled 
                                    by noise, and more likely to detect true weak edges.</li></ul>''')
-        self.direction = cps.Choice("Which edges do you want to find?",
+        self.direction = cps.Choice("Select edges to find:",
                                     [ E_ALL, E_HORIZONTAL, E_VERTICAL], doc = '''This is the direction of the edges
                                     are you are identifying in the image (predominantly horizontal, predominantly vertical,
                                     or both).''')
-        self.wants_automatic_sigma = cps.Binary("Do you want the Gaussian's sigma calculated automatically?", True)
+        self.wants_automatic_sigma = cps.Binary("Calculate Gaussian's sigma automatically?", True)
         self.sigma = cps.Float("Enter the value for the Gaussian's sigma:", 10)
-        self.wants_automatic_low_threshold = cps.Binary("Do you want the value for the low threshold to be calculated automatically?", True)
+        self.wants_automatic_low_threshold = cps.Binary("Calculate value for low threshold automatically?", True)
         self.low_threshold = cps.Float("Enter the value for the low threshold",.1,0,1)
 
     def settings(self):

@@ -54,13 +54,13 @@ class FlipAndRotate(cpm.CPModule):
     
     def create_settings(self):
         self.image_name = cps.ImageNameSubscriber(
-            "What did you call the image you want to transform?", "None")
+            "Select input image:", "None")
         self.output_name = cps.ImageNameProvider(
-            "What do you want to call the transformed image?", 
+            "Name output image:", 
             "FlippedOrigBlue")
-        self.flip_choice = cps.Choice("How do you want to flip the image?",
-                                      FLIP_ALL)
-        self.rotate_choice = cps.Choice("How do you want to rotate the image?",
+        self.flip_choice = cps.Choice("Select method to flip image:",
+                                      FLIP_ALL, doc = """How do you want to flip the image?""")
+        self.rotate_choice = cps.Choice("Select method to rotate image:",
                                         ROTATE_ALL, doc='''
              <ul> <li> Angle - you can provide the numerical angle by which the 
              image should be rotated.</li>
@@ -75,29 +75,28 @@ class FlipAndRotate(cpm.CPModule):
              </ul>''')
         
         self.wants_crop = cps.Binary(
-            "Would you like to crop away the rotated edges?", True, doc=
+            "Crop away the rotated edges?", True, doc=
              '''When an image is rotated, there will be black space at the 
              corners/edges unless you choose to crop away the incomplete rows 
              and columns of the image. This cropping will produce an image that 
              is not the exact same size as the original, which may affect 
              downstream modules.''')
                 
-        self.how_often = cps.Choice(
-            "Do you want to determine the amount of rotation for each image "
+        self.how_often = cps.Choice("Calculate rotation:",
+            IO_ALL, doc = "Do you want to determine the amount of rotation for each image "
             "individually as you cycle through, or do you want to define it "
-            "only once (on the first image) and then apply it to all images?",
-            IO_ALL)
+            "only once (on the first image) and then apply it to all images?")
         self.first_pixel = cps.Coordinates(
-            "What are the coordinates of the top or left pixel?", (0,0))
+            "Enter coordinates of the top or left pixel?", (0,0))
         self.second_pixel = cps.Coordinates(
-            "What are the coordinates of the bottom or right pixel?", (0,100))
+            "Enter the coordinates of the bottom or right pixel?", (0,100))
         self.horiz_or_vert = cps.Choice(
-            "Are the points horizontally or vertically aligned?",
-            C_ALL)
+            "Images are aligned:",
+            C_ALL, doc = """Are the points horizontally or vertically aligned?""")
         self.angle = cps.Float(
-            "By what angle would you like to rotate the image "
-            "(in degrees, positive = counterclockwise and "
-            "negative = clockwise)?", 0)
+            "Enter angle of rotation:", 0, doc = """By what angle would you like to rotate the image 
+            (in degrees, positive = counterclockwise and 
+            negative = clockwise)?""")
     
     def settings(self):
         return [self.image_name, self.output_name, self.flip_choice,

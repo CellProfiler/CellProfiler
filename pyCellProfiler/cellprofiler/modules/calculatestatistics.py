@@ -16,7 +16,7 @@ can be exported as the "Experiment" set of data.
 For both Z' and V factors, the highest possible value (best assay
 quality) = 1 and they can range into negative values (for assays where
 distinguishing between positive and negative controls is difficult or
-impossible). A Z' factor > 0 is potentially screenable; A Z' factor > 0.5
+impossible). A Z' factor > 0 is potentially screenable; a Z' factor > 0.5
 is considered an excellent assay.
 <p>
 The Z' factor is based only on positive and negative controls. The V
@@ -26,23 +26,23 @@ minimum and maximum responses. When there are only two doses in the assay
 factor.
 <p>
 The one-tailed Z' factor is an attempt to overcome the limitation of the
-Z'-factor formulation used upon populations with moderate or high amounts
+Z'-factor formulation best applied to populations with moderate or high amounts
 of skewness. In these cases, the tails opposite to the mid-range point
 may lead to a high standard deviation for either population. This will 
 give a low Z' factor even though the population means and samples between
-the means are well-separated. Therefore, the one-tailed Z'factor is 
+the means may be well-separated. Therefore, the one-tailed Z'factor is 
 calculated with the same formula but using only those samples that lie 
 between the population means. 
 <p>
 NOTE: The statistical robustness of the one-tailed Z' factor has not been
-determined, and hence should probably not be used at this time.
+determined, and therefore should not be relied upon at this time.
 <p>
 NOTE: If the standard deviation of a measured feature is zero for a
 particular set of samples (e.g. all the positive controls), the Z' and V
 factors will equal 1 despite the fact that this is not a useful feature
-for the assay. This occurs when you have only one sample at each dose.
+for the assay. This can occur when there is only one sample at each dose.
 This also occurs for some non-informative measured features, like the
-number of Cytoplasm compartments per Cell which is always equal to 1.
+number of cytoplasm compartments per cell, which is always equal to 1.
 <p>
 Features measured:
 <ul>
@@ -54,7 +54,7 @@ Features measured:
 <p>
 <h2>Marking controls and specifying dosing information</h2>
 The Z factor calculations are made on the positive and negative controls
-in your sample. You use first setting in this module to choose a measurement
+in your sample. The first setting in this module is used to choose a measurement
 that marks each image set as being a positive control, a negative control,
 or an experiment sample. The module uses the convention that all of the
 negative controls have the minimum value for this measurement, the

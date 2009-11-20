@@ -95,6 +95,7 @@ def check_module(module, name):
 def fill_modules():
     del pymodules[:]
     del badmodules[:]
+    all_modules.clear()
     for mod, name in pymodule_to_cpmodule.items():
         try:
             m = __import__('cellprofiler.modules.' + mod, globals(), locals(), [name])

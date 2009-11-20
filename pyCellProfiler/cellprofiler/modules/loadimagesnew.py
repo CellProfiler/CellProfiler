@@ -109,16 +109,14 @@ class LoadImagesNew(cpmodule.CPModule):
                 </ul>
                 For the movie formats, the files are opened as a stack of images and each image is processed individually.""")
         
-        self.descend_subdirectories = cps.Binary('Analyze all subfolders within the selected folder?', False, doc="""
+        self.descend_subdirectories = cps.Binary('Descend into subdirectories?', False, doc="""
                 If this box is checked, all the subfolders under the image directory location that you specify will be
                 searched for images.""")
         
         self.top_spacer = cps.Divider()
 
         # Images settings
-        self.image_label = cps.Divider("Image naming")
-
-        self.exclude = cps.Binary('Do you want to exclude certain files?', False,doc="""
+        self.exclude = cps.Binary('Do you want to exclude some files?', False,doc="""
                 <p>This settings allows you exclude certain files (such as thumbnails) from further consideration.""")
         
         # should this be a regexp?
@@ -138,9 +136,11 @@ class LoadImagesNew(cpmodule.CPModule):
 
 
         # Metadata settings
-        self.metadata_label = cps.Divider("Metadata extraction")
+        self.metadata_label = cps.Divider("Metadata")
 
-        # Grouping settings
+        
+
+        # extraction settings
         self.grouping_label = cps.Divider("Grouping")
 
     def add_image(self):
@@ -176,15 +176,14 @@ class LoadImagesNew(cpmodule.CPModule):
                         for the column headers cannot exceed 64K. A warning will be generated later if this limit
                         has been exceeded.</li>
                         </ul>"""))
-        group.append("image_specifier", 
-                     cps.ImageFileSpecifier("What substring defines these images?", "", regexp=False, default_dir=cps.DefaultImageDirectory))
-        group.append("remover", cps.RemoveSettingButton("Remove the image above", "Remove", self.images, group))
+        group.append("image_specifier", cps.Text("What substring is common to these images?", ""))
+        group.append("remover", cps.RemoveSettingButton("", "Remove above image", self.images, group))
         group.append("divider", cps.Divider(line=False))
         self.images.append(group)
 
     def visible_settings(self):
         result = [self.file_types, self.descend_subdirectories, self.top_spacer]
-        result += [self.image_label, self.exclude]
+        result += [self.exclude]
         if self.exclude.value:
             result += [self.match_exclude_text]
             
@@ -193,10 +192,10 @@ class LoadImagesNew(cpmodule.CPModule):
         for im in self.images:
             result += im.unpack_group()
         result += [self.add_image_button, self.image_spacer_bottom]
-
+        
         # metadata
         result += [self.metadata_label]
-
+        
         # grouping
         result += [self.grouping_label]
         return result
@@ -204,13 +203,13 @@ class LoadImagesNew(cpmodule.CPModule):
     def settings(self):
         result = [self.file_types, self.descend_subdirectories]
         result += [self.exclude, self.match_exclude_text]
-
+        
         # images
         for im in self.images:
             result += [im.image_name, im.image_specifier]
-
+        
         # metadata
-
+        
         # grouping
         return result
 

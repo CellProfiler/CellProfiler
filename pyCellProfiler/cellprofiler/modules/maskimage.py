@@ -47,7 +47,7 @@ class MaskImage(cpm.CPModule):
         self.image_name = cps.ImageNameSubscriber("Select input image:","None", doc = '''Which image do you want to mask?''')
         self.masked_image_name = cps.ImageNameProvider("Name output image:",
                                                        "MaskBlue", doc = '''What do you want to call the masked image?''')
-        self.invert_mask = cps.Binary("Do you want to invert the mask?",False)
+        self.invert_mask = cps.Binary("Invert the mask?",False)
 
     def settings(self):
         """Return the settings in the order that they will be saved or loaded

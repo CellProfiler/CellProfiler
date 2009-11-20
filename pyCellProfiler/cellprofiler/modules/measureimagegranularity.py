@@ -96,9 +96,9 @@ class MeasureImageGranularity(cpm.CPModule):
         
     def add_image(self):    
         group = GranularitySettingsGroup()
-        group.append("image_name",cps.ImageNameSubscriber("Select the input image","None"))
+        group.append("image_name",cps.ImageNameSubscriber("Select the input image:","None"))
         group.append("subsample_size",cps.Float(
-            "Subsampling factor for granularity measurements",
+            "Subsampling factor for granularity measurements:",
             .25, minval = np.finfo(float).eps, maxval = 1,doc='''Subsampling factor for granularity 
             measurements: If the textures of 
             interest are larger than a few pixels, it is recommended to subsample the image with a factor 
@@ -109,7 +109,7 @@ class MeasureImageGranularity(cpm.CPModule):
             increase the subsampling fraction and for high-resolution images, decrease the subsampling 
             fraction. '''))
         group.append("image_sample_size",cps.Float(
-            "Subsampling factor for background reduction",
+            "Subsampling factor for background reduction:",
             .25, minval = np.finfo(float).eps, maxval = 1,doc='''Reduce background: It is important to 
             remove low frequency image background variations as they will affect the final granularity 
             measure. Here we simply subtract a highly open image. To do it fast we subsample the image 
@@ -119,14 +119,14 @@ class MeasureImageGranularity(cpm.CPModule):
             volume at certain granular size is normalized by the total image volume, which depends on 
             how the background was removed.'''))
         group.append("element_size", cps.Integer(
-            "Radius of structuring element",
+            "Radius of structuring element:",
             10, minval = 1,doc='''Radius of the structuring element: 
             This radius should correspond to the radius of the textures of interest <i>after</i> 
             subsampling. I.e., if textures in the original image scale have a radius of 40 
             pixels, and a subsampling factor of 0.25 is used, the structuring element size should be
             10, or slightly smaller, and the range of the spectrum defined below will cover more sizes.'''))
         group.append("granular_spectrum_length", cps.Integer(
-            "Length of the granular spectrum",
+            "Length of the granular spectrum:",
             16, minval = 1,doc='''Granular spectrum length: Needs a trial run to see which Granular 
             Spectrum Length yields informative measurements. Start by using a wide spectrum, and 
             narrow it down to the informative range to save time.'''))

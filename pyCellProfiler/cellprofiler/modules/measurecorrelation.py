@@ -82,9 +82,12 @@ class MeasureCorrelation(cpm.CPModule):
         self.add_image_button = cps.DoSomething('Add another image','Add image',
                                                 self.add_image)
         self.spacer = cps.Divider(line=False)
-        self.images_or_objects = cps.Choice('Do you want to measure the correlation within objects, over the whole image or both within objects and over the whole image?',
+        self.images_or_objects = cps.Choice('Measure correlation across:',
                                             [M_IMAGES, M_OBJECTS, M_IMAGES_AND_OBJECTS], 
-                                            doc = '''Both methods measure correlation on a pixel by pixel basis.
+                                            doc = '''
+                                            Do you want to measure the correlation within objects, 
+                                            over the whole image or both within objects and over the whole image?
+                                            Both methods measure correlation on a pixel by pixel basis.
                                             Selecting <i>Objects</i> will measure correlation only in those pixels previously
                                             identified as an object (the user can then specify which object).  Selecting 
                                             <i>Images</i> will measure correlation across all pixels in the images.

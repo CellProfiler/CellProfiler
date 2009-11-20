@@ -123,6 +123,9 @@ class MeasureImageIntensity(cpm.CPModule):
             dict[key] = im
         return dict.values()
         
+    def is_interactive(self):
+        return False
+
     def run(self, workspace):
         '''Perform the measurements on the imageset'''
         #
@@ -131,9 +134,12 @@ class MeasureImageIntensity(cpm.CPModule):
         statistics = [["Image","Masking object","Feature","Value"]]
         for im in self.get_non_redundant_image_measurements():
             statistics += self.measure(im, workspace)
-        if not workspace.frame is None:
-            figure = workspace.create_or_find_figure(subplots=(1,1))
-            figure.subplot_table(0, 0, statistics, ratio=(.25,.25,.25,.25))
+        workspace.display_data.statistics = statistics
+
+    def display(self, workspace):
+        figure = workspace.create_or_find_figure(subplots=(1,1))
+        figure.subplot_table(0, 0, workspace.display_data.statistics, 
+                             ratio=(.25,.25,.25,.25))
     
     def measure(self, im, workspace):
         '''Perform measurements according to the image measurement in im

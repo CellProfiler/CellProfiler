@@ -1066,6 +1066,9 @@ class LoadImages(cpmodule.CPModule):
             image_set = image_set_list.get_image_set(image_number-1)
             self.load_image_set_info(image_set)
             
+    def is_interactive(self):
+        return False
+
     def run(self,workspace):
         """Run the module - add the measurements
         
@@ -1105,10 +1108,15 @@ class LoadImages(cpmodule.CPModule):
                 else:
                     row.append("")
             statistics.append(row)
-        if workspace.frame:
-            figure = workspace.create_or_find_figure(title="Load images, image set #%d"%(workspace.measurements.image_set_number),
-                                                     subplots=(1,1))
-            figure.subplot_table(0,0,statistics,ratio=ratio)
+        workspace.display_data.statistics = statistics
+        workspace.display_data.ratio = ratio
+
+    def display(self, workspace):
+        figure = workspace.create_or_find_figure(title="Load images, image set #%d"%(
+                workspace.measurements.image_set_number),
+                                                 subplots=(1,1))
+        figure.subplot_table(0,0,workspace.display_data.statistics,
+                             ratio=workspace.display_data.ratio)
 
     def get_filename_metadata(self, fd, filename, path):
         """Get the filename and path metadata for a given image

@@ -119,6 +119,9 @@ class Smooth(cpm.CPModule):
                 result.append(self.sigma_range)
         return result
 
+    def is_interactive(self):
+        return False
+
     def run(self, workspace):
         image = workspace.image_set.get_image(self.image_name.value,
                                               must_be_grayscale=True)
@@ -149,14 +152,19 @@ class Smooth(cpm.CPModule):
         output_image = cpi.Image(output_pixels, parent_image = image)
         workspace.image_set.add(self.filtered_image_name.value,
                                 output_image)
-        if not workspace.frame is None:
-            figure = workspace.create_or_find_figure(subplots=(1,2))
-            figure.subplot_imshow_grayscale(0,0, pixel_data,
-                                            "Original: %s" % 
-                                            self.image_name.value)
-            figure.subplot_imshow_grayscale(0,1, output_pixels,
-                                            "Filtered: %s" %
-                                            self.filtered_image_name.value)
+        workspace.display_data.pixel_data = pixel_data
+        workspace.display_data.output_pixels = output_pixels
+
+    def display(self, workspace):
+        figure = workspace.create_or_find_figure(subplots=(1,2))
+        figure.subplot_imshow_grayscale(0, 0, 
+                                        workspace.display_data.pixel_data,
+                                        "Original: %s" % 
+                                        self.image_name.value)
+        figure.subplot_imshow_grayscale(0, 1,
+                                        workspace.display_data.output_pixels,
+                                        "Filtered: %s" %
+                                        self.filtered_image_name.value)
     
     def upgrade_settings(self, setting_values, variable_revision_number, 
                          module_name, from_matlab):

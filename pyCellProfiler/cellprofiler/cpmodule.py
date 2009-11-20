@@ -403,6 +403,12 @@ class CPModule(object):
         """
         return True
     
+    def is_interactive():
+        """If true, the module will be run in the background.
+        Background threads cannot safely manipulate the GUI.  See
+        display()."""
+        return True
+
     def run(self,workspace):
         """Run the module (abstract method)
         
@@ -411,7 +417,12 @@ class CPModule(object):
             image_set    - the images in the image set being processed
             object_set   - the objects (labeled masks) in this image set
             measurements - the measurements for this run
-            frame        - the parent frame to whatever frame is created. None means don't draw.
+            frame        - the parent frame to whatever frame is created. 
+                           None means don't draw.
+
+        If is_interactive() returns false, then run() will be run in a
+        background thread.  Background threads cannot safely
+        manipulate the GUI.  See display().
         """
         pass
     
@@ -419,6 +430,21 @@ class CPModule(object):
         """Do post-processing after the run completes
         
         workspace - the workspace at the end of the run
+        """
+        pass
+
+    def display(self, workspace):
+        """Display the results, and possibly intermediate results, as
+        appropriate for this module.  This method will be called after
+        run() is finished if workspace.frame is not false.
+
+        This method exists because the run() method will run in the
+        background if is_interactive() returns false, and background
+        threads cannot safely manipulate the GUI.  The default
+        implementation does nothing.
+        
+        The run() method should store whatever data display() needs in
+        workspace.display_data.
         """
         pass
     

@@ -73,6 +73,12 @@ class Workspace(object):
         self.__create_new_window = create_new_window
         self.__grid = {}
         self.disposition = DISPOSITION_CONTINUE
+
+        class DisplayData(object):
+            pass
+        self.display_data = DisplayData()
+        """Object into which the module's run() method can stuff items
+        that must be available later for display()."""
     
     def refresh(self):
         """Refresh any windows created during use"""

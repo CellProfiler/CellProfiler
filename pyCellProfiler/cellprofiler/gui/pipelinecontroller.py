@@ -73,7 +73,8 @@ class PipelineController:
         
         wx.EVT_CLOSE(frame, self.__on_close)
         
-        wx.EVT_IDLE(frame,self.on_idle)
+        cellprofiler.pipeline.evt_modulerunner_done(frame,
+                                                    self.on_module_runner_done)
     
     def attach_to_pipeline_list_view(self,pipeline_list_view, movie_viewer):
         """Glom onto events from the list box with all of the module names in it
@@ -424,7 +425,7 @@ class PipelineController:
             self.__output_path = output_path
             self.__frame.preferences_view.on_analyze_images()
             self.__running_pipeline = self.__pipeline.run_with_yield(self.__frame)
-            wx.CallLater(1,self.on_idle, None)
+            self.__running_pipeline.next()  # Start the first module.
     
     def on_frame_menu_open(self, event):
         pass
@@ -685,17 +686,17 @@ class PipelineController:
     def on_debug_reload(self, event):
         self.__pipeline.reload_modules()
 
-    def on_idle(self,event):
+    def on_module_runner_done(self,event):
         '''Run one iteration of the pipeline
         
-        Either run the iteration during idle processing or using a timer
-        and wx.CallLater.
+        Called in response to a
+        cellprofiler.pipeline.ModuleRunnerDoneEvent whenever a module
+        is done running.
         '''
-        if self.__running_pipeline and not self.__inside_running_pipeline:
-            self.__inside_running_pipeline = True
+        if self.__running_pipeline:
             try:
-                self.__running_pipeline.next()
                 self.__pipeline_measurements = self.__running_pipeline.next()
+                self.__running_pipeline.next()
                 event.RequestMore()
             except StopIteration:
                 self.stop_running()
@@ -703,9 +704,6 @@ class PipelineController:
                     self.__pipeline.save_measurements(self.__output_path,self.__pipeline_measurements)
                     self.__pipeline_measurements = None
                     self.__output_path = None
-            finally:
-                self.__inside_running_pipeline = False
-
 
     def get_output_file_path(self):
         path = os.path.join(cellprofiler.preferences.get_default_output_directory(),

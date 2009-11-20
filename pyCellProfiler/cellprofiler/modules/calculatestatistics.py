@@ -137,9 +137,9 @@ class CalculateStatistics(cpm.CPModule):
             self.smoothing_size = cellprofiler.settings.Float(...)"""
         
         self.grouping_values = cps.Measurement(
-            "What measurement should be used to designate the positive and negative controls?",
+            "Positive and negative controls",
             lambda : cpmeas.IMAGE,
-            doc = '''This is the measurement that marks each image set as
+            doc = '''This is the metadata measurement that marks each image set as
             a positive control, a negative control or a sample. Positive
             controls should all be given a single high value (for instance, 1)
             and negative controls should be given a single low value (for
@@ -158,7 +158,7 @@ class CalculateStatistics(cpm.CPModule):
         '''Add a dose value measurement to the list'''
         group = cps.SettingsGroup()
         group.append("measurement",
-                     cps.Measurement("Choose a dose measurement",
+                     cps.Measurement("Dose measurement",
                                      lambda : cpmeas.IMAGE,
                                      doc = 
             """Choose a measurement that gives the dose of some treatment
@@ -169,19 +169,19 @@ class CalculateStatistics(cpm.CPModule):
             module.
             """))
         group.append("log_transform",cps.Binary(
-            "Would you like to log-transform the dose values?",
+            "Log-transform dose values?",
             False,
             doc = '''This option allows you to log-transform the values for
             the grouping measurement before fitting a sigmoid curve. Check
             this box if you have dose-response data. Leave the box unchecked
             if your data values indicate positive vs negative controls.'''))
         group.append('wants_save_figure', cps.Binary(
-            '''Do you want to create dose/response plots for each measurement?''',
+            '''Create dose/response plots?''',
             False,
-            doc = '''<a name='wants_save_figure'/>Check this box if you want to save dose response plots for each figure generated. 
-            If you check the box, you'll be asked for file name information.</a>'''))
+            doc = '''<a name='wants_save_figure'/>Check this box if you want to create and save dose response plots for each figure generated. 
+            If you check the box, you will be asked for file name information.</a>'''))
         group.append('figure_name', cps.Text(
-            "What do you want to use as the prefix for the figure?","",
+            "Figure prefix?","",
             doc = '''CellProfiler will create a file name by appending the measurement name
             to the prefix you enter here. For instance, if you have objects
             named, "Cells", the AreaShape_Area measurement, and a prefix of "Dose_",
@@ -189,7 +189,7 @@ class CalculateStatistics(cpm.CPModule):
             Leave this setting blank if you do not want a prefix.'''
         ))
         group.append('pathname_choice', cps.Choice(
-            "Where do you want to store the files?",
+            "File output location",
             [PC_DEFAULT, PC_CUSTOM],
             doc="""
             This setting lets you control the directory used to store the file. The
@@ -201,7 +201,7 @@ class CalculateStatistics(cpm.CPModule):
             output directory or "&" (an ampersand) to make the root directory the default image
             directory.</li></ul>"""))
         group.append('pathname', cps.Text(
-            "Enter the pathname of the directory where you want to save files:",
+            "Directory pathname:",
             ".",doc="""
                 Enter the pathname to save the images here. The pathname can referenced with respect 
                 to the Default Output directory directory with a period (".") or the Default Input 

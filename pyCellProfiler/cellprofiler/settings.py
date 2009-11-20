@@ -794,7 +794,7 @@ class GridNameSubscriber(NameSubscriber):
     """
     def __init__(self, text, value=DO_NOT_USE, can_be_blank=False,
                  blank_text=LEAVE_BLANK, *args, **kwargs):
-        super(ObjectNameSubscriber,self).__init__(text, GRID_GROUP, value,
+        super(GridNameSubscriber,self).__init__(text, GRID_GROUP, value,
                                                   can_be_blank, blank_text,
                                                   *args, **kwargs)
         

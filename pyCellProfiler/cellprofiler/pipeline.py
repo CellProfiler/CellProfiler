@@ -526,6 +526,7 @@ class Pipeline(object):
                     image_set = image_set_list.get_image_set(image_number-1)
                     outlines = {}
                     should_write_measurements = True
+                    grids = None
                     for module in self.modules():
                         gc.collect()
                         if module.should_stop_writing_measurements():
@@ -548,6 +549,7 @@ class Pipeline(object):
                                                       image_set_list,
                                                       frame_if_shown,
                                                       outlines = outlines)
+                            grids = workspace.set_grids(grids)
                             start_time = datetime.datetime.now()
                             t0 = sum(os.times()[:-1])
                             #worker = Pipeline.ModuleRunner(module, workspace, 

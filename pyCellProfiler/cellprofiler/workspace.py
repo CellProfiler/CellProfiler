@@ -138,6 +138,18 @@ class Workspace(object):
             raise ValueError("Could not find grid %s"%grid_name)
         return self.__grid[grid_name]
     
+    def set_grids(self, last = None):
+        '''Initialize the grids for an image set
+        
+        last - none if first in image set or the return value from
+               this method.
+        returns a grid dictionary
+        '''
+        if last is None:
+            last = {}
+        self.__grid = last
+        return self.__grid
+    
     def set_grid(self, grid_name, grid_info):
         '''Add a grid to the workspace'''
         self.__grid[grid_name] = grid_info

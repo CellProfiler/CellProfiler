@@ -47,6 +47,7 @@ class PipelineController:
         self.__pipeline_measurements = None
         self.__debug_image_set_list = None
         self.__debug_measurements = None
+        self.__debug_grids = None
         self.__keys = None
         self.__groupings = None
         self.__grouping_index = None
@@ -486,6 +487,7 @@ class PipelineController:
         self.__debug_measurements = None
         self.__debug_object_set = None
         self.__debug_outlines = None
+        self.__debug_grids = None
         self.__pipeline_list_view.on_stop_debugging()
         self.__pipeline.end_run()
     
@@ -512,6 +514,7 @@ class PipelineController:
                                       self.__debug_image_set_list,
                                       self.__frame if module.show_frame else None,
                                       outlines = self.__debug_outlines)
+            self.__debug_grids = workspace.set_grids(self.__debug_grids)
             module.run(workspace)
             workspace.refresh()
             if module.module_num < len(self.__pipeline.modules()):

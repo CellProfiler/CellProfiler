@@ -63,11 +63,14 @@ class Relate(cpm.CPModule):
             The parent objects are defined as those objects which encompass the 
             child object. For example, to <b>Relate</b> a speckle to a containing
             nucleus, the parent is the nucleus object.""")
-        self.find_parent_child_distances = cps.Choice("Do you want to find minimum distances of each child to its parent?",
+        self.find_parent_child_distances = cps.Choice("Find minimum distances?",
                                                       [D_NONE, D_MINIMUM],doc="""
+            Do you want to find the minimum distances of each child to its parent?
             The <i>minimum distance</i> is the distance from the centroid of the
             child object to the closest perimeter point on the parent object.""")
-        self.step_parent_name = cps.ObjectNameSubscriber("What other object do you want to find distances to?", None)
+        self.step_parent_name = cps.ObjectNameSubscriber("Select additional objects to find distances to:", None,doc = """
+                                                         You can find distances to additional objects,
+                                                         or "step-parents""")
         self.wants_per_parent_means = cps.Binary('Calculate per-parent means for all child measurements?',
                                                  False,doc="""
             For every measurement that has been made of

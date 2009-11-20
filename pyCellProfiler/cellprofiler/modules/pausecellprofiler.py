@@ -41,7 +41,7 @@ class PauseCellProfiler(cpm.CPModule):
             # Ask the user for a parameter
             self.smoothing_size = cellprofiler.settings.Float(...)
         """
-        self.action = cps.Choice("Do you want to pause here or skip subsequent modules?",
+        self.action = cps.Choice("Pause here or skip subsequent modules?",
                                  [cpw.DISPOSITION_PAUSE, cpw.DISPOSITION_SKIP],
                                  doc = """
             Choose <i>%s</i> to pause CellProfiler

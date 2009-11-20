@@ -756,6 +756,9 @@ class IdentifyPrimAutomatic(cpmi.Identify):
         vv += [self.fill_holes]
         return vv
     
+    def is_interactive(self):
+        return False
+
     def run(self,workspace):
         """Run the module
         
@@ -854,14 +857,13 @@ class IdentifyPrimAutomatic(cpmi.Identify):
                                    "%.1f"%(self.calc_smoothing_filter_size())])
                 statistics.append(["Maxima suppression size",
                                    "%.1f"%(maxima_suppression_size)])
-            self.display(workspace.frame,
-                         image,
-                         labeled_image,
-                         outline_image,
-                         outline_size_excluded_image,
-                         outline_border_excluded_image,
-                         statistics,
-                         workspace.image_set.number+1)
+            workspace.display_data.image = image
+            workspace.display_data.labeled_image = labeled_image
+            workspace.display_data.outline_image = outline_image
+            workspace.display_data.outline_size_excluded_image = outline_size_excluded_image
+            workspace.display_data.outline_border_excluded_image = outline_border_excluded_image
+            workspace.display_data.statistics = statistics
+
         # Add image measurements
         objname = self.object_name.value
         measurements = workspace.measurements
@@ -1157,10 +1159,11 @@ class IdentifyPrimAutomatic(cpmi.Identify):
                     labeled_image[histogram_image > 0] = 0
         return labeled_image
     
-    def display(self, frame, image, labeled_image, outline_image, outline_size_excluded_image, outline_border_excluded_image, statistics, image_set_number):
+    def display(self, workspace):
         """Display the image and labeling"""
-        window_name = "CellProfiler(%s:%d)"%(self.module_name,self.module_num)
-        my_frame=cpf.create_or_find(frame, title="Identify primary automatic", 
+        window_name = "CellProfiler(%s:%d)"%(self.module_name, self.module_num)
+        my_frame=cpf.create_or_find(workspace.frame, 
+                                    title="Identify primary automatic", 
                                     name=window_name, subplots=(2,2))
         
         orig_axes     = my_frame.subplot(0,0)
@@ -1168,43 +1171,43 @@ class IdentifyPrimAutomatic(cpmi.Identify):
         outlined_axes = my_frame.subplot(0,1)
         table_axes    = my_frame.subplot(1,1)
 
-        title = "Original image, cycle #%d"%(image_set_number)
+        title = "Original image, cycle #%d"%(workspace.image_set.number + 1,)
         my_frame.subplot_imshow_grayscale(0, 0,
-                                          image.pixel_data,
+                                          workspace.display_data.image.pixel_data,
                                           title)
-        my_frame.subplot_imshow_labels(1, 0, labeled_image, 
+        my_frame.subplot_imshow_labels(1, 0, workspace.display_data.labeled_image, 
                                        self.object_name.value)
 
-        if image.pixel_data.ndim == 2:
+        if workspace.display_data.image.pixel_data.ndim == 2:
             # Outline the size-excluded pixels in red
-            outline_img = np.ndarray(shape=(image.pixel_data.shape[0],
-                                               image.pixel_data.shape[1],3))
-            outline_img[:,:,0] = image.pixel_data 
-            outline_img[:,:,1] = image.pixel_data
-            outline_img[:,:,2] = image.pixel_data
+            outline_img = np.ndarray(shape=(workspace.display_data.image.pixel_data.shape[0],
+                                               workspace.display_data.image.pixel_data.shape[1],3))
+            outline_img[:,:,0] = workspace.display_data.image.pixel_data 
+            outline_img[:,:,1] = workspace.display_data.image.pixel_data
+            outline_img[:,:,2] = workspace.display_data.image.pixel_data
         else:
-            outline_img = image.pixel_data.copy()
+            outline_img = workspace.display_data.image.pixel_data.copy()
         
         # Outline the accepted objects pixels in green
-        outline_img[outline_image != 0,0] = 0
-        outline_img[outline_image != 0,1] = 1 
-        outline_img[outline_image != 0,2] = 0
+        outline_img[workspace.display_data.outline_image != 0,0] = 0
+        outline_img[workspace.display_data.outline_image != 0,1] = 1 
+        outline_img[workspace.display_data.outline_image != 0,2] = 0
         
         # Outline the size-excluded pixels in red
-        outline_img[outline_size_excluded_image != 0,0] = 1
-        outline_img[outline_size_excluded_image != 0,1] = 0 
-        outline_img[outline_size_excluded_image != 0,2] = 0
+        outline_img[workspace.display_data.outline_size_excluded_image != 0,0] = 1
+        outline_img[workspace.display_data.outline_size_excluded_image != 0,1] = 0 
+        outline_img[workspace.display_data.outline_size_excluded_image != 0,2] = 0
         
         # Outline the border-excluded pixels in yellow
-        outline_img[outline_border_excluded_image != 0,0] = 1
-        outline_img[outline_border_excluded_image != 0,1] = 1 
-        outline_img[outline_border_excluded_image != 0,2] = 0
+        outline_img[workspace.display_data.outline_border_excluded_image != 0,0] = 1
+        outline_img[workspace.display_data.outline_border_excluded_image != 0,1] = 1 
+        outline_img[workspace.display_data.outline_border_excluded_image != 0,2] = 0
         
         title = "%s outlines"%(self.object_name.value) 
         my_frame.subplot_imshow(0,1,outline_img, title)
         
         table_axes.clear()
-        table = table_axes.table(cellText=statistics,
+        table = table_axes.table(cellText=workspace.display_data.statistics,
                                  colWidths=[.7,.3],
                                  loc='center',
                                  cellLoc='left')

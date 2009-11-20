@@ -263,7 +263,7 @@ class ModuleView:
             if reselecting:
                 self.hide_settings()
             
-            for v,i in zip(settings, range(0,len(settings))):
+            for i, v in enumerate(settings):
                 flag = 0
                 border = 0
                 control_name = edit_control_name(v)

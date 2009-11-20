@@ -106,8 +106,9 @@ class MeasureObjectNeighbors(cpm.CPModule):
 
     def create_settings(self):
         self.object_name = cps.ObjectNameSubscriber('Select input objects','None')
-        self.distance_method = cps.Choice('How do you want to determine whether objects are touching?',
+        self.distance_method = cps.Choice('Method to determine neighbors:',
                                           D_ALL, D_EXPAND,doc="""
+            How do you want to determine whether objects are touching?
             <ul>
             <li><i>Adjacent</i>: In this mode, two objects must have adjacent 
             boundary pixels to be touching. 
@@ -127,25 +128,28 @@ class MeasureObjectNeighbors(cpm.CPModule):
             pixels are adjacent after expansion and PercentTouching measures the 
             percentage of boundary pixels of an <i>expanded</i> object that 
             touch adjacent objects.""")
-        self.distance = cps.Integer('Within what distance are objects considered neighbors (in pixels) ?',
+        self.distance = cps.Integer('Neighbor distance:',
                                     5,1,doc="""
-            <i>(Only used when "Within a specified distance" is selected)</i> The
-            number of pixels that each object is expanded for the neighbor 
+            <i>(Only used when "Within a specified distance" is selected)</i> 
+            Within what distance are objects considered neighbors (in pixels) ?
+            The number of pixels that each object is expanded for the neighbor 
             calculation. Expanded objects that touch are considered neighbors.""")
-        self.wants_count_image = cps.Binary('Do you want to save the image of objects colored by numbers of neighbors?',
+        self.wants_count_image = cps.Binary('Save the image of objects colored by numbers of neighbors?',
                                             False, doc="""
              The image of the objects colored by numbers of neighbors can be 
              saved for later export. See <b>SaveImages</b> for more details.""")
-        self.count_image_name = cps.ImageNameProvider('What do you want to call the image of objects colored by numbers of neighbors?',
-                                                      'ObjectNeighborCount')
-        self.count_colormap = cps.Colormap('What colormap do you want to use to color the above image?')
-        self.wants_percent_touching_image = cps.Binary('Do you want to save the image of objects colored by percent of touching pixels?',
+        self.count_image_name = cps.ImageNameProvider('Name the output image:',
+                                                      'ObjectNeighborCount', 
+                                                      doc = """What do you want to call the image of objects colored by numbers of neighbors?""")
+        self.count_colormap = cps.Colormap('Select colormap:', doc = """What colormap do you want to use to color the above image?""")
+        self.wants_percent_touching_image = cps.Binary('Save the image of objects colored by percent of touching pixels?',
                                                        False, doc="""
              The image of the objects colored by percent of touching pixels can be 
              saved for later export. See <b>SaveImages</b> for more details.""")
-        self.touching_image_name = cps.ImageNameProvider('What do you want to call the image of objects colored by percent of touching pixels?',
-                                                         'PercentTouching')
-        self.touching_colormap = cps.Colormap('What colormap do you want to use to color the above image?')
+        self.touching_image_name = cps.ImageNameProvider('Name the output image:',
+                                                         'PercentTouching', 
+                                                         doc = """What do you want to call the image of objects colored by percent of touching pixels?""")
+        self.touching_colormap = cps.Colormap('Select colormap:', doc = """hat colormap do you want to use to color the above image?""")
 
     def settings(self):
         return [self.object_name, self.distance_method, self.distance,

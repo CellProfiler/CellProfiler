@@ -146,7 +146,9 @@ class MeasureImageQuality(cpm.CPModule):
                                                        methods, or choose "Manual" to enter a threshold manually.  To choose a binary image, select "Binary image". 
                                                        The output of <b>MeasureImageQuality</b> will be a numerical threshold, rather than objects.  
                                                        For more help on thresholding, see the Identify modules.'''))
-        group.append("object_fraction", cps.Float("What fraction of the image is composed of objects?", 0.1,0,1))
+        group.append("object_fraction", cps.Float("Enter the fraction of the image covered by objects:", 0.1,0,1, doc = 
+                                                  """For MoG thresholding, enter the approximate fraction of the image
+                                                  that is covered by objects."""))
         group.append("remove_button", cps.RemoveSettingButton("Remove the image above", "Remove", self.image_groups, group))
         group.append("divider", cps.Divider())
         self.image_groups.append(group)

@@ -97,7 +97,8 @@ class MeasureObjectIntensity(cpm.CPModule):
     
     def create_settings(self):
         self.image_keys =[uuid.uuid1()]
-        self.image_names = [cps.ImageNameSubscriber("What did you call the grayscale images you want to process?","None")]
+        self.image_names = [cps.ImageNameSubscriber("Select input image:","None", doc = 
+                                                    """What did you call the grayscale images you want to process?""")]
         self.image_names_remove_buttons = [cps.DoSomething("Remove above image",
                                                            "Remove",
                                                            self.remove_image_cb,
@@ -107,7 +108,8 @@ class MeasureObjectIntensity(cpm.CPModule):
                                                      self.add_image_cb)
         self.image_divider = cps.Text("Marks end of images list",cps.DO_NOT_USE)
         self.object_keys = [uuid.uuid1()]
-        self.object_names = [cps.ObjectNameSubscriber("What did you call the objects that you want to measure?","None")]
+        self.object_names = [cps.ObjectNameSubscriber("Select objects to measure:","None", doc = 
+                                                      """What did you call the objects that you want to measure?""")]
         self.object_name_remove_buttons = [cps.DoSomething("Remove this object",
                                                            "Remove",
                                                            self.remove_cb,
@@ -123,7 +125,8 @@ class MeasureObjectIntensity(cpm.CPModule):
     def add_cb(self):
         new_uuid = uuid.uuid1()
         self.object_keys.append(new_uuid)
-        self.object_names.append(cps.ObjectNameSubscriber("What did you call the objects that you want to measure?","None"))
+        self.object_names.append(cps.ObjectNameSubscriber("Select objects to measure:","None", doc = 
+                                                          """What did you call the objects that you want to measure?"""))
         self.object_name_remove_buttons.append(cps.DoSomething("Remove this object","Remove",self.remove_cb,new_uuid))
 
     def remove_image_cb(self, id):
@@ -135,7 +138,8 @@ class MeasureObjectIntensity(cpm.CPModule):
     def add_image_cb(self):
         new_uuid = uuid.uuid1()
         self.image_keys.append(new_uuid)
-        self.image_names.append(cps.ImageNameSubscriber("What did you call the grayscale images you want to process?","None"))
+        self.image_names.append(cps.ImageNameSubscriber("Select input image:","None", doc = 
+                                                        """What did you call the grayscale images you want to process?"""))
         self.image_names_remove_buttons.append(cps.DoSomething("Remove above image","Remove",self.remove_image_cb, new_uuid))
         
     def visible_settings(self):

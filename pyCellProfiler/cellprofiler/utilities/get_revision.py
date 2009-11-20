@@ -16,6 +16,8 @@ __version__="$Revision$"
 import numpy as np
 import re
 import sys
+import cellprofiler # to force import of many other modules for their version number
+import cellprofiler.modules as cpmodules
 
 def __get_revision_of_module(module):
     version = getattr(module, '__version__', None)
@@ -26,8 +28,6 @@ def __get_revision_of_module(module):
         return int(match.groups()[0])
     return 0
 
-'''SVN revision - only valid after call to get_revision'''
-version = None
 
 def get_revision():
     '''Return the maximum revision number from CellProfiler Python modules
@@ -35,19 +35,20 @@ def get_revision():
     Starting with cellprofiler, find the maximum revision number by looking
     at __version__ in all modules.
     '''
-    global version
-    if version is not None:
-        return version
     version = 0
     for module_name in sys.modules.keys():
-        if (module_name.lower().startswith('cellprofiler') and 
-            module_name.find('tests') == -1):
+        if module_name.lower().startswith('cellprofiler'):
             sub_version = __get_revision_of_module(sys.modules[module_name])
             version = max(version, sub_version)
+    for module in cpmodules.pymodules:
+        sub_version = __get_revision_of_module(module)
+        version = max(version, sub_version)
     return version
+
+'''SVN revision'''
+version = get_revision()
     
 if __name__ == '__main__':
-    import cellprofiler
-    print get_revision()
+    print version
 
     

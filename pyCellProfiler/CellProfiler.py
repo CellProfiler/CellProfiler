@@ -152,10 +152,10 @@ if not options.show_gui:
 from cellprofiler.cellprofilerapp import CellProfilerApp
 from cellprofiler.pipeline import Pipeline, EXIT_STATUS
 import cellprofiler.gui.cpframe as cpgframe
-from cellprofiler.utilities.get_revision import get_revision
+from cellprofiler.utilities.get_revision import version
 import cellprofiler.measurements as cpmeas
 
-print "Subversion revision: %d"%get_revision()
+print "Subversion revision: %d"%version
 if options.run_pipeline and not options.pipeline_filename:
     raise ValueError("You must specify a pipeline filename to run")
 

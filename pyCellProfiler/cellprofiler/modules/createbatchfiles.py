@@ -40,7 +40,7 @@ import cellprofiler.cpmodule as cpm
 import cellprofiler.pipeline as cpp
 import cellprofiler.settings as cps
 import cellprofiler.preferences as cpprefs
-from cellprofiler.utilities.get_revision import get_revision
+from cellprofiler.utilities.get_revision import version
 
 '''# of settings aside from the mappings'''
 S_FIXED_COUNT = 6
@@ -90,8 +90,7 @@ class CreateBatchFiles(cpm.CPModule):
         self.batch_mode = cps.Binary("Hidden: in batch mode", False)
         self.default_image_directory = cps.Setting("Hidden: default image directory at time of save",
                                                    cpprefs.get_default_image_directory())
-        self.revision = cps.Integer("Hidden: SVN revision number",
-                                    get_revision())
+        self.revision = cps.Integer("Hidden: SVN revision number", version)
         self.mappings = []
         self.add_mapping()
         self.add_mapping_button = cps.DoSomething("Add another path?","Add",
@@ -302,7 +301,7 @@ class CreateBatchFiles(cpm.CPModule):
             variable_revision_number = 2
         if (not from_matlab) and variable_revision_number == 2:
             setting_values = (setting_values[:6] + 
-                              [get_revision()] +
+                              [version] +
                               setting_values[6:])
             variable_revision_number = 3
         if (not from_matlab) and variable_revision_number == 3:

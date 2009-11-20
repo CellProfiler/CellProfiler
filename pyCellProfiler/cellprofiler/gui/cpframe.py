@@ -26,6 +26,7 @@ from cellprofiler.gui.moduleview import ModuleView
 from cellprofiler.gui.preferencesview import PreferencesView
 from cellprofiler.gui.directoryview import DirectoryView
 import cellprofiler.gui.preferencesdlg
+import cellprofiler.utilities.get_revision as get_revision
 import traceback
 import sys
 
@@ -102,7 +103,7 @@ class CPFrame(wx.Frame):
         self.Destroy()
  
     def __set_properties(self):
-        self.SetTitle("CellProfiler")
+        self.SetTitle("CellProfiler (svn %d)"%(get_revision.version))
         self.SetSize((640, 480))
  
     def __add_menu(self):

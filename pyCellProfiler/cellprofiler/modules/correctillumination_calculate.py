@@ -1,4 +1,4 @@
-'''<b>CorrectIllumination_Calculate</b> - Calculates an illumination function, used to correct uneven
+'''<b>Correct Illumination - Calculate</b> calculates an illumination function, used to correct uneven
 illumination/lighting/shading or to reduce uneven background in images.
 <hr>
 This module calculates an illumination function which can be saved to the
@@ -13,7 +13,7 @@ which should help clarify it (TR Jones, AE Carpenter, P Golland, in
 preparation). In the meantime, please be patient in trying to understand
 this module.
 
-See also <b>CorrectIllumination_Apply</b> and <b>SmoothOrEnhance</b> modules.
+See also <b>CorrectIllumination_Apply</b> and <b>EnhanceOrSuppressSpeckles</b> modules.
 '''
 #CellProfiler is distributed under the GNU General Public License.
 #See the accompanying file LICENSE for details.
@@ -71,62 +71,90 @@ class CorrectIllumination_Calculate(cpm.CPModule):
     def create_settings(self):
         """Create the setting variables
         """
-        self.image_name = cps.ImageNameSubscriber("Select the input image","None", doc = '''What did you call the images to be used to calculate the illumination function?''')
-        self.illumination_image_name = cps.ImageNameProvider("Select the output image","IllumBlue", doc = '''What do you want to call the illumination function?''')
-        self.intensity_choice = cps.Choice("Do you want to calculate using regular intensities or background intensities?",
+        self.image_name = cps.ImageNameSubscriber("Select the input image","None", doc = '''
+                                           What did you call the images to be used to calculate the illumination function?''')
+        
+        self.illumination_image_name = cps.ImageNameProvider("Select the output image","IllumBlue", doc = '''
+                                           What do you want to call the illumination function?''')
+        
+        self.intensity_choice = cps.Choice("Illumination function calculation method",
                                            [IC_REGULAR, IC_BACKGROUND],
-                                           IC_REGULAR, doc = '''<ul><li>Regular: If you have objects that are evenly dispersed across your image(s) and
-                                            cover most of the image, then you can choose Regular intensities. Regular
+                                           IC_REGULAR, doc = '''
+                                           Do you want to calculate using regular intensities or background intensities?<br>
+                                           <ul>
+                                           <li><i>Regular:</i> If you have objects that are evenly dispersed across your image(s) and
+                                            cover most of the image, then you can choose the <i>Regular</i> method. Regular
                                             intensities makes the illumination function based on the intensity at
-                                            each pixel of the image (or group of images if you are in All mode) and
+                                            each pixel of the image (or group of images if you are in <i>All</i> mode) and
                                             is most often rescaled (see below) and applied by division using
-                                            CorrectIllumination_Apply. Note that if you are in Each mode or using a
+                                            <b>CorrectIllumination_Apply.</b> Note that if you are in <i>Each</i> mode or using a
                                             small set of images with few objects, there will be regions in the
                                             average image that contain no objects and smoothing by median filtering
                                             is unlikely to work well.
-                                            Note: it does not make sense to choose (Regular + no smoothing + Each)
+                                            Note: it does not make sense to choose (<i>Regular + No Smoothing + Each</i>)
                                             because the illumination function would be identical to the original
                                             image and applying it will yield a blank image. You either need to smooth
-                                            each image or you need to use All images.
-                                            <li>Background intensities:
+                                            each image or you need to use <i>All</i> images.</li>
+                                            <li><i>Background intensities:</i>
                                             If you think that the background (dim points) between objects show the
-                                            same pattern of illumination as your objects of interest, you can choose
-                                            Background intensities. Background intensities finds the minimum pixel
+                                            same pattern of illumination as your objects of interest, you can choose the
+                                            <i>Background<i> method. Background intensities finds the minimum pixel
                                             intensities in blocks across the image (or group of images if you are in
-                                            All mode) and is most often applied by subtraction using the
-                                            CorrectIllumination_Apply module.
-                                            Note: if you will be using the Subtract option in the
-                                            CorrectIllumination_Apply module, you almost certainly do NOT want to
-                                            Rescale! See below!! </ul> ''')
-        self.dilate_objects = cps.Binary("Do you want to dilate objects in the final averaged image?",False, doc = '''For some applications, the incoming images are binary and each object
+                                            <i>All</i> mode) and is most often applied by subtraction using the
+                                            <b>CorrectIllumination_Apply</b> module.
+                                            Note: if you will be using the <i>Subtract</i> option in the
+                                            <b>CorrectIllumination_Apply</b> module, you almost certainly do NOT want to
+                                            <i>Rescale</i>! </li>
+                                            </ul> ''')
+        
+        self.dilate_objects = cps.Binary("Dilate objects in the final averaged image?",False, doc = '''
+                                            <i>(Used if the Regular method is selected)</i><br>
+                                            Do you want to dilate objects in the final averaged image?
+                                            For some applications, the incoming images are binary and each object
                                             should be dilated with a gaussian filter in the final averaged
                                             (projection) image. This is for a sophisticated method of illumination
                                             correction where model objects are produced.''')
-        self.object_dilation_radius = cps.Integer("Enter the radius (roughly equal to the original radius of the objects).",1,0)
-        self.block_size = cps.Integer("Enter the block size, which should be large enough that every square block of pixels is likely to contain some background pixels, where no objects are located.",60,1)
-        self.rescale_option = cps.Choice("""Do you want to rescale the illumination function?""",
-                                         [cps.YES, cps.NO, RE_MEDIAN], doc = '''The illumination function can be rescaled so that the pixel intensities
+        
+        self.object_dilation_radius = cps.Integer("Dilation radius",1,0,doc='''
+                                            <i>(Used if the Background method is selected)</i><br>
+                                            This value should be roughly equal to the original radius of the objects''')
+        
+        self.block_size = cps.Integer("Block size",60,1,doc = '''
+                                            <i>(Used if the Regular method and dilation is selected)</i><br>
+                                            The block size should be large enough that every square block of pixels is likely 
+                                            to contain some background pixels, where no objects are located.''')
+        
+        self.rescale_option = cps.Choice("Rescale the illumination function?",
+                                         [cps.YES, cps.NO, RE_MEDIAN], doc = '''
+                                        The illumination function can be rescaled so that the pixel intensities
                                         are all equal to or greater than one. This is recommended if you plan to
-                                        use the division option in CorrectIllumination_Apply so that the
+                                        use the <i>Division</i> option in <b>CorrectIllumination_Apply</b> so that the
                                         corrected images are in the range 0 to 1. It is NOT recommended if you
-                                        plan to use the Subtract option in CorrectIllumination_Apply! Note that
+                                        plan to use the <i>Subtract</i> option in <b>CorrectIllumination_Apply</b>! Note that
                                         as a result of the illumination function being rescaled from 1 to
                                         infinity, if there is substantial variation across the field of view, the
                                         rescaling of each image might be dramatic, causing the corrected images
-                                        to be very dark. The <i>Median</i> option chooses the median value in the image to rescale so that division increases some values an decreases others.''')
-        self.each_or_all = cps.Choice("Calculate a separate function for each image, or one for all the images?",
-                                      [EA_EACH,EA_ALL], doc = '''Select Each to calculate an illumination function for Each image 
-                                      individually or All to calculate an illumination function based on All the specified images 
-                                      to be corrected.  All will cycle through all the images in the image set, creating an averaged image,
-                                      plus any smoothing you select.  The first cycle will be longer, but subsequent cycles will be processed
+                                        to be very dark. The <i>Median</i> option chooses the median value in the 
+                                        image to rescale so that division increases some values an decreases others.''')
+        
+        self.each_or_all = cps.Choice("Calculate function for each or all images?",
+                                      [EA_EACH,EA_ALL], doc = '''
+                                      Calculate a separate function for each image, or one for all the images?
+                                      Select <i>Each</i> to calculate an illumination function for each image 
+                                      individually or <i>All</i> to calculate an illumination function based on all 
+                                      the specified images to be corrected. <i>All</i> will cycle through all the 
+                                      images in the image set, creating an averaged image, plus any smoothing you 
+                                      select.  The first cycle will be longer, but subsequent cycles will be processed
                                       more quickly.''')
-        self.smoothing_method = cps.Choice("Enter the smoothing method you would like to use, if any.",
+        
+        self.smoothing_method = cps.Choice("Smoothing method",
                                            [SM_NONE, SM_FIT_POLYNOMIAL, 
                                             SM_MEDIAN_FILTER, 
                                             SM_GAUSSIAN_FILTER,
-                                            SM_TO_AVERAGE], doc = '''If requested, the resulting image is smoothed. See the help for the
-                                            <b>SmoothOrEnhance</b> module for more details. If you are using Each mode, this is
-                                            almost certainly necessary. If you have few objects in each image or a
+                                            SM_TO_AVERAGE], doc = '''
+                                            If requested, the resulting image is smoothed. See the help for the
+                                            <b>EnhanceOrSuppressSpeckles</b> module for more details. If you are using <i>Each</i> mode,
+                                            this is almost certainly necessary. If you have few objects in each image or a
                                             small image set, you may want to smooth. The goal is to smooth to the
                                             point where the illumination function resembles a believable pattern.
                                             That is, if it is a lamp illumination problem you are trying to correct,
@@ -138,22 +166,42 @@ class CorrectIllumination_Calculate(cpm.CPModule):
                                             is less sensitive to outliers, although the results are also slightly 
                                             less smooth and the fact that images are in the range of 0 to 1 means that
                                             outliers typically will not dominate too strongly anyway. A less commonly
-                                            used option is to <b>completely</b> smooth the entire image by choosing
-                                            "Smooth to average", which will create a flat, smooth image where every
+                                            used option is to completely smooth the entire image by choosing
+                                            <i>Smooth to average</i>, which will create a flat, smooth image where every
                                             pixel of the image is the average of what the illumination function would
                                             otherwise have been.''')
-        self.automatic_object_width = cps.Choice("Calculate the smoothing filter size automatically, relative to the width of artifacts to be smoothed or use a manually entered value?",
-                                                 [FI_AUTOMATIC, FI_OBJECT_SIZE, FI_MANUALLY])
-        self.object_width = cps.Integer("Approximate width of the artifacts to be smoothed (in pixels)?",10)
-        self.size_of_smoothing_filter = cps.Integer("Size of the smoothing filter (in pixels)?",10)
-        self.save_average_image = cps.Binary("Do you want to save the averaged image?", False, doc = '''This is the illumination function
-                                        prior to dilation or smoothing. It is an image produced during the calculations, not typically
-                                        needed for downstream modules.''')
-        self.average_image_name = cps.ImageNameProvider("What is the name of the averaged image?","IllumBlueAvg")
-        self.save_dilated_image = cps.Binary("Do you want to save the dilated image?", False, doc = '''This is the illumination function
-                                        after dilation but prior to smoothing. It is an image produced during the calculations, not typically 
-                                        needed for downstream modules.''')
-        self.dilated_image_name = cps.ImageNameProvider("What is the name of the dilated image?","IllumBlueDilated")
+        
+        self.automatic_object_width = cps.Choice("Method to calculate smoothing filter size",
+                                            [FI_AUTOMATIC, FI_OBJECT_SIZE, FI_MANUALLY], doc = '''
+                                            <i>(Used if a smoothing method other than Fit Polynomial is selected)</i><br>
+                                            Calculate the smoothing filter size automatically, relative to the width 
+                                            of artifacts to be smoothed or use a manually entered value?''')
+        
+        self.object_width = cps.Integer("Approximate object size",10,doc = '''
+                                            <i>(Used if Automatic is selected for smoothing filter size calculation)</i><br>
+                                            What is the approximate width of the artifacts to be smoothed, in pixels?''')
+        
+        self.size_of_smoothing_filter = cps.Integer("Smoothing filter size",10,doc = '''
+                                            <i>(Used if Manual is selected for smoothing filter size calculation)</i><br>
+                                            What is the size of the smoothing filter, in pixels?''')
+        
+        self.save_average_image = cps.Binary("Save the averaged image?", False, doc = '''
+                                            Do you want to save the averaged image? This is the illumination function
+                                            prior to dilation or smoothing. It is an image produced during the calculations, not typically
+                                            needed for downstream modules.''')
+        
+        self.average_image_name = cps.ImageNameProvider("Name the averaged image","IllumBlueAvg",doc = '''
+                                            <i>(Only used if the averaged image is to be saved)</i><br>
+                                            What is the name of the averaged image?''')
+        
+        self.save_dilated_image = cps.Binary("Save the dilated image?", False, doc = '''                                            
+                                            Do you want to save the dilated image? This is the illumination function                                            
+                                            after dilation but prior to smoothing. It is an image produced during the calculations, not typically 
+                                            needed for downstream modules.''')
+        
+        self.dilated_image_name = cps.ImageNameProvider("Name the dilated image","IllumBlueDilated",doc='''
+                                            <i>(Only used if the dilated image is to be saved)</i><br>
+                                            What is the name of the dilated image?''')
 
     def settings(self):
         return [ self.image_name, self.illumination_image_name,

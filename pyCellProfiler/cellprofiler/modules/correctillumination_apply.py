@@ -66,21 +66,32 @@ class CorrectIllumination_Apply(cpm.CPModule):
     
     def add_image(self, can_delete = True):
         '''Add an image and its settings to the list of images'''
-        image_name = cps.ImageNameSubscriber("Select the input image","None", doc = '''What did you call the image to be corrected?''')
-        corrected_image_name = cps.ImageNameProvider("Name the output image","CorrBlue", doc = '''What do you want to call the corrected image?''')
-        illum_correct_function_image_name = cps.ImageNameSubscriber("Select the illumination function","None", doc = '''What did you call the 
-                                        illumination correction function image to be used to carry out the correction (produced by another module 
+        image_name = cps.ImageNameSubscriber("Select the input image","None", doc = '''
+                                        What did you call the image to be corrected?''')
+        
+        corrected_image_name = cps.ImageNameProvider("Name the output image","CorrBlue", doc = '''
+                                        What do you want to call the corrected image?''')
+        
+        illum_correct_function_image_name = cps.ImageNameSubscriber("Select the illumination function","None", doc = '''
+                                        What did you call the illumination correction function image to be used to carry out the correction (produced by another module 
                                         or loaded as a .mat format image using Load Single Image)?''')
-        divide_or_subtract = cps.Choice("How do you want to apply the illumination correction function?",
-                                        [DOS_DIVIDE, DOS_SUBTRACT], doc = '''This choice depends on how the illumination function was calculated
+        
+        divide_or_subtract = cps.Choice("Application of the illumination function",
+                                        [DOS_DIVIDE, DOS_SUBTRACT], doc = '''
+                                        How do you want to apply the illumination correction function?
+                                        This choice depends on how the illumination function was calculated
                                         and on your physical model of how illumination variation affects the background of images relative to 
                                         the objects in images. <ul><li>Subtract: Use <i>Subtract</i> if the background signal is significant relative to the real signal
                                         coming from the cells (a somewhat empirical decision).  If you created the illumination correction function using <i>Background</i>,
                                         then you will want to choose <i>Subtract</i> here.</li><li>Divide: Use <i>Divide</i> if the the signal to background ratio 
                                         is quite high (the cells are stained very strongly).  If you created the illumination correction function using <i>Regular</i>,
                                         then you will want to choose <i>Divide</i> here.</ul>''')
-        rescale_option = cps.Choice("Choose rescaling method",
-                                    [RE_NONE, RE_STRETCH, RE_MATCH], doc = '''<ul><li>Subtract: Any pixels that end up negative are set to zero, so no rescaling is necessary.
+        
+        rescale_option = cps.Choice("Rescaling method",
+                                    [RE_NONE, RE_STRETCH, RE_MATCH], doc = '''
+                                    Choose the rescaling method
+                                    <ul>
+                                    <li>Subtract: Any pixels that end up negative are set to zero, so no rescaling is necessary.
                                     <li>Divide: The resulting image may be in a very different range of intensity values relative to the original image.
                                     If the illumination correction function is in the range 1 to infinity, <i>Divide</i> will usually yield an image in a reasonable
                                     range (0 to 1).  However, if the image is not in this range, or the intensity gradient within the image is still very great,

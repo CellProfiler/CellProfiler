@@ -101,9 +101,11 @@ def fill_modules():
             m = __import__('cellprofiler.modules.' + mod, globals(), locals(), [name])
             assert not name in all_modules, "Module %s appears more than once in module list"%(name)
         except Exception, e:
+            import traceback
+            print traceback.print_exc(e)
             badmodules.append((mod, e))
             continue
-
+        
         try:
             pymodules.append(m)
             all_modules[name] = m.__dict__[name]
@@ -111,11 +113,13 @@ def fill_modules():
             # attempt to instantiate
             all_modules[name]()
         except Exception, e:
+            import traceback
+            print traceback.print_exc(e)
             badmodules.append((mod, e))
             if name in all_modules:
                 del all_modules[name]
                 del pymodules[-1]
-
+                
     if len(badmodules) > 0:
         print "could not load these modules", badmodules
         

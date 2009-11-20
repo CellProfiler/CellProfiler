@@ -32,7 +32,6 @@ import os
 import re
 import sys
 import wx
-import uuid
 import zlib
 
 import cellprofiler.cpimage as cpi
@@ -40,7 +39,14 @@ import cellprofiler.cpmodule as cpm
 import cellprofiler.pipeline as cpp
 import cellprofiler.settings as cps
 import cellprofiler.preferences as cpprefs
-from cellprofiler.utilities.get_revision import version
+
+try:
+    # During initialization, this isn't available because the
+    # cellprofiler module is still being imported.
+    from cellprofiler.utilities.get_revision import version
+except:
+    version = 0
+    pass
 
 '''# of settings aside from the mappings'''
 S_FIXED_COUNT = 6
@@ -98,11 +104,10 @@ class CreateBatchFiles(cpm.CPModule):
                 Press this button to add another path mapping.""")
     
     def add_mapping(self):
-        class Mapping(object):
-            def __init__(self, mappings):
-                self.key = uuid.uuid4()
-                self.local_directory = cps.Text("What is the path to files on this computer?",
-                                                cpprefs.get_default_image_directory(),doc="""
+        group = cps.SettingsGroup()
+        group.append("local_directory",
+                     cps.Text("What is the path to files on this computer?",
+                              cpprefs.get_default_image_directory(),doc="""
                         This is the root path on the local machine (i.e., the computer setting up
                         the batch file). If <b>CreateBatchFiles</b> finds
                         any pathname that matches the local root path at the begining, it will replace the
@@ -112,9 +117,10 @@ class CreateBatchFiles(cpm.CPModule):
                         and the cluster machine sees the same directory as:<br><br>
                         <i>/server_name/your_name/your_data/images</i><br><br>
                         you would want to put <i>Z:</i> here and <i>/server_name/your_name/</i> 
-                        for the cluster path in the next setting.""")
-                self.remote_directory = cps.Text("What is the path to files on the cluster?",
-                                                 cpprefs.get_default_image_directory(),doc="""
+                        for the cluster path in the next setting."""))
+        group.append("remote_directory",
+                     cps.Text("What is the path to files on the cluster?",
+                              cpprefs.get_default_image_directory(),doc="""
                         This is the cluster root path, i.e, how the cluster machine sees the
                         top-most directory where your input/output files are stored.
                         <p>For example, if you have mapped the remote cluster machine as:<br><br>
@@ -122,29 +128,19 @@ class CreateBatchFiles(cpm.CPModule):
                         and the cluster machine sees the same directory as:<br><br>
                         <i>/server_name/your_name/your_data/images</i><br><br>
                         you would want to put <i>Z:</i> in the previous setting for the
-                        local machine path and <i>/server_name/your_name/</i> here. """)
-                def remove_fn(key = self.key, mappings = mappings):
-                    index = [mapping.key for mapping in mappings].index(key)
-                    del mappings[index]
-                self.remove_button = cps.DoSomething("Remove the above directory mapping.",
-                                                     "Remove",
-                                                     remove_fn)
-            
-            def settings(self):
-                return [self.local_directory, self.remote_directory]
-            
-            def visible_settings(self):
-                return [self.local_directory, self.remote_directory,
-                        self.remove_button]
-        self.mappings.append(Mapping(self.mappings))
-    
+                        local machine path and <i>/server_name/your_name/</i> here. """))
+        group.append("remover",
+                     cps.RemoveSettingButton("", "Remove above mapping", self.mappings, group))
+        group.append("divider", cps.Divider(line=False))
+        self.mappings.append(group)
+
     def settings(self):
         result = [self.wants_default_output_directory,
                   self.custom_output_directory, self.remote_host_is_windows,
                   self.batch_mode, 
                   self.default_image_directory, self.revision]
         for mapping in self.mappings:
-            result += mapping.settings()
+            result += [mapping.local_directory, mapping.remote_directory]
         return result
     
     def prepare_settings(self, setting_values):
@@ -166,7 +162,7 @@ class CreateBatchFiles(cpm.CPModule):
             result += [self.custom_output_directory]
         result += [self.remote_host_is_windows]
         for mapping in self.mappings:
-            result += mapping.visible_settings()
+            result += mapping.unpack_group()
         result += [self.add_mapping_button]
         return result
     

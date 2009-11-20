@@ -57,8 +57,6 @@ S_PER_MAPPING = 2
 F_BATCH_DATA = 'Batch_data.mat'
 
 class CreateBatchFiles(cpm.CPModule):
-    # XXX needs to use cps.SettingsGroup
-
     #
     # How it works:
     #
@@ -74,6 +72,7 @@ class CreateBatchFiles(cpm.CPModule):
     category = 'File Processing'
     variable_revision_number = 4
     
+    #
     def create_settings(self):
         '''Create the module settings and name the module'''
         self.wants_default_output_directory = cps.Binary("Do you want to store the batch files in the default output directory?", True,doc="""

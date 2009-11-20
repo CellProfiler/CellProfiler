@@ -144,9 +144,9 @@ class MeasureTexture(cpm.CPModule):
         self.add_scales = cps.DoSomething("Add another scale", "Add",
                                           self.add_scale_cb)
         
-        self.gabor_angles = cps.Integer("How many angles do you want to use for each Gabor measurement?",4,2, doc="""
-            Enter the number of angles to compute for Gabor. The default is
-            four which detects bands in the horizontal, vertical and diagonal
+        self.gabor_angles = cps.Integer("Enter number of angles to compute for Gabor:",4,2, doc="""
+        How many angles do you want to use for each Gabor measurement?
+            The default is four which detects bands in the horizontal, vertical and diagonal
             orientations.""")
 
     def settings(self):

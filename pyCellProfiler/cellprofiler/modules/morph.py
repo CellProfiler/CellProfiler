@@ -390,12 +390,14 @@ class Morph(cpm.CPModule):
     variable_revision_number = 1
     
     def create_settings(self):
-        self.image_name = cps.ImageNameSubscriber("What image do you want to morph?","None",doc="""
+        self.image_name = cps.ImageNameSubscriber("Select input image:","None",doc="""
+            What image do you want to morph?
             This is the input image to the module. A grayscale image can be
             converted to binary using the <b>ApplyThreshold</b> module. Objects can be
             converted to binary using the <b>ConvertToImage module</b>.""")
         
-        self.output_image_name = cps.ImageNameProvider("What do you want to call the resulting image?","MorphBlue",doc="""
+        self.output_image_name = cps.ImageNameProvider("Name the output image:","MorphBlue",doc="""
+        What do you want to call the resulting image?
             This is the output of the module. It will be of the same type as the
             input image.""")
         
@@ -413,11 +415,12 @@ class Morph(cpm.CPModule):
             '''Represents the variables needed to run a function'''
             def __init__(self, functions):
                 self.key = uuid.uuid4()
-                self.function = cps.Choice("What operation do you want to perform?",
+                self.function = cps.Choice("Select operation to perform:",
                                            F_ALL, F_OPEN,doc="""
+                                           What operation do you want to perform?
                     This is one of the functions listed in the module Help.""")
                 
-                self.repeats_choice = cps.Choice("How many times do you want to repeat the operation?",
+                self.repeats_choice = cps.Choice("Repeat operation:",
                                                  R_ALL,doc="""
                     This setting controls the number of times that the same operation is applied
                     successively to the image.

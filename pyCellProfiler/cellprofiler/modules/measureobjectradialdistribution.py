@@ -136,7 +136,7 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
                 self.object_name = cps.ObjectNameSubscriber(
                     "Select the input objects", "None")
                 self.center_choice = cps.Choice(
-                    "What objects do you want to use as centers?", C_ALL,doc="""
+                    "Use these objects or another object as the center?", C_ALL,doc="""
                     There are two options for the center of the radial measurement:
                     <ul>
                     <li><i>These objects</i>:Use the object centers for the 
@@ -149,7 +149,7 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
                     objects</i>) or you can use previously identified Nuclei objects as 
                     the centers (<i>Other objects</i>).""")
                 self.center_object_name = cps.ObjectNameSubscriber(
-                    "What objects do you want to use as centers?", "None",doc="""
+                    "Select objects to use as centers:", "None",doc="""
                     Select the object to use as the center, or select <i>None</i> to
                     use the input object centers (which is the same as selecting
                     <i>These objects</i> for the object centers.""")
@@ -182,8 +182,8 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
             def __init__(self, bin_counts):
                 self.key = uuid.uuid4()
                 self.bin_count = cps.Integer(
-                    "How many bins do you want to use to store "
-                        "the distribution?",4, 2, doc="""
+                    "Number of bins:",4, 2, doc="""How many bins do you want to use to store 
+                        the distribution?
                         The radial distribution is measured with respect to a series
                         of concentric rings starting from the object center (or 
                         more generally, between contours at a normalized distance

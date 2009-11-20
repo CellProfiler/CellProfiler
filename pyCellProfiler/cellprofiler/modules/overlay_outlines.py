@@ -49,27 +49,28 @@ class OverlayOutlines(cpm.CPModule):
     category = "Image Processing"
     
     def create_settings(self):
-        self.blank_image = cps.Binary("Do you want to display outlines on a blank image?",
+        self.blank_image = cps.Binary("Display outlines on a blank image?",
                                       False, doc="""
                         If you check this setting, the module will produce an
                         image of the outlines on a black background. If the
                         setting is unchecked, the module will overlay the 
                         outlines on an image of your choosing.""")
         self.image_name = cps.ImageNameSubscriber(
-            "On which image would you like to display the outlines?","None", doc="""
+            "Select image on which to display outlines","None", doc="""
+            On which image would you like to display the outlines?
             Choose the image to serve as the background for the outlines.
             You can choose from images that were loaded or created by modules
             previous to this one""")
         self.output_image_name = cps.ImageNameProvider(
-            "What do you want to call the image with the outlines displayed?",
+            "Name the output image:",
             "OrigOverlay",
             doc="""
+            What do you want to call the image with the outlines displayed?
             This setting names the overlay image. The name you provide will
             show up in image lists in later modules (for instance 
             <b>SaveImages</b>)""")
         self.wants_color = cps.Choice(
-            "Do you want the output image to have color outlines or have "
-            "outlines drawn on a grayscale image",
+            "Select outline display mode:",
             [WANTS_COLOR, WANTS_GRAYSCALE], doc="""
             This option chooses how to display the outline contours around
             your objects. Color outlines produce a clearer display for
@@ -78,11 +79,11 @@ class OverlayOutlines(cpm.CPModule):
             either the highest possible intensity or the same intensity
             as the brightest pixel in the image.""")
         self.max_type = cps.Choice(
-            "Would you like the intensity (brightness) of the outlines to be "
-            "the same as the brightest point in the image, or the maximum "
-            "possible value for this image format?",
+            "Select method to determine brightness of outlines:",
             [MAX_IMAGE, MAX_POSSIBLE],
-            doc = """
+            doc = """Would you like the intensity (brightness) of the outlines to be "
+            "the same as the brightest point in the image, or the maximum "
+            "possible value for this image format?
             If your image is quite dim, then putting bright white lines
             onto it may not be useful. It may be preferable to make the
             outlines equal to the maximal brightness already occurring 
@@ -102,7 +103,7 @@ class OverlayOutlines(cpm.CPModule):
                     del outlines[index]
                 
                 self.outline_name = cps.OutlineNameSubscriber(
-                    "What did you call the outlines that you would like to display?",
+                    "Select outlines to display:",
                     "None", doc="""
                     Choose an outline from a previous <b>IdentifyPrimAutomatic</b>,
                     <b>IdentifySecondary</b> or <b>IdentifyTertiarySubregion</b>
@@ -115,7 +116,7 @@ class OverlayOutlines(cpm.CPModule):
                                  if len(outlines) < len(COLOR_ORDER)
                                  else COLOR_ORDER[0])
                 self.color = cps.Choice(
-                    "What color do you want the outlines to be?",
+                    "Select outline color:",
                     COLORS.keys(), default_color)
                 self.remove_button = cps.DoSomething("Remove the above outline",
                                                      "Remove",

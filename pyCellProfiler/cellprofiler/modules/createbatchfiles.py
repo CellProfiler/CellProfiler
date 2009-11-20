@@ -75,13 +75,16 @@ class CreateBatchFiles(cpm.CPModule):
     #
     def create_settings(self):
         '''Create the module settings and name the module'''
-        self.wants_default_output_directory = cps.Binary("Do you want to store the batch files in the default output directory?", True,doc="""
+        self.wants_default_output_directory = cps.Binary("Store batch files in Default output directory", True,doc="""
+                Do you want to store the batch files in the default output directory? 
                 Check this box to store batch files in the Default Output directory. Uncheck
                 the box to enter the path to the directory that will be used to store
                 these files.""")
         
-        self.custom_output_directory = cps.Text("What is the path to the output directory?",
-                                                cpprefs.get_default_output_directory())
+        self.custom_output_directory = cps.Text("Output directory path",
+                                                cpprefs.get_default_output_directory(),doc="""
+                                                What is the path to the output directory?""")
+        
         # Worded this way not because I am windows-centric but because it's
         # easier than listing every other OS in the universe except for VMS
         self.remote_host_is_windows = cps.Binary("Are the cluster computers running Windows?",
@@ -105,29 +108,32 @@ class CreateBatchFiles(cpm.CPModule):
     def add_mapping(self):
         group = cps.SettingsGroup()
         group.append("local_directory",
-                     cps.Text("What is the path to files on this computer?",
-                              cpprefs.get_default_image_directory(),doc="""
-                        This is the root path on the local machine (i.e., the computer setting up
-                        the batch file). If <b>CreateBatchFiles</b> finds
-                        any pathname that matches the local root path at the begining, it will replace the
-                        start with the cluster root path.
-                        <p>For example, if you have mapped the remote cluster machine as:<br><br>
-                        <i>Z:\your_data\images</i> (on a Windows machine, for instance)<br><br>
-                        and the cluster machine sees the same directory as:<br><br>
-                        <i>/server_name/your_name/your_data/images</i><br><br>
-                        you would want to put <i>Z:</i> here and <i>/server_name/your_name/</i> 
-                        for the cluster path in the next setting."""))
+                     cps.Text("Path to files on this computer",
+                                cpprefs.get_default_image_directory(),doc="""
+                                What is the path to files on this computer? 
+                                This is the root path on the local machine (i.e., the computer setting up
+                                the batch file). If <b>CreateBatchFiles</b> finds
+                                any pathname that matches the local root path at the begining, it will replace the
+                                start with the cluster root path.
+                                <p>For example, if you have mapped the remote cluster machine as:<br><br>
+                                <i>Z:\your_data\images</i> (on a Windows machine, for instance)<br><br>
+                                and the cluster machine sees the same directory as:<br><br>
+                                <i>/server_name/your_name/your_data/images</i><br><br>
+                                you would want to put <i>Z:</i> here and <i>/server_name/your_name/</i> 
+                                for the cluster path in the next setting."""))
+
         group.append("remote_directory",
-                     cps.Text("What is the path to files on the cluster?",
-                              cpprefs.get_default_image_directory(),doc="""
-                        This is the cluster root path, i.e, how the cluster machine sees the
-                        top-most directory where your input/output files are stored.
-                        <p>For example, if you have mapped the remote cluster machine as:<br><br>
-                        <i>Z:\your_data\images</i> (on a Windows machine, for instance)<br><br>
-                        and the cluster machine sees the same directory as:<br><br>
-                        <i>/server_name/your_name/your_data/images</i><br><br>
-                        you would want to put <i>Z:</i> in the previous setting for the
-                        local machine path and <i>/server_name/your_name/</i> here. """))
+                     cps.Text("Path to files on the cluster",
+                                cpprefs.get_default_image_directory(),doc="""
+                                What is the path to files on the cluster? This is the cluster 
+                                root path, i.e, how the cluster machine sees the
+                                top-most directory where your input/output files are stored.
+                                <p>For example, if you have mapped the remote cluster machine as:<br><br>
+                                <i>Z:\your_data\images</i> (on a Windows machine, for instance)<br><br>
+                                and the cluster machine sees the same directory as:<br><br>
+                                <i>/server_name/your_name/your_data/images</i><br><br>
+                                you would want to put <i>Z:</i> in the previous setting for the
+                                local machine path and <i>/server_name/your_name/</i> here. """))
         group.append("remover",
                      cps.RemoveSettingButton("", "Remove above mapping", self.mappings, group))
         group.append("divider", cps.Divider(line=False))

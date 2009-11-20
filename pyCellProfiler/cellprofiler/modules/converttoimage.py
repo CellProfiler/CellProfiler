@@ -1,17 +1,18 @@
-'''converttoimage.py - the ConvertToImage module
-
-Converts a labels matrix into an image
-
-CellProfiler is distributed under the GNU General Public License.
-See the accompanying file LICENSE for details.
-
-Developed by the Broad Institute
-Copyright 2003-2009
-
-Please see the AUTHORS file for credits.
-
-Website: http://www.cellprofiler.org
+'''<b>Convert To Image </b> converts objects you have identified into an image
+<hr>
+This module allows you to take previously identified objects and convert
+them into an image, which can then be saved with the SaveImages modules.
 '''
+
+#CellProfiler is distributed under the GNU General Public License.
+#See the accompanying file LICENSE for details.
+#
+#Developed by the Broad Institute
+#Copyright 2003-2009
+#
+#Please see the AUTHORS file for credits.
+#
+#Website: http://www.cellprofiler.org
 
 __version__="$Revision$"
 
@@ -39,44 +40,38 @@ IM_UINT16 = "uint16"
 IM_ALL = [IM_COLOR, IM_BINARY, IM_GRAYSCALE, IM_UINT16]
 
 class ConvertToImage(cpm.CPModule):
-    '''SHORT DESCRIPTION:
-    Converts objects you have identified into an image so that it can be
-    saved with the Save Images module.
-    *************************************************************************
-    
-    This module allows you to take previously identified objects and convert
-    them into an image, which can then be saved with the SaveImages modules.
-    
-    Settings:
-    
-    Binary (black & white), grayscale, or color: Choose how you would like
-    the objects to appear. Color allows you to choose a colormap which will
-    produce jumbled colors for your objects. Grayscale will give each object
-    a graylevel pixel intensity value corresponding to its number (also
-    called label), so it usually results in objects on the left side of the
-    image being very dark, and progressing towards white on the right side of
-    the image. You can choose "Color" with a "Gray" colormap to produce
-    jumbled gray objects.
-    
-    Colormap:
-    Affect how the objects are colored. You can look up your default colormap
-    under File > Set Preferences. Look in matlab help online (try Google) to
-    see what the available colormaps look like. See also Help > HelpColormaps
-    in the main CellProfiler window.
-    '''
-    
+
     module_name = "ConvertToImage"
     category = "Object Processing"
     variable_revision_number = 1
     
     def create_settings(self):
-        self.object_name = cps.ObjectNameSubscriber("What did you call the objects you want to convert to an image?","None")
-        self.image_name = cps.ImageNameProvider("What do you want to call the resulting image?", "CellImage")
-        self.image_mode = cps.Choice("What colors should the resulting image use?",
-                                     IM_ALL)
-        self.colormap = cps.Choice("What do you want the colormap to be?",
-                                   COLORMAPS)
-
+        self.object_name = cps.ObjectNameSubscriber("Select the input objects","None",doc="""
+                                What did you call the objects you want to convert to an image?""")
+        
+        self.image_name = cps.ImageNameProvider("Name the output image", "CellImage",doc="""
+                                What do you want to call the resulting image?""")
+        
+        self.image_mode = cps.Choice("Select color type",
+                                IM_ALL,doc="""
+                                What colors should the resulting image use? Choose how you would like
+                                the objects to appear:
+                                <ul>
+                                <li><i>Color:</i> Allows you to choose a colormap which will
+                                produce jumbled colors for your objects. </li>
+                                <li><i>Grayscale:</i> Gives each object
+                                a graylevel pixel intensity value corresponding to its number (also
+                                called label), so it usually results in objects on the left side of the
+                                image being very dark, and progressing towards white on the right side of
+                                the image. </li>
+                                </ul>
+                                You can choose <i>Color</i> with a <i>Gray</i> colormap to produce
+                                jumbled gray objects.""")
+        
+        self.colormap = cps.Choice("Select the colormap",
+                                COLORMAPS,doc="""
+                                What do you want the colormap to be? Affect how the objects are colored. 
+                                You can look up your default colormap under <i>File > Set Preferences</i>.""")
 
     def settings(self):
         return [self.object_name, self.image_name, self.image_mode, 

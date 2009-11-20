@@ -1,21 +1,17 @@
-'''<b>DefineGrid:</b>
-Produces a grid of desired specifications either manually, or
-automatically based on previously identified objects. The grid can then
-be used to make measurements (using Identify Objects in Grid) or to
-display text information (using Display Grid Info) within each
-compartment of the grid.
+'''<b>Define Grid</b> produces a grid of desired specifications either manually, or
+automatically based on previously identified objects.
 <hr>
-
 This module defines the location of a grid that can be used by modules
 downstream. When used in combination with <b>IdentifyObjectsInGrid</b>, it
 allows the measurement of the size, shape, intensity and texture of each
 object in a grid. The grid is defined by the location of marker spots
 (control spots) in the grid, which are either indicated manually or are
-found automatically using previous modules in the pipeline.
+found automatically using previous modules in the pipeline. The grid can then
+be used to make measurements (using <b>IdentifyObjectsInGrid</b>).
 
 If you are using images of plastic plates, it may be useful to precede
-this module with an IdentifyPrimAutomatic module to find the plastic
-plate, followed by a Crop module to remove the plastic edges of the
+this module with an <b>IdentifyPrimAutomatic</b> module to find the plastic
+plate, followed by a <b>Crop</b> module to remove the plastic edges of the
 plate, so that the grid can be defined within the smooth portion of the
 plate only. If the plates are not centered in exactly the same position
 from one image to the next, this allows the plates to be identified
@@ -23,20 +19,21 @@ automatically and then cropped so that the interior of the plates, upon
 which the grids will be defined, are always in precise alignment with
 each other. 
 
-Features measured:
-XLocationOfLowestXSpot
-YLocationOfLowestYSpot
-XSpacing
-YSpacing
-Rows
-Columns
-TotalHeight
-TotalWidth
-LeftOrRightNum
-TopOrBottomNum
-RowsOrColumnsNum
-The last three are related to the questions the module ask you about the
-grid.
+Features that can be measured by this module:
+<ul>
+<li>XLocationOfLowestXSpot</li>
+<li>YLocationOfLowestYSpot</li>
+<li>XSpacing</li>
+<li>YSpacing</li>
+<li>Rows</li>
+<li>Columns</li>
+<li>TotalHeight</li>
+<li>TotalWidth</li>
+<li>LeftOrRightNum</li>
+<li>TopOrBottomNum</li>
+<li>RowsOrColumnsNum</li>
+</ul>
+The last three are related to the questions the module ask you about the grid.
 
 See also: <b>IdentifyObjectsInGrid</b>
 '''
@@ -49,7 +46,6 @@ See also: <b>IdentifyObjectsInGrid</b>
 #Please see the AUTHORS file for credits.
 #
 #Website: http://www.cellprofiler.org
-
 
 __version__="$Revision$"
 
@@ -111,167 +107,197 @@ class DefineGrid(cpm.CPModule):
         
         create_settings is called at the end of initialization.
         """
-        self.grid_image = cps.GridNameProvider("Grid name:", doc="""
-            This is the name for the grid. You can use this name to
-            retrieve the grid in subsequent modules.""")
-        self.grid_rows = cps.Integer("Number of rows:",8,1)
-        self.grid_columns = cps.Integer("Number of columns:",12,1)
-        self.origin = cps.Choice("Where is the first spot?",
-                                 [NUM_TOP_LEFT, NUM_BOTTOM_LEFT,
-                                  NUM_TOP_RIGHT, NUM_BOTTOM_RIGHT], doc="""
-            Grid cells are numbered consecutively; this option picks the
-            origin for the numbering system and the direction for numbering.
-            For instance, if you choose "Top left", the top left cell is
-            cell # 1 and cells to the right and bottom are indexed with
-            larger numbers.""")
-        self.ordering = cps.Choice("Order by:", [NUM_BY_ROWS, NUM_BY_COLUMNS],
-                                   doc="""
-            Grid cells can either be numbered by rows, then columns or by
-            columns, then rows. For instance, you might ask to start numbering
-            a 96-well plate at the top left using the "Where is the first spot?"
-            setting. If you choose, "Rows", then well A01 will be assigned
-            the index, "1", B01, the index "2" and so on up to H01 which
-            receives the index, "8". Well A02 will be assigned the index, "9".
-            Conversely, if you choose, "Columns", well A02 will be assigned,
-            "2", well A12 will be assigned "12" and well B01 will be assigned
-            "13".""")
+        self.grid_image = cps.GridNameProvider("Name the grid", doc="""
+                        This is the name for the grid. You can use this name to
+                        retrieve the grid in subsequent modules.""")
+        
+        self.grid_rows = cps.Integer("Number of rows",8,1)
+        
+        self.grid_columns = cps.Integer("Number of columns",12,1)
+        
+        self.origin = cps.Choice("Location of the first spot",
+                        [NUM_TOP_LEFT, NUM_BOTTOM_LEFT,
+                        NUM_TOP_RIGHT, NUM_BOTTOM_RIGHT], doc="""
+                        Grid cells are numbered consecutively; this option picks the
+                        origin for the numbering system and the direction for numbering.
+                        For instance, if you choose "Top left", the top left cell is
+                        cell #1 and cells to the right and bottom are indexed with
+                        larger numbers.""")
+        
+        self.ordering = cps.Choice("Order of the spots", [NUM_BY_ROWS, NUM_BY_COLUMNS], doc="""
+                        Grid cells can either be numbered by rows, then columns or by
+                        columns, then rows. For instance, you might ask to start numbering
+                        a 96-well plate at the top-left (by specifying the location of the first spot). 
+                        If you choose, <i>Rows</i>, then well <i>A01</i> will be assigned
+                        the index <i>1</i>, <i>B01</i>, the index <i>2</i> and so on up to H01 which
+                        receives the index <i>8</i>. Well <i>A02</i> will be assigned the index, 
+                        <i>9</i>. Conversely, if you choose <i>Columns</i>, well <i>A02</i> will be assigned,
+                        <i>2</i>, well <i>A12</i> will be assigned <i>12</i> and well <i>B01</i> will be assigned
+                        <i>13</i>.""")
+        
         self.each_or_once = cps.Choice(
-            "Would you like to define a new grid for each image cycle, "
-            "or define a grid once and use it for all images?",
-            [EO_EACH, EO_ONCE], doc="""
-            If all of your images are perfectly aligned with each
-            other (due to very consistent image acquisition, consistent 
-            grid location within the plate, and/or automatic cropping 
-            precisely within each plate), you can define the location of the 
-            marker spots ONCE for all of the image
-            cycles; if the location of the grid will vary from one image cycle 
-            to the next then you should define the location of the marker spots 
-            for EACH CYCLE independently.""")
+                        "Define a grid for which cycle?",
+                        [EO_EACH, EO_ONCE], doc="""
+                        Would you like to define a new grid for each image cycle, 
+                        or define a grid once and use it for all images? 
+                        <ul>
+                        <li><i>Once: </i> If all of your images are perfectly aligned with each
+                        other (due to very consistent image acquisition, consistent 
+                        grid location within the plate, and/or automatic cropping 
+                        precisely within each plate), you can define the location of the 
+                        marker spots once for all of the image cycles</li>
+                        <li><i>Each Cycle:</i> If the location of the grid will vary from one image cycle 
+                        to the next then you should define the location of the marker spots 
+                        for <i>Each Cycle</i> independently.</i>
+                        </ul>""")
+        
         self.auto_or_manual = cps.Choice(
-            "Would you like to define the grid automatically, based on objects "
-            "you have identified in a previous module?",
-            [AM_AUTOMATIC, AM_MANUAL], doc="""
-            This setting controls how the grid is defined:
-
-            <ul><li>% <b>Manual mode</b>: In manual mode, you manually indicate
-            known locations of marker spots in the grid and have the rest of 
-            the positions calculated from those marks, no matter what the 
-            image itself looks like. You can define the grid either by
-            clicking on the image with a mouse or by entering coordinates.
-            </li>
-            <li><a> name="AutomaticMode"</a><b>Automatic mode</b></a>: 
-            If you would like the grid to be defined
-            automatically, an IdentifyPrimAutomatic module must be run prior to 
-            this module to identify the objects which will be used to define 
-            the grid. The left-most, right-most, top-most, and bottom-most 
-            object will be used to define the edges of the grid and the rows 
-            and columns will be evenly spaced between these edges. Note that 
-            automatic mode requires that the incoming objects are nicely 
-            defined - for example, if there is an object at the edge of the 
-            images that is not really an object that ought to be in the grid, 
-            a skewed grid will result. You might wish to use a 
-            <b>FilterByObjectMeasurement</b> module to clean up badly 
-            identified objects prior to defining the grid. If the spots are 
-            slightly out of alignment with each other from one image cycle to 
-            the next, this allows the identification to be a bit flexible and 
-            adapt to the real location of the spots.</li></ul>""")
+                        "Method to define the grid",
+                        [AM_AUTOMATIC, AM_MANUAL], doc="""
+                        Would you like to define the grid automatically (based on objects 
+                        you have identified in a previous module) or manually? This setting 
+                        controls how the grid is defined:
+                        <ul>
+                        <li><b>Manual mode:</b> In manual mode, you manually indicate
+                        known locations of marker spots in the grid and have the rest of 
+                        the positions calculated from those marks, no matter what the 
+                        image itself looks like. You can define the grid either by
+                        clicking on the image with a mouse or by entering coordinates.
+                        </li>
+                        <li><i>Automatic mode:</i> If you would like the grid to be defined
+                        automatically, an <b>IdentifyPrimAutomatic</b> module must be run prior to 
+                        this module to identify the objects which will be used to define 
+                        the grid. The left-most, right-most, top-most, and bottom-most 
+                        object will be used to define the edges of the grid and the rows 
+                        and columns will be evenly spaced between these edges. Note that 
+                        automatic mode requires that the incoming objects are nicely 
+                        defined - for example, if there is an object at the edge of the 
+                        images that is not really an object that ought to be in the grid, 
+                        a skewed grid will result. You might wish to use a 
+                        <b>FilterByObjectMeasurement</b> module to clean up badly 
+                        identified objects prior to defining the grid. If the spots are 
+                        slightly out of alignment with each other from one image cycle to 
+                        the next, this allows the identification to be a bit flexible and 
+                        adapt to the real location of the spots.</li>
+                        </ul>""")
+        
         self.object_name = cps.ObjectNameSubscriber(
-            "What are the previously identified objects you want to use to "
-            "define the grid?", "None",doc="""
-            Use this setting to specify the name of the objects that will
-            be used to define the grid. See the documentation for
-            <a href="AutomaticMode">Automatic mode</a> in the automatic or
-            manual setting's documentation.""")
+                        "Select the previously identified objects", "None",doc="""
+                        <i>(Used if Automatic is selected to define the grid)</i><br>
+                        What are the previously identified objects you want to use to 
+                        define the grid? Use this setting to specify the name of the objects that will
+                        be used to define the grid.""")
+        
         self.manual_choice = cps.Choice(
-            "Do you want to define the grid using the mouse or by entering "
-            "the coordinates of the cells?",[MAN_MOUSE, MAN_COORDINATES],
-            doc="""You can either use the user interface to define the grid
-            or you can enter the coordinates of the spots:
-            
-            <ul><li><b>Mouse</b>: The user interface displays the image of
-            your grid. You will be asked to click in the center of two of
-            the grid cells and specify the row and column for each. The
-            grid coordinates will be computed from this information.</li>
-            <li><b>Coordinates</b>: This option lets you enter the X and Y
-            coordinates of the grid cells directly. You can display an image
-            of your grid to find the locations of the centers of the cells,
-            then enter the X and Y position and cell coordinates for each
-            of two cells.</li></ul>""")
+                        "Method for manual defintion",[MAN_MOUSE, MAN_COORDINATES], doc="""
+                        <i>(Used if Manual is selected to define the grid)</i><br>
+                        Do you want to define the grid using the mouse or by entering "
+                        the coordinates of the cells? You can either use the user interface 
+                        to define the grid or you can enter the coordinates of the spots:
+                        <ul>
+                        <li><i>Mouse</i>: The user interface displays the image of
+                        your grid. You will be asked to click in the center of two of
+                        the grid cells and specify the row and column for each. The
+                        grid coordinates will be computed from this information.</li>
+                        <li><i>Coordinates</i>: This option lets you enter the X and Y
+                        coordinates of the grid cells directly. You can display an image
+                        of your grid to find the locations of the centers of the cells,
+                        then enter the X and Y position and cell coordinates for each
+                        of two cells.</li>
+                        </ul>""")
+        
         self.manual_image = cps.ImageNameSubscriber(
-            "What image do you want to display when defining the grid?",
-            "None", doc="""This setting lets you choose the image to display 
-            in the grid definition user interface.""")
+                        "Select the image to display",
+                        "None", doc="""
+                        What image do you want to display when defining the grid?
+                        This setting lets you choose the image to display 
+                        in the grid definition user interface.""")
+        
         self.first_spot_coordinates = cps.Coordinates(
-            "Enter the coordinates of the first cell on your grid",
-            (0,0),doc="""This setting defines the location of the first of
-            two cells in your grid. You should enter the coordinates of
-            the center of the cell. You can display an image of your grid
-            and use the <i>Show pixel data</i> tool to determine the
-            coordinates of the center of your cell.""")
+                        "Coordinates of the first cell",
+                        (0,0),doc="""
+                        Enter the coordinates of the first cell on your grid.
+                        This setting defines the location of the first of
+                        two cells in your grid. You should enter the coordinates of
+                        the center of the cell. You can display an image of your grid
+                        and use the <i>Tools > Show pixel data</i> tool to determine the
+                        coordinates of the center of your cell.""")
+        
         self.first_spot_row = cps.Integer(
-            "What is this cell's row number?", 1, minval=1,
-            doc="""Enter the row index for the first cell here. Rows are
-            numbered starting at the origin. For instance, if you chose
-            "Top left" as your origin, well A01 will be row number 1
-            and H01 will be row number 8. If you chose "Bottom left",
-            A01 will be row number 8 and H01 will be row number 12.""")
+                        "Row number of the first cell", 1, minval=1, doc="""
+                        What is this cell's row number? Enter the row index for the first cell here. Rows are
+                        numbered starting at the origin. For instance, if you chose
+                        <i>Top left</i> as your origin, well <i>A01</i> will be row number <i>1</i>
+                        and <i>H01</i> will be row number <i>8</i>. If you chose <i>Bottom left</i>,
+                        <i>A01</i> will be row number <i>8</i> and <i>H01</i> will be row number <i>12</i>.""")
+        
         self.first_spot_col = cps.Integer(
-            "What is this cell's column number?",1, minval=1,
-            doc="""Enter the column index for the first cell here. Columns
-            are numbered starting at the origin. For instance, if you chose
-            "Top left" as your origin, well A01 will be column number 1
-            and A12 will be column number 12. If you chose "Top right",
-            A01 and A12 will be 12 and 1 respectively.""")
+                        "Column number of the first cell",1, minval=1,doc="""
+                        Enter the column index for the first cell here. Columns
+                        are numbered starting at the origin. For instance, if you chose
+                        <i>Top left</i> as your origin, well <i>A01</i> will be column number <i>1</i>
+                        and <i>A12</i> will be column number <i>12</i>. If you chose <i>Top right</i>,
+                        <i>A01</i> and <i>A12</i> will be <i>12</i> and <i>1</i>, respectively.""")
+        
         self.second_spot_coordinates = cps.Coordinates(
-            "Enter the coordinates of the second cell on your grid",
-            (0,0),doc="""This setting defines the location of the second of
-            two cells in your grid. You should enter the coordinates of
-            the center of the cell. You can display an image of your grid
-            and use the <i>Show pixel data</i> tool to determine the
-            coordinates of the center of your cell.""")
+                        "Coordinates of the second cell",
+                        (0,0),doc="""
+                        This setting defines the location of the second of
+                        two cells in your grid. You should enter the coordinates of
+                        the center of the cell. You can display an image of your grid
+                        and use the <i>Tools > Show pixel data</i> tool to determine the
+                        coordinates of the center of your cell.""")
+        
         self.second_spot_row = cps.Integer(
-            "What is this cell's row number?", 1, minval=1,
-            doc="""Enter the row index for the second cell here. Rows are
-            numbered starting at the origin. For instance, if you chose
-            "Top left" as your origin, well A01 will be row number 1
-            and H01 will be row number 8. If you chose "Bottom left",
-            A01 will be row number 8 and H01 will be row number 12.""")
+                        "Row number of the second cell", 1, minval=1, doc="""
+                        What is this cell's row number? Enter the row index for the second cell here. Rows are
+                        numbered starting at the origin. For instance, if you chose
+                        <i>Top left</i> as your origin, well <i>A01</i> will be row number <i>1</i>
+                        and <i>H01</i> will be row number <i>8</i>. If you chose <i>Bottom left</i>,
+                        <i>A01</i> will be row number <i>8</i> and <i>H01</i> will be row number <i>12</i>.""")
+        
         self.second_spot_col = cps.Integer(
-            "What is this cell's column number?",1, minval=1,
-            doc="""Enter the column index for the second cell here. Columns
-            are numbered starting at the origin. For instance, if you chose
-            "Top left" as your origin, well A01 will be column number 1
-            and A12 will be column number 12. If you chose "Top right",
-            A01 and A12 will be 12 and 1 respectively.""")
+                        "Column number of the second cell",1, minval=1, doc="""
+                        What is this cell's column number? Enter the column index for the second cell here. Columns
+                        are numbered starting at the origin. For instance, if you chose
+                        <i>Top left</i> as your origin, well <i>A01</i> will be column number <i>1</i>
+                        and <i>A12</i> will be column number <i>12</i>. If you chose <i>Top right</i>,
+                        <i>A01</i> and <i>A12</i> will be <i>12</i> and <i>1</i>, respectively.""")
+        
         self.wants_image = cps.Binary(
-            "Do you want to save an image of the grid?", False,
-            doc="""This module can create an annotated image of the grid
-            which can be saved using the <b>SaveImages</b> module. Check
-            this box if you want to save the annotated image.
-            """)
+                        "Save an image of the grid?", False, doc = """
+                        Do you want to save an image of the grid? 
+                        This module can create an annotated image of the grid
+                        which can be saved using the <b>SaveImages</b> module. Check
+                        this box if you want to save the annotated image. """)
+        
         self.display_image_name = cps.ImageNameSubscriber(
-            "Display image name:", cps.LEAVE_BLANK, can_be_blank = True,
-            doc = """Enter the name of the image that should be used as
-            the background for annotations (grid lines and grid indexes).
-            This image will be used for the figure and for the saved image.""")
+                        "Enter the display image name", cps.LEAVE_BLANK, can_be_blank = True, doc = """
+                        <i>(Used if saving an image of the grid)</i><br>
+                        Enter the name of the image that should be used as
+                        the background for annotations (grid lines and grid indexes).
+                        This image will be used for the figure and for the saved image.""")
+        
         self.save_image_name = cps.ImageNameProvider(
-            "Output image name:", "Grid",doc="""
-            Enter the name you want to use for the output image. You can
-            save this image using the <b>SaveImages</b> module.""")
+                        "Enter the output image name", "Grid", doc = """
+                        <i>(Used if saving an image of the grid)</i><br>
+                        Enter the name you want to use for the output image. You can
+                        save this image using the <b>SaveImages</b> module.""")
+        
         self.failed_grid_choice = cps.Choice(
-            "If the gridding fails, would you like to use a previous grid "
-            "that worked?", [FAIL_NO, FAIL_ANY_PREVIOUS, FAIL_FIRST],
-            doc="""This setting allows you to control how the module responds
-            to errors:
-            
-            <ul><li><b>No</b>: The module will stop the pipeline if gridding
-            fails.</li>
-            <li><b>Any Previous</b>: The module will use the gridding from
-            the most recent successful gridding.</li>
-            <li><b>The First</b>: The module will use the gridding from
-            the first gridding.</li></ul>
-            
-            The pipeline will stop in all cases if the first gridding fails.""")
+                        "Use a previous grid if gridding fails?", 
+                        [FAIL_NO, FAIL_ANY_PREVIOUS, FAIL_FIRST], doc="""
+                        If the gridding fails, would you like to use a previous grid 
+                        that worked? This setting allows you to control how the module responds
+                        to errors:            
+                        <ul>
+                        <li><i>No</i>: The module will stop the pipeline if gridding fails.</li>
+                        <li><i>Any Previous</i>: The module will use the gridding from
+                        the most recent successful gridding.</li>
+                        <li><i>The First</i>: The module will use the gridding from
+                        the first gridding.</li>
+                        </ul>
+                        The pipeline will stop in all cases if the first gridding fails.""")
         
     def settings(self):
         """Return the settings to be loaded or saved to/from the pipeline

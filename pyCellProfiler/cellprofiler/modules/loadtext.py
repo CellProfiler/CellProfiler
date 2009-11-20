@@ -144,7 +144,7 @@ class LoadText(cpm.CPModule):
 
     def create_settings(self):
         self.uuid = uuid.uuid4()
-        self.csv_directory_choice = cps.Choice("Where is the CSV file located?", DIR_ALL, doc="""
+        self.csv_directory_choice = cps.Choice("CSV file location:", DIR_ALL, doc="""
             This is the folder that contains the CSV file. Choose "Default Image Directory"
             if the CSV file is in the default image directory. Choose "Default Output
             Directory" if the CSV file is in the default output directory. Choose
@@ -154,15 +154,16 @@ class LoadText(cpm.CPModule):
             start with "&" are relative to the default output directory.
             For example '&/../My_directory' looks in a directory called 'My_directory'
             at the same level as the output directory""")
-        self.csv_custom_directory = cps.DirectoryPath("What is the name of the CSV file's directory?",
-                                                      ".")
-        self.csv_file_name = cps.FilenameText("What is the name of the CSV file?",
+        self.csv_custom_directory = cps.DirectoryPath("Enter the path to the CSV file:",
+                                                      ".", doc = 
+                                                      """What is the name of the CSV file's directory?""")
+        self.csv_file_name = cps.FilenameText("Enter the name of the CSV file:",
                                               "None",doc="""
             This is the file name of the CSV file containing the data.""")
         self.wants_images = cps.Binary("Load images from CSV data?", True, doc="""
             Check this box to have LoadText load images using the Image_FileName field and,
             if it appears in the CSV file, the Image_PathName fields.""")
-        self.image_directory_choice = cps.Choice("Where are the images located?",
+        self.image_directory_choice = cps.Choice("Image directory location:",
                                                  DIR_ALL, doc="""
             This is the base directory used for paths to images. Path names to image
             files are relative to this directory. Choose "Default Image Directory" to
@@ -174,19 +175,21 @@ class LoadText(cpm.CPModule):
             start with "&" are relative to the default output directory.
             For example '&/../My_directory' looks in a directory called 'My_directory'
             at the same level as the output directory""")
-        self.image_custom_directory = cps.DirectoryPath("What is the name of the image directory?",
-                                                        ".")
-        self.wants_image_groupings = cps.Binary("Do you want to group images by metadata?", False)
-        self.metadata_fields = cps.MultiChoice("What metadata fields should be used to group?", None)
-        self.wants_rows = cps.Binary("Do you want to specify a range of rows to be processed?",
+        self.image_custom_directory = cps.DirectoryPath("Enter the path to the images:",
+                                                        ".", doc = 
+                                                        """What is the name of the image directory?""")
+        self.wants_image_groupings = cps.Binary("Group images by metadata?", False)
+        self.metadata_fields = cps.MultiChoice("Select metadata fields for grouping:", None)
+        self.wants_rows = cps.Binary("Process just a range of rows?",
                                      False, doc="""
             Check this box if you want to process a subset of the rows in the CSV file.
             Rows are numbered starting at 1 (but do not count the header line). 
             LoadText will process up to and including the end row.
             This option can be used to break the image sets in an experiment into groups
             that can be processed by different nodes on a computing cluster.""")
-        self.row_range = cps.IntegerRange("Enter the row numbers of the first and last row to be processed",
-                                          (1,100000),1)
+        self.row_range = cps.IntegerRange("Rows to process:",
+                                          (1,100000),1, doc = 
+                                          """Enter the row numbers of the first and last row to be processed.""")
 
     def settings(self):
         return [self.csv_directory_choice, self.csv_custom_directory,

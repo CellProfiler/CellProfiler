@@ -44,8 +44,10 @@ class MakeProjection(cpm.CPModule):
     variable_revision_number = 1
     def create_settings(self):
         self.image_name = cps.ImageNameSubscriber('Select the input image','None', doc = '''What did you call the images to be made into a projection?''')
-        self.projection_type = cps.Choice('What kind of projection would you like to make?',
-                                          P_ALL, doc = '''<ul><li>Average: The average pixel intensity at each pixel position
+        self.projection_type = cps.Choice('Type of projection:',
+                                          P_ALL, doc = '''
+                                          What kind of projection would you like to make?
+                                          <ul><li>Average: The average pixel intensity at each pixel position
                                           will be used to create the final image.</li>
                                           <li>Maximum: The maximum pixel value at each pixel position will be used to
                                           create the final image.</li></ul>''')

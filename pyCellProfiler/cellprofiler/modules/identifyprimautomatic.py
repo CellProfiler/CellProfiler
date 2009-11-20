@@ -376,16 +376,15 @@ class IdentifyPrimAutomatic(cpmi.Identify):
             covered by objects. If a larger percentage of the image is covered, the
             Otsu method will give a slightly biased threshold that may have to be
             corrected using this setting.""")
-        self.threshold_range = cps.FloatRange('Lower and upper bounds on threshold, in '
-                                         'the range [0,1]', (0,1), minval=0,
+        self.threshold_range = cps.FloatRange('Lower and upper bounds on threshold:', (0,1), minval=0,
                                          maxval=1, doc="""\
-            May be used as a safety precaution when the threshold is calculated
+            In the range [0,1].  May be used as a safety precaution when the threshold is calculated
             automatically. For example, if there are no objects in the field of view,
             the automatic threshold will be unreasonably low. In such cases, the
             lower bound you enter here will override the automatic threshold.""")
         
         self.object_fraction = cps.CustomChoice(
-            'What is the approximate fraction of image covered by objects?', 
+            'Approximate fraction of image covered by objects?', 
             ['0.01','0.1','0.2','0.3', '0.4','0.5','0.6','0.7', '0.8','0.9',
              '0.99'], doc="""\
             <i>(Only used when applying the Mixture of Gaussian thresholding method)</i>
@@ -451,7 +450,7 @@ class IdentifyPrimAutomatic(cpmi.Identify):
             question.</li></ul>""")
         
         self.automatic_smoothing = cps.Binary(
-            'Automatically calculate size of smoothing filter when separating clumped objects', 
+            'Automatically calculate size of smoothing filter?', 
             True, doc="""\
             <i>(Only used when distinguishing between clumped objects)</i> This setting,
             along with the suppress local maxima setting, affects whether objects
@@ -462,10 +461,9 @@ class IdentifyPrimAutomatic(cpmi.Identify):
             ought to be merged, the value should be higher.""")
         
         self.smoothing_filter_size = cps.Integer(
-            'Size of smoothing filter, in pixel units', 
-            10, doc="""\
+            'Size of smoothing filter:', 10, doc="""\
             <i>(Only used when distinguishing between clumped objects)</i> 
-            <p>This setting, along with the <i>Suppress local maxima</i> setting, affects whether objects
+            <p>This setting , in pixel units, along with the <i>Suppress local maxima</i> setting, affects whether objects
             close to each other are considered a single object or multiple objects.
             It does not affect the dividing lines between an object and the
             background. If you see too many objects merged that ought to be separated
@@ -482,7 +480,7 @@ class IdentifyPrimAutomatic(cpmi.Identify):
             size of the smoothing filter increases the processing time exponentially.""")
 
         self.automatic_suppression = cps.Binary(
-            'Automatically calculate minimum size of local maxima for clumped objects?', 
+            'Automatically calculate minimum size of local maxima?', 
             True, doc="""\
             <i>(Only used when distinguishing between clumped objects)</i>
             This setting, along with the size of the smoothing filter, affects whether objects
@@ -499,10 +497,10 @@ class IdentifyPrimAutomatic(cpmi.Identify):
             automatically calculated value here by unchecking this box.""")
         
         self.maxima_suppression_size = cps.Integer(
-            'Suppress local maxima within this distance (in pixel units)', 
+            'Suppress local maxima within this distance:', 
             7, doc="""\
             <i>(Only used when distinguishing between clumped objects)</i>
-            <p>This setting, along with the size of the smoothing filter, affects whether objects
+            <p>This setting (in pixel units) along with the size of the smoothing filter, affects whether objects
             close to each other are considered a single object or multiple objects.
             It is a positive integer, and does not affect the dividing lines between 
             an object and the background. This setting looks for the maximum intensity in the size 
@@ -536,31 +534,31 @@ class IdentifyPrimAutomatic(cpmi.Identify):
             by selecting them from any drop-down image list.""")
         
         self.fill_holes = cps.Binary(
-            'Do you want to fill holes in identified objects?', True, doc="""
+            'Fill holes in identified objects?', True, doc="""
             Checking this box will cause any/all holes interior to identified objects
             to be filled.""")
         
         self.test_mode = cps.Binary(
-            'Do you want to run in test mode where each method for '
+            'Run in test mode where each method for '
             'distinguishing clumped objects is compared?', False)
         
-        self.manual_threshold = cps.Float("What is the manual threshold?", 
+        self.manual_threshold = cps.Float("Enter manual threshold:", 
                                           value=0.0, minval=0.0, maxval=1.0,doc="""\
             <i>(Only used if Manual selected for thresholding method)</i>
             <p>Enter the value that will act as an absolute threshold for the image""")
         
         self.binary_image = cps.ImageNameSubscriber(
-            "What is the binary thresholding image?", "None")
+            "Select binary image:", "None", doc = """What is the binary thresholding image?""")
         
         self.wants_automatic_log_threshold = cps.Binary(
-            'Do you want to calculate the Laplacian of Gaussian threshold '
+            'Calculate the Laplacian of Gaussian threshold '
             'automatically?', True)
         
-        self.manual_log_threshold = cps.Float('What is the Laplacian of '
-                                              'Gaussian threshold?', .5, 0, 1)
+        self.manual_log_threshold = cps.Float('Enter Laplacian of '
+                                              'Gaussian threshold:', .5, 0, 1)
         
         self.two_class_otsu = cps.Choice(
-            'Does your image have two classes of intensity value or three?',
+            'Two-class or three-class thresholding?',
             [cpmi.O_TWO_CLASS, cpmi.O_THREE_CLASS],doc="""
             <i>(Only used for the Otsu thresholding method)</i> 
             <p>Select <i>Two</i> if the grayscale levels are readily distinguishable into foregound 
@@ -577,7 +575,7 @@ class IdentifyPrimAutomatic(cpmi.Identify):
             objects, three-class thresholding may perform worse than two-class.""")
         
         self.use_weighted_variance = cps.Choice(
-            'Do you want to minimize the weighted variance or the entropy?',
+            'Minimize the weighted variance or the entropy?',
             [cpmi.O_WEIGHTED_VARIANCE, cpmi.O_ENTROPY])
         
         self.assign_middle_to_foreground = cps.Choice(
@@ -588,7 +586,7 @@ class IdentifyPrimAutomatic(cpmi.Identify):
             to the foreground pixels or the background pixels.""")
         
         self.wants_automatic_log_diameter = cps.Binary(
-            'Do you want to automatically calculate the size of objects '
+            'Automatically calculate the size of objects '
             'for the Laplacian of Gaussian filter?', True,
             doc="""\
             <i>(Only used when applying the Laplacian of Gaussian thresholding method)</i>
@@ -599,7 +597,7 @@ class IdentifyPrimAutomatic(cpmi.Identify):
             using loose criteria, but have objects that are generally of 
             similar sizes.""")
         self.log_diameter = cps.Float(
-            'What diameter do you want to use for the Laplacian of Gaussian filter?', 
+            'Enter LoG filter diameter: ', 
             5, minval=1, maxval=100,
             doc="""\
             <i>(Only used when applying the Laplacian of Gaussian thresholding method)</i>

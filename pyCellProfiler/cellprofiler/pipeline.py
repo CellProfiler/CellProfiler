@@ -467,19 +467,15 @@ class Pipeline(object):
                    grouping to run or None to run all groupings
         """
         measurements = cellprofiler.measurements.Measurements()
-        # XXX: Should not call run_with_yield because run_with_yield
-        # depends on wx whereas run() shouldn't.
-        for m in self.run_with_yield(frame, 
-                                     image_set_start, 
-                                     image_set_end,
-                                     grouping):
+        for m in self.run_with_yield(frame, image_set_start, image_set_end,
+                                     grouping, run_in_background=False):
             measurements = m
         return measurements
 
     def run_with_yield(self,frame = None, 
                        image_set_start = 0, 
                        image_set_end = None,
-                       grouping = None):
+                       grouping = None, run_in_background=True):
         """Run the pipeline, yielding periodically to keep the GUI alive
         
         Run the pipeline, returning the measurements made
@@ -554,7 +550,7 @@ class Pipeline(object):
                             grids = workspace.set_grids(grids)
                             start_time = datetime.datetime.now()
                             t0 = sum(os.times()[:-1])
-                            if module.is_interactive():
+                            if not run_in_background or module.is_interactive():
                                 module.run(workspace)
                                 yield None
                             else:

@@ -411,6 +411,7 @@ class Morph(cpm.CPModule):
         self.add_function()
     
     def add_function(self):
+        # XXX SettingsGroup
         class Function:
             '''Represents the variables needed to run a function'''
             def __init__(self, functions):

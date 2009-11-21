@@ -35,7 +35,6 @@ The intensity will be restricted to within the objects you name here.
 __version__="$Revision$"
 
 import numpy as np
-import uuid
 
 import cellprofiler.cpmodule as cpm
 import cellprofiler.settings as cps

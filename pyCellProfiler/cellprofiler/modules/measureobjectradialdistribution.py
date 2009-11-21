@@ -92,8 +92,10 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
         self.bin_counts_count = cps.HiddenCount(self.bin_counts)
         self.add_image_button = cps.DoSomething("Add another image", "Add", 
                                                 self.add_image)
+        self.spacer_1 = cps.Divider(line=False)
         self.add_object_button = cps.DoSomething("Add another object", "Add",
                                                  self.add_object)
+        self.spacer_2 = cps.Divider(line=False)
         self.add_bin_count_button = cps.DoSomething("Add another bin count",
                                                     "Add", self.add_bin_count)
         self.add_image(can_remove = False)
@@ -102,86 +104,45 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
     
     def add_image(self, can_remove = True):
         '''Add an image to be measured'''
-        # XXX needs to use cps.SettingGroup
-        class ImageSettings(object):
-            '''Settings describing an image to be measured'''
-            def __init__(self, images):
-                self.key = uuid.uuid4()
-                self.image_name = cps.ImageNameSubscriber(
-                    "Select the input image", "None")
-                if can_remove:
-                    def remove(images=images, key = self.key):
-                        index = [x.key for x in images].index(key)
-                        del images[index]
-                    self.remove_button = cps.DoSomething("Remove above image",
-                                                         "Remove", remove)
-            def settings(self):
-                '''Return the settings that should be saved in the pipeline'''
-                return [self.image_name]
-            
-            def visible_settings(self):
-                '''Return the settings that should be displayed'''
-                if can_remove:
-                    return [self.image_name, self.remove_button]
-                else:
-                    return [self.image_name]
-        self.images.append(ImageSettings(self.images))
-    
+        group = cps.SettingsGroup()
+        group.append("image_name", cps.ImageNameSubscriber(
+                "Select the input image", "None"))
+        if can_remove:
+            group.append("remover", cps.RemoveSettingButton("", "Remove this image", self.images, group))
+        self.images.append(group)
+
     def add_object(self, can_remove = True):
         '''Add an object to be measured (plus optional centers)'''
-        class ObjectSettings(object):
-            '''Settings describing an object to be measured'''
-            def __init__(self, objects):
-                self.key = uuid.uuid4()
-                self.object_name = cps.ObjectNameSubscriber(
-                    "Select the input objects", "None")
-                self.center_choice = cps.Choice(
-                    "Use these objects or another object as the center?", C_ALL,doc="""
-                    There are two options for the center of the radial measurement:
-                    <ul>
-                    <li><i>These objects</i>:Use the object centers for the 
-                    radial measurement.</li> 
-                    <li><i>Other objects</i>: Use the centers of other objects
-                    for the radial measurement.</li>
-                    </ul>
-                    For example, if measuring the radial distribution in a Cell
-                    object, you can use the center of the Cell objects (<i>These
-                    objects</i>) or you can use previously identified Nuclei objects as 
-                    the centers (<i>Other objects</i>).""")
-                self.center_object_name = cps.ObjectNameSubscriber(
-                    "Select objects to use as centers:", "None",doc="""
-                    Select the object to use as the center, or select <i>None</i> to
-                    use the input object centers (which is the same as selecting
-                    <i>These objects</i> for the object centers.""")
-                if can_remove:
-                    def remove(objects = objects, key = self.key):
-                        index = [x.key for x in objects].index(key)
-                        del objects[index]
-                    self.remove_button = cps.DoSomething("Remove above object",
-                                                         "Remove", remove)
-            
-            def settings(self):
-                '''Return the settings that should be saved in the pipeline'''
-                return [self.object_name, self.center_choice, 
-                        self.center_object_name]
-            
-            def visible_settings(self):
-                '''Return the settings that should be displayed'''
-                result = [self.object_name, self.center_choice]
-                if self.center_choice == C_OTHER:
-                    result += [self.center_object_name]
-                if can_remove:
-                    result += [self.remove_button]
-                return result
-        self.objects.append(ObjectSettings(self.objects))
-    
+        group = cps.SettingsGroup()
+        group.append("object_name", cps.ObjectNameSubscriber(
+                "Select the input objects", "None"))
+        group.append("center_choice", cps.Choice(
+                "Use these objects or another object as the center?", C_ALL,doc="""
+                There are two options for the center of the radial measurement:
+                <ul>
+                <li><i>These objects</i>:Use the object centers for the 
+                radial measurement.</li> 
+                <li><i>Other objects</i>: Use the centers of other objects
+                for the radial measurement.</li>
+                </ul>
+                For example, if measuring the radial distribution in a Cell
+                object, you can use the center of the Cell objects (<i>These
+                objects</i>) or you can use previously identified Nuclei objects as 
+                the centers (<i>Other objects</i>)."""))
+        group.append("center_object_name", cps.ObjectNameSubscriber(
+                "Select objects to use as centers:", "None",doc="""
+                Select the object to use as the center, or select <i>None</i> to
+                use the input object centers (which is the same as selecting
+                <i>These objects</i> for the object centers."""))
+        if can_remove:
+            group.append("remover", cps.RemoveSettingButton("", "Remove this object", self.objects, group))
+        group.append("divider", cps.Divider(line=False))
+        self.objects.append(group)
+
     def add_bin_count(self, can_remove = True):
         '''Add another radial bin count at which to measure'''
-        class BinCountSettings(object):
-            '''Settings describing the number of radial bins'''
-            def __init__(self, bin_counts):
-                self.key = uuid.uuid4()
-                self.bin_count = cps.Integer(
+        group = cps.SettingsGroup()
+        group.append("bin_count", cps.Integer(
                     "Number of bins:",4, 2, doc="""How many bins do you want to use to store 
                         the distribution?
                         The radial distribution is measured with respect to a series
@@ -190,40 +151,39 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
                         from the object center). This number
                         specifies the number of rings that the distribution is to
                         be divided into. Additional ring counts can be specified
-                        by clicking the <i>Add another bin count</i> button below.""")
-                if can_remove:
-                    def remove(bin_counts = bin_counts, key = self.key):
-                        index = [x.key for x in bin_counts].index(key)
-                        del bin_counts[index]
-                    self.remove_button = cps.DoSomething("Remove above bin count",
-                                                         "Remove", remove)
-            def settings(self):
-                '''Return the settings that should be saved in the pipeline'''
-                return [self.bin_count]
-            
-            def visible_settings(self):
-                '''Return the settings that should be displayed'''
-                if can_remove:
-                    return [self.bin_count, self.remove_button]
-                else:
-                    return [self.bin_count]
-        self.bin_counts.append(BinCountSettings(self.bin_counts))
+                        by clicking the <i>Add another bin count</i> button below."""))
+        if can_remove:
+            group.append("remover", cps.RemoveSettingButton("", "Remove this bin", self.bin_counts, group))
+        self.bin_counts.append(group)
     
     def settings(self):
         result = [self.image_count, self.object_count, self.bin_counts_count]
         for x in (self.images, self.objects, self.bin_counts):
             for settings in x:
-                result += settings.settings()
+                temp = [s for s in settings.unpack_group() 
+                        if not (isinstance(s, cps.Divider) or isinstance(s, cps.RemoveSettingButton))]
+                result += temp
         return result
     
     def visible_settings(self):
         result = []
-        for setting_list, add_button in ((self.images, self.add_image_button),
-                                         (self.objects, self.add_object_button),
-                                         (self.bin_counts, self.add_bin_count_button)):
-            for settings in setting_list:
-                result += settings.visible_settings()
-            result += [add_button]
+        
+        for settings in self.images:
+            result += settings.unpack_group()
+        result += [self.add_image_button, self.spacer_1]
+        
+        for settings in self.objects:
+            temp = settings.unpack_group()
+            if settings.center_choice.value == C_SELF:
+                # we have to remove this by index, because of the __eq__ in cps.Setting
+                del temp[2]
+            result += temp
+        result += [self.add_object_button, self.spacer_2]
+
+        for settings in self.bin_counts:
+            result += settings.unpack_group()
+        result += [self.add_bin_count_button]
+        
         return result
     
     def prepare_settings(self, setting_values):

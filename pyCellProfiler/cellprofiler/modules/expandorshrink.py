@@ -110,7 +110,7 @@ class ExpandOrShrink(cpm.CPModule):
         
         self.outlines_name = cps.OutlineNameProvider("Name the outline image",
                                     "ShrunkenNucleiOutlines", doc = """
-                                    <i>(Only used if outlines are to be saved)</i>
+                                    <i>(Only used if outlines are to be saved)</i><br>
                                     What do you want to call the outlines of the identified objects?""")
 
     def settings(self):

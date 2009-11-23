@@ -1,4 +1,5 @@
-'''<b>ExportToDatabase:</b>  Exports data directly to a database, or in database readable format, including an importing file
+'''<b>Export To Database</b> exports data directly to a database, or in 
+database readable format, including an importing file
 with column names and a CellProfiler Analyst properties file, if desired.
 <hr>
 
@@ -134,57 +135,85 @@ class ExportToDatabase(cpm.CPModule):
     category = "File Processing"
 
     def create_settings(self):
-        self.db_type = cps.Choice("What type of database do you want to use?",
-                                  [DB_MYSQL,DB_ORACLE,DB_SQLITE], DB_MYSQL, doc = '''<ul><li><i>MySQL</i>
-                                  will allow you to write directly to the database.  <li><i>Oracle</i> is currently
+        self.db_type = cps.Choice("Database type",
+                                  [DB_MYSQL,DB_ORACLE,DB_SQLITE], DB_MYSQL, doc = """
+                                  What type of database do you want to use? <ul><li><i>MySQL</i>
+                                  will allow you to write directly to the database.</li>  <li><i>Oracle</i> is currently
                                   not supported, but writing your data to .csv files will allow you to upload your
-                                  data to an Oracle database with a simple script. <li><i>SQLite</i> will write 
-                                  sqlite files directly.  More information about sqlite can be found at <a href="http://www.sqlite.org/"> http://www.sqlite.org/</a> </ul>''')
+                                  data to an Oracle database with a simple script.</li> <li><i>SQLite</i> will write 
+                                  sqlite files directly.  More information about sqlite can be found at 
+                                  <a href="http://www.sqlite.org/"> http://www.sqlite.org/</a> </li></ul>""")
+        
         self.db_name = cps.Text(
-            "What is the name of the database you want to use?", "DefaultDB")
+            "Database name", "DefaultDB",doc = """
+            What is the name of the database you want to use?""")
+        
         self.want_table_prefix = cps.Binary(
-            "Do you want to add a prefix to your table names?", False, doc = '''This gives you the option to prepend text to your table names
-            (Per_Image and Per_Object).  CellProfiler will warn you before overwriting an existing table.''')
+            "Add a prefix to table names?", False, doc = """
+            Do you want to add a prefix to your table names?
+            This gives you the option to prepend text to your table names
+            (Per_Image and Per_Object).  CellProfiler will warn you before overwriting an existing table.""")
+        
         self.table_prefix = cps.Text(
-            "What is the table prefix you want to use?", "Expt_")
+            "Table prefix", "Expt_" , doc = """
+            <i>(Used if Add Table Prefix is selected)</i><br>
+            What is the table prefix you want to use?""")
+        
         self.sql_file_prefix = cps.Text(
-            "What prefix do you want to use to name the SQL file?", "SQL_")
+            "SQL file prefix", "SQL_", doc = """
+            <i>(Used if SQL is selected as the database type and CSV files are to be written)</i><br>
+            What prefix do you want to use to name the SQL file?""")
+        
         self.use_default_output_directory = cps.Binary(
-            "Do you want to save files in the default output directory?", True)
+            "Save files in the default output directory?", True)
+        
         self.output_directory = cps.Text(
-            "What directory should be used to save files?", ".")
+            "Enter output directory", ".", doc = """
+            <i>(Used if SQL is selected as the database type and CSV files are to be written)</i><br>
+            What directory should be used to save files? Use a "." to indicate the default
+            output directory.""")
+        
         self.save_cpa_properties = cps.Binary(
-            "Do you want to create a CellProfilerAnalyst properties file?", 
-            False, doc = '''Generate a template
-            properties for using your new database in CellProfiler Analyst (a data
+            "Create a CellProfiler Analyst properties file?", 
+            False, doc = """
+            Generate a template properties for using your new database in CellProfiler Analyst (a data
             exploration tool which can also be downloaded from
-            <a href="http://www.cellprofiler.org/"> http://www.cellprofiler.org/ </a>). The module will attempt to fill in as many as the entries as possible 
+            <a href="http://www.cellprofiler.org/"> http://www.cellprofiler.org/ </a>). 
+            The module will attempt to fill in as many as the entries as possible 
             based on the current handles structure. However, entries such as the 
             server name, username and password are omitted. Hence, opening the 
             properties file in CPA will produce an error since it won't be able to
             connect to the server. However, you can still edit the file in CPA and
-            then fill in the required information.''')
+            then fill in the required information.""")
+        
         self.store_csvs = cps.Binary(
-            "Store the database in CSV files? ", False, doc = '''This will write per_image and 
-            per_object tables as a series of CSV files along with an SQL file 
+            "Store the database in CSV files? ", False, doc = """
+            This will write per_image and per_object tables as a series of CSV files along with an SQL file 
             that can be used with those files to create the database.  You can also look at the csv
-            files in a spreadsheet program, such as Excel.''')
+            files in a spreadsheet program, such as Excel.""")
+        
         self.mysql_not_available = cps.Divider("Cannot write to MySQL directly - CSV file output only", line=False, 
-            doc="The MySQLdb python module could not be loaded.  MySQLdb is necessary for direct export.")
-        self.db_host = cps.Text("What is the database host?", "imgdb01")
-        self.db_user = cps.Text("What is the database username?", "cpuser")
-        self.db_passwd = cps.Text("What is the database password?", "cPus3r")
-        self.sqlite_file = cps.Text(
-            "What is the SQLite database file you want to write to?", 
-            "DefaultDB.db")
-        self.wants_agg_mean = cps.Binary(
-            "Do you want to calculate the aggregate mean value of each "
-            "object measurement per image?", True, doc = '''ExportToDatabase can calculate statistics over all the objects in each image
+            doc= """The MySQLdb python module could not be loaded.  MySQLdb is necessary for direct export.""")
+        
+        self.db_host = cps.Text("Database host", "imgdb01")
+        
+        self.db_user = cps.Text("Username", "cpuser")
+        
+        self.db_passwd = cps.Text("Password", "cPus3r")
+        
+        self.sqlite_file = cps.Text("Name the SQLite database file", 
+            "DefaultDB.db", doc = """
+            <i>(Used if SQLite selected as database type)</i><br>
+            What is the SQLite database file you want to write to?""")
+        
+        self.wants_agg_mean = cps.Binary("Calculate the per-image mean values of object measurements?", True, doc = """
+            ExportToDatabase can calculate statistics over all the objects in each image
             and store the results as columns in the database. For instance, if
             you are measuring the area of the Nuclei objects and you check the aggregate
             mean box in this module, ExportToDatabase will create a column in the Per_Image
-            table called Mean_Nuclei_AreaShape_Area. You may not want to use 
-            ExportToDatabase to calculate these measurements if your pipeline generates
+            table called Mean_Nuclei_AreaShape_Area. Check this setting to add 
+            these columns to your image file; uncheck it to remove these columns from your image file.
+            <p>You may not want to use ExportToDatabase to calculate these measurements if your pipeline generates
             a large number of per-object measurements; doing so might exceed database
             column limits. These columns can be created manually for selected measurements.
             For instance, the following SQL creates the Mean_Nuclei_AreaShape_Area column:
@@ -193,45 +222,47 @@ class ExportToDatabase(cpm.CPModule):
                 UPDATE Per_Image SET Mean_Nuclei_AreaShape_Area = 
                     (SELECT AVG(Nuclei_AreaShape_Area)
                      FROM Per_Object
-                     WHERE Per_Image.ImageNumber = Per_Object.ImageNumber);''')
-        self.wants_agg_median = cps.Binary(
-            "Do you want to calculate the aggregate median value of each "
-            "object measurement per image?", False)
-        self.wants_agg_std_dev = cps.Binary(
-            "Do you want to calculate the standard deviation of the values "
-            "of each object measurement per image?", False)
+                     WHERE Per_Image.ImageNumber = Per_Object.ImageNumber);""")
+        
+        self.wants_agg_median = cps.Binary("Calculate the per-image median values of object measurements?", False)
+        
+        self.wants_agg_std_dev = cps.Binary("Calculate the standard deviation per-image values of object measurements?", False)
+        
         self.wants_agg_mean_well = cps.Binary(
-            "Do you want to calculate the aggregate mean value of each "
-            "object measurement per well?", False, doc = '''ExportToDatabase can calculate statistics 
-            over all the objects in each well and store the results as columns in per_well tables in the database. 
-            For instance, if you are measuring the area of the Nuclei objects and you check the aggregate
+            "Calculate the mean per-well value of each object measurement?", False, doc = '''
+            ExportToDatabase can calculate statistics over all the objects in each well 
+            and store the results as columns in per_well tables in the database. For instance, 
+            if you are measuring the area of the Nuclei objects and you check the aggregate
             mean box in this module, ExportToDatabase will create a table in database called
             Per_Well_Mean, with a column called Mean_Nuclei_AreaShape_Area. NOTE: this option is only
             available if you have extracted plate and well metadata from the filename or via a LoadText module.
             This option will write out a .SQL file with the statements necessary to create the per_well
             table, regardless of the option chosen above.''')
+        
         self.wants_agg_median_well = cps.Binary(
-            "Do you want to calculate the aggregate median value of each "
-            "object measurement per well?", False)
+            "Calculate the median per-well value of each object measurement?", False)
+        
         self.wants_agg_std_dev_well = cps.Binary(
-            "Do you want to calculate the standard deviation of the values "
-            "of each object measurement per well?", False)
+            "Calculate the standard deviation per-well value of each object measurement?", False)
+        
         self.objects_choice = cps.Choice(
-            "Do you want to add all object measurements to the database?",
-            [O_ALL, O_NONE, O_SELECT],
-            doc="""This option lets you choose the objects that will have
-                   their measurements saved in the Per_Object and Per_Well(s) database tables.
-                   <ul><li><b>All:</b> save measurements from all objects</li>
-                       <li><b>None:</b> don't make a Per_Object table, save
-                              only image measurements.</li>
-                       <li><b>Select:</b> select the objects you want from a list</li><ul""")
+            "Add measurements for all objects to the database?",
+            [O_ALL, O_NONE, O_SELECT], doc = """
+            This option lets you choose the objects that will have
+            their measurements saved in the Per_Object and Per_Well(s) database tables.
+            <ul>
+            <li><i>All:</i> Save measurements from all objects</li>
+            <li><i>None:</i> Don't make a Per_Object table, save only image measurements.</li>
+            <li><i>Select:</i> select the objects you want from a list</li>
+            </ul>""")
+        
         self.objects_list = cps.ObjectSubscriberMultiChoice(
-            "Choose the objects to include",
-            doc="""Choose one or more objects from this list. The list includes
+            "Select the objects", doc = """
+            <i>(Used if Select is chosen for adding objects)</i><br>
+            Choose one or more objects from this list. The list includes
             the objects that were created by prior modules. If you choose an
             object, its measurements will be written out to the Per_Object and/or
             Per_Well(s) tables, otherwise, the object's measurements will be skipped.""")
-        
                                                             
     def visible_settings(self):
         needs_default_output_directory =\

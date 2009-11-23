@@ -1,4 +1,4 @@
-'''<b>ExportToExcel</b>: Exports measurements into a comma-delimited text file which can be
+'''<b>Export To Excel</b> exports measurements into a comma-delimited text file which can be
 opened in Excel or other spreadsheets.
 <hr>
 
@@ -80,49 +80,46 @@ class ExportToExcel(cpm.CPModule):
     variable_revision_number = 2
     
     def create_settings(self):
-        self.delimiter = cps.CustomChoice('What delimiter do you want to use?',
-                                          DELIMITERS, doc = '''This is the character that separates columns in a file. The
-                                          two choices are tab and comma, but you can add any single character delimiter you like.''')
-        self.prepend_output_filename = cps.Binary("Do you want to prepend the output file name to the data file names?", True,
-                                                  doc = '''This can be useful if you want to run a pipeline multiple 
-                                                  times without overwriting the old results''')
-        self.add_metadata = cps.Binary("Do you want to add image metadata columns to your object data?",False,
-                                       doc = '''Unless you check <i>Yes</i>, all the Image_Metadata_ columns
-                                       only appear in the Image data output.''')
-        self.add_indexes = cps.Binary("Do you want to add an image set number column to your image data and image set number and object number columns to your object data?", False,
-                                      doc = '''The ImageNumber and ObjectNumber will always be output, but if you would like
-                                      to know which image set (cycle) the data is from, check <i>Yes</i> for this setting.''')
-        self.excel_limits = cps.Binary("Do you want to limit output to what is allowed in Excel?", False,
-                                       doc = '''If your output has more than 256 columns, a window will open
-                                       which allows you to select which columns you'd like to export. If your output exceeds
-                                       65,000 rows, you can still open the .csv in Excel, but not all rows will be visible.''')
-        self.pick_columns = cps.Binary("Do you want to pick the columns to output?", False,
-                                       doc = '''Choosing <i>Yes</i> for this setting will open up a window
-                                       that allows you to select which columns to output.''')
-        self.wants_aggregate_means = cps.Binary(
-            "Do you want to compute the aggregate mean value for object measurements?", 
-            False,
-            doc = ("ExportToExcel can compute the mean value for all of the "
-                   "cells in an image set and save that value as an aggregate "
-                   "measurement in the image file. Check this setting to add "
-                   "these columns to your image file. Uncheck it to remove "
-                   "these columns from your image file."))
-        self.wants_aggregate_medians = cps.Binary(
-            "Do you want to compute the aggregate median value for object measurements?", 
-            False,
-            doc = ("ExportToExcel can compute the median value for all of the "
-                   "cells in an image set and save that value as an aggregate "
-                   "measurement in the image file. Check this setting to add "
-                   "these columns to your image file. Uncheck it to remove "
-                   "these columns from your image file."))
-        self.wants_aggregate_std = cps.Binary(
-            "Do you want to compute the standard deviation for object measurements?", 
-            False,
-            doc = ("ExportToExcel can compute the standard deviation for all of the "
-                   "cells in an image set and save that value as an aggregate "
-                   "measurement in the image file. Check this setting to add "
-                   "these columns to your image file. Uncheck it to remove "
-                   "these columns from your image file."))
+        self.delimiter = cps.CustomChoice('Select column delimiter',DELIMITERS, doc = """
+                            What delimiter do you want to use? This is the character that separates columns in a file. The
+                            two choices are tab and comma, but you can add any single character delimiter you like.""")
+        
+        self.prepend_output_filename = cps.Binary("Prepend the output file name to the data file names?", True, doc = """
+                            This can be useful if you want to run a pipeline multiple 
+                            times without overwriting the old results""")
+        
+        self.add_metadata = cps.Binary("Add image metadata columns to your object data?", False, doc = """
+                            Unless you check <i>Yes</i>, all the Image_Metadata_ columns
+                            only appear in the Image data output.""")
+        
+        self.add_indexes = cps.Binary("Add an image set number column to your image data and image set number and object number columns to your object data?", False,doc = """
+                            The ImageNumber and ObjectNumber will always be output, but if you would like
+                            to know which image set (cycle) the data is from, check <i>Yes</i> for this setting.""")
+        
+        self.excel_limits = cps.Binary("Limit output to what is allowed in Excel?", False, doc = """
+                            If your output has more than 256 columns, a window will open
+                            which allows you to select which columns you'd like to export. If your output exceeds
+                            65,000 rows, you can still open the .csv in Excel, but not all rows will be visible.""")
+        
+        self.pick_columns = cps.Binary("Select the columns to output?", False, doc = """
+                            Checking this setting will open up a window that allows you to select which columns to output.""")
+        
+        self.wants_aggregate_means = cps.Binary("Calculate the per-image mean values for object measurements?", False, doc = """
+                            ExportToExcel can compute the statistics over all the 
+                            objects in each image set and save that value as an aggregate 
+                            measurement in the image file.  For instance, if you are measuring 
+                            the area of the Nuclei objects and you check the aggregate
+                            mean box in this module, ExportToDatabase will create a column in 
+                            the per-image file called Mean_Nuclei_AreaShape_Area. Check this 
+                            setting to add these columns to your image file; uncheck it to remove 
+                            these columns from your image file.
+                            <p>You may not want to use ExportToExcel to calculate these 
+                            measurements if your pipeline generates a large number of per-object 
+                            measurements; doing so might exceed Excel data limits. """)
+        
+        self.wants_aggregate_medians = cps.Binary("Calculate the per-image median values for object measurements?", False)
+        
+        self.wants_aggregate_std = cps.Binary("Calculate the per-image standard deviation values for object measurements?", False)
         
         self.object_groups = []
         self.add_object_group()
@@ -133,10 +130,10 @@ class ExportToExcel(cpm.CPModule):
         key = uuid.uuid4()
         d = {
              OG_KEY: key,
-             OG_OBJECT_NAME: EEObjectNameSubscriber("What data did you want to export?"),
-             OG_PREVIOUS_FILE: cps.Binary("Do you want to combine the measurements with this object with those of the previous object?",
+             OG_OBJECT_NAME: EEObjectNameSubscriber("Data to export"),
+             OG_PREVIOUS_FILE: cps.Binary("Combine these object measurements with those of the previous object?",
                                           False),
-             OG_FILE_NAME: cps.Text("What is the name of the file that will hold the data?","DATA.csv"),
+             OG_FILE_NAME: cps.Text("Name the data file","DATA.csv"),
              OG_REMOVE_BUTTON: cps.DoSomething("Remove this data source:", 
                                                "Remove",
                                                self.remove_object_group, key)    

@@ -348,24 +348,24 @@ ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule
 if any(findobj == ThisModuleFigureNumber)
     % For three input images
     if AreThereThreeInputImages,
-        OriginalRGB(:,:,1) = sum(ModifiedImage3,3)/sum(max(max(ModifiedImage3)));
-        OriginalRGB(:,:,2) = sum(ModifiedImage2,3)/sum(max(max(ModifiedImage2)));
-        OriginalRGB(:,:,3) = sum(ModifiedImage1,3)/sum(max(max(ModifiedImage1)));
-        AlignedRGB(:,:,1) = sum(AlignedImage3,3)/sum(max(max(AlignedImage3)));
-        AlignedRGB(:,:,2) = sum(AlignedImage2,3)/sum(max(max(AlignedImage2)));
-        AlignedRGB(:,:,3) = sum(AlignedImage1,3)/sum(max(max(AlignedImage1)));
+        OriginalRGB = cat(3,sum(ModifiedImage3,3)/sum(max(max(ModifiedImage3))),...
+							sum(ModifiedImage2,3)/sum(max(max(ModifiedImage2))),...
+							sum(ModifiedImage1,3)/sum(max(max(ModifiedImage1))));
+        AlignedRGB = cat(3,	sum(AlignedImage3,3)/sum(max(max(AlignedImage3))),...
+							sum(AlignedImage2,3)/sum(max(max(AlignedImage2))),...
+							sum(AlignedImage1,3)/sum(max(max(AlignedImage1))));
     % For two input images
     else
         % Note that the size is recalculated in case images were
         % cropped to be the same size.
         [M1 N1 P1] = size(ModifiedImage1);
-        OriginalRGB(:,:,1) = zeros(M1,N1);
-        OriginalRGB(:,:,2) = sum(ModifiedImage2,3)/sum(max(max(ModifiedImage2)));
-        OriginalRGB(:,:,3) = sum(ModifiedImage1,3)/sum(max(max(ModifiedImage1)));
+        OriginalRGB = cat(3,zeros(M1,N1),...
+							sum(ModifiedImage2,3)/sum(max(max(ModifiedImage2))),...
+							sum(ModifiedImage1,3)/sum(max(max(ModifiedImage1))));
         [aM1, aN1, aP1] = size(AlignedImage1);
-        AlignedRGB(:,:,1) = zeros(aM1,aN1);
-        AlignedRGB(:,:,2) = sum(AlignedImage2,3)/sum(max(max(Image2)));
-        AlignedRGB(:,:,3) = sum(AlignedImage1,3)/sum(max(max(Image1)));
+        AlignedRGB = cat(3,	zeros(aM1,aN1),...
+							sum(AlignedImage2,3)/sum(max(max(Image2))),...
+							sum(AlignedImage1,3)/sum(max(max(Image1))));
     end
 
     % Activates the appropriate figure window.
@@ -486,8 +486,8 @@ lastdy = besty;
 while true,
     [nextx, nexty, newbest] = one_step(in1, in2, bestx, besty, lastdx, lastdy, best);
     if (nextx == 0) && (nexty == 0),
-        shiftx = bestx;
-        shifty = besty;
+        shiftx = -bestx;
+        shifty = -besty;
         return;
     else
         bestx = bestx + nextx;

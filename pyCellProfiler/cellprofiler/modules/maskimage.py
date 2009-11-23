@@ -68,6 +68,10 @@ class MaskImage(cpm.CPModule):
             mask = labels > 0
         orig_image = workspace.image_set.get_image(self.image_name.value,
                                                    must_be_grayscale = True)
+        if mask.shape != orig_image.pixel_data.shape:
+            tmp = np.zeros(orig_image.pixel_data.shape, mask.dtype)
+            tmp[mask] = True
+            mask = tmp
         if orig_image.has_mask:
             mask = np.logical_and(mask, orig_image.mask)
         masked_pixels = orig_image.pixel_data.copy()

@@ -618,13 +618,13 @@ class DefineGrid(cpm.CPModule):
         gridding.columns = self.grid_columns.value
         gridding.left_to_right = (self.origin in (NUM_TOP_LEFT, NUM_BOTTOM_LEFT))
         gridding.top_to_bottom = (self.origin in (NUM_TOP_LEFT, NUM_TOP_RIGHT))
-        gridding.total_width = gridding.x_spacing * gridding.columns
-        gridding.total_height = gridding.y_spacing * gridding.rows
+        gridding.total_width = int(gridding.x_spacing * gridding.columns)
+        gridding.total_height = int(gridding.y_spacing * gridding.rows)
         
-        line_left_x = (gridding.x_location_of_lowest_x_spot - 
-                       round(gridding.x_spacing/2))
-        line_top_y = (gridding.y_location_of_lowest_y_spot - 
-                      round(gridding.y_spacing/2))
+        line_left_x = int(gridding.x_location_of_lowest_x_spot - 
+                          gridding.x_spacing/2)
+        line_top_y = int(gridding.y_location_of_lowest_y_spot - 
+                         gridding.y_spacing/2)
         #
         # Make a 2 x columns array of x-coordinates of vertical lines (x0=x1)
         #

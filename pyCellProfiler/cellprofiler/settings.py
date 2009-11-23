@@ -87,6 +87,10 @@ class Setting(object):
     value = property(__internal_get_value,__internal_set_value)
     
     def __eq__(self, x):
+        # we test explicitly for other Settings to prevent matching if
+        # their .values are the same.
+        if isinstance(x, Setting):
+            return self .__key == x.__key
         return self.value == str(x)
     
     def __ne__(self, x):

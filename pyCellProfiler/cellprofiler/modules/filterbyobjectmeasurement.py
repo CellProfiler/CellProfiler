@@ -82,14 +82,14 @@ class FilterByObjectMeasurement(cpm.CPModule):
         
         self.spacer_1 = cps.Divider(line=False)
         
-        self.measurement = cps.Measurement('What measurement do you want to use?', 
+        self.measurement = cps.Measurement('Select the measurement to filter by', 
                                 self.object_name.get_value, "AreaShape_Area", doc = """
                                 See the help of the Measurements modules
                                 for more information on the features measured.""")
         
         self.spacer_2 = cps.Divider(line=False)
         
-        self.filter_choice = cps.Choice("Filtering method", FI_ALL, FI_LIMITS, doc = """
+        self.filter_choice = cps.Choice("Select the filtering method", FI_ALL, FI_LIMITS, doc = """
                                 There are five different ways to filter objects:
                                 <ul>
                                 <li><i>Maximal:</i> Keep the object with the maximum value for the measurement

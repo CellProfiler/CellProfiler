@@ -52,7 +52,7 @@ class ConvertToImage(cpm.CPModule):
         self.image_name = cps.ImageNameProvider("Name the output image", "CellImage",doc="""
                                 What do you want to call the resulting image?""")
         
-        self.image_mode = cps.Choice("Select color type",
+        self.image_mode = cps.Choice("Select the color type",
                                 IM_ALL,doc="""
                                 What colors should the resulting image use? Choose how you would like
                                 the objects to appear:

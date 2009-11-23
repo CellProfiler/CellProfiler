@@ -73,7 +73,7 @@ class ExpandOrShrink(cpm.CPModule):
                                     "ShrunkenNuclei", doc = '''
                                     What do you want to call the resulting objects?''')
         
-        self.operation = cps.Choice("Operation",
+        self.operation = cps.Choice("Select the operation",
                                     O_ALL,  doc = '''
                                     What operation do you want to perform?
                                     <ul>

@@ -75,7 +75,7 @@ class CreateBatchFiles(cpm.CPModule):
     #
     def create_settings(self):
         '''Create the module settings and name the module'''
-        self.wants_default_output_directory = cps.Binary("Store batch files in Default output directory", True,doc="""
+        self.wants_default_output_directory = cps.Binary("Store batch files in default output directory", True,doc="""
                 Do you want to store the batch files in the default output directory? 
                 Check this box to store batch files in the Default Output directory. Uncheck
                 the box to enter the path to the directory that will be used to store

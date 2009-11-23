@@ -166,7 +166,7 @@ class CalculateMath(cpm.CPModule):
                                             "Measurement",doc="""
                                             What do you want to call the measurement calculated by this module?""")
         
-        self.operation = cps.Choice("Operation",
+        self.operation = cps.Choice("Select the operation",
                                     O_ALL,doc="""
                                     What arithmetic operation would you like to perform?""")
         

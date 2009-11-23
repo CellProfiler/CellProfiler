@@ -90,7 +90,7 @@ class Crop(cpm.CPModule):
         self.cropped_image_name = cps.CroppingNameProvider("Name the output image","CropBlue",doc = """
                             What do you want to call the cropped image?""")
         
-        self.shape=cps.Choice("Cropping shape",
+        self.shape=cps.Choice("Select the cropping shape",
                             [SH_ELLIPSE, SH_RECTANGLE, SH_IMAGE,
                              SH_OBJECTS, SH_CROPPING],
                             SH_ELLIPSE,doc = """
@@ -120,7 +120,7 @@ class Crop(cpm.CPModule):
                             you choose.</li>
                             </ul>""")
         
-        self.crop_method = cps.Choice("Cropping method",
+        self.crop_method = cps.Choice("Select the cropping method",
                             [CM_COORDINATES, CM_MOUSE], CM_COORDINATES, doc = """                                      
                             Would you like to crop by typing in pixel coordinates or clicking with the mouse?
                             For ellipse, you will be asked to click five or more

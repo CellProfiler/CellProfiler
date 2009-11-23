@@ -76,9 +76,8 @@ class CorrectIllumination_Apply(cpm.CPModule):
                                         What did you call the illumination correction function image to be used to carry out the correction (produced by another module 
                                         or loaded as a .mat format image using Load Single Image)?''')
         
-        divide_or_subtract = cps.Choice("Application of the illumination function",
+        divide_or_subtract = cps.Choice("Select how the illumination function is applied",
                                         [DOS_DIVIDE, DOS_SUBTRACT], doc = '''
-                                        How do you want to apply the illumination correction function?
                                         This choice depends on how the illumination function was calculated
                                         and on your physical model of how illumination variation affects the background of images relative to 
                                         the objects in images. <ul><li>Subtract: Use <i>Subtract</i> if the background signal is significant relative to the real signal
@@ -87,7 +86,7 @@ class CorrectIllumination_Apply(cpm.CPModule):
                                         is quite high (the cells are stained very strongly).  If you created the illumination correction function using <i>Regular</i>,
                                         then you will want to choose <i>Divide</i> here.</ul>''')
         
-        rescale_option = cps.Choice("Rescaling method",
+        rescale_option = cps.Choice("Select the rescaling method",
                                     [RE_NONE, RE_STRETCH, RE_MATCH], doc = '''
                                     Choose the rescaling method
                                     <ul>

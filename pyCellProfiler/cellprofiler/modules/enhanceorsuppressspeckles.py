@@ -52,14 +52,14 @@ class EnhanceOrSuppressSpeckles(cpm.CPModule):
                                         'FilteredBlue',doc="""
                                         What do you want to call the speckle-enhanced or suppressed image?""")
         
-        self.method = cps.Choice('Speckle operation to perform',
+        self.method = cps.Choice('Select the operation',
                                         [ ENHANCE, SUPPRESS],doc="""
                                         Do you want to enhance or suppress speckles?
                                         Choose <i>Enhance</i> to get an image whose intensity is largely composed of
                                         the speckles. Choose <i>Suppress</i> to get an image with the speckles
                                         removed.""")
         
-        self.enhance_method = cps.Choice('Speckle type',
+        self.enhance_method = cps.Choice('Feature type',
                                         [E_SPECKLES, E_NEURITES, E_DARK_HOLES],
                                         doc="""
                                         This module can enhance three kinds of objects:
@@ -80,7 +80,7 @@ class EnhanceOrSuppressSpeckles(cpm.CPModule):
                                         spots with a radius equal to the number of iterations performed.
                                         </li></ul>""")
         
-        self.object_size = cps.Integer('Speckle size',
+        self.object_size = cps.Integer('Feature size',
                                         10,1,doc="""
                                         <i>(Used if speckles or neurites are selected)</i><br>
                                         What is the speckle size? 

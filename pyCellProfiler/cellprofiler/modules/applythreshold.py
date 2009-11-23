@@ -117,15 +117,15 @@ class ApplyThreshold(Identify):
         self.object_fraction = cpsetting.CustomChoice('Approximate fraction of image covered by objects?',
                                                       ['0.01','0.1','0.2','0.3','0.4','0.5','0.6','0.7','0.8','0.9','0.99'])
         
-        self.enclosing_objects_name = cpsetting.ObjectNameSubscriber("What is the name of the objects?","None")
+        self.enclosing_objects_name = cpsetting.ObjectNameSubscriber("Select the input objects","None")
         
-        self.two_class_otsu = cpsetting.Choice('Number of intensity classes',
+        self.two_class_otsu = cpsetting.Choice('Two-class or three-class thresholding?',
                                                [O_TWO_CLASS, O_THREE_CLASS])
         
-        self.use_weighted_variance = cpsetting.Choice('Parameter to minimize',
+        self.use_weighted_variance = cpsetting.Choice('Minimize the weighted variance or the entropy?',
                                                 [O_WEIGHTED_VARIANCE, O_ENTROPY])
         
-        self.assign_middle_to_foreground = cpsetting.Choice("Assignment of the middle intensity class",
+        self.assign_middle_to_foreground = cpsetting.Choice("Assign pixels in the middle intensity class to the foreground or the background?",
                                                       [O_FOREGROUND, O_BACKGROUND])
 
     def visible_settings(self):

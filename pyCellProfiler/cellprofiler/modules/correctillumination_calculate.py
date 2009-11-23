@@ -77,7 +77,7 @@ class CorrectIllumination_Calculate(cpm.CPModule):
         self.illumination_image_name = cps.ImageNameProvider("Select the output image","IllumBlue", doc = '''
                                            What do you want to call the illumination function?''')
         
-        self.intensity_choice = cps.Choice("Illumination function calculation method",
+        self.intensity_choice = cps.Choice("Select how the illumination function is calculated",
                                            [IC_REGULAR, IC_BACKGROUND],
                                            IC_REGULAR, doc = '''
                                            Do you want to calculate using regular intensities or background intensities?<br>
@@ -137,7 +137,7 @@ class CorrectIllumination_Calculate(cpm.CPModule):
                                         to be very dark. The <i>Median</i> option chooses the median value in the 
                                         image to rescale so that division increases some values an decreases others.''')
         
-        self.each_or_all = cps.Choice("Calculate function for each or all images?",
+        self.each_or_all = cps.Choice("Calculate function for each image or all images?",
                                       [EA_EACH,EA_ALL], doc = '''
                                       Calculate a separate function for each image, or one for all the images?
                                       Select <i>Each</i> to calculate an illumination function for each image 

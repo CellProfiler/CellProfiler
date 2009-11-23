@@ -1,9 +1,9 @@
-'''<b>FindEdges:</b> Identifies edges in an image, which can be used as the basis for object
+'''<b>Find Edges</b> identifies edges in an image, which can be used as the basis for object
 identification or other downstream image processing.
 <hr>
 This module enhances the edges of objects in a grayscale image. All methods
 other than Canny produce a grayscale image that can be thresholded using
-the ApplyThreshold module to produce a mask of edges. The Canny algorithm
+the <b>ApplyThreshold</b> module to produce a mask of edges. The Canny algorithm
 produces a binary image consisting of the edge pixels.
 
 '''
@@ -59,8 +59,9 @@ class FindEdges(cpm.CPModule):
                                                     category Otsu algorithm performed on the Sobel transform of the image.''')
         self.manual_threshold = cps.Float("Enter an absolute threshold between:",.2,0,1, doc = '''You can enter a threshold
         between 0 and 1.''')
-        self.threshold_adjustment_factor = cps.Float("Enter the threshold adjustment factor (1 = no adjustment)",1)
-        self.method = cps.Choice("Choose an edge-finding method:",
+        self.threshold_adjustment_factor = cps.Float("Threshold adjustment factor",1, doc = '''
+                                An adjustment factor of 1 indicates no adjustment)''')
+        self.method = cps.Choice("Select an edge-finding method",
                                  [M_SOBEL, M_PREWITT, M_ROBERTS,
                                   M_LOG, M_CANNY], doc = '''There are several methods that can be used to identify edges:
                                   <ul><li>Sobel Method: finds edges using the Sobel approximation to the derivative. 
@@ -80,14 +81,14 @@ class FindEdges(cpm.CPModule):
                                    edges, and includes the weak edges in the output only if they are connected to 
                                    strong edges. This method is therefore less likely than the others to be fooled 
                                    by noise, and more likely to detect true weak edges.</li></ul>''')
-        self.direction = cps.Choice("Select edges to find:",
+        self.direction = cps.Choice("Select edges to find",
                                     [ E_ALL, E_HORIZONTAL, E_VERTICAL], doc = '''This is the direction of the edges
                                     are you are identifying in the image (predominantly horizontal, predominantly vertical,
                                     or both).''')
         self.wants_automatic_sigma = cps.Binary("Calculate Gaussian's sigma automatically?", True)
-        self.sigma = cps.Float("Enter the value for the Gaussian's sigma:", 10)
+        self.sigma = cps.Float("Gaussian's sigma value", 10)
         self.wants_automatic_low_threshold = cps.Binary("Calculate value for low threshold automatically?", True)
-        self.low_threshold = cps.Float("Enter the value for the low threshold",.1,0,1)
+        self.low_threshold = cps.Float("Low threshold value",.1,0,1)
 
     def settings(self):
         return [self.image_name, self.output_image_name, 

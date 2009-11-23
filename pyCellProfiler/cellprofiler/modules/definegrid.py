@@ -152,7 +152,7 @@ class DefineGrid(cpm.CPModule):
                         </ul>""")
         
         self.auto_or_manual = cps.Choice(
-                        "Method to define the grid",
+                        "Select the method to define the grid",
                         [AM_AUTOMATIC, AM_MANUAL], doc="""
                         Would you like to define the grid automatically (based on objects 
                         you have identified in a previous module) or manually? This setting 
@@ -189,7 +189,7 @@ class DefineGrid(cpm.CPModule):
                         be used to define the grid.""")
         
         self.manual_choice = cps.Choice(
-                        "Method for manual defintion",[MAN_MOUSE, MAN_COORDINATES], doc="""
+                        "Select the method to define the grid manually",[MAN_MOUSE, MAN_COORDINATES], doc="""
                         <i>(Used if Manual is selected to define the grid)</i><br>
                         Do you want to define the grid using the mouse or by entering "
                         the coordinates of the cells? You can either use the user interface 
@@ -272,14 +272,14 @@ class DefineGrid(cpm.CPModule):
                         this box if you want to save the annotated image. """)
         
         self.display_image_name = cps.ImageNameSubscriber(
-                        "Enter the display image name", cps.LEAVE_BLANK, can_be_blank = True, doc = """
+                        "Select the display image", cps.LEAVE_BLANK, can_be_blank = True, doc = """
                         <i>(Used if saving an image of the grid)</i><br>
                         Enter the name of the image that should be used as
                         the background for annotations (grid lines and grid indexes).
                         This image will be used for the figure and for the saved image.""")
         
         self.save_image_name = cps.ImageNameProvider(
-                        "Enter the output image name", "Grid", doc = """
+                        "Name the output image", "Grid", doc = """
                         <i>(Used if saving an image of the grid)</i><br>
                         Enter the name you want to use for the output image. You can
                         save this image using the <b>SaveImages</b> module.""")

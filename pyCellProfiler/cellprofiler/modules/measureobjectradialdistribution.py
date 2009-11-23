@@ -175,11 +175,10 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
         for settings in self.objects:
             temp = settings.unpack_group()
             if settings.center_choice.value == C_SELF:
-                # we have to remove this by index, because of the __eq__ in cps.Setting
-                del temp[2]
+                temp.remove(settings.center_object_name)
             result += temp
         result += [self.add_object_button, self.spacer_2]
-
+        
         for settings in self.bin_counts:
             result += settings.unpack_group()
         result += [self.add_bin_count_button]

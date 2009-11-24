@@ -126,7 +126,7 @@ class FlagImage(cpm.CPModule):
                 return cpmeas.IMAGE
             return group.object_name.value
 
-        group.append("measurement", cps.Measurement("What measurement do you want to use?",
+        group.append("measurement", cps.Measurement("Which measurement?",
                                                     object_fn))
         group.append("wants_minimum",
                      cps.Binary("Flag images based on low values?",

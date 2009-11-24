@@ -165,6 +165,8 @@ def add_all_measurements(handles, measurements):
 
 
 _evt_modulerunner_done_id = None
+_evt_modulerunner_eventtype = None
+
 def evt_modulerunner_done_id():
     """Initialize _evt_modulerunner_done_id inside this function
     instead of at the top level so that the module will not require wx
@@ -175,8 +177,18 @@ def evt_modulerunner_done_id():
         _evt_modulerunner_done_id = wx.NewId()
     return _evt_modulerunner_done_id
 
+def evt_modulerunner_event_type():
+    """Initialize the module runner event type"""
+    import wx
+    global _evt_modulerunner_eventtype
+    if _evt_modulerunner_eventtype is None:
+        _evt_modulerunner_eventtype = wx.NewEventType()
+    return _evt_modulerunner_eventtype
+
 def evt_modulerunner_done(win, func):
-    win.Connect(-1, -1, evt_modulerunner_done_id(), func)
+    done_id = evt_modulerunner_done_id()
+    event_type = evt_modulerunner_event_type()
+    win.Connect(done_id, done_id, event_type, func)
 
 class ModuleRunner(threading.Thread):
     """Worker thread that executes the run() method of a module."""
@@ -185,7 +197,32 @@ class ModuleRunner(threading.Thread):
         self.module = module
         self.workspace = workspace
         self.notify_window = notify_window
+        self.paused = False
+        self.exited_run = False
+        workspace.add_disposition_listener(self.on_disposition_changed)
+    
+    def on_disposition_changed(self, event):
+        '''Callback to listen for changes in the workspace disposition
+        
+        This gets called when a module decides to pause, continue,
+        or cancel running the pipeline. We want to postpone posting done
+        during pause and post done if we've finished running and
+        we're switching from paused to not paused
+        '''
+        if event.disposition == cpw.DISPOSITION_PAUSE:
+            self.paused = True
+        elif self.paused:
+            self.paused = False
+            if self.exited_run:
+                self.post_done()
+            
     def run(self):
+        self.module.run(self.workspace)
+        if not self.paused:
+            self.post_done()
+        self.exited_run = True
+        
+    def post_done(self):
         import wx
 
         # Defined here because the module should not depend on wx.
@@ -196,12 +233,12 @@ class ModuleRunner(threading.Thread):
             results and collected its measurements."""
             def __init__(self):
                 wx.PyEvent.__init__(self)
-                self.SetEventType(evt_modulerunner_done_id())
+                self.SetEventType(evt_modulerunner_event_type())
+                self.SetId(evt_modulerunner_done_id())
             def RequestMore(self):
                 "For now, make this work with code written for IdleEvent."
                 pass
 
-        self.module.run(self.workspace)
         wx.PostEvent(self.notify_window, ModuleRunnerDoneEvent())
 
 
@@ -550,20 +587,22 @@ class Pipeline(object):
                             grids = workspace.set_grids(grids)
                             start_time = datetime.datetime.now()
                             t0 = sum(os.times()[:-1])
-                            if not run_in_background or module.is_interactive():
+                            if not run_in_background:
                                 module.run(workspace)
-                                yield None
+                            elif module.is_interactive():
+                                worker = ModuleRunner(module, workspace, frame)
+                                worker.run()
                             else:
                                 worker = ModuleRunner(module, workspace, frame)
                                 worker.start()
-                            yield None
+                            yield measurements
                             t1 = sum(os.times()[:-1])
                             delta_sec = max(0,t1-t0)
                             print ("%s: Image # %d, module %s # %d: %.2f sec" %
                                    (start_time.ctime(), image_number, 
                                     module.module_name, module.module_num, 
                                     delta_sec))
-                            if workspace.frame:
+                            if workspace.frame and not module.is_interactive():
                                 module.display(workspace)
                             workspace.refresh()
                             failure = 0
@@ -585,10 +624,8 @@ class Pipeline(object):
                             measurements.add_measurement('Image',
                                                          execution_time_measurement,
                                                          np.array([delta_sec]))
-                        yield measurements
                         while (workspace.disposition == cpw.DISPOSITION_PAUSE and
                                frame is not None):
-                            yield None
                             yield measurements
                         if workspace.disposition == cpw.DISPOSITION_SKIP:
                             break

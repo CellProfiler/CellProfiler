@@ -284,9 +284,6 @@ class CorrectIllumination_Calculate(cpm.CPModule):
         return True
         
     def run(self, workspace):
-        orig_image = workspace.image_set.get_image(self.image_name.value,
-                                                   must_be_grayscale=True)
-        pixels = orig_image.pixel_data
         if self.each_or_all == EA_ALL:
             output_image_provider = \
                 workspace.image_set.get_image_provider(self.illumination_image_name.value)
@@ -295,12 +292,17 @@ class CorrectIllumination_Calculate(cpm.CPModule):
                 # We are accumulating a pipeline image. Add this image set's
                 # image to the output image provider.
                 # 
+                orig_image = workspace.image_set.get_image(self.image_name.value,
+                                                           must_be_grayscale=True)
                 output_image_provider.add_image(orig_image)
             if workspace.frame != None:
                 avg_image = output_image_provider.provide_avg_image()
                 dilated_image = output_image_provider.provide_dilated_image()
                 output_image = output_image_provider.provide_image(workspace.image_set)
         else:
+            orig_image = workspace.image_set.get_image(self.image_name.value,
+                                                       must_be_grayscale=True)
+            pixels = orig_image.pixel_data
             avg_image       = self.preprocess_image_for_averaging(orig_image)
             dilated_image   = self.apply_dilation(avg_image, orig_image)
             smoothed_image  = self.apply_smoothing(dilated_image, orig_image)

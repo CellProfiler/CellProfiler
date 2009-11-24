@@ -72,7 +72,8 @@ class Workspace(object):
         self.__windows_used = []
         self.__create_new_window = create_new_window
         self.__grid = {}
-        self.disposition = DISPOSITION_CONTINUE
+        self.__disposition = DISPOSITION_CONTINUE
+        self.__disposition_listeners = []
 
         class DisplayData(object):
             pass
@@ -217,4 +218,31 @@ class Workspace(object):
     def is_last_image_set(self):
         return (self.measurements.image_set_number ==
                 self.image_set_list.count()-1)
+    
+    def get_disposition(self):
+        '''How to proceed with the pipeline
         
+        One of the following values:
+        DISPOSITION_CONTINUE - continue to execute the pipeline
+        DISPOSITION_PAUSE - wait until the status changes before executing
+                            the next module
+        DISPOSITION_CANCEL - stop running the pipeline
+        DISPOSITION_SKIP - skip the rest of this image set
+        '''
+        return self.__disposition
+    
+    def set_disposition(self, disposition):
+        self.__disposition = disposition
+        event = DispositionChangedEvent(disposition)
+        for listener in self.__disposition_listeners:
+            listener(event)
+    
+    disposition = property(get_disposition, set_disposition)
+    
+    def add_disposition_listener(self, listener):
+        self.__disposition_listeners.append(listener)
+
+class DispositionChangedEvent(object):
+    def __init__(self, disposition):
+        self.disposition = disposition
+

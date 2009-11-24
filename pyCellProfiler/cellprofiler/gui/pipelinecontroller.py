@@ -696,7 +696,6 @@ class PipelineController:
         if self.__running_pipeline:
             try:
                 self.__pipeline_measurements = self.__running_pipeline.next()
-                self.__running_pipeline.next()
                 event.RequestMore()
             except StopIteration:
                 self.stop_running()

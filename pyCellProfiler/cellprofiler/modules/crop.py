@@ -475,6 +475,8 @@ class Crop(cpm.CPModule):
                 else:
                     new_setting_values[OFF_IMAGE_MASK_SOURCE] = shape
                     new_setting_values[OFF_SHAPE] = SH_IMAGE
+            if new_setting_values[OFF_REMOVE_ROWS_AND_COLUMNS] == cps.YES:
+                new_setting_values[OFF_REMOVE_ROWS_AND_COLUMNS] = RM_EDGES
             setting_values = new_setting_values
             variable_revision_number = 2
             from_matlab = False

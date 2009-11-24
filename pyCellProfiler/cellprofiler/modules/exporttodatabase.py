@@ -365,6 +365,7 @@ class ExportToDatabase(cpm.CPModule):
                     return False
             except:
                 pass
+            mappings = self.get_column_name_mappings(pipeline)
             column_defs = self.get_pipeline_measurement_columns(pipeline, 
                                                                 image_set_list)
             if self.objects_choice != O_ALL:
@@ -375,6 +376,7 @@ class ExportToDatabase(cpm.CPModule):
                                if column[0] in onames]
             self.create_database_tables(self.cursor, 
                                         column_defs,
+                                        mappings,
                                         not pipeline.in_batch_mode())
         return True
     
@@ -385,13 +387,13 @@ class ExportToDatabase(cpm.CPModule):
     def run(self, workspace):
         if ((self.db_type == DB_MYSQL and not self.store_csvs.value) or
             self.db_type == DB_SQLITE):
-            mappings = self.get_column_name_mappings(workspace)
+            mappings = self.get_column_name_mappings(workspace.pipeline)
             self.write_data_to_db(workspace, mappings)
             
     def post_run(self, workspace):
         if self.save_cpa_properties.value:
             self.write_properties(workspace)
-        mappings = self.get_column_name_mappings(workspace)
+        mappings = self.get_column_name_mappings(workspace.pipeline)
         if self.db_type == DB_MYSQL:
             per_image, per_object = self.write_mysql_table_defs(workspace, mappings)
         else:
@@ -437,18 +439,19 @@ class ExportToDatabase(cpm.CPModule):
             return True
         return False
     
-    def get_column_name_mappings(self,workspace):
+    def get_column_name_mappings(self, pipeline):
         """Scan all the feature names in the measurements, creating column names"""
-        measurements = workspace.measurements
+        columns = pipeline.get_measurement_columns()
         mappings = ColumnNameMapping()
-        for object_name in measurements.get_object_names():
-            for feature_name in measurements.get_feature_names(object_name):
-                if self.ignore_feature(object_name, feature_name, measurements):
+        mappings.add("ImageNumber")
+        mappings.add("ObjectNumber")
+        for object_name, feature_name, coltype in columns:
+            if self.ignore_feature(object_name, feature_name):
                     continue
-                mappings.add("%s_%s"%(object_name,feature_name))
-                if object_name != 'Image':
-                    for agg_name in cpmeas.AGG_NAMES:
-                        mappings.add('%s_%s_%s'%(agg_name, object_name, feature_name))
+            mappings.add("%s_%s"%(object_name,feature_name))
+            if object_name != 'Image':
+                for agg_name in self.agg_names:
+                    mappings.add('%s_%s_%s'%(agg_name, object_name, feature_name))
         return mappings
     
     @property
@@ -474,7 +477,8 @@ class ExportToDatabase(cpm.CPModule):
     #
     # Create per_image and per_object tables in MySQL
     #
-    def create_database_tables(self, cursor, column_defs, create_database):
+    def create_database_tables(self, cursor, column_defs, mappings, 
+                               create_database):
         '''Creates empty image and object tables
         
         Creates the MySQL database (if MySQL), drops existing tables of the
@@ -483,6 +487,7 @@ class ExportToDatabase(cpm.CPModule):
         
         cursor - database cursor for creating the tables
         column_defs - column definitions as returned by get_measurement_columns
+        mappings - mappings from measurement feature names to column names
         create_database - True to actually create the database, False if
                           we have to call this just to do the initialization
                           of image_col_order etc. during batch mode
@@ -527,7 +532,7 @@ class ExportToDatabase(cpm.CPModule):
                                                  cpmeas.COLTYPE_FLOAT)]
                         self.object_col_order[feature_name] = c
                         c+=1
-                        statement += ',\n%s %s'%(feature_name, ftype)
+                        statement += ',\n%s %s'%(mappings[feature_name], ftype)
             statement += ',\nPRIMARY KEY (ImageNumber, ObjectNumber) )'
             
             if create_database:
@@ -545,7 +550,7 @@ class ExportToDatabase(cpm.CPModule):
                 else:
                     feature_name = feature
                 self.image_col_order[feature_name] = c
-                statement += ',\n%s %s'%(feature_name, ftype)
+                statement += ',\n%s %s'%(mappings[feature_name], ftype)
                 c+=1
         statement += ',\nPRIMARY KEY (ImageNumber) )'
 
@@ -915,12 +920,12 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
         
         stmt = ('INSERT INTO %s (%s) VALUES (%s)' % 
                 (image_table, 
-                 ','.join([colname for val, dtype, colname in image_row]),
+                 ','.join([mappings[colname] for val, dtype, colname in image_row]),
                  ','.join([str(v) for v in image_row_formatted])))
         execute(self.cursor, stmt)
         stmt = ('INSERT INTO %s (%s) VALUES (%s)'%
                 (object_table,
-                 ','.join(object_cols),
+                 ','.join([mappings[col] for col in object_cols]),
                  ','.join(['%s']*len(object_cols))))
 
         if self.db_type == DB_MYSQL:

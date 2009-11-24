@@ -36,8 +36,12 @@ COLTYPE_FLOAT = "float"
 To get a varchar column of width X: COLTYPE_VARCHAR_FORMAT % X
 '''
 COLTYPE_VARCHAR_FORMAT = "varchar(%d)"
-COLTYPE_VARCHAR_FILE_NAME = COLTYPE_VARCHAR_FORMAT % 128
-COLTYPE_VARCHAR_PATH_NAME = COLTYPE_VARCHAR_FORMAT % 128
+'''# of characters reserved for path name in the database'''
+PATH_NAME_LENGTH = 256
+'''# of characters reserved for file name in the database'''
+FILE_NAME_LENGTH = 128
+COLTYPE_VARCHAR_FILE_NAME = COLTYPE_VARCHAR_FORMAT % FILE_NAME_LENGTH
+COLTYPE_VARCHAR_PATH_NAME = COLTYPE_VARCHAR_FORMAT % PATH_NAME_LENGTH
 
 class Measurements(object):
     """Represents measurements made on images and objects

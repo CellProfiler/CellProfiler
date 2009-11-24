@@ -82,6 +82,8 @@ DIR_ALL = [DIR_DEFAULT_IMAGE, DIR_DEFAULT_OUTPUT,DIR_OTHER]
 
 PATH_NAME = 'PathName'
 FILE_NAME = 'FileName'
+'''Reserve extra space in pathnames for batch processing name rewrites'''
+PATH_PADDING = 20
 
 ###################################################################
 #
@@ -482,6 +484,12 @@ class LoadText(cpm.CPModule):
         collen = [0]*len(header)
         for row in reader:
             for field,index in zip(row,range(len(row))):
+                len_field = len(field)
+                if field.startswith(PATH_NAME) and self.wants_images:
+                    # Account for possible rewrite of the pathname
+                    # in batch data
+                    len_field = max(cpmeas.PATH_NAME_LENGTH, 
+                                    len_field + PATH_PADDING)
                 if coltypes[index] == cpmeas.COLTYPE_INTEGER:
                     try:
                         int(field)

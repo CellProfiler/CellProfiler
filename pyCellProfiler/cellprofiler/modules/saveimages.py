@@ -426,9 +426,12 @@ class SaveImages(cpm.CPModule):
     
     def get_measurement_columns(self, pipeline):
         if self.update_file_names.value:
-            return [(cellprofiler.measurements.IMAGE, x,
-                     cellprofiler.measurements.COLTYPE_VARCHAR_FILE_NAME)
-                    for x in (self.file_name_feature, self.path_name_feature)]
+            return [(cellprofiler.measurements.IMAGE, 
+                     self.file_name_feature,
+                     cellprofiler.measurements.COLTYPE_VARCHAR_FILE_NAME),
+                    (cellprofiler.measurements.IMAGE,
+                     self.path_name_feature,
+                     cellprofiler.measurements.COLTYPE_VARCHAR_PATH_NAME)]
         else:
             return []
         

@@ -280,8 +280,11 @@ class CPModule(object):
             for setting in self.visible_settings():
                 setting.test_valid(pipeline)
             self.validate_module(pipeline)
+        except cps.ValidationError, instance:
+            raise instance
         except Exception, e:
-            raise cps.ValidationError("Exception in cpmodule.test_valid %s" % e, self)
+            raise cps.ValidationError("Exception in cpmodule.test_valid %s" % e, 
+                                      self.visible_settings()[0])
     
     def validate_module(self,pipeline):
         pass

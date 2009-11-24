@@ -161,7 +161,7 @@ class CPFrame(wx.Frame):
         wx.EVT_MENU(self,ID_OPTIONS_PREFERENCES, self.__on_preferences)
         wx.EVT_MENU(self,ID_WINDOW_CLOSE_ALL, self.__on_close_all)
         accelerator_table = wx.AcceleratorTable([(wx.ACCEL_CMD,ord('N'),ID_FILE_ANALYZE_IMAGES),
-                                                 (wx.ACCEL_CMD,ord('P'),ID_FILE_LOAD_PIPELINE),
+                                                 (wx.ACCEL_CMD,ord('O'),ID_FILE_LOAD_PIPELINE),
                                                  (wx.ACCEL_CMD|wx.ACCEL_SHIFT,ord('S'),ID_FILE_SAVE_PIPELINE),
                                                  (wx.ACCEL_CMD,ord('L'),ID_WINDOW_CLOSE_ALL),
                                                  (wx.ACCEL_CMD,ord('Q'),ID_FILE_EXIT),
@@ -280,6 +280,16 @@ class CPFrame(wx.Frame):
         helpframe.Bind(wx.EVT_MENU, on_edit_select_all, id= ID_EDIT_SELECT_ALL)
         helpframe.Bind(wx.EVT_IDLE, on_idle)
         
+        ####################################################
+	#
+	# Build an accelerator table for some of the commands
+	#
+	####################################################
+	accelerator_table = wx.AcceleratorTable(
+	    [(wx.ACCEL_CMD,ord('Q'), ID_FILE_EXIT),
+             (wx.ACCEL_CMD,ord('P'), ID_FILE_PRINT),
+             (wx.ACCEL_CMD,ord('C'), ID_EDIT_COPY)])
+        helpframe.SetAcceleratorTable(accelerator_table)
         helpframe.SetIcon(get_icon())
         helpframe.Layout()
         helpframe.Show()

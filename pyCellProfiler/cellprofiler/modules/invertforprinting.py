@@ -40,7 +40,7 @@ class InvertForPrinting(cpm.CPModule):
     def create_settings(self):
         # Input settings
         self.input_color_choice = cps.Choice(
-            "Input image is:",
+            "Input image type",
             CC_ALL, doc = """Are you combining several grayscale images or loading a single color image?""")
         self.wants_red_input = cps.Binary(
             "Load a red image?",
@@ -68,7 +68,7 @@ class InvertForPrinting(cpm.CPModule):
         
         # output settings
         self.output_color_choice = cps.Choice(
-            "Output image will be :",
+            "Output image type",
             CC_ALL, doc = """Do you want to produce several grayscale images or one color image?""")
         self.wants_red_output = cps.Binary(
             "Produce a red image?",

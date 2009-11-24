@@ -160,14 +160,28 @@ class MeasureObjectIntensity(cpm.CPModule):
         result.extend(self.object_names)
         return result
 
-    def set_settings_from_values(self,setting_values,variable_revision_number,module_name):
-        """Adjust the number of object_names according to the number of
-        setting values, then call the superclass to set the object names
-        to the variable values
-        """
-        if variable_revision_number ==1:
-            raise NotImplementedError("Can't read version # 1")
-        if module_name != self.module_class():
+    def upgrade_settings(self,setting_values,variable_revision_number,
+                         module_name,from_matlab):
+        '''Adjust setting values if they came from a previous revision
+        
+        setting_values - a sequence of strings representing the settings
+                         for the module as stored in the pipeline
+        variable_revision_number - the variable revision number of the
+                         module at the time the pipeline was saved. Use this
+                         to determine how the incoming setting values map
+                         to those of the current module version.
+        module_name - the name of the module that did the saving. This can be
+                      used to import the settings from another module if
+                      that module was merged into the current module
+        from_matlab - True if the settings came from a Matlab pipeline, False
+                      if the settings are from a CellProfiler 2.0 pipeline.
+        
+        Overriding modules should return a tuple of setting_values,
+        variable_revision_number and True if upgraded to CP 2.0, otherwise
+        they should leave things as-is so that the caller can report
+        an error.
+        '''
+        if from_matlab and variable_revision_number == 2:
             # Old matlab-style. Erase any setting values that are
             # "Do not use"
             new_setting_values = [setting_values[0],cps.DO_NOT_USE]
@@ -175,27 +189,37 @@ class MeasureObjectIntensity(cpm.CPModule):
                 if setting_value != cps.DO_NOT_USE:
                     new_setting_values.append(setting_value)
             setting_values = new_setting_values
-            module_name = self.module_class()
+            from_matlab = False
+            variable_revision_number = 2
+
+        return setting_values, variable_revision_number, from_matlab
+
+    def prepare_settings(self,setting_values):
+        """Do any sort of adjustment to the settings required for the given values
         
-        # Count the # of settings up to the first, "DO_NOT_USE"
-        for i in range(len(setting_values)):
-            if setting_values[i]==cps.DO_NOT_USE:
-                break
+        setting_values - the values for the settings just prior to mapping
+                         as done by set_settings_from_values
+        This method allows a module to specialize itself according to
+        the number of settings and their value. For instance, a module that
+        takes a variable number of images or objects can increase or decrease
+        the number of relevant settings so they map correctly to the values.
         
-        image_count = i
+        See cellprofiler.modules.measureobjectareashape for an example.
+        """
+        #
+        # The settings have two parts - images, then objects
+        # The parts are divided by the string, cps.DO_NOT_USE
+        #
+        image_count = setting_values.index(cps.DO_NOT_USE)
+        object_count = len(setting_values)-image_count -1
         while len(self.image_names) > image_count:
-            self.remove_image_cb(len(self.image_names)-1)
+            self.remove_image_cb(self.image_keys[-1])
         while len(self.image_names) < image_count:
             self.add_image_cb()
-        
-        object_count = len(setting_values)-image_count -1
         while len(self.object_names) > object_count:
             self.remove_cb(len(self.object_names)-1)
         while len(self.object_names) < object_count:
             self.add_cb()
-        super(MeasureObjectIntensity,self).set_settings_from_values(setting_values, 
-                                                              variable_revision_number, 
-                                                              module_name)
 
     def get_measurement_columns(self, pipeline):
         '''Return the column definitions for measurements made by this module'''

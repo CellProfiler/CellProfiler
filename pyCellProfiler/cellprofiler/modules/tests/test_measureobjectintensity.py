@@ -15,8 +15,9 @@ __version__="$Revision$"
 import base64
 import math
 import numpy
-import StringIO
+from StringIO import StringIO
 import unittest
+import zlib
 
 import cellprofiler.modules.injectimage as II
 import cellprofiler.modules.measureobjectintensity as MOI
@@ -36,7 +37,7 @@ class TestMeasureObjects(unittest.TestCase):
     def test_01_01_load(self):
         pipeline = P.Pipeline()
         pipeline.add_listener(self.error_callback)
-        fd = StringIO.StringIO(base64.b64decode(pipeline_data))
+        fd = StringIO(base64.b64decode(pipeline_data))
         pipeline.load(fd)
         self.assertEqual(len(pipeline.modules()),3)
         module = pipeline.modules()[2]
@@ -44,6 +45,50 @@ class TestMeasureObjects(unittest.TestCase):
         self.assertEqual(len(module.object_names),1)
         self.assertEqual(module.object_names[0].value,'Nuclei')
         self.assertEqual(module.image_names[0].value,'DNA')
+        
+    def test_01_02_load_v2(self):
+        data = ('eJztW0Fv2zYUpl0nWFagS08dhhXgoYckiDXZq9E0KFo78boZqB2jNtoNadYx'
+                'Mm1zkEVDotK4Re/9qTvmuONEW7IlTolkS4qdVAIE+VH8+L33+PhIyVS90n5V'
+                'OYAlSYb1SjvfJSqGTRWxLtUH+1Bju/BQx4jhDqTaPmybGDboGSw+hoXifqm0'
+                'X5BhUZafgsWOTK1+z7pcPANg3bp+Y51Z+9aaLWdcJ5dbmDGi9Yw1kAPf2+UX'
+                '1vkG6QSdqvgNUk1szCic8prWpe3RcHqrTjumihto4K5sHQ1zcIp146jrAO3b'
+                'TXKO1Rb5iAUTnGqv8RkxCNVsvN2+WDrlpUzgbfXph5e6pY7Q/gFiSr/FrB7w'
+                'lnO/bf0481tG8FvOOh+6ynn938Csfs7Hz/dd9TdtmWgdckY6JlIhGaDeVGve'
+                'nhzQ3h1Pe3dAtVEZ4/YCcOuCHlxumIqKSTTecgBuU+DlZxufs/wv50hhcMC7'
+                'Ig79g/BrAp7Lh1hVDbA4vqJYwwaE81/Gg8+AnyPwFuTdx7KND/L/XQHP5aZO'
+                'h6iHmDWIxuVh2vlWaIfLVQo1yqBp2OMoznbmjcc/rFEURz9GjaMgvbMefBY0'
+                'aDRckL/9+v+IGSb8VaWnSJ36O+r4C8qDDwQ8l6u4i0yVwRpPgrBKdKwwqo8i'
+                '9f+8uIIk/w+3LuCcw8Ft2NcouHKAnmH7bZH5R5bk8bFbsH/EYM8y+8sPl/Pg'
+                'ctzmQpL2XTY+k+yfMHoU5GT7ddF8FqZ/QuJKqzh+N4C3X7lc0xjWDMJGrnYW'
+                'iY8WVqjWQfroyGQq0S5dPyZtz2EfaRpWC/kE/DJvXpBjzOPzrH/jGI9h4rxB'
+                'NZykfeL6tLAg7klIXJi8Ead9Yfw5z7xVDsD5zd/tDxQqKjIMe8RGsbcfwP9E'
+                '4Ofyn1svms/4iwj8XNrZfs+lt9bS9flxJd88OZbzT08+FT9vvzf4jRaxao3L'
+                'tkPZ+53Ax+Wmbj3eurLUovnuLSa9Pn9dcsZfDGiK89gexX+/B+jxSNCDy9LO'
+                '8bt3P51w91RtJ04LXpsalx/56RVnXPk9P72kOu7p1NQ60f0SxH/FPFB0zwNx'
+                'rAevYx5P+rl/VeycN48XF7Qvznl4FfJ/kvPwKuf7Zc7ftyGPLzP+k1z3ylJp'
+                '6Xom/Z4lznXadeNWZX21av2c9Lpp1cftbctL4nqltCQ9v/www2UEnN//hdcZ'
+                '3+M/F3mAD8O345cP6enfWGGzhuLU5zrznMsOSLQOHibY3rL9k+Juxji6LX67'
+                'bfamuBSX4lJc1Ly4Cbx5kZ+z+WSybLhJ9n5t/g3iT9dxKS4JXBksN+5T3NeJ'
+                'K4M07lJcOu+luBSX4lJciktxNwn3b2aGywg4Lrv3s/D6f7l4/Ob5HVf9TVtW'
+                'sKoOdcq/a9SlwfjjO0NSKepMvmaTXlk/a64P2zjPMICnLPCUL+MhHawx0h0N'
+                '+eZCk9EBYkSRanYp33JYcUo5bz+Ad0/g3QviNZzN11PO6XZszncewHcg8B1c'
+                'xjfAyDB1PHmHTpwd0lJ9Unw0LhY2Totxs+HD7+7/rCU9eHh/7ap4A8AbZ7P4'
+                'u3ixCF8ul83eA959d3cDcDngjXuO/wfMF+dbV9R3bFzl+vP6OWMdUf0048lN'
+                'dZq0v5r1/wNnl0Vu')
+        pipeline = P.Pipeline()
+        def callback(caller,event):
+            self.assertFalse(isinstance(event, P.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
+        self.assertEqual(len(pipeline.modules()), 4)
+        module = pipeline.modules()[-1]
+        self.assertTrue(isinstance(module, MOI.MeasureObjectIntensity))
+        self.assertEqual(len(module.image_names), 2)
+        for expected, actual in zip(("DNA","Actin"),module.image_names):
+            self.assertEqual(expected, actual)
+        self.assertEqual(len(module.object_names), 2)
+        for expected, actual in zip(("Cells","Nuclei"), module.object_names):
+            self.assertEqual(expected, actual)
         
     def test_02_01_supplied_measurements(self):
         """Test the get_category / get_measurements, get_measurement_images functions"""

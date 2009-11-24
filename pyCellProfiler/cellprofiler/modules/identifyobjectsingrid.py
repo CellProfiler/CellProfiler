@@ -1,21 +1,20 @@
-'''<b>IdentifyObjectsInGrid</b>
-Identifies objects within each section of a grid that has been defined by
+'''<b>Identify Objects In Grid</b> identifies objects within each section of a grid that has been defined by
 the DefineGrid module.
 <hr>
 This module identifies objects that are in a grid pattern which allows
 you to measure the objects using measure modules. It requires that you
-create a grid in an earlier module using the DefineGrid module.
+create a grid in an earlier module using the <b>DefineGrid</b> module.
 
 For several of the automatic options, you will need to tell the module
 what you called previously identified objects. Typically, you roughly
-identify objects of interest in a previous Identify module, and the
+identify objects of interest in a previous <b>Identify</b> module, and the
 locations and/or shapes of these rough objects are refined in this
 module. Within this module, objects are re-numbered according to the grid
 definitions rather than their original numbering from the original 
-Identify module. For the Natural Shape option, if an object does not 
+Identify module. For the <i>Natural Shape</i> option, if an object does not 
 exist within a grid compartment, an object consisting of one single pixel 
-in the middle of the grid square will be created. Also, for the Natural 
-Shape option, if a grid compartment contains two partial objects, they 
+in the middle of the grid square will be created. Also, for the <i>Natural 
+Shape</i> option, if a grid compartment contains two partial objects, they 
 will be combined together as a single object.
 
 If placing the objects within the grid is impossible for some reason (the
@@ -25,9 +24,9 @@ you choose to re-use any previous grid or the first grid in the in the
 image cycle.
 
 Special note on saving images: Using the settings in this module, object
-outlines can be passed along to the module OverlayOutlines and then
-saved with the SaveImages module. Objects themselves can be passed along
-to the object processing module ConvertToImage and then saved with the
+outlines can be passed along to the module <b>OverlayOutlines</b> and then
+saved with the </b>SaveImages</b> module. Objects themselves can be passed along
+to the object processing module <b>ConvertToImage</b> and then saved with the
 SaveImages module.
 
 See also <b>DefineGrid</b>.
@@ -82,62 +81,77 @@ class IdentifyObjectsInGrid(cpm.CPModule):
         
         create_settings is called at the end of initialization.
         """
-        self.grid_name = cps.GridNameSubscriber("Grid name:","None",doc="""
+        self.grid_name = cps.GridNameSubscriber("Select the defined grid","None",doc="""
             This is the name of a grid created by a previous <b>DefineGrid</b>
             module.""")
+        
         self.output_objects_name = cps.ObjectNameProvider(
-            "Objects name:","Wells",
+            "Name the identified objects","Wells",
             doc="""Enter the name you want to use for the grid objects that
             are created by this module. These objects will be available in
             subsequent modules.""")
+        
         self.shape_choice = cps.Choice(
-            "Object shape:",[SHAPE_RECTANGLE, SHAPE_CIRCLE_FORCED,
+            "Select object shape",[SHAPE_RECTANGLE, SHAPE_CIRCLE_FORCED,
                              SHAPE_CIRCLE_NATURAL, SHAPE_NATURAL],
             doc="""This setting chooses the grid object shape and the
             algorithm used to create that shape:
-            
-            <ul><li><b>Rectangle</b>: Each object occupies the entire grid
+            <ul>
+            <li><i>Rectangle</i>: Each object occupies the entire grid
             rectangle.</li>
-            <li><b>Circle Forced Location</b>: The object is a circle, centered
+            <li><i>Circle Forced Location</i>: The object is a circle, centered
             in the middle of each grid. You will have an opportunity to
             specify the circle radius.</li>
-            <li><b>Circle Natural Location</b>: The object is a circle. The
+            <li><i>Circle Natural Location</i>: The object is a circle. The
             algorithm takes all of the guiding objects that are within the grid
             except for ones whose centers are close to the grid edge, combines
             the parts that fall within the grid and finds the centroid of
             this aggregation. The circle's center is set to that centroid.</li>
-            <li><b>Natural Location</b>: The object is an aggregation of
+            <li><i>Natural Location</i>: The object is an aggregation of
             all of the parts of guiding objects that fall within the grid.
             The algorithm filters out guiding objects that are close to the
-            edge of the grid.</li><ul>""")
+            edge of the grid.</li>
+            </ul>""")
+        
         self.diameter_choice = cps.Choice(
-            "Do you want to specify the diameter for the circles automatically?",
+            "Specify the circle diameter automatically?",
             [AM_AUTOMATIC, AM_MANUAL],
-            doc="""The automatic method uses the average diameter of guiding
+            doc="""<i>(Used if Circle selected as object shape)</i><br>
+            The automatic method uses the average diameter of guiding
             objects as the diameter. The manual method lets you specify the
             diameter directly.""")
+        
         self.diameter = cps.Integer(
-            "Enter the diameter:", 20, minval=2,
-            doc="""Enter the diameter to be used for each grid circle""")
+            "Circle diameter", 20, minval=2,
+            doc="""<i>(Used if Circle selected as object shape and diameter is 
+            specified manually)</i><br>
+            Enter the diameter to be used for each grid circle""")
+        
         self.guiding_object_name = cps.ObjectNameSubscriber(
-            "Guiding objects name:", "None",
-            doc="""This is the name of previously identified objects that
+            "Select the guiding objects", "None",
+            doc="""<i>(Used if Circle selected as object shape and diameter is 
+            specified automatically, or if Natural Location is selected as object 
+            shape)</i><br>
+            This is the name of previously identified objects that
             will be used to guide placement of the objects created by this
             module. These objects may used to automatically calculate the
             diameter of the circles to be used, placeement of the circles
             within the grid or the shape of the objects created by this
             module, depending on the module's settings.""")
+        
         self.wants_outlines = cps.Binary(
-            "Do you want to save object outlines?", False,
+            "Save outlines of the identified objects?", False,
             doc="""The module can create a binary image of the outlines
             of the objects it creates. You can then use <b>OverlayOutlines</b>
-            to overlay the outlines on an image or use <b>SaveImages</b>
+            to overlay the outlines on an image or use <b>SaveImages</b>.
             to save them""")
+        
         self.outlines_name = cps.OutlineNameProvider(
-            "Outlines name:","GridOutlines",
-            doc="""This setting names the outlines of the output objects.
+            "Name the outline image","GridOutlines",
+            doc="""<i>(Used if outlines are to be saved)</i><br>
+            This setting names the outlines of the output objects.
             You can use this name to refer to the outlines in the
-            <b>OverlayOutlines</b> and <b>SaveImages</b> modules""")
+            <b>OverlayOutlines</b> and <b>SaveImages</b> modules.""")
 
     def settings(self):
         """Return the settings to be loaded or saved to/from the pipeline

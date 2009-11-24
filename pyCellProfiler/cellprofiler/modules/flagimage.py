@@ -1,12 +1,11 @@
 '''<b>FlagImage</b>: This module allows you to flag an image if it fails some quality control
 measurement you specify. 
 <hr>
-
 This module allows the user to assign a flag if
-an image fails some quality control measurement the user specifies.  The
+an image fails a quality control measurement the user specifies.  The
 value of the measurement is '1' if the image has failed QC, and '0' if it
 has passed. The flag can be used in post-processing to filter out images
-the user does not want to analyze in CPAnalyst. Additionally, you can
+the user does not want to analyze, e.g. in CPAnalyst. Additionally, you can
 use ExportToExcel to generate a file that includes the measurement as metadata
 associated with the images. This file can then be used by the LoadText 
 module to put images that pass QC into one group and the images that fail 
@@ -14,18 +13,18 @@ into another. If you plan to use a flag in LoadText, give it a category of
 "Metadata" so that it can be used in grouping.
 
 The flag is stored in a measurement whose name is a combination of the
-flag's category and feature name. For instance, the default category is
-"Metadata" and the default feature name is "QCFlag". The default
-measurement name is "Metadata_QCFlag".
+flag's category and feature name, underscore delimited. 
+For instance, if the measurement category is
+"Metadata" and the feature name is "QCFlag", then the default
+measurement name would be "Metadata_QCFlag".
 
 A flag can be based on one or more measurements. If you create a flag based
 on more than one measurement, you'll have to choose between setting the
 flag if all measurements are outside the bounds or if one of the measurements
 is outside of the bounds.
 
-This module requires the measurement modules be placed prior to this
+This module requires the measurement modules to be placed prior to this
 module in the pipeline.
-
 '''
 
 #CellProfiler is distributed under the GNU General Public License.
@@ -83,19 +82,19 @@ class FlagImage(cpm.CPModule):
         group = cps.SettingsGroup()
         group.append("measurement_settings", [])
         group.append("measurement_count", cps.HiddenCount(group.measurement_settings))
-        group.append("category", cps.Text("What is the flag's measurement category?",
-                                 "Metadata", doc = '''The default is 'Metadata', which allows you to group images
+        group.append("category", cps.Text("Flag's measurement category?",
+                                 "Metadata", doc = '''Choose the measurement category to flag.  The default is 'Metadata', which allows you to group images
                                  by quality if loading the QCFlag via LoadText.  Otherwise, the flag can be stored
                                  in the 'Image' category.'''))
-        group.append("feature_name", cps.Text("What is the flag's feature name ?"
-                                     ,"QCFlag", doc = "The default name of the flag's measurement is "
-                                     "Metadata_QCFlag."))
+        group.append("feature_name", cps.Text("Flag's feature name ?"
+                                     ,"QCFlag", doc = "Choose the measurement category to flag. "
+                                     "The default name of the flag's measurement is 'QCFlag'."))
         group.append("combination_choice",
                      cps.Choice(
-                "Do you want to set the flag if any measurement fails to meet the criteria or if all measurements fail to meet the criteria?",
+                "Flag if any, or all, measurement(s) fails to meet the criteria?",
                 [ C_ANY, C_ALL], doc = '''<ul><li>Any: An image will be assigned a flag if any of its measurements fail. This can be useful
-                for capturing images possessing varied QC flaws; for example, you can flag all bright images and all out of focus images with one flag.</li>
-                <li>All: A flag will only be assigned if all measurements fail.  This can be useful for capturing images that possess only a combination
+                for flagging images possessing varied QC flaws; for example, you can flag all bright images and all out of focus images with one flag.</li>
+                <li>All: A flag will only be assigned if all measurements fail.  This can be useful for flagging  images that possess only a combination
                 of QC flaws; for example, you can flag only images that are both bright and out of focus.</li></ul>'''))
         group.append("add_measurement_button", 
                      cps.DoSomething("Add another measurement",
@@ -112,9 +111,7 @@ class FlagImage(cpm.CPModule):
         group = cps.SettingsGroup()
         group.append("source_choice",
                      cps.Choice(
-                "Do you want to filter on an image measurement, "
-                "on the average value of an object measurement, or "
-                "on the values of all objects in the image?", S_ALL, doc = '''<ul><li>Image: This will flag an image based
+                "Filter object type", S_ALL, doc = '''<ul><li>Image: This will flag an image based
                 on a per-image measurement, such as intensity or granularity.</li><li>Average for objects: This will flag
                 an image based on the average of all object measurements in an image.</li>
                 <li>All objects: This will flag an image based on all the object measurements in an image, without averaging.
@@ -132,13 +129,13 @@ class FlagImage(cpm.CPModule):
         group.append("measurement", cps.Measurement("What measurement do you want to use?",
                                                     object_fn))
         group.append("wants_minimum",
-                     cps.Binary("Do you want to flag images based on low values?",
-                                True, doc = '''Low values: Images with measurements below this cutoff will be flagged.'''))
-        group.append("minimum_value", cps.Float("What is the minimum value for the measurement?", 0))
+                     cps.Binary("Flag images based on low values?",
+                                True, doc = '''Images with measurements below this cutoff will be flagged.'''))
+        group.append("minimum_value", cps.Float("Minimum value", 0))
         group.append("wants_maximum",
-                     cps.Binary("Do you want to flag images based on high values?",
-                                True, doc = '''High values: Images with measurements above this cutoff will be flagged.'''))
-        group.append("maximum_value", cps.Float("What is the maximum value for the measurement?", 1))
+                     cps.Binary("Flag images based on high values?",
+                                True, doc = '''Images with measurements above this cutoff will be flagged.'''))
+        group.append("maximum_value", cps.Float("Maximum value", 1))
         
         if can_delete:
             group.append("remover", cps.RemoveSettingButton("", "Remove this measurement", measurement_settings, group))

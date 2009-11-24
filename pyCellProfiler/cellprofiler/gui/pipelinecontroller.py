@@ -425,7 +425,22 @@ class PipelineController:
             self.__output_path = output_path
             self.__frame.preferences_view.on_analyze_images()
             self.__running_pipeline = self.__pipeline.run_with_yield(self.__frame)
-            self.__running_pipeline.next()  # Start the first module.
+            try:
+                # Start the first module.
+                self.__pipeline_measurements = self.__running_pipeline.next()
+            except StopIteration:
+                #
+                # Pipeline finished on the first go (typical for something
+                # like CreateBatchFiles)
+                #
+                self.stop_running()
+                if self.__pipeline_measurements is not None:
+                    self.__pipeline.save_measurements(self.__output_path,self.__pipeline_measurements)
+                    self.__pipeline_measurements = None
+                    self.__output_path = None
+                    wx.MessageBox("Finished processing pipeline", "Analysis complete")
+                else:
+                    wx.MessageBox("Pipeline processing finished, no measurements taken", "Analysis complete")
     
     def on_frame_menu_open(self, event):
         pass
@@ -703,6 +718,8 @@ class PipelineController:
                     self.__pipeline.save_measurements(self.__output_path,self.__pipeline_measurements)
                     self.__pipeline_measurements = None
                     self.__output_path = None
+                wx.MessageBox("Finished processing pipeline", "Analysis complete")
+                
 
     def get_output_file_path(self):
         path = os.path.join(cellprofiler.preferences.get_default_output_directory(),

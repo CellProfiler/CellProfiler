@@ -202,7 +202,13 @@ class LoadText(cpm.CPModule):
         csv_path = self.csv_path
         if not os.path.isfile(csv_path):
             raise cps.ValidationError("No such CSV file: %s"%csv_path,
-                                      self.csv_file_name) 
+                                      self.csv_file_name)
+        else:
+            try:
+                self.get_header()
+            except:
+                raise cps.ValidationError("The CSV file, %s, is not in the proper format. See this module's help for details on CSV format." %
+                                          self.csv_path, self.csv_file_name)
 
     def visible_settings(self):
         result = [self.csv_directory_choice]
@@ -466,9 +472,12 @@ class LoadText(cpm.CPModule):
 
     def get_measurement_columns(self, pipeline):
         '''Return column definitions for measurements output by this module'''
-        fd = open(self.csv_path, 'rb')
-        reader = csv.reader(fd)
-        header = [header_to_column(x) for x in reader.next()]
+        try:
+            fd = open(self.csv_path, 'rb')
+            reader = csv.reader(fd)
+            header = [header_to_column(x) for x in reader.next()]
+        except:
+            return []
         coltypes = [cpmeas.COLTYPE_INTEGER]*len(header)
         collen = [0]*len(header)
         for row in reader:

@@ -195,13 +195,16 @@ class CalculateMath(cpm.CPModule):
             measurement = operand.operand_measurement.value
             pieces = measurement.split('_')
             if len(pieces) == 4:
-                measurement = pipeline.synthesize_measurement_name(self,
-                                                                   operand.object,
-                                                                   pieces[0],
-                                                                   pieces[1],
-                                                                   pieces[2],
-                                                                   pieces[3])
-                operand.operand_measurement.value = measurement
+                try:
+                    measurement = pipeline.synthesize_measurement_name(self,
+                                                                       operand.object,
+                                                                       pieces[0],
+                                                                       pieces[1],
+                                                                       pieces[2],
+                                                                       pieces[3])
+                    operand.operand_measurement.value = measurement
+                except:
+                    pass
                  
     def visible_settings(self):
         return ([self.output_feature_name, self.operation] +

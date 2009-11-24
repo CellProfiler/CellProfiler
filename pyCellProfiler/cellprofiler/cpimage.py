@@ -368,7 +368,6 @@ def check_consistency(image, mask):
     assert (image==None) or (len(image.shape)==2) or (image.shape[2] in (1,3)),"3-dimensional images must have either one or three colors"
     assert (mask==None) or (len(mask.shape)==2),"Mask must have 2 dimensions"
     assert (image==None) or (mask==None) or (image.shape[:2] == mask.shape), "Image and mask sizes don't match"
-    assert (image==None) or (image.dtype.type is numpy.float64), "Image must be float64, was %s"%(repr(image.dtype.type))
     assert (mask==None) or (mask.dtype.type is numpy.bool_), "Mask must be boolean, was %s"%(repr(mask.dtype.type))
 
 class AbstractImageProvider(object):

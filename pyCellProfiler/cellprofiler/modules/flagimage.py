@@ -124,7 +124,7 @@ class FlagImage(cpm.CPModule):
         def object_fn():
             if group.source_choice == S_IMAGE:
                 return cpmeas.IMAGE
-            return self.object_name.value
+            return group.object_name.value
 
         group.append("measurement", cps.Measurement("What measurement do you want to use?",
                                                     object_fn))

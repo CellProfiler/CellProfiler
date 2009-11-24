@@ -216,10 +216,13 @@ class LoadText(cpm.CPModule):
             result += [self.wants_image_groupings]
             if self.wants_image_groupings.value:
                 result += [self.metadata_fields]
-                fields = [field[len("Metadata_"):] 
-                          for field in self.get_header()
-                          if field.startswith("Metadata_")]
-                self.metadata_fields.choices = fields
+                if os.path.isfile(self.csv_path):
+                    fields = [field[len("Metadata_"):] 
+                              for field in self.get_header()
+                              if field.startswith("Metadata_")]
+                    self.metadata_fields.choices = fields
+                else:
+                    self.metadata_fields.choices = [ "No CSV file"]
                 
         result += [self.wants_rows]
         if self.wants_rows.value:

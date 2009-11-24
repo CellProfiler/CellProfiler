@@ -83,7 +83,8 @@ class TestMeasureObjects(unittest.TestCase):
     def features_and_columns_match(self, measurements, module):
         object_names = [x for x in measurements.get_object_names()
                         if x != cpmeas.IMAGE]
-        features = [measurements.get_feature_names(object_name)
+        features = [[f for f in measurements.get_feature_names(object_name)
+                     if f != 'Exit_Status']
                     for object_name in object_names]
         columns = module.get_measurement_columns(None)
         self.assertEqual(sum([len(f) for f in features]), len(columns))

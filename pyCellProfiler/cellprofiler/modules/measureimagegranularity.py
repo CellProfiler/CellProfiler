@@ -256,9 +256,9 @@ class MeasureImageGranularity(cpm.CPModule):
         result = []
         for image in self.images:
             result += [(cpmeas.IMAGE, 
-                        C_GRANULARITY%(i,image.image_name.value), gs,
+                        C_GRANULARITY%(i,image.image_name.value), 
                         cpmeas.COLTYPE_FLOAT)
-                        for i in range(1,image_setting.granular_spectrum_length.value+1)]
+                        for i in range(1,image.granular_spectrum_length.value+1)]
         return result
     
     def get_categories(self, pipeline, object_name):

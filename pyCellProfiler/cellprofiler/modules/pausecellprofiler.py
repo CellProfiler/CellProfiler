@@ -41,19 +41,22 @@ class PauseCellProfiler(cpm.CPModule):
             # Ask the user for a parameter
             self.smoothing_size = cellprofiler.settings.Float(...)
         """
-        self.action = cps.Choice("Pause here or skip subsequent modules?",
-                                 [cpw.DISPOSITION_PAUSE, cpw.DISPOSITION_SKIP],
-                                 doc = """
-            Choose <i>%s</i> to pause CellProfiler
-            at this module. The pipeline will stop and a window with a <i>Resume</i>
-            button will appear. You can examine the module figures at this point.
-            The pipeline will continue when you hit the <i>Resume</i> button or will
-            stop if you hit the <i>Stop analysis</i> button on the main window.
-            <p>
-            Choose <i>%s</i> to skip the modules following this one. CellProfiler
-            will still pause as described above. CellProfiler will advance to
-            the next image set, if any, and the first module after you resume.""" %
-                                (cpw.DISPOSITION_PAUSE, cpw.DISPOSITION_SKIP))
+        self.action = cps.Choice("Pause here, skip subsequent modules or continue without prompting?",
+                                [cpw.DISPOSITION_PAUSE, cpw.DISPOSITION_SKIP, cpw.DISPOSITION_CONTINUE],
+                                doc = """
+                                There are three options:
+                                <ul>
+                                <li><i>%s</i> to pause CellProfiler
+                                at this module. The pipeline will stop and a window with a <i>Resume</i>
+                                button will appear. You can examine the module figures at this point.
+                                The pipeline will continue when you hit the <i>Resume</i> button or will
+                                stop if you hit the <i>Stop analysis</i> button on the main window.</li>
+                                <li><i>%s</i> to skip the modules following this one. CellProfiler
+                                will still pause as described above. CellProfiler will advance to
+                                the next image set, if any, and the first module after you resume.</li>
+                                <li><i>%s</i> to continue pipeline execution without stopping.</li>
+                                </ul>""" %
+                                (cpw.DISPOSITION_PAUSE, cpw.DISPOSITION_SKIP, cpw.DISPOSITION_CONTINUE))
     
     def settings(self):
         """Return the settings to be loaded or saved to/from the pipeline
@@ -77,71 +80,73 @@ class PauseCellProfiler(cpm.CPModule):
         """
         if workspace.pipeline.in_batch_mode():
             return
-        #
-        # Tell the pipeline to pause after we return
-        #
-        workspace.disposition = cpw.DISPOSITION_PAUSE
-        #
-        # Make a frame to hold the resume button
-        #
-        frame = wx.Frame(None,title="Pause CellProfiler")
-        frame.BackgroundColour = cpprefs.get_background_color()
-        #
-        # Register to hear about the run ending so we can clean up
-        #
-        def on_pipeline_event(caller, event):
-            if isinstance(event, cpp.EndRunEvent):
+        
+        if self.action != cpw.DISPOSITION_CONTINUE:
+            #
+            # Tell the pipeline to pause after we return
+            #
+            workspace.disposition = cpw.DISPOSITION_PAUSE
+            #
+            # Make a frame to hold the resume button
+            #
+            frame = wx.Frame(None,title="Pause CellProfiler")
+            frame.BackgroundColour = cpprefs.get_background_color()
+            #
+            # Register to hear about the run ending so we can clean up
+            #
+            def on_pipeline_event(caller, event):
+                if isinstance(event, cpp.EndRunEvent):
+                    frame.Close()
+            workspace.pipeline.add_listener(on_pipeline_event)
+            #
+            # Make sure we stop listening when the window closes
+            #
+            def on_close(event):
+                if workspace.disposition == cpw.DISPOSITION_PAUSE:
+                    workspace.disposition = self.action.value
+                workspace.pipeline.remove_listener(on_pipeline_event)
+                frame.Destroy()
+            frame.Bind(wx.EVT_CLOSE, on_close)
+            #
+            # Make the UI:
+            super_sizer = wx.BoxSizer(wx.VERTICAL)
+            frame.SetSizer(super_sizer)
+            sizer = wx.BoxSizer(wx.HORIZONTAL)
+            super_sizer.Add(sizer, 0, wx.EXPAND)
+            sizer.Add(wx.StaticBitmap(frame, -1, 
+                                      wx.ArtProvider.GetBitmap(wx.ART_INFORMATION,
+                                                               wx.ART_MESSAGE_BOX)),
+                      0, wx.EXPAND | wx.ALL, 5)
+            sizer.Add(wx.StaticText(frame,-1, """Press "Resume" to continue processing.\nPress "Cancel" to stop."""),
+                      0, wx.EXPAND | wx.ALL, 5)
+            super_sizer.Add(wx.StaticLine(frame), 0, wx.EXPAND | wx.LEFT | wx.RIGHT, 10)
+            sizer = wx.StdDialogButtonSizer()
+            super_sizer.Add(sizer, 0, wx.EXPAND)
+            resume_id = 100
+            cancel_id = 101
+            resume_button = wx.Button(frame, resume_id, "Resume")
+            sizer.AddButton(resume_button)
+            sizer.SetAffirmativeButton(resume_button)
+            cancel_button = wx.Button(frame, cancel_id, "Cancel")
+            sizer.AddButton(cancel_button)
+            sizer.SetNegativeButton(cancel_button)
+            sizer.Realize()
+            frame.Fit()
+            
+            def on_resume(event):
+                if self.action == cpw.DISPOSITION_PAUSE:
+                    workspace.disposition = cpw.DISPOSITION_CONTINUE
+                else:
+                    workspace.disposition = self.action.value
                 frame.Close()
-        workspace.pipeline.add_listener(on_pipeline_event)
-        #
-        # Make sure we stop listening when the window closes
-        #
-        def on_close(event):
-            if workspace.disposition == cpw.DISPOSITION_PAUSE:
-                workspace.disposition = self.action.value
-            workspace.pipeline.remove_listener(on_pipeline_event)
-            frame.Destroy()
-        frame.Bind(wx.EVT_CLOSE, on_close)
-        #
-        # Make the UI:
-        super_sizer = wx.BoxSizer(wx.VERTICAL)
-        frame.SetSizer(super_sizer)
-        sizer = wx.BoxSizer(wx.HORIZONTAL)
-        super_sizer.Add(sizer, 0, wx.EXPAND)
-        sizer.Add(wx.StaticBitmap(frame, -1, 
-                                  wx.ArtProvider.GetBitmap(wx.ART_INFORMATION,
-                                                           wx.ART_MESSAGE_BOX)),
-                  0, wx.EXPAND | wx.ALL, 5)
-        sizer.Add(wx.StaticText(frame,-1, """Press "Resume" to continue processing.\nPress "Cancel" to stop."""),
-                  0, wx.EXPAND | wx.ALL, 5)
-        super_sizer.Add(wx.StaticLine(frame), 0, wx.EXPAND | wx.LEFT | wx.RIGHT, 10)
-        sizer = wx.StdDialogButtonSizer()
-        super_sizer.Add(sizer, 0, wx.EXPAND)
-        resume_id = 100
-        cancel_id = 101
-        resume_button = wx.Button(frame, resume_id, "Resume")
-        sizer.AddButton(resume_button)
-        sizer.SetAffirmativeButton(resume_button)
-        cancel_button = wx.Button(frame, cancel_id, "Cancel")
-        sizer.AddButton(cancel_button)
-        sizer.SetNegativeButton(cancel_button)
-        sizer.Realize()
-        frame.Fit()
-        
-        def on_resume(event):
-            if self.action == cpw.DISPOSITION_PAUSE:
-                workspace.disposition = cpw.DISPOSITION_CONTINUE
-            else:
-                workspace.disposition = self.action.value
-            frame.Close()
-        
-        def on_cancel(event):
-            workspace.disposition = cpw.DISPOSITION_CANCEL
-            frame.Close()
-        
-        frame.Bind(wx.EVT_BUTTON, on_resume, id=resume_id)
-        frame.Bind(wx.EVT_BUTTON, on_cancel, id=cancel_id)
-        frame.Show()
+            
+            def on_cancel(event):
+                workspace.disposition = cpw.DISPOSITION_CANCEL
+                frame.Close()
+            
+            frame.Bind(wx.EVT_BUTTON, on_resume, id=resume_id)
+            frame.Bind(wx.EVT_BUTTON, on_cancel, id=cancel_id)
+            frame.Show()
     
     def upgrade_settings(self,setting_values,variable_revision_number,
                          module_name,from_matlab):
@@ -165,6 +170,7 @@ class PauseCellProfiler(cpm.CPModule):
         an error.
         '''
         if from_matlab and variable_revision_number == 2:
+            setting_values = [setting_values[1]]
             from_matlab = False
             variable_revision_number = 1
         return setting_values, variable_revision_number, from_matlab

@@ -19,8 +19,7 @@ function handles = Align(handles)
 % with respect to the first image.
 % (2) If desired, the images may be cropped according to the smallest input
 % image. 
-% (3) If an image is aligned, the padded pixels are assigned a fill value 
-% of zero.
+% (3) If an image is aligned, the aligned image is padded with zeros.
 % (4) The module stores the amount of shift between images as a
 % measurement, which can be useful for quality control purposes.
 %

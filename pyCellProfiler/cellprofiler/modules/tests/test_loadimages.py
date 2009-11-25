@@ -701,12 +701,12 @@ class testLoadImages(unittest.TestCase):
         pipeline.load(fd)
         module = pipeline.module(1)
         expected_cols = [('Image', 'FileName_DNA', 'varchar(128)'), 
-                         ('Image', 'PathName_DNA', 'varchar(128)'),
+                         ('Image', 'PathName_DNA', 'varchar(256)'),
                          ('Image', 'MD5Digest_DNA', 'varchar(32)'),
                          ('Image', 'Metadata_Row', 'varchar(128)'), 
                          ('Image', 'Metadata_Col', 'varchar(128)'), 
                          ('Image', 'FileName_Cytoplasm', 'varchar(128)'), 
-                         ('Image', 'PathName_Cytoplasm', 'varchar(128)'), 
+                         ('Image', 'PathName_Cytoplasm', 'varchar(256)'), 
                          ('Image', 'MD5Digest_Cytoplasm', 'varchar(32)'),
                          ('Image', 'Metadata_Row', 'varchar(128)'), 
                          ('Image', 'Metadata_Col', 'varchar(128)')]

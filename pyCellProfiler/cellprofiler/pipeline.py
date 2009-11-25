@@ -199,6 +199,7 @@ class ModuleRunner(threading.Thread):
         self.notify_window = notify_window
         self.paused = False
         self.exited_run = False
+        self.exception = None
         workspace.add_disposition_listener(self.on_disposition_changed)
     
     def on_disposition_changed(self, event):
@@ -217,7 +218,11 @@ class ModuleRunner(threading.Thread):
                 self.post_done()
             
     def run(self):
-        self.module.run(self.workspace)
+        try:
+            self.module.run(self.workspace)
+        except Exception, instance:
+            traceback.print_exc()
+            self.exception = instance
         if not self.paused:
             self.post_done()
         self.exited_run = True
@@ -574,41 +579,54 @@ class Pipeline(object):
                                                           (module.module_num,
                                                            module.module_name))
                         failure = 1
-                        try:
-                            frame_if_shown = frame if module.show_frame else None
-                            workspace = cpw.Workspace(self,
-                                                      module,
-                                                      image_set,
-                                                      object_set,
-                                                      measurements,
-                                                      image_set_list,
-                                                      frame_if_shown,
-                                                      outlines = outlines)
-                            grids = workspace.set_grids(grids)
-                            start_time = datetime.datetime.now()
-                            t0 = sum(os.times()[:-1])
-                            if not run_in_background:
+                        exception = None
+                        frame_if_shown = frame if module.show_frame else None
+                        workspace = cpw.Workspace(self,
+                                                  module,
+                                                  image_set,
+                                                  object_set,
+                                                  measurements,
+                                                  image_set_list,
+                                                  frame_if_shown,
+                                                  outlines = outlines)
+                        grids = workspace.set_grids(grids)
+                        start_time = datetime.datetime.now()
+                        t0 = sum(os.times()[:-1])
+                        if not run_in_background:
+                            try:
                                 module.run(workspace)
-                            elif module.is_interactive():
-                                worker = ModuleRunner(module, workspace, frame)
-                                worker.run()
-                            else:
-                                worker = ModuleRunner(module, workspace, frame)
-                                worker.start()
+                            except Exception, instance:
+                                traceback.print_exc()
+                                exception = instance
                             yield measurements
-                            t1 = sum(os.times()[:-1])
-                            delta_sec = max(0,t1-t0)
-                            print ("%s: Image # %d, module %s # %d: %.2f sec" %
-                                   (start_time.ctime(), image_number, 
-                                    module.module_name, module.module_num, 
-                                    delta_sec))
-                            if workspace.frame and not module.is_interactive():
+                        elif module.is_interactive():
+                            worker = ModuleRunner(module, workspace, frame)
+                            worker.run()
+                            if worker.exception is not None:
+                                exception = worker.exception
+                            yield measurements
+                        else:
+                            worker = ModuleRunner(module, workspace, frame)
+                            worker.start()
+                            yield measurements
+                            if worker.exception is not None:
+                                exception = worker.exception
+                        t1 = sum(os.times()[:-1])
+                        delta_sec = max(0,t1-t0)
+                        print ("%s: Image # %d, module %s # %d: %.2f sec" %
+                               (start_time.ctime(), image_number, 
+                                module.module_name, module.module_num, 
+                                delta_sec))
+                        if workspace.frame and not module.is_interactive():
+                            try:
                                 module.display(workspace)
-                            workspace.refresh()
-                            failure = 0
-                        except Exception,instance:
-                            traceback.print_exc()
-                            event = RunExceptionEvent(instance,module)
+                            except Exception, instance:
+                                traceback.print_exc()
+                                exception = instance
+                        workspace.refresh()
+                        failure = 0
+                        if exception is not None:
+                            event = RunExceptionEvent(exception,module)
                             self.notify_listeners(event)
                             if event.cancel_run:
                                 return

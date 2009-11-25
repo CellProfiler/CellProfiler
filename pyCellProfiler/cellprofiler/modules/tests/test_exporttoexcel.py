@@ -816,4 +816,62 @@ class TestExportToExcel(unittest.TestCase):
             self.assertRaises(StopIteration,reader.next)
         finally:
             fd.close()
+    
+    def test_07_01_missing_measurements(self):
+        '''Make sure ExportToExcel can continue when measurements are missing
+        
+        Regression test of IMG-361
+        Take measurements for 3 image sets, some measurements missing
+        from the middle one.
+        '''
+        path = os.path.join(self.output_dir, "my_file.csv")
+        module = E.ExportToExcel()
+        module.module_num = 1
+        module.prepend_output_filename.value = False
+        module.object_groups[0][E.OG_OBJECT_NAME].value = "my_objects"
+        module.object_groups[0][E.OG_FILE_NAME].value = path
+        module.add_metadata.value = True
+        m = cpmeas.Measurements()
+        np.random.seed(0)
+        # Three images with four objects each
+        mvalues = np.random.uniform(size=(3,4))
+        for image_idx in range(mvalues.shape[0]):
+            if image_idx:
+                m.next_image_set()
+            m.add_image_measurement("Count_my_objects", mvalues.shape[1])
+            if image_idx != 1:
+                m.add_image_measurement("my_measurement", 100)
+                m.add_measurement("my_objects", "my_measurement", mvalues[image_idx,:])
+        image_set_list = cpi.ImageSetList()
+        image_set = image_set_list.get_image_set(0)
+        object_set = cpo.ObjectSet()
+        object_set.add_objects(cpo.Objects(), "my_objects")
+        workspace = cpw.Workspace(cpp.Pipeline(),
+                                  module,
+                                  image_set,
+                                  object_set,
+                                  m,
+                                  image_set_list)
+        module.post_run(workspace)
+        try:
+            fd = open(path,"r")
+            reader = csv.reader(fd, delimiter=module.delimiter_char)
+            header = reader.next()
+            self.assertEqual(len(header),1)
+            d = {}
+            for index, column in enumerate(header):
+                d[column]=index
+            self.assertTrue(d.has_key("my_measurement"))
+            for image_idx in range(3):
+                for object_idx in range(mvalues.shape[1]):
+                    row = reader.next()
+                    self.assertEqual(len(row),1)
+                    if image_idx == 1:
+                        self.assertEqual(row[d["my_measurement"]],str(np.NAN))
+                    else:
+                        self.assertAlmostEqual(float(row[d["my_measurement"]]),
+                                               mvalues[image_idx,object_idx],4)
+            self.assertRaises(StopIteration,reader.next)
+        finally:
+            fd.close()
         

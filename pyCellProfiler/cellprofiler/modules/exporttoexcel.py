@@ -416,9 +416,11 @@ class ExportToExcel(cpm.CPModule):
                                                   img_index)
                            for object_name, feature_name in features]
                 for obj_index in range(object_count):
-                    row = [ column[obj_index] if obj_index < column.shape[0] 
-                           else np.NAN
-                           for column in columns]
+                    row = [ column[obj_index] 
+                            if (column is not None and 
+                                obj_index < column.shape[0])
+                            else np.NAN
+                            for column in columns]
                     writer.writerow(row)
         finally:
             fd.close()

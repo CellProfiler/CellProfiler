@@ -63,7 +63,7 @@ class JavaError(ValueError):
     def __init__(self, message=None):
         super(JavaError,self).__init__(message)
         
-class JavaException(BaseException):
+class JavaException(Exception):
     '''Represents a Java exception thrown inside the JVM'''
     def __init__(self, throwable):
         '''Initialize by calling exception_occurred'''
@@ -176,6 +176,9 @@ def make_kill_vm():
     kill = __kill
     thread_local_env = __thread_local_env
     def kill_vm():
+        global __vm
+        if __vm is None:
+            return
         if getattr(thread_local_env,"env",None) is not None:
             detach()
         kill[0] = True

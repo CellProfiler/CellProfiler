@@ -17,8 +17,8 @@ function handles = Align(handles)
 % Some important notes for proper use of this module:
 % (1) Regardless of the number of input images, they will all be aligned
 % with respect to the first image.
-% (2) The images are cropped according to the smallest input image. If the
-% images are all the same size, then no cropping is performed
+% (2) If desired, the images may be cropped according to the smallest input
+% image. 
 % (3) If an image is aligned, the padded pixels are assigned a fill value 
 % of zero.
 % (4) The module stores the amount of shift between images as a
@@ -216,7 +216,7 @@ MoreImageName{4} = char(handles.Settings.VariableValues{CurrentModuleNum,14});
 %infotypeVAR15 = imagegroup indep
 MoreAlignedImageName{4} = char(handles.Settings.VariableValues{CurrentModuleNum,15});
 
-%textVAR16 = Do you want the output images cropped according to the smallest input image? If so, the shifted images will be cropped from the upper left corner. If not, the shifted images will remain the same size and will be padded with zeros.
+%textVAR16 = Do you want the output images cropped according to the smallest input image? If so, the shifted images will be cropped from the upper left corner. 
 %choiceVAR16 = No
 %choiceVAR16 = Yes
 wantImagesCropped = char(handles.Settings.VariableValues{CurrentModuleNum,16});
@@ -348,24 +348,60 @@ ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule
 if any(findobj == ThisModuleFigureNumber)
     % For three input images
     if AreThereThreeInputImages,
-        OriginalRGB = cat(3,sum(ModifiedImage3,3)/sum(max(max(ModifiedImage3))),...
-							sum(ModifiedImage2,3)/sum(max(max(ModifiedImage2))),...
-							sum(ModifiedImage1,3)/sum(max(max(ModifiedImage1))));
-        AlignedRGB = cat(3,	sum(AlignedImage3,3)/sum(max(max(AlignedImage3))),...
-							sum(AlignedImage2,3)/sum(max(max(AlignedImage2))),...
-							sum(AlignedImage1,3)/sum(max(max(AlignedImage1))));
+		if wantImagesCropped,
+			OriginalRGB = cat(3,sum(ModifiedImage3,3)/sum(max(max(ModifiedImage3))),...
+								sum(ModifiedImage2,3)/sum(max(max(ModifiedImage2))),...
+								sum(ModifiedImage1,3)/sum(max(max(ModifiedImage1))));
+			AlignedRGB = cat(3,	sum(AlignedImage3,3)/sum(max(max(AlignedImage3))),...
+								sum(AlignedImage2,3)/sum(max(max(AlignedImage2))),...
+								sum(AlignedImage1,3)/sum(max(max(AlignedImage1))));
+		else
+			ModifiedImages = {ModifiedImage1,ModifiedImage2,ModifiedImage3};
+			[ignore,idx] = max(cell2mat(cellfun(@size,ModifiedImages,'UniformOutput',false)'));
+			idx = unique(idx);
+			[M1 N1 P1] = size(ModifiedImages{1});
+			[M2 N2 P2] = size(ModifiedImages{2});
+			[M3 N3 P3] = size(ModifiedImages{3});
+			[Mi Ni Pi] = size(ModifiedImages{idx});
+			OriginalRGB = cat(3,zeros(Mi,Ni),...
+								sum(padarray(ModifiedImages{3},[Mi-M3 Ni-N3],'pre'),3)/sum(max(max(ModifiedImages{3}))),...
+								sum(padarray(ModifiedImages{2},[Mi-M2 Ni-N2],'pre'),3)/sum(max(max(ModifiedImages{2}))),...
+								sum(padarray(ModifiedImages{1},[Mi-M1 Ni-N1],'pre'),3)/sum(max(max(ModifiedImages{1}))));
+			AlignedImages = {AlignedImage1,AlignedImage2,AlignedImage3};
+			AlignedRGB = cat(3,zeros(Mi,Ni),...
+								sum(padarray(AlignedImages{3},[Mi-M3 Ni-N3],'pre'),3)/sum(max(max(AlignedImages{3}))),...
+								sum(padarray(AlignedImages{2},[Mi-M2 Ni-N2],'pre'),3)/sum(max(max(AlignedImages{3}))),...
+								sum(padarray(AlignedImages{1},[Mi-M1 Ni-N1],'pre'),3)/sum(max(max(AlignedImages{1}))));
+		end
     % For two input images
     else
         % Note that the size is recalculated in case images were
         % cropped to be the same size.
-        [M1 N1 P1] = size(ModifiedImage1);
-        OriginalRGB = cat(3,zeros(M1,N1),...
-							sum(ModifiedImage2,3)/sum(max(max(ModifiedImage2))),...
-							sum(ModifiedImage1,3)/sum(max(max(ModifiedImage1))));
-        [aM1, aN1, aP1] = size(AlignedImage1);
-        AlignedRGB = cat(3,	zeros(aM1,aN1),...
-							sum(AlignedImage2,3)/sum(max(max(Image2))),...
-							sum(AlignedImage1,3)/sum(max(max(Image1))));
+		if wantImagesCropped
+			[M1 N1 P1] = size(ModifiedImage1);
+			OriginalRGB = cat(3,zeros(M1,N1),...
+								sum(ModifiedImage2,3)/sum(max(max(ModifiedImage2))),...
+								sum(ModifiedImage1,3)/sum(max(max(ModifiedImage1))));
+			[aM1, aN1, aP1] = size(AlignedImage1);
+			AlignedRGB = cat(3,	zeros(aM1,aN1),...
+								sum(AlignedImage2,3)/sum(max(max(Image2))),...
+								sum(AlignedImage1,3)/sum(max(max(Image1))));
+		else
+			ModifiedImages = {ModifiedImage1,ModifiedImage2};
+			[ignore,idx] = max(cell2mat(cellfun(@size,ModifiedImages,'UniformOutput',false)'));
+			idx = unique(idx);
+			[M1 N1 P1] = size(ModifiedImages{1});
+			[M2 N2 P2] = size(ModifiedImages{2});
+			[Mi Ni Pi] = size(ModifiedImages{idx});
+			OriginalRGB = cat(3,zeros(Mi,Ni),...
+								sum(padarray(ModifiedImages{2},[Mi-M2 Ni-N2],'pre'),3)/sum(max(max(ModifiedImages{2}))),...
+								sum(padarray(ModifiedImages{1},[Mi-M1 Ni-N1],'pre'),3)/sum(max(max(ModifiedImages{1}))));
+			AlignedImages = {AlignedImage1,AlignedImage2};
+			AlignedRGB = cat(3,zeros(Mi,Ni),...
+								sum(padarray(AlignedImages{2},[Mi-M2 Ni-N2],'pre'),3)/sum(max(max(AlignedImages{2}))),...
+								sum(padarray(AlignedImages{1},[Mi-M1 Ni-N1],'pre'),3)/sum(max(max(AlignedImages{1}))));
+							
+		end
     end
 
     % Activates the appropriate figure window.

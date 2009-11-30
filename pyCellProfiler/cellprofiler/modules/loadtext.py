@@ -356,7 +356,15 @@ class LoadText(cpm.CPModule):
             if len(metadata):
                 key = {}
                 for k in metadata.keys():
-                    key[k] = metadata[k][i]
+                    md = metadata[k][i]
+                    if hasattr(md, "dtype"):
+                        if md.dtype.name.startswith('string'):
+                            md = str(md)
+                        elif md.dtype.name.startswith('int'):
+                            md = int(md)
+                        elif md.dtype.name.startswith('float'):
+                            md = float(md)
+                    key[k] = md
                 image_set = image_set_list.get_image_set(key)
             else:
                 image_set = image_set_list.get_image_set(i)

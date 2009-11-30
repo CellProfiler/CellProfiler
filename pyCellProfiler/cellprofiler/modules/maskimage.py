@@ -32,18 +32,41 @@ import cellprofiler.cpimage as cpi
 import cellprofiler.cpmodule as cpm
 import cellprofiler.settings as cps
 
+IO_IMAGE = "Image"
+IO_OBJECTS = "Objects"
+
 class MaskImage(cpm.CPModule):
 
     module_name = "MaskImage"
     category = "Image Processing"
-    variable_revision_number = 1
+    variable_revision_number = 2
     
     def create_settings(self):
         """Create the settings here and set the module name (initialization)
         
         """
+        self.source_choice=cps.Choice(
+            "Do you want to mask using objects or an image?",
+            [IO_OBJECTS, IO_IMAGE],
+            doc="""You can mask an image in two ways:<br>
+            <ul><li><b>Objects</b>: use objects created by another
+            module (for instance <b>IdentifyPrimAutomatic</b>). In this case,
+            the mask will mask out all parts of the image not within one
+            of the objects (unless you invert the mask).</li>
+            <li><b>Image</b>: use a binary image as the mask. If the image is
+            not binary, the module will convert it to grayscale and use
+            all pixels whose intensity is greater than .5 as the mask's
+            foreground. You may use <b>ApplyThreshold</b> to create a binary
+            image with finer control over the intensity choice.</li></ul>""")
         self.object_name = cps.ObjectNameSubscriber("Select object for mask:","None",
                                                     doc = '''From which object would you like to make a mask?''')
+        self.masking_image_name = cps.ImageNameSubscriber(
+            "Select image for mask:","None",
+            doc = """This is the image that will be used as a mask. If it is
+            a binary image, all false or zero pixels will be masked out. If
+            the image is not binary, the module will convert it to grayscale
+            and threshold it at an intensity of .5 to get a mask. You can use
+            <b>ApplyThreshold</b> to create a binary mask""")
         self.image_name = cps.ImageNameSubscriber("Select input image:","None", doc = '''Which image do you want to mask?''')
         self.masked_image_name = cps.ImageNameProvider("Name output image:",
                                                        "MaskBlue", doc = '''What do you want to call the masked image?''')
@@ -57,17 +80,37 @@ class MaskImage(cpm.CPModule):
               for a different display order.
         """
         return [self.object_name, self.image_name,
-                self.masked_image_name, self.invert_mask]
+                self.masked_image_name, self.invert_mask,
+                self.source_choice, self.masking_image_name]
+    
+    def visible_settings(self):
+        """Return the settings as displayed in the user interface"""
+        return [self.source_choice,
+                self.object_name if self.source_choice == IO_OBJECTS
+                else self.masking_image_name,
+                self.image_name, self.masked_image_name,
+                self.invert_mask]
 
     def run(self, workspace):
-        objects = workspace.get_objects(self.object_name.value)
-        labels = objects.segmented
-        if self.invert_mask.value:
-            mask = labels == 0
+        image_set = workspace.image_set
+        if self.source_choice == IO_OBJECTS:
+            objects = workspace.get_objects(self.object_name.value)
+            labels = objects.segmented
+            if self.invert_mask.value:
+                mask = labels == 0
+            else:
+                mask = labels > 0
         else:
-            mask = labels > 0
-        orig_image = workspace.image_set.get_image(self.image_name.value,
-                                                   must_be_grayscale = True)
+            objects = None
+            try:
+                mask = image_set.get_image(self.masking_image_name.value,
+                                           must_be_binary=True).pixel_data
+            except ValueError:
+                mask = image_set.get_image(self.masking_image_name.value,
+                                           must_be_grayscale=True).pixel_data
+                mask = mask > .5
+        orig_image = image_set.get_image(self.image_name.value,
+                                         must_be_grayscale = True)
         if mask.shape != orig_image.pixel_data.shape:
             tmp = np.zeros(orig_image.pixel_data.shape, mask.dtype)
             tmp[mask] = True
@@ -86,7 +129,7 @@ class MaskImage(cpm.CPModule):
                                             "Original image: %s"%(self.image_name.value))
             figure.subplot_imshow_grayscale(1,0,masked_pixels,
                                             "Masked image: %s"%(self.masked_image_name.value))
-        workspace.image_set.add(self.masked_image_name.value, masked_image)
+        image_set.add(self.masked_image_name.value, masked_image)
     
     def upgrade_settings(self, setting_values, 
                          variable_revision_number, 
@@ -97,5 +140,10 @@ class MaskImage(cpm.CPModule):
         if from_matlab and variable_revision_number == 3:
             from_matlab = False
             variable_revision_number = 1
+        if (not from_matlab) and variable_revision_number == 1:
+            #
+            # Added ability to select an image
+            #
+            setting_values = setting_values + [IO_OBJECTS, "None"]
         return setting_values, variable_revision_number, from_matlab
 

@@ -290,10 +290,7 @@ class CalculateStatistics(cpm.CPModule):
         feature_set = []
         for object_name in all_objects:
             all_features = [x for x in measurements.get_feature_names(object_name)
-                            if (x.find("Location") == -1 and
-                                x.find("FileName") == -1 and
-                                x.find("PathName") == -1 and
-                                x.find("ModuleError") == -1)]
+                            if self.include_feature(measurements, object_name, x)]
             feature_set += [(object_name, feature_name) 
                             for feature_name in all_features]
         grouping_data = np.array(measurements.get_all_measurements(
@@ -351,7 +348,24 @@ class CalculateStatistics(cpm.CPModule):
                 figure.subplot_table(ii,0, stats, (.3,.5,.2))
                 figure.set_subplot_title("Top 10 by %s"%key, ii,0)
                 
-    
+    def include_feature(self, measurements, object_name, feature_name):
+        '''Return true if we should analyze a feature'''
+        if feature_name.find("Location") != -1:
+            return False
+        if feature_name.find("ModuleError") != -1:
+            return False
+        all_measurements = measurements.get_all_measurements(object_name, 
+                                                             feature_name)
+        if len(all_measurements) == 0:
+            return False
+        if np.isscalar(all_measurements[0]):
+            return not (isinstance(all_measurements[0], str),
+                        isinstance(all_measurements[0], unicode))
+        #
+        # Make sure the measurement isn't a string or other oddity
+        #
+        return all_measurements[0].dtype.kind not in "OSU"
+        
     def upgrade_settings(self, setting_values, variable_revision_number, 
                          module_name, from_matlab):
         if from_matlab and variable_revision_number == 3:

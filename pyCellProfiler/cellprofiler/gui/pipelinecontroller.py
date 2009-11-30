@@ -57,8 +57,7 @@ class PipelineController:
         wx.EVT_MENU(frame,cpframe.ID_FILE_ANALYZE_IMAGES,self.on_analyze_images)
         wx.EVT_MENU(frame,cpframe.ID_FILE_STOP_ANALYSIS,self.on_stop_running)
         
-        wx.EVT_MENU(frame,cpframe.ID_DEBUG_START,self.on_debug_start)
-        wx.EVT_MENU(frame,cpframe.ID_DEBUG_STOP,self.on_debug_stop)
+        wx.EVT_MENU(frame,cpframe.ID_DEBUG_TOGGLE,self.on_debug_toggle)
         wx.EVT_MENU(frame,cpframe.ID_DEBUG_STEP,self.on_debug_step)
         wx.EVT_MENU(frame,cpframe.ID_DEBUG_NEXT_IMAGE_SET,self.on_debug_next_image_set)
         wx.EVT_MENU(frame,cpframe.ID_DEBUG_NEXT_GROUP, self.on_debug_next_group)
@@ -457,6 +456,12 @@ class PipelineController:
         """True if there's some sort of debugging in progress"""
         return self.__debug_image_set_list != None
     
+    def on_debug_toggle(self, event):
+        if self.is_in_debug_mode():
+            self.on_debug_stop(event)
+        else:
+            self.on_debug_start(event)
+            
     def on_debug_start(self, event):
         self.__pipeline_list_view.select_one_module(1)
         self.__movie_viewer.Value = 0

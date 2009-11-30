@@ -527,7 +527,27 @@ class TestConvexHull(unittest.TestCase):
         self.assertEqual(counts.shape[0], 2)
         self.assertEqual(counts[0], 0)
         self.assertEqual(counts[1], 4)
+
+class TestConvexHullImage(unittest.TestCase):
+    def test_00_00_zeros(self):
+        image = np.zeros((10,13), bool)
+        output = morph.convex_hull_image(image)
+        self.assertTrue(np.all(output == False))
+        
+    def test_01_01_square(self):
+        image = np.zeros((10,13), bool)
+        image[2:5,3:8] = True
+        output = morph.convex_hull_image(image)
+        self.assertTrue(np.all(output == image))
     
+    def test_01_02_concave(self):
+        image = np.zeros((10,13), bool)
+        image[2:5,3:8] = True
+        image2 = image.copy()
+        image2[4,4:7] = False
+        output = morph.convex_hull_image(image2)
+        self.assertTrue(np.all(output == image))
+        
 class TestMinimumEnclosingCircle(unittest.TestCase):
     def test_00_00_zeros(self):
         """Make sure minimum_enclosing_circle can handle an empty array"""

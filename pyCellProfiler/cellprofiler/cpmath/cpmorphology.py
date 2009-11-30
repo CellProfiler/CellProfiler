@@ -254,6 +254,17 @@ def relabel(image):
     new_image = label_table[image]
     return (new_image,len(unique_labels))
 
+def convex_hull_image(image):
+    '''Given a binary image, return an image of the convex hull'''
+    labels = image.astype(int)
+    points, counts = convex_hull(labels, np.array([1]))
+    output = np.zeros(image.shape, int)
+    for i in range(counts[0]):
+        inext = (i+1) % counts[0]
+        draw_line(output, points[i,1:], points[inext,1:],1)
+    output = fill_labeled_holes(output)
+    return output == 1
+
 def convex_hull(labels, indexes=None):
     """Given a labeled image, return a list of points per object ordered by
     angle from an interior point, representing the convex hull.

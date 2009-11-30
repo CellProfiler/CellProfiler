@@ -325,7 +325,7 @@ class LoadText(cpm.CPModule):
                 key = header[i][len('Metadata_'):]
                 column = np.array(column)
                 metadata[key] = column
-                dictionary[header[i]] = column
+                dictionary[header[i]] = best_cast(column)
             elif (self.wants_images.value and
                   is_file_name_feature(header[i])):
                 column = np.array(column)

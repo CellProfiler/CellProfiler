@@ -35,13 +35,14 @@ def outline(labels):
     different[:-1,:-1][d1_different] = True
     different[1:,:-1][d2_different] = True
     different[:-1,1:][d2_different] = True
-    output[different] = labels[different]
     #
     # Labels on edges need outlines
     #
-    output[0,:] = labels[0,:] > 0
-    output[:,0] = labels[:,0] > 0
-    output[-1,:] = labels[-1,:] > 0
-    output[:,-1] = labels[:,-1] > 0
+    different[0,:] = True
+    different[:,0] = True
+    different[-1,:] = True
+    different[:,-1] = True
+    
+    output[different] = labels[different]
     return output
     

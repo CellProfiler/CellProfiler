@@ -12,4 +12,5 @@ __loci_jar = os.path.join(__path, "loci_tools.jar")
 
 jutil.start_vm(["-Djava.class.path="+__loci_jar,
                 "-Djava.awt.headless=true",
-                "-Dloci.bioformats.loaded=true"])
+                "-Dloci.bioformats.loaded=true",
+                "-Xmx512m"])

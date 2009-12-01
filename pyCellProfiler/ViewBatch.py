@@ -27,7 +27,7 @@ for run in my_batch["runs"]:
     if os.path.isfile(RunBatch.RunDoneFilePath(my_batch,run)):
         try:
             fd = open(RunBatch.RunDoneFilePath(my_batch, run), "r")
-            stat = fd.readline()
+            stat = fd.readline().strip()
             if stat.startswith("Done"):
                 stat = "Complete"
             fd.close()

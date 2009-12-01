@@ -277,6 +277,9 @@ class CalculateStatistics(cpm.CPModule):
             
         CalculateStatistics does all of its work after running. Do nothing here.
         """
+
+    def run_as_data_tool(self, workspace):
+        self.post_run(workspace)
         
     def post_run(self, workspace):
         """Do post-processing after the run completes
@@ -324,7 +327,7 @@ class CalculateStatistics(cpm.CPModule):
                 if dose_group.pathname_choice == PC_DEFAULT:
                     pathname = cpprefs.get_default_output_directory()
                 elif dose_group.pathname_choice == PC_CUSTOM:
-                    pathname = cpprefs.get_absolute_path(dose_group.pathname,
+                    pathname = cpprefs.get_absolute_path(dose_group.pathname.value,
                                                          cpprefs.ABSPATH_OUTPUT)
                 write_figures(dose_group.figure_name, pathname, dose_feature,
                               dose_data, data, ec50_coeffs, feature_set,

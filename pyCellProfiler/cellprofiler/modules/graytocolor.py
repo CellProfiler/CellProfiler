@@ -33,20 +33,40 @@ OFF_RED_ADJUSTMENT_FACTOR = 4
 OFF_GREEN_ADJUSTMENT_FACTOR = 5
 OFF_BLUE_ADJUSTMENT_FACTOR = 6
 
+SCHEME_RGB = "RGB"
+SCHEME_CMYK = "CMYK"
+LEAVE_THIS_BLACK = "Leave this black"
+
 class GrayToColor(cpm.CPModule):
     module_name = 'GrayToColor'
-    variable_revision_number = 1
+    variable_revision_number = 2
     category = "Image Processing"
     def create_settings(self):
+        self.scheme_choice = cps.Choice(
+            "Do you want to use an RGB or CMYK color scheme?",
+            [SCHEME_RGB, SCHEME_CMYK],
+            doc="""This module can use one of two color schemes to combine images:<br/>
+            <ul><li><b>RGB</b>: Each input image determines the intensity of
+            one of the color channels</li>
+            <li><b>CMYK</b>: Three of the input images are combined to determine
+            the colors and a fourth is used only for brightness. The cyan
+            image adds equally to the green and blue intensities. The magenta
+            image adds equally to the red and blue intensities. The yellow
+            image adds equally to the red and green intensities.</li></ul>""")
+        # # # # # # # # # # # # # # # #
+        # 
+        # RGB settings
+        #
+        # # # # # # # # # # # # # # # #
         self.red_image_name = cps.ImageNameSubscriber("Select input image to be colored red",
                                                       can_be_blank = True,
-                                                      blank_text = "Leave this black")
+                                                      blank_text = LEAVE_THIS_BLACK)
         self.green_image_name = cps.ImageNameSubscriber("Select input image to be colored green?",
                                                         can_be_blank = True,
-                                                        blank_text = "Leave this black")
+                                                        blank_text = LEAVE_THIS_BLACK)
         self.blue_image_name = cps.ImageNameSubscriber("Select input image to be colored blue?",
                                                        can_be_blank = True,
-                                                       blank_text = "Leave this black")
+                                                       blank_text = LEAVE_THIS_BLACK)
         self.rgb_image_name = cps.ImageNameProvider("Name the output image",
                                                     "ColorImage")
         self.red_adjustment_factor = cps.Float("Relative weight for the red image:",
@@ -64,21 +84,82 @@ class GrayToColor(cpm.CPModule):
                                                 minval=0,doc='''Enter the relative weights: If all relative weights are equal, all three 
             colors contribute equally in the final image. To weight colors relative to each other, the relative
             weights can be increased or decreased.''')
+        # # # # # # # # # # # # # #
+        #
+        # CYMK settings
+        #
+        # # # # # # # # # # # # # #
+        self.cyan_image_name = cps.ImageNameSubscriber(
+            "Select input image to be colored cyan", can_be_blank = True,
+            blank_text = LEAVE_THIS_BLACK)
+        self.magenta_image_name = cps.ImageNameSubscriber(
+            "Select input image to be colored magenta", can_be_blank = True,
+            blank_text = LEAVE_THIS_BLACK)
+        self.yellow_image_name = cps.ImageNameSubscriber(
+            "Select input image to be colored yellow", can_be_blank = True,
+            blank_text = LEAVE_THIS_BLACK)
+        self.gray_image_name = cps.ImageNameSubscriber(
+            "Select grayscale input image", can_be_blank = True,
+            blank_text = LEAVE_THIS_BLACK)
+        self.cyan_adjustment_factor = cps.Float(
+            "Relative weight for the cyan image:", value=1,
+            minval=0,doc='''Enter the relative weights: If all relative weights are equal, all three 
+            colors contribute equally in the final image. To weight colors relative to each other, the relative
+            weights can be increased or decreased.''')
+        self.magenta_adjustment_factor = cps.Float(
+            "Relative weight for the magenta image:", value=1,
+            minval=0,doc='''Enter the relative weights: If all relative weights are equal, all three 
+            colors contribute equally in the final image. To weight colors relative to each other, the relative
+            weights can be increased or decreased.''')
+        self.yellow_adjustment_factor = cps.Float(
+            "Relative weight for the yellow image:", value=1,
+            minval=0,doc='''Enter the relative weights: If all relative weights are equal, all three 
+            colors contribute equally in the final image. To weight colors relative to each other, the relative
+            weights can be increased or decreased.''')
+        self.gray_adjustment_factor = cps.Float(
+            "Relative weight for the grayscale image:", value=1,
+            minval=0,doc='''Enter the relative weights: If all relative weights are equal, all three 
+            colors contribute equally in the final image. To weight colors relative to each other, the relative
+            weights can be increased or decreased.''')
     
+    @property
+    def color_scheme_settings(self):
+        if self.scheme_choice == SCHEME_RGB:
+            return [ColorSchemeSettings(self.red_image_name,
+                                        self.red_adjustment_factor, 1,0,0),
+                    ColorSchemeSettings(self.green_image_name,
+                                        self.green_adjustment_factor, 0,1,0),
+                    ColorSchemeSettings(self.blue_image_name,
+                                        self.blue_adjustment_factor, 0,0,1)]
+        else:
+            return [ColorSchemeSettings(self.cyan_image_name,
+                                        self.cyan_adjustment_factor, 0,.5,.5),
+                    ColorSchemeSettings(self.magenta_image_name,
+                                        self.magenta_adjustment_factor, .5, .5, 0),
+                    ColorSchemeSettings(self.yellow_image_name,
+                                        self.yellow_adjustment_factor, .5, 0, .5),
+                    ColorSchemeSettings(self.gray_image_name,
+                                        self.gray_adjustment_factor, 
+                                        1./3., 1./3., 1./3.)]
+
     def settings(self):
-        return [self.red_image_name, self.green_image_name, self.blue_image_name,
+        return [self.scheme_choice,
+                self.red_image_name,self.green_image_name,self.blue_image_name,
                 self.rgb_image_name, self.red_adjustment_factor, 
-                self.green_adjustment_factor, self.blue_adjustment_factor]
+                self.green_adjustment_factor, self.blue_adjustment_factor,
+                self.cyan_image_name,self.magenta_image_name, 
+                self.yellow_image_name, self.gray_image_name,
+                self.cyan_adjustment_factor, self.magenta_adjustment_factor,
+                self.yellow_adjustment_factor, self.gray_adjustment_factor]
     
     def visible_settings(self):
-        result = [self.red_image_name, self.green_image_name, 
-                  self.blue_image_name, self.rgb_image_name]
-        if not self.red_image_name.is_blank:
-            result.append(self.red_adjustment_factor)
-        if not self.green_image_name.is_blank:
-            result.append(self.green_adjustment_factor)
-        if not self.blue_image_name.is_blank:
-            result.append(self.blue_adjustment_factor)
+        result = [self.scheme_choice]
+        result += [color_scheme_setting.image_name 
+                   for color_scheme_setting in self.color_scheme_settings]
+        result += [self.rgb_image_name]
+        for color_scheme_setting in self.color_scheme_settings:
+            if not color_scheme_setting.image_name.is_blank:
+                result.append(color_scheme_setting.adjustment_factor)
         return result
     
     def validate_module(self,pipeline):
@@ -86,93 +167,61 @@ class GrayToColor(cpm.CPModule):
         
         We need at least one image name to be filled in
         """
-        if (self.red_image_name.is_blank and
-            self.green_image_name.is_blank and
-            self.blue_image_name.is_blank):
+        if all([color_scheme_setting.image_name.is_blank
+                for color_scheme_setting in self.color_scheme_settings]):
             raise cps.ValidationError("At least one of the images must not be blank",\
-                                      self.red_image_name)
+                                      self.color_scheme_settings[0].image_name)
     def run(self,workspace):
-        assert not (self.red_image_name.is_blank and
-                    self.green_image_name.is_blank and
-                    self.blue_image_name.is_blank),\
-                    "At least one of the images must not be blank"
         parent_image = None
         parent_image_name = None
         imgset = workspace.image_set
-        if not self.red_image_name.is_blank:
-            red_image = imgset.get_image(self.red_image_name.value,
-                                         must_be_grayscale=True)
-            red_pixel_data = (red_image.pixel_data *
-                              self.red_adjustment_factor.value)
-            parent_image = red_image
-            parent_image_name = self.red_image_name.value
-        if not self.green_image_name.is_blank:
-            green_image = imgset.get_image(self.green_image_name.value,
-                                           must_be_grayscale=True)
-            green_pixel_data = (green_image.pixel_data *
-                                self.green_adjustment_factor.value) 
+        rgb_pixel_data = None
+        input_image_settings = []
+        for color_scheme_setting in self.color_scheme_settings:
+            if color_scheme_setting.image_name.is_blank:
+                continue
+            input_image_settings.append(color_scheme_setting.image_name)
+            image = imgset.get_image(color_scheme_setting.image_name.value,
+                                     must_be_grayscale=True)
+            multiplier = (color_scheme_setting.intensities *
+                          color_scheme_setting.adjustment_factor.value)
+            pixel_data = image.pixel_data
             if parent_image != None:
-                if (parent_image.pixel_data.shape != green_pixel_data.shape):
+                if (parent_image.pixel_data.shape != pixel_data.shape):
                     raise ValueError("The %s image and %s image have different sizes (%s vs %s)"%
                                      (parent_image_name, 
-                                      self.green_image_name.value,
+                                      color_scheme_setting.image_name.value,
                                       parent_image.pixel_data.shape,
-                                      green_pixel_data.shape))
+                                      image.pixel_data.shape))
+                rgb_pixel_data += np.dstack([pixel_data]*3) * multiplier
             else:
-                parent_image = green_image
+                parent_image = image
                 parent_image_name = self.green_image_name.value
-        if not self.blue_image_name.is_blank: 
-            blue_image = imgset.get_image(self.blue_image_name.value,
-                                          must_be_grayscale=True)
-            blue_pixel_data = (blue_image.pixel_data *
-                               self.blue_adjustment_factor.value)
-            if parent_image != None:
-                if (parent_image.pixel_data.shape != blue_pixel_data.shape):
-                    raise ValueError("The %s image and %s image have different sizes (%s vs %s)"%
-                                     (parent_image_name, 
-                                      self.blue_image_name.value,
-                                      parent_image.pixel_data.shape,
-                                      blue_pixel_data.shape))
-            else:
-                parent_image = blue_image
-                parent_image_name = self.blue_image_name.value
-        if parent_image != None:
-            if self.red_image_name.is_blank:
-                red_pixel_data = np.zeros(parent_image.pixel_data.shape)
-            if self.green_image_name.is_blank:
-                green_pixel_data = np.zeros(parent_image.pixel_data.shape)
-            if self.blue_image_name.is_blank:
-                blue_pixel_data = np.zeros(parent_image.pixel_data.shape)
-        
-        rgb_pixel_data = np.dstack((red_pixel_data,
-                                    green_pixel_data,
-                                    blue_pixel_data))
-        rgb_pixel_data.shape = (red_pixel_data.shape[0],
-                                red_pixel_data.shape[1],3)
+                rgb_pixel_data = np.dstack([pixel_data]*3) * multiplier
+
         ###############
         # Draw images #
         ###############
         if workspace.frame != None:
             title = "Gray to color #%d"%(self.module_num)
-            my_frame = workspace.create_or_find_figure(title,(2,2))
-            if self.red_image_name.is_blank:
-                my_frame.subplot(0,0).set_visible(False)
+            if len(input_image_settings) == 4:
+                subplots = (2,3)
+                subplot_indices = ((0,0),(0,1),(1,0),(1,1),(2,2))
+                color_subplot = (1,2)
             else:
-                my_frame.subplot(0,0).set_visible(True)
-                my_frame.subplot_imshow_grayscale(0,0,red_pixel_data,
-                                                  title=self.red_image_name.value)
-            if self.green_image_name.is_blank:
-                my_frame.subplot(1,0).set_visible(False)
-            else:
-                my_frame.subplot(1,0).set_visible(True)
-                my_frame.subplot_imshow_grayscale(1,0,green_pixel_data,
-                                                  title=self.green_image_name.value)
-            if self.blue_image_name.is_blank:
-                my_frame.subplot(0,1).set_visible(False)
-            else:
-                my_frame.subplot(0,1).set_visible(True)
-                my_frame.subplot_imshow_grayscale(0,1,blue_pixel_data,
-                                                  title=self.blue_image_name.value)
+                subplots = (2,2)
+                subplot_indices = ((0,0),(0,1),(1,0))
+                color_subplot = (1,1)
+            my_frame = workspace.create_or_find_figure(title, subplots)
+            for i, input_image_setting in enumerate(input_image_settings):
+                x,y = subplot_indices[i]
+                my_frame.subplot(x,y).set_visible(True)
+                image = imgset.get_image(input_image_setting.value,
+                                         must_be_grayscale=True)
+                my_frame.subplot_imshow_grayscale(x,y,image.pixel_data,
+                                                  title=input_image_setting.value)
+            for x,y in subplot_indices[len(input_image_settings):]:
+                my_frame.subplot(x,y).set_visible(False)
             my_frame.subplot_imshow_color(1,1,rgb_pixel_data,
                                           title=self.rgb_image_name.value)
         ##############
@@ -195,5 +244,59 @@ class GrayToColor(cpm.CPModule):
         if from_matlab and variable_revision_number == 2:
             from_matlab = False
             variable_revision_number = 1
+        if from_matlab and variable_revision_number == 3:
+            image_names = [LEAVE_THIS_BLACK if value == cps.DO_NOT_USE 
+                           else value
+                           for value in setting_values[:4]]
+            rgb_image_name = setting_values[4]
+            adjustment_factors = setting_values[5:]
+            if image_names[3] == LEAVE_THIS_BLACK:
+                #
+                # RGB color scheme
+                #
+                setting_values = (
+                    [ SCHEME_RGB ] + image_names[:3] + [rgb_image_name] +
+                    adjustment_factors[:3] + ["None"] * 4 + [1] * 4)
+            else:
+                #
+                # CYMK color scheme
+                #
+                setting_values = (
+                    [ SCHEME_CMYK ] + ["None"] * 3 + [rgb_image_name] + 
+                    [1] * 3 + image_names + adjustment_factors)
+            from_matlab = False
+            variable_revision_number = 2
+        if (not from_matlab) and variable_revision_number == 1:
+            #
+            # Was RGB-only. Convert values to CYMK-style
+            #
+            setting_values = (
+                [ SCHEME_CMYK ] + setting_values + 
+                ["None"] * 4 + [1] * 4)
+            variable_revision_number = 2
         return setting_values, variable_revision_number, from_matlab
-    
+
+class ColorSchemeSettings(object):
+    '''Collect all of the details for one color in one place'''
+    def __init__(self, image_name_setting, adjustment_setting,
+                 red_intensity, green_intensity, blue_intensity):
+        '''Initialize with settings and multipliers
+        
+        image_name_setting - names the image to use for the color
+        adjustment_setting - weights the image
+        red_intensity - indicates how much it contributes to the red channel
+        green_intensity - indicates how much it contributes to the green channel
+        blue_intensity - indicates how much it contributes to the blue channel
+        '''
+        self.image_name = image_name_setting
+        self.adjustment_factor = adjustment_setting
+        self.red_intensity = red_intensity
+        self.green_intensity = green_intensity
+        self.blue_intensity = blue_intensity
+        
+    @property
+    def intensities(self):
+        '''The intensities in RGB order as a numpy array'''
+        return np.array((self.red_intensity, 
+                         self.green_intensity, 
+                         self.blue_intensity))

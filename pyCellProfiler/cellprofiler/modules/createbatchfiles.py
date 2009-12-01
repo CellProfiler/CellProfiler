@@ -40,14 +40,6 @@ import cellprofiler.pipeline as cpp
 import cellprofiler.settings as cps
 import cellprofiler.preferences as cpprefs
 
-try:
-    # During initialization, this isn't available because the
-    # cellprofiler module is still being imported.
-    from cellprofiler.utilities.get_revision import version
-except:
-    version = 0
-    pass
-
 '''# of settings aside from the mappings'''
 S_FIXED_COUNT = 6
 '''# of settings per mapping'''
@@ -98,7 +90,7 @@ class CreateBatchFiles(cpm.CPModule):
         self.batch_mode = cps.Binary("Hidden: in batch mode", False)
         self.default_image_directory = cps.Setting("Hidden: default image directory at time of save",
                                                    cpprefs.get_default_image_directory())
-        self.revision = cps.Integer("Hidden: SVN revision number", version)
+        self.revision = cps.Integer("Hidden: SVN revision number", 0)
         self.mappings = []
         self.add_mapping()
         self.add_mapping_button = cps.DoSomething("Add another path?","Add",
@@ -197,6 +189,7 @@ class CreateBatchFiles(cpm.CPModule):
         Save the pickled image_set_list state in a setting and put this
         module in batch mode.
         '''
+        from cellprofiler.utilities.get_revision import version
         assert isinstance(image_set_list, cpi.ImageSetList)
         assert isinstance(pipeline, cpp.Pipeline)
         pipeline = pipeline.copy()
@@ -205,6 +198,7 @@ class CreateBatchFiles(cpm.CPModule):
         assert isinstance(bizarro_self, CreateBatchFiles)
         state = image_set_list.save_state()
         state = zlib.compress(state)
+        bizarro_self.revision.value = version
         bizarro_self.batch_state = np.fromstring(state, np.uint8)
         if self.wants_default_output_directory:
             bizarro_self.custom_output_directory.value = \
@@ -301,6 +295,8 @@ class CreateBatchFiles(cpm.CPModule):
                               setting_values[5:])
             variable_revision_number = 2
         if (not from_matlab) and variable_revision_number == 2:
+            from cellprofiler.utilities.get_revision import version
+            
             setting_values = (setting_values[:6] + 
                               [version] +
                               setting_values[6:])

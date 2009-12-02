@@ -720,7 +720,10 @@ class PipelineController:
             except StopIteration:
                 self.stop_running()
                 if self.__pipeline_measurements != None:
-                    self.__pipeline.save_measurements(self.__output_path,self.__pipeline_measurements)
+                    try:
+                        self.__pipeline.save_measurements(self.__output_path,self.__pipeline_measurements)
+                    except IOError, err:
+                        wx.MessageBox("CellProfiler could not save your measurements.\nThe error was:\n%s"%(err), "Error saving measurements.", wx.ICON_ERROR|wx.OK)
                     self.__pipeline_measurements = None
                     self.__output_path = None
                 wx.MessageBox("Finished processing pipeline", "Analysis complete")

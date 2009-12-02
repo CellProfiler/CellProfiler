@@ -352,8 +352,9 @@ class LoadText(cpm.CPModule):
         #
         # Populate the image set list 
         #
+        use_key = (image_set_list.associating_by_key != False)
         for i in range(len(rows)):
-            if len(metadata):
+            if len(metadata) and use_key:
                 key = {}
                 for k in metadata.keys():
                     md = metadata[k][i]

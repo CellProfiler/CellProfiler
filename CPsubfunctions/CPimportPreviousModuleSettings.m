@@ -556,6 +556,20 @@ if strcmp(CurrentModuleName, 'Morph')
     end
 end
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Changes to FlagImageForQC
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if strcmp(CurrentModuleName, 'FlagImageForQC')
+    if SavedVarRevNum == 1      % Adding setting 4 (size scale)
+		Settings.VariableValues(ModuleNum-Skipped,5:end) = Settings.VariableValues(ModuleNum-Skipped,4:end-1);
+        Settings.VariableValues{ModuleNum-Skipped,4} = '1';
+        Settings.VariableInfoTypes(ModuleNum-Skipped,5:end) = Settings.VariableInfoTypes(ModuleNum-Skipped,4:end-1);
+        Settings.NumbersOfVariables(ModuleNum-Skipped) = Settings.NumbersOfVariables(ModuleNum-Skipped) + 1;
+        SavedVarRevNum = 2;
+        IsModuleModified = true;
+    end
+end
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Obsolete module: MeasureImageSaturationBlur
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

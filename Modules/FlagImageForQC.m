@@ -98,34 +98,39 @@ Category = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %inputtypeVAR03 = popupmenu measurement
 FeatureNumOrName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
-%textVAR04 = Images with a measurement below this value will be flagged:
-%choiceVAR04 = No minimum
-%inputtypeVAR04 = popupmenu custom
-MinValue1 = char(handles.Settings.VariableValues{CurrentModuleNum,4});
+%textVAR04 = For TEXTURE OR IMAGEQUALITY features, what previously measured size scale do you want to use?
+%defaultVAR04 = 1
+%inputtypeVAR04 = popupmenu scale
+SizeScale = str2double(handles.Settings.VariableValues{CurrentModuleNum,4});
 
-%textVAR05 = Images with a measurement above this value will be flagged:
-%choiceVAR05 = No maximum
+%textVAR05 = Images with a measurement below this value will be flagged:
+%choiceVAR05 = No minimum
 %inputtypeVAR05 = popupmenu custom
-MaxValue1 = char(handles.Settings.VariableValues{CurrentModuleNum,5});
+MinValue1 = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
-%textVAR06 = Did you want to append an existing flag, or create a new one? ** Warning, if you choose to append a flag, you will be overwriting it with the appended flag **
-%choiceVAR06 = Create a new flag
-%choiceVAR06 = Append existing flag
-%inputtypeVAR06 = popupmenu
-NewOrAppend = char(handles.Settings.VariableValues{CurrentModuleNum,6});
+%textVAR06 = Images with a measurement above this value will be flagged:
+%choiceVAR06 = No maximum
+%inputtypeVAR06 = popupmenu custom
+MaxValue1 = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 
-%textVAR07 = If you're creating a new flag, what do you want to call it?
-%defaultVAR07 = NewFlag
-%inputtypeVAR07 = popupmenu custom
-NewName = char(handles.Settings.VariableValues{CurrentModuleNum,7});
+%textVAR07 = Did you want to append an existing flag, or create a new one? ** Warning, if you choose to append a flag, you will be overwriting it with the appended flag **
+%choiceVAR07 = Create a new flag
+%choiceVAR07 = Append existing flag
+%inputtypeVAR07 = popupmenu
+NewOrAppend = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 
-%textVAR08 = If you're appending an existing flag, what did you call it?
-%defaultVAR08 = Flag
+%textVAR08 = If you're creating a new flag, what do you want to call it?
+%defaultVAR08 = NewFlag
 %inputtypeVAR08 = popupmenu custom
-OldName = char(handles.Settings.VariableValues{CurrentModuleNum,8});
+NewName = char(handles.Settings.VariableValues{CurrentModuleNum,8});
+
+%textVAR09 = If you're appending an existing flag, what did you call it?
+%defaultVAR09 = Flag
+%inputtypeVAR09 = popupmenu custom
+OldName = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 
 
-%%%VariableRevisionNumber = 1
+%%%VariableRevisionNumber = 2
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
@@ -139,7 +144,7 @@ if isempty(FeatureNumOrName)
 end
 try
     FeatureName = CPgetfeaturenamesfromnumbers(handles, 'Image', ...
-        Category, FeatureNumOrName, ImageName);
+        Category, FeatureNumOrName, ImageName, SizeScale);
 
 catch
     error([lasterr '  Image processing was canceled in the ', ModuleName, ...

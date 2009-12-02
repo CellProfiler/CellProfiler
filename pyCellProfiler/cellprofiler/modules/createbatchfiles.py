@@ -100,7 +100,7 @@ class CreateBatchFiles(cpm.CPModule):
     def add_mapping(self):
         group = cps.SettingsGroup()
         group.append("local_directory",
-                     cps.Text("Path to files on this computer",
+                     cps.Text("Local root path",
                                 cpprefs.get_default_image_directory(),doc="""
                                 What is the path to files on this computer? 
                                 This is the root path on the local machine (i.e., the computer setting up
@@ -115,7 +115,7 @@ class CreateBatchFiles(cpm.CPModule):
                                 for the cluster path in the next setting."""))
 
         group.append("remote_directory",
-                     cps.Text("Path to files on the cluster",
+                     cps.Text("Cluster root path",
                                 cpprefs.get_default_image_directory(),doc="""
                                 What is the path to files on the cluster? This is the cluster 
                                 root path, i.e, how the cluster machine sees the

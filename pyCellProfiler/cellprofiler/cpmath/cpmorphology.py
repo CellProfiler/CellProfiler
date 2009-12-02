@@ -508,6 +508,10 @@ def triangle_areas(p1,p2,p3):
     cross1 = v1[:,1] * v2[:,0]
     cross2 = v2[:,1] * v1[:,0]
     a = (cross1-cross2) / 2
+    #
+    # Handle small round-off errors
+    #
+    a[a<np.finfo(np.float32).eps] = 0
     return a  
 
 def draw_line(labels,pt0,pt1,value=1):

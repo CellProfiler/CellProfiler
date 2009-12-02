@@ -527,6 +527,21 @@ class TestConvexHull(unittest.TestCase):
         self.assertEqual(counts.shape[0], 2)
         self.assertEqual(counts[0], 0)
         self.assertEqual(counts[1], 4)
+        
+    def test_06_01_regression_373(self):
+        '''Regression test of IMG-374'''
+        labels = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
+                           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                           [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
+                           [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
+                           [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
+                           [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+                           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]])
+        result, counts = morph.convex_hull(labels, np.array([1]))
+        self.assertEqual(counts[0], 2)
+        
 
 class TestConvexHullImage(unittest.TestCase):
     def test_00_00_zeros(self):

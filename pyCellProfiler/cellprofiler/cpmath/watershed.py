@@ -244,7 +244,7 @@ def fast_watershed(image, markers, connectivity=None, offset=None, mask=None):
                              c_mask,
                              numpy.array(c_image.shape,numpy.int32),
                              c_output)
-        c_output = c_output.reshape(c_image.shape)[[slice(1,-1,None)] * image.ndim]
+    c_output = c_output.reshape(c_image.shape)[[slice(1,-1,None)] * image.ndim]
     try:
         return c_output.astype(markers.dtype)
     except:

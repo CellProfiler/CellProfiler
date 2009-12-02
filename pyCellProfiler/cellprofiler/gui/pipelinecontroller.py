@@ -537,6 +537,8 @@ class PipelineController:
                                       outlines = self.__debug_outlines)
             self.__debug_grids = workspace.set_grids(self.__debug_grids)
             module.run(workspace)
+            if not module.is_interactive():
+                module.display(workspace)
             workspace.refresh()
             if module.module_num < len(self.__pipeline.modules()):
                 self.__pipeline_list_view.select_one_module(module.module_num+1)

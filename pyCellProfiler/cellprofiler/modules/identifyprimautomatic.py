@@ -766,7 +766,6 @@ class IdentifyPrimAutomatic(cpmi.Identify):
             object_set   - the objects (labeled masks) in this image set
             measurements - the measurements for this run
         """
-        self.workspace_saved_for_debugging_take_this_out_please=workspace 
         #
         # Retrieve the relevant image and mask
         #

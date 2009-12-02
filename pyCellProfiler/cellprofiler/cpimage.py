@@ -560,6 +560,7 @@ class ImageSetList(object):
         self.__image_sets = []
         self.__image_sets_by_key = {}
         self.__legacy_fields = {}
+        self.__associating_by_key = None
     
     def get_image_set(self,keys_or_number):
         """Return either the indexed image set (keys_or_number = index) or the image set with matching keys
@@ -569,12 +570,15 @@ class ImageSetList(object):
             keys = {'number':keys_or_number }
             number = keys_or_number
             assert number <= len(self.__image_sets)
+            if self.__associating_by_key is None:
+                self.__associating_by_key = False
         else:
             keys = keys_or_number
             if self.__image_sets_by_key.has_key(repr(keys)):
                 number = self.__image_sets_by_key[repr(keys)].get_number()
             else:
                 number = len(self.__image_sets)
+            self.__associating_by_key = True
         if number == len(self.__image_sets):
             image_set = ImageSet(number,keys,self.__legacy_fields)
             self.__image_sets.append(image_set)
@@ -582,6 +586,14 @@ class ImageSetList(object):
         else:
             image_set = self.__image_sets[number]
         return image_set
+    
+    @property
+    def associating_by_key(self):
+        '''True if some image set has been added with a key instead of a number
+        
+        This will return "None" if no association has been done.
+        '''
+        return self.__associating_by_key
     
     def purge_image_set(self, number):
         """Remove the memory associated with an image set"""

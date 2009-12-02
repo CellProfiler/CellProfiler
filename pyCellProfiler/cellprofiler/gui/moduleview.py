@@ -14,6 +14,7 @@ __version__="$Revision$"
 import matplotlib.cm
 import numpy as np
 import os
+import time
 import traceback
 import wx
 import wx.grid
@@ -29,6 +30,8 @@ ERROR_COLOR = wx.RED
 RANGE_TEXT_WIDTH = 40 # number of pixels in a range text box TO_DO - calculate it
 ABSOLUTE = "Absolute"
 FROM_EDGE = "From edge"
+
+CHECK_TIMEOUT_SEC = 2
 
 class SettingEditedEvent:
     """Represents an attempt by the user to edit a setting
@@ -977,6 +980,11 @@ class ModuleView:
     
     def on_idle(self,event):
         """Check to see if the selected module is valid"""
+        last_idle_time = getattr(self, "last_idle_time", 0)
+        if time.time() - last_idle_time > CHECK_TIMEOUT_SEC:
+            self.last_idle_time = time.time()
+        else:
+            return
         if self.__module:
             validation_error = None
             try:

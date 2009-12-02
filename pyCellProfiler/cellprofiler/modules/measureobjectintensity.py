@@ -279,7 +279,7 @@ class MeasureObjectIntensity(cpm.CPModule):
             for object_name in self.object_names:
                 objects = workspace.object_set.get_objects(object_name.value)
                 labels   = objects.segmented
-                nobjects = int(np.max(labels))
+                nobjects = np.int32(np.max(labels))
                 outlines = cpmo.outline(labels)
                 
                 if image.has_mask:

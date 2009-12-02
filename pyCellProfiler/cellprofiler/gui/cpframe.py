@@ -17,6 +17,7 @@ import wx
 import wx.html
 import wx.lib.scrolledpanel
 import cellprofiler.preferences
+from cellprofiler.modules import get_data_tool_names
 from cellprofiler.gui import get_icon, get_cp_bitmap
 from cellprofiler.gui.pipelinelistview import PipelineListView
 from cellprofiler.gui.cpfigure import close_all
@@ -25,6 +26,7 @@ from cellprofiler.gui.pipelinecontroller import PipelineController
 from cellprofiler.gui.moduleview import ModuleView
 from cellprofiler.gui.preferencesview import PreferencesView
 from cellprofiler.gui.directoryview import DirectoryView
+from cellprofiler.gui.datatoolframe import DataToolFrame
 import cellprofiler.gui.preferencesdlg
 import cellprofiler.utilities.get_revision as get_revision
 import traceback
@@ -137,6 +139,7 @@ class CPFrame(wx.Frame):
         self.__menu_debug.Enable(ID_DEBUG_CHOOSE_GROUP, False)
         self.__menu_debug.Enable(ID_DEBUG_CHOOSE_IMAGE_SET, False)
         self.__menu_bar.Append(self.__menu_debug,'&Test')
+        self.__menu_bar.Append(self.data_tools_menu(),'&Data tools')
         self.__menu_window = wx.Menu()
         self.__menu_window.Append(ID_WINDOW_CLOSE_ALL, "Close &all\tctrl+L", 
                                   "Close all figure windows")
@@ -167,6 +170,18 @@ class CPFrame(wx.Frame):
                                                  (wx.ACCEL_NORMAL,wx.WXK_F7,ID_DEBUG_NEXT_IMAGE_SET),
                                                  (wx.ACCEL_NORMAL,wx.WXK_F8,ID_DEBUG_NEXT_GROUP)])
         self.SetAcceleratorTable(accelerator_table)
+        
+    def data_tools_menu(self):
+        '''Create a menu of data tools'''
+        if not hasattr(self, "__data_tools_menu"):
+            self.__data_tools_menu = wx.Menu()
+            for data_tool_name in get_data_tool_names():
+                new_id = wx.NewId()
+                self.__data_tools_menu.Append(new_id, data_tool_name)
+                def on_data_tool(event, data_tool_name=data_tool_name):
+                    self.__on_data_tool(event, data_tool_name)
+                wx.EVT_MENU(self, new_id, on_data_tool)
+        return self.__data_tools_menu
 
     def enable_debug_commands(self, enable=True):
         """Enable or disable the debug commands (like ID_DEBUG_STEP)"""
@@ -373,6 +388,15 @@ class CPFrame(wx.Frame):
 
     def __on_size(self, event):
         self.Layout()
+        
+    def __on_data_tool(self, event, tool_name):
+        dlg = wx.FileDialog(self, "Choose data output file for %s data tool" %
+                            tool_name, wildcard="*.mat",
+                            style=(wx.FD_OPEN | wx.FILE_MUST_EXIST))
+        if dlg.ShowModal() == wx.ID_OK:
+            DataToolFrame(self, 
+                          module_name=tool_name,
+                          measurements_file_name = dlg.Path)
 
     def display_error(self,message,error):
         """Displays an exception in a standardized way

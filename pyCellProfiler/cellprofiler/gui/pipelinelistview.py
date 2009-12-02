@@ -13,6 +13,7 @@ Website: http://www.cellprofiler.org
 __version__="$Revision$"
 
 from StringIO import StringIO
+import time
 import base64
 import zlib
 import wx
@@ -119,6 +120,8 @@ CLOSED_EYE = "closedeye"
 PAUSE = "pause"
 GO = "go"
 NOTDEBUG = "notdebug"
+
+CHECK_TIMEOUT_SEC = 2
 
 class PipelineListView(object):
     """View on a set of modules
@@ -347,6 +350,12 @@ class PipelineListView(object):
         self.__pipeline_slider.Value = 0
         
     def on_idle(self,event):
+        last_idle_time = getattr(self, "last_idle_time", 0)
+        if time.time() - last_idle_time > CHECK_TIMEOUT_SEC:
+            self.last_idle_time = time.time()
+        else:
+            return
+        
         modules = self.__pipeline.modules()
         for idx,module in enumerate(modules):
             try:
@@ -375,3 +384,5 @@ class PipelineListView(object):
                 
             if pause_value != self.__grid.GetCellValue(idx, PAUSE_COLUMN):
                 self.__grid.SetCellValue(idx, PAUSE_COLUMN, pause_value)
+        event.RequestMore(False)
+        

@@ -374,6 +374,11 @@ class Pipeline(object):
         fd_or_filename - either the name of a file or a file-like object
         """
         handles=scipy.io.matlab.mio.loadmat(fd_or_filename, struct_as_record=True)
+        if handles.has_key("handles"):
+            #
+            # From measurements...
+            #
+            handles=handles["handles"][0,0]
         self.create_from_handles(handles)
         
     def save(self, fd_or_filename):

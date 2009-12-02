@@ -79,6 +79,7 @@ substitutions = {'FlagImageForQC' : 'FlagImage',
 all_modules = {}
 pymodules = []
 badmodules = []
+datatools = []
 
 do_not_override = ['__init__', 'set_settings', 'create_from_handles', 'test_valid', 'module_class']
 should_override = ['create_settings', 'settings', 'run']
@@ -96,6 +97,7 @@ def check_module(module, name):
 def fill_modules():
     del pymodules[:]
     del badmodules[:]
+    del datatools[:]
     all_modules.clear()
     for mod, name in pymodule_to_cpmodule.items():
         try:
@@ -113,6 +115,8 @@ def fill_modules():
             check_module(m.__dict__[name], name)
             # attempt to instantiate
             all_modules[name]()
+            if hasattr(all_modules[name], "run_as_data_tool"):
+                datatools.append(name)
         except Exception, e:
             import traceback
             print traceback.print_exc(e)
@@ -120,7 +124,7 @@ def fill_modules():
             if name in all_modules:
                 del all_modules[name]
                 del pymodules[-1]
-                
+    datatools.sort()
     if len(badmodules) > 0:
         print "could not load these modules", badmodules
         
@@ -138,6 +142,9 @@ def instantiate_module(module_name):
 
 def get_module_names():
     return all_modules.keys()
+
+def get_data_tool_names():
+    return datatools
 
 def reload_modules():
     for m in pymodules:

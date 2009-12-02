@@ -53,11 +53,11 @@ elseif strncmpi(RescaleOption,'E',1) == 1
     LowestPixelOrigPinnedValue = MethodSpecificArguments{4};
     HighestPixelRescale = MethodSpecificArguments{5};
     HighestPixelOrigPinnedValue = MethodSpecificArguments{6};
-    ImageName = MethodSpecificArguments{5};
+    ImageName = MethodSpecificArguments{7};
     % Case 1: Either of the arguments are AA
-    if any([strcmp(upper(LowestPixelOrig), 'AA') strcmp(upper(HighestPixelOrig), 'AA')]),
-        FindLowestIntensity =   strcmp(upper(LowestPixelOrig), 'AA');
-        FindHighestIntensity =  strcmp(upper(HighestPixelOrig),'AA');
+    if any([strcmpi(LowestPixelOrig, 'AA') strcmpi(HighestPixelOrig, 'AA')]),
+        FindLowestIntensity =   strcmpi(LowestPixelOrig, 'AA');
+        FindHighestIntensity =  strcmpi(HighestPixelOrig,'AA');
         
         if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
             try
@@ -123,10 +123,10 @@ elseif strncmpi(RescaleOption,'E',1) == 1
     end
     
     % Case 2: Either of the arguments are AE
-    if strcmp(upper(LowestPixelOrig), 'AE'),
+    if strcmpi(LowestPixelOrig, 'AE'),
         LowestPixelOrig = min(min(InputImage));
     end
-    if strcmp(upper(HighestPixelOrig), 'AE'),
+    if strcmpi(HighestPixelOrig, 'AE'),
         HighestPixelOrig = max(max(InputImage));
     end
     

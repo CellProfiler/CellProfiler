@@ -932,6 +932,13 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
         
         image_table = self.get_table_prefix()+'Per_Image'
         object_table = self.get_table_prefix()+'Per_Object'
+        #
+        # Delete any prior data for this image
+        #
+        for table_name in (image_table, object_table):
+            stmt = ('DELETE FROM %s WHERE ImageNumber=%d'%
+                    (table_name, image_number))
+            execute(self.cursor, stmt)
         
         stmt = ('INSERT INTO %s (%s) VALUES (%s)' % 
                 (image_table, 

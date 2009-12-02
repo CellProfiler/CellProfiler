@@ -588,7 +588,7 @@ class ExportToDatabase(cpm.CPModule):
             feature_name = "%s_%s"%(object_name,feature)
             colname = mappings[feature_name]
             if coltype.upper() == 'FLOAT':
-                coltype = 'FLOAT NOT NULL'
+                coltype = 'FLOAT'
             fid.write(",\n%s %s"%(colname, coltype))
             per_image[feature_name] = per_image_idx
             per_image_idx += 1
@@ -604,7 +604,7 @@ class ExportToDatabase(cpm.CPModule):
                         continue
                     feature_name = "%s_%s_%s"%(aggname,object_name,feature)
                     colname = mappings[feature_name]
-                    fid.write(",\n%s FLOAT NOT NULL"%(colname))
+                    fid.write(",\n%s FLOAT"%(colname))
                     per_image[feature_name] = per_image_idx
                     per_image_idx += 1
         fid.write(");\n\n")
@@ -623,7 +623,7 @@ ObjectNumber INTEGER"""%(self.get_table_prefix()))
                     if self.ignore_feature(object_name, feature, measurements, True):
                         continue
                     feature_name = '%s_%s'%(object_name,feature)
-                    fid.write(",\n%s FLOAT NOT NULL"%(mappings[feature_name]))
+                    fid.write(",\n%s FLOAT"%(mappings[feature_name]))
                     per_object[feature_name]=per_object_idx
                     per_object_idx += 1
             fid.write(""",
@@ -717,15 +717,13 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
         per_image - map a feature name to its column index in the per_image table
         per_object - map a feature name to its column index in the per_object table
         """
+        zeros_for_nan = False
         measurements = workspace.measurements
         image_filename = os.path.join(self.get_output_directory(),
                                       '%s_image.CSV'%(self.base_name(workspace)))
         object_filename = os.path.join(self.get_output_directory(),
                                        '%s_object.CSV'%(self.base_name(workspace)))
         fid_per_image = open(image_filename,"wb")
-        csv_per_image = csv.writer(fid_per_image, 
-                                   quoting=csv.QUOTE_NONNUMERIC,
-                                   lineterminator='\n')
         if self.objects_choice != O_NONE:
             fid_per_object = open(object_filename,"wb")
             csv_per_object = csv.writer(fid_per_object, lineterminator='\n')
@@ -751,9 +749,17 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                 feature_name = "%s_%s"%('Image',feature)
                 value = measurements.get_measurement('Image',feature, i)
                 if isinstance(value, np.ndarray):
-                    value=value[0]
-                if isinstance(value, unicode) or isinstance(value, str):
-                    value = MySQLdb.escape_string(value)
+                    if value.dtype.kind in ('O','S','U'):
+                        value = '"'+MySQLdb.escape_string(value[0])+'"'
+                    elif isnan(value[0]):
+                        value = "NULL"
+                    else:
+                        value = value[0]
+                elif isinstance(value, str) or isinstance(value, unicode):
+                    value = '"'+MySQLdb.escape_string(value)+'"'
+                elif np.isnan(value):
+                    value = "NULL"
+                    
                 image_row[per_image[feature_name]] = value
                 if feature_name.startswith('Image_Count_'):
                     max_count = max(max_count,int(value))
@@ -777,7 +783,10 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                 agg_dict = measurements.compute_aggregate_measurements(
                     i, self.agg_names)
                 for feature_name in agg_dict.keys():
-                    image_row[per_image[feature_name]] = agg_dict[feature_name]
+                    value = agg_dict[feature_name]
+                    if np.isnan(value):
+                        value = "NULL"
+                    image_row[per_image[feature_name]] = value
                 #
                 # Allocate an array for the per_object values
                 #
@@ -797,7 +806,8 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                                 continue
                             feature_name = "%s_%s"%(object_name, feature)
                             values = measurements.get_measurement(object_name, feature, i)
-                            values[np.logical_not(np.isfinite(values))] = 0
+                            if zeros_for_nan:
+                                values[np.logical_not(np.isfinite(values))] = 0
                             nvalues = np.product(values.shape)
                             if (nvalues < max_rows):
                                 sys.stderr.write("Warning: too few measurements for %s in image set #%d, got %d, expected %d\n"%(feature_name,image_number,nvalues,max_rows))
@@ -806,18 +816,20 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                                 values = values[:max_rows]
                             object_rows[:nvalues,per_object[feature_name]] = values
                     for row in range(max_rows):
-                        csv_per_object.writerow(object_rows[row,:])
-            csv_per_image.writerow(image_row)
+                        row_values = ["NULL" if np.isnan(value) else value
+                                      for value in object_rows[row,:]]
+                        csv_per_object.writerow(row_values)
+            fid_per_image.write(','.join([str(x) for x in image_row])+"\n")
         fid_per_image.close()
         if self.objects_choice != O_NONE:
             fid_per_object.close()
-        
         
     def write_data_to_db(self, workspace, mappings):
         """Write the data in the measurements out to the database
         workspace - contains the measurements
         mappings  - map a feature name to a column name
         """
+        zeros_for_nan = False
         measurements = workspace.measurements
         measurement_cols = self.get_pipeline_measurement_columns(workspace.pipeline,
                                                                  workspace.image_set_list)
@@ -846,7 +858,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                 value = measurements.get_measurement(cpmeas.IMAGE, m_col[1], index)
                 if isinstance(value, np.ndarray):
                     value=value[0]
-                if isinstance(value, float) and not np.isfinite(value):
+                if isinstance(value, float) and not np.isfinite(value) and zeros_for_nan:
                     value = 0
                 if feature_name in self.image_col_order.keys():
                     image_row[self.image_col_order[feature_name]] =\
@@ -897,7 +909,8 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                 for _, feature, ftype in cols:
                     feature_name = "%s_%s"%(obname, feature)
                     values = measurements.get_measurement(obname, feature, index)
-                    values[np.logical_not(np.isfinite(values))] = 0
+                    if zeros_for_nan:
+                        values[np.logical_not(np.isfinite(values))] = 0
                     nvalues = np.product(values.shape)
                     if (nvalues < max_rows):
                         sys.stderr.write("Warning: too few measurements for %s in image set #%d, got %d, expected %d\n"%(feature_name,image_number,nvalues,max_rows))
@@ -911,8 +924,10 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                         object_rows[i,self.object_col_order[feature_name]] = (values[i], cpmeas.COLTYPE_FLOAT)
         
         # wrap non-numeric types in quotes
-        image_row_formatted = [(dtype in [cpmeas.COLTYPE_FLOAT, cpmeas.COLTYPE_INTEGER]) and
-                               str(val) or "'%s'"%MySQLdb.escape_string(str(val)) 
+        image_row_formatted = [("NULL" if np.isnan(val)
+                                else str(val))
+                               if dtype in [cpmeas.COLTYPE_FLOAT, cpmeas.COLTYPE_INTEGER]
+                               else "'%s'"%MySQLdb.escape_string(str(val)) 
                                for val, dtype, colname in image_row]
         
         image_table = self.get_table_prefix()+'Per_Image'
@@ -932,11 +947,13 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
             # Write 25 rows at a time (to get under the max_allowed_packet limit)
             for i in range(0,len(object_rows), 25):
                 my_rows = object_rows[i:min(i+25, len(object_rows))]
-                self.cursor.executemany(stmt,[ [ str(v) for v,t in ob_row] 
+                self.cursor.executemany(stmt,[ [ None if np.isnan(v)
+                                                 else str(v) for v,t in ob_row] 
                                                for ob_row in my_rows])
         else:
             for row in object_rows:
-                row_stmt = stmt % tuple([str(v) for v,t in row])
+                row_stmt = stmt % tuple([None if np.isnan(v) else str(v) 
+                                         for v,t in row])
                 self.cursor.execute(row_stmt)
         self.connection.commit()
         

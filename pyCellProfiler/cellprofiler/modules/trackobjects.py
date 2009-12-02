@@ -662,7 +662,7 @@ class TrackObjects(cpm.CPModule):
             return F_ALL
         return []
     
-    def get_measurement_scales(self, pipeline, object_name, category, feature):
+    def get_measurement_scales(self, pipeline, object_name, category, feature,image_name):
         if (object_name == self.object_name.value and
             category == F_PREFIX and
             feature in F_ALL):

@@ -302,14 +302,14 @@ class TestExportToDatabase(unittest.TestCase):
         m.add_image_measurement(FLOAT_IMG_MEASUREMENT, FLOAT_VALUE)
         m.add_image_measurement(STRING_IMG_MEASUREMENT, STRING_VALUE)
         m.add_image_measurement(OBJECT_COUNT_MEASUREMENT, len(OBJ_VALUE))
-        m.add_measurement(OBJECT_NAME, OBJ_MEASUREMENT, OBJ_VALUE)
+        m.add_measurement(OBJECT_NAME, OBJ_MEASUREMENT, OBJ_VALUE.copy())
         if alt_object:
             m.add_image_measurement(ALTOBJECT_COUNT_MEASUREMENT, 100)
             m.add_measurement(ALTOBJECT_NAME, OBJ_MEASUREMENT,
                               np.arange(100))
         if long_measurement:
             m.add_image_measurement(LONG_IMG_MEASUREMENT, 100)
-            m.add_measurement(OBJECT_NAME, LONG_OBJ_MEASUREMENT, OBJ_VALUE)
+            m.add_measurement(OBJECT_NAME, LONG_OBJ_MEASUREMENT, OBJ_VALUE.copy())
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
         image_set.add(IMAGE_NAME, cpi.Image(np.zeros((10,10))))
@@ -600,7 +600,150 @@ class TestExportToDatabase(unittest.TestCase):
                 except:
                     print "Failed to drop table %s"%table_name
         
+    def test_02_04_write_nulls(self):
+        workspace, module, output_dir, finally_fn = self.make_workspace(True)
+        #
+        # Insert a NaN into the float image measurement and one of the
+        # object measurements
+        #
+        m = workspace.measurements
+        fim = m.get_all_measurements(cpmeas.IMAGE, FLOAT_IMG_MEASUREMENT)
+        fim[0] = np.NaN
+        om = m.get_all_measurements(OBJECT_NAME, OBJ_MEASUREMENT)
+        om[0][0] = np.NaN
+        os.chdir(output_dir)
+        try:
+            self.assertTrue(isinstance(module, E.ExportToDatabase))
+            module.db_type = E.DB_MYSQL
+            module.store_csvs.value = True
+            module.wants_agg_mean.value = True
+            module.wants_agg_median.value = False
+            module.wants_agg_std_dev.value = False
+            module.objects_choice.value = E.O_ALL
+            module.post_run(workspace)
+            sql_file = os.path.join(output_dir, "SQL__SETUP.SQL")
+            base_name = "SQL_1_1"
+            image_file = os.path.join(output_dir, base_name+"_image.CSV")
+            object_file = os.path.join(output_dir, base_name+"_object.CSV")
+            for filename in (sql_file, image_file, object_file):
+                self.assertTrue(os.path.isfile(filename))
+            fd = open(sql_file,'rt')
+            sql_text = fd.read()
+            fd.close()
+            for statement in sql_text.split(';'):
+                if len(statement.strip()) == 0:
+                    continue
+                self.cursor.execute(statement)
+            #
+            # Now read the image file from the database
+            #
+            image_table = module.table_prefix.value + "Per_Image"
+            statement = ("select ImageNumber, Image_%s, Image_%s, Image_%s, "
+                         "Image_Count_%s, Mean_%s_%s "
+                         "from %s" %
+                         (INT_IMG_MEASUREMENT, FLOAT_IMG_MEASUREMENT,
+                          STRING_IMG_MEASUREMENT, OBJECT_NAME, OBJECT_NAME,
+                          OBJ_MEASUREMENT, image_table))
+            self.cursor.execute(statement)
+            row = self.cursor.fetchone()
+            self.assertEqual(len(row), 6)
+            self.assertEqual(row[0],1)
+            self.assertAlmostEqual(row[1], INT_VALUE)
+            self.assertTrue(row[2] is None)
+            self.assertEqual(row[3], STRING_VALUE)
+            self.assertEqual(row[4], len(OBJ_VALUE))
+            self.assertAlmostEqual(row[5], np.mean(om[0][~np.isnan(om[0])]))
+            self.assertRaises(StopIteration, self.cursor.next)
+            statement = ("select ImageNumber, ObjectNumber, %s_%s "
+                         "from %sPer_Object order by ObjectNumber"%
+                         (OBJECT_NAME, OBJ_MEASUREMENT, module.table_prefix.value))
+            self.cursor.execute(statement)
+            for i, value in enumerate(OBJ_VALUE):
+                row = self.cursor.fetchone()
+                self.assertEqual(len(row), 3)
+                self.assertEqual(row[0], 1)
+                self.assertEqual(row[1], i+1)
+                if i == 0:
+                    self.assertTrue(row[2] is None)
+                else:
+                    self.assertAlmostEqual(row[2], value)
+            self.assertRaises(StopIteration, self.cursor.next)
+        finally:
+            os.chdir(output_dir)
+            finally_fn()
+            for table_suffix in ("Per_Image","Per_Object"):
+                table_name = module.table_prefix.value + table_suffix
+                try:
+                    self.cursor.execute("drop table %s.%s" %
+                                        (module.db_name.value, table_name))
+                except:
+                    print "Failed to drop table %s"%table_name
     
+    def test_02_05_mysql_direct_null(self):
+        '''Write directly to the mysql DB, not to a file and write nulls'''
+        workspace, module = self.make_workspace(False)
+        #
+        # Insert a NaN into the float image measurement and one of the
+        # object measurements
+        #
+        m = workspace.measurements
+        fim = m.get_all_measurements(cpmeas.IMAGE, FLOAT_IMG_MEASUREMENT)
+        fim[0] = np.NaN
+        om = m.get_all_measurements(OBJECT_NAME, OBJ_MEASUREMENT)
+        om[0][:] = np.NaN
+        try:
+            self.assertTrue(isinstance(module, E.ExportToDatabase))
+            module.db_type = E.DB_MYSQL
+            module.store_csvs.value = False
+            module.wants_agg_mean.value = True
+            module.wants_agg_median.value = False
+            module.wants_agg_std_dev.value = False
+            module.objects_choice.value = E.O_ALL
+            module.prepare_run(workspace.pipeline, workspace.image_set_list,None)
+            module.prepare_group(workspace.pipeline, workspace.image_set_list,
+                                 {}, [1])
+            module.run(workspace)
+            self.cursor.execute("use CPUnitTest")
+            #
+            # Now read the image file from the database
+            #
+            image_table = module.table_prefix.value + "Per_Image"
+            statement = ("select ImageNumber, Image_%s, Image_%s, Image_%s, "
+                         "Image_Count_%s, Mean_%s_%s "
+                         "from %s" %
+                         (INT_IMG_MEASUREMENT, FLOAT_IMG_MEASUREMENT,
+                          STRING_IMG_MEASUREMENT, OBJECT_NAME,
+                          OBJECT_NAME, OBJ_MEASUREMENT, image_table))
+            self.cursor.execute(statement)
+            row = self.cursor.fetchone()
+            self.assertEqual(len(row), 6)
+            self.assertEqual(row[0],1)
+            self.assertAlmostEqual(row[1], INT_VALUE)
+            self.assertTrue(row[2] is None)
+            self.assertEqual(row[3], STRING_VALUE)
+            self.assertEqual(row[4], len(OBJ_VALUE))
+            self.assertTrue(row[5] is None)
+            self.assertRaises(StopIteration, self.cursor.next)
+            statement = ("select ImageNumber, ObjectNumber, %s_%s "
+                         "from %sPer_Object order by ObjectNumber"%
+                         (OBJECT_NAME, OBJ_MEASUREMENT, module.table_prefix.value))
+            self.cursor.execute(statement)
+            for i, value in enumerate(OBJ_VALUE):
+                row = self.cursor.fetchone()
+                self.assertEqual(len(row), 3)
+                self.assertEqual(row[0], 1)
+                self.assertEqual(row[1], i+1)
+                self.assertTrue(row[2] is None)
+            self.assertRaises(StopIteration, self.cursor.next)
+        finally:
+            for table_suffix in ("Per_Image","Per_Object"):
+                table_name = module.table_prefix.value + table_suffix
+                try:
+                    self.cursor.execute("drop table %s.%s" %
+                                        (module.db_name.value, table_name))
+                except:
+                    print "Failed to drop table %s"%table_name
+                    
     def test_03_01_write_sqlite_direct(self):
         '''Write directly to a SQLite database'''
         workspace, module, output_dir, finally_fn = self.make_workspace(True)

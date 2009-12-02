@@ -219,6 +219,17 @@ class Measurements(object):
         assert self.__dictionary[object_name].has_key(feature_name),"No measurements for %s.%s"%(object_name,feature_name)
         return self.__dictionary[object_name][feature_name]
     
+    def add_all_measurements(self, object_name, feature_name, values):
+        '''Add a list of measurements for all image sets
+        
+        object_name - name of object or Images
+        feature_name - feature to add
+        values - list of either values or arrays of values
+        '''
+        if not self.__dictionary.has_key(object_name):
+            self.__dictionary[object_name] = {}
+        self.__dictionary[object_name][feature_name] = values
+    
     def get_experiment_measurement(self, feature_name):
         """Retrieve an experiment-wide measurement
         """
@@ -331,7 +342,7 @@ class Measurements(object):
                 feature_name = "%s_%s"%(object_name, feature)
                 values = self.get_measurement(object_name, feature, 
                                               image_set_number)
-                values[np.logical_not(np.isfinite(values))] = 0
+                values = values[np.isfinite(values)] 
                 #
                 # Compute the mean and standard deviation
                 #

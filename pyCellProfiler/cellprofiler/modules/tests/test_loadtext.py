@@ -248,7 +248,7 @@ class TestLoadText(unittest.TestCase):
         pipeline, module, filename = self.make_pipeline(csv_text)
         m = pipeline.run(image_set_start=2)
         data = m.get_all_measurements(cpmeas.IMAGE, "Metadata_Measurement")
-        self.assertTrue(all([data[i-2] == str(i) for i in range(2,11)]))
+        self.assertTrue(all([data[i-2] == i for i in range(2,11)]))
         os.remove(filename)
     
     def test_07_01_get_measurement_columns(self):

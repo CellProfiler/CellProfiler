@@ -1112,10 +1112,11 @@ class LoadImages(cpmodule.CPModule):
         workspace.display_data.ratio = ratio
 
     def display(self, workspace):
-        figure = workspace.create_or_find_figure(title="Load images, image set #%d"%(
+        if workspace.frame != None:
+            figure = workspace.create_or_find_figure(title="Load images, image set #%d"%(
                 workspace.measurements.image_set_number),
                                                  subplots=(1,1))
-        figure.subplot_table(0,0,workspace.display_data.statistics,
+            figure.subplot_table(0,0,workspace.display_data.statistics,
                              ratio=workspace.display_data.ratio)
 
     def get_filename_metadata(self, fd, filename, path):

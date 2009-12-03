@@ -829,7 +829,7 @@ class IdentifyPrimAutomatic(cpmi.Identify):
         outline_size_excluded_image = cellprofiler.cpmath.outline.outline(size_excluded_labeled_image)
         outline_border_excluded_image = cellprofiler.cpmath.outline.outline(border_excluded_labeled_image)
         
-        if workspace.frame:
+        if workspace.frame != None:
             statistics = []
             statistics.append(["Threshold","%0.3f"%(global_threshold)])
             statistics.append(["# of identified objects",
@@ -1157,62 +1157,63 @@ class IdentifyPrimAutomatic(cpmi.Identify):
         return labeled_image
     
     def display(self, workspace):
-        """Display the image and labeling"""
-        window_name = "CellProfiler(%s:%d)"%(self.module_name, self.module_num)
-        my_frame=cpf.create_or_find(workspace.frame, 
-                                    title="Identify primary automatic", 
-                                    name=window_name, subplots=(2,2))
-        
-        orig_axes     = my_frame.subplot(0,0)
-        label_axes    = my_frame.subplot(1,0)
-        outlined_axes = my_frame.subplot(0,1)
-        table_axes    = my_frame.subplot(1,1)
-
-        title = "Original image, cycle #%d"%(workspace.image_set.number + 1,)
-        my_frame.subplot_imshow_grayscale(0, 0,
-                                          workspace.display_data.image.pixel_data,
-                                          title)
-        my_frame.subplot_imshow_labels(1, 0, workspace.display_data.labeled_image, 
-                                       self.object_name.value)
-
-        if workspace.display_data.image.pixel_data.ndim == 2:
+        if workspace.frame != None:
+            """Display the image and labeling"""
+            window_name = "CellProfiler(%s:%d)"%(self.module_name, self.module_num)
+            my_frame=cpf.create_or_find(workspace.frame, 
+                                        title="Identify primary automatic", 
+                                        name=window_name, subplots=(2,2))
+            
+            orig_axes     = my_frame.subplot(0,0)
+            label_axes    = my_frame.subplot(1,0)
+            outlined_axes = my_frame.subplot(0,1)
+            table_axes    = my_frame.subplot(1,1)
+    
+            title = "Original image, cycle #%d"%(workspace.image_set.number + 1,)
+            my_frame.subplot_imshow_grayscale(0, 0,
+                                              workspace.display_data.image.pixel_data,
+                                              title)
+            my_frame.subplot_imshow_labels(1, 0, workspace.display_data.labeled_image, 
+                                           self.object_name.value)
+    
+            if workspace.display_data.image.pixel_data.ndim == 2:
+                # Outline the size-excluded pixels in red
+                outline_img = np.ndarray(shape=(workspace.display_data.image.pixel_data.shape[0],
+                                                   workspace.display_data.image.pixel_data.shape[1],3))
+                outline_img[:,:,0] = workspace.display_data.image.pixel_data 
+                outline_img[:,:,1] = workspace.display_data.image.pixel_data
+                outline_img[:,:,2] = workspace.display_data.image.pixel_data
+            else:
+                outline_img = workspace.display_data.image.pixel_data.copy()
+            
+            # Outline the accepted objects pixels in green
+            outline_img[workspace.display_data.outline_image != 0,0] = 0
+            outline_img[workspace.display_data.outline_image != 0,1] = 1 
+            outline_img[workspace.display_data.outline_image != 0,2] = 0
+            
             # Outline the size-excluded pixels in red
-            outline_img = np.ndarray(shape=(workspace.display_data.image.pixel_data.shape[0],
-                                               workspace.display_data.image.pixel_data.shape[1],3))
-            outline_img[:,:,0] = workspace.display_data.image.pixel_data 
-            outline_img[:,:,1] = workspace.display_data.image.pixel_data
-            outline_img[:,:,2] = workspace.display_data.image.pixel_data
-        else:
-            outline_img = workspace.display_data.image.pixel_data.copy()
-        
-        # Outline the accepted objects pixels in green
-        outline_img[workspace.display_data.outline_image != 0,0] = 0
-        outline_img[workspace.display_data.outline_image != 0,1] = 1 
-        outline_img[workspace.display_data.outline_image != 0,2] = 0
-        
-        # Outline the size-excluded pixels in red
-        outline_img[workspace.display_data.outline_size_excluded_image != 0,0] = 1
-        outline_img[workspace.display_data.outline_size_excluded_image != 0,1] = 0 
-        outline_img[workspace.display_data.outline_size_excluded_image != 0,2] = 0
-        
-        # Outline the border-excluded pixels in yellow
-        outline_img[workspace.display_data.outline_border_excluded_image != 0,0] = 1
-        outline_img[workspace.display_data.outline_border_excluded_image != 0,1] = 1 
-        outline_img[workspace.display_data.outline_border_excluded_image != 0,2] = 0
-        
-        title = "%s outlines"%(self.object_name.value) 
-        my_frame.subplot_imshow(0,1,outline_img, title)
-        
-        table_axes.clear()
-        table = table_axes.table(cellText=workspace.display_data.statistics,
-                                 colWidths=[.7,.3],
-                                 loc='center',
-                                 cellLoc='left')
-        table_axes.set_frame_on(False)
-        table_axes.set_axis_off()
-        table.auto_set_font_size(False)
-        table.set_fontsize(cpp.get_table_font_size())
-        my_frame.Refresh()
+            outline_img[workspace.display_data.outline_size_excluded_image != 0,0] = 1
+            outline_img[workspace.display_data.outline_size_excluded_image != 0,1] = 0 
+            outline_img[workspace.display_data.outline_size_excluded_image != 0,2] = 0
+            
+            # Outline the border-excluded pixels in yellow
+            outline_img[workspace.display_data.outline_border_excluded_image != 0,0] = 1
+            outline_img[workspace.display_data.outline_border_excluded_image != 0,1] = 1 
+            outline_img[workspace.display_data.outline_border_excluded_image != 0,2] = 0
+            
+            title = "%s outlines"%(self.object_name.value) 
+            my_frame.subplot_imshow(0,1,outline_img, title)
+            
+            table_axes.clear()
+            table = table_axes.table(cellText=workspace.display_data.statistics,
+                                     colWidths=[.7,.3],
+                                     loc='center',
+                                     cellLoc='left')
+            table_axes.set_frame_on(False)
+            table_axes.set_axis_off()
+            table.auto_set_font_size(False)
+            table.set_fontsize(cpp.get_table_font_size())
+            my_frame.Refresh()
     
     def calc_smoothing_filter_size(self):
         """Return the size of the smoothing filter, calculating it if in automatic mode"""

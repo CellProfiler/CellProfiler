@@ -385,3 +385,20 @@ class TestCalculateMath(unittest.TestCase):
         self.assertEqual(len(data),2)
         self.assertAlmostEqual(data[0], 10)
         self.assertAlmostEqual(data[1], 12)
+    
+    def test_07_01_img_379(self):
+        '''Regression test for IMG-379, divide by zero'''
+        
+        measurements = self.run_workspace(C.O_DIVIDE, True, 35, True, 0)
+        data = measurements.get_current_measurement(cpmeas.IMAGE, 
+                                                    MATH_OUTPUT_MEASUREMENTS)
+        self.assertTrue(np.isnan(data))
+        
+        measurements = self.run_workspace(C.O_DIVIDE, 
+                                          False, np.array([1.0]), 
+                                          False, np.array([0.0]))
+        data = measurements.get_current_measurement(OBJECT[0], 
+                                                    MATH_OUTPUT_MEASUREMENTS)
+        self.assertEqual(len(data), 1)
+        self.assertTrue(np.isnan(data[0]))
+        

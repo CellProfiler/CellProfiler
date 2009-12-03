@@ -239,8 +239,8 @@ class CalculateMath(cpm.CPModule):
         
         if (not has_image_measurement) and len(values[0]) != len(values[1]):
             raise ValueError("Incompatable objects: %s has %d objects and %s has %d objects"%
-                             (operands[0].operand_objects.value, len(values[0]),
-                              operands[1].operand_objects.value, len(values[1])))
+                             (self.operands[0].operand_objects.value, len(values[0]),
+                              self.operands[1].operand_objects.value, len(values[1])))
         
         if self.operation == O_ADD:
             result = values[0]+values[1]
@@ -249,7 +249,14 @@ class CalculateMath(cpm.CPModule):
         elif self.operation == O_MULTIPLY:
             result = values[0] * values[1]
         elif self.operation == O_DIVIDE:
-            result = values[0] / values[1]
+            if np.isscalar(values[1]):
+                if values[1] == 0:
+                    result = np.NaN
+                else:
+                    result = values[0] / values[1]
+            else:
+                result = values[0] / values[1]
+                result[values[1] == 0] = np.NaN
         else:
             raise NotImplementedError("Unsupported operation: %s"%self.operation.value)
         #
@@ -258,7 +265,8 @@ class CalculateMath(cpm.CPModule):
         if self.wants_log.value:
             result = np.log10(result)
         result *= self.final_multiplicand.value
-        result **= self.final_exponent.value
+        # Handle NaNs with np.power instead of **
+        result = np.power(result, self.final_exponent.value)
         feature = self.measurement_name()
         if all_image_measurements:
             m.add_image_measurement(feature, result)

@@ -646,21 +646,38 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
         fid = open(path_name,"wt")
         fid.write("CREATE DATABASE IF NOT EXISTS %s;\n"%(self.db_name.value))
         fid.write("USE %s;\n"%(self.db_name.value))
-
+        table_prefix = self.get_table_prefix()
+        #
+        # Do in two passes. Pass # 1 makes the column name mappings for the
+        # well table. Pass # 2 writes the SQL
+        #
         for aggname in self.agg_well_names:
             measurements = workspace.measurements
-            fid.write("CREATE TABLE %sPer_Well_%s AS SELECT "%(self.get_table_prefix(), aggname))
-            for object_name in workspace.measurements.get_object_names():
-                    if object_name == 'Image':
-                        continue
-                    for feature in measurements.get_feature_names(object_name):
-                        if self.ignore_feature(object_name, feature, measurements):
+            well_mappings = ColumnNameMapping()
+            for do_mapping, do_write in ((True, False),(False, True)):
+                if do_write:
+                    fid.write("CREATE TABLE %sPer_Well_%s AS SELECT " %
+                              (self.get_table_prefix(), aggname))
+                for object_name in workspace.measurements.get_object_names():
+                        if object_name == 'Image':
                             continue
-                        feature_name = "%s_%s"%(object_name,feature)
-                        colname = mappings[feature_name]
-                        fid.write("%s(%s),\n"%(aggname,colname))
-            fid.write("Image_Metadata_Plate, Image_Metadata_Well\n"
-                                  "FROM %sPer_Object GROUP BY Image_Metadata_Plate, Image_Metadata_Well;\n\n"%(self.get_table_prefix()))
+                        for feature in measurements.get_feature_names(object_name):
+                            if self.ignore_feature(object_name, feature, measurements):
+                                continue
+                            feature_name = "%s_%s"%(object_name,feature)
+                            colname = mappings[feature_name]
+                            well_colname = "%s_%s" % (aggname, colname)
+                            if do_mapping:
+                                well_mappings.add(well_colname)
+                            if do_write:
+                                fid.write("%s(OT.%s) as %s,\n" %
+                                          (aggname, colname, 
+                                           well_mappings[well_colname]))
+            fid.write("""IT.Image_Metadata_Plate, IT.Image_Metadata_Well
+            FROM %sPer_Image IT JOIN %sPer_Object OT 
+            ON IT.ImageNumber = OT.ImageNumber
+            GROUP BY IT.Image_Metadata_Plate, IT.Image_Metadata_Well;\n\n""" %
+                      (table_prefix, table_prefix))
         fid.close()
     
     def write_oracle_table_defs(self, workspace, mappings):

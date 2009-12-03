@@ -564,7 +564,8 @@ class Pipeline(object):
                             image_set_start=image_number - 1)
                     else:
                         measurements.next_image_set(image_number)
-                    measurements.add_image_measurement(IMAGE_NUMBER, image_number)
+                    # This is added by ExportToDatabase
+                    #measurements.add_image_measurement(IMAGE_NUMBER, image_number)
                     numberof_windows = 0;
                     slot_number = 0
                     object_set = cellprofiler.objects.ObjectSet()

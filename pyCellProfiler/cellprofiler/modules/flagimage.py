@@ -1,4 +1,4 @@
-'''<b>FlagImage</b>: This module allows you to flag an image if it fails some quality control
+'''<b>Flag Image</b> allows you to flag an image if it fails some quality control
 measurement you specify. 
 <hr>
 This module allows the user to assign a flag if
@@ -92,10 +92,13 @@ class FlagImage(cpm.CPModule):
         group.append("combination_choice",
                      cps.Choice(
                 "Flag if any, or all, measurement(s) fails to meet the criteria?",
-                [ C_ANY, C_ALL], doc = '''<ul><li>Any: An image will be assigned a flag if any of its measurements fail. This can be useful
+                [ C_ANY, C_ALL], doc = '''
+                <ul>
+                <li><i>Any:</i> An image will be assigned a flag if any of its measurements fail. This can be useful
                 for flagging images possessing varied QC flaws; for example, you can flag all bright images and all out of focus images with one flag.</li>
-                <li>All: A flag will only be assigned if all measurements fail.  This can be useful for flagging  images that possess only a combination
-                of QC flaws; for example, you can flag only images that are both bright and out of focus.</li></ul>'''))
+                <li><i>All:</i> A flag will only be assigned if all measurements fail.  This can be useful for flagging  images that possess only a combination
+                of QC flaws; for example, you can flag only images that are both bright and out of focus.</li>
+                </ul>'''))
         group.append("add_measurement_button", 
                      cps.DoSomething("Add another measurement",
                                      "Add measurement",
@@ -111,11 +114,15 @@ class FlagImage(cpm.CPModule):
         group = cps.SettingsGroup()
         group.append("source_choice",
                      cps.Choice(
-                "Filter object type", S_ALL, doc = '''<ul><li>Image: This will flag an image based
-                on a per-image measurement, such as intensity or granularity.</li><li>Average for objects: This will flag
+                "Filter object type", S_ALL, doc = '''
+                <ul>
+                <li><i>Image:</i> This will flag an image based
+                on a per-image measurement, such as intensity or granularity.</li>
+                <li><i>Average for objects:</i> This will flag
                 an image based on the average of all object measurements in an image.</li>
-                <li>All objects: This will flag an image based on all the object measurements in an image, without averaging.
-                </li></ul>'''))
+                <li><i>All objects:</i> This will flag an image based on all the 
+                object measurements in an image, without averaging.</li>
+                </ul>'''))
         group.append("object_name",
                      cps.ObjectNameSubscriber(
                 "Select the object to filter by",
@@ -298,9 +305,15 @@ class FlagImage(cpm.CPModule):
 
     def upgrade_settings(self, setting_values, variable_revision_number,
                          module_name, from_matlab):
-        if from_matlab and variable_revision_number == 1:
-            image_name, category, feature_num_or_name, min_value, max_value, \
+        if from_matlab and (variable_revision_number == 1 or variable_revision_number == 2):
+            
+            if variable_revision_number == 1:
+                image_name, category, feature_num_or_name, min_value, max_value, \
                       new_or_append, new_name, old_name = setting_values
+            elif variable_revision_number == 2:
+                image_name, category, feature_num_or_name, scale, min_value, max_value, \
+                      new_or_append, new_name, old_name = setting_values
+                 
             measurement_name = '_'.join((category, feature_num_or_name,
                                          image_name))
             if min_value == 'No minimum':
@@ -336,6 +349,6 @@ class FlagImage(cpm.CPModule):
                               wants_maximum,
                               max_value]
             from_matlab = False
-            variable_revision_number = 1
+            
         return setting_values, variable_revision_number, from_matlab
     

@@ -704,9 +704,11 @@ class DefineGrid(cpm.CPModule):
         #
         if self.display_image_name == cps.LEAVE_BLANK:
             image = np.zeros((gridding.total_height + 
-                              2 * gridding.y_location_of_lowest_y_spot,
+                              (gridding.y_location_of_lowest_y_spot -
+                              gridding.y_spacing / 2)*2+2,
                               gridding.total_width +
-                              2 * gridding.x_location_of_lowest_x_spot,3))
+                              (gridding.x_location_of_lowest_x_spot -
+                              gridding.x_spacing / 2)*2+2,3))
         else:
             image = workspace.image_set.get_image(self.display_image_name.value)
             image = image.pixel_data

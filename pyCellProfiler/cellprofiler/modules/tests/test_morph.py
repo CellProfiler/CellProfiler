@@ -144,12 +144,16 @@ class TestMorph(unittest.TestCase):
         output = image_set.get_image(OUTPUT_IMAGE_NAME)
         return output.pixel_data
     
-    def binary_tteesstt(self, function_name, function):
+    def binary_tteesstt(self, function_name, function, gray_out = False):
         np.random.seed(map(ord,function_name))
         input = np.random.uniform(size=(20,20)) > .7
         output = self.execute(input, function_name)
-        expected = function(input) > 0
-        self.assertTrue(np.all(output==expected))
+        expected = function(input)
+        if not gray_out:
+            expected = expected > 0
+            self.assertTrue(np.all(output==expected))
+        else:
+            self.assertTrue(np.all(np.abs(output-expected) < np.finfo(np.float32).eps))
         
     def test_02_01_binary_bothat(self):
         self.binary_tteesstt('bothat',cpmorph.black_tophat)
@@ -213,4 +217,13 @@ class TestMorph(unittest.TestCase):
     
     def test_02_19_binary_vbreak(self):
         self.binary_tteesstt('vbreak', cpmorph.vbreak)
+        
+    def test_02_20_binary_distance(self):
+        def distance(x):
+            y = scind.distance_transform_edt(x)
+            if np.max(y) == 0:
+                return y
+            else:
+                return y / np.max(y)
+        self.binary_tteesstt('distance', distance, True)
     

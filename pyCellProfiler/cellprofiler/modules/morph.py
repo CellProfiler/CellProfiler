@@ -123,6 +123,13 @@ pixels that are 8-connected:<br>
 For grayscale, each pixel is replaced by the maximum of its neighbors and itself.</td>
 <td>Binary, grayscale</td>
 </tr>
+<tr>
+<td><i>Distance</i><td>
+<td>Compute the distance transform of a binary image. The distance of each
+foreground pixel is computed to the nearest background pixel. The resulting
+image is then scaled so that the largest distance is 1.</td>
+<td>Binary</td>
+</tr>
 <tr>        
 <td><i>Erode</i></td>
 <td>For binary, any 1 pixel is replaced by 0 if any of its neighbors is 0. 
@@ -358,6 +365,7 @@ F_CLEAN  = 'clean'
 F_CLOSE  = 'close'
 F_DIAG   = 'diag'
 F_DILATE = 'dilate'
+F_DISTANCE = 'distance'
 F_ENDPOINTS = 'endpoints'
 F_ERODE  = 'erode'
 F_FILL   = 'fill'
@@ -374,7 +382,7 @@ F_THIN   = 'thin'
 F_TOPHAT = 'tophat'
 F_VBREAK = 'vbreak'
 F_ALL = [F_BOTHAT, F_BRANCHPOINTS, F_BRIDGE, F_CLEAN, F_CLOSE, F_DIAG, 
-         F_DILATE, F_ENDPOINTS, F_ERODE,
+         F_DILATE, F_DISTANCE, F_ENDPOINTS, F_ERODE,
          F_FILL, F_HBREAK, F_LIFE, F_MAJORITY, F_OPEN, F_REMOVE, F_SHRINK, 
          F_SKEL, F_SPUR, F_THICKEN, F_THIN, F_TOPHAT, F_VBREAK]
 
@@ -529,7 +537,7 @@ class Morph(cpm.CPModule):
         '''Apply the function once to the image, returning the result'''
         is_binary =  pixel_data.dtype.kind == 'b'
         if (function_name in (F_BRANCHPOINTS, F_BRIDGE, F_CLEAN, F_DIAG, 
-                              F_ENDPOINTS, F_FILL,
+                              F_DISTANCE, F_ENDPOINTS, F_FILL,
                               F_HBREAK, F_LIFE, F_MAJORITY, F_REMOVE, F_SHRINK,
                               F_SKEL, F_SPUR, F_THICKEN, F_THIN, F_VBREAK) and
             not is_binary):
@@ -539,7 +547,7 @@ class Morph(cpm.CPModule):
             pixel_data = pixel_data != 0
 
         if (function_name in (F_BRANCHPOINTS, F_BRIDGE, F_CLEAN, F_DIAG, 
-                              F_ENDPOINTS, F_FILL,
+                              F_DISTANCE, F_ENDPOINTS, F_FILL,
                               F_HBREAK, F_LIFE, F_MAJORITY, F_REMOVE, F_SHRINK,
                               F_SKEL, F_SPUR, F_THICKEN, F_THIN, F_VBREAK) or
             (is_binary and
@@ -570,6 +578,12 @@ class Morph(cpm.CPModule):
                                              np.ones((3,3),bool),
                                              iterations=count,
                                              mask=mask)
+            elif function_name == F_DISTANCE:
+                image = scind.distance_transform_edt(pixel_data)
+                img_max = np.max(image)
+                if img_max > 0:
+                    image = image / img_max
+                return image
             elif function_name == F_ENDPOINTS:
                 return morph.endpoints(pixel_data, mask)
             elif function_name == F_ERODE:

@@ -38,6 +38,9 @@ def create_or_find(parent=None, id=-1, title="",
             if len(title) and title != window.Title:
                 window.Title = title
             window.clf()
+            if subplots!=None:
+                window.subplots = np.zeros(subplots,dtype=object)
+                window.zoom_rects = np.zeros(subplots,dtype=object)
                 
             return window
     return CPFigureFrame(parent, id, title, pos, size, style, name, subplots)
@@ -414,9 +417,12 @@ class CPFigureFrame(wx.Frame):
                               renumber=True):
         if renumber:
             labels = renumber_labels_for_display(labels)
-        cm = matplotlib.cm.get_cmap(cpprefs.get_default_colormap())
-        cm.set_bad((0,0,0))
-        labels = numpy.ma.array(labels, mask=labels==0)
+        if np.all(labels == 0):
+            cm=matplotlib.cm.gray
+        else:
+            cm = matplotlib.cm.get_cmap(cpprefs.get_default_colormap())
+            cm.set_bad((0,0,0))
+            labels = numpy.ma.array(labels, mask=labels==0)
         return self.subplot_imshow(x,y,labels,title,clear,cm)
     
     def subplot_imshow_grayscale(self, x,y,image, title=None, clear=True,

@@ -217,6 +217,24 @@ class TestIdentifyObjectsInGrid(unittest.TestCase):
         outlines = outlines.pixel_data
         expected_outlines = outline(expected)
         self.assertTrue(np.all(outlines == (expected_outlines[0:outlines.shape[0],0:outlines.shape[1]]>0)))
+        #
+        # Check the measurements
+        #
+        categories = module.get_categories(None, OUTPUT_OBJECTS_NAME)
+        self.assertEqual(len(categories), 1)
+        self.assertEqual(categories[0], "Location")
+        categories = module.get_categories(None, cpmeas.IMAGE)
+        self.assertEqual(len(categories), 1)
+        self.assertEqual(categories[0], "Count")
+        measurements = module.get_measurements(None, cpmeas.IMAGE, "Count")
+        self.assertEqual(len(measurements), 1)
+        self.assertEqual(measurements[0], OUTPUT_OBJECTS_NAME)
+        measurements = module.get_measurements(None, OUTPUT_OBJECTS_NAME, "Location")
+        self.assertEqual(len(measurements), 2)
+        self.assertTrue(all(m in ('Center_X','Center_Y') for m in measurements))
+        self.assertTrue('Center_X' in measurements)
+        self.assertTrue('Center_Y' in measurements)
+        
     
     def test_02_02_forced_location_auto(self):
         #

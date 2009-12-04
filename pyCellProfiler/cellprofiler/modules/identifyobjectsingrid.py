@@ -466,7 +466,7 @@ class IdentifyObjectsInGrid(cpm.CPModule):
         """
         if object_name == 'Image':
             return ['Count']
-        elif object_name == self.object_name.value:
+        elif object_name == self.output_objects_name.value:
             return ['Location']
         return []
       
@@ -477,7 +477,7 @@ class IdentifyObjectsInGrid(cpm.CPModule):
         category - return measurements made in this category
         """
         if object_name == 'Image' and category == 'Count':
-            return [ self.object_name.value ]
-        elif object_name == self.object_name.value and category == 'Location':
+            return [ self.output_objects_name.value ]
+        elif object_name == self.output_objects_name.value and category == 'Location':
             return ['Center_X','Center_Y']
         return []

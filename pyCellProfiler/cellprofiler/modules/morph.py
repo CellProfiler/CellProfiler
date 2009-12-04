@@ -124,7 +124,7 @@ For grayscale, each pixel is replaced by the maximum of its neighbors and itself
 <td>Binary, grayscale</td>
 </tr>
 <tr>
-<td><i>Distance</i><td>
+<td><i>Distance</i></td>
 <td>Compute the distance transform of a binary image. The distance of each
 foreground pixel is computed to the nearest background pixel. The resulting
 image is then scaled so that the largest distance is 1.</td>

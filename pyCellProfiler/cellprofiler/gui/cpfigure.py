@@ -16,6 +16,7 @@ import numpy as np
 import wx
 import matplotlib
 import matplotlib.cm
+import numpy.ma
 import matplotlib.patches
 import matplotlib.colorbar
 import matplotlib.backends.backend_wxagg
@@ -409,9 +410,13 @@ class CPFigureFrame(wx.Frame):
             self.set_subplot_title(title, x, y)
         return result
     
-    def subplot_imshow_labels(self, x,y,labels, title=None, clear=True):
-        labels = renumber_labels_for_display(labels)
+    def subplot_imshow_labels(self, x,y,labels, title=None, clear=True, 
+                              renumber=True):
+        if renumber:
+            labels = renumber_labels_for_display(labels)
         cm = matplotlib.cm.get_cmap(cpprefs.get_default_colormap())
+        cm.set_bad((0,0,0))
+        labels = numpy.ma.array(labels, mask=labels==0)
         return self.subplot_imshow(x,y,labels,title,clear,cm)
     
     def subplot_imshow_grayscale(self, x,y,image, title=None, clear=True,

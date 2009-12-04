@@ -74,6 +74,7 @@ See also: Any of the <b>Measure*</b> modules, <b>IdentifyPrimAutomatic</b>, <b>L
 __version__="$Revision$"
 
 import numpy as np
+import numpy.ma
 import matplotlib.figure
 import matplotlib.axes
 import matplotlib.backends.backend_agg
@@ -355,8 +356,10 @@ class TrackObjects(cpm.CPModule):
             indexer = np.sum(bits.transpose() * (2 ** np.arange(7,-1,-1)), 1)
             labels = indexer[objects.segmented]
             cm = matplotlib.cm.get_cmap(cpprefs.get_default_colormap())
+	    cm.set_bad((0,0,0))
             norm = matplotlib.colors.BoundaryNorm(range(256), 256)
-            img = ax.imshow(labels, cmap=cm, norm=norm)
+            img = ax.imshow(numpy.ma.array(labels, mask=(labels==0)),
+			    cmap=cm, norm=norm)
             i,j = centers_of_labels(objects.segmented)
             for n, x, y in zip(object_numbers, j, i):
                 ax.annotate(str(n), xy=(x,y),
@@ -589,7 +592,7 @@ class TrackObjects(cpm.CPModule):
             new_per_old = fix(scipy.ndimage.sum(np.ones(new_count),
                                                 old_of_new,
                                                 np.arange(old_count)+1))
-            one_to_one = new_per_old == 1
+            one_to_one = ((new_per_old == 1) & (new_of_old != 0))
             mapping[(new_of_old[one_to_one]-1)] = old_object_numbers[one_to_one]
             miss_count = np.sum(mapping == 0)
         else:

@@ -502,6 +502,7 @@ class TestTrackObjects(unittest.TestCase):
         '''Test the different measurement pieces'''
         module = T.TrackObjects()
         module.object_name.value = OBJECT_NAME
+        module.image_name.value = "image"
         module.pixel_radius.value = 10
         categories = module.get_categories(None,"Foo")
         self.assertEqual(len(categories),0)
@@ -514,11 +515,11 @@ class TestTrackObjects(unittest.TestCase):
         self.assertEqual(len(features), len(T.F_ALL))
         self.assertTrue(all([feature in T.F_ALL for feature in features]))
         scales = module.get_measurement_scales(None, OBJECT_NAME,
-                                               T.F_PREFIX, "Foo")
+                                               T.F_PREFIX, "Foo","image")
         self.assertEqual(len(scales), 0)
         for feature in T.F_ALL:
             scales = module.get_measurement_scales(None, OBJECT_NAME,
-                                                   T.F_PREFIX, feature)
+                                                   T.F_PREFIX, feature,"image")
             self.assertEqual(len(scales), 1)
             self.assertEqual(int(scales[0]), 10)
         

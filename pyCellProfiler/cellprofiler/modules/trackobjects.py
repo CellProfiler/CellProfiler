@@ -362,6 +362,9 @@ class TrackObjects(cpm.CPModule):
 			    cmap=cm, norm=norm)
             i,j = centers_of_labels(objects.segmented)
             for n, x, y in zip(object_numbers, j, i):
+		if np.isnan(x) or np.isnan(y):
+		    # This happens if there are missing labels
+		    continue
                 ax.annotate(str(n), xy=(x,y),color='white',
                             arrowprops=dict(visible=False))
             if self.wants_image.value:

@@ -363,4 +363,92 @@ class TestClassifyObjects(unittest.TestCase):
                 m = workspace.measurements.get_current_measurement(OBJECTS_NAME,
                                                                    m_name)
                 self.assertEqual(len(m), 0)
+                
+    def test_03_02_two(self):
+        np.random.seed(0)
+        labels = np.zeros((10,20), int)
+        index = 1
+        for i_min,i_max in ((1,4),(6,9)):
+            for j_min, j_max in ((2,6),(8,11),(13,18)):
+                labels[i_min:i_max,j_min:j_max] = index
+                index += 1
+        exps = np.exp(np.arange(np.max(labels)))
+        m1 = np.random.permutation(exps)
+        m2 = np.random.permutation(exps)
+        for wants_custom_names in (False, True):
+            for tm1 in (C.TM_MEAN, C.TM_MEDIAN, C.TM_CUSTOM):
+                for tm2 in (C.TM_MEAN, C.TM_MEDIAN, C.TM_CUSTOM):
+                    workspace, module = self.make_workspace(labels, 
+                                                            C.BY_TWO_MEASUREMENTS,
+                                                            m1, m2)
+                    self.assertTrue(isinstance(module, C.ClassifyObjects))
+                    module.first_threshold_method.value = tm1
+                    module.first_threshold.value = 8
+                    module.second_threshold_method.value = tm2
+                    module.second_threshold.value = 70
+                    module.wants_image = True
+                    def cutoff(method, custom_cutoff):
+                        if method == C.TM_MEAN:
+                            return np.mean(exps)
+                        elif method == C.TM_MEDIAN:
+                            return np.median(exps)
+                        else:
+                            return custom_cutoff
+                    c1 = cutoff(tm1, module.first_threshold.value)
+                    c2 = cutoff(tm2, module.second_threshold.value)
+                    m1_over = m1 >= c1
+                    m2_over = m2 >= c2
+                    if wants_custom_names:
+                        f_names = ("TL","TR","BL","BR")
+                        module.wants_custom_names.value = True
+                        module.low_low_custom_name.value = f_names[0]
+                        module.low_high_custom_name.value = f_names[1]
+                        module.high_low_custom_name.value = f_names[2]
+                        module.high_high_custom_name.value = f_names[3]
+                    else:
+                        f_names = ("Measurement1_low_Measurement2_low",
+                                   "Measurement1_low_Measurement2_high",
+                                   "Measurement1_high_Measurement2_low",
+                                   "Measurement1_high_Measurement2_high")
+                    m_names = ["_".join((C.M_CATEGORY, name))
+                               for name in f_names]
+                    
+                    module.run(workspace)
+                    columns = module.get_measurement_columns(None)
+                    for column in columns:
+                        self.assertEqual(column[0], OBJECTS_NAME)
+                        self.assertTrue(column[2] == cpmeas.COLTYPE_INTEGER)
+                    self.assertEqual(len(columns), 4)
+                    self.assertEqual(len(set([column[1] for column in columns])), 4) # no duplicates
+                    
+                    categories = module.get_categories(None, cpmeas.IMAGE)
+                    self.assertEqual(len(categories), 0)
+                    categories = module.get_categories(None, OBJECTS_NAME)
+                    self.assertEqual(len(categories), 1)
+                    self.assertEqual(categories[0], C.M_CATEGORY)
+                    names = module.get_measurements(None, OBJECTS_NAME, "foo")
+                    self.assertEqual(len(names), 0)
+                    names = module.get_measurements(None, "foo", C.M_CATEGORY)
+                    self.assertEqual(len(names), 0)
+                    names = module.get_measurements(None, OBJECTS_NAME, C.M_CATEGORY)
+                    self.assertEqual(len(names), 4)
+    
+                    for m_name, expected in zip(m_names,
+                                                ((~m1_over) & (~m2_over),
+                                                 (~m1_over) & m2_over,
+                                                 m1_over & ~m2_over,
+                                                 m1_over & m2_over)):
+                        m = workspace.measurements.get_current_measurement(OBJECTS_NAME,
+                                                                           m_name)
+                        self.assertTrue(np.all(m==expected.astype(int)))
+                        self.assertTrue(m_name in [column[1] for column in columns])
+                        self.assertTrue(m_name in ["_".join((C.M_CATEGORY, name))
+                                                   for name in names])
+                    image = workspace.image_set.get_image(IMAGE_NAME).pixel_data
+                    self.assertTrue(np.all(image[labels==0,:] == 0))
+                    colors = image[(labels > 0) & (m[labels-1] == 1),:]
+                    if colors.shape[0] > 0:
+                        self.assertTrue(all([np.all(colors[:,i]==colors[0,i])
+                                             for i in range(3)]))
+                
         

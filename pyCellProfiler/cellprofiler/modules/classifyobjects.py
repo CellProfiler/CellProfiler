@@ -737,6 +737,7 @@ class ClassifyObjects(cpm.CPModule):
                 if group.object_name == object_name:
                     result += group.bin_feature_names()
             return result
-        elif self.contrast_choice == BY_TWO_MEASUREMENTS:
+        elif (self.contrast_choice == BY_TWO_MEASUREMENTS and
+              self.object_name == object_name):
             return self.get_feature_name_matrix().flatten().tolist()
         return []

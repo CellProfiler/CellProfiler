@@ -12,7 +12,7 @@ which all have the same label - other stuff to be implemented.
 #CellProfiler is distributed under the GNU General Public License.
 #See the accompanying file LICENSE for details.
 #
-#eveloped by the Broad Institute
+#Developed by the Broad Institute
 #Copyright 2003-2009
 #
 #Please see the AUTHORS file for credits.

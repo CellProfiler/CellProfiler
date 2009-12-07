@@ -144,7 +144,8 @@ class SaveImages(cpm.CPModule):
                 For example, if the <i>plate</i>, <i>well_row</i> and <i>well_column</i> tags have the values <i>XG45</i>, <i>A</i>
                 and <i>01</i>, respectively, the string <i>Illum_\g&lt;plate&gt;_\g&lt;well_row&gt;\g&lt;well_column&gt;</i>
                 produces the output filename <i>Illum_XG45_A01</i>.</li>
-                </ul>""")
+                </ul>
+                Do not enter the file extension in this setting; it will be appended automatically.""")
         self.file_name_suffix = cps.Text("Enter text to append to the image name:",cps.DO_NOT_USE,doc="""
                 Enter the text that will be appended to the filename specified above.""")
         self.file_format = cps.Choice("Select file format:",

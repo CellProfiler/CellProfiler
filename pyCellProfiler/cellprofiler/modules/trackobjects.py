@@ -362,7 +362,7 @@ class TrackObjects(cpm.CPModule):
 			    cmap=cm, norm=norm)
             i,j = centers_of_labels(objects.segmented)
             for n, x, y in zip(object_numbers, j, i):
-                ax.annotate(str(n), xy=(x,y),
+                ax.annotate(str(n), xy=(x,y),color='white',
                             arrowprops=dict(visible=False))
             if self.wants_image.value:
                 # This is the recipe that gets a canvas to render itself

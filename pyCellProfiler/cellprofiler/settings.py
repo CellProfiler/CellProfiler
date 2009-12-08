@@ -1269,6 +1269,14 @@ class Measurement(Setting):
             and len(self.get_scale_choices(pipeline)) > 0):
             raise ValidationError("%s has an unavailable scale" %
                                   self.value, self)
+        object_name = self.__object_fn()
+        for module in pipeline.modules():
+            if self.key() in [s.key() for s in module.visible_settings()]:
+                break
+        if (not any([column[0] == object_name and column[1] == self.value
+                     for column in pipeline.get_measurement_columns(module)])):
+            raise ValidationError("%s is not measured for %s"%
+                                  (self.value, object_name), self)
 
 class Colormap(Choice):
     '''Represents the choice of a colormap'''

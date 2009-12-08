@@ -57,7 +57,7 @@ class Objects(object):
     def set_segmented(self,labels):
         check_consistency(labels, self.__unedited_segmented, 
                           self.__small_removed_segmented)
-        self.__segmented = labels
+        self.__segmented = downsample_labels(labels)
         # Clear all cached results.
         if getattr(self, "memoize_method_dictionary", False):
             self.memoize_method_dictionary = {}
@@ -84,7 +84,7 @@ class Objects(object):
     def set_unedited_segmented(self,labels):
         check_consistency(self.__segmented, labels, 
                           self.__small_removed_segmented)
-        self.__unedited_segmented = labels
+        self.__unedited_segmented = downsample_labels(labels)
     
     unedited_segmented = property(get_unedited_segmented, 
                                   set_unedited_segmented)
@@ -116,10 +116,11 @@ class Objects(object):
     
     def set_small_removed_segmented(self,labels):
         check_consistency(self.__segmented, self.__unedited_segmented, labels)
-        self.__small_removed_segmented = labels
+        self.__small_removed_segmented = downsample_labels(labels)
     
     small_removed_segmented = property(get_small_removed_segmented, 
                                        set_small_removed_segmented)
+    
     
     def get_parent_image(self):
         """The image that was analyzed to yield the objects.
@@ -308,3 +309,12 @@ class ObjectSet(object):
         return self.__objects_by_name.items()
     
     all_objects = property(get_all_objects)
+
+def downsample_labels(labels):
+    '''Convert a labels matrix to the smallest possible integer format'''
+    labels_max = np.max(labels)
+    if labels_max < 256:
+        return labels.astype(np.uint8)
+    elif labels_max < 65536:
+        return labels.astype(np.uint16)
+    return labels

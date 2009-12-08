@@ -308,4 +308,46 @@ class TestMeasureObjects(unittest.TestCase):
         # Crashes when pipeline runs in measureobjectintensity.py revision 7146
         m = pipeline.run()
 
-        
+    def test_03_06_quartiles(self):
+        """test quartile values on a 250x250 square with 4 objects"""
+        labels = numpy.ones((250,250),int)
+        labels[125:,:]+=1
+        labels[:,125:]+=2
+        numpy.random.seed(0)
+        image = numpy.random.uniform(size=(250,250))
+        #
+        # Make the distributions center around .5, .25, 1/6 and .125
+        #
+        image /= labels.astype(float)
+        ii = II.InjectImage('MyImage',image)
+        ii.module_num = 1
+        io = II.InjectObjects('MyObjects',labels)
+        io.module_num = 2
+        moi = MOI.MeasureObjectIntensity()
+        moi.image_names[0].value = 'MyImage'
+        moi.object_names[0].value = 'MyObjects'
+        moi.module_num = 3
+        pipeline = P.Pipeline()
+        pipeline.add_listener(self.error_callback)
+        pipeline.add_module(ii)
+        pipeline.add_module(io)
+        pipeline.add_module(moi)
+        m = pipeline.run()
+        feature_name = '%s_%s_%s'%(MOI.INTENSITY,MOI.LOWER_QUARTILE_INTENSITY,'MyImage')
+        data = m.get_current_measurement('MyObjects',feature_name)
+        self.assertAlmostEqual(data[0],1.0/4.0,2)
+        self.assertAlmostEqual(data[1],1.0/8.0,2)
+        self.assertAlmostEqual(data[2],1.0/12.0,2)
+        self.assertAlmostEqual(data[3],1.0/16.0,2)
+        feature_name = '%s_%s_%s'%(MOI.INTENSITY,MOI.MEDIAN_INTENSITY,'MyImage')
+        data = m.get_current_measurement('MyObjects',feature_name)
+        self.assertAlmostEqual(data[0],1.0/2.0,2)
+        self.assertAlmostEqual(data[1],1.0/4.0,2)
+        self.assertAlmostEqual(data[2],1.0/6.0,2)
+        self.assertAlmostEqual(data[3],1.0/8.0,2)
+        feature_name = '%s_%s_%s'%(MOI.INTENSITY,MOI.UPPER_QUARTILE_INTENSITY,'MyImage')
+        data = m.get_current_measurement('MyObjects',feature_name)
+        self.assertAlmostEqual(data[0],3.0/4.0,2)
+        self.assertAlmostEqual(data[1],3.0/8.0,2)
+        self.assertAlmostEqual(data[2],3.0/12.0,2)
+        self.assertAlmostEqual(data[3],3.0/16.0,2)

@@ -65,6 +65,7 @@ import cellprofiler.measurements as cpmeas
 import cellprofiler.settings as cps
 import cellprofiler.cpmath.outline as cpmo
 from cellprofiler.cpmath.cpmorphology import fixup_scipy_ndimage_result as fix
+from cellprofiler.cpmath.filter import stretch
 
 INTENSITY = 'Intensity'
 INTEGRATED_INTENSITY = 'IntegratedIntensity'
@@ -353,15 +354,15 @@ class MeasureObjectIntensity(cpm.CPModule):
                 # the ordered array and you can read out quantiles pretty easily
                 
                 if nobjects > 0:
-                    assert img.min() >= 0,"Algorithm requires image values between 0 and 1"
-                    assert img.max() <= 1,"Algorithm requires image values between 0 and 1"
+                    stretched_img = stretch(img) * .99
+                    flat_img = img.flatten()
                     areas = fix(nd.sum(np.ones(labels.shape,int),
                                        labels, np.arange(nobjects+1)))
                     areas = areas.astype(int)
                     indices = np.cumsum(areas)[:-1]
-                    ordered_image = img + labels.astype(float)
+                    ordered_image = stretched_img + labels.astype(float)
                     ordered_image = ordered_image.flatten()
-                    ordered_image.sort()
+                    image_idx = np.argsort(ordered_image)
                     max_indices = (indices + areas[1:] - 1).astype(int)
                     indices_25  = indices+(areas[1:]+2)/4
                     indices_50  = indices+(areas[1:]+1)/2
@@ -372,12 +373,9 @@ class MeasureObjectIntensity(cpm.CPModule):
                     for indices in (indices_25, indices_50, indices_75):
                         imask = indices > max_indices
                         indices[imask] = max_indices[imask]
-                    lower_quartile_intensity = (ordered_image[indices_25] - 
-                                                range(1,nobjects+1))
-                    median_intensity         = (ordered_image[indices_50] - 
-                                                range(1,nobjects+1))
-                    upper_quartile_intensity = (ordered_image[indices_75] - 
-                                                range(1,nobjects+1))
+                    lower_quartile_intensity = flat_img[image_idx[indices_25]]
+                    median_intensity         = flat_img[image_idx[indices_50]]
+                    upper_quartile_intensity = flat_img[image_idx[indices_75]]
                 else:
                     lower_quartile_intensity = np.zeros((0,))
                     median_intensity = np.zeros((0,))

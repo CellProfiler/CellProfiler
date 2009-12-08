@@ -768,7 +768,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                 if isinstance(value, np.ndarray):
                     if value.dtype.kind in ('O','S','U'):
                         value = '"'+MySQLdb.escape_string(value[0])+'"'
-                    elif isnan(value[0]):
+                    elif np.isnan(value[0]):
                         value = "NULL"
                     else:
                         value = value[0]

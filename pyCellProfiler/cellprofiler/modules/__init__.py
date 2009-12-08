@@ -69,6 +69,7 @@ pymodule_to_cpmodule = {'align' : 'Align',
                         'speedupcellprofiler' : 'SpeedUpCellProfiler',
                         'smooth' : 'Smooth',
                         'trackobjects' : 'TrackObjects',
+                        'imageconvexhull' : 'ImageConvexHull',
                         }
 
 # CP-Matlab to CP-python module substitutions

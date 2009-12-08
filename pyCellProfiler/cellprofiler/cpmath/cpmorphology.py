@@ -2260,7 +2260,7 @@ def index_lookup(index_i, index_j, image, table, iterations=None):
     for i in range(iterations):
         hit_count = len(index_i)
         indexer = np.ones(index_i.shape, int) * 2**4 # get the middle for free
-        if np.issubdtype(image.dtype, int):
+        if image.dtype.kind in ('i','u'):
             #
             # For integers, an adjacent point is "background" if it
             # doesn't match the integer value. This lets adjacent labeled
@@ -2275,7 +2275,7 @@ def index_lookup(index_i, index_j, image, table, iterations=None):
             indexer[image[index_i+1, index_j-1]==image[index_i,index_j]]+=2**6
             indexer[image[index_i+1, index_j]==image[index_i,index_j]]  +=2**7
             indexer[image[index_i+1, index_j+1]==image[index_i,index_j]]+=2**8
-        elif np.issubdtype(image.dtype, bool):
+        elif image.dtype.kind == 'b':
             indexer[image[index_i-1, index_j-1]] += 2**0
             indexer[image[index_i-1, index_j]]   += 2**1
             indexer[image[index_i-1, index_j+1]] += 2**2

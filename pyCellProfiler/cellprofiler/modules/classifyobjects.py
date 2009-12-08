@@ -69,9 +69,9 @@ class ClassifyObjects(cpm.CPModule):
             "by two measurements taken together?",
             [BY_SINGLE_MEASUREMENTS, BY_TWO_MEASUREMENTS],
             doc="""This setting controls how classifications are recorded:<br>
-            <ul><li><b>Single measurements</b>: ClassifyObjects will record
+            <ul><li><i>Single measurements</i>: ClassifyObjects will record
             one classification for each measurement you choose.</li>
-            <li><b>Two measurements</b>: ClassifyObjects will allow you to
+            <li><i>Two measurements</i>: ClassifyObjects will allow you to
             choose two measurements. It will record one classification based
             on the two measurements taken together.</li></ul>""")
         
@@ -100,7 +100,7 @@ class ClassifyObjects(cpm.CPModule):
         # The object for the contrasting method
         #
         self.object_name = cps.ObjectNameSubscriber(
-            "Enter the object name:","None",
+            "Enter the object name","None",
             doc="""Select the object that you want to measure from the list.
             This should be an object created by a previous module such as
             <b>IdentifyPrimAutomatic</b>, <b>IdentifySecondary</b> or
@@ -111,80 +111,92 @@ class ClassifyObjects(cpm.CPModule):
         def object_fn():
             return self.object_name.value
         self.first_measurement = cps.Measurement(
-            "Select the first measurement:", object_fn,
+            "Select the first measurement", object_fn,
             doc="""Select a measurement made on the above object. This is
             the first of two measurements that will be contrasted together.
             The measurement should be one made on the object in a prior
             module.""")
+        
         self.first_threshold_method = cps.Choice(
             "How do you want to select the cutoff?",
             [TM_MEAN, TM_MEDIAN, TM_CUSTOM],
             doc="""Objects are classified as being above or below a cutoff
             value for a measurement. You can set this cutoff threshold in one
             of three ways:<br>
-            <ul><li><b>Mean</b>: The threshold is set at the mean
+            <ul><li><i>Mean</i>: The threshold is set at the mean
             of the measurement's value for all objects in the image set.</li>
-            <li><b>Median</b>: The threshold is set at the median of the
+            <li><i>Median</i>: The threshold is set at the median of the
             measurement's value for all objects in the image set.</li>
-            <li><b>Custom</b>: You specify a custom threshold value.</li></ul>""")
+            <li><i>Custom</i>: You specify a custom threshold value.</li></ul>""")
+        
         self.first_threshold = cps.Float(
-            "Enter the cutoff value:",.5,
+            "Enter the cutoff value",.5,
             doc="""This is the cutoff value separating objects in the two 
             classes.""")
+        
         self.second_measurement = cps.Measurement(
-            "Select the second measurement:", object_fn,
+            "Select the second measurement", object_fn,
             doc="""Select a measurement made on the above object. This is
             the second of two measurements that will be contrasted together.
             The measurement should be one made on the object in a prior
             module.""")
+        
         self.second_threshold_method = cps.Choice(
             "How do you want to select the cutoff?",
             [TM_MEAN, TM_MEDIAN, TM_CUSTOM],
             doc="""Objects are classified as being above or below a cutoff
             value for a measurement. You can set this cutoff threshold in one
             of three ways:<br>
-            <ul><li><b>Mean</b>: The threshold is set at the mean
+            <ul><li><i>Mean</i>: The threshold is set at the mean
             of the measurement's value for all objects in the image set.</li>
-            <li><b>Median</b>: The threshold is set at the median of the
+            <li><i>Median</i>: The threshold is set at the median of the
             measurement's value for all objects in the image set.</li>
-            <li><b>Custom</b>: You specify a custom threshold value.</li></ul>""")
+            <li><i>Custom</i>: You specify a custom threshold value.</li></ul>""")
+        
         self.second_threshold = cps.Float(
-            "Enter the cutoff value:",.5,
+            "Enter the cutoff value",.5,
             doc="""This is the cutoff value separating objects in the two 
             classes.""")
+        
         self.wants_custom_names = cps.Binary(
-            "Do you want custom names for the bins?", False,
+            "Use custom names for the bins?", False,
             doc="""Check this if you want to specify the names of each bin 
             measurement. If you leave the box unchecked, the module will
             create names based on the measurements (for instance, for
             Intensity_MeanIntensity_Green and Intensity_TotalIntensity_Blue,
             the module generates measurements such as
             Classify_Intensity_MeanIntensity_Green_High_Intensity_TotalIntensity_Low).""")
+        
         self.low_low_custom_name = cps.Text(
-            "Enter the low-low bin name:","low_low",
+            "Enter the low-low bin name","low_low",
             doc="""This is the name of the measurement for objects that
             fall below the threshold for both measurements""")
+        
         self.low_high_custom_name = cps.Text(
-            "Enter the low-high bin name:","low_high",
+            "Enter the low-high bin name","low_high",
             doc="""This is the name of the measurement for objects whose
             first measurement is below threshold and whose second measurement
             is above threshold""")
+        
         self.high_low_custom_name = cps.Text(
-            "Enter the high-low bin name:","high_low",
+            "Enter the high-low bin name","high_low",
             doc="""This is the name of the measurement for objects whose
             first measurement is above threshold and whose second measurement
             is below threshold""")
+        
         self.high_high_custom_name = cps.Text(
-            "Enter the high-high bin name:","high_high",
+            "Enter the high-high bin name","high_high",
             doc="""This is the name of the measurement for objects that
             are above the threshold for both measurements""")
+        
         self.wants_image = cps.Binary(
-            "Do you want to save the display as an image?", False,
+            "Save the display as an image?", False,
             doc="""You can save the graph of this classification as an image.
             Check this option to create the image. You can save this image
             using the <b>SaveImages</b> module.""")
+        
         self.image_name = cps.ImageNameProvider(
-            "Enter the image name:","None",
+            "Enter the image name","None",
             doc="""This is the name that will be associated with the graph
             image. You can specify this name in a <b>SaveImages</b> module
             if you want to save the image.""")
@@ -197,15 +209,16 @@ class ClassifyObjects(cpm.CPModule):
         '''
         group = cps.SettingsGroup()
         group.append("object_name",cps.ObjectNameSubscriber(
-            "Enter object name:","None",
+            "Enter object name","None",
             doc="""This is the name of the objects to be classified. You can
             choose from objects created by any previous module. See
             <b>IdentifyPrimAutomatic</b>, <b>IdentifySecondary</b> or
             <b>IdentifyTertiarySubregion</b>"""))
+        
         def object_fn():
             return group.object_name.value
         group.append("measurement", cps.Measurement(
-            "Select measurement:",object_fn,
+            "Select measurement",object_fn,
             doc="""Select a measurement made by a previous module. The objects
             will be classified according to their value for this 
             measurement."""))
@@ -224,16 +237,18 @@ class ClassifyObjects(cpm.CPModule):
         
         group.append("bin_count", cps.Integer(
             "How many bins?", 3, minval= 3))
+        
         group.append("low_threshold", cps.Float(
-            "Enter lower threshold:", 0,
+            "Enter lower threshold", 0,
             doc="""This is the threshold that separates the lowest bin from the
             others. The lower threshold, upper threshold and number of bins
             define the thresholds of bins between the lowest and highest."""))
+        
         def min_upper_threshold():
             return group.low_threshold.value + np.finfo(float).eps
         
         group.append("high_threshold", cps.Float(
-            "Enter upper threshold:", 1,
+            "Enter upper threshold", 1,
             minval = cps.NumberConnector(min_upper_threshold),
             doc="""This is the threshold that separates the last bin from
             the others."""))
@@ -241,24 +256,33 @@ class ClassifyObjects(cpm.CPModule):
         group.append("custom_thresholds", cps.Text(
             "Enter the custom thresholds separating the values between bins",
             "0,1",
-            doc="""This setting establishes the threshold values for the
+            doc="""
+            <i>(Used if custom thresholds is selected)</i><br>
+            This setting establishes the threshold values for the
             bins. You should enter one threshold between each bin, separating
             thresholds with commas (for example, "0.3, 1.5, 2.1" for four bins).
             The module will create one more bin than there are thresholds."""))
+        
         group.append("wants_custom_names", cps.Binary(
-            "Do you want to name the bins?", False,
+            "Give each bin a name?", False,
             doc="""This option lets you assign custom names to the measurements
             for each bin. If you leave this unchecked, the module will
             assign names based on the measurements and the bin number."""))
+        
         group.append("bin_names", cps.Text(
             "Enter the bin names separated by commas","None",
-            doc="""Enter names for each of the bins with commas in-between.
+            doc="""
+            <i>(Used if user wants to name the bins)</i><br>
+            Enter names for each of the bins with commas in-between.
             An example for three bins might be, "First,Second,Third"."""))
+        
         group.append("wants_images", cps.Binary(
-            "Do you want to save an image of the objects classified by their measurements?",
+            "Save an image of the objects classified by their measurements?",
             False))
+        
         group.append("image_name", cps.ImageNameProvider(
-            "Enter image name:", "ClassifiedNuclei"))
+            "Enter image name", "ClassifiedNuclei"))
+        
         group.can_delete = can_delete
         def number_of_bins():
             '''Return the # of bins in this classification'''

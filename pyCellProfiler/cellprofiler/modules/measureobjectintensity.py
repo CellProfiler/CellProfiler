@@ -266,7 +266,13 @@ class MeasureObjectIntensity(cpm.CPModule):
                 return [image_name.value for image_name in self.image_names]
         return []
     
+    def is_interactive(self):
+        return False
+    
     def run(self, workspace):
+        if workspace.frame is not None:
+            statistics = [("Image","Object","Feature","Mean","Median","STD")]
+            workspace.display_data.statistics = statistics
         for image_name in self.image_names:
             image = workspace.image_set.get_image(image_name.value,
                                                   must_be_grayscale=True)
@@ -401,3 +407,14 @@ class MeasureObjectIntensity(cpm.CPModule):
                                                    image_name.value)
                     m.add_measurement(object_name.value,measurement_name, 
                                       measurement)
+                    if workspace.frame is not None and len(measurement) > 0:
+                        statistics.append((image_name.value, object_name.value, 
+                                           feature_name,
+                                           np.round(np.mean(measurement),3),
+                                           np.round(np.median(measurement),3),
+                                           np.round(np.std(measurement),3)))
+        
+    def display(self, workspace):
+        figure = workspace.create_or_find_figure(subplots=(1,1))
+        figure.subplot_table(0,0,workspace.display_data.statistics,
+                             ratio=(.2,.2,.3,.1,.1,.1))

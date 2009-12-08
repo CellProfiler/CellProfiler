@@ -175,5 +175,8 @@ class ImageProvider(cpi.AbstractImageProvider):
 
     def get_name(self):
         return self.__name
+    
+    def release_memory(self):
+        self.reset()
 
 

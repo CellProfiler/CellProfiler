@@ -2732,3 +2732,104 @@ class TestGreyReconstruction(unittest.TestCase):
         '''Test grey_reconstruction with an image of all zeros and a mask that's not'''
         result = morph.grey_reconstruction(np.zeros((10,10)), np.ones((10,10)))
         self.assertTrue(np.all(result == 0))
+        
+class TestGetLinePts(unittest.TestCase):
+    def test_01_01_no_pts(self):
+        '''Can we call get_line_pts with zero-length vectors?'''
+        i0, j0, i1, j1 = [np.zeros((0,))] * 4
+        index, count, i, j = morph.get_line_pts(i0, j0, i1, j1)
+        self.assertEqual(len(index), 0)
+        self.assertEqual(len(count), 0)
+        self.assertEqual(len(i), 0)
+        self.assertEqual(len(j), 0)
+    
+    def test_01_02_horizontal_line(self):
+        index, count, i, j = morph.get_line_pts([0],[0],[0],[10])
+        self.assertEqual(len(index), 1)
+        self.assertEqual(index[0], 0)
+        self.assertEqual(len(count), 1)
+        self.assertEqual(count[0], 11)
+        self.assertTrue(np.all(i==0))
+        self.assertTrue(np.all(j==np.arange(11)))
+    
+    def test_01_03_vertical_line(self):
+        index, count, i, j = morph.get_line_pts([0],[0],[10],[0])
+        self.assertEqual(len(index), 1)
+        self.assertEqual(index[0], 0)
+        self.assertEqual(len(count), 1)
+        self.assertEqual(count[0], 11)
+        self.assertTrue(np.all(j==0))
+        self.assertTrue(np.all(i==np.arange(11)))
+    
+    def test_01_04_diagonal_line(self):
+        index, count, i, j = morph.get_line_pts([0],[0],[10],[10])
+        self.assertEqual(len(index), 1)
+        self.assertEqual(index[0], 0)
+        self.assertEqual(len(count), 1)
+        self.assertEqual(count[0], 11)
+        self.assertTrue(np.all(j==np.arange(11)))
+        self.assertTrue(np.all(i==np.arange(11)))
+        
+    def test_01_05_antidiagonal_line(self):
+        index, count, i, j = morph.get_line_pts([0],[0],[10],[-10])
+        self.assertEqual(len(index), 1)
+        self.assertEqual(index[0], 0)
+        self.assertEqual(len(count), 1)
+        self.assertEqual(count[0], 11)
+        self.assertTrue(np.all(j==-np.arange(11)))
+        self.assertTrue(np.all(i==np.arange(11)))
+        
+    def test_01_06_single_point(self):
+        index, count, i, j = morph.get_line_pts([0],[0],[0],[0])
+        self.assertEqual(len(index), 1)
+        self.assertEqual(index[0], 0)
+        self.assertEqual(len(count), 1)
+        self.assertEqual(count[0], 1)
+        self.assertEqual(i[0], 0)
+        self.assertEqual(j[0], 0)
+        
+    def test_02_01_test_many(self):
+        np.random.seed(0)
+        n = 100
+        i0,i1,j0,j1 = (np.random.uniform(size=(4,n))*100).astype(int)
+        index, count, i_out, j_out = morph.get_line_pts(i0, j0, i1, j1)
+        #
+        # Run the Bresenham algorithm on each of the points manually
+        #
+        for idx in range(n):
+            diff_i = abs(i1[idx]-i0[idx])
+            diff_j = abs(j1[idx]-j0[idx])
+            i = i0[idx]
+            j = j0[idx]
+            self.assertTrue(count[idx] > 0)
+            self.assertEqual(i_out[index[idx]], i)
+            self.assertEqual(j_out[index[idx]], j)
+            step_i = (i1[idx] > i0[idx] and 1) or -1
+            step_j = (j1[idx] > j0[idx] and 1) or -1
+            pt_idx = 0
+            if diff_j > diff_i:
+                # J varies fastest, do i before j
+                remainder = diff_i*2 - diff_j
+                while j != j1[idx]:
+                    pt_idx += 1
+                    self.assertTrue(count[idx] > pt_idx)
+                    if remainder >= 0:
+                        i += step_i
+                        remainder -= diff_j*2
+                    j += step_j
+                    remainder += diff_i*2
+                    self.assertEqual(i_out[index[idx]+pt_idx], i)
+                    self.assertEqual(j_out[index[idx]+pt_idx], j)
+            else:
+                remainder = diff_j*2 - diff_i
+                while i != i1[idx]:
+                    pt_idx += 1
+                    self.assertTrue(count[idx] > pt_idx)
+                    if remainder >= 0:
+                        j += step_j
+                        remainder -= diff_i*2
+                    i += step_i
+                    remainder += diff_j*2
+                    self.assertEqual(j_out[index[idx]+pt_idx], j)
+                    self.assertEqual(i_out[index[idx]+pt_idx], i)
+            

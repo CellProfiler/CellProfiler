@@ -550,6 +550,154 @@ def draw_line(labels,pt0,pt1,value=1):
             remainder += diff_y*2
             labels[y,x] = value
 
+def get_line_pts(pt0i, pt0j, pt1i, pt1j):
+    '''Retrieve the coordinates of the points along lines
+    
+    pt0i, pt0j - the starting coordinates of the lines (1-d nparray)
+    pt1i, pt1j - the ending coordinates of the lines (1-d nparray)
+    
+    use the Bresenham algorithm to find the coordinates along the lines
+    connectiong pt0 and pt1. pt01, pt0j, pt1i and pt1j must be 1-d arrays
+    of similar size and must be of integer type.
+    
+    The results are returned as four vectors - index, count, i, j.
+    index is the index of the first point in the line for each coordinate pair
+    count is the # of points in the line
+    i is the I coordinates for each point
+    j is the J coordinate for each point
+    '''
+    assert len(pt0i) == len(pt0j)
+    assert len(pt0i) == len(pt1i)
+    assert len(pt0i) == len(pt1j)
+    pt0i = np.array(pt0i, int)
+    pt0j = np.array(pt0j, int)
+    pt1i = np.array(pt1i, int)
+    pt1j = np.array(pt1j, int)
+    if len(pt0i) == 0:
+        # Return four zero-length arrays if nothing passed in
+        return [np.zeros((0,),int)] * 4
+    #
+    # The Bresenham algorithm picks the coordinate that varies the most
+    # and generates one point for each step in that coordinate. Add one
+    # for the start point.
+    #
+    diff_i = np.abs(pt0i - pt1i)
+    diff_j = np.abs(pt0j - pt1j)
+    count = np.maximum(diff_i, diff_j) + 1
+    #
+    # The indexes of the ends of the coordinate vectors are at the
+    # cumulative sum of the counts. We get to the starts by subtracting
+    # the count.
+    #
+    index = np.cumsum(count) - count
+    #
+    # Find the step directions per coordinate pair. 
+    # True = 1, False = 0
+    # True * 2 - 1 = 1, False * 2 - 1 = -1
+    #
+    step_i = (pt1i > pt0i).astype(int) * 2 - 1
+    step_j = (pt1j > pt0j).astype(int) * 2 - 1
+    #
+    # Make arrays to hold the results
+    #
+    n_pts = index[-1] + count[-1]
+    i = np.zeros(n_pts, int)
+    j = np.zeros(n_pts, int)
+    #
+    # Put pt0 into the arrays
+    #
+    i[index] = pt0i
+    j[index] = pt0j
+    #
+    # # # # # # # # # #
+    #
+    # Do the points for which I varies most (or it's a tie).
+    #
+    mask = (diff_i >= diff_j)
+    count_t = count[mask]
+    if len(count_t) > 0:
+        last_n = np.max(count_t)
+        diff_i_t = diff_i[mask]
+        diff_j_t = diff_j[mask]
+        remainder = diff_j_t * 2 - diff_i_t
+        current_i = pt0i[mask]
+        current_j = pt0j[mask]
+        index_t = index[mask]
+        step_i_t = step_i[mask]
+        step_j_t = step_j[mask]
+        for n in range(1,last_n+1):
+            #
+            # Eliminate all points that are done
+            #
+            mask = (count_t > n)
+            remainder = remainder[mask]
+            current_i = current_i[mask]
+            current_j = current_j[mask]
+            index_t = index_t[mask]
+            count_t = count_t[mask]
+            diff_i_t = diff_i_t[mask]
+            diff_j_t = diff_j_t[mask]
+            step_i_t = step_i_t[mask]
+            step_j_t = step_j_t[mask]
+            #
+            # Take a step in the J direction if the remainder is positive
+            #
+            remainder_mask = (remainder >= 0)
+            current_j[remainder_mask] += step_j_t[remainder_mask]
+            remainder[remainder_mask] -= diff_i_t[remainder_mask] * 2
+            #
+            # Always take a step in the I direction
+            #
+            current_i += step_i_t
+            remainder += diff_j_t * 2
+            i[index_t+n] = current_i
+            j[index_t+n] = current_j
+    #
+    # # # # # # # # # #
+    #
+    # Do the points for which J varies most
+    #
+    mask = (diff_j > diff_i)
+    count_t = count[mask]
+    if len(count_t) > 0:
+        last_n = np.max(count_t)
+        diff_i_t = diff_i[mask]
+        diff_j_t = diff_j[mask]
+        remainder = diff_i_t * 2 - diff_j_t
+        current_i = pt0i[mask]
+        current_j = pt0j[mask]
+        index_t = index[mask]
+        step_i_t = step_i[mask]
+        step_j_t = step_j[mask]
+        for n in range(1,last_n+1):
+            #
+            # Eliminate all points that are done
+            #
+            mask = (count_t > n)
+            remainder = remainder[mask]
+            current_i = current_i[mask]
+            current_j = current_j[mask]
+            index_t = index_t[mask]
+            count_t = count_t[mask]
+            diff_i_t = diff_i_t[mask]
+            diff_j_t = diff_j_t[mask]
+            step_i_t = step_i_t[mask]
+            step_j_t = step_j_t[mask]
+            #
+            # Take a step in the I direction if the remainder is positive
+            #
+            remainder_mask = (remainder >= 0)
+            current_i[remainder_mask] += step_i_t[remainder_mask]
+            remainder[remainder_mask] -= diff_j_t[remainder_mask] * 2
+            #
+            # Always take a step in the J direction
+            #
+            current_j += step_j_t
+            remainder += diff_i_t * 2
+            i[index_t+n] = current_i
+            j[index_t+n] = current_j
+    return index, count, i, j
+    
 def fixup_scipy_ndimage_result(whatever_it_returned):
     """Convert a result from scipy.ndimage to a numpy array
     

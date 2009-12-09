@@ -5,9 +5,15 @@ import os
 import os.path
 import fnmatch
 import re
+import sys
 
-
-# XXX - need to be able to refresh directories and files somehow
+default_input = '/tmp'
+default_output = '/Users/thouis'
+try:
+    default_input = sys.argv[1]
+    default_output = sys.argv[2]
+except:
+    pass
 
 base_dir_choices = ['Default Image directory', 'Default Output directory', 'Other Directory...']
 FS_DEFAULT_IMAGE, FS_DEFAULT_OUTPUT, FS_OTHER_DIR = base_dir_choices
@@ -46,9 +52,17 @@ def default_image_name(idx):
     except:
         return 'Image%d'%(idx + 1)
 
+myEVT_CUSTOM_EVENT = wx.NewEventType()
+EVT_CUSTOM_EVENT = wx.PyEventBinder(myEVT_CUSTOM_EVENT, 1)
+
+class MyEvent(wx.PyEvent):
+    def __init__(self):
+        wx.PyEvent.__init__(self)
+        self.SetEventType(myEVT_CUSTOM_EVENT)
+
+
 class CPFileSelector(wx.Frame):
-    def __init__(self, default_dir, *args, **kwds):
-        self.default_dir = default_dir
+    def __init__(self, *args, **kwds):
 
         kwds["style"] = wx.DEFAULT_FRAME_STYLE
         wx.Frame.__init__(self, *args, **kwds)
@@ -80,7 +94,7 @@ class CPFileSelector(wx.Frame):
         descend_dirs, descend_sizer = labeled_thing("Descend into subdirectories?", wx.Choice(self, -1, choices=descend_dir_choices))
         self.descend_dirs = descend_dirs
         # descend force update
-        descend_update_filelist = wx.Button(self, -1, "Update file list...")
+        self.descend_update_filelist = descend_update_filelist = wx.Button(self, -1, "Update file list...")
         # descent tree chooser...
         box = wx.StaticBox(self, -1, "Choose directories to search for files...")
         self.dirtree, self.dirtree_boxsizer = dirtree, dirtree_boxsizer = boxed_thing(box, DirTree(self), flag=wx.EXPAND)
@@ -144,14 +158,17 @@ class CPFileSelector(wx.Frame):
         otherdir_browse.Bind(wx.EVT_BUTTON, self.browse_otherdir)
         descend_dirs.Bind(wx.EVT_CHOICE, self.change_descend)
         exclude.Bind(wx.EVT_CHECKBOX, self.change_exclude)
+        exclude_list.Bind(wx.EVT_TEXT, self.update_exclusions)
         mode.Bind(wx.EVT_CHOICE, self.change_mode)
         imagebook.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGING, self.page_changing)
+        
         
         
         # default state
         base_dir.SetSelection(base_dir_choices.index(FS_DEFAULT_IMAGE))
         top_sizer.Hide(otherdir_sizer)
         descend_dirs.SetSelection(descend_dir_choices.index(FS_DESCEND_NO))
+        top_sizer.Hide(descend_update_filelist)
         top_sizer.Hide(dirtree_boxsizer)
         exclude.SetValue(False)
         top_sizer.Hide(exclude_boxsizer)
@@ -164,17 +181,22 @@ class CPFileSelector(wx.Frame):
     def change_basedir(self, evt):
         idx = self.base_dir.GetSelection()
         self.top_sizer.Show(self.otherdir_sizer, show=(base_dir_choices[idx] == FS_OTHER_DIR))
-        self.dirtree.set_directory(self.get_current_directory())
+        if os.path.isdir(self.get_current_directory()):
+            self.dirtree.set_directory(self.get_current_directory())
+            if descend_dir_choices[self.descend_dirs.GetSelection()] == FS_DESCEND_NO:
+                self.update_file_list()
         self.Layout()
         self.Refresh()
 
     def change_otherdir(self, evt):
         if os.path.isdir(evt.GetString()):
             self.dirtree.set_directory(self.get_current_directory())
+            if descend_dir_choices[self.descend_dirs.GetSelection()] == FS_DESCEND_NO:
+                self.update_file_list()
 
     def get_current_directory(self):
         idx = self.base_dir.GetSelection()
-        return ['/Users/thouis/hardtosegment', '/Users/thouis', self.otherdir.GetValue()][idx]
+        return [default_input, default_output, self.otherdir.GetValue()][idx]
 
     def update_file_list(self, dir=None, descend_dirs=None):
         if dir is None:
@@ -188,14 +210,16 @@ class CPFileSelector(wx.Frame):
             self.file_list = []
             for dirpath, dirnames, filenames in os.walk(dir):
                 subpath = relpath(dirpath, dir)
+                print dirpath
                 self.file_list += [(dir, subpath, f) for f in filenames]
         else:
             self.file_list = []
             for dirpath in self.dirtree.get_selected_dirs():
                 subpath = relpath(dirpath, dir)
-                self.file_list = [(dir, subpath, f) for f in os.listdir(dirpath) if os.path.isfile(os.path.join(dirpathf))]
+                self.file_list += [(dir, subpath, f) for f in os.listdir(dirpath) if os.path.isfile(os.path.join(dirpath, f))]
 
         self.file_list.sort()
+
         for i in range(self.imagebook.GetPageCount() - 1):
             self.imagebook.GetPage(i).update_file_list()
 
@@ -203,10 +227,15 @@ class CPFileSelector(wx.Frame):
         self.update_file_list()
 
     def get_file_list(self):
-        return self.file_list
+        temp_list = self.file_list
+        if self.exclude.GetValue():
+            for exclude_substring in self.exclude_list.GetValue().split("\n"):
+                if exclude_substring:
+                    temp_list = [(d, s, f) for (d, s, f) in temp_list if exclude_substring not in f]
+        return temp_list
 
     def browse_otherdir(self, evt):
-        default = self.otherdir.GetValue() or "/tmp"  # XXX - make default imagedir
+        default = self.otherdir.GetValue() or default_input
         dlg = wx.DirDialog(self, "Choose a directory:", style=wx.DD_DEFAULT_STYLE, defaultPath=default)
         if dlg.ShowModal() == wx.ID_OK:
             self.otherdir.SetValue(dlg.GetPath())
@@ -216,14 +245,20 @@ class CPFileSelector(wx.Frame):
 
     def change_descend(self, evt):
         idx = self.descend_dirs.GetSelection()
+        self.top_sizer.Show(self.descend_update_filelist, show=(descend_dir_choices[idx] != FS_DESCEND_NO))
         self.top_sizer.Show(self.dirtree_boxsizer, show=(descend_dir_choices[idx] == FS_DESCEND_CHOOSE))
         self.Layout()
         self.Refresh()
 
     def change_exclude(self, evt):
         self.top_sizer.Show(self.exclude_boxsizer, show=self.exclude.GetValue())
+        self.update_exclusions()
         self.Layout()
         self.Refresh()
+
+    def update_exclusions(self, evt=None):
+        for i in range(self.imagebook.GetPageCount() - 1):
+            self.imagebook.GetPage(i).update_file_list()
 
     def change_mode(self, evt):
         idx = self.mode.GetSelection()
@@ -303,6 +338,7 @@ class ImagePage(wx.Panel):
         matches_only.Bind(wx.EVT_CHECKBOX, self.update_file_list)
         file_list.Bind(wx.EVT_SIZE, self.resize)
         file_list.Bind(wx.EVT_SCROLLWIN, self.scroll)
+        file_list.Bind(EVT_CUSTOM_EVENT, self.restore_scroll)
 
         self.scroll_pos=0
 
@@ -369,21 +405,15 @@ class ImagePage(wx.Panel):
             pass
 
     def resize(self, evt):
-        print self.scroll_pos
-        self.file_list.Freeze()
+        wx.PostEvent(self.file_list, MyEvent())
         evt.Skip()
-        print "post"
-        wx.PostEvent(self.file_list, wx.ScrollWinEvent(wx.wxEVT_SCROLLWIN_THUMBRELEASE, self.scroll_pos))
-        self.file_list.Scroll(0, self.scroll_pos)
-        print "done?"
-        self.file_list.Thaw()
         
     def scroll(self, evt):
-        print "in scroll"
-        self.scroll_pos = evt.GetPosition()[1]
-        print self.scroll_pos
+        self.scroll_pos = self.file_list.GetViewStart()[1]
         evt.Skip()
 
+    def restore_scroll(self, evt):
+        self.file_list.Scroll(0, self.scroll_pos)
 
     def set_mode(self, idx):
         self.path_sizer.Show(self.fullpath, (match_modes[idx] != FS_POSITION))
@@ -417,6 +447,7 @@ class DirTree(CT.CustomTreeCtrl):
         self.SetItemImage(root, self.fldridx, wx.TreeItemIcon_Normal)
         self.SetItemImage(root, self.fldropenidx, wx.TreeItemIcon_Expanded)
         self.AppendItem(root, '...')
+        self.Refresh()
         
     def expand(self, evt):
         self.Freeze()
@@ -437,11 +468,20 @@ class DirTree(CT.CustomTreeCtrl):
         self.SetPyData(item, (dirname, True))
         self.Thaw()
 
+    def get_selected_dirs(self):
+        def find_all_checked_branches(node):
+            if node.IsChecked():
+                yield self.GetPyData(node)[0]
+            for child in node.GetChildren():
+                for checked_child in find_all_checked_branches(child):
+                    yield checked_child
+
+        return [d for d in find_all_checked_branches(self.GetRootItem())]
 
 
 class MyApp(wx.App):
     def OnInit(self):
-        frame = CPFileSelector("/tmp", None, title="Select files to load...")
+        frame = CPFileSelector(None, title="Select files to load...")
         frame.Show(True)
         self.SetTopWindow(frame)
         return True

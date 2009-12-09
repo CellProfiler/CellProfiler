@@ -581,7 +581,11 @@ if ReadyFlag || isCreatingBatchFile
             % NB!  This will *not* ensure that the applied values will
             % be > 1!  We need to check this...
 			robust_factor = 0.02;
-			s = sort(FinalIlluminationFunction(MaskImage ~= 0));
+			if HasMask,
+				s = sort(FinalIlluminationFunction(MaskImage ~= 0));
+			else
+				s = sort(FinalIlluminationFunction(FinalIlluminationFunction > 0));
+			end
 			if numel(s) > 0
 				rescale = s(floor(length(s).*robust_factor)+1);
 				FinalIlluminationFunction(FinalIlluminationFunction < rescale) = rescale;

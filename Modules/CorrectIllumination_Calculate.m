@@ -359,6 +359,8 @@ MaskFieldname = ['CropMask', ImageName];
 HasMask = CPisimageinpipeline(handles,MaskFieldname);
 if HasMask
     MaskImage = CPretrieveimage(handles,MaskFieldname,ModuleName);
+else
+	MaskImage = ones(size(OrigImage));
 end
 
 if isProcessingAll
@@ -574,23 +576,18 @@ if ReadyFlag || isCreatingBatchFile
         % subfunction because it is not needed.
         %[ignore,FinalIlluminationFunction] = CPrescale('',FinalIlluminationFunction,'G',[]); %#ok
         if strcmp(RescaleOption,'Yes')
-            if HasMask
-                % Add robust factor -- Rescale not to minimum pixel, but to the X-th percentage minimum pixel
-                % This guards against a few very dark pixels throwing off the rescaling
-                % NB!  This will *not* ensure that the applied values will
-                % be > 1!  We need to check this...
-                robust_factor = 0.02;
-                s = sort(FinalIlluminationFunction(MaskImage ~= 0));
-                if numel(s) > 0
-                    rescale = s(floor(length(s).*robust_factor)+1);
-                    FinalIlluminationFunction(FinalIlluminationFunction<rescale)=rescale;
-                else
-                    rescale = 1;
-                end
-%                rescale = max([min(abs(FinalIlluminationFunction(MaskImage ~= 0)));.0001]);
-            else
-                rescale = max([min(abs(FinalIlluminationFunction(:)));.0001]);
-            end
+			% Add robust factor -- Rescale not to minimum pixel, but to the X-th percentage minimum pixel
+            % This guards against a few very dark pixels throwing off the rescaling
+            % NB!  This will *not* ensure that the applied values will
+            % be > 1!  We need to check this...
+			robust_factor = 0.02;
+			s = sort(FinalIlluminationFunction(MaskImage ~= 0));
+			if numel(s) > 0
+				rescale = s(floor(length(s).*robust_factor)+1);
+				FinalIlluminationFunction(FinalIlluminationFunction < rescale) = rescale;
+			else
+				rescale = 1;
+			end
         elseif strcmp(RescaleOption,'Median') == 1
             if HasMask
                 rescale = median(FinalIlluminationFunction(MaskImage ~= 0));

@@ -59,6 +59,8 @@ def otsu(data, min_threshold=None, max_threshold=None,bins=256):
         return (min_threshold if not min_threshold is None
                 else max_threshold if not max_threshold is None
                 else 0)
+    elif len(data) == 1:
+        return constrain(data[0])
     if bins > len(data):
         bins = len(data)
     data.sort()
@@ -70,6 +72,8 @@ def otsu(data, min_threshold=None, max_threshold=None,bins=256):
     score_high = (rvar[1:len(data):len(data)/bins] *
                   (len(data) - np.arange(1,len(data),len(data)/bins)))
     scores = score_low + score_high
+    if len(scores) == 0:
+        return constrain(thresholds[0])
     index = np.argwhere(scores == scores.min()).flatten()
     if len(index)==0:
         return constrain(thresholds[0])

@@ -48,11 +48,13 @@ import os
 import random
 import re
 import sys
+import traceback
 try:
     import MySQLdb
     from MySQLdb.cursors import SSCursor
     HAS_MYSQL_DB=True
 except:
+    traceback.print_exc()
     sys.stderr.write("WARNING: MySQL could not be loaded.\n")
     HAS_MYSQL_DB=False
 

@@ -8,21 +8,8 @@ among them. Aligning images is useful to obtain proper measurements of the
 intensities in one channel based on objects identified in another channel, 
 for example. Alignment is often needed when the microscope is not perfectly 
 calibrated. It can also be useful to align images in a time-lapse series of 
-images.
-
-Some important notes for proper use of this module:
-<ul> 
-<li> Regardless of the number of input images, they will all be aligned
-with respect to the first image.</li>
-<li> If cropping is enabled, the images are cropped according to the 
-smallest input image. If the images are all the same size, then no cropping
-is performed.</li>
-<li> If an image is aligned, the padded pixels are assigned a fill value 
-of zero. The resulting image is masked in the filled area.</li>
-<li> The module stores the amount of shift between images as a
+images.  The module stores the amount of shift between images as a
 measurement, which can be useful for quality control purposes.
-</ul>
-
 
 Features that can be measured by this module:
 <ul> 
@@ -65,7 +52,8 @@ class Align(cpm.CPModule):
     def create_settings(self):
         self.first_input_image = cps.ImageNameSubscriber("Select the first input image",
                                                          "None",doc="""
-                                                         What is the name of the first image to align?""")
+                                                         What is the name of the first image to align?  Regardless of the number of input images, they will all be aligned
+with respect to the first image.""")
         self.first_output_image = cps.ImageNameProvider("Name the first output image",
                                                         "AlignedRed",doc="""
                                                         What do you want to call the aligned first image?""")
@@ -93,11 +81,12 @@ class Align(cpm.CPModule):
              image should serve as a template and be smaller than the first 
              image selected.</li>
              </ul>''')
-        self.wants_cropping = cps.Binary("Crop output mages to the smallest input image size?",
+        self.wants_cropping = cps.Binary("Crop output images to retain just the aligned regions?",
                                          True, doc='''
-             If you select this option, all output images are cropped to the 
-             size of the smallest image after alignment. If not, the unaligned 
-             portions of each image are padded and appear as black space.''')
+             If you choose to crop, all output images are cropped to retain 
+             just those regions that exist in all channels after alignment. 
+             If you do not choose to crop, the unaligned portions of each
+             image are padded (with zeroes) and appear as black space.''')
     
     def add_image(self):
         '''Add an image + associated questions and buttons'''

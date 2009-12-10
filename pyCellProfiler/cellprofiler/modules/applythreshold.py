@@ -56,19 +56,17 @@ class ApplyThreshold(Identify):
         self.binary = cpsetting.Choice("Select the output image type", [GRAYSCALE, BINARY], doc = '''
                                 What kind of output image would you like to produce?<br>
                                 <ul>
-                                <li><i>Grayscale:</i> In a grayscale image, the pixels that you retain will have their original 
-                                intensity values. You can choose to either set all other pixels to zero, or shift them by some 
-                                threshold value.</li>
-                                <li><i>Binary:</i> In a binary image, the pixels that you retain will be white and all other pixels 
-                                will be black.</li>
+                                <li><i>Grayscale:</i> If you choose to produce a grayscale image, the pixels that are retained after some pixels are set to zero or shifted (based on your selections for thresholding options) will have their original 
+                                intensity values.</li>
+                                <li><i>Binary:</i> If you choose to produce a binary image, the pixels that are retained after some pixels are set to zero (based on your selections for thresholding options) will be white and all other pixels will be black (zeroes).</li>
                                 </ul>''')
         # if not binary:
-        self.low = cpsetting.Binary("Set pixels below a given intensity to zero?", False, doc = '''
-                                <i>(Only used if a grayscale image is ouput)</i><br>
+        self.low = cpsetting.Binary("Set pixels below a threshold to zero?", False, doc = '''
+                                <i>(Only used if a grayscale image is output)</i><br>
                                 Use this setting if you would like to threshold dim pixels.''')
         
-        self.high = cpsetting.Binary("Set pixels above a given intensity to zero?", False, doc = '''
-                                <i>(Only used if the utput image is grayscale)</i><br>
+        self.high = cpsetting.Binary("Set pixels above a threshold to zero?", False, doc = '''
+                                <i>(Only used if the output image is grayscale)</i><br>
                                 Use this setting if you would like to threshold bright pixels. This setting is useful if you want
                                 to mask out bright regions, such as artifacts that saturate the intensity.''')
         
@@ -96,19 +94,17 @@ class ApplyThreshold(Identify):
                                 thresholded region around those bright objects by a certain distance so as to avoid a 'halo' effect.''')
 
         # if binary:
-        self.manual_threshold = cpsetting.Float("Set pixels below this value to zero and set pixels at least this value to one.",
+        self.manual_threshold = cpsetting.Float("Set pixels below this value to zero and set pixels at least this value to one",
                                 0.5,doc = '''
                                 <i>(Only used if the output image is binary)</i><br>
                                 Use this setting to create a binary thresholded image, which disregards intensity
                                 information for both  bright and dim pixels by setting them equal to one and zero, respectively.''')
         
-        self.threshold_method = cpsetting.Choice('''Select the thresholding method.''',
+        self.threshold_method = cpsetting.Choice('''Select the thresholding method''',
                                 threshold_methods, doc = '''
                                 <i>(Only used if the output image is binary)</i><br>
-                                This setting allows you to access the same automatic thresholding 
-                                methods used in the <b>Identify</b> modules.  You may select any of these automatic thresholding 
-                                methods, or choose "Manual" to enter a threshold manually.  To choose a binary image, select "Binary image". 
-                                The output of <b>ApplyThreshold</b> be a binary image, rather than objects.  For more help on thresholding, see the Identify modules.''')
+                                This setting allows you to access the same thresholding 
+                                methods used in the <b>Identify</b> modules.  For more help on thresholding, including further explanations of the many optional settings, see the Identify Primary Automatic module.''')
         
         self.threshold_range = cpsetting.FloatRange('Lower and upper bounds on threshold',(0,1),0,1)
         

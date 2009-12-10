@@ -52,6 +52,13 @@ def default_image_name(idx):
     except:
         return 'Image%d'%(idx + 1)
 
+MAX_DIRNAME_SIZE=80
+def limit_dirname_size(dir):
+    if len(dir) > MAX_DIRNAME_SIZE:
+        assert len(dir[:MAX_DIRNAME_SIZE/2 - 3] + '...\n' + dir[-MAX_DIRNAME_SIZE/2:])
+        return dir[:47] + '...' + dir[-50:]
+    return dir
+
 myEVT_CUSTOM_EVENT = wx.NewEventType()
 EVT_CUSTOM_EVENT = wx.PyEventBinder(myEVT_CUSTOM_EVENT, 1)
 
@@ -67,10 +74,17 @@ class CPFileSelector(wx.Frame):
         kwds["style"] = wx.DEFAULT_FRAME_STYLE
         wx.Frame.__init__(self, *args, **kwds)
 
-        # controls
+        # top level splitter
+        splitter = wx.SplitterWindow(self, -1, style=wx.BORDER_NONE)
 
-        def labeled_thing(label, thing):
-            text = wx.StaticText(self, -1, label)
+        # panels
+        self.top_panel = top_panel = wx.Panel(splitter, -1, style=wx.BORDER_SIMPLE)
+        bottom_panel = wx.Panel(splitter, -1)
+        splitter.SplitHorizontally(top_panel, bottom_panel)
+        
+        # controls
+        def labeled_thing(label, thing, parent=top_panel):
+            text = wx.StaticText(parent, -1, label)
             sizer = wx.BoxSizer(wx.HORIZONTAL)
             sizer.Add(text, 0, wx.ALIGN_CENTER)
             sizer.AddSpacer(5)
@@ -83,36 +97,35 @@ class CPFileSelector(wx.Frame):
             return thing, boxsizer
 
         # Base directory
-        base_dir, base_dir_sizer = labeled_thing("Where are your images located?", wx.Choice(self, -1, choices=base_dir_choices))
+        base_dir, base_dir_sizer = labeled_thing("Where are your images located?", wx.Choice(top_panel, -1, choices=base_dir_choices))
         self.base_dir = base_dir
         # otherdir entry & browse
-        otherdir_label = wx.StaticText(self, -1, "Other directory:")
-        self.otherdir = otherdir = wx.TextCtrl(self, -1, "")
-        otherdir_browse = wx.Button(self, -1, "Browse...")
+        otherdir_label = wx.StaticText(top_panel, -1, "Other directory:")
+        self.otherdir = otherdir = wx.TextCtrl(top_panel, -1, "")
+        otherdir_browse = wx.Button(top_panel, -1, "Browse...")
 
         # descend?
-        descend_dirs, descend_sizer = labeled_thing("Descend into subdirectories?", wx.Choice(self, -1, choices=descend_dir_choices))
+        descend_dirs, descend_sizer = labeled_thing("Descend into subdirectories?", wx.Choice(top_panel, -1, choices=descend_dir_choices))
         self.descend_dirs = descend_dirs
         # descend force update
-        self.descend_update_filelist = descend_update_filelist = wx.Button(self, -1, "Update file list...")
+        self.descend_update_filelist = descend_update_filelist = wx.Button(top_panel, -1, "Update file list...")
         # descent tree chooser...
-        box = wx.StaticBox(self, -1, "Choose directories to search for files...")
-        self.dirtree, self.dirtree_boxsizer = dirtree, dirtree_boxsizer = boxed_thing(box, DirTree(self), flag=wx.EXPAND)
+        box = wx.StaticBox(top_panel, -1, "Choose directories to search for files...")
+        self.dirtree, self.dirtree_boxsizer = dirtree, dirtree_boxsizer = boxed_thing(box, DirTree(top_panel, self), flag=wx.EXPAND)
 
         # exclude some files?
-        exclude, exclude_sizer = labeled_thing("Exclude some files by substring in filename?", wx.CheckBox(self, -1, ""))
+        exclude, exclude_sizer = labeled_thing("Exclude some files by substring in filename?", wx.CheckBox(top_panel, -1, ""))
         self.exclude = exclude
 
-        box = wx.StaticBox(self, -1, "Exclude substrings...")
-        self.exclude_list, self.exclude_boxsizer = exclude_list, exclude_boxsizer = boxed_thing(box, wx.TextCtrl(self, -1, "", size=(300,10), style=wx.TE_MULTILINE))
+        box = wx.StaticBox(top_panel, -1, "Exclude substrings...")
+        self.exclude_list, self.exclude_boxsizer = exclude_list, exclude_boxsizer = boxed_thing(box, wx.TextCtrl(top_panel, -1, "", size=(300,10), style=wx.TE_MULTILINE))
                                                                                                 
-
         # Matching Mode
-        mode, mode_sizer = labeled_thing("Identify channels by:", wx.Choice(self, -1, choices=match_modes))
+        mode, mode_sizer = labeled_thing("Identify channels by:", wx.Choice(bottom_panel, -1, choices=match_modes), parent=bottom_panel)
         self.mode = mode
 
         # images notebook
-        self.imagebook = imagebook = wx.Notebook(self, -1, style=wx.BK_TOP)
+        self.imagebook = imagebook = wx.Notebook(bottom_panel, -1, style=wx.BK_TOP)
         imagebook.AddPage(ImagePage(self, imagebook, default_image_name(0)), default_image_name(0))
         imagebook.AddPage(wx.Panel(imagebook, -1), "Add another image...")
 
@@ -137,15 +150,22 @@ class CPFileSelector(wx.Frame):
         top_sizer.Add(exclude_sizer, 0,  wx.ALIGN_CENTER)
         top_sizer.AddSpacer(5)
         top_sizer.Add(exclude_boxsizer, 1, wx.ALIGN_CENTER)
-        top_sizer.AddSpacer(10)
-        top_sizer.Add(wx.StaticLine(self), 0,  wx.EXPAND | wx.LEFT | wx.RIGHT, border=20)
-        top_sizer.AddSpacer(10)
-        top_sizer.Add(mode_sizer, 0, wx.ALIGN_CENTER)
-        top_sizer.AddSpacer(10)
-        top_sizer.Add(imagebook, 3, wx.EXPAND | wx.LEFT | wx.RIGHT, border=20)
 
+        bottom_sizer = wx.BoxSizer(wx.VERTICAL)
+        bottom_sizer.Add(mode_sizer, 0, wx.ALIGN_CENTER)
+        bottom_sizer.AddSpacer(5)
+        bottom_sizer.Add(imagebook, 1, wx.ALIGN_CENTER | wx.EXPAND)
+
+        top_border = wx.BoxSizer()
+        top_border.Add(top_sizer, 1, wx.EXPAND | wx.ALL, 5)
+        top_panel.SetSizer(top_border)
+
+        bot_border = wx.BoxSizer()
+        bot_border.Add(bottom_sizer, 1, wx.EXPAND | wx.ALL, 5)
+        bottom_panel.SetSizer(bot_border)
+        
         border = wx.BoxSizer()
-        border.Add(top_sizer, 1, wx.EXPAND | wx.ALL, 10)
+        border.Add(splitter, 1, wx.EXPAND | wx.ALL, 5)
 
         self.SetAutoLayout(True)
         self.SetSizer(border)
@@ -185,7 +205,7 @@ class CPFileSelector(wx.Frame):
             self.dirtree.set_directory(self.get_current_directory())
             if descend_dir_choices[self.descend_dirs.GetSelection()] == FS_DESCEND_NO:
                 self.update_file_list()
-        self.Layout()
+        self.top_panel.Layout()
         self.Refresh()
 
     def change_otherdir(self, evt):
@@ -207,16 +227,28 @@ class CPFileSelector(wx.Frame):
         if descend_dirs == FS_DESCEND_NO:
             self.file_list = [(dir, '', f) for f in os.listdir(dir) if os.path.isfile(os.path.join(dir, f))]
         elif descend_dirs == FS_DESCEND_YES:
+            progress = wx.ProgressDialog('Finding files...', 'M' * MAX_DIRNAME_SIZE, 100, self, wx.PD_CAN_ABORT | wx.PD_APP_MODAL)
+            progress.Pulse(limit_dirname_size(dir))
             self.file_list = []
             for dirpath, dirnames, filenames in os.walk(dir):
                 subpath = relpath(dirpath, dir)
-                print dirpath
                 self.file_list += [(dir, subpath, f) for f in filenames]
+                print dirpath
+                c, s = progress.Pulse(limit_dirname_size(dirpath))
+                if not c:
+                    break
+            progress.Destroy()
         else:
+            progress = wx.ProgressDialog('Finding files...', ' ' * MAX_DIRNAME_SIZE, 100, self, wx.PD_CAN_ABORT | wx.PD_APP_MODAL)
             self.file_list = []
-            for dirpath in self.dirtree.get_selected_dirs():
+            dirlist = self.dirtree.get_selected_dirs()
+            for idx, dirpath in enumerate(dirlist):
                 subpath = relpath(dirpath, dir)
                 self.file_list += [(dir, subpath, f) for f in os.listdir(dirpath) if os.path.isfile(os.path.join(dirpath, f))]
+                c, s = progress.Update((idx * 99) / len(dirlist), limit_dirname_size(dirpath))
+                if not c:
+                    break
+            progress.Destroy()
 
         self.file_list.sort()
 
@@ -247,13 +279,13 @@ class CPFileSelector(wx.Frame):
         idx = self.descend_dirs.GetSelection()
         self.top_sizer.Show(self.descend_update_filelist, show=(descend_dir_choices[idx] != FS_DESCEND_NO))
         self.top_sizer.Show(self.dirtree_boxsizer, show=(descend_dir_choices[idx] == FS_DESCEND_CHOOSE))
-        self.Layout()
+        self.top_panel.Layout()
         self.Refresh()
 
     def change_exclude(self, evt):
         self.top_sizer.Show(self.exclude_boxsizer, show=self.exclude.GetValue())
         self.update_exclusions()
-        self.Layout()
+        self.top_panel.Layout()
         self.Refresh()
 
     def update_exclusions(self, evt=None):
@@ -272,7 +304,9 @@ class CPFileSelector(wx.Frame):
             new = self.new_page
         imagebook = self.imagebook
         if new == (imagebook.GetPageCount() - 1):
-            imagebook.InsertPage(new, ImagePage(self, imagebook, default_image_name(new)), default_image_name(new))
+            newpage = ImagePage(self, imagebook, default_image_name(new))
+            imagebook.InsertPage(new, newpage, default_image_name(new))
+            newpage.update_file_list()
             evt.Veto()
         else:
             evt.Skip()
@@ -435,9 +469,9 @@ class ImagePage(wx.Panel):
 
 
 class DirTree(CT.CustomTreeCtrl):
-    def __init__(self, file_selector):
+    def __init__(self, parent, file_selector):
         self.file_selector = file_selector
-        CT.CustomTreeCtrl.__init__(self, file_selector, -1, style=wx.TR_DEFAULT_STYLE)
+        CT.CustomTreeCtrl.__init__(self, parent, -1, style=wx.TR_DEFAULT_STYLE)
         
         # folder images
         isz = (16, 16)

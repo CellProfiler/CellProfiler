@@ -28,7 +28,7 @@ import cellprofiler.objects as cpo
 from cellprofiler.gui.addmoduleframe import AddModuleFrame
 import cellprofiler.gui.moduleview
 from cellprofiler.gui.movieslider import EVT_TAKE_STEP
-
+from progress import ProgressFrame
 
 class PipelineController:
     """Controls the pipeline through the UI
@@ -420,6 +420,9 @@ class PipelineController:
         self.__module_view.disable()
         output_path = self.get_output_file_path()
         if output_path:
+            self.__progress_frame = ProgressFrame(self.__frame)
+            # Uncomment to show half-baked progress dialog
+            #self.__progress_frame.Show(True)
             if self.__running_pipeline:
                 self.__running_pipeline.close()
             self.__output_path = output_path
@@ -453,6 +456,8 @@ class PipelineController:
         self.__running_pipeline = False
         self.__frame.preferences_view.on_stop_analysis()
         self.__module_view.enable()
+        #self.__progress_frame.Show(False)
+        self.__progress_frame.Destroy()
     
     def is_in_debug_mode(self):
         """True if there's some sort of debugging in progress"""

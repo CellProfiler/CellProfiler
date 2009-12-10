@@ -18,7 +18,7 @@ except:
 base_dir_choices = ['Default Image directory', 'Default Output directory', 'Other Directory...']
 FS_DEFAULT_IMAGE, FS_DEFAULT_OUTPUT, FS_OTHER_DIR = base_dir_choices
 
-descend_dir_choices = ['No', 'Yes', 'Choose...']
+descend_dir_choices = ['No', 'Yes (all)', 'Yes (only selected)']
 FS_DESCEND_NO, FS_DESCEND_YES, FS_DESCEND_CHOOSE = descend_dir_choices
 
 match_modes = ['Common Substring', 'Shell pattern', 'Regular expression', 'Numeric Position']
@@ -161,8 +161,7 @@ class CPFileSelector(wx.Frame):
         exclude_list.Bind(wx.EVT_TEXT, self.update_exclusions)
         mode.Bind(wx.EVT_CHOICE, self.change_mode)
         imagebook.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGING, self.page_changing)
-        
-        
+        imagebook.Bind(wx.EVT_LEFT_DOWN, self.notebook_click)
         
         # default state
         base_dir.SetSelection(base_dir_choices.index(FS_DEFAULT_IMAGE))
@@ -173,6 +172,7 @@ class CPFileSelector(wx.Frame):
         exclude.SetValue(False)
         top_sizer.Hide(exclude_boxsizer)
         mode.SetSelection(match_modes.index(FS_SUBSTRING))
+        self.new_page = 0
 
         self.update_file_list()
         self.Layout()
@@ -268,11 +268,21 @@ class CPFileSelector(wx.Frame):
     def page_changing(self, evt):
         old = evt.GetOldSelection()
         new = evt.GetSelection()
+        if old == new: # windows behavior (http://docs.wxwidgets.org/stable/wx_wxnotebookevent.html#wxnotebookeventgetselection)
+            new = self.new_page
         imagebook = self.imagebook
         if new == (imagebook.GetPageCount() - 1):
             imagebook.InsertPage(new, ImagePage(self, imagebook, default_image_name(new)), default_image_name(new))
-            imagebook.Refresh()
             evt.Veto()
+        else:
+            evt.Skip()
+
+    def notebook_click(self,evt):
+        page = self.imagebook.HitTest(evt.GetPosition())[0]
+        if page != wx.NOT_FOUND:
+            self.new_page = page
+        evt.Skip()
+
 
     def change_image_name(self, image_window, new_name):
         imagebook = self.imagebook

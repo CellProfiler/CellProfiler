@@ -227,10 +227,16 @@ class MeasureObjectAreaShape(cpm.CPModule):
             self.get_categories(pipeline,object_name)):
             return self.get_feature_names()
         return []
+    
+    def is_interactive(self):
+        return False
 
     def run(self, workspace):
         """Run, computing the area measurements for the objects"""
         
+        if workspace.frame is not None:
+            workspace.display_data.statistics = \
+                     [("Object","Feature","Mean","Median","STD")]
         for object_group in self.object_groups:
             self.run_on_objects(object_group[OG_NAME].value, workspace)
     
@@ -298,7 +304,11 @@ class MeasureObjectAreaShape(cpm.CPModule):
                 self.record_measurement(workspace, object_name, feature_name, 
                                         zernike_feature)
             
-    
+    def display(self, workspace):
+        figure = workspace.create_or_find_figure(subplots=(1,1))
+        figure.subplot_table(0,0,workspace.display_data.statistics,
+                             ratio=(.25,.45,.1,.1,.1))
+        
     def perform_measurement(self, workspace, function,
                             object_name, feature_name):
         """Perform a measurement on a label matrix
@@ -348,6 +358,12 @@ class MeasureObjectAreaShape(cpm.CPModule):
         workspace.add_measurement(object_name, 
                                   "%s_%s"%(AREA_SHAPE,feature_name), 
                                   data)
+        if workspace.frame is not None and len(data) > 0:
+            workspace.display_data.statistics.append(
+                (object_name, feature_name, 
+                 "%.2f"%np.mean(data),
+                 "%.2f"%np.median(data),
+                 "%.2f"%np.std(data)))
         
     def get_measurement_columns(self, pipeline):
         '''Return measurement column definitions. 

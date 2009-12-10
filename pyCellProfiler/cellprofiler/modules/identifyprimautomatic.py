@@ -908,17 +908,34 @@ class IdentifyPrimAutomatic(cpmi.Identify):
     def smooth_image(self, image, mask,sigma):
         """Apply the smoothing filter to the image"""
         
-        if self.calc_smoothing_filter_size() == 0:
+        filter_size = self.calc_smoothing_filter_size()
+        if filter_size == 0:
             return image
+        #
+        # We not only want to smooth using a Gaussian, but we want to limit
+        # the spread of the smoothing to 2 SD, partly to make things happen
+        # locally, partly to make things run faster, partly to try to match
+        # the Matlab behavior.
+        #
+        filter_size = max(int(float(filter_size) / 2.0),1)
+        f = (1/np.sqrt(2.0 * np.pi ) / sigma * 
+             np.exp(-0.5 * np.arange(-filter_size, filter_size+1)**2 / 
+                    sigma ** 2))
+        def fgaussian(image):
+            output = scipy.ndimage.convolve1d(image, f,
+                                              axis = 0,
+                                              mode='constant')
+            return scipy.ndimage.convolve1d(output, f,
+                                            axis = 1,
+                                            mode='constant')
         #
         # Use the trick where you similarly convolve an array of ones to find 
         # out the edge effects, then divide to correct the edge effects
         #
-        edge_array = scipy.ndimage.gaussian_filter(mask.astype(float),
-                                                   sigma,mode='constant')
+        edge_array = fgaussian(mask.astype(float))
         masked_image = image.copy()
         masked_image[~mask] = 0
-        return scipy.ndimage.gaussian_filter(masked_image,sigma,mode='constant') / edge_array
+        return fgaussian(masked_image) / edge_array
     
     def separate_neighboring_objects(self, image, mask, 
                                      labeled_image,object_count,threshold):
@@ -940,15 +957,15 @@ class IdentifyPrimAutomatic(cpmi.Identify):
             if self.automatic_suppression.value:
                 maxima_suppression_size = 7
             else:
-                maxima_suppression_size = int(self.maxima_suppression_size.value *
-                                              image_resize_factor+.5)
+                maxima_suppression_size = (self.maxima_suppression_size.value *
+                                           image_resize_factor+.5)
         else:
             image_resize_factor = 1.0
             if self.automatic_suppression.value:
-                maxima_suppression_size = int(math.floor(self.size_range.min/1.5+.5))
+                maxima_suppression_size = self.size_range.min/1.5
             else:
                 maxima_suppression_size = self.maxima_suppression_size.value
-        maxima_mask = strel_disk(maxima_suppression_size)
+        maxima_mask = strel_disk(maxima_suppression_size-.5)
         distance_transformed_image = None
         if self.unclump_method == UN_LOG:
             if self.wants_automatic_log_diameter.value:

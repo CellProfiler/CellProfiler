@@ -601,7 +601,7 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         x.fill_holes.value = False
         x.smoothing_filter_size.value = 0
         x.automatic_smoothing.value = 0
-        x.maxima_suppression_size.value = 3
+        x.maxima_suppression_size.value = 3.6
         x.automatic_suppression.value = False
         x.unclump_method.value = ID.UN_INTENSITY
         x.watershed_method.value = ID.WA_DISTANCE
@@ -655,14 +655,14 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         x.fill_holes.value = False
         x.smoothing_filter_size.value = 0
         x.automatic_smoothing.value = 0
-        x.maxima_suppression_size.value = 3
+        x.maxima_suppression_size.value = 3.6
         x.automatic_suppression.value = False
         x.unclump_method.value = ID.UN_INTENSITY
         x.watershed_method.value = ID.WA_DISTANCE
         img = np.array([[ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                            [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                            [ 0, 0, 0, 0, 0,.5,.5,.5,.5,.5,.5, 0, 0, 0, 0, 0],
-                           [ 0, 0, 0,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5, 0, 0, 0],
+                           [ 0, 0, 0,.5,.5,.5,.5,.8,.8,.5,.5,.5,.5, 0, 0, 0],
                            [ 0, 0,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5, 0, 0],
                            [ 0, 0,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5, 0, 0],
                            [ 0, 0,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5, 0, 0],
@@ -676,7 +676,7 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
                            [ 0, 0,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5, 0, 0],
                            [ 0, 0,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5, 0, 0],
                            [ 0, 0,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5, 0, 0],
-                           [ 0, 0, 0,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5, 0, 0, 0],
+                           [ 0, 0, 0,.5,.5,.5,.5,.8,.8,.5,.5,.5,.5, 0, 0, 0],
                            [ 0, 0, 0, 0, 0,.5,.5,.5,.5,.5,.5, 0, 0, 0, 0, 0],
                            [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                            [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
@@ -706,7 +706,7 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         x.fill_holes.value = False
         x.smoothing_filter_size.value = 1
         x.automatic_smoothing.value = 1
-        x.maxima_suppression_size.value = 3
+        x.maxima_suppression_size.value = 3.6
         x.automatic_suppression.value = False
         x.unclump_method.value = ID.UN_INTENSITY
         x.watershed_method.value = ID.WA_DISTANCE
@@ -760,7 +760,7 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         x.fill_holes.value = False
         x.smoothing_filter_size.value = 0
         x.automatic_smoothing.value = 0
-        x.maxima_suppression_size.value = 3
+        x.maxima_suppression_size.value = 3.6
         x.automatic_suppression.value = False
         x.unclump_method.value = ID.UN_INTENSITY
         x.watershed_method.value = ID.WA_DISTANCE
@@ -1453,10 +1453,12 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
                            [0,0,2,1,2,2,2,2,1,2,0,0],
                            [0,0,2,1,1,1,1,1,1,2,0,0],
                            [0,0,2,2,2,2,2,2,2,2,0,0],                           
+                           [0,0,2,2,1,2,2,2,2,2,0,0],                           
+                           [0,0,2,2,1,2,2,2,2,2,0,0],                           
+                           [0,0,2,2,1,2,2,2,2,2,0,0],                           
                            [0,0,2,2,2,2,2,2,2,2,0,0],                           
-                           [0,0,2,2,2,2,2,2,2,2,0,0],                           
-                           [0,0,2,2,2,2,2,2,9,2,0,0],                           
-                           [0,0,2,2,2,2,2,2,2,2,0,0],                           
+                           [0,0,2,2,2,2,2,2,9,9,0,0],                           
+                           [0,0,2,2,2,2,2,2,9,9,0,0],                           
                            [0,0,0,0,0,0,0,0,0,0,0,0],
                            [0,0,0,0,0,0,0,0,0,0,0,0]], float) / 10.0
         expected = np.array([[0,0,0,0,0,0,0,0,0,0,0,0],
@@ -1469,6 +1471,8 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
                              [0,0,2,1,1,1,1,1,1,2,0,0],
                              [0,0,2,1,1,1,1,1,1,2,0,0],
                              [0,0,2,1,1,1,1,1,1,2,0,0],
+                             [0,0,2,2,2,2,2,2,2,2,0,0],                           
+                             [0,0,2,2,2,2,2,2,2,2,0,0],                           
                              [0,0,2,2,2,2,2,2,2,2,0,0],                           
                              [0,0,2,2,2,2,2,2,2,2,0,0],                           
                              [0,0,2,2,2,2,2,2,2,2,0,0],                           
@@ -1490,6 +1494,8 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
                          [0,0,1,1,1,1,1,1,1,1,0,0],                           
                          [0,0,1,1,1,1,1,1,1,1,0,0],                           
                          [0,0,1,1,1,1,1,1,1,1,0,0],                           
+                         [0,0,1,1,1,1,1,1,1,1,0,0],                           
+                         [0,0,1,1,1,1,1,1,1,1,0,0],                           
                          [0,0,0,1,1,1,1,1,1,0,0,0],                           
                          [0,0,0,0,0,0,0,0,0,0,0,0],
                          [0,0,0,0,0,0,0,0,0,0,0,0]], bool)
@@ -1503,7 +1509,7 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         x.object_name.value = "my_object"
         x.image_name.value = "my_image"
         x.exclude_size.value = True
-        x.size_range.min = 7
+        x.size_range.min = 6
         x.size_range.max = 50
         x.maxima_suppression_size.value = 3
         x.automatic_suppression.value = False

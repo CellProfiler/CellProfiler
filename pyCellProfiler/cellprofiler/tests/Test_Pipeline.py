@@ -131,8 +131,7 @@ class TestPipeline(unittest.TestCase):
             return True
         def run(workspace):
             expects_state, expects_image_number = expects
-            image_number = workspace.measurements.get_current_image_measurement(
-                'ImageNumber')
+            image_number = workspace.measurements.image_set_number
             self.assertEqual(expects_state, 'Run')
             self.assertEqual(expects_image_number, image_number)
             image = workspace.image_set.get_image('image')
@@ -168,7 +167,7 @@ class TestPipeline(unittest.TestCase):
         pipeline.add_module(module)
         measurements = pipeline.run()
         self.assertEqual(expects[0], 'Done')
-        image_numbers = measurements.get_all_measurements("Image","ImageNumber")
+        image_numbers = measurements.get_all_measurements("Image","mymeasurement")
         self.assertEqual(len(image_numbers), 4)
         self.assertTrue(np.all(image_numbers == np.array([1,3,2,4])))
          
@@ -203,8 +202,7 @@ class TestPipeline(unittest.TestCase):
         
         def run(workspace):
             expects_state, expects_image_number = expects
-            image_number = workspace.measurements.get_current_image_measurement(
-                'ImageNumber')
+            image_number = workspace.measurements.image_set_number
             self.assertEqual(expects_state, 'Run')
             self.assertEqual(expects_image_number, image_number)
             image = workspace.image_set.get_image('image')
@@ -234,7 +232,7 @@ class TestPipeline(unittest.TestCase):
         pipeline.add_module(module)
         measurements = pipeline.run(grouping = {'foo':'foo-B', 'bar':'bar-B'})
         self.assertEqual(expects[0], 'Done')
-        image_numbers = measurements.get_all_measurements("Image","ImageNumber")
+        image_numbers = measurements.get_all_measurements("Image","mymeasurement")
         self.assertEqual(len(image_numbers), 2)
         self.assertTrue(np.all(image_numbers == np.array([2,5])))
     

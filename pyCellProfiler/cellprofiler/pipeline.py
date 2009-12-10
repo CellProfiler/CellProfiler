@@ -665,7 +665,11 @@ class Pipeline(object):
                         return
 
             measurements.add_experiment_measurement(EXIT_STATUS, "Complete")
-            self.post_run(measurements, image_set_list, frame)
+            exit_status = self.post_run(measurements, image_set_list, frame)
+            #
+            # Record the status after post_run
+            #
+            measurements.add_experiment_measurement(EXIT_STATUS,exit_status)
 
     class prepared_run:
         def __init__(self, pipeline, frame):
@@ -725,7 +729,8 @@ class Pipeline(object):
                 event = RunExceptionEvent(instance, module)
                 self.notify_listeners(event)
                 if event.cancel_run:
-                    return
+                    return "Failure"
+        return "Complete"
     
     def prepare_to_create_batch(self, image_set_list, fn_alter_path):
         '''Prepare to create a batch file

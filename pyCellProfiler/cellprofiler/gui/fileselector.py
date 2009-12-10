@@ -271,6 +271,7 @@ class CPFileSelector(wx.Frame):
         imagebook = self.imagebook
         if new == (imagebook.GetPageCount() - 1):
             imagebook.InsertPage(new, ImagePage(self, imagebook, default_image_name(new)), default_image_name(new))
+            imagebook.Refresh()
             evt.Veto()
 
     def change_image_name(self, image_window, new_name):

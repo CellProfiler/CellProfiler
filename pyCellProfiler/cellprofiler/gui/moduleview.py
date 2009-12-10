@@ -1029,6 +1029,13 @@ class ModuleView:
             focus_control = self.module_panel.FindWindowByName(focus_name)
             if focus_control:
                 focus_control.SetFocus()
+
+    def disable(self):
+        self.__module_panel.Disable()
+
+    def enable(self):
+        self.__module_panel.Enable()
+
         
 class ModuleSizer(wx.PySizer):
     """The module sizer uses the maximum best width of the setting

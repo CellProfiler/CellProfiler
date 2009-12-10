@@ -417,6 +417,7 @@ class PipelineController:
         if len(self.__setting_errors):
             wx.MessageBox("Please correct the errors in your pipeline before running.","Can't run pipeline",self.__frame)
             return
+        self.__module_view.disable()
         output_path = self.get_output_file_path()
         if output_path:
             if self.__running_pipeline:
@@ -451,6 +452,7 @@ class PipelineController:
     def stop_running(self):
         self.__running_pipeline = False
         self.__frame.preferences_view.on_stop_analysis()
+        self.__module_view.enable()
     
     def is_in_debug_mode(self):
         """True if there's some sort of debugging in progress"""

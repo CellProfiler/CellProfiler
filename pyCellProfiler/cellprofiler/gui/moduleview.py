@@ -830,7 +830,7 @@ class ModuleView:
                           scale_ctrl = scale_ctrl):
                 '''Reconstruct the measurement value if anything changes'''
                 def value_of(ctrl):
-                    return ctrl.Value if len(ctrl.Strings) else None
+                    return ctrl.Value if ctrl.Selection != -1 else ''
                 value = v.construct_value(value_of(category_ctrl),
                                           value_of(feature_ctrl),
                                           value_of(image_ctrl),

@@ -2,21 +2,14 @@
 performs basic arithmetic operations
 <hr>
 The arithmetic operations available in this module include addition,
-subtraction, multiplication and division. The operation can be chosen
-by adjusting the operations setting. The resulting data can also be
-log-transformed or raised to a power. This data can then be used in other
-calculations.
+subtraction, multiplication and division. The result can be
+log-transformed or raised to a power and can be used in further
+calculations if another Calculate Math module is added to the pipeline. 
 
-<p>This module currently works on an object-by-object basis (it calculates
-the requested operation for each object) but can also apply the operation
-for measurements made for entire images.
+<p>The module can make its calculations on a per-image basis (for example, multiplying the area occupied by a stain in the image by the total intensity in the image) or on an object-by-object basis (for example, dividing the intensity in the nucleus by the intensity in the cytoplasm for each cell).
 
-<p>The math measurements are stored as <i>Math_&lt;MeasurementName&gt;</i>. 
-If both measures are image-based, then a single calculation (per cycle) will 
-be stored as <i>Image</i> data. If one measure is object-based and one 
-image-based, then the calculations will be stored associated with the object, 
-one calculation per object. If both are objects, then the calculations are 
-stored with both objects.
+<p>The result of this module is a new measurement in the "Math" category. If both input measurements are whole-image measurements, then the resulting calculated measurement will also be a whole-image measurement. Similarly, if both input measurements are individual object measurements, then the resulting calculated measurement will also be an object measurement. In this case, the measurement will be associated with <i>both<\i> objects that were involved in the measurement. If one measure is object-based and one 
+image-based, then the resulting calculated measurement will be an object measurement.
 
 See also all <b>Measure</b> modules.
 '''
@@ -162,7 +155,7 @@ class CalculateMath(cpm.CPModule):
                           else []) +
                         [self.operand_measurement,self.multiplicand, self.exponent])
             
-        self.output_feature_name = cps.Text("Name the output measurements",
+        self.output_feature_name = cps.Text("Name the output measurement",
                                             "Measurement",doc="""
                                             What do you want to call the measurement calculated by this module?""")
         

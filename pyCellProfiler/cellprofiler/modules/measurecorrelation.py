@@ -343,13 +343,13 @@ class MeasureCorrelation(cpm.CPModule):
         object_name - name of the measured object or cpmeas.IMAGE
         '''
         if ((object_name == cpmeas.IMAGE and self.wants_images()) or
-            (object_name != cpmeas.IMAGE and self.wants_objects() and
-             object_name in [x.object_name.value for x in self.object_groups])):
+            ((object_name != cpmeas.IMAGE) and self.wants_objects() and
+             (object_name in [x.object_name.value for x in self.object_groups]))):
             return ["Correlation"]
         return [] 
 
     def get_measurements(self, pipeline, object_name, category):
-        if self.get_categories(pipeline, object_name) == ["Correlation"]:
+        if self.get_categories(pipeline, object_name) == [category]:
             if object_name == cpmeas.IMAGE:
                 return ["Correlation","Slope"]
             else:

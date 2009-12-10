@@ -196,7 +196,7 @@ class MeasureImageAreaOccupied(cpm.CPModule):
         modules.
         """
         if from_matlab:
-            raise NotImplementedError("The MeasureImageArea module has changed substantially. \n"
+            raise NotImplementedError("The MeasureImageAreaOccupied module has changed substantially. \n"
                                       "You should threshold your image using IdentifyPrimAutomatic\n"
                                       "and then measure the resulting objects' area using this module.")
         if variable_revision_number == 1:

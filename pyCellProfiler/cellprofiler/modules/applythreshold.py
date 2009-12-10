@@ -1,17 +1,9 @@
 """<b>Apply Threshold</b> sets pixel intensities below or above a certain threshold to zero.
 <hr>
 ApplyThreshold allows you to produce either a grayscale or binary image
-by specifying a threshold, or using one of the automatic thresholding
-methods available in the <b>Identify</b> modules.  In contrast to the Identify
-modules, ApplyThreshold produces images, not objects.
-
-There are several ways to shift the intensity of a thresholded pixel (see Settings, below).
+based on a threshold which can be pre-selected or calculated automatically using one of many methods.
 """
-# TODO: Find out why this module makes python segfaults whenever the
-# user switches from grayscale to binary.
-# TODO: Review new settings with Anne.
-# TODO: Update docstring to match the new settings.
-# TODO: Test.
+
 __version__="$Revision: 6746 $"
 
 import wx

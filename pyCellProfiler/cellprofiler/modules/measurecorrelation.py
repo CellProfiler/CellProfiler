@@ -215,21 +215,27 @@ class MeasureCorrelation(cpm.CPModule):
         elif second_pixel_count < first_pixel_count:
             first_pixel_data = second_image.crop_image_similarly(first_pixel_data)
             first_mask = second_image.crop_image_similarly(first_mask)
-        mask = (first_mask & second_mask)
-        #
-        # Perform the correlation, which returns:
-        # [ [ii, ij],
-        #   [ji, jj] ]
-        #
-        fi = first_pixel_data[mask]
-        si = second_pixel_data[mask]
-        corr = np.corrcoef((fi,si))[1,0]
-        #
-        # Find the slope as a linear regression to
-        # A * i1 + B = i2
-        #
-        coeffs = lstsq(np.array((fi,np.ones_like(fi))).transpose(),si)[0]
-        slope = coeffs[0]
+        mask = (first_mask & second_mask & 
+                (~ np.isnan(first_pixel_data)) &
+                (~ np.isnan(second_pixel_data)))
+        if np.any(mask):
+            #
+            # Perform the correlation, which returns:
+            # [ [ii, ij],
+            #   [ji, jj] ]
+            #
+            fi = first_pixel_data[mask]
+            si = second_pixel_data[mask]
+            corr = np.corrcoef((fi,si))[1,0]
+            #
+            # Find the slope as a linear regression to
+            # A * i1 + B = i2
+            #
+            coeffs = lstsq(np.array((fi,np.ones_like(fi))).transpose(),si)[0]
+            slope = coeffs[0]
+        else:
+            corr = np.NaN
+            slope = np.NaN
         #
         # Add the measurements
         #

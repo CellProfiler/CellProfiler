@@ -575,6 +575,8 @@ def sum_of_entropies(image, mask, threshold):
     """Bin the foreground and background pixels and compute the entropy 
     of the distribution of points among the bins
     """
+    mask=mask.copy()
+    mask[np.isnan(image)] = False
     if not np.any(mask):
         return 0
     #
@@ -594,8 +596,8 @@ def sum_of_entropies(image, mask, threshold):
     #
     # Figure out the bounds for the histogram
     #
-    upper = math.log(im_max,2)
-    lower = math.log(im_min,2)
+    upper = np.log2(im_max)
+    lower = np.log2(im_min)
     if upper == lower:
         # All values are the same, answer is log2 of # of pixels
         return math.log(np.sum(mask),2) 

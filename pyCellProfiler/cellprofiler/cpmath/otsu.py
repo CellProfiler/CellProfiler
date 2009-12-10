@@ -40,8 +40,6 @@ def otsu(data, min_threshold=None, max_threshold=None,bins=256):
     bins           - we bin the data into this many equally-spaced bins, then pick
                      the bin index that optimizes the metric
     """
-    assert np.min(data) >= 0, "The input data must be greater than zero"
-    assert np.max(data) <= 1, "The input data must be less than or equal to one"
     assert min_threshold==None or min_threshold >=0
     assert min_threshold==None or min_threshold <=1
     assert max_threshold==None or max_threshold >=0
@@ -152,8 +150,6 @@ def otsu3(data, min_threshold=None, max_threshold=None,bins=128):
     three pieces.
     Returns the lower and upper thresholds
     """
-    assert np.min(data) >= 0, "The input data must be greater than zero"
-    assert np.max(data) <= 1, "The input data must be less than or equal to one"
     assert min_threshold==None or min_threshold >=0
     assert min_threshold==None or min_threshold <=1
     assert max_threshold==None or max_threshold >=0
@@ -163,7 +159,7 @@ def otsu3(data, min_threshold=None, max_threshold=None,bins=128):
     #
     # Compute the running variance and reverse running variance.
     # 
-    data = np.array(data).flatten()
+    data = data[~ np.isnan(data)]
     data.sort()
     if len(data) == 0:
         return 0

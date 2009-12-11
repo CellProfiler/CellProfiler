@@ -15,7 +15,7 @@ def make_OMEXMLMetadata_class():
 
 def make_metadata_tools_class():
     class MetadataTools(object):
-        '''A wrapper for loci.formats.MetadatasdfaTools
+        '''A wrapper for loci.formats.MetadataTools
 
         A utility class for working with metadata objects, including 
         MetadataStore, MetadataRetrieve, and OME-XML strings. Most of the 
@@ -24,6 +24,8 @@ def make_metadata_tools_class():
 
         See http://hudson.openmicroscopy.org.uk/job/LOCI/javadoc/loci/formats/MetadataTools.html
         '''
+        env = jutil.get_env()
+        klass = env.find_class('loci/formats/MetadataTools')
         createOMEXMLMetadata = jutil.make_method('createOMEXMLMetadata',
                                                  '()Lloci/formats/meta/IMetadata;',
                                                  ' Creates an OME-XML metadata object using reflection, to avoid direct dependencies on the optional loci.formats.ome package.') 

@@ -280,25 +280,43 @@ if __name__ == "__main__":
                 # writer testing
                 ImageWriter = make_image_writer_class()
                 writer = ImageWriter()
-                
-                MetadataTools = make_metadata_tools_class()
-                meta = jutil.static_call('loci/formats/MetadataTools', 'createOMEXMLMetadata', '()Lloci/formats/meta/IMetadata;')
-                print meta
-                jutil.call(meta, 'createRoot', '()V')
-                t = jutil.make_instance('java/lang/Boolean', '(Z)V', True)
-                jutil.call(meta, 'setPixelsBigEndian', '(Ljava/lang/Boolean;II)V', t, 0, 0)
+
+                #TODO:
+#                MetadataTools = make_metadata_tools_class()
 #                meta = MetadataTools.createOMEXMLMetadata()
-                
+
+                # Setup metadata                
+                meta = jutil.static_call('loci/formats/MetadataTools', 'createOMEXMLMetadata', '()Lloci/formats/meta/IMetadata;')
+                jutil.call(meta, 'createRoot', '()V')
+                val = jutil.make_instance('java/lang/Boolean', '(Z)V', True)
+                jutil.call(meta, 'setPixelsBigEndian', '(Ljava/lang/Boolean;II)V', val, 0, 0)
+                val = env.new_string_utf('XYCZT')
+                jutil.call(meta, 'setPixelsDimensionOrder', '(Ljava/lang/String;II)V', val, 0 , 0)
+                val = jutil.static_call('loci/formats/FormatTools', 'getPixelTypeString', '(I)Ljava/lang/String;', pixel_type)
+                jutil.call(meta, 'setPixelsPixelType', '(Ljava/lang/String;II)V', val, 0, 0)
+                val = jutil.make_instance('java/lang/Integer', '(I)V', w)
+                jutil.call(meta, 'setPixelsSizeX', '(Ljava/lang/Integer;II)V', val, 0, 0)
+                val = jutil.make_instance('java/lang/Integer', '(I)V', h)
+                jutil.call(meta, 'setPixelsSizeY', '(Ljava/lang/Integer;II)V', val, 0, 0)
+                val = jutil.make_instance('java/lang/Integer', '(I)V', 3)
+                jutil.call(meta, 'setPixelsSizeC', '(Ljava/lang/Integer;II)V', val, 0, 0)
+                val = jutil.make_instance('java/lang/Integer', '(I)V', 1)
+                jutil.call(meta, 'setPixelsSizeZ', '(Ljava/lang/Integer;II)V', val, 0, 0)
+                val = jutil.make_instance('java/lang/Integer', '(I)V', 1)
+                jutil.call(meta, 'setPixelsSizeT', '(Ljava/lang/Integer;II)V', val, 0, 0)
+
+                # JAVA
 #                meta.createRoot()
 #                meta.setPixelsBigEndian(True, 0, 0)
-#                meta.setPixelsDimensionOrder("XYZCT", 0, 0)
+#                meta.setPixelsDimensionOrder("XYCZT", 0, 0)
 #                meta.setPixelsPixelType(FormatTools.getPixelTypeString(pixelType), 0, 0)
 #                meta.setPixelsSizeX(w, 0, 0)
 #                meta.setPixelsSizeY(h, 0, 0)
-#                meta.setPixelsSizeZ(1, 0, 0)
 #                meta.setPixelsSizeC(3, 0, 0)
+#                meta.setPixelsSizeZ(1, 0, 0)
 #                meta.setPixelsSizeT(1, 0, 0)
                 
+                writer.setMetadataRetrieve(meta)
                 writer.setId('/Users/afraser/Desktop/test_output.tiff')
                 for i in range(image.shape[0]):
                     writer.saveBytes(env.make_byte_array(image[i].astype(np.uint8)), 0, True, True)

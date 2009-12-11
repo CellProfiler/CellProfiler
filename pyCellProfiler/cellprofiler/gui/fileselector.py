@@ -390,6 +390,7 @@ class ImagePage(wx.Panel):
         #bindings
         name.Bind(wx.EVT_TEXT, self.change_name)
         pattern.Bind(wx.EVT_TEXT, self.update_file_list)
+        pattern.Bind(wx.EVT_KEY_UP, self.update_file_list) # some editing keys don't cause EVT_TEXT (e.g., control-D)
         fullpath.Bind(wx.EVT_CHOICE, self.update_file_list)
         matches_only.Bind(wx.EVT_CHECKBOX, self.update_file_list)
 

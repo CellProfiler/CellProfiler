@@ -50,14 +50,13 @@ def make_format_tools_class():
         UINT8 = jutil.get_static_field(klass, 'UINT8', 'I')
     return FormatTools
 
-def make_iformat_reader_class(class_name):
+def make_iformat_reader_class():
     '''Bind a Java class that implements IFormatReader to a Python class
     
     Returns a class that implements IFormatReader through calls to the
     implemented class passed in. The returned class can be subclassed to
     provide additional bindings.
     '''
-    env = jutil.get_env()
     class IFormatReader(object):
         '''A wrapper for loci.formats.IFormatReader
         
@@ -116,7 +115,7 @@ def make_image_reader_class():
     class_name = 'loci/formats/ImageReader'
     klass = env.find_class(class_name)
     base_klass = env.find_class('loci/formats/IFormatReader')
-    IFormatReader = make_iformat_reader_class(class_name)
+    IFormatReader = make_iformat_reader_class()
     #
     # This uses the reader.txt file from inside the loci_tools.jar
     #
@@ -148,7 +147,7 @@ def make_reader_wrapper_class(class_name):
     You can instantiate an instance of the wrapper class like this:
     rdr = ChannelSeparator(ImageReader())
     '''
-    IFormatReader = make_iformat_reader_class(class_name)
+    IFormatReader = make_iformat_reader_class()
     class ReaderWrapper(IFormatReader):
         __doc__ = '''A wrapper for %s
         
@@ -162,65 +161,6 @@ def make_reader_wrapper_class(class_name):
                                   'Set the name of the data file')
     return ReaderWrapper
 
-def make_format_writer_class(class_name):
-    '''Make a FormatWriter wrapper class
-    
-    class_name - the name of a class that implements loci.formats.FormatWriter
-                 Known names in the loci.formats.out package:
-                     APNGWriter, AVIWriter, EPSWriter, ICSWriter, ImageIOWriter,
-                     JPEG2000Writer, JPEGWriter, LegacyQTWriter, OMETiffWriter,
-                     OMEXMLWriter, QTWriter, TiffWriter
-    '''
-    new_fn = jutil.make_new(class_name, 
-                            '(Ljava/lang/String;Ljava/lang/String;)V')
-    class FormatWriter(object):
-        __doc__ = '''A wrapper for %s implementing loci.formats.FormatWriter
-        See http://hudson.openmicroscopy.org.uk/job/LOCI/javadoc/loci/formats/FormatWriter'''%class_name
-        def __init__(self):
-            self.new_fn()
-            
-        canDoStacks = jutil.make_method('canDoStacks','()Z',
-                                        'Reports whether the writer can save multiple images to a single file')
-        getColorModel = jutil.make_method('getColorModel',
-                                          '()Ljava/awt/image/ColorModel;',
-                                          'Gets the color model')
-        getCompression = jutil.make_method('getCompression',
-                                           '()Ljava/lang/String;',
-                                           'Gets the current compression type')
-        getCompressionTypes = jutil.make_method('getCompressionTypes',
-                                                '()[Ljava/lang/String;',
-                                                'Gets the available compression types')
-        getFramesPerSecond = jutil.make_method('getFramesPerSecond',
-                                               '()I', "Gets the frames per second to use when writing")
-        getMetadataRetrieve = jutil.make_method('getMetadataRetrieve',
-                                                '()Lloci/formats/meta/MetadataRetrieve;',
-                                                'Retrieves the current metadata retrieval object for this writer.')
-        
-        getPixelTypes = jutil.make_method('getPixelTypes',
-                                          '()[I')
-        isInterleaved = jutil.make_method('isInterleaved','()Z',
-                                          'Gets whether or not the channels in an image are interleaved')
-        isSupportedType = jutil.make_method('isSupportedType','(I)Z',
-                                            'Checks if the given pixel type is supported')
-        saveBytes = jutil.make_method('saveBytes', '([BZ)V',
-                                      'Saves the given byte array to the current file')
-        setColorModel = jutil.make_method('setColorModel',
-                                          '(Ljava/awt/image/ColorModel;)V',
-                                          'Sets the color model')
-        setCompression = jutil.make_method('setCompression',
-                                           '(Ljava/lang/String;)V',
-                                           'Sets the current compression type')
-        setFramesPerSecond = jutil.make_method('setFramesPerSecond',
-                                               '(I)V',
-                                               'Sets the frames per second to use when writing')
-        setId = jutil.make_method('setId','(Ljava/lang/String;)V',
-                                  'Sets the current file name')
-        setInterleaved = jutil.make_method('setInterleaved', '(Z)V',
-                                           'Sets whether or not the channels in an image are interleaved')
-        setMetadataRetrieve = jutil.make_method('setMetadataRetrieve',
-                                                '(Lloci/formats/meta/MetadataRetrieve;)V',
-                                                'Sets the metadata retrieval object from which to retrieve standardized metadata')
-    return FormatWriter
         
 if __name__ == "__main__":
     import wx

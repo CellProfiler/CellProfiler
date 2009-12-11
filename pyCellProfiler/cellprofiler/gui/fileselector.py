@@ -243,7 +243,7 @@ class CPFileSelector(wx.Frame):
         if descend_dirs == FS_DESCEND_NO:
             self.file_list = [(dir, '', f) for f in os.listdir(dir) if os.path.isfile(os.path.join(dir, f))]
         elif descend_dirs == FS_DESCEND_YES:
-            progress = wx.ProgressDialog('Finding files...', 'M' * MAX_DIRNAME_SIZE, 100, self, wx.PD_CAN_ABORT | wx.PD_APP_MODAL)
+            progress = wx.ProgressDialog('Finding files...', 'M' * (MAX_DIRNAME_SIZE * 2 / 3), 100, self, wx.PD_CAN_ABORT | wx.PD_APP_MODAL)
             progress.Pulse(limit_dirname_size(dir))
             self.file_list = []
             for dirpath, dirnames, filenames in os.walk(dir):
@@ -254,7 +254,7 @@ class CPFileSelector(wx.Frame):
                     break
             progress.Destroy()
         else:
-            progress = wx.ProgressDialog('Finding files...', ' ' * MAX_DIRNAME_SIZE, 100, self, wx.PD_CAN_ABORT | wx.PD_APP_MODAL)
+            progress = wx.ProgressDialog('Finding files...', 'M' * (MAX_DIRNAME_SIZE * 2 / 3), 100, self, wx.PD_CAN_ABORT | wx.PD_APP_MODAL)
             self.file_list = []
             dirlist = self.dirtree.get_selected_dirs()
             for idx, dirpath in enumerate(dirlist):

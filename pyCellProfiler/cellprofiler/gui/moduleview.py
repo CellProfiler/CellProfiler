@@ -890,6 +890,7 @@ class ModuleView:
                 ctrl.Value = "No measurements available"
             else:
                 ctrl.Hide()
+                ctrl.Clear()
                 text_ctrl.Hide()
         set_up_combobox(category_ctrl, category_text_ctrl, categories, 
                         category, True)

@@ -1,6 +1,7 @@
 import wx
 import wx.html
 import wx.lib.agw.customtreectrl as CT
+import scrollable_text
 import os
 import os.path
 import fnmatch
@@ -75,7 +76,7 @@ class CPFileSelector(wx.Frame):
         wx.Frame.__init__(self, *args, **kwds)
 
         # top level splitter
-        splitter = wx.SplitterWindow(self, -1, style=wx.BORDER_NONE)
+        self.splitter = splitter = wx.SplitterWindow(self, -1, style=wx.BORDER_NONE)
 
         # panels
         self.top_panel = top_panel = wx.Panel(splitter, -1, style=wx.BORDER_SIMPLE)
@@ -118,7 +119,7 @@ class CPFileSelector(wx.Frame):
         self.exclude = exclude
 
         box = wx.StaticBox(top_panel, -1, "Exclude substrings...")
-        self.exclude_list, self.exclude_boxsizer = exclude_list, exclude_boxsizer = boxed_thing(box, wx.TextCtrl(top_panel, -1, "", size=(300,10), style=wx.TE_MULTILINE))
+        self.exclude_list, self.exclude_boxsizer = exclude_list, exclude_boxsizer = boxed_thing(box, wx.TextCtrl(top_panel, -1, "", size=(300,30), style=wx.TE_MULTILINE))
                                                                                                 
         # Matching Mode
         mode, mode_sizer = labeled_thing("Identify channels by:", wx.Choice(bottom_panel, -1, choices=match_modes), parent=bottom_panel)
@@ -198,13 +199,28 @@ class CPFileSelector(wx.Frame):
         self.Layout()
         self.SetAutoLayout(True)
 
+    def set_shown(self, sizer, item, show):
+        was_shown = sizer.IsShown(item)
+        sizer.Show(item, show=show)
+        is_shown =  sizer.IsShown(item)
+        if (sizer == self.top_sizer) and (is_shown and not was_shown):
+            if hasattr(item, 'GetBestSize'):
+                sz = item.GetBestSize()[1]
+            else:
+                sz = item.GetMinSize()[1]
+            self.splitter.SashPosition += sz
+        elif (sizer == self.top_sizer) and (was_shown and not is_shown):
+            self.splitter.SashPosition -= item.GetSize()[1]
+
+
     def change_basedir(self, evt):
         idx = self.base_dir.GetSelection()
-        self.top_sizer.Show(self.otherdir_sizer, show=(base_dir_choices[idx] == FS_OTHER_DIR))
+        self.set_shown(self.top_sizer, self.otherdir_sizer, (base_dir_choices[idx] == FS_OTHER_DIR))
         if os.path.isdir(self.get_current_directory()):
             self.dirtree.set_directory(self.get_current_directory())
             if descend_dir_choices[self.descend_dirs.GetSelection()] == FS_DESCEND_NO:
                 self.update_file_list()
+                
         self.top_panel.Layout()
         self.Refresh()
 
@@ -233,7 +249,6 @@ class CPFileSelector(wx.Frame):
             for dirpath, dirnames, filenames in os.walk(dir):
                 subpath = relpath(dirpath, dir)
                 self.file_list += [(dir, subpath, f) for f in filenames]
-                print dirpath
                 c, s = progress.Pulse(limit_dirname_size(dirpath))
                 if not c:
                     break
@@ -277,13 +292,13 @@ class CPFileSelector(wx.Frame):
 
     def change_descend(self, evt):
         idx = self.descend_dirs.GetSelection()
-        self.top_sizer.Show(self.descend_update_filelist, show=(descend_dir_choices[idx] != FS_DESCEND_NO))
-        self.top_sizer.Show(self.dirtree_boxsizer, show=(descend_dir_choices[idx] == FS_DESCEND_CHOOSE))
+        self.set_shown(self.top_sizer, self.descend_update_filelist, show=(descend_dir_choices[idx] != FS_DESCEND_NO))
+        self.set_shown(self.top_sizer, self.dirtree_boxsizer, show=(descend_dir_choices[idx] == FS_DESCEND_CHOOSE))
         self.top_panel.Layout()
         self.Refresh()
 
     def change_exclude(self, evt):
-        self.top_sizer.Show(self.exclude_boxsizer, show=self.exclude.GetValue())
+        self.set_shown(self.top_sizer, self.exclude_boxsizer, show=self.exclude.GetValue())
         self.update_exclusions()
         self.top_panel.Layout()
         self.Refresh()
@@ -341,11 +356,7 @@ class ImagePage(wx.Panel):
         self.fullpath = fullpath = wx.Choice(self, -1, choices=match_elements)
         self.matches_only = matches_only = wx.CheckBox(self, -1, "Show only matching files?")
 
-        self.file_list = file_list = wx.html.HtmlWindow(self, -1, style=wx.html.HW_SCROLLBAR_AUTO)
-        if 'gtk2' in wx.PlatformInfo:
-            file_list.SetStandardFonts()
-
-        self.unprocessed_list = None
+        self.file_list = file_list = scrollable_text.ScrollableText(self, -1)
 
         # Layout
         name_sizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -381,11 +392,6 @@ class ImagePage(wx.Panel):
         pattern.Bind(wx.EVT_TEXT, self.update_file_list)
         fullpath.Bind(wx.EVT_CHOICE, self.update_file_list)
         matches_only.Bind(wx.EVT_CHECKBOX, self.update_file_list)
-        file_list.Bind(wx.EVT_SIZE, self.resize)
-        file_list.Bind(wx.EVT_SCROLLWIN, self.scroll)
-        file_list.Bind(EVT_CUSTOM_EVENT, self.restore_scroll)
-
-        self.scroll_pos=0
 
         # initial state
         fullpath.SetSelection(match_elements.index(FS_FILENAME_ONLY))
@@ -403,62 +409,50 @@ class ImagePage(wx.Panel):
         match_elements_choice = match_elements[self.fullpath.GetSelection()]
         modestr = match_modes[self.file_selector.mode.GetSelection()]
             
-        prefix = ''
+        prefix = []
         if match_elements_choice == FS_FILENAME_ONLY:
             file_string = filename
             if sub_dir != '':
-                prefix = '<font color="grey">' + sub_dir + os.sep + '</font>'
+                prefix += [('grey', sub_dir + os.sep)]
         elif match_elements_choice == FS_SUBDIR_AND_FNAME:
             file_string = os.path.join(sub_dir, filename)
         else:
             file_string = os.path.join(base_dir, sub_dir, filename)
 
         if modestr == FS_SUBSTRING:
-            if pattern in file_string:
-                return prefix + file_string.replace(pattern, '<font color="red">'+pattern+'</font>') + '<br>'
+            if len(pattern) > 0:
+                if pattern in file_string:
+                    idx = file_string.index(pattern)
+                    return prefix + [('black', file_string[:idx]), ('red', pattern), ('black', file_string[idx + len(pattern):])]
+            else:
+                return prefix + [('red', file_string)]
         elif modestr == FS_SHELL:
             if re.match(fnmatch.translate(pattern), file_string):
-                return prefix + '<font color="red">'+file_string+'</font><br>'
+                return prefix + [('red', file_string)]
         elif modestr == FS_RE:
             match = re.search(pattern, file_string)
             if match:
                 start, end = match.start(), match.end()
-                return prefix + file_string[:start] + '<font color="red">' + file_string[start:end] + '</font>' + file_string[end:] + '<br>'
+                return  prefix + [('black', file_string[:start]), ('red', file_string[start:end]), ('black', file_string[end:])]
         elif modestr == FS_POSITION:
-            return prefix + '<font color="red">'+file_string+'</font><br>'
+            return prefix + [('red', file_string)]
 
         if self.matches_only.GetValue():
-            return ''
+            return None
         else:
-            return prefix + '<font color="grey">'+file_string+'</font><br>'
+            return prefix + [('grey', file_string)]
 
     def format_file_list(self):
-        return "\n".join([self.format_file(f) for f in self.file_selector.get_file_list()])
+        flist = [self.format_file(f) for f in self.file_selector.get_file_list()]
+        return [f for f in flist if f is not None]
         
     def update_file_list(self, evt=None, keep_pos=False):
-        keep_position = keep_pos or ((evt is not None) and (evt.GetEventObject() != self.matches_only))
         try:
-            if keep_position:
-                self.file_list.Freeze()
-                ux, uy = self.file_list.GetViewStart()
-            self.file_list.SetPage(self.format_file_list())
-            if keep_position:
-                self.file_list.Scroll(ux, uy)
-                self.file_list.Thaw()
+            flist = self.format_file_list()
+            self.file_list.set_text(flist)
         except re.error:
             # don't blow up when the pattern isn't valid
             pass
-
-    def resize(self, evt):
-        wx.PostEvent(self.file_list, MyEvent())
-        evt.Skip()
-        
-    def scroll(self, evt):
-        self.scroll_pos = self.file_list.GetViewStart()[1]
-        evt.Skip()
-
-    def restore_scroll(self, evt):
-        self.file_list.Scroll(0, self.scroll_pos)
 
     def set_mode(self, idx):
         self.path_sizer.Show(self.fullpath, (match_modes[idx] != FS_POSITION))

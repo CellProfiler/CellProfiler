@@ -155,6 +155,11 @@ def get_threshold(threshold_method, threshold_modifier, image,
     else:
         raise NotImplementedError("%s thresholding is not implemented"%(threshold_modifier))
     if isinstance(local_threshold, np.ndarray):
+        #
+        # Constrain thresholds to within .7 to 1.5 of the global threshold.
+        #
+        threshold_range_min = max(threshold_range_min, global_threshold * .7)
+        threshold_range_max = min(threshold_range_max, global_threshold * 1.5)
         if not threshold_range_min is None:
             local_threshold[local_threshold < threshold_range_min] = \
                 threshold_range_min

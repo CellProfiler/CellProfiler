@@ -295,10 +295,11 @@ class CorrectIllumination_Calculate(cpm.CPModule):
                 orig_image = workspace.image_set.get_image(self.image_name.value,
                                                            must_be_grayscale=True)
                 output_image_provider.add_image(orig_image)
-            if workspace.frame != None:
-                avg_image = output_image_provider.provide_avg_image()
-                dilated_image = output_image_provider.provide_dilated_image()
-                output_image = output_image_provider.provide_image(workspace.image_set)
+
+            # fetch images for display
+            avg_image = output_image_provider.provide_avg_image()
+            dilated_image = output_image_provider.provide_dilated_image()
+            output_image = output_image_provider.provide_image(workspace.image_set)
         else:
             orig_image = workspace.image_set.get_image(self.image_name.value,
                                                        must_be_grayscale=True)
@@ -315,11 +316,16 @@ class CorrectIllumination_Calculate(cpm.CPModule):
                                         dilated_image)
             workspace.image_set.add(self.illumination_image_name.value,
                                     output_image)
-        
-        if workspace.frame != None:
-            self.display(workspace, avg_image, dilated_image, output_image)
+        # store images for potential display
+        workspace.display_data.avg_image = avg_image
+        workspace.display_data.dilated_image = dilated_image
+        workspace.display_data.output_image = output_image
     
-    def display(self, workspace, avg_image, dilated_image, output_image):
+    def display(self, workspace):
+        avg_image = workspace.display_data.avg_image
+        dilated_image = workspace.display_data.dilated_image
+        output_image = workspace.display_data.output_image
+        
         figure = workspace.create_or_find_figure(subplots=(2,2))
         figure.subplot_imshow_grayscale(0, 0, avg_image.pixel_data, 
                                         "Averaged image")
@@ -349,6 +355,9 @@ class CorrectIllumination_Calculate(cpm.CPModule):
         statistics.append(["Smoothing filter size",
                            round(self.smoothing_filter_size(output_image.pixel_data.size),2)])
         figure.subplot_table(1, 1, statistics, ratio=[.6,.4])
+
+    def is_interactive(self):
+        return False
 
     def apply_dilation(self, image, orig_image=None):
         """Return an image that is dilated according to the settings

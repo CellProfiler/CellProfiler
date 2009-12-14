@@ -263,20 +263,9 @@ class CalculateMath(cpm.CPModule):
         feature = self.measurement_name()
         if all_image_measurements:
             m.add_image_measurement(feature, result)
-            workspace.display_data.statistics = [[feature, "%f"%result]]
         else:
             for object_name in all_object_names:
                 m.add_measurement(object_name, feature, result)
-            workspace.display_data.statistics = [[feature, "mean: %f"%(np.mean(result))]]
-                
-
-    def display(self, workspace):
-        if workspace.frame != None:
-            figure = workspace.create_or_find_figure(subplots=(1,1))
-            figure.subplot_table(0, 0, workspace.display_data.statistics, ratio=(0.5, 0.5))
-
-    def is_interactive(self):
-        return False
 
     def measurement_name(self):
         return "Math_"+self.output_feature_name.value

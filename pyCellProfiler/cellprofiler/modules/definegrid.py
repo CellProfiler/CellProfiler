@@ -384,7 +384,7 @@ class DefineGrid(cpm.CPModule):
             import matplotlib.backends.backend_wxagg
             figure = matplotlib.figure.Figure()
             axes = figure.add_axes((0,0,1,1),frameon=False)
-            self.display(workspace, gridding, axes)
+            self.display_grid(workspace, gridding, axes)
             axes.axison=False
             ai = axes.images[0]
             size = 2*np.array(ai.get_size(),float) / float(figure.get_dpi())
@@ -393,8 +393,13 @@ class DefineGrid(cpm.CPModule):
             pixel_data = figure_to_image(figure)
             image = cpi.Image(pixel_data)
             workspace.image_set.add(self.save_image_name.value, image)
-        if workspace.frame is not None:
-            self.display(workspace, gridding)
+
+        workspace.display_data.gridding = gridding
+
+    def is_interactive(self):
+        # if the user wants an image, we have to have access to the
+        # display to create it.
+        return self.wants_image
 
     def run_automatic(self, workspace):
         '''Automatically define a grid based on objects
@@ -687,7 +692,14 @@ class DefineGrid(cpm.CPModule):
             column -= 1
         return (row, column)
         
-    def display(self, workspace, gridding, axes=None):
+
+    def display(self, workspace):
+        # if the user requested an image, the display has already been
+        # updated in run()
+        if not self.wants_image:
+            self.display_grid(workspace, workspace.display_data.gridding)
+
+    def display_grid(self, workspace, gridding, axes=None):
         '''Display the grid in a figure'''
         import matplotlib
         

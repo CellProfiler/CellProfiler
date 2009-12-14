@@ -149,6 +149,12 @@ class ColorToGray(cpm.CPModule):
         else:
             self.run_split(workspace, image)
     
+    def display(self, workspace):
+        if self.should_combine():
+            self.display_combine(workspace)
+        else:
+            self.display_split(workspace)
+
     def run_combine(self, workspace, image):
         """Combine images to make a grayscale one
         """
@@ -162,12 +168,15 @@ class ColorToGray(cpm.CPModule):
                         input_image[:,:,2] * self.blue_contribution.value) / denominator
         image = cpi.Image(output_image,parent_image=image)
         workspace.image_set.add(self.grayscale_name,image)
+
         
-        if workspace.display:
-            self.display_combine(workspace, input_image, output_image)
-        
+        workspace.display_data.input_image = input_image
+        workspace.display_data.output_image = output_image
+       
     
-    def display_combine(self, workspace, input_image, output_image):
+    def display_combine(self, workspace):
+        input_image = workspace.display_data.input_image
+        output_image = workspace.display_data.output_image
         figure=workspace.create_or_find_figure(title="Color to gray",
                                                subplots=(1,2))
         input_axes = figure.subplot(0,0)
@@ -193,11 +202,13 @@ class ColorToGray(cpm.CPModule):
                 image = cpi.Image(output_image,parent_image=image)
                 workspace.image_set.add(v_name.value,image)
                 disp_collection.append([output_image, title])
-        if workspace.display:
-            self.display_split(workspace, input_image, disp_collection)
-                
+
+        workspace.display_data.input_image = input_image
+        workspace.display_data.disp_collection = disp_collection
     
-    def display_split(self, workspace, input_image, disp_collection):
+    def display_split(self, workspace):
+        input_image = workspace.display_data.input_image
+        disp_collection = workspace.display_data.disp_collection
         ndisp = len(disp_collection)
         if ndisp == 1:
             subplots = (1,2)
@@ -223,6 +234,9 @@ class ColorToGray(cpm.CPModule):
             output_axes.imshow(disp[0],matplotlib.cm.Greys_r)
             output_axes.set_title("%s image"%(disp[1]))
         
+    def is_interactive(self):
+        return False
+
     def upgrade_settings(self,
                          setting_values,
                          variable_revision_number,

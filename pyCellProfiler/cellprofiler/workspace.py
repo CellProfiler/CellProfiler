@@ -74,6 +74,7 @@ class Workspace(object):
         self.__grid = {}
         self.__disposition = DISPOSITION_CONTINUE
         self.__disposition_listeners = []
+        self.__in_background = False # controls checks for calls to create_or_find_figure()
 
         class DisplayData(object):
             pass
@@ -175,8 +176,18 @@ class Workspace(object):
         return self.__frame != None
     display = property(get_display)
     
+    def get_in_background(self):
+        return self.__in_background
+    def set_in_background(self, val):
+        self.__in_background = val
+    in_background = property(get_in_background, set_in_background)
+
     def create_or_find_figure(self,title=None,subplots=None,window_name = None):
         """Create a matplotlib figure window or find one already created"""
+        
+        # catch any background threads trying to call display functions.
+        assert not self.__in_background 
+
         if title==None:
             title=self.__module.module_name
             

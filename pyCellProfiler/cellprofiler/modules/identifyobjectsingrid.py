@@ -219,8 +219,6 @@ class IdentifyObjectsInGrid(cpm.CPModule):
             outlines = outline(labels!=0)
             outline_image = cpi.Image(outlines)
             workspace.image_set.add(self.outlines_name.value, outline_image)
-        if workspace.frame is not None:
-            self.display(workspace)
             
     def run_rectangle(self, workspace, gridding):
         '''Return a labels matrix composed of the grid rectangles'''
@@ -397,6 +395,10 @@ class IdentifyObjectsInGrid(cpm.CPModule):
         guide_labels = guide_labels.segmented
         return guide_labels
         
+
+    def is_interactive(self):
+        return False
+
     def display(self, workspace):
         '''Display the resulting objects'''
         import matplotlib

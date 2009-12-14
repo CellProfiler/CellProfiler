@@ -54,6 +54,9 @@ def set_headless():
     global __is_headless
     __is_headless = True
     
+def get_headless():
+    return __is_headless
+
 def get_config():
     global __is_headless,__headless_config
     if __is_headless:

@@ -1341,13 +1341,20 @@ class LoadImagesImageProvider(cpimage.AbstractImageProvider):
         if self.__filename.lower().endswith(".mat"):
             imgdata = scipy.io.matlab.mio.loadmat(self.get_full_name(),
                                                   struct_as_record=True)
-            return cpimage.Image(imgdata["Image"])
-        elif has_bioformats:
-            img = load_using_bioformats(self.get_full_name())
+            img = imgdata["Image"]
         elif self.__filename.lower().endswith(".dib"):
+            # use our own DIB reader
             img = cpimage.readc01(self.get_full_name())
         else:
-            img = load_using_PIL(self.get_full_name())
+            # try PIL first, for speed
+            try:
+                img = load_using_PIL(self.get_full_name())    
+            except:
+                if has_bioformats:
+                    img = load_using_bioformats(self.get_full_name())
+                else:
+                    raise
+            
         return cpimage.Image(img,
                              path_name = self.get_pathname(),
                              file_name = self.get_filename())
@@ -1538,10 +1545,7 @@ class LoadImagesSTKFrameProvider(cpimage.AbstractImageProvider):
         self.__frame    = frame
         
     def provide_image(self, image_set):
-        if has_bioformats:
-            img = load_using_bioformats(self.get_full_name(),
-                                         t=self.__frame)
-        else:
+        try:
             def seekfn(img, index):
                 '''Seek in an STK file to a given stack frame
                 
@@ -1566,6 +1570,12 @@ class LoadImagesSTKFrameProvider(cpimage.AbstractImageProvider):
                             for coding, location, offset, format in img.tile]
                 
             img = load_using_PIL(self.get_full_name(), self.__frame, seekfn)
+        except:
+            if has_bioformats:
+                img = load_using_bioformats(self.get_full_name(),
+                                         t=self.__frame)
+            else:
+                raise
         return cpimage.Image(img,
                              path_name = self.get_pathname(),
                              file_name = self.get_filename())

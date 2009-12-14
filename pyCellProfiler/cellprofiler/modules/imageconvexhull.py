@@ -56,8 +56,8 @@ class ImageConvexHull(cpm.CPModule):
         workspace.display_data.pixel_data = pixel_data
         workspace.display_data.output_pixels = output_pixels
 
-        if not workspace.frame is None:
-            self.display(workspace)
+    def is_interactive(self):
+        return False
 
     def display(self, workspace):
         figure = workspace.create_or_find_figure(subplots=(1,2))

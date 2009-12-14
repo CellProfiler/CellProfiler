@@ -199,8 +199,9 @@ class RescaleIntensity(cpm.CPModule):
                                        parent_image = input_image,
                                        convert = False)
         workspace.image_set.add(self.rescaled_image_name.value, rescaled_image)
-        if workspace.frame is not None:
-            self.display(workspace)
+
+    def is_interactive(self):
+        return False
     
     def display(self, workspace):
         '''Display the original and rescaled image'''

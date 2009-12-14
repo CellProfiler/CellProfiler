@@ -34,7 +34,6 @@ import numpy as np
 import os
 import Image as PILImage
 import scipy.io.matlab.mio
-import wx
 
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements
@@ -334,6 +333,17 @@ class SaveImages(cpm.CPModule):
         else:
             raise NotImplementedError(("Saving a %s is not yet supported"%
                                        (self.save_image_or_figure)))
+        workspace.display_data.filename = self.get_filename(workspace)
+        
+    def is_interactive(self):
+        # if we overwrite files, it's safe to run in the background
+        return self.overwrite.value
+
+    def display(self, workspace):
+        if workspace.frame != None:
+            figure = workspace.create_or_find_figure(subplots=(1,1))
+            figure.subplot_table(0, 0, [["Wrote: %s"%(workspace.display_data.filename)]])
+
     
     def run_image(self,workspace):
         """Handle saving an image"""
@@ -398,16 +408,21 @@ class SaveImages(cpm.CPModule):
         else:
             mode = 'L'
         filename = self.get_filename(workspace)
-        if self.get_file_format() == FF_MAT:
-            scipy.io.matlab.mio.savemat(filename,{"Image":pixels},format='5')
-        else:
-            pil = PILImage.fromarray(pixels,mode)
-            if not self.overwrite.value and os.path.isfile(filename):
+
+        if not self.overwrite.value and os.path.isfile(filename):
+            if cpp.get_headless():
+                raise 'SaveImages: trying to overwrite %s in headless mode, but Overwrite files is set to "No"'%(filename)
+            else:
+                import wx
                 over = wx.MessageBox("Do you want to overwrite %s?"%(filename),
                                      "Warning: overwriting file", wx.YES_NO)
                 if over == wx.ID_NO:
                     return
-            pil.save(filename,self.get_file_format())
+        if self.get_file_format() == FF_MAT:
+            scipy.io.matlab.mio.savemat(filename,{"Image":pixels},format='5')
+        else:
+            pil = PILImage.fromarray(pixels,mode)
+            pil.save(filename, self.get_file_format())
         if self.update_file_names.value:
             pn, fn = os.path.split(filename)
             workspace.measurements.add_measurement('Image',

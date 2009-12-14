@@ -612,9 +612,13 @@ class Pipeline(object):
                                 exception = worker.exception
                             yield measurements
                         else:
+                            # Turn on checks for calls to create_or_find_figure() in workspace.
+                            workspace.in_background = True
                             worker = ModuleRunner(module, workspace, frame)
                             worker.start()
                             yield measurements
+                            # After the worker finishes, we can clear this flag.
+                            workspace.in_background = False
                             if worker.exception is not None:
                                 exception = worker.exception
                         t1 = sum(os.times()[:-1])
@@ -623,7 +627,7 @@ class Pipeline(object):
                                (start_time.ctime(), image_number, 
                                 module.module_name, module.module_num, 
                                 delta_sec))
-                        if workspace.frame and not module.is_interactive():
+                        if workspace.frame:
                             try:
                                 module.display(workspace)
                             except Exception, instance:

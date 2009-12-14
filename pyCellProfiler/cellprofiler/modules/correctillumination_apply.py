@@ -181,9 +181,6 @@ class CorrectIllumination_Apply(cpm.CPModule):
         for image in self.images:
             self.run_image(image, workspace)
         
-        if workspace.frame:
-            self.display(workspace)
-            
     def run_image(self, image, workspace):
         '''Perform illumination according to the parameters of one image setting group
         
@@ -273,6 +270,9 @@ class CorrectIllumination_Apply(cpm.CPModule):
             figure.subplot_imshow_grayscale(2, j, corrected_image.pixel_data,
                                             "Final image: %s" %
                                             corrected_image_name)
+
+    def is_interactive(self):
+        return False
 
     def upgrade_settings(self, setting_values, variable_revision_number, 
                          module_name, from_matlab):

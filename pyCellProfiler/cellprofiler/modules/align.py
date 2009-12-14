@@ -194,10 +194,11 @@ with respect to the first image.""")
                             output_name))
                 workspace.measurements.add_image_measurement(feature, value)
             
-        if not workspace.frame is None:
-            self.display(workspace, statistics, most_cropped_image_name)
+        # save data for display
+        workspace.display_data.statistics = statistics
+        workspace.display_data.most_cropped_image_name = most_cropped_image_name
     
-    def display(self, workspace, statistics, most_cropped_image_name):
+    def display(self, workspace):
         '''Display the overlaid images
         
         workspace - the workspace being run
@@ -208,6 +209,8 @@ with respect to the first image.""")
             3: x offset
             4: y offset
         '''
+        statistics = workspace.display_data.statistics
+        most_cropped_image_name = workspace.display_data.most_cropped_image_name
         image_set = workspace.image_set
         crop_image = image_set.get_image(most_cropped_image_name)
         first_image = image_set.get_image(self.first_input_image.value,
@@ -236,6 +239,9 @@ with respect to the first image.""")
                      (self.first_output_image.value, output_name,
                       off_x, off_y))
             figure.subplot_imshow_color(1,i,img,title)
+
+    def is_interactive(self):
+        return False
         
     def align(self, workspace, input1_name, input2_name, most_cropped_image_name):
         '''Align the second image with the first

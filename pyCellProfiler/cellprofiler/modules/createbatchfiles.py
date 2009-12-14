@@ -176,6 +176,14 @@ class CreateBatchFiles(cpm.CPModule):
         # all the actual work is done in prepare_run
         pass
 
+    def display(self, workspace):
+        if workspace.frame != None:
+            figure = workspace.create_or_find_figure(title='CreateBatchFiles', subplots=(1,1))
+            figure.subplot_table(0, 0, [['Batch files created.']])
+
+    def is_interactive(self):
+        return False
+
     def validate_module(self, pipeline):
         '''Make sure this is the last module in the pipeline'''
         if self.module_num != len(pipeline.modules()):

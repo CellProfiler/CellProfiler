@@ -246,6 +246,9 @@ class LoadImagesNew(cpmodule.CPModule):
     def display(self, workspace):
         pass
 
+    def is_interactive(self):
+        return True
+    
     def get_filename_metadata(self, fd, filename, path):
         """Get the filename and path metadata for a given image
         

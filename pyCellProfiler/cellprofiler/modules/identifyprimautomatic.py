@@ -257,139 +257,7 @@ class IdentifyPrimAutomatic(cpmi.Identify):
             This is useful in cases when you do not want to make measurements of
             objects that are not fully within the field of view (because, for
             example, the morphological measurements would not be accurate).''')
-        self.threshold_method = cps.Choice(
-            'Select the thresholding method',
-            cpthresh.TM_METHODS, doc='''\
-            The threshold affects the stringency of the lines between the objects 
-            and the background. You can have the threshold automatically calculated 
-            using several methods, or you can enter an absolute number between 0 
-            and 1 for the threshold (to see the pixel intensities for your images 
-            in the appropriate range of 0 to 1, use <i>Tools &gt; Show pixel data</i> 
-            in a window showing your image). There are advantages either way. 
-            An absolute number treats every image identically, but is not robust 
-            to slight changes in lighting/staining conditions between images. An
-            automatically calculated threshold adapts to changes in
-            lighting/staining conditions between images and is usually more
-            robust/accurate, but it can occasionally produce a poor threshold for
-            unusual/artifactual images. It also takes a small amount of time to
-            calculate.
-            
-            <p>The threshold which is used for each image is recorded as a
-            measurement in the output file, so if you find unusual measurements from
-            one of your images, you might check whether the automatically calculated
-            threshold was unusually high or low compared to the other images.
-            
-            <p>There are six methods for finding thresholds automatically:
-            <ul><li><i>Otsu:</i> This method is probably best if you don't know 
-            anything about the image, or if the percent of the image covered by 
-            objects varies substantially from image to image. Our implementation 
-            takes into account the max and min values in the image and log-transforming the
-            image prior to calculating the threshold. If you know that the object 
-            coverage percentage does not vary much from image
-            to image, the MoG method can be better, especially if the coverage percentage is
-            not near 50%. Note, however, that the MoG function is experimental and
-            has not been thoroughly validated. </li>
-            <li><i>Mixture of Gaussian (MoG):</i>This function assumes that the 
-            pixels in the image belong to either a background class or an object
-            class, using an initial guess of the fraction of the image that is 
-            covered by objects. Essentially, there are two steps:
-            <ol><li>First, a number of Gaussian distributions are estimated to 
-            match the distribution of pixel intensities in the image. Currently 
-            three Gaussian distributions are fitted, one corresponding to a 
-            background class, one corresponding to an object class, and one 
-            distribution for an intermediate class. The distributions are fitted
-            using the Expectation-Maximization algorithm, a procedure referred 
-            to as Mixture of Gaussians modeling. </li>
-            <li>When the three Gaussian distributions have been fitted, a decsion 
-            is made whether the intermediate class models the background pixels 
-            or object pixels based on the fraction provided by the user.</li></ol>
-            <li><i>Background:</i> This method is simple and appropriate for images in 
-            which most of the image is background. It finds the mode of the 
-            histogram of the image, which is assumed to be the background of the 
-            image, and chooses a threshold at twice that value (which you can 
-            adjust with a Threshold Correction Factor,
-            see below).  Note that the mode is protected from a high number of 
-            saturated pixels by only counting pixels < 0.95. This can be very helpful,
-            for example, if your images vary in overall brightness but the objects of 
-            interest are always twice (or actually, any constant) as bright as the 
-            background of the image. </li>
-            <li><i>Robust background:</i> This method trims the brightest and 
-            dimmest 5% of pixel intensities in the hopes that the remaining pixels 
-            represent a gaussian of intensity values that are mostly background 
-            pixels. It then calculates the mean and standard deviation of the 
-            remaining pixels and calculates the threshold as the mean + 2 times 
-            the standard deviation.</li>
-            <li><i>Ridler-Calvard:</i> This method is simple and its results are
-            often very similar to Otsu's - according to
-            Sezgin and Sankur's paper (<i>Journal of Electronic Imaging</i>, 2004), Otsu's 
-            overall quality on testing 40 nondestructive testing images is slightly 
-            better than Ridler's (Average error - Otsu: 0.318, Ridler: 0.401). 
-            It chooses an initial threshold, and then iteratively calculates the next 
-            one by taking the mean of the average intensities of the background and 
-            foreground pixels determined by the first threshold, repeating this until 
-            the threshold converges.</li>
-            <li><i>Kapur:</i> This method computes the threshold of an image by
-            log-transforming its values, then searching for the threshold that
-            maximizes the sum of entropies of the foreground and background
-            pixel values, when treated as separate distributions.</li>
-            </ul>
-            
-            <p>You can also choose between <i>Global</i>, <i>Adaptive</i>, and 
-            <i>Per-Object</i> thresholding for the automatic methods:
-            <ul>
-            <li><i>Global:</i> One threshold is used for the entire image (fast)</li>
-            <li><i>Adaptive:</i> The threshold varies across the image - a bit slower but
-            provides more accurate edge determination which may help to separate
-            clumps, especially if you are not using a clump-separation method </li>
-            <li><i>Per-Object:</i> If you are using this module to find child objects located
-            <i>within</i> parent objects, the per object method will calculate a distinct
-            threshold for each parent object. This is especially helpful, for
-            example, when the background brightness varies substantially among the
-            parent objects. 
-            <p>Important: the per-object method requires that you run an
-            IdentifyPrimAutomatic module to identify the parent objects upstream in the
-            pipeline. After the parent objects are identified in the pipeline, you
-            must then also run a <b>Crop</b> module with the following inputs: 
-            <ul>
-            <li>The input image is the image containing the sub-objects to be identified.</li>
-            <li>Select <i>Objects</i> as the shape to crop into.</li>
-            <li>Select the parent objects (e.g., Nuclei) as the objects to use as a cropping mask.</li>
-            </ul>
-            Finally, in the IdentifyPrimAutomatic module, select the cropped image as input image.</ul>
-            
-            <p>Selecting manual thresholding allows you to enter a single value between 0 and 1
-            as the threshold value. This setting can be useful when you are certain what the
-            cutoff should be. Also, in the case of a binary image (where the foreground is 1 and 
-            the background is 0), a manual value of 0.5 will identify the objects.
-            
-            <p>Selecting a binary image will essentially use the binary image as a mask for the
-            input image.''')
-
-        self.threshold_correction_factor = cps.Float('Threshold correction factor', 1,
-                                                doc="""\
-            When the threshold is calculated automatically, it may consistently be
-            too stringent or too lenient. You may need to enter an adjustment factor
-            which you empirically determine is suitable for your images. The number 1
-            means no adjustment, 0 to 1 makes the threshold more lenient and greater
-            than 1 (e.g. 1.3) makes the threshold more stringent. For example, the
-            Otsu automatic thresholding inherently assumes that 50% of the image is
-            covered by objects. If a larger percentage of the image is covered, the
-            Otsu method will give a slightly biased threshold that may have to be
-            corrected using this setting.""")
-        self.threshold_range = cps.FloatRange('Lower and upper bounds on threshold:', (0,1), minval=0,
-                                         maxval=1, doc="""\
-            In the range [0,1].  May be used as a safety precaution when the threshold is calculated
-            automatically. For example, if there are no objects in the field of view,
-            the automatic threshold will be unreasonably low. In such cases, the
-            lower bound you enter here will override the automatic threshold.""")
-        
-        self.object_fraction = cps.CustomChoice(
-            'Approximate fraction of image covered by objects?', 
-            ['0.01','0.1','0.2','0.3', '0.4','0.5','0.6','0.7', '0.8','0.9',
-             '0.99'], doc="""\
-            <i>(Only used when applying the Mixture of Gaussian thresholding method)</i>
-            <p>An estimate of how much of the image is covered with objects, which
-            is used to estimate the distribution of pixel intensities.""")
+        self.create_threshold_settings()
         self.unclump_method = cps.Choice(
             'Method to distinguish clumped objects', 
             [UN_INTENSITY, UN_SHAPE, UN_LOG, UN_NONE], doc="""\
@@ -542,48 +410,12 @@ class IdentifyPrimAutomatic(cpmi.Identify):
             'Run in test mode where each method for '
             'distinguishing clumped objects is compared?', False)
         
-        self.manual_threshold = cps.Float("Enter manual threshold:", 
-                                          value=0.0, minval=0.0, maxval=1.0,doc="""\
-            <i>(Only used if Manual selected for thresholding method)</i>
-            <p>Enter the value that will act as an absolute threshold for the image""")
-        
-        self.binary_image = cps.ImageNameSubscriber(
-            "Select binary image:", "None", doc = """What is the binary thresholding image?""")
-        
         self.wants_automatic_log_threshold = cps.Binary(
             'Calculate the Laplacian of Gaussian threshold '
             'automatically?', True)
         
         self.manual_log_threshold = cps.Float('Enter Laplacian of '
                                               'Gaussian threshold:', .5, 0, 1)
-        
-        self.two_class_otsu = cps.Choice(
-            'Two-class or three-class thresholding?',
-            [cpmi.O_TWO_CLASS, cpmi.O_THREE_CLASS],doc="""
-            <i>(Only used for the Otsu thresholding method)</i> 
-            <p>Select <i>Two</i> if the grayscale levels are readily distinguishable into foregound 
-            (i.e., objects) and background. Select <i>Three</i> if there is an 
-            middle set of grayscale levels which belong to neither the
-            foreground nor background. 
-            <p>For example, three-class thresholding may
-            be useful for images in which you have nuclear staining along with a
-            low-intensity non-specific cell staining. Where two-class thresholding
-            might incorrectly assign this intemediate staining to the nuclei 
-            objects, three-class thresholding allows you to assign it to the 
-            foreground or background as desired. However, in extreme cases where either 
-            there are almost no objects or the entire field of view is covered with 
-            objects, three-class thresholding may perform worse than two-class.""")
-        
-        self.use_weighted_variance = cps.Choice(
-            'Minimize the weighted variance or the entropy?',
-            [cpmi.O_WEIGHTED_VARIANCE, cpmi.O_ENTROPY])
-        
-        self.assign_middle_to_foreground = cps.Choice(
-            'Assign pixels in the middle intensity class to the foreground '
-            'or the background?', [cpmi.O_FOREGROUND, cpmi.O_BACKGROUND],doc="""
-            <i>Only used for the Otsu thresholding method with three-class thresholding)</i>
-            <p>Select whether you want the middle grayscale intensities to be assigned 
-            to the foreground pixels or the background pixels.""")
         
         self.wants_automatic_log_diameter = cps.Binary(
             'Automatically calculate the size of objects '
@@ -717,21 +549,9 @@ class IdentifyPrimAutomatic(cpmi.Identify):
         return setting_values, variable_revision_number, from_matlab
             
     def visible_settings(self):
-        vv = [self.image_name,self.object_name,self.size_range, \
-                self.exclude_size, self.merge_objects, \
-                self.exclude_border_objects, self.threshold_method]
-        if self.threshold_method == cpthresh.TM_MANUAL:
-            vv += [self.manual_threshold]
-        elif self.threshold_method == cpthresh.TM_BINARY_IMAGE:
-            vv += [self.binary_image]
-        if self.threshold_algorithm == cpthresh.TM_OTSU:
-            vv += [self.two_class_otsu, self.use_weighted_variance]
-            if self.two_class_otsu == cpmi.O_THREE_CLASS:
-                vv.append(self.assign_middle_to_foreground)
-        if self.threshold_algorithm == cpthresh.TM_MOG:
-            vv += [self.object_fraction]
-        if not self.threshold_method in (cpthresh.TM_MANUAL, cpthresh.TM_BINARY_IMAGE):
-            vv += [ self.threshold_correction_factor, self.threshold_range]
+        vv = [self.image_name,self.object_name,self.size_range,
+              self.exclude_size, self.merge_objects,
+              self.exclude_border_objects] + self.get_threshold_visible_settings()
         vv += [ self.unclump_method ]
         if self.unclump_method != UN_NONE:
             if self.unclump_method == UN_LOG:

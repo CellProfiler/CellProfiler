@@ -92,30 +92,10 @@ class ApplyThreshold(Identify):
                                 Use this setting to create a binary thresholded image, which disregards intensity
                                 information for both  bright and dim pixels by setting them equal to one and zero, respectively.''')
         
-        self.threshold_method = cpsetting.Choice('''Select the thresholding method''',
-                                threshold_methods, doc = '''
-                                <i>(Only used if the output image is binary)</i><br>
-                                This setting allows you to access the same thresholding 
-                                methods used in the <b>Identify</b> modules.  For more help on thresholding, including further explanations of the many optional settings, see the Identify Primary Automatic module.''')
-        
-        self.threshold_range = cpsetting.FloatRange('Lower and upper bounds on threshold',(0,1),0,1)
-        
-        self.threshold_correction_factor = cpsetting.Float('Threshold correction factor', 1)
-        
-        self.object_fraction = cpsetting.CustomChoice('Approximate fraction of image covered by objects?',
-                                                      ['0.01','0.1','0.2','0.3','0.4','0.5','0.6','0.7','0.8','0.9','0.99'])
+        self.create_threshold_settings(threshold_methods)
         
         self.enclosing_objects_name = cpsetting.ObjectNameSubscriber("Select the input objects","None")
         
-        self.two_class_otsu = cpsetting.Choice('Two-class or three-class thresholding?',
-                                               [O_TWO_CLASS, O_THREE_CLASS])
-        
-        self.use_weighted_variance = cpsetting.Choice('Minimize the weighted variance or the entropy?',
-                                                [O_WEIGHTED_VARIANCE, O_ENTROPY])
-        
-        self.assign_middle_to_foreground = cpsetting.Choice("Assign pixels in the middle intensity class to the foreground or the background?",
-                                                      [O_FOREGROUND, O_BACKGROUND])
-
     def visible_settings(self):
         vv = [self.image_name, self.thresholded_image_name, self.binary]
         if self.binary.value == GRAYSCALE:
@@ -126,19 +106,9 @@ class ApplyThreshold(Identify):
             if self.high.value:
                 vv.extend([self.high_threshold, self.dilation])
         else:
-            vv.append(self.threshold_method)
-            if self.threshold_method == TM_MANUAL:
-                vv.append(self.manual_threshold)
-            else:
-                vv += [self.threshold_range, self.threshold_correction_factor]
-                if self.threshold_algorithm == TM_MOG:
-                    vv.append(self.object_fraction)
-                if self.threshold_algorithm == TM_OTSU:
-                    vv += [self.two_class_otsu, self.use_weighted_variance]
-                    if self.two_class_otsu == O_THREE_CLASS:
-                        vv.append(self.assign_middle_to_foreground)
-                if self.threshold_modifier == TM_PER_OBJECT:
-                    vv.append(self.enclosing_objects_name)
+            vv += self.get_threshold_visible_settings()
+            if self.threshold_modifier == TM_PER_OBJECT:
+                vv.append(self.enclosing_objects_name)
         return vv
     
     def settings(self):

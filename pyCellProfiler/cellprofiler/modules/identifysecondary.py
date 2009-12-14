@@ -139,29 +139,7 @@ class IdentifySecondary(cpmi.Identify):
                                                   "None",doc="""
             The selected image will be used to find the edges of the secondary objects.
             For DISTANCE - N, this will not affect object identification, only the final display.""")
-        self.threshold_method = cps.Choice('Select thresholding method:',
-                                           [cpthresh.TM_OTSU_GLOBAL,cpthresh.TM_OTSU_ADAPTIVE,cpthresh.TM_OTSU_PER_OBJECT,
-                                            cpthresh.TM_MOG_GLOBAL,cpthresh.TM_MOG_ADAPTIVE,cpthresh.TM_MOG_PER_OBJECT,
-                                            cpthresh.TM_BACKGROUND_GLOBAL, cpthresh.TM_BACKGROUND_ADAPTIVE, cpthresh.TM_BACKGROUND_PER_OBJECT,
-                                            cpthresh.TM_ROBUST_BACKGROUND_GLOBAL, cpthresh.TM_ROBUST_BACKGROUND_ADAPTIVE, cpthresh.TM_ROBUST_BACKGROUND_PER_OBJECT,
-                                            cpthresh.TM_RIDLER_CALVARD_GLOBAL, cpthresh.TM_RIDLER_CALVARD_ADAPTIVE, cpthresh.TM_RIDLER_CALVARD_PER_OBJECT,
-                                            cpthresh.TM_KAPUR_GLOBAL,cpthresh.TM_KAPUR_ADAPTIVE,cpthresh.TM_KAPUR_PER_OBJECT,
-                                            cpthresh.TM_MANUAL, cpthresh.TM_BINARY_IMAGE])
-        self.threshold_correction_factor = cps.Float('Threshold correction factor', 1)
-        self.threshold_range = cps.FloatRange('Lower and upper bounds on threshold:', (0,1),minval=0,maxval=1,
-                                              doc="""\
-            In the range [0,1]. May be used as a safety precaution when the threshold is calculated
-            automatically. For example, if there are no objects in the field of view,
-            the automatic threshold will be unreasonably low. In such cases, the
-            lower bound you enter here will override the automatic threshold.""")
-        self.object_fraction = cps.CustomChoice('Approximate fraction of image covered by objects?',
-                                                ['0.01','0.1','0.2','0.3','0.4','0.5','0.6','0.7','0.8','0.9','0.99'],
-                                                doc="""\
-            <i>(Only used when applying the Mixture of Gaussian thresholding method)</i>
-            <p> An estimate of how much of the image is covered with objects, which
-            is used to estimate the distribution of pixel intensities.""")
-        self.manual_threshold = cps.Float("Manual threshold value",value=0.0,minval=0.0,maxval=1.0)
-        self.binary_image = cps.ImageNameSubscriber("Select binary image:","None")
+        self.create_threshold_settings()
         self.distance_to_dilate = cps.Integer("Number of pixels by which to expand the primary objects:",10,minval=1)
         self.regularization_factor = cps.Float("Regularization factor:",0.05,minval=0,
                                                doc="""\
@@ -185,25 +163,6 @@ class IdentifySecondary(cpmi.Identify):
         self.outlines_name = cps.OutlineNameProvider('Name the outline image',"SecondaryOutlines", doc="""\
             The outlines of the identified objects may be used by modules downstream,
             by selecting them from any drop-down image list.""")
-        self.two_class_otsu = cps.Choice('Two-class or three-class thresholding?',
-                                         [cpmi.O_TWO_CLASS, cpmi.O_THREE_CLASS], doc="""
-            <i>(Only used for the Otsu thresholding method)</i> 
-            <p>Select <i>Two</i> if the grayscale levels are readily distinguishable into foregound 
-            (i.e., objects) and background. Select <i>Three</i> if there is an 
-            middle set of grayscale levels which belong to neither the
-            foreground nor background. 
-            <p>For example, three-class thresholding may
-            be useful for images in which you have nuclear staining along with a
-            low-intensity non-specific cell staining. Where two-class thresholding
-            might incorrectly assign this intemediate staining to the nuclei 
-            objects, three-class thresholding allows you to assign it to the 
-            foreground or background as desired. However, in extreme cases where either 
-            there are almost no objects or the entire field of view is covered with 
-            objects, three-class thresholding may perform worse than two-class.""")
-        self.use_weighted_variance = cps.Choice('Minimize the weighted variance or the entropy?',
-                                                [cpmi.O_WEIGHTED_VARIANCE, cpmi.O_ENTROPY])
-        self.assign_middle_to_foreground = cps.Choice("Assign pixels in the middle intensity class to the foreground or the background?",
-                                                      [cpmi.O_FOREGROUND, cpmi.O_BACKGROUND])
     
     def settings(self):
         return [ self.primary_objects, self.objects_name,   
@@ -220,19 +179,7 @@ class IdentifySecondary(cpmi.Identify):
         result = [self.image_name, self.primary_objects, self.objects_name,  
                  self.method]
         if self.method != M_DISTANCE_N:
-            result.append(self.threshold_method)
-            if self.threshold_method == cpthresh.TM_MANUAL:
-                result.append(self.manual_threshold)
-            elif self.threshold_method == cpthresh.TM_BINARY_IMAGE:
-                result.append(self.binary_image)
-            else:
-                if self.threshold_algorithm == cpthresh.TM_OTSU:
-                    result+= [self.two_class_otsu, self.use_weighted_variance]
-                    if self.two_class_otsu == cpmi.O_THREE_CLASS:
-                        result.append(self.assign_middle_to_foreground)
-            
-                result.extend([self.threshold_correction_factor,
-                               self.threshold_range, self.object_fraction])
+            result += self.get_threshold_visible_settings()
         if self.method in (M_DISTANCE_B,M_DISTANCE_N):
             result.append(self.distance_to_dilate)
         elif self.method == M_PROPAGATION:

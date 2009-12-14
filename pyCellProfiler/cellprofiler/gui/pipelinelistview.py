@@ -166,7 +166,7 @@ class PipelineListView(object):
         name_attrs.SetReadOnly(True)
         grid.SetColAttr(MODULE_NAME_COLUMN, name_attrs)
         wx.grid.EVT_GRID_CELL_LEFT_CLICK(grid, self.__on_grid_left_click)
-        wx.grid.EVT_GRID_CELL_LEFT_DCLICK(grid, self.__on_grid_left_click) # annoying
+        wx.grid.EVT_GRID_CELL_LEFT_DCLICK(grid, self.__on_grid_left_dclick) # annoying
         grid.SetCellHighlightPenWidth(0)
         grid.SetCellHighlightColour(grid.GetGridLineColour())
         grid.EnableGridLines()
@@ -255,6 +255,15 @@ class PipelineListView(object):
         else:
             self.select_one_module(event.Row+1)
 
+    def __on_grid_left_dclick(self, event):
+        if event.Col == EYE_COLUMN or event.Col == PAUSE_COLUMN:
+            self.__on_grid_left_click(event)
+        else:
+            self.select_one_module(event.Row+1)
+            win = self.__panel.GrandParent.FindWindowByName('CellProfiler:%s:%d'%(self.get_selected_modules()[0].module_name, event.Row+1))
+            if win:
+                win.Show(False)
+                win.Show(True)
     
     def __on_pipeline_loaded(self,pipeline,event):
         """Repopulate the list view after the pipeline loads

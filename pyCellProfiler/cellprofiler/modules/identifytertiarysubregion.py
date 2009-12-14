@@ -182,7 +182,7 @@ class IdentifyTertiarySubregion(cpm.CPModule):
             # Draw the primary, secondary and tertiary labels
             # and the outlines
             #
-            window_name = "CellProfiler(%s:%d)"%(self.module_name,self.module_num)
+            window_name = "CellProfiler:%s:%d"%(self.module_name,self.module_num)
             my_frame=cpf.create_or_find(workspace.frame, 
                                         title="Identify tertiary subregion", 
                                         name=window_name, subplots=(2,2))

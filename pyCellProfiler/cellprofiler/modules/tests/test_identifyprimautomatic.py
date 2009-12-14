@@ -1200,7 +1200,7 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
     def test_08_01_per_object_otsu(self):
         """Test get_threshold using Otsu per-object"""
         
-        image = np.zeros((20,20))
+        image = np.ones((20,20)) * .08
         draw_circle(image,(5,5),2,.1)
         draw_circle(image,(15,15),3,.1)
         draw_circle(image,(15,15),2,.2)
@@ -1223,14 +1223,15 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
     def test_08_02_per_object_otsu_run(self):
         """Test IdentifyPrimAutomatic per object through the Run function"""
         
-        image = np.ones((20,20))*0.05
-        draw_circle(image,(5,5),2,.1)
-        draw_circle(image,(15,15),3,.25)
-        draw_circle(image,(15,15),2,.5)
+        image = np.ones((20,20))*0.06
+        draw_circle(image,(5,5),5,.05)
+        draw_circle(image,(5,5),2,.15)
+        draw_circle(image,(15,15),5,.05)
+        draw_circle(image,(15,15),2,.15)
         image = add_noise(image, .01)
         labels = np.zeros((20,20),int)
-        draw_circle(labels,(5,5),3,1)
-        draw_circle(labels,(15,15),3,2)
+        draw_circle(labels,(5,5),5,1)
+        draw_circle(labels,(15,15),5,2)
         objects = cellprofiler.objects.Objects()
         objects.segmented = labels
         image = cellprofiler.cpimage.Image(image,
@@ -1263,6 +1264,8 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         # which label
         self.assertNotEqual(labels[5,5], labels[15,15])
         indexes = np.array([0, labels[5,5], labels[15,15]])
+
+
         self.assertTrue(np.all(indexes[labels] == expected_labels))
     
     def test_09_01_mog(self):

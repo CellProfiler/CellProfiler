@@ -166,6 +166,8 @@ def get_threshold(threshold_method, threshold_modifier, image,
         if not threshold_range_max is None:
             local_threshold[local_threshold > threshold_range_max] = \
             threshold_range_max
+        if threshold_modifier == TM_PER_OBJECT:
+            local_threshold[labels == 0] = 1.0
     else:
         if not threshold_range_min is None:
             local_threshold = max(local_threshold, threshold_range_min)
@@ -212,10 +214,6 @@ def get_adaptive_threshold(threshold_method, image, threshold,
     Block sizes must be at least 50x50. Images > 500 x 500 get 10x10
     blocks.
     """
-    # Compute the minimum and maximum allowable thresholds
-    min_threshold = max(.7 * threshold,0)
-    max_threshold = min(1.5 * threshold,1)
-    
     # for the X and Y direction, find the # of blocks, given the
     # size constraints
     image_size = np.array(image.shape[:2],dtype=int)

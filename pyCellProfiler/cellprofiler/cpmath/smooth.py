@@ -95,4 +95,6 @@ def fit_polynomial(pixel_data, mask):
     coeffs = scipy.linalg.lstsq(a.transpose(),pixel_data[mask])[0]
     output_pixels = np.sum([coeff * index for coeff, index in
                             zip(coeffs, [x,y,x2,y2,xy,o])],0)
+    output_pixels[output_pixels > 1] = 1
+    output_pixels[output_pixels < 0] = 0
     return output_pixels

@@ -19,7 +19,8 @@ import _cpmorphology
 from outline import outline
 from rankorder import rank_order
 from _cpmorphology2 import skeletonize_loop, table_lookup_index
-from _cpmorphology2 import grey_reconstruction_loop 
+from _cpmorphology2 import grey_reconstruction_loop
+from _cpmorphology2 import _all_connected_components
 
 eight_connect = scind.generate_binary_structure(2, 2)
 four_connect = scind.generate_binary_structure(2,1)
@@ -3110,6 +3111,38 @@ def regional_maximum(image, mask = None, structure=None, ties_are_ok=False):
                        src_j_min:src_j_max][min_mask] = False
     return result
 
+def all_connected_components(i,j):
+    '''Associate each label in i with a component #
+    
+    This function finds all connected components given an array of
+    associations between labels i and j using a depth-first search.
+    
+    i & j give the edges of the graph. The first step of the algorithm makes
+    bidirectional edges, (i->j and j<-i), so it's best to only send the
+    edges in one direction (although the algorithm can withstand duplicates).
+    
+    returns a label for each vertex up to the maximum named vertex in i.
+    '''
+    if len(i) == 0:
+        return i
+    i1 = np.hstack((i,j))
+    j1 = np.hstack((j,i))
+    order = np.lexsort((j1,i1))
+    i=np.ascontiguousarray(i1[order],np.uint32)
+    j=np.ascontiguousarray(j1[order],np.uint32)
+    #
+    # Get indexes and counts of edges per vertex
+    #
+    counts = np.ascontiguousarray(np.bincount(i.astype(int)),np.uint32)
+    indexes = np.ascontiguousarray(np.cumsum(counts)-counts,np.uint32)
+    #
+    # This stores the lowest index # during the algorithm - the first
+    # vertex to be labeled in a connected component.
+    #
+    labels = np.zeros(len(counts), np.uint32)
+    _all_connected_components(i,j,indexes,counts,labels)
+    return labels
+    
 if __name__=='__main__':
     import Image as PILImage
     from matplotlib.image import pil_to_array

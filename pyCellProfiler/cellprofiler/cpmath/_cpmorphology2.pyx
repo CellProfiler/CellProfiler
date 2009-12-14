@@ -263,3 +263,144 @@ def grey_reconstruction_loop(np.ndarray[dtype=np.uint32_t, ndim=1,
                             prev[nnext] = neighbor
                             next[link] = neighbor
         current = next[current]
+        
+def _all_connected_components(np.ndarray[dtype=np.uint32_t, ndim=1,
+                                         negative_indices = False,
+                                         mode = 'c'] i_a,
+                              np.ndarray[dtype=np.uint32_t, ndim=1,
+                                         negative_indices = False,
+                                         mode = 'c'] j_a,
+                              np.ndarray[dtype=np.uint32_t, ndim=1,
+                                         negative_indices = False,
+                                         mode = 'c'] indexes_a,
+                              np.ndarray[dtype=np.uint32_t, ndim=1,
+                                         negative_indices = False,
+                                         mode = 'c'] counts_a,
+                              np.ndarray[dtype=np.uint32_t, ndim=1,
+                                         negative_indices = False,
+                                         mode = 'c'] label_a):
+    '''Inner loop for the all_connected_components algorithm
+    
+    i,j - vectors giving the edges between vertices. These vectors must
+          be pre-sorted by i then j. There should be one j,i edge for
+          every i,j edge for all_connected_components.
+          
+    indexes - 1 index per vertex # into the i,j array giving the index
+              of the first edge for vertex i
+              
+    counts - 1 count per vertex # of the # of edges for vertex i
+    
+    label - one array element per vertex, the label assigned to this
+            vertex's connected components. On exit, this is the vertex
+            number of the first vertex processed in the connected component.
+    '''
+    cdef:
+        # n = # of vertices
+        np.uint32_t n = counts_a.shape[0]
+        np.ndarray[dtype=np.uint8_t, ndim=1,
+                   negative_indices = False,
+                   mode = 'c'] being_processed_a = np.zeros(n, np.uint8)
+        np.ndarray[dtype=np.uint32_t, ndim=1,
+                   negative_indices = False,
+                   mode = 'c'] visit_index_a = np.zeros(n, np.uint32)
+        np.ndarray[dtype=np.uint32_t, ndim=1,
+                   negative_indices = False,
+                   mode = 'c'] stack_v_a = np.zeros(n, np.uint32)
+        np.ndarray[dtype=np.uint32_t, ndim=1,
+                   negative_indices = False,
+                   mode = 'c'] v_idx_a  = np.zeros(n, np.uint32)
+        np.ndarray[dtype=np.uint32_t, ndim=1,
+                   negative_indices = False,
+                   mode = 'c'] stack_being_processed_a = np.zeros(n, np.uint32)
+        #
+        # This is the recursion depth for recursive calls to process the
+        # connected components.
+        #
+        np.uint32_t  stack_ptr = 0
+        #
+        # cur_index gives the next visit_index to be assigned. The visit_index
+        # orders vertices according to when they were first visited
+        #
+        np.uint32_t  cur_index = 0
+        #
+        # raw pointer to the "from" vertices in the edge list (unused)
+        #
+        np.uint32_t *i = <np.uint32_t *>(i_a.data)
+        #
+        # raw pointer to the "to" vertices in the edge list
+        #
+        np.uint32_t *j = <np.uint32_t *>(j_a.data)
+        #
+        # raw pointer to the index into j for each vertex
+        #
+        np.uint32_t *indexes = <np.uint32_t *>(indexes_a.data)
+        #
+        # raw pointer to the # of edges per vertex
+        #
+        np.uint32_t *counts = <np.uint32_t *>(counts_a.data)
+        #
+        # the label per vertex
+        #
+        np.uint32_t *label = <np.uint32_t *>(label_a.data)
+        #
+        # The recursive "function" has a single argument - the vertex to be
+        # processed, so this mimics a stack where v is pushed on entry
+        # and popped on exit.
+        #
+        np.uint32_t *stack_v = <np.uint32_t *>(stack_v_a.data)
+        #
+        # The recursive function has a single local variable
+        # v_idx which is the index of the current edge being processed.
+        # On entry, this is UNDEFINED to indicate that the recursive function
+        # should initialize "v". Afterwards, it cycles from 0 to the count.
+        # When it reaches the count, the recursive function "exits"
+        #
+        np.uint32_t *v_idx = <np.uint32_t *>(v_idx_a.data)
+        #
+        # Holds the index of the top-level v in the top-level loop
+        #
+        np.uint32_t v
+        #
+        # Holds the v inside the recursive function
+        #
+        np.uint32_t vv
+        #
+        # Holds the vertex at the opposite side of the edge from vv
+        #
+        np.uint32_t v1
+        #
+        # A value to indicate something that's not been processed
+        #
+        np.uint32_t UNDEFINED = -1
+        
+    label_a[:] = UNDEFINED
+    v_idx_a[:] = UNDEFINED
+        
+    for v in range(n):
+        if label[v] == UNDEFINED:
+            stack_v[0] = v
+            stack_ptr = 1
+            while(stack_ptr > 0):
+                vv = stack_v[stack_ptr-1]
+                if v_idx[vv] == UNDEFINED:
+                    #
+                    # Start of recursive function for a vertex: set the vertex
+                    #     label.
+                    #
+                    label[vv] = cur_index
+                    v_idx[vv] = 0
+                if v_idx[vv] < counts[vv]:
+                    # For each edge of v, push other vertex on stack 
+                    # if unprocessed.
+                    #
+                    v1 = j[indexes[vv] + v_idx[vv]]
+                    v_idx[vv] += 1
+                    if label[v1] == UNDEFINED:
+                        stack_v[stack_ptr] = v1
+                        stack_ptr += 1
+                else:
+                    #
+                    # We have processed every edge for vv.
+                    #
+                    stack_ptr -= 1
+            cur_index += 1                                    

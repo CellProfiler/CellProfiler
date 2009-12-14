@@ -467,4 +467,5 @@ class TestApplyThreshold(unittest.TestCase):
         module.run(workspace)
         output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         self.assertTrue(np.all(output.pixel_data == expected))
+    
         

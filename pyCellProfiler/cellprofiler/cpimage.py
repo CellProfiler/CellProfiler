@@ -15,7 +15,7 @@ Website: http://www.cellprofiler.org
 """
 __version__ = "$Revision: 1$"
 
-import numpy
+import numpy as np
 import math
 import sys
 
@@ -89,52 +89,52 @@ class Image(object):
     def set_image(self,image,convert=True):
         """Set the primary image
         
-        Convert the image to a numpy array of dtype = numpy.float64.
+        Convert the image to a numpy array of dtype = np.float64.
         Rescale according to Matlab's rules for im2double:
         * single/double values: keep the same
         * uint8/16/32/64: scale 0 to max to 0 to 1
         * int8/16/32/64: scale min to max to 0 to 1
         * logical: save as is (and get if must_be_binary)
         """
-        img = numpy.array(image)
+        img = np.array(image)
         if img.dtype.name == "bool" or not convert:
             self.__image = img
             return
         mval  = 0.
         scale = 1.
         fix_range = False
-        if issubclass(img.dtype.type,numpy.floating):
+        if issubclass(img.dtype.type,np.floating):
             pass
-        elif img.dtype.type is numpy.uint8:
+        elif img.dtype.type is np.uint8:
             scale = math.pow(2.0,8.0)-1
-        elif img.dtype.type is numpy.uint16:
+        elif img.dtype.type is np.uint16:
             scale = math.pow(2.0,16.0)-1
-        elif img.dtype.type is numpy.uint32:
+        elif img.dtype.type is np.uint32:
             scale = math.pow(2.0,32.0)-1
-        elif img.dtype.type is numpy.uint64:
+        elif img.dtype.type is np.uint64:
             scale = math.pow(2.0,64.0)-1
-        elif img.dtype.type is numpy.int8:
+        elif img.dtype.type is np.int8:
             scale = math.pow(2.0,8.0)
             mval  = -scale / 2.0
             scale -=1
             fix_range = True
-        elif img.dtype.type is numpy.int16:
+        elif img.dtype.type is np.int16:
             scale = math.pow(2.0,16.0)
             mval  = -scale / 2.0
             scale -= 1
             fix_range = True
-        elif img.dtype.type is numpy.int32:
+        elif img.dtype.type is np.int32:
             scale = math.pow(2.0,32.0)
             mval  = -scale / 2.0
             scale -= 1
             fix_range = True
-        elif img.dtype.type is numpy.int64:
+        elif img.dtype.type is np.int64:
             scale = math.pow(2.0,64.0)
             mval  = -scale / 2.0
             scale -= 1
             fix_range = True
         
-        img = (img.astype(numpy.float64) - mval)/scale
+        img = (img.astype(np.float64) - mval)/scale
         if fix_range:
             # These types will always have ranges between 0 and 1. Make it so.
             img[img<0]=0
@@ -204,7 +204,7 @@ class Image(object):
         if self.has_parent_image:
             return self.parent_image.mask
         
-        return numpy.ones(self.__image.shape[0:2],dtype=numpy.bool)
+        return np.ones(self.__image.shape[0:2],dtype=np.bool)
     
     def set_mask(self, mask):
         """Set the mask (pixels to be considered) for the primary image
@@ -212,8 +212,8 @@ class Image(object):
         Convert the input into a numpy array. If the input is numeric,
         we convert it to boolean by testing each element for non-zero.
         """
-        m = numpy.array(mask)
-        if not(m.dtype.type is numpy.bool):
+        m = np.array(mask)
+        if not(m.dtype.type is np.bool):
             m = (m != 0)
         check_consistency(self.__image,m)
         self.__mask = m
@@ -259,7 +259,7 @@ class Image(object):
     def crop_image_similarly(self, image):
         """Crop a 2-d or 3-d image using this image's crop mask
         
-        image - a numpy.ndarray to be cropped (of any type)
+        image - a np.ndarray to be cropped (of any type)
         """
         if image.shape == self.pixel_data.shape:
             # Same size - no cropping needed
@@ -314,18 +314,18 @@ class Image(object):
 def crop_image(image, crop_mask,crop_internal = False):
     """Crop an image to the size of the nonzero portion of a crop mask"""
     i_histogram = crop_mask.sum(axis=1)
-    i_cumsum    = numpy.cumsum(i_histogram != 0)
+    i_cumsum    = np.cumsum(i_histogram != 0)
     j_histogram = crop_mask.sum(axis=0)
-    j_cumsum    = numpy.cumsum(j_histogram != 0)
+    j_cumsum    = np.cumsum(j_histogram != 0)
     if i_cumsum[-1] == 0:
         # The whole image is cropped away
-        return numpy.zeros((0,0),dtype=image.dtype)
+        return np.zeros((0,0),dtype=image.dtype)
     if crop_internal:
         #
         # Make up sequences of rows and columns to keep
         #
-        i_keep = numpy.argwhere(i_histogram>0)
-        j_keep = numpy.argwhere(j_histogram>0)
+        i_keep = np.argwhere(i_histogram>0)
+        j_keep = np.argwhere(j_histogram>0)
         #
         # Then slice the array by I, then by J to get what's not blank
         #
@@ -336,19 +336,21 @@ def crop_image(image, crop_mask,crop_internal = False):
         # The last are at the first where the cumsum is it's max (meaning
         # what came after was all zeros and added nothing)
         #
-        i_first     = numpy.argwhere(i_cumsum==1)[0]
-        i_last      = numpy.argwhere(i_cumsum==i_cumsum.max())[0]
+        i_first     = np.argwhere(i_cumsum==1)[0]
+        i_last      = np.argwhere(i_cumsum==i_cumsum.max())[0]
         i_end       = i_last+1
-        j_first     = numpy.argwhere(j_cumsum==1)[0]
-        j_last      = numpy.argwhere(j_cumsum==j_cumsum.max())[0]
+        j_first     = np.argwhere(j_cumsum==1)[0]
+        j_last      = np.argwhere(j_cumsum==j_cumsum.max())[0]
         j_end       = j_last+1
         if image.ndim == 3:
             return image[i_first:i_end,j_first:j_end,:].copy()
         return image[i_first:i_end,j_first:j_end].copy()
 
 class GrayscaleImage(object):
-    """A wrapper around the image object if the image is 3-d but all channels
-       are the same
+    """A wrapper around a non-grayscale image
+    
+    This is meant to be used if the image is 3-d but all channels
+       are the same or if the image is binary.
     """
     def __init__(self, image):
         self.__image = image
@@ -358,6 +360,8 @@ class GrayscaleImage(object):
     
     def get_pixel_data(self):
         """One 2-d channel of the color image as a numpy array"""
+        if self.__image.pixel_data.dtype.kind == 'b':
+            return self.__image.pixel_data.astype(np.float64)
         return self.__image.pixel_data[:,:,0]
     
     pixel_data = property(get_pixel_data)
@@ -368,7 +372,7 @@ def check_consistency(image, mask):
     assert (image==None) or (len(image.shape)==2) or (image.shape[2] in (1,3)),"3-dimensional images must have either one or three colors"
     assert (mask==None) or (len(mask.shape)==2),"Mask must have 2 dimensions"
     assert (image==None) or (mask==None) or (image.shape[:2] == mask.shape), "Image and mask sizes don't match"
-    assert (mask==None) or (mask.dtype.type is numpy.bool_), "Mask must be boolean, was %s"%(repr(mask.dtype.type))
+    assert (mask==None) or (mask.dtype.type is np.bool_), "Mask must be boolean, was %s"%(repr(mask.dtype.type))
 
 class AbstractImageProvider(object):
     """Represents an image provider that returns images
@@ -483,17 +487,20 @@ class ImageSet(object):
             image = self.__images[name]
         if must_be_binary and image.pixel_data.ndim == 3:
             raise ValueError("Image must be binary, but it was color")
-        if must_be_binary and image.pixel_data.dtype != numpy.bool:
+        if must_be_binary and image.pixel_data.dtype != np.bool:
             raise ValueError("Image was not binary")
         if must_be_color and image.pixel_data.ndim != 3:
             raise ValueError("Image must be color, but it was grayscale")
-        if must_be_grayscale and image.pixel_data.ndim != 2:
+        if (must_be_grayscale and 
+            (image.pixel_data.ndim != 2)):
             pd = image.pixel_data
             if pd.shape[2] >= 3 and\
-               numpy.all(pd[:,:,0]==pd[:,:,1]) and\
-               numpy.all(pd[:,:,0]==pd[:,:,2]):
+               np.all(pd[:,:,0]==pd[:,:,1]) and\
+               np.all(pd[:,:,0]==pd[:,:,2]):
                 return GrayscaleImage(image)
-            raise ValueError("Image must be grayscale, but it was color") 
+            raise ValueError("Image must be grayscale, but it was color")
+        if must_be_grayscale and image.pixel_data.dtype.kind == 'b':
+            return GrayscaleImage(image)
         return image
     
     def get_providers(self):

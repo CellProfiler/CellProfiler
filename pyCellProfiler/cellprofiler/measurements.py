@@ -425,3 +425,24 @@ def extract_metadata(pattern, text):
         return match.groupdict()
     else:
         return {}
+
+def load_measurements(measurements_file_name):
+    '''Load measurements from a .mat file'''
+    
+    from cellprofiler.pipeline import MEASUREMENTS
+    from scipy.io.matlab import loadmat
+    handles = loadmat(measurements_file_name, struct_as_record=True)
+    m = handles["handles"][0,0][MEASUREMENTS][0,0]
+    measurements = Measurements()
+    for object_name in m.dtype.fields.keys():
+        omeas = m[object_name][0,0]
+        for feature_name in omeas.dtype.fields.keys():
+            if object_name == IMAGE:
+                values = [x[0] for x in omeas[feature_name][0]]
+            else:
+                values = omeas[feature_name][0].tolist()
+            measurements.add_all_measurements(object_name,
+                                                       feature_name,
+                                                       values)
+    return measurements
+

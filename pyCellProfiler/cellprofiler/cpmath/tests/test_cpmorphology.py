@@ -2832,4 +2832,79 @@ class TestGetLinePts(unittest.TestCase):
                     remainder += diff_j*2
                     self.assertEqual(j_out[index[idx]+pt_idx], j)
                     self.assertEqual(i_out[index[idx]+pt_idx], i)
+
+class TestAllConnectedComponents(unittest.TestCase):
+    def test_01_01_no_edges(self):
+        result = morph.all_connected_components(np.array([], int), np.array([], int))
+        self.assertEqual(len(result), 0)
+        
+    def test_01_02_one_component(self):
+        result = morph.all_connected_components(np.array([0]), np.array([0]))
+        self.assertEqual(len(result),1)
+        self.assertEqual(result[0], 0)
+        
+    def test_01_03_two_components(self):
+        result = morph.all_connected_components(np.array([0,1]), 
+                                                np.array([0,1]))
+        self.assertEqual(len(result),2)
+        self.assertEqual(result[0], 0)
+        self.assertEqual(result[1], 1)
+        
+    def test_01_04_one_connection(self):
+        result = morph.all_connected_components(np.array([0,1,2]),
+                                                np.array([0,2,1]))
+        self.assertEqual(len(result),3)
+        self.assertTrue(np.all(result == np.array([0,1,1])))
+        
+    def test_01_05_components_can_label(self):
+        #
+        # all_connected_components can be used to label a matrix
+        #
+        np.random.seed(0)
+        for d in ((10,12),(100,102)):
+            mask = np.random.uniform(size=d) < .2
+            mask[-1,-1] = True
+            #
+            # Just do 4-connectivity
+            #
+            labels, count = scind.label(mask)
+            i,j = np.mgrid[0:d[0],0:d[1]]
+            connected_top = (i > 0) & mask[i,j] & mask[i-1,j]
+            idx = np.arange(np.prod(d))
+            idx.shape = d
+            connected_top_j = idx[connected_top] - d[1]
+            
+            connected_bottom = (i < d[0]-1) & mask[i,j] & mask[(i+1) % d[0],j]
+            connected_bottom_j = idx[connected_bottom] + d[1]
+            
+            connected_left = (j > 0) & mask[i,j] & mask[i,j-1]
+            connected_left_j = idx[connected_left] - 1
+            
+            connected_right = (j < d[1]-1) & mask[i,j] & mask[i,(j+1) % d[1]]
+            connected_right_j = idx[connected_right] + 1
+            
+            i = np.hstack((idx[mask],
+                           idx[connected_top],
+                           idx[connected_bottom],
+                           idx[connected_left],
+                           idx[connected_right]))
+            j = np.hstack((idx[mask], connected_top_j, connected_bottom_j,
+                           connected_left_j, connected_right_j))
+            result = morph.all_connected_components(i,j)
+            self.assertEqual(len(result), np.prod(d))
+            result.shape = d
+            result[mask] += 1
+            result[~mask] = 0
+            #
+            # Correlate the labels with the result
+            #
+            coo = scipy.sparse.coo_matrix((np.ones(np.prod(d)),
+                                           (labels.flatten(),
+                                            result.flatten())))
+            corr = coo.toarray()
+            #
+            # Make sure there's either no or one hit per label association
+            #
+            self.assertTrue(np.all(np.sum(corr != 0,0) <= 1))
+            self.assertTrue(np.all(np.sum(corr != 0,1) <= 1))
             

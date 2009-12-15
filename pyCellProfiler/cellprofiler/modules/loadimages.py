@@ -864,7 +864,7 @@ class LoadImages(cpmodule.CPModule):
                 if self.file_types == FF_STK_MOVIES:
                     p = LoadImagesSTKFrameProvider(image_name, path, filename,
                                                    frame)
-                elif self.file_types == FF_AVI_MOVIES:
+                elif self.file_types in (FF_AVI_MOVIES, FF_OTHER_MOVIES):
                     p = LoadImagesMovieFrameProvider(image_name, path, filename,
                                                      int(frame))
                 else:
@@ -1320,11 +1320,11 @@ def is_image(filename):
     ext = os.path.splitext(filename)[1].lower()
     if PILImage.EXTENSION.has_key(ext):
         return True
-    return ext in ('.avi', '.mpeg', '.mat', '.stk')
+    return ext in ('.avi', '.mpeg', '.mat', '.stk','.flex')
 
 def is_movie(filename):
     ext = os.path.splitext(filename)[1].lower()
-    return ext in ('.avi', '.mpeg', '.stk')
+    return ext in ('.avi', '.mpeg', '.stk','.flex')
 
 
 class LoadImagesImageProvider(cpimage.AbstractImageProvider):

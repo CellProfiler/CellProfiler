@@ -1068,10 +1068,11 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         for center, p in zip(centers,present):
             if p:
                 self.assertTrue(objects.segmented[center[0],center[1]] > 0)
+                self.assertTrue(objects.small_removed_segmented[center[0],center[1]] > 0)
             else:
                 self.assertTrue(objects.segmented[center[0],center[1]] == 0)
+                self.assertTrue(objects.small_removed_segmented[center[0],center[1]] == 0)
             self.assertTrue(objects.unedited_segmented[center[0],center[1]] > 0)
-            self.assertTrue(objects.small_removed_segmented[center[0],center[1]] > 0)
 
     def test_05_03_discard_with_mask(self):
         """Check discard of objects that are on the border of a mask"""
@@ -1101,10 +1102,12 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         for center, p in zip(centers,present):
             if p:
                 self.assertTrue(objects.segmented[center[0],center[1]] > 0)
+                self.assertTrue(objects.small_removed_segmented[center[0],center[1]] > 0)
             else:
                 self.assertTrue(objects.segmented[center[0],center[1]] == 0)
+                self.assertTrue(objects.small_removed_segmented[center[0],center[1]] == 0)
             self.assertTrue(objects.unedited_segmented[center[0],center[1]] > 0)
-            self.assertTrue(objects.small_removed_segmented[center[0],center[1]] > 0)
+
     def test_06_01_regression_diagonal(self):
         """Regression test - was using one-connected instead of 3-connected structuring element"""
         x = ID.IdentifyPrimAutomatic()

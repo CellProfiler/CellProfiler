@@ -47,12 +47,14 @@ import scipy.ndimage as scind
 from scipy.sparse import coo_matrix
 
 import cellprofiler.cpmodule as cpm
+import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo
 import cellprofiler.settings as cps
 import cellprofiler.preferences as cpprefs
 from cellprofiler.modules.identify import get_object_measurement_columns
 from cellprofiler.modules.identify import add_object_count_measurements
 from cellprofiler.modules.identify import add_object_location_measurements
+from cellprofiler.modules.identify import FF_CHILDREN_COUNT, FF_PARENT
 import cellprofiler.cpmath.cpmorphology as morph
 from cellprofiler.cpmath.filter import stretch
 
@@ -188,12 +190,28 @@ class RelabelObjects(cpm.CPModule):
                 copy_labels(objects.unedited_segmented, output_labels)
         output_objects.parent_image = objects.parent_image
         workspace.object_set.add_objects(output_objects, self.output_objects_name.value)
-        add_object_count_measurements(workspace.measurements,
+        
+        measurements = workspace.measurements
+        add_object_count_measurements(measurements,
                                       self.output_objects_name.value,
                                       np.max(output_objects.segmented))
-        add_object_location_measurements(workspace.measurements,
+        add_object_location_measurements(measurements,
                                          self.output_objects_name.value,
                                          output_objects.segmented)
+        
+        #
+        # Relate the output objects to the input ones and record
+        # the relationship.
+        #
+        children_per_parent, parents_of_children = \
+            objects.relate_children(output_objects)
+        measurements.add_measurement(self.objects_name.value,
+                                     FF_CHILDREN_COUNT % 
+                                     self.output_objects_name.value,
+                                     children_per_parent)
+        measurements.add_measurement(self.output_objects_name.value,
+                                     FF_PARENT%self.objects_name.value,
+                                     parents_of_children)
         if workspace.frame is not None:
             workspace.display_data.orig_labels = objects.segmented
             workspace.display_data.output_labels = output_objects.segmented
@@ -399,7 +417,14 @@ class RelabelObjects(cpm.CPModule):
         return image
         
     def get_measurement_columns(self, pipeline):
-        return get_object_measurement_columns(self.output_objects_name.value)
+        columns =  get_object_measurement_columns(self.output_objects_name.value)
+        columns += [(self.output_objects_name.value,
+                     FF_PARENT % self.objects_name.value,
+                     cpmeas.COLTYPE_INTEGER),
+                    (self.objects_name.value,
+                     FF_CHILDREN_COUNT % self.output_objects_name.value,
+                     cpmeas.COLTYPE_INTEGER)]
+        return columns
     
     def get_categories(self,pipeline, object_name):
         """Return the categories of measurements that this module produces
@@ -409,7 +434,9 @@ class RelabelObjects(cpm.CPModule):
         if object_name == 'Image':
             return ['Count']
         elif object_name == self.output_objects_name.value:
-            return ['Location']
+            return ['Location','Parent']
+        elif object_name == self.objects_name.value:
+            return ['Children']
         return []
       
     def get_measurements(self, pipeline, object_name, category):
@@ -422,6 +449,10 @@ class RelabelObjects(cpm.CPModule):
             return [ self.output_objects_name.value ]
         elif object_name == self.output_objects_name.value and category == 'Location':
             return ['Center_X','Center_Y']
+        elif object_name == self.output_objects_name.value and category == 'Parent':
+            return [ self.objects_name.value]
+        elif object_name == self.objects_name.value and category == 'Children':
+            return [ "%s_Count" % self.output_objects_name.value]
         return []
 
 def copy_labels(labels, segmented):

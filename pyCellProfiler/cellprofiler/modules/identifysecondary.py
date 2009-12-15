@@ -72,7 +72,7 @@ M_DISTANCE_B = "Distance - B"
 class IdentifySecondary(cpmi.Identify):
 
     module_name = "IdentifySecondary"
-    variable_revision_number = 2
+    variable_revision_number = 3
     category = "Object Processing"
     
     def create_settings(self):
@@ -163,6 +163,35 @@ class IdentifySecondary(cpmi.Identify):
         self.outlines_name = cps.OutlineNameProvider('Name the outline image',"SecondaryOutlines", doc="""\
             The outlines of the identified objects may be used by modules downstream,
             by selecting them from any drop-down image list.""")
+        self.wants_discard_edge = cps.Binary(
+            "Do you want to discard objects that touch the edge of the image?",
+            False,
+            doc = """This option will discard objects which have an edge
+            that falls on the border of the image. The objects are discarded
+            from the labels that are used for measurements, but they appear
+            in the unedited labels; this prevents pixels in objects touching
+            the edge from being considered in modules which modify the
+            segmentation.""")
+        self.wants_discard_primary = cps.Binary(
+            "Do you want to discard associated primary objects?",
+            False,
+            doc = """It might be appropriate to discard the primary object
+            for any secondary object that touches the edge of the image.
+            The module will create a new set of objects that mirrors your
+            primary objects if you check this setting. The new objects
+            will be identical to the old, except that the new objects
+            will have objects removed if their associated secondary object
+            touches the edge of the image.""")
+            
+        self.new_primary_objects_name = cps.ObjectNameProvider(
+            "New primary objects name:", "FilteredNuclei",
+            doc = """This setting lets you name the primary objects that
+            aren't discarded. These objects will all have secondary objects
+            that don't touch the edge of the image. Any primary object
+            whose secondary object touches the edge will be added to the
+            unedited objects - the unedited objects prevent operations
+            that change the segmentation from using the pixels of objects
+            that are edited out.""")
     
     def settings(self):
         return [ self.primary_objects, self.objects_name,   
@@ -173,7 +202,9 @@ class IdentifySecondary(cpmi.Identify):
                  self.manual_threshold,
                  self.binary_image, self.use_outlines,
                  self.two_class_otsu, self.use_weighted_variance,
-                 self.assign_middle_to_foreground ]
+                 self.assign_middle_to_foreground,
+                 self.wants_discard_edge, self.wants_discard_primary,
+                 self.new_primary_objects_name]
     
     def visible_settings(self):
         result = [self.image_name, self.primary_objects, self.objects_name,  
@@ -184,6 +215,11 @@ class IdentifySecondary(cpmi.Identify):
             result.append(self.distance_to_dilate)
         elif self.method == M_PROPAGATION:
             result.append(self.regularization_factor)
+        result.append(self.wants_discard_edge)
+        if self.wants_discard_edge:
+            result.append(self.wants_discard_primary)
+            if self.wants_discard_primary:
+                result.append(self.new_primary_objects_name)
         result.append(self.use_outlines)
         if self.use_outlines.value:
             result.append(self.outlines_name)
@@ -245,6 +281,10 @@ class IdentifySecondary(cpmi.Identify):
             setting_values += [cpmi.O_TWO_CLASS, cpmi.O_WEIGHTED_VARIANCE,
                                cpmi.O_FOREGROUND]
             variable_revision_number = 2
+        if (not from_matlab) and variable_revision_number == 2:
+            # Added discarding touching
+            setting_values = setting_values + [cps.NO, cps.NO, "FilteredNuclei"]
+            variable_revision_number = 3
         return setting_values, variable_revision_number, from_matlab
 
     def run(self, workspace):
@@ -273,7 +313,15 @@ class IdentifySecondary(cpmi.Identify):
         if has_threshold:
             thresholded_image = img > local_threshold
         
-        labels_in = objects.small_removed_segmented
+        #
+        # Get the following labels:
+        # * all edited labels
+        # * labels touching the edge, including small removed
+        #
+        labels_in = objects.unedited_segmented.copy()
+        labels_in[(objects.small_removed_segmented > 0) &
+                  (objects.segmented == 0)] = 0
+        
         if self.method in (M_DISTANCE_B, M_DISTANCE_N):
             if self.method == M_DISTANCE_N:
                 distances,(i,j) = scind.distance_transform_edt(labels_in == 0, 
@@ -294,14 +342,14 @@ class IdentifySecondary(cpmi.Identify):
             # 
             segmented_labels = objects.segmented
             small_removed_segmented_out = labels_out
-            segmented_out = self.filter_labels(labels_out, objects)
+            segmented_out = self.filter_labels(labels_out, objects, workspace)
         elif self.method == M_PROPAGATION:
             labels_out, distance = propagate(img, labels_in, 
                                              thresholded_image,
                                              self.regularization_factor.value)
             small_removed_segmented_out = fill_labeled_holes(labels_out)
             segmented_out = self.filter_labels(small_removed_segmented_out,
-                                               objects)
+                                               objects, workspace)
         elif self.method == M_WATERSHED_G:
             #
             # First, apply the sobel filter to the image (both horizontal
@@ -322,7 +370,7 @@ class IdentifySecondary(cpmi.Identify):
                                    mask=watershed_mask)
             small_removed_segmented_out = fill_labeled_holes(labels_out)
             segmented_out = self.filter_labels(small_removed_segmented_out,
-                                               objects)
+                                               objects, workspace)
         elif self.method == M_WATERSHED_I:
             #
             # invert the image so that the maxima are filled first
@@ -343,8 +391,25 @@ class IdentifySecondary(cpmi.Identify):
                                    mask=watershed_mask)
             small_removed_segmented_out = fill_labeled_holes(labels_out)
             segmented_out = self.filter_labels(small_removed_segmented_out,
-                                                objects)
+                                                objects, workspace)
 
+        if self.wants_discard_edge and self.wants_discard_primary:
+            #
+            # Make a new primary object
+            #
+            lookup = scind.maximum(segmented_out,
+                                   objects.segmented,
+                                   range(np.max(objects.segmented)+1))
+            lookup = np.array(lookup, int)
+            lookup[0] = 0
+            segmented_labels = lookup[objects.segmented]
+            new_objects = cpo.Objects()
+            new_objects.segmented = segmented_labels
+            if objects.has_unedited_segmented:
+                new_objects.unedited_segmented = objects.unedited_segmented
+            if objects.has_small_removed_segmented:
+                new_objects.small_removed_segmented = objects.small_removed_segmented
+            new_objects.parent_image = objects.parent_image
         primary_outline = outline(objects.segmented)
         secondary_outline = outline(segmented_out) 
         if workspace.frame != None:
@@ -434,9 +499,37 @@ class IdentifySecondary(cpmi.Identify):
         measurements.add_measurement(objname,
                                      cpmi.FF_PARENT%self.primary_objects.value,
                                      parents_of_children)
+        #
+        # If primary objects were created, add them
+        #
+        if self.wants_discard_edge and self.wants_discard_primary:
+            workspace.object_set.add_objects(new_objects,
+                                             self.new_primary_objects_name.value)
+            cpmi.add_object_count_measurements(measurements,
+                                               self.new_primary_objects_name.value,
+                                               np.max(new_objects.segmented))
+            cpmi.add_object_location_measurements(measurements,
+                                                  self.new_primary_objects_name.value,
+                                                  new_objects.segmented)
+            for parent_objects, parent_name, child_objects, child_name in (
+                (objects, self.primary_objects.value,
+                 new_objects, self.new_primary_objects_name.value),
+                (new_objects, self.new_primary_objects_name.value,
+                 objects_out, objname)):
+                children_per_parent, parents_of_children = \
+                    parent_objects.relate_children(child_objects)
+                measurements.add_measurement(parent_name,
+                                             cpmi.FF_CHILDREN_COUNT%child_name,
+                                             children_per_parent)
+                measurements.add_measurement(child_name,
+                                             cpmi.FF_PARENT%parent_name,
+                                             parents_of_children)
 
-    def filter_labels(self, labels_out, objects):
-        """Filter labels out of the output that are not in the segmented input labels
+    def filter_labels(self, labels_out, objects, workspace):
+        """Filter labels out of the output
+        
+        Filter labels that are not in the segmented input labels. Optionally
+        filter labels that are touching the edge.
         
         labels_out - the unfiltered output labels
         objects    - the objects thing, containing both segmented and 
@@ -452,6 +545,28 @@ class IdentifySecondary(cpmi.Identify):
             segmented_labels_out = lookup[labels_out]
         else:
             segmented_labels_out = labels_out.copy()
+        if self.wants_discard_edge:
+            image = workspace.image_set.get_image(self.image_name.value)
+            if image.has_mask:
+                mask_border = (image.mask & ~ scind.binary_erosion(image.mask))
+                edge_labels = segmented_labels_out[mask_border]
+            else:
+                edge_labels = np.hstack((segmented_labels_out[0,:],
+                                         segmented_labels_out[-1,:],
+                                         segmented_labels_out[:,0],
+                                         segmented_labels_out[:,-1]))
+            edge_labels = np.unique(edge_labels)
+            #
+            # Make a lookup table that translates edge labels to zero
+            # but translates everything else to itself
+            #
+            lookup = np.arange(max_out+1)
+            lookup[edge_labels] = 0
+            #
+            # Run the segmented labels through this to filter out edge
+            # labels
+            segmented_labels_out = lookup[segmented_labels_out]
+                
         return segmented_labels_out
         
     def get_measurement_columns(self, pipeline):
@@ -471,4 +586,80 @@ class IdentifySecondary(cpmi.Identify):
                                        cpmi.FF_ORIG_THRESHOLD,
                                        cpmi.FF_WEIGHTED_VARIANCE,
                                        cpmi.FF_SUM_OF_ENTROPIES)]
-        return columns 
+        if self.wants_discard_edge and self.wants_discard_primary:
+            columns += cpmi.get_object_measurement_columns(self.new_primary_objects_name.value)
+            columns += [(self.new_primary_objects_name.value,
+                         cpmi.FF_CHILDREN_COUNT%self.objects_name.value,
+                         cpmeas.COLTYPE_INTEGER),
+                        (self.objects_name.value,
+                         cpmi.FF_PARENT%self.new_primary_objects_name.value,
+                         cpmeas.COLTYPE_INTEGER)]
+            columns += [(self.primary_objects.value,
+                         cpmi.FF_CHILDREN_COUNT%self.new_primary_objects_name.value,
+                         cpmeas.COLTYPE_INTEGER),
+                        (self.new_primary_objects_name.value,
+                         cpmi.FF_PARENT%self.primary_objects.value,
+                         cpmeas.COLTYPE_INTEGER)]
+
+        return columns
+    
+    def get_categories(self, pipeline, object_name):
+        """Return the categories of measurements that this module produces
+        
+        object_name - return measurements made on this object (or 'Image' for image measurements)
+        """
+        categories = []
+        if object_name == cpmeas.IMAGE:
+            categories += ["Count", "Threshold"]
+        elif (object_name == self.primary_objects or
+              (self.wants_discard_edge and self.wants_discard_primary and
+               object_name == self.new_primary_objects_name)):
+            categories.append("Children")
+        if ((object_name == self.new_primary_objects_name and
+             self.wants_discard_edge and self.wants_discard_primary) or
+            (object_name == self.objects_name)):
+            categories += ("Parent", "Location")
+        return categories
+      
+    def get_measurements(self, pipeline, object_name, category):
+        """Return the measurements that this module produces
+        
+        object_name - return measurements made on this object (or 'Image' for image measurements)
+        category - return measurements made in this category
+        """
+        result = []
+        has_new_primary = (self.wants_discard_edge and self.wants_discard_primary)
+        is_new_primary = (has_new_primary and 
+                          object_name == self.new_primary_objects_name)
+        is_child_object = (object_name == self.objects_name or is_new_primary)
+        
+        if object_name == cpmeas.IMAGE:
+            if category == "Count":
+                result += [self.objects_name.value]
+                if self.wants_discard_edge and self.wants_discard_primary:
+                    result += [self.new_primary_objects_name.value]
+            elif category == "Threshold":
+                result += ["FinalThreshold", "OrigThreshold",
+                           "WeightedVariance", "SumOfEntropies"]
+        if object_name == self.primary_objects and category == "Children":
+            result += ["%s_Count" % self.objects_name.value]
+            if has_new_primary:
+                result += ["%s_Count"%self.new_primary_objects_name.value]
+        if is_new_primary and category == "Children":
+            result += ["%s_Count", self.objects_name]
+        if (is_child_object):
+            if category == "Location":
+                result += [ "Center_X","Center_Y"]
+            elif category == "Parent":
+                result += [ self.primary_objects.value]
+        if (object_name == self.objects_name and has_new_primary and
+            category == "Parent"):
+            result += [self.new_primary_objects_name.value]
+        return result
+    
+    def get_measurement_objects(self, pipeline, object_name, category, measurement):
+        if (object_name == cpmeas.IMAGE and category == "Threshold" and
+            measurement in ("FinalThreshold", "OrigThreshold",
+                            "WeightedVariance", "SumOfEntropies")):
+            return [self.objects_name.value]
+        return []

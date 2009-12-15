@@ -624,16 +624,17 @@ class IdentifyPrimAutomatic(cpmi.Identify):
             self.separate_neighboring_objects(img, mask, 
                                               labeled_image,
                                               object_count,global_threshold)
-        # Filter out small and large objects
-        size_excluded_labeled_image = labeled_image.copy()
-        labeled_image, unedited_labels, small_removed_labels = \
-            self.filter_on_size(labeled_image,object_count)
-        size_excluded_labeled_image[labeled_image > 0] = 0
-        
+        unedited_labels = labeled_image.copy()
         # Filter out objects touching the border or mask
         border_excluded_labeled_image = labeled_image.copy()
         labeled_image = self.filter_on_border(image, labeled_image)
         border_excluded_labeled_image[labeled_image > 0] = 0
+        
+        # Filter out small and large objects
+        size_excluded_labeled_image = labeled_image.copy()
+        labeled_image, small_removed_labels = \
+            self.filter_on_size(labeled_image,object_count)
+        size_excluded_labeled_image[labeled_image > 0] = 0
         
         # Relabel the image
         labeled_image,object_count = relabel(labeled_image)
@@ -927,10 +928,9 @@ class IdentifyPrimAutomatic(cpmi.Identify):
         
         labeled_image - pixel image labels
         object_count - # of objects in the labeled image
-        returns the labeled image, the labeled image before filtering and
-        the labeled image with the small objects removed
+        returns the labeled image, and the labeled image with the 
+        small objects removed
         """
-        unedited_labels = labeled_image.copy()
         if self.exclude_size.value and object_count > 0:
             areas = scipy.ndimage.measurements.sum(np.ones(labeled_image.shape),
                                                    labeled_image,
@@ -945,7 +945,7 @@ class IdentifyPrimAutomatic(cpmi.Identify):
             labeled_image[area_image > max_allowed_area] = 0
         else:
             small_removed_labels = labeled_image.copy()
-        return (labeled_image, unedited_labels, small_removed_labels)
+        return (labeled_image, small_removed_labels)
 
     def filter_on_border(self,image,labeled_image):
         """Filter out objects touching the border

@@ -174,10 +174,14 @@ class TestRelabelObjects(unittest.TestCase):
         module = workspace.module
         self.assertTrue(isinstance(module, R.RelabelObjects))
         columns = module.get_measurement_columns(workspace.pipeline)
-        self.assertEqual(len(columns), 3)
+        self.assertEqual(len(columns), 5)
         for object_name, feature_name, coltype in (
             (OUTPUT_OBJECTS_NAME, I.M_LOCATION_CENTER_X, cpmeas.COLTYPE_FLOAT),
             (OUTPUT_OBJECTS_NAME, I.M_LOCATION_CENTER_Y, cpmeas.COLTYPE_FLOAT),
+            (INPUT_OBJECTS_NAME, I.FF_CHILDREN_COUNT % OUTPUT_OBJECTS_NAME,
+             cpmeas.COLTYPE_INTEGER),
+            (OUTPUT_OBJECTS_NAME, I.FF_PARENT % INPUT_OBJECTS_NAME,
+             cpmeas.COLTYPE_INTEGER),
             (cpmeas.IMAGE, I.FF_COUNT % OUTPUT_OBJECTS_NAME, cpmeas.COLTYPE_INTEGER)):
             self.assertTrue(any([object_name == c[0] and
                                  feature_name == c[1] and
@@ -186,8 +190,12 @@ class TestRelabelObjects(unittest.TestCase):
         self.assertEqual(len(categories), 1)
         self.assertEqual(categories[0], "Count")
         categories = module.get_categories(workspace.pipeline, OUTPUT_OBJECTS_NAME)
+        self.assertEqual(len(categories), 2)
+        self.assertTrue(any(["Location" in categories]))
+        self.assertTrue(any(["Parent" in categories]))
+        categories = module.get_categories(workspace.pipeline, INPUT_OBJECTS_NAME)
         self.assertEqual(len(categories), 1)
-        self.assertEqual(categories[0], "Location")
+        self.assertEqual(categories[0], "Children")
         f = module.get_measurements(workspace.pipeline, cpmeas.IMAGE, "Count")
         self.assertEqual(len(f), 1)
         self.assertEqual(f[0], OUTPUT_OBJECTS_NAME)
@@ -196,6 +204,16 @@ class TestRelabelObjects(unittest.TestCase):
         self.assertEqual(len(f), 2)
         self.assertTrue(all([any([x==y for y in f])
                              for x in ("Center_X","Center_Y")]))
+        f = module.get_measurements(workspace.pipeline, OUTPUT_OBJECTS_NAME,
+                                    "Parent")
+        self.assertEqual(len(f), 1)
+        self.assertEqual(f[0], INPUT_OBJECTS_NAME)
+        
+        f = module.get_measurements(workspace.pipeline, INPUT_OBJECTS_NAME,
+                                    "Children")
+        self.assertEqual(len(f), 1)
+        self.assertEqual(f[0], "%s_Count"%OUTPUT_OBJECTS_NAME)
+
     
     def test_02_02_split_one(self):
         labels = np.zeros((10,20), int)
@@ -209,11 +227,17 @@ class TestRelabelObjects(unittest.TestCase):
         count = m.get_current_image_measurement(I.FF_COUNT%OUTPUT_OBJECTS_NAME)
         self.assertEqual(count, 1)
         for feature_name, value in ((I.M_LOCATION_CENTER_X, 5), 
-                                    (I.M_LOCATION_CENTER_Y, 3)):
+                                    (I.M_LOCATION_CENTER_Y, 3),
+                                    (I.FF_PARENT%INPUT_OBJECTS_NAME, 1)):
             values = m.get_current_measurement(OUTPUT_OBJECTS_NAME,
                                                feature_name)
             self.assertEqual(len(values), 1)
             self.assertAlmostEqual(values[0], value)
+            
+        values = m.get_current_measurement(INPUT_OBJECTS_NAME,
+                                           I.FF_CHILDREN_COUNT % OUTPUT_OBJECTS_NAME)
+        self.assertEqual(len(values), 1)
+        self.assertEqual(values[0], 1)
     
     def test_02_03_split_one_into_two(self):
         labels = np.zeros((10,20), int)
@@ -227,6 +251,15 @@ class TestRelabelObjects(unittest.TestCase):
         expected[2:5, 3:8] = index[0]
         expected[2:5, 13:18] = index[1]
         self.assertTrue(np.all(labels_out == expected))
+        m = workspace.measurements
+        values = m.get_current_measurement(OUTPUT_OBJECTS_NAME,
+                                           I.FF_PARENT%INPUT_OBJECTS_NAME)
+        self.assertEqual(len(values), 2)
+        self.assertTrue(np.all(values == 1))
+        values = m.get_current_measurement(INPUT_OBJECTS_NAME,
+                                           I.FF_CHILDREN_COUNT% OUTPUT_OBJECTS_NAME)
+        self.assertEqual(len(values),1)
+        self.assertEqual(values[0], 2)
     
     def test_03_01_unify_zero(self):
         labels, workspace = self.rruunn(np.zeros((10,20),int),

@@ -81,7 +81,7 @@ CM_GRAY        = "gray"
 class SaveImages(cpm.CPModule):
 
     module_name = "SaveImages"
-    variable_revision_number = 2
+    variable_revision_number = 3
     category = "File Processing"
     
     def create_settings(self):
@@ -577,6 +577,16 @@ class SaveImages(cpm.CPModule):
             else: 
                 setting_values[11] = cps.YES       
             variable_revision_number = 2
+            
+        if (not from_matlab) and variable_revision_number == 2:
+            # Default image/output directory -> Default Image Folder
+            if setting_values[8].startswith("Default output"):
+                setting_values = (setting_values[:8] +
+                                  [PC_DEFAULT]+ setting_values[9:])
+            elif setting_values[8].startswith("Same"):
+                setting_values = (setting_values[:8] +
+                                  [PC_WITH_IMAGE] + setting_values[9:])
+            variable_revision_number = 3
 
         return setting_values, variable_revision_number, from_matlab
     

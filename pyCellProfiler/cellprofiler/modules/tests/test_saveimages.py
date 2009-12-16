@@ -115,6 +115,36 @@ class TestSaveImages(unittest.TestCase):
         self.assertEqual(module.when_to_save.value, cpm_si.WS_EVERY_CYCLE)
         self.assertEqual(module.colormap.value, cpm_si.CM_GRAY)
         self.assertFalse(module.overwrite)
+        
+    def test_00_04_load_v3(self):
+        data = ('eJztVsFu0zAYdrJ0MCohNC47+ogQVNlQ0eiFdZSKSms70WriiJc6wZITR45T'
+                'Vk48Ao/HY+wRiCNnSaywJK3EhVmy4t/+Pn+/v9iWp8PlxfAc9ns2nA6Xr11C'
+                'MbykSLiM+wMYiFfwA8dI4BVkwQCOOYFzR0D7BB6/HRz3B2/68MS234HtijGZ'
+                'Pk0+t10A9pPv46SaaqijYqNQZbzAQpDAizrAAkeq/3dSrxAn6JriK0RjHOUS'
+                'Wf8kcNlyE94NTdkqpniG/CI4KbPYv8Y8mrsZUQ1fkhtMF+QH1paQwT7jNYkI'
+                'CxRfza/33ukyoekuvrHvY56ko80v/flp5f4YFf4cFvol/hTkeKsC3yngn6l4'
+                '4iMPK75dw98r8ffAaDbcifephvdcy1fGY858SGTSUO7ZIHOuyfofafPJeM6J'
+                'l+WzK/+shv9E48t4xGDABIwjtQG28TMMvEZ+HoGyvoxH2EUxFZDFIowFXBGO'
+                'HcH4pkkeVmk+C8xYgJvwjBLPSH1vwjNLPDPRA41872rrlvHHNeYb6Gwcmu+f'
+                'tnlf7Jh3W389jhr9l231/sY7bXkPFXX2NXxWMvxBgXdWk1/V+UmvAo+zONxd'
+                '/3/L+4H3wPsXvF8FXtX9UbxXJf4ruP88vQTl8yRjB1MacibfBLznp4+tqBeh'
+                'NU4PWtRbJM30rRNVr+egQqeYl5m0Dmt80Nef+3L7fhs9s0KvW8Oz1Eta8r6A'
+                'dr6/uAcPKvBt1yPbfwCfYqjK')
+        pipeline = cpp.Pipeline()
+        def callback(caller,event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))        
+        self.assertEqual(len(pipeline.modules()), 1)
+        module = pipeline.modules()[0]
+        self.assertTrue(isinstance(module, cpm_si.SaveImages))
+        self.assertEqual(module.image_name.value, "DNA")
+        self.assertEqual(module.file_image_name.value, "OrigDNA")
+        self.assertEqual(module.file_name_method.value, cpm_si.FN_FROM_IMAGE)
+        self.assertEqual(module.pathname_choice.value, cpm_si.PC_DEFAULT)
+        self.assertEqual(module.when_to_save.value, cpm_si.WS_EVERY_CYCLE)
+        self.assertEqual(module.colormap.value, cpm_si.CM_GRAY)
+        self.assertFalse(module.overwrite)
     
     def test_01_01_save_first_to_same_tif(self):
         img1_filename = os.path.join(self.new_image_directory,'img1.tif')

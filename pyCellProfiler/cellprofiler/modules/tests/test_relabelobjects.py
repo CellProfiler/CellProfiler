@@ -174,10 +174,11 @@ class TestRelabelObjects(unittest.TestCase):
         module = workspace.module
         self.assertTrue(isinstance(module, R.RelabelObjects))
         columns = module.get_measurement_columns(workspace.pipeline)
-        self.assertEqual(len(columns), 5)
+        self.assertEqual(len(columns), 6)
         for object_name, feature_name, coltype in (
             (OUTPUT_OBJECTS_NAME, I.M_LOCATION_CENTER_X, cpmeas.COLTYPE_FLOAT),
             (OUTPUT_OBJECTS_NAME, I.M_LOCATION_CENTER_Y, cpmeas.COLTYPE_FLOAT),
+            (OUTPUT_OBJECTS_NAME, I.M_NUMBER_OBJECT_NUMBER, cpmeas.COLTYPE_INTEGER),
             (INPUT_OBJECTS_NAME, I.FF_CHILDREN_COUNT % OUTPUT_OBJECTS_NAME,
              cpmeas.COLTYPE_INTEGER),
             (OUTPUT_OBJECTS_NAME, I.FF_PARENT % INPUT_OBJECTS_NAME,
@@ -190,9 +191,10 @@ class TestRelabelObjects(unittest.TestCase):
         self.assertEqual(len(categories), 1)
         self.assertEqual(categories[0], "Count")
         categories = module.get_categories(workspace.pipeline, OUTPUT_OBJECTS_NAME)
-        self.assertEqual(len(categories), 2)
+        self.assertEqual(len(categories), 3)
         self.assertTrue(any(["Location" in categories]))
         self.assertTrue(any(["Parent" in categories]))
+        self.assertTrue(any(["Number" in categories]))
         categories = module.get_categories(workspace.pipeline, INPUT_OBJECTS_NAME)
         self.assertEqual(len(categories), 1)
         self.assertEqual(categories[0], "Children")
@@ -208,6 +210,11 @@ class TestRelabelObjects(unittest.TestCase):
                                     "Parent")
         self.assertEqual(len(f), 1)
         self.assertEqual(f[0], INPUT_OBJECTS_NAME)
+        
+        f=module.get_measurements(workspace.pipeline, OUTPUT_OBJECTS_NAME,
+                                  "Number")
+        self.assertEqual(len(f), 1)
+        self.assertEqual(f[0],'Object_Number')
         
         f = module.get_measurements(workspace.pipeline, INPUT_OBJECTS_NAME,
                                     "Children")

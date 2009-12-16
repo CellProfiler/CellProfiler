@@ -434,7 +434,7 @@ class RelabelObjects(cpm.CPModule):
         if object_name == 'Image':
             return ['Count']
         elif object_name == self.output_objects_name.value:
-            return ['Location','Parent']
+            return ['Location','Parent','Number']
         elif object_name == self.objects_name.value:
             return ['Children']
         return []
@@ -451,6 +451,8 @@ class RelabelObjects(cpm.CPModule):
             return ['Center_X','Center_Y']
         elif object_name == self.output_objects_name.value and category == 'Parent':
             return [ self.objects_name.value]
+        elif object_name == self.output_objects_name.value and category == 'Number':
+            return ['Object_Number']
         elif object_name == self.objects_name.value and category == 'Children':
             return [ "%s_Count" % self.output_objects_name.value]
         return []

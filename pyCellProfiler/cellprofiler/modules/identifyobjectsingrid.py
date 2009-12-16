@@ -469,7 +469,7 @@ class IdentifyObjectsInGrid(cpm.CPModule):
         if object_name == 'Image':
             return ['Count']
         elif object_name == self.output_objects_name.value:
-            return ['Location']
+            return ['Location','Number']
         return []
       
     def get_measurements(self, pipeline, object_name, category):
@@ -482,4 +482,6 @@ class IdentifyObjectsInGrid(cpm.CPModule):
             return [ self.output_objects_name.value ]
         elif object_name == self.output_objects_name.value and category == 'Location':
             return ['Center_X','Center_Y']
+        elif object_name == self.output_objects_name.value and category == 'Number':
+            return ['Object_Number']
         return []

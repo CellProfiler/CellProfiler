@@ -16,7 +16,7 @@ __version__="$Revision$"
 import math
 import scipy.ndimage
 import scipy.sparse
-import numpy
+import numpy as np
 import scipy.stats
 
 import cellprofiler.cpmodule
@@ -43,6 +43,9 @@ M_LOCATION_CENTER_X = 'Location_Center_X'
 
 '''The centroid Y coordinate measurement feature name'''
 M_LOCATION_CENTER_Y = 'Location_Center_Y'
+
+'''The object number - an index from 1 to however many objects'''
+M_NUMBER_OBJECT_NUMBER = 'Number_Object_Number'
 
 '''The format for the object count image measurement'''
 FF_COUNT = 'Count_%s' 
@@ -311,31 +314,34 @@ def add_object_location_measurements(measurements,
     object_name  - the name of the objects being measured
     labels       - the label matrix
     """
-    object_count = numpy.max(labels)
+    object_count = np.max(labels)
     #
     # Get the centers of each object - center_of_mass <- list of two-tuples.
     #
     if object_count:
-        centers = scipy.ndimage.center_of_mass(numpy.ones(labels.shape), 
+        centers = scipy.ndimage.center_of_mass(np.ones(labels.shape), 
                                                labels, 
                                                range(1,object_count+1))
-        centers = numpy.array(centers)
+        centers = np.array(centers)
         centers = centers.reshape((object_count,2))
         location_center_y = centers[:,0]
         location_center_x = centers[:,1]
+        number = np.arange(1,object_count+1)
     else:
-        location_center_y = numpy.zeros((0,),dtype=float)
-        location_center_x = numpy.zeros((0,),dtype=float)
+        location_center_y = np.zeros((0,),dtype=float)
+        location_center_x = np.zeros((0,),dtype=float)
+        number = np.zeros((0,),dtype=int)
     measurements.add_measurement(object_name, M_LOCATION_CENTER_X,
                                  location_center_x)
     measurements.add_measurement(object_name, M_LOCATION_CENTER_Y,
                                  location_center_y)
+    measurements.add_measurement(object_name, M_NUMBER_OBJECT_NUMBER, number)
 
 def add_object_count_measurements(measurements, object_name, object_count):
     """Add the # of objects to the measurements"""
     measurements.add_measurement('Image',
                                  FF_COUNT%(object_name),
-                                 numpy.array([object_count],
+                                 np.array([object_count],
                                              dtype=float))
 
 def get_object_measurement_columns(object_name):
@@ -348,4 +354,6 @@ def get_object_measurement_columns(object_name):
     '''
     return [(object_name, M_LOCATION_CENTER_X, cpmeas.COLTYPE_FLOAT),
             (object_name, M_LOCATION_CENTER_Y, cpmeas.COLTYPE_FLOAT),
+            (object_name, M_NUMBER_OBJECT_NUMBER, cpmeas.COLTYPE_INTEGER),
             (cpmeas.IMAGE, FF_COUNT%object_name, cpmeas.COLTYPE_INTEGER)]
+

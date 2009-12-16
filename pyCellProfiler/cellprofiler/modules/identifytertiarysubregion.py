@@ -298,3 +298,42 @@ class IdentifyTertiarySubregion(cpm.CPModule):
         
         return setting_values,variable_revision_number,from_matlab
     
+    def get_categories(self, pipeline, object_name):
+        """Return the categories of measurements that this module produces
+        
+        object_name - return measurements made on this object (or 'Image' for image measurements)
+        """
+        categories = []
+        if object_name == cpmeas.IMAGE:
+            categories += ["Count"]
+        elif (object_name == self.primary_objects_name or
+              object_name == self.secondary_objects_name):
+            categories.append("Children")
+        if (object_name == self.subregion_objects_name):
+            categories += ("Parent", "Location","Number")
+        return categories
+      
+    def get_measurements(self, pipeline, object_name, category):
+        """Return the measurements that this module produces
+        
+        object_name - return measurements made on this object (or 'Image' for image measurements)
+        category - return measurements made in this category
+        """
+        result = []
+        
+        if object_name == cpmeas.IMAGE:
+            if category == "Count":
+                result += [self.subregion_objects_name.value]
+        if (object_name in 
+            (self.primary_objects_name.value, self.secondary_objects_name.value)
+            and category == "Children"):
+            result += ["%s_Count" % self.subregion_objects_name.value]
+        if object_name == self.subregion_objects_name:
+            if category == "Location":
+                result += [ "Center_X","Center_Y"]
+            elif category == "Parent":
+                result += [ self.primary_objects_name.value]
+            elif category == "Number":
+                result += ["Object_Number"]
+        return result
+    

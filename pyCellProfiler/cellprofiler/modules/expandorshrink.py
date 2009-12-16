@@ -37,6 +37,10 @@ from scipy.ndimage import distance_transform_edt
 import cellprofiler.cpmodule as cpm
 import cellprofiler.settings as cps
 import cellprofiler.objects as cpo
+import cellprofiler.measurements as cpmeas
+from cellprofiler.modules.identify import add_object_count_measurements
+from cellprofiler.modules.identify import add_object_location_measurements
+from cellprofiler.modules.identify import get_object_measurement_columns
 from cellprofiler.cpmath.cpmorphology import binary_shrink, thin
 from cellprofiler.cpmath.cpmorphology import fill_labeled_holes, adjacent
 from cellprofiler.cpmath.cpmorphology import skeletonize_labels, spur
@@ -143,7 +147,12 @@ class ExpandOrShrink(cpm.CPModule):
                 self.do_labels(input_objects.unedited_segmented)
         workspace.object_set.add_objects(output_objects,
                                          self.output_object_name.value)
-        
+        add_object_count_measurements(workspace.measurements, 
+                                      self.output_object_name.value,
+                                      np.max(output_objects.segmented)+1)
+        add_object_location_measurements(workspace.measurements,
+                                         self.output_object_name.value,
+                                         output_objects.segmented)
         if self.wants_outlines.value:
             outlines = outline(output_objects.segmented)
             workspace.add_outline(self.outlines_name.value, outlines)
@@ -217,3 +226,38 @@ class ExpandOrShrink(cpm.CPModule):
             variable_revision_number = 1
         return setting_values, variable_revision_number, from_matlab
 
+    def get_measurement_columns(self, pipeline):
+        '''Return column definitions for measurements made by this module'''
+        columns = get_object_measurement_columns(self.output_object_name.value)
+        return columns
+    
+    def get_categories(self, pipeline, object_name):
+        """Return the categories of measurements that this module produces
+        
+        object_name - return measurements made on this object (or 'Image' for image measurements)
+        """
+        categories = []
+        if object_name == cpmeas.IMAGE:
+            categories += ["Count"]
+        if (object_name == self.output_object_name):
+            categories += ("Location","Number")
+        return categories
+      
+    def get_measurements(self, pipeline, object_name, category):
+        """Return the measurements that this module produces
+        
+        object_name - return measurements made on this object (or 'Image' for image measurements)
+        category - return measurements made in this category
+        """
+        result = []
+        
+        if object_name == cpmeas.IMAGE:
+            if category == "Count":
+                result += [self.output_object_name.value]
+        if object_name == self.output_object_name:
+            if category == "Location":
+                result += [ "Center_X","Center_Y"]
+            elif category == "Number":
+                result += ["Object_Number"]
+        return result
+    

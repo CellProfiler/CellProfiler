@@ -618,7 +618,7 @@ class IdentifySecondary(cpmi.Identify):
         if ((object_name == self.new_primary_objects_name and
              self.wants_discard_edge and self.wants_discard_primary) or
             (object_name == self.objects_name)):
-            categories += ("Parent", "Location")
+            categories += ("Parent", "Location","Number")
         return categories
       
     def get_measurements(self, pipeline, object_name, category):
@@ -652,6 +652,8 @@ class IdentifySecondary(cpmi.Identify):
                 result += [ "Center_X","Center_Y"]
             elif category == "Parent":
                 result += [ self.primary_objects.value]
+            elif category == "Number":
+                result += ["Object_Number"]
         if (object_name == self.objects_name and has_new_primary and
             category == "Parent"):
             result += [self.new_primary_objects_name.value]

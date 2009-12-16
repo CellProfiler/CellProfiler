@@ -223,7 +223,10 @@ class DisplayDataOnImage(cpm.CPModule):
                                workspace.display_data.values):
             try:
                 fvalue = float(value)
-                svalue = "%.3f"%fvalue
+                if round(fvalue) == value:
+                    svalue = str(value)
+                else:
+                    svalue = round(fvalue,3)
             except:
                 svalue = str(value)
             

@@ -75,8 +75,8 @@ import cellprofiler.settings as cps
 import cellprofiler.preferences as cpprefs
 from cellprofiler.modules.loadimages import LoadImagesImageProvider
 
-DIR_DEFAULT_IMAGE = 'Default Image Directory'
-DIR_DEFAULT_OUTPUT = 'Default Output Directory'
+DIR_DEFAULT_IMAGE = 'Default Input Folder'
+DIR_DEFAULT_OUTPUT = 'Default Output Folder'
 DIR_OTHER = 'Elsewhere...'
 DIR_ALL = [DIR_DEFAULT_IMAGE, DIR_DEFAULT_OUTPUT,DIR_OTHER]
 
@@ -147,39 +147,39 @@ class LoadText(cpm.CPModule):
     def create_settings(self):
         self.uuid = uuid.uuid4()
         self.csv_directory_choice = cps.Choice("CSV file location:", DIR_ALL, doc="""
-            This is the folder that contains the CSV file. Choose "Default Image Directory"
-            if the CSV file is in the default image directory. Choose "Default Output
-            Directory" if the CSV file is in the default output directory. Choose
-            "Elsewhere..." to specify a custom directory name. 
+            This is the folder that contains the CSV file. Choose "Default Input Folder"
+            if the CSV file is in the default input folder. Choose "Default Output
+            Folder" if the CSV file is in the default output folder. Choose
+            "Elsewhere..." to specify a custom folder name. 
             
-            Custom directory names that start with "." are relative to the default image directory. Names that
-            start with "&" are relative to the default output directory.
-            For example '&/../My_directory' looks in a directory called 'My_directory'
-            at the same level as the output directory""")
+            Custom folder names that start with "." are relative to the default image folder. Names that
+            start with "&" are relative to the default output folder.
+            For example '&/../My_folder' looks in a folder called 'My_folder'
+            at the same level as the output folder""")
         self.csv_custom_directory = cps.DirectoryPath("Enter the path to the CSV file:",
                                                       ".", doc = 
-                                                      """What is the name of the CSV file's directory?""")
+                                                      """What is the name of the CSV file's folder?""")
         self.csv_file_name = cps.FilenameText("Enter the name of the CSV file:",
                                               "None",doc="""
             This is the file name of the CSV file containing the data.""")
         self.wants_images = cps.Binary("Load images from CSV data?", True, doc="""
             Check this box to have LoadText load images using the Image_FileName field and,
             if it appears in the CSV file, the Image_PathName fields.""")
-        self.image_directory_choice = cps.Choice("Image directory location:",
+        self.image_directory_choice = cps.Choice("Image folder location:",
                                                  DIR_ALL, doc="""
-            This is the base directory used for paths to images. Path names to image
-            files are relative to this directory. Choose "Default Image Directory" to
-            make the default image directory the base directory. Choose "Default Output
-            Directory" to make the default output directory the base directory. Choose
-            "Elsewhere..." to specify a custom directory name.
+            This is the base folder used for paths to images. Path names to image
+            files are relative to this folder. Choose "Default Input Folder" to
+            make the default input folder the base folder. Choose "Default Output
+            Folder" to make the default output folder the base folder. Choose
+            "Elsewhere..." to specify a custom folder name.
             
-            Custom directory names that start with "." are relative to the default image directory. Names that
-            start with "&" are relative to the default output directory.
-            For example '&/../My_directory' looks in a directory called 'My_directory'
-            at the same level as the output directory""")
+            Custom folder names that start with "." are relative to the default input folder. Names that
+            start with "&" are relative to the default output folder.
+            For example '&/../My_folder' looks in a folder called 'My_folder'
+            at the same level as the output folder""")
         self.image_custom_directory = cps.DirectoryPath("Enter the path to the images:",
                                                         ".", doc = 
-                                                        """What is the name of the image directory?""")
+                                                        """What is the name of the image folder?""")
         self.wants_image_groupings = cps.Binary("Group images by metadata?", False)
         self.metadata_fields = cps.MultiChoice("Select metadata fields for grouping:", None)
         self.wants_rows = cps.Binary("Process just a range of rows?",

@@ -69,8 +69,8 @@ FF_TIFF        = "tiff"
 FF_XWD         = "xwd"
 FF_AVI         = "avi"
 FF_MAT         = "mat"
-PC_DEFAULT     = "Default output directory"
-PC_WITH_IMAGE  = "Same directory as image"
+PC_DEFAULT     = "Default output folder"
+PC_WITH_IMAGE  = "Same folder as image"
 PC_CUSTOM      = "Custom"
 PC_WITH_METADATA = "Custom with metadata"
 WS_EVERY_CYCLE = "Every cycle"
@@ -161,23 +161,23 @@ class SaveImages(cpm.CPModule):
         self.movie_pathname_choice = cps.Choice("Select location to save file:",
                                           [PC_DEFAULT,PC_CUSTOM],
                                           PC_DEFAULT,doc="""
-                This setting lets you control the directory used to store the file. The
+                This setting lets you control the folder used to store the file. The
                 choices are:
                 <ul>
-                <li><i>Default output directory</i></li>
-                <li><i>Same directory as image:</i> The file will be stored in the directory of the
+                <li><i>Default output folder</i></li>
+                <li><i>Same folder as image:</i> The file will be stored in the folder of the
                 images from this image set.</li>
-                <li><i>Custom:</i> The file will be stored in a customizable directory. You can
-                prefix the directory name with "." (an period) to make the root directory the default
-                output directory or "&" (an ampersand) to make the root directory the default image
-                directory.</li>
-                <li><i>Custom with metadata:</i> The file will be stored in a customizable directory
+                <li><i>Custom:</i> The file will be stored in a customizable folder. You can
+                prefix the folder name with "." (an period) to make the root folder the default
+                output folder or "&" (an ampersand) to make the root folder the default image
+                folder.</li>
+                <li><i>Custom with metadata:</i> The file will be stored in a customizable folder
                 with metadata substitution (see the <i>Name with metadata</i> setting above)</li>
                 </ul>""")
-        self.pathname = cps.Text("Enter the pathname of the directory where you want to save images:",".",doc="""
+        self.pathname = cps.Text("Enter the pathname of the folder where you want to save images:",".",doc="""
                 Enter the pathname to save the images here. The pathname can referenced with respect 
-                to the Default Output directory directory with a period (".") or the Default Input 
-                directory with an ampersand ("&") as the root directory.""")
+                to the Default Output Folder with a period (".") or the Default Input 
+                folder with an ampersand ("&") as the root folder.""")
         self.bit_depth = cps.Choice("Enter the bit depth at which to save the images:",
                                     ["8","12","16"])
         self.overwrite = cps.Binary("Overwrite existing files without warning?",False)
@@ -229,8 +229,8 @@ class SaveImages(cpm.CPModule):
                 the file names of the loaded files with the file names of the the saved
                 files. Because this function is rarely needed and may introduce
                 complications, the default setting is unchecked.""")
-        self.create_subdirectories = cps.Binary("Create subdirectories in the output directory?",False,
-                                                doc = """This option allows you to create subdirectories to match the input image directory structure.""")
+        self.create_subdirectories = cps.Binary("Create subfolders in the output folder?",False,
+                                                doc = """This option allows you to create subfolders to match the input image folder structure.""")
     
     def settings(self):
         """Return the settings in the order to use when saving"""

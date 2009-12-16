@@ -81,8 +81,8 @@ if has_bioformats:
 else:
     FF = [FF_INDIVIDUAL_IMAGES, FF_STK_MOVIES]
 
-DIR_DEFAULT_IMAGE = 'Default Image Directory'
-DIR_DEFAULT_OUTPUT = 'Default Output Directory'
+DIR_DEFAULT_IMAGE = 'Default Image Folder'
+DIR_DEFAULT_OUTPUT = 'Default Output Folder'
 DIR_OTHER = 'Elsewhere...'
 
 SB_GRAYSCALE = 'grayscale'
@@ -240,7 +240,7 @@ class LoadImages(cpmodule.CPModule):
                 <i>DAPI, FITC, Red, DAPI, FITC, Red</i>, and so on, the number would be 3.""")
         
         self.descend_subdirectories = cps.Binary('Analyze all subfolders within the selected folder?', False, doc="""
-                If this box is checked, all the subfolders under the image directory location that you specify will be
+                If this box is checked, all the subfolders under the image folder location that you specify will be
                 searched for images matching the criteria above.""")
         
         self.check_images = cps.Binary('Do you want to check image sets for missing or duplicate files?',True,doc="""
@@ -253,7 +253,7 @@ class LoadImages(cpmodule.CPModule):
                 metadata tag. For example, if performing per-plate illumination correction, and the
                 plate metadata is part of the image filename, using image grouping will you to
                 process those images that have the same plate field together (the alternative would be
-                to place the images from each plate in a separate directory). The next setting allows you
+                to place the images from each plate in a separate folder). The next setting allows you
                 to select the metadata tags by which to group.""")
         
         self.metadata_fields = cps.MultiChoice('What metadata fields do you want to group by?',[],doc="""
@@ -321,7 +321,7 @@ class LoadImages(cpmodule.CPModule):
                         for the column headers cannot exceed 64K. A warning will be generated later if this limit
                         has been exceeded.</li>
                         </ul>"""),
-               FD_METADATA_CHOICE:cps.Choice('Do you want to extract metadata from the file name, the subdirectory path or both?',
+               FD_METADATA_CHOICE:cps.Choice('Do you want to extract metadata from the file name, the subfolder path or both?',
                                              [M_NONE, M_FILE_NAME, 
                                               M_PATH, M_BOTH],doc="""
                         Metadata fields can be specified from the image filename, the image path, or both. 
@@ -360,7 +360,7 @@ class LoadImages(cpmodule.CPModule):
                         <p>The regular expression can be typed in the upper text box, with a sample file name given in the lower
                         text box. Provided the syntax is correct, the corresponding fields will be highlighted in the same
                         color in the two boxes. Press <i>Submit</i> to accept the typed regular expression."""),
-               FD_PATH_METADATA: cps.RegexpText('Type the regular expression that finds metadata in the subdirectory path:',
+               FD_PATH_METADATA: cps.RegexpText('Type the regular expression that finds metadata in the subfolder path:',
                                           '.*[\\\\/](?P<Date>.*)[\\\\/](?P<Run>.*)$',doc="""
                         <i>(Only used if you want to extract metadata from the path)</i>
                         <p>The regular expression to extract the metadata from the path is entered here. Note that
@@ -371,7 +371,7 @@ class LoadImages(cpmodule.CPModule):
                         check the accuracy of your regular expression. The regular expression syntax can be used to 
                         name different parts of your expression. The syntax for this is <i>(?&lt;fieldname&gt;expr)</i> to
                         extract whatever matches <i>expr</i> and assign it to the measurement, <i>fieldname</i> for the image.
-                        <p>For instance, a researcher uses directory names with the date and subfolders containing the
+                        <p>For instance, a researcher uses folder names with the date and subfolders containing the
                         images with the run ID (e.g., <i>./2009_10_02/1234/</i>)
                         The following regular expression will capture the plate, well and site in the fields 
                         <i>Date</i> and <i>Run</i>:<br>
@@ -386,7 +386,7 @@ class LoadImages(cpmodule.CPModule):
                         <tr><td>.*</td><td>Capture as many characters that follow</td></tr>
                         <tr><td>$</td><td>The <i>Run</i> field must be at the end of the path string, i.e. the
                         last folder on the path. This also means that the <i>Date</i> field contains the parent
-                        directory of the <i>Date</i> folder.</td></tr>
+                        folder of the <i>Date</i> folder.</td></tr>
                         </table>"""),
                FD_REMOVE_IMAGE:cps.DoSomething('Remove this image...', 'Remove',self.remove_imagecb, new_uuid)
                }
@@ -1006,7 +1006,7 @@ class LoadImages(cpmodule.CPModule):
         """Set up image providers for movie files"""
         files = self.collect_files()
         if len(files) == 0:
-            raise ValueError("there are no image files in the chosen directory (or subdirectories, if you requested them to be analyzed as well)")
+            raise ValueError("there are no image files in the chosen folder (or subfolders, if you requested them to be analyzed as well)")
         
         root = self.image_directory()
         image_names = self.image_name_vars()

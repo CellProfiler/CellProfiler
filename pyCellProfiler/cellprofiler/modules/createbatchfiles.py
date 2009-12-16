@@ -67,15 +67,15 @@ class CreateBatchFiles(cpm.CPModule):
     #
     def create_settings(self):
         '''Create the module settings and name the module'''
-        self.wants_default_output_directory = cps.Binary("Store batch files in default output directory", True,doc="""
-                Do you want to store the batch files in the default output directory? 
-                Check this box to store batch files in the Default Output directory. Uncheck
-                the box to enter the path to the directory that will be used to store
+        self.wants_default_output_directory = cps.Binary("Store batch files in default output folder", True,doc="""
+                Do you want to store the batch files in the default output folder? 
+                Check this box to store batch files in the Default Output folder. Uncheck
+                the box to enter the path to the folder that will be used to store
                 these files.""")
         
-        self.custom_output_directory = cps.Text("Output directory path",
+        self.custom_output_directory = cps.Text("Output folder path",
                                                 cpprefs.get_default_output_directory(),doc="""
-                                                What is the path to the output directory?""")
+                                                What is the path to the output folder?""")
         
         # Worded this way not because I am windows-centric but because it's
         # easier than listing every other OS in the universe except for VMS
@@ -88,7 +88,7 @@ class CreateBatchFiles(cpm.CPModule):
                 the Unix or Macintosh file separator (slash,&#47;).""")
         
         self.batch_mode = cps.Binary("Hidden: in batch mode", False)
-        self.default_image_directory = cps.Setting("Hidden: default image directory at time of save",
+        self.default_image_directory = cps.Setting("Hidden: default image folder at time of save",
                                                    cpprefs.get_default_image_directory())
         self.revision = cps.Integer("Hidden: SVN revision number", 0)
         self.mappings = []
@@ -109,7 +109,7 @@ class CreateBatchFiles(cpm.CPModule):
                                 start with the cluster root path.
                                 <p>For example, if you have mapped the remote cluster machine as:<br><br>
                                 <i>Z:\your_data\images</i> (on a Windows machine, for instance)<br><br>
-                                and the cluster machine sees the same directory as:<br><br>
+                                and the cluster machine sees the same folder as:<br><br>
                                 <i>/server_name/your_name/your_data/images</i><br><br>
                                 you would want to put <i>Z:</i> here and <i>/server_name/your_name/</i> 
                                 for the cluster path in the next setting."""))
@@ -119,10 +119,10 @@ class CreateBatchFiles(cpm.CPModule):
                                 cpprefs.get_default_image_directory(),doc="""
                                 What is the path to files on the cluster? This is the cluster 
                                 root path, i.e, how the cluster machine sees the
-                                top-most directory where your input/output files are stored.
+                                top-most folder where your input/output files are stored.
                                 <p>For example, if you have mapped the remote cluster machine as:<br><br>
                                 <i>Z:\your_data\images</i> (on a Windows machine, for instance)<br><br>
-                                and the cluster machine sees the same directory as:<br><br>
+                                and the cluster machine sees the same folder as:<br><br>
                                 <i>/server_name/your_name/your_data/images</i><br><br>
                                 you would want to put <i>Z:</i> in the previous setting for the
                                 local machine path and <i>/server_name/your_name/</i> here. """))

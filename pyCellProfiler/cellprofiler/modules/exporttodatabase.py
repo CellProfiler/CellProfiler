@@ -167,13 +167,13 @@ class ExportToDatabase(cpm.CPModule):
             What prefix do you want to use to name the SQL file?""")
         
         self.use_default_output_directory = cps.Binary(
-            "Save files in the default output directory?", True)
+            "Save files in the default output folder?", True)
         
         self.output_directory = cps.Text(
-            "Enter output directory", ".", doc = """
+            "Enter output folder", ".", doc = """
             <i>(Used if SQL is selected as the database type and CSV files are to be written)</i><br>
-            What directory should be used to save files? Use a "." to indicate the default
-            output directory.""")
+            What folder should be used to save files? Use a "." to indicate the default
+            output folder.""")
         
         self.save_cpa_properties = cps.Binary(
             "Create a CellProfiler Analyst properties file?", 

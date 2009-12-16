@@ -115,8 +115,8 @@ import cellprofiler.preferences as cpprefs
 FIXED_SETTING_COUNT = 1
 VARIABLE_SETTING_COUNT = 6
 
-PC_DEFAULT     = "Default output directory"
-PC_WITH_IMAGE  = "Same directory as image"
+PC_DEFAULT     = "Default output folder"
+PC_WITH_IMAGE  = "Same folder as image"
 PC_CUSTOM      = "Custom"
 
 class CalculateStatistics(cpm.CPModule):
@@ -192,20 +192,20 @@ class CalculateStatistics(cpm.CPModule):
             "File output location",
             [PC_DEFAULT, PC_CUSTOM],
             doc="""
-            This setting lets you control the directory used to store the file. The
+            This setting lets you control the folder used to store the file. The
             choices are:
             <ul>
-            <li><i>Default output directory</i></li>
-            <li><i>Custom:</i> The file will be stored in a customizable directory. You can
-            prefix the directory name with "." (an period) to make the root directory the default
-            output directory or "&" (an ampersand) to make the root directory the default image
-            directory.</li></ul>"""))
+            <li><i>Default output folder</i></li>
+            <li><i>Custom:</i> The file will be stored in a customizable folder. You can
+            prefix the folder name with "." (an period) to make the root directory the default
+            output folder or "&" (an ampersand) to make the root folder the default image
+            folder.</li></ul>"""))
         group.append('pathname', cps.Text(
-            "Directory pathname:",
+            "Folder pathname:",
             ".",doc="""
                 Enter the pathname to save the images here. The pathname can referenced with respect 
-                to the Default Output directory directory with a period (".") or the Default Input 
-                directory with an ampersand ("&") as the root directory."""))
+                to the Default Output Folder with a period (".") or the Default Input 
+                Folder with an ampersand ("&") as the root folder."""))
             
         group.append("remover", cps.RemoveSettingButton("Remove the above dose measurement",
                                                         "Remove", 

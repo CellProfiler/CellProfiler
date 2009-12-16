@@ -36,7 +36,7 @@ import cellprofiler.preferences as cpprefs
 import cellprofiler.settings as cps
 from loadimages import LoadImagesImageProvider
 
-DIR_DEFAULT_IMAGE_FOLDER = "Default image folder"
+DIR_DEFAULT_IMAGE_FOLDER = "Default input folder"
 DIR_DEFAULT_OUTPUT_FOLDER = "Default output folder"
 DIR_CUSTOM_FOLDER = "Custom folder"
 

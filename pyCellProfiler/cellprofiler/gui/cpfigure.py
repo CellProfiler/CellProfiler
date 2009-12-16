@@ -134,8 +134,10 @@ class CPFigureFrame(wx.Frame):
     def clf(self):
         '''Clear the figure window, resetting the display'''
         self.figure.clf()
-        self.subplots[:,:] = None
-        self.zoom_rects[:,:] = None
+        if hasattr(self,"subplots"):
+            self.subplots[:,:] = None
+        if hasattr(self,"zoom_rects"):
+            self.zoom_rects[:,:] = None
         
     def on_paint(self, event):
         dc = wx.PaintDC(self)
@@ -169,6 +171,8 @@ class CPFigureFrame(wx.Frame):
             self.mouse_mode = MODE_NONE
             
     def on_button_press(self, event):
+        if not hasattr(self, "subplots"):
+            return
         if event.inaxes in self.subplots.flatten():
             self.mouse_down = (event.xdata,event.ydata)
             if self.mouse_mode == MODE_ZOOM:
@@ -273,6 +277,8 @@ class CPFigureFrame(wx.Frame):
         self.status_bar.SetFields(fields)
     
     def on_button_release(self,event):
+        if not hasattr(self, "subplots"):
+            return
         if event.inaxes in self.subplots.flatten() and self.mouse_down:
             x0 = min(self.mouse_down[0], event.xdata)
             x1 = max(self.mouse_down[0], event.xdata)

@@ -1432,6 +1432,7 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         expected_columns += [(oname, feature, cpmeas.COLTYPE_FLOAT)
                              for feature in (I.M_LOCATION_CENTER_X,
                                              I.M_LOCATION_CENTER_Y)]
+        expected_columns += [(oname, I.M_NUMBER_OBJECT_NUMBER, cpmeas.COLTYPE_INTEGER)]
         self.assertEqual(len(columns), len(expected_columns))
         for column in columns:
             self.assertTrue(any(all([colval==exval for colval, exval in zip(column, expected)])

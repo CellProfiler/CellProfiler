@@ -524,6 +524,16 @@ class LoadImages(cpmodule.CPModule):
         if (variable_revision_number == 3 and module_name == self.module_class()):
             setting_values, variable_revision_number = self.upgrade_new_3_to_4(setting_values)
 
+        #
+        # Standardize "Default Image Directory" -> "Default Image Folder"
+        if setting_values[self.SLOT_LOCATION].startswith("Default Image"):
+            setting_values = (setting_values[:self.SLOT_LOCATION] +
+                              [DIR_DEFAULT_IMAGE] +
+                              setting_values[self.SLOT_LOCATION+1:])
+        elif setting_values[self.SLOT_LOCATION].startswith("Default Output"):
+            setting_values = (setting_values[:self.SLOT_LOCATION] +
+                              [DIR_DEFAULT_OUTPUT] +
+                              setting_values[self.SLOT_LOCATION+1:])
         if variable_revision_number != self.variable_revision_number or \
            module_name != self.module_class():
             raise NotImplementedError("Cannot read version %d of %s"%(

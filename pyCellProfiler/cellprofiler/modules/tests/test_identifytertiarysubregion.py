@@ -295,6 +295,7 @@ class TestIdentifyTertiarySubregion(unittest.TestCase):
         expected = ((cpm.IMAGE, cpmi.FF_COUNT%TERTIARY, cpm.COLTYPE_INTEGER),
                     (TERTIARY, cpmi.M_LOCATION_CENTER_X, cpm.COLTYPE_FLOAT),
                     (TERTIARY, cpmi.M_LOCATION_CENTER_Y, cpm.COLTYPE_FLOAT),
+                    (TERTIARY, cpmi.M_NUMBER_OBJECT_NUMBER, cpm.COLTYPE_INTEGER),
                     (PRIMARY, cpmi.FF_CHILDREN_COUNT%TERTIARY, cpm.COLTYPE_INTEGER),
                     (SECONDARY, cpmi.FF_CHILDREN_COUNT%TERTIARY, cpm.COLTYPE_INTEGER),
                     (TERTIARY, cpmi.FF_PARENT%PRIMARY, cpm.COLTYPE_INTEGER),

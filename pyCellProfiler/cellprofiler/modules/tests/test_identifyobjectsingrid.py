@@ -203,12 +203,12 @@ class TestIdentifyObjectsInGrid(unittest.TestCase):
         self.assertEqual(count[0], gridding.rows * gridding.columns)
         
         columns = module.get_measurement_columns(workspace.pipeline)
-        self.assertEqual(len(columns), 3)
+        self.assertEqual(len(columns), 4)
         count_feature = 'Count_%s'%OUTPUT_OBJECTS_NAME
         self.assertTrue(all([column[0] == ("Image" if column[1] == count_feature
                                            else OUTPUT_OBJECTS_NAME)
                              for column in columns]))
-        self.assertTrue(all([column[1] in ('Location_Center_X','Location_Center_Y', count_feature)
+        self.assertTrue(all([column[1] in ('Location_Center_X','Location_Center_Y', count_feature,'Number_Object_Number')
                              for column in columns]))
         #
         # Check the outlines
@@ -220,9 +220,11 @@ class TestIdentifyObjectsInGrid(unittest.TestCase):
         #
         # Check the measurements
         #
-        categories = module.get_categories(None, OUTPUT_OBJECTS_NAME)
-        self.assertEqual(len(categories), 1)
+        categories = list(module.get_categories(None, OUTPUT_OBJECTS_NAME))
+        self.assertEqual(len(categories), 2)
+        categories.sort()
         self.assertEqual(categories[0], "Location")
+        self.assertEqual(categories[1], "Number")
         categories = module.get_categories(None, cpmeas.IMAGE)
         self.assertEqual(len(categories), 1)
         self.assertEqual(categories[0], "Count")
@@ -234,6 +236,9 @@ class TestIdentifyObjectsInGrid(unittest.TestCase):
         self.assertTrue(all(m in ('Center_X','Center_Y') for m in measurements))
         self.assertTrue('Center_X' in measurements)
         self.assertTrue('Center_Y' in measurements)
+        measurements = module.get_measurements(None, OUTPUT_OBJECTS_NAME, "Number")
+        self.assertEqual(len(measurements),1)
+        self.assertEqual(measurements[0], "Object_Number")
         
     
     def test_02_02_forced_location_auto(self):

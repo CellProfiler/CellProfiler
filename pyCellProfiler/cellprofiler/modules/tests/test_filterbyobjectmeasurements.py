@@ -807,7 +807,7 @@ Module #3: FilterByObjectMeasurement revision - 6
         image_features = m.get_feature_names(cpm.IMAGE)
         object_features = m.get_feature_names("my_result")
         columns = module.get_measurement_columns(workspace.pipeline)
-        self.assertEqual(len(columns), 4)
+        self.assertEqual(len(columns), 5)
         for feature in image_features:
             self.assertTrue(any([(column[0] == cpm.IMAGE and 
                                   column[1] == feature)
@@ -826,8 +826,25 @@ Module #3: FilterByObjectMeasurement revision - 6
         
         for feature, coltype in (("Location_Center_X", cpm.COLTYPE_FLOAT),
                                  ("Location_Center_Y", cpm.COLTYPE_FLOAT),
+                                 ("Number_Object_Number", cpm.COLTYPE_INTEGER),
                                  ("Parent_my_objects", cpm.COLTYPE_INTEGER),
                                  ("Count_my_result", cpm.COLTYPE_INTEGER)):
             fcolumns = [x for x in columns if x[1] == feature]
             self.assertEqual(len(fcolumns),1,"Missing or duplicate column: %s"%feature)
             self.assertEqual(fcolumns[0][2], coltype)
+            
+        for object_name, category in (("Image",dict(Count=["my_objects"])),
+                                      ("my_objects",
+                                       dict(Children=["my_result_Count"])),
+                                      ("my_result",
+                                       dict(Location=["Center_X","Center_Y"],
+                                            Parent="my_objects",
+                                            Number="Object_Number"))):
+            categories = module.get_categories(None, object_name)
+            for c in category.keys():
+                self.assertTrue(c in categories)
+                ff = module.get_measurements(None, object_name, c)
+                for f in ff:
+                    self.assertTrue(f in category[c])
+                                            
+                                                         

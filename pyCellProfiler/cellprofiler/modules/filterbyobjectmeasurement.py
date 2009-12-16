@@ -439,6 +439,42 @@ class FilterByObjectMeasurement(cpm.CPModule):
             columns += get_object_measurement_columns(target_name)
         return columns
     
+    def get_categories(self, pipeline, object_name):
+        """Return the categories of measurements that this module produces
+        
+        object_name - return measurements made on this object (or 'Image' for image measurements)
+        """
+        categories = []
+        if object_name == cpmeas.IMAGE:
+            categories += ["Count"]
+        elif object_name == self.object_name:
+            categories.append("Children")
+        if object_name == self.target_name.value:
+            categories += ("Parent", "Location","Number")
+        return categories
+      
+    def get_measurements(self, pipeline, object_name, category):
+        """Return the measurements that this module produces
+        
+        object_name - return measurements made on this object (or 'Image' for image measurements)
+        category - return measurements made in this category
+        """
+        result = []
+        
+        if object_name == cpmeas.IMAGE:
+            if category == "Count":
+                result += [self.target_name.value]
+        if object_name == self.object_name and category == "Children":
+            result += ["%s_Count" % self.target_name.value]
+        if object_name == self.target_name:
+            if category == "Location":
+                result += [ "Center_X","Center_Y"]
+            elif category == "Parent":
+                result += [ self.object_name.value]
+            elif category == "Number":
+                result += ["Object_Number"]
+        return result
+    
     def upgrade_settings(self, setting_values, variable_revision_number, 
                          module_name, from_matlab):
         '''Account for old save formats

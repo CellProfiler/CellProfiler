@@ -51,7 +51,7 @@ class TestLoadText(unittest.TestCase):
     
     def test_01_00_revision(self):
         '''Remember to update this and write another test on new revision'''
-        self.assertEqual(L.LoadText().variable_revision_number, 2)
+        self.assertEqual(L.LoadText().variable_revision_number, 3)
         
     def test_01_01_load_v1(self):
         data = ('eJztV01v2jAYdvgabBPith59mnrootANqeWyMtAEU6EVRdV2qlwwzJITR46'
@@ -109,6 +109,30 @@ class TestLoadText(unittest.TestCase):
         self.assertEqual(module.metadata_fields.selections[0], "SBS_doses")
         self.assertEqual(module.image_directory_choice, L.DIR_DEFAULT_IMAGE)
         self.assertFalse(module.wants_rows.value)
+    
+    def test_01_03_load_v3(self):
+        data = ('eJztVUtPg0AQXihtfCTGgwePezIelICv2F5MqzE2kWqE+Dhu28WSLGwDS338'
+                'An+CP9Of4FKX8pAUbT2Y6AQyO7PzzTczLGA0rfNmC+6rGjSa1rbtEAwvCWI2'
+                '9d0G9NgWPPYxYrgPqdeAN1yf4B7UD/jV0Hcbe/twR9PqYDaR2sYKV68LANS4'
+                '5grIYqsqbCl1R7aJGXO8+6AKFLAu/G/8vka+g7oEXyMS4iChiP1tz6bW03Cy'
+                'ZdB+SHAHuelgLp3Q7WI/uLBjoNi+dB4xMZ1nnGshDrvCIydwqCfwIn/eO+Gl'
+                'LMdrDujDqc/LyeVvIdYbmIw/gax/PDc5mZtUMLellD+KPwNJvFIQv5aKXxX2'
+                'CbZRSBhse8OQwVNK+tiP82kl+aRMPgmoAndYglsA2ToiW9f26movGH2Ft5LB'
+                'V8Adn/Vv6r8MJ2dwMujQOea2pWuRzMObxtVyuFhi3KLQEe72m+dzVp5/3N/E'
+                'vYDp5yv9/o3PI5h+/jdA9v2J7B4mZOjT6L/oq+744x2ohKI+w49MPecLiy8+'
+                '97FYkD9dj8xXSyX95/tO5vF2NAtfpYBvuQSniD9yfn5fmffmlHhQEP/dfqQf'
+                'qCvhUSY1feT/kHfzN4ip')
+        pipeline = cpp.Pipeline()
+        def callback(caller,event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
+        self.assertEqual(len(pipeline.modules()), 1)
+        module = pipeline.modules()[0]
+        self.assertTrue(isinstance(module,L.LoadText))
+        self.assertEqual(module.csv_file_name, "1049.csv")
+        self.assertTrue(module.wants_images.value)
+        self.assertFalse(module.wants_image_groupings.value)
         
     def test_02_01_string_image_measurement(self):
         csv_text = '''"Test_Measurement"
@@ -177,7 +201,7 @@ class TestLoadText(unittest.TestCase):
             self.assertTrue(isinstance(m, cpmeas.Measurements))
             self.assertTrue(c0_ran[0])
             hexdigest = m.get_current_image_measurement('MD5Digest_DNA')
-            self.assertEqual(hexdigest, '489b769a9d6e54114b5f8c382c603eb2')
+            self.assertEqual(hexdigest, 'c55554be83a1c928c1ae9268486a94b3')
             self.assertTrue('PathName_DNA' in m.get_feature_names(cpmeas.IMAGE))
             self.assertEqual(m.get_current_image_measurement('PathName_DNA'),
                              dir)

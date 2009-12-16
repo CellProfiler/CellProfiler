@@ -142,7 +142,7 @@ class LoadText(cpm.CPModule):
     
     module_name = "LoadText"
     category = 'File Processing'
-    variable_revision_number = 2
+    variable_revision_number = 3
 
     def create_settings(self):
         self.uuid = uuid.uuid4()
@@ -575,6 +575,18 @@ class LoadText(cpm.CPModule):
         if (not from_matlab) and variable_revision_number == 1:
             setting_values = setting_values + [cps.NO, ""]
             variable_revision_number = 2
+        if variable_revision_number == 2 and (not from_matlab):
+            if setting_values[0].startswith("Default Image"):
+                setting_values = [DIR_DEFAULT_IMAGE] + setting_values[1:]
+            elif setting_values[0].startswith("Default Output"):
+                setting_values = [DIR_DEFAULT_OUTPUT] + setting_values[1:]
+            if setting_values[4].startswith("Default Image"):
+                setting_values = (setting_values[:4] + [DIR_DEFAULT_IMAGE] + 
+                                  setting_values[5:])
+            elif setting_values[4].startswith("Default Output"):
+                setting_values = (setting_values[:4] + [DIR_DEFAULT_OUTPUT] + 
+                                  setting_values[5:])
+            variable_revision_number = 3
         return setting_values, variable_revision_number, from_matlab 
 
 def best_cast(sequence):

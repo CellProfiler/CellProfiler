@@ -674,9 +674,9 @@ class TestIdentifySecondary(unittest.TestCase):
             self.assertTrue(all([any([x == y for x in categories])
                                  for y in ("Count", "Threshold")]))
             categories = module.get_categories(None, "Secondary")
-            self.assertEqual(len(categories), 2)
+            self.assertEqual(len(categories), 3)
             self.assertTrue(all([any([x == y for x in categories])
-                                 for y in ("Location","Parent")]))
+                                 for y in ("Location","Parent", "Number")]))
             categories = module.get_categories(None, "Primary")
             self.assertEqual(len(categories), 1)
             self.assertEqual(categories[0], "Children")
@@ -713,6 +713,9 @@ class TestIdentifySecondary(unittest.TestCase):
             self.assertEqual(len(features), 2)
             self.assertTrue(all([any([x==y for x in features])
                                  for y in ("Center_X","Center_Y")]))
+            features = module.get_measurements(None, "Secondary", "Number")
+            self.assertEqual(len(features), 1)
+            self.assertEqual(features[0], "Object_Number")
             
             columns = module.get_measurement_columns(None)
             expected_columns = [ (cpm.IMAGE, "Threshold_%s_Secondary"%f, cpm.COLTYPE_FLOAT)
@@ -721,6 +724,7 @@ class TestIdentifySecondary(unittest.TestCase):
                                  ("Primary", "Children_Secondary_Count", cpm.COLTYPE_INTEGER),
                                  ("Secondary", "Location_Center_X", cpm.COLTYPE_FLOAT),
                                  ("Secondary", "Location_Center_Y", cpm.COLTYPE_FLOAT),
+                                 ("Secondary", "Number_Object_Number", cpm.COLTYPE_INTEGER),
                                  ("Secondary", "Parent_Primary", cpm.COLTYPE_INTEGER)]
             self.assertEqual(len(columns), len(expected_columns))
             for column in expected_columns:
@@ -742,17 +746,17 @@ class TestIdentifySecondary(unittest.TestCase):
         self.assertTrue(all([any([x == y for x in categories])
                              for y in ("Count", "Threshold")]))
         categories = module.get_categories(None, "Secondary")
-        self.assertEqual(len(categories), 2)
+        self.assertEqual(len(categories), 3)
         self.assertTrue(all([any([x == y for x in categories])
-                             for y in ("Location","Parent")]))
+                             for y in ("Location","Parent","Number")]))
         categories = module.get_categories(None, "Primary")
         self.assertEqual(len(categories), 1)
         self.assertEqual(categories[0], "Children")
         
         categories = module.get_categories(None, "NewPrimary")
-        self.assertEqual(len(categories), 3)
+        self.assertEqual(len(categories), 4)
         self.assertTrue(all([any([x == y for x in categories])
-                             for y in ("Location","Parent","Children")]))
+                             for y in ("Location","Parent","Children","Number")]))
         
         features = module.get_measurements(None, cpm.IMAGE, "Count")
         self.assertEqual(len(features), 2)
@@ -795,6 +799,7 @@ class TestIdentifySecondary(unittest.TestCase):
                                  ("Primary", "Children_%s_Count"%oname, cpm.COLTYPE_INTEGER),
                                  (oname, "Location_Center_X", cpm.COLTYPE_FLOAT),
                                  (oname, "Location_Center_Y", cpm.COLTYPE_FLOAT),
+                                 (oname, "Number_Object_Number", cpm.COLTYPE_INTEGER),
                                  (oname, "Parent_Primary", cpm.COLTYPE_INTEGER)]
         expected_columns += [("NewPrimary","Children_Secondary_Count", cpm.COLTYPE_INTEGER),
                              ("Secondary","Parent_NewPrimary", cpm.COLTYPE_INTEGER)]

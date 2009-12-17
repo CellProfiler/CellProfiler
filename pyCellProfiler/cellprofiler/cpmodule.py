@@ -74,7 +74,7 @@ class CPModule(object):
         self.__settings = []
         self.__notes = []
         self.__variable_revision_number = 0
-        self.__show_frame = True
+        self.__show_window = True
         self.__wants_pause = False
         self.batch_state = np.zeros((0,),np.uint8)
         # Set the name of the module based on the class name.  A
@@ -116,8 +116,8 @@ class CPModule(object):
             self.__notes = [str(n[i,0][0]) for i in range(0,n.size)]
         else:
             self.__notes = []
-        if settings.dtype.fields.has_key(cpp.SHOW_FRAME):
-            self.__show_frame = settings[cpp.SHOW_FRAME][0,idx] != 0
+        if settings.dtype.fields.has_key(cpp.SHOW_WINDOW):
+            self.__show_window = settings[cpp.SHOW_WINDOW][0,idx] != 0
         if settings.dtype.fields.has_key(cpp.BATCH_STATE):
             self.batch_state = settings[cpp.BATCH_STATE][0,idx]
         setting_count=settings[cpp.NUMBERS_OF_VARIABLES][0,idx]
@@ -241,7 +241,7 @@ class CPModule(object):
                 setting[cpp.VARIABLE_INFO_TYPES][module_idx,i] = unicode(variable.group)
         setting[cpp.VARIABLE_REVISION_NUMBERS][0,module_idx] = self.variable_revision_number
         setting[cpp.MODULE_REVISION_NUMBERS][0,module_idx] = 0
-        setting[cpp.SHOW_FRAME][0,module_idx] = 1 if self.show_frame else 0
+        setting[cpp.SHOW_WINDOW][0,module_idx] = 1 if self.show_window else 0
         setting[cpp.BATCH_STATE][0,module_idx] = self.batch_state
     
     def in_batch_mode(self):
@@ -348,14 +348,14 @@ class CPModule(object):
         """
         return self.settings()
     
-    def get_show_frame(self):
+    def get_show_window(self):
         '''True if the user wants to see the figure for this module'''
-        return self.__show_frame
+        return self.__show_window
     
-    def set_show_frame(self, show_frame):
-        self.__show_frame = show_frame
+    def set_show_window(self, show_window):
+        self.__show_window = show_window
 
-    show_frame = property(get_show_frame, set_show_frame)
+    show_window = property(get_show_window, set_show_window)
 
     def get_wants_pause(self):
         '''True if the user wants to pause at this module while debugging'''

@@ -247,7 +247,7 @@ class PipelineListView(object):
         if event.Col == EYE_COLUMN:
             if len(self.__pipeline.modules()) > event.Row:
                 module = self.__pipeline.modules()[event.Row]
-                module.show_frame = not module.show_frame
+                module.show_window = not module.show_window
         elif event.Col == PAUSE_COLUMN:
             if self.__debug_mode and len(self.__pipeline.modules()) > event.Row:
                 module = self.__pipeline.modules()[event.Row]
@@ -376,7 +376,7 @@ class PipelineListView(object):
             if ec_value != self.__grid.GetCellValue(idx,ERROR_COLUMN):
                 self.__grid.SetCellValue(idx,ERROR_COLUMN,ec_value)
 
-            if module.show_frame:
+            if module.show_window:
                 eye_value = EYE
             else:
                 eye_value = CLOSED_EYE

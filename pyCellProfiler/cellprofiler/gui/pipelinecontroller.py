@@ -65,8 +65,8 @@ class PipelineController:
         wx.EVT_MENU(frame,cpframe.ID_DEBUG_CHOOSE_IMAGE_SET, self.on_debug_choose_image_set)
         wx.EVT_MENU(frame,cpframe.ID_DEBUG_RELOAD, self.on_debug_reload)
         
-        wx.EVT_MENU(frame,cpframe.ID_WINDOW_SHOW_ALL_FRAMES, self.on_show_all_frames)
-        wx.EVT_MENU(frame,cpframe.ID_WINDOW_HIDE_ALL_FRAMES, self.on_hide_all_frames)
+        wx.EVT_MENU(frame,cpframe.ID_WINDOW_SHOW_ALL_WINDOWS, self.on_show_all_windows)
+        wx.EVT_MENU(frame,cpframe.ID_WINDOW_HIDE_ALL_WINDOWS, self.on_hide_all_windows)
         
         wx.EVT_MENU_OPEN(frame, self.on_frame_menu_open)
         
@@ -532,11 +532,11 @@ class PipelineController:
                                       self.__debug_object_set,
                                       self.__debug_measurements,
                                       self.__debug_image_set_list,
-                                      self.__frame if module.show_frame else None,
+                                      self.__frame if module.show_window else None,
                                       outlines = self.__debug_outlines)
             self.__debug_grids = workspace.set_grids(self.__debug_grids)
             module.run(workspace)
-            if (not module.is_interactive()) and module.show_frame:
+            if (not module.is_interactive()) and module.show_window:
                 module.display(workspace)
             workspace.refresh()
             if module.module_num < len(self.__pipeline.modules()):
@@ -756,17 +756,17 @@ class PipelineController:
                 return None
         return path
     
-    def on_show_all_frames(self, event):
-        '''Turn "show_frame" on for every module in the pipeline'''
+    def on_show_all_windows(self, event):
+        '''Turn "show_window" on for every module in the pipeline'''
         for module in self.__pipeline.modules():
-            module.show_frame = True
+            module.show_window = True
         self.__dirty_pipeline = True
         self.set_title()
         
-    def on_hide_all_frames(self, event):
-        '''Turn "show_frame" off for every module in the pipeline'''
+    def on_hide_all_windows(self, event):
+        '''Turn "show_window" off for every module in the pipeline'''
         for module in self.__pipeline.modules():
-            module.show_frame = False
+            module.show_window = False
         self.__dirty_pipeline = True
         self.set_title()
             

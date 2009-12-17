@@ -78,7 +78,7 @@ VARIABLE_REVISION_NUMBERS = 'VariableRevisionNumbers'
 MODULE_REVISION_NUMBERS   = 'ModuleRevisionNumbers'
 MODULE_NOTES              = 'ModuleNotes'
 CURRENT_MODULE_NUMBER     = 'CurrentModuleNumber'
-SHOW_FRAME                = 'ShowFrame'
+SHOW_WINDOW                = 'ShowFrame'
 BATCH_STATE               = 'BatchState'
 EXIT_STATUS               = 'Exit_Status'
 SETTINGS_DTYPE = np.dtype([(VARIABLE_VALUES, '|O4'), 
@@ -89,7 +89,7 @@ SETTINGS_DTYPE = np.dtype([(VARIABLE_VALUES, '|O4'),
                            (VARIABLE_REVISION_NUMBERS, '|O4'), 
                            (MODULE_REVISION_NUMBERS, '|O4'), 
                            (MODULE_NOTES, '|O4'),
-                           (SHOW_FRAME, '|O4'),
+                           (SHOW_WINDOW, '|O4'),
                            (BATCH_STATE, '|O4')])
 CURRENT_DTYPE = make_cell_struct_dtype([ NUMBER_OF_IMAGE_SETS,
                                          SET_BEING_ANALYZED, NUMBER_OF_MODULES, 
@@ -365,7 +365,7 @@ class Pipeline(object):
         setting[MODULE_REVISION_NUMBERS] =  np.ndarray((1,module_count),
                                                        dtype=np.dtype('uint16'))
         setting[MODULE_NOTES] =             new_string_cell_array((1,module_count))
-        setting[SHOW_FRAME] =               np.ndarray((1,module_count),
+        setting[SHOW_WINDOW] =               np.ndarray((1,module_count),
                                                        dtype=np.dtype('uint8'))
         setting[BATCH_STATE] = np.ndarray((1,module_count),
                                           dtype=np.dtype('object'))
@@ -607,7 +607,7 @@ class Pipeline(object):
                                                            module.module_name))
                         failure = 1
                         exception = None
-                        frame_if_shown = frame if module.show_frame else None
+                        frame_if_shown = frame if module.show_window else None
                         workspace = cpw.Workspace(self,
                                                   module,
                                                   image_set,

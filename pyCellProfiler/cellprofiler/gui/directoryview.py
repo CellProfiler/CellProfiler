@@ -14,6 +14,7 @@ Website: http://www.cellprofiler.org
 __version__="$Revision$"
 import os
 import sys
+import traceback
 import wx
 
 import scipy.io.matlab
@@ -91,15 +92,20 @@ class DirectoryView(object):
         if len(selections) > 0:
             selection = self.__list_box.GetItems()[selections[0]]
         filename = os.path.join(cellprofiler.preferences.get_default_image_directory(),selection)
-        if os.path.splitext(selection)[1].lower() =='.mat':
-            # A matlab file might be an image or a pipeline
-            handles=scipy.io.matlab.mio.loadmat(filename, struct_as_record=True)
-            if handles.has_key('Image'):
-                self.__display_matlab_image(handles, filename)
+        try:
+            if os.path.splitext(selection)[1].lower() =='.mat':
+                # A matlab file might be an image or a pipeline
+                handles=scipy.io.matlab.mio.loadmat(filename, struct_as_record=True)
+                if handles.has_key('Image'):
+                    self.__display_matlab_image(handles, filename)
+                else:
+                    self.notify_pipeline_listeners(LoadPipelineRequestEvent(filename))
             else:
-                self.notify_pipeline_listeners(LoadPipelineRequestEvent(filename))
-        else:
-            self.__display_image(filename)
+                self.__display_image(filename)
+        except Exception, x:
+            traceback.print_exc()
+            wx.MessageBox("Unable to display %s.\n%s"%
+                          (selection, str(x)),"Failed to display image")
     
     def __display_matlab_image(self,handles, filename):
             frame = ImageFrame(self.__list_box.GetTopLevelParent(),

@@ -140,16 +140,28 @@ class Crop(cpm.CPModule):
         self.horizontal_limits = cps.IntegerOrUnboundedRange("Left and right rectangle positions",
                             minval=0, doc = """
                             <i>(Used if Rectangle selected as cropping shape, or if using Plate Fix)</i><br>
-                            Specify the left and right positions for the bounding rectangle. Select
-                            <i>Absolute<i> to specify these values as absolute pixel coordinates, or
-                            <i>From edge</i> to specify position relative to the image edge.""")
+                            Specify the left and right positions for the bounding rectangle. Select<br>
+                            <ul><li><i>Absolute</i> to specify these values as absolute pixel coordinates.
+                            For instance, you might enter 25, 225 and "Absolute" 
+                            to create a 200x200 pixel image that's 25 pixels 
+                            from the top-left corner.</li>
+                            <li><i>From edge</i> to specify position relative to the image edge.
+                            For instance, you might enter 25, 25 and "Edge" to
+                            crop 25 pixels from the edges of your images irrespective
+                            of their size.</li></ul>""")
         
         self.vertical_limits = cps.IntegerOrUnboundedRange("Top and bottom rectangle positions",
                             minval=0, doc = """
                             <i>(Used if Rectangle selected as cropping shape, or if using Plate Fix)</i><br>
-                            Specify the top and bottom positions for the bounding rectangle. Select
-                            <i>Absolute<i> to specify these values as absolute pixel coordinates, or
-                            <i>From edge</i> to specify position relative to the image edge.""")
+                            Specify the top and bottom positions for the bounding rectangle. Select<br>
+                            <ul><li><i>Absolute</i> to specify these values as absolute pixel coordinates.
+                            For instance, you might enter 25, 225 and "Absolute" 
+                            to create a 200x200 pixel image that's 25 pixels 
+                            from the top-left corner.</li>
+                            <li><i>From edge</i> to specify position relative to the image edge.
+                            For instance, you might enter 25, 25 and "Edge" to
+                            crop 25 pixels from the edges of your images irrespective
+                            of their size.</li></ul>""")
         
         self.ellipse_center = cps.Coordinates("Coordinates of ellipse center",(500,500),doc = """
                             <i>(Used if Ellipse selected as cropping shape)</i><br>

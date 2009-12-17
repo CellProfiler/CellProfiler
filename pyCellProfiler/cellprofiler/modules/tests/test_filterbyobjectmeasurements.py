@@ -833,13 +833,13 @@ Module #3: FilterByObjectMeasurement revision - 6
             self.assertEqual(len(fcolumns),1,"Missing or duplicate column: %s"%feature)
             self.assertEqual(fcolumns[0][2], coltype)
             
-        for object_name, category in (("Image",dict(Count=["my_objects"])),
+        for object_name, category in (("Image",dict(Count=["my_result"])),
                                       ("my_objects",
                                        dict(Children=["my_result_Count"])),
                                       ("my_result",
                                        dict(Location=["Center_X","Center_Y"],
-                                            Parent="my_objects",
-                                            Number="Object_Number"))):
+                                            Parent=["my_objects"],
+                                            Number=["Object_Number"]))):
             categories = module.get_categories(None, object_name)
             for c in category.keys():
                 self.assertTrue(c in categories)

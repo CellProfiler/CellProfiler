@@ -41,11 +41,15 @@ FLOAT_IMG_FEATURE = 'float_imagemeasurement'
 STRING_IMG_FEATURE = 'string_imagemeasurement'
 LONG_IMG_FEATURE = 'image_measurement_with_a_column_name_that_exceeds_64_characters_in_width'
 LONG_OBJ_FEATURE = 'obj_measurement_with_a_column_name_that_exceeds_64_characters_in_width'
+WIERD_IMG_FEATURE = 'image_measurement_with_"!@%*\n~!\t\ra\+=''and other &*^% in it..........'
+WIERD_OBJ_FEATURE = 'measurement w/"!@%*\n~!\t\ra\+=''and other &*^% in it'
 OBJ_MEASUREMENT, INT_IMG_MEASUREMENT, FLOAT_IMG_MEASUREMENT, \
-    STRING_IMG_MEASUREMENT, LONG_IMG_MEASUREMENT, LONG_OBJ_MEASUREMENT = \
+    STRING_IMG_MEASUREMENT, LONG_IMG_MEASUREMENT, LONG_OBJ_MEASUREMENT, \
+    WIERD_IMG_MEASUREMENT, WIERD_OBJ_MEASUREMENT = \
     ['_'.join((M_CATEGORY, x))
      for x in (OBJ_FEATURE, INT_IMG_FEATURE, FLOAT_IMG_FEATURE, 
-               STRING_IMG_FEATURE, LONG_IMG_FEATURE, LONG_OBJ_FEATURE)]
+               STRING_IMG_FEATURE, LONG_IMG_FEATURE, LONG_OBJ_FEATURE,
+               WIERD_IMG_FEATURE, WIERD_OBJ_FEATURE)]
 OBJECT_NAME = 'myobject'
 IMAGE_NAME = 'myimage'
 OBJECT_COUNT_MEASUREMENT = 'Count_%s'%OBJECT_NAME
@@ -243,7 +247,8 @@ class TestExportToDatabase(unittest.TestCase):
         self.assertEqual(module.objects_choice, E.O_SELECT)
         self.assertEqual(module.objects_list.value, "Nuclei")
         
-    def make_workspace(self, wants_files, alt_object=False, long_measurement=False):
+    def make_workspace(self, wants_files, alt_object=False, 
+                       long_measurement=False, wierd_measurement=False):
         '''Make a measurements structure with image and object measurements'''
         class TestModule(cpm.CPModule):
             module_name = "TestModule"
@@ -268,6 +273,9 @@ class TestExportToDatabase(unittest.TestCase):
                 if long_measurement:
                     columns += [(cpmeas.IMAGE,LONG_IMG_MEASUREMENT,cpmeas.COLTYPE_INTEGER),
                                 (OBJECT_NAME, LONG_OBJ_MEASUREMENT, cpmeas.COLTYPE_FLOAT)]
+                if wierd_measurement:
+                    columns += [(cpmeas.IMAGE,WIERD_IMG_MEASUREMENT,cpmeas.COLTYPE_INTEGER),
+                                (OBJECT_NAME, WIERD_OBJ_MEASUREMENT, cpmeas.COLTYPE_FLOAT)]
                 return columns
             
             def get_categories(self, pipeline, object_name):
@@ -289,7 +297,9 @@ class TestExportToDatabase(unittest.TestCase):
                         return [OBJ_FEATURE]
                     else:
                         return ([INT_IMG_FEATURE, FLOAT_IMG_FEATURE, STRING_IMG_FEATURE] +
-                                [ LONG_IMG_FEATURE] if long_measurement else [])
+                                [ LONG_IMG_FEATURE] if long_measurement 
+                                else [WIERD_IMG_FEATURE] if wierd_measurement
+                                else [])
                 elif category == "Count" and object_name == cpmeas.IMAGE:
                     result = [OBJECT_NAME]
                     if alt_object:
@@ -310,6 +320,9 @@ class TestExportToDatabase(unittest.TestCase):
         if long_measurement:
             m.add_image_measurement(LONG_IMG_MEASUREMENT, 100)
             m.add_measurement(OBJECT_NAME, LONG_OBJ_MEASUREMENT, OBJ_VALUE.copy())
+        if wierd_measurement:
+            m.add_image_measurement(WIERD_IMG_MEASUREMENT, 100)
+            m.add_measurement(OBJECT_NAME, WIERD_OBJ_MEASUREMENT, OBJ_VALUE.copy())
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
         image_set.add(IMAGE_NAME, cpi.Image(np.zeros((10,10))))
@@ -734,6 +747,68 @@ class TestExportToDatabase(unittest.TestCase):
                 self.assertEqual(row[0], 1)
                 self.assertEqual(row[1], i+1)
                 self.assertTrue(row[2] is None)
+            self.assertRaises(StopIteration, self.cursor.next)
+        finally:
+            for table_suffix in ("Per_Image","Per_Object"):
+                table_name = module.table_prefix.value + table_suffix
+                try:
+                    self.cursor.execute("drop table %s.%s" %
+                                        (module.db_name.value, table_name))
+                except:
+                    print "Failed to drop table %s"%table_name
+                    
+    def test_02_06_write_direct_wierd_colname(self):
+        '''Write to MySQL, even if illegal characters are in the column name'''
+        workspace, module = self.make_workspace(False, wierd_measurement=True)
+        try:
+            self.assertTrue(isinstance(module, E.ExportToDatabase))
+            module.db_type = E.DB_MYSQL
+            module.store_csvs.value = False
+            module.wants_agg_mean.value = False
+            module.wants_agg_median.value = False
+            module.wants_agg_std_dev.value = False
+            module.objects_choice.value = E.O_ALL
+            module.prepare_run(workspace.pipeline, workspace.image_set_list,None)
+            module.prepare_group(workspace.pipeline, workspace.image_set_list,
+                                 {}, [1])
+            module.run(workspace)
+            mappings = module.get_column_name_mappings(workspace.pipeline)
+            wierd_img_column = mappings["Image_%s"%WIERD_IMG_MEASUREMENT]
+            wierd_obj_column = mappings["%s_%s"%(OBJECT_NAME, WIERD_OBJ_MEASUREMENT)]
+            
+            self.cursor.execute("use CPUnitTest")
+            #
+            # Now read the image file from the database
+            #
+            image_table = module.table_prefix.value + "Per_Image"
+            statement = ("select ImageNumber, Image_%s, Image_%s, Image_%s,"
+                         "Image_Count_%s, %s "
+                         "from %s" %
+                         (INT_IMG_MEASUREMENT, FLOAT_IMG_MEASUREMENT,
+                          STRING_IMG_MEASUREMENT, OBJECT_NAME,
+                          wierd_img_column, image_table))
+            self.cursor.execute(statement)
+            row = self.cursor.fetchone()
+            self.assertEqual(len(row), 6)
+            self.assertEqual(row[0],1)
+            self.assertAlmostEqual(row[1], INT_VALUE)
+            self.assertAlmostEqual(row[2], FLOAT_VALUE)
+            self.assertEqual(row[3], STRING_VALUE)
+            self.assertEqual(row[4], len(OBJ_VALUE))
+            self.assertEqual(row[5], 100)
+            self.assertRaises(StopIteration, self.cursor.next)
+            statement = ("select ImageNumber, ObjectNumber, %s_%s,%s "
+                         "from %sPer_Object order by ObjectNumber"%
+                         (OBJECT_NAME, OBJ_MEASUREMENT, wierd_obj_column,
+                          module.table_prefix.value))
+            self.cursor.execute(statement)
+            for i, value in enumerate(OBJ_VALUE):
+                row = self.cursor.fetchone()
+                self.assertEqual(len(row), 4)
+                self.assertEqual(row[0], 1)
+                self.assertEqual(row[1], i+1)
+                self.assertAlmostEqual(row[2], value)
+                self.assertAlmostEqual(row[3], value)
             self.assertRaises(StopIteration, self.cursor.next)
         finally:
             for table_suffix in ("Per_Image","Per_Object"):

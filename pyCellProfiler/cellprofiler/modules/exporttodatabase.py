@@ -1316,39 +1316,51 @@ class ColumnNameMapping:
         """Scan the dictionary for feature names > max_len and shorten"""
         reverse_dictionary = {}
         problem_names = []
+        valid_name_regexp = "^[0-9a-zA-Z_$]+$"
         for key,value in self.__dictionary.iteritems():
             reverse_dictionary[value] = key
             if len(value) > self.__max_len:
+                problem_names.append(value)
+            elif not re.match(valid_name_regexp, value):
                 problem_names.append(value)
         
         for name in problem_names:
             key = reverse_dictionary[name]
             orig_name = name
+            if not re.match(valid_name_regexp, name):
+                name = re.sub("[^0-9a-zA-Z_$]","_",name)
+                if reverse_dictionary.has_key(name):
+                    i = 1
+                    while reverse_dictionary.has_key(name + str(i)):
+                        i += 1
+                    name = name + str(i)
+            starting_name = name
             # remove vowels 
             to_remove = len(name)-self.__max_len
-            remove_count = 0
-            for to_drop in (('a','e','i','o','u'),
-                            ('b','c','d','f','g','h','j','k','l','m','n',
-                             'p','q','r','s','t','v','w','x','y','z'),
-                            ('A','B','C','D','E','F','G','H','I','J','K',
-                             'L','M','N','O','P','Q','R','S','T','U','V',
-                             'W','X','Y','Z')):
-                for index in range(len(name)-1,-1,-1):
-                    if name[index] in to_drop:
+            if to_remove > 0:
+                remove_count = 0
+                for to_drop in (('a','e','i','o','u'),
+                                ('b','c','d','f','g','h','j','k','l','m','n',
+                                 'p','q','r','s','t','v','w','x','y','z'),
+                                ('A','B','C','D','E','F','G','H','I','J','K',
+                                 'L','M','N','O','P','Q','R','S','T','U','V',
+                                 'W','X','Y','Z')):
+                    for index in range(len(name)-1,-1,-1):
+                        if name[index] in to_drop:
+                            name = name[:index]+name[index+1:]
+                            remove_count += 1
+                            if remove_count == to_remove:
+                                break
+                    if remove_count == to_remove:
+                        break
+    
+                while name in reverse_dictionary.keys():
+                    # if, improbably, removing the vowels hit an existing name
+                    # try deleting random characters
+                    name = starting_name
+                    while len(name) > self.__max_len:
+                        index = int(random.uniform(0,len(name)))
                         name = name[:index]+name[index+1:]
-                        remove_count += 1
-                        if remove_count == to_remove:
-                            break
-                if remove_count == to_remove:
-                    break
-
-            while name in reverse_dictionary.keys():
-                # if, improbably, removing the vowels hit an existing name
-                # try deleting random characters
-                name = orig_name
-                while len(name) > self.__max_len:
-                    index = int(random.uniform(0,len(name)))
-                    name = name[:index]+name[index+1:]
             reverse_dictionary.pop(orig_name)
             reverse_dictionary[name] = key
             self.__dictionary[key] = name

@@ -58,6 +58,10 @@ ID_WINDOW = wx.NewId()
 ID_WINDOW_CLOSE_ALL = wx.NewId()
 ID_WINDOW_SHOW_ALL_WINDOWS = wx.NewId()
 ID_WINDOW_HIDE_ALL_WINDOWS = wx.NewId()
+ID_WINDOW_ALL = (ID_WINDOW_CLOSE_ALL, ID_WINDOW_SHOW_ALL_WINDOWS,
+                 ID_WINDOW_HIDE_ALL_WINDOWS)
+
+window_ids = []
 
 ID_HELP_MODULE=wx.NewId()
 ID_HELP_DEVELOPERS_GUIDE = wx.NewId()
@@ -397,7 +401,7 @@ class CPFrame(wx.Frame):
             DataToolFrame(self, 
                           module_name=tool_name,
                           measurements_file_name = dlg.Path)
-
+    
     def display_error(self,message,error):
         """Displays an exception in a standardized way
 

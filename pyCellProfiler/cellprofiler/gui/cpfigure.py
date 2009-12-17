@@ -27,6 +27,8 @@ import sys
 from cellprofiler.gui import get_icon
 import cellprofiler.preferences as cpprefs
 
+window_ids = []
+
 def create_or_find(parent=None, id=-1, title="", 
                    pos=wx.DefaultPosition, size=wx.DefaultSize,
                    style=wx.DEFAULT_FRAME_STYLE, name=wx.FrameNameStr,
@@ -83,6 +85,7 @@ class CPFigureFrame(wx.Frame):
         name     - searchable window name
         subplots - 2-tuple indicating the layout of subplots inside the window
         """
+        global window_ids
         super(CPFigureFrame,self).__init__(parent, id, title, pos, size, style, name)
         self.BackgroundColour = cpprefs.get_background_color()
         self.mouse_mode = MODE_NONE
@@ -90,6 +93,7 @@ class CPFigureFrame(wx.Frame):
         self.length_arrow = None
         self.colorbar = {}
         self.mouse_down = None
+        self.remove_menu = []
         sizer = wx.BoxSizer()
         self.SetSizer(sizer)
         self.figure = figure= matplotlib.figure.Figure()
@@ -97,6 +101,7 @@ class CPFigureFrame(wx.Frame):
         sizer.Add(self.panel,1,wx.EXPAND) 
         self.status_bar = self.CreateStatusBar()
         wx.EVT_PAINT(self, self.on_paint)
+        wx.EVT_CLOSE(self, self.on_close)
         if subplots:
             self.subplots = np.zeros(subplots,dtype=object)
             self.zoom_rects = np.zeros(subplots,dtype=object)
@@ -107,6 +112,23 @@ class CPFigureFrame(wx.Frame):
         self.SetIcon(get_icon())
         self.Fit()
         self.Show()
+        parent_menu_bar = parent.MenuBar
+        if parent_menu_bar is not None and isinstance(parent_menu_bar, wx.MenuBar):
+            for menu,label in parent_menu_bar.GetMenus():
+                if label == "Window":
+                    menu_ids = [menu_item.Id for menu_item in menu.MenuItems]
+                    for window_id in window_ids+[None]:
+                        if window_id not in menu_ids:
+                            break
+                    if window_id is None:
+                        window_id = wx.NewId()
+                        window_ids.append(window_id)
+                    assert isinstance(menu,wx.Menu)
+                    menu.Append(window_id, title)
+                    def on_menu_command(event):
+                        self.Raise()
+                    wx.EVT_MENU(parent, window_id, on_menu_command)
+                    self.remove_menu.append([menu, window_id])
     
     def add_menu(self):
         self.MenuBar = wx.MenuBar()
@@ -145,6 +167,13 @@ class CPFigureFrame(wx.Frame):
         event.Skip()
         del dc
     
+    def on_close(self, event):
+        for menu, menu_id in self.remove_menu:
+            print "Removing menu ID %d"%menu_id
+            self.Parent.Unbind(wx.EVT_MENU, id=menu_id)
+            menu.Delete(menu_id)
+        self.Destroy()
+
     def on_zoom_in(self,event):
         if self.__menu_item_zoom_in.IsChecked():
             self.mouse_mode = MODE_ZOOM

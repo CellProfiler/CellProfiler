@@ -15,11 +15,9 @@ Features that can be measured by this module:
 <li><i>NumberOfNeighbors:</i> Number of neighbor objects
 <li><i>PercentTouching:</i> Percent of pixels within the measured distance</li>
 <li><i>FirstClosestObjectNumber:</i> The index of the closest object.</li>
-<li><i>FirstClosestXVector:</i> The difference between these object's X locations.</li>
-<li><i>FirstClosestYVector:</i> The difference between these object's Y locations.</li>
+<li><i>FirstClosestDistance:</i> The distance to the closest object.</li>
 <li><i>SecondClosestObjectNumber:</i> The index of the second closest object.</li>
-<li><i>SecondClosestXVector:</i> The difference between these objects' X locations.</li>
-<li><i>SecondClosestYVector:</i> The difference between these objects' Y locations.</li>
+<li><i>SecondClosestDistance:</i> The distance to the second closest object.</li>
 <li><i>AngleBetweenNeighbors:</i> The angle formed with the object center as the 
 vertex and the first and second closest object centers along the vectors.</li>
 </ul>
@@ -81,16 +79,13 @@ D_ALL = [D_ADJACENT, D_EXPAND, D_WITHIN]
 M_NUMBER_OF_NEIGHBORS = 'NumberOfNeighbors'
 M_PERCENT_TOUCHING = 'PercentTouching'
 M_FIRST_CLOSEST_OBJECT_NUMBER = 'FirstClosestObjectNumber'
-M_FIRST_CLOSEST_X_VECTOR = 'FirstClosestXVector'
-M_FIRST_CLOSEST_Y_VECTOR = 'FirstClosestYVector'
+M_FIRST_CLOSEST_DISTANCE = 'FirstClosestDistance'
 M_SECOND_CLOSEST_OBJECT_NUMBER = 'SecondClosestObjectNumber'
-M_SECOND_CLOSEST_X_VECTOR ='SecondClosestXVector'
-M_SECOND_CLOSEST_Y_VECTOR ='SecondClosestYVector'
+M_SECOND_CLOSEST_DISTANCE ='SecondClosestDistance'
 M_ANGLE_BETWEEN_NEIGHBORS = 'AngleBetweenNeighbors'
 M_ALL = [M_NUMBER_OF_NEIGHBORS, M_PERCENT_TOUCHING, 
-         M_FIRST_CLOSEST_OBJECT_NUMBER, M_FIRST_CLOSEST_X_VECTOR,
-         M_FIRST_CLOSEST_Y_VECTOR, M_SECOND_CLOSEST_OBJECT_NUMBER,
-         M_SECOND_CLOSEST_X_VECTOR, M_SECOND_CLOSEST_Y_VECTOR,
+         M_FIRST_CLOSEST_OBJECT_NUMBER, M_FIRST_CLOSEST_DISTANCE,
+         M_SECOND_CLOSEST_OBJECT_NUMBER, M_SECOND_CLOSEST_DISTANCE,
          M_ANGLE_BETWEEN_NEIGHBORS]
 
 C_NEIGHBORS = 'Neighbors'
@@ -294,11 +289,9 @@ class MeasureObjectNeighbors(cpm.CPModule):
             ((M_NUMBER_OF_NEIGHBORS, neighbor_count),
              (M_PERCENT_TOUCHING, percent_touching),
              (M_FIRST_CLOSEST_OBJECT_NUMBER, first_object_number),
-             (M_FIRST_CLOSEST_X_VECTOR, first_x_vector),
-             (M_FIRST_CLOSEST_Y_VECTOR, first_y_vector),
+             (M_FIRST_CLOSEST_DISTANCE, np.sqrt(first_x_vector**2+first_y_vector**2)),
              (M_SECOND_CLOSEST_OBJECT_NUMBER, second_object_number),
-             (M_SECOND_CLOSEST_X_VECTOR, second_x_vector),
-             (M_SECOND_CLOSEST_Y_VECTOR, second_y_vector),
+             (M_SECOND_CLOSEST_DISTANCE, np.sqrt(second_x_vector**2+second_y_vector**2)),
              (M_ANGLE_BETWEEN_NEIGHBORS, angle)):
             m.add_measurement(self.object_name.value,
                               '%s_%s_%s'%(C_NEIGHBORS, feature_name, scale),

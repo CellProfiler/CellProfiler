@@ -203,16 +203,10 @@ class TestMeasureObjectNeighbors(unittest.TestCase):
         self.assertEqual(fo[0],2)
         self.assertEqual(fo[1],1)
         x = m.get_current_measurement(OBJECTS_NAME,
-                                      "Neighbors_FirstClosestXVector_Expanded")
-        self.assertEqual(len(x),2)
-        self.assertAlmostEqual(x[0],5)
-        self.assertAlmostEqual(x[1],-5)
-
-        y = m.get_current_measurement(OBJECTS_NAME,
-                                      "Neighbors_FirstClosestYVector_Expanded")
-        self.assertEqual(len(y),2)
-        self.assertAlmostEqual(y[0],6)
-        self.assertAlmostEqual(y[1],-6)
+                                      "Neighbors_FirstClosestDistance_Expanded")
+        self.assertAlmostEqual(len(x),2)
+        self.assertAlmostEqual(x[0],np.sqrt(61))
+        self.assertAlmostEqual(x[1],np.sqrt(61))
 
     def test_02_04_two_not_adjacent(self):
         '''Test a labels matrix with two objects, not adjacent'''
@@ -331,19 +325,12 @@ class TestMeasureObjectNeighbors(unittest.TestCase):
         self.assertEqual(so[0],3)
         self.assertEqual(so[1],3)
         self.assertEqual(so[2],2)
-        x = m.get_current_measurement(OBJECTS_NAME,
-                                      "Neighbors_SecondClosestXVector_5")
-        self.assertEqual(len(x),3)
-        self.assertAlmostEqual(x[0],0)
-        self.assertAlmostEqual(x[1],-3)
-        self.assertAlmostEqual(x[2],3)
-
-        y = m.get_current_measurement(OBJECTS_NAME,
-                                      "Neighbors_SecondClosestYVector_5")
-        self.assertEqual(len(y),3)
-        self.assertAlmostEqual(y[0],4)
-        self.assertAlmostEqual(y[1],4)
-        self.assertAlmostEqual(y[2],-4)
+        d = m.get_current_measurement(OBJECTS_NAME,
+                                      "Neighbors_SecondClosestDistance_5")
+        self.assertEqual(len(d),3)
+        self.assertAlmostEqual(d[0],4)
+        self.assertAlmostEqual(d[1],5)
+        self.assertAlmostEqual(d[2],5)
         
         angle = m.get_current_measurement(OBJECTS_NAME,
                                           "Neighbors_AngleBetweenNeighbors_5")

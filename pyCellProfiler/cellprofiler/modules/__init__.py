@@ -153,5 +153,8 @@ def get_data_tool_names():
 
 def reload_modules():
     for m in pymodules:
-        reload(m)
+        try:
+            reload(m)
+        except:
+            pass
     fill_modules()

@@ -230,6 +230,8 @@ class ModuleRunner(threading.Thread):
             self.module.run(self.workspace)
         except Exception, instance:
             traceback.print_exc()
+            if os.getenv('CELLPROFILER_RERAISE') is not None:
+                raise
             self.exception = instance
         if not self.paused:
             self.post_done()

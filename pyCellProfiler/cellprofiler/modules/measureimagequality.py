@@ -1,23 +1,27 @@
 '''MeasureImageQuality: This module measures features that indicate image quality. This includes the
-percentage of pixels in the image that are saturated. Measurements of blur 
+percentage of pixels in the image that are minimal and maximal. Measurements of blur 
 (poor focus) are also calculated.
 <hr>
 
 Features measured:   
-<ul><li>FocusScore: a measure of the intensity variance across image</li>
+<ul>
+<li>PercentMaximal: percent of pixels at the maximum intensity value of the image</li>
+<li>PercentMinimal: percent of pixels at the minimum intensity value of the image</li>
+<li>FocusScore: a measure of the intensity variance across image</li>
 <li>LocalFocusScore: a measure of the intensity variance between image parts</li>
-<li>PercentSaturation: percent of pixels with a value of 1</li>
-<li>PercentMaximal: percent of pixels at the maximum intensity value</li>
-<li>Threshold: calculated threshold for image</li></ul>
+<li>Threshold: calculated threshold for image</li>
+<li>PowerSpectrum1stQuartile, PowerSpectrum2ndQuartile, PowerSpectrum3rdQuartile, PowerSpectrumSum: the radial power quartiles and total power in the image</li>
+</ul>
 
-<h3>Saturation and PercentMaximal</h3> Saturation means that 
-the pixel's intensity value is equal to the maximum possible intensity value 
-for that image type. Sometimes images have undergone some kind of transformation
- such that no pixels ever reach the maximum possible intensity value of 
-the image type. For this reason, the percentage of pixels at that <i>individual</i>
-image's maximum intensity value is also calculated. Given noise in images, 
-this should typically be a low percentage but if the images were saturated
-during imaging, a higher than usual PercentMaximal will be observed.
+<h3>PercentMaximal and PercentMinimal</h3> The percentage of pixels at
+the upper or lower limit of the <i>individual</i> image are
+calculated.  The hard limits of 0 and 1 are not used because often
+images have undergone some kind of transformation such that no pixels
+ever reach the absolute maximum or minimum of the image format.  Given
+noise in images, this should typically be a low percentage but if the
+images were saturated during imaging, a higher than usual
+PercentMaximal will be observed, and if there are no objects, the
+PercentMinimal will increase.
 
 <h3>Focus Score (Blur)</h3> The module can also measure blur by calculating a focus score
 (higher = better focus). This calculation is slow, so it is optional. The score 
@@ -50,17 +54,20 @@ LocalFocusScore was added to differentiate good segmentation and bad
 segmentation images in the cases when bad segmentation images usually 
 contain no cell objects with high background noise.
 
+<h3>Power Spectrum</h3> The Power Spectrum is computed via FFT and the
+radii of the first three quartiles and the total power are measured.
+
 Example Output:
 <table border="1">
 <tr>
-<td>Percent of pixels that are Saturated:</td>
-<td>RescaledOrig: </td>
-<td>0.002763</td>
-</tr>
-<tr>
-<td>Percent of pixels that are in the Maximal Intensity:</td>
+<td>Percent of pixels that are at the Maximal Intensity:</td>
 <td>RescaledOrig: </td>
 <td>0.0002763</td>
+</tr>
+<tr>
+<td>Percent of pixels that are at the Minimal Intensity:</td>
+<td>RescaledOrig: </td>
+<td>0.0000352</td>
 </tr>
 <tr>
 <td>Focus Score:</td>
@@ -71,6 +78,26 @@ Example Output:
 <td>Suggested Threshold:</td>
 <td>Orig: </td>
 <td>0.0022854</td>
+</tr>
+<tr>
+<td>Power Spectrum Sum:</td>
+<td>RescaledOrig: </td>
+<td>20.0</td>
+</tr>
+<tr>
+<td>Power Spectrum 1st Quartile:</td>
+<td>RescaledOrig: </td>
+<td>5.3</td>
+</tr>
+<tr>
+<td>Power Spectrum 2nd Quartile:</td>
+<td>RescaledOrig: </td>
+<td>9.2</td>
+</tr>
+<tr>
+<td>Power Spectrum 3rd Quartile:</td>
+<td>RescaledOrig: </td>
+<td>21.0</td>
 </tr>
 </table>'''
 
@@ -94,22 +121,24 @@ import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.settings as cps
 import cellprofiler.cpmath.threshold as cpthresh
+import cellprofiler.cpmath.radial_power_spectrum as rps
 
 IMAGE_QUALITY = 'ImageQuality'
 FOCUS_SCORE = 'FocusScore'
 LOCAL_FOCUS_SCORE = 'LocalFocusScore'
-PERCENT_SATURATION = 'PercentSaturation'
 PERCENT_MAXIMAL = 'PercentMaximal'
+PERCENT_MINIMAL = 'PercentMinimal'
 THRESHOLD = 'Threshold'
 MEAN_THRESH_ALL_IMAGES = 'MeanThresh_AllImages'
 MEDIAN_THRESH_ALL_IMAGES = 'MedianThresh_AllImages'
 STD_THRESH_ALL_IMAGES = 'StdThresh_AllImages'
-SETTINGS_PER_GROUP = 7
+POWER_SPECTRUM_FEATURES = ['PowerSpectrum1stQuartile', 'PowerSpectrum2ndQuartile', 'PowerSpectrum3rdQuartile', 'PowerSpectrumSum']
+SETTINGS_PER_GROUP = 8
 
 class MeasureImageQuality(cpm.CPModule):
     module_name = "MeasureImageQuality"
     category = "Measurement"
-    variable_revision_number = 1
+    variable_revision_number = 2
 
     def create_settings(self):
         self.image_groups = []
@@ -135,7 +164,7 @@ class MeasureImageQuality(cpm.CPModule):
                                                   to the list more than once and by setting different window sizes for
                                                   each image.'''))
         group.append("check_saturation", cps.Binary("Check for saturation:",
-                                                    True, doc = '''Would you like to check for saturation?'''))
+                                                    True, doc = '''Would you like to check for saturation (maximal and minimal percentages)?'''))
         group.append("calculate_threshold", cps.Binary("Calculate threshold:",
                                                        True, doc = '''Would you like to calculate a suggested threshold?'''))
         group.append("threshold_method", cps.Choice("Select a thresholding method:",
@@ -149,6 +178,8 @@ class MeasureImageQuality(cpm.CPModule):
         group.append("object_fraction", cps.Float("Enter the fraction of the image covered by objects:", 0.1,0,1, doc = 
                                                   """For MoG thresholding, enter the approximate fraction of the image
                                                   that is covered by objects."""))
+        group.append("compute_power_spectrum", cps.Binary("Calculate quartiles and sum of radial power spectrum:", True,
+                                                      doc = "Would you like to calculate the quartiles and sum of the radial power spectrum?"))
         group.append("remove_button", cps.RemoveSettingButton("Remove the image above", "Remove", self.image_groups, group))
         group.append("divider", cps.Divider())
         self.image_groups.append(group)
@@ -167,7 +198,8 @@ class MeasureImageQuality(cpm.CPModule):
         for image_group in self.image_groups:
             result += [image_group.image_name, image_group.check_blur, image_group.window_size,
                        image_group.check_saturation, image_group.calculate_threshold,
-                       image_group.threshold_method, image_group.object_fraction]
+                       image_group.threshold_method, image_group.object_fraction,
+                       image_group.compute_power_spectrum]
         return result
 
     def visible_settings(self):
@@ -182,6 +214,7 @@ class MeasureImageQuality(cpm.CPModule):
                 result += [image_group.threshold_method]
                 if image_group.threshold_method == cpthresh.TM_MOG_GLOBAL:
                     result += [image_group.object_fraction]
+            result += [image_group.compute_power_spectrum]
             result += [image_group.remove_button, image_group.divider]
             
         # remove the last divider
@@ -218,6 +251,11 @@ class MeasureImageQuality(cpm.CPModule):
         return any([ig.check_blur.value
                     for ig in self.image_groups])
     
+    def any_power_spectrum(self):
+        '''True if some image has its radial power spectrum calculated'''
+        return any([ig.compute_power_spectrum.value
+                    for ig in self.image_groups])
+
     def get_measurement_columns(self, pipeline, return_sources=False):
         '''Return column definitions for all measurements'''
         columns = []
@@ -232,7 +270,7 @@ class MeasureImageQuality(cpm.CPModule):
                                     cpmeas.COLTYPE_FLOAT))
                     sources.append(ig.image_name)
             if ig.check_saturation.value:
-                for feature in (PERCENT_SATURATION, PERCENT_MAXIMAL):
+                for feature in (PERCENT_MAXIMAL, PERCENT_MINIMAL):
                     columns.append((cpmeas.IMAGE,
                                     '%s_%s_%s'%(IMAGE_QUALITY, feature,
                                                 ig.image_name.value),
@@ -242,6 +280,13 @@ class MeasureImageQuality(cpm.CPModule):
                 feature = ig.threshold_feature_name
                 columns.append((cpmeas.IMAGE, feature, cpmeas.COLTYPE_FLOAT))
                 sources.append(ig.image_name)
+            if ig.compute_power_spectrum.value:
+                for feature in POWER_SPECTRUM_FEATURES:
+                    columns.append((cpmeas.IMAGE,
+                                    '%s_%s_%s'%(IMAGE_QUALITY, feature,
+                                                ig.image_name.value),
+                                    cpmeas.COLTYPE_FLOAT))
+                    sources.append(ig.image_name)
         if return_sources:
             return columns, sources
         else:
@@ -260,7 +305,9 @@ class MeasureImageQuality(cpm.CPModule):
             if self.any_blur():
                 result += [FOCUS_SCORE, LOCAL_FOCUS_SCORE]
             if self.any_saturation():
-                result += [PERCENT_SATURATION, PERCENT_MAXIMAL]
+                result += [PERCENT_MAXIMAL, PERCENT_MINIMAL]
+            if self.any_power_spectrum():
+                result += POWER_SPECTRUM_FEATURES
             thresholds = set([THRESHOLD+ig.threshold_algorithm 
                               for ig in self.image_groups
                               if ig.calculate_threshold.value])
@@ -280,13 +327,16 @@ class MeasureImageQuality(cpm.CPModule):
         if measurement in (FOCUS_SCORE, LOCAL_FOCUS_SCORE):
             return [ig.image_name.value for ig in self.image_groups
                     if ig.check_blur.value]
-        if measurement in (PERCENT_MAXIMAL, PERCENT_SATURATION):
+        if measurement in (PERCENT_MAXIMAL, PERCENT_MINIMAL):
             return [ig.image_name.value for ig in self.image_groups
                     if ig.check_saturation.value]
         if measurement.startswith(THRESHOLD):
             return [ig.image_name.value for ig in self.image_groups
                     if (ig.calculate_threshold.value and
                         measurement == THRESHOLD+ig.threshold_algorithm)]
+        if measurement in POWER_SPECTRUM_FEATURES:
+                return [ig.image_name.value for ig in self.image_groups
+                        if ig.compute_power_spectrum.value]
     
     def get_measurement_scales(self, pipeline, object_name, category, 
                                measurement, image_name):
@@ -303,8 +353,14 @@ class MeasureImageQuality(cpm.CPModule):
         statistics = []
         for image_group in self.image_groups:
             statistics += self.run_on_image_group(image_group, workspace)
+        workspace.display_data.statistics = statistics
 
-        if not workspace.frame is None:
+    def is_interactive(self):
+        return False
+
+    def display(self, workspace):
+        if workspace.frame is not None:
+            statistics = workspace.display_data.statistics
             figure = workspace.create_or_find_figure(subplots=(1,1))
             figure.subplot_table(0,0,statistics)
     
@@ -314,10 +370,6 @@ class MeasureImageQuality(cpm.CPModule):
         for image_group in self.image_groups:
             statistics += self.calculate_experiment_threshold(image_group, 
                                                               workspace)
-        if not workspace.frame is None:
-            figure = workspace.create_or_find_figure(subplots=(1,1))
-            figure.subplot_table(0,0,statistics)
-    
     def run_on_image_group(self, image_group, workspace):
         '''Calculate statistics for a particular image'''
         statistics = []
@@ -327,6 +379,9 @@ class MeasureImageQuality(cpm.CPModule):
             statistics += self.calculate_saturation(image_group, workspace)
         if image_group.calculate_threshold.value:
             statistics += self.calculate_threshold(image_group, workspace)
+        if image_group.compute_power_spectrum.value:
+            statistics += self.calculate_power_spectrum(image_group, workspace)
+        
         return statistics
     
     def calculate_image_blur(self, image_group, workspace):
@@ -416,24 +471,62 @@ class MeasureImageQuality(cpm.CPModule):
         if pixel_count == 0:
             percent_saturation = 0
             percent_maximal = 0
+            percent_minimal = 0
         else:
-            number_pixels_saturated = np.sum(pixel_data == 1)
             number_pixels_maximal = np.sum(pixel_data == np.max(pixel_data))
-            percent_saturation = (100.0 * float(number_pixels_saturated) /
-                                  float(pixel_count))
+            number_pixels_minimal = np.sum(pixel_data == np.min(pixel_data))
             percent_maximal = (100.0 * float(number_pixels_maximal) /
                                float(pixel_count))
-        percent_saturation_name = "%s_%s_%s"%(IMAGE_QUALITY, PERCENT_SATURATION,
-                                              image_name)
+            percent_minimal = (100.0 * float(number_pixels_minimal) /
+                               float(pixel_count))
         percent_maximal_name = "%s_%s_%s"%(IMAGE_QUALITY, PERCENT_MAXIMAL,
                                            image_name)
-        workspace.add_measurement(cpmeas.IMAGE, percent_saturation_name,
-                                  percent_saturation)
+        percent_minimal_name = "%s_%s_%s"%(IMAGE_QUALITY, PERCENT_MINIMAL,
+                                           image_name)
         workspace.add_measurement(cpmeas.IMAGE, percent_maximal_name,
                                   percent_maximal)
-        return [["%s saturation"%image_name,"%.1f %%"%percent_saturation],
-                ["%s maximal"%image_name, "%.1f %%"%percent_maximal]]
+        workspace.add_measurement(cpmeas.IMAGE, percent_minimal_name,
+                                  percent_minimal)
+        return [["%s maximal"%image_name,"%.1f %%"%percent_maximal],
+                ["%s minimal"%image_name, "%.1f %%"%percent_minimal]]
+
     
+
+    def calculate_power_spectrum(self, image_group, workspace):
+        image_name = image_group.image_name.value
+        image = workspace.image_set.get_image(image_name,
+                                              must_be_grayscale = True)
+
+        pixel_data = image.pixel_data
+
+        if image.has_mask:
+            pixel_data = np.array(pixel_data) # make a copy
+            masked_pixels = pixel_data[image.mask]
+            pixel_count = np.product(masked_pixels.shape)
+            if pixel_count > 0:
+                pixel_data[~ image.mask] = np.mean(masked_pixels)
+            else:
+                pixel_data[~ image.mask] = 0
+        
+        radii, power = rps.rps(pixel_data)
+        cpower = np.cumsum(power)
+        powersum = cpower[-1]
+        if powersum > 0:
+            cpower /= powersum
+            power1st = radii[cpower.searchsorted(0.25)]
+            power2nd = radii[cpower.searchsorted(0.5)]
+            power3rd = radii[cpower.searchsorted(0.75)]
+        else:
+            power1st = power2nd = power3rd = 0
+
+        result = []
+        for fname, val in zip(POWER_SPECTRUM_FEATURES, [power1st, power2nd, power3rd, powersum]):
+            workspace.add_measurement(cpmeas.IMAGE, 
+                                      "%s_%s_%s"%(IMAGE_QUALITY, fname, image_name),
+                                      val)
+            result += [["%s %s"%(image_name, fname), "%.1f"%(val)]]
+        return result
+
     def calculate_threshold(self, image_group, workspace):
         '''Calculate a threshold for this image'''
         image_name = image_group.image_name.value
@@ -458,7 +551,7 @@ class MeasureImageQuality(cpm.CPModule):
                                   global_threshold)
         return [["%s %s threshold"%(image_name, threshold_method), 
                  str(global_threshold)]]
-    
+
     def calculate_experiment_threshold(self, image_group, workspace):
         '''Calculate experiment-wide threshold mean, median and standard-deviation'''
         m = workspace.measurements
@@ -492,6 +585,7 @@ class MeasureImageQuality(cpm.CPModule):
                                                             image_group.threshold_algorithm),
                                str(std_threshold)])
         return statistics
+
     
     def upgrade_settings(self, setting_values, variable_revision_number, 
                          module_name, from_matlab):
@@ -545,6 +639,19 @@ class MeasureImageQuality(cpm.CPModule):
                                    ".10"]
             from_matlab = False
             variable_revision_number = 1
+        
+        if variable_revision_number == 1:
+            # add power spectrum calculations
+            assert (not from_matlab)
+            assert len(setting_values) % 7 == 0
+            num_images = len(setting_values) / 7
+            new_settings = []
+            for idx in range(num_images):
+                new_settings += setting_values[(idx * 7):(idx * 7 + 7)]
+                new_settings += [cps.YES]
+            setting_values = new_settings
+            variable_revision_number = 2
+
         return setting_values, variable_revision_number, from_matlab
 
 

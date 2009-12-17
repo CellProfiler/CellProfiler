@@ -386,6 +386,14 @@ class CalculateStatistics(cpm.CPModule):
                               cps.DO_NOT_USE]
             variable_revision_number = 1
             from_matlab = False
+        if variable_revision_number == 1 and not from_matlab:
+            #
+            # Minor change: Default output directory -> folder
+            #
+            for choice in (PC_DEFAULT, PC_WITH_IMAGE):
+                if setting_values[5].startswith(choice[:4]):
+                    setting_values = (setting_values[:5] + [choice] +
+                                      setting_values[6:])
         return setting_values, variable_revision_number, from_matlab                              
 
 ########################################################

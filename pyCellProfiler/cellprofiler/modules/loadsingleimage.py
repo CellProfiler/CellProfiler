@@ -185,5 +185,11 @@ class LoadSingleImage(cpm.CPModule):
             setting_values = new_setting_values
             from_matlab = False
             variable_revision_number = 1
+        #
+        # Minor revision: default image folder -> default input folder
+        #
+        if variable_revision_number == 1 and not from_matlab:
+            if setting_values[0].startswith("Default image"):
+                setting_values = [DIR_DEFAULT_IMAGE_FOLDER] + setting_values[1:] 
         return setting_values, variable_revision_number, from_matlab
 

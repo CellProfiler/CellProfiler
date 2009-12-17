@@ -151,6 +151,7 @@ class CPFrame(wx.Frame):
                                   "Show all module display windows for all modules during analysis")
         self.__menu_window.Append(ID_WINDOW_HIDE_ALL_WINDOWS,"Hide all windows",
                                   "Hide all module display windows for all modules during analysis")
+        self.__menu_window.AppendSeparator()
         self.__menu_bar.Append(self.__menu_window,"&Window")
         self.__menu_help = wx.Menu()
         self.__menu_help.Append(ID_HELP_MODULE,'Module help','Display help from the module''s .m file')

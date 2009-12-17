@@ -168,15 +168,7 @@ class PipelineController:
     
     def do_load_pipeline(self,pathname):
         try:
-            handles=scipy.io.matlab.mio.loadmat(pathname, struct_as_record=True)
-        except Exception,instance:
-            self.__frame.display_error('Failed to open %s'%(pathname),instance)
-            return
-        try:
-            if handles.has_key('handles'):
-                self.__pipeline.create_from_handles(handles['handles'][0,0])
-            else:
-                self.__pipeline.create_from_handles(handles)
+            self.__pipeline.load(pathname)
             self.__pipeline.turn_off_batch_mode()
             self.__clear_errors()
             cellprofiler.preferences.set_current_pipeline_path(pathname)

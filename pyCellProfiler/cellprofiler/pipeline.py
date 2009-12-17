@@ -18,10 +18,18 @@ import hashlib
 import gc
 import numpy as np
 import scipy.io.matlab
+try:
+    #implemented in scipy.io.matlab.miobase.py@5582
+    from scipy.io.matlab.miobase import MatReadError
+    has_mat_read_error = True
+except:
+    has_mat_read_error = False
+    
 import os
 import StringIO
 import sys
 import tempfile
+import traceback
 import datetime
 import traceback
 import threading
@@ -373,7 +381,20 @@ class Pipeline(object):
         
         fd_or_filename - either the name of a file or a file-like object
         """
-        handles=scipy.io.matlab.mio.loadmat(fd_or_filename, struct_as_record=True)
+        if has_mat_read_error:
+            try:
+                handles=scipy.io.matlab.mio.loadmat(fd_or_filename, 
+                                                    struct_as_record=True)
+            except MatReadError:
+                sys.stderr.write("Caught exception in Matlab reader\n")
+                traceback.print_exc()
+                raise MatReadError(
+                    "%s is an unsupported .MAT file, most likely a measurements file.\nYou can load this as a pipeline if you load it as a pipeline using CellProfiler 1.0 and then save it to a different file.\n" %
+                    fd_or_filename)
+        else:
+            handles=scipy.io.matlab.mio.loadmat(fd_or_filename, 
+                                                struct_as_record=True)
+            
         if handles.has_key("handles"):
             #
             # From measurements...

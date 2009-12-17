@@ -661,7 +661,7 @@ GridInfo.XLocations = XLocations;
 GridInfo.LeftOrRight = LeftOrRight;
 GridInfo.TopOrBottom = TopOrBottom;
 
-handles.Pipeline.(['Grid_' GridName]) = GridInfo;
+handles = CPaddimages(handles,['Grid_' GridName],GridInfo);
 
 %%% To store these values in
 %%% handles.Measurements.Image we must convert them to numbers.

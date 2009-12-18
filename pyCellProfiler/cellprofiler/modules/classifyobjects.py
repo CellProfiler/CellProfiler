@@ -44,8 +44,8 @@ import cellprofiler.measurements as cpmeas
 import cellprofiler.cpimage as cpi
 import cellprofiler.settings as cps
 
-BY_SINGLE_MEASUREMENTS = "Single measurements"
-BY_TWO_MEASUREMENTS = "Two measurements"
+BY_SINGLE_MEASUREMENTS = "Single measurement"
+BY_TWO_MEASUREMENTS = "Pair of measurements"
 TM_MEAN = "Mean"
 TM_MEDIAN = "Median"
 TM_CUSTOM = "Custom"
@@ -65,15 +65,11 @@ class ClassifyObjects(cpm.CPModule):
         Create the settings for the module during initialization.
         """
         self.contrast_choice = cps.Choice(
-            "Do you want to classify objects by single measurements or "
-            "by two measurements taken together?",
+            "Should each classification decision be based on a single measurement or on the combination of a pair of measurements?",
             [BY_SINGLE_MEASUREMENTS, BY_TWO_MEASUREMENTS],
             doc="""This setting controls how classifications are recorded:<br>
-            <ul><li><i>Single measurements</i>: ClassifyObjects will record
-            one classification for each measurement you choose.</li>
-            <li><i>Two measurements</i>: ClassifyObjects will allow you to
-            choose two measurements. It will record one classification based
-            on the two measurements taken together.</li></ul>""")
+            <ul><li><i>Single measurements</i>: ClassifyObjects will classify each object based on a single measurement.</li>
+            <li><i>Pair of measurements</i>: ClassifyObjects will classify each object based on a pair of measurements taken together (that is, an object must meet two criteria to belong to a class).</li></ul>""")
         
         ############### Single measurement settings ##################
         #
@@ -93,7 +89,7 @@ class ClassifyObjects(cpm.CPModule):
         # A button to press to get another measurement
         #
         self.add_measurement_button = cps.DoSomething(
-            "Add another measurement","Add", self.add_single_measurement)
+            "Add another classification","Add", self.add_single_measurement)
         #
         ############### Two-measurement settings #####################
         #
@@ -209,7 +205,7 @@ class ClassifyObjects(cpm.CPModule):
         '''
         group = cps.SettingsGroup()
         group.append("object_name",cps.ObjectNameSubscriber(
-            "Enter object name","None",
+            "Select the object to be classified","None",
             doc="""This is the name of the objects to be classified. You can
             choose from objects created by any previous module. See
             <b>IdentifyPrimAutomatic</b>, <b>IdentifySecondary</b> or
@@ -218,19 +214,18 @@ class ClassifyObjects(cpm.CPModule):
         def object_fn():
             return group.object_name.value
         group.append("measurement", cps.Measurement(
-            "Select measurement",object_fn,
+            "Select the measurement to classify by",object_fn,
             doc="""Select a measurement made by a previous module. The objects
             will be classified according to their value for this 
             measurement."""))
         group.append("bin_choice", cps.Choice(
-            "Do you want evenly spaced bins or custom bins?",
+            "Select bin spacing",
             [BC_EVEN, BC_CUSTOM],
             doc="""You can either specify bins of equal size, bounded by
-            upper and lower limits or you can specify custom values for
-            each bin threshold. 
+            upper and lower limits, or you can specify custom values that
+            define the edges of each bin with a threshold. 
             
-            <i>Note:</i> Choose "Custom-defined bins" if you want
-            two bins with a single threshold. "Evenly spaced bins" creates
+            <i>Note:</i> If you would like two bins, choose "Custom-defined bins" and then provide a single threshold when asked. "Evenly spaced bins" creates
             at least three bins, including a bin of objects that fall below
             the lower threshold and a bin of objects that have values above
             the upper threshold."""))
@@ -239,7 +234,7 @@ class ClassifyObjects(cpm.CPModule):
             "How many bins?", 3, minval= 3))
         
         group.append("low_threshold", cps.Float(
-            "Enter lower threshold", 0,
+            "Lower threshold", 0,
             doc="""This is the threshold that separates the lowest bin from the
             others. The lower threshold, upper threshold and number of bins
             define the thresholds of bins between the lowest and highest."""))
@@ -248,10 +243,11 @@ class ClassifyObjects(cpm.CPModule):
             return group.low_threshold.value + np.finfo(float).eps
         
         group.append("high_threshold", cps.Float(
-            "Enter upper threshold", 1,
+            "Upper threshold", 1,
             minval = cps.NumberConnector(min_upper_threshold),
             doc="""This is the threshold that separates the last bin from
-            the others."""))
+            the others.
+            <i>Note:</i> If you would like two bins, choose "Custom-defined bins"."""))
         
         group.append("custom_thresholds", cps.Text(
             "Enter the custom thresholds separating the values between bins",
@@ -265,8 +261,8 @@ class ClassifyObjects(cpm.CPModule):
         
         group.append("wants_custom_names", cps.Binary(
             "Give each bin a name?", False,
-            doc="""This option lets you assign custom names to the measurements
-            for each bin. If you leave this unchecked, the module will
+            doc="""This option lets you assign custom names to bins you have 
+            specified. If you leave this unchecked, the module will
             assign names based on the measurements and the bin number."""))
         
         group.append("bin_names", cps.Text(
@@ -281,7 +277,7 @@ class ClassifyObjects(cpm.CPModule):
             False))
         
         group.append("image_name", cps.ImageNameProvider(
-            "Enter image name", "ClassifiedNuclei"))
+            "Name the output image", "ClassifiedNuclei"))
         
         group.can_delete = can_delete
         def number_of_bins():

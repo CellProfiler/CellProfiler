@@ -4,10 +4,10 @@ automatically based on previously identified objects.
 This module defines the location of a grid that can be used by modules
 downstream. When used in combination with <b>IdentifyObjectsInGrid</b>, it
 allows the measurement of the size, shape, intensity and texture of each
-object in a grid. The grid is defined by the location of marker spots
+object or location in a grid. The grid is defined by the location of marker spots
 (control spots) in the grid, which are either indicated manually or are
 found automatically using previous modules in the pipeline. The grid can then
-be used to make measurements (using <b>IdentifyObjectsInGrid</b>).
+be used to make measurements (using <b>IdentifyObjectsInGrid</b>). Text annotation of a grid can be shown on top of an image using the <b>DisplayGridInfo</b> module (coming soon).
 
 If you are using images of plastic plates, it may be useful to precede
 this module with an <b>IdentifyPrimAutomatic</b> module to find the plastic
@@ -33,7 +33,7 @@ Features that can be measured by this module:
 <li>TopOrBottomNum</li>
 <li>RowsOrColumnsNum</li>
 </ul>
-The last three are related to the questions the module ask you about the grid.
+The last three are related to the questions the module asks you about the grid.
 
 See also: <b>IdentifyObjectsInGrid</b>
 '''
@@ -75,8 +75,8 @@ MAN_MOUSE = "Mouse"
 MAN_COORDINATES = "Coordinates"
 
 FAIL_NO = "No"
-FAIL_ANY_PREVIOUS = "Any Previous"
-FAIL_FIRST = "The First"
+FAIL_ANY_PREVIOUS = "Use any previous grid"
+FAIL_FIRST = "Use the first cycle's grid"
 
 '''The module dictionary keyword of the first or most recent good gridding'''
 GOOD_GRIDDING = "GoodGridding"
@@ -191,12 +191,10 @@ class DefineGrid(cpm.CPModule):
         self.manual_choice = cps.Choice(
                         "Select the method to define the grid manually",[MAN_MOUSE, MAN_COORDINATES], doc="""
                         <i>(Used if Manual is selected to define the grid)</i><br>
-                        Do you want to define the grid using the mouse or by entering "
-                        the coordinates of the cells? You can either use the user interface 
-                        to define the grid or you can enter the coordinates of the spots:
+                        Do you want to define the grid using the mouse or by entering
+                        the coordinates of the cells?
                         <ul>
-                        <li><i>Mouse</i>: The user interface displays the image of
-                        your grid. You will be asked to click in the center of two of
+                        <li><i>Mouse</i>: The user interface displays the image you specify. You will be asked to click in the center of two of
                         the grid cells and specify the row and column for each. The
                         grid coordinates will be computed from this information.</li>
                         <li><i>Coordinates</i>: This option lets you enter the X and Y
@@ -265,14 +263,14 @@ class DefineGrid(cpm.CPModule):
                         <i>A01</i> and <i>A12</i> will be <i>12</i> and <i>1</i>, respectively.""")
         
         self.wants_image = cps.Binary(
-                        "Save an image of the grid?", False, doc = """
-                        Do you want to save an image of the grid? 
+                        "Retain an image of the grid for use later in the pipeline (for example, in SaveImages)?", False, doc = """
+                        Do you want to retain an image of the grid for use later in the pipeline? 
                         This module can create an annotated image of the grid
                         which can be saved using the <b>SaveImages</b> module. Check
                         this box if you want to save the annotated image. """)
         
         self.display_image_name = cps.ImageNameSubscriber(
-                        "Select the display image", cps.LEAVE_BLANK, can_be_blank = True, doc = """
+                        "Select the image on which to display the grid", cps.LEAVE_BLANK, can_be_blank = True, doc = """
                         <i>(Used if saving an image of the grid)</i><br>
                         Enter the name of the image that should be used as
                         the background for annotations (grid lines and grid indexes).
@@ -280,7 +278,7 @@ class DefineGrid(cpm.CPModule):
         
         self.save_image_name = cps.ImageNameProvider(
                         "Name the output image", "Grid", doc = """
-                        <i>(Used if saving an image of the grid)</i><br>
+                        <i>(Used if retaining an image of the grid for use later in the pipeline)</i><br>
                         Enter the name you want to use for the output image. You can
                         save this image using the <b>SaveImages</b> module.""")
         
@@ -292,13 +290,13 @@ class DefineGrid(cpm.CPModule):
                         to errors:            
                         <ul>
                         <li><i>No</i>: The module will stop the pipeline if gridding fails.</li>
-                        <li><i>Any Previous</i>: The module will use the gridding from
+                        <li><i> Use any previous grid</i>: The module will use the gridding from
                         the most recent successful gridding.</li>
-                        <li><i>The First</i>: The module will use the gridding from
+                        <li><i> Use the first cycle's grid</i>: The module will use the gridding from
                         the first gridding.</li>
                         </ul>
-                        The pipeline will stop in all cases if the first gridding fails.""")
-        
+                        The pipeline will stop in all cases if gridding fails on the first image.""")
+
     def settings(self):
         """Return the settings to be loaded or saved to/from the pipeline
         

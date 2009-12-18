@@ -559,7 +559,8 @@ class Pipeline(object):
         """
 
         def group(image_set_list):
-            """Enumerate relevant images"""
+            """Enumerate relevant image sets.  This function is
+            side-effect free, so it can be called more than once."""
             keys, groupings = self.get_groupings(image_set_list)
             if grouping is not None and set(keys) != set(grouping.keys()):
                 raise ValueError("The grouping keys specified on the command line (%s) must be the same as those defined by the modules in the pipeline (%s)"%(
@@ -577,7 +578,7 @@ class Pipeline(object):
                     if need_to_run_prepare_group:
                         yield image_number, lambda: self.prepare_group(image_set_list, grouping_keys, image_numbers)
                     else:
-                        yield image_number, lambda: None
+                        yield image_number, lambda: True
                     need_to_run_prepare_group = False
                 if not need_to_run_prepare_group:
                     yield None, lambda workspace: self.post_group(workspace, grouping_keys)
@@ -585,6 +586,11 @@ class Pipeline(object):
         with self.prepared_run(self, frame) as image_set_list:
             if image_set_list == None:
                 return
+
+            # Keep track of progress for the benefit of the progress window.
+            num_image_sets = sum([image_number is not None 
+                                  for image_number, _ in group(image_set_list)])
+            image_set_count = -1
             
             measurements = None
             for image_number, closure in group(image_set_list):
@@ -592,7 +598,9 @@ class Pipeline(object):
                     if not closure(workspace):
                         measurements.add_experiment_measurement(EXIT_STATUS,
                                                                 "Failure")
-                        return                    
+                        return
+                    continue
+                image_set_count += 1
                 if not closure():
                     return
                 if measurements is None:
@@ -633,7 +641,7 @@ class Pipeline(object):
                                               outlines = outlines)
                     grids = workspace.set_grids(grids)
                     if status_callback:
-                        status_callback(module, image_set)
+                        status_callback(module, image_set_count, num_image_sets)
                     start_time = datetime.datetime.now()
                     t0 = sum(os.times()[:-1])
                     if not run_in_background:

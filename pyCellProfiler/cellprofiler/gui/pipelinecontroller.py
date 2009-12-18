@@ -404,6 +404,9 @@ class PipelineController:
                 if setting.key() in [x.key() for x in module.settings()]:
                     if module.change_causes_prepare_run(setting):
                         self.stop_debugging()
+
+    def status_callback(self, *args):
+        self.__progress_frame.start_module(*args)
             
     def on_analyze_images(self,event):
         if len(self.__setting_errors):
@@ -413,13 +416,14 @@ class PipelineController:
         output_path = self.get_output_file_path()
         if output_path:
             self.__progress_frame = ProgressFrame(self.__frame)
-            # Uncomment to show half-baked progress dialog
-            #self.__progress_frame.Show(True)
+            # XXX: Uncomment to show half-baked progress dialog
+            self.__progress_frame.Show(True)
             if self.__running_pipeline:
                 self.__running_pipeline.close()
             self.__output_path = output_path
             self.__frame.preferences_view.on_analyze_images()
-            self.__running_pipeline = self.__pipeline.run_with_yield(self.__frame)
+            self.__running_pipeline = self.__pipeline.run_with_yield(self.__frame,
+                                                                     status_callback=self.status_callback)
             try:
                 # Start the first module.
                 self.__pipeline_measurements = self.__running_pipeline.next()
@@ -714,7 +718,7 @@ class PipelineController:
         cellprofiler.pipeline.ModuleRunnerDoneEvent whenever a module
         is done running.
         '''
-        if self.__running_pipeline:
+        if self.__running_pipeline:            
             try:
                 self.__pipeline_measurements = self.__running_pipeline.next()
                 event.RequestMore()

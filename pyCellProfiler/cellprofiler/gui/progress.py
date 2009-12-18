@@ -74,6 +74,11 @@ class ProgressFrame(wx.Frame):
         self.tbicon.Destroy()
         self.Destroy()
 
+    def start_module(self, module, image_set_index, num_image_sets):
+        self.current_module_control.SetLabel(module.module_name)
+        self.image_set_control.SetLabel("Image set: %d of %d"%(image_set_index + 1, num_image_sets))
+
+
 if __name__ == '__main__':
     app = wx.PySimpleApp()
     frame = ProgressFrame(None).Show()

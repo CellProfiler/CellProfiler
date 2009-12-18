@@ -53,8 +53,9 @@ class Workspace(object):
         """Workspace constructor
         
         pipeline          - the pipeline of modules being run
-        module            - the current module to run
+        module            - the current module to run (a CPModule instance)
         image_set         - the set of images available for this iteration
+                            (a cpimage.ImageSet instance)
         object_set        - an object.ObjectSet instance
         image_set_list    - the list of all images
         frame             - the application's frame, or None for no display

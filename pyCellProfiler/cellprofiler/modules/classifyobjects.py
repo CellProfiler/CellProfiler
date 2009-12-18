@@ -550,6 +550,8 @@ class ClassifyObjects(cpm.CPModule):
             bin_hits = workspace.display_data.bins[i]
             labels = workspace.display_data.labels[i]
             values = workspace.display_data.values[i]
+            if len(values) == 0:
+                continue
             #
             # A histogram of the values
             #

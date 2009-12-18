@@ -495,6 +495,12 @@ class Crop(cpm.CPModule):
             new_setting_values = list(setting_values)
             new_setting_values.append("None")
             variable_revision_number = 2
-            
+        
+        if variable_revision_number == 2 and not from_matlab:
+            # minor - "Cropping" changed to "Previous cropping"
+            if setting_values[OFF_SHAPE] == "Cropping":
+                setting_values = (setting_values[:OFF_SHAPE] +
+                                  [SH_CROPPING] + 
+                                  setting_values[(OFF_SHAPE+1):])
         return setting_values, variable_revision_number, from_matlab
     

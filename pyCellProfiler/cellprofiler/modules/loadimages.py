@@ -1352,9 +1352,6 @@ class LoadImagesImageProvider(cpimage.AbstractImageProvider):
             imgdata = scipy.io.matlab.mio.loadmat(self.get_full_name(),
                                                   struct_as_record=True)
             img = imgdata["Image"]
-        elif self.__filename.lower().endswith(".dib"):
-            # use our own DIB reader
-            img = cpimage.readc01(self.get_full_name())
         else:
             # try PIL first, for speed
             try:

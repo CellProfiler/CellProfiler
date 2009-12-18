@@ -137,49 +137,52 @@ class CalculateStatistics(cpm.CPModule):
             self.smoothing_size = cellprofiler.settings.Float(...)"""
         
         self.grouping_values = cps.Measurement(
-            "Positive and negative controls",
+            "Where is information about the positive and negative control status of each image?",
             lambda : cpmeas.IMAGE,
-            doc = '''This is the metadata measurement that marks each image set as
-            a positive control, a negative control or a sample. Positive
-            controls should all be given a single high value (for instance, 1)
-            and negative controls should be given a single low value (for
-            instance, 0). Other samples should be given an intermediate value
-            to exclude them from the Z-score analysis.<p>
-            Most likely, you'll want to use a
-            measurement loaded by <b>LoadText</b>. In that case, choose the
+            doc = '''The Z' factor, a measure of assay quality, is calculated by this module based on which images 
+            are positive controls and which images are negative controls (images that 
+            are neither are ignored when calculating this statistic). Positive
+            controls should all be specified by a single high value (for instance, 1)
+            and negative controls should all be specified by a single low value (for
+            instance, 0). Other samples should have an intermediate value
+            to exclude them from the Z' factor analysis.<p>
+            The typical way to provide this information in the pipeline is to create 
+            a text file outside of CellProfiler and then load that file in the pipeline
+            using <b>LoadText</b>. In that case, choose the
             measurement that matches the column header of the measurement
             in LoadText's input file.''')
         self.dose_values = []
         self.add_dose_value()
-        self.add_dose_button = cps.DoSomething("Add another dose measurement?","Add",
+        self.add_dose_button = cps.DoSomething("Add another dose specification?","Add",
                                                self.add_dose_value)
         
     def add_dose_value(self):
         '''Add a dose value measurement to the list'''
         group = cps.SettingsGroup()
         group.append("measurement",
-                     cps.Measurement("Dose measurement",
+                     cps.Measurement("Where is information about the treatment dose for each image?",
                                      lambda : cpmeas.IMAGE,
                                      doc = 
-            """Choose a measurement that gives the dose of some treatment
-            for each of your images. This module will calculate one EC50
-            of the titration for each measurement taken for each dose
-            measurement included here.<p>
-            You can load dose measurements per image using the <b>LoadText</b>
-            module.
+            """The V factor, a measure of assay quality, and the EC50, indicating dose/response, are calculated by this module based on each image being specified as a particular treatment dose. Choose a measurement that gives the dose of some treatment
+            for each of your images. <p>
+            The typical way to provide this information in the pipeline is to create 
+            a text file outside of CellProfiler and then load that file in the pipeline
+            using <b>LoadText</b>. In that case, choose the
+            measurement that matches the column header of the measurement
+            in LoadText's input file.
             """))
         group.append("log_transform",cps.Binary(
             "Log-transform dose values?",
             False,
-            doc = '''This option allows you to log-transform the values for
-            the grouping measurement before fitting a sigmoid curve. Check
+            doc = '''This option allows you to log-transform the dose values 
+            before fitting a sigmoid curve. Check
             this box if you have dose-response data. Leave the box unchecked
             if your data values indicate positive vs negative controls.'''))
         group.append('wants_save_figure', cps.Binary(
             '''Create dose/response plots?''',
             False,
-            doc = '''<a name='wants_save_figure'/>Check this box if you want to create and save dose response plots for each figure generated. 
-            If you check the box, you will be asked for file name information.</a>'''))
+            doc = '''<a name='wants_save_figure'/>Check this box if you want to create and save dose response plots. 
+            If you check the box, you will be asked for information on how to save the plots.</a>'''))
         group.append('figure_name', cps.Text(
             "Figure prefix?","",
             doc = '''CellProfiler will create a file name by appending the measurement name
@@ -197,7 +200,7 @@ class CalculateStatistics(cpm.CPModule):
             <ul>
             <li><i>Default output folder</i></li>
             <li><i>Custom:</i> The file will be stored in a customizable folder. You can
-            prefix the folder name with "." (an period) to make the root directory the default
+            prefix the folder name with "." (an period) to make the root folder the default
             output folder or "&" (an ampersand) to make the root folder the default image
             folder.</li></ul>"""))
         group.append('pathname', cps.Text(

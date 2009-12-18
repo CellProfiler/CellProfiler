@@ -1,4 +1,4 @@
-'''<b>CorrectIllumination_Apply:</b> Applies an illumination function, created by
+'''<b>CorrectIllumination_Apply:</b> Applies an illumination function, usually created by
 CorrectIllumination_Calculate, to an image in order to correct for uneven
 illumination (uneven shading).
 <hr>
@@ -7,7 +7,7 @@ This module applies a previously created illumination correction function,
 either loaded by <b>LoadSingleImage</b> or created by <b>CorrectIllumination_Calculate</b>.
 This module corrects each image in the pipeline using the function you specify. 
 
-See also <b>CorrectIllumination_Calculate, RescaleIntensity</b>.'''
+See also <b>CorrectIllumination_Calculate</b>.'''
 
 #CellProfiler is distributed under the GNU General Public License.
 #See the accompanying file LICENSE for details.
@@ -73,29 +73,27 @@ class CorrectIllumination_Apply(cpm.CPModule):
                                         What do you want to call the corrected image?''')
         
         illum_correct_function_image_name = cps.ImageNameSubscriber("Select the illumination function","None", doc = '''
-                                        What did you call the illumination correction function image to be used to carry out the correction (produced by another module 
+                                        What did you call the illumination correction function image that will be used to carry out the correction (produced by another module 
                                         or loaded as a .mat format image using Load Single Image)?''')
         
         divide_or_subtract = cps.Choice("Select how the illumination function is applied",
                                         [DOS_DIVIDE, DOS_SUBTRACT], doc = '''
                                         This choice depends on how the illumination function was calculated
                                         and on your physical model of how illumination variation affects the background of images relative to 
-                                        the objects in images. <ul><li>Subtract: Use <i>Subtract</i> if the background signal is significant relative to the real signal
-                                        coming from the cells (a somewhat empirical decision).  If you created the illumination correction function using <i>Background</i>,
+                                        the objects in images, and is also somewhat empirical. <ul><li>Subtract: Use <i>Subtract</i> if the background signal is significant relative to the real signal
+                                        coming from the cells.  If you created the illumination correction function using <i>Background</i>,
                                         then you will want to choose <i>Subtract</i> here.</li><li>Divide: Use <i>Divide</i> if the the signal to background ratio 
                                         is quite high (the cells are stained very strongly).  If you created the illumination correction function using <i>Regular</i>,
                                         then you will want to choose <i>Divide</i> here.</ul>''')
         
         rescale_option = cps.Choice("Select the rescaling method",
                                     [RE_NONE, RE_STRETCH, RE_MATCH], doc = '''
-                                    Choose the rescaling method
-                                    <ul>
-                                    <li>Subtract: Any pixels that end up negative are set to zero, so no rescaling is necessary.
-                                    <li>Divide: The resulting image may be in a very different range of intensity values relative to the original image.
+                                   Applying an illumination function can produce an image in a very different range of intensity values relative to the original image.
                                     If the illumination correction function is in the range 1 to infinity, <i>Divide</i> will usually yield an image in a reasonable
                                     range (0 to 1).  However, if the image is not in this range, or the intensity gradient within the image is still very great,
-                                    you may want to rescale the image.  There are two:<ul><li>Stretch the image from 0 to 1.<li>Match the maximum of the corrected image
-                                    to the maximum of the original image.</ul></ul>''')
+                                    you may want to rescale the image.  There are two methods for rescaling:<ul><li>Stretch the image from 0 to 1.<li>Match the maximum of the corrected image
+                                    to the maximum of the original image.</li></ul>
+Rescaling is only necessary when using the <i>Divide</i> method (because in the  <i>Subtract</i> method, any pixels that end up negative are set to zero, so no rescaling is necessary). ''')
         image_settings = cps.SettingsGroup()
         image_settings.append("image_name", image_name)
         image_settings.append("corrected_image_name", corrected_image_name)

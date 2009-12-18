@@ -67,8 +67,8 @@ class TestExportToExcel(unittest.TestCase):
         self.assertTrue(isinstance(module, E.ExportToExcel))
         self.assertEqual(len(module.object_groups), 1)
         og = module.object_groups[0]
-        self.assertEqual(og[E.OG_OBJECT_NAME], "Image")
-        self.assertEqual(og[E.OG_FILE_NAME], "Image.csv")
+        self.assertEqual(og.name, "Image")
+        self.assertEqual(og.file_name, "Image.csv")
     
     def test_000_02_load_v1(self):
         '''Load a version 1 pipeline'''
@@ -106,11 +106,11 @@ class TestExportToExcel(unittest.TestCase):
         self.assertTrue(isinstance(module, E.ExportToExcel))
         self.assertEqual(len(module.object_groups), 2)
         og = module.object_groups[0]
-        self.assertEqual(og[E.OG_OBJECT_NAME], "Image")
-        self.assertEqual(og[E.OG_FILE_NAME], "Image.csv")
+        self.assertEqual(og.name, "Image")
+        self.assertEqual(og.file_name, "Image.csv")
         og = module.object_groups[1]
-        self.assertEqual(og[E.OG_OBJECT_NAME], "Nuclei")
-        self.assertEqual(og[E.OG_FILE_NAME], "Nuclei.csv")
+        self.assertEqual(og.name, "Nuclei")
+        self.assertEqual(og.file_name, "Nuclei.csv")
         
     def test_000_03_load_v2(self):
         '''Load a version 2 pipeline'''
@@ -147,8 +147,8 @@ class TestExportToExcel(unittest.TestCase):
         module = E.ExportToExcel()
         module.module_num = 1
         module.prepend_output_filename.value = False
-        module.object_groups[0][E.OG_OBJECT_NAME].value = "my_object"
-        module.object_groups[0][E.OG_FILE_NAME].value = path
+        module.object_groups[0].name.value = "my_object"
+        module.object_groups[0].file_name.value = path
         m = cpmeas.Measurements()
         m.add_measurement("my_object","my_measurement",np.zeros((0,)))
         m.add_image_measurement("Count_my_object", 0)
@@ -179,8 +179,8 @@ class TestExportToExcel(unittest.TestCase):
         module = E.ExportToExcel()
         module.module_num = 1
         module.prepend_output_filename.value = False
-        module.object_groups[0][E.OG_OBJECT_NAME].value = cpmeas.EXPERIMENT
-        module.object_groups[0][E.OG_FILE_NAME].value = path
+        module.object_groups[0].name.value = cpmeas.EXPERIMENT
+        module.object_groups[0].file_name.value = path
         m = cpmeas.Measurements()
         m.add_experiment_measurement("my_measurement", "Hello, world")
         image_set_list = cpi.ImageSetList()
@@ -210,8 +210,8 @@ class TestExportToExcel(unittest.TestCase):
         module = E.ExportToExcel()
         module.module_num = 1
         module.prepend_output_filename.value = False
-        module.object_groups[0][E.OG_OBJECT_NAME].value = cpmeas.EXPERIMENT
-        module.object_groups[0][E.OG_FILE_NAME].value = path
+        module.object_groups[0].name.value = cpmeas.EXPERIMENT
+        module.object_groups[0].file_name.value = path
         m = cpmeas.Measurements()
         m.add_experiment_measurement("my_measurement", "Hello, world")
         m.add_experiment_measurement("my_other_measurement","Goodbye")
@@ -246,8 +246,8 @@ class TestExportToExcel(unittest.TestCase):
         module = E.ExportToExcel()
         module.module_num = 1
         module.prepend_output_filename.value = True
-        module.object_groups[0][E.OG_OBJECT_NAME].value = cpmeas.EXPERIMENT
-        module.object_groups[0][E.OG_FILE_NAME].value = path
+        module.object_groups[0].name.value = cpmeas.EXPERIMENT
+        module.object_groups[0].file_name.value = path
         m = cpmeas.Measurements()
         m.add_experiment_measurement("my_measurement", "Hello, world")
         image_set_list = cpi.ImageSetList()
@@ -280,8 +280,8 @@ class TestExportToExcel(unittest.TestCase):
         module = E.ExportToExcel()
         module.module_num = 1
         module.prepend_output_filename.value = False
-        module.object_groups[0][E.OG_OBJECT_NAME].value = cpmeas.IMAGE
-        module.object_groups[0][E.OG_FILE_NAME].value = path
+        module.object_groups[0].name.value = cpmeas.IMAGE
+        module.object_groups[0].file_name.value = path
         m = cpmeas.Measurements()
         m.add_image_measurement("my_measurement", "Hello, world")
         image_set_list = cpi.ImageSetList()
@@ -312,8 +312,8 @@ class TestExportToExcel(unittest.TestCase):
         module = E.ExportToExcel()
         module.module_num = 1
         module.prepend_output_filename.value = False
-        module.object_groups[0][E.OG_OBJECT_NAME].value = cpmeas.IMAGE
-        module.object_groups[0][E.OG_FILE_NAME].value = path
+        module.object_groups[0].name.value = cpmeas.IMAGE
+        module.object_groups[0].file_name.value = path
         m = cpmeas.Measurements()
         image_set_list = cpi.ImageSetList()
         image_sets = [image_set_list.get_image_set(i)
@@ -353,8 +353,8 @@ class TestExportToExcel(unittest.TestCase):
         module = E.ExportToExcel()
         module.module_num = 1
         module.prepend_output_filename.value = False
-        module.object_groups[0][E.OG_OBJECT_NAME].value = "my_object"
-        module.object_groups[0][E.OG_FILE_NAME].value = path
+        module.object_groups[0].name.value = "my_object"
+        module.object_groups[0].file_name.value = path
         m = cpmeas.Measurements()
         np.random.seed(0)
         mvalues = np.random.uniform(size=(1,))
@@ -390,8 +390,8 @@ class TestExportToExcel(unittest.TestCase):
         module = E.ExportToExcel()
         module.module_num = 1
         module.prepend_output_filename.value = False
-        module.object_groups[0][E.OG_OBJECT_NAME].value = "my_object"
-        module.object_groups[0][E.OG_FILE_NAME].value = path
+        module.object_groups[0].name.value = "my_object"
+        module.object_groups[0].file_name.value = path
         m = cpmeas.Measurements()
         np.random.seed(0)
         mvalues = np.random.uniform(size=(2,3))
@@ -432,10 +432,10 @@ class TestExportToExcel(unittest.TestCase):
         module.module_num = 1
         module.prepend_output_filename.value = False
         module.add_object_group()
-        module.object_groups[0][E.OG_OBJECT_NAME].value = "object_0"
-        module.object_groups[0][E.OG_FILE_NAME].value = path
-        module.object_groups[1][E.OG_PREVIOUS_FILE].value = True
-        module.object_groups[1][E.OG_OBJECT_NAME].value = "object_1"
+        module.object_groups[0].name.value = "object_0"
+        module.object_groups[0].file_name.value = path
+        module.object_groups[1].previous_file.value = True
+        module.object_groups[1].name.value = "object_1"
         m = cpmeas.Measurements()
         np.random.seed(0)
         # cell, measurement, object
@@ -492,8 +492,8 @@ class TestExportToExcel(unittest.TestCase):
         module = E.ExportToExcel()
         module.module_num = 1
         module.prepend_output_filename.value = False
-        module.object_groups[0][E.OG_OBJECT_NAME].value = "my_object"
-        module.object_groups[0][E.OG_FILE_NAME].value = path
+        module.object_groups[0].name.value = "my_object"
+        module.object_groups[0].file_name.value = path
         m = cpmeas.Measurements()
         np.random.seed(0)
         mvalues = np.random.uniform(size=(4,))
@@ -541,8 +541,8 @@ class TestExportToExcel(unittest.TestCase):
         module = E.ExportToExcel()
         module.module_num = 1
         module.prepend_output_filename.value = False
-        module.object_groups[0][E.OG_OBJECT_NAME].value = cpmeas.IMAGE
-        module.object_groups[0][E.OG_FILE_NAME].value = path
+        module.object_groups[0].name.value = cpmeas.IMAGE
+        module.object_groups[0].file_name.value = path
         m = cpmeas.Measurements()
         np.random.seed(0)
         mvalues = np.random.uniform(size=(4,))
@@ -591,8 +591,8 @@ class TestExportToExcel(unittest.TestCase):
         module = E.ExportToExcel()
         module.module_num = 1
         module.prepend_output_filename.value = False
-        module.object_groups[0][E.OG_OBJECT_NAME].value = cpmeas.IMAGE
-        module.object_groups[0][E.OG_FILE_NAME].value = path
+        module.object_groups[0].name.value = cpmeas.IMAGE
+        module.object_groups[0].file_name.value = path
         module.wants_aggregate_means.value = True
         module.wants_aggregate_medians.value = True
         module.wants_aggregate_std.value = True
@@ -639,8 +639,8 @@ class TestExportToExcel(unittest.TestCase):
         module = E.ExportToExcel()
         module.module_num = 1
         module.prepend_output_filename.value = False
-        module.object_groups[0][E.OG_OBJECT_NAME].value = cpmeas.IMAGE
-        module.object_groups[0][E.OG_FILE_NAME].value = path
+        module.object_groups[0].name.value = cpmeas.IMAGE
+        module.object_groups[0].file_name.value = path
         module.wants_aggregate_means.value = False
         module.wants_aggregate_medians.value = False
         module.wants_aggregate_std.value = False
@@ -678,8 +678,8 @@ class TestExportToExcel(unittest.TestCase):
         module.module_num = 1
         module.prepend_output_filename.value = False
         module.add_indexes.value = True
-        module.object_groups[0][E.OG_OBJECT_NAME].value = cpmeas.IMAGE
-        module.object_groups[0][E.OG_FILE_NAME].value = path
+        module.object_groups[0].name.value = cpmeas.IMAGE
+        module.object_groups[0].file_name.value = path
         m = cpmeas.Measurements()
         image_set_list = cpi.ImageSetList()
         data = ("The reverse side also has a reverse side. (Japanese proverb)",
@@ -720,8 +720,8 @@ class TestExportToExcel(unittest.TestCase):
         module = E.ExportToExcel()
         module.module_num = 1
         module.prepend_output_filename.value = False
-        module.object_groups[0][E.OG_OBJECT_NAME].value = "my_objects"
-        module.object_groups[0][E.OG_FILE_NAME].value = path
+        module.object_groups[0].name.value = "my_objects"
+        module.object_groups[0].file_name.value = path
         module.add_indexes.value = True
         m = cpmeas.Measurements()
         np.random.seed(0)
@@ -769,8 +769,8 @@ class TestExportToExcel(unittest.TestCase):
         module = E.ExportToExcel()
         module.module_num = 1
         module.prepend_output_filename.value = False
-        module.object_groups[0][E.OG_OBJECT_NAME].value = "my_objects"
-        module.object_groups[0][E.OG_FILE_NAME].value = path
+        module.object_groups[0].name.value = "my_objects"
+        module.object_groups[0].file_name.value = path
         module.add_metadata.value = True
         m = cpmeas.Measurements()
         np.random.seed(0)
@@ -828,8 +828,8 @@ class TestExportToExcel(unittest.TestCase):
         module = E.ExportToExcel()
         module.module_num = 1
         module.prepend_output_filename.value = False
-        module.object_groups[0][E.OG_OBJECT_NAME].value = "my_objects"
-        module.object_groups[0][E.OG_FILE_NAME].value = path
+        module.object_groups[0].name.value = "my_objects"
+        module.object_groups[0].file_name.value = path
         module.add_metadata.value = True
         m = cpmeas.Measurements()
         np.random.seed(0)

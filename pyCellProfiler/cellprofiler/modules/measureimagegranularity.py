@@ -68,7 +68,6 @@ __version__="$Revision$"
 
 import numpy as np
 import scipy.ndimage as scind
-import uuid
 
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas

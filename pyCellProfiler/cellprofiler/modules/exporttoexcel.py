@@ -23,7 +23,6 @@ import csv
 import numpy as np
 import os
 import sys
-import uuid
 import wx
 
 import cellprofiler.cpmodule as cpm
@@ -36,21 +35,6 @@ from cellprofiler.preferences import ABSPATH_OUTPUT
 DELIMITER_TAB = "Tab"
 DELIMITER_COMMA = 'Comma (",")'
 DELIMITERS = (DELIMITER_COMMA,DELIMITER_TAB)
-
-"""The object group key field - holds key for lookup as list expands/contracts"""
-OG_KEY = "Key"
-
-"""The object group's object name field - which object to output"""
-OG_OBJECT_NAME = "ObjectName"
-
-"""The checkbox that lets you pick the previous file as your output file"""
-OG_PREVIOUS_FILE = "PreviousFile"
-
-"""The file name field of the object group - file name for the data"""
-OG_FILE_NAME = "FileName"
-
-"""The remove button field"""
-OG_REMOVE_BUTTON = "RemoveButton"
 
 """Offset of the first object group in the settings"""
 SETTING_OG_OFFSET = 9
@@ -127,23 +111,14 @@ class ExportToExcel(cpm.CPModule):
                                            self.add_object_group)
     
     def add_object_group(self):
-        key = uuid.uuid4()
-        d = {
-             OG_KEY: key,
-             OG_OBJECT_NAME: EEObjectNameSubscriber("Data to export"),
-             OG_PREVIOUS_FILE: cps.Binary("Combine these object measurements with those of the previous object?",
-                                          False),
-             OG_FILE_NAME: cps.Text("Name the data file","DATA.csv"),
-             OG_REMOVE_BUTTON: cps.DoSomething("Remove this data source:", 
-                                               "Remove",
-                                               self.remove_object_group, key)    
-             }
-        self.object_groups.append(d)
-        
-    def remove_object_group(self, key):
-        """Remove the object group whose OG_KEY matches key"""
-        index = [x[OG_KEY] for x in self.object_groups].index(key)
-        del self.object_groups[index]
+        group = cps.SettingsGroup()
+        group.append("name", EEObjectNameSubscriber("Data to export"))
+        group.append("previous_file", cps.Binary("Combine these object measurements with those of the previous object?",
+                                          False))
+        group.append("file_name", cps.Text("Name of the data file", "DATA.csv"))
+        group.append("remover", cps.RemoveSettingButton("", "Remove this object", self.object_groups, group))
+        group.append("divider", cps.Divider(line=False))
+        self.object_groups.append(group)
         
     def prepare_settings(self, setting_values):
         """Add enough object groups to capture the settings"""
@@ -166,8 +141,7 @@ class ExportToExcel(cpm.CPModule):
                   self.wants_aggregate_means, self.wants_aggregate_medians,
                   self.wants_aggregate_std]
         for group in self.object_groups:
-            result += [group[OG_OBJECT_NAME], group[OG_PREVIOUS_FILE],
-                       group[OG_FILE_NAME]]
+            result += [group.name, group.previous_file, group.file_name]
         return result
 
     def visible_settings(self):
@@ -179,7 +153,7 @@ class ExportToExcel(cpm.CPModule):
                   self.wants_aggregate_std]
         previous_group = None
         for group in self.object_groups:
-            result += [group[OG_OBJECT_NAME]]
+            result += [group.name]
             if is_object_group(group):
                 if ((not previous_group is None) and
                     is_object_group(previous_group)):
@@ -187,14 +161,14 @@ class ExportToExcel(cpm.CPModule):
                     # Show the previous-group button if there was a previous
                     # group and it was an object group
                     #
-                    result += [group[OG_PREVIOUS_FILE]]
-                    if not group[OG_PREVIOUS_FILE].value:
-                        result += [group[OG_FILE_NAME]]
+                    result += [group.previous_file]
+                    if not group.previous_file.value:
+                        result += [group.file_name]
                 else:
-                    result += [group[OG_FILE_NAME]]
+                    result += [group.file_name]
             else:
-                result += [group[OG_FILE_NAME]]
-            result += [group[OG_REMOVE_BUTTON]]
+                result += [group.file_name]
+            result += [group.remover, group.divider]
             previous_group = group
         result += [ self.add_button ]
         return result
@@ -230,10 +204,10 @@ class ExportToExcel(cpm.CPModule):
             last_in_file = ((i == len(self.object_groups)-1) or
                             (not is_object_group(group)) or
                             (not is_object_group(self.object_groups[i+1])) or
-                            (not self.object_groups[i+1][OG_PREVIOUS_FILE].value))
+                            (not self.object_groups[i+1].previous_file.value))
             if len(object_names) == 0:
-                filename = group[OG_FILE_NAME].value
-            object_names.append(group[OG_OBJECT_NAME].value)
+                filename = group.file_name.value
+            object_names.append(group.name.value)
             if last_in_file:
                 self.run_objects(object_names, filename, workspace)
                 object_names = []
@@ -519,7 +493,7 @@ class ExportToExcel(cpm.CPModule):
 
 def is_object_group(group):
     """True if the group's object name is not one of the static names"""
-    return not group[OG_OBJECT_NAME].value in (IMAGE,EXPERIMENT)
+    return not group.name.value in (IMAGE,EXPERIMENT)
 
 class EEObjectNameSubscriber(cps.ObjectNameSubscriber):
     """ExportToExcel needs to prepend "Image" and "Experiment" to the list of objects

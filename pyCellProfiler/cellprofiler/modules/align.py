@@ -27,7 +27,6 @@ import numpy as np
 from scipy.fftpack import fft2, ifft2
 import scipy.ndimage as scind
 import scipy.sparse
-import uuid
 
 import cellprofiler.cpimage as cpi
 import cellprofiler.cpmodule as cpm

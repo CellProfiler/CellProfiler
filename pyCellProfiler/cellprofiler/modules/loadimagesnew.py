@@ -45,7 +45,6 @@ import TiffImagePlugin as TIFF
 import cellprofiler.dib
 import matplotlib.image
 import scipy.io.matlab.mio
-import uuid
 
 import cellprofiler.cpmodule as cpmodule
 import cellprofiler.cpimage as cpimage

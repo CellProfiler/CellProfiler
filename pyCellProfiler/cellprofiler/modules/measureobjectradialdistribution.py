@@ -40,7 +40,6 @@ import matplotlib.cm
 from numpy.ma import masked_array
 from scipy.sparse import coo_matrix
 import sys
-import uuid
 
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas

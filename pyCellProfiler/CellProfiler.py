@@ -12,6 +12,10 @@ Website: http://www.cellprofiler.org
 __version__ = "$Revision$"
 
 import sys
+import os
+
+
+# Mark's machine
 if sys.platform.startswith('win'):
     try:
         import cellprofiler.cpmath.propagate
@@ -19,7 +23,8 @@ if sys.platform.startswith('win'):
         print "Propagate module doesn't exist yet."
         print "CellProfiler will compile it, but may crash soon after."
         print "Restart CellProfiler and it will probably work."
-import os
+
+
 root = os.path.split(__file__)[0]
 if len(root) == 0:
     root = os.curdir
@@ -28,6 +33,7 @@ site_packages = os.path.join(root, 'site-packages')
 if os.path.exists(site_packages) and os.path.isdir(site_packages):
     import site
     site.addsitedir(site_packages)
+
 import optparse
 usage = """usage: %prog [options] [<measurement-file>])
      where <measurement-file> is the optional filename for measurement output
@@ -83,13 +89,13 @@ parser.add_option("-d","--done-file",
                         ' shortly before exiting'))
 options, args = parser.parse_args()
 
-import wx
-import subprocess
-# necessary to prevent matplotlib trying to use Tkinter as its backend
+# necessary to prevent matplotlib trying to use Tkinter as its backend.
+# has to be done before CellProfilerApp is imported
 from matplotlib import use as mpluse
 mpluse('WXAgg')
 
 if (not hasattr(sys, 'frozen')) and options.build_extensions:
+    import subprocess
     import cellprofiler.cpmath.setup
     if sys.platform == 'win32':
         import cellprofiler.ffmpeg.setup
@@ -141,7 +147,10 @@ if (not hasattr(sys, 'frozen')) and options.build_extensions:
         p = subprocess.Popen(["python", zippo_script, zippo_outfile] + icon_files)
         p.communicate()
 
-    
+if options.show_gui:
+    from cellprofiler.cellprofilerapp import CellProfilerApp
+    App = CellProfilerApp(0)
+
 #
 # Important to go headless ASAP
 #
@@ -152,12 +161,7 @@ if not options.show_gui:
     # Might want to change later if there's some headless setup 
     options.run_pipeline = True
 
-from cellprofiler.cellprofilerapp import CellProfilerApp
-from cellprofiler.pipeline import Pipeline, EXIT_STATUS
-import cellprofiler.gui.cpframe as cpgframe
 from cellprofiler.utilities.get_revision import version
-import cellprofiler.measurements as cpmeas
-
 print "Subversion revision: %d"%version
 if options.run_pipeline and not options.pipeline_filename:
     raise ValueError("You must specify a pipeline filename to run")
@@ -185,13 +189,15 @@ if options.image_directory:
     cpprefs.set_default_image_directory(options.image_directory)
 
 if options.show_gui:
-    App = CellProfilerApp(0)
+    import cellprofiler.gui.cpframe as cpgframe
     if options.pipeline_filename:
         App.frame.pipeline.load(options.pipeline_filename)
     if options.run_pipeline:
         App.frame.Command(cpgframe.ID_FILE_ANALYZE_IMAGES)
     App.MainLoop()
 else:
+    from cellprofiler.pipeline import Pipeline, EXIT_STATUS
+    import cellprofiler.measurements as cpmeas
     pipeline = Pipeline()
     pipeline.load(options.pipeline_filename)
     if options.groups is not None:

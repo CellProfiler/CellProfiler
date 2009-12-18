@@ -3,10 +3,11 @@
 made from images.
 <hr>
 The V and Z' factors are statistical measures of assay quality and are
-calculated for each per-cell and per-image measurement that you have made
+calculated for each per-image measurement and for each average per-object 
+measurement that you have made
 in the pipeline. For example, the Z' factor indicates how well-separated
 the positive and negative controls are. Calculating these values by
-placing this module at the end of a pipeline allows you to choose which
+placing this module at the end of a pipeline allows you to identify which
 measured features are most powerful for distinguishing positive and
 negative control samples, or for accurately quantifying the assay's
 response to dose. Both Z' and V factors will be calculated for all
@@ -14,7 +15,7 @@ measured values (Intensity, AreaShape, Texture, etc.). These measurements
 can be exported as the "Experiment" set of data.
 <p>
 For both Z' and V factors, the highest possible value (best assay
-quality) = 1 and they can range into negative values (for assays where
+quality) is 1 and they can range into negative values (for assays where
 distinguishing between positive and negative controls is difficult or
 impossible). A Z' factor > 0 is potentially screenable; a Z' factor > 0.5
 is considered an excellent assay.
@@ -25,62 +26,23 @@ minimum and maximum responses. When there are only two doses in the assay
 (positive and negative controls only), the V factor will equal the Z'
 factor.
 <p>
-The one-tailed Z' factor is an attempt to overcome the limitation of the
-Z'-factor formulation best applied to populations with moderate or high amounts
-of skewness. In these cases, the tails opposite to the mid-range point
-may lead to a high standard deviation for either population. This will 
-give a low Z' factor even though the population means and samples between
-the means may be well-separated. Therefore, the one-tailed Z'factor is 
+The one-tailed Z' factor is an attempt to overcome a limitation of the original 
+Z'-factor formulation (it assumes a gaussian distribution) and is 
+informative for populations with moderate or high amounts
+of skewness. In these cases, long tails opposite to the mid-range point
+lead to a high standard deviation for either population, which results 
+in a low Z' factor even though the population means and samples between
+the means may be well-separated. Therefore, the one-tailed Z' factor is 
 calculated with the same formula but using only those samples that lie 
-between the population means. 
-<p>
-NOTE: The statistical robustness of the one-tailed Z' factor has not been
-determined, and therefore should not be relied upon at this time.
+between the positive/negative population means. This is not yet a well-
+established measure of assay robustness.
 <p>
 NOTE: If the standard deviation of a measured feature is zero for a
 particular set of samples (e.g. all the positive controls), the Z' and V
-factors will equal 1 despite the fact that this is not a useful feature
-for the assay. This can occur when there is only one sample at each dose.
+factors will equal 1 despite the fact that the assay quality is poor. 
+This can occur when there is only one sample at each dose.
 This also occurs for some non-informative measured features, like the
 number of cytoplasm compartments per cell, which is always equal to 1.
-<p>
-Features measured:
-<ul>
-<li>Zfactor</li>
-<li>Vfactor</li>
-<li>EC50</li>
-<li>One-tailed Zfactor</li>
-</ul>
-<p>
-<h2>Marking controls and specifying dosing information</h2>
-The Z factor calculations are made on the positive and negative controls
-in your sample. The first setting in this module is used to choose a measurement
-that marks each image set as being a positive control, a negative control,
-or an experiment sample. The module uses the convention that all of the
-negative controls have the minimum value for this measurement, the
-positive controls have the maximum value for this measurement and others
-have an intermediate value - this might allow you to use your dosing 
-information to specify the controls. If this is not the case, you can
-use a uniform convention to designate your controls, for instance, 
--1 as a negative control, 0 as experiment, and 1 as positive control.
-<p>
-The easiest way to enter the positive/negative control information and dose
-information is through <b>LoadText</b>. LoadText loads information from a
-CSV file. The first line of this file is a header that names the items.
-Each subsequent line represents data for one image set. You can have LoadText
-load your images which is a good way to guarantee that images are matched
-with the correct data. Here is an example file:<br>
-<code>
-<table>
-<tr><td>Image_FileName_CY3,</td><td>Image_PathName_CY3,</td><td>Control,</td><td>Dose</td></tr>
-<tr><td>"Plate1_A01.tif",</td><td>"/images",</td><td>-1,</td><td>0</td></tr>
-<tr><td>"Plate1_A02.tif",</td><td>"/images",</td><td>1,</td><td>1E10</td></tr>
-<tr><td>"Plate1_A03.tif",</td><td>"/images",</td><td>0,</td><td>3E4</td></tr>
-<tr><td>"Plate1_A04.tif",</td><td>"/images",</td><td>0,</td><td>5E5</td></tr>
-</table>
-</code>
-<br>
-See the <b>LoadText</b> module for more information.
 <p>
 This module can create Matlab scripts that display the EC50 curves for
 each measurement. These scripts will require Matlab and the statistics
@@ -96,9 +58,33 @@ Measures for Imaging-based Cellular Assays. Society for Biomolecular
 Screening Annual Meeting Abstracts. This is likely to be published.
 <p>
 Code for the calculation of Z' and V factors was kindly donated by Ilya
-Ravkin: http://www.ravkin.net
+Ravkin: http://www.ravkin.net. Carlos Evangelista donated his copyrighted 
+dose-response-related code.
 <p>
-This module currently contains code copyrighted by Carlos Evangelista.
+Features measured:
+Note: whereas most CellProfiler measurements are calculated for each object (per-object) or for each image (per-image), the Calculate Statistics module produces per-experiment values; for example, one Z' factor is calculated for each measurement, across the entire analysis run.
+<ul>
+<li>Zfactor</li>
+<li>Vfactor</li>
+<li>EC50</li>
+<li>One-tailed Zfactor</li>
+</ul>
+<p>
+Example format for a file to be loaded by <b>LoadText</b> for this module:
+LoadText loads information from a CSV file. The first line of this file is a 
+header that names the items.
+Each subsequent line represents data for one image set, so your file should have the header line plus one line per image to be processed. You can also make a file for LoadText to load that contains the positive/negative control and dose designations *plus* the image file names to be processed, which is a good way to guarantee that images are matched
+with the correct data. Here is an example file:<br>
+<code>
+<table>
+<tr><td>Image_FileName_CY3,</td><td>Image_PathName_CY3,</td><td>Control,</td><td>Dose</td></tr>
+<tr><td>"Plate1_A01.tif",</td><td>"/images",</td><td>-1,</td><td>0</td></tr>
+<tr><td>"Plate1_A02.tif",</td><td>"/images",</td><td>1,</td><td>1E10</td></tr>
+<tr><td>"Plate1_A03.tif",</td><td>"/images",</td><td>0,</td><td>3E4</td></tr>
+<tr><td>"Plate1_A04.tif",</td><td>"/images",</td><td>0,</td><td>5E5</td></tr>
+</table>
+</code>
+<br>
 '''
 __version__="$Revision$"
 
@@ -139,9 +125,8 @@ class CalculateStatistics(cpm.CPModule):
         self.grouping_values = cps.Measurement(
             "Where is information about the positive and negative control status of each image?",
             lambda : cpmeas.IMAGE,
-            doc = '''The Z' factor, a measure of assay quality, is calculated by this module based on which images 
-            are positive controls and which images are negative controls (images that 
-            are neither are ignored when calculating this statistic). Positive
+            doc = '''The Z' factor, a measure of assay quality, is calculated by this module based on measurements from images that are specified as positive controls and images that are specified as negative controls (images that are neither are ignored when calculating this statistic). The module uses the convention that all of the negative controls are specified by a minimum value, all of the
+positive controls are specified by a maximum value, and all other images have an intermediate value - this might allow you to use your dosing information to also specify the positive and negative controls. If you are not using actual dose data to designate your controls, a common way to designate them is: -1 is a negative control, 0 is an experimental sample, and 1 is a positive control.  In other words, positive
             controls should all be specified by a single high value (for instance, 1)
             and negative controls should all be specified by a single low value (for
             instance, 0). Other samples should have an intermediate value
@@ -150,7 +135,7 @@ class CalculateStatistics(cpm.CPModule):
             a text file outside of CellProfiler and then load that file in the pipeline
             using <b>LoadText</b>. In that case, choose the
             measurement that matches the column header of the measurement
-            in LoadText's input file.''')
+            in LoadText's input file. See the help for this module for an example text file.''')
         self.dose_values = []
         self.add_dose_value()
         self.add_dose_button = cps.DoSomething("Add another dose specification?","Add",
@@ -169,7 +154,7 @@ class CalculateStatistics(cpm.CPModule):
             a text file outside of CellProfiler and then load that file in the pipeline
             using <b>LoadText</b>. In that case, choose the
             measurement that matches the column header of the measurement
-            in LoadText's input file.
+            in LoadText's input file. See the help for this module for an example text file.
             """))
         group.append("log_transform",cps.Binary(
             "Log-transform dose values?",
@@ -412,20 +397,8 @@ def vz_factors(xcol, ymatr):
            observations and columns corresponds to different measures.
        
        returns v, z, z_one_tailed, OrderedUniqueDoses, OrderedAverageValues
-       v, z and z_bwtn_mean are (1, Nmeasures) row vectors containing V-, Z- and 
-       between-mean Z-factors for the corresponding measures.
-
-       The one-tailed Z' factor is an attempt to overcome the limitation of the
-       Z'-factor formulation used upon populations with moderate or high amounts
-       of skewness. In these cases, the tails opposite to the mid-range point
-       may lead to a high standard deviation for either population. This will 
-       give a low Z' factor even though the population means and samples between
-       the means are well-separated. Therefore, the one-tailed Z'factor is 
-       calculated with the same formula but using only those samples that lie 
-       between the population means. 
- 
-       NOTE: The statistical robustness of the one-tailed Z' factor has not been
-       determined, and hence should probably not be used at this time.
+       v, z and z_bwtn_mean are (1, Nmeasures) row vectors containing V-, Z'- and 
+       between-mean Z'-factors for the corresponding measures.
 
        When ranges are zero, we set the V and Z' factors to a very negative
        value.'''
@@ -444,7 +417,7 @@ def vz_factors(xcol, ymatr):
     vrange[vrange == 0] = 0.000001;
     v = 1 - 6 * (vstd / vrange)
 
-    # Z factor is defined by the positive and negative controls, so we take the
+    # Z' factor is defined by the positive and negative controls, so we take the
     # extremes BY DOSE of the averages and stdevs.
     zrange = np.abs(avers[0, :] - avers[-1, :])
     zstd = stds[0, :] + stds[-1, :]
@@ -452,7 +425,7 @@ def vz_factors(xcol, ymatr):
     zrange[zrange == 0] = 0.000001;
     z = 1 - 3 * (zstd / zrange)
 
-    # The one-tailed Z factor is defined by using only the samples between the
+    # The one-tailed Z' factor is defined by using only the samples between the
     # means, again defined by DOSE extremes
     zrange = np.abs(avers[0, :] - avers[-1, :]);
     exp1_vals = ymatr[xcol == xs[0],:]

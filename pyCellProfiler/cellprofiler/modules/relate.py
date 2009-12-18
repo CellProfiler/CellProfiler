@@ -132,6 +132,22 @@ class Relate(cpm.CPModule):
                                          (self.sub_object_name.value,
                                           self.parent_name.value))
     
+    def validate_module(self, pipeline):
+        '''Validate the module's settings
+        
+        Relate will complain if the children and parents are related
+        by a prior module'''
+        for module in pipeline.modules():
+            if module == self:
+                break
+            parent_features = module.get_measurements(
+                pipeline, self.sub_object_name.value, "Parent")
+            if self.parent_name.value in (parent_features):
+                raise cps.ValidationError(
+                    "%s and %s were related by the %s module"%
+                    (self.sub_object_name.value, self.parent_name.value,
+                     module.module_name),self.parent_name)
+        
     def get_measurement_columns(self, pipeline):
         '''Return the column definitions for this module's measurements'''
         columns = [(self.sub_object_name.value,

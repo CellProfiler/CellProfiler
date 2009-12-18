@@ -27,6 +27,7 @@ import hashlib
 import os
 import re
 import sys
+import traceback
 import wx
 import wx.html
 
@@ -81,6 +82,7 @@ if has_bioformats:
 else:
     FF = [FF_INDIVIDUAL_IMAGES, FF_STK_MOVIES]
 
+USE_BIOFORMATS_FIRST = [".flex",".stk"]
 DIR_DEFAULT_IMAGE = 'Default Image Folder'
 DIR_DEFAULT_OUTPUT = 'Default Output Folder'
 DIR_OTHER = 'Elsewhere...'
@@ -116,6 +118,11 @@ V_IMAGES = 1
 P_MOVIES = "LoadImagesMovieProvider"
 '''The version number for the __init__ method of the movie file image provider'''
 V_MOVIES = 1
+
+'''The provider name for the flex file image provider'''
+P_FLEX = 'LoadImagesFlexFrameProvider'
+'''The version number for the __init__ method of the flex file image provider'''
+V_FLEX = 1
 
 def default_cpimage_name(index):
     # the usual suspects
@@ -407,9 +414,10 @@ class LoadImages(cpmodule.CPModule):
         elif self.match_method == MS_ORDER:
             varlist += [self.order_group_size]
         varlist += [self.descend_subdirectories]
-        
-        if len(self.images) > 1:
-            varlist += [self.check_images]
+        do_flex = self.file_types == FF_OTHER_MOVIES
+        if not do_flex:
+            if len(self.images) > 1:
+                varlist += [self.check_images]
         varlist += [self.group_by_metadata]
         if self.group_by_metadata.value:
             varlist += [self.metadata_fields]
@@ -428,14 +436,20 @@ class LoadImages(cpmodule.CPModule):
         else:
             file_kwd = FD_ORDER_POSITION
         
-        for fd in self.images:
-            varlist += [fd[file_kwd], 
-                        fd[FD_IMAGE_NAME],
-                        fd[FD_METADATA_CHOICE]]
-            if fd[FD_METADATA_CHOICE].value in (M_FILE_NAME, M_BOTH):
-                varlist.append(fd[FD_FILE_METADATA])
-            if fd[FD_METADATA_CHOICE].value in (M_PATH, M_BOTH):
-                varlist.append(fd[FD_PATH_METADATA])
+        for i,fd in enumerate(self.images):
+            if do_flex:
+                varlist += [fd[FD_IMAGE_NAME]]
+                if i == 0:
+                    varlist += [fd[file_kwd]]
+            else:
+                varlist += [fd[file_kwd], 
+                            fd[FD_IMAGE_NAME]]
+            if i == 0 or not do_flex:
+                varlist += [fd[FD_METADATA_CHOICE]]
+                if fd[FD_METADATA_CHOICE].value in (M_FILE_NAME, M_BOTH):
+                    varlist.append(fd[FD_FILE_METADATA])
+                if fd[FD_METADATA_CHOICE].value in (M_PATH, M_BOTH):
+                    varlist.append(fd[FD_PATH_METADATA])
             varlist.append(fd[FD_REMOVE_IMAGE])
         varlist += [self.add_image]
         varlist += [self.location]
@@ -670,7 +684,9 @@ class LoadImages(cpmodule.CPModule):
             # Don't set up if we're going to retrieve the image set list
             # from batch mode
             return True
-        if self.load_movies():
+        if self.file_types == FF_OTHER_MOVIES:
+            self.prepare_run_of_flex(pipeline, image_set_list)
+        elif self.load_movies():
             self.prepare_run_of_movies(pipeline,image_set_list)
         else:
             self.prepare_run_of_images(pipeline, image_set_list, frame)
@@ -874,12 +890,18 @@ class LoadImages(cpmodule.CPModule):
                 if self.file_types == FF_STK_MOVIES:
                     p = LoadImagesSTKFrameProvider(image_name, path, filename,
                                                    frame)
-                elif self.file_types in (FF_AVI_MOVIES, FF_OTHER_MOVIES):
+                elif self.file_types == FF_AVI_MOVIES:
                     p = LoadImagesMovieFrameProvider(image_name, path, filename,
                                                      int(frame))
                 else:
                     raise NotImplementedError("File type %s not supported"%self.file_types.value)
-                
+            elif provider == P_FLEX:
+                if version != V_FLEX:
+                    raise NotImplementedError("Can't restore file information: flex image provider versino %d not supported"%version)
+                pathname, channel, z, t, series = values[2:]
+                path, filename = os.path.split(pathname)
+                p = LoadImagesFlexFrameProvider(image_name, path, filename, 
+                                                int(channel), int(z), int(t), int(series))
             else:
                 raise NotImplementedError("Can't restore file information: provider %s not supported"%provider)
             image_set.providers.append(p)
@@ -1011,6 +1033,38 @@ class LoadImages(cpmodule.CPModule):
         table.SetMinSize((best_total_width, table.GetMinHeight()))
         my_frame.Fit()
         my_frame.Show()
+    
+    def prepare_run_of_flex(self, pipeline, image_set_list):
+        '''Set up image providers for flex files'''
+        files = self.collect_files()
+        if len(files) == 0:
+            raise ValueError("there are no image files in the chosen folder (or subfolders, if you requested them to be analyzed as well)")
+        root = self.image_directory()
+        image_names = self.image_name_vars()
+        #
+        # The list of lists has one list per image type. Each per-image type
+        # list is composed of tuples of pathname and frame #
+        #
+        image_set_count = 0
+        for pathname,image_index in files:
+            pathname = os.path.join(self.image_directory(), pathname)
+            formatreader.jutil.attach()
+            try:
+                rdr = ImageReader()
+                rdr.setId(pathname)
+                print "%s has %d series"%(pathname, rdr.getSeriesCount())
+                for i in range(rdr.getSeriesCount()):
+                    rdr.setSeries(i)
+                    print "%s - series %d: %d channels, %d z, %d t"%(pathname, i, rdr.getSizeC(), rdr.getSizeZ(), rdr.getSizeT())
+                    for z in range(rdr.getSizeZ()):
+                        for t in range(rdr.getSizeT()):
+                            image_set = image_set_list.get_image_set(image_set_count)
+                            d = self.get_dictionary(image_set)
+                            for c,image_name in enumerate(image_names):
+                                d[image_name.value] = (P_FLEX, V_FLEX, pathname, c, z, t, i)
+                            image_set_count += 1
+            finally:
+                formatreader.jutil.detach()
         
     def prepare_run_of_movies(self, pipeline, image_set_list):
         """Set up image providers for movie files"""
@@ -1083,8 +1137,15 @@ class LoadImages(cpmodule.CPModule):
         """Run the module - add the measurements
         
         """
-        header = ["Image name","Path","Filename"]
-        ratio = [1.0,3.0,2.0]
+        if self.file_types in (FF_AVI_MOVIES, FF_STK_MOVIES):
+            header = ["Image name", "Path", "Filename","Frame"]
+            ratio = [1.0,2.5,2.0,0.5]
+        elif self.file_types == FF_OTHER_MOVIES:
+            header = ["Image name", "Path", "Filename","Z","T","Series"]
+            ratio = [1.0,2.5,2.0,0.5,0.5,0.5]
+        else:
+            header = ["Image name","Path","Filename"]
+            ratio = [1.0,3.0,2.0]
         tags = self.get_metadata_tags()
         ratio += [1.0 for tag in tags]
         ratio = [x / sum(ratio) for x in ratio]
@@ -1095,7 +1156,12 @@ class LoadImages(cpmodule.CPModule):
             provider = workspace.image_set.get_image_provider(fd[FD_IMAGE_NAME].value)
             path, filename = os.path.split(provider.get_filename())
             name = provider.name
-            row = [name, path, filename]
+            if self.file_types in (FF_AVI_MOVIES, FF_STK_MOVIES):
+                row = [name, path, filename, provider.get_frame()]
+            elif self.file_types == FF_OTHER_MOVIES:
+                row = [name, path, filename, provider.get_z(), provider.get_t(), provider.get_series()]
+            else:
+                row = [name, path, filename]
             metadata = self.get_filename_metadata(fd, filename, path)
             m.add_measurement('Image','FileName_'+name, filename)
             full_path = os.path.join(self.image_directory(),path)
@@ -1160,7 +1226,7 @@ class LoadImages(cpmodule.CPModule):
                 formatreader.jutil.detach()
             
         raise NotImplementedError("get_frame_count not implemented for %s"%(self.file_types))
-    
+
     def get_metadata_tags(self, fd=None):
         """Find the metadata tags for the indexed image
 
@@ -1255,6 +1321,9 @@ class LoadImages(cpmodule.CPModule):
     def text_to_find_vars(self):
         """Return the list of values in the image name field (the name that later modules see)
         """
+        if self.file_types == FF_OTHER_MOVIES:
+            # Return only the first text to find for .flex files
+            return [self.images[0][FD_COMMON_TEXT]]
         return [fd[FD_COMMON_TEXT] for fd in self.images]
     
     def text_to_exclude(self):
@@ -1352,6 +1421,14 @@ class LoadImagesImageProvider(cpimage.AbstractImageProvider):
             imgdata = scipy.io.matlab.mio.loadmat(self.get_full_name(),
                                                   struct_as_record=True)
             img = imgdata["Image"]
+        elif (os.path.splitext(self.__filename.lower())[-1] 
+              in USE_BIOFORMATS_FIRST and
+              has_bioformats):
+            try:
+                img = load_using_bioformats(self.get_full_name())
+            except:
+                traceback.print_exc()
+                img = load_using_PIL(self.get_full_name())
         else:
             # try PIL first, for speed
             try:
@@ -1424,7 +1501,7 @@ def load_using_PIL(path, index=0, seekfn=None):
         img = matplotlib.image.pil_to_array(img)
     return img
 
-def load_using_bioformats(path, z=0, t=0):
+def load_using_bioformats(path, c=None, z=0, t=0, series=None):
     '''Load the given image file using the Bioformats library
     
     path: path to the file
@@ -1477,10 +1554,16 @@ def load_using_bioformats(path, z=0, t=0):
                                                 'intValue', '()I')
             except:
                 sys.stderr.write("WARNING: failed to get MaxSampleValue for image. Intensities may be improperly scaled\n")
+        if series is not None:
+            rdr.setSeries(series)
         if rdr.isRGB() and rdr.isInterleaved():
             index = rdr.getIndex(z,0,t)
             image = np.frombuffer(rdr.openBytes(index), dtype)
             image.shape = (height, width, 3)
+        elif c is not None:
+            index = rdr.getIndex(z,c,t)
+            image = np.frombuffer(rdr.openBytes(index), dtype)
+            image.shape = (height, width)
         elif rdr.getRGBChannelCount() > 1:
             rdr.close()
             rdr = ChannelSeparator(ImageReader())
@@ -1518,8 +1601,8 @@ class LoadImagesMovieFrameProvider(cpimage.AbstractImageProvider):
     def provide_image(self, image_set):
         """Load an image from a movie frame
         """
-        pixel_data = load_using_bioformats(self.get_full_name(), 0, 
-                                           self.__frame)
+        pixel_data = load_using_bioformats(self.get_full_name(), z=0, 
+                                           t=self.__frame)
         image = cpimage.Image(pixel_data, path_name = self.get_pathname(),
                               file_name = self.get_filename())
         return image
@@ -1535,7 +1618,68 @@ class LoadImagesMovieFrameProvider(cpimage.AbstractImageProvider):
     
     def get_full_name(self):
         return os.path.join(self.get_pathname(),self.get_filename())
+    
+    def get_frame(self):
+        return self.__frame
 
+class LoadImagesFlexFrameProvider(cpimage.AbstractImageProvider):
+    """Provide an image by filename:frame, loading the file as it is requested
+    """
+    def __init__(self,name,pathname,filename,channel, z, t, series):
+        self.__name = name
+        self.__pathname = pathname
+        self.__filename = filename
+        self.__channel = channel
+        self.__z = z
+        self.__t = t
+        self.__series    = series
+    
+    def provide_image(self, image_set):
+        """Load an image from a movie frame
+        """
+        pixel_data = load_using_bioformats(self.get_full_name(), 
+                                           c=self.__channel,
+                                           z=self.__z, 
+                                           t=self.__t,
+                                           series=self.__series)
+        image = cpimage.Image(pixel_data, path_name = self.get_pathname(),
+                              file_name = self.get_filename())
+        return image
+    
+    def get_name(self):
+        return self.__name
+    
+    def get_pathname(self):
+        return self.__pathname
+    
+    def get_filename(self):
+        return self.__filename
+    
+    def get_full_name(self):
+        return os.path.join(self.get_pathname(),self.get_filename())
+    
+    def get_c(self):
+        '''Get the channel #'''
+        return self.__channel
+    
+    def get_z(self):
+        '''Get the z stack #'''
+        return self.__z
+    
+    def get_t(self):
+        '''Get the time index'''
+        return self.__t
+    
+    def get_series(self):
+        '''Get the series #'''
+        return self.__series
+
+    def release_memory(self):
+        '''Release any image memory
+        
+        The image is either loaded every time or cached so this is a no-op'''
+        pass
+    
 class LoadImagesSTKFrameProvider(cpimage.AbstractImageProvider):
     """Provide an image by filename:frame from an STK file"""
     def __init__(self, name, pathname, filename, frame):
@@ -1597,6 +1741,9 @@ class LoadImagesSTKFrameProvider(cpimage.AbstractImageProvider):
     
     def get_full_name(self):
         return os.path.join(self.get_pathname(),self.__filename)
+
+    def get_frame(self):
+        return self.__frame
 
     def release_memory(self):
         '''Release any image memory

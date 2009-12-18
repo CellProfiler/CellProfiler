@@ -74,6 +74,14 @@ def make_iformat_reader_class():
                                              '(Ljava/lang/String;)'
                                              'Ljava/lang/Object;',
                                              'Look up a specific metadata value from the store')
+        getSeriesMetadata = jutil.make_method('getSeriesMetadata',
+                                              '()Ljava/util/Hashtable;',
+                                              'Obtains the hashtable contaning the series metadata field/value pairs')
+        getSeriesCount = jutil.make_method('getSeriesCount',
+                                           '()I',
+                                           'Return the # of image series in the file')
+        getSeries = jutil.make_method('getSeries', '()I',
+                                      'Return the currently selected image series')
         getImageCount = jutil.make_method('getImageCount',
                                           '()I','Determines the number of images in the current file')
         getIndex = jutil.make_method('getIndex', '(III)I',
@@ -107,6 +115,7 @@ def make_iformat_reader_class():
                                           no - image plane number
                                           x,y - offset into image
                                           w,h - dimensions of image to return''')
+        setSeries = jutil.make_method('setSeries','(I)V','Set the currently selected image series')
     return IFormatReader
     
 def make_image_reader_class():

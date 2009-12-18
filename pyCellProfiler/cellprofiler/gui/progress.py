@@ -93,7 +93,7 @@ class ProgressFrame(wx.Frame):
                      num_image_sets):
         self.num_modules = num_modules
 
-        if self.current_module and False:  # Disable untested code
+        if self.current_module: # and False:  # Disable untested code
             # Record time spent on previous module.
             if not self.time_per_module:
                 self.time_per_module = np.zeros(num_modules)
@@ -104,6 +104,9 @@ class ProgressFrame(wx.Frame):
             for i in range(module.module_num):
                 average = self.time_per_module[i] / (image_set_index + 1)
                 projection += average * (num_image_sets - image_set_index)
+            for i in range(module.module_num, num_modules):
+                average = self.time_per_module[i] / image_set_index
+                projection += average * (num_image_sets - image_set_index + 1)
         self.current_module = module
         if module:
             self.current_module_start_time = time.time()

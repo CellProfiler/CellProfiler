@@ -6,6 +6,18 @@ import cellprofiler.icons
 import cellprofiler.utilities.get_revision as get_revision
 from cellprofiler.gui import get_icon, get_cp_bitmap
 
+def module_label(module):
+    if module:
+        return "Current module: " + module.module_name
+    else:
+        return "Current module:"
+
+def image_set_label(image_set_index, num_image_sets):
+    if image_set_index:
+        return "Image set: %(image_set_index)d of %(num_image_sets)d"%locals()
+    else:
+        return "Image set:"
+
 class ProgressFrame(wx.Frame):
 
     def __init__(self, *args, **kwds):
@@ -13,6 +25,9 @@ class ProgressFrame(wx.Frame):
         wx.Frame.__init__(self, *args, **kwds)
 
         self.start_time = time.time()
+        self.current_module = None
+        self.current_module_start_time = self.start_time
+        self.time_per_module = None
 
         # GUI stuff
         self.BackgroundColour = cellprofiler.preferences.get_background_color()
@@ -33,9 +48,9 @@ class ProgressFrame(wx.Frame):
         self.gauge = wx.Gauge(self.panel, -1, style=wx.GA_HORIZONTAL)
         self.gauge.SetValue(30)
         sizer.Add(self.gauge, 0, wx.ALL | wx.EXPAND, 5)
-        self.image_set_control = wx.StaticText(self.panel, -1, label="Image set: 14 of 42")
+        self.image_set_control = wx.StaticText(self.panel, -1, label=image_set_label(None, None))
         sizer.Add(self.image_set_control, 0, wx.LEFT | wx.RIGHT, 5)
-        self.current_module_control = wx.StaticText(self.panel, -1, label="Current module: Load Images")
+        self.current_module_control = wx.StaticText(self.panel, -1, label=module_label(None))
         sizer.Add(self.current_module_control, 0, wx.LEFT | wx.RIGHT | wx.BOTTOM, 5)
         def get_bitmap(name):
             return wx.BitmapFromImage(wx.ImageFromStream(cStringIO.StringIO(name)))
@@ -74,9 +89,26 @@ class ProgressFrame(wx.Frame):
         self.tbicon.Destroy()
         self.Destroy()
 
-    def start_module(self, module, image_set_index, num_image_sets):
-        self.current_module_control.SetLabel(module.module_name)
-        self.image_set_control.SetLabel("Image set: %d of %d"%(image_set_index + 1, num_image_sets))
+    def start_module(self, module, num_modules, image_set_index, 
+                     num_image_sets):
+        self.num_modules = num_modules
+
+        if self.current_module and False:  # Disable untested code
+            # Record time spent on previous module.
+            if not self.time_per_module:
+                self.time_per_module = np.zeros(num_modules)
+            time_spend = time.time() - self.current_module_start_time
+            self.time_per_module[module.module_num - 1] += time_spent
+            # Update projection.
+            projection = 0.
+            for i in range(module.module_num):
+                average = self.time_per_module[i] / (image_set_index + 1)
+                projection += average * (num_image_sets - image_set_index)
+        self.current_module = module
+        if module:
+            self.current_module_start_time = time.time()
+        self.current_module_control.SetLabel(module_label(module))
+        self.image_set_control.SetLabel(image_set_label(image_set_index + 1, num_image_sets))
 
 
 if __name__ == '__main__':

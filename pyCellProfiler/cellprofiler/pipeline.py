@@ -641,7 +641,8 @@ class Pipeline(object):
                                               outlines = outlines)
                     grids = workspace.set_grids(grids)
                     if status_callback:
-                        status_callback(module, image_set_count, num_image_sets)
+                        status_callback(module, len(self.modules), 
+                                        image_set_count, num_image_sets)
                     start_time = datetime.datetime.now()
                     t0 = sum(os.times()[:-1])
                     if not run_in_background:

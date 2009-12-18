@@ -28,7 +28,6 @@ __version__="Revision: $1 "
 
 import re
 import os
-import uuid
 
 import cellprofiler.cpimage as cpi
 import cellprofiler.cpmodule as cpm
@@ -40,11 +39,6 @@ DIR_DEFAULT_IMAGE_FOLDER = "Default input folder"
 DIR_DEFAULT_OUTPUT_FOLDER = "Default output folder"
 DIR_CUSTOM_FOLDER = "Custom folder"
 DIR_CUSTOM_WITH_METADATA = "Custom with metadata"
-
-FD_FILE_NAME = "FileName"
-FD_IMAGE_NAME = "ImageName"
-FD_KEY = "Key"
-FD_REMOVE_BUTTON = "RemoveButton"
 
 class LoadSingleImage(cpm.CPModule):
 
@@ -76,58 +70,39 @@ class LoadSingleImage(cpm.CPModule):
             from the folder associated with your image's plate.''')
         self.file_settings = []
         self.add_file()
-        self.add_button = cps.DoSomething("Add another file to be loaded",
-                                          "Add", self.add_file)
+        self.add_button = cps.DoSomething("", "Add another image", self.add_file)
 
     def add_file(self):
         """Add settings for another file to the list"""
-        new_key = uuid.uuid1()
-        dictionary = {
-                      FD_KEY: new_key,
-                      FD_FILE_NAME: cps.Text("What image file do you want to load? Include the extension like .tif","None"),
-                      FD_IMAGE_NAME: cps.FileImageNameProvider("What do you want to call that image?",
-                                                               "OrigBlue"),
-                      FD_REMOVE_BUTTON: cps.DoSomething("Remove the above image and file",
-                                                        "Remove", 
-                                                        self.remove_file,
-                                                        new_key)
-                      }
-        self.file_settings.append(dictionary)
-    
-    def remove_file(self, key):
-        """Remove settings for the file whose FD_KEY entry is the indicated key
-        
-        key - should be the FD_KEY entry of the dictionary for the file
-              to be removed from self.file_settings
-        """
-        index = [d[FD_KEY] for d in self.file_settings].index(key)
-        del self.file_settings[index]
-        
+        group = cps.SettingsGroup()
+        group.append("file_name", cps.Text("What image file do you want to load? Include the extension like .tif","None"))
+        group.append("image_name", cps.FileImageNameProvider("What do you want to call that image?", "OrigBlue"))
+        group.append("remove", cps.RemoveSettingButton("", "Remove above image", self.file_settings, group))
+        self.file_settings.append(group)
+
     def settings(self):
         """Return the settings in the order in which they appear in a pipeline file"""
         result = [self.dir_choice, self.custom_directory]
         for file_setting in self.file_settings:
-            result += [file_setting[FD_FILE_NAME], 
-                       file_setting[FD_IMAGE_NAME]]
+            result += [file_setting.file_name, file_setting.image_name]
         return result
-
-    def prepare_settings(self, setting_values):
-        """Adjust the file_settings depending on how many files there are"""
-        count = (len(setting_values)-2)/2
-        while len(self.file_settings) > count:
-            self.remove_file(self.file_settings[0][FD_KEY])
-        while len(self.file_settings) < count:
-            self.add_file()
 
     def visible_settings(self):
         result = [self.dir_choice]
         if self.dir_choice in (DIR_CUSTOM_FOLDER, DIR_CUSTOM_WITH_METADATA):
             result += [self.custom_directory]
         for file_setting in self.file_settings:
-            result += [file_setting[FD_FILE_NAME], file_setting[FD_IMAGE_NAME],
-                       file_setting[FD_REMOVE_BUTTON] ]
+            result += [file_setting.file_name, file_setting.image_name, file_setting.remove]
         result.append(self.add_button)
         return result 
+
+    def prepare_settings(self, setting_values):
+        """Adjust the file_settings depending on how many files there are"""
+        count = (len(setting_values)-2)/2
+        del self.file_settings[count:]
+        while len(self.file_settings) < count:
+            self.add_file()
+
 
     def get_base_directory(self, workspace):
         if self.dir_choice == DIR_DEFAULT_IMAGE_FOLDER:
@@ -158,9 +133,9 @@ class LoadSingleImage(cpm.CPModule):
         """
         result = {}
         for file_setting in self.file_settings:
-            file_pattern = file_setting[FD_FILE_NAME].value
+            file_pattern = file_setting.file_name.value
             file_name = workspace.measurements.apply_metadata(file_pattern)
-            result[file_setting[FD_IMAGE_NAME].value] = file_name
+            result[file_setting.image_name.value] = file_name
                 
         return result
             

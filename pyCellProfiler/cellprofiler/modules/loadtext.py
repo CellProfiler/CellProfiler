@@ -67,7 +67,6 @@ import hashlib
 import numpy as np
 import os
 import sys
-import uuid
 
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
@@ -145,7 +144,6 @@ class LoadText(cpm.CPModule):
     variable_revision_number = 3
 
     def create_settings(self):
-        self.uuid = uuid.uuid4()
         self.csv_directory_choice = cps.Choice("CSV file location:", DIR_ALL, doc="""
             This is the folder that contains the CSV file. Choose "Default Input Folder"
             if the CSV file is in the default input folder. Choose "Default Output

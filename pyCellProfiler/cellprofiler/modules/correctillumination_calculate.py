@@ -263,21 +263,21 @@ class CorrectIllumination_Calculate(cpm.CPModule):
             if pipeline.is_image_from_file(self.image_name.value):
                 if not pipeline.in_batch_mode():
                     progress_dialog = wx.ProgressDialog("#%d: CorrectIllumination_Calculate for %s"%(self.module_num, self.image_name),
-                                                        "CorrectIllumination_Calculate is averaging %d images while preparing for run"%(image_set_list.count()),
-                                                        image_set_list.count(),
+                                                        "CorrectIllumination_Calculate is averaging %d images while preparing for run"%(len(image_numbers)),
+                                                        len(image_numbers),
                                                         None,
                                                         wx.PD_APP_MODAL |
                                                         wx.PD_AUTO_HIDE |
                                                         wx.PD_CAN_ABORT)
  
-                for image_number in image_numbers:
+                for i,image_number in enumerate(image_numbers):
                     image_set = image_set_list.get_image_set(image_number-1)
                     image     = image_set.get_image(self.image_name.value,
                                                     must_be_grayscale=True,
                                                     cache = False)
                     output_image_provider.add_image(image)
                     if not pipeline.in_batch_mode():
-                        should_continue, skip = progress_dialog.Update(image_number)
+                        should_continue, skip = progress_dialog.Update(i+1)
                         if not should_continue:
                             progress_dialog.EndModal(0)
                             return False

@@ -39,6 +39,7 @@ from loadimages import LoadImagesImageProvider
 DIR_DEFAULT_IMAGE_FOLDER = "Default input folder"
 DIR_DEFAULT_OUTPUT_FOLDER = "Default output folder"
 DIR_CUSTOM_FOLDER = "Custom folder"
+DIR_CUSTOM_WITH_METADATA = "Custom with metadata"
 
 FD_FILE_NAME = "FileName"
 FD_IMAGE_NAME = "ImageName"
@@ -54,14 +55,25 @@ class LoadSingleImage(cpm.CPModule):
         """Create the settings during initialization
         
         """
-        self.dir_choice = cps.Choice("Which folder contains the image files?",
-                                     [DIR_DEFAULT_IMAGE_FOLDER,
-                                      DIR_DEFAULT_OUTPUT_FOLDER,
-                                      DIR_CUSTOM_FOLDER], doc = '''It is best to store your illumination function
-                                      in either the input or output folder, so that the correct image is loaded into 
-                                      the pipeline and typos are avoided.  If you must store it in another folder, 
-                                      select 'Custom'.''')
-        self.custom_directory = cps.Text("What is the name of the folder containing the image files?",".")
+        self.dir_choice = cps.Choice(
+            "Which folder contains the image files?",
+            [DIR_DEFAULT_IMAGE_FOLDER,
+             DIR_DEFAULT_OUTPUT_FOLDER,
+             DIR_CUSTOM_FOLDER,
+             DIR_CUSTOM_WITH_METADATA], 
+            doc = '''It is best to store your illumination function
+            in either the input or output folder, so that the correct image is loaded into 
+            the pipeline and typos are avoided.  If you must store it in another folder, 
+            select 'Custom'. You can use metadata from the image set to
+            construct the name by selecting 'Custom with metadata'.''')
+        self.custom_directory = cps.Text(
+            "What is the name of the folder containing the image files?",".",
+            doc='''This is the name of the folder that has your illumination
+            files in it. If you chose "Custom with metadata" above, you can
+            specify a path that is based on metadata associated with the
+            image set. For instance, if you have a "Plate" metadata element,
+            you can specify a path name of "./\g&lt;Plate&gt;" to get files
+            from the folder associated with your image's plate.''')
         self.file_settings = []
         self.add_file()
         self.add_button = cps.DoSomething("Add another file to be loaded",
@@ -109,7 +121,7 @@ class LoadSingleImage(cpm.CPModule):
 
     def visible_settings(self):
         result = [self.dir_choice]
-        if self.dir_choice == DIR_CUSTOM_FOLDER:
+        if self.dir_choice in (DIR_CUSTOM_FOLDER, DIR_CUSTOM_WITH_METADATA):
             result += [self.custom_directory]
         for file_setting in self.file_settings:
             result += [file_setting[FD_FILE_NAME], file_setting[FD_IMAGE_NAME],
@@ -117,22 +129,24 @@ class LoadSingleImage(cpm.CPModule):
         result.append(self.add_button)
         return result 
 
-    def get_base_directory(self):
+    def get_base_directory(self, workspace):
         if self.dir_choice == DIR_DEFAULT_IMAGE_FOLDER:
             base_directory = cpprefs.get_default_image_directory()
         elif self.dir_choice == DIR_DEFAULT_OUTPUT_FOLDER:
             base_directory = cpprefs.get_default_output_directory()
-        elif self.dir_choice == DIR_CUSTOM_FOLDER:
+        elif self.dir_choice in (DIR_CUSTOM_FOLDER, DIR_CUSTOM_WITH_METADATA):
             base_directory = self.custom_directory.value
+            if self.dir_choice == DIR_CUSTOM_WITH_METADATA:
+                base_directory = workspace.measurements.apply_metadata(base_directory)
             if (base_directory[:2] == '.'+ os.sep or
                 (os.altsep and base_directory[:2] == '.'+os.altsep)):
                 # './filename' -> default_image_folder/filename
                 base_directory = os.path.join(cpprefs.get_default_image_directory(),
-                                              base_directory[:2])
+                                              base_directory[2:])
             elif (base_directory[:2] == '&'+ os.sep or
                   (os.altsep and base_directory[:2] == '&'+os.altsep)):
                 base_directory = os.path.join(cpprefs.get_default_output_directory(),
-                                              base_directory[:2])
+                                              base_directory[2:])
         return base_directory
     
     def get_file_names(self, workspace):
@@ -152,7 +166,7 @@ class LoadSingleImage(cpm.CPModule):
             
     def run(self, workspace):
         dict = self.get_file_names(workspace)
-        root = self.get_base_directory()
+        root = self.get_base_directory(workspace)
         statistics = [("Image name","File")]
         for image_name in dict.keys():
             provider = LoadImagesImageProvider(image_name, root, 

@@ -79,8 +79,7 @@ class MeasureCorrelation(cpm.CPModule):
         self.add_image(can_delete = False)
         self.image_count = cps.HiddenCount(self.image_groups)
         
-        self.add_image_button = cps.DoSomething('Add another image','Add image',
-                                                self.add_image)
+        self.add_image_button = cps.DoSomething("", 'Add image', self.add_image)
         self.spacer = cps.Divider(line=False)
         self.images_or_objects = cps.Choice('Measure correlation across:',
                                             [M_IMAGES, M_OBJECTS, M_IMAGES_AND_OBJECTS], 
@@ -97,8 +96,7 @@ class MeasureCorrelation(cpm.CPModule):
         self.add_object()
         self.object_count = cps.HiddenCount(self.object_groups)
         
-        self.add_object_button = cps.DoSomething('Add another object','Add object',
-                                                 self.add_object)
+        self.add_object_button = cps.DoSomething("", 'Add object', self.add_object)
 
     def add_image(self, can_delete = True):
         '''Add an image to the image_groups collection

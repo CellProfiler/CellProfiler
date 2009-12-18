@@ -144,8 +144,7 @@ class MeasureImageQuality(cpm.CPModule):
         self.image_groups = []
         self.add_image_group()
         self.bottom_spacer = cps.Divider(line=False)
-        self.add_button = cps.DoSomething("Add another image for measurement:",
-                                          "Add", self.add_image_group)
+        self.add_button = cps.DoSomething("", "Add image", self.add_image_group)
     
     def add_image_group(self):
         group = MeasureImageQualitySettingsGroup() # helper class defined below

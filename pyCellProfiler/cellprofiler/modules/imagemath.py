@@ -96,7 +96,7 @@ class ImageMath(cpm.CPModule):
             Values outside the range 0 to 1 might not be handled well by other modules. 
             Here, you have the option of setting values greater than 1 to a maximum value of 1.""")
         self.output_image_name = cps.ImageNameProvider("Name the output image", "ImageAfterMath", doc="""What do you want to call the resulting image?""")
-        self.add_button = cps.DoSomething("Add another image","Add image", self.add_image, True)
+        self.add_button = cps.DoSomething("", "Add another image", self.add_image, True)
         self.divider_bottom = cps.Divider(line=False)
     
     def add_image(self, removable=False):

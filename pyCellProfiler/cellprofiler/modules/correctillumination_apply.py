@@ -61,7 +61,7 @@ class CorrectIllumination_Apply(cpm.CPModule):
         """Make settings here (and set the module name)"""
         self.images = []
         self.add_image(can_delete = False)
-        self.add_image_button = cps.DoSomething("Add another image","Add",
+        self.add_image_button = cps.DoSomething("", "Add another image",
                                                 self.add_image)
     
     def add_image(self, can_delete = True):

@@ -129,7 +129,7 @@ class LoadImagesNew(cpmodule.CPModule):
         self.images = []
         self.add_image()
 
-        self.add_image_button = cps.DoSomething('Add another image...','Add', self.add_image)
+        self.add_image_button = cps.DoSomething("", "Add image", self.add_image)
 
         self.image_spacer_bottom = cps.Divider()
 

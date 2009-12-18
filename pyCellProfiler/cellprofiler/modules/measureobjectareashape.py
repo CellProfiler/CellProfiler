@@ -129,7 +129,7 @@ class MeasureObjectAreaShape(cpm.CPModule):
         self.object_groups = []
         self.add_object()
 
-        self.add_objects = cps.DoSomething("Add another object","Add",self.add_object)
+        self.add_objects = cps.DoSomething("", "Add object",self.add_object)
         self.calculate_zernikes = cps.Binary('Calculate the Zernike features?',True, doc="""
                                             Check this box to calculate the Zernike shape features. Since the
                                             first ten Zernike polynomials (from order 0 to order 9) are

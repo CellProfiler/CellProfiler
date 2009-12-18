@@ -58,7 +58,7 @@ class MeasureImageAreaOccupied(cpm.CPModule):
         self.divider_top = cps.Divider(line=False)
         self.objects = []
         self.add_object(False)
-        self.add_button = cps.DoSomething("Add another object","Add object", self.add_object, True)
+        self.add_button = cps.DoSomething("","Add object", self.add_object, True)
         self.divider_bottom = cps.Divider(line=False)
         
     def add_object(self, removable=True):

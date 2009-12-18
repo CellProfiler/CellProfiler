@@ -281,7 +281,7 @@ class LoadImages(cpmodule.CPModule):
         self.images = []
         self.add_imagecb()
         # Add another image
-        self.add_image = cps.DoSomething('Add another image...','Add', self.add_imagecb)
+        self.add_image = cps.DoSomething("", "Add another image", self.add_imagecb)
         
         # Location settings
         self.location = cps.CustomChoice('Where are the images located?',

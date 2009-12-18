@@ -134,15 +134,15 @@ class MeasureTexture(cpm.CPModule):
         self.object_count = cps.HiddenCount(self.object_groups)
         self.scale_count = cps.HiddenCount(self.scale_groups)
         self.add_image_cb()
-        self.add_images = cps.DoSomething("Add another image", "Add",
+        self.add_images = cps.DoSomething("", "Add image",
                                           self.add_image_cb)
         self.image_divider = cps.Divider()
         self.add_object_cb()
-        self.add_objects = cps.DoSomething("Add another object", "Add",
+        self.add_objects = cps.DoSomething("", "Add object",
                                            self.add_object_cb)
         self.object_divider = cps.Divider()
         self.add_scale_cb()
-        self.add_scales = cps.DoSomething("Add another scale", "Add",
+        self.add_scales = cps.DoSomething("", "Add scale",
                                           self.add_scale_cb)
         self.scale_divider = cps.Divider()
         

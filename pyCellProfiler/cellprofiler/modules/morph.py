@@ -408,7 +408,7 @@ class Morph(cpm.CPModule):
             This is the output of the module. It will be of the same type as the
             input image.""")
         
-        self.add_button = cps.DoSomething("Add another operation:","Add",
+        self.add_button = cps.DoSomething("", "Add operation",
                                           self.add_function,doc="""                                    
             Press this button to add an operation that will be applied to the
             image resulting from the previous transformation. The module repeats

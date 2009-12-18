@@ -73,8 +73,7 @@ class FlagImage(cpm.CPModule):
     def create_settings(self):
         self.flags = []
         self.flag_count = cps.HiddenCount(self.flags)
-        self.add_flag_button = cps.DoSomething("Add another QC flag",
-                                               "Add flag",
+        self.add_flag_button = cps.DoSomething("", "Add QC flag",
                                                self.add_flag)
         self.add_flag(False)
         
@@ -101,7 +100,7 @@ class FlagImage(cpm.CPModule):
                 </ul>'''))
         group.append("add_measurement_button", 
                      cps.DoSomething("Add another measurement",
-                                     "Add measurement",
+                                     "Add",
                                      self.add_measurement, group))
         self.add_measurement(group, False)
         if can_delete:

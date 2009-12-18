@@ -93,7 +93,7 @@ class CreateBatchFiles(cpm.CPModule):
         self.revision = cps.Integer("Hidden: SVN revision number", 0)
         self.mappings = []
         self.add_mapping()
-        self.add_mapping_button = cps.DoSomething("Add another path?","Add",
+        self.add_mapping_button = cps.DoSomething("", "Add another path?",
                                                   self.add_mapping, doc="""
                 Use this option if another path must be mapped because there is a difference between how the local computer sees a folder location vs. how the cluster computer sees the folder location.""")
     

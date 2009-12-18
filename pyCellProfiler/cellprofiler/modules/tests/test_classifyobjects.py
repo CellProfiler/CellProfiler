@@ -63,7 +63,7 @@ class TestClassifyObjects(unittest.TestCase):
         pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))    
         module = pipeline.modules()[-1]
         self.assertTrue(isinstance(module, C.ClassifyObjects))
-        self.assertEqual(module.contrast_choice, C.BY_SINGLE_MEASUREMENTS)
+        self.assertEqual(module.contrast_choice, C.BY_SINGLE_MEASUREMENT)
         self.assertEqual(len(module.single_measurements), 1)
         group = module.single_measurements[0]
         self.assertEqual(group.object_name, "Nuclei")
@@ -156,7 +156,7 @@ class TestClassifyObjects(unittest.TestCase):
         self.assertEqual(len(pipeline.modules()),5)
         module = pipeline.modules()[-2]
         self.assertTrue(isinstance(module, C.ClassifyObjects))
-        self.assertEqual(module.contrast_choice, C.BY_SINGLE_MEASUREMENTS)
+        self.assertEqual(module.contrast_choice.value, C.BY_SINGLE_MEASUREMENT)
         self.assertEqual(len(module.single_measurements), 2)
         
         group = module.single_measurements[0]
@@ -204,7 +204,7 @@ class TestClassifyObjects(unittest.TestCase):
         image_set = image_set_list.get_image_set(0)
         
         module.contrast_choice.value = contrast_choice
-        if module.contrast_choice == C.BY_SINGLE_MEASUREMENTS:
+        if module.contrast_choice == C.BY_SINGLE_MEASUREMENT:
             for i, m in enumerate(m_names):
                 group = module.single_measurements[i]
                 group.object_name.value = OBJECTS_NAME
@@ -230,7 +230,7 @@ class TestClassifyObjects(unittest.TestCase):
         '''Make sure the single measurement mode can handle no objects'''
         workspace, module = self.make_workspace(
             np.zeros((10,10),int),
-            C.BY_SINGLE_MEASUREMENTS,
+            C.BY_SINGLE_MEASUREMENT,
             np.zeros((0,), float))
         module.run(workspace)
         for m_name in ("Classify_Measurement1_Bin_1",
@@ -249,7 +249,7 @@ class TestClassifyObjects(unittest.TestCase):
         labels[6:11,5:9] = 3
         labels[16:19,5:9] = 4
         workspace, module = self.make_workspace(labels,
-                                                C.BY_SINGLE_MEASUREMENTS, m)
+                                                C.BY_SINGLE_MEASUREMENT, m)
         module.single_measurements[0].bin_choice.value = C.BC_EVEN
         module.single_measurements[0].low_threshold.value = .2
         module.single_measurements[0].high_threshold.value = .7
@@ -303,7 +303,7 @@ class TestClassifyObjects(unittest.TestCase):
         labels[6:11,5:9] = 3
         labels[16:19,5:9] = 4
         workspace, module = self.make_workspace(labels,
-                                                C.BY_SINGLE_MEASUREMENTS, m)
+                                                C.BY_SINGLE_MEASUREMENT, m)
         module.single_measurements[0].bin_choice.value = C.BC_CUSTOM
         module.single_measurements[0].custom_thresholds.value = ".2,.7"
         module.single_measurements[0].bin_count.value = 14 # should ignore

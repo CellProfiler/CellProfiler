@@ -65,7 +65,7 @@ with respect to the first image.""")
                                                          What do you want to call the aligned second image?""")
         self.separator_2 = cps.Divider(line=False)
         self.additional_images = []
-        self.add_button = cps.DoSomething("Add another image","Add",
+        self.add_button = cps.DoSomething("", "Add another image",
                                           self.add_image)
         self.alignment_method = cps.Choice("Select the alignment method",
                                            M_ALL, doc='''

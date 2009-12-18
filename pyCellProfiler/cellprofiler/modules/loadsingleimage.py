@@ -70,7 +70,7 @@ class LoadSingleImage(cpm.CPModule):
             from the folder associated with your image's plate.''')
         self.file_settings = []
         self.add_file()
-        self.add_button = cps.DoSomething("", "Add another image", self.add_file)
+        self.add_button = cps.DoSomething("", "Add image", self.add_file)
 
     def add_file(self):
         """Add settings for another file to the list"""

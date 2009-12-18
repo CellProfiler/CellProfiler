@@ -44,7 +44,7 @@ import cellprofiler.measurements as cpmeas
 import cellprofiler.cpimage as cpi
 import cellprofiler.settings as cps
 
-BY_SINGLE_MEASUREMENTS = "Single measurement"
+BY_SINGLE_MEASUREMENT = "Single measurement"
 BY_TWO_MEASUREMENTS = "Pair of measurements"
 TM_MEAN = "Mean"
 TM_MEDIAN = "Median"
@@ -66,7 +66,7 @@ class ClassifyObjects(cpm.CPModule):
         """
         self.contrast_choice = cps.Choice(
             "Should each classification decision be based on a single measurement or on the combination of a pair of measurements?",
-            [BY_SINGLE_MEASUREMENTS, BY_TWO_MEASUREMENTS],
+            [BY_SINGLE_MEASUREMENT, BY_TWO_MEASUREMENTS],
             doc="""This setting controls how classifications are recorded:<br>
             <ul><li><i>Single measurements</i>: ClassifyObjects will classify each object based on a single measurement.</li>
             <li><i>Pair of measurements</i>: ClassifyObjects will classify each object based on a pair of measurements taken together (that is, an object must meet two criteria to belong to a class).</li></ul>""")
@@ -383,7 +383,7 @@ class ClassifyObjects(cpm.CPModule):
     
     def run(self, workspace):
         """Classify the objects in the image set"""
-        if self.contrast_choice == BY_SINGLE_MEASUREMENTS:
+        if self.contrast_choice == BY_SINGLE_MEASUREMENT:
             if workspace.frame:
                 workspace.display_data.labels = []
                 workspace.display_data.bins = []
@@ -606,7 +606,7 @@ class ClassifyObjects(cpm.CPModule):
             self.add_single_measurement(True)
             
     def validate_module(self, pipeline):
-        if self.contrast_choice == BY_SINGLE_MEASUREMENTS:
+        if self.contrast_choice == BY_SINGLE_MEASUREMENT:
             for group in self.single_measurements:
                 group.validate_group()
                 
@@ -697,7 +697,7 @@ class ClassifyObjects(cpm.CPModule):
                 custom_bins = bin_specifications
             wants_labels = cps.NO if labels == cps.DO_NOT_USE else cps.YES
             setting_values = [
-                BY_SINGLE_MEASUREMENTS, "1", object_name, measurement,
+                BY_SINGLE_MEASUREMENT, "1", object_name, measurement,
                 bin_type, bin_count, low_threshold, high_threshold,
                 custom_bins, wants_labels, labels,
                 cps.NO if save_colored_objects == cps.DO_NOT_USE else cps.YES,
@@ -707,12 +707,18 @@ class ClassifyObjects(cpm.CPModule):
                 "ClassifiedNuclei"]
             from_matlab = False
             variable_revision_number = 1
+
+        if variable_revision_number == 1:
+            assert not from_matlab
+            # we modified this in the code but didn't want to bump the variable revision number.
+            if BY_SINGLE_MEASUREMENT in setting_values[0]:
+                setting_values[0] = BY_SINGLE_MEASUREMENT
             
         return setting_values, variable_revision_number, from_matlab
 
     def get_measurement_columns(self, pipeline):
         columns = []
-        if self.contrast_choice == BY_SINGLE_MEASUREMENTS:
+        if self.contrast_choice == BY_SINGLE_MEASUREMENT:
             for group in self.single_measurements:
                 columns += [(group.object_name.value,
                              '_'.join((M_CATEGORY,feature_name)),
@@ -731,7 +737,7 @@ class ClassifyObjects(cpm.CPModule):
         
         object_name - return measurements made on this object (or 'Image' for image measurements)
         """
-        if ((self.contrast_choice == BY_SINGLE_MEASUREMENTS and
+        if ((self.contrast_choice == BY_SINGLE_MEASUREMENT and
              object_name in [group.object_name.value 
                              for group in self.single_measurements]) or
             (self.contrast_choice == BY_TWO_MEASUREMENTS and
@@ -748,7 +754,7 @@ class ClassifyObjects(cpm.CPModule):
         """
         if category != M_CATEGORY:
             return []
-        if self.contrast_choice == BY_SINGLE_MEASUREMENTS:
+        if self.contrast_choice == BY_SINGLE_MEASUREMENT:
             result = []
             for group in self.single_measurements:
                 if group.object_name == object_name:

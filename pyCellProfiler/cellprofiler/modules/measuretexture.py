@@ -93,7 +93,6 @@ __version__="$Revision: 1 $"
 
 import numpy as np
 import scipy.ndimage as scind
-import uuid
 
 import cellprofiler.cpmodule as cpm
 import cellprofiler.settings as cps
@@ -137,12 +136,15 @@ class MeasureTexture(cpm.CPModule):
         self.add_image_cb()
         self.add_images = cps.DoSomething("Add another image", "Add",
                                           self.add_image_cb)
+        self.image_divider = cps.Divider()
         self.add_object_cb()
         self.add_objects = cps.DoSomething("Add another object", "Add",
                                            self.add_object_cb)
+        self.object_divider = cps.Divider()
         self.add_scale_cb()
         self.add_scales = cps.DoSomething("Add another scale", "Add",
                                           self.add_scale_cb)
+        self.scale_divider = cps.Divider()
         
         self.gabor_angles = cps.Integer("Enter number of angles to compute for Gabor:",4,2, doc="""
         How many angles do you want to use for each Gabor measurement?
@@ -152,10 +154,11 @@ class MeasureTexture(cpm.CPModule):
     def settings(self):
         """The settings as they appear in the save file."""
         result = [self.image_count, self.object_count, self.scale_count]
-        for groups in (self.image_groups, self.object_groups, 
-                       self.scale_groups):
+        for groups, element in [(self.image_groups, 'image_name'),
+                                (self.object_groups, 'object_name'),
+                                (self.scale_groups, 'scale')]:
             for group in groups:
-                result += group.settings()
+                result += [getattr(group, element)]
         result += [self.gabor_angles]
         return result
 
@@ -166,94 +169,56 @@ class MeasureTexture(cpm.CPModule):
             ((int(setting_values[0]), self.image_groups, self.add_image_cb),
              (int(setting_values[1]), self.object_groups, self.add_object_cb),
              (int(setting_values[2]), self.scale_groups, self.add_scale_cb)):
-            while len(sequence) > count:
-                del sequence[count]
+            del sequence[count:]
             while len(sequence) < count:
                 fn()
         
     def visible_settings(self):
         """The settings as they appear in the module viewer"""
         result = []
-        for groups, add_button in ((self.image_groups, self.add_images),
-                                   (self.object_groups, self.add_objects),
-                                   (self.scale_groups, self.add_scales)):
+        for groups, add_button, div in [(self.image_groups, self.add_images, self.image_divider),
+                                        (self.object_groups, self.add_objects, self.object_divider),
+                                        (self.scale_groups, self.add_scales, self.scale_divider)]:
             for group in groups:
-                result += group.visible_settings()
-            result += [add_button]
+                result += group.unpack_group()
+            result += [add_button, div]
         result += [self.gabor_angles]
         return result
 
     def add_image_cb(self):
-        """Add a slot for another image"""
-        #XXX needs to use cps.SettingsGroup
-        class ImageSettings(object):
-            def __init__(self, sequence):
-                self.key = uuid.uuid4()
-                def remove(sequence=sequence, key=self.key):
-                    index = [x.key for x in sequence].index(key)
-                    del sequence[index]
-                
-                self.image_name = cps.ImageNameSubscriber("Select an input image","None", doc="""
-                    What did you call the greyscale images you want to measure?""")
-                
-                self.remove_button = cps.DoSomething("Remove the above image",
-                                                     "Remove",remove)
-            def settings(self):
-                return [self.image_name]
-            def visible_settings(self):
-                return [self.image_name, self.remove_button]
-        self.image_groups.append(ImageSettings(self.image_groups))
-        
+        group = cps.SettingsGroup()
+        group.append('image_name', 
+                     cps.ImageNameSubscriber("Select an input image","None", 
+                                             doc="""What did you call the greyscale images you want to measure?"""))
+        group.append("remover", cps.RemoveSettingButton("", "Remove above image", self.image_groups, group))
+        self.image_groups.append(group)
+
     def add_object_cb(self):
         """Add a slot for another object"""
-        class ObjectSettings(object):
-            def __init__(self, sequence):
-                self.key = uuid.uuid4()
-                def remove(sequence=sequence, key=self.key):
-                    index = [x.key for x in sequence].index(key)
-                    del sequence[index]
-                
-                self.object_name = cps.ObjectNameSubscriber("Select the input objects","None",doc="""
-                    What did you call the objects that you want to measure?""")
-                
-                self.remove_button = cps.DoSomething("Remove the above objects",
-                                                     "Remove",remove)
-            def settings(self):
-                return [self.object_name]
-            def visible_settings(self):
-                return [self.object_name, self.remove_button]
-            
-        self.object_groups.append(ObjectSettings(self.object_groups))
+        group = cps.SettingsGroup()
+        group.append('object_name', 
+                     cps.ObjectNameSubscriber("Select the input objects","None",
+                                              doc="""What did you call the objects that you want to measure?"""))
+        group.append("remover", cps.RemoveSettingButton("", "Remove above object", self.object_groups, group))
+        self.object_groups.append(group)
 
     def add_scale_cb(self):
         '''Add another scale to be measured'''
-        class ScaleSettings(object):
-            def __init__(self, sequence):
-                self.key = uuid.uuid4()
-                def remove(sequence=sequence, key=self.key):
-                    index = [x.key for x in sequence].index(key)
-                    del sequence[index]
-                
-                self.scale = cps.Integer("Enter the texture scale",
-                                len(sequence)+3,doc="""
-                                The scale of texture measured is chosen by the user, in pixel units, 
-                                and is the distance between correlated intensities in the image. A 
-                                higher number for the scale of texture measures larger patterns of 
-                                texture whereas smaller numbers measure more localized patterns of 
-                                texture. It is best to measure texture on a scale smaller than your 
-                                objects' sizes, so be sure that the value entered for scale of texture is 
-                                smaller than most of your objects. For very small objects (smaller than 
-                                the scale of texture you are measuring), the texture cannot be measured 
-                                and will result in a undefined value in the output file.""")
-                
-                self.remove_button = cps.DoSomething("Remove the above scale",
-                                                     "Remove",remove)
-            def settings(self):
-                return [self.scale]
-            def visible_settings(self):
-                return [self.scale, self.remove_button]
-            
-        self.scale_groups.append(ScaleSettings(self.scale_groups))
+        group = cps.SettingsGroup()
+        group.append('scale', 
+                     cps.Integer("Enter the texture scale",
+                                 len(self.scale_groups)+3,
+                                 doc="""The scale of texture measured is chosen by the user, in pixel units, 
+                                 and is the distance between correlated intensities in the image. A 
+                                 higher number for the scale of texture measures larger patterns of 
+                                 texture whereas smaller numbers measure more localized patterns of 
+                                 texture. It is best to measure texture on a scale smaller than your 
+                                 objects' sizes, so be sure that the value entered for scale of texture is 
+                                 smaller than most of your objects. For very small objects (smaller than 
+                                 the scale of texture you are measuring), the texture cannot be measured 
+                                 and will result in a undefined value in the output file."""))
+        group.append("remover", cps.RemoveSettingButton("", "Remove above scale", self.scale_groups, group))
+        self.scale_groups.append(group)
 
     def get_categories(self,pipeline, object_name):
         """Get the measurement categories supplied for the given object name.

@@ -58,7 +58,6 @@ __version__="$Revision$"
 
 import numpy as np
 import scipy.ndimage as nd
-import uuid
 
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
@@ -93,74 +92,49 @@ ALL_MEASUREMENTS = [INTEGRATED_INTENSITY, MEAN_INTENSITY, STD_INTENSITY,
 class MeasureObjectIntensity(cpm.CPModule):
 
     module_name = "MeasureObjectIntensity"
-    variable_revision_number = 2
+    variable_revision_number = 3
     category = "Measurement"
     
     def create_settings(self):
-        self.image_keys =[uuid.uuid1()]
-        self.image_names = [cps.ImageNameSubscriber("Select input image:","None", doc = 
-                                                    """What did you call the grayscale images you want to process?""")]
-        self.image_names_remove_buttons = [cps.DoSomething("Remove above image",
-                                                           "Remove",
-                                                           self.remove_image_cb,
-                                                           self.image_keys[0])]
-        self.image_name_add_button = cps.DoSomething("Add another image",
-                                                     "Add image", 
-                                                     self.add_image_cb)
-        self.image_divider = cps.Text("Marks end of images list",cps.DO_NOT_USE)
-        self.object_keys = [uuid.uuid1()]
-        self.object_names = [cps.ObjectNameSubscriber("Select objects to measure:","None", doc = 
-                                                      """What did you call the objects that you want to measure?""")]
-        self.object_name_remove_buttons = [cps.DoSomething("Remove this object",
-                                                           "Remove",
-                                                           self.remove_cb,
-                                                           self.object_keys[0])]
-        self.object_name_add_button = cps.DoSomething("Add another object","Add object",self.add_cb)
-    
-    def remove_cb(self, id):
-        index = self.object_keys.index(id)
-        del self.object_keys[index]
-        del self.object_names[index]
-        del self.object_name_remove_buttons[index]
-    
-    def add_cb(self):
-        new_uuid = uuid.uuid1()
-        self.object_keys.append(new_uuid)
-        self.object_names.append(cps.ObjectNameSubscriber("Select objects to measure:","None", doc = 
-                                                          """What did you call the objects that you want to measure?"""))
-        self.object_name_remove_buttons.append(cps.DoSomething("Remove this object","Remove",self.remove_cb,new_uuid))
+        self.images = []
+        self.add_image()
+        self.image_count = cps.HiddenCount(self.images)
+        self.add_image_button = cps.DoSomething("", "Add another image", self.add_image)
+        self.divider = cps.Divider()
+        self.objects = []
+        self.add_object()
+        self.add_object_button = cps.DoSomething("", "Add another object", self.add_object)
 
-    def remove_image_cb(self, id):
-        index = self.image_keys.index(id)
-        del self.image_keys[index]
-        del self.image_names[index]
-        del self.image_names_remove_buttons[index]
-    
-    def add_image_cb(self):
-        new_uuid = uuid.uuid1()
-        self.image_keys.append(new_uuid)
-        self.image_names.append(cps.ImageNameSubscriber("Select input image:","None", doc = 
-                                                        """What did you call the grayscale images you want to process?"""))
-        self.image_names_remove_buttons.append(cps.DoSomething("Remove above image","Remove",self.remove_image_cb, new_uuid))
-        
+    def add_image(self):
+        group = cps.SettingsGroup()
+        group.append("name", cps.ImageNameSubscriber("Select input image:","None", doc = 
+                                                     """What did you call the grayscale images you want to process?"""))
+        group.append("remover", cps.RemoveSettingButton("", "Remove above image", self.images, group))
+        self.images.append(group)
+
+    def add_object(self):
+        group = cps.SettingsGroup()
+        group.append("name", cps.ObjectNameSubscriber("Select objects to measure:","None", doc = 
+                                                          """What did you call the objects that you want to measure?"""))
+        group.append("remover", cps.RemoveSettingButton("", "Remove above image", self.images, group))
+        self.objects.append(group)
+
+    def settings(self):
+        result = [self.image_count]
+        result += [im.name for im in self.images]
+        result += [obj.name for obj in self.objects]
+        return result
+
     def visible_settings(self):
         result = []
-        for image_name,remove_button in zip(self.image_names,
-                                            self.image_names_remove_buttons):
-            result.extend((image_name, remove_button))
-        result.append(self.image_name_add_button)
-        for object_name,remove_button in zip(self.object_names, 
-                                             self.object_name_remove_buttons):
-            result.extend((object_name,remove_button))
-        result.append(self.object_name_add_button)
+        for im in self.images:
+            result += im.unpack_group()
+        result += [self.add_image_button, self.divider]
+        for im in self.objects:
+            result += im.unpack_group()
+        result += [self.add_object_button]
         return result
-    
-    def settings(self):
-        result = list(self.image_names)
-        result.append(self.image_divider)
-        result.extend(self.object_names)
-        return result
-
+        
     def upgrade_settings(self,setting_values,variable_revision_number,
                          module_name,from_matlab):
         '''Adjust setting values if they came from a previous revision
@@ -192,7 +166,11 @@ class MeasureObjectIntensity(cpm.CPModule):
             setting_values = new_setting_values
             from_matlab = False
             variable_revision_number = 2
-
+        if variable_revision_number == 2:
+            assert not from_matlab
+            num_imgs = setting_values.index(cps.DO_NOT_USE)
+            setting_values = [str(num_imgs)] + setting_values[:num_imgs] + setting_values[num_imgs+1:]
+            variable_revision_number = 3
         return setting_values, variable_revision_number, from_matlab
 
     def prepare_settings(self,setting_values):
@@ -211,22 +189,20 @@ class MeasureObjectIntensity(cpm.CPModule):
         # The settings have two parts - images, then objects
         # The parts are divided by the string, cps.DO_NOT_USE
         #
-        image_count = setting_values.index(cps.DO_NOT_USE)
-        object_count = len(setting_values)-image_count -1
-        while len(self.image_names) > image_count:
-            self.remove_image_cb(self.image_keys[-1])
-        while len(self.image_names) < image_count:
-            self.add_image_cb()
-        while len(self.object_names) > object_count:
-            self.remove_cb(len(self.object_names)-1)
-        while len(self.object_names) < object_count:
-            self.add_cb()
+        image_count = int(setting_values[0])
+        object_count = len(setting_values) - image_count - 1
+        del self.images[image_count:]
+        while len(self.images) < image_count:
+            self.add_image()
+        del self.objects[object_count:]
+        while len(self.objects) < object_count:
+            self.add_object()
 
     def get_measurement_columns(self, pipeline):
         '''Return the column definitions for measurements made by this module'''
         columns = []
-        for image_name in self.image_names:
-            for object_name in self.object_names:
+        for image_name in [im.name for im in self.images]:
+            for object_name in [obj.name for obj in self.objects]:
                 for feature in (ALL_MEASUREMENTS):
                     columns.append((object_name.value,
                                     "%s_%s_%s"%(INTENSITY, feature,
@@ -241,8 +217,8 @@ class MeasureObjectIntensity(cpm.CPModule):
         object_name - name of labels in question (or 'Images')
         returns a list of category names
         """
-        for object_name_variable in self.object_names:
-            if object_name_variable == object_name:
+        for object_name_variable in [obj.name for obj in self.objects]:
+            if object_name_variable.value == object_name:
                 return [INTENSITY]
         return []
     
@@ -250,8 +226,8 @@ class MeasureObjectIntensity(cpm.CPModule):
         """Get the measurements made on the given object in the given category"""
         if category != INTENSITY:
             return []
-        for object_name_variable in self.object_names:
-            if object_name_variable == object_name:
+        for object_name_variable in [obj.name for obj in self.objects]:
+            if object_name_variable.value == object_name:
                 return ALL_MEASUREMENTS
         return []
     
@@ -261,9 +237,9 @@ class MeasureObjectIntensity(cpm.CPModule):
             return []
         if measurement not in ALL_MEASUREMENTS:
             return []
-        for object_name_variable in self.object_names:
+        for object_name_variable in [obj.name for obj in self.objects]:
             if object_name_variable == object_name:
-                return [image_name.value for image_name in self.image_names]
+                return [image.name.value for image in self.images]
         return []
     
     def is_interactive(self):
@@ -273,7 +249,7 @@ class MeasureObjectIntensity(cpm.CPModule):
         if workspace.frame is not None:
             statistics = [("Image","Object","Feature","Mean","Median","STD")]
             workspace.display_data.statistics = statistics
-        for image_name in self.image_names:
+        for image_name in [img.name for img in self.images]:
             image = workspace.image_set.get_image(image_name.value,
                                                   must_be_grayscale=True)
             img = image.pixel_data
@@ -283,7 +259,7 @@ class MeasureObjectIntensity(cpm.CPModule):
                 img = img[image.mask]
             else:
                 masked_image = img
-            for object_name in self.object_names:
+            for object_name in [obj.name for obj in self.objects]:
                 objects = workspace.object_set.get_objects(object_name.value)
                 labels   = objects.segmented
                 nobjects = np.int32(np.max(labels))

@@ -42,9 +42,9 @@ class TestMeasureObjects(unittest.TestCase):
         self.assertEqual(len(pipeline.modules()),3)
         module = pipeline.modules()[2]
         self.assertTrue(isinstance(module,MOI.MeasureObjectIntensity))
-        self.assertEqual(len(module.object_names),1)
-        self.assertEqual(module.object_names[0].value,'Nuclei')
-        self.assertEqual(module.image_names[0].value,'DNA')
+        self.assertEqual(len(module.objects),1)
+        self.assertEqual(module.objects[0].name.value,'Nuclei')
+        self.assertEqual(module.images[0].name.value,'DNA')
         
     def test_01_02_load_v2(self):
         data = ('eJztW0Fv2zYUpl0nWFagS08dhhXgoYckiDXZq9E0KFo78boZqB2jNtoNadYx'
@@ -83,21 +83,21 @@ class TestMeasureObjects(unittest.TestCase):
         self.assertEqual(len(pipeline.modules()), 4)
         module = pipeline.modules()[-1]
         self.assertTrue(isinstance(module, MOI.MeasureObjectIntensity))
-        self.assertEqual(len(module.image_names), 2)
-        for expected, actual in zip(("DNA","Actin"),module.image_names):
+        self.assertEqual(len(module.images), 2)
+        for expected, actual in zip(("DNA","Actin"),[img.name for img in module.images]):
             self.assertEqual(expected, actual)
-        self.assertEqual(len(module.object_names), 2)
-        for expected, actual in zip(("Cells","Nuclei"), module.object_names):
+        self.assertEqual(len(module.objects), 2)
+        for expected, actual in zip(("Cells","Nuclei"), [obj.name for obj in module.objects]):
             self.assertEqual(expected, actual)
         
     def test_02_01_supplied_measurements(self):
         """Test the get_category / get_measurements, get_measurement_images functions"""
         
         moi = MOI.MeasureObjectIntensity()
-        moi.image_names[0].value='MyImage'
-        moi.add_cb()
-        moi.object_names[0].value = 'MyObjects1'
-        moi.object_names[1].value = 'MyObjects2'
+        moi.images[0].name.value='MyImage'
+        moi.add_object()
+        moi.objects[0].name.value = 'MyObjects1'
+        moi.objects[1].name.value = 'MyObjects2'
         
         self.assertEqual(moi.get_categories(None, 'MyObjects1'),[MOI.INTENSITY])
         self.assertEqual(moi.get_categories(None, 'Foo'),[])
@@ -112,10 +112,10 @@ class TestMeasureObjects(unittest.TestCase):
     def test_02_02_get_measurement_columns(self):
         '''test the get_measurement_columns method'''
         moi = MOI.MeasureObjectIntensity()
-        moi.image_names[0].value='MyImage'
-        moi.add_cb()
-        moi.object_names[0].value = 'MyObjects1'
-        moi.object_names[1].value = 'MyObjects2'
+        moi.images[0].name.value='MyImage'
+        moi.add_object()
+        moi.objects[0].name.value = 'MyObjects1'
+        moi.objects[1].name.value = 'MyObjects2'
         columns = moi.get_measurement_columns(None)
         self.assertEqual(len(columns), 2*len(MOI.ALL_MEASUREMENTS))
         for column in columns:
@@ -145,8 +145,8 @@ class TestMeasureObjects(unittest.TestCase):
         io = II.InjectObjects('MyObjects',numpy.zeros((10,10),int))
         io.module_num = 2
         moi = MOI.MeasureObjectIntensity()
-        moi.image_names[0].value = 'MyImage'
-        moi.object_names[0].value = 'MyObjects'
+        moi.images[0].name.value = 'MyImage'
+        moi.objects[0].name.value = 'MyObjects'
         moi.module_num = 3
         pipeline = P.Pipeline()
         pipeline.add_listener(self.error_callback)
@@ -172,8 +172,8 @@ class TestMeasureObjects(unittest.TestCase):
         io = II.InjectObjects('MyObjects',img.astype(int))
         io.module_num = 2
         moi = MOI.MeasureObjectIntensity()
-        moi.image_names[0].value = 'MyImage'
-        moi.object_names[0].value = 'MyObjects'
+        moi.images[0].name.value = 'MyImage'
+        moi.objects[0].name.value = 'MyObjects'
         moi.module_num = 3
         pipeline = P.Pipeline()
         pipeline.add_listener(self.error_callback)
@@ -240,8 +240,8 @@ class TestMeasureObjects(unittest.TestCase):
         io = II.InjectObjects('MyObjects',labels)
         io.module_num = 2
         moi = MOI.MeasureObjectIntensity()
-        moi.image_names[0].value = 'MyImage'
-        moi.object_names[0].value = 'MyObjects'
+        moi.images[0].name.value = 'MyImage'
+        moi.objects[0].name.value = 'MyObjects'
         moi.module_num = 3
         pipeline = P.Pipeline()
         pipeline.add_listener(self.error_callback)
@@ -266,8 +266,8 @@ class TestMeasureObjects(unittest.TestCase):
         io = II.InjectObjects('MyObjects',labels)
         io.module_num = 2
         moi = MOI.MeasureObjectIntensity()
-        moi.image_names[0].value = 'MyImage'
-        moi.object_names[0].value = 'MyObjects'
+        moi.images[0].name.value = 'MyImage'
+        moi.objects[0].name.value = 'MyObjects'
         moi.module_num = 3
         pipeline = P.Pipeline()
         pipeline.add_listener(self.error_callback)
@@ -297,8 +297,8 @@ class TestMeasureObjects(unittest.TestCase):
         io = II.InjectObjects('MyObjects',labels)
         io.module_num = 2
         moi = MOI.MeasureObjectIntensity()
-        moi.image_names[0].value = 'MyImage'
-        moi.object_names[0].value = 'MyObjects'
+        moi.images[0].name.value = 'MyImage'
+        moi.objects[0].name.value = 'MyObjects'
         moi.module_num = 3
         pipeline = P.Pipeline()
         pipeline.add_listener(self.error_callback)
@@ -324,8 +324,8 @@ class TestMeasureObjects(unittest.TestCase):
         io = II.InjectObjects('MyObjects',labels)
         io.module_num = 2
         moi = MOI.MeasureObjectIntensity()
-        moi.image_names[0].value = 'MyImage'
-        moi.object_names[0].value = 'MyObjects'
+        moi.images[0].name.value = 'MyImage'
+        moi.objects[0].name.value = 'MyObjects'
         moi.module_num = 3
         pipeline = P.Pipeline()
         pipeline.add_listener(self.error_callback)

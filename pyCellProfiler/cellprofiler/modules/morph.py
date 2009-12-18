@@ -351,7 +351,6 @@ __version__ = "$Revision$"
 import numpy as np
 import scipy.ndimage as scind
 import sys
-import uuid
 
 import cellprofiler.cpmodule as cpm
 import cellprofiler.settings as cps
@@ -419,18 +418,13 @@ class Morph(cpm.CPModule):
         self.add_function()
     
     def add_function(self):
-        # XXX SettingsGroup
-        class Function:
-            '''Represents the variables needed to run a function'''
-            def __init__(self, functions):
-                self.key = uuid.uuid4()
-                self.function = cps.Choice("Select operation to perform:",
+        group = MorphSettingsGroup()
+        group.append("function", cps.Choice("Select operation to perform:",
                                            F_ALL, F_OPEN,doc="""
                                            What operation do you want to perform?
-                    This is one of the functions listed in the module Help.""")
-                
-                self.repeats_choice = cps.Choice("Repeat operation:",
-                                                 R_ALL,doc="""
+                    This is one of the functions listed in the module Help."""))
+        group.append("repeats_choice", cps.Choice("Repeat operation:",
+                                                  R_ALL,doc="""
                     This setting controls the number of times that the same operation is applied
                     successively to the image.
                     <ul>
@@ -438,54 +432,17 @@ class Morph(cpm.CPModule):
                     <li><i>Forever:</i> Perform the transformation on the image until successive
                     transformations yield the same image.</li>
                     <li><i>Custom:</i> Perform the transformation a custom number of times.</li>
-                    </ul>""")
-                self.custom_repeats = cps.Integer("Custom # of repeats",2,1)
-                def remove(functions = functions, key = self.key):
-                    '''Remove this function from the function list'''
-                    index = [x.key for x in functions].index(key)
-                    del functions[index]
-                
-                self.remove = remove    
-                self.remove_button = cps.DoSomething("Remove the above operation:",
-                                                     "Remove",
-                                                     self.remove,doc="""
-                                                     Press this button to remove a operation from the list.""")
-            
-            def settings(self):
-                '''The settings to be saved in the pipeline'''
-                return [self.function, self.repeats_choice, 
-                        self.custom_repeats]
-            
-            def visible_settings(self):
-                '''The settings to be shown to the user'''
-                result = [self.function, self.repeats_choice]
-                if self.repeats_choice == R_CUSTOM:
-                    result += [self.custom_repeats]
-                result += [self.remove_button]
-                return result
-            
-            def get_repeat_count(self):
-                '''# of times to repeat'''
-                if self.repeats_choice == R_ONCE:
-                    return 1
-                elif self.repeats_choice == R_FOREVER:
-                    return 10000
-                elif self.repeats_choice == R_CUSTOM:
-                    return self.custom_repeats.value
-                else:
-                    raise ValueError("Unsupported repeat choice: %s"%
-                                     self.repeats_choice.value)
-            repeat_count = property(get_repeat_count)
-            
-        function = Function(self.functions)
-        self.functions.append(function)
+                    </ul>"""))
+        group.append("custom_repeats", cps.Integer("Custom # of repeats",2,1))
+        group.append("remove", cps.RemoveSettingButton("", "Remove above operation", self.functions, group))
+        group.append("divider", cps.Divider(line=False))
+        self.functions.append(group)
 
     def prepare_settings(self, setting_values):
         '''Adjust the # of functions to match the # of setting values'''
         assert (len(setting_values)-2)%3 == 0
         function_count = (len(setting_values)-2) / 3
-        while len(self.functions) > function_count:
-            self.functions[-1].remove()
+        del self.functions[function_count:]
         while len(self.functions) < function_count:
             self.add_function()
 
@@ -493,14 +450,17 @@ class Morph(cpm.CPModule):
         '''Return the settings as saved in the pipeline file'''
         result = [self.image_name, self.output_image_name]
         for function in self.functions:
-            result += function.settings()
+            result += [function.function, function.repeats_choice, function.custom_repeats]
         return result
     
     def visible_settings(self):
         '''Return the settings as displayed to the user'''
         result = [self.image_name, self.output_image_name]
         for function in self.functions:
-            result += function.visible_settings()
+            result += [function.function, function.repeats_choice]
+            if function.repeats_choice == R_CUSTOM:
+                result += [function.custom_repeats]
+            result += [function.divider]
         result += [self.add_button]
         return result
 
@@ -539,8 +499,8 @@ class Morph(cpm.CPModule):
         if (function_name in (F_BRANCHPOINTS, F_BRIDGE, F_CLEAN, F_DIAG, 
                               F_DISTANCE, F_ENDPOINTS, F_FILL,
                               F_HBREAK, F_LIFE, F_MAJORITY, F_REMOVE, F_SHRINK,
-                              F_SKEL, F_SPUR, F_THICKEN, F_THIN, F_VBREAK) and
-            not is_binary):
+                              F_SKEL, F_SPUR, F_THICKEN, F_THIN, F_VBREAK) 
+            and not is_binary):
             # Apply a very crude threshold to the image for binary algorithms
             sys.stderr.write("Warning: converting image to binary for %s\n"%
                              function_name)
@@ -673,3 +633,21 @@ class Morph(cpm.CPModule):
             variable_revision_number = 1
         return setting_values, variable_revision_number, from_matlab
                         
+
+
+class MorphSettingsGroup(cps.SettingsGroup):
+    @property
+    def repeat_count(self):
+        ''# of times to repeat'''
+        if self.repeats_choice == R_ONCE:
+            return 1
+        elif self.repeats_choice == R_FOREVER:
+            return 10000
+        elif self.repeats_choice == R_CUSTOM:
+            return self.custom_repeats.value
+        else:
+            raise ValueError("Unsupported repeat choice: %s"%
+                             self.repeats_choice.value)
+
+        '''The thresholding algorithm to run'''
+        return self.threshold_method.value.split(' ')[0]

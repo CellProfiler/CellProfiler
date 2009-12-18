@@ -109,6 +109,13 @@ M_FILE_NAME = "File name"
 M_PATH      = "Path"
 M_BOTH      = "Both"
 
+#
+# FLEX metadata
+#
+M_Z = "Z"
+M_T = "T"
+M_SERIES = "Series"
+
 '''The provider name for the image file image provider'''
 P_IMAGES = "LoadImagesImageProvider"
 '''The version number for the __init__ method of the image file image provider'''
@@ -428,7 +435,11 @@ class LoadImages(cpmodule.CPModule):
                     if fd[FD_METADATA_CHOICE].value in (tag, M_BOTH):
                         choices.update(
                             cpm.find_metadata_tokens(setting.value))
-            self.metadata_fields.choices = list(choices)
+            if self.file_types == FF_OTHER_MOVIES:
+                choices.update([M_Z,M_T,M_SERIES])
+            choices = list(choices)
+            choices.sort()
+            self.metadata_fields.choices = choices
         
         # per image settings
         if self.match_method != MS_ORDER:
@@ -1049,6 +1060,8 @@ class LoadImages(cpmodule.CPModule):
         for pathname,image_index in files:
             pathname = os.path.join(self.image_directory(), pathname)
             formatreader.jutil.attach()
+            path, filename = os.path.split(pathname)
+            metadata = self.get_filename_metadata(self.images[0], filename, path)
             try:
                 rdr = ImageReader()
                 rdr.setId(pathname)
@@ -1058,7 +1071,14 @@ class LoadImages(cpmodule.CPModule):
                     print "%s - series %d: %d channels, %d z, %d t"%(pathname, i, rdr.getSizeC(), rdr.getSizeZ(), rdr.getSizeT())
                     for z in range(rdr.getSizeZ()):
                         for t in range(rdr.getSizeT()):
-                            image_set = image_set_list.get_image_set(image_set_count)
+                            if self.group_by_metadata:
+                                key = metadata.copy()
+                                key[M_Z] = str(z)
+                                key[M_T] = str(t)
+                                key[M_SERIES] = str(i)
+                                image_set = image_set_list.get_image_set(key)
+                            else:
+                                image_set = image_set_list.get_image_set(image_set_count)
                             d = self.get_dictionary(image_set)
                             for c,image_name in enumerate(image_names):
                                 d[image_name.value] = (P_FLEX, V_FLEX, pathname, c, z, t, i)
@@ -1140,9 +1160,6 @@ class LoadImages(cpmodule.CPModule):
         if self.file_types in (FF_AVI_MOVIES, FF_STK_MOVIES):
             header = ["Image name", "Path", "Filename","Frame"]
             ratio = [1.0,2.5,2.0,0.5]
-        elif self.file_types == FF_OTHER_MOVIES:
-            header = ["Image name", "Path", "Filename","Z","T","Series"]
-            ratio = [1.0,2.5,2.0,0.5,0.5,0.5]
         else:
             header = ["Image name","Path","Filename"]
             ratio = [1.0,3.0,2.0]
@@ -1152,17 +1169,25 @@ class LoadImages(cpmodule.CPModule):
         header += tags 
         statistics = [header]
         m = workspace.measurements
+        image_set_metadata = {}
+        do_flex = (self.file_types == FF_OTHER_MOVIES)
+        if do_flex:
+            provider = workspace.image_set.get_image_provider(self.images[0][FD_IMAGE_NAME].value)
+            for tag, value in ((M_Z, provider.get_z()),
+                               (M_T, provider.get_t()),
+                               (M_SERIES, provider.get_series())):
+                m.add_image_measurement("Metadata_"+tag, value)
+                image_set_metadata[tag] = value
         for fd in self.images:
             provider = workspace.image_set.get_image_provider(fd[FD_IMAGE_NAME].value)
             path, filename = os.path.split(provider.get_filename())
             name = provider.name
             if self.file_types in (FF_AVI_MOVIES, FF_STK_MOVIES):
                 row = [name, path, filename, provider.get_frame()]
-            elif self.file_types == FF_OTHER_MOVIES:
-                row = [name, path, filename, provider.get_z(), provider.get_t(), provider.get_series()]
             else:
                 row = [name, path, filename]
-            metadata = self.get_filename_metadata(fd, filename, path)
+            metadata = self.get_filename_metadata(self.images[0] if do_flex 
+                                                  else fd, filename, path)
             m.add_measurement('Image','FileName_'+name, filename)
             full_path = os.path.join(self.image_directory(),path)
             m.add_measurement('Image','PathName_'+name, full_path)
@@ -1181,6 +1206,8 @@ class LoadImages(cpmodule.CPModule):
             for tag in tags:
                 if metadata.has_key(tag):
                     row.append(metadata[tag])
+                elif image_set_metadata.has_key(tag):
+                    row.append(image_set_metadata[tag])
                 else:
                     row.append("")
             statistics.append(row)
@@ -1245,6 +1272,8 @@ class LoadImages(cpmodule.CPModule):
             tags += cpm.find_metadata_tokens(fd[FD_FILE_METADATA].value)
         if fd[FD_METADATA_CHOICE] in (M_PATH, M_BOTH):
             tags += cpm.find_metadata_tokens(fd[FD_PATH_METADATA].value)
+        if self.file_types == FF_OTHER_MOVIES:
+            tags += [M_Z, M_T, M_SERIES]
         return tags
     
     def get_groupings(self, image_set_list):
@@ -1377,6 +1406,10 @@ class LoadImages(cpmodule.CPModule):
             tokens = cpm.find_metadata_tokens(fd[FD_PATH_METADATA].value)
             cols += [('Image', 'Metadata_'+token, cpm.COLTYPE_VARCHAR_PATH_NAME) for token in tokens]
         
+        if self.file_types == FF_OTHER_MOVIES:
+            cols += [(cpm.IMAGE, M_Z, cpm.COLTYPE_INTEGER),
+                     (cpm.IMAGE, M_T, cpm.COLTYPE_INTEGER),
+                     (cpm.IMAGE, M_SERIES, cpm.COLTYPE_INTEGER)]
         return cols
     
     def change_causes_prepare_run(self, setting):

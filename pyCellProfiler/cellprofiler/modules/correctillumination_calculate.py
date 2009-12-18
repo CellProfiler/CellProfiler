@@ -3,15 +3,12 @@ illumination/lighting/shading or to reduce uneven background in images.
 <hr>
 This module calculates an illumination function which can be saved to the
 hard drive for later use, or it can be immediately applied to images later in the
-pipeline. This will correct for the uneven illumination of each image.  
+pipeline. This will correct for the uneven illumination in images.  
 If saving, select '.mat' format in <b>SaveImages</b>.  
 Use the CorrectIllumination_Apply module to apply the
 function to the image to be corrected.
 
-Illumination correction is challenging and we are writing a paper on it
-which should help clarify it (TR Jones, AE Carpenter, P Golland, in
-preparation). In the meantime, please be patient in trying to understand
-this module.
+Illumination correction is a challenge to do properly; please see the CellProfiler website for further advice.
 
 See also <b>CorrectIllumination_Apply</b> and <b>EnhanceOrSuppressSpeckles</b> modules.
 '''
@@ -74,7 +71,7 @@ class CorrectIllumination_Calculate(cpm.CPModule):
         self.image_name = cps.ImageNameSubscriber("Select the input image","None", doc = '''
                                            What did you call the images to be used to calculate the illumination function?''')
         
-        self.illumination_image_name = cps.ImageNameProvider("Select the output image","IllumBlue", doc = '''
+        self.illumination_image_name = cps.ImageNameProvider("Name the output image","IllumBlue", doc = '''
                                            What do you want to call the illumination function?''')
         
         self.intensity_choice = cps.Choice("Select how the illumination function is calculated",
@@ -83,7 +80,7 @@ class CorrectIllumination_Calculate(cpm.CPModule):
                                            Do you want to calculate using regular intensities or background intensities?<br>
                                            <ul>
                                            <li><i>Regular:</i> If you have objects that are evenly dispersed across your image(s) and
-                                            cover most of the image, then you can choose the <i>Regular</i> method. Regular
+                                            cover most of the image, the <i>Regular</i> method might be appropriate. Regular
                                             intensities makes the illumination function based on the intensity at
                                             each pixel of the image (or group of images if you are in <i>All</i> mode) and
                                             is most often rescaled (see below) and applied by division using
@@ -103,8 +100,8 @@ class CorrectIllumination_Calculate(cpm.CPModule):
                                             <i>All</i> mode) and is most often applied by subtraction using the
                                             <b>CorrectIllumination_Apply</b> module.
                                             Note: if you will be using the <i>Subtract</i> option in the
-                                            <b>CorrectIllumination_Apply</b> module, you almost certainly do NOT want to
-                                            <i>Rescale</i>! </li>
+                                            <b>CorrectIllumination_Apply</b> module, you almost certainly do not want to
+                                            <i>Rescale</i>. </li>
                                             </ul> ''')
         
         self.dilate_objects = cps.Binary("Dilate objects in the final averaged image?",False, doc = '''
@@ -129,15 +126,15 @@ class CorrectIllumination_Calculate(cpm.CPModule):
                                         The illumination function can be rescaled so that the pixel intensities
                                         are all equal to or greater than one. This is recommended if you plan to
                                         use the <i>Division</i> option in <b>CorrectIllumination_Apply</b> so that the
-                                        corrected images are in the range 0 to 1. It is NOT recommended if you
-                                        plan to use the <i>Subtract</i> option in <b>CorrectIllumination_Apply</b>! Note that
+                                        corrected images are in the range 0 to 1. It is not recommended if you
+                                        plan to use the <i>Subtract</i> option in <b>CorrectIllumination_Apply</b>. Note that
                                         as a result of the illumination function being rescaled from 1 to
                                         infinity, if there is substantial variation across the field of view, the
                                         rescaling of each image might be dramatic, causing the corrected images
                                         to be very dark. The <i>Median</i> option chooses the median value in the 
-                                        image to rescale so that division increases some values an decreases others.''')
+                                        image to rescale so that division increases some values and decreases others.''')
         
-        self.each_or_all = cps.Choice("Calculate function for each image or all images?",
+        self.each_or_all = cps.Choice("Calculate function for each image individually, or based on all images?",
                                       [EA_EACH,EA_ALL], doc = '''
                                       Calculate a separate function for each image, or one for all the images?
                                       Select <i>Each</i> to calculate an illumination function for each image 
@@ -183,25 +180,25 @@ class CorrectIllumination_Calculate(cpm.CPModule):
         
         self.size_of_smoothing_filter = cps.Integer("Smoothing filter size",10,doc = '''
                                             <i>(Used if Manual is selected for smoothing filter size calculation)</i><br>
-                                            What is the size of the smoothing filter, in pixels?''')
+                                            What is the size of the desired smoothing filter, in pixels?''')
         
-        self.save_average_image = cps.Binary("Save the averaged image?", False, doc = '''
-                                            Do you want to save the averaged image? This is the illumination function
+        self.save_average_image = cps.Binary("Retain the averaged image for use later in the pipeline (for example, in SaveImages)?", False, doc = '''
+                                            The averaged image is the illumination function
                                             prior to dilation or smoothing. It is an image produced during the calculations, not typically
-                                            needed for downstream modules.''')
+                                            needed for downstream modules. It can be helpful to retain it if you may wish to try several different smoothing methods without taking the time to recalculate the averaged image each time.''')
         
         self.average_image_name = cps.ImageNameProvider("Name the averaged image","IllumBlueAvg",doc = '''
-                                            <i>(Only used if the averaged image is to be saved)</i><br>
-                                            What is the name of the averaged image?''')
+                                            <i>(Only used if the averaged image is to be retained for later use in the pipeline)</i><br>
+                                            Choose a name, which will allow the averaged image to be selected later in the pipeline.''')
         
-        self.save_dilated_image = cps.Binary("Save the dilated image?", False, doc = '''                                            
-                                            Do you want to save the dilated image? This is the illumination function                                            
+        self.save_dilated_image = cps.Binary("Retain the dilated image for use later in the pipeline (for example, in SaveImages)?", False, doc = '''                                            
+                                            The dilated image is the illumination function                                            
                                             after dilation but prior to smoothing. It is an image produced during the calculations, not typically 
                                             needed for downstream modules.''')
         
         self.dilated_image_name = cps.ImageNameProvider("Name the dilated image","IllumBlueDilated",doc='''
-                                            <i>(Only used if the dilated image is to be saved)</i><br>
-                                            What is the name of the dilated image?''')
+                                            <i>(Only used if the dilated image is to be retained for later use in the pipeline)</i><br>
+                                            Choose a name, which will allow the dilated image to be selected later in the pipeline.''')
 
     def settings(self):
         return [ self.image_name, self.illumination_image_name,

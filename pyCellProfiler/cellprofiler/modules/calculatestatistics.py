@@ -162,7 +162,7 @@ positive controls are specified by a maximum value, and all other images have an
             doc = '''This option allows you to log-transform the dose values 
             before fitting a sigmoid curve. Check
             this box if you have dose-response data. Leave the box unchecked
-            if your data values indicate positive vs negative controls.'''))
+            if your data values only indicate positive vs negative controls.'''))
         group.append('wants_save_figure', cps.Binary(
             '''Create dose/response plots?''',
             False,
@@ -185,15 +185,15 @@ positive controls are specified by a maximum value, and all other images have an
             <ul>
             <li><i>Default output folder</i></li>
             <li><i>Custom:</i> The file will be stored in a customizable folder. You can
-            prefix the folder name with "." (an period) to make the root folder the default
+            prefix the folder name with "." (a period) to make the root folder the default
             output folder or "&" (an ampersand) to make the root folder the default image
             folder.</li></ul>"""))
         group.append('pathname', cps.Text(
             "Folder pathname:",
             ".",doc="""
-                Enter the pathname to save the images here. The pathname can referenced with respect 
-                to the Default Output Folder with a period (".") or the Default Input 
-                Folder with an ampersand ("&") as the root folder."""))
+                Enter the pathname to save the images here. The pathname can be referenced with respect 
+                to the default output folder specified in the main CellProfiler window with a period (".") or the default input 
+                folder with an ampersand ("&") as the root folder."""))
             
         group.append("remover", cps.RemoveSettingButton("Remove the above dose measurement",
                                                         "Remove", 

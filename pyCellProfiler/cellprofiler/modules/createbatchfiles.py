@@ -1,16 +1,16 @@
 '''<b>Create Batch Files</b> produces files that allow individual batches of images to be processed
 separately on a cluster of computers.
 <hr>
-This module creates a file that can be submitted in parallel to a
+This module creates files that can be submitted in parallel to a
 cluster for faster processing. This module should be placed at the end of
 an image processing pipeline.
 
 If your computer mounts the file system differently than the cluster computers,
-<b>CreateBatchFiles</b> can replace the neccesary parts of the paths to the 
-image and output files. For instance, at the Broad, our Windows machines may 
+<b>CreateBatchFiles</b> can replace the necessary parts of the paths to the 
+image and output files. For instance, a Windows machine may 
 access files images by mounting the file system using a drive letter, like this:
 <i>Z:\imaging_analysis</i>
-and our cluster computers access the same file system like this:
+and the cluster computers access the same file system like this:
 <i>/imaging/analysis</i>
 In this case, the local root path is <i>Z:\imaging_analysis</i> and the cluster 
 root path is <i>/imaging/analysis</i>.
@@ -67,7 +67,7 @@ class CreateBatchFiles(cpm.CPModule):
     #
     def create_settings(self):
         '''Create the module settings and name the module'''
-        self.wants_default_output_directory = cps.Binary("Store batch files in default output folder", True,doc="""
+        self.wants_default_output_directory = cps.Binary("Store batch files in default output folder?", True,doc="""
                 Do you want to store the batch files in the default output folder? 
                 Check this box to store batch files in the Default Output folder. Uncheck
                 the box to enter the path to the folder that will be used to store
@@ -95,7 +95,7 @@ class CreateBatchFiles(cpm.CPModule):
         self.add_mapping()
         self.add_mapping_button = cps.DoSomething("Add another path?","Add",
                                                   self.add_mapping, doc="""
-                Press this button to add another path mapping.""")
+                Use this option if another path must be mapped because there is a difference between how the local computer sees a folder location vs. how the cluster computer sees the folder location.""")
     
     def add_mapping(self):
         group = cps.SettingsGroup()
@@ -104,7 +104,7 @@ class CreateBatchFiles(cpm.CPModule):
                                 cpprefs.get_default_image_directory(),doc="""
                                 What is the path to files on this computer? 
                                 This is the root path on the local machine (i.e., the computer setting up
-                                the batch file). If <b>CreateBatchFiles</b> finds
+                                the batch files). If <b>CreateBatchFiles</b> finds
                                 any pathname that matches the local root path at the begining, it will replace the
                                 start with the cluster root path.
                                 <p>For example, if you have mapped the remote cluster machine as:<br><br>

@@ -186,10 +186,7 @@ class ClassifyObjects(cpm.CPModule):
             are above the threshold for both measurements""")
         
         self.wants_image = cps.Binary(
-            "Save the display as an image?", False,
-            doc="""You can save the graph of this classification as an image.
-            Check this option to create the image. You can save this image
-            using the <b>SaveImages</b> module.""")
+            "Retain an image of the objects classified by their measurements, for use later in the pipeline (for example, in SaveImages)?", False)
         
         self.image_name = cps.ImageNameProvider(
             "Enter the image name","None",
@@ -273,7 +270,7 @@ class ClassifyObjects(cpm.CPModule):
             An example for three bins might be, "First,Second,Third"."""))
         
         group.append("wants_images", cps.Binary(
-            "Save an image of the objects classified by their measurements?",
+            "Retain an image of the objects classified by their measurements, for use later in the pipeline (for example, in SaveImages)?",
             False))
         
         group.append("image_name", cps.ImageNameProvider(

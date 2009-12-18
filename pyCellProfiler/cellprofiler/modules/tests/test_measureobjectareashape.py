@@ -37,7 +37,7 @@ class TestMeasureObjectAreaShape(unittest.TestCase):
         self.assertEqual(len(module.object_groups), 3)
         for og,expected in zip(module.object_groups,
                                ["Cells","Nuclei","Cytoplasm"]):
-            self.assertEqual(og[cpmoas.OG_NAME].value,expected)
+            self.assertEqual(og.name.value,expected)
         self.assertFalse(module.calculate_zernikes.value)
 
     def test_01_00_zeros(self):

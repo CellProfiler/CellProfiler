@@ -81,7 +81,6 @@ __version__="$Revision: 1 $"
 
 import numpy as np
 import scipy.ndimage as scind
-import uuid
 
 import cellprofiler.cpmodule as cpm
 import cellprofiler.settings as cps
@@ -96,14 +95,6 @@ from cellprofiler.measurements import COLTYPE_FLOAT
 
 """The category of the per-object measurements made by this module"""
 AREA_SHAPE = 'AreaShape'
-
-"""The "name" slot in the object group dictionary entry"""
-OG_NAME = 'name'
-
-"""The "remove"slot in the object group dictionary entry"""
-OG_REMOVE = 'remove'
-
-OG_UUID = 'uuid'
 
 """Calculate Zernike features for N,M where N=0 through ZERNIKE_N"""
 ZERNIKE_N = 9
@@ -136,17 +127,27 @@ class MeasureObjectAreaShape(cpm.CPModule):
         of which has an entry in self.object_groups.
         """ 
         self.object_groups = []
-        self.add_object_cb()
-        self.add_objects = cps.DoSomething("Add another object","Add",self.add_object_cb)
+        self.add_object()
+
+        self.add_objects = cps.DoSomething("Add another object","Add",self.add_object)
         self.calculate_zernikes = cps.Binary('Calculate the Zernike features?',True, doc="""
                                             Check this box to calculate the Zernike shape features. Since the
                                             first ten Zernike polynomials (from order 0 to order 9) are
                                             calculated, this operation can be time-consuming if the image
                                             contains a lot of objects.""")
     
+    def add_object(self):
+        """Add a slot for another object"""
+        group = cps.SettingsGroup()
+        group.append("name", cps.ObjectNameSubscriber("Select the input objects","None",doc="""
+                                                What did you call the objects you want to measure?"""))
+        group.append("remove", cps.RemoveSettingButton("", "Remove above object", self.object_groups, group))
+        group.append("divider", cps.Divider(line=False))
+        self.object_groups.append(group)
+        
     def settings(self):
         """The settings as they appear in the save file"""
-        result = [og[OG_NAME] for og in self.object_groups]
+        result = [og.name for og in self.object_groups]
         result.append(self.calculate_zernikes)
         return result
     
@@ -154,35 +155,19 @@ class MeasureObjectAreaShape(cpm.CPModule):
         """Adjust the number of object groups based on the number of setting_values"""
         object_group_count = len(setting_values)-1
         while len(self.object_groups) > object_group_count:
-            self.remove_object_cb(object_group_count)
+            self.remove_object(object_group_count)
         
         while len(self.object_groups) < object_group_count:
-            self.add_object_cb()
+            self.add_object()
         
     def visible_settings(self):
         """The settings as they appear in the module viewer"""
         result = []
         for og in self.object_groups:
-            result.extend([og[OG_NAME],og[OG_REMOVE]])
+            result += og.unpack_group()
         result.extend([self.add_objects, self.calculate_zernikes])
         return result
     
-    def add_object_cb(self):
-        """Add a slot for another object"""
-        new_uuid = uuid.uuid1()
-        self.object_groups.append({OG_NAME:cps.ObjectNameSubscriber("Select the input objects","None",doc="""
-                                                What did you call the objects you want to measure?"""),
-                                   OG_REMOVE:cps.DoSomething("Remove the above objects","Remove",self.remove_object_cb,new_uuid),
-                                   OG_UUID:new_uuid})
-        
-    def remove_object_cb(self, id):
-        """Remove the indexed object from the to-do list"""
-        indexes = [i for i in range(len(self.object_groups))
-                   if self.object_groups[i][OG_UUID] == id]
-        if len(indexes) != 1:
-            raise ValueError("The id, '%s', was not in the object_groups list"%(id))
-        del self.object_groups[indexes[0]]
-        
     def get_categories(self,pipeline, object_name):
         """Get the categories of measurements supplied for the given object name
         
@@ -190,7 +175,7 @@ class MeasureObjectAreaShape(cpm.CPModule):
         object_name - name of labels in question (or 'Images')
         returns a list of category names
         """
-        if any([object_name == og[OG_NAME] for og in self.object_groups]):
+        if object_name in [og.name for og in self.object_groups]:
             return [AREA_SHAPE]
         else:
             return []
@@ -238,7 +223,7 @@ class MeasureObjectAreaShape(cpm.CPModule):
             workspace.display_data.statistics = \
                      [("Object","Feature","Mean","Median","STD")]
         for object_group in self.object_groups:
-            self.run_on_objects(object_group[OG_NAME].value, workspace)
+            self.run_on_objects(object_group.name.value, workspace)
     
     def run_on_objects(self,object_name, workspace):
         """Run, computing the area measurements for a single map of objects"""

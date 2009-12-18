@@ -261,7 +261,7 @@ class Image(object):
         
         image - a np.ndarray to be cropped (of any type)
         """
-        if image.shape == self.pixel_data.shape:
+        if image.shape[:2] == self.pixel_data.shape[:2]:
             # Same size - no cropping needed
             return image
         if any([my_size > other_size

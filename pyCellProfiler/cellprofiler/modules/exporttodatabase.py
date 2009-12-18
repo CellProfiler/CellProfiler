@@ -514,6 +514,7 @@ class ExportToDatabase(cpm.CPModule):
             execute(cursor, 'CREATE DATABASE IF NOT EXISTS %s'%(self.db_name.value))
             execute(cursor, 'USE %s'% self.db_name.value)
         
+        agg_column_defs = []
         if self.objects_choice != O_NONE:
             # Object table
             ob_tables = set([obname for obname, _, _ in column_defs 
@@ -521,7 +522,6 @@ class ExportToDatabase(cpm.CPModule):
             statement = 'CREATE TABLE '+object_table+' (\n'
             statement += 'ImageNumber INTEGER,\n'
             statement += 'ObjectNumber INTEGER'
-            agg_column_defs = []
             c = 2
             for ob_table in ob_tables:
                 for obname, feature, ftype in column_defs:

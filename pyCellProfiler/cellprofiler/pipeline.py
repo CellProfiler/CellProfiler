@@ -646,10 +646,11 @@ class Pipeline(object):
                                 exception = worker.exception
                         t1 = sum(os.times()[:-1])
                         delta_sec = max(0,t1-t0)
-                        print ("%s: Image # %d, module %s # %d: %.2f sec" %
+                        print ("%s: Image # %d, module %s # %d: %.2f sec%s" %
                                (start_time.ctime(), image_number, 
                                 module.module_name, module.module_num, 
-                                delta_sec))
+                                delta_sec,
+                                "" if module.is_interactive() else " (bg)"))
                         if workspace.frame:
                             try:
                                 module.display(workspace)

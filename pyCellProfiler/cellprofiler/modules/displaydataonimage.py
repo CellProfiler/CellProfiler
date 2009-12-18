@@ -58,9 +58,9 @@ class DisplayDataOnImage(cpm.CPModule):
             [OI_OBJECTS, OI_IMAGE],
             doc = """Choose "Image" to display a single measurement made
             on an image. Choose "Object" to display measurements made on
-            objects""")
+            objects.""")
         self.objects_name = cps.ObjectNameSubscriber(
-            "Objects name:", "None",
+            "Which objects' measurements do you want to display?", "None",
             doc = """Choose the name of objects identified by some previous
             module (such as <b>IdentifyPrimAutomatic</b> or
             <b>IdentifySecondary</b>).""")
@@ -70,17 +70,17 @@ class DisplayDataOnImage(cpm.CPModule):
             else:
                 return cpmeas.IMAGE
         self.measurement = cps.Measurement(
-            "Measurement: ", object_fn,
+            "Measurement to display", object_fn,
             doc="""Choose the measurement to display. This will be a measurement
             made by some previous module on either the whole image (if
             displaying a single image measurement) or on the objects you
-            selected""")
+            selected.""")
         self.image_name = cps.ImageNameSubscriber(
-            "Image name:", "None",
+            "Select the image on which to display the measurements", "None",
             doc="""Choose the image to be displayed behind the measurements.
             This can be any image created or loaded by a previous module.""")
         self.text_color = cps.Text(
-            "Text color:","red",
+            "Text color","red",
             doc="""This is the color that will be used when displaying the text.
             There are several different ways to specify the color:<br>
             <ul><li>Single letter: b=blue, g=green, r=red, c=cyan, m=magenta,
@@ -96,12 +96,12 @@ class DisplayDataOnImage(cpm.CPModule):
             http://www.w3schools.com/html/html_colors.asp for a more detailed
             explanation</li></ul>""")
         self.display_image = cps.ImageNameProvider(
-            "Display image name:","DisplayImage",
+            "Name the output image, which has the measurements displayed","DisplayImage",
             doc="""This is the name that will be given to the image with
             the measurements superimposed. You can refer to the image in
             subsequent modules (such as <b>SaveImages</b>) using this name.""")
         self.dpi = cps.Float(
-            "Resolution:",96.0,minval=1.0,
+            "Resolution (pixels per inch)",96.0,minval=1.0,
             doc="""This is the resolution to be used when displaying the image
             (in pixels per inch).""")
         self.saved_image_contents = cps.Choice(

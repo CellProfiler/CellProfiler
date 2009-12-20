@@ -119,7 +119,7 @@ class PreferencesView:
         if error_text in self.__errors:
             self.__errors.remove(error_text)
             if len(self.__errors) == 0:
-                self.set_message_color(wx.Color(0,0,0))
+                self.set_message_color(wx.Colour(0,0,0))
                 self.set_message_text(WELCOME_MESSAGE)
             else:
                 self.set_message_text(self.__errors.__iter__().next())
@@ -129,7 +129,7 @@ class PreferencesView:
     
     def set_error_text(self,error_text):
         self.set_message_text(error_text)
-        self.set_message_color(wx.Color(255,0,0))
+        self.set_message_color(wx.Colour(255,0,0))
         self.__errors.add(error_text)
         
     def __on_browse(self,event,edit_box,text,action):

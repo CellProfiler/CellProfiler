@@ -513,7 +513,11 @@ class Float(Text):
         """Return the value of the setting as a float
         """
         try:
-            self.__default = float(super(Float,self).get_value())
+            str_value = super(Float,self).get_value()
+            if str_value.endswith("%"):
+                self.__default = float(str_value[:-1]) / 100.0
+            else:
+                self.__default = float(str_value)
         except ValueError:
             pass
         return self.__default
@@ -523,11 +527,12 @@ class Float(Text):
         """
         try:
             # Raises value error inside self.value if not a float
-            if self.__minval != None and self.__minval > self.value:
+            value = self.value
+            if self.__minval != None and self.__minval > value:
                 raise ValidationError('Must be at least %d, was %d'%(self.__minval, self.value),self)
         except ValueError:
             raise ValidationError('Value not in decimal format', self)
-        if self.__maxval != None and self.__maxval < self.value:
+        if self.__maxval != None and self.__maxval < value:
             raise ValidationError('Must be at most %d, was %d'%(self.__maxval, self.value),self)
         
     def __eq__(self,x):

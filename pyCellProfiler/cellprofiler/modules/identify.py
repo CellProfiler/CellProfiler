@@ -268,6 +268,11 @@ class Identify(cellprofiler.cpmodule.CPModule):
         """
         if self.threshold_method == TM_MANUAL:
             return self.manual_threshold.value, self.manual_threshold.value
+        object_fraction = self.object_fraction.value
+        if object_fraction.endswith("%"):
+            object_fraction = float(object_fraction[:-1])/100.0
+        else:
+            object_fraction = float(object_fraction)
         return get_threshold(
             self.threshold_algorithm,
             self.threshold_modifier,
@@ -277,11 +282,21 @@ class Identify(cellprofiler.cpmodule.CPModule):
             threshold_range_min = self.threshold_range.min,
             threshold_range_max = self.threshold_range.max,
             threshold_correction_factor = self.threshold_correction_factor.value,
-            object_fraction = self.object_fraction.value,
+            object_fraction = object_fraction,
             two_class_otsu = self.two_class_otsu.value == O_TWO_CLASS,
             use_weighted_variance = self.use_weighted_variance.value == O_WEIGHTED_VARIANCE,
             assign_middle_to_foreground = self.assign_middle_to_foreground.value == O_FOREGROUND)
     
+    def validate_module(self, pipeline):
+        try:
+            if self.object_fraction.value.endswith("%"):
+                float(self.object_fraction.value[:-1])
+            else:
+                float(self.object_fraction.value)
+        except ValueError:
+            raise cps.ValidationError("%s is not a floating point value"%
+                                      self.object_fraction.value,
+                                      self.object_fraction)
 
     def get_threshold_modifier(self):
         """The threshold algorithm modifier

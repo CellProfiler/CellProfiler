@@ -677,7 +677,8 @@ class Pipeline(object):
                             module.module_name, module.module_num, 
                             delta_sec,
                             "" if module.is_interactive() else " (bg)"))
-                    if workspace.frame:
+                    if ((workspace.frame is not None) and
+                        (exception is None)):
                         try:
                             module.display(workspace)
                         except Exception, instance:

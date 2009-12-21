@@ -862,6 +862,15 @@ class DefineGrid(cpm.CPModule):
                 image_name, failed_grid_choice]
             from_matlab = False
             variable_revision_number = 1
+            
+        if variable_revision_number == 1 and not from_matlab:
+            #
+            # Some of the wording changed for the failed grid choice
+            #
+            if setting_values[-1] == "Any Previous":
+                setting_values = setting_values[:-1]+[FAIL_ANY_PREVIOUS]
+            elif setting_values[-1] == "The First":
+                setting_values = setting_values[:-1]+[FAIL_FIRST]
         return setting_values, variable_revision_number, from_matlab
     
     def get_measurement_columns(self, pipeline):

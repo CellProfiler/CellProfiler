@@ -58,7 +58,7 @@ M_CATEGORY = "Classify"
 class ClassifyObjects(cpm.CPModule):
     category = "Object Processing"
     module_name = "ClassifyObjects"
-    variable_revision_number = 1
+    variable_revision_number = 2
     def create_settings(self):
         """Create the settings for the module
         
@@ -222,19 +222,29 @@ class ClassifyObjects(cpm.CPModule):
             upper and lower limits, or you can specify custom values that
             define the edges of each bin with a threshold. 
             
-            <i>Note:</i> If you would like two bins, choose "Custom-defined bins" and then provide a single threshold when asked. "Evenly spaced bins" creates
-            at least three bins, including a bin of objects that fall below
-            the lower threshold and a bin of objects that have values above
-            the upper threshold."""))
+            <i>Note:</i> If you would like two bins, choose "Custom-defined bins" and then provide a single threshold when asked. 
+            "Evenly spaced bins" creates the indicated number of bins
+            at evenly-spaced intervals between the low and high threshold.
+            You also have the option to create bins for objects that fall below
+            or above the low and high threhsold"""))
         
         group.append("bin_count", cps.Integer(
-            "How many bins?", 3, minval= 3))
+            "How many bins?", 3, minval= 1,
+            doc="""This is the number of bins that will be created between
+            the low and high threshold"""
+        ))
         
         group.append("low_threshold", cps.Float(
             "Lower threshold", 0,
             doc="""This is the threshold that separates the lowest bin from the
             others. The lower threshold, upper threshold and number of bins
             define the thresholds of bins between the lowest and highest."""))
+        
+        group.append("wants_low_bin",cps.Binary(
+            "Do you want a bin for objects below the threshold?", False,
+            doc="""Check this box if you want to create a bin for objects
+            whose values fall below the low threshold. Leave the box unchecked
+            if you do not want a bin for these objects."""))
         
         def min_upper_threshold():
             return group.low_threshold.value + np.finfo(float).eps
@@ -245,6 +255,12 @@ class ClassifyObjects(cpm.CPModule):
             doc="""This is the threshold that separates the last bin from
             the others.
             <i>Note:</i> If you would like two bins, choose "Custom-defined bins"."""))
+        
+        group.append("wants_high_bin", cps.Binary(
+            "Do you want a bin for objects above the threshold?", False,
+            doc="""Check this box if you want to create a bin for objects
+            whose values are above the high threshold. Leave the box unchecked
+            if you do not want a bin for these objects."""))
         
         group.append("custom_thresholds", cps.Text(
             "Enter the custom thresholds separating the values between bins",
@@ -280,9 +296,14 @@ class ClassifyObjects(cpm.CPModule):
         def number_of_bins():
             '''Return the # of bins in this classification'''
             if group.bin_choice == BC_EVEN:
-                return group.bin_count.value
+                value = group.bin_count.value
             else:
-                return len(group.custom_thresholds.value.split(","))+1
+                value = len(group.custom_thresholds.value.split(","))-1
+            if group.wants_low_bin:
+                value += 1
+            if group.wants_high_bin:
+                value += 1
+            return value
         group.number_of_bins = number_of_bins
         def bin_feature_names():
             '''Return the feature names for each bin'''
@@ -297,6 +318,13 @@ class ClassifyObjects(cpm.CPModule):
         def validate_group():
             bin_name_count = len(bin_feature_names())
             bin_count = number_of_bins()
+            if bin_count < 1:
+                bad_setting = (group.bin_count if group.bin_choice == BC_EVEN
+                               else group.custom_thresholds)
+                raise cps.ValidationError(
+                    "You must have at least one bin in order to take measurements. "
+                    "Either add more bins or ask for bins for objects above or below threshold",
+                    bad_setting)
             if bin_name_count != number_of_bins():
                 raise cps.ValidationError(
                     "The number of bin names (%d) does not match the number of bins (%d)." %
@@ -362,10 +390,12 @@ class ClassifyObjects(cpm.CPModule):
                 result += [group.object_name, group.measurement,
                            group.bin_choice]
                 if group.bin_choice == BC_EVEN:
-                    result += [group.bin_count, group.low_threshold,
-                               group.high_threshold]
+                    result += [group.bin_count, 
+                               group.low_threshold, group.wants_low_bin,
+                               group.high_threshold, group.wants_high_bin]
                 else:
-                    result += [group.custom_thresholds]
+                    result += [group.custom_thresholds,
+                               group.wants_low_bin, group.wants_high_bin]
                 result += [group.wants_custom_names]
                 if group.wants_custom_names:
                     result += [group.bin_names]
@@ -505,8 +535,8 @@ class ClassifyObjects(cpm.CPModule):
             low_threshold = group.low_threshold.value
             high_threshold = group.high_threshold.value
             bin_count = group.bin_count.value
-            thresholds = (np.arange(bin_count-1) *
-                          (high_threshold - low_threshold)/float(bin_count-2) +
+            thresholds = (np.arange(bin_count+1) *
+                          (high_threshold - low_threshold)/float(bin_count) +
                           low_threshold)
         else:
             thresholds = [float(x.strip()) 
@@ -515,7 +545,9 @@ class ClassifyObjects(cpm.CPModule):
         # Put infinities at either end of the thresholds so we can bin the
         # low and high bins
         #
-        thresholds = np.hstack(([-np.inf],thresholds,[np.inf]))
+        thresholds = np.hstack(([-np.inf] if group.wants_low_bin else [] ,
+                                thresholds,
+                                [np.inf] if group.wants_high_bin else []))
         #
         # Do a cross-product of objects and threshold comparisons
         #
@@ -662,8 +694,8 @@ class ClassifyObjects(cpm.CPModule):
                 split_labels += ["None"]*(4-len(split_labels))
             setting_values = [
                 BY_TWO_MEASUREMENTS, "1", "None", "None", BC_EVEN,
-                "3", "0", "1", "0,1",cps.NO,"First,Second,Third",
-                cps.NO,"ClassifiedNuclei",
+                "1", cps.NO, cps.NO, "0", "1", "0,1",cps.NO,
+                "First,Second,Third", cps.NO, "ClassifiedNuclei",
                 object_name, measurement[0], separator[0], threshold[0],
                 measurement[1], separator[1], threshold[1],
                 cps.NO if labels == cps.DO_NOT_USE else cps.YES,
@@ -673,7 +705,7 @@ class ClassifyObjects(cpm.CPModule):
                 save_colored_objects]
             from_matlab = False
             module_name = self.module_name
-            variable_revision_number = 1
+            variable_revision_number = 2
         if (from_matlab and module_name == 'ClassifyObjects' and
             variable_revision_number == 8):
             (object_name, category, feature_name, image_name, size_scale,
@@ -684,9 +716,11 @@ class ClassifyObjects(cpm.CPModule):
                 measurement += '_' + image_name
             if len(size_scale) > 0:
                 measurement += '_' + size_scale
-            bin_count = "3"
+            bin_count = "1"
             low_threshold = "0"
+            wants_low_bin = cps.NO
             high_threshold = "1"
+            wants_high_bin = cps.NO
             custom_bins = "0,1"
             if bin_type == BC_EVEN:
                 pieces = bin_specifications.split(',')
@@ -700,7 +734,8 @@ class ClassifyObjects(cpm.CPModule):
             wants_labels = cps.NO if labels == cps.DO_NOT_USE else cps.YES
             setting_values = [
                 BY_SINGLE_MEASUREMENT, "1", object_name, measurement,
-                bin_type, bin_count, low_threshold, high_threshold,
+                bin_type, bin_count, low_threshold, wants_low_bin,
+                high_threshold, wants_high_bin,
                 custom_bins, wants_labels, labels,
                 cps.NO if save_colored_objects == cps.DO_NOT_USE else cps.YES,
                 save_colored_objects,
@@ -708,13 +743,33 @@ class ClassifyObjects(cpm.CPModule):
                 cps.NO, "LowLow","HighLow","LowHigh","HighHigh", cps.NO,
                 "ClassifiedNuclei"]
             from_matlab = False
-            variable_revision_number = 1
+            variable_revision_number = 2
 
         if variable_revision_number == 1:
             assert not from_matlab
             # we modified this in the code but didn't want to bump the variable revision number.
             if BY_SINGLE_MEASUREMENT in setting_values[0]:
-                setting_values[0] = BY_SINGLE_MEASUREMENT
+                contrast_choice = BY_SINGLE_MEASUREMENT
+            else:
+                contrast_choice = BY_TWO_MEASUREMENTS
+            #
+            # We inserted wants_low_bin and wants_high_bin in each group
+            #
+            new_setting_values = [contrast_choice, setting_values[1]]
+            setting_values = setting_values[2:]
+            for i in range(int(new_setting_values[1])):
+                new_setting_values += setting_values[:3]
+                #
+                # Bin count changed: don't count the outer 2 bins
+                #
+                new_setting_values += [str(int(setting_values[3])-2)]
+                new_setting_values += [setting_values[4]]+ [cps.YES]
+                new_setting_values += [setting_values[5]] + [cps.YES]
+                new_setting_values += setting_values[6:11]
+                setting_values = setting_values[11:]
+            new_setting_values += setting_values
+            setting_values = new_setting_values
+            variable_revision_number = 2
             
         return setting_values, variable_revision_number, from_matlab
 

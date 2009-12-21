@@ -71,7 +71,9 @@ class TestClassifyObjects(unittest.TestCase):
         self.assertEqual(group.bin_choice, C.BC_EVEN)
         self.assertEqual(group.bin_count, 5)
         self.assertAlmostEqual(group.low_threshold.value, 0.2)
+        self.assertFalse(group.wants_low_bin)
         self.assertAlmostEqual(group.high_threshold.value, 0.8)
+        self.assertFalse(group.wants_high_bin)
         self.assertFalse(group.wants_custom_names)
         self.assertFalse(group.wants_images)
         
@@ -163,9 +165,11 @@ class TestClassifyObjects(unittest.TestCase):
         self.assertEqual(group.object_name, "Nuclei")
         self.assertEqual(group.measurement.value, "Intensity_IntegratedIntensity_OrigBlue")
         self.assertEqual(group.bin_choice, C.BC_EVEN)
-        self.assertEqual(group.bin_count, 5)
+        self.assertEqual(group.bin_count, 3)
         self.assertAlmostEqual(group.low_threshold.value, 0.2)
+        self.assertTrue(group.wants_low_bin)
         self.assertAlmostEqual(group.high_threshold.value, 0.8)
+        self.assertTrue(group.wants_high_bin)
         self.assertTrue(group.wants_custom_names)
         for name, expected in zip(group.bin_names.value.split(','),
                                   ('First','Second','Third','Fourth','Fifth')):
@@ -180,7 +184,96 @@ class TestClassifyObjects(unittest.TestCase):
         self.assertEqual(group.custom_thresholds, ".2,.5,.8")
         self.assertFalse(group.wants_custom_names)
         self.assertFalse(group.wants_images)
+    
+        module = pipeline.modules()[-1]
+        self.assertTrue(isinstance(module, C.ClassifyObjects))
+        self.assertEqual(module.contrast_choice, C.BY_TWO_MEASUREMENTS)
+        self.assertEqual(module.object_name, "Nuclei")
+        self.assertEqual(module.first_measurement, "Location_Center_X")
+        self.assertEqual(module.first_threshold_method, C.TM_MEDIAN)
+        self.assertEqual(module.second_measurement, "Location_Center_Y")
+        self.assertEqual(module.second_threshold_method, C.TM_MEDIAN)
         
+    def test_01_04_load_v2(self):
+        data = ('eJztne9z2jYYxwUhXdPe7dJtL/qmN7/a7XrEA5bs0rwZ+VEW7kLCDa5rX6WO'
+                'LUA7I3G2nIT91fkTZoEdG8XExtgGU3EhIOHP80hfP5L1iBBax92L4xPpQK5I'
+                'rePuXg/pUGrrCu0RY3gkYVqWTg2oUKhJBB9JLYKlM6hKtapUPTiq/XG0/0Gq'
+                'VSofQLxbodn63n5o9wF4YT++tO9F56Vtp1zw3Vm5AylFuG9ugxJ469Q/2PdP'
+                'ioGUGx1+UnQLmp4Lt76Je6Q7Hj2+1CKapcNLZeg/2L5dWsMbaJhXPRd0Xm6j'
+                'e6h30H+Q64J72N/wFpmIYId37PO1j34J5fx2BuSuYdjN4eyfKFQddKh9Bmbr'
+                'mW4PFU+3Aqcbe3zvq2fHnwPv+FKAzm98x+86ZYQ1dIs0S9ElNFT6j61m9g5D'
+                '7L3k7LHylYH6J/YpYnwlhC/M8AVQjdiPHzi/rNyxg8YO7SFUTMuAQ4hpdF1+'
+                '4uyxcltBhkR6foOma68eYm+Xs8fuXXhP9z7eKyqVhuyUR9H3BWeHlS8tVYdo'
+                'Neen5vQ/7nldlPsdROvnNtdPVq5WyvuViPyyOofxYf0uzfAlcEkwjBJnrzi/'
+                'rHxGJEyoZJnOfBLF/9aMnS3wxZ4FeO4Fx7k3l9sBnr/PIf5+4drNyk1MITYR'
+                'HV+zZ32DXZK8Ojdql9MzjCvOcEWbi+YvCreIfnHmv4+3EOtjyRwpqn0tv0HY'
+                'XJ29oPn0DPYUS6dSk11kpAbRNWi49rKOz7jzUFbzngyiXWdeczqz8hU1Lekv'
+                'ndwoemB/k9SJPy8VuRarv+48ndb4jHJe0tQlKF6T5OLq8uT8lasZx8thquMq'
+                'ri789aMiV6p5jZdF2lkP8bcz429afrxGz+lvqvETEK+LcHHWz6cDBWOo1/Ko'
+                '17LzSdr5Bu+3WllOn3aIv5+59rJyAxkmLXegSrBW7g6QoZUbxDLooNxAPTpY'
+                'av25bLwtOk8egHzFV1rr+qznyaD8/1RXTBP1ENSmmWGSdtLSLQq3iG55zcOz'
+                'jq8485aXK7eU+4DEOe7+4AVRFYoIvj6FtlHj+rOvnaucV5LMp3/k+s3Kp5ZJ'
+                'yXBPgz2E/Qlw3DhsQQ0pOF+6pbUuf5oHHGScd1RW4i+J8fdlTjuSvH6t276C'
+                'G8dxxt10HKfb3qT3/xbVpxoQz9Hicn+j5qM016Npxos9/S3lL05eIdfK8kFZ'
+                'PozCf8fxrKyTu2v7nvk81L0jksrWwNC7Hmc9ruPozfQaoP4gzXVM0PXjH2g7'
+                'ZW/v37I3srEK5/Q/Sd2SzH+ZZizQ0oyzoPfRGsSAfYNYWEtfr3lxFtbuoP2l'
+                'iV7s1xz/6zy/h/U3qXw46/k+6X2ZdciD4+qTNbfp/UtTlxZU8KrbuQ66JL1e'
+                'yyMnxlEwJ8ZRMCfGUTCX9Xpknbk465gLcmf/5KufaekTlJef20v/iyXz8rxw'
+                'cfSxtWES5aqfWe4LMXHOl9ynyCMn5mWPq4PndYmThy/U7t88rsBx7JH/3EOW'
+                '+0KTD0mwjaHR8v7zwp2D53UK2nckN/9ClU6EkhDW4Mhnrx5iT+gef3/cp/va'
+                '2smL/oITnOAEJzjBCU5wgnueq/u4qHmjt66fpgl56q/gvk2uDpKJ86TsrLof'
+                'm5Lf5iX+BCc4wX07XN3Hif1SwQlOcIITnOAEt075XF64Onhep6TyTqG34AQn'
+                'OMEJTnCCE5zgBCc4wW0mV/dxq8gHB0WPK3BcwXle8B3/NaS9/r+z33XKKtT1'
+                'kUHY90gY8nDyZQemrBNFm357gHxhP236vkiA+RmF+Klzfurz/CANYop645Fh'
+                'e7MoGSoUqXLTqW3btcduLfN7H+L3hPN7Ms+v8yUA0z0A5P5zNbk1rb6aVHP/'
+                '2HNyPkL873P+9+f5V6cfrhhPG2DKzoctxlPP5qr8+T9ftBPgzx9vRaf85t3W'
+                '+3fg+XEGwGx8e3H/8Gdcv6XSVrEIno7T1yE80/EVeHpjdt4WFhtvv4L5x7t9'
+                '3qTj45ynAruB5fX1/JUe2+b62YTj/wfn4gog')
+        pipeline = cpp.Pipeline()
+        def callback(caller,event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))        
+        self.assertEqual(len(pipeline.modules()),5)
+        module = pipeline.modules()[-2]
+        self.assertTrue(isinstance(module, C.ClassifyObjects))
+        self.assertEqual(module.contrast_choice.value, C.BY_SINGLE_MEASUREMENT)
+        self.assertEqual(len(module.single_measurements), 2)
+        
+        group = module.single_measurements[0]
+        self.assertEqual(group.object_name, "Nuclei")
+        self.assertEqual(group.measurement.value, "Intensity_IntegratedIntensity_OrigBlue")
+        self.assertEqual(group.bin_choice, C.BC_EVEN)
+        self.assertEqual(group.bin_count, 3)
+        self.assertAlmostEqual(group.low_threshold.value, 0.2)
+        self.assertTrue(group.wants_low_bin)
+        self.assertAlmostEqual(group.high_threshold.value, 0.8)
+        self.assertTrue(group.wants_high_bin)
+        self.assertTrue(group.wants_custom_names)
+        for name, expected in zip(group.bin_names.value.split(','),
+                                  ('First','Second','Third','Fourth','Fifth')):
+            self.assertEqual(name, expected)
+        self.assertTrue(group.wants_images)
+        self.assertEqual(group.image_name, "ClassifiedNuclei")
+        
+        group = module.single_measurements[1]
+        self.assertEqual(group.object_name, "Nuclei")
+        self.assertEqual(group.measurement.value, "Intensity_MaxIntensity_OrigBlue")
+        self.assertEqual(group.bin_choice, C.BC_CUSTOM)
+        self.assertEqual(group.custom_thresholds, ".2,.5,.8")
+        self.assertFalse(group.wants_custom_names)
+        self.assertFalse(group.wants_images)
+
+        module = pipeline.modules()[-1]
+        self.assertTrue(isinstance(module, C.ClassifyObjects))
+        self.assertEqual(module.contrast_choice, C.BY_TWO_MEASUREMENTS)
+        self.assertEqual(module.object_name, "Nuclei")
+        self.assertEqual(module.first_measurement, "Location_Center_X")
+        self.assertEqual(module.first_threshold_method, C.TM_MEDIAN)
+        self.assertEqual(module.second_measurement, "Location_Center_Y")
+        self.assertEqual(module.second_threshold_method, C.TM_CUSTOM)
+        self.assertAlmostEqual(module.second_threshold.value, .4)
+    
     def make_workspace(self, labels, contrast_choice,
                        measurement1=None, measurement2=None):
         object_set = cpo.ObjectSet()
@@ -253,7 +346,9 @@ class TestClassifyObjects(unittest.TestCase):
         module.single_measurements[0].bin_choice.value = C.BC_EVEN
         module.single_measurements[0].low_threshold.value = .2
         module.single_measurements[0].high_threshold.value = .7
-        module.single_measurements[0].bin_count.value = 3
+        module.single_measurements[0].bin_count.value = 1
+        module.single_measurements[0].wants_low_bin.value = True
+        module.single_measurements[0].wants_high_bin.value = True
         module.single_measurements[0].wants_images.value = True
         
         expected = dict(Classify_Measurement1_Bin_1 = (0,1,0,1),
@@ -308,6 +403,8 @@ class TestClassifyObjects(unittest.TestCase):
         module.single_measurements[0].custom_thresholds.value = ".2,.7"
         module.single_measurements[0].bin_count.value = 14 # should ignore
         module.single_measurements[0].wants_custom_names.value = True
+        module.single_measurements[0].wants_low_bin.value = True
+        module.single_measurements[0].wants_high_bin.value = True
         module.single_measurements[0].bin_names.value = "Three,Blind,Mice"
         module.single_measurements[0].wants_images.value = True
         

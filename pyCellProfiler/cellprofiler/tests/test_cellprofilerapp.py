@@ -21,6 +21,7 @@ import cellprofiler.cellprofilerapp
 import cellprofiler.gui.moduleview as mv
 import cellprofiler.settings as vvv
 import cellprofiler.modules.identifyprimautomatic
+import cellprofiler.gui.cpframe
 import cellprofiler.gui.addmoduleframe
 
 __version__ = "$Revision$"

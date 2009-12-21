@@ -1,4 +1,5 @@
 import cStringIO
+import numpy as np
 import time
 import wx
 import cellprofiler
@@ -95,9 +96,9 @@ class ProgressFrame(wx.Frame):
 
         if self.current_module: # and False:  # Disable untested code
             # Record time spent on previous module.
-            if not self.time_per_module:
+            if self.time_per_module is None:
                 self.time_per_module = np.zeros(num_modules)
-            time_spend = time.time() - self.current_module_start_time
+            time_spent = time.time() - self.current_module_start_time
             self.time_per_module[module.module_num - 1] += time_spent
             # Update projection.
             projection = 0.

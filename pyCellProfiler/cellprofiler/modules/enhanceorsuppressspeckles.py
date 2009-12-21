@@ -110,7 +110,7 @@ class EnhanceOrSuppressSpeckles(cpm.CPModule):
             result += [self.hole_size if self.enhance_method == E_DARK_HOLES
                        else self.object_size]
         else:
-            result += self.object_size
+            result += [self.object_size]
         return result
             
     def run(self, workspace):

@@ -45,6 +45,7 @@ ID_EDIT_SELECT_ALL = wx.NewId()
 ID_EDIT_COPY = wx.NewId()
 
 ID_OPTIONS_PREFERENCES = wx.NewId()
+ID_CHECK_NEW_VERSION = wx.NewId()
 
 ID_DEBUG_TOGGLE = wx.NewId()
 ID_DEBUG_STEP = wx.NewId()
@@ -125,6 +126,7 @@ class CPFrame(wx.Frame):
         self.__menu_file.Append(ID_FILE_STOP_ANALYSIS,'Stop analysis','Stop running the pipeline')
         self.__menu_file.AppendSeparator()
         self.__menu_file.Append(ID_OPTIONS_PREFERENCES,"&Preferences...","Set global application preferences")
+        self.__menu_file.Append(ID_CHECK_NEW_VERSION,"Check for updates...","Check for a new version of CellProfiler")
         # self.__menu_file.Append(ID_FILE_WIDGET_INSPECTOR,'Widget inspector','Run the widget inspector for debugging the UI')
         self.__menu_file.Append(ID_FILE_EXIT,'E&xit\tctrl+Q','Quit the application')
         self.__menu_bar.Append(self.__menu_file,'&File')
@@ -164,6 +166,7 @@ class CPFrame(wx.Frame):
         wx.EVT_MENU(self,ID_HELP_MODULE,self.__on_help_module)
         wx.EVT_MENU(self,ID_HELP_DEVELOPERS_GUIDE, self.__on_help_developers_guide)
         wx.EVT_MENU(self,ID_OPTIONS_PREFERENCES, self.__on_preferences)
+        wx.EVT_MENU(self,ID_CHECK_NEW_VERSION, self.__on_check_new_version)
         wx.EVT_MENU(self,ID_WINDOW_CLOSE_ALL, self.__on_close_all)
         accelerator_table = wx.AcceleratorTable([(wx.ACCEL_CMD,ord('N'),ID_FILE_ANALYZE_IMAGES),
                                                  (wx.ACCEL_CMD,ord('O'),ID_FILE_LOAD_PIPELINE),
@@ -212,6 +215,9 @@ class CPFrame(wx.Frame):
         dlg = cellprofiler.gui.preferencesdlg.PreferencesDlg()
         dlg.show_modal()
         dlg.Destroy()
+
+    def __on_check_new_version(self, event):
+        wx.GetApp().new_version_check(force=True)
 
     def __on_close_all(self, event):
         close_all(self)

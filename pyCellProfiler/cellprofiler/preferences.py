@@ -97,6 +97,8 @@ BACKGROUND_COLOR = 'BackgroundColor'
 PIXEL_SIZE = 'PixelSize'
 COLORMAP = 'Colormap'
 MODULEDIRECTORY = 'ModuleDirectory'
+CHECKFORNEWVERSIONS = 'CheckForNewVersions'
+SKIPVERSION = 'SkipVersion'
 
 def module_directory():
     if not get_config().Exists(MODULEDIRECTORY):
@@ -323,3 +325,27 @@ def get_current_pipeline_path():
 def set_current_pipeline_path(path):
     global __current_pipeline_path
     __current_pipeline_path = path
+
+def get_check_new_versions():
+    if not get_config().Exists(CHECKFORNEWVERSIONS):
+        # should this check for whether we can actually save preferences?
+        return True
+    return get_config().ReadBool(CHECKFORNEWVERSIONS)
+    
+def set_check_new_versions(val):
+    old_val = get_check_new_versions()
+    get_config().WriteBool(CHECKFORNEWVERSIONS, bool(val))
+    # If the user turns on version checking, they probably don't want
+    # to skip versions anymore.
+    print "here"
+    if val and (not old_val):
+        set_skip_version(0)
+    
+
+def get_skip_version():
+    if not get_config().Exists(SKIPVERSION):
+        return 0
+    return get_config().ReadInt(SKIPVERSION)
+
+def set_skip_version(ver):
+    get_config().WriteInt(SKIPVERSION, ver)

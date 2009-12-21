@@ -1,3 +1,18 @@
+""" an htmldialog with an ok button
+
+CellProfiler is distributed under the GNU General Public License.
+See the accompanying file LICENSE for details.
+
+Developed by the Broad Institute
+Copyright 2003-2009
+
+Please see the AUTHORS file for credits.
+
+Website: http://www.cellprofiler.org
+"""
+__version__="$Revision: 8754 $"
+
+
 long_text = """\
 This is a very important parameter which tells the module what you are
 looking for. Most options within this module use this estimate of the

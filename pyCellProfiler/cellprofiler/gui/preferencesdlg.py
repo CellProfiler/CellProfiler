@@ -20,6 +20,7 @@ import cellprofiler.preferences as cpprefs
 DIRBROWSE = "Browse"
 FONT = "Font"
 COLOR = "Color"
+CHOICE = "Choice"
 
 class PreferencesDlg(wx.Dialog):
     '''Display a dialog for setting preferences
@@ -50,6 +51,9 @@ class PreferencesDlg(wx.Dialog):
             elif ui_info == COLOR:
                 ctl = wx.Panel(self, -1, style=wx.BORDER_SUNKEN)
                 ctl.BackgroundColour = getter()
+            elif ui_info == CHOICE:
+                ctl = wx.CheckBox(self, -1)
+                ctl.Value = getter()
             else:
                 ctl = wx.TextCtrl(self, -1, getter())
                 min_height = ctl.GetMinHeight()
@@ -137,7 +141,8 @@ class PreferencesDlg(wx.Dialog):
                 ["Title font", self.get_title_font, self.set_title_font, FONT],
                 ["Table font", self.get_table_font, self.set_table_font, FONT],
                 ["Default colormap", cpprefs.get_default_colormap, cpprefs.set_default_colormap, cmaps],
-                ["Window background", cpprefs.get_background_color, cpprefs.set_background_color, COLOR]
+                ["Window background", cpprefs.get_background_color, cpprefs.set_background_color, COLOR],
+                ["Check for updates", cpprefs.get_check_new_versions, cpprefs.set_check_new_versions, CHOICE],
                 ]
     
     def get_title_font(self):

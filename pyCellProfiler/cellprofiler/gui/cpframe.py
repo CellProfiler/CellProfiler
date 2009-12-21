@@ -211,6 +211,7 @@ class CPFrame(wx.Frame):
     def __on_preferences(self, event):
         dlg = cellprofiler.gui.preferencesdlg.PreferencesDlg()
         dlg.show_modal()
+        dlg.Destroy()
 
     def __on_close_all(self, event):
         close_all(self)

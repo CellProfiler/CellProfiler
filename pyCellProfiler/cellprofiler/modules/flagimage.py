@@ -255,6 +255,7 @@ class FlagImage(cpm.CPModule):
         '''
         m = workspace.measurements
         assert isinstance(m, cpmeas.Measurements)
+        fail = False
         if ms.source_choice == S_IMAGE:
             value = m.get_current_image_measurement(ms.measurement.value)
             min_value = max_value = value
@@ -263,23 +264,34 @@ class FlagImage(cpm.CPModule):
         elif ms.source_choice == S_AVERAGE_OBJECT:
             data = m.get_current_measurement(ms.object_name.value,
                                              ms.measurement.value)
-            min_value = max_value = np.mean(data)
-            display_value = str(round(min_value, 3))
+            if len(data) == 0:
+                min_value = max_value = np.NaN
+                fail = True
+                display_value = "No objects"
+            else:
+                min_value = max_value = np.mean(data)
+                display_value = str(round(min_value, 3))
             source = "Ave. %s"%ms.object_name.value
         elif ms.source_choice == S_ALL_OBJECTS:
             data = m.get_current_measurement(ms.object_name.value,
                                              ms.measurement.value)
             source = ms.object_name.value
-            min_value = np.min(data)
-            max_value = np.max(data)
-            if min_value == max_value:
-                display_value = str(min_value)
+            if len(data) == 0:
+                min_value = max_value = np.NaN
+                fail = True
+                display_value = "No objects"
             else:
-                display_value = "%.3f - %.3f"%(min_value,max_value)
+                min_value = np.min(data)
+                max_value = np.max(data)
+                if min_value == max_value:
+                    display_value = str(min_value)
+                else:
+                    display_value = "%.3f - %.3f"%(min_value,max_value)
         else:
             raise NotImplementedError("Source choice of %s not implemented" %
                                       ms.source_choice)
-        fail = ((ms.wants_minimum.value and 
+        fail = (fail or
+                (ms.wants_minimum.value and 
                  min_value < ms.minimum_value.value) or
                 (ms.wants_maximum.value and
                  max_value > ms.maximum_value.value))

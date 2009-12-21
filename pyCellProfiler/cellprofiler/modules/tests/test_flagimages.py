@@ -193,7 +193,7 @@ class TestFlagImages(unittest.TestCase):
         for i in range(len(object_measurements)):
             measurements.add_measurement(OBJECT_NAME,
                                          object_measurement_name(i),
-                                         np.array(object_measurements))
+                                         np.array(object_measurements[i]))
         flag = module.flags[0]
         self.assertTrue(isinstance(flag, cps.SettingsGroup))
         flag.category.value = MEASUREMENT_CATEGORY
@@ -241,6 +241,30 @@ class TestFlagImages(unittest.TestCase):
         self.assertTrue(isinstance(m, cpmeas.Measurements))
         self.assertTrue(MEASUREMENT_NAME in m.get_feature_names(cpmeas.IMAGE))
         self.assertEqual(m.get_current_image_measurement(MEASUREMENT_NAME), 0)
+    
+    def test_03_00_no_ave_object_measurement(self):
+        for case in ("minimum", "maximum"):
+            module, workspace = self.make_workspace([],[[]])
+            flag = module.flags[0]
+            self.assertTrue(isinstance(flag, cps.SettingsGroup))
+            measurement = flag.measurement_settings[0]
+            self.assertTrue(isinstance(measurement, cps.SettingsGroup))
+            measurement.source_choice.value = F.S_AVERAGE_OBJECT
+            measurement.object_name.value = OBJECT_NAME
+            measurement.measurement.value = object_measurement_name(0)
+            if case == "minimum":
+                measurement.wants_maximum.value = False
+                measurement.wants_minimum.value = True
+                measurement.minimum_value.value = .3
+            else:
+                measurement.wants_minimum.value = False
+                measurement.wants_maximum.value = True
+                measurement.maximum_value.value = .2
+            module.run(workspace)
+            m = workspace.measurements
+            self.assertTrue(isinstance(m, cpmeas.Measurements))
+            self.assertTrue(MEASUREMENT_NAME in m.get_feature_names(cpmeas.IMAGE))
+            self.assertEqual(m.get_current_image_measurement(MEASUREMENT_NAME), 1)
         
     def test_03_01_positive_ave_object_measurement(self):
         for case in ("minimum", "maximum"):
@@ -290,6 +314,30 @@ class TestFlagImages(unittest.TestCase):
             self.assertTrue(MEASUREMENT_NAME in m.get_feature_names(cpmeas.IMAGE))
             self.assertEqual(m.get_current_image_measurement(MEASUREMENT_NAME), 0)
 
+    def test_04_00_no_object_measurements(self):
+        for case in ("minimum","maximum"):
+            module, workspace = self.make_workspace([],[[]])
+            flag = module.flags[0]
+            self.assertTrue(isinstance(flag, cps.SettingsGroup))
+            measurement = flag.measurement_settings[0]
+            self.assertTrue(isinstance(measurement, cps.SettingsGroup))
+            measurement.source_choice.value = F.S_ALL_OBJECTS
+            measurement.object_name.value = OBJECT_NAME
+            measurement.measurement.value = object_measurement_name(0)
+            if case == "maximum":
+                measurement.wants_minimum.value = False
+                measurement.wants_maximum.value = True
+                measurement.maximum_value.value = .35
+            else:
+                measurement.wants_maximum.value = False
+                measurement.wants_minimum.value = True
+                measurement.minimum_value.value = .15
+            module.run(workspace)
+            m = workspace.measurements
+            self.assertTrue(isinstance(m, cpmeas.Measurements))
+            self.assertTrue(MEASUREMENT_NAME in m.get_feature_names(cpmeas.IMAGE))
+            self.assertEqual(m.get_current_image_measurement(MEASUREMENT_NAME), 1)
+        
     def test_04_01_positive_object_measurement(self):
         for case in ("minimum","maximum"):
             module, workspace = self.make_workspace([],[[.1,.2,.3,.4]])

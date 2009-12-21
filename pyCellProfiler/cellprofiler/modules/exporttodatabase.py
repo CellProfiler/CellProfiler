@@ -769,7 +769,10 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                 value = measurements.get_measurement('Image',feature, i)
                 if isinstance(value, np.ndarray):
                     if value.dtype.kind in ('O','S','U'):
-                        value = '"'+MySQLdb.escape_string(value[0])+'"'
+                        if value[0] is None:
+                            value = "NULL"
+                        else:
+                            value = '"'+MySQLdb.escape_string(value[0])+'"'
                     elif np.isnan(value[0]):
                         value = "NULL"
                     else:
@@ -946,6 +949,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
         image_row_formatted = [("NULL" if np.isnan(val)
                                 else str(val))
                                if dtype in [cpmeas.COLTYPE_FLOAT, cpmeas.COLTYPE_INTEGER]
+                               else "NULL" if val is None
                                else "'%s'"%MySQLdb.escape_string(str(val)) 
                                for val, dtype, colname in image_row]
         
@@ -1141,11 +1145,17 @@ image_channel_colors = %(image_channel_colors)s
         image_features = m.get_feature_names('Image')
         for feature in image_features:
             if feature.startswith('FileName'):
-                names = m.get_all_measurements('Image',feature)
-                FileNameWidth = max(FileNameWidth, np.max(map(len,names)))
+                names = [name 
+                         for name in m.get_all_measurements('Image',feature)
+                         if name is not None]
+                if len(names) > 0:
+                    FileNameWidth = max(FileNameWidth, np.max(map(len,names)))
             elif feature.startswith('PathName'):
-                names = m.get_all_measurements('Image',feature)
-                PathNameWidth = max(PathNameWidth, np.max(map(len,names)))
+                names = [name
+                         for name in m.get_all_measurements('Image',feature)
+                         if name is not None]
+                if len(names) > 0:
+                    PathNameWidth = max(PathNameWidth, np.max(map(len,names)))
         return FileNameWidth, PathNameWidth
     
     def get_output_directory(self):

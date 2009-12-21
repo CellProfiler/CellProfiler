@@ -329,7 +329,8 @@ class SaveImages(cpm.CPModule):
             frame        - display within this frame (or None to not display)
         """
         if self.save_image_or_figure.value in (IF_IMAGE, IF_MASK, IF_CROPPING):
-            self.run_image(workspace)
+            should_save = self.run_image(workspace)
+                
         else:
             raise NotImplementedError(("Saving a %s is not yet supported"%
                                        (self.save_image_or_figure)))
@@ -356,12 +357,17 @@ class SaveImages(cpm.CPModule):
         if self.when_to_save == WS_FIRST_CYCLE:
             d = self.get_dictionary(workspace.image_set_list)
             if not d["FIRST_IMAGE"]:
-                return
+                workspace.display_data.wrote_image = False
+                self.save_filename_measurements(workspace)
+                return False
             d["FIRST_IMAGE"] = False
             
         elif self.when_to_save == WS_LAST_CYCLE:
-            return
+            workspace.display_data.wrote_image = False
+            self.save_filename_measurements( workspace)
+            return False
         self.save_image(workspace)
+        return True
     
     def post_group(self, workspace, *args):
         if self.when_to_save == WS_LAST_CYCLE:
@@ -428,8 +434,12 @@ class SaveImages(cpm.CPModule):
             pil = PILImage.fromarray(pixels,mode)
             pil.save(filename, self.get_file_format())
         workspace.display_data.wrote_image = True
+        if self.when_to_save != WS_LAST_CYCLE:
+            self.save_filename_measurements(workspace)
         
+    def save_filename_measurements(self, workspace):
         if self.update_file_names.value:
+            filename = self.get_filename(workspace)
             pn, fn = os.path.split(filename)
             workspace.measurements.add_measurement('Image',
                                                    self.file_name_feature,

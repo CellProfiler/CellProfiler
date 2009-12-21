@@ -158,6 +158,8 @@ def add_all_measurements(handles, measurements):
                     ddata = data[i]
                     if np.isscalar(ddata) and np.isreal(ddata):
                         feature_measurements[0,i] = np.array([ddata])
+                    elif ddata is None:
+                        feature_measurements[0,i] = np.array([0])
                     else:
                         feature_measurements[0,i] = ddata
                 else:

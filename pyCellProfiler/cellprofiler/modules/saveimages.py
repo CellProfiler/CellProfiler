@@ -342,7 +342,10 @@ class SaveImages(cpm.CPModule):
     def display(self, workspace):
         if workspace.frame != None:
             figure = workspace.create_or_find_figure(subplots=(1,1))
-            figure.subplot_table(0, 0, [["Wrote: %s"%(workspace.display_data.filename)]])
+            outcome = ("Wrote %s" if workspace.display_data.wrote_image
+                       else "Did not write %s")
+            figure.subplot_table(0, 0, [[outcome %
+                                         (workspace.display_data.filename)]])
 
     
     def run_image(self,workspace):
@@ -365,6 +368,7 @@ class SaveImages(cpm.CPModule):
             self.save_image(workspace)
 
     def save_image(self, workspace):
+        workspace.display_data.wrote_image = False
         image = workspace.image_set.get_image(self.image_name.value)
         if self.save_image_or_figure == IF_IMAGE:
             pixels = image.pixel_data
@@ -416,13 +420,15 @@ class SaveImages(cpm.CPModule):
                 import wx
                 over = wx.MessageBox("Do you want to overwrite %s?"%(filename),
                                      "Warning: overwriting file", wx.YES_NO)
-                if over == wx.ID_NO:
+                if over == wx.NO:
                     return
         if self.get_file_format() == FF_MAT:
             scipy.io.matlab.mio.savemat(filename,{"Image":pixels},format='5')
         else:
             pil = PILImage.fromarray(pixels,mode)
             pil.save(filename, self.get_file_format())
+        workspace.display_data.wrote_image = True
+        
         if self.update_file_names.value:
             pn, fn = os.path.split(filename)
             workspace.measurements.add_measurement('Image',

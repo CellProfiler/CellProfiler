@@ -308,7 +308,7 @@ class ModuleView:
                     choices = v.get_choices(self.__pipeline)
                     control = self.make_choice_control(v, choices,
                                                        control_name, 
-                                                       wx.CB_DROPDOWN,
+                                                       wx.CB_READONLY,
                                                        control)
                 elif isinstance(v,cps.FigureSubscriber):
                     choices = v.get_choices(self.__pipeline)

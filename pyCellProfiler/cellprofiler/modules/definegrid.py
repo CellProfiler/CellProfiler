@@ -406,34 +406,38 @@ class DefineGrid(cpm.CPModule):
         '''
         objects = workspace.object_set.get_objects(self.object_name.value)
         centroids = centers_of_labels(objects.segmented)
-        if centroids.shape[1] < 2:
-            #
-            # Failed if too few objects
-            #
-            if self.failed_grid_choice == FAIL_NO:
+        try:
+            if centroids.shape[1] < 2:
+                #
+                # Failed if too few objects
+                #
                 raise RuntimeError("%s has too few grid cells"%
                                    self.object_name.value)
-            else:
+            #
+            # Artificially swap these to match the user's orientation
+            #
+            first_row, second_row = (1,self.grid_rows.value)
+            if self.origin in (NUM_BOTTOM_LEFT, NUM_BOTTOM_RIGHT):
+                first_row, second_row = (second_row, first_row)
+            first_column, second_column = (1, self.grid_columns.value)
+            if self.origin in (NUM_TOP_RIGHT, NUM_BOTTOM_RIGHT):
+                first_column, second_column = (second_column, first_column)
+            first_x = np.min(centroids[1,:])
+            first_y = np.min(centroids[0,:])
+            second_x = np.max(centroids[1,:])
+            second_y = np.max(centroids[0,:])
+            result = self.build_grid_info(first_x, first_y, first_row, 
+                                          first_column, second_x, second_y, 
+                                          second_row, second_column,
+                                          objects.segmented.shape)
+        except Exception:
+            if self.failed_grid_choice != FAIL_NO:
                 result = self.get_good_gridding(workspace)
                 if result is None:
                     raise RuntimeError("%s has too few grid cells and there is no previous successful grid"%
                                        self.object_name.value)
-                return result
-        #
-        # Artificially swap these to match the user's orientation
-        #
-        first_row, second_row = (1,self.grid_rows.value)
-        if self.origin in (NUM_BOTTOM_LEFT, NUM_BOTTOM_RIGHT):
-            first_row, second_row = (second_row, first_row)
-        first_column, second_column = (1, self.grid_columns.value)
-        if self.origin in (NUM_TOP_RIGHT, NUM_BOTTOM_RIGHT):
-            first_column, second_column = (second_column, first_column)
-        first_x = np.min(centroids[1,:])
-        first_y = np.min(centroids[0,:])
-        second_x = np.max(centroids[1,:])
-        second_y = np.max(centroids[0,:])
-        return self.build_grid_info(first_x, first_y, first_row, first_column,
-                                    second_x, second_y, second_row, second_column)
+            raise
+        return result
     
     def run_coordinates(self, workspace):
         '''Define a grid based on the coordinates of two points
@@ -602,7 +606,8 @@ class DefineGrid(cpm.CPModule):
         workspace.measurements.add_image_measurement(feature_name, value)
         
     def build_grid_info(self, first_x, first_y, first_row, first_col,
-                        second_x, second_y, second_row, second_col):
+                        second_x, second_y, second_row, second_col,
+                        image_shape = None):
         '''Populate and return a CPGridInfo based on two cell locations'''
         first_row, first_col =\
                   self.canonical_row_and_column(first_row, first_col)
@@ -671,6 +676,28 @@ class DefineGrid(cpm.CPModule):
         if self.origin in (NUM_TOP_RIGHT, NUM_BOTTOM_RIGHT):
             # Flip left and right
             gridding.spot_table = gridding.spot_table[:,::-1]
+        #
+        # Validate the gridding. All spots must be within the image
+        # boundaries.
+        #
+        left_edge = gridding.x_location_of_lowest_x_spot - gridding.x_spacing/2
+        if left_edge < 0:
+            raise ValueError(("The left edge of the first grid column is %d "
+                              "pixels outside of the image.") % -left_edge)
+        right_edge = gridding.x_location_of_lowest_x_spot + gridding.x_spacing/2
+        if image_shape is not None and image_shape[1] < right_edge:
+            raise ValueError(("The right edge of the last grid column is %d "
+                              "pixels outside of the image.") %
+                             (right_edge - image_shape[1]))
+        top_edge = gridding.y_location_of_lowest_y_spot - gridding.y_spacing / 2
+        if top_edge < 0:
+            raise ValueError(("The top edge of the last grid row is %d "
+                              "pixels outside of the image.") % -top_edge)
+        bottom_edge = gridding.y_location_of_lowest_y_spot + gridding.y_spacing / 2
+        if image_shape is not None and image_shape[0] < bottom_edge:
+            raise ValueError(("The bottom edge of the last grid column is %d "
+                              "pixels outside of the image.") %
+                             (bottom_edge - image_shape[0]))
         return gridding
         
     def canonical_row_and_column(self, row, column):

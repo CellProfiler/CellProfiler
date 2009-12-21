@@ -1,13 +1,7 @@
-'''<b>Enhance Or Suppress Speckles</b> enhances or suppresses the contrast of 
-speckle pixels with respect to the rest of the image
+'''<b>Enhance Or Suppress Speckles</b> enhances or suppresses certain image features (such as speckles, ring shapes, and neurites), which can improve subsequent identification of objects
 <hr>
-This module enhances or suppresses the intensity of speckle pixels
-using the white top-hat or opening morphological operations. Opening
-suppresses speckles. It applies a grayscale erosion to reduce everything
-within a given radius to the lowest value within that radius, then uses
-a grayscale dilation to restore objects larger than the radius to an
-approximation of their former shape. The white top-hat filter enhances 
-speckles by subtracting the effects of opening from the original image.
+This module enhances or suppresses the intensity of certain pixels relative
+to the rest of the image, by applying image processing filters to the image. It produces a grayscale image in which objects can be identified using an <b>Identify module</>.
 '''
 
 #CellProfiler is distributed under the GNU General Public License.
@@ -46,30 +40,36 @@ class EnhanceOrSuppressSpeckles(cpm.CPModule):
     def create_settings(self):
         self.image_name = cps.ImageNameSubscriber('Select the input image',
                                                 'None',doc="""
-            What did you call the image with speckles to be enhanced or suppressed?""")
+            What did you call the image with features to be enhanced or suppressed?""")
         
         self.filtered_image_name = cps.ImageNameProvider('Name the output image',
                                         'FilteredBlue',doc="""
-                                        What do you want to call the speckle-enhanced or suppressed image?""")
+                                        What do you want to call the feature-enhanced or suppressed image?""")
         
         self.method = cps.Choice('Select the operation',
                                         [ ENHANCE, SUPPRESS],doc="""
-                                        Do you want to enhance or suppress speckles?
+                                        Do you want to enhance or suppress the feature you designate?
                                         Choose <i>Enhance</i> to get an image whose intensity is largely composed of
-                                        the speckles. Choose <i>Suppress</i> to get an image with the speckles
+                                        the features of interest. Choose <i>Suppress</i> to produce an image with the feature largely
                                         removed.""")
         
         self.enhance_method = cps.Choice('Feature type',
                                         [E_SPECKLES, E_NEURITES, E_DARK_HOLES],
                                         doc="""
-                                        This module can enhance three kinds of objects:
+                                        This module can enhance (or suppress, in some cases) three kinds of objects:
                                         <ul><li><i>Speckles</i>: A speckle is an area of enhanced intensity
                                         relative to its immediate neighborhood. The module enhances
                                         speckles using a white tophat filter (the image minus the
-                                        morphological grayscale opening of the image)</li>
+                                        morphological grayscale opening of the image). Opening
+suppresses speckles. It applies a grayscale erosion to reduce everything
+within a given radius to the lowest value within that radius, then uses
+a grayscale dilation to restore objects larger than the radius to an
+approximation of their former shape. The white top-hat filter enhances 
+speckles by subtracting the effects of opening from the original image.
+</li>
                                         <li><i>Neurites</i>: The module takes the difference of the
                                         white and black tophat filters. The effect is to enhance lines
-                                        whose width is the "speckle size".</li>
+                                        whose width is the "feature size".</li>
                                         <li><i>Dark holes</i>: The module uses morphological reconstruction 
                                         (the rolling-ball algorithm) to identify dark holes within brighter
                                         rings. The image is inverted so that the dark holes turn into
@@ -83,13 +83,13 @@ class EnhanceOrSuppressSpeckles(cpm.CPModule):
         self.object_size = cps.Integer('Feature size',
                                         10,1,doc="""
                                         <i>(Used if speckles or neurites are selected)</i><br>
-                                        What is the speckle size? 
-                                        This is the diameter of the largest speckle to be enhanced or suppressed, which
+                                        What is the feature size? 
+                                        This is the diameter of the largest speckle (or the width of the neurites) to be enhanced or suppressed, which
                                         will be used to calculate an adequate filter size. If you don't know the width 
-                                        of your objects, you can use the <i>Tools &lt; Show pixel data</i> image tool 
+                                        of your objects, you can use the <i>Tools -> Show pixel data</i> image tool 
                                         in the image window menu to find out.""")
         
-        self.hole_size = cps.IntegerRange('Range of hole sizes?',
+        self.hole_size = cps.IntegerRange('Range of hole sizes',
                                         value=(1,10),minval=1, doc="""
                                         <i>(Used if dark hole detection is selected)</i><br>
                                         This is the range of hole sizes to be enhanced. The algorithm will

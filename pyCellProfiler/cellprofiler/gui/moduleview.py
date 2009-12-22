@@ -375,6 +375,8 @@ class ModuleView:
         control_name - assign this name to the control
         style        - one of the CB_ styles 
         """
+        if v.value not in choices and style == wx.CB_READONLY:
+            choices = choices + [v.value]
         if not control:
             control = wx.ComboBox(self.__module_panel,-1,v.value,
                                   choices=choices,

@@ -22,9 +22,9 @@ Per_Image row for every "cycle" that CellProfiler processes (usually, a cycle is
 measurements for individual objects. There is one row of object
 measurements per object identified. The two tables are connected with the
 primary key column ImageNumber, which indicates to which image each object belongs. The Per_Object table has another primary
-key called ObjectNumber, which is unique per image.
+key called ObjectNumber, which is unique per image. In the most typical use, if multiple types of objects are identified and measured in a pipeline, the number of those objects are equal to each other. For example, in most pipelines, each nucleus has exactly one cytoplasm, so the first row of the Per-Object table contains all of the information about object #1, including both nucleus- and cytoplasm-related measurements. If this one-to-one correspondence is <em>not</em> the case for all objects in the pipeline (for example, if dozens of speckles are identified and measured for each nucleus), then the ExportToDatabase module must be configured to export only objects that maintain the one-to-one correspondence (for example, export only Nucleus and Cytoplasm, but omit Speckles).
 
-If metadata has been used to group images (for example, grouping several image cycles into a single well), then the database can also contain a per-Group table (for example, a Per_Well table).  Because 
+If metadata has been used to group images (for example, grouping several image cycles into a single well), then the database can also contain a Per_Group table (for example, a Per_Well table).  
 
 Oracle is not currently fully supported; you can create your own Oracle DB using
 the .csv output option, and writing a simple script to upload to the DB.
@@ -181,21 +181,20 @@ class ExportToDatabase(cpm.CPModule):
         self.save_cpa_properties = cps.Binary(
             "Create a CellProfiler Analyst properties file?", 
             False, doc = """
-            Generate a template properties for using your new database in CellProfiler Analyst (a data
+            You can generate a template properties file that will allow you to use your new database with CellProfiler Analyst (a data
             exploration tool which can also be downloaded from
             <a href="http://www.cellprofiler.org/"> http://www.cellprofiler.org/ </a>). 
             The module will attempt to fill in as many as the entries as possible 
-            based on the current handles structure. However, entries such as the 
-            server name, username and password are omitted. Hence, opening the 
-            properties file in CPA will produce an error since it won't be able to
-            connect to the server. However, you can still edit the file in CPA and
-            then fill in the required information.""")
+            based on the pipeline's settings. However, entries such as the 
+            server name, username and password are omitted and will need to be edited within CellProfiler Analyst. Opening the 
+            properties file in CPA without editing those fields will produce an error since it won't be able to
+            connect to the server.""")
         
         self.store_csvs = cps.Binary(
             "Store the database in CSV files? ", False, doc = """
             This will write per_image and per_object tables as a series of CSV files along with an SQL file 
             that can be used with those files to create the database.  You can also look at the csv
-            files in a spreadsheet program, such as Excel.""")
+            files in a spreadsheet program, such as Excel. The typical usage of the module omits the creation of CSV files and instead data is written directly to the MySQL database.""")
         
         self.mysql_not_available = cps.Divider("Cannot write to MySQL directly - CSV file output only", line=False, 
             doc= """The MySQLdb python module could not be loaded.  MySQLdb is necessary for direct export.""")
@@ -209,13 +208,12 @@ class ExportToDatabase(cpm.CPModule):
         self.sqlite_file = cps.Text("Name the SQLite database file", 
             "DefaultDB.db", doc = """
             <i>(Used if SQLite selected as database type)</i><br>
-            What is the SQLite database file you want to write to?""")
+            What is the SQLite database filename to which you want to write?""")
         
         self.wants_agg_mean = cps.Binary("Calculate the per-image mean values of object measurements?", True, doc = """
-            ExportToDatabase can calculate statistics over all the objects in each image
-            and store the results as columns in the database. For instance, if
-            you are measuring the area of the Nuclei objects and you check the aggregate
-            mean box in this module, ExportToDatabase will create a column in the Per_Image
+            ExportToDatabase can calculate population statistics over all the objects in each image
+            and store the results in the database. For instance, if
+            you are measuring the area of the Nuclei objects and you check the box for this option, ExportToDatabase will create a column in the Per_Image
             table called Mean_Nuclei_AreaShape_Area. Check this setting to add 
             these columns to your image file; uncheck it to remove these columns from your image file.
             <p>You may not want to use ExportToDatabase to calculate these measurements if your pipeline generates
@@ -236,7 +234,7 @@ class ExportToDatabase(cpm.CPModule):
         self.wants_agg_mean_well = cps.Binary(
             "Calculate the per-well mean values of object measurements?", False, doc = '''
             ExportToDatabase can calculate statistics over all the objects in each well 
-            and store the results as columns in per_well tables in the database. For instance, 
+            and store the results as columns in a Per_Well table in the database. For instance, 
             if you are measuring the area of the Nuclei objects and you check the aggregate
             mean box in this module, ExportToDatabase will create a table in database called
             Per_Well_Mean, with a column called Mean_Nuclei_AreaShape_Area. NOTE: this option is only
@@ -251,14 +249,14 @@ class ExportToDatabase(cpm.CPModule):
             "Calculate the per-well standard deviation values of object measurements?", False)
         
         self.objects_choice = cps.Choice(
-            "Add measurements for all objects to the database?",
+            "Export measurements for all objects to the database?",
             [O_ALL, O_NONE, O_SELECT], doc = """
             This option lets you choose the objects that will have
             their measurements saved in the Per_Object and Per_Well(s) database tables.
             <ul>
-            <li><i>All:</i> Save measurements from all objects</li>
-            <li><i>None:</i> Don't make a Per_Object table, save only image measurements.</li>
-            <li><i>Select:</i> select the objects you want from a list</li>
+            <li><i>All:</i> Export measurements from all objects</li>
+            <li><i>None:</i> Do not export data to a Per_Object table. Save only Per_Image or Per_Well measurements (which nonetheless include population statistics from objects).</li>
+            <li><i>Select:</i> Select the objects you want to export from a list</li>
             </ul>""")
         
         self.objects_list = cps.ObjectSubscriberMultiChoice(

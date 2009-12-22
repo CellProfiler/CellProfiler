@@ -392,7 +392,7 @@ class ModuleView:
             if len(choices)!=len(old_choices) or\
                not all([x==y for x,y in zip(choices,old_choices)]):
                 control.Items = choices
-            if control.Value != v.value:
+            if len(choices) > 0 and control.Value != v.value:
                 control.Value = v.value
         
         if (getattr(v,'has_tooltips',False) and 

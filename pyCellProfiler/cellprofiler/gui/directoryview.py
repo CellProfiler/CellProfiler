@@ -123,6 +123,7 @@ class DirectoryView(object):
             frame.subplot_imshow_color(0,0,image,filename)
         else:
             frame.subplot_imshow_grayscale(0,0,image,filename)
+        frame.Refresh()
 
 class LoadPipelineRequestEvent:
     """The user wants to load a pipeline

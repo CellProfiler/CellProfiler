@@ -393,6 +393,14 @@ class ModuleView:
             old_choices = control.Items
             if len(choices)!=len(old_choices) or\
                not all([x==y for x,y in zip(choices,old_choices)]):
+                if (len(old_choices) > 0 and v.value in old_choices and
+                    control.Value != v.value):
+                    # For Mac, if you change the choices and the current
+                    # combo-box value isn't in the choices, it throws
+                    # an exception. Windows is much more forgiving.
+                    # But the Mac has those buttons that look like little
+                    # jellies, so it is better.
+                    control.Value = v.value
                 control.Items = choices
             if len(choices) > 0 and control.Value != v.value:
                 control.Value = v.value

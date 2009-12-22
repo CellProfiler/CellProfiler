@@ -7,26 +7,29 @@ This module exports measurements directly to a database, or to a SQL compatible 
 It allows you to create MySQL and associated data files which will create a
 database and import the data into it and gives you the option of creating
 a properties file for use with CellProfiler Analyst. Optionally, you can create
-an SQLite DB file if you do not have a server on which to run MySQL.
- 
+an SQLite DB file if you do not have a server on which to run MySQL itself.
+
 This module must be run at the end of a pipeline, or second to last if 
 you are using the CreateBatchFiles module. If you forget this module, you
-can also run the ExportDatabase data tool after processing is complete; 
+can also run the ExportDatabase data tool (note: under construction) after processing is complete; 
 its functionality is the same.
 
 The database is set up with two primary tables. These tables are the
 Per_Image table and the Per_Object table (which may have a prefix if you
-specify). The Per_Image table consists of all the Image measurements and
-the Mean and Standard Deviation of the object measurements. There is one
-Per_Image row for every image. The Per_Object table contains all the
+specify). The Per_Image table consists of all the per-image measurements made during the pipeline, plus
+per-image population statistics (such as mean, median, and standard deviation) of the object measurements. There is one
+Per_Image row for every "cycle" that CellProfiler processes (usually, a cycle is a single field of view, and a single cycle usually contains several image files, each representing a different channel of the same field of view). The Per_Object table contains all the
 measurements for individual objects. There is one row of object
 measurements per object identified. The two tables are connected with the
-primary key column ImageNumber. The Per_Object table has another primary
+primary key column ImageNumber, which indicates to which image each object belongs. The Per_Object table has another primary
 key called ObjectNumber, which is unique per image.
 
-Oracle is not currently supported; you can create your own Oracle DB using
+If metadata has been used to group images (for example, grouping several image cycles into a single well), then the database can also contain a per-Group table (for example, a Per_Well table).  Because 
+
+Oracle is not currently fully supported; you can create your own Oracle DB using
 the .csv output option, and writing a simple script to upload to the DB.
 
+See also <b>ExportToExcel</b>.
 
 '''
 #CellProfiler is distributed under the GNU General Public License.
@@ -139,16 +142,16 @@ class ExportToDatabase(cpm.CPModule):
     def create_settings(self):
         self.db_type = cps.Choice("Database type",
                                   [DB_MYSQL,DB_ORACLE,DB_SQLITE], DB_MYSQL, doc = """
-                                  What type of database do you want to use? <ul><li><i>MySQL</i>
-                                  will allow you to write directly to the database.</li>  <li><i>Oracle</i> is currently
-                                  not supported, but writing your data to .csv files will allow you to upload your
-                                  data to an Oracle database with a simple script.</li> <li><i>SQLite</i> will write 
-                                  sqlite files directly.  More information about sqlite can be found at 
+                                  What type of database do you want to use? <ul><li><i>MySQL:</i>
+                                  This option will allow the data to be written directly to a MySQL database. MySQL is open-source software and may require help from your local Information Technology group to set up a database server.</li>  <li><i>Oracle:</i>This option  is currently
+                                  not fully supported, but your data will be written to .csv files. You can then upload your
+                                  data to an Oracle database by writing a simple script.</li> <li><i>SQLite:</i> This option will write 
+                                  sqlite files directly. SQLite is simpler to set up than MySQL and can more readily be run on your local computer rather than a database server. More information about sqlite can be found at 
                                   <a href="http://www.sqlite.org/"> http://www.sqlite.org/</a> </li></ul>""")
         
         self.db_name = cps.Text(
             "Database name", "DefaultDB",doc = """
-            What is the name of the database you want to use?""")
+            Select a name for the database you want to use?""")
         
         self.want_table_prefix = cps.Binary(
             "Add a prefix to table names?", False, doc = """
@@ -163,15 +166,15 @@ class ExportToDatabase(cpm.CPModule):
         
         self.sql_file_prefix = cps.Text(
             "SQL file prefix", "SQL_", doc = """
-            <i>(Used if SQL is selected as the database type and CSV files are to be written)</i><br>
+            <i>(Used if SQL is selected as the database type and if CSV files are to be written)</i><br>
             What prefix do you want to use to name the SQL file?""")
         
         self.use_default_output_directory = cps.Binary(
             "Save files in the default output folder?", True)
         
         self.output_directory = cps.Text(
-            "Enter output folder", ".", doc = """
-            <i>(Used if SQL is selected as the database type and CSV files are to be written)</i><br>
+            "Enter the output folder", ".", doc = """
+            <i>(Used if SQL is selected as the database type and if CSV files are to be written)</i><br>
             What folder should be used to save files? Use a "." to indicate the default
             output folder.""")
         
@@ -261,7 +264,7 @@ class ExportToDatabase(cpm.CPModule):
         self.objects_list = cps.ObjectSubscriberMultiChoice(
             "Select the objects", doc = """
             <i>(Used if Select is chosen for adding objects)</i><br>
-            Choose one or more objects from this list. The list includes
+            Choose one or more objects from this list (click using shift or command keys to select multiple objects from the list). The list includes
             the objects that were created by prior modules. If you choose an
             object, its measurements will be written out to the Per_Object and/or
             Per_Well(s) tables, otherwise, the object's measurements will be skipped.""")

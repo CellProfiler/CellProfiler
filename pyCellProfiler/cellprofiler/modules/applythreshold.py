@@ -60,12 +60,12 @@ class ApplyThreshold(Identify):
                                 </ul>''')
         # if not binary:
         self.low_or_high = cpsetting.Choice(
-            "Set pixels below or above the threshold to zero?",
-            [TH_BELOW_THRESHOLD, TH_ABOVE_THRESHOLD],
-            doc="""For grayscale output, you can either set the pixels below 
-            the threshold to zero or set the pixels above the threshold to zero.
-            Choose "Below threshold" to threshold dim pixels and
-            "Above threshold" to threshold bright pixels.""")
+                                "Set pixels below or above the threshold to zero?",
+                                [TH_BELOW_THRESHOLD, TH_ABOVE_THRESHOLD],
+                                doc="""For grayscale output, you can either set the dim pixels below 
+                                the threshold to zero or set the bright pixels above the threshold to zero.
+                                Choose <i>Below threshold</i> to threshold dim pixels and
+                                <i>Above threshold</i> to threshold bright pixels.""")
         
         # if not binary and below threshold
         

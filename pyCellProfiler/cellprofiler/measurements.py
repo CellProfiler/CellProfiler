@@ -266,8 +266,8 @@ class Measurements(object):
                     break
             result += pattern[:m.start()]
             measurement = 'Metadata_'+m.groups()[0]
-            result += self.get_measurement("Image", measurement, 
-                                           image_set_index)
+            result += str(self.get_measurement("Image", measurement, 
+                                               image_set_index))
             pattern = pattern[m.end():]
         result += pattern
         return result

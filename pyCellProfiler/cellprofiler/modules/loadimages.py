@@ -529,42 +529,7 @@ class LoadImages(cpmodule.CPModule):
                 self.images[i][FD_PATH_METADATA]
         return varlist
     
-    def set_settings_from_values(self,setting_values,variable_revision_number,module_name):
-        """Interpret the setting values as saved by the given revision number
-        """
-        if variable_revision_number == 1 and module_name == 'LoadImages':
-            setting_values,variable_revision_number = self.upgrade_1_to_2(setting_values)
-        if variable_revision_number == 2 and module_name == 'LoadImages':
-            setting_values,variable_revision_number = self.upgrade_2_to_3(setting_values)
-        if variable_revision_number == 3 and module_name == 'LoadImages':
-            setting_values,variable_revision_number = self.upgrade_3_to_4(setting_values)
-        if variable_revision_number == 4 and module_name == 'LoadImages':
-            setting_values,variable_revision_number = self.upgrade_4_to_5(setting_values)
-        if variable_revision_number == 5 and module_name == 'LoadImages':
-            setting_values,variable_revision_number = self.upgrade_5_to_new_1(setting_values)
-            module_name = self.module_class()
-        
-        if (variable_revision_number == 1 and module_name == self.module_class()):
-            setting_values, variable_revision_number = self.upgrade_new_1_to_2(setting_values)
-        if (variable_revision_number == 2 and module_name == self.module_class()):
-            setting_values, variable_revision_number = self.upgrade_new_2_to_3(setting_values)
-        if (variable_revision_number == 3 and module_name == self.module_class()):
-            setting_values, variable_revision_number = self.upgrade_new_3_to_4(setting_values)
-
-        #
-        # Standardize "Default Image Directory" -> "Default Image Folder"
-        if setting_values[self.SLOT_LOCATION].startswith("Default Image"):
-            setting_values = (setting_values[:self.SLOT_LOCATION] +
-                              [DIR_DEFAULT_IMAGE] +
-                              setting_values[self.SLOT_LOCATION+1:])
-        elif setting_values[self.SLOT_LOCATION].startswith("Default Output"):
-            setting_values = (setting_values[:self.SLOT_LOCATION] +
-                              [DIR_DEFAULT_OUTPUT] +
-                              setting_values[self.SLOT_LOCATION+1:])
-        if variable_revision_number != self.variable_revision_number or \
-           module_name != self.module_class():
-            raise NotImplementedError("Cannot read version %d of %s"%(
-                variable_revision_number, self.module_name))
+    def prepare_settings(self, setting_values):
         #
         # Figure out how many images are in the saved settings - make sure
         # the array size matches the incoming #
@@ -575,111 +540,157 @@ class LoadImages(cpmodule.CPModule):
             self.remove_imagecb(self.image_keys[0])
         while len(self.images) < image_count:
             self.add_imagecb()
-        super(LoadImages,self).set_settings_from_values(setting_values, variable_revision_number, module_name)
     
-    def upgrade_1_to_2(self, setting_values):
-        """Upgrade rev 1 LoadImages to rev 2
-        
-        Handle movie formats new to rev 2
-        """
-        new_values = list(setting_values[:10])
-        image_or_movie =  setting_values[10]
-        if image_or_movie == 'Image':
-            new_values.append('individual images')
-        elif setting_values[11] == 'avi':
-            new_values.append('avi movies')
-        elif setting_values[11] == 'stk':
-            new_values.append('stk movies')
-        else:
-            raise ValueError('Unhandled movie type: %s'%(setting_values[11]))
-        new_values.extend(setting_values[11:])
-        return (new_values,2)
-    
-    def upgrade_2_to_3(self, setting_values):
-        """Added binary/grayscale question"""
-        new_values = list(setting_values)
-        new_values.append('grayscale')
-        new_values.append('')
-        return (new_values,3)
-    
-    def upgrade_3_to_4(self, setting_values):
-        """Added text exclusion at slot # 10"""
-        new_values = list(setting_values)
-        new_values.insert(10,cps.DO_NOT_USE)
-        return (new_values,4)
-    
-    def upgrade_4_to_5(self, setting_values):
-        new_values = list(setting_values)
-        new_values.append(cps.NO)
-        return (new_values,5)
-    
-    def upgrade_5_to_new_1(self, setting_values):
-        """Take the old LoadImages values and put them in the correct slots"""
-        new_values = range(self.SLOT_FIRST_IMAGE_V1)
-        new_values[self.SLOT_FILE_TYPE]              = setting_values[11]
-        new_values[self.SLOT_MATCH_METHOD]           = setting_values[0]
-        new_values[self.SLOT_ORDER_GROUP_SIZE]       = setting_values[9]
-        new_values[self.SLOT_MATCH_EXCLUDE]          = setting_values[10]
-        new_values[self.SLOT_DESCEND_SUBDIRECTORIES] = setting_values[12]
-        new_values[self.SLOT_CHECK_IMAGES]           = setting_values[16]
-        loc = setting_values[13]
-        if loc == '.':
-            new_values[self.SLOT_LOCATION]           = DIR_DEFAULT_IMAGE
-        elif loc == '&':
-            new_values[self.SLOT_LOCATION]           = DIR_DEFAULT_OUTPUT
-        else:
-            new_values[self.SLOT_LOCATION]           = DIR_OTHER 
-        new_values[self.SLOT_LOCATION_OTHER]         = loc 
-        for i in range(0,4):
-            text_to_find = setting_values[i*2+1]
-            image_name = setting_values[i*2+2]
-            if text_to_find == cps.DO_NOT_USE or \
-               image_name == cps.DO_NOT_USE or\
-               text_to_find == '/' or\
-               image_name == '/' or\
-               text_to_find == '\\' or\
-               image_name == '\\':
-                break
-            new_values.extend([text_to_find,image_name,text_to_find])
-        return (new_values,1)
-    
-    def upgrade_new_1_to_2(self, setting_values):
-        """Add the metadata slots to the images"""
-        new_values = list(setting_values[:self.SLOT_FIRST_IMAGE_V1])
-        new_values.append(cps.NO) # Group by metadata is off
-        for i in range((len(setting_values)-self.SLOT_FIRST_IMAGE_V1) / self.SLOT_IMAGE_FIELD_COUNT_V1):
-            off = self.SLOT_FIRST_IMAGE_V1 + i * self.SLOT_IMAGE_FIELD_COUNT_V1
-            new_values.extend([setting_values[off],
-                               setting_values[off+1],
-                               setting_values[off+2],
-                               M_NONE,
-                               "None",
-                               "None"])
-        return (new_values, 2)
 
-    def upgrade_new_2_to_3(self, setting_values):
-        """Add the checkbox for excluding certain files"""
-        new_values = list(setting_values[:self.SLOT_FIRST_IMAGE_V2])
-        if setting_values[self.SLOT_MATCH_EXCLUDE] == cps.DO_NOT_USE:
-            new_values += [cps.NO]
-        else:
-            new_values += [cps.YES]
-        for i in range((len(setting_values)-self.SLOT_FIRST_IMAGE_V2) / self.SLOT_IMAGE_FIELD_COUNT):
-            off = self.SLOT_FIRST_IMAGE_V2 + i * self.SLOT_IMAGE_FIELD_COUNT
-            new_values.extend([setting_values[off],
-                               setting_values[off+1],
-                               setting_values[off+2],
-                               M_NONE,
-                               "None",
-                               "None"])
-        return (new_values, 3)
-    
-    def upgrade_new_3_to_4(self, setting_values):
-        """Add the metadata_fields setting"""
-        new_values = list(setting_values[:self.SLOT_FIRST_IMAGE_V3])
-        new_values.append('')
-        new_values += setting_values[self.SLOT_FIRST_IMAGE_V3:]
-        return (new_values, 4)
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name, from_matlab):
+
+        #
+        # historic rewrites from CP1.0
+        # 
+        def upgrade_1_to_2(setting_values):
+            """Upgrade rev 1 LoadImages to rev 2
+
+            Handle movie formats new to rev 2
+            """
+            new_values = list(setting_values[:10])
+            image_or_movie =  setting_values[10]
+            if image_or_movie == 'Image':
+                new_values.append('individual images')
+            elif setting_values[11] == 'avi':
+                new_values.append('avi movies')
+            elif setting_values[11] == 'stk':
+                new_values.append('stk movies')
+            else:
+                raise ValueError('Unhandled movie type: %s'%(setting_values[11]))
+            new_values.extend(setting_values[11:])
+            return (new_values,2)
+
+        def upgrade_2_to_3(setting_values):
+            """Added binary/grayscale question"""
+            new_values = list(setting_values)
+            new_values.append('grayscale')
+            new_values.append('')
+            return (new_values,3)
+
+        def upgrade_3_to_4(setting_values):
+            """Added text exclusion at slot # 10"""
+            new_values = list(setting_values)
+            new_values.insert(10,cps.DO_NOT_USE)
+            return (new_values,4)
+
+        def upgrade_4_to_5(setting_values):
+            new_values = list(setting_values)
+            new_values.append(cps.NO)
+            return (new_values,5)
+
+        def upgrade_5_to_new_1(setting_values):
+            """Take the old LoadImages values and put them in the correct slots"""
+            new_values = range(self.SLOT_FIRST_IMAGE_V1)
+            new_values[self.SLOT_FILE_TYPE]              = setting_values[11]
+            new_values[self.SLOT_MATCH_METHOD]           = setting_values[0]
+            new_values[self.SLOT_ORDER_GROUP_SIZE]       = setting_values[9]
+            new_values[self.SLOT_MATCH_EXCLUDE]          = setting_values[10]
+            new_values[self.SLOT_DESCEND_SUBDIRECTORIES] = setting_values[12]
+            new_values[self.SLOT_CHECK_IMAGES]           = setting_values[16]
+            loc = setting_values[13]
+            if loc == '.':
+                new_values[self.SLOT_LOCATION]           = DIR_DEFAULT_IMAGE
+            elif loc == '&':
+                new_values[self.SLOT_LOCATION]           = DIR_DEFAULT_OUTPUT
+            else:
+                new_values[self.SLOT_LOCATION]           = DIR_OTHER 
+            new_values[self.SLOT_LOCATION_OTHER]         = loc 
+            for i in range(0,4):
+                text_to_find = setting_values[i*2+1]
+                image_name = setting_values[i*2+2]
+                if text_to_find == cps.DO_NOT_USE or \
+                   image_name == cps.DO_NOT_USE or\
+                   text_to_find == '/' or\
+                   image_name == '/' or\
+                   text_to_find == '\\' or\
+                   image_name == '\\':
+                    break
+                new_values.extend([text_to_find,image_name,text_to_find])
+            return (new_values,1)
+
+        #
+        # New revisions in CP2.0
+        #
+        def upgrade_new_1_to_2(setting_values):
+            """Add the metadata slots to the images"""
+            new_values = list(setting_values[:self.SLOT_FIRST_IMAGE_V1])
+            new_values.append(cps.NO) # Group by metadata is off
+            for i in range((len(setting_values)-self.SLOT_FIRST_IMAGE_V1) / self.SLOT_IMAGE_FIELD_COUNT_V1):
+                off = self.SLOT_FIRST_IMAGE_V1 + i * self.SLOT_IMAGE_FIELD_COUNT_V1
+                new_values.extend([setting_values[off],
+                                   setting_values[off+1],
+                                   setting_values[off+2],
+                                   M_NONE,
+                                   "None",
+                                   "None"])
+            return (new_values, 2)
+
+        def upgrade_new_2_to_3(setting_values):
+            """Add the checkbox for excluding certain files"""
+            new_values = list(setting_values[:self.SLOT_FIRST_IMAGE_V2])
+            if setting_values[self.SLOT_MATCH_EXCLUDE] == cps.DO_NOT_USE:
+                new_values += [cps.NO]
+            else:
+                new_values += [cps.YES]
+            for i in range((len(setting_values)-self.SLOT_FIRST_IMAGE_V2) / self.SLOT_IMAGE_FIELD_COUNT):
+                off = self.SLOT_FIRST_IMAGE_V2 + i * self.SLOT_IMAGE_FIELD_COUNT
+                new_values.extend([setting_values[off],
+                                   setting_values[off+1],
+                                   setting_values[off+2],
+                                   M_NONE,
+                                   "None",
+                                   "None"])
+            return (new_values, 3)
+
+        def upgrade_new_3_to_4(setting_values):
+            """Add the metadata_fields setting"""
+            new_values = list(setting_values[:self.SLOT_FIRST_IMAGE_V3])
+            new_values.append('')
+            new_values += setting_values[self.SLOT_FIRST_IMAGE_V3:]
+            return (new_values, 4)
+
+        if from_matlab:
+            if variable_revision_number == 1:
+                setting_values,variable_revision_number = upgrade_1_to_2(setting_values)
+            if variable_revision_number == 2:
+                setting_values,variable_revision_number = upgrade_2_to_3(setting_values)
+            if variable_revision_number == 3:
+                setting_values,variable_revision_number = upgrade_3_to_4(setting_values)
+            if variable_revision_number == 4:
+                setting_values,variable_revision_number = upgrade_4_to_5(setting_values)
+            if variable_revision_number == 5:
+                setting_values,variable_revision_number = upgrade_5_to_new_1(setting_values)
+            from_matlab = False
+        
+        assert not from_matlab
+        if variable_revision_number == 1:
+            setting_values, variable_revision_number = upgrade_new_1_to_2(setting_values)
+        if variable_revision_number == 2:
+            setting_values, variable_revision_number = upgrade_new_2_to_3(setting_values)
+        if variable_revision_number == 3:
+            setting_values, variable_revision_number = upgrade_new_3_to_4(setting_values)
+
+        #
+        # Standardize "Default Image Directory" -> "Default Image Folder"
+        #
+        if setting_values[self.SLOT_LOCATION].startswith("Default Image"):
+            setting_values = (setting_values[:self.SLOT_LOCATION] +
+                              [DIR_DEFAULT_IMAGE] +
+                              setting_values[self.SLOT_LOCATION+1:])
+        elif setting_values[self.SLOT_LOCATION].startswith("Default Output"):
+            setting_values = (setting_values[:self.SLOT_LOCATION] +
+                              [DIR_DEFAULT_OUTPUT] +
+                              setting_values[self.SLOT_LOCATION+1:])
+
+        assert variable_revision_number == self.variable_revision_number, "Cannot read version %d of %s"%(variable_revision_number, self.module_name)
+
+        return setting_values, variable_revision_number, from_matlab
+
 
     def write_to_handles(self,handles):
         """Write out the module's state to the handles

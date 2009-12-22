@@ -199,11 +199,11 @@ class ExportToDatabase(cpm.CPModule):
         self.mysql_not_available = cps.Divider("Cannot write to MySQL directly - CSV file output only", line=False, 
             doc= """The MySQLdb python module could not be loaded.  MySQLdb is necessary for direct export.""")
         
-        self.db_host = cps.Text("Database host", "imgdb01")
+        self.db_host = cps.Text("Database host", "")
         
-        self.db_user = cps.Text("Username", "cpuser")
+        self.db_user = cps.Text("Username", "")
         
-        self.db_passwd = cps.Text("Password", "cPus3r")
+        self.db_passwd = cps.Text("Password", "")
         
         self.sqlite_file = cps.Text("Name the SQLite database file", 
             "DefaultDB.db", doc = """
@@ -1018,10 +1018,10 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
         date = datetime.datetime.now().ctime()
         db_type = (self.db_type == DB_MYSQL and 'mysql') or (self.db_type == DB_SQLITE and 'sqlite') or 'oracle_not_supported'
         db_port = (self.db_type == DB_MYSQL and 3306) or (self.db_type == DB_ORACLE and 1521) or ''
-        db_host = 'imgdb01'
+        db_host = 'Host'
         db_pwd  = ''
         db_name = self.db_name
-        db_user = 'cpuser'
+        db_user = 'User'
         db_sqlite_file = (self.db_type == DB_SQLITE and self.get_output_directory()+'/'+self.sqlite_file.value) or ''
         if self.db_type != DB_SQLITE:
             db_info =  'db_type      = %(db_type)s\n'%(locals())

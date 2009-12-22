@@ -16,9 +16,9 @@ its functionality is the same.
 
 The database is set up with two primary tables. These tables are the
 Per_Image table and the Per_Object table (which may have a prefix if you
-specify). The Per_Image table consists of all the per-image measurements made during the pipeline, plus
+specify). The <em>Per_Image</em> table consists of all the per-image measurements made during the pipeline, plus
 per-image population statistics (such as mean, median, and standard deviation) of the object measurements. There is one
-Per_Image row for every "cycle" that CellProfiler processes (usually, a cycle is a single field of view, and a single cycle usually contains several image files, each representing a different channel of the same field of view). The Per_Object table contains all the
+Per_Image row for every "cycle" that CellProfiler processes (usually, a cycle is a single field of view, and a single cycle usually contains several image files, each representing a different channel of the same field of view). The<em> Per_Object</em> table contains all the
 measurements for individual objects. There is one row of object
 measurements per object identified. The two tables are connected with the
 primary key column ImageNumber, which indicates to which image each object belongs. The Per_Object table has another primary

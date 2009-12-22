@@ -56,20 +56,22 @@ class EnhanceOrSuppressSpeckles(cpm.CPModule):
         self.enhance_method = cps.Choice('Feature type',
                                         [E_SPECKLES, E_NEURITES, E_DARK_HOLES],
                                         doc="""
-                                        This module can enhance (or suppress, in some cases) three kinds of objects:
+                                        This module can enhance three kinds of image intensity features:
                                         <ul><li><i>Speckles</i>: A speckle is an area of enhanced intensity
                                         relative to its immediate neighborhood. The module enhances
-                                        speckles using a white tophat filter (the image minus the
-                                        morphological grayscale opening of the image). Opening
-suppresses speckles. It applies a grayscale erosion to reduce everything
-within a given radius to the lowest value within that radius, then uses
-a grayscale dilation to restore objects larger than the radius to an
-approximation of their former shape. The white top-hat filter enhances 
-speckles by subtracting the effects of opening from the original image.
-</li>
-                                        <li><i>Neurites</i>: The module takes the difference of the
-                                        white and black tophat filters. The effect is to enhance lines
-                                        whose width is the "feature size".</li>
+                                        speckles using a white tophat filter, which is the image minus the
+                                        morphological grayscale opening of the image. The opening operation
+                                        suppresses the speckles by applying a grayscale erosion to reduce everything
+                                        within a given radius to the lowest value within that radius, then uses
+                                        a grayscale dilation to restore objects larger than the radius to an
+                                        approximation of their former shape. The white top-hat filter enhances 
+                                        speckles by subtracting the effects of opening from the original image.
+                                        </li>
+                                        <li><i>Neurites</i>: Here, the neurites are taken to be long, thin features
+                                        of enhanced intensity. The module takes the difference of the
+                                        white and black tophat filters (a black tophat filter is the 
+                                        morphological grayscale opening of the image minus the image itself). 
+                                        The effect is to enhance lines whose width is the "feature size".</li>
                                         <li><i>Dark holes</i>: The module uses morphological reconstruction 
                                         (the rolling-ball algorithm) to identify dark holes within brighter
                                         rings. The image is inverted so that the dark holes turn into
@@ -78,7 +80,9 @@ speckles by subtracting the effects of opening from the original image.
                                         missing the peaks. Finally, the reconstructed image is subtracted
                                         from the previous reconstructed image. This leaves circular bright
                                         spots with a radius equal to the number of iterations performed.
-                                        </li></ul>""")
+                                        </li></ul>
+                                        In addition, this module can suppress certain features (such as speckles)
+                                        by specifying the feature size.""")
         
         self.object_size = cps.Integer('Feature size',
                                         10,1,doc="""

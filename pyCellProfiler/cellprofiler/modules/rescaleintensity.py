@@ -57,75 +57,109 @@ class RescaleIntensity(cpm.CPModule):
     
     def create_settings(self):
         self.image_name = cps.ImageNameSubscriber("Select the input image","None", doc = '''What did you call the image to be rescaled?''')
+        
         self.rescaled_image_name = cps.ImageNameProvider("Name the output image","RescaledBlue", doc = '''What do you want to call the rescaled image?''')
+        
         self.rescale_method = cps.Choice('Select rescaling method:',
                                          choices=M_ALL, doc='''There are nine options for rescaling the input image: 
-                                         <ul><li>Stretch each image to use the full intensity range: Find the minimum and maximum values within the unmasked part of the image 
-                                         (or the whole image if there is no mask) and rescale every pixel so that 
-                                         the minimum has an intensity of zero and the maximum has an intensity of one.</li>
-                                         <li>Choose specific values to be reset to the full intensity range: Pixels are
-                                        scaled from their user-specified original range to the range, 0 to 1.
-                                        Options are available to handle values outside of the original range.
-                                            
-                                        To convert 12-bit images saved in 16-bit format to the correct range,
-                                        use the range, 0 to 0.0625. The value 0.0625 is equivalent 
-                                        to 2^12 divided by 2^16, so it will convert a 16 bit image containing 
-                                        only 12 bits of data to the proper range.</li>
-                                        <li>Choose specific values to be reset to a custom range: Pixels are scaled from their original range to
-                                        the new target range. Options are available to handle values outside
-                                        of the original range.</li>
-                                        <li>Divide by image's minimum: Divide the intensity value of each pixel by the image's minimum intensity
-                                        value so that all pixel intensities are equal to or greater than 1.
-                                        You can use the output from this option in CorrectIllumination_Apply.
-                                        The image becomes an illumination correction function.</li>
-                                        <li>Divide by image's maximum: Divide the intensity value of each pixel by the image's maximum intensity
-                                        value so that all pixel intensities are less than or equal to 1.</li>
-                                        <li>Divide each image by the same value: Divide the intensity value of each pixel by the value entered.</li>
-                                        <li>Divide by each image by a previously calculated value: The intensity value of each pixel is divided by some previously calculated
-                                        measurement. This measurement can be the output of some other module
-                                        or can be a value loaded by the LoadText module.</li>
-                                        <li>Match the image's maximum to another image's maximum: Scale an image so that its maximum value is the same as the maximum value
-                                        within the target image.</li>
-                                        <li>Convert to 8-bit: Images in CellProfiler are normally stored as a floating point number in
-                                        the range of 0 to 1. This option converts these images to class uint8, 
-                                        meaning an 8 bit integer in the range of 0 to 255.  This is useful to
-                                        reduce the amount of memory required to store the image. Warning: Most
-                                        CellProfiler modules require the incoming image to be in the standard 0
-                                        to 1 range, so this conversion may cause downstream modules to behave 
-                                        unexpectedly.</li></ul>''')
+                                                <ul>
+                                                <li><i>Stretch each image to use the full intensity range:</i> Find the minimum and maximum values within the unmasked part of the image 
+                                                (or the whole image if there is no mask) and rescale every pixel so that 
+                                                the minimum has an intensity of zero and the maximum has an intensity of one.</li>
+                                                <li><i>Choose specific values to be reset to the full intensity range:</i> Pixels are
+                                                scaled from their user-specified original range to the range, 0 to 1.
+                                                Options are available to handle values outside of the original range.<br>
+                                                To convert 12-bit images saved in 16-bit format to the correct range,
+                                                use the range, 0 to 0.0625. The value 0.0625 is equivalent 
+                                                to 2<sup>12</sup> divided by 2<sup>16</sup>, so it will convert a 16 bit image containing 
+                                                only 12 bits of data to the proper range.</li>
+                                                <li><i>Choose specific values to be reset to a custom range:</i> Pixels are scaled from their original range to
+                                                the new target range. Options are available to handle values outside
+                                                of the original range.</li>
+                                                <li><i>Divide by image's minimum:</i> Divide the intensity value of each pixel by the image's minimum intensity
+                                                value so that all pixel intensities are equal to or greater than 1.
+                                                You can use the output from this option in CorrectIllumination_Apply.
+                                                The image becomes an illumination correction function.</li>
+                                                <li><i>Divide by image's maximum:</i> Divide the intensity value of each pixel by the image's maximum intensity
+                                                value so that all pixel intensities are less than or equal to 1.</li>
+                                                <li><i>Divide each image by the same value:</i> Divide the intensity value of each pixel by the value entered.</li>
+                                                <li><i>Divide by each image by a previously calculated value:</i> The intensity value of each pixel is divided by some previously calculated
+                                                measurement. This measurement can be the output of some other module
+                                                or can be a value loaded by the LoadText module.</li>
+                                                <li><i>Match the image's maximum to another image's maximum:</i> Scale an image so that its maximum value is the same as the maximum value
+                                                within the target image.</li>
+                                                <li><i>Convert to 8-bit:</i> Images in CellProfiler are normally stored as a floating point number in
+                                                the range of 0 to 1. This option converts these images to class uint8, 
+                                                meaning an 8 bit integer in the range of 0 to 255.  This is useful to
+                                                reduce the amount of memory required to store the image. Warning: Most
+                                                CellProfiler modules require the incoming image to be in the standard 0
+                                                to 1 range, so this conversion may cause downstream modules to behave 
+                                                unexpectedly.</li></ul>''')
+        
         self.wants_automatic_low = cps.Binary('Use the minimum intensity value as the lower limit?',
-                                              False, doc = """This setting will use the minimum intensity in the original image
+                                              False, doc = """
+                                              <i>(Used if specific values are to be chosen for a custom range)</i><br>
+                                              This setting will use the minimum intensity in the original image
                                               as the lower limit of intensity range in the rescaled image.""")
+        
         self.wants_automatic_high = cps.Binary('Use the maximum intensity value as the upper limit?',
-                                               False, doc = """This setting will use the maximum intensity in the original image
-                                              as the upper limit of intensity range in the rescaled image.""")
+                                               False, doc = """
+                                               <i>(Used if specific values are to be chosen for a custom range)</i><br>
+                                               This setting will use the maximum intensity in the original image
+                                               as the upper limit of intensity range in the rescaled image.""")
+        
         self.source_low = cps.Float('Enter the lower limit for the intensity range for the original image',0)
+        
         self.source_high = cps.Float('Enter the upper limit for the intensity range for the original image',1)
+        
         self.source_scale = cps.FloatRange('Enter the intensity range for the original image',(0,1))
+        
         self.dest_scale = cps.FloatRange('Enter the desired intensity range for the final image', (0,1))
+        
         self.low_truncation_choice = cps.Choice('Select method for rescaling pixels below the lower limit:',
                                                 [R_MASK, R_SET_TO_ZERO, 
-                                                 R_SET_TO_CUSTOM, R_SCALE], doc = '''There are four ways to handle values less than the lower limit of the intensity range:
-                                                 <ul><li> Mask pixels: Creates a mask for the output image. All pixels below
-                                                  the lower limit will be masked out.</li>
-                                                  <li>Set to zero: Sets all pixels below the lower limit to zero.</li>
-                                                  <li>Set to custom value: Sets all pixels below the lower limit to a custom
-                                                  value.</li>
-                                                  <li>Scale similarly to others: Scales pixels with values below the lower limit
-                                                  using the same offset and divisor as other pixels. The results
-                                                  will be less than zero.</li></ul>
-                                                  ''')
-        self.custom_low_truncation = cps.Float("Enter custom value:",0, doc = """What custom value should be assigned to pixels with values below the lower limit?""")
+                                                 R_SET_TO_CUSTOM, R_SCALE], doc = '''
+                                                <i>(Used if specific values are to be chosen for a custom range)</i><br>
+                                                There are four ways to handle values less than the lower limit of the intensity range:
+                                                <ul>
+                                                <li><i>Mask pixels:</i> Creates a mask for the output image. All pixels below
+                                                the lower limit will be masked out.</li>
+                                                <li><i>Set to zero:</i> Sets all pixels below the lower limit to zero.</li>
+                                                <li><i>Set to custom value:</i> Sets all pixels below the lower limit to a custom
+                                                value.</li>
+                                                <li><i>Scale similarly to others:</i> Scales pixels with values below the lower limit
+                                                using the same offset and divisor as other pixels. The results
+                                                will be less than zero.</li>
+                                                </ul>''')
+        
+        self.custom_low_truncation = cps.Float("Enter custom value:",0, doc = """
+                                                <i>(Used if a custom rescaling range and a custom lower limit value is selected)</i><br>
+                                                What custom value should be assigned to pixels with values below the lower limit?""")
+        
         self.high_truncation_choice = cps.Choice('Select method for rescaling pixels above the upper limit:',
                                                 [R_MASK, R_SET_TO_ONE, 
-                                                 R_SET_TO_CUSTOM, R_SCALE], doc = """How do you want to handle values that are greater than the upper limit of the intensity range?""")
-        self.custom_high_truncation = cps.Float("Enter custom value:",0, doc = """What custom value should be assigned to pixels with values above the upper limit?""")
+                                                 R_SET_TO_CUSTOM, R_SCALE], doc = """
+                                                <i>(Used if specific values are to be chosen for a custom range)</i><br>
+                                                How do you want to handle values that are greater than the upper limit of the intensity range?""")
+        
+        self.custom_high_truncation = cps.Float("Enter custom value:",0, doc = """
+                                                <i>(Used if a custom rescaling range and a custom upper limit value is selected)</i><br>
+                                                What custom value should be assigned to pixels with values above the upper limit?""")
+        
         self.matching_image_name = cps.ImageNameSubscriber("Select image to match in maximum intensity:", "None",
-                                                           doc = """What did you call the image whose maximum you want the rescaled image to match?""")
+                                                           doc = """
+                                                           <i>(Used if the maximum for an image is to be matched to another image)</i><br>
+                                                           What did you call the image whose maximum you want the rescaled image to match?""")
+        
         self.divisor_value = cps.Float("Enter the divisor:",
-                                       1,minval=np.finfo(float).eps, doc = """What value should be used as the divisor for the final image?""")
+                                       1,minval=np.finfo(float).eps, doc = """
+                                       <i>(Used if the same value is used as a divisor)</i><br>
+                                       What value should be used as the divisor for the final image?""")
+        
         self.divisor_measurement = cps.Measurement("Select the measurement to use as a divisor:",
-                                                   lambda : cpmeas.IMAGE, doc = """What measurement value should be used as the divisor for the final image?""")
+                                                   lambda : cpmeas.IMAGE, doc = """
+                                                   <i>(Used if the previously calculated value is used as a divisor)</i><br>
+                                                   What measurement value should be used as the divisor for the final image?""")
 
     def settings(self):
         return [self.image_name, self.rescaled_image_name, self.rescale_method,

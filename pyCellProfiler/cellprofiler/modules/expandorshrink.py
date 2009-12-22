@@ -5,7 +5,7 @@ pixels. You can specify a certain number of border pixels to be
 added or removed, expand objects until they are almost touching or shrink
 objects down to a point. Objects are never lost using this module (shrinking 
 stops when an object becomes a single pixel). The module can separate touching
-objects (which can be created by <b>IdentifySecondary</b>) without otherwise shrinking
+objects without otherwise shrinking
 the objects.
 
 ExpandOrShrink can perform some specialized morphological operations that 
@@ -14,7 +14,7 @@ for more detail.
 
 Special note on saving images: Using the settings in this module, object
 outlines can be passed along to the module <b>OverlayOutlines</b> and then saved
-with the <b>SaveImages</b> module. Objects themselves can be passed along to the
+with the <b>SaveImages</b> module. The identified objects themselves can be passed along to the
 object processing module <b>ConvertToImage</b> and then saved with the
 SaveImages module.
 
@@ -100,22 +100,22 @@ class ExpandOrShrink(cpm.CPModule):
                                     <li><i>Skeletonize each object:</i> Erode each object to its skeleton.</li>
                                     <li><i>Remove spurs:<i> Remove or reduce the length of spurs in a skeletonized image.
                                     The algorithm reduces spur size by the number of pixels indicated in the
-                                    setting "Enter the number of pixels by which to expand or shrink."</li> </ul>              
+                                    setting "Number of pixels by which to expand or shrink."</li> </ul>              
                                     ''')
         
-        self.iterations = cps.Integer("Enter the number of pixels by which to expand or shrink",
+        self.iterations = cps.Integer("Number of pixels by which to expand or shrink",
                                       1, minval=1)
         
         self.wants_fill_holes = cps.Binary("Do you want to fill holes in objects so that all objects shrink to a single point?",
                                     False, doc=DOC_FILL_HOLES)
         
-        self.wants_outlines = cps.Binary("Save outlines of the identified objects?",
+        self.wants_outlines = cps.Binary("Retain the outlines of the identified objects for use later in the pipeline (for example, in SaveImages)?",
                                     False)
         
         self.outlines_name = cps.OutlineNameProvider("Name the outline image",
                                     "ShrunkenNucleiOutlines", doc = """
-                                    <i>(Only used if outlines are to be saved)</i><br>
-                                    What do you want to call the outlines of the identified objects?""")
+                                    <i>(Only used if outlines are to be retained for later use in the pipeline)</i><br>
+                                    Choose a name for the outlines of the identified objects, which will allow them to be selected as an image later in the pipeline.""")
 
     def settings(self):
         return [self.object_name, self.output_object_name, self.operation,

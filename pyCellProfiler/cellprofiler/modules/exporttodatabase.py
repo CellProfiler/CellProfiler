@@ -228,10 +228,10 @@ class ExportToDatabase(cpm.CPModule):
         
         self.wants_agg_median = cps.Binary("Calculate the per-image median values of object measurements?", False)
         
-        self.wants_agg_std_dev = cps.Binary("Calculate the standard deviation per-image values of object measurements?", False)
+        self.wants_agg_std_dev = cps.Binary("Calculate the per-image standard deviation values of object measurements?", False)
         
         self.wants_agg_mean_well = cps.Binary(
-            "Calculate the mean per-well value of each object measurement?", False, doc = '''
+            "Calculate the per-well mean values of object measurements?", False, doc = '''
             ExportToDatabase can calculate statistics over all the objects in each well 
             and store the results as columns in per_well tables in the database. For instance, 
             if you are measuring the area of the Nuclei objects and you check the aggregate
@@ -242,10 +242,10 @@ class ExportToDatabase(cpm.CPModule):
             table, regardless of the option chosen above.''')
         
         self.wants_agg_median_well = cps.Binary(
-            "Calculate the median per-well value of each object measurement?", False)
+            "Calculate the per-well median values of object measurements?", False)
         
         self.wants_agg_std_dev_well = cps.Binary(
-            "Calculate the standard deviation per-well value of each object measurement?", False)
+            "Calculate the per-well standard deviation values of object measurements?", False)
         
         self.objects_choice = cps.Choice(
             "Add measurements for all objects to the database?",

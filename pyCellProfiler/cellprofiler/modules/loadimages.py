@@ -1,8 +1,10 @@
 '''<b>Load Images</b> allows you to specify which images or movies are to be loaded and in
-which order. Groups of images will be loaded per cycle of CellProfiler processing.
+which order
 <hr>
 Tells CellProfiler where to retrieve images and gives each image a
-meaningful name for the other modules to access. When used in combination
+meaningful name for the other modules to access. The relationships between images and metadata describing each image can also be extracted or defined in this module. For example, a group of images (such as three channels that represent the same field of view) can be loaded together to be processed in a single cycle of CellProfiler processing.
+
+When used in combination
 with a <b>SaveImages</b> module, you can load images in one file format and
 save in another file format, making CellProfiler work as a file format
 converter.

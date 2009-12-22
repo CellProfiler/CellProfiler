@@ -107,7 +107,7 @@ class ExportToExcel(cpm.CPModule):
         
         self.object_groups = []
         self.add_object_group()
-        self.add_button = cps.DoSomething("Add a new data source.", "Add",
+        self.add_button = cps.DoSomething("Add a new data source", "Add",
                                            self.add_object_group)
     
     def add_object_group(self):

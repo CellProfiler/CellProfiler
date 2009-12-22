@@ -1,11 +1,10 @@
-'''<b>Export To Excel</b> exports measurements into a comma-delimited text file which can be
-opened in Excel or other spreadsheets.
+'''<b>Export To Excel</b> exports measurements into one or more files that can be
+opened in Excel or other spreadsheet programs.
 <hr>
 
-This module will convert the measurements to a comma-delimited form and
-either combine measurements from separate objects into one table or
-output per-object tables to separate files. In addition, you can save
-both image and experiment measurements.
+This module will convert the measurements to a comma-, tab-, or other 
+character-delimited text format and
+save them to the hard drive in one or several files, as requested. 
 
 '''
 #CellProfiler is distributed under the GNU General Public License.
@@ -64,28 +63,26 @@ class ExportToExcel(cpm.CPModule):
     variable_revision_number = 2
     
     def create_settings(self):
-        self.delimiter = cps.CustomChoice('Select column delimiter',DELIMITERS, doc = """
+        self.delimiter = cps.CustomChoice('Select or enter the column delimiter',DELIMITERS, doc = """
                             What delimiter do you want to use? This is the character that separates columns in a file. The
-                            two choices are tab and comma, but you can add any single character delimiter you like.""")
+                            two default choices are tab and comma, but you can type in any single character delimiter you would prefer. Be sure that the delimiter you choose is not a character that is present within your data (for example, in file names).""")
         
         self.prepend_output_filename = cps.Binary("Prepend the output file name to the data file names?", True, doc = """
                             This can be useful if you want to run a pipeline multiple 
-                            times without overwriting the old results""")
+                            times without overwriting the old results.""")
         
-        self.add_metadata = cps.Binary("Add image metadata columns to your object data?", False, doc = """
-                            Unless you check <i>Yes</i>, all the Image_Metadata_ columns
-                            only appear in the Image data output.""")
+        self.add_metadata = cps.Binary("Add image metadata columns to your object data file?", False, doc = """Image_Metadata_ columns are normally exported in the Image data file, but if you check this box, they will also be exported with the Object data file(s).""")
         
-        self.add_indexes = cps.Binary("Add an image set number column to your image data and image set number and object number columns to your object data?", False,doc = """
+        self.add_indexes = cps.Binary("Add an image set number column to your image data and image set number and object number columns to your object data file?", False,doc = """
                             The ImageNumber and ObjectNumber will always be output, but if you would like
                             to know which image set (cycle) the data is from, check <i>Yes</i> for this setting.""")
         
-        self.excel_limits = cps.Binary("Limit output to what is allowed in Excel?", False, doc = """
+        self.excel_limits = cps.Binary("Limit output to a size that is allowed in Excel?", False, doc = """
                             If your output has more than 256 columns, a window will open
                             which allows you to select which columns you'd like to export. If your output exceeds
                             65,000 rows, you can still open the .csv in Excel, but not all rows will be visible.""")
         
-        self.pick_columns = cps.Binary("Select the columns to output?", False, doc = """
+        self.pick_columns = cps.Binary("Select the columns of measurements to export?", False, doc = """
                             Checking this setting will open up a window that allows you to select which columns to output.""")
         
         self.wants_aggregate_means = cps.Binary("Calculate the per-image mean values for object measurements?", False, doc = """
@@ -107,7 +104,7 @@ class ExportToExcel(cpm.CPModule):
         
         self.object_groups = []
         self.add_object_group()
-        self.add_button = cps.DoSomething("Add a new data source", "Add",
+        self.add_button = cps.DoSomething("Add another data type to export", "Add",
                                            self.add_object_group)
     
     def add_object_group(self):
@@ -115,7 +112,7 @@ class ExportToExcel(cpm.CPModule):
         group.append("name", EEObjectNameSubscriber("Data to export"))
         group.append("previous_file", cps.Binary("Combine these object measurements with those of the previous object?",
                                           False))
-        group.append("file_name", cps.Text("Name of the data file", "DATA.csv"))
+        group.append("file_name", cps.Text("Name the data file", "DATA.csv"))
         group.append("remover", cps.RemoveSettingButton("", "Remove this object", self.object_groups, group))
         group.append("divider", cps.Divider(line=False))
         self.object_groups.append(group)

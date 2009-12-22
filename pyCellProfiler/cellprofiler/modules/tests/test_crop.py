@@ -41,6 +41,7 @@ class TestCrop(unittest.TestCase):
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
         module = cpmc.Crop()
+        module.module_num = 1
         image_set.add(INPUT_IMAGE, cpi.Image(input_pixels))
         module.image_name.value = INPUT_IMAGE
         module.cropped_image_name.value = OUTPUT_IMAGE 
@@ -56,12 +57,19 @@ class TestCrop(unittest.TestCase):
             objects = cpo.Objects()
             objects.segmented = crop_objects
             object_set.add_objects(objects, CROP_OBJECTS)
-        workspace = cpw.Workspace(cpp.Pipeline(),
+        
+        pipeline = cpp.Pipeline()
+        def callback(caller, event):
+            self.assertFalse(isinstance(event, cpp.RunExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.add_module(module)
+        workspace = cpw.Workspace(pipeline,
                                   module,
                                   image_set,
                                   object_set,
                                   cpm.Measurements(),
                                   image_set_list)
+        module.prepare_group(pipeline, image_set_list, None, None)
         return workspace, module
     
     def test_00_00_zeros(self):

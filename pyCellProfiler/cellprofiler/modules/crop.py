@@ -74,6 +74,10 @@ OFF_REMOVE_ROWS_AND_COLUMNS = 11
 OFF_IMAGE_MASK_SOURCE       = 12
 OFF_CROPPING_MASK_SOURCE    = 13
 
+D_FIRST_IMAGE_SET = "FirstImageSet"
+D_FIRST_CROPPING = "FirstCropping"
+D_FIRST_CROPPING_MASK = "FirstCroppingMask"
+
 class Crop(cpm.CPModule):
 
     module_name = "Crop"
@@ -221,12 +225,6 @@ class Crop(cpm.CPModule):
                             <li><i>All:</i> Remove any row or column of all-blank pixels, even from the
                             internal portion of the image</li>
                             </ul>""")
-        #
-        # If the user chooses "First" for individual_or_once, then we
-        # save the cropping and crop mask here for subsequent images
-        #
-        self.__first_cropping = None
-        self.__first_crop_mask = None
     
     def settings(self):
         return [self.image_name, self.cropped_image_name, self.shape,
@@ -276,17 +274,20 @@ class Crop(cpm.CPModule):
         prepare_group is called once after prepare_run if there are no
         groups.
         '''
-        pass
+        d = self.get_dictionary(image_set_list)
+        d[D_FIRST_IMAGE_SET] = True
     
     def run(self,workspace):
+        d = self.get_dictionary(workspace.image_set_list)
+        first_image_set = d[D_FIRST_IMAGE_SET]
+        d[D_FIRST_IMAGE_SET] = False
         orig_image = workspace.image_set.get_image(self.image_name.value)
         recalculate_flag = (self.shape not in (SH_ELLIPSE, SH_RECTANGLE) or
                             self.individual_or_once == IO_INDIVIDUALLY or
-                            workspace.image_set.number == 0)
-        save_flag = (self.individual_or_once == IO_FIRST and
-                     workspace.image_set.number == 0)
+                            first_image_set)
+        save_flag = (self.individual_or_once == IO_FIRST and first_image_set)
         if not recalculate_flag:
-            if self.__first_cropping.shape != orig_image.pixel_data.shape[:2]:
+            if d[D_FIRST_CROPPING].shape != orig_image.pixel_data.shape[:2]:
                 recalculate_flag = True
                 sys.stderr.write("""Image, "%s", size changed from %s to %s during cycle %d, recalculating"""%
                                  (self.image_name.value, 
@@ -297,8 +298,8 @@ class Crop(cpm.CPModule):
         cropping = None
         masking_objects = None
         if not recalculate_flag:
-            cropping = self.__first_cropping
-            mask = self.__first_crop_mask
+            cropping = d[D_FIRST_CROPPING]
+            mask = d[D_FIRST_CROPPING_MASK]
         elif self.shape == SH_CROPPING:
             cropping_image = workspace.image_set.get_image(self.cropping_mask_source.value)
             cropping = cropping_image.crop_mask
@@ -362,8 +363,8 @@ class Crop(cpm.CPModule):
             my_frame.subplot_imshow_bw(1,0,cropped_pixel_data,
                                        self.cropped_image_name.value)
         if save_flag:
-            self.__first_crop_mask = mask
-            self.__first_cropping = cropping
+            d[D_FIRST_CROPPING_MASK] = mask
+            d[D_FIRST_CROPPING] = cropping
         #
         # Save the image / cropping / mask
         #

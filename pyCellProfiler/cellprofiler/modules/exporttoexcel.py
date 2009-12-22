@@ -86,17 +86,14 @@ class ExportToExcel(cpm.CPModule):
                             Checking this setting will open up a window that allows you to select which columns to output.""")
         
         self.wants_aggregate_means = cps.Binary("Calculate the per-image mean values for object measurements?", False, doc = """
-                            ExportToExcel can compute the statistics over all the 
-                            objects in each image set and save that value as an aggregate 
-                            measurement in the image file.  For instance, if you are measuring 
-                            the area of the Nuclei objects and you check the aggregate
-                            mean box in this module, ExportToDatabase will create a column in 
-                            the per-image file called Mean_Nuclei_AreaShape_Area. Check this 
-                            setting to add these columns to your image file; uncheck it to remove 
-                            these columns from your image file.
+                            ExportToExcel can calculate population statistics over all the 
+                            objects in each image and save that value as an aggregate 
+                            measurement in the Image file.  For instance, if you are measuring 
+                            the area of the Nuclei objects and you check the box for this option, ExportToExcel will 
+                            create a column in the Image file called Mean_Nuclei_AreaShape_Area. 
                             <p>You may not want to use ExportToExcel to calculate these 
                             measurements if your pipeline generates a large number of per-object 
-                            measurements; doing so might exceed Excel data limits. """)
+                            measurements; doing so might exceed Excel's limits on the number of columns (256). """)
         
         self.wants_aggregate_medians = cps.Binary("Calculate the per-image median values for object measurements?", False)
         

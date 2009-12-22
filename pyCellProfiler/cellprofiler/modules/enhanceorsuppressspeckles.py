@@ -74,7 +74,7 @@ class EnhanceOrSuppressSpeckles(cpm.CPModule):
                                         The effect is to enhance lines whose width is the "feature size".</li>
                                         <li><i>Dark holes</i>: The module uses morphological reconstruction 
                                         (the rolling-ball algorithm) to identify dark holes within brighter
-                                        rings. The image is inverted so that the dark holes turn into
+                                        areas, or brighter ring shapes. The image is inverted so that the dark holes turn into
                                         bright peaks. The image is successively eroded and the eroded image
                                         is reconstructed at each step, resulting in an image which is
                                         missing the peaks. Finally, the reconstructed image is subtracted

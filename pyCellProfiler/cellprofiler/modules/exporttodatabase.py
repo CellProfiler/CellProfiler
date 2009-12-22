@@ -151,7 +151,7 @@ class ExportToDatabase(cpm.CPModule):
         
         self.db_name = cps.Text(
             "Database name", "DefaultDB",doc = """
-            Select a name for the database you want to use?""")
+            Select a name for the database you want to use""")
         
         self.want_table_prefix = cps.Binary(
             "Add a prefix to table names?", False, doc = """
@@ -193,7 +193,7 @@ class ExportToDatabase(cpm.CPModule):
         self.store_csvs = cps.Binary(
             "Store the database in CSV files? ", False, doc = """
             This will write per_image and per_object tables as a series of CSV files along with an SQL file 
-            that can be used with those files to create the database.  You can also look at the csv
+            that can be used with those files to create the database.  You can also look at the CSV
             files in a spreadsheet program, such as Excel. The typical usage of the module omits the creation of CSV files and instead data is written directly to the MySQL database.""")
         
         self.mysql_not_available = cps.Divider("Cannot write to MySQL directly - CSV file output only", line=False, 
@@ -214,12 +214,11 @@ class ExportToDatabase(cpm.CPModule):
             ExportToDatabase can calculate population statistics over all the objects in each image
             and store the results in the database. For instance, if
             you are measuring the area of the Nuclei objects and you check the box for this option, ExportToDatabase will create a column in the Per_Image
-            table called Mean_Nuclei_AreaShape_Area. Check this setting to add 
-            these columns to your image file; uncheck it to remove these columns from your image file.
-            <p>You may not want to use ExportToDatabase to calculate these measurements if your pipeline generates
+            table called Mean_Nuclei_AreaShape_Area.
+            <p>You may not want to use ExportToDatabase to calculate these population statistics if your pipeline generates
             a large number of per-object measurements; doing so might exceed database
-            column limits. These columns can be created manually for selected measurements.
-            For instance, the following SQL creates the Mean_Nuclei_AreaShape_Area column:
+            column limits. These columns can be created manually for selected measurements directly in MySQL.
+            For instance, the following SQL command creates the Mean_Nuclei_AreaShape_Area column:
             
                 ALTER TABLE Per_Image ADD (Mean_Nuclei_AreaShape_Area);
                 UPDATE Per_Image SET Mean_Nuclei_AreaShape_Area = 

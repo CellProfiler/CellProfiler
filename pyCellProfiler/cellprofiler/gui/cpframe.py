@@ -75,22 +75,24 @@ class CPFrame(wx.Frame):
         kwds["style"] = wx.DEFAULT_FRAME_STYLE
         wx.Frame.__init__(self, *args, **kwds)
         self.BackgroundColour = cellprofiler.preferences.get_background_color()
-        self.__top_left_panel = wx.Panel(self,-1)
-        self.__top_left_panel.BackgroundColour = cellprofiler.preferences.get_background_color()
-        self.__logo_panel = wx.Panel(self,-1,style=wx.RAISED_BORDER)
+        self.__splitter = wx.SplitterWindow(self, -1)
+        self.__left_win = wx.Panel(self.__splitter, style=wx.BORDER_SIMPLE)
+        self.__right_win = wx.Panel(self.__splitter, style=wx.BORDER_SIMPLE)
+
+        self.__logo_panel = wx.Panel(self.__left_win,-1,style=wx.RAISED_BORDER)
         self.__logo_panel.BackgroundColour = cellprofiler.preferences.get_background_color()
-        self.__module_list_panel = wx.lib.scrolledpanel.ScrolledPanel(self.__top_left_panel, -1)
+        self.__module_list_panel = wx.lib.scrolledpanel.ScrolledPanel(self.__left_win, -1)
         self.__module_list_panel.SetBackgroundColour('white')
-        self.__pipeline_test_panel = wx.Panel(self.__top_left_panel,-1)
+        self.__pipeline_test_panel = wx.Panel(self.__left_win,-1)
         self.__pipeline_test_panel.Hide()
         self.__pipeline_test_panel.BackgroundColour = cellprofiler.preferences.get_background_color()
-        self.__module_controls_panel = wx.Panel(self.__top_left_panel,-1)
+        self.__module_controls_panel = wx.Panel(self.__left_win,-1)
         self.__module_controls_panel.BackgroundColour = cellprofiler.preferences.get_background_color()
-        self.__module_panel = wx.lib.scrolledpanel.ScrolledPanel(self,-1,style=wx.SUNKEN_BORDER)
+        self.__module_panel = wx.lib.scrolledpanel.ScrolledPanel(self.__right_win,-1,style=wx.SUNKEN_BORDER)
         self.__module_panel.BackgroundColour = cellprofiler.preferences.get_background_color()
-        self.__file_list_panel = wx.Panel(self,-1)
+        self.__file_list_panel = wx.Panel(self.__left_win,-1)
         self.__file_list_panel.BackgroundColour = cellprofiler.preferences.get_background_color()
-        self.__preferences_panel = wx.Panel(self,-1)
+        self.__preferences_panel = wx.Panel(self.__right_win,-1)
         self.__preferences_panel.BackgroundColour = cellprofiler.preferences.get_background_color()
         self.__pipeline = Pipeline()
         self.__add_menu()
@@ -357,28 +359,31 @@ class CPFrame(wx.Frame):
         self.__pipeline_controller.attach_to_directory_view(self.__directory_view)
 
     def __do_layout(self):
-        self.__sizer = CPSizer(2,2,0,1)
-        if False:
-            self.__top_left_sizer = wx.FlexGridSizer(3,1,1,1)
-        else:
-            self.__top_left_sizer = wx.BoxSizer(wx.VERTICAL)
-        self.__top_left_sizer.Add(self.__logo_panel,0,wx.EXPAND|wx.ALL,1)
-        self.__top_left_sizer.Add(self.__module_list_panel,1,wx.EXPAND|wx.ALL,1)
-        self.__top_left_sizer.Add(self.__pipeline_test_panel, 0, wx.EXPAND|wx.ALL,2)
-        self.__top_left_sizer.Add(self.__module_controls_panel,0,wx.EXPAND|wx.ALL,2)
-        if False:
-            self.__top_left_sizer.AddGrowableRow(1)
-        self.__top_left_panel.SetSizer(self.__top_left_sizer)
-        self.__sizer.AddMany([(self.__top_left_panel,0,wx.EXPAND),
-                              (self.__module_panel,1,wx.EXPAND),
-                              (self.__file_list_panel,0,wx.EXPAND),
-                              (self.__preferences_panel,0,wx.EXPAND)])
-        self.__sizer.set_ignore_height(0,1) # Ignore the best height for the file list panel
-        self.__sizer.set_ignore_width(0,1) # Ignore the best width for the file list panel
-        self.__sizer.set_ignore_height(0,0) # Ignore the best height for the module list panel
-        self.SetSizer(self.__sizer)
-        self.Layout()
+        splitter = self.__splitter
+        left_win = self.__left_win
+        right_win = self.__right_win
+        
+        self.__splitter.SetMinimumPaneSize(20)
+        self.__splitter.SplitVertically(self.__left_win, self.__right_win, 300)
+
+        left_sizer = wx.BoxSizer(wx.VERTICAL)
+        left_sizer.Add(self.__logo_panel,0,wx.EXPAND|wx.ALL,1)
+        left_sizer.Add(self.__module_list_panel,1,wx.EXPAND|wx.ALL,1)
+        left_sizer.Add(self.__pipeline_test_panel, 0, wx.EXPAND|wx.ALL,2)
+        left_sizer.Add(self.__module_controls_panel,0,wx.EXPAND|wx.ALL,2)
+        left_sizer.Add(self.__file_list_panel,0,wx.EXPAND|wx.ALL|wx.CENTER,2)
+        left_win.SetSizer(left_sizer)
+
+        right_sizer = wx.BoxSizer(wx.VERTICAL)
+        right_sizer.Add(self.__module_panel, 1, wx.EXPAND|wx.ALL, 1)
+        right_sizer.Add(self.__preferences_panel, 0, wx.EXPAND|wx.ALL, 1)
+        right_win.SetSizer(right_sizer)
         self.__directory_view.set_height(self.__preferences_panel.GetBestSize()[1])
+
+        border = wx.BoxSizer()
+        border.Add(splitter, 1, wx.EXPAND | wx.ALL, 1)
+        self.SetSizer(border)
+        self.Layout()
 
     def __layout_logo(self):
         import cStringIO

@@ -1206,7 +1206,10 @@ class ModuleSizer(wx.PySizer):
                         control.Wrap(inner_text_width)
                     for j in range(self.__cols):
                         item = self.GetItem(self.idx(j, i))
-                        item_size = wx.Size(widths[j], item.CalcMin()[1])
+                        if isinstance(item.GetWindow(), wx.Button):
+                            item_size = item.CalcMin()
+                        else:
+                            item_size = wx.Size(widths[j], item.CalcMin()[1])
                         item_location = wx.Point(sum(widths[0:j]), height)
                         item_location = panel.CalcScrolledPosition(item_location)
                         item.SetDimension(item_location, item_size)

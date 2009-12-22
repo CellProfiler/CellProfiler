@@ -626,8 +626,8 @@ class ClassifyObjects(cpm.CPModule):
     def prepare_settings(self, setting_values):
         """Do any sort of adjustment to the settings required for the given values
         
-        setting_values - the values for the settings just prior to mapping
-                         as done by set_settings_from_values
+        setting_values - the values for the settings
+
         This method allows a module to specialize itself according to
         the number of settings and their value. For instance, a module that
         takes a variable number of images or objects can increase or decrease

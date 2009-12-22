@@ -409,3 +409,5 @@ class TestCrop(unittest.TestCase):
         self.assertFalse(module.use_plate_fix.value)
         self.assertTrue(module.remove_rows_and_columns.value)
                 
+    def test_07_02_load_v2(self):
+        

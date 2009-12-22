@@ -518,9 +518,13 @@ class Crop(cpm.CPModule):
         
         if variable_revision_number == 2 and not from_matlab:
             # minor - "Cropping" changed to "Previous cropping"
+            setting_values = list(setting_values)
             if setting_values[OFF_SHAPE] == "Cropping":
-                setting_values = (setting_values[:OFF_SHAPE] +
-                                  [SH_CROPPING] + 
-                                  setting_values[(OFF_SHAPE+1):])
+                setting_values[OFF_SHAPE] = SH_CROPPING
+            #
+            # Individually changed to "every"
+            #
+            if setting_values[OFF_INDIVIDUAL_OR_ONCE] == "Individually":
+                setting_values[OFF_INDIVIDUAL_OR_ONCE] = IO_INDIVIDUALLY
         return setting_values, variable_revision_number, from_matlab
     

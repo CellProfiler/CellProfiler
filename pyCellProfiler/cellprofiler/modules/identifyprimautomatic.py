@@ -687,29 +687,9 @@ class IdentifyPrimAutomatic(cpmi.Identify):
         measurements = workspace.measurements
         cpmi.add_object_count_measurements(measurements,
                                            objname, object_count)
-        if self.threshold_modifier == cpthresh.TM_GLOBAL:
-            # The local threshold is a single number
-            assert(not isinstance(local_threshold,np.ndarray))
-            ave_threshold = local_threshold
-        else:
-            # The local threshold is an array
-            ave_threshold = local_threshold.mean()
-        measurements.add_measurement(cpmeas.IMAGE,
-                                     FF_FINAL_THRESHOLD%(objname),
-                                     np.array([ave_threshold],
-                                                 dtype=float))
-        measurements.add_measurement(cpmeas.IMAGE,
-                                     FF_ORIG_THRESHOLD%(objname),
-                                     np.array([global_threshold],
-                                                  dtype=float))
-        wv = cpthresh.weighted_variance(img, mask, local_threshold)
-        measurements.add_measurement(cpmeas.IMAGE,
-                                     FF_WEIGHTED_VARIANCE%(objname),
-                                     np.array([wv],dtype=float))
-        entropies = cpthresh.sum_of_entropies(img, mask, local_threshold)
-        measurements.add_measurement(cpmeas.IMAGE,
-                                     FF_SUM_OF_ENTROPIES%(objname),
-                                     np.array([entropies],dtype=float))
+        self.add_threshold_measurements(measurements, img, mask,
+                                        local_threshold, global_threshold,
+                                        self.object_name.value)
         # Add label matrices to the object set
         objects = cellprofiler.objects.Objects()
         objects.segmented = labeled_image
@@ -1074,11 +1054,10 @@ class IdentifyPrimAutomatic(cpmi.Identify):
         
         object_name - return measurements made on this object (or 'Image' for image measurements)
         """
-        if object_name == 'Image':
-            return ['Threshold','Count']
-        elif object_name == self.object_name.value:
-            return ['Location', 'Number']
-        return []
+        result = self.get_threshold_categories(pipeline, object_name)
+        result += self.get_object_categories(pipeline, object_name,
+                                             {self.object_name.value: [] })
+        return result
       
     def get_measurements(self, pipeline, object_name, category):
         """Return the measurements that this module produces
@@ -1086,23 +1065,17 @@ class IdentifyPrimAutomatic(cpmi.Identify):
         object_name - return measurements made on this object (or 'Image' for image measurements)
         category - return measurements made in this category
         """
-        if object_name == 'Image' and category == 'Threshold':
-            return ['FinalThreshold','OrigThreshold','WeightedVariance',
-                    'SumOfEntropies']
-        elif object_name == 'Image' and category == 'Count':
-            return [ self.object_name.value ]
-        elif object_name == self.object_name.value and category == 'Location':
-            return ['Center_X','Center_Y']
-        elif object_name == self.object_name.value and category == 'Number':
-            return ['Object_Number']
-        return []
+        result = self.get_threshold_measurements(pipeline, object_name,
+                                                 category)
+        result += self.get_object_measurements(pipeline, object_name, category,
+                                               {self.object_name.value: [] })
+        return result
     
     def get_measurement_objects(self, pipeline, object_name, category, 
                                 measurement):
         """Return the objects associated with image measurements
         
         """
-        if object_name == 'Image' and category == 'Threshold':
-            return [ self.object_name.value ]
-        return []
-    
+        return self.get_threshold_measurement_objects(pipeline, object_name,
+                                                      category, measurement,
+                                                      self.object_name.value)

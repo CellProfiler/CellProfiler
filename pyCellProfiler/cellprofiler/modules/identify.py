@@ -28,6 +28,7 @@ from cellprofiler.cpmath.smooth import smooth_with_noise
 from cellprofiler.cpmath.threshold import TM_MANUAL, TM_METHODS, get_threshold
 from cellprofiler.cpmath.threshold import TM_GLOBAL, TM_BINARY_IMAGE, TM_MOG
 from cellprofiler.cpmath.threshold import TM_OTSU
+from cellprofiler.cpmath.threshold import weighted_variance, sum_of_entropies
 
 O_TWO_CLASS = 'Two classes'
 O_THREE_CLASS = 'Three classes'
@@ -38,35 +39,64 @@ O_ENTROPY = 'Entropy'
 O_FOREGROUND = 'Foreground'
 O_BACKGROUND = 'Background'
 
+'''The location measurement category'''
+C_LOCATION = "Location"
+
+'''The number category (e.g. Number_Object_Number)'''
+C_NUMBER = "Number"
+
+'''The count category (e.g. Count_Nuclei)'''
+C_COUNT = "Count"
+
+'''The threshold category (e.g. Threshold_FinalThreshold_DNA)'''
+C_THRESHOLD = "Threshold"
+
+'''The parent category (e.g. Parent_Nuclei)'''
+C_PARENT = "Parent"
+
+'''The children category (e.g. Children_Cells_Count)'''
+C_CHILDREN = "Children"
+
+FTR_CENTER_X = "Center_X"
 '''The centroid X coordinate measurement feature name'''
-M_LOCATION_CENTER_X = 'Location_Center_X'
+M_LOCATION_CENTER_X = '%s_%s'%(C_LOCATION, FTR_CENTER_X)
 
+FTR_CENTER_Y = "Center_Y"
 '''The centroid Y coordinate measurement feature name'''
-M_LOCATION_CENTER_Y = 'Location_Center_Y'
+M_LOCATION_CENTER_Y = '%s_%s'%(C_LOCATION, FTR_CENTER_Y)
 
+FTR_OBJECT_NUMBER = "Object_Number"
 '''The object number - an index from 1 to however many objects'''
-M_NUMBER_OBJECT_NUMBER = 'Number_Object_Number'
+M_NUMBER_OBJECT_NUMBER = '%s_%s' % (C_NUMBER, FTR_OBJECT_NUMBER)
 
 '''The format for the object count image measurement'''
-FF_COUNT = 'Count_%s' 
+FF_COUNT = '%s_%%s' % C_COUNT
+
+FTR_FINAL_THRESHOLD = "FinalThreshold"
 
 '''Format string for the FinalThreshold feature name'''
-FF_FINAL_THRESHOLD = 'Threshold_FinalThreshold_%s'
+FF_FINAL_THRESHOLD = '%s_%s_%%s' %(C_THRESHOLD, FTR_FINAL_THRESHOLD)
+
+FTR_ORIG_THRESHOLD = "OrigThreshold"
 
 '''Format string for the OrigThreshold feature name'''
-FF_ORIG_THRESHOLD = 'Threshold_OrigThreshold_%s'
+FF_ORIG_THRESHOLD = '%s_%s_%%s' % (C_THRESHOLD,FTR_ORIG_THRESHOLD)
+
+FTR_WEIGHTED_VARIANCE = "WeightedVariance"
 
 '''Format string for the WeightedVariance feature name'''
-FF_WEIGHTED_VARIANCE = 'Threshold_WeightedVariance_%s'
+FF_WEIGHTED_VARIANCE = '%s_%s_%%s' % (C_THRESHOLD, FTR_WEIGHTED_VARIANCE)
+
+FTR_SUM_OF_ENTROPIES = "SumOfEntropies"
 
 '''Format string for the SumOfEntropies feature name'''
-FF_SUM_OF_ENTROPIES = 'Threshold_SumOfEntropies_%s'
+FF_SUM_OF_ENTROPIES = '%s_%s_%%s' % (C_THRESHOLD, FTR_SUM_OF_ENTROPIES)
 
 '''Format string for # of children per parent feature name'''
-FF_CHILDREN_COUNT = "Children_%s_Count"
+FF_CHILDREN_COUNT = "%s_%%s_Count" % C_CHILDREN
 
 '''Format string for parent of child feature name'''
-FF_PARENT = "Parent_%s"
+FF_PARENT = "%s_%%s" % C_PARENT
 
 class Identify(cellprofiler.cpmodule.CPModule):
     def create_threshold_settings(self, methods = TM_METHODS):
@@ -287,6 +317,44 @@ class Identify(cellprofiler.cpmodule.CPModule):
             use_weighted_variance = self.use_weighted_variance.value == O_WEIGHTED_VARIANCE,
             assign_middle_to_foreground = self.assign_middle_to_foreground.value == O_FOREGROUND)
     
+    def add_threshold_measurements(self, measurements, image, mask, 
+                                   local_threshold, global_threshold,
+                                   objname):
+        '''Compute and add threshold statistics measurements 
+        
+        measurements - add the measurements here
+        image - the image that was thresholded
+        mask - mask of significant pixels
+        local_threshold - either a per-pixel threshold (a matrix) or a 
+                          copy of the global threshold (a scalar)
+        global_threshold - the globally-calculated threshold
+        objname - either the name of the objects that were created or,
+                  for ApplyThreshold, the image created.
+        '''
+        if self.threshold_modifier == TM_GLOBAL:
+            # The local threshold is a single number
+            assert(not isinstance(local_threshold,np.ndarray))
+            ave_threshold = local_threshold
+        else:
+            # The local threshold is an array
+            ave_threshold = local_threshold.mean()
+        measurements.add_measurement(cpmeas.IMAGE,
+                                     FF_FINAL_THRESHOLD%(objname),
+                                     np.array([ave_threshold],
+                                                 dtype=float))
+        measurements.add_measurement(cpmeas.IMAGE,
+                                     FF_ORIG_THRESHOLD%(objname),
+                                     np.array([global_threshold],
+                                                  dtype=float))
+        wv = weighted_variance(image, mask, local_threshold)
+        measurements.add_measurement(cpmeas.IMAGE,
+                                     FF_WEIGHTED_VARIANCE%(objname),
+                                     np.array([wv],dtype=float))
+        entropies = sum_of_entropies(image, mask, local_threshold)
+        measurements.add_measurement(cpmeas.IMAGE,
+                                     FF_SUM_OF_ENTROPIES%(objname),
+                                     np.array([entropies],dtype=float))
+        
     def validate_module(self, pipeline):
         try:
             if self.object_fraction.value.endswith("%"):
@@ -318,8 +386,108 @@ class Identify(cellprofiler.cpmodule.CPModule):
         return parts[0]
     
     threshold_algorithm = property(get_threshold_algorithm)
-
-
+    
+    def get_threshold_categories(self, pipeline, object_name):
+        '''Get categories related to thresholding'''
+        if object_name == cpmeas.IMAGE:
+            return [C_THRESHOLD]
+        return []
+    
+    def get_threshold_measurements(self, pipeline, object_name, category):
+        '''Return a list of threshold measurements for a given category
+        
+        object_name - either "Image" or an object name
+        category - must be "Threshold" to get anything back
+        '''
+        if object_name == cpmeas.IMAGE and category == C_THRESHOLD:
+            return [FTR_ORIG_THRESHOLD, FTR_FINAL_THRESHOLD,
+                    FTR_SUM_OF_ENTROPIES, FTR_WEIGHTED_VARIANCE]
+        return []
+    
+    def get_threshold_measurement_objects(self, pipeline, object_name, category, 
+                                          measurement, child_object_name):
+        '''Get the measurement objects for a threshold measurement
+        
+        pipeline - not used
+        object_name - either "Image" or an object name. (must be "Image")
+        category - the measurement category. (must be "Threshold")
+        measurement - the feature being measured
+        child_object_name - the name of the objects that are created by this
+                            module.
+        '''
+        if (object_name == cpmeas.IMAGE and category == C_THRESHOLD and
+            measurement in (FTR_ORIG_THRESHOLD, FTR_FINAL_THRESHOLD,
+                            FTR_SUM_OF_ENTROPIES, FTR_WEIGHTED_VARIANCE)):
+            return [child_object_name]
+        else:
+            return []
+        
+    def get_threshold_measurement_images(self, pipeline, object_name, category, 
+                                          measurement, image_name):
+        '''Get the measurement objects for a threshold measurement
+        
+        pipeline - not used
+        object_name - either "Image" or an object name. (must be "Image")
+        category - the measurement category. (must be "Threshold")
+        measurement - the feature being measured
+        child_object_name - the name of the image used during thresholding
+        '''
+        if (object_name == cpmeas.IMAGE and category == C_THRESHOLD and
+            measurement in (FTR_ORIG_THRESHOLD, FTR_FINAL_THRESHOLD,
+                            FTR_SUM_OF_ENTROPIES, FTR_WEIGHTED_VARIANCE)):
+            return [image_name]
+        else:
+            return []
+         
+    def get_object_categories(self, pipeline, object_name, 
+                              object_dictionary):
+        '''Get categories related to creating new children
+        
+        pipeline - the pipeline being run (not used)
+        object_name - the base object of the measurement: "Image" or an object
+        object_dictionary - a dictionary where each key is the name of
+                            an object created by this module and each
+                            value is a list of names of parents.
+        '''
+        if object_name == cpmeas.IMAGE:
+            return [C_COUNT]
+        result = []
+        if object_dictionary.has_key(object_name):
+            result += [C_LOCATION, C_NUMBER]
+            if len(object_dictionary[object_name]) > 0:
+                result += [C_PARENT]
+        if object_name in reduce(lambda x,y: x+y, object_dictionary.values()):
+            result += [C_CHILDREN]
+        return result
+    
+    def get_object_measurements(self, pipleline, object_name, category,
+                                object_dictionary):
+        '''Get measurements related to creating new children
+        
+        pipeline - the pipeline being run (not used)
+        object_name - the base object of the measurement: "Image" or an object
+        object_dictionary - a dictionary where each key is the name of 
+                            an object created by this module and each
+                            value is a list of names of parents.
+        '''
+        if object_name == cpmeas.IMAGE and category == C_COUNT:
+            return list(object_dictionary.keys())
+        
+        if object_dictionary.has_key(object_name):
+            if category == C_LOCATION:
+                return [FTR_CENTER_X, FTR_CENTER_Y]
+            elif category == C_NUMBER:
+                return [FTR_OBJECT_NUMBER]
+            elif category == C_PARENT:
+                return list(object_dictionary[object_name])
+        if category == C_CHILDREN:
+            result = []
+            for child_object_name in object_dictionary.keys():
+                if object_name in object_dictionary[child_object_name]:
+                    result += ["%s_Count" % child_object_name]
+            return result
+        return []
+    
 def add_object_location_measurements(measurements, 
                                      object_name,
                                      labels):
@@ -372,3 +540,14 @@ def get_object_measurement_columns(object_name):
             (object_name, M_NUMBER_OBJECT_NUMBER, cpmeas.COLTYPE_INTEGER),
             (cpmeas.IMAGE, FF_COUNT%object_name, cpmeas.COLTYPE_INTEGER)]
 
+def get_threshold_measurement_columns(image_name):
+    '''Get the column definitions for threshold measurements, if made
+    
+    image_name - name of the image
+    '''
+    return [(cpmeas.IMAGE, FF_FINAL_THRESHOLD%image_name, cpmeas.COLTYPE_FLOAT),
+            (cpmeas.IMAGE, FF_ORIG_THRESHOLD%image_name, cpmeas.COLTYPE_FLOAT),
+            (cpmeas.IMAGE, FF_WEIGHTED_VARIANCE%image_name, cpmeas.COLTYPE_FLOAT),
+            (cpmeas.IMAGE, FF_SUM_OF_ENTROPIES%image_name, cpmeas.COLTYPE_FLOAT)]
+
+    

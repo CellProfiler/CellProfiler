@@ -88,10 +88,9 @@ class TestApplyThreshold(unittest.TestCase):
         self.assertEqual(module.image_name.value, "OrigBlue")
         self.assertEqual(module.thresholded_image_name.value, "ThreshBlue")
         self.assertEqual(module.binary.value, A.GRAYSCALE)
-        self.assertEqual(module.low_threshold.value, .1)
-        self.assertEqual(module.high_threshold.value, .9)
-        self.assertTrue(module.low.value)
-        self.assertTrue(module.high.value)
+        self.assertEqual(module.low_or_high, A.TH_BELOW_THRESHOLD)
+        self.assertEqual(module.threshold_method, T.TM_MANUAL)
+        self.assertAlmostEqual(module.manual_threshold.value, .1)
     
     def test_01_02_load_v2(self):
         '''Load a variable_revision_number = 2 pipeline'''
@@ -189,14 +188,58 @@ class TestApplyThreshold(unittest.TestCase):
         expected = image.copy()
         expected[expected < .5] = 0
         workspace, module = self.make_workspace(image)
+        self.assertTrue(isinstance(module, A.ApplyThreshold))
         module.binary.value = A.GRAYSCALE
-        module.low.value = True
-        module.low_threshold.value = .5
-        module.high.value = False
+        module.low_or_high.value = A.TH_BELOW_THRESHOLD
+        module.threshold_method.value = T.TM_MANUAL
+        module.manual_threshold.value = .5
         module.shift.value = False
         module.run(workspace)
         output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         self.assertTrue(np.all(output.pixel_data == expected))
+        
+        m = workspace.measurements
+        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        image_features = m.get_feature_names(cpmeas.IMAGE)
+        #
+        # Check measurement columns = image features
+        #
+        columns = module.get_measurement_columns(workspace.pipeline)
+        self.assertEqual(len(image_features), len(columns))
+        # No duplicates
+        self.assertEqual(len(image_features), len(set([column[1] for column in columns])))
+        for column in columns:
+            self.assertEqual(column[0], cpmeas.IMAGE)
+            self.assertTrue(column[1] in image_features)
+            self.assertEqual(column[2], cpmeas.COLTYPE_FLOAT)
+        #
+        # Check measurement categories, etc
+        #
+        pipeline = workspace.pipeline
+        categories = module.get_categories(pipeline, cpmeas.IMAGE)
+        self.assertEqual(len(categories), 1)
+        self.assertEqual(categories[0], I.C_THRESHOLD)
+        self.assertEqual(len(module.get_categories(pipeline, "FOO")), 0)
+        measurements = module.get_measurements(pipeline, cpmeas.IMAGE, I.C_THRESHOLD)
+        features = (I.FTR_ORIG_THRESHOLD, I.FTR_FINAL_THRESHOLD, 
+                    I.FTR_WEIGHTED_VARIANCE, I.FTR_SUM_OF_ENTROPIES)
+        self.assertEqual(len(measurements), len(features))
+        self.assertEqual(len(set(measurements)), len(features))
+        self.assertTrue(all([measurement in features for measurement in measurements]))
+        self.assertEqual(len(module.get_measurements(pipeline, cpmeas.IMAGE, I.C_COUNT)), 0)
+        
+        for measurement in measurements:
+            image_names = module.get_measurement_images(pipeline, cpmeas.IMAGE,
+                                                        I.C_THRESHOLD, measurement)
+            self.assertEqual(len(image_names), 1)
+            self.assertEqual(image_names[0], OUTPUT_IMAGE_NAME)
+            
+        for ff, expected in ((I.FF_ORIG_THRESHOLD, .5),
+                             (I.FF_FINAL_THRESHOLD, .5),
+                             (I.FF_WEIGHTED_VARIANCE, .93),
+                             (I.FF_SUM_OF_ENTROPIES, -11.26)):
+            value = m.get_current_image_measurement(ff%OUTPUT_IMAGE_NAME)
+            self.assertAlmostEqual(value, expected, 1)
     
     def test_02_02_grayscale_low_threshold_shift(self):
         '''Apply a low threshold, with shift'''
@@ -208,9 +251,9 @@ class TestApplyThreshold(unittest.TestCase):
         expected[~thresholded_pixels] -= .5
         workspace, module = self.make_workspace(image)
         module.binary.value = A.GRAYSCALE
-        module.low.value = True
-        module.low_threshold.value = .5
-        module.high.value = False
+        module.low_or_high.value = A.TH_BELOW_THRESHOLD
+        module.threshold_method.value = T.TM_MANUAL
+        module.manual_threshold.value = .5
         module.shift.value = True
         module.run(workspace)
         output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
@@ -224,10 +267,9 @@ class TestApplyThreshold(unittest.TestCase):
         thresholded_pixels = expected > .5
         expected[thresholded_pixels] = 0
         workspace, module = self.make_workspace(image)
-        module.binary.value = A.GRAYSCALE
-        module.low.value = False
-        module.high_threshold.value = .5
-        module.high.value = True
+        module.low_or_high.value = A.TH_ABOVE_THRESHOLD
+        module.threshold_method.value = T.TM_MANUAL
+        module.manual_threshold.value = .5
         module.dilation.value = 0
         module.run(workspace)
         output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
@@ -242,10 +284,9 @@ class TestApplyThreshold(unittest.TestCase):
         thresholded_pixels = i*i+j*j <= 4
         expected[thresholded_pixels] = 0
         workspace, module = self.make_workspace(image)
-        module.binary.value = A.GRAYSCALE
-        module.low.value = False
-        module.high_threshold.value = .5
-        module.high.value = True
+        module.low_or_high.value = A.TH_ABOVE_THRESHOLD
+        module.threshold_method.value = T.TM_MANUAL
+        module.manual_threshold.value = .5
         module.dilation.value = 2
         module.run(workspace)
         output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)

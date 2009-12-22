@@ -608,17 +608,10 @@ class IdentifySecondary(cpmi.Identify):
         
         object_name - return measurements made on this object (or 'Image' for image measurements)
         """
-        categories = []
-        if object_name == cpmeas.IMAGE:
-            categories += ["Count", "Threshold"]
-        elif (object_name == self.primary_objects or
-              (self.wants_discard_edge and self.wants_discard_primary and
-               object_name == self.new_primary_objects_name)):
-            categories.append("Children")
-        if ((object_name == self.new_primary_objects_name and
-             self.wants_discard_edge and self.wants_discard_primary) or
-            (object_name == self.objects_name)):
-            categories += ("Parent", "Location","Number")
+        object_dictionary = self.get_object_dictionary()
+        categories = self.get_threshold_categories(pipeline, object_name)
+        categories += self.get_object_categories(pipeline, object_name,
+                                                 object_dictionary)
         return categories
       
     def get_measurements(self, pipeline, object_name, category):
@@ -627,41 +620,30 @@ class IdentifySecondary(cpmi.Identify):
         object_name - return measurements made on this object (or 'Image' for image measurements)
         category - return measurements made in this category
         """
-        result = []
-        has_new_primary = (self.wants_discard_edge and self.wants_discard_primary)
-        is_new_primary = (has_new_primary and 
-                          object_name == self.new_primary_objects_name)
-        is_child_object = (object_name == self.objects_name or is_new_primary)
-        
-        if object_name == cpmeas.IMAGE:
-            if category == "Count":
-                result += [self.objects_name.value]
-                if self.wants_discard_edge and self.wants_discard_primary:
-                    result += [self.new_primary_objects_name.value]
-            elif category == "Threshold":
-                result += ["FinalThreshold", "OrigThreshold",
-                           "WeightedVariance", "SumOfEntropies"]
-        if object_name == self.primary_objects and category == "Children":
-            result += ["%s_Count" % self.objects_name.value]
-            if has_new_primary:
-                result += ["%s_Count"%self.new_primary_objects_name.value]
-        if is_new_primary and category == "Children":
-            result += ["%s_Count", self.objects_name]
-        if (is_child_object):
-            if category == "Location":
-                result += [ "Center_X","Center_Y"]
-            elif category == "Parent":
-                result += [ self.primary_objects.value]
-            elif category == "Number":
-                result += ["Object_Number"]
-        if (object_name == self.objects_name and has_new_primary and
-            category == "Parent"):
-            result += [self.new_primary_objects_name.value]
+        object_dictionary = self.get_object_dictionary()
+        result = self.get_threshold_measurements(pipeline, object_name,
+                                                 category)
+        result += self.get_object_measurements(pipeline, object_name,
+                                               category, object_dictionary)
         return result
     
+    def get_object_dictionary(self):
+        '''Get the dictionary of parent child relationships
+        
+        see Identify.get_object_categories, Identify.get_object_measurements
+        '''
+        object_dictionary = { 
+            self.objects_name.value: [self.primary_objects.value]
+        }
+        if self.wants_discard_edge and self.wants_discard_primary:
+            object_dictionary[self.objects_name.value] += \
+                             [self.new_primary_objects_name.value]
+            object_dictionary[self.new_primary_objects_name.value] = \
+                             [self.primary_objects.value]
+        return object_dictionary
+        
     def get_measurement_objects(self, pipeline, object_name, category, measurement):
-        if (object_name == cpmeas.IMAGE and category == "Threshold" and
-            measurement in ("FinalThreshold", "OrigThreshold",
-                            "WeightedVariance", "SumOfEntropies")):
-            return [self.objects_name.value]
-        return []
+        return self.get_threshold_measurement_objects(pipeline, object_name,
+                                                      category, measurement,
+                                                      self.objects_name.value)
+                                                      

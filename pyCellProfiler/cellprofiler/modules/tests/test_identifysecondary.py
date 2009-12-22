@@ -760,7 +760,8 @@ class TestIdentifySecondary(unittest.TestCase):
         
         features = module.get_measurements(None, cpm.IMAGE, "Count")
         self.assertEqual(len(features), 2)
-        self.assertEqual(features[0], "Secondary","NewPrimary")
+        self.assertTrue("Secondary" in features)
+        self.assertTrue("NewPrimary" in features)
         
         features = module.get_measurements(None, cpm.IMAGE, "Threshold")
         threshold_features = ("OrigThreshold", "FinalThreshold",

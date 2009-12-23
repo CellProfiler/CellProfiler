@@ -193,10 +193,8 @@ class ExportToDatabase(cpm.CPModule):
             exploration tool which can also be downloaded from
             <a href="http://www.cellprofiler.org/"> http://www.cellprofiler.org/ </a>). 
             The module will attempt to fill in as many as the entries as possible 
-            based on the pipeline's settings. However, entries such as the 
-            server name, username and password are omitted and will need to be edited within CellProfiler Analyst. Opening the 
-            properties file in CPA without editing those fields will produce an error since it won't be able to
-            connect to the server.""")
+            based on the pipeline's settings, including the 
+            server name, username and password if MySQL or Oracle is used.""")
         
         self.store_csvs = cps.Binary(
             "Store the database in CSV files? ", False, doc = """
@@ -1026,10 +1024,10 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
         date = datetime.datetime.now().ctime()
         db_type = (self.db_type == DB_MYSQL and 'mysql') or (self.db_type == DB_SQLITE and 'sqlite') or 'oracle_not_supported'
         db_port = (self.db_type == DB_MYSQL and 3306) or (self.db_type == DB_ORACLE and 1521) or ''
-        db_host = 'Host'
-        db_pwd  = ''
+        db_host = self.db_host
+        db_pwd  = self.db_passwd
         db_name = self.db_name
-        db_user = 'User'
+        db_user = self.db_user
         db_sqlite_file = (self.db_type == DB_SQLITE and self.get_output_directory()+'/'+self.sqlite_file.value) or ''
         if self.db_type != DB_SQLITE:
             db_info =  'db_type      = %(db_type)s\n'%(locals())
@@ -1088,6 +1086,11 @@ image_channel_files = %(image_channel_file_names)s
 # Give short names for each of the channels (respectively)...
 image_channel_names = %(image_channel_names)s
 
+# Specify a default color for each of the channels (respectively)
+# Valid colors are: [red, green, blue, magenta, cyan, yellow, gray, none]
+
+image_channel_colors = %(image_channel_colors)s
+
 # ==== Image Accesss Info ====
 image_url_prepend = %(image_url)s
 
@@ -1124,20 +1127,64 @@ filters  =
 #   object_name  =  singular object name, plural object name,
 object_name  =  cell, cells,
 
+# What size plates were used?  384 or 96?  This is for use in the PlateViewer
+plate_type  = 
+
 # ==== Excluded Columns ====
-# DB Columns the classifier should exclude:
-classifier_ignore_substrings  =  table_number_key_column, image_number_key_column, object_number_key_column
+# OPTIONAL
+# Classifier uses columns in your per_object table to find rules. It will
+# automatically ignore ID columns defined in table_id, image_id, and object_id
+# as well as any columns that contain non-numeric data.
+#
+# Here you may list other columns in your per_object table that you wish the
+# classifier to ignore when finding rules.
+#
+# You may also use regular expressions here to match more general column names.
+#
+# Example: classifier_ignore_columns = WellID, Meta_.*, .*_Position
+#   This will ignore any column named "WellID", any columns that start with
+#   "Meta_", and any columns that end in "_Position".
+#
+# A more restrictive example:
+# classifier_ignore_columns = ImageNumber, ObjectNumber, .*Parent.*, .*Children.*, .*_Location_Center_.*,.*_Metadata_.*
+
+classifier_ignore_columns  =  table_number_key_column, image_number_key_column, object_number_key_column
 
 # ==== Other ====
 # Specify the approximate diameter of your objects in pixels here.
 image_tile_size   =  50
 
-# ==== Internal Cache ====
-# It shouldn't be necessary to cache your images in the application, but the cache sizes can be set here.
-# (Units = 1 image. ie: "image_buffer_size = 100", will cache 100 images before it starts replacing old ones.
-image_buffer_size = 1
-tile_buffer_size  = 1
-image_channel_colors = %(image_channel_colors)s
+# ======== Auto Load Training Set ========
+# OPTIONAL
+# You may enter the full path to a training set that you would like Classifier
+# to automatically load when started.
+
+training_set  = 
+
+# ======== Area Based Scoring ========
+# OPTIONAL
+# You may specify a column in your per-object table which will be summed and
+# reported in place of object-counts when scoring.  The typical use for this
+# is to report the areas of objects on a per-image or per-group basis.
+
+area_scoring_column =
+
+# ======== Output Per-Object Classes ========
+# OPTIONAL
+# Here you can specify a MySQL table in your Database where you would like
+# Classifier to write out class information for each object in the
+# object_table
+
+class_table  =
+
+# ======== Check Tables ========
+# OPTIONAL
+# [yes/no]  You can ask classifier to check your tables for anomalies such
+# as orphaned objects or missing column indices.  Default is on.
+# This check is run when Classifier starts and may take up to a minute if
+# your object_table is extremely large.
+
+check_tables = yes
 """%(locals())
         fid.write(contents)
         fid.close()

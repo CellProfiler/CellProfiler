@@ -11,12 +11,6 @@ module to put images that pass QC into one group and images that fail
 into another. If you plan to use a flag in LoadText, give it a category of
 "Metadata" so that it can be used in grouping.
 
-The flag is stored as a Per-image measurement whose name is a combination of the
-flag's category and feature name, underscore delimited. 
-For instance, if the measurement category is
-"Metadata" and the feature name is "QCFlag", then the default
-measurement name would be "Metadata_QCFlag".
-
 A flag can be based on one or more measurements. If you create a flag based
 on more than one measurement, you'll have to choose between setting the
 flag if all measurements are outside the bounds or if one of the measurements
@@ -51,7 +45,7 @@ C_ALL = "Flag if all fail"
 
 S_IMAGE = "Whole-image measurement"
 S_AVERAGE_OBJECT = "Average measurement for all objects in each image"
-S_ALL_OBJECTS = "Measurement for all objects in each image"
+S_ALL_OBJECTS = "Measurements for all objects in each image"
 S_ALL = [S_IMAGE, S_AVERAGE_OBJECT, S_ALL_OBJECTS]
 
 '''Number of settings in the module, aside from those in the flags'''
@@ -80,13 +74,20 @@ class FlagImage(cpm.CPModule):
         group = cps.SettingsGroup()
         group.append("measurement_settings", [])
         group.append("measurement_count", cps.HiddenCount(group.measurement_settings))
-        group.append("category", cps.Text("Flag's measurement category?",
-                                 "Metadata", doc = '''Choose the measurement category to flag.  The default is 'Metadata', which allows you to group images
-                                 by quality if loading the QCFlag via LoadText.  Otherwise, the flag can be stored
-                                 in the 'Image' category.'''))
+        group.append("category", cps.Text("Name the flag's category",
+                                 "Metadata", doc = '''Name a measurement category the flag should reside in. Metadata allows you to later group images in the LoadImages module based on the flag, if you load the flag data in a future pipeline via the LoadText module.  Otherwise, you might choose to have the flag stored
+                                 in the Image category or some other word you prefer.  The flag is stored as a Per-image measurement whose name is a combination of the
+flags category and feature name, underscore delimited. 
+For instance, if the measurement category is
+Metadata and the feature name is QCFlag, then the default
+measurement name would be Metadata_QCFlag.
+'''))
         group.append("feature_name", cps.Text("Name the flag"
-                                     ,"QCFlag", doc = "Choose the measurement category to flag. "
-                                     "The default name of the flag's measurement is 'QCFlag'."))
+                                     ,"QCFlag", doc = '''The flag is stored as a Per-image measurement whose name is a combination of the
+flags category and feature name, underscore delimited. 
+For instance, if the measurement category is
+Metadata and the feature name is QCFlag, then the default
+measurement name would be Metadata_QCFlag.'''))
         group.append("combination_choice",
                      cps.Choice(
                 "Flag if any, or all, measurement(s) fails to meet the criteria?",

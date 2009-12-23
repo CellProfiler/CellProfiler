@@ -286,7 +286,7 @@ class LoadImages(cpmodule.CPModule):
         self.add_image = cps.DoSomething("", "Add another image", self.add_imagecb)
         
         # Location settings
-        self.location = cps.CustomChoice('Where are the images located?',
+        self.location = cps.Choice('Image location',
                                         [DIR_DEFAULT_IMAGE, DIR_DEFAULT_OUTPUT, DIR_OTHER],doc="""
                 You have the choice of loading the image files from the Default Input folder, the Default Output
                 folder or another location entirely.""")
@@ -404,7 +404,7 @@ class LoadImages(cpmodule.CPModule):
                         last folder on the path. This also means that the <i>Date</i> field contains the parent
                         folder of the <i>Date</i> folder.</td></tr>
                         </table>"""),
-               FD_REMOVE_IMAGE:cps.DoSomething('Remove this image...', 'Remove',self.remove_imagecb, new_uuid)
+               FD_REMOVE_IMAGE:cps.DoSomething('', 'Remove this image',self.remove_imagecb, new_uuid)
                }
         self.images.append(fd)
 

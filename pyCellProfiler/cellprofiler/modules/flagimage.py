@@ -1,18 +1,17 @@
-'''<b>Flag Image</b> allows you to flag an image if it fails some quality control
-measurement you specify. 
+'''<b>Flag Image</b> allows you to flag an image based on properties that you specify, for example, quality control measurements
 <hr>
 This module allows the user to assign a flag if
-an image fails a quality control measurement the user specifies.  The
-value of the measurement is '1' if the image has failed QC, and '0' if it
-has passed. The flag can be used in post-processing to filter out images
-the user does not want to analyze, e.g. in CPAnalyst. Additionally, you can
+an image meets certain measurement criteria that the user specifies (for example, if the image fails a quality control measurement).  The
+value of the flag is '1' if the image meets the selected criteria (for example, if it fails QC), and '0' if it
+does not meet the criteria (if it passes QC). The flag can be used in post-processing to filter out images
+the user does not want to analyze, e.g. in CellProfiler Analyst. Additionally, you can
 use ExportToExcel to generate a file that includes the measurement as metadata
 associated with the images. This file can then be used by the LoadText 
-module to put images that pass QC into one group and the images that fail 
+module to put images that pass QC into one group and images that fail 
 into another. If you plan to use a flag in LoadText, give it a category of
 "Metadata" so that it can be used in grouping.
 
-The flag is stored in a measurement whose name is a combination of the
+The flag is stored as a Per-image measurement whose name is a combination of the
 flag's category and feature name, underscore delimited. 
 For instance, if the measurement category is
 "Metadata" and the feature name is "QCFlag", then the default
@@ -23,8 +22,8 @@ on more than one measurement, you'll have to choose between setting the
 flag if all measurements are outside the bounds or if one of the measurements
 is outside of the bounds.
 
-This module requires the measurement modules to be placed prior to this
-module in the pipeline.
+This module must be placed in the pipeline after the relevant measurement 
+modules upon which the flags are based.
 '''
 
 #CellProfiler is distributed under the GNU General Public License.
@@ -50,9 +49,9 @@ import cellprofiler.gui.cpfigure as cpf
 C_ANY = "Flag if any fail"
 C_ALL = "Flag if all fail"
 
-S_IMAGE = "Image"
-S_AVERAGE_OBJECT = "Average for objects"
-S_ALL_OBJECTS = "All objects"
+S_IMAGE = "Whole-image measurement"
+S_AVERAGE_OBJECT = "Average measurement for all objects in each image"
+S_ALL_OBJECTS = "Measurement for all objects in each image"
 S_ALL = [S_IMAGE, S_AVERAGE_OBJECT, S_ALL_OBJECTS]
 
 '''Number of settings in the module, aside from those in the flags'''
@@ -73,7 +72,7 @@ class FlagImage(cpm.CPModule):
     def create_settings(self):
         self.flags = []
         self.flag_count = cps.HiddenCount(self.flags)
-        self.add_flag_button = cps.DoSomething("", "Add QC flag",
+        self.add_flag_button = cps.DoSomething("", "Add another flag",
                                                self.add_flag)
         self.add_flag(False)
         
@@ -85,7 +84,7 @@ class FlagImage(cpm.CPModule):
                                  "Metadata", doc = '''Choose the measurement category to flag.  The default is 'Metadata', which allows you to group images
                                  by quality if loading the QCFlag via LoadText.  Otherwise, the flag can be stored
                                  in the 'Image' category.'''))
-        group.append("feature_name", cps.Text("Flag's feature name ?"
+        group.append("feature_name", cps.Text("Name the flag"
                                      ,"QCFlag", doc = "Choose the measurement category to flag. "
                                      "The default name of the flag's measurement is 'QCFlag'."))
         group.append("combination_choice",
@@ -99,8 +98,8 @@ class FlagImage(cpm.CPModule):
                 of QC flaws; for example, you can flag only images that are both bright and out of focus.</li>
                 </ul>'''))
         group.append("add_measurement_button", 
-                     cps.DoSomething("Add another measurement",
-                                     "Add",
+                     cps.DoSomething("",
+                                     "Add another measurement",
                                      self.add_measurement, group))
         self.add_measurement(group, False)
         if can_delete:
@@ -113,7 +112,7 @@ class FlagImage(cpm.CPModule):
         group = cps.SettingsGroup()
         group.append("source_choice",
                      cps.Choice(
-                "Filter object type", S_ALL, doc = '''
+                "Flag is based on", S_ALL, doc = '''
                 <ul>
                 <li><i>Image:</i> This will flag an image based
                 on a per-image measurement, such as intensity or granularity.</li>
@@ -124,8 +123,8 @@ class FlagImage(cpm.CPModule):
                 </ul>'''))
         group.append("object_name",
                      cps.ObjectNameSubscriber(
-                "Select the object to filter by",
-                "None", doc = '''What did you call the objects whose measurements you want to filter by?'''))
+                "Select the object whose measurements will be used to flag",
+                "None", doc = '''What did you call the objects whose measurements you want to use for flagging?'''))
 
         def object_fn():
             if group.source_choice == S_IMAGE:

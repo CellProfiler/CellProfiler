@@ -337,7 +337,6 @@ def set_check_new_versions(val):
     get_config().WriteBool(CHECKFORNEWVERSIONS, bool(val))
     # If the user turns on version checking, they probably don't want
     # to skip versions anymore.
-    print "here"
     if val and (not old_val):
         set_skip_version(0)
     

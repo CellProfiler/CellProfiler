@@ -24,7 +24,15 @@ measurements per object identified. The two tables are connected with the
 primary key column ImageNumber, which indicates to which image each object belongs. The Per_Object table has another primary
 key called ObjectNumber, which is unique per image. In the most typical use, if multiple types of objects are identified and measured in a pipeline, the number of those objects are equal to each other. For example, in most pipelines, each nucleus has exactly one cytoplasm, so the first row of the Per-Object table contains all of the information about object #1, including both nucleus- and cytoplasm-related measurements. If this one-to-one correspondence is <em>not</em> the case for all objects in the pipeline (for example, if dozens of speckles are identified and measured for each nucleus), then the ExportToDatabase module must be configured to export only objects that maintain the one-to-one correspondence (for example, export only Nucleus and Cytoplasm, but omit Speckles).
 
-If metadata has been used to group images (for example, grouping several image cycles into a single well), then the database can also contain a Per_Group table (for example, a Per_Well table).  
+If you have extracted "Plate" and "Well" metadata from image filenames or loaded "Plate" and "Well" metadata via LoadText, 
+you can ask CellProfiler to create a "per-well" table, which aggregates object measurements across wells.  
+This option will output a .SQL file (regardless of whether or not you choose to write directly to the database)
+which can be used to create the per-well table.  At the secure shell where you normally log in to mysql, type
+the following, replacing the italics with references to your database and files:
+
+mysql -h <i>hostname</i> -u <i>username</i> -p <i>databasename</i> &lt<i>pathtoimages/perwellsetupfile.SQL</i>
+
+ and the commands written by CellProfiler to create the per-well table will be executed.
 
 Oracle is not currently fully supported; you can create your own Oracle DB using
 the .csv output option, and writing a simple script to upload to the DB.
@@ -239,7 +247,7 @@ class ExportToDatabase(cpm.CPModule):
             Per_Well_Mean, with a column called Mean_Nuclei_AreaShape_Area. NOTE: this option is only
             available if you have extracted plate and well metadata from the filename or via a LoadText module.
             This option will write out a .SQL file with the statements necessary to create the per_well
-            table, regardless of the option chosen above.''')
+            table, regardless of the option chosen above. See the help for this module for more information.''')
         
         self.wants_agg_median_well = cps.Binary(
             "Calculate the per-well median values of object measurements?", False)

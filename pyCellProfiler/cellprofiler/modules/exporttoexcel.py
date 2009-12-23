@@ -109,7 +109,7 @@ class ExportToExcel(cpm.CPModule):
         group.append("name", EEObjectNameSubscriber("Data to export"))
         group.append("previous_file", cps.Binary("Combine these object measurements with those of the previous object?",
                                           False))
-        group.append("file_name", cps.Text("Name the data file", "DATA.csv"))
+        group.append("file_name", cps.Text("Name the data file (the output filename will automatically be prepended)", "DATA.csv"))
         group.append("remover", cps.RemoveSettingButton("", "Remove this data", self.object_groups, group))
         group.append("divider", cps.Divider(line=False))
         self.object_groups.append(group)

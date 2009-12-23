@@ -403,7 +403,7 @@ class ModuleView:
                 control.Items = choices
             try:
                 # more desperate MAC cruft
-                i_am_different = (control.Value != value)
+                i_am_different = (control.Value != v.value)
             except:
                 i_am_different = True
             if len(choices) > 0 and i_am_different:

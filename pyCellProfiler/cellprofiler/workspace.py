@@ -195,15 +195,27 @@ class Workspace(object):
         if window_name == None:
             window_name = "CellProfiler:%s:%s"%(self.__module.module_name,
                                                 self.__module.module_num)
+        #
+        # Turn display off if someone closes the window.
+        #
+        def on_close(event):
+            '''Turn module display off'''
+            from cellprofiler.pipeline import ModuleEditedPipelineEvent
+            self.module.show_window = False
+            self.pipeline.notify_listeners(
+                ModuleEditedPipelineEvent(self.module.module_num))
+            
         if self.__create_new_window:
             figure = CPFigureFrame(self, 
                                    title=title,
                                    name = window_name,
-                                   subplots = subplots)
+                                   subplots = subplots,
+                                   on_close = on_close)
         else:
             figure = cpf.create_or_find(self.__frame, title = title, 
                                         name = window_name, 
-                                        subplots = subplots)
+                                        subplots = subplots,
+                                        on_close = on_close)
         if not figure in self.__windows_used:
             self.__windows_used.append(figure)
         return figure

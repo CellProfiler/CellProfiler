@@ -32,7 +32,8 @@ window_ids = []
 def create_or_find(parent=None, id=-1, title="", 
                    pos=wx.DefaultPosition, size=wx.DefaultSize,
                    style=wx.DEFAULT_FRAME_STYLE, name=wx.FrameNameStr,
-                   subplots=None ):
+                   subplots=None,
+                   on_close=None):
     """Create or find a figure frame window"""
     if parent:
         window = parent.FindWindowByName(name)
@@ -45,7 +46,8 @@ def create_or_find(parent=None, id=-1, title="",
                 window.zoom_rects = np.zeros(subplots,dtype=object)
                 
             return window
-    return CPFigureFrame(parent, id, title, pos, size, style, name, subplots)
+    return CPFigureFrame(parent, id, title, pos, size, style, name, subplots,
+                         on_close)
 
 def close_all(parent):
     windows = [x for x in parent.GetChildren()
@@ -73,7 +75,7 @@ class CPFigureFrame(wx.Frame):
     def __init__(self, parent=None, id=-1, title="", 
                  pos=wx.DefaultPosition, size=wx.DefaultSize,
                  style=wx.DEFAULT_FRAME_STYLE, name=wx.FrameNameStr, 
-                 subplots=None):
+                 subplots=None, on_close = None):
         """Initialize the frame:
         
         parent   - parent window to this one, typically CPFrame
@@ -84,9 +86,11 @@ class CPFigureFrame(wx.Frame):
         style    - window style
         name     - searchable window name
         subplots - 2-tuple indicating the layout of subplots inside the window
+        on_close - a function to run when the window closes
         """
         global window_ids
         super(CPFigureFrame,self).__init__(parent, id, title, pos, size, style, name)
+        self.close_fn = on_close
         self.BackgroundColour = cpprefs.get_background_color()
         self.mouse_mode = MODE_NONE
         self.zoom_stack = []
@@ -168,6 +172,8 @@ class CPFigureFrame(wx.Frame):
         del dc
     
     def on_close(self, event):
+        if self.close_fn is not None:
+            self.close_fn(event)
         for menu, menu_id in self.remove_menu:
             print "Removing menu ID %d"%menu_id
             self.Parent.Unbind(wx.EVT_MENU, id=menu_id)

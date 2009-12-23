@@ -398,7 +398,14 @@ class FilterByObjectMeasurement(cpm.CPModule):
             red_channel[outs] = maxpix
             figure.subplot_imshow_color(1,1,picture,
                                         "Outlines")
-    
+            
+            if workspace.frame != None:
+                number_of_src_objects = np.max(src_objects.segmented)
+                number_of_target_objects = np.max(target_objects.segmented)
+                figure.status_bar.SetFields(
+                     ["Number of objects pre-filtering: %d" % number_of_src_objects,
+                     "Number of objects post-filtering: %d" % number_of_target_objects])
+                
     def keep_one(self, workspace, src_objects):
         '''Return an array containing the single object to keep
         

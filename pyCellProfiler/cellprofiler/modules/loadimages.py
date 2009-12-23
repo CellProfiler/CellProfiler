@@ -290,7 +290,7 @@ class LoadImages(cpmodule.CPModule):
                                         [DIR_DEFAULT_IMAGE, DIR_DEFAULT_OUTPUT, DIR_OTHER],doc="""
                 You have the choice of loading the image files from the Default Input folder, the Default Output
                 folder or another location entirely.""")
-        self.location_other = cps.DirectoryPath("Where are the images located?", '',doc="""
+        self.location_other = cps.DirectoryPath("Enter the full path to the images", '',doc="""
                 <i>(Only used if your images are located Elsewhere)</i> 
                 <p>Type the full path to where the images are located. Note that this
                 path is fixed with respect to your local machine, which means that transfering

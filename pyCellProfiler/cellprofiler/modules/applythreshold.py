@@ -164,20 +164,20 @@ class ApplyThreshold(Identify):
                 ("Feature","Value")]
             
             for column in self.get_measurement_columns(workspace.pipeline):
-                value = workspace.measurements.get_image_measurement(column[1])
-                statistics += (column[0].split('_')[1], str(value))
+                value = workspace.measurements.get_current_image_measurement(column[1])[0]
+                statistics += [(column[1].split('_')[1], str(value))]
                 
     def display(self, workspace):
         figure = workspace.create_or_find_figure(subplots=(1,3))
 
-        figure.subplot_imshow(0,0, workspace.display_data.input_pixel_data,
+        figure.subplot_imshow_grayscale(0,0, workspace.display_data.input_pixel_data,
                               title = "Original image: %s" % 
                               self.image_name.value)
 
-        figure.subplot_imshow(0,1, workspace.display_data.output_pixel_data,
+        figure.subplot_imshow_grayscale(0,1, workspace.display_data.output_pixel_data,
                               title = "Thresholded image: %s" %
                               self.thresholded_image_name.value)
-        figure.subplot_table(0,2, statistics)
+        figure.subplot_table(0,2, workspace.display_data.statistics)
         
     def get_measurement_columns(self, pipeline):
         return get_threshold_measurement_columns(self.thresholded_image_name.value)

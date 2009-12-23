@@ -13,7 +13,10 @@ __version__="$Revision$"
 
 import base64
 import numpy as np
+import os
 import StringIO
+import tempfile
+import zlib
 import unittest
 
 import cellprofiler.workspace as cpw
@@ -794,6 +797,50 @@ Module #3: FilterByObjectMeasurement revision - 6
         self.assertEqual(module.additional_objects[0].object_name.value, 'Cells')
         self.assertEqual(module.additional_objects[0].target_name.value, 'FilteredCells')
 
+    def test_05_03_test_load_v2(self):
+        data = ('eJztW91u2zYUll0naNYtS4FdDBsK6KIXTRCrclKjbTa0tuNlMRA7Rhw0G9Is'
+                'ky065kCJhkSl8Ya94x5jl32EkZZsSZxcyYr/hEqAIB2K3/nOOTw6ov7q5fOT'
+                'ckUsSrJYL5/nuxABsYkU0sWGdiDqZFc8NIBCgCpi/UC8oNsq6Ih7+2LhxcF+'
+                '8UAuinuy/FqIt2Rq9U26+ecHQVin24d0zTqH1hw541mZ3AKEQP3GXBNywrdO'
+                '+0e6vlMMqLQReKcgC5guxai9pnfx+aA/PlTHqoVAQ9G8nenSsLQ2MMzT7gjo'
+                'HG7CO4Ba8E/AuTDqdgZuoQmx7uAd/XzrmBcTjrfVwx+ODGoOp7+ikE6vRegI'
+                '+NtZ3I6/d+OW4eKWo+sTT/uwv+D2zwXE+bGn/5YjQ12Ft1C1FCRCTbkZW830'
+                'ySH6Hvj0PRCqjfIQ9yoEt87ZweSG1UEA2rylEPyXHJ7JRxARYAC1QtNjZH+Y'
+                'ni1OD1vPwR3J/3SndIiosaGZhT/TxvFXOgqL4M348Blh34lbGO8ax8vkgrz7'
+                'Qhb+z7vO4UfLCL/hbKOM1ybHy+QyrV6tntIH12wvmp4vOD1MrmJRx0S0TODa'
+                'E3fc4vofZ7xPoAaJGc3erA+fFRp4drhp/Azjy/n4cpRPB1Hq2zdcfJhcBV3F'
+                'QkSsseImHmGkAiOqHbMe30XzlUL4HnHxYvIpMS3xZ4TbCgq0e57+ypI8szhF'
+                'wRUC+BY9ntOcb3Gu7zSmw2W34OxMsH+efgfFeZb1ia8X1OfCPP2bdT0shfBt'
+                'CP5xZXJNJ0A3IRlMsHuW/LOabwX5cdhTdB2gvfwKxSPO/OfMsm8l7jNvnjbv'
+                'CvJ8x/0rzk8mH1omwZrYHV1I48wzCzFxLwNw8zyvpef3m68sc34xDa4XYudL'
+                'wZ8HTP7t2dvmj+xBAngj7WxfM+kCIPTmspxvXl3K+ddXf+39vX1tsgMtSHsN'
+                '27Yj5d3XHB+Tmwa9PTUGpxZBUF9SnH4JsfspZzeTpZ3L9++fX7EwVJ1gjRvO'
+                'LJ3JT4PsWuV8Scr8N/Vvuf4FzeeT7F+UOp9k/+Z5n78K/n1+519x6XbO+3nF'
+                '+QcsdpBims6T6yT5exzib9D9/AWANz32uuaWvZjQO8CjLyl+l0L8Dno+e4QN'
+                'cGNgS1eT5+/nXpf4+7jikux89Z2Ly3C4oPdpi8zv4cs3luD96HqC6iFu/wE6'
+                'xFUUt8549IhQV0F/BnFZFTtKIXZEjWsSz88UlzxcSUjzNcWluBSX4hZRT7cE'
+                'fz1lqzs/s6chSfI3jVOKS3GTcSUhzfMUl+JS3GrUm6jPh5Lib4pLcSkuxaW4'
+                'FJdk3MOsi+PfHzHZ+30I6/+7hyfoOr/j6b/lyB2AUN/A7D89Q9KGP5OZEsKK'
+                'av+dJZ3Q3ZrnRy3G0w/hKXE8pUk8UAU6gd1Bn31sZxGsKQR2pJrTyj7BK49a'
+                'Ge9dCG+F461M4tWAYloGsJ9ZKwaV2B89Ut1uPh02j3/0cf0O4z/m+I8n8XeH'
+                'HzO3B7YBjjUa9VqyP3OuDGwb6u4RPo82Avi9+ZCl0uMn2c1P5Z8g+PPOzceP'
+                'b+Pw5XKZ7PC9pwf3KASXE/znAcP/K0yX988+0X/k4yr3nzbOGbrcN04uT25s'
+                'k61/Nfv/B37E+Yc=')
+        pipeline = cpp.Pipeline()
+        def callback(caller,event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO.StringIO(zlib.decompress(base64.b64decode(data))))
+        module = pipeline.modules()[-1]
+        self.assertTrue(isinstance(module, F.FilterByObjectMeasurement))
+        self.assertEqual(module.target_name.value, 'FilteredBlue')
+        self.assertEqual(module.object_name.value, 'Nuclei')
+        self.assertEqual(module.rules_or_measurement, F.ROM_RULES)
+        self.assertEqual(module.rules_file_name, 'rules.txt')
+        self.assertEqual(module.rules_directory_choice, F.DIR_CUSTOM)
+        self.assertEqual(module.rules_directory, './')
+        
+        
     def test_06_01_get_measurement_columns(self):
         '''Test the get_measurement_columns function'''
         workspace, module = self.make_workspace({ "my_objects": np.zeros((10,10),int) })
@@ -847,4 +894,33 @@ Module #3: FilterByObjectMeasurement revision - 6
                 for f in ff:
                     self.assertTrue(f in category[c])
                                             
-                                                         
+    def test_08_01_filter_by_rule(self):
+        labels = np.zeros((10,20),int)
+        labels[3:5,4:9] = 1
+        labels[7:9,6:12] = 2
+        labels[4:9, 14:18] = 3
+        workspace, module = self.make_workspace({ "MyObjects": labels })
+        self.assertTrue(isinstance(module, F.FilterByObjectMeasurement))
+        m = workspace.measurements
+        m.add_measurement("MyObjects","MyMeasurement", 
+                          np.array([ 1.5, 2.3,1.8]))
+        rules_file_contents = "IF (MyObjects_MyMeasurement > 2.0, [1.0,-1.0], [-1.0,1.0])\n"
+        rules_path = tempfile.mktemp()
+        fd = open(rules_path, 'wt')
+        try:
+            fd.write(rules_file_contents)
+            fd.close()
+            rules_dir, rules_file = os.path.split(rules_path)
+            module.object_name.value = "MyObjects"
+            module.rules_or_measurement.value = F.ROM_RULES
+            module.rules_file_name.value = rules_file
+            module.rules_directory_choice.value = F.DIR_CUSTOM
+            module.rules_directory.value = rules_dir
+            module.target_name.value = "MyTargetObjects"
+            module.run(workspace)
+            target_objects = workspace.object_set.get_objects("MyTargetObjects")
+            target_labels = target_objects.segmented
+            self.assertTrue(np.all(target_labels[labels == 2] > 0))
+            self.assertTrue(np.all(target_labels[labels != 2] == 0))
+        finally:
+            os.remove(rules_path)

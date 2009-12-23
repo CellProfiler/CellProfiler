@@ -21,13 +21,17 @@ See also: Any of the <b>MeasureObject*</b> modules, <b>MeasureTexture</b>,
 __version__ = "$Revision$"
 
 import numpy as np
+import os
 import scipy.ndimage as scind
+import traceback
 
 import cellprofiler.cpimage as cpi
 import cellprofiler.cpmodule as cpm
 import cellprofiler.objects as cpo
 import cellprofiler.settings as cps
 import cellprofiler.measurements as cpmeas
+import cellprofiler.preferences as cpprefs
+import cellprofiler.utilities.rules as cprules
 from cellprofiler.cpmath.outline import outline
 from cellprofiler.cpmath.cpmorphology import fixup_scipy_ndimage_result as fix
 from cellprofiler.modules.identify import add_object_count_measurements
@@ -53,18 +57,25 @@ FI_ALL = [ FI_MINIMAL, FI_MAXIMAL, FI_MINIMAL_PER_OBJECT,
           FI_MAXIMAL_PER_OBJECT, FI_LIMITS ]
 
 '''The number of settings for this module in the pipeline if no additional objects'''
-FIXED_SETTING_COUNT = 11
+FIXED_SETTING_COUNT = 14
 
 '''The number of settings per additional object'''
 ADDITIONAL_OBJECT_SETTING_COUNT = 4
 
 FF_PARENT = "Parent_%s"
 
+ROM_RULES = "Rules"
+ROM_MEASUREMENTS = "Measurements"
+
+DIR_DEFAULT_INPUT = "Default input folder"
+DIR_DEFAULT_OUTPUT = "Default output folder"
+DIR_CUSTOM = "Custom folder"
+
 class FilterByObjectMeasurement(cpm.CPModule):
 
     module_name = 'FilterByObjectMeasurement'
     category = "Object Processing"
-    variable_revision_number = 1
+    variable_revision_number = 2
     
     def create_settings(self):
         '''Create the initial settings and name the module'''
@@ -82,6 +93,13 @@ class FilterByObjectMeasurement(cpm.CPModule):
         
         self.spacer_1 = cps.Divider(line=False)
         
+        self.rules_or_measurement = cps.Choice(
+            'Do you want to filter using classifier rules or measurements?',
+            [ROM_MEASUREMENTS, ROM_RULES],
+            doc = """You can either pick a measurement made on the objects or
+            a rules file as produced by CellProfiler Analyst. If you choose
+            "Rules", you will have to ensure that this pipeline makes every
+            measurement in that rules file.""")
         self.measurement = cps.Measurement('Select the measurement to filter by', 
                                 self.object_name.get_value, "AreaShape_Area", doc = """
                                 See the help of the Measurements modules
@@ -129,6 +147,34 @@ class FilterByObjectMeasurement(cpm.CPModule):
                                 <i>(Used if a Per-Object filtering method is selected)</i><br>
                                 This setting selects the container (i.e, parent) objects for the <i>Maximal per object</i> 
                                 and <i>Minimal per object</i> filtering choices.""")
+        
+        self.rules_file_name = cps.Text(
+            "Rules file name:","rules.txt",
+            doc="""The filename of the file holding the rules. Each line of
+            this file should be a rule, naming a measurement to be made
+            on the object you selected. For instance, a rule might be:
+            <br><tt>
+            IF (Nuclei_AreaShape_Area < 351.3, [0.79, -0.79], [-0.94, 0.94])
+            </tt><br>
+            The above rule will score +.79 for the positive category and -0.94
+            for the negative category for nuclei whose area is less than 351.3 
+            pixels and will score the opposite for nuclei whose area is larger.
+            The filter adds positive and negative and keeps only objects whose
+            positive score is higher than the negative score""")
+        self.rules_directory_choice = cps.Choice(
+            "Where is the rules file?",
+            [DIR_DEFAULT_INPUT, DIR_DEFAULT_OUTPUT, DIR_CUSTOM],
+            doc = """The location of the rules file. Choose "Default input
+            folder" if the rules file is in the default input folder, 
+            "Default output folder" if the rules file is in the default output
+            folder or "Custom folder" if you want to enter a folder name other
+            than the default input or output folder.""")
+        self.rules_directory = cps.Text(
+            "Rules folder name:",".",
+            doc="""Enter the path to the folder containing the rules file. You
+            can use "." for a path name that's relative to the default input
+            directory and "&amp;" for a path that's relative to the default 
+            output directory.""")
         
         self.wants_outlines = cps.Binary('Save outlines of filtered objects?', False)
         
@@ -179,24 +225,33 @@ class FilterByObjectMeasurement(cpm.CPModule):
                  self.filter_choice, self.enclosing_object_name,
                  self.wants_minimum, self.min_limit,
                  self.wants_maximum, self.max_limit,
-                  self.wants_outlines, self.outlines_name]
+                  self.wants_outlines, self.outlines_name,
+                  self.rules_or_measurement, self.rules_directory_choice,
+                  self.rules_directory]
         for x in self.additional_objects:
             result += [x.object_name, x.target_name, x.wants_outlines, x.outlines_name]
         return result
 
     def visible_settings(self):
-        result =[self.target_name, self.object_name, self.spacer_1, self.measurement, 
-                 self.spacer_2, self.filter_choice]
-        if self.filter_choice.value in (FI_MINIMAL_PER_OBJECT, 
-                                        FI_MAXIMAL_PER_OBJECT):
-            result.append(self.enclosing_object_name)
-        elif self.filter_choice == FI_LIMITS:
-            result.append(self.wants_minimum)
-            if self.wants_minimum.value:
-                result.append(self.min_limit)
-            result.append(self.wants_maximum)
-            if self.wants_maximum.value:
-                result.append(self.max_limit)
+        result =[self.target_name, self.object_name, 
+                 self.spacer_2, self.rules_or_measurement]
+        if self.rules_or_measurement == ROM_RULES:
+            result += [self.rules_file_name, self.rules_directory_choice]
+            if self.rules_directory_choice == DIR_CUSTOM:
+                result += [self.rules_directory]
+        else:
+            result += [self.spacer_1, self.measurement, 
+                       self.filter_choice]
+            if self.filter_choice.value in (FI_MINIMAL_PER_OBJECT, 
+                                            FI_MAXIMAL_PER_OBJECT):
+                result.append(self.enclosing_object_name)
+            elif self.filter_choice == FI_LIMITS:
+                result.append(self.wants_minimum)
+                if self.wants_minimum.value:
+                    result.append(self.min_limit)
+                result.append(self.wants_maximum)
+                if self.wants_maximum.value:
+                    result.append(self.max_limit)
         result.append(self.wants_outlines)
         if self.wants_outlines.value:
             result.append(self.outlines_name)
@@ -211,16 +266,26 @@ class FilterByObjectMeasurement(cpm.CPModule):
 
     def validate_module(self, pipeline):
         '''Make sure that the user has selected some limits when filtering'''
-        if (self.filter_choice == FI_LIMITS and
+        if (self.rules_or_measurement == ROM_MEASUREMENTS and
+            self.filter_choice == FI_LIMITS and
             self.wants_minimum.value == False and
             self.wants_maximum.value == False):
             raise cps.ValidationError('Please enter a minimum and/or maximum limit for your measurement',
                                       self.wants_minimum)
+        if self.rules_or_measurement == ROM_RULES:
+            try:
+                self.get_rules()
+            except Exception, instance:
+                traceback.print_exc()
+                raise cps.ValidationError(str(instance),
+                                          self.rules_file_name)
 
     def run(self, workspace):
         '''Filter objects for this image set, display results'''
         src_objects = workspace.get_objects(self.object_name.value)
-        if self.filter_choice in (FI_MINIMAL, FI_MAXIMAL):
+        if self.rules_or_measurement == ROM_RULES:
+            indexes = self.keep_by_rules(workspace, src_objects)
+        elif self.filter_choice in (FI_MINIMAL, FI_MAXIMAL):
             indexes = self.keep_one(workspace, src_objects)
         elif self.filter_choice in (FI_MINIMAL_PER_OBJECT, 
                                     FI_MAXIMAL_PER_OBJECT):
@@ -426,6 +491,45 @@ class FilterByObjectMeasurement(cpm.CPModule):
         indexes = indexes + 1
         return indexes
 
+    def get_rules(self):
+        '''Read the rules from a file'''
+        rules_file = self.rules_file_name.value
+        if self.rules_directory_choice == DIR_DEFAULT_INPUT:
+            rules_directory = cpprefs.get_default_image_directory()
+        elif self.rules_directory_choice == DIR_DEFAULT_OUTPUT:
+            rules_directory = cpprefs.get_default_output_directory()
+        elif self.rules_directory_choice == DIR_CUSTOM:
+            rules_directory = self.rules_directory.value
+            rules_directory = cpprefs.get_absolute_path(rules_directory)
+        else:
+            raise NotImplementedError("Unknown directory choice: %s"%
+                                      self.rules_directory_choice.value)
+        path = os.path.join(rules_directory, rules_file)
+        rules = cprules.Rules()
+        rules.parse(path)
+        return rules
+        
+    def keep_by_rules(self, workspace, src_objects):
+        '''Keep objects according to rules
+        
+        workspace - workspace holding the measurements for the rules
+        src_objects - filter these objects (uses measurement indexes instead)
+        
+        Open the rules file indicated by the settings and score the
+        objects by the rules. Return the indexes of the objects that pass.
+        '''
+        rules = self.get_rules()
+        scores = rules.score(workspace.measurements)
+        #
+        # NaN positive scores get - infinity. NaN negative scores get
+        # infinity. This means all NaN cells get rejected.
+        #
+        scores[np.isnan(scores[:,0]),0] = -np.Infinity
+        scores[np.isnan(scores[:,1]),1] = np.Infinity
+        hits = scores[:,0] > scores[:,1]
+        indexes = np.argwhere(hits)[:,0] + 1
+        return indexes
+    
     def get_measurement_columns(self, pipeline):
         '''Return measurement column defs for the parent/child measurement'''
         object_list = ([(self.object_name.value, self.target_name.value)] + 
@@ -539,6 +643,13 @@ class FilterByObjectMeasurement(cpm.CPModule):
                               wants_outlines, outlines_name]
             from_matlab = False
             variable_revision_number = 1 
-                                  
+        if (not from_matlab) and variable_revision_number == 1:
+            #
+            # Added CPA rules
+            #
+            setting_values = (setting_values[:11] + 
+                              [ROM_MEASUREMENTS, DIR_DEFAULT_INPUT, "."] +
+                              setting_values[11:])
+            variable_revision_number = 2
         return setting_values, variable_revision_number, from_matlab
 

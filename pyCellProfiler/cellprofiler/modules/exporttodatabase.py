@@ -1072,13 +1072,36 @@ image_table   = %(spot_tables)s
 object_table  = %(cell_tables)s
 
 # ==== Database Columns ====
+# Specify the database column names that contain unique IDs for images and
+# objects (and optionally tables).
+#
+# table_id (OPTIONAL): This field lets Classifier handle multiple tables if
+#          you merge them into one and add a table_number column as a foreign
+#          key to your per-image and per-object tables.
+# image_id: must be a foreign key column between your per-image and per-object
+#           tables
+# object_id: the object key column from your per-object table
+
 image_id      = %(unique_id)s
 object_id     = %(object_id)s
+plate_id      = 
+well_id       = 
+
+# Also specify the column names that contain X and Y coordinates for each
+# object within an image.
 cell_x_loc    = %(cell_x_loc)s
 cell_y_loc    = %(cell_y_loc)s
 
 # ==== Image Path and File Name Columns ====
-# Here you specify the DB columns from your "image_table" that specify the image paths and file names.
+# Classifier needs to know where to find the images from your experiment.
+# Specify the column names from your per-image table that contain the image
+# paths and file names here.
+#
+# Individual image files are expected to be monochromatic and represent a single
+# channel. However, any number of images may be combined by adding a new channel
+# path and filename column to the per-image table of your database and then
+# adding those column names here.
+#
 # NOTE: These lists must have equal length!
 image_channel_paths = %(image_channel_file_paths)s
 image_channel_files = %(image_channel_file_names)s

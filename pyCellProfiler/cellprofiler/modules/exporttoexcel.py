@@ -101,7 +101,7 @@ class ExportToExcel(cpm.CPModule):
         
         self.object_groups = []
         self.add_object_group()
-        self.add_button = cps.DoSomething("Add another data type to export", "Add",
+        self.add_button = cps.DoSomething("", "Add more data",
                                            self.add_object_group)
     
     def add_object_group(self):
@@ -110,7 +110,7 @@ class ExportToExcel(cpm.CPModule):
         group.append("previous_file", cps.Binary("Combine these object measurements with those of the previous object?",
                                           False))
         group.append("file_name", cps.Text("Name the data file", "DATA.csv"))
-        group.append("remover", cps.RemoveSettingButton("", "Remove this object", self.object_groups, group))
+        group.append("remover", cps.RemoveSettingButton("", "Remove this data", self.object_groups, group))
         group.append("divider", cps.Divider(line=False))
         self.object_groups.append(group)
         

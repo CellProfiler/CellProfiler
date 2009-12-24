@@ -28,6 +28,7 @@ import cellprofiler.objects as cpo
 from cellprofiler.gui.addmoduleframe import AddModuleFrame
 import cellprofiler.gui.moduleview
 from cellprofiler.gui.movieslider import EVT_TAKE_STEP
+import cellprofiler.utilities.get_revision as get_revision
 from progress import ProgressFrame
 
 class PipelineController:
@@ -210,13 +211,13 @@ class PipelineController:
         '''Set the title of the parent frame'''
         pathname = cellprofiler.preferences.get_current_pipeline_path()
         if pathname is None:
-            self.__frame.Title = "CellProfiler"
+            self.__frame.Title = "CellProfiler (v.%d)"%(get_revision.version)
             return
         path, file = os.path.split(pathname)
         if self.__dirty_pipeline:
-            self.__frame.Title = "CellProfiler: %s* (%s)"%(file,path)
+            self.__frame.Title = "CellProfiler (v.%d): %s* (%s)"%(get_revision.version, file, path)
         else:
-            self.__frame.Title = "CellProfiler: %s (%s)"%(file,path)
+            self.__frame.Title = "CellProfiler (v.%d): %s (%s)"%(get_revision.version, file, path)
             
     def __on_clear_pipeline(self,event):
         if wx.MessageBox("Do you really want to remove all modules from the pipeline?",

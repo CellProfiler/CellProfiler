@@ -62,7 +62,11 @@ def configuration():
         elif sys.platform == 'darwin':
             include_dirs += ['/System/Library/Frameworks/JavaVM.framework/Headers']
             library_dirs = ['/System/Library/Frameworks/JavaVM.framework/Libraries']
-            libraries = ['jvm_compat']
+            if os.uname()[2][0] == '9':
+                libraries = ['jvm_compat']
+            else:
+                # snow leopard = darwin version 10
+                libraries = ['verify']
         elif sys.platform.startswith('linux'):
             include_dirs += [os.path.join(java_home,'include'),
                              os.path.join(java_home,'include','linux')]

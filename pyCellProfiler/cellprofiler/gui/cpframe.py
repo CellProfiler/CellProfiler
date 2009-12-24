@@ -76,8 +76,8 @@ class CPFrame(wx.Frame):
         wx.Frame.__init__(self, *args, **kwds)
         self.BackgroundColour = cellprofiler.preferences.get_background_color()
         self.__splitter = wx.SplitterWindow(self, -1)
-        self.__left_win = wx.Panel(self.__splitter, style=wx.BORDER_SIMPLE)
-        self.__right_win = wx.Panel(self.__splitter, style=wx.BORDER_SIMPLE)
+        self.__left_win = wx.Panel(self.__splitter, style=wx.BORDER_NONE)
+        self.__right_win = wx.Panel(self.__splitter, style=wx.BORDER_NONE)
 
         self.__logo_panel = wx.Panel(self.__left_win,-1,style=wx.RAISED_BORDER)
         self.__logo_panel.BackgroundColour = cellprofiler.preferences.get_background_color()
@@ -111,7 +111,7 @@ class CPFrame(wx.Frame):
         self.Destroy()
 
     def __set_properties(self):
-        self.SetTitle("CellProfiler (svn %d)"%(get_revision.version))
+        self.SetTitle("CellProfiler (v.%d)"%(get_revision.version))
         self.SetSize((640, 480))
 
     def __add_menu(self):
@@ -363,7 +363,7 @@ class CPFrame(wx.Frame):
         left_win = self.__left_win
         right_win = self.__right_win
         
-        self.__splitter.SetMinimumPaneSize(20)
+        self.__splitter.SetMinimumPaneSize(self.__logopic.GetBestSize()[0] + 5)
         self.__splitter.SplitVertically(self.__left_win, self.__right_win, 300)
 
         left_sizer = wx.BoxSizer(wx.VERTICAL)
@@ -381,7 +381,7 @@ class CPFrame(wx.Frame):
         self.__directory_view.set_height(self.__preferences_panel.GetBestSize()[1])
 
         border = wx.BoxSizer()
-        border.Add(splitter, 1, wx.EXPAND | wx.ALL, 1)
+        border.Add(splitter, 1, wx.EXPAND|wx.ALL,1)
         self.SetSizer(border)
         self.Layout()
 
@@ -396,8 +396,8 @@ class CPFrame(wx.Frame):
             fd = open('CellProfilerIcon.ico','rb')
             stream = cStringIO.StringIO(fd.read())
         bitmap = wx.BitmapFromImage(wx.ImageFromStream(stream))
-        logopic = wx.StaticBitmap(self.__logo_panel,-1,bitmap)
-        sizer.Add(logopic)
+        self.__logopic = wx.StaticBitmap(self.__logo_panel,-1,bitmap)
+        sizer.Add(self.__logopic)
         self.__logo_panel.SetSizer(sizer)
 
     def __set_icon(self):

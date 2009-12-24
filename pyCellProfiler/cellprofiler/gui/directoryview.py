@@ -91,7 +91,10 @@ class DirectoryView(object):
         selections = self.__list_box.GetSelections()
         if len(selections) > 0:
             selection = self.__list_box.GetItems()[selections[0]]
+        else:
+            selection = self.__list_box.GetItems()[self.__list_box.GetSelection()]
         filename = os.path.join(cellprofiler.preferences.get_default_image_directory(),selection)
+
         try:
             if os.path.splitext(selection)[1].lower() =='.mat':
                 # A matlab file might be an image or a pipeline

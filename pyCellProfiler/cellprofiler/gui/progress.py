@@ -22,7 +22,7 @@ def image_set_label(image_set_index, num_image_sets):
 class ProgressFrame(wx.Frame):
 
     def __init__(self, *args, **kwds):
-        kwds["style"] = wx.DEFAULT_FRAME_STYLE
+        kwds["style"] = wx.DEFAULT_FRAME_STYLE | wx.STAY_ON_TOP
         wx.Frame.__init__(self, *args, **kwds)
 
         self.start_time = time.time()
@@ -34,7 +34,7 @@ class ProgressFrame(wx.Frame):
         self.BackgroundColour = cellprofiler.preferences.get_background_color()
         self.tbicon = wx.TaskBarIcon()
         self.tbicon.SetIcon(get_icon(), "CellProfiler2.0")
-        self.SetTitle("CellProfiler (svn %d)"%(get_revision.version))
+        self.SetTitle("CellProfiler (v.%d)"%(get_revision.version))
         self.SetSize((640, 480))
         self.panel = wx.Panel(self, wx.ID_ANY)
         sizer = wx.BoxSizer(wx.VERTICAL)

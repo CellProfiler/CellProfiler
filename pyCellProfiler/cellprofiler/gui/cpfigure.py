@@ -116,9 +116,13 @@ class CPFigureFrame(wx.Frame):
         self.SetIcon(get_icon())
         self.Fit()
         self.Show()
-        parent_menu_bar = parent.MenuBar
+        try:
+            parent_menu_bar = parent.MenuBar
+        except:
+            # when testing, there may be no parent
+            parent_menu_bar = None
         if parent_menu_bar is not None and isinstance(parent_menu_bar, wx.MenuBar):
-            for menu,label in parent_menu_bar.GetMenus():
+            for menu, label in parent_menu_bar.GetMenus():
                 if label == "Window":
                     menu_ids = [menu_item.Id for menu_item in menu.MenuItems]
                     for window_id in window_ids+[None]:
@@ -540,25 +544,28 @@ def figure_to_image(figure):
 if __name__ == "__main__":
     import numpy as np
     import gc
-    
+
     ID_TEST_ADD_IMAGE = wx.NewId()
+
     class MyApp(wx.App):
         def OnInit(self):
             wx.InitAllImageHandlers()
-            self.frame = CPFigureFrame(subplots=(1,1))
+            self.frame = CPFigureFrame(subplots=(1, 1))
             menu = wx.Menu()
             menu.Append(ID_TEST_ADD_IMAGE, "Add image")
+
             def add_image(event):
                 self.frame.clf()
-                img = np.random.uniform(size=(1000,1000,3))
-                self.frame.subplot_imshow_color(0,0,img,"Random image")
+                img = np.random.uniform(size=(1000, 1000, 3))
+                self.frame.subplot_imshow_color(0, 0, img, "Random image")
                 self.frame.figure.canvas.draw()
                 gc.collect()
+
             wx.EVT_MENU(self.frame, ID_TEST_ADD_IMAGE, add_image)
             self.frame.MenuBar.Append(menu, "Test")
             self.SetTopWindow(self.frame)
             self.frame.Show()
             return True
+
     app = MyApp()
     app.MainLoop()
-        

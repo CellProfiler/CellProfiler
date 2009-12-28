@@ -35,9 +35,9 @@ O_ADD = "Add"
 O_SUBTRACT = "Subtract"
 O_MULTIPLY = "Multiply"
 O_DIVIDE = "Divide"
+O_AVERAGE = "Average"
 O_INVERT = "Invert"
 O_LOG_TRANSFORM = "Log transform (base 2)"
-O_AVERAGE = "Average"
 O_NONE = "None"
 # Combine is now obsolete - done by Add now, but we need the string for upgrade_settings
 O_COMBINE = "Combine"
@@ -65,13 +65,15 @@ class ImageMath(cpm.CPModule):
 
         # other settings
         self.operation = cps.Choice("Operation", 
-                                    [O_ADD, O_SUBTRACT, O_MULTIPLY, O_DIVIDE, O_INVERT, O_LOG_TRANSFORM, O_AVERAGE, O_NONE], doc=
+                                    [O_ADD, O_SUBTRACT, O_MULTIPLY, O_DIVIDE, O_AVERAGE, O_INVERT, O_LOG_TRANSFORM, O_NONE], doc=
             """What operation would you like performed?
                         
             <ul>
+            <li><i>Add</i> adds the first image to the second, and so on.
+
             <li><i>Subtract</i> subtracts the second image from the first.
             
-            <li><i>Multiple </i> multiplies the first image by the second.
+            <li><i>Multiply</i> multiplies the first image by the second.
 
             <li><i>Divide </i> divides the first image by the second.
             
@@ -84,7 +86,9 @@ class ImageMath(cpm.CPModule):
             <li><i>Invert</i> subtracts the image intensities from 1. This makes the darkest
             color the brightest and vice-versa.</li>
 
-            <i>None</i> is useful if you want to add, subtract, or exponentiate your image by a constant.
+            <i>Log transform (base 2)</i> log transforms each pixel's intensity. 
+
+            <i>None</i> is useful if you simply want to select some of the later options in the module, such as adding, multiplying, or exponentiating your image by a constant.
             
             <li> Note that <i>Invert</i>, <i>Log Transform</i>, and <i>None</i> operate only on a single image.
             </ul>""")

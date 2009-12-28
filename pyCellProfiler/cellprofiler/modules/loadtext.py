@@ -144,7 +144,7 @@ class LoadText(cpm.CPModule):
     variable_revision_number = 3
 
     def create_settings(self):
-        self.csv_directory_choice = cps.Choice("CSV file location:", DIR_ALL, doc="""
+        self.csv_directory_choice = cps.Choice("CSV file location", DIR_ALL, doc="""
             This is the folder that contains the CSV file. Choose "Default Input Folder"
             if the CSV file is in the default input folder. Choose "Default Output
             Folder" if the CSV file is in the default output folder. Choose
@@ -154,16 +154,16 @@ class LoadText(cpm.CPModule):
             start with "&" are relative to the default output folder.
             For example '&/../My_folder' looks in a folder called 'My_folder'
             at the same level as the output folder""")
-        self.csv_custom_directory = cps.DirectoryPath("Enter the path to the CSV file:",
+        self.csv_custom_directory = cps.DirectoryPath("Path to the CSV file",
                                                       ".", doc = 
                                                       """What is the name of the CSV file's folder?""")
-        self.csv_file_name = cps.FilenameText("Enter the name of the CSV file:",
+        self.csv_file_name = cps.FilenameText("Name of the CSV file",
                                               "None",doc="""
             This is the file name of the CSV file containing the data.""")
         self.wants_images = cps.Binary("Load images from CSV data?", True, doc="""
             Check this box to have LoadText load images using the Image_FileName field and,
             if it appears in the CSV file, the Image_PathName fields.""")
-        self.image_directory_choice = cps.Choice("Image folder location:",
+        self.image_directory_choice = cps.Choice("Image folder location",
                                                  DIR_ALL, doc="""
             This is the base folder used for paths to images. Path names to image
             files are relative to this folder. Choose "Default Input Folder" to
@@ -175,11 +175,11 @@ class LoadText(cpm.CPModule):
             start with "&" are relative to the default output folder.
             For example '&/../My_folder' looks in a folder called 'My_folder'
             at the same level as the output folder""")
-        self.image_custom_directory = cps.DirectoryPath("Enter the path to the images:",
+        self.image_custom_directory = cps.DirectoryPath("Path to the images",
                                                         ".", doc = 
                                                         """What is the name of the image folder?""")
         self.wants_image_groupings = cps.Binary("Group images by metadata?", False)
-        self.metadata_fields = cps.MultiChoice("Select metadata fields for grouping:", None)
+        self.metadata_fields = cps.MultiChoice("Select metadata fields for grouping", None)
         self.wants_rows = cps.Binary("Process just a range of rows?",
                                      False, doc="""
             Check this box if you want to process a subset of the rows in the CSV file.
@@ -187,7 +187,7 @@ class LoadText(cpm.CPModule):
             LoadText will process up to and including the end row.
             This option can be used to break the image sets in an experiment into groups
             that can be processed by different nodes on a computing cluster.""")
-        self.row_range = cps.IntegerRange("Rows to process:",
+        self.row_range = cps.IntegerRange("Rows to process",
                                           (1,100000),1, doc = 
                                           """Enter the row numbers of the first and last row to be processed.""")
 

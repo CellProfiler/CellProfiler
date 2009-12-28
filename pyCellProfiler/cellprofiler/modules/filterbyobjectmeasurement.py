@@ -5,6 +5,8 @@ This module removes selected objects based on their measurements produced by ano
 MeasureObjectAreaShape, MeasureObjectIntensity, MeasureTexture, etc). All objects that do not satisty  
 the specified parameters will be discarded.
 
+Special note on saving images: Using the settings in this module, object outlines can be passed along to the module OverlayOutlines and then saved with the SaveImages module. The identified objects themselves can be passed along to the object processing module ConvertToImage and then saved with the SaveImages module.
+
 See also: Any of the <b>MeasureObject*</b> modules, <b>MeasureTexture</b>,
 <b>MeasureCorrelation</b> and <b>CalculateRatios</b>.
 '''
@@ -97,10 +99,10 @@ class FilterByObjectMeasurement(cpm.CPModule):
         self.rules_or_measurement = cps.Choice(
             'Filter using classifier rules or measurements?',
             [ROM_MEASUREMENTS, ROM_RULES],
-            doc = """You can either pick a measurement made on the objects or
-            a rules file as produced by CellProfiler Analyst. If you choose
+            doc = """You can either pick a measurement made on the objects within the pipeline, or
+            a rules file produced by CellProfiler Analyst. If you choose
             "Rules", you will have to ensure that this pipeline makes every
-            measurement in that rules file.""")
+            measurement in that rules file and that the image and object names are identical to those that were used when the rules file was created.""")
         self.measurement = cps.Measurement('Select the measurement to filter by', 
                                 self.object_name.get_value, "AreaShape_Area", doc = """
                                 See the help of the Measurements modules
@@ -171,18 +173,18 @@ class FilterByObjectMeasurement(cpm.CPModule):
             than the default input or output folder.""")
         self.rules_directory = cps.Text(
             "Rules folder name",".",
-            doc="""Enter the path to the folder containing the rules file. You
-            can use "." for a path name that's relative to the default input
-            directory and "&amp;" for a path that's relative to the default 
+            doc="""(Only used when a custom rules file location is selected) <br> 
+            Enter the path to the folder containing the rules file. You
+            can use "." for a path name that is relative to the default input
+            directory and "&amp;" for a path that is relative to the default 
             output directory.""")
         
-        self.wants_outlines = cps.Binary('Retain the outlines of filtered objects for use later in the pipeline (for example, in SaveImages)?', False, doc = '''''')
+        self.wants_outlines = cps.Binary('Retain the outlines of filtered objects for use later in the pipeline (for example, in SaveImages)?', False)
         
         self.outlines_name = cps.ImageNameProvider('Name the outline image','FilteredObjects', doc = '''
                                  (Only used if the outline image is to be retained for later use in the  
                                  pipeline) <br> Choose a name, which will allow the outline image to be 
-                                 selected later in the pipeline. Special note on saving images: Using the settings in this module, object outlines can be passed along to the module OverlayOutlines and then saved with the SaveImages module. The identified objects themselves can be passed along to the object processing module ConvertToImage and then saved with the SaveImages module.
-''')
+                                 selected later in the pipeline.''')
         
         self.additional_objects = []
         self.spacer_3 = cps.Divider(line=False)

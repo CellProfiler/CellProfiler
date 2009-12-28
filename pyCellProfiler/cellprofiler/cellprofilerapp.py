@@ -20,7 +20,7 @@ class CellProfilerApp(wx.App):
         dc.SelectObject(splashbitmap)
         dc.DrawBitmap(wx.BitmapFromImage(splashimage), 0, 0)
         dc.Destroy() # necessary to avoid a crash in splashscreen
-        self.splash = wx.SplashScreen(splashbitmap, wx.SPLASH_CENTRE_ON_SCREEN | wx.SPLASH_TIMEOUT, 2000, None, -1)
+        self.splash = wx.SplashScreen(splashbitmap, wx.SPLASH_CENTRE_ON_SCREEN | wx.SPLASH_TIMEOUT, 3500, None, -1)
         
         self.new_version_check()
 

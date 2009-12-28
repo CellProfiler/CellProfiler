@@ -371,6 +371,7 @@ class ExportToExcel(cpm.CPModule):
                 object_count =\
                      np.max([m.get_measurement(IMAGE, "Count_%s"%name, img_index)
                              for name in object_names])
+                object_count = int(object_count)
                 columns = [np.repeat(img_index+1, object_count)
                            if feature_name == IMAGE_NUMBER
                            else np.arange(1,object_count+1) 

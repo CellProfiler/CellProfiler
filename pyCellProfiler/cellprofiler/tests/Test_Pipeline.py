@@ -267,6 +267,58 @@ class TestPipeline(unittest.TestCase):
                 print "%s needs to define module_name as a class variable"%k
                 success = False
         self.assertTrue(success)
+        
+    def test_13_01_save_pipeline(self):
+        pipeline = cellprofiler.pipeline.Pipeline()
+        cellprofiler.modules.fill_modules()
+        module = cellprofiler.modules.instantiate_module("Align")
+        module.module_num = 1
+        pipeline.add_module(module)
+        fd = cStringIO.StringIO()
+        pipeline.save(fd)
+        fd.seek(0)
+        
+        pipeline = cellprofiler.pipeline.Pipeline()
+        def callback(caller, event):
+            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(fd)
+        self.assertEqual(len(pipeline.modules()), 1)
+        module_out = pipeline.modules()[-1]
+        for setting_in, setting_out in zip(module.settings(),
+                                           module_out.settings()):
+            self.assertEqual(setting_in.value, setting_out.value)
+            
+    def test_13_02_save_measurements(self):
+        pipeline = cellprofiler.pipeline.Pipeline()
+        cellprofiler.modules.fill_modules()
+        module = cellprofiler.modules.instantiate_module("Align")
+        module.module_num = 1
+        pipeline.add_module(module)
+        measurements = cellprofiler.measurements.Measurements()
+        my_measurement = [np.random.uniform(size=np.random.randint(3,25))
+                          for i in range(20)]
+        measurements.add_all_measurements("Foo","Bar", my_measurement)
+        fd = cStringIO.StringIO()
+        pipeline.save_measurements(fd, measurements)
+        fd.seek(0)
+        measurements = cellprofiler.measurements.load_measurements(fd)
+        my_measurement_out = measurements.get_all_measurements("Foo","Bar")
+        for m_in, m_out in zip(my_measurement, my_measurement_out):
+            self.assertEqual(len(m_in), len(m_out))
+            self.assertTrue(np.all(m_in == m_out))
+            
+        fd.seek(0)
+        pipeline = cellprofiler.pipeline.Pipeline()
+        def callback(caller, event):
+            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(fd)
+        self.assertEqual(len(pipeline.modules()), 1)
+        module_out = pipeline.modules()[-1]
+        for setting_in, setting_out in zip(module.settings(),
+                                           module_out.settings()):
+            self.assertEqual(setting_in.value, setting_out.value)
 
 class MyClassForTest0801(cellprofiler.cpmodule.CPModule):
     def create_settings(self):

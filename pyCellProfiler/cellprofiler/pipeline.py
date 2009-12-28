@@ -18,6 +18,7 @@ import hashlib
 import gc
 import numpy as np
 import scipy.io.matlab
+import scipy
 try:
     #implemented in scipy.io.matlab.miobase.py@5582
     from scipy.io.matlab.miobase import MatReadError
@@ -412,7 +413,7 @@ class Pipeline(object):
         fd_or_filename - either a file descriptor or the name of the file
         """
         handles = self.save_to_handles()
-        scipy.io.matlab.mio.savemat(fd_or_filename,handles,format='5')
+        self.savemat(fd_or_filename,handles)
     
     def save_measurements(self,filename, measurements):
         """Save the measurements and the pipeline settings in a Matlab file
@@ -431,9 +432,22 @@ class Pipeline(object):
         root = {'handles':np.ndarray((1,1),dtype=make_cell_struct_dtype(handles.keys()))}
         for key,value in handles.iteritems():
             root['handles'][key][0,0]=value
+        self.savemat(filename, root)
         
-        scipy.io.matlab.mio.savemat(filename,root,format='5',
-                                    long_field_names=True)
+    def savemat(self, filename, root):
+        '''Save a handles structure accounting for scipy version compatibility'''
+        sver = scipy.__version__.split('.')
+        if (len(sver) >= 2 and sver[0].isdigit() and int(sver[0]) == 0 and
+            sver[1].isdigit() and int(sver[1]) < 8):
+            #
+            # 1-d -> 2-d not done
+            #
+            scipy.io.matlab.mio.savemat(filename, root, format='5',
+                                        long_field_names=True)
+        else:
+            scipy.io.matlab.mio.savemat(filename, root, format='5',
+                                        long_field_names = True, 
+                                        oned_as = 'column')
     
 
     def build_matlab_handles(self, image_set = None, object_set = None, measurements=None):

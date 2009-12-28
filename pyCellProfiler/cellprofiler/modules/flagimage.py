@@ -1,18 +1,18 @@
 '''<b>Flag Image</b> allows you to flag an image based on properties that you specify, for example, quality control measurements
 <hr>
-This module allows the user to assign a flag if
-an image meets certain measurement criteria that the user specifies (for example, if the image fails a quality control measurement).  The
+This module allows you to assign a flag if
+an image meets certain measurement criteria that you specify (for example, if the image fails a quality control measurement).  The
 value of the flag is '1' if the image meets the selected criteria (for example, if it fails QC), and '0' if it
 does not meet the criteria (if it passes QC). The flag can be used in post-processing to filter out images
-the user does not want to analyze, e.g. in CellProfiler Analyst. Additionally, you can
-use ExportToExcel to generate a file that includes the measurement as metadata
+you do not want to analyze, e.g. in CellProfiler Analyst. Additionally, you can
+use ExportToExcel to generate a file that includes the flag as a metadata measurement
 associated with the images. This file can then be used by the LoadText 
 module to put images that pass QC into one group and images that fail 
 into another. If you plan to use a flag in LoadText, give it a category of
 "Metadata" so that it can be used in grouping.
 
 A flag can be based on one or more measurements. If you create a flag based
-on more than one measurement, you'll have to choose between setting the
+on more than one measurement, you can choose between setting the
 flag if all measurements are outside the bounds or if one of the measurements
 is outside of the bounds.
 
@@ -77,14 +77,14 @@ class FlagImage(cpm.CPModule):
         group.append("category", cps.Text("Name the flag's category",
                                  "Metadata", doc = '''Name a measurement category the flag should reside in. Metadata allows you to later group images in the LoadImages module based on the flag, if you load the flag data in a future pipeline via the LoadText module.  Otherwise, you might choose to have the flag stored
                                  in the Image category or some other word you prefer.  The flag is stored as a Per-image measurement whose name is a combination of the
-flags category and feature name, underscore delimited. 
+flag's category and feature name, underscore delimited. 
 For instance, if the measurement category is
 Metadata and the feature name is QCFlag, then the default
 measurement name would be Metadata_QCFlag.
 '''))
         group.append("feature_name", cps.Text("Name the flag"
                                      ,"QCFlag", doc = '''The flag is stored as a Per-image measurement whose name is a combination of the
-flags category and feature name, underscore delimited. 
+flag's category and feature name, underscore delimited. 
 For instance, if the measurement category is
 Metadata and the feature name is QCFlag, then the default
 measurement name would be Metadata_QCFlag.'''))
@@ -115,12 +115,12 @@ measurement name would be Metadata_QCFlag.'''))
                      cps.Choice(
                 "Flag is based on", S_ALL, doc = '''
                 <ul>
-                <li><i>Image:</i> This will flag an image based
+                <li><i> Whole-image measurement:</i> This will flag an image based
                 on a per-image measurement, such as intensity or granularity.</li>
-                <li><i>Average for objects:</i> This will flag
-                an image based on the average of all object measurements in an image.</li>
-                <li><i>All objects:</i> This will flag an image based on all the 
-                object measurements in an image, without averaging.</li>
+                <li><i> Average measurement for all objects in each image:</i> This will flag
+                an image based on the average of all object measurements in the image.</li>
+                <li><i> Measurements for all objects in each image:</i> This will flag an image based on all the 
+                object measurements in an image, without averaging. In other words, if <em>any</em> of the objects meet the criteria, the image will be flagged.</li>
                 </ul>'''))
         group.append("object_name",
                      cps.ObjectNameSubscriber(

@@ -298,10 +298,12 @@ class TestExportToExcel(unittest.TestCase):
             fd = open(path,"r")
             reader = csv.reader(fd, delimiter=module.delimiter_char)
             header = reader.next()
-            self.assertEqual(len(header),1)
-            self.assertEqual(header[0],"my_measurement")
+            self.assertEqual(len(header),2)
+            self.assertEqual(header[0], 'ImageNumber')
+            self.assertEqual(header[1], "my_measurement")
             row = reader.next()
-            self.assertEqual(row[0],"Hello, world")
+            self.assertEqual(row[0],"1")
+            self.assertEqual(row[1],"Hello, world")
             self.assertRaises(StopIteration,reader.next)
         finally:
             fd.close()
@@ -335,14 +337,15 @@ class TestExportToExcel(unittest.TestCase):
             fd = open(path,"r")
             reader = csv.reader(fd, delimiter=module.delimiter_char)
             header = reader.next()
-            self.assertEqual(len(header),3)
+            self.assertEqual(len(header),4)
+            self.assertEqual(header[0],"ImageNumber")
             for i in range(3):
-                self.assertEqual(header[i],"measurement_%d"%(i))
+                self.assertEqual(header[i+1],"measurement_%d"%(i))
             for i in range(2):
                 row = reader.next()
-                self.assertEqual(len(row),3)
+                self.assertEqual(len(row),4)
                 for j in range(3):
-                    self.assertEqual(row[j],"%d:%d"%(i,j))
+                    self.assertEqual(row[j+1],"%d:%d"%(i,j))
             self.assertRaises(StopIteration,reader.next)
         finally:
             fd.close()
@@ -375,11 +378,13 @@ class TestExportToExcel(unittest.TestCase):
             fd = open(path,"r")
             reader = csv.reader(fd, delimiter=module.delimiter_char)
             header = reader.next()
-            self.assertEqual(len(header),1)
-            self.assertEqual(header[0],"my_measurement")
+            self.assertEqual(len(header),3)
+            self.assertEqual(header[0],"ImageNumber")
+            self.assertEqual(header[1],"ObjectNumber")
+            self.assertEqual(header[2],"my_measurement")
             row = reader.next()
-            self.assertEqual(len(row),1)
-            self.assertAlmostEqual(float(row[0]),mvalues[0],4)
+            self.assertEqual(len(row),3)
+            self.assertAlmostEqual(float(row[2]),mvalues[0],4)
             self.assertRaises(StopIteration,reader.next)
         finally:
             fd.close()
@@ -413,14 +418,18 @@ class TestExportToExcel(unittest.TestCase):
             fd = open(path,"r")
             reader = csv.reader(fd, delimiter=module.delimiter_char)
             header = reader.next()
-            self.assertEqual(len(header),3)
+            self.assertEqual(len(header),5)
+            self.assertEqual(header[0],"ImageNumber")
+            self.assertEqual(header[1],"ObjectNumber")
             for i in range(3):
-                self.assertEqual(header[i],"measurement_%d"%(i))
+                self.assertEqual(header[i+2],"measurement_%d"%(i))
             for i in range(2):
                 row = reader.next()
-                self.assertEqual(len(row),3)
+                self.assertEqual(len(row),5)
+                self.assertEqual(int(row[0]),1)
+                self.assertEqual(int(row[1]),i+1)
                 for j in range(3):
-                    self.assertAlmostEqual(float(row[j]),mvalues[i,j])
+                    self.assertAlmostEqual(float(row[j+2]),mvalues[i,j])
             self.assertRaises(StopIteration,reader.next)
         finally:
             fd.close()
@@ -462,22 +471,26 @@ class TestExportToExcel(unittest.TestCase):
             fd = open(path,"r")
             reader = csv.reader(fd, delimiter=module.delimiter_char)
             header = reader.next()
-            self.assertEqual(len(header),6)
+            self.assertEqual(len(header),8)
             for oidx in range(2):
                 for i in range(3):
-                    self.assertEqual(header[i+oidx*3],"object_%d"%(oidx))
+                    self.assertEqual(header[i+oidx*3+2],"object_%d"%(oidx))
             header = reader.next()
-            self.assertEqual(len(header),6)
+            self.assertEqual(len(header),8)
+            self.assertEqual(header[0],"ImageNumber")
+            self.assertEqual(header[1],"ObjectNumber")
             for oidx in range(2):
                 for i in range(3):
-                    self.assertEqual(header[i+oidx*3],"measurement_%d"%(i))
+                    self.assertEqual(header[i+oidx*3+2],"measurement_%d"%(i))
 
             for i in range(4):
                 row = reader.next()
-                self.assertEqual(len(row),6)
+                self.assertEqual(len(row),8)
+                self.assertEqual(int(row[0]), 1)
+                self.assertEqual(int(row[1]), i+1)
                 for j in range(3):
                     for k in range(2):
-                        self.assertAlmostEqual(float(row[k*3+j]),mvalues[i,j,k])
+                        self.assertAlmostEqual(float(row[k*3+j+2]),mvalues[i,j,k])
             self.assertRaises(StopIteration,reader.next)
         finally:
             fd.close()
@@ -522,12 +535,16 @@ class TestExportToExcel(unittest.TestCase):
             try:
                 reader = csv.reader(fd, delimiter=module.delimiter_char)
                 header = reader.next()
-                self.assertEqual(len(header),1)
-                self.assertEqual(header[0],"my_measurement")
+                self.assertEqual(len(header),3)
+                self.assertEqual(header[0],"ImageNumber")
+                self.assertEqual(header[1],"ObjectNumber")
+                self.assertEqual(header[2],"my_measurement")
                 for value_index in value_indexes:
                     row = reader.next()
-                    self.assertEqual(len(row),1)
-                    self.assertAlmostEqual(float(row[0]),
+                    self.assertEqual(len(row),3)
+                    self.assertEqual(int(row[0]), value_index+1)
+                    self.assertEqual(int(row[1]), 1)
+                    self.assertAlmostEqual(float(row[2]),
                                            mvalues[value_index],4)
                 self.assertRaises(StopIteration,reader.next)
             finally:
@@ -570,15 +587,16 @@ class TestExportToExcel(unittest.TestCase):
             try:
                 reader = csv.reader(fd, delimiter=module.delimiter_char)
                 header = reader.next()
-                self.assertEqual(len(header),2)
+                self.assertEqual(len(header),3)
                 d = {}
+                self.assertTrue("ImageNumber" in header)
                 self.assertTrue("my_measurement" in header)
                 self.assertTrue("Metadata_tag" in header)
-                for caption, index in zip(header,range(2)):
+                for caption, index in zip(header,range(3)):
                     d[caption] = index
                 for value_index in value_indexes:
                     row = reader.next()
-                    self.assertEqual(len(row),2)
+                    self.assertEqual(len(row),3)
                     self.assertAlmostEqual(float(row[d["my_measurement"]]),
                                            mvalues[value_index],4)
                 self.assertRaises(StopIteration,reader.next)
@@ -616,7 +634,7 @@ class TestExportToExcel(unittest.TestCase):
             fd = open(path,"r")
             reader = csv.reader(fd, delimiter=module.delimiter_char)
             header = reader.next()
-            self.assertEqual(len(header),len(cpmeas.AGG_NAMES)+1)
+            self.assertEqual(len(header),len(cpmeas.AGG_NAMES)+2)
             d = {}
             for index, caption in enumerate(header):
                 d[caption]=index
@@ -664,9 +682,12 @@ class TestExportToExcel(unittest.TestCase):
             fd = open(path,"r")
             reader = csv.reader(fd, delimiter=module.delimiter_char)
             header = reader.next()
-            self.assertEqual(len(header),1)
+            self.assertEqual(len(header),2)
+            d = {}
+            for index, caption in enumerate(header):
+                d[caption]=index
             row = reader.next()
-            self.assertEqual(row[0],"6")
+            self.assertEqual(row[d["Count_my_objects"]],"6")
             self.assertRaises(StopIteration,reader.next)
         finally:
             fd.close()
@@ -798,7 +819,7 @@ class TestExportToExcel(unittest.TestCase):
             fd = open(path,"r")
             reader = csv.reader(fd, delimiter=module.delimiter_char)
             header = reader.next()
-            self.assertEqual(len(header),3)
+            self.assertEqual(len(header),5)
             d = {}
             for index, column in enumerate(header):
                 d[column]=index
@@ -808,7 +829,7 @@ class TestExportToExcel(unittest.TestCase):
             for image_idx in range(mvalues.shape[0]):
                 for object_idx in range(mvalues.shape[1]):
                     row = reader.next()
-                    self.assertEqual(len(row),3)
+                    self.assertEqual(len(row),5)
                     self.assertEqual(row[d["Metadata_Plate"]], "P-X9TRG")
                     self.assertEqual(row[d["Metadata_Well"]], "C0%d"%(image_idx+1))
                     self.assertAlmostEqual(float(row[d["my_measurement"]]),
@@ -857,7 +878,7 @@ class TestExportToExcel(unittest.TestCase):
             fd = open(path,"r")
             reader = csv.reader(fd, delimiter=module.delimiter_char)
             header = reader.next()
-            self.assertEqual(len(header),1)
+            self.assertEqual(len(header),3)
             d = {}
             for index, column in enumerate(header):
                 d[column]=index
@@ -865,7 +886,7 @@ class TestExportToExcel(unittest.TestCase):
             for image_idx in range(3):
                 for object_idx in range(mvalues.shape[1]):
                     row = reader.next()
-                    self.assertEqual(len(row),1)
+                    self.assertEqual(len(row),3)
                     if image_idx == 1:
                         self.assertEqual(row[d["my_measurement"]],str(np.NAN))
                     else:

@@ -165,8 +165,9 @@ class TestSaveImages(unittest.TestCase):
         apply_threshold = cpm_a.ApplyThreshold()
         apply_threshold.image_name.value = 'Orig'
         apply_threshold.thresholded_image_name.value = 'Derived'
-        apply_threshold.low.value = False
-        apply_threshold.high.value = False
+        apply_threshold.low_or_high.value = cpm_a.TH_ABOVE_THRESHOLD
+        apply_threshold.threshold_method.value = cpm_a.TM_MANUAL
+        apply_threshold.manual_threshold.value = 1.0
         apply_threshold.binary.value = cpm_a.GRAYSCALE
         apply_threshold.module_num = 2
 
@@ -196,7 +197,9 @@ class TestSaveImages(unittest.TestCase):
         self.assertEqual(pathnames[0],pn)
         data = matplotlib.image.imread(img1_out_filename)
         expected_data = matplotlib.image.imread(img1_filename) 
-        self.assertTrue(numpy.all(data==expected_data))
+        self.assertTrue(numpy.all(data[expected_data < 255] ==
+                                  expected_data[expected_data < 255]))
+        self.assertTrue(numpy.all(data[expected_data == 255] == 0))
 
     def test_01_02_save_all_to_same_tif(self):
         img1_filename = os.path.join(self.new_image_directory,'img1.tif')
@@ -217,8 +220,9 @@ class TestSaveImages(unittest.TestCase):
         apply_threshold = cpm_a.ApplyThreshold()
         apply_threshold.image_name.value = 'Orig'
         apply_threshold.thresholded_image_name.value = 'Derived'
-        apply_threshold.low.value = False
-        apply_threshold.high.value = False
+        apply_threshold.low_or_high.value = cpm_a.TH_BELOW_THRESHOLD
+        apply_threshold.threshold_method.value = cpm_a.TM_MANUAL
+        apply_threshold.manual_threshold.value = 0
         apply_threshold.binary.value = cpm_a.GRAYSCALE
         apply_threshold.module_num = 2
 
@@ -272,8 +276,9 @@ class TestSaveImages(unittest.TestCase):
         apply_threshold = cpm_a.ApplyThreshold()
         apply_threshold.image_name.value = 'Orig'
         apply_threshold.thresholded_image_name.value = 'Derived'
-        apply_threshold.low.value = False
-        apply_threshold.high.value = False
+        apply_threshold.low_or_high.value = cpm_a.TH_BELOW_THRESHOLD
+        apply_threshold.threshold_method.value = cpm_a.TM_MANUAL
+        apply_threshold.manual_threshold.value = 0
         apply_threshold.binary.value = cpm_a.GRAYSCALE
         apply_threshold.module_num = 2
 
@@ -319,8 +324,9 @@ class TestSaveImages(unittest.TestCase):
         apply_threshold = cpm_a.ApplyThreshold()
         apply_threshold.image_name.value = 'Orig'
         apply_threshold.thresholded_image_name.value = 'Derived'
-        apply_threshold.low.value = False
-        apply_threshold.high.value = False
+        apply_threshold.low_or_high.value = cpm_a.TH_BELOW_THRESHOLD
+        apply_threshold.threshold_method.value = cpm_a.TM_MANUAL
+        apply_threshold.manual_threshold.value = 0
         apply_threshold.binary.value = cpm_a.GRAYSCALE
         apply_threshold.module_num = 2
 
@@ -374,8 +380,9 @@ class TestSaveImages(unittest.TestCase):
         apply_threshold = cpm_a.ApplyThreshold()
         apply_threshold.image_name.value = 'Orig'
         apply_threshold.thresholded_image_name.value = 'Derived'
-        apply_threshold.low.value = False
-        apply_threshold.high.value = False
+        apply_threshold.low_or_high.value = cpm_a.TH_BELOW_THRESHOLD
+        apply_threshold.threshold_method.value = cpm_a.TM_MANUAL
+        apply_threshold.manual_threshold.value = 0
         apply_threshold.binary.value = cpm_a.GRAYSCALE
         apply_threshold.module_num = 2
 
@@ -430,8 +437,9 @@ class TestSaveImages(unittest.TestCase):
         apply_threshold = cpm_a.ApplyThreshold()
         apply_threshold.image_name.value = 'Orig'
         apply_threshold.thresholded_image_name.value = 'Derived'
-        apply_threshold.low.value = False
-        apply_threshold.high.value = False
+        apply_threshold.low_or_high.value = cpm_a.TH_BELOW_THRESHOLD
+        apply_threshold.threshold_method.value = cpm_a.TM_MANUAL
+        apply_threshold.manual_threshold.value = 0
         apply_threshold.binary.value = cpm_a.GRAYSCALE
         apply_threshold.module_num = 2
 
@@ -490,8 +498,9 @@ class TestSaveImages(unittest.TestCase):
         apply_threshold = cpm_a.ApplyThreshold()
         apply_threshold.image_name.value = 'Orig'
         apply_threshold.thresholded_image_name.value = 'Derived'
-        apply_threshold.low.value = False
-        apply_threshold.high.value = False
+        apply_threshold.low_or_high.value = cpm_a.TH_BELOW_THRESHOLD
+        apply_threshold.threshold_method.value = cpm_a.TM_MANUAL
+        apply_threshold.manual_threshold.value = 0
         apply_threshold.binary.value = cpm_a.GRAYSCALE
         apply_threshold.module_num = 2
 
@@ -549,8 +558,9 @@ class TestSaveImages(unittest.TestCase):
         apply_threshold = cpm_a.ApplyThreshold()
         apply_threshold.image_name.value = 'Orig'
         apply_threshold.thresholded_image_name.value = 'Derived'
-        apply_threshold.low.value = False
-        apply_threshold.high.value = False
+        apply_threshold.low_or_high.value = cpm_a.TH_BELOW_THRESHOLD
+        apply_threshold.threshold_method.value = cpm_a.TM_MANUAL
+        apply_threshold.manual_threshold.value = 0
         apply_threshold.binary.value = cpm_a.GRAYSCALE
         apply_threshold.module_num = 2
 
@@ -605,8 +615,9 @@ class TestSaveImages(unittest.TestCase):
         apply_threshold = cpm_a.ApplyThreshold()
         apply_threshold.image_name.value = 'Orig'
         apply_threshold.thresholded_image_name.value = 'Derived'
-        apply_threshold.low.value = False
-        apply_threshold.high.value = False
+        apply_threshold.low_or_high.value = cpm_a.TH_BELOW_THRESHOLD
+        apply_threshold.threshold_method.value = cpm_a.TM_MANUAL
+        apply_threshold.manual_threshold.value = 0
         apply_threshold.binary.value = cpm_a.GRAYSCALE
         apply_threshold.module_num = 2
 

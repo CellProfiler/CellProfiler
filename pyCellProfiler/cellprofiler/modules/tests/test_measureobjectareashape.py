@@ -143,6 +143,35 @@ class TestMeasureObjectAreaShape(unittest.TestCase):
                 self.assertTrue(measurement in measurements)
             self.assertFalse('Zernike_3_1' in measurements)
             
+    def test_03_01_non_contiguous(self):
+        '''make sure MeasureObjectAreaShape doesn't crash if fed non-contiguous objects'''
+        module = cpmoas.MeasureObjectAreaShape()
+        module.object_groups[0].name.value = "SomeObjects"
+        module.calculate_zernikes.value = True
+        object_set = cpo.ObjectSet()
+        labels = np.zeros((10,20),int)
+        labels[1:9,1:5] = 1
+        labels[4:6,6:19] = 1
+        objects = cpo.Objects()
+        objects.segmented = labels
+        object_set.add_objects(objects, "SomeObjects")
+        module.module_num = 1
+        image_set_list = cpi.ImageSetList()
+        measurements = cpmeas.Measurements()
+        pipeline = cpp.Pipeline()
+        pipeline.add_module(module)
+        def callback(caller, event):
+            self.assertFalse(isinstance(event, cpp.RunExceptionEvent))
+        pipeline.add_listener(callback)
+        workspace = cpw.Workspace(pipeline, module, 
+                                  image_set_list.get_image_set(0),
+                                  object_set, measurements, image_set_list)
+        module.run(workspace)
+        values = measurements.get_current_measurement("SomeObjects",
+                                                      "AreaShape_Perimeter")
+        self.assertEqual(len(values), 1)
+        self.assertEqual(values[0], 54)
+            
     def features_and_columns_match(self, measurements, module):
         self.assertEqual(len(measurements.get_object_names()), 2)
         self.assertTrue('SomeObjects' in measurements.get_object_names())

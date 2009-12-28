@@ -16,12 +16,12 @@ class CellProfilerApp(wx.App):
         splashimage = wx.ImageFromStream(cStringIO.StringIO(CellProfilerSplash))
         # If the splash image has alpha, it shows up transparently on
         # windows, so we blend it into a white background.
-        splashbitmap = wx.EmptyBitmapRGBA(splashimage.GetWidth(), splashimage.GetHeight(), 255, 255, 255, 0)
+        splashbitmap = wx.EmptyBitmap(splashimage.GetWidth(), splashimage.GetHeight())
         dc = wx.MemoryDC()
         dc.SelectObject(splashbitmap)
         dc.DrawBitmap(wx.BitmapFromImage(splashimage), 0, 0)
         dc.Destroy() # necessary to avoid a crash in splashscreen
-        self.splash = AdvancedSplash(None, bitmap=splashbitmap, extrastyle=AS_SHADOW_BITMAP|AS_CENTER_ON_SCREEN|AS_TIMEOUT, timeout=2000, shadowcolour=wx.Color(0,255,0))
+        self.splash = AdvancedSplash(None, bitmap=splashbitmap, extrastyle=AS_SHADOW_BITMAP|AS_CENTER_ON_SCREEN|AS_TIMEOUT, timeout=5000, shadowcolour=wx.Color(0,255,0))
 
         self.new_version_check()
 

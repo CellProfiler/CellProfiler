@@ -14,6 +14,7 @@ __version__="$Revision$"
 
 import base64
 import numpy as np
+from scipy.ndimage import distance_transform_edt
 from StringIO import StringIO
 import unittest
 import zlib
@@ -44,6 +45,7 @@ class TestRelate(unittest.TestCase):
         module = R.Relate()
         module.parent_name.value = PARENT_OBJECTS
         module.sub_object_name.value = CHILD_OBJECTS
+        module.find_parent_child_distances.value = R.D_NONE
         module.module_num = 2 if fake_measurement else 1
         pipeline.add_module(module)
         object_set = cpo.ObjectSet()
@@ -206,5 +208,88 @@ class TestRelate(unittest.TestCase):
         self.assertTrue(np.all(data==expected))
         self.features_and_columns_match(workspace)
         
+    def test_04_00_distance_empty(self):
+        '''Make sure we can handle labels matrices that are all zero'''
+        empty_labels = np.zeros((10,20),int)
+        some_labels = np.zeros((10,20),int)
+        some_labels[2:7,3:8] = 1
+        some_labels[3:8,12:17] = 2
+        for parent_labels, child_labels, n in ((empty_labels, empty_labels,0),
+                                               (some_labels, empty_labels, 0),
+                                               (empty_labels, some_labels, 2)):
+            workspace,module = self.make_workspace(parent_labels, child_labels)
+            self.assertTrue(isinstance(module, R.Relate))
+            module.find_parent_child_distances.value = R.D_BOTH
+            module.run(workspace)
+            self.features_and_columns_match(workspace)
+            meas = workspace.measurements
+            for feature in (R.FF_CENTROID, R.FF_MINIMUM):
+                m = feature % PARENT_OBJECTS
+                v = meas.get_current_measurement(CHILD_OBJECTS, m)
+                self.assertEqual(len(v), n)
+                if n > 0:
+                    self.assertTrue(np.all(np.isnan(v)))
         
+    def test_04_01_distance_centroids(self):
+        '''Check centroid-centroid distance calculation'''
+        i,j = np.mgrid[0:14,0:30]
+        parent_labels = (i>=7) * 1 + (j>=15) * 2 + 1
+        # Centers should be at i=3 and j=7
+        parent_centers = np.array([[3,7],[10,7],[3,22],[10,22]], float)
+        child_labels = np.zeros(i.shape)
+        np.random.seed(0)
+        # Take 12 random points and label them
+        child_centers = np.random.permutation(np.prod(i.shape))[:12]
+        child_centers = np.vstack((i.flatten()[child_centers], 
+                                   j.flatten()[child_centers]))
+        child_labels[child_centers[0],child_centers[1]] = np.arange(1,13)
+        parent_indexes = parent_labels[child_centers[0],
+                                       child_centers[1]] -1
+        expected = np.sqrt(np.sum((parent_centers[parent_indexes,:] - 
+                                   child_centers.transpose())**2,1))
+
+        workspace,module = self.make_workspace(parent_labels, child_labels)
+        self.assertTrue(isinstance(module, R.Relate))
+        module.find_parent_child_distances.value = R.D_CENTROID
+        module.run(workspace)
+        self.features_and_columns_match(workspace)
+        meas = workspace.measurements
+        v = meas.get_current_measurement(CHILD_OBJECTS,
+                                         R.FF_CENTROID % PARENT_OBJECTS)
+        self.assertEqual(v.shape[0], 12)
+        self.assertTrue(np.all(np.abs(v - expected) < .0001))
         
+    def test_04_02_distance_minima(self):
+        '''Check centroid-perimeter distance calculation'''
+        i,j = np.mgrid[0:14,0:30]
+        #
+        # Make the objects different sizes to exercise more code
+        #
+        parent_labels = (i>=6) * 1 + (j>=14) * 2 + 1
+        child_labels = np.zeros(i.shape)
+        np.random.seed(0)
+        # Take 12 random points and label them
+        child_centers = np.random.permutation(np.prod(i.shape))[:12]
+        child_centers = np.vstack((i.flatten()[child_centers], 
+                                   j.flatten()[child_centers]))
+        child_labels[child_centers[0],child_centers[1]] = np.arange(1,13)
+        #
+        # Measure the distance from the child to the edge of its parent.
+        # We do this using the distance transform with a background that's
+        # the edges of the labels
+        #
+        background = ((i != 0) & (i != 5) & (i !=6) & (i != 13) &
+                      (j != 0) & (j != 13) & (j != 14) & (j != 29))
+        d = distance_transform_edt(background)
+        expected = d[child_centers[0], child_centers[1]]
+
+        workspace,module = self.make_workspace(parent_labels, child_labels)
+        self.assertTrue(isinstance(module, R.Relate))
+        module.find_parent_child_distances.value = R.D_MINIMUM
+        module.run(workspace)
+        self.features_and_columns_match(workspace)
+        meas = workspace.measurements
+        v = meas.get_current_measurement(CHILD_OBJECTS,
+                                         R.FF_MINIMUM % PARENT_OBJECTS)
+        self.assertEqual(v.shape[0], 12)
+        self.assertTrue(np.all(np.abs(v - expected) < .0001))

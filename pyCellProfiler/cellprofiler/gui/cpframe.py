@@ -112,7 +112,7 @@ class CPFrame(wx.Frame):
 
     def __set_properties(self):
         self.SetTitle("CellProfiler (v.%d)"%(get_revision.version))
-        self.SetSize((640, 480))
+        self.SetSize((1024, 600))
 
     def __add_menu(self):
         """Add the menu to the frame
@@ -388,13 +388,9 @@ class CPFrame(wx.Frame):
     def __layout_logo(self):
         import cStringIO
         sizer = wx.BoxSizer(wx.HORIZONTAL)
-
-        try:
-            from cellprofiler.icons import CP_logo
-            stream = cStringIO.StringIO(CP_logo)
-        except:
-            fd = open('CellProfilerIcon.ico','rb')
-            stream = cStringIO.StringIO(fd.read())
+        
+        from cellprofiler.icons import CP_logo
+        stream = cStringIO.StringIO(CP_logo)
         bitmap = wx.BitmapFromImage(wx.ImageFromStream(stream))
         self.__logopic = wx.StaticBitmap(self.__logo_panel,-1,bitmap)
         sizer.Add(self.__logopic)

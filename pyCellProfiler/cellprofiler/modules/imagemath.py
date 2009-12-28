@@ -1,4 +1,4 @@
-'''<b>Image Math<b/> performs simple mathematical operations on image intensities.
+'''<b>Image Math<b/> performs simple mathematical operations on image intensities
 <hr>
 ImageMath can perform addition, subtraction, multiplication, division, or averaging
 of two or more images' intensities, as well as inversion, log transform, or scaling by 
@@ -7,9 +7,10 @@ a constant for individual image intensities.
 <i>Multiply factors</i> The final image may have a substantially different range of pixel
 intensities than the originals, so each image can be multiplied by a 
 factor prior to the operation. This factor can be any real number.  
-See the Rescale Intensity module for more scaling options.
-
-See also SubtractBackground, RescaleIntensity, CorrectIllumination_Calculate.
+See the <b>Rescale Intensity</b> module for more scaling options.
+<br>
+<br>
+See also <b>SubtractBackground</b>, <b>RescaleIntensity</b>, <b>CorrectIllumination_Calculate</b>.
 '''
 #CellProfiler is distributed under the GNU General Public License.
 #See the accompanying file LICENSE for details.
@@ -70,12 +71,14 @@ class ImageMath(cpm.CPModule):
             <ul>
             <li><i>Subtract</i> subtracts the second image from the first.
             
+            <li><i>Multiple </i> multiplies the first image by the second.
+
             <li><i>Divide </i> divides the first image by the second.
             
             <li><i>Average</i> calculates the mean intensity of the images loaded in the module.  
             This is equivalent to the "add" option divided by the number of images loaded 
-            by this module.  If you would like to average many images (all of the images in 
-            an entire pipeline, i.e. across cycles), please use the CorrectIllumination_Calculate module 
+            by this module.  If you would like to average all of the images in 
+            an entire pipeline, i.e. across cycles, you should instead use the CorrectIllumination_Calculate module 
             and choose the 'All' (vs. 'Each') option.</li>
             
             <li><i>Invert</i> subtracts the image intensities from 1. This makes the darkest
@@ -111,8 +114,8 @@ class ImageMath(cpm.CPModule):
         
     def renumber_settings(self):
         for idx, image in enumerate(self.images):
-            image.image_name.text = "Choose %s image:"%(ordinal(idx + 1))
-            image.factor.text = "Enter a factor to multiply the %s image by (before other operations):"%ordinal(idx + 1)
+            image.image_name.text = "Select the %s image"%(ordinal(idx + 1))
+            image.factor.text = "Enter a factor to multiply the %s image by (before other operations)"%ordinal(idx + 1)
 
     def settings(self):
         result = [self.operation, self.exponent, self.after_factor, self.addend,

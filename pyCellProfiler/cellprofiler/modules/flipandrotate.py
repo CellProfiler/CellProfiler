@@ -54,48 +54,48 @@ class FlipAndRotate(cpm.CPModule):
     
     def create_settings(self):
         self.image_name = cps.ImageNameSubscriber(
-            "Select input image:", "None")
+            "Select the input image", "None")
         self.output_name = cps.ImageNameProvider(
-            "Name output image:", 
+            "Name the output image", 
             "FlippedOrigBlue")
-        self.flip_choice = cps.Choice("Select method to flip image:",
-                                      FLIP_ALL, doc = """How do you want to flip the image?""")
-        self.rotate_choice = cps.Choice("Select method to rotate image:",
+        self.flip_choice = cps.Choice("Select method to flip image",
+                                      FLIP_ALL, doc = """How do you want to flip the image? Left to right, Top to bottom, or both?""")
+        self.rotate_choice = cps.Choice("Select method to rotate image",
                                         ROTATE_ALL, doc='''
              <ul> <li> Angle - you can provide the numerical angle by which the 
              image should be rotated.</li>
              <li> Coordinates - you can provide the X,Y pixel locations of 
-             two points in the image which should be aligned horizontally or 
+             two points in the image that should be aligned horizontally or 
              vertically.</li> 
              <li> Mouse - CellProfiler will pause so you can select the 
-             rotation interactively. You can grab the image by 
+             rotation interactively. When prompted during the analysis run, grab the image by 
              clicking down with the left mouse button and rotate the image by 
-             dragging with the mouse. Press the "Done" button on the image 
+             dragging with the mouse, then release the mouse button. Press the "Done" button on the image 
              after rotating the image appropriately.</li>
              </ul>''')
         
         self.wants_crop = cps.Binary(
             "Crop away the rotated edges?", True, doc=
-             '''When an image is rotated, there will be black space at the 
+             '''(Only used when rotating images) <br> When an image is rotated, there will be black space at the 
              corners/edges unless you choose to crop away the incomplete rows 
              and columns of the image. This cropping will produce an image that 
              is not the exact same size as the original, which may affect 
              downstream modules.''')
                 
-        self.how_often = cps.Choice("Calculate rotation:",
-            IO_ALL, doc = "Do you want to determine the amount of rotation for each image "
+        self.how_often = cps.Choice("Calculate rotation",
+            IO_ALL, doc = "(Only used when rotating images using the mouse) <br> Do you want to determine the amount of rotation for each image "
             "individually as you cycle through, or do you want to define it "
             "only once (on the first image) and then apply it to all images?")
         self.first_pixel = cps.Coordinates(
-            "Enter coordinates of the top or left pixel?", (0,0))
+            "Enter coordinates of the top or left pixel", (0,0))
         self.second_pixel = cps.Coordinates(
-            "Enter the coordinates of the bottom or right pixel?", (0,100))
+            "Enter the coordinates of the bottom or right pixel", (0,100))
         self.horiz_or_vert = cps.Choice(
-            "Images are aligned:",
-            C_ALL, doc = """Are the points horizontally or vertically aligned?""")
+            "Select how the points you specified should be aligned",
+            C_ALL, doc = """(Only used when rotating images by entering coordinates)<br> Should the points you specified be horizontally or vertically aligned after the rotation is complete?""")
         self.angle = cps.Float(
-            "Enter angle of rotation:", 0, doc = """By what angle would you like to rotate the image 
-            (in degrees, positive = counterclockwise and 
+            "Enter angle of rotation", 0, doc = """(Only used when rotating images by entering an angle) <br> By what angle would you like to rotate the image 
+            (in degrees; positive = counterclockwise and 
             negative = clockwise)?""")
     
     def settings(self):

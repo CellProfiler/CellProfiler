@@ -371,6 +371,7 @@ class FlipAndRotate(cpm.CPModule):
         result = dialog.ShowModal()
         if result == wx.ID_OK:
             return angle[0]
+        raise ValueError("Canceled by user in FlipAndRotate")
     
     def get_measurement_columns(self, pipeline):
         return [(cpmeas.IMAGE, M_ROTATION_F % self.output_name.value,

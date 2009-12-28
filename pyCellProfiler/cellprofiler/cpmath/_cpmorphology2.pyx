@@ -454,15 +454,15 @@ def index_lookup(np.ndarray[dtype=np.int32_t, ndim=1, negative_indices=False] in
             for 0 <= idx < hit_count:
                 idxi, idxj = index_i[idx], index_j[idx]
                 center = image[idxi, idxj]
-                indexer =          ((image[idxi - 1, idxj - 1] == center) * 2**0 +
-                                    (image[idxi - 1, idxj]     == center) * 2**1 +
-                                    (image[idxi - 1, idxj + 1] == center) * 2**2 +
-                                    (image[idxi,     idxj - 1] == center) * 2**3 +
-                                    2**4 +
-                                    (image[idxi,     idxj + 1] == center) * 2**5 +
-                                    (image[idxi + 1, idxj - 1] == center) * 2**6 +
-                                    (image[idxi + 1, idxj]     == center) * 2**7 +
-                                    (image[idxi + 1, idxj + 1] == center) * 2**8)
+                indexer =          ((image[idxi - 1, idxj - 1] == center) * 1 +
+                                    (image[idxi - 1, idxj]     == center) * 2 +
+                                    (image[idxi - 1, idxj + 1] == center) * 4 +
+                                    (image[idxi,     idxj - 1] == center) * 8 +
+                                    16 +
+                                    (image[idxi,     idxj + 1] == center) * 32 +
+                                    (image[idxi + 1, idxj - 1] == center) * 64 +
+                                    (image[idxi + 1, idxj]     == center) * 128 +
+                                    (image[idxi + 1, idxj + 1] == center) * 256)
                 if table[indexer] == 0:
                     # mark for deletion
                     index_i[idx] = -index_i[idx]

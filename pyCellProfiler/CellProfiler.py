@@ -40,7 +40,7 @@ usage = """usage: %prog [options] [<measurement-file>])
            when running headless"""
 
 parser = optparse.OptionParser(usage=usage)
-parser.add_option("-p", "--pipeline", 
+parser.add_option("-p", "--pipeline",
                   dest="pipeline_filename",
                   help="Load this pipeline file on startup",
                   default=None)
@@ -62,27 +62,27 @@ parser.add_option("-i", "--image-directory",
                   dest="image_directory",
                   default=None,
                   help="Make this directory the default image directory")
-parser.add_option("-f","--first-image-set",
+parser.add_option("-f", "--first-image-set",
                   dest="first_image_set",
                   default=None,
                   help="The one-based index of the first image set to process")
-parser.add_option("-l","--last-image-set",
+parser.add_option("-l", "--last-image-set",
                   dest="last_image_set",
                   default=None,
                   help="The one-based index of the last image set to process")
-parser.add_option("-g","--group",
+parser.add_option("-g", "--group",
                   dest="groups",
                   default=None,
                   help=('Restrict processing to one grouping in a grouped '
                         'pipeline. For instance, "-g ROW=H,COL=01", will '
                         'process only the group of image sets that match '
                         'the keys.'))
-parser.add_option("-b","--do-not_build",
+parser.add_option("-b", "--do-not_build",
                   dest="build_extensions",
                   default=True,
                   action="store_false",
                   help="Do not build C and Cython extensions")
-parser.add_option("-d","--done-file",
+parser.add_option("-d", "--done-file",
                   dest="done_file",
                   default=None,
                   help=('The path to the "Done" file, written by CellProfiler'
@@ -105,11 +105,11 @@ if (not hasattr(sys, 'frozen')) and options.build_extensions:
     #
     # Check for dependencies and compile if necessary
     #
-    compile_scripts = [(os.path.join('cellprofiler','cpmath','setup.py'),
+    compile_scripts = [(os.path.join('cellprofiler', 'cpmath', 'setup.py'),
                         cellprofiler.cpmath.setup),
-                       (os.path.join('cellprofiler','utilities','setup.py'),
+                       (os.path.join('cellprofiler', 'utilities', 'setup.py'),
                         cellprofiler.utilities.setup),
-                       (os.path.join('contrib','setup.py'),
+                       (os.path.join('contrib', 'setup.py'),
                         contrib.setup)]
     if sys.platform == 'win32':
         compile_scripts += [(os.path.join('cellprofiler','ffmpeg','setup.py'),
@@ -117,24 +117,24 @@ if (not hasattr(sys, 'frozen')) and options.build_extensions:
     current_directory = os.path.abspath(os.curdir)
     for compile_script, my_module in compile_scripts:
         script_path, script_file = os.path.split(compile_script)
-        os.chdir(os.path.join(root,script_path))
+        os.chdir(os.path.join(root, script_path))
         configuration = my_module.configuration()
         needs_build = False
         for extension in configuration['ext_modules']:
-            target = extension.name+'.pyd'
-            if newer_group(extension.sources,target):
+            target = extension.name + '.pyd'
+            if newer_group(extension.sources, target):
                 needs_build = True
         if not needs_build:
-            continue 
+            continue
         if sys.platform == 'win32':
             p = subprocess.Popen(["python",
                                   script_file,
-                                  "build_ext","-i",
+                                  "build_ext", "-i",
                                   "--compiler=mingw32"])
-        else:            
+        else:
             p = subprocess.Popen(["python",
                                   script_file,
-                                  "build_ext","-i"])
+                                  "build_ext", "-i"])
         p.communicate()
     os.chdir(current_directory)
     # build icon files
@@ -205,9 +205,9 @@ else:
         groups = dict(kvs)
     else:
         groups = None
-    measurements = pipeline.run(image_set_start = image_set_start, 
-                                image_set_end = image_set_end,
-                                grouping = groups)
+    measurements = pipeline.run(image_set_start=image_set_start, 
+                                image_set_end=image_set_end,
+                                grouping=groups)
     if len(args) > 0:
         pipeline.save_measurements(args[0], measurements)
     if options.done_file is not None:
@@ -216,7 +216,7 @@ else:
             done_text = measurements.get_experiment_measurement(EXIT_STATUS)
         else:
             done_text = "Failure"
-        fd = open(options.done_file,"wt")
+        fd = open(options.done_file, "wt")
         fd.write("%s\n"%done_text)
         fd.close()
 try:

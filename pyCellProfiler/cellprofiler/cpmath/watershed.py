@@ -186,7 +186,7 @@ def fast_watershed(image, markers, connectivity=None, offset=None, mask=None):
             "markers (ndim=%d) must have same # of dimensions "\
             "as image (ndim=%d)"%(c_markers.ndim, cimage.ndim)
     if not all([x==y for x,y in zip(c_markers.shape, c_image.shape)]):
-           raise ValueError,"image and markers must have the same shape"
+        raise ValueError("image and markers must have the same shape")
     if mask!=None:
         c_mask = numpy.ascontiguousarray(mask,dtype=bool)
         if c_mask.ndim!=c_markers.ndim:

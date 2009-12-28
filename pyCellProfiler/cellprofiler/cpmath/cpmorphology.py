@@ -21,6 +21,7 @@ from rankorder import rank_order
 from _cpmorphology2 import skeletonize_loop, table_lookup_index
 from _cpmorphology2 import grey_reconstruction_loop
 from _cpmorphology2 import _all_connected_components
+from _cpmorphology2 import index_lookup, prepare_for_index_lookup, extract_from_image_lookup
 
 eight_connect = scind.generate_binary_structure(2, 2)
 four_connect = scind.generate_binary_structure(2,1)
@@ -204,8 +205,7 @@ def binary_shrink(image, iterations=-1):
                                             image, table, 1)
         if len(index_i) == pixel_count:
             break
-    image = np.zeros(orig_image.shape, orig_image.dtype)
-    image[index_i, index_j] = orig_image[index_i, index_j]
+    image = extract_from_image_lookup(orig_image, index_i, index_j)
     return image
 
 def strel_disk(radius):
@@ -2192,8 +2192,7 @@ def table_lookup(image, table, border_value, iterations = None):
         index_i, index_j, image = prepare_for_index_lookup(image, border_value)
         index_i, index_j = index_lookup(index_i, index_j, 
                                         image, table, iterations)
-        image = np.zeros(orig_image.shape, orig_image.dtype)
-        image[index_i, index_j] = orig_image[index_i, index_j]
+        image = extract_from_image_lookup(orig_image, index_i, index_j)
         if invert:
             image = ~ image
         return image
@@ -2231,88 +2230,6 @@ def table_lookup(image, table, border_value, iterations = None):
             break
         image = new_image
     return image
-
-def index_lookup(index_i, index_j, image, table, iterations=None):
-    '''Perform a table lookup for only the indexed pixels
-    
-    For morphological operations that only convert 1 to 0, the set of
-    resulting pixels is always a subset of the input set. Therefore, when
-    repeating, it will be faster to operate only on the subsets especially
-    when the results are 1-d or 0-d objects.
-    
-    This function returns a new index_i and index_j array of the pixels
-    that survive the operation. The image is modified in-place to remove
-    the pixels that did not survive.
-    
-    index_i - an array of row indexes into the image.
-    index_j - a similarly-shaped array of column indexes.
-    image - the binary image: *NOTE* add a row and column of border values
-            to the original image to account for pixels on the edge of the
-            image.
-    iterations - # of iterations to do, default is "forever"
-    
-    The idea of index_lookup was taken from
-    http://blogs.mathworks.com/steve/2008/06/13/performance-optimization-for-applylut/
-    which, apparently, is how Matlab achieved its bwmorph speedup.
-    '''
-    if iterations == None:
-        # Worst case - remove one per iteration
-        iterations = len(index_i)
-    for i in range(iterations):
-        hit_count = len(index_i)
-        indexer = np.ones(index_i.shape, int) * 2**4 # get the middle for free
-        if image.dtype.kind in ('i','u'):
-            #
-            # For integers, an adjacent point is "background" if it
-            # doesn't match the integer value. This lets adjacent labeled
-            # objects shrink independently of each other.
-            #
-            indexer[image[index_i-1, index_j-1]==image[index_i,index_j]]+=2**0
-            indexer[image[index_i-1, index_j]==image[index_i,index_j]]  +=2**1
-            indexer[image[index_i-1, index_j+1]==image[index_i,index_j]]+=2**2
-            indexer[image[index_i, index_j-1]==image[index_i,index_j]]  +=2**3
-            # we did 2**4 already
-            indexer[image[index_i, index_j+1]==image[index_i,index_j]]  +=2**5
-            indexer[image[index_i+1, index_j-1]==image[index_i,index_j]]+=2**6
-            indexer[image[index_i+1, index_j]==image[index_i,index_j]]  +=2**7
-            indexer[image[index_i+1, index_j+1]==image[index_i,index_j]]+=2**8
-        elif image.dtype.kind == 'b':
-            indexer[image[index_i-1, index_j-1]] += 2**0
-            indexer[image[index_i-1, index_j]]   += 2**1
-            indexer[image[index_i-1, index_j+1]] += 2**2
-            indexer[image[index_i, index_j-1]]   += 2**3
-            # we did 2**4 already
-            indexer[image[index_i, index_j+1]]   += 2**5
-            indexer[image[index_i+1, index_j-1]] += 2**6
-            indexer[image[index_i+1, index_j]]   += 2**7
-            indexer[image[index_i+1, index_j+1]] += 2**8
-        else:
-            raise ValueError("Unsupported dtype: %s"%image.dtype)
-        hits = table[indexer]
-        not_hits = ~hits
-        image[index_i[not_hits], index_j[not_hits]] = False
-        index_i = index_i[hits]
-        index_j = index_j[hits]
-        if len(index_i) == hit_count:
-            break
-    return (index_i, index_j)
-
-def prepare_for_index_lookup(image, border_value):
-    '''Return the index arrays of "1" pixels and an image with an added border
-    
-    The routine, index_lookup takes an array of i indexes, an array of
-    j indexes and an image guaranteed to be indexed successfully by 
-    index_<i,j>[:] +/- 1. This routine constructs an image with added border
-    pixels... evilly, the index, 0 - 1, lands on the border because of Python's
-    negative indexing convention.
-    '''
-    if np.issubdtype(image.dtype, float):
-        image = image.astype(bool)
-    image_i, image_j = np.argwhere(image.astype(bool)).transpose()
-    output_image = (np.ones(np.array(image.shape)+1,image.dtype) if border_value
-                    else np.zeros(np.array(image.shape)+1, image.dtype))
-    output_image[:image.shape[0],:image.shape[1]] = image
-    return (image_i, image_j, output_image)
 
 def pattern_of(index):
     '''Return the pattern represented by an index value'''
@@ -2677,8 +2594,7 @@ def spur(image, mask=None, iterations=1):
         for table in (spur_table_1, spur_table_2):
             index_i, index_j = index_lookup(index_i, index_j, 
                                             masked_image, table, 1)
-    masked_image = np.zeros(image.shape, image.dtype)
-    masked_image[index_i, index_j] = image[index_i, index_j]
+    masked_image = extract_from_image_lookup(image, index_i, index_j)
     if not mask is None:
         masked_image[~mask] = image[~mask]
     return masked_image
@@ -2781,8 +2697,7 @@ def thin(image, mask=None, iterations=1):
                                              thin_table[j], 1)
         if hit_count == len(index_i):
             break
-    masked_image = np.zeros(image.shape, image.dtype)
-    masked_image[index_i, index_j] = image[index_i, index_j]
+    masked_image = extract_from_image_lookup(image, index_i, index_j)
     if not mask is None:
         masked_image[~mask] = masked_image[~mask]
     return masked_image
@@ -3142,7 +3057,7 @@ def all_connected_components(i,j):
     labels = np.zeros(len(counts), np.uint32)
     _all_connected_components(i,j,indexes,counts,labels)
     return labels
-    
+
 if __name__=='__main__':
     import Image as PILImage
     from matplotlib.image import pil_to_array

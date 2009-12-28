@@ -298,7 +298,7 @@ class PipelineController:
                 pass
             if error_msg is None:
                 error_msg = event.error.message
-            message = "Error while processing %s: %s\nDo you want to stop processing?"%(event.module.module_name,error_msg)
+            message = "Error while processing %s:\n%s\n\nDo you want to stop processing?"%(event.module.module_name,error_msg)
             if wx.MessageBox(message,"Pipeline error",wx.YES_NO | wx.ICON_ERROR,self.__frame) == wx.NO:
                 event.cancel_run = False
         elif isinstance(event, cellprofiler.pipeline.LoadExceptionEvent):

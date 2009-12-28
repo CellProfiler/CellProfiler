@@ -271,6 +271,16 @@ class FlipAndRotate(cpm.CPModule):
         else:
             pixel_data = ((pixel_data - pd_min) * 255.0 / (pd_max - pd_min))
         #
+        # Make a 100 x 100 image so it's manageable
+        #
+        isize = 200
+        i,j,k = np.mgrid[0:isize,
+                         0:int(isize*pixel_data.shape[1] / pixel_data.shape[0]),
+                         0:3].astype(float)
+        i *= float(pixel_data.shape[0])/float(isize)
+        j *= float(pixel_data.shape[0])/float(isize)
+        pixel_data = scind.map_coordinates(pixel_data,(i,j,k))
+        #
         # Make a dialog box that contains the image
         #
         dialog = wx.Dialog(workspace.frame,
@@ -286,9 +296,14 @@ class FlipAndRotate(cpm.CPModule):
                   wx.ALIGN_CENTER_HORIZONTAL|
                   wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5)
         angle = [ 0 ]
+        angle_text = wx.StaticText(dialog, label = "Angle: %d"%angle[0])
+        sizer.Add(angle_text, 0, wx.ALIGN_CENTER_HORIZONTAL)
         def imshow():
-            transform = np.array([[np.cos(angle[0]),-np.sin(angle[0])],
-                                  [np.sin(angle[0]),np.cos(angle[0])]])
+            angle_text.Label = "Angle: %d"%int(angle[0])
+            angle_text.Refresh()
+            my_angle = -angle[0] * np.pi / 180.0
+            transform = np.array([[np.cos(my_angle),-np.sin(my_angle)],
+                                  [np.sin(my_angle),np.cos(my_angle)]])
             # Make it rotate about the center
             offset = affine_offset(pixel_data.shape, transform)
             x = np.dstack((scind.affine_transform(pixel_data[:,:,0], transform,
@@ -298,8 +313,8 @@ class FlipAndRotate(cpm.CPModule):
                            scind.affine_transform(pixel_data[:,:,2], transform, 
                                                   offset, order=0)))
             buff = x.astype(np.uint8).tostring()
-            bitmap = wx.BitmapFromBuffer(x.shape[0],
-                                         x.shape[1],
+            bitmap = wx.BitmapFromBuffer(x.shape[1],
+                                         x.shape[0],
                                          buff)
             canvas.SetBitmap(bitmap)
         imshow()
@@ -314,7 +329,7 @@ class FlipAndRotate(cpm.CPModule):
             center = np.array(canvas.Size) / 2
             point = np.array(event.GetPositionTuple())
             offset = point - center
-            return np.arctan2(offset[1],offset[0]) * 180.0 / np.pi
+            return -np.arctan2(offset[1],offset[0]) * 180.0 / np.pi
         
         def on_mouse_down(event):
             canvas.Cursor = hand_cursor

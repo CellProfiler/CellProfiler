@@ -1,9 +1,9 @@
 '''
-<b> Gray to Color</b> takes up to 3 grayscale images and and produces a
-new color (RGB) image. 
+<b> Gray to Color</b> takes grayscale images and and produces a
+color image from them 
 <hr>
-This module takes 1 to 3 grayscale images as input and assigns them to colors in a final red, green,
-blue (RGB) image. Each color's brightness is adjusted independently by using relative weights.
+This module takes grayscale images as input and assigns them to colors in a red, green,
+blue (RGB) image or a cyan, magenta, yellow, black (CMYK) image. Each color's brightness can be adjusted independently by using relative weights.
 <br>
 See also <b>ColorToGray</b>.'''
 
@@ -116,28 +116,28 @@ class GrayToColor(cpm.CPModule):
         self.cyan_adjustment_factor = cps.Float(
             "Relative weight for the cyan image", value=1,
             minval=0,doc='''<i>(Only used if CMYK is selected)</i><br>
-			Enter the relative weights: If all relative weights are equal, all three 
+			Enter the relative weights: If all relative weights are equal, all 
                         colors contribute equally in the final image. To weight colors relative to each other, the relative
                         weights can be increased or decreased.''')
         
         self.magenta_adjustment_factor = cps.Float(
             "Relative weight for the magenta image", value=1,
             minval=0,doc='''<i>(Only used if CMYK is selected)</i><br>
-                            Enter the relative weights: If all relative weights are equal, all three 
+                            Enter the relative weights: If all relative weights are equal, all 
                             colors contribute equally in the final image. To weight colors relative to each other, the relative
                             weights can be increased or decreased.''')
         
         self.yellow_adjustment_factor = cps.Float(
             "Relative weight for the yellow image", value=1,
             minval=0,doc='''<i>(Only used if CMYK is selected)</i><br>
-                            Enter the relative weights: If all relative weights are equal, all three 
+                            Enter the relative weights: If all relative weights are equal, all 
                             colors contribute equally in the final image. To weight colors relative to each other, the relative
                             weights can be increased or decreased.''')
         
         self.gray_adjustment_factor = cps.Float(
             "Relative weight for the brightness image", value=1,
             minval=0,doc='''<i>(Only used if CMYK is selected)</i><br>
-                            Enter the relative weights: If all relative weights are equal, all three 
+                            Enter the relative weights: If all relative weights are equal, all 
                             colors contribute equally in the final image. To weight colors relative to each other, the relative
                             weights can be increased or decreased.''')
     

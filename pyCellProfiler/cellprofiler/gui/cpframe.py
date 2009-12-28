@@ -355,6 +355,7 @@ class CPFrame(wx.Frame):
         self.__pipeline_list_view.attach_to_module_view((self.__module_view))
         self.__preferences_view = PreferencesView(self.__preferences_panel)
         self.__preferences_view.attach_to_pipeline_controller(self.__pipeline_controller)
+        self.__preferences_view.attach_to_pipeline_list_view(self.__pipeline_list_view)
         self.__directory_view = DirectoryView(self.__file_list_panel)
         self.__pipeline_controller.attach_to_directory_view(self.__directory_view)
 

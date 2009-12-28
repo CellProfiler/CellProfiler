@@ -174,6 +174,7 @@ class PipelineListView(object):
         self.set_debug_mode(False)
         wx.EVT_IDLE(panel,self.on_idle)
         self.__adjust_rows()
+        self.__first_dirty_module = 0
 
     def set_debug_mode(self, mode):
         self.__grid.SetGridCursor(0,0)
@@ -211,15 +212,26 @@ class PipelineListView(object):
         """
         if isinstance(event,cellprofiler.pipeline.PipelineLoadedEvent):
             self.__on_pipeline_loaded(pipeline,event)
+            self.__first_dirty_module = 0
         elif isinstance(event,cellprofiler.pipeline.ModuleAddedPipelineEvent):
             self.__on_module_added(pipeline,event)
+            self.__first_dirty_module = min(self.__first_dirty_module, event.module_num - 1)
         elif isinstance(event,cellprofiler.pipeline.ModuleMovedPipelineEvent):
             self.__on_module_moved(pipeline,event)
+            self.__first_dirty_module = min(self.__first_dirty_module, event.module_num - 2)
         elif isinstance(event,cellprofiler.pipeline.ModuleRemovedPipelineEvent):
             self.__on_module_removed(pipeline,event)
+            self.__first_dirty_module = min(self.__first_dirty_module, event.module_num - 1)
         elif isinstance(event,cellprofiler.pipeline.PipelineClearedEvent):
             self.__on_pipeline_cleared(pipeline, event)
+            self.__first_dirty_module = 0
+        elif isinstance(event,cellprofiler.pipeline.ModuleEditedPipelineEvent):
+            self.__first_dirty_module = min(self.__first_dirty_module, event.module_num - 1)
     
+    def notify_directory_change(self):
+        # we can't know which modules use this information
+        self.__first_dirty_module = 0
+
     def select_one_module(self, module_num):
         """Select only the given module number in the list box"""
         self.__grid.SelectBlock(module_num-1, MODULE_NAME_COLUMN,
@@ -307,9 +319,9 @@ class PipelineListView(object):
         self.__adjust_rows()
         
     def __on_module_added(self,pipeline,event):
-        module=pipeline.modules()[event.module_num-1]
+        module = pipeline.modules()[event.module_num - 1]
         if (self.__grid.NumberRows == 1 and 
-            self.__grid.GetCellValue(0,MODULE_NAME_COLUMN)==NO_PIPELINE_LOADED):
+            self.__grid.GetCellValue(0,MODULE_NAME_COLUMN) == NO_PIPELINE_LOADED):
             self.__grid.DeleteRows(0,1)
         self.__grid.InsertRows(event.module_num-1)
         self.__populate_row(module)
@@ -364,9 +376,11 @@ class PipelineListView(object):
             self.last_idle_time = time.time()
         else:
             return
-        
         modules = self.__pipeline.modules()
-        for idx,module in enumerate(modules):
+        for idx, module in enumerate(modules):
+            # skip to first dirty module
+            if idx < self.__first_dirty_module:
+                continue
             try:
                 module.test_valid(self.__pipeline)
                 target_name = module.module_name
@@ -395,3 +409,4 @@ class PipelineListView(object):
                 self.__grid.SetCellValue(idx, PAUSE_COLUMN, pause_value)
         event.RequestMore(False)
         
+        self.__first_dirty_module = len(modules)

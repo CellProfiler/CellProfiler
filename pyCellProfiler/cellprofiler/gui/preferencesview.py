@@ -31,13 +31,15 @@ class PreferencesView:
                                                          cellprofiler.preferences.get_default_image_directory(),
                                                          'default input folder',
                                                          'HelpDefaultImageFolder.m',
-                                                         cellprofiler.preferences.set_default_image_directory)
+                                                         [cellprofiler.preferences.set_default_image_directory,
+                                                          self.__notify_pipeline_list_view_directory_change])
         self.__output_folder_panel = wx.Panel(panel,-1)
         self.__output_edit_box = self.__make_folder_panel(self.__output_folder_panel,
                                                           cellprofiler.preferences.get_default_output_directory(),
                                                           'default output folder',
                                                           'HelpDefaultOutputFolder.m',
-                                                          cellprofiler.preferences.set_default_output_directory)
+                                                          [cellprofiler.preferences.set_default_output_directory,
+                                                           self.__notify_pipeline_list_view_directory_change])
         self.__odds_and_ends_panel = wx.Panel(panel,-1)
         self.__make_odds_and_ends_panel()
         self.__status_text = wx.StaticText(panel,-1,style=wx.SUNKEN_BORDER,label=WELCOME_MESSAGE)
@@ -47,8 +49,9 @@ class PreferencesView:
                               (self.__status_text,0,wx.EXPAND|wx.ALL,2)])
         panel.SetSizer(self.__sizer)
         self.__errors = set()
+        self.__pipeline_list_view = None
         
-    def __make_folder_panel(self,panel,value, text,helpfile,action):
+    def __make_folder_panel(self, panel, value, text, helpfile, actions):
         sizer = wx.BoxSizer(wx.HORIZONTAL)
         help_button = wx.Button(panel,-1,'?',(0,0),(25,25))
         text_static = wx.StaticText(panel,-1,string.capitalize(text)+':')
@@ -60,9 +63,9 @@ class PreferencesView:
                        (edit_box,3,wx.EXPAND|wx.ALL,1),
                        (browse_button,0,0|wx.ALL,1)])
         panel.SetSizer(sizer)
-        panel.Bind(wx.EVT_BUTTON,lambda event: self.__on_help(event, helpfile))
-        panel.Bind(wx.EVT_BUTTON,lambda event: self.__on_browse(event,edit_box,text,action),browse_button)
-        panel.Bind(wx.EVT_TEXT,lambda event: self.__on_edit_box_change(event, edit_box, text,action),edit_box)
+        panel.Bind(wx.EVT_BUTTON, lambda event: self.__on_help(event, helpfile))
+        panel.Bind(wx.EVT_BUTTON, lambda event: self.__on_browse(event, edit_box, text), browse_button)
+        panel.Bind(wx.EVT_TEXT, lambda event: self.__on_edit_box_change(event, edit_box, text, actions), edit_box)
         return edit_box
     
     def __make_odds_and_ends_panel(self):
@@ -92,13 +95,16 @@ class PreferencesView:
         cellprofiler.preferences.remove_output_directory_listener(self.__on_preferences_output_directory_event)
         cellprofiler.preferences.remove_output_file_name_listener(self.__on_preferences_output_filename_event)
 
-    def attach_to_pipeline_controller(self,pipeline_controller):
+    def attach_to_pipeline_controller(self, pipeline_controller):
         self.__panel.Bind(wx.EVT_BUTTON,
                           pipeline_controller.on_analyze_images, 
                           self.__analyze_images_button)
         self.__panel.Bind(wx.EVT_BUTTON,
                           pipeline_controller.on_stop_running,
                           self.__stop_analysis_button)
+    
+    def attach_to_pipeline_list_view(self, pipeline_list_view):
+        self.__pipeline_list_view = pipeline_list_view
     
     def on_analyze_images(self):
         self.__odds_and_ends_panel.Sizer.Hide(self.__analyze_images_button)
@@ -132,16 +138,17 @@ class PreferencesView:
         self.set_message_color(wx.Colour(255,0,0))
         self.__errors.add(error_text)
         
-    def __on_browse(self,event,edit_box,text,action):
-        dir_dialog = wx.DirDialog(self.__panel,string.capitalize(text),edit_box.GetValue())
+    def __on_browse(self, event, edit_box, text):
+        dir_dialog = wx.DirDialog(self.__panel,string.capitalize(text), edit_box.GetValue())
         if dir_dialog.ShowModal() == wx.ID_OK:
             edit_box.SetValue(dir_dialog.GetPath())
 
-    def __on_edit_box_change(self,event,edit_box,text,action):
+    def __on_edit_box_change(self, event, edit_box, text, actions):
         path = edit_box.GetValue()
         error_text = 'The %s is not a directory'%(text)
         if os.path.isdir(path):
-            action(path)
+            for action in actions:
+                action(path)
             self.pop_error_text(error_text)
         else:
             self.set_error_text(error_text)
@@ -178,3 +185,8 @@ class PreferencesView:
         if self.__image_edit_box.Value != cellprofiler.preferences.get_default_image_directory():
             self.__image_edit_box.Value = cellprofiler.preferences.get_default_image_directory()
             self.__image_edit_box.SetSelection(*old_selection)
+
+    def __notify_pipeline_list_view_directory_change(self, path):
+        # modules may need revalidation
+        if self.__pipeline_list_view is not None:
+            self.__pipeline_list_view.notify_directory_change()

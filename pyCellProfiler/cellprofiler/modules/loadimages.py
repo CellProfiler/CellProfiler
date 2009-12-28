@@ -303,7 +303,7 @@ class LoadImages(cpmodule.CPModule):
         img_index = len(self.images)
         new_uuid = uuid.uuid1()
         fd = { FD_KEY:new_uuid,
-               FD_COMMON_TEXT:cps.Text('Type the text that these images have in common', '',doc="""
+               FD_COMMON_TEXT:cps.Text('Type the text that these images have in common (case-sensitive)', '',doc="""
                         <i>(Only used for the Text options for image loading)</i>
                         <p>For <i>Text-Exact match</i>, type the text string that all the images have in common. For example,
                         if all the images for the given channel end with the text <i>D.TIF</i>, type <i>D.TIF</i> here.

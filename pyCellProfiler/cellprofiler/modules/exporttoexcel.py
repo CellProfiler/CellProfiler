@@ -73,9 +73,8 @@ class ExportToExcel(cpm.CPModule):
         
         self.add_metadata = cps.Binary("Add image metadata columns to your object data file?", False, doc = """Image_Metadata_ columns are normally exported in the Image data file, but if you check this box, they will also be exported with the Object data file(s).""")
         
-        self.add_indexes = cps.Binary("Add an image set number column to your image data and image set number and object number columns to your object data file?", False,doc = """
-                            The ImageNumber and ObjectNumber will always be output, but if you would like
-                            to know which image set (cycle) the data is from, check <i>Yes</i> for this setting.""")
+        self.add_indexes = cps.Binary("Add image/object numbers to output?", True,doc = """
+                            Checking this box will add an image number column to image data (otherwise, the image number is implied by the row of the spreadsheet). It will also add an image number column and an object number column to object data.""")
         
         self.excel_limits = cps.Binary("Limit output to a size that is allowed in Excel?", False, doc = """
                             If your output has more than 256 columns, a window will open
@@ -83,7 +82,7 @@ class ExportToExcel(cpm.CPModule):
                             65,000 rows, you can still open the .csv in Excel, but not all rows will be visible.""")
         
         self.pick_columns = cps.Binary("Select the columns of measurements to export?", False, doc = """
-                            Checking this setting will open up a window that allows you to select which columns to output.""")
+                            Checking this setting will open up a window that allows you to select which columns to export.""")
         
         self.wants_aggregate_means = cps.Binary("Calculate the per-image mean values for object measurements?", False, doc = """
                             ExportToExcel can calculate population statistics over all the 
@@ -109,7 +108,7 @@ class ExportToExcel(cpm.CPModule):
         group.append("name", EEObjectNameSubscriber("Data to export"))
         group.append("previous_file", cps.Binary("Combine these object measurements with those of the previous object?",
                                           False))
-        group.append("file_name", cps.Text("Name the data file (the output filename will automatically be prepended)", "DATA.csv"))
+        group.append("file_name", cps.Text("Name the data file (not including the output filename, if prepending was requested above)", "DATA.csv"))
         group.append("remover", cps.RemoveSettingButton("", "Remove this data", self.object_groups, group))
         group.append("divider", cps.Divider(line=False))
         self.object_groups.append(group)

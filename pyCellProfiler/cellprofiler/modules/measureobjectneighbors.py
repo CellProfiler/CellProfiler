@@ -1,4 +1,6 @@
-'''<b>Identify Object Neighbors</b> calculates how many neighbors each object has.
+'''<b>Measure Object Neighbors</b> calculates how many neighbors each 
+object has and records various properties about the neighbors' relationships, 
+including the percentage of an object's edge pixels that touch a neighbor
 <hr>
 Given an image with objects identified (e.g. nuclei or cells), this
 module determines how many neighbors each object has. The user selects

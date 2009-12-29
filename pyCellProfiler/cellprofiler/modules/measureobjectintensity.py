@@ -1,15 +1,8 @@
-"""<b>MeasureObjectIntensity</b> - Measures several intensity features for identified objects.
+"""<b>MeasureObjectIntensity</b> measures several intensity features for identified objects
 <hr>
 Given an image with objects identified (e.g. nuclei or cells), this
-module extracts intensity features for each object based on a
-corresponding grayscale image. Measurements are recorded for each object.
-
-Retrieves objects in label matrix format and a corresponding original
-grayscale image and makes measurements of the objects. The label matrix
-image should be "compacted": that is, each number should correspond to an
-object, with no numbers skipped. So, if some objects were discarded from
-the label matrix image, the image should be converted to binary and
-re-made into a label matrix image before feeding it to this module.
+module extracts intensity features for each object based on one or more
+corresponding grayscale images. Measurements are recorded for each object.
 
 Features that can be measured by this module:
 <ul><li><i>IntegratedIntensity:</i> The sum of the pixel intensities within an
@@ -35,7 +28,7 @@ Features that can be measured by this module:
 <li><i>UpperQuartileIntensity:</i> The intensity value of the pixel for which 75%
  of the pixels in the object have lower values.</li></ul>
 
-For publication purposes, it is important to note that the units of
+Note that for publication purposes, the units of
 intensity from microscopy images are usually described as "Intensity
 units" or "Arbitrary intensity units" since microscopes are not 
 callibrated to an absolute scale. Also, it is important to note whether 

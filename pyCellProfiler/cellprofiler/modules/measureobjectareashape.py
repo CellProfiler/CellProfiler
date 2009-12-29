@@ -55,15 +55,6 @@ the order which can be calculated (and indeed users could add more by
 adjusting the code), the higher order polynomials carry less information.</li>
 </ul>
 
-<h2>Technical notes:</h2>
-
-<p>This module retrieves objects in label matrix format and measures them.
-The label matrix image should be "compacted": that is, each number should
-correspond to an object, with no numbers skipped. So, if some objects
-were discarded from the label matrix image, the image should be converted
-to binary and re-made into a label matrix image before feeding into this
-module.
-
 See also <b>MeasureImageAreaOccupied</b>
 '''
 

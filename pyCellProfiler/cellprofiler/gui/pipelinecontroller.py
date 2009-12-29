@@ -42,6 +42,7 @@ class PipelineController:
         self.__add_module_frame = AddModuleFrame(frame,-1,"Add modules")
         self.__add_module_frame.add_listener(self.on_add_to_pipeline)
         self.__setting_errors = {}
+        self.__progress_frame = None
         self.__running_pipeline = None
         self.__dirty_pipeline = False
         self.__inside_running_pipeline = False 
@@ -305,8 +306,22 @@ class PipelineController:
             if error_msg is None:
                 error_msg = event.error.message
             message = "Error while processing %s:\n%s\n\nDo you want to stop processing?"%(event.module.module_name,error_msg)
+            #
+            # The Mac UI hangs if you display a message box with
+            # the progress frame up. But, when you display the message
+            # box, the buttons look like little bubbles which is very
+            # pretty.
+            #
+            if (self.__progress_frame is not None and 
+                self.__progress_frame.IsShown()):
+               was_shown = True
+               self.__progress_frame.Hide()
+            else:
+               was_shown = False
             if wx.MessageBox(message,"Pipeline error",wx.YES_NO | wx.ICON_ERROR,self.__frame) == wx.NO:
                 event.cancel_run = False
+            if was_shown:
+               self.__progress_frame.Show(True)
         elif isinstance(event, cellprofiler.pipeline.LoadExceptionEvent):
             if event.module is None:
                 module_name = event.module_name

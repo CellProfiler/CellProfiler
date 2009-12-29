@@ -1,4 +1,4 @@
-'''<b>MeasureImageIntensity</b>- Measures the total image intensity by summing pixel intensity
+'''<b>Measure image intensity</b> measures the total intensity in an image by summing all of the pixel intensities (excluding masked pixels)
 <hr>
 This module will sum all pixel values to measure the total image
 intensity. The user can measure all pixels in the image or can restrict
@@ -9,18 +9,6 @@ Features measured:
 <ul><li>TotalIntensity: Sum of all pixel values.
 <li>MeanIntensity: Sum of all pixel values divided by number of pixels measured.
 <li>TotalArea: Number of pixels measured.</ul>
-<h2>Settings:</h2>
-<h3>What did you call the images whose intensity you want to measure?</h3>
-Choose an image name from the drop-down to calculate intensity for that
-image. Use the "Add image" button below to add additional images which will be
-measured. You can add the same image multiple times if you want to measure
-the intensity within several different objects.
-<h3>Do you want to measure intensity only from areas of the image that contain
-objects you've identified?</h3>
-Check this option to restrict the pixels being measured to those within
-the boundaries of some object.
-<h3>What is the name of the objects to use?</h3>
-The intensity will be restricted to within the objects you name here.
 '''
 #CellProfiler is distributed under the GNU General Public License.
 #See the accompanying file LICENSE for details.
@@ -76,11 +64,15 @@ class MeasureImageIntensity(cpm.CPModule):
     def add_image_measurement(self, removable = True):
         group = cps.SettingsGroup()
         group.append("image_name", cps.ImageNameSubscriber("Select an image to measure",
-                                                            "None", doc = '''What did you call the images whose intensity you want to measure?'''))
-        group.append("wants_objects", cps.Binary("Do you want to measure intensity only from areas of the image that contain objects you've identified?",
-                                                  False))
+                                                            "None", doc = '''What did you call the images whose intensity you want to measure? Choose an image name from the drop-down menu to calculate intensity for that
+image. Use the "Add image" button below to add additional images which will be
+measured. You can add the same image multiple times if you want to measure
+the intensity within several different objects.
+'''))
+        group.append("wants_objects", cps.Binary("Do you want to measure intensity only from areas of the image that contain particular objects?",
+                                                  False, doc = "Check this option to restrict the pixels being measured to those within the boundaries of an object."))
         group.append("object_name",cps.ObjectNameSubscriber("Select the objects to use to constrain the measurement","None", 
-                                                           doc = '''What is the name of the objects to use?'''))
+                                                           doc = '''What is the name of the objects to use? The intensity measurement will be restricted to within these objects.'''))
         if removable:
             group.append("remover", cps.RemoveSettingButton("", 
                                                             "Remove this image", self.images, group))

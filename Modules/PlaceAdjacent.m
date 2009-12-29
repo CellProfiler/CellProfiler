@@ -100,14 +100,20 @@ end
 ImageName = tmp1;
 
 OrigImage = {};
-for i=1:length(ImageName)
+for i = 1:length(ImageName)
     %%% Reads (opens) the image you want to analyze and assigns it to a
     %%% variable.
     OrigImage{i} = CPretrieveimage(handles,ImageName{i},ModuleName);
 
     %%% Removes the image from the pipeline to save memory if requested.
     if strncmpi(DeletePipeline,'Y',1) == 1
-        handles.Pipeline = rmfield(handles.Pipeline,ImageName{i});
+        isImageGroups = isfield(handles.Pipeline,'ImageGroupFields');
+		if ~isImageGroups
+			handles.Pipeline = rmfield(handles.Pipeline,ImageName{i});
+		else
+			idx = handles.Pipeline.CurrentImageGroupID;
+			handles.Pipeline.GroupFileList{idx} = rmfield(handles.Pipeline.GroupFileList{idx},ImageName{i});
+		end
     end
 end
 

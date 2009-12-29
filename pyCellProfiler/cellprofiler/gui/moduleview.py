@@ -540,13 +540,16 @@ class ModuleView:
                 #
                 file = "plateA-2008-08-06_A12_s1_w1_[89A882DE-E675-4C12-9F8E-46C9976C4ABE].tif"
                 try:
-                    path = cellprofiler.preferences.get_default_image_directory()
-                    filenames = [x for x in os.listdir(path)
-                                 if x.find('.') != -1 and
-                                 os.path.splitext(x)[1].upper() in
-                                 ('.TIF','.JPG','.PNG','.BMP')]
-                    if len(filenames):
-                        file = filenames[0]
+                    if setting.get_example_fn is None:
+                        path = cellprofiler.preferences.get_default_image_directory()
+                        filenames = [x for x in os.listdir(path)
+                                     if x.find('.') != -1 and
+                                     os.path.splitext(x)[1].upper() in
+                                     ('.TIF','.JPG','.PNG','.BMP')]
+                        if len(filenames):
+                            file = filenames[0]
+                    else:
+                        file = setting.get_example_fn()
                 except:
                     pass
                 new_value = edit_regexp(panel, control.Value, file)

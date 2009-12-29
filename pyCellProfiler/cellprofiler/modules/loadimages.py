@@ -302,6 +302,16 @@ class LoadImages(cpmodule.CPModule):
         'Adds another image to the settings'
         img_index = len(self.images)
         new_uuid = uuid.uuid1()
+        def example_path_fn():
+            '''Get an example path for use in the path metadata regexp editor'''
+            root = self.image_directory()
+            d = [os.path.abspath(x)
+                 for x in os.listdir(root)
+                 if os.path.isdir(x) and not x.startswith('.')]
+            if len(d) > 0:
+                return d[0]
+            return root
+        
         fd = { FD_KEY:new_uuid,
                FD_COMMON_TEXT:cps.Text('Type the text that these images have in common (case-sensitive)', '',doc="""
                         <i>(Only used for the Text options for image loading)</i>
@@ -376,8 +386,11 @@ class LoadImages(cpmodule.CPModule):
                         <p>The regular expression can be typed in the upper text box, with a sample file name given in the lower
                         text box. Provided the syntax is correct, the corresponding fields will be highlighted in the same
                         color in the two boxes. Press <i>Submit</i> to accept the typed regular expression."""),
-               FD_PATH_METADATA: cps.RegexpText('Type the regular expression that finds metadata in the subfolder path:',
-                                          '.*[\\\\/](?P<Date>.*)[\\\\/](?P<Run>.*)$',doc="""
+               FD_PATH_METADATA: cps.RegexpText(
+                        'Type the regular expression that finds metadata in the subfolder path:',
+                        '.*[\\\\/](?P<Date>.*)[\\\\/](?P<Run>.*)$',
+                        get_example_fn = example_path_fn,
+                        doc="""
                         <i>(Only used if you want to extract metadata from the path)</i>
                         <p>The regular expression to extract the metadata from the path is entered here. Note that
                         this field is available whether you have selected <i>Text-Regular expressions</i> to load
@@ -1247,6 +1260,7 @@ class LoadImages(cpmodule.CPModule):
             metadata.update(cpm.extract_metadata(fd[FD_FILE_METADATA].value,
                                                  filename))
         if fd[FD_METADATA_CHOICE].value in (M_BOTH, M_PATH):
+            path = os.path.abspath(path)
             metadata.update(cpm.extract_metadata(fd[FD_PATH_METADATA].value,
                                                  path))
         return metadata

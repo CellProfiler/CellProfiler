@@ -164,6 +164,8 @@ class RegexpText(Setting):
     """A setting with a regexp button on the side
     """
     def __init__(self, text, value, *args, **kwargs):
+        kwargs = kwargs.copy()
+        self.get_example_fn = kwargs.pop("get_example_fn",None)
         super(RegexpText,self).__init__(text, value, *args, **kwargs)
 
 class DirectoryPath(Text):

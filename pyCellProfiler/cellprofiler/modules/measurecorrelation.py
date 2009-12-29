@@ -5,7 +5,20 @@ objects or across an entire image.
 Given two or more images, this module calculates the correlation between the
 pixel intensities. The correlation can be measured for entire
 images, or a correlation measurement can be made within each
-individual object. 
+individual object.
+<br>
+The correlation between two images, I & J (or the portions of the two images 
+I & J within an object) is the Pearson's correlation coefficient:<br><br>
+covariance(I,J)<br>
+----------------<br>
+std(I) * std(J)<br>
+<br>
+This measurement is saved as Correlation_Correlation_I_J.<br>
+<br>
+The module also performs a least-squares regression between the two images
+using the model:<br>
+A * I + B = J<br>
+"A" is recorded as Correlation_Slope_I_J.<br>
 <br>
 Correlations will be calculated between all pairs of images
 that are selected in the module.  For example, if correlations are 
@@ -75,7 +88,7 @@ class MeasureCorrelation(cpm.CPModule):
 
     module_name = 'MeasureCorrelation'
     category = 'Measurement'
-    variable_revision_number = 1
+    variable_revision_number = 2
     
     def create_settings(self):
         '''Create the initial settings for the module'''
@@ -391,5 +404,22 @@ class MeasureCorrelation(cpm.CPModule):
                               image_names + [m] + object_names)
             from_matlab = False
             variable_revision_number = 1
+        if variable_revision_number == 1:
+            #
+            # Wording of image / object text changed
+            #
+            image_count, object_count = [int(x) for x in setting_values[:2]]
+            image_names = setting_values[2:(image_count+2)]
+            m = setting_values[image_count+2]
+            object_names = setting_values[(image_count+3):]
+            if m == "Images":
+                m = M_IMAGES
+            elif m == "Objects":
+                m = M_OBJECTS
+            elif m == "Images and objects":
+                m = M_IMAGES_AND_OBJECTS
+            setting_values = ([str(image_count), str(object_count)] +
+                              image_names + [m] + object_names)
+            variable_revision_number = 2
         return setting_values, variable_revision_number, from_matlab
 

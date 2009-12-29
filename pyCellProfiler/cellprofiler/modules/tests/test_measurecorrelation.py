@@ -93,6 +93,9 @@ class TestMeasureCorrelation(unittest.TestCase):
         #
         fd = StringIO(zlib.decompress(base64.b64decode(data)))
         pipeline = cpp.Pipeline()
+        def callback(caller, event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
         pipeline.load(fd)
         self.assertEqual(len(pipeline.modules()),4)
         module = pipeline.modules()[-1]
@@ -148,6 +151,118 @@ class TestMeasureCorrelation(unittest.TestCase):
         #
         fd = StringIO(zlib.decompress(base64.b64decode(data)))
         pipeline = cpp.Pipeline()
+        def callback(caller, event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(fd)
+        self.assertEqual(len(pipeline.modules()),4)
+        module = pipeline.modules()[-1]
+        self.assertEqual(module.images_or_objects.value, M.M_IMAGES_AND_OBJECTS)
+        self.assertEqual(module.image_count.value, 2)
+        for name in [x.image_name.value for x in module.image_groups]:
+            self.assertTrue(name in ["DNA","Cytoplasm"])
+        
+        self.assertEqual(module.object_count.value, 2)
+        for name in [x.object_name.value for x in module.object_groups]:
+            self.assertTrue(name in ["Nuclei","Cells"])
+    
+    def test_01_03_load_v2(self):
+        data=r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:1
+SVNRevision:8905
+
+LoadImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_window:True|notes:\x5B\x5D]
+    What type of files are you loading?:individual images
+    How do you want to load these files?:Text-Exact match
+    How many images are there in each group?:3
+    Type the text that the excluded images have in common:ILLUM
+    Analyze all subfolders within the selected folder?:No
+    Image location:Default Image Folder
+    Enter the full path to the images:
+    Do you want to check image sets for missing or duplicate files?:Yes
+    Do you want to group image sets by metadata?:Yes
+    Do you want to exclude certain files?:Yes
+    What metadata fields do you want to group by?:
+    Type the text that these images have in common (case-sensitive):Channel2
+    What do you want to call this image in CellProfiler?:DNA
+    What is the position of this image in each group?:1
+    Do you want to extract metadata from the file name, the subfolder path or both?:None
+    Type the regular expression that finds metadata in the file name\x3A:None
+    Type the regular expression that finds metadata in the subfolder path\x3A:None
+    Type the text that these images have in common (case-sensitive):Channel1
+    What do you want to call this image in CellProfiler?:Cytoplasm
+    What is the position of this image in each group?:2
+    Do you want to extract metadata from the file name, the subfolder path or both?:None
+    Type the regular expression that finds metadata in the file name\x3A:None
+    Type the regular expression that finds metadata in the subfolder path\x3A:None
+
+IdentifyPrimAutomatic:[module_num:2|svn_version:\'Unknown\'|variable_revision_number:4|show_window:True|notes:\x5B\x5D]
+    Select the input image:DNA
+    Name the identified primary objects:Nuclei
+    Typical diameter of objects, in pixel units (Min,Max)\x3A:6,40
+    Discard objects outside the diameter range?:Yes
+    Try to merge too small objects with nearby larger objects?:No
+    Discard objects touching the border of the image?:Yes
+    Select the thresholding method:Otsu Global
+    Threshold correction factor:1.0
+    Lower and upper bounds on threshold\x3A:0.000000,1.000000
+    Approximate fraction of image covered by objects?:0.01
+    Method to distinguish clumped objects:Intensity
+    Method to draw dividing lines between clumped objects:Intensity
+    Size of smoothing filter\x3A:10
+    Suppress local maxima within this distance\x3A:7
+    Speed up by using lower-resolution image to find local maxima?:Yes
+    Name the outline image:Do not use
+    Fill holes in identified objects?:Yes
+    Automatically calculate size of smoothing filter?:Yes
+    Automatically calculate minimum size of local maxima?:Yes
+    Enter manual threshold\x3A:0.0
+    Select binary image\x3A:None
+    Save outlines of the identified objects?:No
+    Calculate the Laplacian of Gaussian threshold automatically?:Yes
+    Enter Laplacian of Gaussian threshold\x3A:0.5
+    Two-class or three-class thresholding?:Two classes
+    Minimize the weighted variance or the entropy?:Weighted variance
+    Assign pixels in the middle intensity class to the foreground or the background?:Foreground
+    Automatically calculate the size of objects for the Laplacian of Gaussian filter?:Yes
+    Enter LoG filter diameter\x3A :5
+
+IdentifySecondary:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:3|show_window:True|notes:\x5B\x5D]
+    Select the input objects:Nuclei
+    Name the identified objects:Cells
+    Select the method to identify the secondary objects:Propagation
+    Select the input image:Cytoplasm
+    Select the thresholding method:Otsu Global
+    Threshold correction factor:1.0
+    Lower and upper bounds on threshold\x3A:0.000000,1.000000
+    Approximate fraction of image covered by objects?:0.01
+    Number of pixels by which to expand the primary objects\x3A:10
+    Regularization factor\x3A:0.05
+    Name the outline image:Do not use
+    Enter manual threshold\x3A:0.0
+    Select binary image\x3A:None
+    Save outlines of the identified objects?:No
+    Two-class or three-class thresholding?:Two classes
+    Minimize the weighted variance or the entropy?:Weighted variance
+    Assign pixels in the middle intensity class to the foreground or the background?:Foreground
+    Do you want to discard objects that touch the edge of the image?:No
+    Do you want to discard associated primary objects?:No
+    New primary objects name\x3A:FilteredNuclei
+
+MeasureCorrelation:[module_num:4|svn_version:\'Unknown\'|variable_revision_number:2|show_window:True|notes:\x5B\x5D]
+    Hidden:2
+    Hidden:2
+    Select an image to measure:DNA
+    Select an image to measure:Cytoplasm
+    Select where to measure correlation:Both
+    Select an object to measure:Nuclei
+    Select an object to measure:Cells
+"""
+        fd = StringIO(data)
+        pipeline = cpp.Pipeline()
+        def callback(caller, event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
         pipeline.load(fd)
         self.assertEqual(len(pipeline.modules()),4)
         module = pipeline.modules()[-1]

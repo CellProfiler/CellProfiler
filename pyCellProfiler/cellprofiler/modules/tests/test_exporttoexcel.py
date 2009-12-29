@@ -167,8 +167,8 @@ class TestExportToExcel(unittest.TestCase):
         try:
             reader = csv.reader(fd, delimiter=module.delimiter_char)
             header = reader.next()
-            self.assertEqual(len(header),1)
-            self.assertEqual(header[0],"my_measurement")
+            self.assertEqual(len(header),3)
+            self.assertEqual(header[2],"my_measurement")
             self.assertRaises(StopIteration,reader.next)
         finally:
             fd.close()

@@ -110,7 +110,22 @@ PREFERENCES_DTYPE = make_cell_struct_dtype([PIXEL_SIZE,
                                             STRIP_PIPELINE, SKIP_ERRORS, 
                                             DISPLAY_MODE_VALUE, FONT_SIZE,
                                             DISPLAY_WINDOWS])
- 
+
+'''Save pipeline in Matlab format'''
+FMT_MATLAB = "Matlab"
+
+'''Save pipeline in native format'''
+FMT_NATIVE = "Native"
+
+'''The current pipeline file format version'''
+NATIVE_VERSION = 1
+
+H_VERSION = 'Version'
+H_SVN_REVISION = 'SVNRevision'
+
+'''The cookie that identifies a file as a CellProfiler pipeline'''
+COOKIE = "CellProfiler Pipeline: http://www.cellprofiler.org"
+
 def add_all_images(handles,image_set, object_set):
     """ Add all images to the handles structure passed
     
@@ -386,6 +401,21 @@ class Pipeline(object):
         
         fd_or_filename - either the name of a file or a file-like object
         """
+        if hasattr(fd_or_filename,'seek') and hasattr(fd_or_filename,'read'):
+            fd = fd_or_filename
+            needs_close = False
+        else:
+            fd = open(fd_or_filename,'r')
+            needs_close = True
+        header = fd.read(len(COOKIE))
+        if header == COOKIE:
+            fd.seek(0)
+            self.loadtxt(fd)
+            return
+        if needs_close:
+            fd.close()
+        else:
+            fd.seek(0)
         if has_mat_read_error:
             try:
                 handles=scipy.io.matlab.mio.loadmat(fd_or_filename, 
@@ -397,7 +427,7 @@ class Pipeline(object):
                     "%s is an unsupported .MAT file, most likely a measurements file.\nYou can load this as a pipeline if you load it as a pipeline using CellProfiler 1.0 and then save it to a different file.\n" %
                     fd_or_filename)
         else:
-            handles=scipy.io.matlab.mio.loadmat(fd_or_filename, 
+            handles=scipy.io.matlab.mio.loadmat(fd, 
                                                 struct_as_record=True)
             
         if handles.has_key("handles"):
@@ -406,15 +436,212 @@ class Pipeline(object):
             #
             handles=handles["handles"][0,0]
         self.create_from_handles(handles)
+    
+    def loadtxt(self, fd_or_filename):
+        '''Load a pipeline from a text file
         
-    def save(self, fd_or_filename):
+        fd_or_filename - either a path to a file or a file-descriptor-like
+                         object.
+        See savetxt for more comprehensive documentation.
+        '''
+        self.__modules = []
+        if hasattr(fd_or_filename,'seek') and hasattr(fd_or_filename,'read'):
+            fd = fd_or_filename
+        else:
+            fd = open(fd_or_filename,'r')
+        def rl():
+            '''Read a line from fd'''
+            try:
+                line = fd.next()
+                if line is None:
+                    return None
+                line = line.strip()
+                return line
+            except StopIteration:
+                return None
+        
+        header = rl()
+        if header != COOKIE:
+            raise NotImplementedError('Invalid header: "%s"'%header)
+        version = NATIVE_VERSION
+        while True:
+            line = rl()
+            if line is None:
+                raise ValueError("Pipeline file unexpectedly truncated before module section")
+            elif len(line) == 0:
+                break
+            kwd, value = line.split(':')
+            if kwd == H_VERSION:
+                version = int(value)
+                if version > NATIVE_VERSION:
+                    raise ValueError("Pipeline file version is %d.\nCellProfiler can only read version %d or less.\nPlease upgrade to the latest version of CellProfiler." %
+                                     (version, NATIVE_VERSION))
+            elif kwd == H_SVN_REVISION:
+                print "Pipeline saved with CellProfiler SVN revision %s"%value
+            else:
+                print line
+        
+        #
+        # The module section
+        #
+        module_number = 1
+        skip_attributes = ['svn_version','module_num']
+        while True:
+            line = rl()
+            if line is None:
+                break
+            try:
+                module = None
+                module_name = None
+                split_loc = line.find(':')
+                if split_loc == -1:
+                    raise ValueError("Invalid format for module header: %s" % line)
+                module_name = line[:split_loc]
+                attribute_string = line[(split_loc+1):]
+                module_name = module_name.decode('string_escape')
+                module = self.instantiate_module(module_name)
+                module.module_num = module_number
+                #
+                # Decode the attributes. These are turned into strings using
+                # repr, so True -> 'True', etc. They are then encoded using
+                # Pipeline.encode_txt.
+                #
+                if (len(attribute_string) < 2 or attribute_string[0] != '[' or
+                    attribute_string[-1] != ']'):
+                    raise ValueError("Invalid format for attributes: %s" %
+                                     attribute_string)
+                attribute_strings = attribute_string[1:-1].split('|')
+                variable_revision_number = None
+                for a in attribute_strings:
+                    if len(a.split(':')) != 2:
+                        raise ValueError("Invalid attribute string: %s" % a)
+                    attribute, value = a.split(':')
+                    value = value.decode('string_escape')
+                    value = eval(value)
+                    if attribute == 'variable_revision_number':
+                        variable_revision_number = value
+                    elif attribute in skip_attributes:
+                        pass
+                    else:
+                        setattr(module, attribute, value)
+                if variable_revision_number is None:
+                    raise ValueError("Module %s did not have a variable revision # attribute" % module_name)
+                #
+                # Decode the settings
+                #
+                last_module = False
+                settings = []
+                while True:
+                    line = rl()
+                    if line is None:
+                        last_module = True
+                        break
+                    if len(line) == 0:
+                        break
+                    if len(line.split(':')) != 2:
+                        raise ValueError("Invalid format for setting: %s" % line)
+                    text, setting = line.split(':')
+                    settings.append(setting.decode('string_escape'))
+                module.set_settings_from_values(settings,
+                                                variable_revision_number,
+                                                module_name, False)
+            except Exception, instance:
+                traceback.print_exc()
+                event = LoadExceptionEvent(instance, module,  module_name)
+                self.notify_listeners(event)
+                if event.cancel_run:
+                    return
+            if module is not None:
+                self.__modules.append(module)
+                module_number += 1
+        for module in self.modules():
+            module.post_pipeline_load(self)
+        self.notify_listeners(PipelineLoadedEvent())
+        
+    def save(self, fd_or_filename, format=FMT_NATIVE):
         """Save the pipeline to a file
         
         fd_or_filename - either a file descriptor or the name of the file
         """
-        handles = self.save_to_handles()
-        self.savemat(fd_or_filename,handles)
+        if format == FMT_MATLAB:
+            handles = self.save_to_handles()
+            self.savemat(fd_or_filename,handles)
+        elif format == FMT_NATIVE:
+            self.savetxt(fd_or_filename)
+        else:
+            raise NotImplementedError("Unknown pipeline file format: %s" %
+                                      format)
     
+    def encode_txt(self, s):
+        '''Encode a string for saving in the text format
+        
+        s - input string
+        Encode for automatic decoding using the 'string_escape' decoder.
+        We encode the special characters, '[', ':', '|' and ']' using the '\\x'
+        syntax.
+        '''
+        s = s.encode('string_escape')
+        s = s.replace(':','\\x3A')
+        s = s.replace('|','\\x7C')
+        s = s.replace('[','\\x5B').replace(']','\\x5D')
+        return s
+        
+    def savetxt(self, fd_or_filename):
+        '''Save the pipeline in a text format
+        
+        fd_or_filename - can be either a "file descriptor" with a "write"
+                         attribute or the path to the file to write.
+                         
+        The format of the file is the following:
+        Strings are encoded using a backslash escape sequence. The colon
+        character is encoded as \\x3A if it should happen to appear in a string
+        and any non-printing character is encoded using the \\x## convention.
+        
+        Line 1: The cookie, identifying this as a CellProfiler pipeline file.
+        The header, i
+        Line 2: "Version:#" the file format version #
+        Line 3: "SVNRevision:#" the SVN revision # of the CellProfiler
+                that wrote this file
+        Line 4: blank
+        
+        The module list follows. Each module has a header composed of
+        the module name, followed by attributes to be set on the module
+        using setattr (the string following the attribute is first evaluated
+        using eval()). For instance:
+        Align:[show_window:True|notes='Align my image']
+        
+        The settings follow. Each setting has text and a value. For instance,
+        Enter object name:Nuclei
+        '''
+        from cellprofiler.utilities.get_revision import get_revision
+        if hasattr(fd_or_filename,"write"):
+            fd = fd_or_filename
+            needs_close = False
+        else:
+            fd = open(fd_or_filename,"wt")
+            needs_close = True
+        fd.write("%s\n"%COOKIE)
+        fd.write("%s:%d\n" % (H_VERSION,NATIVE_VERSION))
+        fd.write("%s:%d\n" % (H_SVN_REVISION,get_revision()))
+        attributes = ('module_num','svn_version','variable_revision_number',
+                      'show_window','notes')
+        for module in self.modules():
+            fd.write("\n")
+            attribute_values = [repr(getattr(module, attribute))
+                                for attribute in attributes]
+            attribute_values = [self.encode_txt(v) for v in attribute_values]
+            attribute_strings = [attribute+':'+value
+                                 for attribute, value 
+                                 in zip(attributes, attribute_values)]
+            attribute_string = '[%s]' % ('|'.join(attribute_strings))
+            fd.write('%s:%s\n' % (self.encode_txt(module.module_name),
+                                attribute_string))
+            for setting in module.settings():
+                fd.write('    %s:%s\n' % (self.encode_txt(setting.text),
+                                          self.encode_txt(str(setting))))
+        if needs_close:
+            fd.close()
+        
     def save_measurements(self,filename, measurements):
         """Save the measurements and the pipeline settings in a Matlab file
         

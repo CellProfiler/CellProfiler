@@ -157,7 +157,10 @@ class PipelineController:
         self.__test_controls_panel.Bind(wx.EVT_BUTTON, self.on_debug_prev_group, self.__tcp_prev_group)
 
     def __on_load_pipeline(self,event):
-        dlg = wx.FileDialog(self.__frame,"Choose a pipeline file to open",wildcard="*.mat")
+        dlg = wx.FileDialog(self.__frame,
+                            "Choose a pipeline file to open",
+                            wildcard = ("CellProfiler pipeline (*.cp)|*.cp|"
+                                        "Measurements file or CP 1.0 pipeline (*.mat)|*.mat"))
         if dlg.ShowModal()==wx.ID_OK:
             pathname = os.path.join(dlg.GetDirectory(),dlg.GetFilename())
             self.do_load_pipeline(pathname)
@@ -194,7 +197,10 @@ class PipelineController:
 
         return True if the user saved the pipeline
         '''
-        dlg = wx.FileDialog(self.__frame,"Save pipeline",wildcard="*.mat",style=wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT)
+        dlg = wx.FileDialog(self.__frame,
+                            "Save pipeline",
+                            wildcard="CellProfiler pipeline (*.cp)|*.cp",
+                            style=wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT)
         path = cellprofiler.preferences.get_current_pipeline_path()
         if path is not None:
             dlg.Path = path

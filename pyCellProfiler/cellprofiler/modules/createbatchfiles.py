@@ -226,7 +226,7 @@ class CreateBatchFiles(cpm.CPModule):
                               wx.YES_NO, frame) == wx.ID_NO):
                 return
         
-        pipeline.save(path)
+        pipeline.save(path, format=cpp.FMT_MATLAB)
     
     def in_batch_mode(self):
         '''Tell the system whether we are in batch mode on the cluster'''

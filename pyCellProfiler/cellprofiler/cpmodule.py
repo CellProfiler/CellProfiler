@@ -76,6 +76,7 @@ class CPModule(object):
         self.__variable_revision_number = 0
         self.__show_window = True
         self.__wants_pause = False
+        self.__svn_version = "Unknown"
         self.batch_state = np.zeros((0,),np.uint8)
         # Set the name of the module based on the class name.  A
         # subclass can override this either by declaring a module_name
@@ -150,7 +151,7 @@ class CPModule(object):
         pass
     
     def set_settings_from_values(self, setting_values, variable_revision_number, 
-                            module_name):
+                                 module_name, from_matlab = None):
         """Set the settings in a module, given a list of values
         
         The default implementation gets all the settings and then
@@ -159,11 +160,13 @@ class CPModule(object):
         whatever values are in the list or however many values
         are in the list.
         """
+        if from_matlab is None:
+            from_matlab = not '.' in module_name
         setting_values, variable_revision_number, from_matlab =\
             self.upgrade_settings(setting_values,
                                   variable_revision_number,
                                   module_name,
-                                  not '.' in module_name)
+                                  from_matlab)
         # we can't handle matlab settings anymore
         assert not from_matlab, "Module %s's upgrade_settings returned from_matlab==True"%(module_name)
         self.prepare_settings(setting_values)
@@ -227,9 +230,9 @@ class CPModule(object):
         module_idx = self.module_num-1
         setting = handles[cpp.SETTINGS][0,0]
         setting[cpp.MODULE_NAMES][0,module_idx] = unicode(self.module_class())
-        setting[cpp.MODULE_NOTES][0,module_idx] = np.ndarray(shape=(len(self.notes()),1),dtype='object')
-        for i in range(0,len(self.notes())):
-            setting[cpp.MODULE_NOTES][0,module_idx][i,0]=self.notes()[i]
+        setting[cpp.MODULE_NOTES][0,module_idx] = np.ndarray(shape=(len(self.notes),1),dtype='object')
+        for i in range(0,len(self.notes)):
+            setting[cpp.MODULE_NOTES][0,module_idx][i,0]=self.notes[i]
         setting[cpp.NUMBERS_OF_VARIABLES][0,module_idx] = len(self.settings())
         for i in range(0,len(self.settings())):
             variable = self.settings()[i]
@@ -372,7 +375,7 @@ class CPModule(object):
         
         """
     
-    def notes(self):
+    def get_notes(self):
         """The user-entered notes for a module
         """
         return self.__notes
@@ -382,6 +385,16 @@ class CPModule(object):
         
         """
         return self.__notes
+    
+    notes = property(get_notes, set_notes)
+    
+    def get_svn_version(self):
+        return self.__svn_version
+    
+    def set_svn_version(self, version):
+        self.__svn_version = version
+        
+    svn_version = property(get_svn_version, set_svn_version)
     
     def write_to_handles(self,handles):
         """Write out the module's state to the handles

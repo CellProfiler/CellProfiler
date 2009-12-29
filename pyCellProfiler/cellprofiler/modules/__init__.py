@@ -12,6 +12,7 @@ Website: http://www.cellprofiler.org
 """
 __version__="$Revision$"
 
+import re
 from cellprofiler.cpmodule import CPModule
 
 # python modules and their corresponding cellprofiler.module classes
@@ -82,6 +83,7 @@ substitutions = {'ClassifyObjectsByTwoMeasurements' : 'ClassifyObjects',
                  }
 
 all_modules = {}
+svn_revisions = {}
 pymodules = []
 badmodules = []
 datatools = []
@@ -104,6 +106,7 @@ def fill_modules():
     del badmodules[:]
     del datatools[:]
     all_modules.clear()
+    svn_revisions.clear()
     for mod, name in pymodule_to_cpmodule.items():
         try:
             m = __import__('cellprofiler.modules.' + mod, globals(), locals(), [name])
@@ -122,6 +125,10 @@ def fill_modules():
             all_modules[name]()
             if hasattr(all_modules[name], "run_as_data_tool"):
                 datatools.append(name)
+            if hasattr(m, '__version__'):
+                match = re.match('^\$Revision: ([0-9]+) \$$', m.__version__)
+                if match is not None:
+                    svn_revisions[name] = match.groups()[0]
         except Exception, e:
             import traceback
             print traceback.print_exc(e)
@@ -143,7 +150,10 @@ def instantiate_module(module_name):
     module_class = module_name.split('.')[-1]
     if not all_modules.has_key(module_class):
         raise ValueError("Could not find the %s module"%module_class)
-    return all_modules[module_class]()
+    module = all_modules[module_class]()
+    if svn_revisions.has_key(module_name):
+        module.svn_version = svn_revisions[module_name]
+    return module
 
 def get_module_names():
     return all_modules.keys()

@@ -1,5 +1,21 @@
+"""
+CellProfiler is distributed under the GNU General Public License.
+See the accompanying file LICENSE for details.
+
+Developed by the Broad Institute
+Copyright 2003-2009
+
+Please see the AUTHORS file for credits.
+
+Website: http://www.cellprofiler.org
+"""
+__version__ = "$Revision$"
+
 from setuptools import setup
-import sys, os
+import sys
+import os
+import os.path
+import glob
 
 # fix from
 #  http://mail.python.org/pipermail/pythonmac-sig/2008-June/020111.html
@@ -12,11 +28,12 @@ if sys.platform == "darwin":
 
 APPNAME = 'CellProfiler2.0'
 APP = ['CellProfiler.py']
-DATA_FILES = []
+DATA_FILES = [('cellprofiler/icons', glob.glob(os.path.join('.', 'cellprofiler', 'icons', '*.png')))]
 OPTIONS = {'argv_emulation': True,
-           'packages': ['numpy', 'cellprofiler', 'cellprofiler.cpmath'],
+           'packages': ['cellprofiler', 'cellprofiler.cpmath'],
+           'includes': ['numpy', 'wx', 'matplotlib'],
            'excludes': ['pylab', 'nose', 'wx.tools'],
-           'resources': ['CellProfilerIcon.png'],
+           'resources': ['CellProfilerIcon.png', 'cellprofiler/icons'],
            }
 
 setup(

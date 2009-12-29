@@ -1,9 +1,9 @@
-'''MeasureImageQuality: This module measures features that indicate image quality. This includes the
-percentage of pixels in the image that are minimal and maximal. Measurements of blur 
-(poor focus) are also calculated.
+'''<b>Measure image quality</b> measures features that indicate image quality, 
+including measurements of blur (poor focus) and the percentage
+of pixels in the image that are minimal and maximal (i.e., saturated).
 <hr>
 
-Features measured:   
+Features that can be measured by this module:   
 <ul>
 <li>PercentMaximal: percent of pixels at the maximum intensity value of the image</li>
 <li>PercentMinimal: percent of pixels at the minimum intensity value of the image</li>
@@ -154,7 +154,7 @@ class MeasureImageQuality(cpm.CPModule):
                                               True, 
                                               doc = '''Would you like to check for blur? Blur is measured by calculating a focus score
                                                   (higher = better focus).'''))
-        group.append("window_size", cps.Integer("Window size for blur metrics",
+        group.append("window_size", cps.Integer("Window size for blur measurements",
                                                 20, minval =1,
                                                 doc = '''The local focus score is measured within an NxN pixel window 
                                                   applied to the image. What value of N would you like to use? A suggested 

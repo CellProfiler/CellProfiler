@@ -8,20 +8,19 @@ import cellprofiler.preferences as cpp
 import cellprofiler.utilities.get_revision as get_revision
 
 class CellProfilerApp(wx.App):
+
     def OnInit(self):
         wx.InitAllImageHandlers()
-        
-        # splash
-        splashimage = wx.ImageFromStream(cStringIO.StringIO(CellProfilerSplash))
+
         # If the splash image has alpha, it shows up transparently on
         # windows, so we blend it into a white background.
-        splashbitmap = wx.EmptyBitmapRGBA(splashimage.GetWidth(), splashimage.GetHeight(), 255, 255, 255, 255)
+        splashbitmap = wx.EmptyBitmapRGBA(CellProfilerSplash.GetWidth(), CellProfilerSplash.GetHeight(), 255, 255, 255, 255)
         dc = wx.MemoryDC()
         dc.SelectObject(splashbitmap)
-        dc.DrawBitmap(wx.BitmapFromImage(splashimage), 0, 0)
+        dc.DrawBitmap(wx.BitmapFromImage(CellProfilerSplash), 0, 0)
         dc.Destroy() # necessary to avoid a crash in splashscreen
         self.splash = wx.SplashScreen(splashbitmap, wx.SPLASH_CENTRE_ON_SCREEN | wx.SPLASH_TIMEOUT, 2000, None, -1)
-        
+
         self.new_version_check()
 
         from cellprofiler.gui.cpframe import CPFrame

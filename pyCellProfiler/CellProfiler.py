@@ -137,15 +137,6 @@ if (not hasattr(sys, 'frozen')) and options.build_extensions:
                                   "build_ext", "-i"])
         p.communicate()
     os.chdir(current_directory)
-    # build icon files
-    if options.show_gui:
-        import glob
-        zippo_script = os.path.join(root, 'zippo.py')
-        zippo_outfile = os.path.join(root, "cellprofiler", "icons", "__init__.py")
-        icon_files = glob.glob(os.path.join(root, "cellprofiler", "icons", "*.png"))
-        print "packing icons", " ".join([os.path.basename(f) for f in icon_files])
-        p = subprocess.Popen(["python", zippo_script, zippo_outfile] + icon_files)
-        p.communicate()
 
 if options.show_gui:
     from cellprofiler.cellprofilerapp import CellProfilerApp

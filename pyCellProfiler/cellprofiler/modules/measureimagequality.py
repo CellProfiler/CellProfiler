@@ -1,6 +1,6 @@
 '''<b>Measure image quality</b> measures features that indicate image quality, 
 including measurements of blur (poor focus) and the percentage
-of pixels in the image that are minimal and maximal (i.e., saturated).
+of pixels in the image that are minimal and maximal (i.e., saturated)
 <hr>
 
 Features that can be measured by this module:   
@@ -23,12 +23,12 @@ images were saturated during imaging, a higher than usual
 PercentMaximal will be observed, and if there are no objects, the
 PercentMinimal will increase.
 
-<h3>Focus Score (Blur)</h3> The module can also measure blur by calculating a focus score
-(higher = better focus). This calculation is slow, so it is optional. The score 
+<h3>Focus Score (Blur)</h3> The focus score indicates how blurry an image is
+(higher Focus Score = better focus = less blurry). This calculation is slow, so it is optional. The score 
 is calculated using the normalized variance. We used this algorithm because it
 was ranked best in this paper:
 Sun, Y., Duthaler, S., Nelson, B. "Autofocusing in Computer Microscopy:
-   Selecting the optimals focus algorithm." Microscopy Research and
+   Selecting the optimal focus algorithm." Microscopy Research and
    Technique 65:139-149 (2004)
 
 The calculation of the focus score is as follows:
@@ -38,21 +38,16 @@ SquaredNormalizedImage = (Image-MeanImageValue).^2;
 FocusScore{ImageNumber} = ...
    sum(SquaredNormalizedImage(:))/(m*n*MeanImageValue);
 
-The above score is to measure a relative score given a focus setting of 
-a certain microscope. Using this, one can calibrate the microscope's
-focus setting. However it doesn't necessarily tell you how well an image
-was focused when taken. That means these scores obtained from many different
-images probably taken in different situations and with different cell
-contents can not be used for focus comparison.
+The above score is designed to determine which image of a particular field of view shows the 
+best focus; it is not necessarily designed to compare images of different 
+fields of view, although it may be useful for this to some degree. 
 
 <h3>Local Focus Score</h3>
-The LocalFocusScore is a local version of the original FocusScore. 
-LocalFocusScore was just named after the original one to be consistent 
-with naming. Note that these focus scores do not necessarily 
-represent the qualities of focusing between different images. 
-LocalFocusScore was added to differentiate good segmentation and bad 
-segmentation images in the cases when bad segmentation images usually 
-contain no cell objects with high background noise.
+The Local Focus Score is a local version of the Focus Score, which is 
+potentially more useful for comparing focus between images of different fields of view. However, 
+like the Focus Score, the measurement should be used with caution 
+because it may fail to correspond well to the blurriness of images of 
+different fields of view, depending on the conditions.
 
 <h3>Power Spectrum</h3> The Power Spectrum is computed via FFT and the
 radii of the first three quartiles and the total power are measured.

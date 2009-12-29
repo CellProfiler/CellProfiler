@@ -954,13 +954,14 @@ class Pipeline(object):
                                                                 "Failure")
                         return
                 image_set_list.purge_image_set(image_number-1)
-
-            measurements.add_experiment_measurement(EXIT_STATUS, "Complete")
-            exit_status = self.post_run(measurements, image_set_list, frame)
-            #
-            # Record the status after post_run
-            #
-            measurements.add_experiment_measurement(EXIT_STATUS,exit_status)
+            
+            if measurements is not None:
+                measurements.add_experiment_measurement(EXIT_STATUS, "Complete")
+                exit_status = self.post_run(measurements, image_set_list, frame)
+                #
+                # Record the status after post_run
+                #
+                measurements.add_experiment_measurement(EXIT_STATUS,exit_status)
 
     class prepared_run:
         def __init__(self, pipeline, frame):

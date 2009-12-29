@@ -1,25 +1,26 @@
-"""<b>Measure Object Radial Distribution</b>- measures the radial distribution 
-of intensities within an object.
+"""<b>Measure object radial distribution</b> measures the radial distribution 
+of intensities within each object
 <hr>
 Given an image with objects identified, this module measures the
 intensity distribution from the center of those objects to their
 boundary within a user-controlled number of bins, for each object.
 
-The distribution can be measured within a single identified object,
-in which case it is relative to the "center" of the object (as
-defined as the point farthest from the boundary), or another object
-can be used as the center, an example of which would be using Nuclei
-for centers within Cells.
+The distribution can be measured within an object (e.g., cells),
+in which case it is relative to the "center" of the object as
+defined as the point farthest from the boundary. Alternatively, the 
+distribution can be measured relative to another object
+(e.g., measure the radial distribution 
+of intensity within a cell relative to the nucleus within each cell).
 
 Features that can be measured by this module:
 <ul>
 <li><i>FracAtD</i>: Fraction of total stain in an object at a given radius.
 <li><i>MeanFrac:</i> Mean fractional intensity at a given radius. Calculated
-as fraction of total intenstiy normalized by fraction of pixels at a given radius).</li>
+as fraction of total intenstiy normalized by fraction of pixels at a given radius.</li>
 <li><i>RadialCV:</i> Coefficient of variation of intensity within a ring, calculated 
 over 8 slices.</li>
 </ul>
-  
+<br>
 See also <b>MeasureObjectIntensity</b>.
 """
 
@@ -118,7 +119,7 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
                 "Select which objects to use as the center", C_ALL,doc="""
                 There are two options for the center of the radial measurement:
                 <ul>
-                <li><i>These objects</i>:Use the object centers for the 
+                <li><i>These objects</i>: Use the centers of these objects for the 
                 radial measurement.</li> 
                 <li><i>Other objects</i>: Use the centers of other objects
                 for the radial measurement.</li>
@@ -131,7 +132,7 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
                 "Select objects to use as centers", "None",doc="""
                 Select the object to use as the center, or select <i>None</i> to
                 use the input object centers (which is the same as selecting
-                <i>These objects</i> for the object centers."""))
+                <i>These objects</i> for the object centers)."""))
         if can_remove:
             group.append("remover", cps.RemoveSettingButton("", "Remove this object", self.objects, group))
         group.append("divider", cps.Divider(line=False))
@@ -141,7 +142,7 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
         '''Add another radial bin count at which to measure'''
         group = cps.SettingsGroup()
         group.append("bin_count", cps.Integer(
-                    "Number of bins",4, 2, doc="""How many bins do you want to use to store 
+                    "Number of bins",4, 2, doc="""How many bins do you want to use to measure 
                         the distribution?
                         The radial distribution is measured with respect to a series
                         of concentric rings starting from the object center (or 

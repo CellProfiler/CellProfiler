@@ -16,4 +16,4 @@ import os.path
 import glob
 
 for f in glob.glob(os.path.join(__path__[0], "*.png")):
-    globals()[os.path.basename(f)[:-4]] = wx.ImageFromStream(open(f))
+    globals()[os.path.basename(f)[:-4]] = wx.Image(f)

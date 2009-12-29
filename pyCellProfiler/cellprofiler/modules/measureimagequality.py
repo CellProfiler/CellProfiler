@@ -9,49 +9,10 @@ Features that can be measured by this module:
 <li>PercentMinimal: percent of pixels at the minimum intensity value of the image</li>
 <li>FocusScore: a measure of the intensity variance across image</li>
 <li>LocalFocusScore: a measure of the intensity variance between image parts</li>
-<li>Threshold: calculated threshold for image</li>
+<li>Threshold: automatically-calculated threshold for image</li>
 <li>PowerSpectrum1stQuartile, PowerSpectrum2ndQuartile, PowerSpectrum3rdQuartile, PowerSpectrumSum: the radial power quartiles and total power in the image</li>
 </ul>
-
-<h3>PercentMaximal and PercentMinimal</h3> The percentage of pixels at
-the upper or lower limit of the <i>individual</i> image are
-calculated.  The hard limits of 0 and 1 are not used because often
-images have undergone some kind of transformation such that no pixels
-ever reach the absolute maximum or minimum of the image format.  Given
-noise in images, this should typically be a low percentage but if the
-images were saturated during imaging, a higher than usual
-PercentMaximal will be observed, and if there are no objects, the
-PercentMinimal will increase.
-
-<h3>Focus Score (Blur)</h3> The focus score indicates how blurry an image is
-(higher Focus Score = better focus = less blurry). This calculation is slow, so it is optional. The score 
-is calculated using the normalized variance. We used this algorithm because it
-was ranked best in this paper:
-Sun, Y., Duthaler, S., Nelson, B. "Autofocusing in Computer Microscopy:
-   Selecting the optimal focus algorithm." Microscopy Research and
-   Technique 65:139-149 (2004)
-
-The calculation of the focus score is as follows:
-[m,n] = size(Image);
-MeanImageValue = mean(Image(:));
-SquaredNormalizedImage = (Image-MeanImageValue).^2;
-FocusScore{ImageNumber} = ...
-   sum(SquaredNormalizedImage(:))/(m*n*MeanImageValue);
-
-The above score is designed to determine which image of a particular field of view shows the 
-best focus; it is not necessarily designed to compare images of different 
-fields of view, although it may be useful for this to some degree. 
-
-<h3>Local Focus Score</h3>
-The Local Focus Score is a local version of the Focus Score, which is 
-potentially more useful for comparing focus between images of different fields of view. However, 
-like the Focus Score, the measurement should be used with caution 
-because it may fail to correspond well to the blurriness of images of 
-different fields of view, depending on the conditions.
-
-<h3>Power Spectrum</h3> The Power Spectrum is computed via FFT and the
-radii of the first three quartiles and the total power are measured.
-
+<br><br>
 Example Output:
 <table border="1">
 <tr>
@@ -147,33 +108,69 @@ class MeasureImageQuality(cpm.CPModule):
                                                            doc = '''What did you call the grayscale images whose quality you want to measure?'''))
         group.append("check_blur", cps.Binary("Check for blur?",
                                               True, 
-                                              doc = '''Would you like to check for blur? Blur is measured by calculating a focus score
-                                                  (higher = better focus).'''))
+                                              doc = '''Would you like to check for blur? If so, the module will calculate a focus score for each image, indicating how blurry an image is
+(higher Focus Score = better focus = less blurry). This calculation is slow, so it is optional. The score 
+is calculated using the normalized variance. We used this algorithm because it
+was ranked best in this paper:
+Sun, Y., Duthaler, S., Nelson, B. "Autofocusing in Computer Microscopy:
+   Selecting the optimal focus algorithm." Microscopy Research and
+   Technique 65:139-149 (2004).<br>
+<br>
+The calculation of the focus score is as follows:<br>
+[m,n] = size(Image);<br>
+MeanImageValue = mean(Image(:));<br>
+SquaredNormalizedImage = (Image-MeanImageValue).^2;<br>
+FocusScore{ImageNumber} = ...<br>
+   sum(SquaredNormalizedImage(:))/(m*n*MeanImageValue);<br>
+<br>
+The above score is designed to determine which image of a particular field of view shows the 
+best focus (assuming the overall intensity and the number of objects in the image is 
+constant); it is not necessarily designed to compare images of different 
+fields of view, although it may be useful for this to some degree. 
+The Local Focus Score is a local version of the Focus Score, which is 
+potentially more useful for comparing focus between images of different fields of view. However, 
+like the Focus Score, the measurement should be used with caution 
+because it may fail to correspond well to the blurriness of images of 
+different fields of view, depending on the conditions.
+'''))
         group.append("window_size", cps.Integer("Window size for blur measurements",
                                                 20, minval =1,
-                                                doc = '''The local focus score is measured within an NxN pixel window 
+                                                doc = '''(Only used if blur measurements are to be calculated) <br> 
+                                                  The local focus score is measured within an NxN pixel window 
                                                   applied to the image. What value of N would you like to use? A suggested 
                                                   value is twice the typical object diameter. You
-                                                  can measure the local focus score over multiple windows by adding an image
+                                                  can measure the local focus score over multiple window sizes by adding an image
                                                   to the list more than once and by setting different window sizes for
-                                                  each image.'''))
+                                                  each image. '''))
         group.append("check_saturation", cps.Binary("Check for saturation?",
-                                                    True, doc = '''Would you like to check for saturation (maximal and minimal percentages)?'''))
+                                                    True, 
+                                                    doc = '''Would you like to check for saturation 
+                                                    (maximal and minimal percentages)? The percentage of pixels at
+                                                    the upper or lower limit of each individual image are
+                                                    calculated.  The hard limits of 0 and 1 are not used because often
+                                                    images have undergone some kind of transformation such that no pixels
+                                                    ever reach the absolute maximum or minimum of the image format.  Given
+                                                    noise in images, this should typically be a low percentage but if the
+                                                    images were saturated during imaging, a higher than usual
+                                                    PercentMaximal will be observed, and if there are no objects, the
+                                                    PercentMinimal will increase.'''))
         group.append("calculate_threshold", cps.Binary("Calculate threshold?",
-                                                       True, doc = '''Would you like to calculate a suggested threshold?'''))
+                                                       True, doc = '''Would you like to automatically calculate a suggested 
+                                                       threshold for each image? One indicator of image quality is that the 
+                                                       automatically-calculated suggested threshold is within a typical range. 
+                                                       Outlier images with high or low thresholds often contain artifacts.'''))
         group.append("threshold_method", cps.Choice("Select a thresholding method",
                                                     cpthresh.TM_GLOBAL_METHODS,
                                                     cpthresh.TM_OTSU_GLOBAL, 
-                                                    doc = '''This setting allows you to access the same automatic thresholding 
-                                                       methods used in the <b>Identify</b> modules.  You may select any of these automatic thresholding 
-                                                       methods, or choose "Manual" to enter a threshold manually.  To choose a binary image, select "Binary image". 
-                                                       The output of <b>MeasureImageQuality</b> will be a numerical threshold, rather than objects.  
+                                                    doc = '''(Only used if thresholds are to be calculated) <br> This setting allows you to access automatic thresholding 
+                                                       methods used in the <b>Identify</b> modules.
                                                        For more help on thresholding, see the Identify modules.'''))
         group.append("object_fraction", cps.Float("Typical fraction of the image covered by objects", 0.1,0,1, doc = 
-                                                  """For MoG thresholding, enter the approximate fraction of the image
-                                                  that is covered by objects."""))
+                                                  """(Only used if threshold are calculated and MoG thresholding is chosen) <br> 
+                                                      Enter the approximate fraction of the typical image in the set
+                                                      that is covered by objects."""))
         group.append("compute_power_spectrum", cps.Binary("Calculate quartiles and sum of radial power spectrum?", True,
-                                                      doc = "Would you like to calculate the quartiles and sum of the radial power spectrum?"))
+                                                      doc = "Would you like to calculate the quartiles and sum of the radial power spectrum? The Power Spectrum is computed via FFT and the radii of the first three quartiles and the total power are measured."))
         group.append("remove_button", cps.RemoveSettingButton("", "Remove this image", self.image_groups, group))
         group.append("divider", cps.Divider())
         self.image_groups.append(group)

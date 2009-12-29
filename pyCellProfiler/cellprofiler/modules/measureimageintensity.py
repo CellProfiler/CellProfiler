@@ -75,15 +75,15 @@ class MeasureImageIntensity(cpm.CPModule):
     
     def add_image_measurement(self, removable = True):
         group = cps.SettingsGroup()
-        group.append("image_name", cps.ImageNameSubscriber("Select the image to measure",
+        group.append("image_name", cps.ImageNameSubscriber("Select an image to measure",
                                                             "None", doc = '''What did you call the images whose intensity you want to measure?'''))
         group.append("wants_objects", cps.Binary("Do you want to measure intensity only from areas of the image that contain objects you've identified?",
                                                   False))
-        group.append("object_name",cps.ObjectNameSubscriber("Select the objects to measure","None", 
+        group.append("object_name",cps.ObjectNameSubscriber("Select the objects to use to constrain the measurement","None", 
                                                            doc = '''What is the name of the objects to use?'''))
         if removable:
-            group.append("remover", cps.RemoveSettingButton("Remove this image from the list of images to be measured", 
-                                                            "Remove", self.images, group))
+            group.append("remover", cps.RemoveSettingButton("", 
+                                                            "Remove this image", self.images, group))
         group.append("divider", cps.Divider())
         self.images.append(group)
                     

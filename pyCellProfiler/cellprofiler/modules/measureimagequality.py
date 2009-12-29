@@ -150,11 +150,11 @@ class MeasureImageQuality(cpm.CPModule):
         group = MeasureImageQualitySettingsGroup() # helper class defined below
         group.append("image_name", cps.ImageNameSubscriber("Select an image to measure","None", 
                                                            doc = '''What did you call the grayscale images whose quality you want to measure?'''))
-        group.append("check_blur", cps.Binary("Check for blur:",
+        group.append("check_blur", cps.Binary("Check for blur?",
                                               True, 
                                               doc = '''Would you like to check for blur? Blur is measured by calculating a focus score
                                                   (higher = better focus).'''))
-        group.append("window_size", cps.Integer("Window Size:",
+        group.append("window_size", cps.Integer("Window size for blur metrics",
                                                 20, minval =1,
                                                 doc = '''The local focus score is measured within an NxN pixel window 
                                                   applied to the image. What value of N would you like to use? A suggested 
@@ -162,11 +162,11 @@ class MeasureImageQuality(cpm.CPModule):
                                                   can measure the local focus score over multiple windows by adding an image
                                                   to the list more than once and by setting different window sizes for
                                                   each image.'''))
-        group.append("check_saturation", cps.Binary("Check for saturation:",
+        group.append("check_saturation", cps.Binary("Check for saturation?",
                                                     True, doc = '''Would you like to check for saturation (maximal and minimal percentages)?'''))
-        group.append("calculate_threshold", cps.Binary("Calculate threshold:",
+        group.append("calculate_threshold", cps.Binary("Calculate threshold?",
                                                        True, doc = '''Would you like to calculate a suggested threshold?'''))
-        group.append("threshold_method", cps.Choice("Select a thresholding method:",
+        group.append("threshold_method", cps.Choice("Select a thresholding method",
                                                     cpthresh.TM_GLOBAL_METHODS,
                                                     cpthresh.TM_OTSU_GLOBAL, 
                                                     doc = '''This setting allows you to access the same automatic thresholding 
@@ -174,12 +174,12 @@ class MeasureImageQuality(cpm.CPModule):
                                                        methods, or choose "Manual" to enter a threshold manually.  To choose a binary image, select "Binary image". 
                                                        The output of <b>MeasureImageQuality</b> will be a numerical threshold, rather than objects.  
                                                        For more help on thresholding, see the Identify modules.'''))
-        group.append("object_fraction", cps.Float("Enter the fraction of the image covered by objects:", 0.1,0,1, doc = 
+        group.append("object_fraction", cps.Float("Typical fraction of the image covered by objects", 0.1,0,1, doc = 
                                                   """For MoG thresholding, enter the approximate fraction of the image
                                                   that is covered by objects."""))
-        group.append("compute_power_spectrum", cps.Binary("Calculate quartiles and sum of radial power spectrum:", True,
+        group.append("compute_power_spectrum", cps.Binary("Calculate quartiles and sum of radial power spectrum?", True,
                                                       doc = "Would you like to calculate the quartiles and sum of the radial power spectrum?"))
-        group.append("remove_button", cps.RemoveSettingButton("Remove the image above", "Remove", self.image_groups, group))
+        group.append("remove_button", cps.RemoveSettingButton("", "Remove this image", self.image_groups, group))
         group.append("divider", cps.Divider())
         self.image_groups.append(group)
 

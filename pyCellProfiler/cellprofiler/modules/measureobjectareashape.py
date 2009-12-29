@@ -139,9 +139,9 @@ class MeasureObjectAreaShape(cpm.CPModule):
     def add_object(self):
         """Add a slot for another object"""
         group = cps.SettingsGroup()
-        group.append("name", cps.ObjectNameSubscriber("Select the input objects","None",doc="""
+        group.append("name", cps.ObjectNameSubscriber("Select objects to measure","None",doc="""
                                                 What did you call the objects you want to measure?"""))
-        group.append("remove", cps.RemoveSettingButton("", "Remove above object", self.object_groups, group))
+        group.append("remove", cps.RemoveSettingButton("", "Remove this object", self.object_groups, group))
         group.append("divider", cps.Divider(line=False))
         self.object_groups.append(group)
         

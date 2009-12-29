@@ -94,8 +94,8 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
         self.add_object_button = cps.DoSomething("", "Add object",
                                                  self.add_object)
         self.spacer_2 = cps.Divider(line=False)
-        self.add_bin_count_button = cps.DoSomething("Add another bin count",
-                                                    "Add bin", self.add_bin_count)
+        self.add_bin_count_button = cps.DoSomething("",
+                                                    "Add another set of bins", self.add_bin_count)
         self.add_image(can_remove = False)
         self.add_object(can_remove = False)
         self.add_bin_count(can_remove = False)
@@ -104,7 +104,7 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
         '''Add an image to be measured'''
         group = cps.SettingsGroup()
         group.append("image_name", cps.ImageNameSubscriber(
-                "Select the input image", "None"))
+                "Select an image to use for radial distribution measurements", "None"))
         if can_remove:
             group.append("remover", cps.RemoveSettingButton("", "Remove this image", self.images, group))
         self.images.append(group)
@@ -113,9 +113,9 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
         '''Add an object to be measured (plus optional centers)'''
         group = cps.SettingsGroup()
         group.append("object_name", cps.ObjectNameSubscriber(
-                "Select the input objects", "None"))
+                "Select objects to measure", "None"))
         group.append("center_choice", cps.Choice(
-                "Use these objects or another object as the center?", C_ALL,doc="""
+                "Select which objects to use as the center", C_ALL,doc="""
                 There are two options for the center of the radial measurement:
                 <ul>
                 <li><i>These objects</i>:Use the object centers for the 
@@ -128,7 +128,7 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
                 objects</i>) or you can use previously identified Nuclei objects as 
                 the centers (<i>Other objects</i>)."""))
         group.append("center_object_name", cps.ObjectNameSubscriber(
-                "Select objects to use as centers:", "None",doc="""
+                "Select objects to use as centers", "None",doc="""
                 Select the object to use as the center, or select <i>None</i> to
                 use the input object centers (which is the same as selecting
                 <i>These objects</i> for the object centers."""))
@@ -141,7 +141,7 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
         '''Add another radial bin count at which to measure'''
         group = cps.SettingsGroup()
         group.append("bin_count", cps.Integer(
-                    "Number of bins:",4, 2, doc="""How many bins do you want to use to store 
+                    "Number of bins",4, 2, doc="""How many bins do you want to use to store 
                         the distribution?
                         The radial distribution is measured with respect to a series
                         of concentric rings starting from the object center (or 
@@ -151,7 +151,7 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
                         be divided into. Additional ring counts can be specified
                         by clicking the <i>Add another bin count</i> button below."""))
         if can_remove:
-            group.append("remover", cps.RemoveSettingButton("", "Remove this bin", self.bin_counts, group))
+            group.append("remover", cps.RemoveSettingButton("", "Remove this set of bins", self.bin_counts, group))
         self.bin_counts.append(group)
     
     def settings(self):

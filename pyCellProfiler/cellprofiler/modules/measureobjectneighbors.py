@@ -100,8 +100,8 @@ class MeasureObjectNeighbors(cpm.CPModule):
     variable_revision_number = 1
 
     def create_settings(self):
-        self.object_name = cps.ObjectNameSubscriber('Select input objects','None')
-        self.distance_method = cps.Choice('Method to determine neighbors:',
+        self.object_name = cps.ObjectNameSubscriber('Select objects to measure','None')
+        self.distance_method = cps.Choice('Method to determine neighbors',
                                           D_ALL, D_EXPAND,doc="""
             How do you want to determine whether objects are touching?
             <ul>
@@ -123,28 +123,24 @@ class MeasureObjectNeighbors(cpm.CPModule):
             pixels are adjacent after expansion and PercentTouching measures the 
             percentage of boundary pixels of an <i>expanded</i> object that 
             touch adjacent objects.""")
-        self.distance = cps.Integer('Neighbor distance:',
+        self.distance = cps.Integer('Neighbor distance',
                                     5,1,doc="""
             <i>(Only used when "Within a specified distance" is selected)</i> 
             Within what distance are objects considered neighbors (in pixels) ?
             The number of pixels that each object is expanded for the neighbor 
             calculation. Expanded objects that touch are considered neighbors.""")
-        self.wants_count_image = cps.Binary('Save the image of objects colored by numbers of neighbors?',
-                                            False, doc="""
-             The image of the objects colored by numbers of neighbors can be 
-             saved for later export. See <b>SaveImages</b> for more details.""")
-        self.count_image_name = cps.ImageNameProvider('Name the output image:',
+        self.wants_count_image = cps.Binary('Retain the image of objects colored by numbers of neighbors for use later in the pipeline (for example, in SaveImages)?',
+                                            False)
+        self.count_image_name = cps.ImageNameProvider('Name the output image',
                                                       'ObjectNeighborCount', 
-                                                      doc = """What do you want to call the image of objects colored by numbers of neighbors?""")
-        self.count_colormap = cps.Colormap('Select colormap:', doc = """What colormap do you want to use to color the above image?""")
-        self.wants_percent_touching_image = cps.Binary('Save the image of objects colored by percent of touching pixels?',
-                                                       False, doc="""
-             The image of the objects colored by percent of touching pixels can be 
-             saved for later export. See <b>SaveImages</b> for more details.""")
-        self.touching_image_name = cps.ImageNameProvider('Name the output image:',
+                                                      doc = """(Only used if the image of objects colored by numbers of neighbors is to be retained for later use in the pipeline) <br> Choose a name, which will allow the the image of objects colored by numbers of neighbors to be selected later in the pipeline.""")
+        self.count_colormap = cps.Colormap('Select colormap', doc = """What colormap do you want to use to color the above image?""")
+        self.wants_percent_touching_image = cps.Binary('Retain the image of objects colored by percent of touching pixels for use later in the pipeline (for example, in SaveImages)?',
+                                                       False)
+        self.touching_image_name = cps.ImageNameProvider('Name the output image',
                                                          'PercentTouching', 
-                                                         doc = """What do you want to call the image of objects colored by percent of touching pixels?""")
-        self.touching_colormap = cps.Colormap('Select colormap:', doc = """hat colormap do you want to use to color the above image?""")
+                                                         doc = """(Only used if the image of objects colored by numbers of neighbors is to be retained for later use in the pipeline) <br> Choose a name, which will allow the the image of objects colored by percent of touching pixels to be selected later in the pipeline.""")
+        self.touching_colormap = cps.Colormap('Select a colormap', doc = """What colormap do you want to use to color the above image?""")
 
     def settings(self):
         return [self.object_name, self.distance_method, self.distance,

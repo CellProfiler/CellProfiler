@@ -2,11 +2,16 @@
 different color channels) on a pixel by pixel basis, within identified
 objects or across an entire image.
 <hr>
-Given two or more images, calculates the correlation between the
+Given two or more images, this module calculates the correlation between the
 pixel intensities. The correlation can be measured for entire
-images, or individual correlation measurements can be made within each
-individual object. For example:
-
+images, or a correlation measurement can be made within each
+individual object. 
+<br>
+Correlations will be calculated between all pairs of images
+that are selected in the module.  For example, if correlations are 
+chosen to be measured for red, green, and blue images, measurements 
+will be made for each individual nucleus as well as the following 
+measurements for the entire image:
 <table border="1">
 <tr>
 <td></td>
@@ -56,9 +61,9 @@ import cellprofiler.settings as cps
 import cellprofiler.measurements as cpmeas
 from cellprofiler.cpmath.cpmorphology import fixup_scipy_ndimage_result as fix
 
-M_IMAGES = "Images"
-M_OBJECTS = "Objects"
-M_IMAGES_AND_OBJECTS = "Images and objects"
+M_IMAGES = "Across entire image"
+M_OBJECTS = "Within objects"
+M_IMAGES_AND_OBJECTS = "Both"
 
 '''Feature name format for the correlation measurement'''
 F_CORRELATION_FORMAT = "Correlation_Correlation_%s_%s"
@@ -81,16 +86,16 @@ class MeasureCorrelation(cpm.CPModule):
         
         self.add_image_button = cps.DoSomething("", 'Add image', self.add_image)
         self.spacer = cps.Divider(line=False)
-        self.images_or_objects = cps.Choice('Measure correlation across:',
+        self.images_or_objects = cps.Choice('Select where to measure correlation',
                                             [M_IMAGES, M_OBJECTS, M_IMAGES_AND_OBJECTS], 
                                             doc = '''
-                                            Do you want to measure the correlation within objects, 
-                                            over the whole image or both within objects and over the whole image?
+                                            Do you want to measure the correlation over the whole image, 
+                                            within objects, or both?
                                             Both methods measure correlation on a pixel by pixel basis.
                                             Selecting <i>Objects</i> will measure correlation only in those pixels previously
-                                            identified as an object (the user can then specify which object).  Selecting 
+                                            identified as an object (you will be asked to specify which object).  Selecting 
                                             <i>Images</i> will measure correlation across all pixels in the images.
-                                            <i>Images and objects</i> will return both measurements.''')
+                                            <i>Images and objects</i> will calculate both measurements.''')
         
         self.object_groups = []
         self.add_object()
@@ -105,20 +110,20 @@ class MeasureCorrelation(cpm.CPModule):
                      button for images that must be present.
         '''
         group = cps.SettingsGroup()
-        group.append("image_name", cps.ImageNameSubscriber('Select an image to measure:','None',
-                                                          doc = '''What is the name of the image to be measured?'''))
+        group.append("image_name", cps.ImageNameSubscriber('Select an image to measure','None',
+                                                          doc = '''What is the name of an image to be measured?'''))
         if can_delete:
             group.append("remover", 
-                         cps.RemoveSettingButton('Remove the image above',
-                                                 'Remove', self.image_groups, group))
+                         cps.RemoveSettingButton('',
+                                                 'Remove this image', self.image_groups, group))
         self.image_groups.append(group)
 
     def add_object(self):
         '''Add an object to the object_groups collection'''
         group = cps.SettingsGroup()
-        group.append("object_name", cps.ObjectNameSubscriber('Select the object to measure:','None',
-                                                            doc = '''What is the name of the objects to be measured?'''))
-        group.append("remover", cps.RemoveSettingButton('Remove the object above', 'Remove', self.object_groups, group))
+        group.append("object_name", cps.ObjectNameSubscriber('Select an object to measure','None',
+                                                            doc = '''What is the name of objects to be measured?'''))
+        group.append("remover", cps.RemoveSettingButton('', 'Remove this object', self.object_groups, group))
         self.object_groups.append(group)
 
     def settings(self):

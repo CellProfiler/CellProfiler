@@ -146,7 +146,7 @@ class MeasureTexture(cpm.CPModule):
                                           self.add_scale_cb)
         self.scale_divider = cps.Divider()
         
-        self.gabor_angles = cps.Integer("Enter number of angles to compute for Gabor:",4,2, doc="""
+        self.gabor_angles = cps.Integer("Number of angles to compute for Gabor",4,2, doc="""
         How many angles do you want to use for each Gabor measurement?
             The default is four which detects bands in the horizontal, vertical and diagonal
             orientations.""")
@@ -188,25 +188,25 @@ class MeasureTexture(cpm.CPModule):
     def add_image_cb(self):
         group = cps.SettingsGroup()
         group.append('image_name', 
-                     cps.ImageNameSubscriber("Select an input image","None", 
+                     cps.ImageNameSubscriber("Select an image to measure","None", 
                                              doc="""What did you call the greyscale images you want to measure?"""))
-        group.append("remover", cps.RemoveSettingButton("", "Remove above image", self.image_groups, group))
+        group.append("remover", cps.RemoveSettingButton("", "Remove this image", self.image_groups, group))
         self.image_groups.append(group)
 
     def add_object_cb(self):
         """Add a slot for another object"""
         group = cps.SettingsGroup()
         group.append('object_name', 
-                     cps.ObjectNameSubscriber("Select the input objects","None",
+                     cps.ObjectNameSubscriber("Select objects to measure","None",
                                               doc="""What did you call the objects that you want to measure?"""))
-        group.append("remover", cps.RemoveSettingButton("", "Remove above object", self.object_groups, group))
+        group.append("remover", cps.RemoveSettingButton("", "Remove this object", self.object_groups, group))
         self.object_groups.append(group)
 
     def add_scale_cb(self):
         '''Add another scale to be measured'''
         group = cps.SettingsGroup()
         group.append('scale', 
-                     cps.Integer("Enter the texture scale",
+                     cps.Integer("Texture scale to measure",
                                  len(self.scale_groups)+3,
                                  doc="""The scale of texture measured is chosen by the user, in pixel units, 
                                  and is the distance between correlated intensities in the image. A 
@@ -217,7 +217,7 @@ class MeasureTexture(cpm.CPModule):
                                  smaller than most of your objects. For very small objects (smaller than 
                                  the scale of texture you are measuring), the texture cannot be measured 
                                  and will result in a undefined value in the output file."""))
-        group.append("remover", cps.RemoveSettingButton("", "Remove above scale", self.scale_groups, group))
+        group.append("remover", cps.RemoveSettingButton("", "Remove this scale", self.scale_groups, group))
         self.scale_groups.append(group)
 
     def get_categories(self,pipeline, object_name):

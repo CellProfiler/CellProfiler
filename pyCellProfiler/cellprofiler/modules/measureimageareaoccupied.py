@@ -64,11 +64,11 @@ class MeasureImageAreaOccupied(cpm.CPModule):
     def add_object(self, removable=True):
         # The text for these settings will be replaced in renumber_settings()
         group = cps.SettingsGroup()
-        group.append("object_name", cps.ObjectNameSubscriber("Select the object name", "None"))
-        group.append("should_save_image", cps.Binary("Save object labels as a binary image?", False))
-        group.append("image_name", cps.ImageNameSubscriber("Name the output binary image", "Stain"))
+        group.append("object_name", cps.ObjectNameSubscriber("Select the objects for which you want to measure overall area occupied", "None"))
+        group.append("should_save_image", cps.Binary("Retain a binary image of the object regions for use later in the pipeline (for example, in SaveImages)?", False))
+        group.append("image_name", cps.ImageNameSubscriber("Name the output binary image", "Stain",doc="(Only used if the binary image of the objects is to be retained for later use in the pipeline) <br> Choose a name, which will allow the binary image of the objects to be selected later in the pipeline."))
         if removable:
-            group.append("remover", cps.RemoveSettingButton("Remove the object above", "Remove", self.objects, group))
+            group.append("remover", cps.RemoveSettingButton("", "Remove this object", self.objects, group))
         group.append("divider", cps.Divider())
         self.objects.append(group)        
 

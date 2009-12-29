@@ -107,16 +107,16 @@ class MeasureObjectIntensity(cpm.CPModule):
 
     def add_image(self):
         group = cps.SettingsGroup()
-        group.append("name", cps.ImageNameSubscriber("Select input image:","None", doc = 
-                                                     """What did you call the grayscale images you want to process?"""))
-        group.append("remover", cps.RemoveSettingButton("", "Remove above image", self.images, group))
+        group.append("name", cps.ImageNameSubscriber("Select an image to use for intensity measurements","None", doc = 
+                                                     """What did you call the grayscale images whose intensity you want to measure?"""))
+        group.append("remover", cps.RemoveSettingButton("", "Remove this image", self.images, group))
         self.images.append(group)
 
     def add_object(self):
         group = cps.SettingsGroup()
-        group.append("name", cps.ObjectNameSubscriber("Select objects to measure:","None", doc = 
-                                                          """What did you call the objects that you want to measure?"""))
-        group.append("remover", cps.RemoveSettingButton("", "Remove above image", self.images, group))
+        group.append("name", cps.ObjectNameSubscriber("Select objects to measure","None", doc = 
+                                                          """What did you call the objects whose intensities you want to measure?"""))
+        group.append("remover", cps.RemoveSettingButton("", "Remove this object", self.images, group))
         self.objects.append(group)
 
     def settings(self):

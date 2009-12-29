@@ -1,14 +1,13 @@
-"""<b> Measure Image Area Occupied</b>
-measures total image area occupied by objects
+"""<b> Measure Image Area Occupied</b> measures the total area in an image that is occupied by objects
 <hr>
 This module reports the sum of the areas of the objects defined by one
 of the Identify modules (<b>IdentifyPrimAutomatic</b>, <b>IdentifyPrimSecondary</b>, etc.).
 Both the area occupied and the total image area will respect
 the masking, if any, of the primary image used by the Identify module.
 
-If you want to threshold an image and then measure the number of pixels
-above that threshold, this can be done by using this module together with IdentifyPrimAutomatic as
-your thresholder.
+If you want to measure the number of pixels
+above a threshold, this can be done by using this module preceded by
+thresholding performed by <b>IdentifyPrimAutomatic</b>.
 <br>
 <br>
 Features that can be measured by this module:

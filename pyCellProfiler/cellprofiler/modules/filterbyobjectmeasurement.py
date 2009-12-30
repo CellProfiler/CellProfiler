@@ -625,10 +625,20 @@ class FilterByObjectMeasurement(cpm.CPModule):
             variable_revision_number = 1
             module_name = self.module_name
         if (module_name == 'FilterByObjectMeasurement' and from_matlab and
+            variable_revision_number == 5):
+            #
+            # Swapped first two measurements
+            #
+            setting_values = ([setting_values[1],setting_values[0]] +
+                              setting_values[2:])
+            variable_revision_number = 6
+            
+        if (module_name == 'FilterByObjectMeasurement' and from_matlab and
             variable_revision_number == 6):
             # The measurement may not be correct here - it will display
             # as an error, though
-            measurement = '_'.join((setting_values[2],setting_values[3]))
+            measurement = '_'.join((setting_values[2],
+                                    setting_values[3]))
             if setting_values[6] == 'No minimum':
                 wants_minimum = cps.NO
                 min_limit = "0"

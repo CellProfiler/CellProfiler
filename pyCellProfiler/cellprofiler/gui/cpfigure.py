@@ -116,27 +116,30 @@ class CPFigureFrame(wx.Frame):
         self.SetIcon(get_icon())
         self.Fit()
         self.Show()
-        try:
-            parent_menu_bar = parent.MenuBar
-        except:
-            # when testing, there may be no parent
-            parent_menu_bar = None
-        if parent_menu_bar is not None and isinstance(parent_menu_bar, wx.MenuBar):
-            for menu, label in parent_menu_bar.GetMenus():
-                if label == "Window":
-                    menu_ids = [menu_item.Id for menu_item in menu.MenuItems]
-                    for window_id in window_ids+[None]:
-                        if window_id not in menu_ids:
-                            break
-                    if window_id is None:
-                        window_id = wx.NewId()
-                        window_ids.append(window_id)
-                    assert isinstance(menu,wx.Menu)
-                    menu.Append(window_id, title)
-                    def on_menu_command(event):
-                        self.Raise()
-                    wx.EVT_MENU(parent, window_id, on_menu_command)
-                    self.remove_menu.append([menu, window_id])
+        if sys.platform.lower().startswith("win"):
+            try:
+                parent_menu_bar = parent.MenuBar
+            except:
+                # when testing, there may be no parent
+                parent_menu_bar = None
+            if (parent_menu_bar is not None and 
+                isinstance(parent_menu_bar, wx.MenuBar)):
+                for menu, label in parent_menu_bar.GetMenus():
+                    if label == "Window":
+                        menu_ids = [menu_item.Id 
+                                    for menu_item in menu.MenuItems]
+                        for window_id in window_ids+[None]:
+                            if window_id not in menu_ids:
+                                break
+                        if window_id is None:
+                            window_id = wx.NewId()
+                            window_ids.append(window_id)
+                        assert isinstance(menu,wx.Menu)
+                        menu.Append(window_id, title)
+                        def on_menu_command(event):
+                            self.Raise()
+                        wx.EVT_MENU(parent, window_id, on_menu_command)
+                        self.remove_menu.append([menu, window_id])
     
     def add_menu(self):
         self.MenuBar = wx.MenuBar()

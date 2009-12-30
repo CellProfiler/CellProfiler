@@ -427,7 +427,7 @@ class Pipeline(object):
                     "%s is an unsupported .MAT file, most likely a measurements file.\nYou can load this as a pipeline if you load it as a pipeline using CellProfiler 1.0 and then save it to a different file.\n" %
                     fd_or_filename)
         else:
-            handles=scipy.io.matlab.mio.loadmat(fd, 
+            handles=scipy.io.matlab.mio.loadmat(fd_or_filename, 
                                                 struct_as_record=True)
             
         if handles.has_key("handles"):

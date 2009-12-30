@@ -333,7 +333,8 @@ class IdentifyTertiarySubregion(cpm.CPModule):
             if category == "Location":
                 result += [ "Center_X","Center_Y"]
             elif category == "Parent":
-                result += [ self.primary_objects_name.value]
+                result += [ self.primary_objects_name.value,
+                            self.secondary_objects_name.value]
             elif category == "Number":
                 result += ["Object_Number"]
         return result

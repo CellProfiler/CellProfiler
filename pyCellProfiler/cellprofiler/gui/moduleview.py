@@ -1004,33 +1004,52 @@ class ModuleView:
         else:
             return
         if self.__module:
-            validation_error = None
-            try:
-                self.__module.test_valid(self.__pipeline)
-            except cps.ValidationError, instance:
-                validation_error = instance
-            try:
-                for idx, setting in enumerate(self.__module.visible_settings()):
-                    try:
-                        if validation_error and validation_error.setting.key() == setting.key():
-                            raise validation_error
-                        setting.test_valid(self.__pipeline)
-                        if self.__static_texts[idx].GetForegroundColour() == ERROR_COLOR:
-                            self.__controls[idx].SetToolTipString('')
-                            for child in self.__controls[idx].GetChildren():
-                                child.SetToolTipString('')
-                            self.__static_texts[idx].SetForegroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOWTEXT))
-                            self.__static_texts[idx].Refresh()
-                    except cps.ValidationError, instance:
-                        # always update the tooltip, in case the value changes to something that's still bad.
-                        self.__controls[idx].SetToolTipString(instance.message)
-                        for child in self.__controls[idx].GetChildren():
+            self.validate_module()
+            
+    def validate_module(self):
+        validation_error = None
+        try:
+            self.__module.test_valid(self.__pipeline)
+        except cps.ValidationError, instance:
+            validation_error = instance
+        try:
+            for idx, setting in enumerate(self.__module.visible_settings()):
+                try:
+                    if validation_error and validation_error.setting.key() == setting.key():
+                        raise validation_error
+                    setting.test_valid(self.__pipeline)
+                    static_text_name = text_control_name(setting)
+                    static_text = self.__module_panel.FindWindowByName(
+                        static_text_name)
+                    if (static_text is not None and
+                        static_text.GetForegroundColour() == ERROR_COLOR):
+                        control_name = edit_control_name(setting)
+                        control = self.__module_panel.FindWindowByName(
+                            control_name)
+                        if control is not None:
+                            control.SetToolTipString('OK')
+                            for child in control.GetChildren():
+                                child.SetToolTipString('OK')
+                        static_text.SetForegroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOWTEXT))
+                        static_text.Refresh()
+                except cps.ValidationError, instance:
+                    # always update the tooltip, in case the value changes to something that's still bad.
+                    control_name = edit_control_name(setting)
+                    control = self.__module_panel.FindWindowByName(
+                        control_name)
+                    if control is not None:
+                        control.SetToolTipString(instance.message)
+                        for child in control.GetChildren():
                             child.SetToolTipString(instance.message)
-                        if self.__static_texts[idx].GetForegroundColour() != ERROR_COLOR:
-                            self.__static_texts[idx].SetForegroundColour(ERROR_COLOR)
-                            self.__static_texts[idx].Refresh()
-            except:
-                pass
+                    static_text_name = text_control_name(setting)
+                    static_text = self.__module_panel.FindWindowByName(
+                        static_text_name)
+                    if (static_text is not None and
+                        static_text.GetForegroundColour() != ERROR_COLOR):
+                        self.__static_texts[idx].SetForegroundColour(ERROR_COLOR)
+                        self.__static_texts[idx].Refresh()
+        except:
+            pass
 
     def reset_view(self):
         """Redo all of the controls after something has changed
@@ -1042,6 +1061,7 @@ class ModuleView:
             focus_name = focus_control.GetName()
         else:
             focus_name = None
+        self.validate_module()
         self.set_selection(self.__module.module_num)
         if focus_name:
             focus_control = self.module_panel.FindWindowByName(focus_name)

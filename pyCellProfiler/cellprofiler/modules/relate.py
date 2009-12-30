@@ -26,25 +26,24 @@ __version__ = "$Revision$"
 
 import sys
 import numpy as np
+import re
 import scipy.ndimage as scind
 
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.settings as cps
+from cellprofiler.modules.identify import C_PARENT, C_CHILDREN
+from cellprofiler.modules.identify import FF_PARENT,FF_CHILDREN_COUNT
 from cellprofiler.cpmath.cpmorphology import fixup_scipy_ndimage_result as fix
 from cellprofiler.cpmath.cpmorphology import centers_of_labels
 from cellprofiler.cpmath.outline import outline
 
-D_NONE = cps.DO_NOT_USE
+D_NONE = "None"
 D_CENTROID = "Centroid"
 D_MINIMUM = "Minimum"
 D_BOTH = "Both"
 
 D_ALL = [D_NONE, D_CENTROID, D_MINIMUM, D_BOTH]
-
-FF_PARENT = "Parent_%s"
-
-FF_CHILDREN_COUNT = "Children_%s_Count"
 
 FF_MEAN = 'Mean_%s_%s'
 
@@ -63,11 +62,14 @@ FF_CENTROID = '%s_%s_%%s' % (C_DISTANCE, FEAT_CENTROID)
 '''Minimum distance measurement (FF_MINIMUM % parent)'''
 FF_MINIMUM = '%s_%s_%%s' % (C_DISTANCE, FEAT_MINIMUM)
 
+FIXED_SETTING_COUNT = 5
+VARIABLE_SETTING_COUNT = 1
+
 class Relate(cpm.CPModule):
 
     module_name = 'Relate'
     category = "Object Processing"
-    variable_revision_number = 1
+    variable_revision_number = 2
 
     def create_settings(self):
         self.sub_object_name = cps.ObjectNameSubscriber('Select the input child objects',
@@ -92,9 +94,24 @@ class Relate(cpm.CPModule):
             <li>The <i>centroid distance</i> is the distance from the
             centroid of the child object to the centroid of the parent.
             </li></ul>""")
-        self.step_parent_name = cps.ObjectNameSubscriber("Select additional objects to find distances to:", None,doc = """
-                                                         You can find distances to additional objects,
-                                                         or "step-parents""")
+        self.wants_step_parent_distances = cps.Binary(
+            "Find distances to other parents?", False,
+            doc = """You can calculate the distances of the child objects to 
+            some other objects. These objects must be either parents or
+            children of your parent object in order for this module to
+            determine the distances. For instance, you might find "Nuclei" using
+            <b>IdentifyPrimAutomatic</b>, find "Cells" using
+            <b>IdentifySecondary</b> and find "Cytoplasm" using
+            <b>IdentifyTertiary</b>. You can use <b>Relate</b> to relate
+            speckles to cells and then measure distances to nuclei and
+            cytoplasm. You could not use <b>Relate</b> to relate speckles to
+            cytoplasm, and then measure distances to nuclei because nuclei is
+            neither a direct parent or child of cytoplasm""")
+        self.step_parent_names = []
+        self.add_step_parent(can_delete = False)
+        self.add_step_parent_button = cps.DoSomething("Add another parent",
+                                                      "Add",
+                                                      self.add_step_parent)
         self.wants_per_parent_means = cps.Binary('Calculate per-parent means for all child measurements?',
                                                  False,doc="""
             For every measurement that has been made of
@@ -103,18 +120,74 @@ class Relate(cpm.CPModule):
             measurement for the parent, as "Mean_&lt;child&gt;_&lt;category&gt;_&lt;feature&gt;". 
             For this reason, this module should be placed <i>after</i> all <b>Measure</b>
             modules that make measurements of the children objects.""")
+        
+    def add_step_parent(self, can_delete = True):
+        group = cps.SettingsGroup()
+        group.append("step_parent_name", cps.Choice(
+            "Parent name:", ["None"], choices_fn = self.get_step_parents,
+            doc = """Choose another parent. The <b>Relate</b> module will 
+            measure the distance from this parent to the child objects
+            in the same manner as it does to the immediate parents.
+            <b>Relate</b> only lets you choose the parents or children of
+            the parent object."""))
+        if can_delete:
+            group.append("remove", cps.RemoveSettingButton(
+                "", "Remove this object", self.step_parent_names, group))
+        self.step_parent_names.append(group)
 
+    def get_step_parents(self, pipeline):
+        '''Return the possible step-parents associated with the parent'''
+        step_parents = set()
+        parent_name = self.parent_name.value
+        for module in pipeline.modules():
+            if module.module_num == self.module_num:
+                return list(step_parents)
+            #
+            # Objects that are the parent of the parents
+            #
+            grandparents = module.get_measurements(pipeline, parent_name,
+                                                   C_PARENT)
+            step_parents.update(grandparents)
+            #
+            # Objects that are the children of the parents
+            #
+            siblings = module.get_measurements(pipeline, parent_name,
+                                               C_CHILDREN)
+            for sibling in siblings:
+                match = re.match("^([^_]+)_Count", sibling)
+                if match is not None:
+                    sibling_name = match.groups()[0]
+                    if parent_name in module.get_measurements(pipeline,
+                                                              sibling_name,
+                                                              C_PARENT):
+                        step_parents.add(sibling_name)
+        return list(step_parents)
+
+    @property
+    def has_step_parents(self):
+        '''True if there are possible step-parents for the parent object'''
+        return (len(self.step_parent_names) > 0 and
+                len(self.step_parent_names[0].step_parent_name.choices) > 0)
+    
     def settings(self):
-        return [self.sub_object_name, self.parent_name, 
-                self.find_parent_child_distances, self.step_parent_name,
-                self.wants_per_parent_means]
-
+        result = [self.sub_object_name, self.parent_name, 
+                  self.find_parent_child_distances, self.wants_per_parent_means, 
+                  self.wants_step_parent_distances]
+        result += [group.step_parent_name for group in self.step_parent_names]
+        return result
 
     def visible_settings(self):
-        # Currently, we don't support measuring distances, so those questions
-        # are not shown.
-        return [self.sub_object_name, self.parent_name,
-                self.wants_per_parent_means]
+        result = [self.sub_object_name, self.parent_name,
+                  self.wants_per_parent_means, 
+                  self.find_parent_child_distances]
+        if (self.find_parent_child_distances != D_NONE and 
+            self.has_step_parents):
+            result += [self.wants_step_parent_distances]
+            if self.wants_step_parent_distances:
+                for group in self.step_parent_names:
+                    result += group.unpack_group()
+            result += [self.add_step_parent_button]
+        return result
 
     def run(self, workspace):
         parents = workspace.object_set.get_objects(self.parent_name.value)
@@ -142,10 +215,13 @@ class Relate(cpm.CPModule):
         m.add_measurement(self.parent_name.value,
                           FF_CHILDREN_COUNT%(self.sub_object_name.value),
                           child_count)
-        if self.find_parent_child_distances in (D_BOTH, D_CENTROID):
-            self.calculate_centroid_distances(workspace)
-        if self.find_parent_child_distances in (D_BOTH, D_MINIMUM):
-            self.calculate_minimum_distances(workspace)
+        parent_names = self.get_parent_names()
+        
+        for parent_name in parent_names:
+            if self.find_parent_child_distances in (D_BOTH, D_CENTROID):
+                self.calculate_centroid_distances(workspace, parent_name)
+            if self.find_parent_child_distances in (D_BOTH, D_MINIMUM):
+                self.calculate_minimum_distances(workspace, parent_name)
             
         if workspace.frame is not None:
             figure = workspace.create_or_find_figure(subplots=(2,2))
@@ -161,16 +237,22 @@ class Relate(cpm.CPModule):
                                          (self.sub_object_name.value,
                                           self.parent_name.value))
     
-    def calculate_centroid_distances(self, workspace):
+    def get_parent_names(self):
+        '''Get the names of parents to be measured for distance'''
+        parent_names = [self.parent_name.value]
+        if self.wants_step_parent_distances.value:
+            parent_names += [group.step_parent_name.value
+                             for group in self.step_parent_names]
+        return parent_names
+    
+    def calculate_centroid_distances(self, workspace, parent_name):
         '''Calculate the centroid-centroid distance between parent & child'''
         meas = workspace.measurements
         assert isinstance(meas,cpmeas.Measurements)
-        parent_name = self.parent_name.value
         sub_object_name = self.sub_object_name.value
         parents = workspace.object_set.get_objects(parent_name)
         children = workspace.object_set.get_objects(sub_object_name)
-        parents_of = meas.get_current_measurement(sub_object_name,
-                                                  FF_PARENT%(parent_name))
+        parents_of = self.get_parents_of(workspace, parent_name)
         pcenters = centers_of_labels(parents.segmented).transpose()
         ccenters = centers_of_labels(children.segmented).transpose()
         if pcenters.shape[0] == 0 or ccenters.shape[0] == 0:
@@ -186,16 +268,14 @@ class Relate(cpm.CPModule):
                                          pcenters[parents_of[mask],:])**2,1))
         meas.add_measurement(sub_object_name, FF_CENTROID % parent_name, dist)
 
-    def calculate_minimum_distances(self, workspace):
+    def calculate_minimum_distances(self, workspace, parent_name):
         '''Calculate the distance from child center to parent perimeter'''
         meas = workspace.measurements
         assert isinstance(meas,cpmeas.Measurements)
-        parent_name = self.parent_name.value
         sub_object_name = self.sub_object_name.value
         parents = workspace.object_set.get_objects(parent_name)
         children = workspace.object_set.get_objects(sub_object_name)
-        parents_of = meas.get_current_measurement(sub_object_name,
-                                                  FF_PARENT%(parent_name))
+        parents_of = self.get_parents_of(workspace, parent_name)
         if len(parents_of) == 0:
             dist = np.zeros((0,))
         elif np.all(parents_of == 0):
@@ -268,12 +348,63 @@ class Relate(cpm.CPModule):
             dist = np.array([np.NaN] * len(mask))
             dist[mask] = min_dist
         meas.add_measurement(sub_object_name, FF_MINIMUM % parent_name, dist)
-            
+    
+    def get_parents_of(self, workspace, parent_name):
+        '''Return the parents_of measurment or equivalent
+        
+        parent_name - name of parent objects
+        
+        Return a vector of parent indexes to the given parent name using
+        the Parent measurement. Look for a direct parent / child link first
+        and then look for relationships between self.parent_name and the
+        named parent.
+        '''
+        meas = workspace.measurements
+        assert isinstance(meas, cpmeas.Measurements)
+        parent_feature = FF_PARENT%(parent_name)
+        primary_parent = self.parent_name.value
+        sub_object_name = self.sub_object_name.value
+        primary_parent_feature = FF_PARENT%(primary_parent)
+        if parent_feature in meas.get_feature_names(sub_object_name):
+            parents_of = meas.get_current_measurement(sub_object_name,
+                                                      parent_feature)
+        elif parent_feature in meas.get_feature_names(primary_parent):
+            #
+            # parent_name is the grandparent of the sub-object via
+            # the primary parent.
+            #
+            primary_parents_of = meas.get_current_measurement(
+                sub_object_name, primary_parent_feature)
+            grandparents_of = meas.get_current_measurement(primary_parent,
+                                                           parent_feature)
+            mask = primary_parents_of != 0
+            parents_of = np.zeros(primary_parents_of.shape[0], int)
+            parents_of[mask] = grandparents_of[primary_parents_of[mask]-1]
+        elif primary_parent_feature in meas.get_feature_names(parent_name):
+            primary_parents_of = meas.get_current_measurement(
+                sub_object_name, primary_parent_feature)
+            primary_parents_of_parent = meas.get_current_measurement(
+                parent_name, primary_parent_feature)
+            #
+            # There may not be a 1-1 relationship, but we attempt to
+            # construct one
+            #
+            reverse_lookup_len = max(np.max(primary_parents_of)+1,
+                                     len(primary_parents_of_parent))
+            reverse_lookup = np.zeros(reverse_lookup_len, int)
+            reverse_lookup[primary_parents_of_parent] =\
+                          np.arange(1,len(primary_parents_of_parent)+1)
+            parents_of = reverse_lookup[primary_parents_of]
+        else:
+            raise ValueError("Don't know how to relate %s to %s" %
+                             (primary_parent, parent_name))
+        return parents_of
+        
     def validate_module(self, pipeline):
         '''Validate the module's settings
         
         Relate will complain if the children and parents are related
-        by a prior module'''
+        by a prior module or if a step-parent is named twice'''
         for module in pipeline.modules():
             if module == self:
                 break
@@ -284,6 +415,15 @@ class Relate(cpm.CPModule):
                     "%s and %s were related by the %s module"%
                     (self.sub_object_name.value, self.parent_name.value,
                      module.module_name),self.parent_name)
+        if self.has_step_parents and self.wants_step_parent_distances:
+            step_parents = set()
+            for group in self.step_parent_names:
+                if group.step_parent_name.value in step_parents:
+                    raise cps.ValidationError(
+                        "%s has already been chosen" %
+                        group.step_parent_name.value,
+                        group.step_parent_name)
+                step_parents.add(group.step_parent_name.value)
         
     def get_measurement_columns(self, pipeline):
         '''Return the column definitions for this module's measurements'''
@@ -301,13 +441,15 @@ class Relate(cpm.CPModule):
                         for column in child_columns
                         if column[0] == self.sub_object_name.value]
         if self.find_parent_child_distances in (D_BOTH, D_CENTROID):
-            columns += [(self.sub_object_name.value,
-                         FF_CENTROID % self.parent_name.value,
-                         cpmeas.COLTYPE_INTEGER)]
+            for parent_name in self.get_parent_names():
+                columns += [(self.sub_object_name.value,
+                             FF_CENTROID % parent_name,
+                             cpmeas.COLTYPE_INTEGER)]
         if self.find_parent_child_distances in (D_BOTH, D_MINIMUM):
-            columns += [(self.sub_object_name.value,
-                         FF_MINIMUM % self.parent_name.value,
-                         cpmeas.COLTYPE_INTEGER)]
+            for parent_name in self.get_parent_names():
+                columns += [(self.sub_object_name.value,
+                             FF_MINIMUM % parent_name,
+                             cpmeas.COLTYPE_INTEGER)]
         return columns
 
     def get_categories(self, pipeline, object_name):
@@ -340,18 +482,38 @@ class Relate(cpm.CPModule):
               category == C_DISTANCE):
             result = []
             if self.find_parent_child_distances in (D_BOTH, D_CENTROID):
-                result += [FF_CENTROID % self.parent_name.value]
+                result += [FF_CENTROID % parent_name 
+                           for parent_name in self.get_parent_names()]
             if self.find_parent_child_distances in (D_BOTH, D_MINIMUM):
-                result += [FF_MINIMUM % self.parent_name.value]
+                result += [FF_MINIMUM % parent_name
+                           for parent_name in self.get_parent_names()]
             return result
         return []
-    
+
+    def prepare_settings(self, setting_values):
+        """Do any sort of adjustment to the settings required for the given values
+        
+        setting_values - the values for the settings just prior to mapping
+                         as done by set_settings_from_values
+        This method allows a module to specialize itself according to
+        the number of settings and their value. For instance, a module that
+        takes a variable number of images or objects can increase or decrease
+        the number of relevant settings so they map correctly to the values.
+        """
+        setting_count = len(setting_values)
+        step_parent_count = ((setting_count - FIXED_SETTING_COUNT) / 
+                             VARIABLE_SETTING_COUNT)
+        assert len(self.step_parent_names) > 0
+        self.step_parent_names = self.step_parent_names[:1]
+        for i in range(1,step_parent_count):
+            self.add_step_parent()
+            
     def upgrade_settings(self, setting_values, variable_revision_number, module_name, from_matlab):
         if from_matlab and variable_revision_number == 2:
             setting_values = [setting_values[0],
                               setting_values[1],
                               setting_values[2],
-                              cps.YES,
+                              cps.DO_NOT_USE,
                               cps.YES]
             variable_revision_number = 3
             
@@ -362,9 +524,22 @@ class Relate(cpm.CPModule):
             variable_revision_number = 4
                 
         if from_matlab and variable_revision_number == 4:
-            if setting_values[2] in (D_CENTROID, D_BOTH):
-                sys.stderr.write("Warning: the Relate module doesn't currently support the centroid distance measurement\n")
+            if setting_values[2] == cps.DO_NOT_USE:
+                setting_values = (setting_values[:2] + [D_NONE] +
+                                  setting_values[3:])
             from_matlab = False
             variable_revision_number = 1
+        if (not from_matlab) and variable_revision_number == 1:
+            #
+            # Added other distance parents
+            #
+            wants_step_parent_distances = (
+                cps.NO if setting_values[3].upper() == cps.DO_NOT_USE.upper()
+                else cps.YES)
+            setting_values = (setting_values[:3] +
+                              [setting_values[4],
+                               wants_step_parent_distances,
+                               setting_values[3]])
+            variable_revision_number = 2
         return setting_values, variable_revision_number, from_matlab
 

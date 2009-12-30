@@ -111,6 +111,9 @@ class TestRelate(unittest.TestCase):
         #
         fd = StringIO(zlib.decompress(base64.b64decode(data)))
         pipeline = cpp.Pipeline()
+        def callback(caller, event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
         pipeline.load(fd)
         self.assertEqual(len(pipeline.modules()),4)
         module = pipeline.modules()[3]
@@ -146,6 +149,9 @@ class TestRelate(unittest.TestCase):
                 'H0jm/B/wE3G8/Pr6nfjTGt9f8Be1L4ug==')
         fd = StringIO(zlib.decompress(base64.b64decode(data)))
         pipeline = cpp.Pipeline()
+        def callback(caller, event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
         pipeline.load(fd)
         self.assertEqual(len(pipeline.modules()),4)
         module = pipeline.modules()[3]
@@ -153,7 +159,170 @@ class TestRelate(unittest.TestCase):
         self.assertEqual(module.sub_object_name.value, "Speckles")
         self.assertEqual(module.parent_name.value, "Cells")
         self.assertFalse(module.wants_per_parent_means.value)
-    
+        
+    def test_01_03_load_v2(self):
+        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:1
+SVNRevision:8925
+
+LoadImages:[module_num:1|svn_version:\'8913\'|variable_revision_number:4|show_window:False|notes:\x5B\x5D]
+    What type of files are you loading?:individual images
+    How do you want to load these files?:Text-Exact match
+    How many images are there in each group?:3
+    Type the text that the excluded images have in common:Do not use
+    Analyze all subfolders within the selected folder?:No
+    Image location:Default Image Folder
+    Enter the full path to the images:
+    Do you want to check image sets for missing or duplicate files?:Yes
+    Do you want to group image sets by metadata?:No
+    Do you want to exclude certain files?:No
+    What metadata fields do you want to group by?:
+    Type the text that these images have in common (case-sensitive):hoe
+    What do you want to call this image in CellProfiler?:Cytoplasm
+    What is the position of this image in each group?:1
+    Do you want to extract metadata from the file name, the subfolder path or both?:None
+    Type the regular expression that finds metadata in the file name\x3A:^(?P<Plate>.*)_(?P<Well>\x5BA-P\x5D\x5B0-9\x5D{2})_s(?P<Site>\x5B0-9\x5D)
+    Type the regular expression that finds metadata in the subfolder path\x3A:.*\x5B\\\\/\x5D(?P<Date>.*)\x5B\\\\/\x5D(?P<Run>.*)$
+    Type the text that these images have in common (case-sensitive):ax2
+    What do you want to call this image in CellProfiler?:Speckles
+    What is the position of this image in each group?:2
+    Do you want to extract metadata from the file name, the subfolder path or both?:None
+    Type the regular expression that finds metadata in the file name\x3A:^(?P<Plate>.*)_(?P<Well>\x5BA-P\x5D\x5B0-9\x5D{2})_s(?P<Site>\x5B0-9\x5D)
+    Type the regular expression that finds metadata in the subfolder path\x3A:.*\x5B\\\\/\x5D(?P<Date>.*)\x5B\\\\/\x5D(?P<Run>.*)$
+
+Smooth:[module_num:2|svn_version:\'8664\'|variable_revision_number:1|show_window:False|notes:\x5B\x5D]
+    Select the input image:Cytoplasm
+    Name the output image:SmoothedCytoplasm
+    Select smoothing method\x3A:Smooth Keeping Edges
+    Calculate object size automatically?:No
+    Size of objects\x3A:100.0
+    Edge intensity difference\x3A:0.1
+
+Morph:[module_num:3|svn_version:\'8780\'|variable_revision_number:1|show_window:False|notes:\x5B\x5D]
+    Select input image\x3A:SmoothedCytoplasm
+    Name the output image\x3A:DNA
+    Select operation to perform\x3A:erode
+    Repeat operation\x3A:Custom
+    Custom # of repeats:20
+
+IdentifyPrimAutomatic:[module_num:4|svn_version:\'8826\'|variable_revision_number:4|show_window:False|notes:\x5B\x5D]
+    Select the input image:DNA
+    Name the identified primary objects:Nuclei
+    Typical diameter of objects, in pixel units (Min,Max)\x3A:50,400
+    Discard objects outside the diameter range?:Yes
+    Try to merge too small objects with nearby larger objects?:Yes
+    Discard objects touching the border of the image?:Yes
+    Select the thresholding method:Otsu Global
+    Threshold correction factor:1.0
+    Lower and upper bounds on threshold\x3A:0.000000,1.000000
+    Approximate fraction of image covered by objects?:0.01
+    Method to distinguish clumped objects:Intensity
+    Method to draw dividing lines between clumped objects:Intensity
+    Size of smoothing filter\x3A:10
+    Suppress local maxima within this distance\x3A:7
+    Speed up by using lower-resolution image to find local maxima?:Yes
+    Name the outline image:PrimaryOutlines
+    Fill holes in identified objects?:Yes
+    Automatically calculate size of smoothing filter?:Yes
+    Automatically calculate minimum size of local maxima?:Yes
+    Enter manual threshold\x3A:0.0
+    Select binary image\x3A:None
+    Save outlines of the identified objects?:No
+    Calculate the Laplacian of Gaussian threshold automatically?:Yes
+    Enter Laplacian of Gaussian threshold\x3A:0.5
+    Two-class or three-class thresholding?:Three classes
+    Minimize the weighted variance or the entropy?:Weighted variance
+    Assign pixels in the middle intensity class to the foreground or the background?:Background
+    Automatically calculate the size of objects for the Laplacian of Gaussian filter?:Yes
+    Enter LoG filter diameter\x3A :5
+
+IdentifySecondary:[module_num:5|svn_version:\'8826\'|variable_revision_number:3|show_window:False|notes:\x5B\x5D]
+    Select the input objects:Nuclei
+    Name the identified objects:Cells
+    Select the method to identify the secondary objects:Propagation
+    Select the input image:Cytoplasm
+    Select the thresholding method:Otsu Global
+    Threshold correction factor:1.0
+    Lower and upper bounds on threshold\x3A:0.000000,1.000000
+    Approximate fraction of image covered by objects?:0.01
+    Number of pixels by which to expand the primary objects\x3A:10
+    Regularization factor\x3A:0.05
+    Name the outline image:SecondaryOutlines
+    Enter manual threshold\x3A:0.0
+    Select binary image\x3A:None
+    Save outlines of the identified objects?:No
+    Two-class or three-class thresholding?:Three classes
+    Minimize the weighted variance or the entropy?:Weighted variance
+    Assign pixels in the middle intensity class to the foreground or the background?:Background
+    Do you want to discard objects that touch the edge of the image?:No
+    Do you want to discard associated primary objects?:No
+    New primary objects name\x3A:FilteredNuclei
+
+IdentifyTertiarySubregion:[module_num:6|svn_version:\'8886\'|variable_revision_number:1|show_window:False|notes:\x5B\x5D]
+    Select the larger identified objects:Cells
+    Select the smaller identified objects:Nuclei
+    Name the identified subregion objects:Cytoplasm
+    Name the outline image:CytoplasmOutlines
+    Retain the outlines for use later in the pipeline (for example, in SaveImages)?:No
+
+IdentifyPrimAutomatic:[module_num:7|svn_version:\'8826\'|variable_revision_number:4|show_window:True|notes:\x5B\x5D]
+    Select the input image:Speckles
+    Name the identified primary objects:Speckles
+    Typical diameter of objects, in pixel units (Min,Max)\x3A:4,30
+    Discard objects outside the diameter range?:Yes
+    Try to merge too small objects with nearby larger objects?:No
+    Discard objects touching the border of the image?:Yes
+    Select the thresholding method:Otsu Global
+    Threshold correction factor:1.0
+    Lower and upper bounds on threshold\x3A:0.000000,1.000000
+    Approximate fraction of image covered by objects?:0.01
+    Method to distinguish clumped objects:Intensity
+    Method to draw dividing lines between clumped objects:Intensity
+    Size of smoothing filter\x3A:10
+    Suppress local maxima within this distance\x3A:7
+    Speed up by using lower-resolution image to find local maxima?:Yes
+    Name the outline image:PrimaryOutlines
+    Fill holes in identified objects?:Yes
+    Automatically calculate size of smoothing filter?:Yes
+    Automatically calculate minimum size of local maxima?:Yes
+    Enter manual threshold\x3A:0.0
+    Select binary image\x3A:None
+    Save outlines of the identified objects?:No
+    Calculate the Laplacian of Gaussian threshold automatically?:Yes
+    Enter Laplacian of Gaussian threshold\x3A:0.5
+    Two-class or three-class thresholding?:Three classes
+    Minimize the weighted variance or the entropy?:Weighted variance
+    Assign pixels in the middle intensity class to the foreground or the background?:Background
+    Automatically calculate the size of objects for the Laplacian of Gaussian filter?:Yes
+    Enter LoG filter diameter\x3A :5
+
+Relate:[module_num:8|svn_version:\'8866\'|variable_revision_number:2|show_window:False|notes:\x5B\x5D]
+    Select the input child objects:Speckles
+    Select the input parent objects:Cells
+    Find distances?:Both
+    Calculate per-parent means for all child measurements?:No
+    Find distances to other parents?:Yes
+    Parent name\x3A:Cytoplasm
+    Parent name\x3A:Nuclei
+"""
+        pipeline = cpp.Pipeline()
+        def callback(caller, event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO(data))
+        self.assertEqual(len(pipeline.modules()), 8)
+        module = pipeline.modules()[-1]
+        self.assertTrue(isinstance(module, R.Relate))
+        self.assertEqual(module.sub_object_name, "Speckles")
+        self.assertEqual(module.parent_name, "Cells")
+        self.assertEqual(module.find_parent_child_distances, R.D_BOTH)
+        self.assertFalse(module.wants_per_parent_means)
+        self.assertTrue(module.wants_step_parent_distances)
+        self.assertEqual(len(module.step_parent_names), 2)
+        for group, expected in zip(module.step_parent_names, 
+                                   ("Cytoplasm","Nuclei")):
+            self.assertEqual(group.step_parent_name, expected)
+            
     def test_02_01_relate_zeros(self):
         '''Relate a field of empty parents to empty children'''
         labels = np.zeros((10,10),int)

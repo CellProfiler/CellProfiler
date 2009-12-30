@@ -356,15 +356,16 @@ class Identify(cellprofiler.cpmodule.CPModule):
                                      np.array([entropies],dtype=float))
         
     def validate_module(self, pipeline):
-        try:
-            if self.object_fraction.value.endswith("%"):
-                float(self.object_fraction.value[:-1])
-            else:
-                float(self.object_fraction.value)
-        except ValueError:
-            raise cps.ValidationError("%s is not a floating point value"%
-                                      self.object_fraction.value,
-                                      self.object_fraction)
+        if hasattr(self, "object_fraction"):
+            try:
+                if self.object_fraction.value.endswith("%"):
+                    float(self.object_fraction.value[:-1])
+                else:
+                    float(self.object_fraction.value)
+            except ValueError:
+                raise cps.ValidationError("%s is not a floating point value"%
+                                          self.object_fraction.value,
+                                          self.object_fraction)
 
     def get_threshold_modifier(self):
         """The threshold algorithm modifier

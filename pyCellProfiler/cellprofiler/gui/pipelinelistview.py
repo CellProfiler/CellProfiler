@@ -376,20 +376,9 @@ class PipelineListView(object):
             self.last_idle_time = time.time()
         else:
             return
+
         modules = self.__pipeline.modules()
         for idx, module in enumerate(modules):
-            # skip to first dirty module
-            if idx < self.__first_dirty_module:
-                continue
-            try:
-                module.test_valid(self.__pipeline)
-                target_name = module.module_name
-                ec_value = OK
-            except:
-                ec_value = ERROR
-            if ec_value != self.__grid.GetCellValue(idx,ERROR_COLUMN):
-                self.__grid.SetCellValue(idx,ERROR_COLUMN,ec_value)
-
             if module.show_window:
                 eye_value = EYE
             else:
@@ -407,6 +396,18 @@ class PipelineListView(object):
                 
             if pause_value != self.__grid.GetCellValue(idx, PAUSE_COLUMN):
                 self.__grid.SetCellValue(idx, PAUSE_COLUMN, pause_value)
+
+            # skip to first dirty module for validation
+            if idx >= self.__first_dirty_module:
+                try:
+                    module.test_valid(self.__pipeline)
+                    target_name = module.module_name
+                    ec_value = OK
+                except:
+                    ec_value = ERROR
+                if ec_value != self.__grid.GetCellValue(idx, ERROR_COLUMN):
+                    self.__grid.SetCellValue(idx, ERROR_COLUMN, ec_value)
+
         event.RequestMore(False)
         
         self.__first_dirty_module = len(modules)

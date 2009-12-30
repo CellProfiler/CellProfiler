@@ -35,7 +35,7 @@ class VersionChecker(threading.Thread):
             if new_version > self.current_version:
                 self.callback(new_version, info)
         except Exception, e:
-            print "Exception fetching new version information:", e
+            print "Exception fetching new version information from %s: %s"%(self.url, e)
             pass # no worries
 
 def check_for_updates(url, current_version, callback):

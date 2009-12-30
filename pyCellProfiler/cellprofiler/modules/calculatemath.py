@@ -43,6 +43,8 @@ MC_IMAGE = cpmeas.IMAGE
 MC_OBJECT = "Object"
 MC_ALL = [MC_IMAGE, MC_OBJECT]
 
+C_MATH = "Math"
+
 class CalculateMath(cpm.CPModule):
 
     module_name = "CalculateMath"
@@ -268,7 +270,7 @@ class CalculateMath(cpm.CPModule):
                 m.add_measurement(object_name, feature, result)
 
     def measurement_name(self):
-        return "Math_"+self.output_feature_name.value
+        return "%s_%s" %(C_MATH,self.output_feature_name.value)
             
     def get_measurement_columns(self, pipeline):
         all_object_names = [operand.operand_objects.value
@@ -288,9 +290,9 @@ class CalculateMath(cpm.CPModule):
                             if operand.object != cpmeas.IMAGE]
         if len(all_object_names):
             if object_name in all_object_names:
-                return ["Math"]
+                return [C_MATH]
         elif object_name == cpmeas.IMAGE:
-            return ["Math"]
+            return [C_MATH]
         return []
 
     def get_measurements(self, pipeline, object_name, category):
@@ -298,6 +300,28 @@ class CalculateMath(cpm.CPModule):
             return [self.output_feature_name.value]
         return []
     
+    def validate_module(self, pipeline):
+        '''Do further validation on this module's settings
+        
+        pipeline - this module's pipeline
+        
+        Check to make sure the output measurements aren't duplicated
+        by prior modules.
+        '''
+        all_object_names = [operand.operand_objects.value
+                            for operand in self.operands
+                            if operand.object != cpmeas.IMAGE]
+        for module in pipeline.modules():
+            if module.module_num == self.module_num:
+                break
+            for name in all_object_names:
+                features = module.get_measurements(pipeline, name, C_MATH)
+                if self.output_feature_name.value in features:
+                    raise cps.ValidationError(
+                        'The feature, "%s", was already defined in module # %d'%
+                        (self.output_feature_name.value, module.module_num),
+                        self.output_feature_name)
+        
     def upgrade_settings(self, setting_values, variable_revision_number,
                          module_name, from_matlab):
         if from_matlab and variable_revision_number == 6:

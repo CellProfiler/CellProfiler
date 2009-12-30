@@ -33,6 +33,90 @@ REFERENCE_NAME = 'reference'
 MEASUREMENT_NAME = 'measurement'
 
 class TestRescaleIntensity(unittest.TestCase):
+    def test_01_0000_load_matlab_v2(self):
+        data=r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:1
+SVNRevision:1234
+FromMatlab:True
+
+RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:2|show_window:False|notes:\x5B\x5D]
+    What did you call the image to be rescaled?:MyImage
+    What do you want to call the rescaled image?:MyRescaledImage
+    Rescaling method. (S) Stretch the image (0 to 1). (E) Enter the minimum and maximum values in the boxes below. (G) rescale so all pixels are equal to or Greater than one. (M) Match the maximum of one image to the maximum of another. (C) Convert to 8 bit. See the help for details.:Stretch 0 to 1
+    Enter the intensity from the original image that should be set to the lowest value in the rescaled image, or type AA to calculate the lowest intensity automatically from all of the images to be analyzed and AE to calculate the lowest intensity from each image independently.:0.1
+    Enter the intensity from the original image that should be set to the highest value in the rescaled image, or type AA to calculate the highest intensity automatically from all of the images to be analyzed and AE to calculate the highest intensity from each image independently.:AA
+    What should the lowest intensity of the rescaled image be (range 0,1)?:0.2
+    What should the highest intensity of the rescaled image be (range 0,1)?:0.9
+    What did you call the image whose maximum you want the rescaled image to match?:MyOtherImage
+
+RescaleIntensity:[module_num:2|svn_version:\'8913\'|variable_revision_number:2|show_window:False|notes:\x5B\x5D]
+    What did you call the image to be rescaled?:MyImage
+    What do you want to call the rescaled image?:MyRescaledImage
+    Rescaling method. (S) Stretch the image (0 to 1). (E) Enter the minimum and maximum values in the boxes below. (G) rescale so all pixels are equal to or Greater than one. (M) Match the maximum of one image to the maximum of another. (C) Convert to 8 bit. See the help for details.:Enter min/max below
+    Enter the intensity from the original image that should be set to the lowest value in the rescaled image, or type AA to calculate the lowest intensity automatically from all of the images to be analyzed and AE to calculate the lowest intensity from each image independently.:0.1
+    Enter the intensity from the original image that should be set to the highest value in the rescaled image, or type AA to calculate the highest intensity automatically from all of the images to be analyzed and AE to calculate the highest intensity from each image independently.:AA
+    What should the lowest intensity of the rescaled image be (range 0,1)?:0.2
+    What should the highest intensity of the rescaled image be (range 0,1)?:0.9
+    What did you call the image whose maximum you want the rescaled image to match?:MyOtherImage
+"""
+        pipeline = cpp.Pipeline()
+        def callback(caller, event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO.StringIO(data))
+        self.assertEqual(len(pipeline.modules()), 2)
+        module = pipeline.modules()[0]
+        self.assertTrue(isinstance(module, R.RescaleIntensity))
+        self.assertEqual(module.image_name, "MyImage")
+        self.assertEqual(module.rescaled_image_name, "MyRescaledImage")
+        self.assertEqual(module.rescale_method, R.M_STRETCH)
+        
+        module = pipeline.modules()[1]
+        self.assertTrue(isinstance(module, R.RescaleIntensity))
+        self.assertEqual(module.image_name, "MyImage")
+        self.assertEqual(module.rescaled_image_name, "MyRescaledImage")
+        self.assertEqual(module.rescale_method, R.M_MANUAL_IO_RANGE)
+        self.assertFalse(module.wants_automatic_low)
+        self.assertTrue(module.wants_automatic_high)
+        self.assertAlmostEqual(module.dest_scale.min, 0.2)
+        self.assertAlmostEqual(module.dest_scale.max, 0.9)
+        
+    def test_01_000_load_matlab_v3(self):
+        data=r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:1
+SVNRevision:1234
+FromMatlab:True
+
+RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|show_window:False|notes:\x5B\x5D]
+    What did you call the image to be rescaled?:MyImage
+    What do you want to call the rescaled image?:MyRescaledImage
+    Rescaling method. (S) Stretch the image (0 to 1). (E) Enter the minimum and maximum values in the boxes below. (G) rescale so all pixels are equal to or Greater than one. (M) Match the maximum of one image to the maximum of another. (C) Convert to 8 bit. See the help for details.:Enter min/max below
+    Enter the intensity from the original image that should be set to the lowest value in the rescaled image, or type AA to calculate the lowest intensity automatically from all of the images to be analyzed and AE to calculate the lowest intensity from each image independently.:0.1
+    Enter the intensity from the original image that should be set to the highest value in the rescaled image, or type AA to calculate the highest intensity automatically from all of the images to be analyzed and AE to calculate the highest intensity from each image independently.:AA
+    What should the lowest intensity of the rescaled image be (range 0,1)?:0.2
+    What should the highest intensity of the rescaled image be (range 0,1)?:0.9
+    What value should pixels *below* the low end of the original intensity range be mapped to (range 0,1)?:0.01
+    What value should pixels *above* the high end of the original intensity range be mapped to (range 0,1)?:0.99
+    What did you call the image whose maximum you want the rescaled image to match?:MyOtherImage
+"""
+        pipeline = cpp.Pipeline()
+        def callback(caller, event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO.StringIO(data))
+        self.assertEqual(len(pipeline.modules()), 1)
+        module = pipeline.modules()[0]
+        self.assertTrue(isinstance(module, R.RescaleIntensity))
+        self.assertEqual(module.image_name, "MyImage")
+        self.assertEqual(module.rescaled_image_name, "MyRescaledImage")
+        self.assertEqual(module.rescale_method, R.M_MANUAL_IO_RANGE)
+        self.assertFalse(module.wants_automatic_low)
+        self.assertTrue(module.wants_automatic_high)
+        self.assertAlmostEqual(module.dest_scale.min, 0.2)
+        self.assertAlmostEqual(module.dest_scale.max, 0.9)
+        self.assertAlmostEqual(module.custom_low_truncation.value, 0.01)
+        self.assertAlmostEqual(module.custom_high_truncation.value, 0.99)
+        
     def test_01_01_load_matlab_stretch(self):
         '''Load a pipeline with RescaleIntensity set up to stretch'''
         data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0s'

@@ -122,6 +122,8 @@ NATIVE_VERSION = 1
 
 H_VERSION = 'Version'
 H_SVN_REVISION = 'SVNRevision'
+'''A pipeline file header variable for faking a matlab pipeline file'''
+H_FROM_MATLAB = 'FromMatlab'
 
 '''The cookie that identifies a file as a CellProfiler pipeline'''
 COOKIE = "CellProfiler Pipeline: http://www.cellprofiler.org"
@@ -464,6 +466,7 @@ class Pipeline(object):
         if header != COOKIE:
             raise NotImplementedError('Invalid header: "%s"'%header)
         version = NATIVE_VERSION
+        from_matlab = False
         while True:
             line = rl()
             if line is None:
@@ -478,6 +481,8 @@ class Pipeline(object):
                                      (version, NATIVE_VERSION))
             elif kwd == H_SVN_REVISION:
                 print "Pipeline saved with CellProfiler SVN revision %s"%value
+            elif kwd == H_FROM_MATLAB:
+                from_matlab = bool(value)
             else:
                 print line
         
@@ -544,7 +549,7 @@ class Pipeline(object):
                     settings.append(setting.decode('string_escape'))
                 module.set_settings_from_values(settings,
                                                 variable_revision_number,
-                                                module_name, False)
+                                                module_name, from_matlab)
             except Exception, instance:
                 traceback.print_exc()
                 event = LoadExceptionEvent(instance, module,  module_name)

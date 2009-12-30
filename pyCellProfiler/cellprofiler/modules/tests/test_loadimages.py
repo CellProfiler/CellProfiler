@@ -112,7 +112,47 @@ class testLoadImages(unittest.TestCase):
         self.assertEqual(len(image_set.get_names()),1)
         self.assertEqual(image_set.get_names()[0],"my_image")
         self.assertTrue(image_set.get_image("my_image"))
-    
+        
+    def test_03_00_load_matlab_v1(self):
+        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:1
+SVNRevision:1234
+FromMatlab:True
+
+LoadImages:[module_num:1|svn_version:\'8913\'|variable_revision_number:1|show_window:False|notes:\x5B\x5D]
+    How do you want to load these files?:Text-Exact match
+    Type the text that one type of image has in common (for TEXT options), or their position in each group (for ORDER option)\x3A:Channel1-
+    What do you want to call these images within CellProfiler?:MyImages
+    Type the text that one type of image has in common (for TEXT options), or their position in each group (for ORDER option)\x3A:Channel2-
+    What do you want to call these images within CellProfiler?:OtherImages
+    Type the text that one type of image has in common (for TEXT options), or their position in each group (for ORDER option)\x3A:/
+    What do you want to call these images within CellProfiler?:/
+    Type the text that one type of image has in common (for TEXT options), or their position in each group (for ORDER option)\x3A:/
+    What do you want to call these images within CellProfiler?:/
+    If using ORDER, how many images are there in each group (i.e. each field of view)?:5
+    Are you loading image or movie files?:Image
+    If you are loading a movie, what is the extension?:stk
+    Analyze all subfolders within the selected folder?:Yes
+    Enter the path name to the folder where the images to be loaded are located. Type period (.) for default image folder.:./Images
+"""
+        pipeline = cpp.Pipeline()
+        def callback(caller, event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO(data))
+        self.assertEqual(len(pipeline.modules()), 1)
+        module = pipeline.modules()[-1]
+        self.assertTrue(isinstance(module, LI.LoadImages))
+        self.assertEqual(module.file_types, LI.FF_INDIVIDUAL_IMAGES)
+        self.assertEqual(module.match_method, LI.MS_EXACT_MATCH)
+        self.assertEqual(len(module.images), 2)
+        self.assertEqual(module.images[0][LI.FD_IMAGE_NAME], "MyImages")
+        self.assertEqual(module.images[1][LI.FD_IMAGE_NAME], "OtherImages")
+        self.assertEqual(module.order_group_size, 5)
+        self.assertTrue(module.analyze_sub_dirs())
+        self.assertEqual(module.location, LI.DIR_OTHER)
+        self.assertEqual(module.location_other, "./Images")
+        
     def test_03_01_load_version_2(self):
         data = 'TUFUTEFCIDUuMCBNQVQtZmlsZSwgUGxhdGZvcm06IFBDV0lOLCBDcmVhdGVkIG9uOiBNb24gSmFuIDA1IDEwOjMwOjQ0IDIwMDkgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAABSU0PAAAAkAEAAHic7ZPNTsJAEMen5UOUZIPxwpEXEInEwJHEiyQKBgj3xS7NJku32bYEPXn0NXwLjz6au7iFbWkoEm+6yWQ70/n/djo7RQDwcQJQlntFmg3fq6R9yzDlj0kYUs8NSlCEuo5/SptiQfGMkSlmEQlgs+J435vzybO/efXAnYiRAV6YyXINosWMiGA4j4X69SNdETamLwSSK04bkSUNKPe0XvPT0Zi/gwck7a2w7YOV0QdkxNXzHWzzixn5dSO/pv0JWYWXI+JGDIsGWfmCBKrAQPF6ObzTFE/5T5xx0Qzp3KjrGM5QUPdWsQxOK4djJTgWXP3rflXXhsPm7ByS96l86jl0SZ0IswZdYDcx53l12AmeDQN+XP3NA88rJHQF8K7wWvdq7f8fq0YcZey9nHNrqb4pWzfLFTzyG7KFxP/LvHj3Yf89mPd+SB1nqTqUf8+x0zcGVXG6BqecwSkbHFv7qIoQquzqs+owv6em/VazfXPd6XTTc5t1vvndtnyyYXfe83RFqXq/+LlOnac0X7WHgow='
         pipeline = T.load_pipeline(self, data)
@@ -498,8 +538,8 @@ class testLoadImages(unittest.TestCase):
             load_images.images[1][LI.FD_IMAGE_NAME].value = "Channel2"
             load_images.images[0][LI.FD_METADATA_CHOICE].value = LI.M_PATH
             load_images.images[1][LI.FD_METADATA_CHOICE].value = LI.M_PATH
-            load_images.images[0][LI.FD_PATH_METADATA].value = "^(?P<plate>.*?)_(?P<well_row>[A-P])(?P<well_col>[0-9]{2})_s(?P<site>[0-9]+)"
-            load_images.images[1][LI.FD_PATH_METADATA].value = "^(?P<plate>.*?)_(?P<well_row>[A-P])(?P<well_col>[0-9]{2})_s(?P<site>[0-9]+)"
+            load_images.images[0][LI.FD_PATH_METADATA].value = "(?P<plate>MMD.*?)_(?P<well_row>[A-P])(?P<well_col>[0-9]{2})_s(?P<site>[0-9]+)"
+            load_images.images[1][LI.FD_PATH_METADATA].value = "(?P<plate>MMD.*?)_(?P<well_row>[A-P])(?P<well_col>[0-9]{2})_s(?P<site>[0-9]+)"
             load_images.module_num = 1
             pipeline = P.Pipeline()
             pipeline.add_listener(self.error_callback)

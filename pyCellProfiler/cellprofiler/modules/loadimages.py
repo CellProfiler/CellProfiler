@@ -575,7 +575,7 @@ class LoadImages(cpmodule.CPModule):
                 new_values.append('stk movies')
             else:
                 raise ValueError('Unhandled movie type: %s'%(setting_values[11]))
-            new_values.extend(setting_values[11:])
+            new_values.extend(setting_values[12:])
             return (new_values,2)
 
         def upgrade_2_to_3(setting_values):

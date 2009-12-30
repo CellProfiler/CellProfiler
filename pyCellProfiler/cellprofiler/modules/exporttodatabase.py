@@ -122,7 +122,6 @@ def get_next_result(cursor):
         return cursor.next()
     except MySQLdb.Error, e:
         raise DBException, 'Error retrieving next result from database: %s'%(e)
-        return None
     except StopIteration, e:
         return None
     
@@ -1260,6 +1259,13 @@ check_tables = yes
     
     def upgrade_settings(self,setting_values,variable_revision_number,
                          module_name, from_matlab):
+        if from_matlab and variable_revision_number == 4:
+            setting_values = setting_values + [cps.NO]
+            variable_revision_number = 5
+        if from_matlab and variable_revision_number == 5:
+            if setting_values[-1] == cps.YES:
+                setting_values = setting_values[:-1] + ["Yes - V1.0 format"]
+            variable_revision_number = 6
         if from_matlab and variable_revision_number == 6:
             new_setting_values = [setting_values[0],setting_values[1]]
             if setting_values[2] == cps.DO_NOT_USE:
@@ -1282,7 +1288,30 @@ check_tables = yes
             from_matlab = False
             variable_revision_number = 6
             setting_values = new_setting_values
-        elif from_matlab and variable_revision_number == 10:
+        if from_matlab and variable_revision_number == 7:
+            #
+            # Added object names
+            #
+            setting_values = (setting_values[:-1] + [cpmeas.IMAGE] +
+                              [cps.DO_NOT_USE] * 3 + setting_values[-1:])
+            variable_revision_number = 8
+        
+        if from_matlab and variable_revision_number == 8:
+            #
+            # Added more object names
+            #
+            setting_values = (setting_values[:-1] +
+                              [cps.DO_NOT_USE] * 3 + setting_values[-1:])
+            variable_revision_number = 9
+        if from_matlab and variable_revision_number == 9:
+            #
+            # Per-well export
+            #
+            setting_values = (setting_values[:-1] + 
+                              [cps.NO, cps.DO_NOT_USE, cps.DO_NOT_USE] +
+                              setting_values[-1:])
+            variable_revision_number = 10
+        if from_matlab and variable_revision_number == 10:
             new_setting_values = setting_values[0:2]
             if setting_values[2] == cps.DO_NOT_USE:
                 new_setting_values.append(cps.NO)
@@ -1308,7 +1337,7 @@ check_tables = yes
             #
             # DB host / user / password
             #
-            new_setting_values += [ 'imgdb01','cpuser','cPus3r']
+            new_setting_values += [ 'imgdb01','cpuser','password']
             #
             # SQLite file name
             #
@@ -1347,7 +1376,7 @@ check_tables = yes
         if (not from_matlab) and variable_revision_number == 6:
             # Append default values for store_csvs, db_host, db_user, 
             #  db_passwd, and sqlite_file to update to revision 7 
-            new_setting_values = settings_values
+            new_setting_values = setting_values
             new_setting_values += [False, 'imgdb01', 'cpuser', '', 'DefaultDB.db']
             variable_revision_number = 7
         

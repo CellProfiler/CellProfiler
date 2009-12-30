@@ -86,6 +86,217 @@ class TestExportToDatabase(unittest.TestCase):
         cursor = connection.cursor()
         return cursor, connection
     
+    def test_01_00_01_load_matlab_4(self):
+        data=r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:1
+SVNRevision:8925
+FromMatlab:True
+
+ExportToDatabase:[module_num:1|svn_version:\'8913\'|variable_revision_number:4|show_window:False|notes:\x5B\x5D]
+    What type of database do you want to use?:MySQL
+    For MySQL only, what is the name of the database to use?:MyDatabase
+    What prefix should be used to name the SQL Tables in the database (should be unique per experiment)?:ExptTbl_
+    What prefix should be used to name the SQL files?:SQLFile_
+    Enter the directory where the SQL files are to be saved.  Type period (.) to use the default output folder.:.
+"""
+        pipeline = cpp.Pipeline()
+        def callback(caller, event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO(data))
+        self.assertEqual(len(pipeline.modules()), 1)
+        module = pipeline.modules()[0]
+        self.assertTrue(isinstance(module, E.ExportToDatabase))
+        self.assertTrue(module.use_default_output_directory)
+        self.assertTrue(module.want_table_prefix)
+        self.assertEqual(module.table_prefix, "ExptTbl_")
+        self.assertEqual(module.sql_file_prefix, "SQLFile_")
+        self.assertEqual(module.db_name, "MyDatabase")
+        self.assertEqual(module.db_type, E.DB_MYSQL)
+    
+    def test_01_00_02_load_matlab_5(self):
+        data=r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:1
+SVNRevision:8925
+FromMatlab:True
+
+ExportToDatabase:[module_num:1|svn_version:\'8913\'|variable_revision_number:5|show_window:False|notes:\x5B\x5D]
+    What type of database do you want to use?:MySQL
+    For MySQL only, what is the name of the database to use?:MyDatabase
+    What prefix should be used to name the SQL Tables in the database (should be unique per experiment)?:ExptTbl_
+    What prefix should be used to name the SQL files?:SQLFile_
+    Enter the directory where the SQL files are to be saved.  Type period (.) to use the default output folder.:.
+    Do you want to create a CellProfiler Analyst properties file?:Yes
+"""
+        pipeline = cpp.Pipeline()
+        def callback(caller, event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO(data))
+        self.assertEqual(len(pipeline.modules()), 1)
+        module = pipeline.modules()[0]
+        self.assertTrue(isinstance(module, E.ExportToDatabase))
+        self.assertTrue(module.use_default_output_directory)
+        self.assertTrue(module.want_table_prefix)
+        self.assertEqual(module.table_prefix, "ExptTbl_")
+        self.assertEqual(module.sql_file_prefix, "SQLFile_")
+        self.assertEqual(module.db_name, "MyDatabase")
+        self.assertEqual(module.db_type, E.DB_MYSQL)
+        self.assertTrue(module.save_cpa_properties)
+    
+    def test_01_00_03_load_matlab_6(self):
+        data=r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:1
+SVNRevision:8925
+FromMatlab:True
+
+ExportToDatabase:[module_num:1|svn_version:\'8913\'|variable_revision_number:6|show_window:False|notes:\x5B\x5D]
+    What type of database do you want to use?:MySQL
+    For MySQL only, what is the name of the database to use?:MyDatabase
+    What prefix should be used to name the SQL Tables in the database (should be unique per experiment)?:ExptTbl_
+    What prefix should be used to name the SQL files?:SQLFile_
+    Enter the directory where the SQL files are to be saved.  Type period (.) to use the default output folder.:.
+    Do you want to create a CellProfiler Analyst properties file?:Yes - V2.0 format
+"""
+        pipeline = cpp.Pipeline()
+        def callback(caller, event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO(data))
+        self.assertEqual(len(pipeline.modules()), 1)
+        module = pipeline.modules()[0]
+        self.assertTrue(isinstance(module, E.ExportToDatabase))
+        self.assertTrue(module.use_default_output_directory)
+        self.assertTrue(module.want_table_prefix)
+        self.assertEqual(module.table_prefix, "ExptTbl_")
+        self.assertEqual(module.sql_file_prefix, "SQLFile_")
+        self.assertEqual(module.db_name, "MyDatabase")
+        self.assertEqual(module.db_type, E.DB_MYSQL)
+        self.assertTrue(module.save_cpa_properties)
+    
+    def test_01_00_04_load_matlab_7(self):
+        data=r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:1
+SVNRevision:8925
+FromMatlab:True
+
+ExportToDatabase:[module_num:1|svn_version:\'8913\'|variable_revision_number:7|show_window:False|notes:\x5B\x5D]
+    What type of database do you want to use?:MySQL
+    For MySQL only, what is the name of the database to use?:MyDatabase
+    What prefix should be used to name the SQL Tables in the database (should be unique per experiment)?:ExptTbl_
+    What prefix should be used to name the SQL files?:SQLFile_
+    Enter the directory where the SQL files are to be saved.  Type period (.) to use the default output folder.:.
+    Which per-image statistics do you want to be calculated?  Select "Do not use" to omit.:Standard deviation
+    :Median
+    :Do not use
+    Do you want to create a CellProfiler Analyst properties file?:Yes - V2.0 format
+"""
+        pipeline = cpp.Pipeline()
+        def callback(caller, event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO(data))
+        self.assertEqual(len(pipeline.modules()), 1)
+        module = pipeline.modules()[0]
+        self.assertTrue(isinstance(module, E.ExportToDatabase))
+        self.assertTrue(module.use_default_output_directory)
+        self.assertTrue(module.want_table_prefix)
+        self.assertEqual(module.table_prefix, "ExptTbl_")
+        self.assertEqual(module.sql_file_prefix, "SQLFile_")
+        self.assertEqual(module.db_name, "MyDatabase")
+        self.assertEqual(module.db_type, E.DB_MYSQL)
+        self.assertTrue(module.save_cpa_properties)
+        self.assertFalse(module.wants_agg_mean)
+        self.assertTrue(module.wants_agg_std_dev)
+        self.assertTrue(module.wants_agg_median)
+    
+    def test_01_00_05_load_matlab_8(self):
+        data=r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:1
+SVNRevision:8925
+FromMatlab:True
+
+ExportToDatabase:[module_num:1|svn_version:\'8913\'|variable_revision_number:8|show_window:False|notes:\x5B\x5D]
+    What type of database do you want to use?:MySQL
+    For MySQL only, what is the name of the database to use?:MyDatabase
+    What prefix should be used to name the SQL Tables in the database (should be unique per experiment)?:ExptTbl_
+    What prefix should be used to name the SQL files?:SQLFile_
+    Enter the directory where the SQL files are to be saved.  Type period (.) to use the default output folder.:.
+    Which per-image statistics do you want to be calculated?  Select "Do not use" to omit.:Standard deviation
+    :Median
+    :Do not use
+    Which objects do you want to export?:Image
+    :MyObjects
+    :Do not use
+    :Do not use
+    Do you want to create a CellProfiler Analyst properties file?:Yes - V2.0 format
+"""
+        pipeline = cpp.Pipeline()
+        def callback(caller, event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO(data))
+        self.assertEqual(len(pipeline.modules()), 1)
+        module = pipeline.modules()[0]
+        self.assertTrue(isinstance(module, E.ExportToDatabase))
+        self.assertTrue(module.use_default_output_directory)
+        self.assertTrue(module.want_table_prefix)
+        self.assertEqual(module.table_prefix, "ExptTbl_")
+        self.assertEqual(module.sql_file_prefix, "SQLFile_")
+        self.assertEqual(module.db_name, "MyDatabase")
+        self.assertEqual(module.db_type, E.DB_MYSQL)
+        self.assertTrue(module.save_cpa_properties)
+        self.assertFalse(module.wants_agg_mean)
+        self.assertTrue(module.wants_agg_std_dev)
+        self.assertTrue(module.wants_agg_median)
+        self.assertEqual(module.objects_choice, E.O_SELECT)
+        self.assertEqual(module.objects_list.value, "MyObjects")
+        
+    def test_01_00_06_load_matlab_9(self):
+        data=r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:1
+SVNRevision:8925
+FromMatlab:True
+
+ExportToDatabase:[module_num:1|svn_version:\'8913\'|variable_revision_number:9|show_window:False|notes:\x5B\x5D]
+    What type of database do you want to use?:MySQL
+    For MySQL only, what is the name of the database to use?:MyDatabase
+    What prefix should be used to name the SQL Tables in the database (should be unique per experiment)?:ExptTbl_
+    What prefix should be used to name the SQL files?:SQLFile_
+    Enter the directory where the SQL files are to be saved.  Type period (.) to use the default output folder.:.
+    Which per-image statistics do you want to be calculated?  Select "Do not use" to omit.:Standard deviation
+    :Median
+    :Do not use
+    Which objects do you want to export?:Image
+    :MyObjects
+    :MyOtherObjects
+    :Do not use
+    :Do not use
+    :Do not use
+    :Do not use
+    Do you want to create a CellProfiler Analyst properties file?:Yes - V2.0 format
+"""
+        pipeline = cpp.Pipeline()
+        def callback(caller, event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO(data))
+        self.assertEqual(len(pipeline.modules()), 1)
+        module = pipeline.modules()[0]
+        self.assertTrue(isinstance(module, E.ExportToDatabase))
+        self.assertTrue(module.use_default_output_directory)
+        self.assertTrue(module.want_table_prefix)
+        self.assertEqual(module.table_prefix, "ExptTbl_")
+        self.assertEqual(module.sql_file_prefix, "SQLFile_")
+        self.assertEqual(module.db_name, "MyDatabase")
+        self.assertEqual(module.db_type, E.DB_MYSQL)
+        self.assertTrue(module.save_cpa_properties)
+        self.assertFalse(module.wants_agg_mean)
+        self.assertTrue(module.wants_agg_std_dev)
+        self.assertTrue(module.wants_agg_median)
+        self.assertEqual(module.objects_choice, E.O_SELECT)
+        self.assertEqual(module.objects_list.value, "MyObjects,MyOtherObjects")
+    
     def test_01_01_load_matlab_10(self):
         data = ('eJwBNATL+01BVExBQiA1LjAgTUFULWZpbGUsIFBsYXRmb3JtOiBQQ1dJTiwg'
                 'Q3JlYXRlZCBvbjogVHVlIE9jdCAxMyAwOTowNzoxMyAyMDA5ICAgICAgICAg'

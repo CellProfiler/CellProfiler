@@ -162,6 +162,7 @@ class TestFlagImages(unittest.TestCase):
             for measurement, (measurement_name, min_value, max_value) \
                 in zip(flag.measurement_settings,measurements):
                 self.assertTrue(isinstance(measurement, cps.SettingsGroup))
+                self.assertEqual(measurement.source_choice, F.S_IMAGE)
                 self.assertEqual(measurement.measurement, measurement_name)
                 self.assertEqual(measurement.wants_minimum.value, min_value is not None)
                 if measurement.wants_minimum.value:

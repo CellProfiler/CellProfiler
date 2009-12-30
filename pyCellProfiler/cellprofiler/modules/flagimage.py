@@ -360,6 +360,27 @@ measurement name would be Metadata_QCFlag.'''))
                               wants_maximum,
                               max_value]
             from_matlab = False
+            variable_revision_number = 1
             
+        if (not from_matlab) and variable_revision_number == 1:
+            new_setting_values = [setting_values[0]]
+            idx = 1
+            for flag_idx in range(int(setting_values[0])):
+                new_setting_values += setting_values[idx:idx+4]
+                meas_count = int(setting_values[idx])
+                idx += 4
+                for meas_idx in range(meas_count):
+                    measurement_source = setting_values[idx]
+                    if (measurement_source.startswith("Measurement for all") or
+                        measurement_source == "All objects"):
+                        measurement_source = S_ALL_OBJECTS
+                    elif measurement_source=="Average for objects":
+                        measurement_source = S_AVERAGE_OBJECT
+                    elif measurement_source=="Image":
+                        measurement_source = S_IMAGE
+                    new_setting_values += [measurement_source] 
+                    new_setting_values += setting_values[(idx+1):(idx+7)]
+                    idx += 7
+            setting_values = new_setting_values
         return setting_values, variable_revision_number, from_matlab
     

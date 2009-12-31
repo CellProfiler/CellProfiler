@@ -82,6 +82,7 @@ substitutions = {'ClassifyObjectsByTwoMeasurements' : 'ClassifyObjects',
                  'MeasureRadialDistribution' : 'MeasureObjectRadialDistribution',
                  'Rotate' : 'FlipAndRotate',
                  'SmoothOrEnhance' : 'Smooth',
+                 'SmoothKeepingEdges' : 'Smooth'
                  }
 
 all_modules = {}

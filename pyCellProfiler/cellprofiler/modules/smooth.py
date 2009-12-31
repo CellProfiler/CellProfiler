@@ -168,6 +168,25 @@ class Smooth(cpm.CPModule):
     
     def upgrade_settings(self, setting_values, variable_revision_number, 
                          module_name, from_matlab):
+        if (module_name == 'SmoothKeepingEdges' and from_matlab and
+            variable_revision_number == 1):
+            image_name, smoothed_image_name, spatial_radius, \
+            intensity_radius = setting_values
+            setting_values = [image_name,
+                              smoothed_image_name,
+                              'Smooth Keeping Edges',
+                              'Automatic',
+                              cps.DO_NOT_USE,
+                              cps.NO,
+                              spatial_radius,
+                              intensity_radius]
+            module_name = 'SmoothOrEnhance'
+            variable_revision_number = 5
+        if (module_name == 'SmoothOrEnhance' and from_matlab and
+            variable_revision_number == 4):
+            # Added spatial radius
+            setting_values = setting_values + ["0.1"]
+            variable_revision_number = 5
         if (module_name == 'SmoothOrEnhance' and from_matlab and
             variable_revision_number == 5):
             if setting_values[2] in ('Remove BrightRoundSpeckles',

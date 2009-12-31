@@ -31,6 +31,45 @@ IMAGE_NAME = 'my_image'
 OUTPUT_IMAGE = 'my_output_image'
 
 class TestFlipAndRotate(unittest.TestCase):
+    def test_01_00_load_matlab_flip(self):
+        data=r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:1
+SVNRevision:8925
+FromMatlab:True
+
+Flip:[module_num:1|svn_version:\'8913\'|variable_revision_number:1|show_window:False|notes:\x5B\x5D]
+    What did you call the image you want to flip?:MyImage
+    What do you want to call the flipped image?:MyFlippedImage
+    Do you want to flip from left to right?:Yes
+    Do you want to flip from top to bottom?:Yes
+    
+Flip:[module_num:2|svn_version:\'8913\'|variable_revision_number:1|show_window:False|notes:\x5B\x5D]
+    What did you call the image you want to flip?:MyImage
+    What do you want to call the flipped image?:MyFlippedImage
+    Do you want to flip from left to right?:Yes
+    Do you want to flip from top to bottom?:No
+    
+Flip:[module_num:3|svn_version:\'8913\'|variable_revision_number:1|show_window:False|notes:\x5B\x5D]
+    What did you call the image you want to flip?:MyImage
+    What do you want to call the flipped image?:MyFlippedImage
+    Do you want to flip from left to right?:No
+    Do you want to flip from top to bottom?:Yes
+"""
+        pipeline = cpp.Pipeline()
+        def callback(caller, event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO(data))
+        self.assertEqual(len(pipeline.modules()), 3)
+        for module, flip_choice in zip(pipeline.modules(),
+                                       (F.FLIP_BOTH, F.FLIP_LEFT_TO_RIGHT,
+                                        F.FLIP_TOP_TO_BOTTOM)):
+            self.assertTrue(isinstance(module, F.FlipAndRotate))
+            self.assertEqual(module.image_name, "MyImage")
+            self.assertEqual(module.output_name, "MyFlippedImage")
+            self.assertEqual(module.flip_choice, flip_choice)
+            self.assertEqual(module.rotate_choice, F.ROTATE_NONE)
+            
     def test_01_01_load_matlab(self):
         data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0s'
                 'SU1RyM+zUvDNz1MITi1QMLJQMLC0AiIjIwUjAwNLBZIBA6OnLz8DA4MgEwND'

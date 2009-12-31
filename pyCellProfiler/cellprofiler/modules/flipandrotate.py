@@ -389,7 +389,26 @@ class FlipAndRotate(cpm.CPModule):
         
     def upgrade_settings(self,setting_values,variable_revision_number,
                          module_name,from_matlab):
-        if from_matlab and variable_revision_number == 1:
+        if (from_matlab and variable_revision_number == 1 and
+            module_name == "Flip"):
+            image_name, output_name, left_to_right, top_to_bottom =\
+                      setting_values
+            if left_to_right == cps.YES:
+                if top_to_bottom == cps.YES:
+                    flip_choice = FLIP_BOTH
+                else:
+                    flip_choice = FLIP_LEFT_TO_RIGHT
+            elif top_to_bottom == cps.YES:
+                flip_choice = FLIP_TOP_TO_BOTTOM
+            else:
+                flip_choice = FLIP_NONE
+            setting_values = [image_name, output_name, flip_choice,
+                              ROTATE_NONE, cps.NO, "1", "2", C_VERTICALLY, "0"]
+            from_matlab = False
+            module_name = self.module_name
+            variable_revision_number = 2
+        if (from_matlab and variable_revision_number == 1 and 
+            module_name == self.module_name):
             if setting_values[2] == cps.YES:
                 if setting_values[3] == cps.YES:
                     flip_choice = FLIP_BOTH

@@ -77,6 +77,7 @@ pymodule_to_cpmodule = {'align' : 'Align',
 # CP-Matlab to CP-python module substitutions
 substitutions = {'ClassifyObjectsByTwoMeasurements' : 'ClassifyObjects',
                  'FlagImageForQC' : 'FlagImage',
+                 'Flip' : 'FlipAndRotate',
                  'KeepLargestObject' : 'FilterByObjectMeasurement',
                  'MeasureRadialDistribution' : 'MeasureObjectRadialDistribution',
                  'SmoothOrEnhance' : 'Smooth',

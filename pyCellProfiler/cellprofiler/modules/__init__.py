@@ -80,6 +80,7 @@ substitutions = {'ClassifyObjectsByTwoMeasurements' : 'ClassifyObjects',
                  'Flip' : 'FlipAndRotate',
                  'KeepLargestObject' : 'FilterByObjectMeasurement',
                  'MeasureRadialDistribution' : 'MeasureObjectRadialDistribution',
+                 'Rotate' : 'FlipAndRotate',
                  'SmoothOrEnhance' : 'Smooth',
                  }
 

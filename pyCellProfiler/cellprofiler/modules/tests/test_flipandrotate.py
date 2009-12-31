@@ -31,7 +31,7 @@ IMAGE_NAME = 'my_image'
 OUTPUT_IMAGE = 'my_output_image'
 
 class TestFlipAndRotate(unittest.TestCase):
-    def test_01_00_load_matlab_flip(self):
+    def test_01_000_load_matlab_flip(self):
         data=r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
 SVNRevision:8925
@@ -69,7 +69,43 @@ Flip:[module_num:3|svn_version:\'8913\'|variable_revision_number:1|show_window:F
             self.assertEqual(module.output_name, "MyFlippedImage")
             self.assertEqual(module.flip_choice, flip_choice)
             self.assertEqual(module.rotate_choice, F.ROTATE_NONE)
-            
+    
+    def test_01_001_matlab_rotate(self):
+        data=r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:1
+SVNRevision:8925
+FromMatlab:True
+
+Rotate:[module_num:1|svn_version:\'8913\'|variable_revision_number:2|show_window:False|notes:\x5B\x5D]
+    What did you call the image to be rotated?:MyImage
+    What do you want to call the rotated image?:MyRotatedImage
+    Choose rotation method\x3A:Angle
+    Would you like to crop away the rotated edges?:Yes
+    Do you want to determine the amount of rotation for each image individually as you cycle through, or do you want to define it only once (on the first image) and then apply it to all images?:Individually
+    For COORDINATES or MOUSE, do you want to click on points that are aligned horizontally or vertically?:horizontally
+    For COORDINATES and ONLY ONCE, what are the coordinates of one point (X,Y)?:1,10
+    For COORDINATES and ONLY ONCE, what are the coordinates of the other point (X,Y)?:121,144
+    For ANGLE and ONLY ONCE, by what angle would you like to rotate the image (in degrees, positive = counterclockwise and negative = clockwise)?:45
+"""
+        pipeline = cpp.Pipeline()
+        def callback(caller, event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO(data))
+        self.assertEqual(len(pipeline.modules()), 1)
+        module = pipeline.modules()[0]
+        self.assertTrue(isinstance(module, F.FlipAndRotate))
+        self.assertEqual(module.image_name, "MyImage")
+        self.assertEqual(module.output_name, "MyRotatedImage")
+        self.assertEqual(module.rotate_choice, F.ROTATE_ANGLE)
+        self.assertTrue(module.wants_crop)
+        self.assertEqual(module.how_often.value, F.IO_INDIVIDUALLY)
+        self.assertEqual(module.first_pixel.x, 1)
+        self.assertEqual(module.first_pixel.y, 10)
+        self.assertEqual(module.second_pixel.x, 121)
+        self.assertEqual(module.second_pixel.y, 144)
+        self.assertEqual(module.angle, 45)
+        
     def test_01_01_load_matlab(self):
         data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0s'
                 'SU1RyM+zUvDNz1MITi1QMLJQMLC0AiIjIwUjAwNLBZIBA6OnLz8DA4MgEwND'

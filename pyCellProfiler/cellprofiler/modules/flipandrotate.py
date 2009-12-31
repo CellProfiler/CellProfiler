@@ -389,6 +389,32 @@ class FlipAndRotate(cpm.CPModule):
         
     def upgrade_settings(self,setting_values,variable_revision_number,
                          module_name,from_matlab):
+        if (from_matlab and variable_revision_number == 2 and
+            module_name == "Rotate"):
+            image_name, output_name, rotate_method, crop_edges, \
+            individual_or_once, horiz_or_vert, pixel1, pixel2, \
+            angle = setting_values
+            if rotate_method == "Coordinates":
+                rotate_method = ROTATE_COORDINATES
+            elif rotate_method == "Mouse":
+                rotate_method = ROTATE_MOUSE
+            else:
+                rotate_method = ROTATE_ANGLE
+            if horiz_or_vert == "horizontally":
+                horiz_or_vert = C_HORIZONTALLY
+            else:
+                horiz_or_vert = C_VERTICALLY
+            if individual_or_once == "Only once":
+                individual_or_once = IO_ONCE
+            else:
+                individual_or_once = IO_INDIVIDUALLY
+            setting_values = [image_name, output_name, FLIP_NONE,
+                              rotate_method, crop_edges,
+                              individual_or_once, pixel1, pixel2,
+                              horiz_or_vert, angle]
+            variable_revision_number = 2
+            from_matlab = False
+            module_name = self.module_name
         if (from_matlab and variable_revision_number == 1 and
             module_name == "Flip"):
             image_name, output_name, left_to_right, top_to_bottom =\
@@ -403,7 +429,8 @@ class FlipAndRotate(cpm.CPModule):
             else:
                 flip_choice = FLIP_NONE
             setting_values = [image_name, output_name, flip_choice,
-                              ROTATE_NONE, cps.NO, "1", "2", C_VERTICALLY, "0"]
+                              ROTATE_NONE, cps.NO, "10,10", 
+                              "100,100", C_VERTICALLY, "0"]
             from_matlab = False
             module_name = self.module_name
             variable_revision_number = 2

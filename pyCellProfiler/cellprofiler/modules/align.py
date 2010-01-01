@@ -115,11 +115,12 @@ with respect to the first image.""")
         self.additional_images.append(group)
 
     def settings(self):
-        result = [self.first_input_image, self.first_output_image,
+        result = [self.alignment_method, self.wants_cropping]
+        
+        result += [self.first_input_image, self.first_output_image,
                   self.second_input_image, self.second_output_image]
         for additional in self.additional_images:
             result += [additional.input_image_name, additional.output_image_name, additional.align_choice]
-        result += [self.alignment_method, self.wants_cropping]
         return result
 
     def prepare_settings(self, setting_values):
@@ -130,11 +131,13 @@ with respect to the first image.""")
             self.add_image()
 
     def visible_settings(self):
-        result = [self.first_input_image, self.first_output_image, self.separator_1,
+        result = [self.alignment_method, self.wants_cropping]
+        
+        result += [self.first_input_image, self.first_output_image, self.separator_1,
                   self.second_input_image, self.second_output_image, self.separator_2]
         for additional in self.additional_images:
             result += additional.unpack_group()
-        result += [self.add_button, self.alignment_method, self.wants_cropping]
+        result += [self.add_button]
         return result
 
     def run(self, workspace):
@@ -537,6 +540,12 @@ with respect to the first image.""")
             setting_values = new_setting_values
             from_matlab = False
             variable_revision_number = 1
+            
+        if (not from_matlab) and variable_revision_number == 1:
+            # Moved final settings (alignment method, cropping) to the top
+            setting_values = (setting_values[-2:] + setting_values[:-2])
+            variable_revision_number = 2
+            
         return setting_values, variable_revision_number, from_matlab
 
 def offset_slice(pixels1, pixels2, i, j):

@@ -31,6 +31,118 @@ import cellprofiler.workspace as cpw
 import cellprofiler.modules.imagemath as I
 
 class TestImageMath(unittest.TestCase):
+    def test_01_000_load_subtract(self):
+        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:1
+SVNRevision:8925
+FromMatlab:True
+
+Subtract:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|show_window:False|notes:\x5B\x5D]
+    Subtract this image\x3A:MySubtrahend
+    From this image\x3A:MyMinuend
+    What do you want to call the resulting image?:MyOutput
+    Enter the factor to multiply the first image by before subtracting\x3A:1.5
+    Enter the factor to multiply the second image by before subtracting\x3A:2.6
+    Do you want negative values in the image to be set to zero?:Yes
+    """
+        pipeline = cpp.Pipeline()
+        def callback(caller, event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO(data))
+        self.assertEqual(len(pipeline.modules()), 1)
+        module = pipeline.modules()[0]
+        self.assertTrue(isinstance(module, I.ImageMath))
+        self.assertEqual(len(module.images), 2)
+        self.assertEqual(module.images[0].image_name, "MyMinuend")
+        self.assertEqual(module.images[1].image_name, "MySubtrahend")
+        self.assertEqual(module.output_image_name, "MyOutput")
+        self.assertEqual(module.operation, I.O_SUBTRACT)
+        self.assertAlmostEqual(module.images[0].factor.value, 2.6)
+        self.assertAlmostEqual(module.images[1].factor.value, 1.5)
+        self.assertTrue(module.truncate_low)
+        self.assertFalse(module.truncate_high)
+        
+    def test_01_001_load_combine(self):
+        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:1
+SVNRevision:8925
+FromMatlab:True
+
+Combine:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|show_window:False|notes:\x5B\x5D]
+    What did you call the first image to be combined?:MyFirstImage
+    What did you call the second image to be combined?:MySecondImage
+    What did you call the third image to be combined?:Do not use
+    What do you want to call the combined image?:MyOutputImage
+    Enter the weight you want to give the first image:0.2
+    Enter the weight you want to give the second image:0.8
+    Enter the weight you want to give the third image:.10
+    """
+        pipeline = cpp.Pipeline()
+        def callback(caller, event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO(data))
+        self.assertEqual(len(pipeline.modules()), 1)
+        module = pipeline.modules()[0]
+        self.assertTrue(isinstance(module, I.ImageMath))
+        self.assertEqual(len(module.images), 2)
+        self.assertEqual(module.images[0].image_name, "MyFirstImage")
+        self.assertEqual(module.images[1].image_name, "MySecondImage")
+        self.assertAlmostEqual(module.images[0].factor.value,0.2)
+        self.assertAlmostEqual(module.images[1].factor.value,0.8)
+        self.assertEqual(module.operation.value, I.O_ADD)
+        self.assertEqual(module.output_image_name, "MyOutputImage")
+    
+    def test_01_002_load_invert_intensity(self):
+        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:1
+SVNRevision:8925
+FromMatlab:True
+
+InvertIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:1|show_window:False|notes:\x5B\x5D]
+    What did you call the image to be inverted (made negative)?:MyImage
+    What do you want to call the inverted image?:MyInvertedImage
+"""
+        pipeline = cpp.Pipeline()
+        def callback(caller, event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO(data))
+        self.assertEqual(len(pipeline.modules()), 1)
+        module = pipeline.modules()[0]
+        self.assertTrue(isinstance(module, I.ImageMath))
+        self.assertEqual(len(module.images), 2) # there are two, but only 1 shown
+        self.assertEqual(module.images[0].image_name, "MyImage")
+        self.assertEqual(module.output_image_name, "MyInvertedImage")
+        self.assertEqual(module.operation, I.O_INVERT)
+    
+    def test_01_003_load_multiply(self):
+        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:1
+SVNRevision:8925
+FromMatlab:True
+
+Multiply:[module_num:1|svn_version:\'8913\'|variable_revision_number:1|show_window:False|notes:\x5B\x5D]
+    What is the name of the first image you would like to use:MyFirstImage
+    What is the name of the second image you would like to use:MySecondImage
+    What do you want to call the resulting image?:MyOutputImage
+"""
+        pipeline = cpp.Pipeline()
+        def callback(caller, event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO(data))
+        self.assertEqual(len(pipeline.modules()), 1)
+        module = pipeline.modules()[0]
+        self.assertTrue(isinstance(module, I.ImageMath))
+        self.assertEqual(len(module.images), 2)
+        self.assertEqual(module.images[0].image_name, "MyFirstImage")
+        self.assertEqual(module.images[1].image_name, "MySecondImage")
+        self.assertEqual(module.images[0].factor, 1)
+        self.assertEqual(module.images[1].factor, 1)
+        self.assertEqual(module.output_image_name, "MyOutputImage")
+        
     def test_01_01_load_matlab(self):
         data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0s'
                 'SU1RyM+zUgjJKFXwKs1RMDQDIitDCytjMwUjAwNLBZIBA6OnLz8DA0MWEwND'

@@ -269,7 +269,52 @@ class ImageMath(cpm.CPModule):
 
     def upgrade_settings(self, setting_values, variable_revision_number, 
                          module_name, from_matlab):
-        if from_matlab and variable_revision_number == 2:
+        if (from_matlab and module_name == 'Subtract' and 
+            variable_revision_number == 3):
+            subtract_image_name, basic_image_name, resulting_image_name,\
+            multiply_factor_1, multiply_factor_2, truncate = setting_values
+            setting_values = [ basic_image_name,
+                               subtract_image_name,
+                               cps.DO_NOT_USE,
+                               "Subtract",
+                               multiply_factor_2,
+                               multiply_factor_1,
+                               1, # multiply_factor_3
+                               1, # power
+                               1, # post-multipy factor
+                               truncate,
+                               cps.NO,
+                               resulting_image_name]
+            module_name = 'ImageMath'
+            variable_revision_number = 2
+        if (from_matlab and module_name == 'Combine' and
+            variable_revision_number == 3):
+            output_image = setting_values[3]
+            setting_values = (setting_values[:3] +
+                              ['Combine'] +
+                              setting_values[4:] +
+                              ['1','1',cps.NO, cps.NO,
+                               output_image])
+            module_name = 'ImageMath'
+            variable_revision_number = 2
+        if (from_matlab and module_name == 'InvertIntensity' and
+            variable_revision_number == 1):
+            image_name, output_image = setting_values
+            setting_values = [image_name, cps.DO_NOT_USE, cps.DO_NOT_USE,
+                              'Invert',
+                              1,1,1,1,1,cps.NO,cps.NO, output_image]
+            module_name = 'ImageMath'
+            variable_revision_number = 2
+        if (from_matlab and module_name == 'Multiply' and 
+            variable_revision_number == 1):
+            image1, image2, output_image = setting_values
+            setting_values = [image1, image2, cps.DO_NOT_USE,
+                              'Multiply', 1,1,1,1,1,cps.NO, cps.NO,
+                              output_image]
+            module_name = 'ImageMath'
+            variable_revision_number = 2
+        if (from_matlab and variable_revision_number == 2 and
+            module_name == 'ImageMath'):
             image_names = [setting_values[0]]
             input_factors = [float(setting_values[4])]
             operation = setting_values[3]

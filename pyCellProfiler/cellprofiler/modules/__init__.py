@@ -88,7 +88,9 @@ substitutions = {'Average': 'MakeProjection',
                  'Rotate' : 'FlipAndRotate',
                  'SmoothOrEnhance' : 'Smooth',
                  'SmoothKeepingEdges' : 'Smooth',
-                 'Subtract': 'ImageMath'
+                 'SplitIntoContiguousObjects': 'RelabelObjects',
+                 'Subtract': 'ImageMath',
+                 'UnifyObjects': 'RelabelObjects'
                  }
 
 all_modules = {}

@@ -394,7 +394,19 @@ class RelabelObjects(cpm.CPModule):
         they should leave things as-is so that the caller can report
         an error.
         '''
-        if from_matlab and variable_revision_number == 1:
+        if (from_matlab and variable_revision_number == 1 and
+            module_name == 'SplitIntoContiguousObjects'):
+            setting_values = setting_values + [OPTION_SPLIT,'0',cps.DO_NOT_USE]
+            variable_revision_number = 1
+            module_name = 'RelabelObjects'
+        if (from_matlab and variable_revision_number == 1 and
+            module_name == 'UnifyObjects'):
+            setting_values = (setting_values[:2] + [OPTION_UNIFY] + 
+                              setting_values[2:])
+            variable_revision_number = 1
+            module_name = 'RelabelObjects'
+        if (from_matlab and variable_revision_number == 1 and
+            module_name == 'RelabelObjects'):
             object_name, relabeled_object_name, relabel_option, \
                    distance_threshold, grayscale_image_name = setting_values
             wants_image = (cps.NO if grayscale_image_name == cps.DO_NOT_USE

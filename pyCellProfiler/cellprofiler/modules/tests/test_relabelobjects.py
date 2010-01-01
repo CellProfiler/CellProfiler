@@ -34,6 +34,54 @@ OUTPUT_OBJECTS_NAME = 'outputobjects'
 IMAGE_NAME = 'image'
 
 class TestRelabelObjects(unittest.TestCase):
+    def test_01_000_load_split(self):
+        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:1
+SVNRevision:8925
+FromMatlab:True
+
+SplitIntoContiguousObjects:[module_num:1|svn_version:\'8913\'|variable_revision_number:1|show_window:False|notes:\x5B\x5D]
+    What did you call the objects you want to filter?:MyObjects
+    What do you want to call the relabeled objects?:MySplitObjects
+"""
+        pipeline = cpp.Pipeline()
+        def callback(caller, event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO(data))
+        self.assertEqual(len(pipeline.modules()), 1)
+        module = pipeline.modules()[0]
+        self.assertTrue(isinstance(module, R.RelabelObjects))
+        self.assertEqual(module.objects_name, "MyObjects")
+        self.assertEqual(module.output_objects_name, "MySplitObjects")
+        self.assertEqual(module.relabel_option, R.OPTION_SPLIT)
+        
+    def test_01_001_load_unify(self):
+        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:1
+SVNRevision:8925
+FromMatlab:True
+
+UnifyObjects:[module_num:1|svn_version:\'8913\'|variable_revision_number:1|show_window:False|notes:\x5B\x5D]
+    What did you call the objects you want to filter?:MyObjects
+    What do you want to call the relabeled objects?:MyUnifiedObjects
+    Distance within which objects should be unified:10
+    Grayscale image:MyImage
+"""
+        pipeline = cpp.Pipeline()
+        def callback(caller, event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO(data))
+        self.assertEqual(len(pipeline.modules()), 1)
+        module = pipeline.modules()[0]
+        self.assertTrue(isinstance(module, R.RelabelObjects))
+        self.assertEqual(module.objects_name, "MyObjects")
+        self.assertEqual(module.output_objects_name, "MyUnifiedObjects")
+        self.assertEqual(module.relabel_option, R.OPTION_UNIFY)
+        self.assertEqual(module.distance_threshold, 10)
+        self.assertEqual(module.image_name, "MyImage")
+        
     def test_01_01_load_matlab(self):
         data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0s'
                 'SU1RyM+zUvDNz1NwSU1WMDRRMDSzMjaxMjJWMDIwsFQgGTAwevryMzAwbGBi'

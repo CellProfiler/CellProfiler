@@ -76,6 +76,7 @@ pymodule_to_cpmodule = {'align' : 'Align',
 
 # CP-Matlab to CP-python module substitutions
 substitutions = {'Average': 'MakeProjection',
+                 'CalculateRatios': 'CalculateMath',
                  'ClassifyObjectsByTwoMeasurements' : 'ClassifyObjects',
                  'Combine': 'ImageMath',
                  'FlagImageForQC' : 'FlagImage',

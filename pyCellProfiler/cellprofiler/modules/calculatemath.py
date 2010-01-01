@@ -324,7 +324,20 @@ class CalculateMath(cpm.CPModule):
         
     def upgrade_settings(self, setting_values, variable_revision_number,
                          module_name, from_matlab):
-        if from_matlab and variable_revision_number == 6:
+        if (from_matlab and variable_revision_number == 6 and 
+            module_name == 'CalculateRatios'):
+            ratio_name, \
+            object_name_1, category_1, feature_1, image_1, scale_1, \
+            object_name_2, category_2, feature_2, image_2, scale_2, \
+            log_choice = setting_values
+            setting_values = [ 
+                object_name_1, category_1, feature_1, image_1, scale_1,
+                object_name_2, category_2, feature_2, image_2, scale_2,
+                log_choice, "1", "1", "1", "1", "Divide", ratio_name]
+            variable_revision_number = 6
+            module_name = 'CalculateMath'
+        if (from_matlab and variable_revision_number == 6 and 
+            module_name == 'CalculateMath'):
             new_setting_values = [setting_values[16], # output feature name
                                   setting_values[15]] # operation
             for i,multiply_factor_idx in ((0,11),(5,12)):

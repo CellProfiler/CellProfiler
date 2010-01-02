@@ -157,7 +157,34 @@ class TestAlign(unittest.TestCase):
         self.assertEqual(module.additional_images[1].align_choice.value, A.A_SEPARATELY)
         self.assertEqual(module.alignment_method.value, A.M_MUTUAL_INFORMATION)
         self.assertFalse(module.wants_cropping.value)
-        
+    
+    def test_01_03_load_v2(self):
+        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:1
+SVNRevision:8945
+
+Align:[module_num:1|svn_version:'8942'|variable_revision_number:2|show_window:True|notes:\x5B\x5D]
+Select the alignment method:Mutual Information
+Crop output images to retain just the aligned regions?:Yes
+Select the first input image:Image1
+Name the first output image:AlignedImage1
+Select the second input image:Image2
+Name the second output image:AlignedImage2
+"""
+        pipeline = cpp.Pipeline()
+        def callback(caller, event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO(data))
+        self.assertEqual(len(pipeline.modules()), 1)
+        module = pipeline.modules()[0]
+        self.assertTrue(isinstance(module, A.Align))
+        self.assertEqual(module.alignment_method, A.M_MUTUAL_INFORMATION)
+        self.assertTrue(module.wants_cropping)
+        self.assertEqual(module.first_input_image, "Image1")
+        self.assertEqual(module.second_input_image, "Image2")
+        self.assertTrue(module.first_output_image, "AlignedImage1")
+        self.assertTrue(module.second_output_image, "AlignedImage2")
     def test_02_01_cross(self):
         '''Align two images using cross correlation'''
         np.random.seed(0)

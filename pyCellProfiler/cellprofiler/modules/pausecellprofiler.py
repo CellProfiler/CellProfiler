@@ -169,6 +169,9 @@ class PauseCellProfiler(cpm.CPModule):
         they should leave things as-is so that the caller can report
         an error.
         '''
+        if from_matlab and variable_revision_number == 1:
+            setting_values = [setting_values[0], 'Pause']
+            variable_revision_number = 2
         if from_matlab and variable_revision_number == 2:
             setting_values = [setting_values[1]]
             from_matlab = False

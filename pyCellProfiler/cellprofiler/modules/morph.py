@@ -612,7 +612,7 @@ class Morph(cpm.CPModule):
                          variable_revision_number, module_name, 
                          from_matlab):
         '''Adjust the setting_values of previous revisions to match this one'''
-        if from_matlab and variable_revision_number == 1:
+        if from_matlab and variable_revision_number in (1,2):
             # Settings:
             # image name
             # resulting image name

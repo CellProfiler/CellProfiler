@@ -360,4 +360,36 @@ class TestMeasureImageQuality(unittest.TestCase):
         self.assertTrue(ig.check_saturation.value)
         self.assertTrue(ig.calculate_threshold.value)
         self.assertEqual(ig.threshold_algorithm, cpthresh.TM_MOG)
-         
+        
+    def test_04_02_load_saturation_blur(self):
+        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:1
+SVNRevision:8925
+FromMatlab:True
+
+MeasureImageSaturationBlur:[module_num:1|svn_version:\'8913\'|variable_revision_number:4|show_window:False|notes:\x5B\x5D]
+    What did you call the image you want to check for saturation?:Image1
+    What did you call the image you want to check for saturation?:Image2
+    What did you call the image you want to check for saturation?:Image3
+    What did you call the image you want to check for saturation?:Do not use
+    What did you call the image you want to check for saturation?:Do not use
+    What did you call the image you want to check for saturation?:Do not use
+    Do you want to also check the above images for image quality (called blur earlier)?:Yes
+    If you chose to check images for image quality above, enter the window size of LocalFocusScore measurement (A suggested value is 2 times ObjectSize)?:25
+"""
+        pipeline = cpp.Pipeline()
+        def callback(caller, event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO.StringIO(data))
+        self.assertEqual(len(pipeline.modules()), 1)
+        module = pipeline.modules()[0]
+        self.assertTrue(isinstance(module, miq.MeasureImageQuality))
+        self.assertEqual(len(module.image_groups),3)
+        for i in range(3):
+            group = module.image_groups[i]
+            self.assertEqual(group.image_name, "Image%d"%(i+1))
+            self.assertTrue(group.check_blur)
+            self.assertEqual(group.window_size, 25)
+            self.assertTrue(group.check_saturation)
+            self.assertFalse(group.calculate_threshold)

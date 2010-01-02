@@ -46,7 +46,7 @@ MEASUREMENT_FORMAT = "Align_%sshift_%s_vs_%s"
 class Align(cpm.CPModule):
     module_name = "Align"
     category = 'Image Processing'
-    variable_revision_number = 1
+    variable_revision_number = 2
 
     def create_settings(self):
         self.first_input_image = cps.ImageNameSubscriber("Select the first input image",

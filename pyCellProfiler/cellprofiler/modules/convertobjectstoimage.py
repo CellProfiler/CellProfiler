@@ -1,4 +1,4 @@
-'''<b>Convert To Image </b> converts objects you have identified into an image
+'''<b>Convert Objects To Image </b> converts objects you have identified into an image
 <hr>
 This module allows you to take previously identified objects and convert
 them into an image according to a colormap you select, which can then be saved with the SaveImages modules.
@@ -39,9 +39,9 @@ IM_GRAYSCALE = "Grayscale"
 IM_UINT16 = "uint16"
 IM_ALL = [IM_COLOR, IM_BINARY, IM_GRAYSCALE, IM_UINT16]
 
-class ConvertToImage(cpm.CPModule):
+class ConvertObjectsToImage(cpm.CPModule):
 
-    module_name = "ConvertToImage"
+    module_name = "ConvertObjectsToImage"
     category = "Object Processing"
     variable_revision_number = 1
     
@@ -140,4 +140,7 @@ class ConvertToImage(cpm.CPModule):
             from_matlab = False
         return setting_values, variable_revision_number, from_matlab
 
-
+#
+# Backwards compatability
+#
+ConvertToImage = ConvertObjectsToImage

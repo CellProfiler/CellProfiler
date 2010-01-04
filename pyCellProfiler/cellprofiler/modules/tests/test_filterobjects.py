@@ -24,9 +24,9 @@ import cellprofiler.pipeline as cpp
 import cellprofiler.objects as cpo
 import cellprofiler.cpimage as cpi
 import cellprofiler.measurements as cpm
-import cellprofiler.modules.filterbyobjectmeasurement as F
+import cellprofiler.modules.filterobjects as F
 
-class TestFilterByObjectMeasurement(unittest.TestCase):
+class TestFilterObjects(unittest.TestCase):
     def make_workspace(self, object_dict= {}, image_dict = {}):
         '''Make a workspace for testing FilterByObjectMeasurement'''
         module = F.FilterByObjectMeasurement()

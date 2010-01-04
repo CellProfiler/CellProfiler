@@ -1,4 +1,4 @@
-'''<b>Expand Or Shrink</b> expands or shrinks objects by a defined distance
+'''<b>Expand Or Shrink Objects</b> expands or shrinks objects by a defined distance
 <hr>
 The module expands or shrinks objects by adding or removing border
 pixels. You can specify a certain number of border pixels to be
@@ -63,9 +63,9 @@ connected by a line in order to keep from breaking up the object or breaking
 the hole. If you fill the holes in each object, then each object will shrink
 to a single point.'''
 
-class ExpandOrShrink(cpm.CPModule):
+class ExpandOrShrinkObjects(cpm.CPModule):
 
-    module_name = 'ExpandOrShrink'
+    module_name = 'ExpandOrShrinkObjects'
     category = 'Object Processing'
     variable_revision_number = 1
     def create_settings(self):
@@ -260,4 +260,8 @@ class ExpandOrShrink(cpm.CPModule):
             elif category == "Number":
                 result += ["Object_Number"]
         return result
-    
+
+#
+# backwards compatability
+#
+ExpandOrShrink = ExpandOrShrinkObjects

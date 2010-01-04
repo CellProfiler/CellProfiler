@@ -32,13 +32,13 @@ import cellprofiler.workspace as cpw
 import cellprofiler.cpmath.cpmorphology as morph
 from cellprofiler.cpmath.outline import outline
 
-import cellprofiler.modules.expandorshrink as E
+import cellprofiler.modules.expandorshrinkobjects as E
 
 INPUT_NAME = "input"
 OUTPUT_NAME = "output"
 OUTLINES_NAME = "outlines"
 
-class TestExpandOrShrink(unittest.TestCase):
+class TestExpandOrShrinkObjects(unittest.TestCase):
     def test_01_01_load_matlab(self):
         '''Load a matlab pipeline with ExpandOrShrink modules'''
         data = ('eJwB+QMG/E1BVExBQiA1LjAgTUFULWZpbGUsIFBsYXRmb3JtOiBQQ1dJTiwg'

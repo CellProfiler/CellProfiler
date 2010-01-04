@@ -25,12 +25,12 @@ import cellprofiler.cpimage as cpi
 import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo
 import cellprofiler.workspace as cpw
-import cellprofiler.modules.converttoimage as C
+import cellprofiler.modules.convertobjectstoimage as C
 
 OBJECTS_NAME = "inputobjects"
 IMAGE_NAME = "outputimage"
  
-class TestConvertToImage(unittest.TestCase):
+class TestConvertObjectsToImage(unittest.TestCase):
     def make_workspace(self):
         module = C.ConvertToImage()
         labels = np.reshape(np.arange(256),(16,16))

@@ -1,4 +1,4 @@
-'''<b>Filter By Object Measurement</b> eliminates objects based on their measurements (e.g. area, shape,
+'''<b>Filter Objects</b> eliminates objects based on their measurements (e.g. area, shape,
 texture, intensity)
 <hr>
 This module removes selected objects based on their measurements produced by another module (e.g. 
@@ -71,9 +71,9 @@ DIR_DEFAULT_INPUT = "Default input folder"
 DIR_DEFAULT_OUTPUT = "Default output folder"
 DIR_CUSTOM = "Custom folder"
 
-class FilterByObjectMeasurement(cpm.CPModule):
+class FilterObjects(cpm.CPModule):
 
-    module_name = 'FilterByObjectMeasurement'
+    module_name = 'FilterObjects'
     category = "Object Processing"
     variable_revision_number = 2
     
@@ -675,3 +675,7 @@ class FilterByObjectMeasurement(cpm.CPModule):
             variable_revision_number = 2
         return setting_values, variable_revision_number, from_matlab
 
+#
+# backwards compatability
+#
+FilterByObjectMeasurement = FilterObjects

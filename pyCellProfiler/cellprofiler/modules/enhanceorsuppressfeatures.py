@@ -1,4 +1,4 @@
-'''<b>Enhance Or Suppress Speckles</b> enhances or suppresses certain image features (such as speckles, ring shapes, and neurites), which can improve subsequent identification of objects
+'''<b>Enhance Or Suppress Features</b> enhances or suppresses certain image features (such as speckles, ring shapes, and neurites), which can improve subsequent identification of objects
 <hr>
 This module enhances or suppresses the intensity of certain pixels relative
 to the rest of the image, by applying image processing filters to the image. It produces a grayscale image in which objects can be identified using an <b>Identify module</>.
@@ -31,9 +31,9 @@ E_SPECKLES = 'Speckles'
 E_NEURITES = 'Neurites'
 E_DARK_HOLES = 'Dark holes'
 
-class EnhanceOrSuppressSpeckles(cpm.CPModule):
+class EnhanceOrSuppressFeatures(cpm.CPModule):
 
-    module_name = 'EnhanceOrSuppressSpeckles'
+    module_name = 'EnhanceOrSuppressFeatures'
     category = "Image Processing"
     variable_revision_number = 2
     
@@ -198,5 +198,5 @@ class EnhanceOrSuppressSpeckles(cpm.CPModule):
             setting_values = setting_values + [E_SPECKLES, "1,10"]
             variable_revision_number = 2
         return setting_values, variable_revision_number, from_matlab
-        
-            
+
+EnhanceOrSuppressSpeckles = EnhanceOrSuppressFeatures

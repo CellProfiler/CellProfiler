@@ -1,4 +1,4 @@
-'''<b>RelabelObjects</b>
+'''<b>Reassign Object Numbers</b>
 Relabels objects so that objects within a specified distance of each
 other, or objects with a straight line connecting
 their centroids that has a relatively uniform intensity, 
@@ -64,8 +64,8 @@ OPTION_SPLIT = "Split"
 CA_CENTROIDS = "Centroids"
 CA_CLOSEST_POINT = "Closest point"
 
-class RelabelObjects(cpm.CPModule):
-    module_name = "RelabelObjects"
+class ReassignObjectNumbers(cpm.CPModule):
+    module_name = "ReassignObjectNumbers"
     category = "Object Processing"
     variable_revision_number = 1
     
@@ -483,3 +483,5 @@ def copy_labels(labels, segmented):
     new_indexes[unique_labels] = np.arange(len(unique_labels))+1
     labels_new = new_indexes[labels_new]
     return labels_new
+
+RelabelObjects = ReassignObjectNumbers

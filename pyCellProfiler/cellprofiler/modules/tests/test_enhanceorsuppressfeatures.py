@@ -86,10 +86,13 @@ class TestEnhanceOrSuppressSpeckles(unittest.TestCase):
                  'PQ3RI+u5EMEf1iXBPqnk9fMg6x/My6+NcfgSymW+BzG4pFCS476B0eZ96'
                  'Zp4f2zjxv8G/FcCeg==')
         pipeline = cpp.Pipeline()
+        def callback(caller, event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
         pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()),2)
         module = pipeline.modules()[1]
-        self.assertEqual(module.module_name,'EnhanceOrSuppressSpeckles')
+        self.assertEqual(module.module_name,'EnhanceOrSuppressFeatures')
         self.assertEqual(module.image_name.value, 'MyImage')
         self.assertEqual(module.filtered_image_name.value, 'MyEnhancedImage')
         self.assertEqual(module.method.value, E.ENHANCE)

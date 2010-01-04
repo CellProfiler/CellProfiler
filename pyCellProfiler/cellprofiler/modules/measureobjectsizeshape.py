@@ -1,4 +1,4 @@
-'''<b>Measure Object AreaShape </b> measures several area and shape features of identified objects
+'''<b>Measure Object Size Shape </b> measures several area and shape features of identified objects
 <hr>
 Given an image with identified objects (e.g. nuclei or cells), this
 module extracts area and shape features of each object. Note that these
@@ -105,9 +105,9 @@ F_STANDARD = [ F_AREA, F_ECCENTRICITY, F_SOLIDITY, F_EXTENT,
                F_EULER_NUMBER, F_PERIMETER, F_FORM_FACTOR,
                F_MAJOR_AXIS_LENGTH, F_MINOR_AXIS_LENGTH,
                F_ORIENTATION ]
-class MeasureObjectAreaShape(cpm.CPModule):
+class MeasureObjectSizeShape(cpm.CPModule):
 
-    module_name = "MeasureObjectAreaShape"
+    module_name = "MeasureObjectSizeShape"
     variable_revision_number = 1
     category = 'Measurement'
     
@@ -392,3 +392,5 @@ def form_factor(objects):
         return 4.0*np.pi*areas / perimeter**2
     else:
         return np.zeros((0,))
+
+MeasureObjectAreaShape = MeasureObjectSizeShape

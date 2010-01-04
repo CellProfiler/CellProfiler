@@ -1,4 +1,4 @@
-'''<b>Relate</b> assigns relationships; all objects (e.g. speckles) within a
+'''<b>Relate Objects</b> assigns relationships; all objects (e.g. speckles) within a
 parent object (e.g. nucleus) become its children
 <hr>
 Allows associating "children" objects with "parent" objects. This is
@@ -65,9 +65,9 @@ FF_MINIMUM = '%s_%s_%%s' % (C_DISTANCE, FEAT_MINIMUM)
 FIXED_SETTING_COUNT = 5
 VARIABLE_SETTING_COUNT = 1
 
-class Relate(cpm.CPModule):
+class RelateObjects(cpm.CPModule):
 
-    module_name = 'Relate'
+    module_name = 'RelateObjects'
     category = "Object Processing"
     variable_revision_number = 2
 
@@ -543,3 +543,4 @@ class Relate(cpm.CPModule):
             variable_revision_number = 2
         return setting_values, variable_revision_number, from_matlab
 
+Relate = RelateObjects

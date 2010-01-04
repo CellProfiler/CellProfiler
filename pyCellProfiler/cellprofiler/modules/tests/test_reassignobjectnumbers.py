@@ -26,14 +26,14 @@ import cellprofiler.cpimage as cpi
 import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo
 import cellprofiler.workspace as cpw
-import cellprofiler.modules.relabelobjects as R
+import cellprofiler.modules.reassignobjectnumbers as R
 import cellprofiler.modules.identify as I
 
 INPUT_OBJECTS_NAME = 'inputobjects'
 OUTPUT_OBJECTS_NAME = 'outputobjects'
 IMAGE_NAME = 'image'
 
-class TestRelabelObjects(unittest.TestCase):
+class TestReassignObjectNumbers(unittest.TestCase):
     def test_01_000_load_split(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1

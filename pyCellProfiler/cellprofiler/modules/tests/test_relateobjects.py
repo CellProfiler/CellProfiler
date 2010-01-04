@@ -1,4 +1,4 @@
-'''test_relate.py - test the Relate module
+'''test_relateobjects.py - test the RelateObjects module
 
 CellProfiler is distributed under the GNU General Public License.
 See the accompanying file LICENSE for details.
@@ -25,13 +25,13 @@ import cellprofiler.cpimage as cpi
 import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo
 import cellprofiler.workspace as cpw
-import cellprofiler.modules.relate as R
+import cellprofiler.modules.relateobjects as R
 
 PARENT_OBJECTS = 'parentobjects'
 CHILD_OBJECTS = 'childobjects'
 MEASUREMENT = 'Measurement'
 
-class TestRelate(unittest.TestCase):
+class TestRelateObjects(unittest.TestCase):
     def make_workspace(self, parents, children, fake_measurement=False):
         '''Make a workspace for testing Relate'''
         pipeline = cpp.Pipeline()

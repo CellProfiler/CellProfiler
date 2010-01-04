@@ -1,20 +1,29 @@
 """
-<b>Measure Texture</b> measures the degree and nature of textures within objects 
-using several different metrics.
+<b>Measure Texture</b> measures the degree and nature of textures within objects (versus smoothness)
 <hr>
 
+This module measures the variations in grayscale images.  An object (or 
+entire image) without much texture has a smooth appearance whereas an
+object or image with a lot of texture will appear rough and show a wide 
+variety of pixel intensities.
+
 Note that texture measurements are affected by the overall intensity of 
-the object (or image). For example, if Image1 = Image2 + 0.2, then the 
+the object (or image). It is difficult to measure the smoothness of pixel 
+intensities in a way that is not influenced by the overall relative 
+brightness of the images. You might perhaps hope that an image showing the
+same group of cells would have identical texture measurements even if the 
+microscope lamp was twice as bright for one image of the cells vs. another 
+image of the same cells.  Additive intensity changes do not affect texture 
+measurements; for example, if Image1 = Image2 + 0.2, then the 
 texture measurements should be the same for Image1 and Image2. However, 
-if the images are scaled differently, for example Image1 = 0.9*Image2, 
-then this will be reflected in the texture measurements, and they will be
-different. For example, in the extreme case of Image1 = 0*Image2 it is
-obvious that the texture measurements must be different. To make the
-measurements useful (both intensity, texture, etc.), it must be ensured
-that the images are scaled similarly. In other words, if differences in
+multiplicative effects (i.e., scaling)
+does influence texture measurements; for example, if Image1 = 0.9*Image2, 
+then the texture measurements will be different. In other words, if differences in
 intensity are seen between two images or objects, the differences in
 texture cannot be trusted as being completely independent of the
-intensity difference.
+intensity difference. For these reasons, texture measurements 
+are most useful on images/objects that are scaled similarly; the 
+<b>RescaleIntensity</b> module may be useful for this. 
 
 Features that can be measured by this module:
 <ul>
@@ -147,7 +156,7 @@ class MeasureTexture(cpm.CPModule):
         self.scale_divider = cps.Divider()
         
         self.gabor_angles = cps.Integer("Number of angles to compute for Gabor",4,2, doc="""
-        How many angles do you want to use for each Gabor measurement?
+        How many angles do you want to use for each Gabor texture measurement?
             The default is four which detects bands in the horizontal, vertical and diagonal
             orientations.""")
 
@@ -189,7 +198,7 @@ class MeasureTexture(cpm.CPModule):
         group = cps.SettingsGroup()
         group.append('image_name', 
                      cps.ImageNameSubscriber("Select an image to measure","None", 
-                                             doc="""What did you call the greyscale images you want to measure?"""))
+                                             doc="""What did you call the grayscale images whose texture you want to measure?"""))
         group.append("remover", cps.RemoveSettingButton("", "Remove this image", self.image_groups, group))
         self.image_groups.append(group)
 
@@ -198,7 +207,7 @@ class MeasureTexture(cpm.CPModule):
         group = cps.SettingsGroup()
         group.append('object_name', 
                      cps.ObjectNameSubscriber("Select objects to measure","None",
-                                              doc="""What did you call the objects that you want to measure?"""))
+                                              doc="""What did you call the objects whose texture you want to measure? You can select <i>None</i> if you only want to measure the texture for the image overall."""))
         group.append("remover", cps.RemoveSettingButton("", "Remove this object", self.object_groups, group))
         self.object_groups.append(group)
 
@@ -208,8 +217,8 @@ class MeasureTexture(cpm.CPModule):
         group.append('scale', 
                      cps.Integer("Texture scale to measure",
                                  len(self.scale_groups)+3,
-                                 doc="""The scale of texture measured is chosen by the user, in pixel units, 
-                                 and is the distance between correlated intensities in the image. A 
+                                 doc="""You can specify the scale of texture to be measured, in pixel units; 
+                                 the texture scale is the distance between correlated intensities in the image. A 
                                  higher number for the scale of texture measures larger patterns of 
                                  texture whereas smaller numbers measure more localized patterns of 
                                  texture. It is best to measure texture on a scale smaller than your 

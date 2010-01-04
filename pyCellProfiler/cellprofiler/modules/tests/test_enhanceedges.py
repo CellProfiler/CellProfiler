@@ -1,4 +1,4 @@
-'''test_findedges - test the findedges module
+'''test_enhanceedges - test the EnhanceEdges module
 
 CellProfiler is distributed under the GNU General Public License.
 See the accompanying file LICENSE for details.
@@ -24,14 +24,14 @@ import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo
 import cellprofiler.pipeline as cpp
 import cellprofiler.workspace as cpw
-import cellprofiler.modules.findedges as F
+import cellprofiler.modules.enhanceedges as F
 import cellprofiler.cpmath.filter as FIL
 from cellprofiler.cpmath.otsu import otsu3
 
 INPUT_IMAGE_NAME = 'inputimage'
 OUTPUT_IMAGE_NAME = 'outputimage'
 
-class TestFindEdges(unittest.TestCase):
+class TestEnhanceEdges(unittest.TestCase):
     def make_workspace(self, image, mask=None):
         '''Make a workspace for testing FindEdges'''
         module = F.FindEdges()
@@ -69,6 +69,9 @@ class TestFindEdges(unittest.TestCase):
                 "42a9/62a1pqqOSfXH9973baxur3k9WZ7ZTu57mP1TIUCx5YDAPkpI08=")
         fd = StringIO(decompress(b64decode(data)))
         p = cpp.Pipeline()
+        def callback(caller, event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        p.add_listener(callback)
         p.load(fd)
         self.assertEqual(len(p.modules()),2)
         module = p.modules()[1]
@@ -102,6 +105,9 @@ class TestFindEdges(unittest.TestCase):
                 'wGTvNXFDvDu2oPG/AYtINWo=')
         fd = StringIO(decompress(b64decode(data)))
         p = cpp.Pipeline()
+        def callback(caller, event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        p.add_listener(callback)
         p.load(fd)
         self.assertEqual(len(p.modules()),2)
         module = p.modules()[1]
@@ -138,6 +144,9 @@ class TestFindEdges(unittest.TestCase):
                 '7+YW1v4vvdw1GA==')
         fd = StringIO(decompress(b64decode(data)))
         p = cpp.Pipeline()
+        def callback(caller, event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        p.add_listener(callback)
         p.load(fd)
         self.assertEqual(len(p.modules()),2)
         module = p.modules()[1]

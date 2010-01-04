@@ -1,4 +1,4 @@
-'''<b>Find Edges</b> enhances or identifies edges in an image, which can improve object
+'''<b>Enhance Edges</b> enhances or identifies edges in an image, which can improve object
 identification or other downstream image processing.
 <hr>
 This module enhances the edges (gradients) in a grayscale image. All methods
@@ -44,9 +44,9 @@ E_ALL = "All"
 E_HORIZONTAL = "Horizontal"
 E_VERTICAL = "Vertical"
 
-class FindEdges(cpm.CPModule):
+class EnhanceEdges(cpm.CPModule):
 
-    module_name = "FindEdges"
+    module_name = "EnhanceEdges"
     category = "Image Processing"
     variable_revision_number = 2
 
@@ -234,3 +234,4 @@ class FindEdges(cpm.CPModule):
             variable_revision_number = 2
         return setting_values, variable_revision_number, from_matlab
     
+FindEdges = EnhanceEdges

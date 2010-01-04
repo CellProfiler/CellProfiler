@@ -244,6 +244,9 @@ class ExportToSpreadsheet(cpm.CPModule):
         if (len(self.delimiter.value) != 1 and
             not self.delimiter.value in (DELIMITER_TAB, DELIMITER_COMMA)):
             raise cps.ValidationError("The CSV field delimiter must be a single character", self.delimiter)
+        if pipeline.in_batch_mode() and self.pick_columns:
+            raise cps.ValidationError("You can't chose columns in batch mode",
+                                      self.pick_columns)
 
     @property
     def delimiter_char(self):
@@ -537,6 +540,56 @@ class ExportToSpreadsheet(cpm.CPModule):
         if dlg.ShowModal() == wx.ID_OK:
             return [columns[i] for i in range(len(columns))
                     if list_box.IsChecked(i)] 
+    
+    def prepare_to_create_batch(self, pipeline, image_set_list, fn_alter_path):
+        '''Prepare to create a batch file
+        
+        This function is called when CellProfiler is about to create a
+        file for batch processing. It will pickle the image set list's
+        "legacy_fields" dictionary. This callback lets a module prepare for
+        saving.
+        
+        pipeline - the pipeline to be saved
+        image_set_list - the image set list to be saved
+        fn_alter_path - this is a function that takes a pathname on the local
+                        host and returns a pathname on the remote host. It
+                        handles issues such as replacing backslashes and
+                        mapping mountpoints. It should be called for every
+                        pathname stored in the settings or legacy fields.
+        
+        ExportToSpreadsheet has to convert the path to file names to
+        something that can be used on the cluster.
+        '''
+        if self.directory_choice == DIR_DEFAULT_OUTPUT:
+            self.directory_choice.value = DIR_CUSTOM
+            path = '.'
+        elif self.directory_choice == DIR_DEFAULT_IMAGE:
+            self.directory_choice.value = DIR_CUSTOM
+            path = '&'
+        elif self.directory_choice == DIR_CUSTOM_WITH_METADATA:
+            # The patterns, "\g<...>" and "\(?", need to be protected
+            # from backslashification.
+            path = self.custom_directory.value
+            end_new_style = path.find("\\g<")
+            end_old_style = path.find("\(?")
+            end = (end_new_style 
+                   if (end_new_style != -1 and 
+                       (end_old_style == -1 or end_old_style > end_new_style))
+                   else end_old_style)
+            if end != -1:
+                pre_path = path[:end]
+                pre_path = get_absolute_path(pre_path, 
+                                             abspath_mode = ABSPATH_OUTPUT)
+                pre_path = fn_alter_path(pre_path)
+                path = pre_path + path[end:]
+                self.custom_directory.value = path
+                return True
+        else:
+            path = self.custom_directory.value
+        path = get_absolute_path(path, abspath_mode = ABSPATH_OUTPUT)
+        self.custom_directory.value = fn_alter_path(path)
+        return True
+    
             
     def upgrade_settings(self, setting_values, variable_revision_number,
                          module_name, from_matlab):

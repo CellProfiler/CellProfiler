@@ -98,6 +98,16 @@ O_SELECT = "Select..."
 
 ##############################################
 #
+# Choices for the output directory
+#
+##############################################
+DIR_DEFAULT_OUTPUT = "Default output folder"
+DIR_DEFAULT_IMAGE = "Default image folder"
+DIR_CUSTOM = "Custom folder"
+DIR_CUSTOM_WITH_METADATA = "Custom folder with metadata"
+
+##############################################
+#
 # Keyword for the cached measurement columns
 #
 ##############################################
@@ -143,7 +153,7 @@ def connect_sqlite(db_file):
 class ExportToDatabase(cpm.CPModule):
  
     module_name = "ExportToDatabase"
-    variable_revision_number = 10
+    variable_revision_number = 11
     category = "File Processing"
 
     def create_settings(self):
@@ -176,8 +186,24 @@ class ExportToDatabase(cpm.CPModule):
             <i>(Used if SQL is selected as the database type and if CSV files are to be written)</i><br>
             What prefix do you want to use to name the SQL file?""")
         
-        self.use_default_output_directory = cps.Binary(
-            "Save files in the default output folder?", True)
+        self.directory_choice = cps.Choice(
+            "Where do you want to save files?",
+            [DIR_DEFAULT_OUTPUT, DIR_DEFAULT_IMAGE, DIR_CUSTOM, 
+             DIR_CUSTOM_WITH_METADATA],
+            doc="""This setting determines where the .CSV files are saved if
+            you decide to save measurements to files instead of writing them
+            directly to the database.
+            <br><ul><li><i>Default output folder</i>: saves files in the
+            default output folder.</li>
+            <li><i>Default image folder</i>: saves files in the default
+            image folder.</li>
+            <li><i>Custom folder</i>: lets you specify the folder name. If
+            the folder name starts with ".", the folder will be a subfolder
+            of the default output folder. If the folder name starts with "&amp;",
+            the folder will be a subfolder of the default image folder.</li>
+            <li><i>Custom folder with metadata</i>: will substitute the metadata
+            values for the last image set processed for any metadata tokens
+            in the path name.</li></ul>""")
         
         self.output_directory = cps.Text(
             "Enter the output folder", ".", doc = """
@@ -298,8 +324,8 @@ class ExportToDatabase(cpm.CPModule):
             result += [self.table_prefix]
         result += [self.save_cpa_properties]
         if needs_default_output_directory:
-            result += [self.use_default_output_directory]
-            if not self.use_default_output_directory.value:
+            result += [self.directory_choice]
+            if self.directory_choice in (DIR_CUSTOM, DIR_CUSTOM_WITH_METADATA):
                 result += [self.output_directory]
         result += [self.wants_agg_mean, self.wants_agg_median,
                    self.wants_agg_std_dev, self.wants_agg_mean_well, 
@@ -312,7 +338,7 @@ class ExportToDatabase(cpm.CPModule):
     def settings(self):
         return [self.db_type, self.db_name, self.want_table_prefix,
                 self.table_prefix, self.sql_file_prefix, 
-                self.use_default_output_directory, self.output_directory,
+                self.directory_choice, self.output_directory,
                 self.save_cpa_properties, self.store_csvs, self.db_host, 
                 self.db_user, self.db_passwd, self.sqlite_file,
                 self.wants_agg_mean, self.wants_agg_median,
@@ -389,7 +415,34 @@ class ExportToDatabase(cpm.CPModule):
     
     def prepare_to_create_batch(self, pipeline, image_set_list, fn_alter_path):
         '''Alter the output directory path for the remote batch host'''
-        self.output_directory.value = fn_alter_path(self.output_directory.value)
+        if self.directory_choice == DIR_DEFAULT_OUTPUT:
+            self.directory_choice.value = DIR_CUSTOM
+            path = '.'
+        elif self.directory_choice == DIR_DEFAULT_IMAGE:
+            self.directory_choice.value = DIR_CUSTOM
+            path = '&'
+        elif self.directory_choice == DIR_CUSTOM_WITH_METADATA:
+            # The patterns, "\g<...>" and "\(?", need to be protected
+            # from backslashification.
+            path = self.output_directory.value
+            end_new_style = path.find("\\g<")
+            end_old_style = path.find("\(?")
+            end = (end_new_style 
+                   if (end_new_style != -1 and 
+                       (end_old_style == -1 or end_old_style > end_new_style))
+                   else end_old_style)
+            if end != -1:
+                pre_path = path[:end]
+                pre_path = cpp.get_absolute_path(pre_path, 
+                                                 abspath_mode = cpp.ABSPATH_OUTPUT)
+                pre_path = fn_alter_path(pre_path)
+                path = pre_path + path[end:]
+                self.output_directory.value = path
+                return True
+        else:
+            path = self.output_directory.value
+        path = cpp.get_absolute_path(path, abspath_mode = cpp.ABSPATH_OUTPUT)
+        self.output_directory.value = fn_alter_path(path)
             
     def run(self, workspace):
         if ((self.db_type == DB_MYSQL and not self.store_csvs.value) or
@@ -400,6 +453,10 @@ class ExportToDatabase(cpm.CPModule):
     def post_run(self, workspace):
         if self.save_cpa_properties.value:
             self.write_properties(workspace)
+        if self.db_type != DB_MYSQL or self.store_csvs:
+            path = self.get_output_directory(workspace)
+            if not os.path.isdir(path):
+                os.makedirs(path)
         mappings = self.get_column_name_mappings(workspace.pipeline)
         if self.db_type == DB_MYSQL:
             per_image, per_object = self.write_mysql_table_defs(workspace, mappings)
@@ -581,7 +638,7 @@ class ExportToDatabase(cpm.CPModule):
         file_name_width, path_name_width = self.get_file_path_width(workspace)
         metadata_name_width = 128
         file_name = "%s_SETUP.SQL"%(self.sql_file_prefix)
-        path_name = os.path.join(self.get_output_directory(), file_name)
+        path_name = os.path.join(self.get_output_directory(workspace), file_name)
         fid = open(path_name,"wt")
         fid.write("CREATE DATABASE IF NOT EXISTS %s;\n"%(self.db_name.value))
         fid.write("USE %s;\n"%(self.db_name.value))
@@ -649,7 +706,8 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
     
     def write_mysql_table_per_well(self, workspace, mappings):
         file_name = "%s_Per_Well_SETUP.SQL"%(self.sql_file_prefix)
-        path_name = os.path.join(self.get_output_directory(), file_name)
+        path_name = os.path.join(self.get_output_directory(workspace), 
+                                 file_name)
         fid = open(path_name,"wt")
         fid.write("CREATE DATABASE IF NOT EXISTS %s;\n"%(self.db_name.value))
         fid.write("USE %s;\n"%(self.db_name.value))
@@ -743,9 +801,9 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
         """
         zeros_for_nan = False
         measurements = workspace.measurements
-        image_filename = os.path.join(self.get_output_directory(),
+        image_filename = os.path.join(self.get_output_directory(workspace),
                                       '%s_image.CSV'%(self.base_name(workspace)))
-        object_filename = os.path.join(self.get_output_directory(),
+        object_filename = os.path.join(self.get_output_directory(workspace),
                                        '%s_object.CSV'%(self.base_name(workspace)))
         fid_per_image = open(image_filename,"wb")
         if self.objects_choice != O_NONE:
@@ -1018,7 +1076,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
         else:
             name = self.db_name
         filename = '%s.properties'%(name)
-        path = os.path.join(self.get_output_directory(), filename)
+        path = os.path.join(self.get_output_directory(workspace), filename)
         fid = open(path,'wt')
         date = datetime.datetime.now().ctime()
         db_type = (self.db_type == DB_MYSQL and 'mysql') or (self.db_type == DB_SQLITE and 'sqlite') or 'oracle_not_supported'
@@ -1027,7 +1085,9 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
         db_pwd  = self.db_passwd
         db_name = self.db_name
         db_user = self.db_user
-        db_sqlite_file = (self.db_type == DB_SQLITE and self.get_output_directory()+'/'+self.sqlite_file.value) or ''
+        db_sqlite_file = (self.db_type == DB_SQLITE and 
+                          self.get_output_directory(workspace)+
+                          '/'+self.sqlite_file.value) or ''
         if self.db_type != DB_SQLITE:
             db_info =  'db_type      = %(db_type)s\n'%(locals())
             db_info += 'db_port      = %(db_port)d\n'%(locals())
@@ -1235,15 +1295,19 @@ check_tables = yes
                     PathNameWidth = max(PathNameWidth, np.max(map(len,names)))
         return FileNameWidth, PathNameWidth
     
-    def get_output_directory(self):
-        if (self.use_default_output_directory.value or
-            self.output_directory == cps.DO_NOT_USE):
+    def get_output_directory(self, workspace=None):
+        if (self.directory_choice == DIR_DEFAULT_OUTPUT):
             return cpp.get_default_output_directory()
-        elif self.output_directory.value.startswith("."+os.path.sep):
-            return os.path.join(cpp.get_default_output_directory(),
-                                self.output_directory.value[2:])
+        elif self.directory_choice == DIR_DEFAULT_IMAGE:
+            return cpp.get_default_image_directory()
         else:
-            return self.output_directory.value
+            path = self.output_directory.value
+            if (self.directory_choice == DIR_CUSTOM_WITH_METADATA and
+                workspace is not None):
+                path = workspace.measurements.apply_metadata(path)
+            path = cpp.get_absolute_path(path, 
+                                         abspath_mode = cpp.ABSPATH_OUTPUT)
+            return path
     
     def get_table_prefix(self):
         if self.want_table_prefix.value:
@@ -1399,6 +1463,19 @@ check_tables = yes
                               [False, False, False] +
                               setting_values[-2:])
             variable_revision_number = 10
+        if (not from_matlab) and variable_revision_number == 10:
+            #
+            # Added a directory choice instead of a checkbox
+            #
+            if setting_values[5] == cps.NO or setting_values[6] == '.':
+                directory_choice = DIR_DEFAULT_OUTPUT
+            elif setting_values[6] == '&':
+                directory_choice = DIR_DEFAULT_IMAGE
+            else:
+                directory_choice = DIR_CUSTOM
+            setting_values = (setting_values[:5] + [directory_choice] +
+                              setting_values[6:])
+            variable_revision_number = 11
         return setting_values, variable_revision_number, from_matlab
     
 class ColumnNameMapping:

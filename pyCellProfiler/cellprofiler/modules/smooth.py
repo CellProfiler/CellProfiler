@@ -27,12 +27,13 @@ import cellprofiler.cpimage as cpi
 from cellprofiler.cpmath.smooth import smooth_with_function_and_mask
 from cellprofiler.cpmath.smooth import circular_gaussian_kernel
 from cellprofiler.cpmath.smooth import fit_polynomial
-from cellprofiler.cpmath.filter import median_filter, bilateral_filter
+from cellprofiler.cpmath.filter import median_filter, bilateral_filter, circular_average_filter
 
 FIT_POLYNOMIAL = 'Fit Polynomial'
 MEDIAN_FILTER = 'Median Filter'
 GAUSSIAN_FILTER = 'Gaussian Filter'
 SMOOTH_KEEPING_EDGES = 'Smooth Keeping Edges'
+CIRCULAR_AVERAGE_FILTER = 'Circular Average Filter'
 
 class Smooth(cpm.CPModule):
     
@@ -47,7 +48,8 @@ class Smooth(cpm.CPModule):
                                            [FIT_POLYNOMIAL,
                                             GAUSSIAN_FILTER,
                                             MEDIAN_FILTER,
-                                            SMOOTH_KEEPING_EDGES],doc="""
+                                            SMOOTH_KEEPING_EDGES,
+                                            CIRCULAR_AVERAGE_FILTER],doc="""
             This module smooths images using one of several filters:
             <ul>
             <li><i>Fit Polynomial:</i> This method treats the intensity of the image pixels
@@ -75,6 +77,9 @@ class Smooth(cpm.CPModule):
             intensity differences greater than 0.1. The algorithm
             will consume more memory and operate more slowly as
             you lower these numbers.</li>
+            <li><i>Circular Average Filter:</i> This method convolves the image with
+            a uniform circular averaging filter of the object size entered. This filter is
+            useful for re-creating an out-of-focus blur to an image.</li>
             </ul>""")
         
         self.wants_automatic_object_size = cps.Binary('Calculate object size automatically?',True,doc="""
@@ -145,7 +150,9 @@ class Smooth(cpm.CPModule):
             output_pixels = bilateral_filter(pixel_data, image.mask,
                                              sigma, sigma_range)
         elif self.smoothing_method.value == FIT_POLYNOMIAL:
-            output_pixels = fit_polynomial(pixel_data, image.mask)
+            output_pixels = outoffocus_blur(pixel_data, image.mask)
+        elif self.smoothing_method.value == CIRCULAR_AVERAGE_FILTER:
+            output_pixels = circular_average_filter(pixel_data, object_size/2+1, image.mask)
         else:
             raise ValueError("Unsupported smoothing method: %s" %
                              self.smoothing_method.value)

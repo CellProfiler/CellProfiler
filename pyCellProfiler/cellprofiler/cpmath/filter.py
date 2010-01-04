@@ -699,3 +699,61 @@ def enhance_dark_holes(image, min_radius, max_radius, mask=None):
     smoothed_image[smoothed_image > 1] = 1
     smoothed_image[smoothed_image < 0] = 0
     return smoothed_image
+
+def circular_average_filter(image, radius, mask=None):
+    '''Blur an image using a circular averaging filter (pillbox)  
+
+    image - grayscale 2-d image
+    radii - radius of filter in pixels
+    
+    The filter will be within a square matrix of side 2*radius+1
+    
+    This code is translated straight from MATLAB's fspecial function
+    '''
+    
+    crad = np.ceil(radius-0.5)
+    x,y = np.mgrid[-crad:crad+1,-crad:crad+1].astype(float) 
+    maxxy = np.maximum(abs(x),abs(y))
+    minxy = np.minimum(abs(x),abs(y))
+    
+    m1 = ((radius **2 < (maxxy+0.5)**2 + (minxy-0.5)**2)*(minxy-0.5) + 
+      (radius**2 >= (maxxy+0.5)**2 + (minxy-0.5)**2) * 
+      np.real(np.sqrt(np.asarray(radius**2 - (maxxy + 0.5)**2,dtype=complex)))) 
+    m2 = ((radius**2 >  (maxxy-0.5)**2 + (minxy+0.5)**2)*(minxy+0.5) + 
+      (radius**2 <= (maxxy-0.5)**2 + (minxy+0.5)**2)*
+      np.real(np.sqrt(np.asarray(radius**2 - (maxxy - 0.5)**2,dtype=complex))))
+    
+    sgrid = ((radius**2*(0.5*(np.arcsin(m2/radius) - np.arcsin(m1/radius)) + 
+          0.25*(np.sin(2*np.arcsin(m2/radius)) - np.sin(2*np.arcsin(m1/radius)))) - 
+         (maxxy-0.5)*(m2-m1) + (m1-minxy+0.5)) *  
+         ((((radius**2 < (maxxy+0.5)**2 + (minxy+0.5)**2) & 
+         (radius**2 > (maxxy-0.5)**2 + (minxy-0.5)**2)) | 
+         ((minxy == 0) & (maxxy-0.5 < radius) & (maxxy+0.5 >= radius)))) ) 
+    
+    sgrid = sgrid + ((maxxy+0.5)**2 + (minxy+0.5)**2 < radius**2) 
+    sgrid[crad,crad] = np.minimum(np.pi*radius**2,np.pi/2) 
+    if ((crad>0) and (radius > crad-0.5) and (radius**2 < (crad-0.5)**2+0.25)): 
+        m1  = np.sqrt(radius**2 - (crad - 0.5)**2) 
+        m1n = m1/radius 
+        sg0 = 2*(radius**2*(0.5*np.arcsin(m1n) + 0.25*np.sin(2*np.arcsin(m1n)))-m1*(crad-0.5))
+        sgrid[2*crad,crad]   = sg0
+        sgrid[crad,2*crad]   = sg0
+        sgrid[crad,0]        = sg0 
+        sgrid[0,crad]        = sg0
+        sgrid[2*crad-1,crad] = sgrid[2*crad-1,crad] - sg0
+        sgrid[crad,2*crad-1] = sgrid[crad,2*crad-1] - sg0
+        sgrid[crad,1]        = sgrid[crad,1]        - sg0 
+        sgrid[1,crad]        = sgrid[1,crad]        - sg0 
+    
+    sgrid[crad,crad] = np.minimum(sgrid[crad,crad],1) 
+    kernel = sgrid/sgrid.sum()
+    
+    output = convolve(image, kernel, mode='constant')
+    if mask is None:
+        mask = np.ones(image.shape,np.uint8)
+    else:
+        mask = np.array(mask, np.uint8)
+    output = masked_convolution(image, mask, kernel)
+    output[mask==0] = image[mask==0]
+    
+    return output

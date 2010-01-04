@@ -198,7 +198,7 @@ class CPFigureFrame(wx.Frame):
         if self.subplots != None and len(self.zoom_stack) > 0:
             old_extents = self.zoom_stack.pop()
             for subplot in self.subplots.flatten():
-                if subplot:
+                if subplot and len(subplot.images) > 0:
                     subplot.set_xlim(old_extents[0][0],old_extents[0][1])
                     subplot.set_ylim(old_extents[1][0],old_extents[1][1])
         self.__menu_item_zoom_out.Enable(len(self.zoom_stack) > 0)
@@ -345,14 +345,17 @@ class CPFigureFrame(wx.Frame):
                         self.zoom_rects[x,y].remove()
                         self.zoom_rects[x,y] = 0
                     if self.subplots[x,y]:
+                        axes = self.subplots[x,y]
+                        if len(axes.images) == 0:
+                            continue
                         if abs(x1 - x0) >= 5 and abs(y1-y0) >= 5:
                             if not old_limits:
-                                old_x0,old_x1 = self.subplots[x,y].get_xlim()
-                                old_y0,old_y1 = self.subplots[x,y].get_ylim()  
+                                old_x0,old_x1 = axes.get_xlim()
+                                old_y0,old_y1 = axes.get_ylim()  
                                 old_limits = ((old_x0, old_x1),
                                               (old_y0, old_y1))
-                            self.subplots[x,y].set_xlim(x0,x1)
-                            self.subplots[x,y].set_ylim(y1,y0)
+                            axes.set_xlim(x0,x1)
+                            axes.set_ylim(y1,y0)
                             self.zoom_stack.append(old_limits)
                             self.__menu_item_zoom_out.Enable(True)
             self.figure.canvas.draw()

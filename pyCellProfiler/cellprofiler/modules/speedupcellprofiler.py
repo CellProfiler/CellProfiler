@@ -56,9 +56,9 @@ class SpeedUpCellProfiler(cpm.CPModule):
 
     def query(self):
         if self.how_to_remove == C_REMOVE:
-            return "Select image to remove:"
+            return "Select image to remove"
         else:
-            return "Select image to keep:"
+            return "Select image to keep"
 
     def add_image(self):
         '''Add an image to the list of image names'''

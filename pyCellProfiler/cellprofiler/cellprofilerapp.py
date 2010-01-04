@@ -33,7 +33,7 @@ class CellProfilerApp(wx.App):
     def new_version_check(self, force=False):
         if cpp.get_check_new_versions() or force:
             import cellprofiler.utilities.check_for_updates as cfu
-            cfu.check_for_updates('http://broad.mit.edu/~thouis/CPversion.html', 
+            cfu.check_for_updates('http://cellprofiler.org/CPupdate.html', 
                                   0 if force else max(get_revision.version, cpp.get_skip_version()), 
                                   self.new_version_cb)
 

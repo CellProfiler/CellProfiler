@@ -28,7 +28,7 @@ import cellprofiler.objects as cpo
 import cellprofiler.preferences as cpprefs
 import cellprofiler.pipeline as cpp
 import cellprofiler.workspace as cpw
-import cellprofiler.modules.exporttoexcel as E 
+import cellprofiler.modules.exporttospreadsheet as E 
 
 class TestExportToExcel(unittest.TestCase):
 
@@ -37,7 +37,13 @@ class TestExportToExcel(unittest.TestCase):
 
     def tearDown(self):
         for file_name in os.listdir(self.output_dir):
-            os.remove(os.path.join(self.output_dir, file_name))
+            path = os.path.join(self.output_dir, file_name)
+            if os.path.isdir(path):
+                for ffiillee_nnaammee in os.listdir(path):
+                    os.remove(os.path.join(path, ffiillee_nnaammee))
+                os.rmdir(path)
+            else:
+                os.remove(path)
         os.rmdir(self.output_dir)
         self.output_dir = None
         
@@ -140,7 +146,57 @@ class TestExportToExcel(unittest.TestCase):
         self.assertTrue(module.wants_aggregate_means)
         self.assertFalse(module.wants_aggregate_medians)
         self.assertTrue(module.wants_aggregate_std)
-                        
+        
+    def test_000_04_load_v3(self):
+        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:1
+SVNRevision:8948
+
+ExportToSpreadsheet:[module_num:1|svn_version:\'8947\'|variable_revision_number:3|show_window:True|notes:\x5B\x5D]
+    Select or enter the column delimiter:Tab
+    Prepend the output file name to the data file names?:Yes
+    Add image metadata columns to your object data file?:No
+    Add image/object numbers to output?:Yes
+    Limit output to a size that is allowed in Excel?:No
+    Select the columns of measurements to export?:Yes
+    Calculate the per-image mean values for object measurements?:No
+    Calculate the per-image median values for object measurements?:Yes
+    Calculate the per-image standard deviation values for object measurements?:No
+    Where do you want to save the files?:Custom folder with metadata
+    Folder name\x3A:./\\<?Plate>
+    Data to export:Image
+    Combine these object measurements with those of the previous object?:No
+    Name the data file (not including the output filename, if prepending was requested above):PFX_Image.csv
+    Data to export:Nuclei
+    Combine these object measurements with those of the previous object?:No
+    Name the data file (not including the output filename, if prepending was requested above):Nuclei.csv
+"""
+        pipeline = cpp.Pipeline()
+        def callback(caller,event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO(data))
+        self.assertEqual(len(pipeline.modules()), 1)
+        module = pipeline.modules()[0]
+        self.assertTrue(isinstance(module,E.ExportToExcel))
+        self.assertEqual(module.delimiter_char, "\t")
+        self.assertTrue(module.prepend_output_filename)
+        self.assertFalse(module.add_metadata)
+        self.assertTrue(module.add_indexes)
+        self.assertFalse(module.excel_limits)
+        self.assertTrue(module.pick_columns)
+        self.assertFalse(module.wants_aggregate_means)
+        self.assertTrue(module.wants_aggregate_medians)
+        self.assertFalse(module.wants_aggregate_std)
+        self.assertEqual(module.directory_choice, E.DIR_CUSTOM_WITH_METADATA)
+        self.assertEqual(module.custom_directory,r"./\<?Plate>")
+        self.assertEqual(len(module.object_groups), 2)
+        for group, object_name, file_name in zip(module.object_groups,
+                                                 ("Image", "Nuclei"),
+                                                 ("PFX_Image.csv", "Nuclei.csv")):
+            self.assertEqual(group.name, object_name)
+            self.assertEqual(group.file_name, file_name)
+            
     def test_00_00_no_measurements(self):
         '''Test an image set with objects but no measurements'''
         path = os.path.join(self.output_dir, "my_file.csv")
@@ -603,6 +659,61 @@ class TestExportToExcel(unittest.TestCase):
             finally:
                 fd.close()
         
+    def test_04_03_image_with_path_metadata(self):
+        '''Test writing image data with 2 pairs of 2 image sets w same metadata'''
+        path = os.path.join(self.output_dir, "+++backslash+++g<tag>")
+        path = path.replace("\\","\\\\")
+        path = path.replace("+++backslash+++","\\")
+        module = E.ExportToExcel()
+        module.module_num = 1
+        module.prepend_output_filename.value = False
+        module.directory_choice.value = E.DIR_CUSTOM_WITH_METADATA
+        module.custom_directory.value = path
+        module.object_groups[0].name.value = cpmeas.IMAGE
+        module.object_groups[0].file_name.value = "output.csv"
+        m = cpmeas.Measurements()
+        np.random.seed(0)
+        mvalues = np.random.uniform(size=(4,))
+        image_set_list = cpi.ImageSetList()
+        for index,measurement,metadata in zip(range(4),mvalues,('foo','bar','bar','foo')):
+            image_set = image_set_list.get_image_set(index)
+            m.add_image_measurement("my_measurement", measurement)
+            m.add_image_measurement("Metadata_tag", metadata)
+            if index < 3:
+                m.next_image_set()
+        object_set = cpo.ObjectSet()
+        object_set.add_objects(cpo.Objects(), "my_objects")
+        workspace = cpw.Workspace(cpp.Pipeline(),
+                                  module,
+                                  image_set,
+                                  object_set,
+                                  m,
+                                  image_set_list)
+        for i in range(4):
+            module.post_run(workspace)
+        for path_name,value_indexes in (("foo",(0,3)),
+                                        ("bar",(1,2))):
+            path = os.path.join(self.output_dir, path_name, "output.csv")
+            fd = open(path,"r")
+            try:
+                reader = csv.reader(fd, delimiter=module.delimiter_char)
+                header = reader.next()
+                self.assertEqual(len(header),3)
+                d = {}
+                self.assertTrue("ImageNumber" in header)
+                self.assertTrue("my_measurement" in header)
+                self.assertTrue("Metadata_tag" in header)
+                for caption, index in zip(header,range(3)):
+                    d[caption] = index
+                for value_index in value_indexes:
+                    row = reader.next()
+                    self.assertEqual(len(row),3)
+                    self.assertAlmostEqual(float(row[d["my_measurement"]]),
+                                           mvalues[value_index],4)
+                self.assertRaises(StopIteration,reader.next)
+            finally:
+                fd.close()
+                
     def test_05_01_aggregate_image_columns(self):
         """Test output of aggregate object data for images"""
         path = os.path.join(self.output_dir, "my_file.csv")

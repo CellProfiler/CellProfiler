@@ -1,11 +1,32 @@
-'''<b>Export To Excel</b> exports measurements into one or more files that can be
+'''<b>Export To Spreadsheet</b> exports measurements into one or more files that can be
 opened in Excel or other spreadsheet programs.
 <hr>
 
 This module will convert the measurements to a comma-, tab-, or other 
 character-delimited text format and
 save them to the hard drive in one or several files, as requested. 
+<h2>Metadata tokens</h2>
+Export to Excel can write out separate files for groups of images based
+on their metadata. This is controlled by the directory and file names
+that you enter. For instance, you might have applied two treatments
+to each of your samples and labeled them with the metadata name, "Treatment1" 
+and "Treatment2" and you might want to create separate files for each 
+combination of treatments, storing all measurements with a given "Treatment1"
+in separate directories. You can do this by specifying metadata tags in
+for the folder name and file name.
+<br>
+To do this, you would choose, "Custom folder with metadata", enter the
+directory name, "\g&lt;Treatment1&gt;" and enter the file name, 
+"\g&lt;Treatment2&gt;". Here's an example table of the files that
+would be generated:<br><tt>
+<table border="1"><tr><th>Treatment1</th><th>Treatment2</th><th>Path</th></tr>
 
+<tr><td>1M_NaCl</td><td>20uM_DMSO</td><td>1M_NaCl/20uM_DMSO.csv</td></tr>
+<tr><td>1M_NaCl</td><td>40uM_DMSO</td><td>1M_NaCl/40uM_DMSO.csv</td></tr>
+<tr><td>2M_NaCl</td><td>20uM_DMSO</td><td>2M_NaCl/20uM_DMSO.csv</td></tr>
+<tr><td>2M_NaCl</td><td>40uM_DMSO</td><td>2M_NaCl/40uM_DMSO.csv</td></tr>\
+
+</table></tt>
 '''
 # CellProfiler is distributed under the GNU General Public License.
 # See the accompanying file LICENSE for details.
@@ -29,14 +50,14 @@ import cellprofiler.measurements as cpmeas
 import cellprofiler.settings as cps
 from cellprofiler.measurements import IMAGE, EXPERIMENT
 from cellprofiler.preferences import get_absolute_path, get_output_file_name
-from cellprofiler.preferences import ABSPATH_OUTPUT
+from cellprofiler.preferences import ABSPATH_OUTPUT, ABSPATH_IMAGE
 
 DELIMITER_TAB = "Tab"
 DELIMITER_COMMA = 'Comma (",")'
 DELIMITERS = (DELIMITER_COMMA,DELIMITER_TAB)
 
 """Offset of the first object group in the settings"""
-SETTING_OG_OFFSET = 9
+SETTING_OG_OFFSET = 11
 
 """Offset of the object name setting within an object group"""
 SETTING_OBJECT_NAME_IDX = 0
@@ -56,11 +77,16 @@ IMAGE_NUMBER = "ImageNumber"
 """The caption for the object # within an image set"""
 OBJECT_NUMBER = "ObjectNumber"
 
-class ExportToExcel(cpm.CPModule):
+DIR_DEFAULT_IMAGE = "Default image folder"
+DIR_DEFAULT_OUTPUT = "Default output folder"
+DIR_CUSTOM = "Custom folder"
+DIR_CUSTOM_WITH_METADATA = "Custom folder with metadata"
 
-    module_name = 'ExportToExcel'
+class ExportToSpreadsheet(cpm.CPModule):
+
+    module_name = 'ExportToSpreadsheet'
     category = 'File Processing'
-    variable_revision_number = 2
+    variable_revision_number = 3
     
     def create_settings(self):
         self.delimiter = cps.CustomChoice('Select or enter the column delimiter',DELIMITERS, doc = """
@@ -70,6 +96,31 @@ class ExportToExcel(cpm.CPModule):
         self.prepend_output_filename = cps.Binary("Prepend the output file name to the data file names?", True, doc = """
                             This can be useful if you want to run a pipeline multiple 
                             times without overwriting the old results.""")
+        self.directory_choice = cps.Choice(
+            "Where do you want to save the files?",
+            [DIR_DEFAULT_OUTPUT, DIR_DEFAULT_IMAGE, DIR_CUSTOM,
+             DIR_CUSTOM_WITH_METADATA],
+            doc="""This setting lets you choose the folder for the output
+            files.<br><ul>
+            <li><i>Default output folder</i>: saves the .csv files in the
+            default output folder</li>
+            <li><i>Default image folder</i>: saves the .csv files in the
+            default image folder</li>
+            <li><i>Custom folder</i>: lets you specify the folder name. Start
+            the folder name with "." to name a sub-folder of the output folder
+            (for instance, "./data"). Start the folder name with "&" to name
+            a sub-folder of the image folder.</li>
+            <li><i>Custom folder with metadata</i>: uses metadata substitution
+            to name the folder and to group the image sets by metadata tag.
+            For instance, if you have a metadata tag named, "Plate", you can
+            create a folder per-plate using the metadata tag, "./&lt;Plate&gt;".
+            </li></ul>""")
+        self.custom_directory = cps.Text(
+            "Folder name:", ".", doc="""This is the folder that will be used
+            to store the output files. Start
+            the folder name with "." to name a sub-folder of the output folder
+            (for instance, "./data"). Start the folder name with "&" to name
+            a sub-folder of the image folder.""")
         
         self.add_metadata = cps.Binary("Add image metadata columns to your object data file?", False, doc = """Image_Metadata_ columns are normally exported in the Image data file, but if you check this box, they will also be exported with the Object data file(s).""")
         
@@ -105,10 +156,26 @@ class ExportToExcel(cpm.CPModule):
     
     def add_object_group(self):
         group = cps.SettingsGroup()
-        group.append("name", EEObjectNameSubscriber("Data to export"))
-        group.append("previous_file", cps.Binary("Combine these object measurements with those of the previous object?",
-                                          False))
-        group.append("file_name", cps.Text("Name the data file (not including the output filename, if prepending was requested above)", "DATA.csv"))
+        group.append(
+            "name", EEObjectNameSubscriber("Data to export",
+            doc="""Choose either "Image", "Experiment" or an object name
+            from the list. <b>ExportToSpreadsheet</b> will write out a
+            file of measurements for the given category."""))
+        group.append(
+            "previous_file", cps.Binary(
+                "Combine these object measurements with those of the previous object?",
+                False,doc="""Check this setting to create a file composed
+                of measurements made on this object and the one directly
+                above this one. Leave the box unchecked to create separate
+                files for this and the previous object."""))
+        group.append("file_name", 
+                     cps.Text(
+                         "File name:", "DATA.csv",
+                         doc="""Enter a file name for the named objects' 
+                         measurements. <b>ExportToSpreadsheet</b> will
+                         prepend the name of the measurements file to this
+                         if you asked to do so above. It will also substitute
+                         metadata tokens if you asked to do that."""))
         group.append("remover", cps.RemoveSettingButton("", "Remove this data", self.object_groups, group))
         group.append("divider", cps.Divider(line=False))
         self.object_groups.append(group)
@@ -132,7 +199,8 @@ class ExportToExcel(cpm.CPModule):
                   self.add_metadata, self.add_indexes,
                   self.excel_limits, self.pick_columns,
                   self.wants_aggregate_means, self.wants_aggregate_medians,
-                  self.wants_aggregate_std]
+                  self.wants_aggregate_std, self.directory_choice,
+                  self.custom_directory]
         for group in self.object_groups:
             result += [group.name, group.previous_file, group.file_name]
         return result
@@ -140,10 +208,13 @@ class ExportToExcel(cpm.CPModule):
     def visible_settings(self):
         """Return the settings as seen by the user"""
         result = [self.delimiter, self.prepend_output_filename,
-                  self.add_metadata, self.add_indexes,
-                  self.excel_limits, self.pick_columns,
-                  self.wants_aggregate_means, self.wants_aggregate_medians,
-                  self.wants_aggregate_std]
+                  self.directory_choice]
+        if self.directory_choice in (DIR_CUSTOM, DIR_CUSTOM_WITH_METADATA):
+            result += [self.custom_directory]
+        result += [ self.add_metadata, self.add_indexes,
+                    self.excel_limits, self.pick_columns,
+                    self.wants_aggregate_means, self.wants_aggregate_medians,
+                    self.wants_aggregate_std]
         previous_group = None
         for group in self.object_groups:
             result += [group.name]
@@ -186,7 +257,7 @@ class ExportToExcel(cpm.CPModule):
     def run(self, workspace):
         # all of the work is done in post_run()
         pass
-
+    
     def post_run(self, workspace):
         object_names = []
         #
@@ -194,10 +265,7 @@ class ExportToExcel(cpm.CPModule):
         #
         for i in range(len(self.object_groups)):
             group = self.object_groups[i]
-            last_in_file = ((i == len(self.object_groups)-1) or
-                            (not is_object_group(group)) or
-                            (not is_object_group(self.object_groups[i+1])) or
-                            (not self.object_groups[i+1].previous_file.value))
+            last_in_file = self.last_in_file(i)
             if len(object_names) == 0:
                 filename = group.file_name.value
             object_names.append(group.name.value)
@@ -205,6 +273,21 @@ class ExportToExcel(cpm.CPModule):
                 self.run_objects(object_names, filename, workspace)
                 object_names = []
 
+    def last_in_file(self, i):
+        '''Return true if the group is the last to be included in a csv file
+        
+        i - the index of the group being considered.
+        
+        Objects can be collected together in one file. Return true if
+        this is the last object in a collection.
+        '''
+    
+        group = self.object_groups[i]
+        return ((i == len(self.object_groups)-1) or
+                (not is_object_group(group)) or
+                (not is_object_group(self.object_groups[i+1])) or
+                (not self.object_groups[i+1].previous_file.value))
+        
     def should_stop_writing_measurements(self):
         '''All subsequent modules should not write measurements'''
         return True
@@ -224,6 +307,8 @@ class ExportToExcel(cpm.CPModule):
             return
         
         tags = cpmeas.find_metadata_tokens(file_name)
+        if self.directory_choice == DIR_CUSTOM_WITH_METADATA:
+            tags += cpmeas.find_metadata_tokens(self.custom_directory.value)
         metadata_groups = workspace.measurements.group_by_metadata(tags)
         for metadata_group in metadata_groups:
             if len(object_names) == 1 and object_names[0] == IMAGE:
@@ -247,8 +332,20 @@ class ExportToExcel(cpm.CPModule):
         if not image_set_index is None:
             file_name = workspace.measurements.apply_metadata(file_name,
                                                               image_set_index)
-        file_name = get_absolute_path(file_name,
-                                      abspath_mode = ABSPATH_OUTPUT)
+        if self.directory_choice == DIR_DEFAULT_OUTPUT:
+            file_name = get_absolute_path(file_name,
+                                          abspath_mode = ABSPATH_OUTPUT)
+        elif self.directory_choice == DIR_DEFAULT_IMAGE:
+            file_name = get_absolute_path(file_name,
+                                          abspath_mode = ABSPATH_IMAGE)
+        else:
+            path = self.custom_directory.value
+            if (self.directory_choice == DIR_CUSTOM_WITH_METADATA and
+                workspace is not None and image_set_index is not None):
+                path = workspace.measurements.apply_metadata(path,
+                                                             image_set_index)
+            file_name = os.path.join(path, file_name)
+            file_name = os.path.abspath(file_name)
         path, file = os.path.split(file_name)
         if not os.path.isdir(path):
             os.makedirs(path)
@@ -466,23 +563,41 @@ class ExportToExcel(cpm.CPModule):
             # Variables 9 and 10 are the pathname and prefix and
             # are not yet replicated in pyCP
             #
-            if setting_values[8] != '.':
-                sys.stderr.write("Warning: pathname specification is not yet implemented in ExportToExcel")
+            custom_directory = '.'
+            if setting_values[8] == '.':
+                directory_choice = DIR_DEFAULT_OUTPUT
+            elif setting_values[8] == '&':
+                directory_choice = DIR_DEFAULT_IMAGE
+            elif setting_values[8].find(r"\(?<"):
+                directory_choice = DIR_CUSTOM_WITH_METADATA
+                custom_directory = setting_values[8]
+            else:
+                directory_choice = DIR_CUSTOM
+                custom_directory = setting_values[8]
             if setting_values[9] != cps.DO_NOT_USE:
-                sys.stderr.write("Warning: prefix specification is not yet implemented in ExportToExcel")
+                prefix = setting_values[9]+"_"
+            else:
+                prefix = ""
             object_names = [x for x in setting_values[:8]
                             if x != cps.DO_NOT_USE]
             setting_values = [ DELIMITER_TAB, cps.YES, cps.NO, cps.NO, 
-                              cps.NO, cps.NO ]
+                              cps.NO, cps.NO, cps.NO, cps.NO, cps.NO,
+                              directory_choice, custom_directory ]
             for name in object_names:
-                setting_values.extend([name, cps.NO, "%s.csv"%(name)])
-            variable_revision_number = 1
+                setting_values.extend([name, cps.NO, 
+                                       "%s%s.csv"%(prefix,name)])
+            variable_revision_number = 3
             from_matlab = False
         if variable_revision_number == 1 and not from_matlab:
             # Added aggregate questions
             setting_values = (setting_values[:6] + [cps.NO, cps.NO, cps.NO] + 
                               setting_values[6:])
             variable_revision_number = 2
+        if variable_revision_number == 2 and not from_matlab:
+            # Added directory choice questions
+            setting_values = (setting_values[:9] + [DIR_DEFAULT_OUTPUT, "."] +
+                              setting_values[9:])
+            variable_revision_number = 3
         return setting_values, variable_revision_number, from_matlab
 
 def is_object_group(group):
@@ -498,4 +613,4 @@ class EEObjectNameSubscriber(cps.ObjectNameSubscriber):
         choices += cps.ObjectNameSubscriber.get_choices(self, pipeline)
         return choices
 
-    
+ExportToExcel = ExportToSpreadsheet

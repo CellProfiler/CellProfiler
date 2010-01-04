@@ -22,7 +22,7 @@ import tempfile
 import StringIO
 import zlib
 
-import cellprofiler.modules.identifyprimautomatic as ID
+import cellprofiler.modules.identifyprimaryobjects as ID
 import cellprofiler.modules.identify as I
 import cellprofiler.cpmath.threshold as T
 from cellprofiler.modules.injectimage import InjectImage
@@ -34,7 +34,7 @@ import cellprofiler.pipeline
 from cellprofiler.workspace import Workspace
 import cellprofiler.modules.tests
 
-class test_IdentifyPrimAutomatic(unittest.TestCase):
+class test_IdentifyPrimaryObjects(unittest.TestCase):
     def load_error_handler(self, caller, event):
         if isinstance(event, cellprofiler.pipeline.LoadExceptionEvent):
             self.fail(event.error.message)
@@ -814,7 +814,7 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         pipeline.add_listener(self.load_error_handler)
         self.assertEqual(len(pipeline.modules()),1)
         module = pipeline.module(1)
-        self.assertTrue(isinstance(module,cellprofiler.modules.identifyprimautomatic.IdentifyPrimAutomatic))
+        self.assertTrue(isinstance(module,ID.IdentifyPrimaryObjects))
         self.assertTrue(module.threshold_algorithm,T.TM_OTSU)
         self.assertTrue(module.threshold_modifier,T.TM_GLOBAL)
         self.assertAlmostEqual(float(module.object_fraction.value),.01)
@@ -873,7 +873,7 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         pipeline.add_listener(self.load_error_handler)
         self.assertEqual(len(pipeline.modules()),1)
         module = pipeline.module(1)
-        self.assertTrue(isinstance(module,cellprofiler.modules.identifyprimautomatic.IdentifyPrimAutomatic))
+        self.assertTrue(isinstance(module,ID.IdentifyPrimaryObjects))
         self.assertEqual(module.threshold_algorithm,T.TM_OTSU)
         self.assertEqual(module.threshold_modifier,T.TM_GLOBAL)
         self.assertTrue(module.image_name == 'None')
@@ -908,7 +908,7 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         pipeline.load(fd)
         self.assertEqual(len(pipeline.modules()),2)
         module = pipeline.modules()[1]
-        self.assertTrue(isinstance(module,cellprofiler.modules.identifyprimautomatic.IdentifyPrimAutomatic))
+        self.assertTrue(isinstance(module,ID.IdentifyPrimaryObjects))
         self.assertTrue(module.threshold_algorithm,T.TM_OTSU)
         self.assertTrue(module.threshold_modifier,T.TM_GLOBAL)
         self.assertEqual(module.two_class_otsu.value, I.O_THREE_CLASS)
@@ -946,7 +946,7 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
             StringIO.StringIO(zlib.decompress(base64.b64decode(data))))        
         self.assertEqual(len(pipeline.modules()),2)
         module = pipeline.modules()[1]
-        self.assertTrue(isinstance(module,cellprofiler.modules.identifyprimautomatic.IdentifyPrimAutomatic))
+        self.assertTrue(isinstance(module,ID.IdentifyPrimaryObjects))
         self.assertTrue(module.threshold_algorithm,T.TM_OTSU)
         self.assertTrue(module.threshold_modifier,T.TM_GLOBAL)
         self.assertEqual(module.two_class_otsu.value, I.O_THREE_CLASS)

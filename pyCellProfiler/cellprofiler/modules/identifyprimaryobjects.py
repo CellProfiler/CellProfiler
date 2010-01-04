@@ -1,4 +1,4 @@
-'''<b>Identify Prim Automatic</b> identifies objects via thresholding and contouring.
+'''<b>Identify Primary Objects</b> identifies objects via thresholding and contouring.
 <hr>
 This module identifies primary objects (e.g. nuclei) in grayscale images
 containing bright objects on a dark background. The module has many
@@ -197,11 +197,11 @@ AUTOMATIC_MAXIMA_SUPPRESSION    = 19
 MANUAL_THRESHOLD_VAR            = 20
 BINARY_IMAGE_VAR                = 21
 
-class IdentifyPrimAutomatic(cpmi.Identify):
+class IdentifyPrimaryObjects(cpmi.Identify):
             
     variable_revision_number = 4
     category =  "Object Processing"
-    module_name = "IdentifyPrimAutomatic"
+    module_name = "IdentifyPrimaryObjects"
     
     def create_settings(self):
         self.image_name = cps.ImageNameSubscriber(
@@ -1079,3 +1079,4 @@ class IdentifyPrimAutomatic(cpmi.Identify):
         return self.get_threshold_measurement_objects(pipeline, object_name,
                                                       category, measurement,
                                                       self.object_name.value)
+IdentifyPrimAutomatic = IdentifyPrimaryObjects

@@ -1,4 +1,4 @@
-'''<b>Identify Secondary</b> identifies objects (e.g. cell edges) using "seed" objects identified by
+'''<b>Identify Secondary Objects</b> identifies objects (e.g. cell edges) using "seed" objects identified by
 an Identify Primary module (e.g. nuclei).
 <hr>
 This module identifies secondary objects (e.g. cell edges) based on two
@@ -25,7 +25,8 @@ there is no separation between adjacent areas with different labels (as there
 would be using, e.g., watershed). Such boundaries must be added in a
 postprocess.
 
-For the theshold-related settings in this module please refer to <b>IdentifyPrimAutomatic</b>.
+For the theshold-related settings in this module please refer to 
+<b>IdentifyPrimaryObjects</b>.
 
 Also see the other <b>Identify</b> modules.
 '''
@@ -69,9 +70,9 @@ M_WATERSHED_I = "Watershed - Image"
 M_DISTANCE_N = "Distance - N"
 M_DISTANCE_B = "Distance - B"
 
-class IdentifySecondary(cpmi.Identify):
+class IdentifySecondaryObjects(cpmi.Identify):
 
-    module_name = "IdentifySecondary"
+    module_name = "IdentifySecondaryObjects"
     variable_revision_number = 3
     category = "Object Processing"
     
@@ -647,3 +648,4 @@ class IdentifySecondary(cpmi.Identify):
                                                       category, measurement,
                                                       self.objects_name.value)
                                                       
+IdentifySecondary = IdentifySecondaryObjects

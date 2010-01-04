@@ -1,4 +1,4 @@
-"""test_identifytertiarysubregion.py - test the IdentifyTertiarySubregion module
+"""test_identifytertiaryobjects.py - test the IdentifyTertiaryObjects module
 
 CellProfiler is distributed under the GNU General Public License.
 See the accompanying file LICENSE for details.
@@ -19,7 +19,7 @@ import unittest
 import zlib
 
 import cellprofiler.modules.identify as cpmi
-import cellprofiler.modules.identifytertiarysubregion as cpmit
+import cellprofiler.modules.identifytertiaryobjects as cpmit
 import cellprofiler.workspace as cpw
 import cellprofiler.pipeline as cpp
 import cellprofiler.cpimage as cpi
@@ -31,7 +31,7 @@ SECONDARY = "secondary"
 TERTIARY = "tertiary"
 OUTLINES = "Outlines"
 
-class TestIdentifyTertiarySubregion(unittest.TestCase):
+class TestIdentifyTertiaryObjects(unittest.TestCase):
     def on_pipeline_event(self, caller, event):
         self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
 

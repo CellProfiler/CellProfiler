@@ -1,4 +1,4 @@
-'''<b>Identify tertiary subregion</b> identifies tertiary objects (e.g. cytoplasm) by removing smaller primary
+'''<b>Identify tertiary objects</b> identifies tertiary objects (e.g. cytoplasm) by removing smaller primary
 objects (e.g. nuclei) from larger secondary objects (e.g. cells), leaving a ring shape
 <hr>
 This module will take the smaller identified objects and remove them from
@@ -47,9 +47,9 @@ import cellprofiler.gui.cpfigure as cpf
 import cellprofiler.preferences as cpprefs
 from cellprofiler.cpmath.outline import outline
 
-class IdentifyTertiarySubregion(cpm.CPModule):
+class IdentifyTertiaryObjects(cpm.CPModule):
 
-    module_name = "IdentifyTertiarySubregion"
+    module_name = "IdentifyTertiaryObjects"
     variable_revision_number = 1
     category = "Object Processing"
     
@@ -339,3 +339,4 @@ class IdentifyTertiarySubregion(cpm.CPModule):
                 result += ["Object_Number"]
         return result
     
+IdentifyTertiarySubregion = IdentifyTertiaryObjects

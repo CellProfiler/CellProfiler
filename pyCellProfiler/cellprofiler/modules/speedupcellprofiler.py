@@ -3,9 +3,9 @@
 This module removes images from memory which can speed up processing and
 prevent memory errors.
 
-Note: CellProfiler 1.0's SpeedUpCellProfiler had an option that let the user
-choose how often the output file (DefaultOUT.mat) was saved. This option has been
-moved to the preferences settings.
+Note: CellProfiler 1.0's SpeedUpCellProfiler had an option that let you 
+choose how often the output file was saved. This option has been
+moved to the preferences settings (File > Preferences).
 '''
 # CellProfiler is distributed under the GNU General Public License.
 # See the accompanying file LICENSE for details.
@@ -40,7 +40,7 @@ class SpeedUpCellProfiler(cpm.CPModule):
     variable_revision_number = 1
     
     def create_settings(self):
-        self.how_to_remove = cps.Choice("Select images to remove or images to keep?",
+        self.how_to_remove = cps.Choice("Specify which images?",
                                         [C_REMOVE, C_KEEP], 
                                         doc="""
             Choose <i>%s</i> to remove some images from memory and keep the rest.
@@ -50,7 +50,7 @@ class SpeedUpCellProfiler(cpm.CPModule):
         self.image_names = []
         self.add_image()
         self.spacer_bottom = cps.Divider(line=False)
-        self.add_image_button = cps.DoSomething("", "Add entry",
+        self.add_image_button = cps.DoSomething("", "Add image",
                                                 self.add_image)
     
 
@@ -64,8 +64,8 @@ class SpeedUpCellProfiler(cpm.CPModule):
         '''Add an image to the list of image names'''
         group = cps.SettingsGroup()
         group.append("image_name", cps.ImageNameSubscriber(self.query(), "None"))
-        group.append("remover", cps.RemoveSettingButton("Remove the entry above",
-                                                        "Remove",
+        group.append("remover", cps.RemoveSettingButton("",
+                                                        "Remove this image",
                                                         self.image_names,
                                                         group))
         self.image_names.append(group)

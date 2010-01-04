@@ -1,14 +1,15 @@
-'''<b>MakeProjection</b>: Makes a projection either by averaging or taking the maximum pixel value
-at each pixel position.
+'''<b>Make Projection</b> combines several two-dimensional images of 
+the same field of view together, either by averaging or taking the 
+maximum pixel value at each pixel position
 
 <hr>
 
-This module averages a set of images by averaging the pixel intensities
-at each pixel position. When this module is used to average a Z-stack
-(3-D image stack), this process is known as making a projection.
+This module combines a set of images by averaging the pixel intensities
+(or taking the maximum pixel intensity) at each pixel position. The 
+process of averaging a Z-stack (3-D image stack) is known as making a projection.
 
-The image is immediately available in subsequent modules. The complete
-projection is not complete until the last image in the image set is run.
+The image is not immediately available in subsequent modules because the
+output of this module is not complete until all image processing cycles have completed.
 
 To make a projection of all images in a directory, group the images 
 as such using metadata (extracted from the subdirectory path) in LoadImages.
@@ -44,7 +45,7 @@ class MakeProjection(cpm.CPModule):
     variable_revision_number = 1
     def create_settings(self):
         self.image_name = cps.ImageNameSubscriber('Select the input image','None', doc = '''What did you call the images to be made into a projection?''')
-        self.projection_type = cps.Choice('Type of projection:',
+        self.projection_type = cps.Choice('Type of projection',
                                           P_ALL, doc = '''
                                           What kind of projection would you like to make?
                                           <ul><li>Average: The average pixel intensity at each pixel position

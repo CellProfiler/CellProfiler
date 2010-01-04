@@ -43,7 +43,7 @@ MEASUREMENT_FEATURE = "MyFeature"
 MEASUREMENT_NAME = '_'.join((MEASUREMENT_CATEGORY,MEASUREMENT_FEATURE))
 
 class TestFlagImages(unittest.TestCase):
-    def test_01_01_load_matlab(self):
+    def test_01_01_00_load_matlab_v1(self):
         data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0s'
                 'SU1RyM+zUnArylRwLE1XMDJUMDSwMjWzMrZQMDIwsFQgGTAwevryMzAwxDMx'
                 'MFTMeTvdP/+ygciBuSZzrVpubRSe1fJEWXyBsNOjE9cCAzNfh1n5Pmq5J2W+'
@@ -98,6 +98,44 @@ class TestFlagImages(unittest.TestCase):
         self.assertEqual(ms.maximum_value.value, 500)
         self.assertEqual(flag.category, "Metadata")
         self.assertEqual(flag.feature_name, "QCFlag")
+        
+    def test_01_01_02_load_matlab_v2(self):
+        data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0s'
+                'SU1RyM+zUvDNz1PwSsxTMDBRMLC0MjW0MjJVMDIwNFAgGTAwevryMzAw5DAx'
+                'MFTMeRvmmH/ZQKTsUskWmVVGnJyKKkVPDt1wWCArqSs6NWPXxiwh9/WFzUuP'
+                'rBNKz7b4ONui8En7B+Yfkjcib6nF3bKIvGGRcHLTvM/3vt/7nbN/Dx9Dwn7u'
+                'A3zx0TWvHmSZCEd6+yrOVzpmUNikZnBgccp/9fnpF45/uOOafoE3kCEseae9'
+                'irFV57PV/spZ7XqbFkwPe3aYa2/xE/bHNy8Z/KzpET9hezRe8ETf0lvqJY3M'
+                'Pp5J8x+c3q29f4pnnXXNv7z1lRdU5KRq3i371vovesM186KK18u+7D45ZwFr'
+                '9b86xuVnvijMrhO0+M1q0cvjx/xl7eIb/xMbY7lT/nJXvkl+LmuvJLrf7dg9'
+                'hr+LHy/smjtt4+WkWtF9t4L2OMkJtXk0RE55tFcrPvWxXUDPbuWjuk84Uy/4'
+                'sq5vKo4/JFg0f1aLkTHPhKp/s3/ob7psXGZlURGZfye0QCerakaC/pcrn6d/'
+                'vlH9N/8Jo/hNm3dC6vrr+Vkt+FVkFL/XsEgaLfS8sNSyeCHzP7m42Eqxq2er'
+                'hfom6JZYClwMWbt78Ysl6gx5m/lOfI2+Wh8nK+eafF0u5fziHNmqqTcYM9d2'
+                '81euLfpvsPEj6zbnF7NuNJ9b5X3isH50u04Ur/uzwvVK/ZXPX/0w4Fp2wdWy'
+                'YtXHk/9vn5+zdfcT7772PQ07Le5/efs3btb62feu/zCytON9/vVxTlT3h8+/'
+                'LpvuOzmfaVb+4f/v18vV6+Z+tp3yvvhq9eeJTtUztDK0vn5c2KL8RLDJ8cVi'
+                'Ca27s8PfTj6qr8omHfB/Sfnf2vciHxYWZ17PuL9iv/7r9StfX//VoGStfLHy'
+                '85ffk+P71//5x/D03N+bYn+f7tD9a7/C4c00AGyvW4A=')
+        pipeline = cpp.Pipeline()
+        def callback(caller,event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
+        self.assertEqual(len(pipeline.modules()), 3)
+        module = pipeline.modules()[-1]
+        self.assertTrue(isinstance(module, F.FlagImage))
+        self.assertEqual(len(module.flags), 1)
+        flags = module.flags[0]
+        self.assertEqual(len(flags.measurement_settings), 1)
+        ms = flags.measurement_settings[0]
+        self.assertEqual(ms.measurement.value, "Intensity_TotalIntensity_OrigBlue_12")
+        self.assertEqual(ms.source_choice, F.S_IMAGE)
+        self.assertTrue(ms.wants_minimum.value)
+        self.assertFalse(ms.wants_maximum.value)
+        self.assertEqual(ms.minimum_value.value, .5)
+        self.assertEqual(flags.category, "Metadata")
+        self.assertEqual(flags.feature_name, "MyQCFlag")
     
     def test_01_02_load_v1(self):
         data = ('eJztW0Fv2zYUphInaFZgyC5r1124Q4FkqwXJXVAnGFJ59ooYqzOvCboVRdcx'

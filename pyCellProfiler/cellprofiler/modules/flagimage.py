@@ -321,12 +321,14 @@ measurement name would be Metadata_QCFlag.'''))
             if variable_revision_number == 1:
                 image_name, category, feature_num_or_name, min_value, max_value, \
                       new_or_append, new_name, old_name = setting_values
+                measurement_name = '_'.join((category, feature_num_or_name,
+                                             image_name))
             elif variable_revision_number == 2:
                 image_name, category, feature_num_or_name, scale, min_value, max_value, \
                       new_or_append, new_name, old_name = setting_values
                  
-            measurement_name = '_'.join((category, feature_num_or_name,
-                                         image_name))
+                measurement_name = '_'.join((category, feature_num_or_name,
+                                             image_name, scale))
             if min_value == 'No minimum':
                 wants_minimum = cps.NO
                 min_value = "0"

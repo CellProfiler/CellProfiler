@@ -150,7 +150,7 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
                         from the object center). This number
                         specifies the number of rings that the distribution is to
                         be divided into. Additional ring counts can be specified
-                        by clicking the <i>Add another bin count</i> button below."""))
+                        by clicking the <i>Add another set of bins</i> button."""))
         if can_remove:
             group.append("remover", cps.RemoveSettingButton("", "Remove this set of bins", self.bin_counts, group))
         self.bin_counts.append(group)

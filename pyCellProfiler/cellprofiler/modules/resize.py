@@ -5,15 +5,15 @@ can resize an image by applying a resizing factor or by specifying a
 pixel size for the resized image. You can also select which interpolation
 method to use. 
 """
-#CellProfiler is distributed under the GNU General Public License.
-#See the accompanying file LICENSE for details.
-#
-#Developed by the Broad Institute
-#Copyright 2003-2009
-#
-#Please see the AUTHORS file for credits.
-#
-#Website: http://www.cellprofiler.org
+# CellProfiler is distributed under the GNU General Public License.
+# See the accompanying file LICENSE for details.
+# 
+# Developed by the Broad Institute
+# Copyright 2003-2010
+# 
+# Please see the AUTHORS file for credits.
+# 
+# Website: http://www.cellprofiler.org
 __version__="$Revision$"
 
 import numpy as np

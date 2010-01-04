@@ -122,15 +122,15 @@ objects (e.g. SmallRemovedSegmented Nuclei).</li></ul>
 See also <b>IdentifySecondary</b>,<b>IdentifyTertiarySubregion</b>, <b>IdentifyPrimManual</b>
 '''
 
-#CellProfiler is distributed under the GNU General Public License.
-#See the accompanying file LICENSE for details.
-#
-#Developed by the Broad Institute
-#Copyright 2003-2009
-#
-#Please see the AUTHORS file for credits.
-#
-#Website: http://www.cellprofiler.org
+# CellProfiler is distributed under the GNU General Public License.
+# See the accompanying file LICENSE for details.
+# 
+# Developed by the Broad Institute
+# Copyright 2003-2010
+# 
+# Please see the AUTHORS file for credits.
+# 
+# Website: http://www.cellprofiler.org
 
 __version__="$Revision$"
 

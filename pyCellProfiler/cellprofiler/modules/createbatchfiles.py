@@ -15,15 +15,15 @@ and the cluster computers access the same file system like this:
 In this case, the local root path is <i>Z:\imaging_analysis</i> and the cluster 
 root path is <i>/imaging/analysis</i>.
 '''
-#CellProfiler is distributed under the GNU General Public License.
-#See the accompanying file LICENSE for details.
-#
-#Developed by the Broad Institute
-#Copyright 2003-2009
-#
-#Please see the AUTHORS file for credits.
-#
-#Website: http://www.cellprofiler.org
+# CellProfiler is distributed under the GNU General Public License.
+# See the accompanying file LICENSE for details.
+# 
+# Developed by the Broad Institute
+# Copyright 2003-2010
+# 
+# Please see the AUTHORS file for credits.
+# 
+# Website: http://www.cellprofiler.org
 
 __version__="$Revision$"
 

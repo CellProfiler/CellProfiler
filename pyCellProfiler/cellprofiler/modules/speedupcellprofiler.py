@@ -1,7 +1,7 @@
-'''<b>Speed Up CellProfiler</b> speeds up cellprofiler by removing images from memory
+'''<b>Speed Up CellProfiler</b> speeds up CellProfiler by removing images from memory
 <hr>
 This module removes images from memory which can speed up processing and
-prevent memory errors.
+prevent out-of-memory errors.
 
 Note: CellProfiler 1.0's SpeedUpCellProfiler had an option that let you 
 choose how often the output file was saved. This option has been

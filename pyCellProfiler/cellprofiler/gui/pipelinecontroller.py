@@ -16,6 +16,7 @@ import numpy
 import wx
 import os
 import re
+import sys
 import traceback
 import scipy.io.matlab.mio
 import cpframe
@@ -199,15 +200,21 @@ class PipelineController:
 
         return True if the user saved the pipeline
         '''
+        wildcard="CellProfiler pipeline (*.cp)|*.cp"
         dlg = wx.FileDialog(self.__frame,
                             "Save pipeline",
-                            wildcard="CellProfiler pipeline (*.cp)|*.cp",
+                            wildcard=wildcard,
                             style=wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT)
         path = cellprofiler.preferences.get_current_pipeline_path()
         if path is not None:
             dlg.Path = path
         if dlg.ShowModal() == wx.ID_OK:
-            pathname = os.path.join(dlg.GetDirectory(),dlg.GetFilename())
+            file_name = dlg.GetFilename()
+            if not sys.platform.startswith("win"):
+                if file_name.find('.') == -1:
+                    # on platforms other than Windows, add the default suffix
+                    file_name += ".cp"
+            pathname = os.path.join(dlg.GetDirectory(), file_name)
             self.__pipeline.save(pathname)
             cellprofiler.preferences.set_current_pipeline_path(dlg.Path)
             self.__dirty_pipeline = False

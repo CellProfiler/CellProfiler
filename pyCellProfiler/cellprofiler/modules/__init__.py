@@ -70,8 +70,7 @@ pymodule_to_cpmodule = {'align' : 'Align',
                         'saveimages' : 'SaveImages',
                         'speedupcellprofiler' : 'SpeedUpCellProfiler',
                         'smooth' : 'Smooth',
-                        'trackobjects' : 'TrackObjects',
-                        'imageconvexhull' : 'ImageConvexHull',
+                        'trackobjects' : 'TrackObjects'
                         }
 
 # CP-Matlab to CP-python module substitutions
@@ -99,6 +98,8 @@ substitutions = {'Average': 'MakeProjection',
                  'IdentifySecondary': 'IdentifySecondaryObjects',
                  'cellprofiler.modules.identifytertiarysubregion.IdentifyTertiarySubregion': 'IdentifyTertiaryObjects',
                  'IdentifyTertiarySubregion': 'IdentifyTertiaryObjects',
+                 'cellprofiler.modules.imageconvexhull.ImageConvexHull': 'Morph',
+                 'ImageConvexHull': 'Morph',
                  'InvertIntensity': 'ImageMath',
                  'KeepLargestObject' : 'FilterObjects',
                  'cellprofiler.modules.measureobjectareashape.MeasureObjectAreaShape':'MeasureObjectSizeShape',

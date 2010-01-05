@@ -665,6 +665,18 @@ class Morph(cpm.CPModule):
             setting_values = new_setting_values
             from_matlab = False
             variable_revision_number = 1
+        if ((not from_matlab) and module_name == 'ImageConvexHull' and
+            variable_revision_number == 1):
+            #
+            # Convert ImageConvexHull into an invert operation and
+            # a convex hull operation
+            #
+            image_name, output_name = setting_values
+            setting_values = [image_name, output_name, 
+                              F_INVERT, R_ONCE, "1",
+                              F_CONVEX_HULL, R_ONCE, "1"]
+            module_name = self.module_name
+            variable_revision_number = 1
         return setting_values, variable_revision_number, from_matlab
                         
 

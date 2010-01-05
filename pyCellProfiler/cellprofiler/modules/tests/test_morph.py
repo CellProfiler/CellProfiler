@@ -226,4 +226,30 @@ class TestMorph(unittest.TestCase):
             else:
                 return y / np.max(y)
         self.binary_tteesstt('distance', distance, True)
+        
+    def test_02_21_binary_convex_hull(self):
+        #
+        # Set the four points of a square to True
+        #
+        image = np.zeros((20,15), bool)
+        image[2,3] = True
+        image[17,3] = True
+        image[2,12] = True
+        image[17,12] = True
+        expected = np.zeros((20,15), bool)
+        expected[2:18,3:13] = True
+        result = self.execute(image, 'convex hull')
+        self.assertTrue(np.all(result == expected))
+        
+    def test_02_22_binary_invert(self):
+        def invert(x):
+            return ~ x
+        self.binary_tteesstt('invert', invert, True)
+        
+    def test_02_23_gray_invert(self):
+        np.random.seed(0)
+        image = np.random.uniform(size=(20,15))
+        result = self.execute(image, 'invert')
+        self.assertTrue(np.all(result == (1-image)))
+        
     

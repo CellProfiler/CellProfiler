@@ -88,6 +88,14 @@ fill holes and join nearby objects.
 <td>Binary, grayscale</td>
 </tr>
 <tr>
+<td><i>Convex hull</i></td>
+<td>Find the convex hull of a binary image. The convex hull is the smallest
+convex polygon that fits around all foreground pixels of the image - it is
+the shape that a rubber band would take if stretched around the foreground
+pixels. The convex hull can be used to regularize the boundary of a large,
+single object in an image, for instance, the edge of a well.</td>
+<td>Binary</td>
+<tr>
 <td><i>Diag</i></td>
 <td>Fill in pixels whose neighbors are diagnonally connected to 4-connect 
 pixels that are 8-connected:<br>
@@ -202,6 +210,12 @@ For grayscale, each pixel is replaced by the minimum of its neighbors and itself
 </table>
 </td>
 <td>Binary</td>
+</tr>
+<tr>
+<td><i>Invert</i></td>
+<td>For a binary image, transform background to foreground and vice-versa.
+For a grayscale image, invert its intensity.
+</td><td>Binary, Grayscale</td>
 </tr>
 <tr>
 <td><i>Majority</i></td>
@@ -362,6 +376,7 @@ F_BRANCHPOINTS = 'branchpoints'
 F_BRIDGE = 'bridge'
 F_CLEAN  = 'clean'
 F_CLOSE  = 'close'
+F_CONVEX_HULL = 'convex hull'
 F_DIAG   = 'diag'
 F_DILATE = 'dilate'
 F_DISTANCE = 'distance'
@@ -369,6 +384,7 @@ F_ENDPOINTS = 'endpoints'
 F_ERODE  = 'erode'
 F_FILL   = 'fill'
 F_HBREAK = 'hbreak'
+F_INVERT = 'invert'
 F_LIFE   = 'life'
 F_MAJORITY = 'majority'
 F_OPEN   = 'open'
@@ -380,10 +396,10 @@ F_THICKEN = 'thicken'
 F_THIN   = 'thin'
 F_TOPHAT = 'tophat'
 F_VBREAK = 'vbreak'
-F_ALL = [F_BOTHAT, F_BRANCHPOINTS, F_BRIDGE, F_CLEAN, F_CLOSE, F_DIAG, 
-         F_DILATE, F_DISTANCE, F_ENDPOINTS, F_ERODE,
-         F_FILL, F_HBREAK, F_LIFE, F_MAJORITY, F_OPEN, F_REMOVE, F_SHRINK, 
-         F_SKEL, F_SPUR, F_THICKEN, F_THIN, F_TOPHAT, F_VBREAK]
+F_ALL = [F_BOTHAT, F_BRANCHPOINTS, F_BRIDGE, F_CLEAN, F_CLOSE, F_CONVEX_HULL,
+         F_DIAG, F_DILATE, F_DISTANCE, F_ENDPOINTS, F_ERODE,
+         F_FILL, F_HBREAK, F_INVERT, F_LIFE, F_MAJORITY, F_OPEN, F_REMOVE, 
+         F_SHRINK, F_SKEL, F_SPUR, F_THICKEN, F_THIN, F_TOPHAT, F_VBREAK]
 
 R_ONCE = 'Once'
 R_FOREVER = 'Forever'
@@ -497,7 +513,7 @@ class Morph(cpm.CPModule):
         '''Apply the function once to the image, returning the result'''
         is_binary =  pixel_data.dtype.kind == 'b'
         if (function_name in (F_BRANCHPOINTS, F_BRIDGE, F_CLEAN, F_DIAG, 
-                              F_DISTANCE, F_ENDPOINTS, F_FILL,
+                              F_CONVEX_HULL, F_DISTANCE, F_ENDPOINTS, F_FILL,
                               F_HBREAK, F_LIFE, F_MAJORITY, F_REMOVE, F_SHRINK,
                               F_SKEL, F_SPUR, F_THICKEN, F_THIN, F_VBREAK) 
             and not is_binary):
@@ -507,8 +523,9 @@ class Morph(cpm.CPModule):
             pixel_data = pixel_data != 0
 
         if (function_name in (F_BRANCHPOINTS, F_BRIDGE, F_CLEAN, F_DIAG, 
-                              F_DISTANCE, F_ENDPOINTS, F_FILL,
-                              F_HBREAK, F_LIFE, F_MAJORITY, F_REMOVE, F_SHRINK,
+                              F_CONVEX_HULL, F_DISTANCE, F_ENDPOINTS, F_FILL,
+                              F_HBREAK, F_INVERT, F_LIFE, F_MAJORITY, F_REMOVE,
+                              F_SHRINK,
                               F_SKEL, F_SPUR, F_THICKEN, F_THIN, F_VBREAK) or
             (is_binary and
              function_name in (F_CLOSE, F_DILATE, F_ERODE, F_OPEN))):
@@ -530,7 +547,11 @@ class Morph(cpm.CPModule):
                                                  np.ones((3,3),bool),
                                                  iterations = count) |
                             (pixel_data & ~ mask))
-                
+            elif function_name == F_CONVEX_HULL:
+                if mask is None:
+                    return morph.convex_hull_image(pixel_data)
+                else:
+                    return morph.convex_hull_image(pixel_data & mask)
             elif function_name == F_DIAG:
                 return morph.diag(pixel_data, mask, count)
             elif function_name == F_DILATE:
@@ -554,6 +575,19 @@ class Morph(cpm.CPModule):
                 return morph.fill(pixel_data, mask, count)
             elif function_name == F_HBREAK:
                 return morph.hbreak(pixel_data, mask, count)
+            elif function_name == F_INVERT:
+                if is_binary:
+                    if mask is None:
+                        return ~ pixel_data
+                    result = pixel_data.copy()
+                    result[mask] = ~result[mask]
+                    return result
+                elif mask is None:
+                    return 1-pixel_data
+                else:
+                    result = pixel_data.copy()
+                    result[mask]  = 1-result[mask]
+                    return result
             elif function_name == F_LIFE:
                 return morph.life(pixel_data, count)
             elif function_name == F_MAJORITY:

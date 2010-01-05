@@ -258,23 +258,26 @@ class ModuleRunner(threading.Thread):
         self.exited_run = True
         
     def post_done(self):
-        import wx
+        post_module_runner_done_event(self.notify_window)
+        
+def post_module_runner_done_event(window):
+    import wx
 
-        # Defined here because the module should not depend on wx.
-        class ModuleRunnerDoneEvent(wx.PyEvent):
-            """In spite of its name, this event is posted both when a module
-            runner is done (i.e., when the module's run() method is finished)
-            and then again when run_with_yield has displayed the module's
-            results and collected its measurements."""
-            def __init__(self):
-                wx.PyEvent.__init__(self)
-                self.SetEventType(evt_modulerunner_event_type())
-                self.SetId(evt_modulerunner_done_id())
-            def RequestMore(self):
-                "For now, make this work with code written for IdleEvent."
-                pass
+    # Defined here because the module should not depend on wx.
+    class ModuleRunnerDoneEvent(wx.PyEvent):
+        """In spite of its name, this event is posted both when a module
+        runner is done (i.e., when the module's run() method is finished)
+        and then again when run_with_yield has displayed the module's
+        results and collected its measurements."""
+        def __init__(self):
+            wx.PyEvent.__init__(self)
+            self.SetEventType(evt_modulerunner_event_type())
+            self.SetId(evt_modulerunner_done_id())
+        def RequestMore(self):
+            "For now, make this work with code written for IdleEvent."
+            pass
 
-        wx.PostEvent(self.notify_window, ModuleRunnerDoneEvent())
+    wx.PostEvent(window, ModuleRunnerDoneEvent())
 
 
 class Pipeline(object):

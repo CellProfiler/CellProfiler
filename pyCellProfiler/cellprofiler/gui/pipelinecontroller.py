@@ -46,6 +46,7 @@ class PipelineController:
         self.__running_pipeline = None
         self.__dirty_pipeline = False
         self.__inside_running_pipeline = False 
+        self.__pause_pipeline = False
         self.__pipeline_measurements = None
         self.__debug_image_set_list = None
         self.__debug_measurements = None
@@ -306,22 +307,8 @@ class PipelineController:
             if error_msg is None:
                 error_msg = event.error.message
             message = "Error while processing %s:\n%s\n\nDo you want to stop processing?"%(event.module.module_name,error_msg)
-            #
-            # The Mac UI hangs if you display a message box with
-            # the progress frame up. But, when you display the message
-            # box, the buttons look like little bubbles which is very
-            # pretty.
-            #
-            if (self.__progress_frame is not None and 
-                self.__progress_frame.IsShown()):
-               was_shown = True
-               self.__progress_frame.Hide()
-            else:
-               was_shown = False
             if wx.MessageBox(message,"Pipeline error",wx.YES_NO | wx.ICON_ERROR,self.__frame) == wx.NO:
                 event.cancel_run = False
-            if was_shown:
-               self.__progress_frame.Show(True)
         elif isinstance(event, cellprofiler.pipeline.LoadExceptionEvent):
             if event.module is None:
                 module_name = event.module_name
@@ -438,6 +425,12 @@ class PipelineController:
         output_path = self.get_output_file_path()
         if output_path:
             self.__progress_frame = ProgressFrame(self.__frame)
+            self.__progress_frame.Bind(wx.EVT_BUTTON, 
+                                       self.on_progress_play_pause,
+                                       self.__progress_frame.play_pause_button)
+            self.__progress_frame.Bind(wx.EVT_BUTTON,
+                                       self.on_stop_running,
+                                       self.__progress_frame.stop_button)
             # XXX: Uncomment to show half-baked progress dialog
             self.__progress_frame.Show(True)
             if self.__running_pipeline:
@@ -463,6 +456,15 @@ class PipelineController:
                 else:
                     wx.MessageBox("Pipeline processing finished, no measurements taken", "Analysis complete")
     
+    def on_progress_play_pause(self, event):
+        if not self.__pause_pipeline:
+            self.__progress_frame.pause()
+            self.__pause_pipeline = True
+        else:
+            self.__progress_frame.play()
+            self.__pause_pipeline = False
+            cellprofiler.pipeline.post_module_runner_done_event(self.__frame)
+        
     def on_frame_menu_open(self, event):
         pass
     
@@ -472,6 +474,7 @@ class PipelineController:
     
     def stop_running(self):
         self.__running_pipeline = False
+        self.__pause_pipeline = False
         self.__frame.preferences_view.on_stop_analysis()
         self.__module_view.enable()
         #self.__progress_frame.Show(False)
@@ -740,7 +743,7 @@ class PipelineController:
         cellprofiler.pipeline.ModuleRunnerDoneEvent whenever a module
         is done running.
         '''
-        if self.__running_pipeline:            
+        if self.__running_pipeline and not self.__pause_pipeline:       
             try:
                 self.__pipeline_measurements = self.__running_pipeline.next()
                 event.RequestMore()

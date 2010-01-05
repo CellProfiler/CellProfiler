@@ -82,6 +82,7 @@ import cellprofiler.measurements as cpmeas
 DB_MYSQL = "MySQL"
 DB_ORACLE = "Oracle"
 DB_SQLITE = "SQLite"
+DB_MYSQL_CSV = "MySQL / CSV"
 
 ##############################################
 #
@@ -153,18 +154,32 @@ def connect_sqlite(db_file):
 class ExportToDatabase(cpm.CPModule):
  
     module_name = "ExportToDatabase"
-    variable_revision_number = 11
+    variable_revision_number = 12
     category = "File Processing"
 
     def create_settings(self):
-        self.db_type = cps.Choice("Database type",
-                                  [DB_MYSQL,DB_ORACLE,DB_SQLITE], DB_MYSQL, doc = """
-                                  What type of database do you want to use? <ul><li><i>MySQL:</i>
-                                  This option will allow the data to be written directly to a MySQL database. MySQL is open-source software and may require help from your local Information Technology group to set up a database server.</li>  <li><i>Oracle:</i>This option  is currently
-                                  not fully supported, but your data will be written to .csv files. You can then upload your
-                                  data to an Oracle database by writing a simple script.</li> <li><i>SQLite:</i> This option will write 
-                                  sqlite files directly. SQLite is simpler to set up than MySQL and can more readily be run on your local computer rather than a database server. More information about sqlite can be found at 
-                                  <a href="http://www.sqlite.org/"> http://www.sqlite.org/</a> </li></ul>""")
+        db_choices = ([DB_MYSQL, DB_MYSQL_CSV, DB_SQLITE] if HAS_MYSQL_DB
+                      else [DB_MYSQL_CSV, DB_SQLITE])
+        default_db = DB_MYSQL if HAS_MYSQL_DB else DB_MYSQL_CSV
+        self.db_type = cps.Choice(
+            "Database type",
+            db_choices, default_db, doc = """
+            What type of database do you want to use? <ul><li><i>MySQL:</i>
+            This option will allow the data to be written directly to a MySQL 
+            database. MySQL is open-source software and may require help from 
+            your local Information Technology group to set up a database 
+            server.</li>
+            <li><i>MySQL / CSV:</i> This option will write a script file that
+            contains SQL statements to create a database and upload the
+            Per_Image and Per_Object tables. It will write out the Per_Image
+            and Per_Object table data to two CSV files; these files can be
+            used directly if you want to import the data into an application
+            that accepts CSV data.</li>
+            <li><i>SQLite:</i> This option will write 
+            sqlite files directly. SQLite is simpler to set up than MySQL and 
+            can more readily be run on your local computer rather than a 
+            database server. More information about sqlite can be found at 
+            <a href="http://www.sqlite.org/"> http://www.sqlite.org/</a> </li></ul>""")
         
         self.db_name = cps.Text(
             "Database name", "DefaultDB",doc = """
@@ -220,12 +235,6 @@ class ExportToDatabase(cpm.CPModule):
             The module will attempt to fill in as many as the entries as possible 
             based on the pipeline's settings, including the 
             server name, username and password if MySQL or Oracle is used.""")
-        
-        self.store_csvs = cps.Binary(
-            "Store the database in CSV files? ", False, doc = """
-            This will write per_image and per_object tables as a series of CSV files along with an SQL file 
-            that can be used with those files to create the database.  You can also look at the CSV
-            files in a spreadsheet program, such as Excel. The typical usage of the module omits the creation of CSV files and instead data is written directly to the MySQL database.""")
         
         self.mysql_not_available = cps.Divider("Cannot write to MySQL directly - CSV file output only", line=False, 
             doc= """The MySQLdb python module could not be loaded.  MySQLdb is necessary for direct export.""")
@@ -299,25 +308,22 @@ class ExportToDatabase(cpm.CPModule):
                                                             
     def visible_settings(self):
         needs_default_output_directory =\
-            (self.db_type != DB_MYSQL or self.store_csvs.value or
+            (self.db_type != DB_MYSQL or
              self.save_cpa_properties.value)
         result = [self.db_type]
+        if not HAS_MYSQL_DB:
+            result += [self.mysql_not_available]
         if self.db_type==DB_MYSQL:
-            if HAS_MYSQL_DB:
-                result += [self.store_csvs]
-            else:
-                result += [self.mysql_not_available]
-            if self.store_csvs.value or not HAS_MYSQL_DB:
-                result += [self.sql_file_prefix]
-                result += [self.db_name]
-            else:
                 result += [self.db_name]
                 result += [self.db_host]
                 result += [self.db_user]
                 result += [self.db_passwd]
-        elif self.db_type==DB_SQLITE:
+        elif self.db_type == DB_MYSQL_CSV:
+            result += [self.sql_file_prefix]
+            result += [self.db_name]
+        elif self.db_type == DB_SQLITE:
             result += [self.sqlite_file]
-        elif self.db_type==DB_ORACLE:
+        elif self.db_type == DB_ORACLE:
             result += [self.sql_file_prefix]
         result += [self.want_table_prefix]
         if self.want_table_prefix.value:
@@ -339,7 +345,7 @@ class ExportToDatabase(cpm.CPModule):
         return [self.db_type, self.db_name, self.want_table_prefix,
                 self.table_prefix, self.sql_file_prefix, 
                 self.directory_choice, self.output_directory,
-                self.save_cpa_properties, self.store_csvs, self.db_host, 
+                self.save_cpa_properties, self.db_host, 
                 self.db_user, self.db_passwd, self.sqlite_file,
                 self.wants_agg_mean, self.wants_agg_median,
                 self.wants_agg_std_dev, self.wants_agg_mean_well, 
@@ -358,7 +364,7 @@ class ExportToDatabase(cpm.CPModule):
             if not re.match("^[A-Za-z0-9_].*$",self.sqlite_file.value):
                 raise cps.ValidationError("The sqlite file name has invalid characters",self.sqlite_file)
 
-        if not self.store_csvs.value:
+        if self.db_type != DB_MYSQL_CSV:
             if not re.match("^[A-Za-z0-9_]+$",self.db_user.value):
                 raise cps.ValidationError("The database user name has invalid characters",self.db_user)
             if not re.match("^[A-Za-z0-9_].*$",self.db_host.value):
@@ -376,7 +382,7 @@ class ExportToDatabase(cpm.CPModule):
     def prepare_run(self, pipeline, image_set_list, frame):
         if self.db_type == DB_ORACLE:
             raise NotImplementedError("Writing to an Oracle database is not yet supported")
-        if not self.store_csvs.value:
+        if self.db_type in (DB_MYSQL, DB_SQLITE):
             if self.db_type==DB_MYSQL:
                 self.connection, self.cursor = connect_mysql(self.db_host.value, 
                                                              self.db_user.value, 
@@ -445,33 +451,32 @@ class ExportToDatabase(cpm.CPModule):
         self.output_directory.value = fn_alter_path(path)
             
     def run(self, workspace):
-        if ((self.db_type == DB_MYSQL and not self.store_csvs.value) or
-            self.db_type == DB_SQLITE):
+        if (self.db_type == DB_MYSQL or self.db_type == DB_SQLITE):
             mappings = self.get_column_name_mappings(workspace.pipeline)
             self.write_data_to_db(workspace, mappings)
             
     def post_run(self, workspace):
         if self.save_cpa_properties.value:
             self.write_properties(workspace)
-        if self.db_type != DB_MYSQL or self.store_csvs:
+        mappings = self.get_column_name_mappings(workspace.pipeline)
+        if self.db_type == DB_MYSQL_CSV:
             path = self.get_output_directory(workspace)
             if not os.path.isdir(path):
                 os.makedirs(path)
-        mappings = self.get_column_name_mappings(workspace.pipeline)
-        if self.db_type == DB_MYSQL:
             per_image, per_object = self.write_mysql_table_defs(workspace, mappings)
-        else:
-            per_image, per_object = self.write_oracle_table_defs(workspace, mappings)
-        if self.wants_agg_mean_well.value:
+            self.write_data(workspace, mappings, per_image, per_object)
+        elif self.wants_well_tables:
             per_well = self.write_mysql_table_per_well(workspace, mappings)
-        if not self.store_csvs.value:
+        if self.db_type in (DB_MYSQL, DB_SQLITE):
             # commit changes to db here or in run?
             print 'Commit'
             self.connection.commit()
-            return
-        self.write_data(workspace, mappings, per_image, per_object)
-        if self.wants_agg_mean_well.value:
-            self.write_data(workspace, mappings, per_well)
+    
+    @property
+    def wants_well_tables(self):
+        '''Return true if user wants any well tables'''
+        return (self.wants_agg_mean_well or self.wants_agg_median_well or
+                self.wants_agg_std_dev_well)
     
     def should_stop_writing_measurements(self):
         '''All subsequent modules should not write measurements'''
@@ -702,14 +707,27 @@ FIELDS TERMINATED BY ','
 OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
 """%(self.base_name(workspace),self.get_table_prefix(),
      self.base_name(workspace),self.get_table_prefix()))
+        if self.wants_well_tables:
+            self.write_mysql_table_per_well(workspace, mappings, fid)
+        fid.close()
         return per_image, per_object
     
-    def write_mysql_table_per_well(self, workspace, mappings):
-        file_name = "%s_Per_Well_SETUP.SQL"%(self.sql_file_prefix)
-        path_name = os.path.join(self.get_output_directory(workspace), 
-                                 file_name)
-        fid = open(path_name,"wt")
-        fid.write("CREATE DATABASE IF NOT EXISTS %s;\n"%(self.db_name.value))
+    def write_mysql_table_per_well(self, workspace, mappings, fid=None):
+        '''Write SQL statements to generate a per-well table
+        
+        workspace - workspace at the end of the run
+        mappings - mappings between feature names and column names
+        fid - file handle of file to write or None if statements
+              should be written to a separate file.
+        '''
+        if fid is None:
+            file_name = "%s_Per_Well_SETUP.SQL"%(self.sql_file_prefix)
+            path_name = os.path.join(self.get_output_directory(workspace), 
+                                     file_name)
+            fid = open(path_name,"wt")
+            needs_close = True
+        else:
+            needs_close = False
         fid.write("USE %s;\n"%(self.db_name.value))
         table_prefix = self.get_table_prefix()
         #
@@ -743,7 +761,8 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
             ON IT.ImageNumber = OT.ImageNumber
             GROUP BY IT.Image_Metadata_Plate, IT.Image_Metadata_Well;\n\n""" %
                       (table_prefix, table_prefix))
-        fid.close()
+        if needs_close:
+            fid.close()
     
     def write_oracle_table_defs(self, workspace, mappings):
         raise NotImplementedError("Writing to an Oracle database is not yet supported")
@@ -1476,6 +1495,19 @@ check_tables = yes
             setting_values = (setting_values[:5] + [directory_choice] +
                               setting_values[6:])
             variable_revision_number = 11
+        if (not from_matlab) and variable_revision_number == 11:
+            #
+            # Added separate "database type" of CSV files and removed
+            # "store_csvs" setting
+            #
+            db_type = setting_values[0]
+            store_csvs = (setting_values[8] == cps.YES)
+            if db_type == DB_MYSQL and store_csvs:
+                db_type = DB_MYSQL_CSV
+            setting_values = ([ db_type ] + setting_values[1:8] +
+                              setting_values[9:])
+            variable_revision_number = 12
+
         return setting_values, variable_revision_number, from_matlab
     
 class ColumnNameMapping:

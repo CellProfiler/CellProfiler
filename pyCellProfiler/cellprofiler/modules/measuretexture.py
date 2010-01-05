@@ -7,36 +7,24 @@ entire image) without much texture has a smooth appearance whereas an
 object or image with a lot of texture will appear rough and show a wide 
 variety of pixel intensities.
 
-Note that texture measurements are affected by the overall intensity of 
-the object (or image). It is difficult to measure the smoothness of pixel 
-intensities in a way that is not influenced by the overall relative 
-brightness of the images. You might perhaps hope that an image showing the
-same group of cells would have identical texture measurements even if the 
-microscope lamp was twice as bright for one image of the cells vs. another 
-image of the same cells.  Additive intensity changes do not affect texture 
-measurements; for example, if Image1 = Image2 + 0.2, then the 
-texture measurements should be the same for Image1 and Image2. However, 
-multiplicative effects (i.e., scaling)
-does influence texture measurements; for example, if Image1 = 0.9*Image2, 
-then the texture measurements will be different. In other words, if differences in
-intensity are seen between two images or objects, the differences in
-texture cannot be trusted as being completely independent of the
-intensity difference. For these reasons, texture measurements 
-are most useful on images/objects that are scaled similarly; the 
-<b>RescaleIntensity</b> module may be useful for this. 
-
 Features that can be measured by this module:
 <ul>
 <li>
-<i>Haralick Features:</i> Haralick texture features are derived from the co-occurrence matrix, 
+<i>Haralick Features:</i> Haralick texture features are derived from the 
+co-occurrence matrix, 
 which contains information about how image intensities in pixels with a 
-certain position in relation to each other occur together. For example, 
-how often does a pixel with intensity 0.12 have a neighbor 2 pixels to 
-the right with intensity 0.15? The current implementation in CellProfiler
-uses a shift of 1 pixel to the right for calculating the co-occurence 
-matrix. A different set of measurements is obtained for larger shifts, 
-measuring texture on a larger scale. The original reference for the 
-Haralick features is <i>Haralick et al. (1973) Textural Features for Image
+certain position in relation to each other occur together. <b>Measure Texture</b>
+can measure textures at different scales; the scale you choose determines
+how the co-occurrence matrix is constructed.
+For example, if you choose a scale of 2, each pixel in the image (excluding
+some border pixels) will be compared against the one that is two pixels to
+the right. <b>MeasureTexture</b> quantizes the image into eight intensity
+levels. There are then 8x8 possible ways to categorize a pixel with its
+scale-neighbor. <b>MeasureTexture</b> forms the 8x8 co-occurrence matrix
+by counting how many pixels and neighbors have each of the 8x8 intensity
+combinations. Features are then calculated for the image by performing
+mathematical operations on the co-occurrence matrix. The original reference for 
+the Haralick features is <i>Haralick et al. (1973) Textural Features for Image
 Classification. IEEE Transaction on Systems Man, Cybernetics,
 SMC-3(6):610-621</i>, where 14 features are described:
 <ul>
@@ -107,8 +95,8 @@ import cellprofiler.cpmodule as cpm
 import cellprofiler.settings as cps
 import cellprofiler.measurements as cpmeas
 from cellprofiler.cpmath.cpmorphology import fixup_scipy_ndimage_result as fix
-from cellprofiler.cpmath.haralick import Haralick
-from cellprofiler.cpmath.filter import gabor
+from cellprofiler.cpmath.haralick import Haralick, normalized_per_object
+from cellprofiler.cpmath.filter import gabor, stretch
 
 """The category of the per-object measurements made by this module"""
 TEXTURE = 'Texture'
@@ -379,6 +367,7 @@ class MeasureTexture(cpm.CPModule):
                                                   must_be_grayscale=True)
             pixel_data = image.pixel_data
             pixel_data = objects.crop_image_similarly(pixel_data)
+            pixel_data = normalized_per_object(pixel_data, objects.segmented)
             best_score = np.zeros((object_count,))
             for angle in range(self.gabor_angles.value):
                 theta = np.pi * angle / self.gabor_angles.value
@@ -406,6 +395,7 @@ class MeasureTexture(cpm.CPModule):
         labels = np.ones(pixel_data.shape, int)
         if image.has_mask:
             labels[~image.mask] = 0
+        pixel_data = stretch(pixel_data, labels > 0)
         best_score = 0
         for angle in range(self.gabor_angles.value):
             theta = np.pi * angle / self.gabor_angles.value

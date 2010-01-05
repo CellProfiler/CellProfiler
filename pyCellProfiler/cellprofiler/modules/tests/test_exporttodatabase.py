@@ -204,7 +204,7 @@ ExportToDatabase:[module_num:1|svn_version:\'8913\'|variable_revision_number:7|s
         self.assertEqual(module.table_prefix, "ExptTbl_")
         self.assertEqual(module.sql_file_prefix, "SQLFile_")
         self.assertEqual(module.db_name, "MyDatabase")
-        self.assertEqual(module.db_type, E.DB_MYSQL)
+        self.assertEqual(module.db_type, E.DB_MYSQL_CSV)
         self.assertTrue(module.save_cpa_properties)
         self.assertFalse(module.wants_agg_mean)
         self.assertTrue(module.wants_agg_std_dev)
@@ -244,7 +244,7 @@ ExportToDatabase:[module_num:1|svn_version:\'8913\'|variable_revision_number:8|s
         self.assertEqual(module.table_prefix, "ExptTbl_")
         self.assertEqual(module.sql_file_prefix, "SQLFile_")
         self.assertEqual(module.db_name, "MyDatabase")
-        self.assertEqual(module.db_type, E.DB_MYSQL)
+        self.assertEqual(module.db_type, E.DB_MYSQL_CSV)
         self.assertTrue(module.save_cpa_properties)
         self.assertFalse(module.wants_agg_mean)
         self.assertTrue(module.wants_agg_std_dev)
@@ -289,7 +289,7 @@ ExportToDatabase:[module_num:1|svn_version:\'8913\'|variable_revision_number:9|s
         self.assertEqual(module.table_prefix, "ExptTbl_")
         self.assertEqual(module.sql_file_prefix, "SQLFile_")
         self.assertEqual(module.db_name, "MyDatabase")
-        self.assertEqual(module.db_type, E.DB_MYSQL)
+        self.assertEqual(module.db_type, E.DB_MYSQL_CSV)
         self.assertTrue(module.save_cpa_properties)
         self.assertFalse(module.wants_agg_mean)
         self.assertTrue(module.wants_agg_std_dev)
@@ -331,7 +331,7 @@ ExportToDatabase:[module_num:1|svn_version:\'8913\'|variable_revision_number:9|s
         self.assertEqual(len(pipeline.modules()), 4)
         module = pipeline.modules()[-1]
         self.assertTrue(isinstance(module, E.ExportToDatabase))
-        self.assertEqual(module.db_type, E.DB_MYSQL)
+        self.assertEqual(module.db_type, E.DB_MYSQL_CSV)
         self.assertEqual(module.db_name, "DefaultDB")
         self.assertEqual(module.sql_file_prefix, "SQL_")
         self.assertEqual(module.table_prefix, "Test")
@@ -385,7 +385,6 @@ ExportToDatabase:[module_num:1|svn_version:\'8913\'|variable_revision_number:9|s
         self.assertEqual(module.db_host, "imgdb01")
         self.assertEqual(module.db_user, "cpuser")
         self.assertEqual(module.db_passwd, "dontpeek")
-        self.assertFalse(module.store_csvs)
         self.assertTrue(module.wants_agg_mean)
         self.assertFalse(module.wants_agg_median)
         self.assertTrue(module.wants_agg_std_dev)
@@ -485,6 +484,59 @@ ExportToDatabase:[module_num:2|svn_version:\'8947\'|variable_revision_number:11|
     Enter the output folder:./\\g<Plate>
     Create a CellProfiler Analyst properties file?:No
     Store the database in CSV files? :Yes
+    Database host:
+    Username:
+    Password:
+    Name the SQLite database file:DefaultDB.db
+    Calculate the per-image mean values of object measurements?:Yes
+    Calculate the per-image median values of object measurements?:No
+    Calculate the per-image standard deviation values of object measurements?:No
+    Calculate the per-well mean values of object measurements?:No
+    Calculate the per-well median values of object measurements?:No
+    Calculate the per-well standard deviation values of object measurements?:No
+    Export measurements for all objects to the database?:All
+    Select the objects:
+"""
+        pipeline = cpp.Pipeline()
+        def callback(caller,event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO(data))
+        self.assertEqual(len(pipeline.modules()), 2)
+        module = pipeline.modules()[-1]
+        self.assertTrue(isinstance(module, E.ExportToDatabase))
+        self.assertEqual(module.db_type, E.DB_MYSQL_CSV)
+        self.assertEqual(module.directory_choice, E.DIR_CUSTOM_WITH_METADATA)
+        self.assertEqual(module.output_directory, r"./\g<Plate>")
+        self.assertEqual(module.sql_file_prefix, "SQL_")
+        self.assertEqual(module.db_name, "DefaultDB")
+        
+    def test_01_05_load_v12(self):
+        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:1
+SVNRevision:8952
+
+LoadText:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|show_window:False|notes:\x5B\x5D]
+    CSV file location:Default Input Folder
+    Path to the CSV file:.
+    Name of the CSV file:1049.csv
+    Load images from CSV data?:Yes
+    Image folder location:Default Input Folder
+    Path to the images:.
+    Process just a range of rows?:No
+    Rows to process:1,100000
+    Group images by metadata?:No
+    Select metadata fields for grouping:
+
+ExportToDatabase:[module_num:2|svn_version:\'8947\'|variable_revision_number:12|show_window:False|notes:\x5B\x5D]
+    Database type:MySQL
+    Database name:DefaultDB
+    Add a prefix to table names?:No
+    Table prefix:Expt_
+    SQL file prefix:SQL_
+    Where do you want to save files?:Custom folder with metadata
+    Enter the output folder:./\\g<Plate>
+    Create a CellProfiler Analyst properties file?:No
     Database host:
     Username:
     Password:
@@ -638,8 +690,7 @@ ExportToDatabase:[module_num:2|svn_version:\'8947\'|variable_revision_number:11|
         os.chdir(output_dir)
         try:
             self.assertTrue(isinstance(module, E.ExportToDatabase))
-            module.db_type = E.DB_MYSQL
-            module.store_csvs.value = True
+            module.db_type = E.DB_MYSQL_CSV
             module.wants_agg_mean.value = False
             module.wants_agg_median.value = False
             module.wants_agg_std_dev.value = False
@@ -704,8 +755,7 @@ ExportToDatabase:[module_num:2|svn_version:\'8947\'|variable_revision_number:11|
         os.chdir(output_dir)
         try:
             self.assertTrue(isinstance(module, E.ExportToDatabase))
-            module.db_type = E.DB_MYSQL
-            module.store_csvs.value = True
+            module.db_type = E.DB_MYSQL_CSV
             module.wants_agg_mean.value = False
             module.wants_agg_median.value = False
             module.wants_agg_std_dev.value = False
@@ -773,7 +823,6 @@ ExportToDatabase:[module_num:2|svn_version:\'8947\'|variable_revision_number:11|
         try:
             self.assertTrue(isinstance(module, E.ExportToDatabase))
             module.db_type = E.DB_MYSQL
-            module.store_csvs.value = False
             module.wants_agg_mean.value = False
             module.wants_agg_median.value = False
             module.wants_agg_std_dev.value = False
@@ -826,7 +875,6 @@ ExportToDatabase:[module_num:2|svn_version:\'8947\'|variable_revision_number:11|
         try:
             self.assertTrue(isinstance(module, E.ExportToDatabase))
             module.db_type = E.DB_MYSQL
-            module.store_csvs.value = False
             module.wants_agg_mean.value = False
             module.wants_agg_median.value = False
             module.wants_agg_std_dev.value = False
@@ -896,8 +944,7 @@ ExportToDatabase:[module_num:2|svn_version:\'8947\'|variable_revision_number:11|
         os.chdir(output_dir)
         try:
             self.assertTrue(isinstance(module, E.ExportToDatabase))
-            module.db_type = E.DB_MYSQL
-            module.store_csvs.value = True
+            module.db_type = E.DB_MYSQL_CSV
             module.wants_agg_mean.value = True
             module.wants_agg_median.value = False
             module.wants_agg_std_dev.value = False
@@ -978,7 +1025,6 @@ ExportToDatabase:[module_num:2|svn_version:\'8947\'|variable_revision_number:11|
         try:
             self.assertTrue(isinstance(module, E.ExportToDatabase))
             module.db_type = E.DB_MYSQL
-            module.store_csvs.value = False
             module.wants_agg_mean.value = True
             module.wants_agg_median.value = False
             module.wants_agg_std_dev.value = False
@@ -1034,7 +1080,6 @@ ExportToDatabase:[module_num:2|svn_version:\'8947\'|variable_revision_number:11|
         try:
             self.assertTrue(isinstance(module, E.ExportToDatabase))
             module.db_type = E.DB_MYSQL
-            module.store_csvs.value = False
             module.wants_agg_mean.value = False
             module.wants_agg_median.value = False
             module.wants_agg_std_dev.value = False
@@ -1098,7 +1143,6 @@ ExportToDatabase:[module_num:2|svn_version:\'8947\'|variable_revision_number:11|
         try:
             self.assertTrue(isinstance(module, E.ExportToDatabase))
             module.db_type = E.DB_SQLITE
-            module.store_csvs.value = False
             module.wants_agg_mean.value = False
             module.wants_agg_median.value = False
             module.wants_agg_std_dev.value = False

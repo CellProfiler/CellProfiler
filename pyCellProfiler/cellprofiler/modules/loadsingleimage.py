@@ -103,6 +103,48 @@ class LoadSingleImage(cpm.CPModule):
         while len(self.file_settings) < count:
             self.add_file()
 
+    def prepare_to_create_batch(self, pipeline, image_set_list, fn_alter_path):
+        '''Prepare to create a batch file
+        
+        This function is called when CellProfiler is about to create a
+        file for batch processing. It will pickle the image set list's
+        "legacy_fields" dictionary. This callback lets a module prepare for
+        saving.
+        
+        pipeline - the pipeline to be saved
+        image_set_list - the image set list to be saved
+        fn_alter_path - this is a function that takes a pathname on the local
+                        host and returns a pathname on the remote host. It
+                        handles issues such as replacing backslashes and
+                        mapping mountpoints. It should be called for every
+                        pathname stored in the settings or legacy fields.
+        '''
+        if self.dir_choice == DIR_DEFAULT_IMAGE_FOLDER:
+            self.dir_choice.value = DIR_CUSTOM_FOLDER
+            self.custom_directory.value = cpprefs.get_default_image_directory()
+        elif self.dir_choice == DIR_DEFAULT_OUTPUT_FOLDER:
+            self.dir_choice.value = DIR_CUSTOM_FOLDER
+            self.custom_directory.value = cpprefs.get_default_output_directory()
+        elif self.dir_choice == DIR_CUSTOM_FOLDER:
+            self.custom_directory.value = cpprefs.get_absolute_path(
+                self.custom_directory.value)
+        elif self.dir_choice == DIR_CUSTOM_WITH_METADATA:
+            path = self.custom_directory.value
+            end_new_style = path.find("\\g<")
+            end_old_style = path.find("\(?")
+            end = (end_new_style 
+                   if (end_new_style != -1 and 
+                       (end_old_style == -1 or end_old_style > end_new_style))
+                   else end_old_style)
+            if end != -1:
+                pre_path = path[:end]
+                pre_path = cpprefs.get_absolute_path(pre_path)
+                pre_path = fn_alter_path(pre_path)
+                path = pre_path + path[end:]
+                self.custom_directory.value = path
+                return True
+        self.custom_directory.value = fn_alter_path(self.custom_directory.value)
+        return True
 
     def get_base_directory(self, workspace):
         if self.dir_choice == DIR_DEFAULT_IMAGE_FOLDER:

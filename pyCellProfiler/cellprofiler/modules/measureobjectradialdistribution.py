@@ -49,7 +49,6 @@ import cellprofiler.preferences as cpprefs
 import cellprofiler.settings as cps
 import cellprofiler.workspace as cpw
 import cellprofiler.gui.cpfigure as cpf
-import relate as R
 
 from cellprofiler.cpmath.cpmorphology import distance_to_edge
 from cellprofiler.cpmath.cpmorphology import centers_of_labels

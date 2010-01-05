@@ -25,8 +25,10 @@ import numpy as np
 import cellprofiler.cpmodule as cpm
 import cellprofiler.settings as cps
 
-C_REMOVE = "Remove"
-C_KEEP = "Keep"
+C_REMOVE_OLD = "Remove"
+C_REMOVE = "Images to remove"
+C_KEEP_OLD = "Keep"
+C_KEEP = "Images to keep"
 
 '''# of settings in a module independent of the image settings'''
 S_NUMBER_OF_PER_MODULE_SETTINGS = 1
@@ -117,7 +119,11 @@ class SpeedUpCellProfiler(cpm.CPModule):
             # There was some skew in the capitalization of the first
             # setting.  We rewrite it, but we leave the revision
             # number at 1.
-            remap = {'remove' : 'Remove', 'keep' : 'Keep'}
+            remap = {'remove' : C_REMOVE, 
+                     C_REMOVE_OLD: C_REMOVE,
+                     'keep' : C_KEEP,
+                     C_KEEP_OLD: C_KEEP
+                     }
             if setting_values[0] in remap:
                 setting_values[0] = remap[setting_values[0]]
 

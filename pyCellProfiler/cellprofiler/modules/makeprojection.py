@@ -1,9 +1,7 @@
 '''<b>Make Projection</b> combines several two-dimensional images of 
 the same field of view together, either by averaging or taking the 
 maximum pixel value at each pixel position
-
 <hr>
-
 This module combines a set of images by averaging the pixel intensities
 (or taking the maximum pixel intensity) at each pixel position. The 
 process of averaging a Z-stack (3-D image stack) is known as making a projection.
@@ -11,10 +9,25 @@ process of averaging a Z-stack (3-D image stack) is known as making a projection
 The image is not immediately available in subsequent modules because the
 output of this module is not complete until all image processing cycles have completed.
 
-To make a projection of all images in a directory, group the images 
-as such using metadata (extracted from the subdirectory path) in LoadImages.
-This achieves the same functionality as LoadImageDirectory.
+<h2>Technical notes:</h2>
+This module will create a projection of all images specified in <b>LoadImages</b>. 
+Previously, the module <b>LoadImageDirectory</b> could be used for the same 
+functionality, but on a per-folder basis, i.e., a projection would be created 
+for each set of images in a folder, for all input folders. The
+functionality of LoadImageDirectory can be achieved by using image grouping with
+metadata, with the following setting specifications in LoadImages:
+<ol>
+<li>Specify that all subfolders under the Default input folder are to be analyzed.</li>
+<li>Extract metadata from the input image path by using a regular expression to capture
+the subfolder name.</li>
+<li>Enable grouping of image sets by metadata and specify the subfolder metadata token
+as the field to group by.
+</ol>
+However, unlike LoadImageDirectory, this per-folder projection is also not 
+immediately available in subsequent modules until all image processing cycles for 
+the given subfolder have completed.
 
+See also <b>LoadImages</b>.
 '''
 # CellProfiler is distributed under the GNU General Public License.
 # See the accompanying file LICENSE for details.

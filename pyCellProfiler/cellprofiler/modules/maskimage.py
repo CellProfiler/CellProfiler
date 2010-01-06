@@ -1,11 +1,12 @@
 """<b>Mask Image</b> hides certain portions of an image (based on previously identified objects or a binary image) so they are ignored by subsequent mask-respecting modules in the pipeline
 <hr>
-
 This module masks an image and saves it in the handles structure for
 future use. The masked image is based on the original image and the
 masking object or image that is selected. 
 
-Note that the image that is created by this module for further processing downstream is grayscale. If a binary mask is desired in subsequent modules, you might be able to access the image's crop mask, or simply use the <b>ApplyThreshold</b> module instead of <b>MaskImage</b>.
+Note that the image that is created by this module for further processing 
+downstream is grayscale. If a binary mask is desired in subsequent modules, use 
+the <b>ApplyThreshold</b> module instead of <b>MaskImage</b>.
 
 See also <b>ApplyThreshold</b>, <b>IdentifyPrimAutomatic</b>, <b>IdentifyPrimManual</b>.
 
@@ -42,28 +43,45 @@ class MaskImage(cpm.CPModule):
         
         """
         self.source_choice=cps.Choice(
-            "Do you want to mask using objects or an image?",
+            "Use objects or an image as a mask?",
             [IO_OBJECTS, IO_IMAGE],
-            doc="""You can mask an image in two ways:<br>
-            <ul><li><b>Objects</b>: Here, you use objects created by another
+            doc="""You can mask an image in two ways:
+            <ul>
+            <li><i>Objects</i>: Here, you use objects created by another
             module (for instance <b>IdentifyPrimAutomatic</b>). The module
             will mask out all parts of the image that are not within one
             of the objects (unless you invert the mask).</li>
-            <li><b>Image</b>: Here, you use a binary image as the mask, where black 
+            <li><i>Image</i>: Here, you use a binary image as the mask, where black 
             portions of the image (false or zero-value pixels) will be masked out.
             If the image is not binary, the module will use
             all pixels whose intensity is greater than .5 as the mask's
             foreground (white area). You may instead use <b>ApplyThreshold</b> to create a binary
             image with finer control over the intensity choice.</li></ul>""")
-        self.object_name = cps.ObjectNameSubscriber("Select object for mask","None",
-                                                    doc = '''<i>(Only used if mask is to be made from objects)</i> <br> Which objects would you like to use to mask the input image?''')
+        
+        self.object_name = cps.ObjectNameSubscriber(
+            "Select object for mask","None",
+            doc = """<i>(Only used if mask is to be made from objects)</i> <br> 
+            Which objects would you like to use to mask the input image?""")
+        
         self.masking_image_name = cps.ImageNameSubscriber(
             "Select image for mask","None",
-            doc = """<i>(Only used if mask is to be made from an image)</i> <br> Which image would you like to use to mask the input image?""")
-        self.image_name = cps.ImageNameSubscriber("Select the input image","None", doc = '''Which image do you want to mask?''')
-        self.masked_image_name = cps.ImageNameProvider("Name the output image",
-                                                       "MaskBlue", doc = '''What do you want to call the masked image?''')
-        self.invert_mask = cps.Binary("Invert the mask?",False)
+            doc = """<i>(Only used if mask is to be made from an image)</i> <br> 
+            Which image would you like to use to mask the input image?""")
+        
+        self.image_name = cps.ImageNameSubscriber(
+            "Select the input image","None", 
+            doc = """Which image do you want to mask?""")
+        
+        self.masked_image_name = cps.ImageNameProvider(
+            "Name the output image", "MaskBlue", 
+            doc = """What do you want to call the masked image?""")
+        
+        self.invert_mask = cps.Binary(
+            "Invert the mask?",False, 
+            doc = """If using an image as the mask, selecting this option will use the 
+            white portions (or foreground) of the masking image. If a set of 
+            objects is used as the mask, the regions within the objects will
+            be comprise the mask.""")
 
     def settings(self):
         """Return the settings in the order that they will be saved or loaded
@@ -72,16 +90,19 @@ class MaskImage(cpm.CPModule):
               they also control the display order. Implement visible_settings
               for a different display order.
         """
-        return [self.object_name, self.image_name,
-                self.masked_image_name, self.invert_mask,
-                self.source_choice, self.masking_image_name]
+        return [self.image_name,
+                self.masked_image_name, 
+                self.source_choice,
+                self.object_name,
+                self.masking_image_name,
+                self.invert_mask]
     
     def visible_settings(self):
         """Return the settings as displayed in the user interface"""
-        return [self.source_choice,
-                self.object_name if self.source_choice == IO_OBJECTS
-                else self.masking_image_name,
-                self.image_name, self.masked_image_name,
+        return [self.image_name, 
+                self.masked_image_name,
+                self.source_choice,
+                self.object_name if self.source_choice == IO_OBJECTS else self.masking_image_name,
                 self.invert_mask]
 
     def run(self, workspace):
@@ -133,10 +154,24 @@ class MaskImage(cpm.CPModule):
         if from_matlab and variable_revision_number == 3:
             from_matlab = False
             variable_revision_number = 1
+            
         if (not from_matlab) and variable_revision_number == 1:
             #
             # Added ability to select an image
             #
-            setting_values = setting_values + [IO_OBJECTS, "None"]
+            setting_values = setting_values + [IO_IMAGE if setting_values[0] == "Image" else IO_OBJECTS,
+                                               "None"]
+            variable_revision_number = 2
+            
+        if (not from_matlab) and variable_revision_number == 2:
+            # Reordering setting values so the settings order and Help makes sense
+            setting_values = [setting_values[1], # Input image name
+                              setting_values[2], # Output image name
+                              setting_values[4], # Image or objects?
+                              setting_values[0], # Object used as mask
+                              setting_values[5], # Image used as mask
+                              setting_values[3]] # Invert image?
+            variable_revision_number = 3
+    
         return setting_values, variable_revision_number, from_matlab
 

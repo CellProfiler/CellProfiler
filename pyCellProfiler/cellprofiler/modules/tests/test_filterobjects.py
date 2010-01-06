@@ -872,6 +872,80 @@ Module #3: FilterByObjectMeasurement revision - 6
         self.assertEqual(module.rules_directory_choice, F.DIR_CUSTOM)
         self.assertEqual(module.rules_directory, './')
         
+    def test_05_04_load_matlab_v7(self):
+        data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0s'
+                'SU1RyM+zUggH0l6JeQoGZgqGhlbGllZGhgpGBoYGCiQDBkZPX34GBoafTAwM'
+                'FXPezridd9lA4vhdvdhGR1OzRgZO0+kxPZO4Wso8Ay1DFmUeXeYZs2vtbUnV'
+                'wqkWwYdN/Q8FF5x8/IGjoP3usrXZl57dOCwwbc2L4j9///yUlw9mYvhTxXLA'
+                'rvpegiW/2soHty0Vi3/zBHatbQxm4Kp4MP1/wk+mWxJlPCWMvOKWCdOWPeVd'
+                '7X9u78M3oZO/xDC/vCCivXnJ7jT2m36r7Uu/xG//yCGZ/oObqTsz6q3yrkN8'
+                'atPev//89FLk7havt9Mi/sXNej1hcklAhJ3Yqcq/4Qlx8ZwX3gasqH/xvNhk'
+                'kf/9noTpq9SW3PU+d9HJopp7jm3A9WyF3viIO6qaeXn7j7K5mr16mXfdQcIl'
+                'Kz7ygcaCuGzzST82ms2N/RK97H1mR7zjpem3Q98+aWVb1Ls6epL99tcuWzlC'
+                'Y4/PVwi0MFfl2y4t5jqteSX7ouJFx4TDz/vn9OUF9VsLtd/2ZdENnOz7amL8'
+                'gyeNftt+2y5aJ3891aZl6/zoB08cRHPK6uQ8ZPK2r3i86j3PpUa3FL+wjyyF'
+                'JYtm3Ti0LHvZ45SftZe+sfdtuyxfuSdb/eqVvyedrj8X/PukNmR1xlWLj+y9'
+                '5Zc336w8u/KC4NmYdgO/K38NV64Tvf++tuN+rCZfXvLq9vUF51vbunwtZsxN'
+                'u35x/Yq/3rviWY8GF2smsqfc8RU8b7T3uqi/0LsDbfMut7IJWXh+P7rj15rq'
+                '+l7p87vOW2d+3TjvoM9+/6jYlHPnH736vXpHn8rV0j03eHIe8ZVPn5xiqzr3'
+                '/Arv4wpT167NkHBevqDW+8HbmpjZj1j+8s+s3+/5/dI88aZHv8Irbl/S75l8'
+                '9c+/9f9f/Tg0L/K4fW3b2mh3oem3jyxl23Yhnjt8zr+Y7893le4+o3v//dPf'
+                'EZcq/zQeiHPekeDy8rpt5+G3bvyRIt/3buv1/agj21oe/6hwd+eCx7dWmM7T'
+                'O/S09fMtxT3tQv23J/+/vX4v54Xls3XSHO0/ztkmv6h8XqT78aPNJv8NH20L'
+                '3zFXv2j/ZYm6rvh/m/5s/fP24/tPP2Q4H/WuVtd+5X953bX/zPOlJoQDAOEw'
+                'rqc=')
+        pipeline = cpp.Pipeline()
+        def callback(caller,event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO.StringIO(zlib.decompress(base64.b64decode(data))))
+        self.assertEqual(len(pipeline.modules()), 4)
+        module = pipeline.modules()[-1]
+        self.assertTrue(isinstance(module, F.FilterObjects))
+        self.assertEqual(module.object_name, "Nucs")
+        self.assertEqual(module.target_name, "FilteredNuclei")
+        self.assertEqual(module.rules_or_measurement, F.ROM_RULES)
+        self.assertEqual(module.rules_directory_choice, F.DIR_DEFAULT_OUTPUT)
+        self.assertEqual(module.rules_file_name, "myrules.txt")
+        self.assertEqual(module.measurement, "Intensity_MeanIntensity_DNA_1")
+    
+    def test_05_05_load_v3(self):
+        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:1
+SVNRevision:8973
+
+FilterObjects:[module_num:1|svn_version:\'8955\'|variable_revision_number:3|show_window:True|notes:\x5B\x5D]
+    Name the output objects:FilteredThings
+    Select the object to filter:Things
+    Select the measurement to filter by:Intensity_MeanIntensity_DNA
+    Select the filtering method:Minimal
+    What did you call the objects that contain the filtered objects?:Nuclei
+    Filter using a minimum measurement value?:No
+    Minimum value:0
+    Filter using a maximum measurement value?:No
+    Maximum value:1
+    Retain the outlines of filtered objects for use later in the pipeline (for example, in SaveImages)?:No
+    Name the outline image:None
+    Filter using classifier rules or measurements?:Measurements
+    Rules file location:Default output folder
+    Rules folder name:.
+    Rules file name:myrules.txt
+"""
+        pipeline = cpp.Pipeline()
+        def callback(caller,event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO.StringIO(data))
+        self.assertEqual(len(pipeline.modules()), 1)
+        module = pipeline.modules()[-1]
+        self.assertTrue(isinstance(module, F.FilterObjects))
+        self.assertEqual(module.object_name, "Things")
+        self.assertEqual(module.target_name, "FilteredThings")
+        self.assertEqual(module.rules_or_measurement, F.ROM_MEASUREMENTS)
+        self.assertEqual(module.rules_directory_choice, F.DIR_DEFAULT_OUTPUT)
+        self.assertEqual(module.rules_file_name, "myrules.txt")
+        self.assertEqual(module.measurement, "Intensity_MeanIntensity_DNA")
+        self.assertEqual(module.filter_choice, F.FI_MINIMAL)
         
     def test_06_01_get_measurement_columns(self):
         '''Test the get_measurement_columns function'''

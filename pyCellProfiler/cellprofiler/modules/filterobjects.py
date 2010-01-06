@@ -57,7 +57,7 @@ FI_ALL = [ FI_MINIMAL, FI_MAXIMAL, FI_MINIMAL_PER_OBJECT,
           FI_MAXIMAL_PER_OBJECT, FI_LIMITS ]
 
 '''The number of settings for this module in the pipeline if no additional objects'''
-FIXED_SETTING_COUNT = 14
+FIXED_SETTING_COUNT = 15
 
 '''The number of settings per additional object'''
 ADDITIONAL_OBJECT_SETTING_COUNT = 4
@@ -75,7 +75,7 @@ class FilterObjects(cpm.CPModule):
 
     module_name = 'FilterObjects'
     category = "Object Processing"
-    variable_revision_number = 2
+    variable_revision_number = 3
     
     def create_settings(self):
         '''Create the initial settings and name the module'''
@@ -232,7 +232,7 @@ class FilterObjects(cpm.CPModule):
                  self.wants_maximum, self.max_limit,
                   self.wants_outlines, self.outlines_name,
                   self.rules_or_measurement, self.rules_directory_choice,
-                  self.rules_directory]
+                  self.rules_directory, self.rules_file_name]
         for x in self.additional_objects:
             result += [x.object_name, x.target_name, x.wants_outlines, x.outlines_name]
         return result
@@ -663,8 +663,71 @@ class FilterObjects(cpm.CPModule):
                               wants_minimum, min_limit,
                               wants_maximum, max_limit,
                               wants_outlines, outlines_name]
+            module_name = self.module_name
             from_matlab = False
-            variable_revision_number = 1 
+            variable_revision_number = 1
+        if (from_matlab and module_name == 'FilterByObjectMeasurement' and
+            variable_revision_number == 7):
+            #
+            # Added rules file name and rules path name
+            #
+            target_name, object_name, category, feature, image, scale, \
+            min_value1, max_value1, save_outlines, rules_file_name, \
+            rules_path_name = setting_values
+            
+            parts = [category, feature]
+            if len(image) > 0:
+                parts.append(image)
+            if len(scale) > 0:
+                parts.append(scale)
+            measurement = "_".join(parts)
+            if rules_file_name == cps.DO_NOT_USE:
+                rules_or_measurements = ROM_MEASUREMENTS
+            else:
+                rules_or_measurements = ROM_RULES
+                if rules_path_name == '.':
+                    rules_directory_choice = DIR_DEFAULT_OUTPUT
+                elif rules_path_name == '&':
+                    rules_directory_choice = DIR_DEFAULT_INPUT
+                else:
+                    rules_directory_choice = DIR_CUSTOM
+            if min_value1 == 'No minimum':
+                wants_minimum = cps.NO
+                min_limit = "0"
+            else:
+                wants_minimum = cps.YES
+                min_limit = min_value1
+            if max_value1 == 'No maximum':
+                wants_maximum = cps.NO
+                max_limit = "1"
+            else:
+                wants_maximum = cps.YES
+                max_limit = max_value1
+            if save_outlines == cps.DO_NOT_USE:
+                wants_outlines = cps.NO
+                outlines_name = "None"
+            else:
+                wants_outlines = cps.YES
+                outlines_name = save_outlines
+            setting_values = [ target_name,
+                               object_name,
+                               measurement,
+                               FI_LIMITS,
+                               "None", # enclosing object name
+                               wants_minimum,
+                               min_limit,
+                               wants_maximum,
+                               max_limit,
+                               wants_outlines,
+                               outlines_name,
+                               rules_or_measurements,
+                               rules_directory_choice,
+                               rules_path_name,
+                               rules_file_name]
+            variable_revision_number = 3
+            module_name = self.module_name
+            from_matlab = False
+            
         if (not from_matlab) and variable_revision_number == 1:
             #
             # Added CPA rules
@@ -673,6 +736,13 @@ class FilterObjects(cpm.CPModule):
                               [ROM_MEASUREMENTS, DIR_DEFAULT_INPUT, "."] +
                               setting_values[11:])
             variable_revision_number = 2
+        if (not from_matlab) and variable_revision_number == 2:
+            #
+            # Forgot file name (???!!!)
+            #
+            setting_values =  (setting_values[:14]+ ["rules.txt"] +
+                               setting_values[14:])
+            variable_revision_number = 3
         return setting_values, variable_revision_number, from_matlab
 
 #

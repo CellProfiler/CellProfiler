@@ -1107,17 +1107,23 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
         db_sqlite_file = (self.db_type == DB_SQLITE and 
                           self.get_output_directory(workspace)+
                           '/'+self.sqlite_file.value) or ''
-        if self.db_type != DB_SQLITE:
+        if self.db_type == DB_MYSQL or self.db_type == DB_ORACLE:
             db_info =  'db_type      = %(db_type)s\n'%(locals())
             db_info += 'db_port      = %(db_port)d\n'%(locals())
             db_info += 'db_host      = %(db_host)s\n'%(locals())
             db_info += 'db_name      = %(db_name)s\n'%(locals())
             db_info += 'db_user      = %(db_user)s\n'%(locals())
             db_info += 'db_passwd    = %(db_pwd)s'%(locals())
-        else:
+        elif self.db_type == DB_SQLITE:
             db_info =  'db_type         = %(db_type)s\n'%(locals())
             db_info += 'db_sqlite_file  = %(db_sqlite_file)s'%(locals())
-        
+        elif self.db_type == DB_MYSQL_CSV:
+            db_info =  'db_type      = mysql\n'
+            db_info += 'db_port      = \n'
+            db_info += 'db_host      = \n'
+            db_info += 'db_name      = %(db_name)s\n'%(locals())
+            db_info += 'db_user      = \n'
+            db_info += 'db_passwd    = '
         
         spot_tables = '%sPer_Image'%(self.get_table_prefix())
         cell_tables = '%sPer_Object'%(self.get_table_prefix())

@@ -151,7 +151,7 @@ class ExportToSpreadsheet(cpm.CPModule):
         
         self.object_groups = []
         self.add_object_group()
-        self.add_button = cps.DoSomething("", "Add more data",
+        self.add_button = cps.DoSomething("", "Add another data set",
                                            self.add_object_group)
     
     def add_object_group(self):
@@ -176,7 +176,7 @@ class ExportToSpreadsheet(cpm.CPModule):
                          prepend the name of the measurements file to this
                          if you asked to do so above. It will also substitute
                          metadata tokens if you asked to do that."""))
-        group.append("remover", cps.RemoveSettingButton("", "Remove this data", self.object_groups, group))
+        group.append("remover", cps.RemoveSettingButton("", "Remove this data set", self.object_groups, group))
         group.append("divider", cps.Divider(line=False))
         self.object_groups.append(group)
         

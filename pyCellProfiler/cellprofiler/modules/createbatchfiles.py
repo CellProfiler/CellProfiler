@@ -93,7 +93,7 @@ class CreateBatchFiles(cpm.CPModule):
         self.revision = cps.Integer("Hidden: SVN revision number", 0)
         self.mappings = []
         self.add_mapping()
-        self.add_mapping_button = cps.DoSomething("", "Add another path?",
+        self.add_mapping_button = cps.DoSomething("", "Add another path mapping",
                                                   self.add_mapping, doc="""
                 Use this option if another path must be mapped because there is a difference between how the local computer sees a folder location vs. how the cluster computer sees the folder location.""")
     
@@ -127,7 +127,7 @@ class CreateBatchFiles(cpm.CPModule):
                                 you would want to put <i>Z:</i> in the previous setting for the
                                 local machine path and <i>/server_name/your_name/</i> here. """))
         group.append("remover",
-                     cps.RemoveSettingButton("", "Remove above mapping", self.mappings, group))
+                     cps.RemoveSettingButton("", "Remove this path mapping", self.mappings, group))
         group.append("divider", cps.Divider(line=False))
         self.mappings.append(group)
 

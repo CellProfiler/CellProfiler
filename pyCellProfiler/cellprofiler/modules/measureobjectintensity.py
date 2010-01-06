@@ -92,11 +92,11 @@ class MeasureObjectIntensity(cpm.CPModule):
         self.images = []
         self.add_image()
         self.image_count = cps.HiddenCount(self.images)
-        self.add_image_button = cps.DoSomething("", "Add image", self.add_image)
+        self.add_image_button = cps.DoSomething("", "Add another image", self.add_image)
         self.divider = cps.Divider()
         self.objects = []
         self.add_object()
-        self.add_object_button = cps.DoSomething("", "Add object", self.add_object)
+        self.add_object_button = cps.DoSomething("", "Add another object", self.add_object)
 
     def add_image(self):
         group = cps.SettingsGroup()

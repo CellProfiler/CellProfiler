@@ -57,7 +57,7 @@ class MeasureImageIntensity(cpm.CPModule):
         self.divider_top = cps.Divider(line=False)
         self.images = []
         self.add_image_measurement()
-        self.add_button = cps.DoSomething("", "Add image",
+        self.add_button = cps.DoSomething("", "Add another image",
                                           self.add_image_measurement)
         self.divider_bottom = cps.Divider(line=False)
     

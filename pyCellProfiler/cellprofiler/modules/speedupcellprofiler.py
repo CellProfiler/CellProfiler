@@ -52,7 +52,7 @@ class SpeedUpCellProfiler(cpm.CPModule):
         self.image_names = []
         self.add_image()
         self.spacer_bottom = cps.Divider(line=False)
-        self.add_image_button = cps.DoSomething("", "Add image",
+        self.add_image_button = cps.DoSomething("", "Add another image",
                                                 self.add_image)
     
 

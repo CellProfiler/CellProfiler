@@ -129,7 +129,7 @@ class LoadImagesNew(cpmodule.CPModule):
         self.images = []
         self.add_image()
 
-        self.add_image_button = cps.DoSomething("", "Add image", self.add_image)
+        self.add_image_button = cps.DoSomething("", "Add another image", self.add_image)
 
         self.image_spacer_bottom = cps.Divider()
 
@@ -176,7 +176,7 @@ class LoadImagesNew(cpmodule.CPModule):
                         has been exceeded.</li>
                         </ul>"""))
         group.append("image_specifier", cps.Text("What substring is common to these images?", ""))
-        group.append("remover", cps.RemoveSettingButton("", "Remove above image", self.images, group))
+        group.append("remover", cps.RemoveSettingButton("", "Remove this image", self.images, group))
         group.append("divider", cps.Divider(line=False))
         self.images.append(group)
 

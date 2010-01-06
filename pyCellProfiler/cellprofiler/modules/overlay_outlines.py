@@ -90,7 +90,7 @@ class OverlayOutlines(cpm.CPModule):
             in the image.""")
         self.outlines = []
         self.add_outline()
-        self.add_outline_button = cps.DoSomething("", "Add outline", self.add_outline)
+        self.add_outline_button = cps.DoSomething("", "Add another outline", self.add_outline)
 
     def add_outline(self):
         group = cps.SettingsGroup()

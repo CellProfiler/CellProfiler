@@ -138,7 +138,7 @@ positive controls are specified by a maximum value, and all other images have an
             in LoadText's input file. See the help for this module for an example text file.''')
         self.dose_values = []
         self.add_dose_value()
-        self.add_dose_button = cps.DoSomething("Add another dose specification?","Add",
+        self.add_dose_button = cps.DoSomething("","Add another dose specification",
                                                self.add_dose_value)
         
     def add_dose_value(self):
@@ -195,8 +195,7 @@ positive controls are specified by a maximum value, and all other images have an
                 to the default output folder specified in the main CellProfiler window with a period (".") or the default input 
                 folder with an ampersand ("&") as the root folder."""))
             
-        group.append("remover", cps.RemoveSettingButton("Remove the above dose measurement",
-                                                        "Remove", 
+        group.append("remover", cps.RemoveSettingButton("", "Remove this dose measurement", 
                                                         self.dose_values,
                                                         group))
         self.dose_values.append(group)

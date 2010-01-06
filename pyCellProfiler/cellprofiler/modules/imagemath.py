@@ -112,7 +112,7 @@ class ImageMath(cpm.CPModule):
         group.append("image_name", cps.ImageNameSubscriber("", ""))
         group.append("factor", cps.Float("", 1))
         if removable:
-            group.append("remover", cps.RemoveSettingButton("Remove the image above", "Remove", self.images, group))
+            group.append("remover", cps.RemoveSettingButton("", "Remove this image", self.images, group))
         group.append("divider", cps.Divider())
         self.images.append(group)
         

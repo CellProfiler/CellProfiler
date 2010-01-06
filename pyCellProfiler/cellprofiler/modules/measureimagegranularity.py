@@ -64,7 +64,7 @@ class MeasureImageGranularity(cpm.CPModule):
         self.divider_top = cps.Divider(line=False)
         self.images = []
         self.add_image()
-        self.add_button = cps.DoSomething("", "Add image", self.add_image)
+        self.add_button = cps.DoSomething("", "Add another image", self.add_image)
         self.divider_bottom = cps.Divider(line=False)
         
     def add_image(self):    

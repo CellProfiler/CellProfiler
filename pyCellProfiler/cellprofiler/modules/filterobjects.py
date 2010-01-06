@@ -188,8 +188,8 @@ class FilterObjects(cpm.CPModule):
         self.additional_objects = []
         self.spacer_3 = cps.Divider(line=False)
         
-        self.additional_object_button = cps.DoSomething('',
-                                'Add an object to be relabeled to match the filtered object', self.add_additional_object, doc = """
+        self.additional_object_button = cps.DoSomething('Relabel additional objects to match the filtered object?',
+                                'Add an additional object', self.add_additional_object, doc = """
                                 Click this button to add an object to receive the same post-filtering labels as
                                 the filtered object. This is useful in making sure that labeling is maintained 
                                 between related objects (e.g., primary and secondary objects) after filtering.""")
@@ -208,7 +208,7 @@ class FilterObjects(cpm.CPModule):
         group.append("outlines_name",
                      cps.ImageNameProvider('Name the outline image','OutlinesFilteredGreen'))
         
-        group.append("remover", cps.RemoveSettingButton("", "Remove above object", self.additional_objects, group))
+        group.append("remover", cps.RemoveSettingButton("", "Remove this additional object", self.additional_objects, group))
         group.append("divider", cps.Divider(line=False))
         self.additional_objects.append(group)
 

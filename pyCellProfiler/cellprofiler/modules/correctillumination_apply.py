@@ -103,8 +103,7 @@ Rescaling is only necessary when using the <i>Divide</i> method (because in the 
         image_settings.append("rescale_option", rescale_option)
         if can_delete:
             image_settings.append("remover",
-                                  cps.RemoveSettingButton("Remove this image",
-                                                          "Remove",
+                                  cps.RemoveSettingButton("","Remove this image",
                                                           self.images,
                                                           image_settings))
         image_settings.append("divider",cps.Divider())

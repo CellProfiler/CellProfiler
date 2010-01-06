@@ -89,7 +89,7 @@ class ClassifyObjects(cpm.CPModule):
         # A button to press to get another measurement
         #
         self.add_measurement_button = cps.DoSomething(
-            "Add another classification","Add", self.add_single_measurement)
+            "","Add another classification", self.add_single_measurement)
         #
         ############### Two-measurement settings #####################
         #
@@ -342,7 +342,7 @@ class ClassifyObjects(cpm.CPModule):
         
         if can_delete:
             group.remove_settings_button = cps.RemoveSettingButton(
-                "Remove the above measurement", "Remove", 
+                "", "Remove the above classification", 
                 self.single_measurements, group)
         self.single_measurements.append(group)
     

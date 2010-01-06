@@ -109,8 +109,7 @@ class RelateObjects(cpm.CPModule):
             neither a direct parent or child of cytoplasm""")
         self.step_parent_names = []
         self.add_step_parent(can_delete = False)
-        self.add_step_parent_button = cps.DoSomething("Add another parent",
-                                                      "Add",
+        self.add_step_parent_button = cps.DoSomething("","Add another parent",
                                                       self.add_step_parent)
         self.wants_per_parent_means = cps.Binary('Calculate per-parent means for all child measurements?',
                                                  False,doc="""

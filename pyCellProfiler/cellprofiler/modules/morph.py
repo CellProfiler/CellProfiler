@@ -424,7 +424,7 @@ class Morph(cpm.CPModule):
             This is the output of the module. It will be of the same type as the
             input image.""")
         
-        self.add_button = cps.DoSomething("", "Add operation",
+        self.add_button = cps.DoSomething("", "Add another operation",
                                           self.add_function,doc="""                                    
             Press this button to add an operation that will be applied to the
             image resulting from the previous transformation. The module repeats
@@ -450,7 +450,7 @@ class Morph(cpm.CPModule):
                     <li><i>Custom:</i> Perform the transformation a custom number of times.</li>
                     </ul>"""))
         group.append("custom_repeats", cps.Integer("Custom # of repeats",2,1))
-        group.append("remove", cps.RemoveSettingButton("", "Remove above operation", self.functions, group))
+        group.append("remove", cps.RemoveSettingButton("", "Remove this operation", self.functions, group))
         group.append("divider", cps.Divider(line=False))
         self.functions.append(group)
 

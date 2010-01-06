@@ -89,9 +89,9 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
         self.image_count = cps.HiddenCount(self.images)
         self.object_count = cps.HiddenCount(self.objects)
         self.bin_counts_count = cps.HiddenCount(self.bin_counts)
-        self.add_image_button = cps.DoSomething("", "Add image", self.add_image)
+        self.add_image_button = cps.DoSomething("", "Add another image", self.add_image)
         self.spacer_1 = cps.Divider(line=False)
-        self.add_object_button = cps.DoSomething("", "Add object",
+        self.add_object_button = cps.DoSomething("", "Add another object",
                                                  self.add_object)
         self.spacer_2 = cps.Divider(line=False)
         self.add_bin_count_button = cps.DoSomething("",

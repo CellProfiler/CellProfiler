@@ -70,14 +70,14 @@ class LoadSingleImage(cpm.CPModule):
             from the folder associated with your image's plate.''')
         self.file_settings = []
         self.add_file()
-        self.add_button = cps.DoSomething("", "Add image", self.add_file)
+        self.add_button = cps.DoSomething("", "Add another image", self.add_file)
 
     def add_file(self):
         """Add settings for another file to the list"""
         group = cps.SettingsGroup()
         group.append("file_name", cps.Text("What image file do you want to load? Include the extension like .tif","None"))
         group.append("image_name", cps.FileImageNameProvider("What do you want to call that image?", "OrigBlue"))
-        group.append("remove", cps.RemoveSettingButton("", "Remove above image", self.file_settings, group))
+        group.append("remove", cps.RemoveSettingButton("", "Remove this image", self.file_settings, group))
         self.file_settings.append(group)
 
     def settings(self):

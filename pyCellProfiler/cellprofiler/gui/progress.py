@@ -70,9 +70,17 @@ class ProgressFrame(wx.Frame):
         buttons_sizer = wx.BoxSizer(wx.HORIZONTAL)
         self.play_pause_button = wx.BitmapButton(self.panel, -1, 
                                                  bitmap=wx.BitmapFromImage(cellprofiler.icons.pause))
+        self.play_pause_button.SetToolTipString("Pause run")
         buttons_sizer.Add(self.play_pause_button, 0, wx.ALL, 5)
         self.stop_button = wx.BitmapButton(self.panel, -1, bitmap=wx.BitmapFromImage(cellprofiler.icons.stop))
+        self.stop_button.SetToolTipString("Stop run")
         buttons_sizer.Add(self.stop_button, 0, wx.ALL, 5)
+        save_bitmap = wx.ArtProvider.GetBitmap(wx.ART_FILE_SAVE,
+                                               wx.ART_CMN_DIALOG, 
+                                               (16,16))
+        self.save_button = wx.BitmapButton(self.panel, -1, bitmap = save_bitmap)
+        self.save_button.SetToolTipString("Save measurements")
+        buttons_sizer.Add(self.save_button, 0, wx.ALL, 5)
         sizer.Add(buttons_sizer, 0, wx.CENTER)
         self.panel.SetSizer(sizer)
         sizer.Fit(self)
@@ -109,12 +117,14 @@ class ProgressFrame(wx.Frame):
     def pause(self):
         self.play_pause_button.SetBitmapLabel(
             wx.BitmapFromImage(cellprofiler.icons.play))
+        self.play_pause_button.SetToolTipString("Resume run")
         self.pause_start_time = time.time()
         self.paused = True
         
     def play(self):
         self.play_pause_button.SetBitmapLabel(
             wx.BitmapFromImage(cellprofiler.icons.pause))
+        self.play_pause_button.SetToolTipString("Pause run")
         self.elapsed_pause_time += time.time() - self.pause_start_time
         self.paused = False
         

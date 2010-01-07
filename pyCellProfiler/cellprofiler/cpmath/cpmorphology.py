@@ -2398,11 +2398,6 @@ def diag(image, mask=None, iterations=1):
         result[~mask] = image[~mask]
     return result
 
-# Fill table - keep all ones. Change a zero surrounded by ones to 1
-fill_table = (make_table(True, np.array([[0,0,0],[0,1,0],[0,0,0]],bool),
-                         np.array([[0,0,0],[0,1,0],[0,0,0]],bool)) |
-              make_table(True, np.array([[1,1,1],[1,0,1],[1,1,1]],bool)))
-
 #
 # Endpoints are on and have at most one neighbor.
 #
@@ -2431,6 +2426,11 @@ def endpoints(image, mask=None):
         result[~mask] = image[~mask]
     return result
 
+# Fill table - keep all ones. Change a zero surrounded by ones to 1
+fill_table = (make_table(True, np.array([[0,0,0],[0,1,0],[0,0,0]],bool),
+                         np.array([[0,0,0],[0,1,0],[0,0,0]],bool)) |
+              make_table(True, np.array([[1,1,1],[1,0,1],[1,1,1]],bool)))
+
 def fill(image, mask=None, iterations=1):
     '''Fill isolated black pixels
     
@@ -2445,6 +2445,31 @@ def fill(image, mask=None, iterations=1):
         masked_image = image.astype(bool).copy()
         masked_image[~mask] = True
     result = table_lookup(masked_image, fill_table, True, iterations)
+    if not mask is None:
+        result[~mask] = image[~mask]
+    return result
+
+#Fill4 table - keep if 1. Change a zero with 1's at N-S-E-W to 1.
+fill4_table = (make_table(True, 
+                          np.array([[0,0,0],[0,1,0],[0,0,0]],bool),
+                          np.array([[0,0,0],[0,1,0],[0,0,0]],bool)) |
+              make_table(True, 
+                         np.array([[1,1,1],[1,0,1],[1,1,1]],bool),
+                         np.array([[0,1,0],[1,1,1],[0,1,0]])))
+def fill4(image, mask=None, iterations=1):
+    '''Fill 4-connected black pixels
+    
+    x 1 x     x 1 x
+    1 0 1 ->  1 1 1
+    x 1 x     x 1 x
+    '''
+    global fill4_table
+    if mask is None:
+        masked_image = image
+    else:
+        masked_image = image.astype(bool).copy()
+        masked_image[~mask] = True
+    result = table_lookup(masked_image, fill4_table, True, iterations)
     if not mask is None:
         result[~mask] = image[~mask]
     return result

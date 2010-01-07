@@ -438,6 +438,9 @@ class PipelineController:
             self.__progress_frame.Bind(wx.EVT_BUTTON,
                                        self.on_stop_running,
                                        self.__progress_frame.stop_button)
+            self.__progress_frame.Bind(wx.EVT_BUTTON,
+                                       self.on_save_measurements,
+                                       self.__progress_frame.save_button)
             # XXX: Uncomment to show half-baked progress dialog
             self.__progress_frame.Show(True)
             if self.__running_pipeline:
@@ -476,9 +479,25 @@ class PipelineController:
         pass
     
     def on_stop_running(self,event):
+        if self.__pipeline_measurements is not None:
+            self.save_measurements()
         self.stop_running()
         self.__pipeline_measurements = None
     
+    def on_save_measurements(self, event):
+        if self.__pipeline_measurements is not None:
+            self.save_measurements()
+        
+    def save_measurements(self):
+        dlg = wx.FileDialog(self.__frame,
+                            "Save measurements to a file",
+                            wildcard="CellProfiler measurements (*.mat)|*.mat",
+                            style = wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT)
+        if dlg.ShowModal() == wx.ID_OK:
+            pathname = os.path.join(dlg.GetDirectory(), dlg.GetFilename())
+            self.__pipeline.save_measurements(pathname, 
+                                              self.__pipeline_measurements)
+        
     def stop_running(self):
         self.__running_pipeline = False
         self.__pause_pipeline = False

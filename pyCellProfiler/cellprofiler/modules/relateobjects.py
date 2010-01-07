@@ -532,11 +532,16 @@ class RelateObjects(cpm.CPModule):
             #
             # Added other distance parents
             #
+            if setting_values[2] == cps.DO_NOT_USE:
+                find_parent_distances = D_NONE
+            else:
+                find_parent_distances = setting_values[2]
             wants_step_parent_distances = (
                 cps.NO if setting_values[3].upper() == cps.DO_NOT_USE.upper()
                 else cps.YES)
-            setting_values = (setting_values[:3] +
-                              [setting_values[4],
+            setting_values = (setting_values[:2] +
+                              [find_parent_distances,
+                               setting_values[4],
                                wants_step_parent_distances,
                                setting_values[3]])
             variable_revision_number = 2

@@ -1,4 +1,4 @@
-'''<b>Load Text</b> loads text or numerical data to be associated with images, and 
+'''<b>Load Data</b> loads text or numerical data to be associated with images, and 
 can also load images specified by filenames
 <hr>
 This module loads a file that supplies text or numerical data to be
@@ -172,9 +172,9 @@ def make_file_name_feature(image):
     '''
     return FILE_NAME+'_'+image
     
-class LoadText(cpm.CPModule):
+class LoadData(cpm.CPModule):
     
-    module_name = "LoadText"
+    module_name = "LoadData"
     category = 'File Processing'
     variable_revision_number = 3
 
@@ -610,6 +610,7 @@ class LoadText(cpm.CPModule):
                               cps.NO, "1,100000"]
             from_matlab = False
             variable_revision_number = 1
+            module_name = self.module_name
         if (not from_matlab) and variable_revision_number == 1:
             setting_values = setting_values + [cps.NO, ""]
             variable_revision_number = 2
@@ -625,7 +626,11 @@ class LoadText(cpm.CPModule):
                 setting_values = (setting_values[:4] + [DIR_DEFAULT_OUTPUT] + 
                                   setting_values[5:])
             variable_revision_number = 3
+        if variable_revision_number == 3 and (not from_matlab):
+            module_name = self.module_name
         return setting_values, variable_revision_number, from_matlab 
+
+LoadText = LoadData
 
 def best_cast(sequence):
     '''Return the best cast (integer, float or string) of the sequence

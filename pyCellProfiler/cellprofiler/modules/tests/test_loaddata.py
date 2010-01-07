@@ -1,4 +1,4 @@
-'''test_loadtext - Test the LoadText module
+'''test_loaddata - Test the LoadData (formerly LoadText) module
 
 CellProfiler is distributed under the GNU General Public License.
 See the accompanying file LICENSE for details.
@@ -27,10 +27,10 @@ import cellprofiler.cpimage as cpi
 import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo
 import cellprofiler.workspace as cpw
-import cellprofiler.modules.loadtext as L
+import cellprofiler.modules.loaddata as L
 from cellprofiler.modules.tests import example_images_directory
 
-class TestLoadText(unittest.TestCase):
+class TestLoadData(unittest.TestCase):
     def make_pipeline(self, csv_text):
         handle, name = tempfile.mkstemp("csv")
         fd = os.fdopen(handle, 'w')

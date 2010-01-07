@@ -1,4 +1,4 @@
-'''test_speedupcellprofiler - Test the SpeedUpCellProfiler module
+'''test_conservememory - Test the ConserveMemory module
 
 CellProfiler is distributed under the GNU General Public License.
 See the accompanying file LICENSE for details.
@@ -30,9 +30,9 @@ import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo
 import cellprofiler.workspace as cpw
 
-import cellprofiler.modules.speedupcellprofiler as S
+import cellprofiler.modules.conservememory as S
 
-class TestSpeedUpCellProfiler(unittest.TestCase):
+class TestConserveMemory(unittest.TestCase):
     def test_01_01_load_matlab(self):
         '''Load a Matlab pipeline with a SpeedUpCellProfiler module'''
         data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0s'

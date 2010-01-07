@@ -1,4 +1,4 @@
-'''<b>Speed Up CellProfiler</b> speeds up CellProfiler by removing images from memory
+'''<b>ConserveMemory</b> speeds up CellProfiler by removing images from memory
 <hr>
 This module removes images from memory which can speed up processing and
 prevent out-of-memory errors.
@@ -35,9 +35,9 @@ S_NUMBER_OF_PER_MODULE_SETTINGS = 1
 '''# of settings per image in the pipeline'''
 S_NUMBER_OF_SETTINGS_PER_IMAGE = 1
 
-class SpeedUpCellProfiler(cpm.CPModule):
+class ConserveMemory(cpm.CPModule):
 
-    module_name = "SpeedUpCellProfiler"
+    module_name = "ConserveMemory"
     category = 'Other'
     variable_revision_number = 1
     
@@ -129,3 +129,4 @@ class SpeedUpCellProfiler(cpm.CPModule):
 
         return setting_values, variable_revision_number, from_matlab
     
+SpeedUpCellProfiler = ConserveMemory

@@ -69,15 +69,18 @@ class LoadSingleImage(cpm.CPModule):
             you can specify a path name of "./\g&lt;Plate&gt;" to get files
             from the folder associated with your image's plate.''')
         self.file_settings = []
-        self.add_file()
+        self.add_file(can_remove = False)
         self.add_button = cps.DoSomething("", "Add another image", self.add_file)
 
-    def add_file(self):
+    def add_file(self, can_remove = True):
         """Add settings for another file to the list"""
         group = cps.SettingsGroup()
+        if can_remove:
+            group.append("divider", cps.Divider(line=False))
         group.append("file_name", cps.Text("What image file do you want to load? Include the extension like .tif","None"))
         group.append("image_name", cps.FileImageNameProvider("What do you want to call that image?", "OrigBlue"))
-        group.append("remove", cps.RemoveSettingButton("", "Remove this image", self.file_settings, group))
+        if can_remove:
+            group.append("remove", cps.RemoveSettingButton("", "Remove this image", self.file_settings, group))
         self.file_settings.append(group)
 
     def settings(self):
@@ -92,7 +95,7 @@ class LoadSingleImage(cpm.CPModule):
         if self.dir_choice in (DIR_CUSTOM_FOLDER, DIR_CUSTOM_WITH_METADATA):
             result += [self.custom_directory]
         for file_setting in self.file_settings:
-            result += [file_setting.file_name, file_setting.image_name, file_setting.remove]
+            result += file_setting.unpack_group()
         result.append(self.add_button)
         return result 
 

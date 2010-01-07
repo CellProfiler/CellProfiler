@@ -431,10 +431,12 @@ class Morph(cpm.CPModule):
             the previous transformation the number of times indicated by the
             instructions before applying the operation added by this button.""")
         self.functions = []
-        self.add_function()
+        self.add_function(can_remove = False)
     
-    def add_function(self):
+    def add_function(self, can_remove = True):
         group = MorphSettingsGroup()
+        if can_remove:
+            group.append("divider", cps.Divider(line=False))
         group.append("function", cps.Choice("Select operation to perform:",
                                            F_ALL, F_OPEN,doc="""
                                            What operation do you want to perform?
@@ -450,8 +452,8 @@ class Morph(cpm.CPModule):
                     <li><i>Custom:</i> Perform the transformation a custom number of times.</li>
                     </ul>"""))
         group.append("custom_repeats", cps.Integer("Custom # of repeats",2,1))
-        group.append("remove", cps.RemoveSettingButton("", "Remove this operation", self.functions, group))
-        group.append("divider", cps.Divider(line=False))
+        if can_remove:
+            group.append("remove", cps.RemoveSettingButton("", "Remove this operation", self.functions, group))
         self.functions.append(group)
 
     def prepare_settings(self, setting_values):
@@ -473,10 +475,10 @@ class Morph(cpm.CPModule):
         '''Return the settings as displayed to the user'''
         result = [self.image_name, self.output_image_name]
         for function in self.functions:
-            result += [function.function, function.repeats_choice]
-            if function.repeats_choice == R_CUSTOM:
-                result += [function.custom_repeats]
-            result += [function.divider]
+            temp = function.unpack_group()
+            if function.repeats_choice != R_CUSTOM:
+                temp.remove(function.custom_repeats)
+            result += temp
         result += [self.add_button]
         return result
 

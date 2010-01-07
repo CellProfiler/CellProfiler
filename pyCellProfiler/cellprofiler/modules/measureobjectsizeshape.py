@@ -118,8 +118,8 @@ class MeasureObjectSizeShape(cpm.CPModule):
         of which has an entry in self.object_groups.
         """ 
         self.object_groups = []
-        self.add_object()
-
+        self.add_object(can_remove = False)
+        self.spacer = cps.Divider(line = True)
         self.add_objects = cps.DoSomething("", "Add another object",self.add_object)
         self.calculate_zernikes = cps.Binary('Calculate the Zernike features?',True, doc="""
                                             Check this box to calculate the Zernike shape features. Since the
@@ -127,13 +127,17 @@ class MeasureObjectSizeShape(cpm.CPModule):
                                             calculated, this operation can be time-consuming if the image
                                             contains a lot of objects.""")
     
-    def add_object(self):
+    def add_object(self, can_remove = True):
         """Add a slot for another object"""
         group = cps.SettingsGroup()
+        if can_remove:
+            group.append("divider", cps.Divider(line=False))
+        
         group.append("name", cps.ObjectNameSubscriber("Select objects to measure","None",doc="""
                                                 What did you call the objects you want to measure?"""))
-        group.append("remove", cps.RemoveSettingButton("", "Remove this object", self.object_groups, group))
-        group.append("divider", cps.Divider(line=False))
+        if can_remove:
+            group.append("remove", cps.RemoveSettingButton("", "Remove this object", self.object_groups, group))
+        
         self.object_groups.append(group)
         
     def settings(self):
@@ -156,7 +160,7 @@ class MeasureObjectSizeShape(cpm.CPModule):
         result = []
         for og in self.object_groups:
             result += og.unpack_group()
-        result.extend([self.add_objects, self.calculate_zernikes])
+        result.extend([self.add_objects, self.spacer, self.calculate_zernikes])
         return result
     
     def get_categories(self,pipeline, object_name):

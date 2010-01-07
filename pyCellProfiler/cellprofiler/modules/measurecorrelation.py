@@ -115,7 +115,7 @@ class MeasureCorrelation(cpm.CPModule):
         self.add_object(can_delete = False)
         self.object_count = cps.HiddenCount(self.object_groups)
         
-        self.spacer_2 = cps.Divider(line=False)
+        self.spacer_2 = cps.Divider(line=True)
         
         self.add_object_button = cps.DoSomething("", 'Add another object', self.add_object)
 

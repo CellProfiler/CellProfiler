@@ -63,12 +63,15 @@ class MeasureImageGranularity(cpm.CPModule):
     def create_settings(self):
         self.divider_top = cps.Divider(line=False)
         self.images = []
-        self.add_image()
+        self.add_image(can_remove = False)
         self.add_button = cps.DoSomething("", "Add another image", self.add_image)
         self.divider_bottom = cps.Divider(line=False)
         
-    def add_image(self):    
+    def add_image(self, can_remove = True):    
         group = GranularitySettingsGroup()
+        if can_remove:
+            group.append("divider", cps.Divider(line=True))
+        
         group.append("image_name",cps.ImageNameSubscriber("Select an image to measure","None",doc="What did you call the images whose granularity you want to measure?"))
         group.append("subsample_size",cps.Float(
             "Subsampling factor for granularity measurements",
@@ -114,8 +117,8 @@ class MeasureImageGranularity(cpm.CPModule):
             16, minval = 1,doc='''You may need a trial run to see which granular 
             spectrum range yields informative measurements. Start by using a wide spectrum, and 
             narrow it down to the informative range to save time.'''))
-        group.append("remover", cps.RemoveSettingButton("", "Remove this image", self.images, group))
-        group.append("divider", cps.Divider())
+        if can_remove:
+            group.append("remover", cps.RemoveSettingButton("", "Remove this image", self.images, group))
         self.images.append(group)
         
     def settings(self):
@@ -135,7 +138,7 @@ class MeasureImageGranularity(cpm.CPModule):
     def visible_settings(self):
         result = []
         for index, image in enumerate(self.images):
-            result += [image.image_name, image.subsample_size, image.image_sample_size, image.element_size, image.granular_spectrum_length, image.remover, image.divider]
+            result += image.unpack_group()
         result += [self.add_button]
         return result 
     

@@ -201,6 +201,9 @@ class ClassifyObjects(cpm.CPModule):
                      allowed to remove it.
         '''
         group = cps.SettingsGroup()
+        if can_delete:
+            group.append("divider", cps.Divider(line=True))
+            
         group.append("object_name",cps.ObjectNameSubscriber(
             "Select the object to be classified","None",
             doc="""This is the name of the objects to be classified. You can
@@ -387,6 +390,8 @@ class ClassifyObjects(cpm.CPModule):
             # Visible results per single measurement
             #
             for group in self.single_measurements:
+                if group.can_delete:
+                    result += [group.divider]
                 result += [group.object_name, group.measurement,
                            group.bin_choice]
                 if group.bin_choice == BC_EVEN:

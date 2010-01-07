@@ -56,19 +56,26 @@ class MeasureImageAreaOccupied(cpm.CPModule):
         """
         self.divider_top = cps.Divider(line=False)
         self.objects = []
-        self.add_object(False)
+        self.add_object(can_remove = False)
         self.add_button = cps.DoSomething("","Add another object", self.add_object, True)
         self.divider_bottom = cps.Divider(line=False)
         
-    def add_object(self, removable=True):
+    def add_object(self, can_remove=True):
         # The text for these settings will be replaced in renumber_settings()
         group = cps.SettingsGroup()
+        if can_remove:
+            group.append("divider", cps.Divider(line=True))
+        
         group.append("object_name", cps.ObjectNameSubscriber("Select the objects for which you want to measure overall area occupied", "None"))
+        
         group.append("should_save_image", cps.Binary("Retain a binary image of the object regions for use later in the pipeline (for example, in SaveImages)?", False))
-        group.append("image_name", cps.ImageNameSubscriber("Name the output binary image", "Stain",doc="(Only used if the binary image of the objects is to be retained for later use in the pipeline) <br> Choose a name, which will allow the binary image of the objects to be selected later in the pipeline."))
-        if removable:
+        
+        group.append("image_name", cps.ImageNameProvider("Name the output binary image", "Stain",doc="""
+                                        <i>(Only used if the binary image of the objects is to be retained for later use in the pipeline)</i> <br> 
+                                        Choose a name, which will allow the binary image of the objects to be selected later in the pipeline."""))
+        if can_remove:
             group.append("remover", cps.RemoveSettingButton("", "Remove this object", self.objects, group))
-        group.append("divider", cps.Divider())
+        
         self.objects.append(group)        
 
     def settings(self):
@@ -86,13 +93,8 @@ class MeasureImageAreaOccupied(cpm.CPModule):
         """
         result = []
         for index, object in enumerate(self.objects):
-            result += [object.object_name, object.should_save_image]
-            if object.should_save_image.value:
-                result += [object.image_name]
-            remover = getattr(object, "remover", None)
-            if remover is not None:
-                result.append(remover) 
-        result += [self.add_button, self.divider_bottom]
+            result += object.unpack_group()
+        result += [self.add_button]
         return result
     
     def prepare_settings(self, setting_values):

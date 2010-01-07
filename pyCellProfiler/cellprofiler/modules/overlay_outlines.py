@@ -89,11 +89,14 @@ class OverlayOutlines(cpm.CPModule):
             outlines equal to the maximal brightness already occurring 
             in the image.""")
         self.outlines = []
-        self.add_outline()
+        self.add_outline(can_remove = False)
         self.add_outline_button = cps.DoSomething("", "Add another outline", self.add_outline)
 
-    def add_outline(self):
+    def add_outline(self,can_remove = True):
         group = cps.SettingsGroup()
+        if can_remove:
+            group.append("divider", cps.Divider(line=False))
+            
         group.append("outline_name",
                      cps.OutlineNameSubscriber(
                 "Select outlines to display:",
@@ -111,8 +114,9 @@ class OverlayOutlines(cpm.CPModule):
         group.append("color", cps.Choice(
                 "Select outline color:",
                 COLORS.keys(), default_color))
-        group.append("remover", cps.RemoveSettingButton("", "Remove this outline", self.outlines, group))
-        group.append("spacer", cps.Divider(line=False))
+        if can_remove:
+            group.append("remover", cps.RemoveSettingButton("", "Remove this outline", self.outlines, group))
+        
         self.outlines.append(group)
 
     def prepare_settings(self, setting_values):
@@ -140,7 +144,7 @@ class OverlayOutlines(cpm.CPModule):
             if self.wants_color.value == WANTS_COLOR:
                 result += outline.unpack_group()
             else:
-                result += [outline.outline_name, outline.remover, outline.spacer]
+                result += [outline.outline_name, outline.remover]
         result += [self.add_outline_button]
         return result
 

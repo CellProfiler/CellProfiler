@@ -56,27 +56,30 @@ class MeasureImageIntensity(cpm.CPModule):
         '''Create the settings & name the module'''
         self.divider_top = cps.Divider(line=False)
         self.images = []
-        self.add_image_measurement()
+        self.add_image_measurement(can_remove = False)
         self.add_button = cps.DoSomething("", "Add another image",
                                           self.add_image_measurement)
         self.divider_bottom = cps.Divider(line=False)
     
-    def add_image_measurement(self, removable = True):
+    def add_image_measurement(self, can_remove = True):
         group = cps.SettingsGroup()
+        if can_remove:
+            group.append("divider", cps.Divider())
+        
         group.append("image_name", cps.ImageNameSubscriber("Select an image to measure",
                                                             "None", doc = '''What did you call the images whose intensity you want to measure? Choose an image name from the drop-down menu to calculate intensity for that
-image. Use the "Add image" button below to add additional images which will be
-measured. You can add the same image multiple times if you want to measure
-the intensity within several different objects.
-'''))
+                                                            image. Use the "Add image" button below to add additional images which will be
+                                                            measured. You can add the same image multiple times if you want to measure
+                                                            the intensity within several different objects.'''))
+        
         group.append("wants_objects", cps.Binary("Do you want to measure intensity only from areas of the image that contain particular objects?",
                                                   False, doc = "Check this option to restrict the pixels being measured to those within the boundaries of an object."))
+        
         group.append("object_name",cps.ObjectNameSubscriber("Select the objects to use to constrain the measurement","None", 
                                                            doc = '''What is the name of the objects to use? The intensity measurement will be restricted to within these objects.'''))
-        if removable:
+        if can_remove:
             group.append("remover", cps.RemoveSettingButton("", 
                                                             "Remove this image", self.images, group))
-        group.append("divider", cps.Divider())
         self.images.append(group)
                     
     def settings(self):
@@ -86,15 +89,13 @@ the intensity within several different objects.
         return result
             
     def visible_settings(self):
-        result = [self.divider_top]
+        result = []
         for index, image in enumerate(self.images):
-            result += [image.image_name, image.wants_objects]
-            if image.wants_objects:
-                result += [image.object_name]
-            remover = getattr(image, "remover", None)
-            if remover is not None:
-                result.append(remover) 
-        result += [self.add_button, self.divider_bottom]
+            temp = image.unpack_group()
+            if not image.wants_objects:
+                temp.remove(image.object_name)
+            result += temp
+        result += [self.add_button]
         return result
     
     def prepare_settings(self, setting_values):

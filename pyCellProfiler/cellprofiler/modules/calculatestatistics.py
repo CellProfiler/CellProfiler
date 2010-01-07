@@ -234,8 +234,8 @@ class CalculateStatistics(cpm.CPModule):
         """The settings that are visible in the UI
         """
         result = [self.grouping_values]
-        for dose_index,dose_value in enumerate(self.dose_values):
-            if dose_index > 0:
+        for index,dose_value in enumerate(self.dose_values):
+            if index > 0:
                 result.append(dose_value.divider)
             result += [dose_value.measurement, dose_value.log_transform,
                        dose_value.wants_save_figure]
@@ -243,7 +243,7 @@ class CalculateStatistics(cpm.CPModule):
                 result += [dose_value.figure_name, dose_value.pathname_choice]
                 if dose_value.pathname_choice == PC_CUSTOM:
                     result += [dose_value.pathname]
-            if dose_index > 0:
+            if index > 0:
                 result += [dose_value.remover]
         result.append(self.add_dose_button)
         return result

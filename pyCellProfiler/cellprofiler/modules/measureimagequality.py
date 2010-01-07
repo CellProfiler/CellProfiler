@@ -98,41 +98,43 @@ class MeasureImageQuality(cpm.CPModule):
 
     def create_settings(self):
         self.image_groups = []
-        self.add_image_group()
+        self.add_image_group(can_remove = False)
         self.bottom_spacer = cps.Divider(line=False)
         self.add_button = cps.DoSomething("", "Add another image", self.add_image_group)
     
-    def add_image_group(self):
+    def add_image_group(self, can_remove = True):
         group = MeasureImageQualitySettingsGroup() # helper class defined below
+        if can_remove:
+            group.append("divider", cps.Divider(line=True))
         group.append("image_name", cps.ImageNameSubscriber("Select an image to measure","None", 
                                                            doc = '''What did you call the grayscale images whose quality you want to measure?'''))
         group.append("check_blur", cps.Binary("Check for blur?",
                                               True, 
                                               doc = '''Would you like to check for blur? If so, the module will calculate a focus score for each image, indicating how blurry an image is
-(higher Focus Score = better focus = less blurry). This calculation is slow, so it is optional. The score 
-is calculated using the normalized variance. We used this algorithm because it
-was ranked best in this paper:
-Sun, Y., Duthaler, S., Nelson, B. "Autofocusing in Computer Microscopy:
-   Selecting the optimal focus algorithm." Microscopy Research and
-   Technique 65:139-149 (2004).<br>
-<br>
-The calculation of the focus score is as follows:<br>
-[m,n] = size(Image);<br>
-MeanImageValue = mean(Image(:));<br>
-SquaredNormalizedImage = (Image-MeanImageValue).^2;<br>
-FocusScore{ImageNumber} = ...<br>
-   sum(SquaredNormalizedImage(:))/(m*n*MeanImageValue);<br>
-<br>
-The above score is designed to determine which image of a particular field of view shows the 
-best focus (assuming the overall intensity and the number of objects in the image is 
-constant); it is not necessarily designed to compare images of different 
-fields of view, although it may be useful for this to some degree. 
-The Local Focus Score is a local version of the Focus Score, which is 
-potentially more useful for comparing focus between images of different fields of view. However, 
-like the Focus Score, the measurement should be used with caution 
-because it may fail to correspond well to the blurriness of images of 
-different fields of view, depending on the conditions.
-'''))
+                                            (higher Focus Score = better focus = less blurry). This calculation is slow, so it is optional. The score 
+                                            is calculated using the normalized variance. We used this algorithm because it
+                                            was ranked best in this paper:
+                                            Sun, Y., Duthaler, S., Nelson, B. "Autofocusing in Computer Microscopy:
+                                               Selecting the optimal focus algorithm." Microscopy Research and
+                                               Technique 65:139-149 (2004).<br>
+                                            <br>
+                                            The calculation of the focus score is as follows:<br>
+                                            [m,n] = size(Image);<br>
+                                            MeanImageValue = mean(Image(:));<br>
+                                            SquaredNormalizedImage = (Image-MeanImageValue).^2;<br>
+                                            FocusScore{ImageNumber} = ...<br>
+                                               sum(SquaredNormalizedImage(:))/(m*n*MeanImageValue);<br>
+                                            <br>
+                                            The above score is designed to determine which image of a particular field of view shows the 
+                                            best focus (assuming the overall intensity and the number of objects in the image is 
+                                            constant); it is not necessarily designed to compare images of different 
+                                            fields of view, although it may be useful for this to some degree. 
+                                            The Local Focus Score is a local version of the Focus Score, which is 
+                                            potentially more useful for comparing focus between images of different fields of view. However, 
+                                            like the Focus Score, the measurement should be used with caution 
+                                            because it may fail to correspond well to the blurriness of images of 
+                                            different fields of view, depending on the conditions.
+                                            '''))
         group.append("window_size", cps.Integer("Window size for blur measurements",
                                                 20, minval =1,
                                                 doc = '''(Only used if blur measurements are to be calculated) <br> 
@@ -171,8 +173,8 @@ different fields of view, depending on the conditions.
                                                       that is covered by objects."""))
         group.append("compute_power_spectrum", cps.Binary("Calculate quartiles and sum of radial power spectrum?", True,
                                                       doc = "Would you like to calculate the quartiles and sum of the radial power spectrum? The Power Spectrum is computed via FFT and the radii of the first three quartiles and the total power are measured."))
-        group.append("remove_button", cps.RemoveSettingButton("", "Remove this image", self.image_groups, group))
-        group.append("divider", cps.Divider())
+        if can_remove:
+            group.append("remove_button", cps.RemoveSettingButton("", "Remove this image", self.image_groups, group))
         self.image_groups.append(group)
 
     def prepare_settings(self, setting_values):
@@ -197,21 +199,8 @@ different fields of view, depending on the conditions.
         '''The settings as displayed to the user'''
         result = []
         for image_group in self.image_groups:
-            result += [image_group.image_name, image_group.check_blur]
-            if image_group.check_blur.value:
-                result += [image_group.window_size]
-            result += [image_group.check_saturation, image_group.calculate_threshold]
-            if image_group.calculate_threshold.value:
-                result += [image_group.threshold_method]
-                if image_group.threshold_method == cpthresh.TM_MOG_GLOBAL:
-                    result += [image_group.object_fraction]
-            result += [image_group.compute_power_spectrum]
-            result += [image_group.remove_button, image_group.divider]
-            
-        # remove the last divider
-        del result[-1]
-
-        result += [self.bottom_spacer, self.add_button]
+            result += image_group.unpack_group()
+        result += [self.add_button]
         return result
 
     def validate_module(self, pipeline):

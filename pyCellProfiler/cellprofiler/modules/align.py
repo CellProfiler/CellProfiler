@@ -87,9 +87,12 @@ with respect to the first image.""")
              If you do not choose to crop, the unaligned portions of each
              image are padded (with zeroes) and appear as black space.''')
     
-    def add_image(self):
+    def add_image(self, can_remove = True):
         '''Add an image + associated questions and buttons'''
         group = cps.SettingsGroup()
+        if can_remove:
+            group.append("divider", cps.Divider(line=False))
+        
         group.append("input_image_name", 
                      cps.ImageNameSubscriber("Select the additional image?",
                                             "None",doc="""
@@ -110,8 +113,8 @@ with respect to the first image.""")
                                                calculated for this additional image using the alignment method
                                                specified with respect to the first input image.</li>
                                                </ul>"""))
-        group.append("remover", cps.RemoveSettingButton("", "Remove above image", self.additional_images, group))
-        group.append("divider", cps.Divider(line=False))
+        if can_remove:
+            group.append("remover", cps.RemoveSettingButton("", "Remove above image", self.additional_images, group))
         self.additional_images.append(group)
 
     def settings(self):
@@ -134,7 +137,7 @@ with respect to the first image.""")
         result = [self.alignment_method, self.wants_cropping]
         
         result += [self.first_input_image, self.first_output_image, self.separator_1,
-                  self.second_input_image, self.second_output_image, self.separator_2]
+                  self.second_input_image, self.second_output_image]
         for additional in self.additional_images:
             result += additional.unpack_group()
         result += [self.add_button]

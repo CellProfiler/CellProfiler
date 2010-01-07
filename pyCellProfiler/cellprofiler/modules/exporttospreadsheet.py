@@ -154,13 +154,14 @@ class ExportToSpreadsheet(cpm.CPModule):
         self.add_button = cps.DoSomething("", "Add another data set",
                                            self.add_object_group)
     
-    def add_object_group(self):
+    def add_object_group(self,can_remove = True):
         group = cps.SettingsGroup()
         group.append(
             "name", EEObjectNameSubscriber("Data to export",
             doc="""Choose either "Image", "Experiment" or an object name
             from the list. <b>ExportToSpreadsheet</b> will write out a
             file of measurements for the given category."""))
+    
         group.append(
             "previous_file", cps.Binary(
                 "Combine these object measurements with those of the previous object?",
@@ -168,6 +169,7 @@ class ExportToSpreadsheet(cpm.CPModule):
                 of measurements made on this object and the one directly
                 above this one. Leave the box unchecked to create separate
                 files for this and the previous object."""))
+        
         group.append("file_name", 
                      cps.Text(
                          "File name:", "DATA.csv",
@@ -176,8 +178,10 @@ class ExportToSpreadsheet(cpm.CPModule):
                          prepend the name of the measurements file to this
                          if you asked to do so above. It will also substitute
                          metadata tokens if you asked to do that."""))
+        
         group.append("remover", cps.RemoveSettingButton("", "Remove this data set", self.object_groups, group))
         group.append("divider", cps.Divider(line=False))
+        
         self.object_groups.append(group)
         
     def prepare_settings(self, setting_values):
@@ -216,7 +220,7 @@ class ExportToSpreadsheet(cpm.CPModule):
                     self.wants_aggregate_means, self.wants_aggregate_medians,
                     self.wants_aggregate_std]
         previous_group = None
-        for group in self.object_groups:
+        for index, group in enumerate(self.object_groups):
             result += [group.name]
             if is_object_group(group):
                 if ((not previous_group is None) and

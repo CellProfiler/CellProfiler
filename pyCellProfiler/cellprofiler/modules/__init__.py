@@ -70,7 +70,6 @@ pymodule_to_cpmodule = {'align' : 'Align',
                         'rescaleintensity' : 'RescaleIntensity',
                         'resize' : 'Resize',
                         'saveimages' : 'SaveImages',
-                        'speedupcellprofiler' : 'SpeedUpCellProfiler',
                         'smooth' : 'Smooth',
                         'trackobjects' : 'TrackObjects'
                         }

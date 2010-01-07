@@ -197,7 +197,7 @@ class FlagImage(cpm.CPModule):
                 result += [m_g.maximum_value]
             if hasattr(m_g, "remover"):
                 result += [m_g.remover]
-            result +=  [m_g.spacer_1]
+            #result +=  [m_g.spacer_1]
             return result
 
         def flag_visibles(flag):

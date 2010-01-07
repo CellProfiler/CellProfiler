@@ -130,15 +130,15 @@ class MeasureTexture(cpm.CPModule):
         self.image_count = cps.HiddenCount(self.image_groups)
         self.object_count = cps.HiddenCount(self.object_groups)
         self.scale_count = cps.HiddenCount(self.scale_groups)
-        self.add_image_cb()
+        self.add_image_cb(can_remove = False)
         self.add_images = cps.DoSomething("", "Add another image",
                                           self.add_image_cb)
         self.image_divider = cps.Divider()
-        self.add_object_cb()
+        self.add_object_cb(can_remove = False)
         self.add_objects = cps.DoSomething("", "Add another object",
                                            self.add_object_cb)
         self.object_divider = cps.Divider()
-        self.add_scale_cb()
+        self.add_scale_cb(can_remove = False)
         self.add_scales = cps.DoSomething("", "Add another scale",
                                           self.add_scale_cb)
         self.scale_divider = cps.Divider()
@@ -182,26 +182,47 @@ class MeasureTexture(cpm.CPModule):
         result += [self.gabor_angles]
         return result
 
-    def add_image_cb(self):
+    def add_image_cb(self, can_remove = True):
+        '''Add an image to the image_groups collection
+        
+        can_delete - set this to False to keep from showing the "remove"
+                     button for images that must be present.
+        '''
         group = cps.SettingsGroup()
+        if can_remove:
+            group.append("divider", cps.Divider(line=False))
         group.append('image_name', 
                      cps.ImageNameSubscriber("Select an image to measure","None", 
                                              doc="""What did you call the grayscale images whose texture you want to measure?"""))
-        group.append("remover", cps.RemoveSettingButton("", "Remove this image", self.image_groups, group))
+        if can_remove:
+            group.append("remover", cps.RemoveSettingButton("", "Remove this image", self.image_groups, group))
         self.image_groups.append(group)
 
-    def add_object_cb(self):
-        """Add a slot for another object"""
+    def add_object_cb(self, can_remove = True):
+        '''Add an object to the object_groups collection
+        
+        can_delete - set this to False to keep from showing the "remove"
+                     button for objects that must be present.
+        '''
         group = cps.SettingsGroup()
+        if can_remove:
+            group.append("divider", cps.Divider(line=False))
         group.append('object_name', 
                      cps.ObjectNameSubscriber("Select objects to measure","None",
                                               doc="""What did you call the objects whose texture you want to measure? You can select <i>None</i> if you only want to measure the texture for the image overall."""))
-        group.append("remover", cps.RemoveSettingButton("", "Remove this object", self.object_groups, group))
+        if can_remove:
+            group.append("remover", cps.RemoveSettingButton("", "Remove this object", self.object_groups, group))
         self.object_groups.append(group)
 
-    def add_scale_cb(self):
-        '''Add another scale to be measured'''
+    def add_scale_cb(self, can_remove = True):
+        '''Add a scale to the scale_groups collection
+        
+        can_delete - set this to False to keep from showing the "remove"
+                     button for scales that must be present.
+        '''
         group = cps.SettingsGroup()
+        if can_remove:
+            group.append("divider", cps.Divider(line=False))
         group.append('scale', 
                      cps.Integer("Texture scale to measure",
                                  len(self.scale_groups)+3,
@@ -214,7 +235,8 @@ class MeasureTexture(cpm.CPModule):
                                  smaller than most of your objects. For very small objects (smaller than 
                                  the scale of texture you are measuring), the texture cannot be measured 
                                  and will result in a undefined value in the output file."""))
-        group.append("remover", cps.RemoveSettingButton("", "Remove this scale", self.scale_groups, group))
+        if can_remove:
+            group.append("remover", cps.RemoveSettingButton("", "Remove this scale", self.scale_groups, group))
         self.scale_groups.append(group)
 
     def get_categories(self,pipeline, object_name):

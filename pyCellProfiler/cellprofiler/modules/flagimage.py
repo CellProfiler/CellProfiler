@@ -68,49 +68,55 @@ class FlagImage(cpm.CPModule):
         self.flag_count = cps.HiddenCount(self.flags)
         self.add_flag_button = cps.DoSomething("", "Add another flag",
                                                self.add_flag)
-        self.add_flag(False)
+        self.spacer_1 = cps.Divider()
+        self.add_flag(can_delete = False)
         
     def add_flag(self, can_delete=True):
         group = cps.SettingsGroup()
+        if can_delete:
+            group.append("divider1", cps.Divider(line=True))
         group.append("measurement_settings", [])
         group.append("measurement_count", cps.HiddenCount(group.measurement_settings))
-        group.append("category", cps.Text("Name the flag's category",
-                                 "Metadata", doc = '''Name a measurement category the flag should reside in. Metadata allows you to later group images in the LoadImages module based on the flag, if you load the flag data in a future pipeline via the LoadText module.  Otherwise, you might choose to have the flag stored
-                                 in the Image category or some other word you prefer.  The flag is stored as a Per-image measurement whose name is a combination of the
-flag's category and feature name, underscore delimited. 
-For instance, if the measurement category is
-Metadata and the feature name is QCFlag, then the default
-measurement name would be Metadata_QCFlag.
-'''))
-        group.append("feature_name", cps.Text("Name the flag"
-                                     ,"QCFlag", doc = '''The flag is stored as a Per-image measurement whose name is a combination of the
-flag's category and feature name, underscore delimited. 
-For instance, if the measurement category is
-Metadata and the feature name is QCFlag, then the default
-measurement name would be Metadata_QCFlag.'''))
-        group.append("combination_choice",
-                     cps.Choice(
-                "Flag if any, or all, measurement(s) fails to meet the criteria?",
-                [ C_ANY, C_ALL], doc = '''
-                <ul>
-                <li><i>Any:</i> An image will be assigned a flag if any of its measurements fail. This can be useful
-                for flagging images possessing varied QC flaws; for example, you can flag all bright images and all out of focus images with one flag.</li>
-                <li><i>All:</i> A flag will only be assigned if all measurements fail.  This can be useful for flagging  images that possess only a combination
-                of QC flaws; for example, you can flag only images that are both bright and out of focus.</li>
-                </ul>'''))
+        group.append("category", cps.Text("Name the flag's category","Metadata", doc = '''
+                                Name a measurement category the flag should reside in. Metadata allows you to later group images in the LoadImages module based on the flag, if you load the flag data in a future pipeline via the LoadText module.  Otherwise, you might choose to have the flag stored
+                                in the Image category or some other word you prefer.  The flag is stored as a Per-image measurement whose name is a combination of the
+                                flag's category and feature name, underscore delimited. 
+                                For instance, if the measurement category is
+                                Metadata and the feature name is QCFlag, then the default
+                                measurement name would be Metadata_QCFlag.'''))
+        
+        group.append("feature_name", cps.Text("Name the flag","QCFlag", doc = '''
+                                The flag is stored as a Per-image measurement whose name is a combination of the
+                                flag's category and feature name, underscore delimited. 
+                                For instance, if the measurement category is
+                                Metadata and the feature name is QCFlag, then the default
+                                measurement name would be Metadata_QCFlag.'''))
+        
+        group.append("combination_choice", cps.Choice("Flag if any, or all, measurement(s) fails to meet the criteria?",
+                                [ C_ANY, C_ALL], doc = '''
+                                <ul>
+                                <li><i>Any:</i> An image will be assigned a flag if any of its measurements fail. This can be useful
+                                for flagging images possessing varied QC flaws; for example, you can flag all bright images and all out of focus images with one flag.</li>
+                                <li><i>All:</i> A flag will only be assigned if all measurements fail.  This can be useful for flagging  images that possess only a combination
+                                of QC flaws; for example, you can flag only images that are both bright and out of focus.</li>
+                                </ul>'''))
+        
         group.append("add_measurement_button", 
                      cps.DoSomething("",
                                      "Add another measurement",
                                      self.add_measurement, group))
-        self.add_measurement(group, False)
+        self.add_measurement(group, False if not can_delete else True)
         if can_delete:
             group.append("remover", cps.RemoveSettingButton("", "Remove this flag", self.flags, group))
+        group.append("divider2", cps.Divider(line=True))
         self.flags.append(group)
 
     def add_measurement(self, flag_settings, can_delete=True):
         measurement_settings = flag_settings.measurement_settings
 
         group = cps.SettingsGroup()
+        if can_delete:
+            group.append("divider", cps.Divider(line=True))
         group.append("source_choice",
                      cps.Choice(
                 "Flag is based on", S_ALL, doc = '''
@@ -145,7 +151,8 @@ measurement name would be Metadata_QCFlag.'''))
         
         if can_delete:
             group.append("remover", cps.RemoveSettingButton("", "Remove this measurement", measurement_settings, group))
-
+            
+        group.append("divider2", cps.Divider(line=True))
         measurement_settings.append(group)
 
     
@@ -190,6 +197,7 @@ measurement name would be Metadata_QCFlag.'''))
                 result += [m_g.maximum_value]
             if hasattr(m_g, "remover"):
                 result += [m_g.remover]
+            result +=  [m_g.spacer_1]
             return result
 
         def flag_visibles(flag):
@@ -201,6 +209,7 @@ measurement name would be Metadata_QCFlag.'''))
             result += [flag.add_measurement_button]
             if hasattr(flag, "remover"):
                 result += [flag.remover]
+            #result +=  [flag.spacer_1]
             return result
 
         result = []

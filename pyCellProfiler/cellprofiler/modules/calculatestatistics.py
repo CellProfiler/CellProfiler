@@ -125,11 +125,19 @@ class CalculateStatistics(cpm.CPModule):
         self.grouping_values = cps.Measurement(
             "Where is information about the positive and negative control status of each image?",
             lambda : cpmeas.IMAGE,
-            doc = '''The Z' factor, a measure of assay quality, is calculated by this module based on measurements from images that are specified as positive controls and images that are specified as negative controls (images that are neither are ignored when calculating this statistic). The module uses the convention that all of the negative controls are specified by a minimum value, all of the
-positive controls are specified by a maximum value, and all other images have an intermediate value - this might allow you to use your dosing information to also specify the positive and negative controls. If you are not using actual dose data to designate your controls, a common way to designate them is: -1 is a negative control, 0 is an experimental sample, and 1 is a positive control.  In other words, positive
-            controls should all be specified by a single high value (for instance, 1)
-            and negative controls should all be specified by a single low value (for
-            instance, 0). Other samples should have an intermediate value
+            doc = '''The Z' factor, a measure of assay quality, is calculated by this 
+            module based on measurements from images that are specified as positive controls 
+            and images that are specified as negative controls (images that are neither are 
+            ignored when calculating this statistic). The module uses the convention that 
+            all of the negative controls are specified by a minimum value, all of the
+            positive controls are specified by a maximum value, and all other images have an 
+            intermediate value - this might allow you to use your dosing information to also 
+            specify the positive and negative controls. If you are not using actual dose 
+            data to designate your controls, a common way to designate them is: -1 is a 
+            negative control, 0 is an experimental sample, and 1 is a positive control.  
+            In other words, positive controls should all be specified by a single high 
+            value (for instance, 1) and negative controls should all be specified by a 
+            single low value (for instance, 0). Other samples should have an intermediate value
             to exclude them from the Z' factor analysis.<p>
             The typical way to provide this information in the pipeline is to create 
             a text file outside of CellProfiler and then load that file in the pipeline
@@ -137,19 +145,24 @@ positive controls are specified by a maximum value, and all other images have an
             measurement that matches the column header of the measurement
             in LoadText's input file. See the help for this module for an example text file.''')
         self.dose_values = []
-        self.add_dose_value()
+        self.add_dose_value(can_remove = False)
         self.add_dose_button = cps.DoSomething("","Add another dose specification",
                                                self.add_dose_value)
         
-    def add_dose_value(self):
-        '''Add a dose value measurement to the list'''
+    def add_dose_value(self,can_remove = True):
+        '''Add a dose value measurement to the list
+        
+        can_delete - set this to False to keep from showing the "remove"
+                     button for images that must be present.'''
         group = cps.SettingsGroup()
         group.append("measurement",
                      cps.Measurement("Where is information about the treatment dose for each image?",
                                      lambda : cpmeas.IMAGE,
                                      doc = 
-            """The V factor, a measure of assay quality, and the EC50, indicating dose/response, are calculated by this module based on each image being specified as a particular treatment dose. Choose a measurement that gives the dose of some treatment
-            for each of your images. <p>
+            """The V factor, a measure of assay quality, and the EC50, indicating 
+            dose/response, are calculated by this module based on each image being 
+            specified as a particular treatment dose. Choose a measurement that gives 
+            the dose of some treatment for each of your images. <p>
             The typical way to provide this information in the pipeline is to create 
             a text file outside of CellProfiler and then load that file in the pipeline
             using <b>LoadText</b>. In that case, choose the
@@ -195,6 +208,8 @@ positive controls are specified by a maximum value, and all other images have an
                 to the default output folder specified in the main CellProfiler window with a period (".") or the default input 
                 folder with an ampersand ("&") as the root folder."""))
             
+        group.append("divider", cps.Divider())
+        
         group.append("remover", cps.RemoveSettingButton("", "Remove this dose measurement", 
                                                         self.dose_values,
                                                         group))
@@ -219,15 +234,18 @@ positive controls are specified by a maximum value, and all other images have an
         """The settings that are visible in the UI
         """
         result = [self.grouping_values]
-        for dose_value in self.dose_values:
+        for dose_index,dose_value in enumerate(self.dose_values):
+            if dose_index > 0:
+                result.append(dose_value.divider)
             result += [dose_value.measurement, dose_value.log_transform,
                        dose_value.wants_save_figure]
             if dose_value.wants_save_figure:
                 result += [dose_value.figure_name, dose_value.pathname_choice]
                 if dose_value.pathname_choice == PC_CUSTOM:
                     result += [dose_value.pathname]
-            result += [dose_value.remover]
-        result += [self.add_dose_button]
+            if dose_index > 0:
+                result += [dose_value.remover]
+        result.append(self.add_dose_button)
         return result
     
     def prepare_settings(self, setting_values):

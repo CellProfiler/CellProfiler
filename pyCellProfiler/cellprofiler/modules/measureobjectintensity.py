@@ -90,26 +90,42 @@ class MeasureObjectIntensity(cpm.CPModule):
     
     def create_settings(self):
         self.images = []
-        self.add_image()
+        self.add_image(can_remove = False)
         self.image_count = cps.HiddenCount(self.images)
         self.add_image_button = cps.DoSomething("", "Add another image", self.add_image)
         self.divider = cps.Divider()
         self.objects = []
-        self.add_object()
+        self.add_object(can_remove = False)
         self.add_object_button = cps.DoSomething("", "Add another object", self.add_object)
 
-    def add_image(self):
+    def add_image(self, can_remove = True):
+        '''Add an image to the image_groups collection
+        
+        can_delete - set this to False to keep from showing the "remove"
+                     button for images that must be present.
+        '''
         group = cps.SettingsGroup()
+        if can_remove:
+            group.append("divider", cps.Divider(line=False))
         group.append("name", cps.ImageNameSubscriber("Select an image to use for intensity measurements","None", doc = 
                                                      """What did you call the grayscale images whose intensity you want to measure?"""))
-        group.append("remover", cps.RemoveSettingButton("", "Remove this image", self.images, group))
+        if can_remove:
+            group.append("remover", cps.RemoveSettingButton("", "Remove this image", self.images, group))
         self.images.append(group)
 
-    def add_object(self):
+    def add_object(self, can_remove = True):
+        '''Add an object to the object_groups collection
+        
+        can_delete - set this to False to keep from showing the "remove"
+                     button for images that must be present.
+        '''
         group = cps.SettingsGroup()
+        if can_remove:
+            group.append("divider", cps.Divider(line=False))
         group.append("name", cps.ObjectNameSubscriber("Select objects to measure","None", doc = 
                                                           """What did you call the objects whose intensities you want to measure?"""))
-        group.append("remover", cps.RemoveSettingButton("", "Remove this object", self.images, group))
+        if can_remove:
+            group.append("remover", cps.RemoveSettingButton("", "Remove this object", self.objects, group))
         self.objects.append(group)
 
     def settings(self):

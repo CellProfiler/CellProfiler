@@ -167,6 +167,12 @@ class CalculateMath(cpm.CPModule):
         
         self.operands = (Operand(0, self.operation), Operand(1, self.operation))
         
+        self.spacer_1 = cps.Divider(line=True)
+                
+        self.spacer_2 = cps.Divider(line=True)
+        
+        self.spacer_3 = cps.Divider(line=True)
+        
         self.wants_log = cps.Binary("Take log10 of result?", False,doc="""
                                     Do you want the log (base 10) of the result?""")
         
@@ -203,8 +209,11 @@ class CalculateMath(cpm.CPModule):
                  
     def visible_settings(self):
         return ([self.output_feature_name, self.operation] +
+                [self.spacer_1] + 
                 self.operands[0].visible_settings() + 
+                [self.spacer_2] + 
                 self.operands[1].visible_settings() + 
+                [self.spacer_3] + 
                 [self.wants_log, self.final_multiplicand, self.final_exponent])
         
 

@@ -94,11 +94,12 @@ class MeasureCorrelation(cpm.CPModule):
         '''Create the initial settings for the module'''
         self.image_groups = []
         self.add_image(can_delete = False)
+        self.spacer_1 = cps.Divider()
         self.add_image(can_delete = False)
         self.image_count = cps.HiddenCount(self.image_groups)
         
         self.add_image_button = cps.DoSomething("", 'Add another image', self.add_image)
-        self.spacer = cps.Divider(line=False)
+        self.spacer_2 = cps.Divider()
         self.images_or_objects = cps.Choice('Select where to measure correlation',
                                             [M_IMAGES, M_OBJECTS, M_IMAGES_AND_OBJECTS], 
                                             doc = '''
@@ -111,8 +112,10 @@ class MeasureCorrelation(cpm.CPModule):
                                             <i>Images and objects</i> will calculate both measurements.''')
         
         self.object_groups = []
-        self.add_object()
+        self.add_object(can_delete = False)
         self.object_count = cps.HiddenCount(self.object_groups)
+        
+        self.spacer_2 = cps.Divider(line=False)
         
         self.add_object_button = cps.DoSomething("", 'Add another object', self.add_object)
 
@@ -123,20 +126,27 @@ class MeasureCorrelation(cpm.CPModule):
                      button for images that must be present.
         '''
         group = cps.SettingsGroup()
+        if can_delete:
+            group.append("divider", cps.Divider(line=False))
         group.append("image_name", cps.ImageNameSubscriber('Select an image to measure','None',
                                                           doc = '''What is the name of an image to be measured?'''))
+        if len(self.image_groups) == 0: # Insert space between 1st two images for aesthetics
+            group.append("extra_divider", cps.Divider(line=False))
+        
         if can_delete:
-            group.append("remover", 
-                         cps.RemoveSettingButton("",
-                                                 "Remove this image", self.image_groups, group))
+            group.append("remover", cps.RemoveSettingButton("","Remove this image", self.image_groups, group))
+            
         self.image_groups.append(group)
 
-    def add_object(self):
+    def add_object(self, can_delete = True):
         '''Add an object to the object_groups collection'''
         group = cps.SettingsGroup()
+        if can_delete:
+            group.append("divider", cps.Divider(line=False))
         group.append("object_name", cps.ObjectNameSubscriber('Select an object to measure','None',
                                                             doc = '''What is the name of objects to be measured?'''))
-        group.append("remover", cps.RemoveSettingButton('', 'Remove this object', self.object_groups, group))
+        if can_delete:
+            group.append("remover", cps.RemoveSettingButton('', 'Remove this object', self.object_groups, group))
         self.object_groups.append(group)
 
     def settings(self):
@@ -166,7 +176,7 @@ class MeasureCorrelation(cpm.CPModule):
         result = []
         for image_group in self.image_groups:
             result += image_group.unpack_group()
-        result += [self.add_image_button, self.spacer, self.images_or_objects]
+        result += [self.add_image_button, self.spacer_2, self.images_or_objects]
         if self.wants_objects():
             for object_group in self.object_groups:
                 result += object_group.unpack_group()

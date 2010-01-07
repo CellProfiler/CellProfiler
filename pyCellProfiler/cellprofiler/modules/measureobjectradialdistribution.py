@@ -90,10 +90,10 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
         self.object_count = cps.HiddenCount(self.objects)
         self.bin_counts_count = cps.HiddenCount(self.bin_counts)
         self.add_image_button = cps.DoSomething("", "Add another image", self.add_image)
-        self.spacer_1 = cps.Divider(line=False)
+        self.spacer_1 = cps.Divider()
         self.add_object_button = cps.DoSomething("", "Add another object",
                                                  self.add_object)
-        self.spacer_2 = cps.Divider(line=False)
+        self.spacer_2 = cps.Divider()
         self.add_bin_count_button = cps.DoSomething("",
                                                     "Add another set of bins", self.add_bin_count)
         self.add_image(can_remove = False)
@@ -103,6 +103,8 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
     def add_image(self, can_remove = True):
         '''Add an image to be measured'''
         group = cps.SettingsGroup()
+        if can_remove:
+            group.append("divider", cps.Divider(line=False))
         group.append("image_name", cps.ImageNameSubscriber(
                 "Select an image to use for radial distribution measurements", "None"))
         if can_remove:
@@ -112,6 +114,8 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
     def add_object(self, can_remove = True):
         '''Add an object to be measured (plus optional centers)'''
         group = cps.SettingsGroup()
+        if can_remove:
+            group.append("divider", cps.Divider(line=False))
         group.append("object_name", cps.ObjectNameSubscriber(
                 "Select objects to measure", "None"))
         group.append("center_choice", cps.Choice(
@@ -134,12 +138,13 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
                 <i>These objects</i> for the object centers)."""))
         if can_remove:
             group.append("remover", cps.RemoveSettingButton("", "Remove this object", self.objects, group))
-        group.append("divider", cps.Divider(line=False))
         self.objects.append(group)
 
     def add_bin_count(self, can_remove = True):
         '''Add another radial bin count at which to measure'''
         group = cps.SettingsGroup()
+        if can_remove:
+            group.append("divider", cps.Divider(line=False))
         group.append("bin_count", cps.Integer(
                     "Number of bins",4, 2, doc="""How many bins do you want to use to measure 
                         the distribution?

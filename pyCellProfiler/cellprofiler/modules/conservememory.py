@@ -50,7 +50,7 @@ class ConserveMemory(cpm.CPModule):
                                 (C_REMOVE, C_KEEP))
         self.spacer_top = cps.Divider(line=False)
         self.image_names = []
-        self.add_image()
+        self.add_image(can_remove = False)
         self.spacer_bottom = cps.Divider(line=False)
         self.add_image_button = cps.DoSomething("", "Add another image",
                                                 self.add_image)
@@ -62,11 +62,18 @@ class ConserveMemory(cpm.CPModule):
         else:
             return "Select image to keep"
 
-    def add_image(self):
-        '''Add an image to the list of image names'''
+    def add_image(self, can_remove = True):
+        '''Add an image to the list of image names
+        
+        can_remove - set this to False to keep from showing the "remove"
+                     button for images that must be present.
+        '''
         group = cps.SettingsGroup()
+        if can_remove:
+            group.append("divider", cps.Divider(line=False))
         group.append("image_name", cps.ImageNameSubscriber(self.query(), "None"))
-        group.append("remover", cps.RemoveSettingButton("",
+        if can_remove:
+            group.append("remover", cps.RemoveSettingButton("",
                                                         "Remove this image",
                                                         self.image_names,
                                                         group))
@@ -90,7 +97,7 @@ class ConserveMemory(cpm.CPModule):
 
         for image_setting in self.image_names:
             result += image_setting.unpack_group()
-        result += [self.spacer_bottom, self.add_image_button]
+        result += [self.add_image_button]
         return result
     
     def run(self, workspace):

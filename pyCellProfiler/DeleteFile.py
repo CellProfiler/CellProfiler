@@ -55,4 +55,3 @@ try:
 except:
     import traceback
     traceback.print_exc()
-    print "Caught exception while killing VM"

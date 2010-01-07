@@ -55,8 +55,6 @@ N_FIXED_SETTINGS_PER_FLAG = 4
 '''Number of settings per measurement'''
 N_SETTINGS_PER_MEASUREMENT = 7
 
-# XXX - needs some Dividers to space things out
-
 class FlagImage(cpm.CPModule):
    
     category = "Image Processing"
@@ -73,8 +71,7 @@ class FlagImage(cpm.CPModule):
         
     def add_flag(self, can_delete=True):
         group = cps.SettingsGroup()
-        if can_delete:
-            group.append("divider1", cps.Divider(line=True))
+        group.append("divider1", cps.Divider(line=False))
         group.append("measurement_settings", [])
         group.append("measurement_count", cps.HiddenCount(group.measurement_settings))
         group.append("category", cps.Text("Name the flag's category","Metadata", doc = '''
@@ -115,8 +112,7 @@ class FlagImage(cpm.CPModule):
         measurement_settings = flag_settings.measurement_settings
 
         group = cps.SettingsGroup()
-        if can_delete:
-            group.append("divider", cps.Divider(line=True))
+        group.append("divider1", cps.Divider(line=False))
         group.append("source_choice",
                      cps.Choice(
                 "Flag is based on", S_ALL, doc = '''
@@ -186,7 +182,12 @@ class FlagImage(cpm.CPModule):
     
     def visible_settings(self):
         def measurement_visibles(m_g):
-            result = [m_g.source_choice]
+            if hasattr(m_g, "remover"):
+                result = [cps.Divider(line=True)]
+            else:
+                result = []
+            result += [m_g.source_choice]
+            
             if m_g.source_choice != S_IMAGE:
                 result += [m_g.object_name]
             result += [m_g.measurement, m_g.wants_minimum]
@@ -196,20 +197,22 @@ class FlagImage(cpm.CPModule):
             if m_g.wants_maximum.value:
                 result += [m_g.maximum_value]
             if hasattr(m_g, "remover"):
-                result += [m_g.remover]
-            #result +=  [m_g.spacer_1]
+                result += [m_g.remover, cps.Divider(line=True)]
             return result
 
         def flag_visibles(flag):
-            result = [flag.category, flag.feature_name]
+            if hasattr(flag, "remover"):
+                result = [cps.Divider(line=True),cps.Divider(line=True)]
+            else:
+                result = []
+            result += [flag.category, flag.feature_name]
             if len(flag.measurement_settings) > 1:
                 result += [flag.combination_choice]
             for measurement_settings in flag.measurement_settings:
                 result += measurement_visibles(measurement_settings)
             result += [flag.add_measurement_button]
             if hasattr(flag, "remover"):
-                result += [flag.remover]
-            #result +=  [flag.spacer_1]
+                result += [flag.remover, cps.Divider(line=True),cps.Divider(line=True)]
             return result
 
         result = []

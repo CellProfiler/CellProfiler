@@ -229,7 +229,7 @@ function go_to_key(key) {
     add_char = "?"
     all_k = new Array("data_dir","email","queue",
                         "project","batch_size","memory_limit",
-                        "write_data","timeout")
+                        "write_data","timeout","revision")
     for (k in all_k) {
         v = document.getElementById('input_'+all_k[k])
         url = url+add_char+all_k[k]+'='+escape(v.value)
@@ -277,9 +277,13 @@ print '''<div style='white-space=nowrap'><label for='input_email'>Project:&nbsp;
 <div style='white-space=nowrap'><label for='input_timeout'>Timeout:&nbsp;</label>
 <input type='text' id='input_timeout' name='timeout' value='%(timeout)s'/></div>
 '''%(keys)
-print '''SVN revision:<select name='revision'>'''
-for filename in os.listdir('/imaging/analysis/CPCluster/CellProfiler-2.0'):
-    if filename in ['checkout.sh']:
+print '''SVN revision:<select name='revision' id='input_revision'>'''
+vroot = '/imaging/analysis/CPCluster/CellProfiler-2.0'
+vdirs = list(os.listdir(vroot))
+vdirs.sort()
+for filename in vdirs:
+    vpath = os.path.join(vroot, filename)
+    if not os.path.isdir(vpath):
         continue
     print '''<option %s>%s</option>'''%('selected="selected"' if filename == keys['revision'] else '',filename)
 print '''</select> (at /imaging/analysis/CPCluster/CellProfiler-2.0/)'''
@@ -313,4 +317,3 @@ try:
 except:
     import traceback
     traceback.print_exc()
-    print "Caught exception while killing VM"

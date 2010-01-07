@@ -526,6 +526,10 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             else:
                 new_setting_values += [ cps.YES ]
             setting_values = new_setting_values
+            if new_setting_values[UNCLUMP_METHOD_VAR] == cps.DO_NOT_USE:
+                new_setting_values[UNCLUMP_METHOD_VAR] = UN_NONE
+            if new_setting_values[WATERSHED_VAR] == cps.DO_NOT_USE:
+                new_setting_values[WATERSHED_VAR] = WA_NONE
             variable_revision_number = 1
             from_matlab = False
         if (not from_matlab) and variable_revision_number == 1:

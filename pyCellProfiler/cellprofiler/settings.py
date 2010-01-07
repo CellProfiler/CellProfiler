@@ -37,6 +37,15 @@ OBJECT_GROUP = 'objectgroup'
 '''Names providers and subscribers of grid information'''
 GRID_GROUP = 'gridgroup'
 
+'''Indicates that the image comes from a cropping operation'''
+CROPPING_ATTRIBUTE = "cropping_image"
+'''Indicates that the image was loaded from a file and has a file name and path'''
+FILE_IMAGE_ATTRIBUTE = "file_image"
+'''Indicates that the image is the result of an aggregate operation'''
+AGGREGATE_IMAGE_ATTRIBUTE = "aggregate_image"
+'''Indicates that the image is only available on the last cycle'''
+AVAILABLE_ON_LAST_ATTRIBUTE = "available_on_last"
+
 class Setting(object):
     """A module setting which holds a single string value
     
@@ -609,21 +618,36 @@ class FloatRange(Setting):
         if self.min > self.max:
             raise ValidationError("%f is greater than %f"%(self.min, self.max),self)
 
+PROVIDED_ATTRIBUTES = "provided_attributes"
 class NameProvider(Text):
     """A setting that provides a named object
     """
     def __init__(self, text, group, value=DO_NOT_USE, *args, **kwargs):
+        self.__provided_attributes = { "group":group }
+        if kwargs.has_key("provided_attributes"):
+            self.__provided_attributes.update(kwargs["provided_attributes"])
+            kwargs = kwargs.copy()
+            del kwargs[PROVIDED_ATTRIBUTES]
         super(NameProvider,self).__init__(text, value, *args, **kwargs)
-        self.__group = group
     
     def get_group(self):
         """This setting provides a name to this group
         
         Returns a group name, e.g. imagegroup or objectgroup
         """
-        return self.__group
+        return self.__provided_attributes["group"]
     
     group = property(get_group)
+    
+    @property
+    def provided_attributes(self):
+        '''Return the dictionary of attributes of this provider
+        
+        These are things like the group ("objectgroup" for instance) and
+        hints about the thing itself, such as that it is an image
+        that was loaded from  a file.
+        '''
+        return self.__provided_attributes
 
 class ImageNameProvider(NameProvider):
     """A setting that provides an image name
@@ -635,12 +659,20 @@ class ImageNameProvider(NameProvider):
 class FileImageNameProvider(ImageNameProvider):
     """A setting that provides an image name where the image has an associated file"""
     def __init__(self, text, value=DO_NOT_USE, *args, **kwargs):
+        kwargs = kwargs.copy()
+        if not kwargs.has_key(PROVIDED_ATTRIBUTES):
+            kwargs[PROVIDED_ATTRIBUTES] = {}
+        kwargs[PROVIDED_ATTRIBUTES][FILE_IMAGE_ATTRIBUTE] = True
         super(FileImageNameProvider,self).__init__(text, value, *args,
                                                    **kwargs)
 
 class CroppingNameProvider(ImageNameProvider):
     """A setting that provides an image name where the image has a cropping mask"""
     def __init__(self, text, value=DO_NOT_USE, *args, **kwargs):
+        kwargs = kwargs.copy()
+        if not kwargs.has_key(PROVIDED_ATTRIBUTES):
+            kwargs[PROVIDED_ATTRIBUTES] = {}
+        kwargs[PROVIDED_ATTRIBUTES][CROPPING_ATTRIBUTE] = True
         super(CroppingNameProvider,self).__init__(text, value, *args, **kwargs)
     
 class ObjectNameProvider(NameProvider):
@@ -664,6 +696,7 @@ class GridNameProvider(NameProvider):
         super(GridNameProvider, self).__init__(text, GRID_GROUP, value, 
                                                *args, **kwargs)
 
+REQUIRED_ATTRIBUTES = "required_attributes"
 class NameSubscriber(Setting):
     """A setting that takes its value from one made available by name providers
     """
@@ -671,18 +704,22 @@ class NameSubscriber(Setting):
                  can_be_blank=False, blank_text=LEAVE_BLANK, *args, **kwargs):
         if value==None:
             value = (can_be_blank and blank_text) or "None"
-        super(NameSubscriber,self).__init__(text, value, *args, **kwargs)
-    
-        self.__group = group
+        self.__required_attributes = { "group":group }
+        if kwargs.has_key(REQUIRED_ATTRIBUTES):
+            self.__required_attributes.update(kwargs[REQUIRED_ATTRIBUTES])
+            kwargs = kwargs.copy()
+            del kwargs[REQUIRED_ATTRIBUTES]
         self.__can_be_blank = can_be_blank
         self.__blank_text = blank_text
+        super(NameSubscriber,self).__init__(text, value, *args, **kwargs)
+    
     
     def get_group(self):
         """This setting provides a name to this group
         
         Returns a group name, e.g. imagegroup or objectgroup
         """
-        return self.__group
+        return self.__required_attributes["group"]
     
     group = property(get_group)
     
@@ -699,7 +736,9 @@ class NameSubscriber(Setting):
     
     def matches(self, setting):
         """Return true if this subscriber matches the category of the provider"""
-        return self.group == setting.group
+        return all([setting.provided_attributes.get(key, None) ==
+                    self.__required_attributes[key]
+                    for key in self.__required_attributes.keys()])
     
     def test_valid(self,pipeline):
         if len(self.get_choices(pipeline)) == 0:
@@ -729,7 +768,29 @@ def get_name_provider_choices(pipeline, last_setting, group):
                 module_choices.append(setting.value)
         choices += module_choices
     assert False, "Setting not among visible settings in pipeline"
-        
+
+def get_name_providers(pipeline, last_setting):
+    '''Scan the pipeline to find name providers matching the name given in the setting
+    
+    pipeline - pipeline to scan
+    last_setting - scan the modules in order until you arrive at this setting
+    returns a list of providers that provide a correct "thing" with the
+    same name as that of the subscriber
+    '''
+    choices = []
+    for module in pipeline.modules():
+        module_choices = []
+        for setting in module.visible_settings():
+            if setting.key() == last_setting.key():
+                return choices
+            if (isinstance(setting, NameProvider) and 
+                setting != DO_NOT_USE and
+                last_setting.matches(setting) and
+                setting.value == last_setting.value):
+                module_choices.append(setting)
+        choices += module_choices
+    assert False, "Setting not among visible settings in pipeline"
+
 class ImageNameSubscriber(NameSubscriber):
     """A setting that provides an image name
     """
@@ -743,26 +804,26 @@ class FileImageNameSubscriber(ImageNameSubscriber):
     """A setting that provides image names loaded from files"""
     def __init__(self, text, value=DO_NOT_USE, can_be_blank = False,
                  blank_text=LEAVE_BLANK, *args, **kwargs):
+        kwargs = kwargs.copy()
+        if not kwargs.has_key(REQUIRED_ATTRIBUTES):
+            kwargs[REQUIRED_ATTRIBUTES] = {}
+        kwargs[REQUIRED_ATTRIBUTES][FILE_IMAGE_ATTRIBUTE] = True
         super(FileImageNameSubscriber,self).__init__(text, value, can_be_blank,
                                                      blank_text, *args,
                                                      **kwargs)
     
-    def matches(self,setting):
-        """Only match FileImageNameProvider variables"""
-        return isinstance(setting, FileImageNameProvider)
-
 class CroppingNameSubscriber(ImageNameSubscriber):
     """A setting that provides image names that have cropping masks"""
     def __init__(self, text, value=DO_NOT_USE, can_be_blank=False,
                  blank_text=LEAVE_BLANK, *args, **kwargs):
+        kwargs = kwargs.copy()
+        if not kwargs.has_key(REQUIRED_ATTRIBUTES):
+            kwargs[REQUIRED_ATTRIBUTES] = {}
+        kwargs[REQUIRED_ATTRIBUTES][CROPPING_ATTRIBUTE] = True
         super(CroppingNameSubscriber,self).__init__(text, value, can_be_blank,
                                                     blank_text, *args, 
                                                     **kwargs)
     
-    def matches(self,setting):
-        """Only match CroppingNameProvider variables"""
-        return isinstance(setting, CroppingNameProvider)
-
 class ObjectNameSubscriber(NameSubscriber):
     """A setting that subscribes to the list of available object names
     """
@@ -989,9 +1050,13 @@ class SubscriberMultiChoice(MultiChoice):
     choices.
     '''
     def __init__(self, text, group, value=None, *args, **kwargs):
+        self.__required_attributes = { "group":group }
+        if kwargs.has_key(REQUIRED_ATTRIBUTES):
+            self.__required_attributes.update(kwargs[REQUIRED_ATTRIBUTES])
+            kwargs = kwargs.copy()
+            del kwargs[REQUIRED_ATTRIBUTES]
         super(SubscriberMultiChoice,self).__init__(text, [], value,
                                                    *args, **kwargs)
-        self.group = group
     
     def load_choices(self, pipeline):
         '''Get the choice list from name providers'''
@@ -1005,7 +1070,9 @@ class SubscriberMultiChoice(MultiChoice):
         FileImageNameProviders (images loaded from files), you can
         check that here.
         '''
-        return provider.group == self.group
+        return all([getattr(provider.provided_attributes, key, None) ==
+                    self.__required_attributes[key]
+                    for key in self.__required_attributes])
     
     def test_valid(self, pipeline):
         self.load_choices(pipeline)

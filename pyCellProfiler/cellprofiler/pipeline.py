@@ -154,6 +154,54 @@ def add_all_images(handles,image_set, object_set):
         npy_images[key][0,0] = image
     handles[PIPELINE]=npy_images
 
+def map_feature_names(feature_names, max_size=63):
+    '''Map feature names to legal Matlab field names
+    
+    returns a dictionary where the key is the field name and
+    the value is the feature name.
+    '''
+    mapping = {}
+    seeded = False
+    def shortest_first(a,b):
+        return -1 if len(a) < len(b) else 1 if len(b) < len(a) else cmp(a,b)
+    
+    for feature_name in sorted(feature_names,shortest_first):
+        if len(feature_name) > max_size:
+            name = feature_name
+            to_remove = len(feature_name) - max_size
+            remove_count = 0
+            for to_drop in (('a','e','i','o','u'),
+                            ('b','c','d','f','g','h','j','k','l','m','n',
+                             'p','q','r','s','t','v','w','x','y','z'),
+                            ('A','B','C','D','E','F','G','H','I','J','K',
+                             'L','M','N','O','P','Q','R','S','T','U','V',
+                             'W','X','Y','Z')):
+                for index in range(len(name)-1,-1,-1):
+                    if name[index] in to_drop:
+                        name = name[:index]+name[index+1:]
+                        remove_count += 1
+                        if remove_count == to_remove:
+                            break
+                if remove_count == to_remove:
+                    break
+            if name in mapping.keys() or len(name) > max_size:
+                # Panic mode - a duplication
+                if not seeded:
+                    np.random.seed(0)
+                    seeded = True
+                while True:
+                    npname = np.fromstring(feature_name, '|S1')
+                    indices = np.random.permutation(len(name))[:max_size]
+                    indices.sort()
+                    name = npname[indices]
+                    name = name.tostring()
+                    if not name in mapping.keys():
+                        break
+        else:
+            name = feature_name
+        mapping[name] = feature_name
+    return mapping
+        
 def add_all_measurements(handles, measurements):
     """Add all measurements from our measurements object into the numpy structure passed
     
@@ -164,12 +212,14 @@ def add_all_measurements(handles, measurements):
     for object_name in measurements.get_object_names():
         if object_name == cpmeas.EXPERIMENT:
             continue
-        object_dtype = make_cell_struct_dtype(measurements.get_feature_names(object_name))
+        mapping = map_feature_names(measurements.get_feature_names(object_name))
+        object_dtype = make_cell_struct_dtype(mapping.keys())
         object_measurements = np.ndarray((1,1),dtype=object_dtype)
         npy_measurements[object_name][0,0] = object_measurements
-        for feature_name in measurements.get_feature_names(object_name):
-            feature_measurements = np.ndarray((1,measurements.image_set_index+1),dtype='object')
-            object_measurements[feature_name][0,0] = feature_measurements
+        for field, feature_name in mapping.iteritems():
+            feature_measurements = np.ndarray((1,measurements.image_set_index+1),
+                                              dtype='object')
+            object_measurements[field][0,0] = feature_measurements
             data = measurements.get_all_measurements(object_name,feature_name)
             for i in range(0,measurements.image_set_index+1):
                 if data != None:
@@ -183,13 +233,14 @@ def add_all_measurements(handles, measurements):
                 else:
                     feature_measurements[0, i] = np.array([0])
     if cpmeas.EXPERIMENT in measurements.object_names:
-        object_dtype = make_cell_struct_dtype(measurements.get_feature_names(cpmeas.EXPERIMENT))
+        mapping = map_feature_names(measurements.get_feature_names(cpmeas.EXPERIMENT))
+        object_dtype = make_cell_struct_dtype(mapping.keys())
         experiment_measurements = np.ndarray((1,1), dtype=object_dtype)
         npy_measurements[cpmeas.EXPERIMENT][0,0] = experiment_measurements
-        for feature_name in measurements.get_feature_names(cpmeas.EXPERIMENT):
+        for field, feature_name in mapping.iteritems():
             feature_measurements = np.ndarray((1,1),dtype='object')
             feature_measurements[0,0] = measurements.get_experiment_measurement(feature_name)
-            experiment_measurements[feature_name][0,0] = feature_measurements
+            experiment_measurements[field][0,0] = feature_measurements
 
 
 _evt_modulerunner_done_id = None

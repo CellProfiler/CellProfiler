@@ -319,6 +319,44 @@ class TestPipeline(unittest.TestCase):
         for setting_in, setting_out in zip(module.settings(),
                                            module_out.settings()):
             self.assertEqual(setting_in.value, setting_out.value)
+            
+    def test_13_03_save_long_measurements(self):
+        pipeline = cellprofiler.pipeline.Pipeline()
+        cellprofiler.modules.fill_modules()
+        module = cellprofiler.modules.instantiate_module("Align")
+        module.module_num = 1
+        pipeline.add_module(module)
+        measurements = cellprofiler.measurements.Measurements()
+        # m2 and m3 should go into panic mode because they differ by a cap
+        m1_name = "dalkzfsrqoiualkjfrqealkjfqroupifaaalfdskquyalkhfaafdsafdsqteqteqtew"
+        m2_name = "lkjxKJDSALKJDSAWQOIULKJFASOIUQELKJFAOIUQRLKFDSAOIURQLKFDSAQOIRALFAJ" 
+        m3_name = "druxKJDSALKJDSAWQOIULKJFASOIUQELKJFAOIUQRLKFDSAOIURQLKFDSAQOIRALFAJ" 
+        my_measurement = [np.random.uniform(size=np.random.randint(3,25))
+                          for i in range(20)]
+        my_other_measurement = [np.random.uniform(size=np.random.randint(3,25))
+                                            for i in range(20)]
+        my_final_measurement = [np.random.uniform(size=np.random.randint(3,25))
+                                for i in range(20)]
+        measurements.add_all_measurements("Foo",m1_name, my_measurement)
+        measurements.add_all_measurements("Foo",m2_name, my_other_measurement)
+        measurements.add_all_measurements("Foo",m3_name, my_final_measurement)
+        fd = cStringIO.StringIO()
+        pipeline.save_measurements(fd, measurements)
+        fd.seek(0)
+        measurements = cellprofiler.measurements.load_measurements(fd)
+        reverse_mapping = cellprofiler.pipeline.map_feature_names([m1_name, m2_name, m3_name])
+        mapping = {}
+        for key in reverse_mapping.keys():
+            mapping[reverse_mapping[key]] = key
+        for name, expected in ((m1_name, my_measurement),
+                               (m2_name, my_other_measurement),
+                               (m3_name, my_final_measurement)):
+            map_name = mapping[name]
+            my_measurement_out = measurements.get_all_measurements("Foo",map_name)
+            for m_in, m_out in zip(expected, my_measurement_out):
+                self.assertEqual(len(m_in), len(m_out))
+                self.assertTrue(np.all(m_in == m_out))
+        
 
 class MyClassForTest0801(cellprofiler.cpmodule.CPModule):
     def create_settings(self):

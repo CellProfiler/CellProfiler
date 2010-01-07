@@ -57,7 +57,9 @@ class MakeProjection(cpm.CPModule):
     category = 'Image Processing'
     variable_revision_number = 1
     def create_settings(self):
-        self.image_name = cps.ImageNameSubscriber('Select the input image','None', doc = '''What did you call the images to be made into a projection?''')
+        self.image_name = cps.ImageNameSubscriber(
+            'Select the input image','None', 
+            doc = '''What did you call the images to be made into a projection?''')
         self.projection_type = cps.Choice('Type of projection',
                                           P_ALL, doc = '''
                                           What kind of projection would you like to make?
@@ -65,8 +67,12 @@ class MakeProjection(cpm.CPModule):
                                           will be used to create the final image.</li>
                                           <li>Maximum: The maximum pixel value at each pixel position will be used to
                                           create the final image.</li></ul>''')
-        self.projection_image_name = cps.ImageNameProvider('Name the output image',
-                                                           'ProjectionBlue', doc = '''What do you want to call the projected image?''')
+        self.projection_image_name = cps.ImageNameProvider(
+            'Name the output image',
+            'ProjectionBlue', 
+            doc = '''What do you want to call the projected image?''',
+            provided_attributes={cps.AGGREGATE_IMAGE_ATTRIBUTE: True,
+                                 cps.AVAILABLE_ON_LAST_ATTRIBUTE: True } )
 
     def settings(self):
         return [self.image_name, self.projection_type, 

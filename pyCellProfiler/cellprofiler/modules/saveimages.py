@@ -606,3 +606,20 @@ class SaveImages(cpm.CPModule):
 
         return setting_values, variable_revision_number, from_matlab
     
+    def validate_module(self, pipeline):
+        if (self.save_image_or_figure in (IF_IMAGE, IF_MASK, IF_CROPPING) and
+            self.when_to_save in (WS_FIRST_CYCLE, WS_EVERY_CYCLE)):
+            #
+            # Make sure that the image name is available on every cycle
+            #
+            for setting in cps.get_name_providers(pipeline,
+                                                  self.image_name):
+                if not setting.provided_attributes.get(cps.AVAILABLE_ON_LAST_ATTRIBUTE):
+                    return
+            #
+            # If we fell through, then you can only save on the last cycle
+            #
+            raise cps.ValidationError("%s is only available after processing all images in an image group" %
+                                      self.image_name.value,
+                                      self.when_to_save)
+    

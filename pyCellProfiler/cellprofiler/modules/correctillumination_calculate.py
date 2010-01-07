@@ -71,8 +71,11 @@ class CorrectIllumination_Calculate(cpm.CPModule):
         self.image_name = cps.ImageNameSubscriber("Select the input image","None", doc = '''
                                            What did you call the images to be used to calculate the illumination function?''')
         
-        self.illumination_image_name = cps.ImageNameProvider("Name the output image","IllumBlue", doc = '''
-                                           What do you want to call the illumination function?''')
+        self.illumination_image_name = cps.ImageNameProvider(
+            "Name the output image","IllumBlue", doc = '''
+            What do you want to call the illumination function?''',
+            provided_attributes={cps.AGGREGATE_IMAGE_ATTRIBUTE:True,
+                                 cps.AVAILABLE_ON_LAST_ATTRIBUTE:False })
         
         self.intensity_choice = cps.Choice("Select how the illumination function is calculated",
                                            [IC_REGULAR, IC_BACKGROUND],
@@ -485,6 +488,14 @@ class CorrectIllumination_Calculate(cpm.CPModule):
         output_pixels = pixel_data / robust_minimum
         output_image = cpi.Image(output_pixels, parent_image = orig_image)
         return output_image
+    
+    def validate_module(self, pipeline):
+        '''Modify the image provider attributes based on other setttings'''
+        d = self.illumination_image_name.provided_attributes
+        if self.each_or_all == EA_ALL:
+            d[cps.AVAILABLE_ON_LAST_ATTRIBUTE] = True
+        elif d.has_key(cps.AVAILABLE_ON_LAST_ATTRIBUTE):
+            del d[cps.AVAILABLE_ON_LAST_ATTRIBUTE]
     
     def upgrade_settings(self, setting_values, variable_revision_number, 
                          module_name, from_matlab):

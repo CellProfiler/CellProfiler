@@ -179,41 +179,43 @@ if options.output_directory:
 if options.image_directory:
     cpprefs.set_default_image_directory(options.image_directory)
 
-if options.show_gui:
-    import cellprofiler.gui.cpframe as cpgframe
-    if options.pipeline_filename:
-        App.frame.pipeline.load(options.pipeline_filename)
-    if options.run_pipeline:
-        App.frame.Command(cpgframe.ID_FILE_ANALYZE_IMAGES)
-    App.MainLoop()
-else:
-    from cellprofiler.pipeline import Pipeline, EXIT_STATUS
-    import cellprofiler.measurements as cpmeas
-    pipeline = Pipeline()
-    pipeline.load(options.pipeline_filename)
-    if options.groups is not None:
-        kvs = [x.split('=') for x in options.groups.split(',')]
-        groups = dict(kvs)
-    else:
-        groups = None
-    measurements = pipeline.run(image_set_start=image_set_start, 
-                                image_set_end=image_set_end,
-                                grouping=groups)
-    if len(args) > 0:
-        pipeline.save_measurements(args[0], measurements)
-    if options.done_file is not None:
-        if (measurements is not None and 
-            measurements.has_feature(cpmeas.EXPERIMENT, EXIT_STATUS)):
-            done_text = measurements.get_experiment_measurement(EXIT_STATUS)
-        else:
-            done_text = "Failure"
-        fd = open(options.done_file, "wt")
-        fd.write("%s\n"%done_text)
-        fd.close()
 try:
-    import cellprofiler.utilities.jutil as jutil
-    jutil.kill_vm()
-except:
-    import traceback
-    traceback.print_exc()
-    print "Caught exception while killing VM"
+    if options.show_gui:
+        import cellprofiler.gui.cpframe as cpgframe
+        if options.pipeline_filename:
+            App.frame.pipeline.load(options.pipeline_filename)
+            if options.run_pipeline:
+                App.frame.Command(cpgframe.ID_FILE_ANALYZE_IMAGES)
+        App.MainLoop()
+    else:
+        from cellprofiler.pipeline import Pipeline, EXIT_STATUS
+        import cellprofiler.measurements as cpmeas
+        pipeline = Pipeline()
+        pipeline.load(options.pipeline_filename)
+        if options.groups is not None:
+            kvs = [x.split('=') for x in options.groups.split(',')]
+            groups = dict(kvs)
+        else:
+            groups = None
+        measurements = pipeline.run(image_set_start=image_set_start, 
+                                    image_set_end=image_set_end,
+                                    grouping=groups)
+        if len(args) > 0:
+            pipeline.save_measurements(args[0], measurements)
+        if options.done_file is not None:
+            if (measurements is not None and 
+                measurements.has_feature(cpmeas.EXPERIMENT, EXIT_STATUS)):
+                done_text = measurements.get_experiment_measurement(EXIT_STATUS)
+            else:
+                done_text = "Failure"
+            fd = open(options.done_file, "wt")
+            fd.write("%s\n"%done_text)
+            fd.close()
+finally:
+    try:
+        import cellprofiler.utilities.jutil as jutil
+        jutil.kill_vm()
+    except:
+        import traceback
+        traceback.print_exc()
+        print "Caught exception while killing VM"

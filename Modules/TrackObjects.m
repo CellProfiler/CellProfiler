@@ -663,9 +663,29 @@ if any(CurrentPreviousLabelHistogram(:)),
     % Get the parent list.
     CurrentObjList = CurrentObjIndexes(end, :);
     
-    % Nandle the case of a zero overlap -> no current obj
+    % Handle the case of a zero overlap -> no current obj
     CurrentObjList(OverlapCounts(end, :) == 0) = 0;
     
+	% If two children have the same parent - then choose the one with the
+	% largest intersection and set the other to zero.
+	[sortedVals, indsOfVals] = sort(CurrentObjList);
+	identicalVals = find(diff(sortedVals) == 0);
+	maxIntersection = OverlapCounts(end, :);
+	i = 1;
+	while i <= length(identicalVals)
+		curVal = sortedVals(identicalVals(i));
+		inds = identicalVals(i);
+		while (i < length(identicalVals) && sortedVals(identicalVals(i+1)) == curVal)
+			i = i + 1;
+			inds = [inds, identicalVals(i)];
+		end
+		inds = [inds, inds(end)+1];
+		sameParentChildrenIndices = indsOfVals(inds);
+		[sortedMaxInterVals, sortedMaxInterInds] = sort(maxIntersection(sameParentChildrenIndices));
+		CurrentObjList(sameParentChildrenIndices(sortedMaxInterInds(1:end-1))) = 0;
+		i = i + 1;
+	end 
+	
     % Transpose to a column vector
     CurrentObjList = CurrentObjList';
 else

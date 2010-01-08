@@ -580,13 +580,7 @@ class IdentifySecondaryObjects(cpmi.Identify):
                      cpmi.FF_PARENT%self.primary_objects.value,
                      cpmeas.COLTYPE_INTEGER)]
         if self.method != M_DISTANCE_N:
-            columns += [(cpmeas.IMAGE, 
-                         format % self.objects_name.value,
-                         cpmeas.COLTYPE_FLOAT)
-                        for format in (cpmi.FF_FINAL_THRESHOLD,
-                                       cpmi.FF_ORIG_THRESHOLD,
-                                       cpmi.FF_WEIGHTED_VARIANCE,
-                                       cpmi.FF_SUM_OF_ENTROPIES)]
+            columns += cpmi.get_threshold_measurement_columns(self.objects_name.value)
         if self.wants_discard_edge and self.wants_discard_primary:
             columns += cpmi.get_object_measurement_columns(self.new_primary_objects_name.value)
             columns += [(self.new_primary_objects_name.value,
@@ -610,7 +604,9 @@ class IdentifySecondaryObjects(cpmi.Identify):
         object_name - return measurements made on this object (or 'Image' for image measurements)
         """
         object_dictionary = self.get_object_dictionary()
-        categories = self.get_threshold_categories(pipeline, object_name)
+        categories = []
+        if self.method != M_DISTANCE_N:
+            categories += self.get_threshold_categories(pipeline, object_name)
         categories += self.get_object_categories(pipeline, object_name,
                                                  object_dictionary)
         return categories
@@ -622,8 +618,10 @@ class IdentifySecondaryObjects(cpmi.Identify):
         category - return measurements made in this category
         """
         object_dictionary = self.get_object_dictionary()
-        result = self.get_threshold_measurements(pipeline, object_name,
-                                                 category)
+        result = []
+        if self.method != M_DISTANCE_N:
+            result += self.get_threshold_measurements(pipeline, object_name,
+                                                      category)
         result += self.get_object_measurements(pipeline, object_name,
                                                category, object_dictionary)
         return result
@@ -644,8 +642,10 @@ class IdentifySecondaryObjects(cpmi.Identify):
         return object_dictionary
         
     def get_measurement_objects(self, pipeline, object_name, category, measurement):
-        return self.get_threshold_measurement_objects(pipeline, object_name,
-                                                      category, measurement,
-                                                      self.objects_name.value)
+        if self.method != M_DISTANCE_N:
+            return self.get_threshold_measurement_objects(pipeline, object_name,
+                                                          category, measurement,
+                                                          self.objects_name.value)
+        return []
                                                       
 IdentifySecondary = IdentifySecondaryObjects

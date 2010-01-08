@@ -798,18 +798,8 @@ class ModuleView:
                                        name=feature_control_name(v))
             sub_sizer.Add(feature_ctrl, 0, wx.EXPAND|wx.ALL, 2)
             #
-            # The image combo-box
+            # The object combo-box which sometimes doubles as an image combo-box
             #
-            sub_sizer = wx.BoxSizer(wx.HORIZONTAL)
-            sizer.Add(sub_sizer, 0, wx.ALIGN_LEFT)
-            image_text_ctrl = wx.StaticText(panel, label='Image:',
-                                            name = image_text_control_name(v))
-            sub_sizer.Add(image_text_ctrl, 0, wx.EXPAND | wx.ALL, 2)
-            image_ctrl = wx.ComboBox(panel, style=wx.CB_READONLY,
-                                     name=image_control_name(v))
-            sub_sizer.Add(image_ctrl, 0, wx.EXPAND|wx.ALL, 2)
-            #
-            # The object combo-box
             sub_sizer = wx.BoxSizer(wx.HORIZONTAL)
             sizer.Add(sub_sizer, 0, wx.ALIGN_LEFT)
             object_text_ctrl = wx.StaticText(panel, label='Object:',
@@ -842,7 +832,6 @@ class ModuleView:
             #
             def on_change(event, v=v, category_ctrl = category_ctrl,
                           feature_ctrl = feature_ctrl,
-                          image_ctrl = image_ctrl,
                           object_ctrl = object_ctrl,
                           scale_ctrl = scale_ctrl):
                 '''Reconstruct the measurement value if anything changes'''
@@ -850,7 +839,6 @@ class ModuleView:
                     return ctrl.Value if ctrl.Selection != -1 else None
                 value = v.construct_value(value_of(category_ctrl),
                                           value_of(feature_ctrl),
-                                          value_of(image_ctrl),
                                           value_of(object_ctrl),
                                           value_of(scale_ctrl))
                 setting_edited_event = SettingEditedEvent(v,
@@ -860,8 +848,7 @@ class ModuleView:
                 self.notify(setting_edited_event)
                 self.reset_view()
             
-            for ctrl in (category_ctrl, feature_ctrl, image_ctrl, 
-                         object_ctrl, scale_ctrl):
+            for ctrl in (category_ctrl, feature_ctrl, object_ctrl, scale_ctrl):
                 panel.Bind(wx.EVT_COMBOBOX, on_change, ctrl)
         else:
             #
@@ -871,8 +858,6 @@ class ModuleView:
             category_text_ctrl = panel.FindWindowByName(category_text_control_name(v))
             feature_ctrl = panel.FindWindowByName(feature_control_name(v))
             feature_text_ctrl = panel.FindWindowByName(feature_text_control_name(v))
-            image_ctrl = panel.FindWindowByName(image_control_name(v))
-            image_text_ctrl = panel.FindWindowByName(image_text_control_name(v))
             object_ctrl = panel.FindWindowByName(object_control_name(v))
             object_text_ctrl = panel.FindWindowByName(object_text_control_name(v))
             scale_ctrl = panel.FindWindowByName(scale_control_name(v))
@@ -913,7 +898,20 @@ class ModuleView:
                         category, True)
         set_up_combobox(feature_ctrl, feature_text_ctrl, 
                         feature_names, feature_name)
-        set_up_combobox(image_ctrl, image_text_ctrl, image_names, image_name)
+        #
+        # The object combo-box might have image choices
+        #
+        if len(object_names) > 0:
+            if len(image_names) > 0:
+                object_text_ctrl.Label = "Image or Objects:"
+                object_names += image_names
+            else:
+                object_text_ctrl.Label = "Objects:"
+        else:
+            object_text_ctrl.Label = "Image:"
+            object_names = image_names
+        if object_name is None:
+            object_name = image_name
         set_up_combobox(object_ctrl, object_text_ctrl, object_names, object_name)
         set_up_combobox(scale_ctrl, scale_text_ctrl, scales, scale)
         return panel

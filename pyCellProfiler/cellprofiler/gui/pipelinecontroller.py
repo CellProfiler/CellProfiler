@@ -464,7 +464,6 @@ class PipelineController:
                                        self.on_save_measurements,
                                        self.__progress_frame.save_button)
             # XXX: Uncomment to show half-baked progress dialog
-            self.__progress_frame.Show(True)
             if self.__running_pipeline:
                 self.__running_pipeline.close()
             self.__output_path = output_path
@@ -525,7 +524,6 @@ class PipelineController:
         self.__pause_pipeline = False
         self.__frame.preferences_view.on_stop_analysis()
         self.__module_view.enable()
-        #self.__progress_frame.Show(False)
         self.__progress_frame.Destroy()
     
     def is_in_debug_mode(self):

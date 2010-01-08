@@ -20,27 +20,39 @@ def image_set_label(image_set_index, num_image_sets):
     else:
         return "Image set:"
 
-if sys.platform.startswith("win"):
-    # :-p
-    PROGRESS_FRAME_STYLE = wx.DEFAULT_FRAME_STYLE | wx.STAY_ON_TOP
-else:
-    # :-(
-    PROGRESS_FRAME_STYLE = wx.DEFAULT_FRAME_STYLE
+def duration_label(duration):
+    dur = int(round(duration))
+    hours = dur // (60 * 60)
+    rest = dur % (60 * 60)
+    minutes = rest // 60
+    rest = rest % 60
+    seconds = rest
+    s = "%d h "%(hours,) if hours > 0 else ""
+    s += "%d min "%(minutes,) if hours > 0 or minutes > 0 else ""
+    s += "%d s"%(seconds,)
+    return s
+
 
 class ProgressFrame(wx.Frame):
 
     def __init__(self, *args, **kwds):
-        kwds["style"] = PROGRESS_FRAME_STYLE
+        if sys.platform.startswith("win"):
+            kwds["style"] = wx.DEFAULT_FRAME_STYLE | wx.STAY_ON_TOP
         wx.Frame.__init__(self, *args, **kwds)
+        self.Show()
+        if wx.Platform == '__WXMAC__' and hasattr(self, 'MacGetTopLevelWindowRef'):
+            from AppKit import NSWindow, NSApp, NSFloatingWindowLevel
+            window_ref = self.MacGetTopLevelWindowRef()
+            print "window_ref =", window_ref
+            nsw = NSWindow.alloc().initWithWindowRef_(window_ref)
+            print "nsw =", nsw
+            nsw.setLevel_(NSFloatingWindowLevel)
 
         self.start_time = time.time()
+        self.end_times = None
         self.current_module = None
-        self.current_module_start_time = self.start_time
-        self.time_per_module = None
-        self.all_times_per_module = None
-        self.elapsed_pause_time = 0
         self.pause_start_time = None
-        self.paused = False
+        self.previous_pauses_duration = 0.
 
         # GUI stuff
         self.BackgroundColour = cellprofiler.preferences.get_background_color()
@@ -55,13 +67,14 @@ class ProgressFrame(wx.Frame):
                                              label=self.elapsed_label(), 
                                              style=wx.ALIGN_LEFT)
         self.remaining_control = wx.StaticText(self.panel, -1, 
-                                               label="Remaining: unknown - calculating", 
+                                               label=self.remaining_label(), 
                                                style=wx.ALIGN_RIGHT)
         times_sizer.Add(self.elapsed_control, 1, wx.ALIGN_LEFT | wx.ALL, 5)
         times_sizer.Add(self.remaining_control, 1, wx.ALIGN_RIGHT | wx.ALL, 5)
         sizer.Add(times_sizer, 0, wx.EXPAND)
         self.gauge = wx.Gauge(self.panel, -1, style=wx.GA_HORIZONTAL)
-        self.gauge.SetValue(30)
+        self.gauge.SetValue(0)
+        self.gauge.SetRange(100)
         sizer.Add(self.gauge, 0, wx.ALL | wx.EXPAND, 5)
         self.image_set_control = wx.StaticText(self.panel, -1, label=image_set_label(None, None))
         sizer.Add(self.image_set_control, 0, wx.LEFT | wx.RIGHT, 5)
@@ -70,10 +83,10 @@ class ProgressFrame(wx.Frame):
         buttons_sizer = wx.BoxSizer(wx.HORIZONTAL)
         self.play_pause_button = wx.BitmapButton(self.panel, -1, 
                                                  bitmap=wx.BitmapFromImage(cellprofiler.icons.pause))
-        self.play_pause_button.SetToolTipString("Pause run")
+        self.play_pause_button.SetToolTipString("Pause")
         buttons_sizer.Add(self.play_pause_button, 0, wx.ALL, 5)
         self.stop_button = wx.BitmapButton(self.panel, -1, bitmap=wx.BitmapFromImage(cellprofiler.icons.stop))
-        self.stop_button.SetToolTipString("Stop run")
+        self.stop_button.SetToolTipString("Stop")
         buttons_sizer.Add(self.stop_button, 0, wx.ALL, 5)
         save_bitmap = wx.ArtProvider.GetBitmap(wx.ART_FILE_SAVE,
                                                wx.ART_CMN_DIALOG, 
@@ -92,102 +105,113 @@ class ProgressFrame(wx.Frame):
         wx.EVT_TIMER(self.panel, timer_id, self.on_timer)
 
     def elapsed_label(self):
-        elapsed = self.elapsed_time()
-        hours = elapsed // (60 * 60)
-        rest = elapsed % (60 * 60)
-        minutes = rest // 60
-        rest = rest % 60
-        seconds = rest
-        s = "%d h "%(hours,) if hours > 0 else ""
-        s += "%d min "%(minutes,) if hours > 0 or minutes > 0 else ""
-        s += "%d s"%(seconds,)
-        return "Elapsed: " + s
+        return "Elapsed: " + duration_label(self.elapsed_time())
     
     def elapsed_time(self):
-        '''Return the # of seconds that have elapsed since start
-        
-        accounts for paused time
+        '''Return the number of seconds that have elapsed since start
+           as a float.  Pauses are taken into account.
         '''
-        if self.paused:
-            return (self.pause_start_time - self.start_time - 
-                    self.elapsed_pause_time)
+        return self.adjusted_time() - self.start_time
+
+    def remaining_label(self):
+        remaining = self.remaining_time()
+        if remaining is None:
+            s = "unknown - calculating"
         else:
-            return time.time() - self.start_time - self.elapsed_pause_time
+            s = duration_label(remaining)
+        return "Remaining: " + s
         
     def pause(self):
         self.play_pause_button.SetBitmapLabel(
             wx.BitmapFromImage(cellprofiler.icons.play))
-        self.play_pause_button.SetToolTipString("Resume run")
+        self.play_pause_button.SetToolTipString("Resume")
         self.pause_start_time = time.time()
         self.paused = True
         
     def play(self):
         self.play_pause_button.SetBitmapLabel(
             wx.BitmapFromImage(cellprofiler.icons.pause))
-        self.play_pause_button.SetToolTipString("Pause run")
-        self.elapsed_pause_time += time.time() - self.pause_start_time
+        self.play_pause_button.SetToolTipString("Pause")
+        self.previous_pauses_duration += time.time() - self.pause_start_time
+        self.pause_start_time = None
         self.paused = False
         
     def on_timer(self, event):
         self.elapsed_control.SetLabel(self.elapsed_label())
+        self.remaining_control.SetLabel(self.remaining_label())
+        remaining = self.remaining_time()
+        if remaining:
+            self.gauge.SetValue(100 * self.elapsed_time() / (self.elapsed_time() + remaining))
         self.timer.Start(100)
 
     def OnClose(self, event):
+        self.timer.Stop()
         self.tbicon.Destroy()
         self.Destroy()
 
+    def adjusted_time(self):
+        """Current time minus the duration spent in pauses."""
+        pauses_duration = self.previous_pauses_duration
+        if self.pause_start_time:
+            pauses_duration += time.time() - self.pause_start_time
+        return time.time() - pauses_duration
+
     def start_module(self, module, num_modules, image_set_index, 
                      num_image_sets):
-        self.num_modules = num_modules
-
-        if self.current_module: # and False:  # Disable untested code
-            # Record time spent on previous module.
-            if self.time_per_module is None:
-                self.time_per_module = np.zeros(num_modules)
-                self.gauge.SetRange(num_image_sets)
-            self.gauge.Value = image_set_index
-            self.gauge.Refresh()
-            if self.all_times_per_module is None:
-                self.all_times_per_module = np.zeros((num_modules, num_image_sets))
-            time_spent = time.time() - self.current_module_start_time
-            self.time_per_module[module.module_num - 1] += time_spent
-            self.all_times_per_module[module.module_num -1, image_set_index] = time_spent
-            # Update projection.
-            projection = 0.
-            for i in range(module.module_num):
-                average = self.time_per_module[i] / (image_set_index + 1)
-                projection += average * (num_image_sets - image_set_index)
-            for i in range(module.module_num, num_modules):
-                average = self.time_per_module[i] / image_set_index
-                projection += average * (num_image_sets - image_set_index + 1)
-            if image_set_index > 0:
-                # Estimate amount of time remaining as the median time
-                # for each module times the number of image sets remaining
-                median_time_per_module = np.median(
-                    self.all_times_per_module[:,:image_set_index],1)
-                time_per_image_set = np.sum(median_time_per_module)
-                time_remaining = int(time_per_image_set * 
-                                     (num_image_sets - image_set_index))
-                sec_remaining = time_remaining % 60
-                min_remaining = (time_remaining / 60) % 60
-                hr_remaining = (time_remaining / 60 / 60) % 24
-                day_remaining = (time_remaining / 60 / 60 / 24)
-                s = ("Remaining:" +
-                     ((" %d d"%day_remaining) if day_remaining > 0 else "") +
-                     ((" %d h"%hr_remaining) if hr_remaining > 0 else "") +
-                     ((" %d m"%min_remaining) if min_remaining > 0 else "") +
-                     ((" %d s"%sec_remaining) if sec_remaining > 0 else ""))
-                self.remaining_control.Label = s
-                self.remaining_control.Refresh()
-                
+        """
+        Update the historical execution times, which are used as the
+        bases for projecting the time that remains.  Also update the
+        labels that show the current module and image set.  This
+        method is called by the pipelinecontroller at the beginning of
+        every module execution to update the progress bar.
+        """
         self.current_module = module
-        if module:
-            self.current_module_start_time = time.time()
+        self.num_modules = num_modules
+        self.image_set_index = image_set_index
+        self.num_image_sets = num_image_sets
+
+        if self.end_times is None:
+            # One extra element at the beginning for the start time
+            self.end_times = np.zeros(1 + num_modules * num_image_sets)
+        module_index = module.module_num - 1  # make it zero-based
+        index = image_set_index * num_modules + (module_index - 1)
+        self.end_times[1 + index] = self.adjusted_time()
+
         self.current_module_control.SetLabel(module_label(module))
         self.current_module_control.Refresh()
         self.image_set_control.SetLabel(image_set_label(image_set_index + 1, num_image_sets))
         self.image_set_control.Refresh()
 
+    def remaining_time(self):
+        """Return our best estimate of the remaining duration, or None
+        if we have no bases for guessing."""
+        if self.end_times is None:
+            return None # We have not started the first module yet
+        else:
+            module_index = self.current_module.module_num - 1
+            index = self.image_set_index * self.num_modules + module_index
+            durations = (self.end_times[1:] - self.end_times[:-1]).reshape(self.num_image_sets, self.num_modules)
+            per_module_estimates = np.zeros(self.num_modules)
+            per_module_estimates[:module_index] = np.median(durations[:self.image_set_index+1,:module_index], 0)
+            current_module_so_far = self.adjusted_time() - self.end_times[1 + index - 1]
+            if self.image_set_index > 0:
+                per_module_estimates[module_index:] = np.median(durations[:self.image_set_index,module_index:], 0)
+                per_module_estimates[module_index] = max(per_module_estimates[module_index], current_module_so_far)
+            else:
+                # Guess that the modules that haven't finished yet are
+                # as slow as the slowest one we've seen so far.
+                per_module_estimates[module_index] = current_module_so_far
+                per_module_estimates[module_index:] = per_module_estimates[:module_index+1].max()
+            print "current_module_so_far =", current_module_so_far, "; adjusted_time =", self.adjusted_time(), "; end_times =", self.end_times
+            print "durations:"
+            print durations
+            print "per_module_estimates:"
+            print per_module_estimates
+            per_module_estimates[:module_index] *= self.num_image_sets - self.image_set_index - 1
+            per_module_estimates[module_index:] *= self.num_image_sets - self.image_set_index
+            per_module_estimates[module_index] -= current_module_so_far
+            return per_module_estimates.sum()
+        
 
 if __name__ == '__main__':
     app = wx.PySimpleApp()

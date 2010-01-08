@@ -229,11 +229,18 @@ function go_to_key(key) {
     add_char = "?"
     all_k = new Array("data_dir","email","queue",
                         "project","batch_size","memory_limit",
-                        "write_data","timeout","revision")
+                        "timeout","revision")
     for (k in all_k) {
         v = document.getElementById('input_'+all_k[k])
         url = url+add_char+all_k[k]+'='+escape(v.value)
         add_char = "&"
+    }
+    v = document.getElementById('input_write_data')
+    if (v.checked)
+    {
+        url = url + add_char + "write_data=yes"
+    } else {
+        url = url + add_char + "write_data=no"
     }
 parent.location = url+"#input_"+key
 }
@@ -262,6 +269,8 @@ for queue in ('broad','short','long','hugemem','preview','priority'):
     print '''<option value='%(queue)s' %(selected)s>%(queue)s</option>'''%(locals())
 
 print '''</select></div>'''
+keys_plus = keys.copy()
+keys_plus["write_data_checked"] = "" if keys["write_data"] == "no" else 'checked="yes"'
 print '''<div style='white-space=nowrap'><label for='input_email'>Project:&nbsp;</label>
 <input type='text' id='input_project' name='project' value='%(project)s'/></div>
 
@@ -272,11 +281,11 @@ print '''<div style='white-space=nowrap'><label for='input_email'>Project:&nbsp;
 <input type='text' id='input_memory_limit' name='memory_limit' value='%(memory_limit)s'/></div>
 
 <div style='white-space=nowrap'><label for='input_write_data'>Write data:&nbsp;</label>
-<input type='checkbox' id='input_write_data' name='write_data' value='%(write_data)s'/></div>
+<input type='checkbox' id='input_write_data' name='write_data' value='yes' %(write_data_checked)s/></div>
 
 <div style='white-space=nowrap'><label for='input_timeout'>Timeout:&nbsp;</label>
 <input type='text' id='input_timeout' name='timeout' value='%(timeout)s'/></div>
-'''%(keys)
+'''%(keys_plus)
 print '''SVN revision:<select name='revision' id='input_revision'>'''
 vroot = '/imaging/analysis/CPCluster/CellProfiler-2.0'
 vdirs = list(os.listdir(vroot))

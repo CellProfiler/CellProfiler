@@ -369,6 +369,18 @@ class LoadData(cpm.CPModule):
             rows = [row for row in reader]
         fd.close()
         #
+        # Check for correct # of columns
+        #
+        for i, row in enumerate(rows):
+            if len(row) != len(header):
+                text = ('Error on line %d of %s.\n'
+                        '\n"%s"\n'
+                        '%d rows found, expected %d') % (
+                            i+2, self.csv_file_name.value,
+                            ','.join(row),
+                            len(row), len(header))
+                raise ValueError(text)
+        #
         # Arrange the metadata in columns
         #
         dictionary = {}

@@ -310,8 +310,15 @@ class CalculateStatistics(cpm.CPModule):
             fdata = np.array([np.mean(e) for e in fdata])
             data[:,i] = fdata
     
-        v, z, z_one_tailed, OrderedUniqueDoses, OrderedAverageValues = \
-             vz_factors(grouping_data, data)
+        z, z_one_tailed, OrderedUniqueDoses, OrderedAverageValues = \
+             z_factors(grouping_data, data)
+        #
+        # For now, use first dose value only
+        #
+        dose_data = measurements.get_all_measurements(
+            cpmeas.IMAGE,self.dose_values[0].measurement.value)
+        dose_data = np.array(dose_data).flatten()
+        v = v_factors(dose_data, data)
         expt_measurements = {
             "Zfactor": z,
             "Vfactor": v,
@@ -322,6 +329,7 @@ class CalculateStatistics(cpm.CPModule):
             dose_data = measurements.get_all_measurements(cpmeas.IMAGE,
                                                           dose_feature)
             dose_data = np.array(dose_data)
+            dose_data = dose_data.flatten()
             ec50_coeffs = calculate_ec50(dose_data, data, 
                                          dose_group.log_transform.value)
             if len(self.dose_values) == 1:
@@ -362,6 +370,13 @@ class CalculateStatistics(cpm.CPModule):
         if feature_name.find("Location") != -1:
             return False
         if feature_name.find("ModuleError") != -1:
+            return False
+        if (object_name == cpmeas.IMAGE and 
+            feature_name == self.grouping_values):
+            # Don't measure the pos/neg controls
+            return False
+        if (object_name == cpmeas.IMAGE and
+            feature_name in [g.measurement.value for g in self.dose_values]):
             return False
         all_measurements = measurements.get_all_measurements(object_name, 
                                                              feature_name)
@@ -408,33 +423,20 @@ class CalculateStatistics(cpm.CPModule):
 #
 # http://www.ravkin.net
 ########################################################        
-def vz_factors(xcol, ymatr):
+def z_factors(xcol, ymatr):
     '''xcol is (Nobservations,1) column vector of grouping values
            (in terms of dose curve it may be Dose).
        ymatr is (Nobservations, Nmeasures) matrix, where rows correspond to 
            observations and columns corresponds to different measures.
        
        returns v, z, z_one_tailed, OrderedUniqueDoses, OrderedAverageValues
-       v, z and z_bwtn_mean are (1, Nmeasures) row vectors containing V-, Z'- and 
+       z and z_bwtn_mean are (1, Nmeasures) row vectors containing Z'- and 
        between-mean Z'-factors for the corresponding measures.
 
-       When ranges are zero, we set the V and Z' factors to a very negative
+       When ranges are zero, we set the Z' factors to a very negative
        value.'''
 
     xs, avers, stds = loc_shrink_mean_std(xcol, ymatr)
-    #
-    # Range of averages per label
-    #
-    vrange = np.max(avers,0) - np.min(avers,0)
-    #
-    # Special handling for labels that have no ranges
-    #
-    vstd = np.zeros(len(vrange))
-    vstd[vrange == 0] = 1;
-    vstd[vrange != 0] = np.mean(stds[:,vrange !=0], 0)
-    vrange[vrange == 0] = 0.000001;
-    v = 1 - 6 * (vstd / vrange)
-
     # Z' factor is defined by the positive and negative controls, so we take the
     # extremes BY DOSE of the averages and stdevs.
     zrange = np.abs(avers[0, :] - avers[-1, :])
@@ -472,7 +474,30 @@ def vz_factors(xcol, ymatr):
     z_one_tailed = 1 - 3 * (zstd / zrange)
     # Otherwise, set it to a really negative value
     z_one_tailed[(~ np.isfinite(zstd)) | (zrange == 0)] = -1e5
-    return (v, z, z_one_tailed, xs, avers)
+    return (z, z_one_tailed, xs, avers)
+
+def v_factors(xcol, ymatr):
+    '''xcol is (Nobservations,1) column vector of grouping values
+           (in terms of dose curve it may be Dose).
+       ymatr is (Nobservations, Nmeasures) matrix, where rows correspond to 
+           observations and columns corresponds to different measures.
+        
+        Calculate the V factor = 1-6 * mean standard deviation / range
+    '''
+    xs, avers, stds = loc_shrink_mean_std(xcol, ymatr)
+    #
+    # Range of averages per label
+    #
+    vrange = np.max(avers,0) - np.min(avers,0)
+    #
+    # Special handling for labels that have no ranges
+    #
+    vstd = np.zeros(len(vrange))
+    vstd[vrange == 0] = 1;
+    vstd[vrange != 0] = np.mean(stds[:,vrange !=0], 0)
+    vrange[vrange == 0] = 0.000001;
+    v = 1 - 6 * (vstd / vrange)
+    return v
 
 def loc_shrink_mean_std(xcol, ymatr):
     '''Compute mean and standard deviation per label

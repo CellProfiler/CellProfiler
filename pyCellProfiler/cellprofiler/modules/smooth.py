@@ -150,7 +150,7 @@ class Smooth(cpm.CPModule):
             output_pixels = bilateral_filter(pixel_data, image.mask,
                                              sigma, sigma_range)
         elif self.smoothing_method.value == FIT_POLYNOMIAL:
-            output_pixels = outoffocus_blur(pixel_data, image.mask)
+            output_pixels = fit_polynomial(pixel_data, image.mask)
         elif self.smoothing_method.value == CIRCULAR_AVERAGE_FILTER:
             output_pixels = circular_average_filter(pixel_data, object_size/2+1, image.mask)
         else:

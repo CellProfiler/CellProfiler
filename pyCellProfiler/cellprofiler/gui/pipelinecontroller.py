@@ -243,6 +243,7 @@ class PipelineController:
             cellprofiler.preferences.set_current_pipeline_path(None)
             self.__dirty_pipeline = False
             self.set_title()
+            self.enable_module_controls_panel_buttons()
     
     def __on_close(self, event):
         if self.__dirty_pipeline and event.CanVeto():
@@ -332,7 +333,28 @@ class PipelineController:
                    cellprofiler.pipeline.ModuleRemovedPipelineEvent)]):
             self.__dirty_pipeline = True
             self.set_title()
-            
+
+    def enable_module_controls_panel_buttons(self):
+        #
+        # Enable/disable the movement buttons
+        #
+        selected_modules = self.__pipeline_list_view.get_selected_modules()
+        enable_up = True
+        enable_down = True
+        enable_delete = True
+        if len(selected_modules) == 0:
+            enable_up = enable_down = enable_delete = False
+        else:
+            if any([m.module_num == 1 for m in selected_modules]):
+                enable_up = False
+            if any([m.module_num == len(self.__pipeline.modules())
+                    for m in selected_modules]):
+                enable_down = False
+        for control, state in ((self.__mcp_module_down_button, enable_down),
+                               (self.__mcp_module_up_button, enable_up),
+                               (self.__mcp_remove_module_button, enable_delete)):
+            control.Enable(state)
+        
     def __on_help(self,event):
         modules = self.__get_selected_modules()
         if len(modules) > 0:

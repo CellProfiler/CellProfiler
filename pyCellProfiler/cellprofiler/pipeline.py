@@ -1219,7 +1219,7 @@ class Pipeline(object):
         idx=module_num-1
         if direction == DIRECTION_DOWN:
             if module_num >= len(self.__modules):
-                raise ValueError('%(ModuleNum)d is at or after the last module in the pipeline and can''t move down'%(locals()))
+                raise ValueError('%(module_num)d is at or after the last module in the pipeline and can''t move down'%(locals()))
             module = self.__modules[idx]
             new_module_num = module_num+1
             module.set_module_num(module_num+1)

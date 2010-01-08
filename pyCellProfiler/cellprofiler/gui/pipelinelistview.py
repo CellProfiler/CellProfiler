@@ -129,6 +129,7 @@ class PipelineListView(object):
     """
     def __init__(self,panel):
         self.__panel=panel
+        self.__module_controls_panel = None
         self.__sizer=wx.BoxSizer(wx.HORIZONTAL)
         self.__panel.SetSizer(self.__sizer)
         self.__panel.SetAutoLayout(True)
@@ -199,6 +200,7 @@ class PipelineListView(object):
         
         """
         self.__pipeline =pipeline
+        self.__controller = controller
         pipeline.add_listener(self.notify)
         controller.attach_to_pipeline_list_view(self,self.__pipeline_slider)
         
@@ -290,6 +292,7 @@ class PipelineListView(object):
         for module in pipeline.modules():
             self.__populate_row(module)
         self.__adjust_rows()
+        self.__controller.enable_module_controls_panel_buttons()
     
     def __adjust_rows(self):
         """Adjust slider and dimensions after adding or removing rows"""
@@ -317,6 +320,7 @@ class PipelineListView(object):
     def __on_pipeline_cleared(self,pipeline,event):
         self.__grid.DeleteRows(0,self.__grid.NumberRows)
         self.__adjust_rows()
+        self.__controller.enable_module_controls_panel_buttons()
         
     def __on_module_added(self,pipeline,event):
         module = pipeline.modules()[event.module_num - 1]
@@ -332,6 +336,7 @@ class PipelineListView(object):
         self.__grid.DeleteRows(event.module_num-1,1)
         self.__adjust_rows()
         self.__module_view.clear_selection()
+        self.__controller.enable_module_controls_panel_buttons()
         
     def __on_module_moved(self,pipeline,event):
         if event.direction == cellprofiler.pipeline.DIRECTION_UP:
@@ -347,13 +352,15 @@ class PipelineListView(object):
                                     new_index, MODULE_NAME_COLUMN,
                                     False)
         self.__adjust_rows()
+        self.__controller.enable_module_controls_panel_buttons()
     
     def __on_item_selected(self,event):
         if self.__module_view:
             selections = self.get_selected_modules()
             if len(selections):
                 self.__module_view.set_selection(selections[0].module_num)
-    
+        self.__controller.enable_module_controls_panel_buttons()
+        
     def __on_setting_changed_event(self, caller, event):
         """Handle a setting change
         

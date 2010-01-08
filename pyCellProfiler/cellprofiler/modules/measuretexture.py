@@ -177,7 +177,7 @@ class MeasureTexture(cpm.CPModule):
                                         (self.object_groups, self.add_objects, self.object_divider),
                                         (self.scale_groups, self.add_scales, self.scale_divider)]:
             for group in groups:
-                result += group.unpack_group()
+                result += group.visible_settings()
             result += [add_button, div]
         result += [self.gabor_angles]
         return result

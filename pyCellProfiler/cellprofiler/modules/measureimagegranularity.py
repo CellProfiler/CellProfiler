@@ -138,7 +138,7 @@ class MeasureImageGranularity(cpm.CPModule):
     def visible_settings(self):
         result = []
         for index, image in enumerate(self.images):
-            result += image.unpack_group()
+            result += image.visible_settings()
         result += [self.add_button]
         return result 
     

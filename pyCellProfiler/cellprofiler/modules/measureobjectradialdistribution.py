@@ -163,8 +163,7 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
         result = [self.image_count, self.object_count, self.bin_counts_count]
         for x in (self.images, self.objects, self.bin_counts):
             for settings in x:
-                temp = [s for s in settings.unpack_group() 
-                        if not (isinstance(s, cps.Divider) or isinstance(s, cps.RemoveSettingButton))]
+                temp = settings.pipeline_settings() 
                 result += temp
         return result
     
@@ -172,18 +171,18 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
         result = []
         
         for settings in self.images:
-            result += settings.unpack_group()
+            result += settings.visible_settings()
         result += [self.add_image_button, self.spacer_1]
         
         for settings in self.objects:
-            temp = settings.unpack_group()
+            temp = settings.visible_settings()
             if settings.center_choice.value == C_SELF:
                 temp.remove(settings.center_object_name)
             result += temp
         result += [self.add_object_button, self.spacer_2]
         
         for settings in self.bin_counts:
-            result += settings.unpack_group()
+            result += settings.visible_settings()
         result += [self.add_bin_count_button]
         
         return result

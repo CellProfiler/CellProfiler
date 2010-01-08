@@ -475,7 +475,7 @@ class Morph(cpm.CPModule):
         '''Return the settings as displayed to the user'''
         result = [self.image_name, self.output_image_name]
         for function in self.functions:
-            temp = function.unpack_group()
+            temp = function.visible_settings()
             if function.repeats_choice != R_CUSTOM:
                 temp.remove(function.custom_repeats)
             result += temp

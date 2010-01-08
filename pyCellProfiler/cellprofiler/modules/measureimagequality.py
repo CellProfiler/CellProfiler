@@ -199,7 +199,7 @@ class MeasureImageQuality(cpm.CPModule):
         '''The settings as displayed to the user'''
         result = []
         for image_group in self.image_groups:
-            result += image_group.unpack_group()
+            result += image_group.visible_settings()
         result += [self.add_button]
         return result
 

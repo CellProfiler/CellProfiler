@@ -137,7 +137,7 @@ class ImageMath(cpm.CPModule):
             if (index >= 1) and single_image:
             # these operations use the first image only
                 break 
-            result += image.unpack_group()
+            result += image.visible_settings()
 
         if single_image:
             result[-1] = self.divider_bottom # this looks better when there's just one image

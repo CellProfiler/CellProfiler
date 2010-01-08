@@ -93,7 +93,7 @@ class MeasureImageAreaOccupied(cpm.CPModule):
         """
         result = []
         for index, object in enumerate(self.objects):
-            result += object.unpack_group()
+            result += object.visible_settings()
         result += [self.add_button]
         return result
     

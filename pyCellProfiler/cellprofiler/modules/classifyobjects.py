@@ -352,7 +352,7 @@ class ClassifyObjects(cpm.CPModule):
     def settings(self):
         result = [self.contrast_choice, self.single_measurement_count]
         result += reduce(lambda x,y: x+y,
-                         [group.unpack_group() 
+                         [group.pipeline_settings() 
                           for group in self.single_measurements])
         result += [self.object_name, self.first_measurement,
                    self.first_threshold_method, self.first_threshold,

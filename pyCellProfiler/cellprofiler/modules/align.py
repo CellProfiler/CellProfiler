@@ -139,7 +139,7 @@ with respect to the first image.""")
         result += [self.first_input_image, self.first_output_image, self.separator_1,
                   self.second_input_image, self.second_output_image]
         for additional in self.additional_images:
-            result += additional.unpack_group()
+            result += additional.visible_settings()
         result += [self.add_button]
         return result
 

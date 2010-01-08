@@ -159,7 +159,7 @@ class MeasureObjectSizeShape(cpm.CPModule):
         """The settings as they appear in the module viewer"""
         result = []
         for og in self.object_groups:
-            result += og.unpack_group()
+            result += og.visible_settings()
         result.extend([self.add_objects, self.spacer, self.calculate_zernikes])
         return result
     

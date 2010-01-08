@@ -999,12 +999,15 @@ class ModuleView:
     def on_idle(self,event):
         """Check to see if the selected module is valid"""
         last_idle_time = getattr(self, "last_idle_time", 0)
-        if time.time() - last_idle_time > CHECK_TIMEOUT_SEC:
+        running_time = getattr(self, "running_time", 0)
+        timeout = max(CHECK_TIMEOUT_SEC, running_time * 4)
+        if time.time() - last_idle_time > timeout:
             self.last_idle_time = time.time()
         else:
             return
         if self.__module:
             self.validate_module()
+            self.running_time = time.time() - self.last_idle_time
             
     def validate_module(self):
         validation_error = None

@@ -262,7 +262,7 @@ class FilterObjects(cpm.CPModule):
             result.append(self.outlines_name)
         result.append(self.spacer_3)
         for x in self.additional_objects:
-            temp = x.unpack_group()
+            temp = x.visible_settings()
             if not x.wants_outlines.value:
                 del temp[temp.index(x.wants_outlines) + 1]
             result += temp

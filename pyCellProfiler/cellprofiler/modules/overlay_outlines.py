@@ -142,7 +142,7 @@ class OverlayOutlines(cpm.CPModule):
             result += [self.max_type]
         for outline in self.outlines:
             if self.wants_color.value == WANTS_COLOR:
-                result += outline.unpack_group()
+                result += outline.visible_settings()
             else:
                 result += [outline.outline_name, outline.remover]
         result += [self.add_outline_button]

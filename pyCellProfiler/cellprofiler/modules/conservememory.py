@@ -96,7 +96,7 @@ class ConserveMemory(cpm.CPModule):
         result = [self.how_to_remove, self.spacer_top]
 
         for image_setting in self.image_names:
-            result += image_setting.unpack_group()
+            result += image_setting.visible_settings()
         result += [self.add_image_button]
         return result
     

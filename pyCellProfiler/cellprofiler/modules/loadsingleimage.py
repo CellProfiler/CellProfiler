@@ -95,7 +95,7 @@ class LoadSingleImage(cpm.CPModule):
         if self.dir_choice in (DIR_CUSTOM_FOLDER, DIR_CUSTOM_WITH_METADATA):
             result += [self.custom_directory]
         for file_setting in self.file_settings:
-            result += file_setting.unpack_group()
+            result += file_setting.visible_settings()
         result.append(self.add_button)
         return result 
 

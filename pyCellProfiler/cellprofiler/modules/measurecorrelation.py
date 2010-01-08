@@ -175,11 +175,11 @@ class MeasureCorrelation(cpm.CPModule):
     def visible_settings(self):
         result = []
         for image_group in self.image_groups:
-            result += image_group.unpack_group()
+            result += image_group.visible_settings()
         result += [self.add_image_button, self.spacer_2, self.images_or_objects]
         if self.wants_objects():
             for object_group in self.object_groups:
-                result += object_group.unpack_group()
+                result += object_group.visible_settings()
             result += [self.add_object_button]
         return result
 

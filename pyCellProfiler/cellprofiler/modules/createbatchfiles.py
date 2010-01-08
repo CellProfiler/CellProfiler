@@ -159,7 +159,7 @@ class CreateBatchFiles(cpm.CPModule):
             result += [self.custom_output_directory]
         result += [self.remote_host_is_windows]
         for mapping in self.mappings:
-            result += mapping.unpack_group()
+            result += mapping.visible_settings()
         result += [self.add_mapping_button]
         return result
     

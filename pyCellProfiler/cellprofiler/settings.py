@@ -50,6 +50,10 @@ class Setting(object):
     """A module setting which holds a single string value
     
     """
+    #
+    # This should be set to False for UI elements like buttons and dividers
+    #
+    save_to_pipeline = True
     def __init__(self,text,value,doc=None):
         """Initialize a setting with the enclosing module and its string value
         
@@ -131,7 +135,7 @@ class Setting(object):
         if not isinstance(self.__value,str):
             raise ValidationError("%s was not a string"%(self.__value),self)
         return self.__value
-
+    
 class HiddenCount(Setting):
     """A setting meant only for saving an item count
     
@@ -1090,6 +1094,7 @@ class ObjectSubscriberMultiChoice(SubscriberMultiChoice):
 class DoSomething(Setting):
     """Do something in response to a button press
     """
+    save_to_pipeline = False
     def __init__(self, text, label, callback, *args, **kwargs):
         super(DoSomething,self).__init__(text, 'n/a', **kwargs)
         self.__label = label
@@ -1106,6 +1111,7 @@ class DoSomething(Setting):
         """Call the callback in response to the user's request to do something"""
         self.__callback(*self.__args)
         
+        
 class RemoveSettingButton(DoSomething):
     '''A button whose only purpose is to remove something from a list.'''
     def __init__(self, text, label, list, entry):
@@ -1113,6 +1119,7 @@ class RemoveSettingButton(DoSomething):
 
 class Divider(Setting):
     """The divider setting inserts a vertical space, possibly with a horizontal line, in the GUI"""
+    save_to_pipeline = False
     def __init__(self, text = "", line=True, doc=None):
         super(Divider, self).__init__(text, 'n/a', doc=doc)
         self.line = line and (text == "")
@@ -1387,12 +1394,18 @@ class SettingsGroup(object):
         self.__setattr__(name, setting)
         self.settings.append(setting)
         
-    def unpack_group(self):
+    def visible_settings(self):
         '''Return a list of the settings in the group, in the order
         they were added to the group.
         '''
         # return a copy
         return list(self.settings)
+    
+    def pipeline_settings(self):
+        '''Return a list of the settings, filtering out UI tidbits'''
+        return [setting for setting in self.settings
+                if setting.save_to_pipeline]
+        
         
 class NumberConnector(object):
     '''This object connects a function to a number slot

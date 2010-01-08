@@ -91,7 +91,7 @@ class MeasureImageIntensity(cpm.CPModule):
     def visible_settings(self):
         result = []
         for index, image in enumerate(self.images):
-            temp = image.unpack_group()
+            temp = image.visible_settings()
             if not image.wants_objects:
                 temp.remove(image.object_name)
             result += temp

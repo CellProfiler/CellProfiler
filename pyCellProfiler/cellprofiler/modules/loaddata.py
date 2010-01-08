@@ -119,6 +119,8 @@ FILE_NAME = 'FileName'
 '''Reserve extra space in pathnames for batch processing name rewrites'''
 PATH_PADDING = 20
 
+'''Cache of header columns for files'''
+header_cache = {}
 ###################################################################
 #
 # Helper functions for the header columns, Image_FileName_<image-name>
@@ -300,18 +302,33 @@ class LoadData(cpm.CPModule):
     def legacy_field_key(self):
         '''The key to use to retrieve the metadata from the image set list'''
         return 'LoadTextMetadata_%d'%self.module_num
-    
+
+    def get_cache_info(self):
+        '''Get the cached information for the data file'''
+        global header_cache
+        entry = header_cache.get(self.csv_path, dict(ctime=0))
+        ctime = os.stat(self.csv_path).st_ctime
+        if ctime > entry["ctime"]:
+            entry = header_cache[self.csv_path] = {}
+            entry["ctime"] = ctime
+        return entry
+        
     def get_header(self):
         '''Read the header fields from the csv file
         
         Open the csv file indicated by the settings and read the fields
         of its first line. These should be the measurement columns.
         '''
+        entry = self.get_cache_info()
+        if entry.has_key("header"):
+            return entry["header"]
+            
         fd = open(self.csv_path, 'rb')
         reader = csv.reader(fd)
         header = reader.next()
         fd.close()
-        return [header_to_column(column) for column in header]
+        entry["header"] = [header_to_column(column) for column in header]
+        return entry["header"]
         
     def other_providers(self, group):
         '''Get name providers from the CSV header'''
@@ -521,11 +538,17 @@ class LoadData(cpm.CPModule):
 
     def get_measurement_columns(self, pipeline):
         '''Return column definitions for measurements output by this module'''
+        entry = None
         try:
+            entry = self.get_cache_info()
+            if entry.has_key("measurement_columns"):
+                return entry["measurement_columns"]
             fd = open(self.csv_path, 'rb')
             reader = csv.reader(fd)
             header = [header_to_column(x) for x in reader.next()]
         except:
+            if entry is not None:
+                entry["measurement_columns"] = []
             return []
         coltypes = [cpmeas.COLTYPE_INTEGER]*len(header)
         collen = [0]*len(header)
@@ -553,11 +576,13 @@ class LoadData(cpm.CPModule):
                     collen[index] = len(field)
                     coltypes[index] = cpmeas.COLTYPE_VARCHAR_FORMAT%len(field)
         image_names = self.other_providers('imagegroup')
-        return ([(cpmeas.IMAGE, colname, coltype)
-                 for colname, coltype in zip(header, coltypes)] +
-                [(cpmeas.IMAGE, 'MD5Digest_'+image_name,
-                  cpmeas.COLTYPE_VARCHAR_FORMAT % 32)
-                 for image_name in image_names])
+        result = ([(cpmeas.IMAGE, colname, coltype)
+                   for colname, coltype in zip(header, coltypes)] +
+                  [(cpmeas.IMAGE, 'MD5Digest_'+image_name,
+                    cpmeas.COLTYPE_VARCHAR_FORMAT % 32)
+                   for image_name in image_names])
+        entry["measurement_columns"] = result
+        return result
 
     def get_categories(self, pipeline, object_name):
         if object_name != cpmeas.IMAGE:

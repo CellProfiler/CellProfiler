@@ -189,7 +189,7 @@ class LoadImagesNew(cpmodule.CPModule):
         # images
         result += [self.image_spacer_1]
         for im in self.images:
-            result += im.unpack_group()
+            result += im.visible_settings()
         result += [self.add_image_button, self.image_spacer_bottom]
         
         # metadata

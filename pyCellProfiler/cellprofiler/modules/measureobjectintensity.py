@@ -137,10 +137,10 @@ class MeasureObjectIntensity(cpm.CPModule):
     def visible_settings(self):
         result = []
         for im in self.images:
-            result += im.unpack_group()
+            result += im.visible_settings()
         result += [self.add_image_button, self.divider]
         for im in self.objects:
-            result += im.unpack_group()
+            result += im.visible_settings()
         result += [self.add_object_button]
         return result
         

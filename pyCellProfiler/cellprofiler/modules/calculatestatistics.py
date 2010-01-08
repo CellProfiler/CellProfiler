@@ -303,6 +303,7 @@ class CalculateStatistics(cpm.CPModule):
                             for feature_name in all_features]
         grouping_data = np.array(measurements.get_all_measurements(
             cpmeas.IMAGE,self.grouping_values.value))
+        grouping_data = grouping_data.flatten()
         data = np.zeros((len(grouping_data), len(feature_set)))
         for i, (object_name, feature_name) in enumerate(feature_set):
             fdata = measurements.get_all_measurements(object_name, feature_name)

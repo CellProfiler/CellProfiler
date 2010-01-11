@@ -22,6 +22,7 @@ import wx.grid
 import cellprofiler.pipeline
 import cellprofiler.gui.movieslider as cpgmov
 import cellprofiler.gui.cpgrid as cpgrid
+from cellprofiler.gui.cpfigure import window_name
 
 NO_PIPELINE_LOADED = 'No pipeline loaded'
 PADDING = 1
@@ -262,6 +263,11 @@ class PipelineListView(object):
             if len(self.__pipeline.modules()) > event.Row:
                 module = self.__pipeline.modules()[event.Row]
                 module.show_window = not module.show_window
+                name = window_name(module)
+                figure = self.__panel.TopLevelParent.FindWindowByName(name)
+                if figure is not None:
+                    figure.Close()
+                    
         elif event.Col == PAUSE_COLUMN:
             if self.__debug_mode and len(self.__pipeline.modules()) > event.Row:
                 module = self.__pipeline.modules()[event.Row]

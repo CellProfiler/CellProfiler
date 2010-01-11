@@ -29,6 +29,10 @@ import cellprofiler.preferences as cpprefs
 
 window_ids = []
 
+def window_name(module):
+    '''Return a module's figure window name'''
+    return "CellProfiler:%s:%s" % (module.module_name, module.module_num)
+
 def create_or_find(parent=None, id=-1, title="", 
                    pos=wx.DefaultPosition, size=wx.DefaultSize,
                    style=wx.DEFAULT_FRAME_STYLE, name=wx.FrameNameStr,

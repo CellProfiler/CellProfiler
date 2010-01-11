@@ -1120,11 +1120,9 @@ class ModuleSizer(wx.PySizer):
                 return wx.Size(0,0)
             height = 0
             for j in range(0,self.__rows):
-                row_height = 0
-                for i in range(0,self.__cols):
-                    item = self.GetItem(self.idx(i,j))
-                    row_height = max([row_height, item.CalcMin()[1]])
-                height += row_height;
+                height_border = max([self.GetItem(col,j).GetBorder() 
+                                     for col in range(2)])
+                height += self.get_row_height(j) + 2*height_border
             self.__printed_exception = False
             return wx.Size(self.calc_edit_size()[0] + self.__min_text_width + 
                            self.calc_help_size()[0],
@@ -1135,7 +1133,18 @@ class ModuleSizer(wx.PySizer):
                 traceback.print_exc()
                 self.__printed_exception = True
                 return wx.Size(0,0)
-            
+
+    def get_row_height(self, j):
+        height = 0
+        for i in range(self.__cols):
+            item = self.GetItem(self.idx(i,j))
+            control = item.GetWindow()
+            if (isinstance(control, wx.StaticLine)):
+                height = max(height, item.CalcMin()[1] * 1.25)
+            else:
+                height = max(height, item.CalcMin()[1])
+        return height
+        
     def calc_column_size(self, j):
         """Return a wx.Size with the total height of the controls in
         column j and the maximum of their widths.
@@ -1170,6 +1179,7 @@ class ModuleSizer(wx.PySizer):
             ctrl_width = control.GetTextExtent(text)[0] + 2 * item.GetBorder()
             width = max(width, ctrl_width)
         return width
+
     
     def RecalcSizes(self):
         """Recalculate the sizes of our items, resizing the text boxes
@@ -1204,6 +1214,7 @@ class ModuleSizer(wx.PySizer):
                 assert isinstance(control, wx.StaticText), 'Control at column 0, %d of grid is not StaticText: %s'%(i,str(control))
                 text = control.GetLabel()
                 edit_control = edit_item.GetWindow()
+                height_border = max([x.GetBorder() for x in (edit_item, text_item)])
                 if (isinstance(edit_control, wx.StaticLine) and
                     len(text) == 0):
                     #
@@ -1211,7 +1222,7 @@ class ModuleSizer(wx.PySizer):
                     #
                     text_item.Show(False)
                     # make the divider height the same as a text row plus some
-                    item_height = self.GetItem(self.idx(0, i)).CalcMin()[1] * 1.25
+                    item_height = self.get_row_height(i)
                     assert isinstance(edit_item, wx.SizerItem)
                     border = edit_item.GetBorder()
                     third_width = (text_width + edit_width - 2*border) / 3
@@ -1219,7 +1230,6 @@ class ModuleSizer(wx.PySizer):
                                              height + border + item_height / 2)
                     item_size = wx.Size(third_width, edit_item.Size[1])
                     edit_item.SetDimension(item_location, item_size)
-                    height += item_height + 2*border
                 else:
                     text_item.Show(True)
                     if (text_width > self.__min_text_width and
@@ -1237,8 +1247,7 @@ class ModuleSizer(wx.PySizer):
                         item_location = wx.Point(sum(widths[0:j]), height)
                         item_location = panel.CalcScrolledPosition(item_location)
                         item.SetDimension(item_location, item_size)
-                    height += max([self.GetItem(self.idx(j, i)).CalcMin()[1] 
-                                   for j in range(self.__cols)])
+                height += self.get_row_height(i) + 2*height_border
             panel.SetVirtualSizeWH(width,height+20)
         except:
             # This happens, hopefully transiently, on the Mac

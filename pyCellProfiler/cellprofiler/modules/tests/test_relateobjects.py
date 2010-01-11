@@ -30,6 +30,7 @@ import cellprofiler.modules.relateobjects as R
 PARENT_OBJECTS = 'parentobjects'
 CHILD_OBJECTS = 'childobjects'
 MEASUREMENT = 'Measurement'
+IGNORED_MEASUREMENT = '%s_Foo'%R.C_PARENT
 
 class TestRelateObjects(unittest.TestCase):
     def make_workspace(self, parents, children, fake_measurement=False):
@@ -38,7 +39,8 @@ class TestRelateObjects(unittest.TestCase):
         if fake_measurement:
             class FakeModule(cpm.CPModule):
                 def get_measurement_columns(self, pipeline):
-                    return [(CHILD_OBJECTS, MEASUREMENT, cpmeas.COLTYPE_FLOAT)]
+                    return [(CHILD_OBJECTS, MEASUREMENT, cpmeas.COLTYPE_FLOAT),
+                            (CHILD_OBJECTS, IGNORED_MEASUREMENT, cpmeas.COLTYPE_INTEGER)]
             module = FakeModule()
             module.module_num = 1
             pipeline.add_module(module)
@@ -73,7 +75,7 @@ class TestRelateObjects(unittest.TestCase):
                         if x != cpmeas.IMAGE]
         features = [[feature  
                      for feature in measurements.get_feature_names(object_name)
-                     if feature != MEASUREMENT]
+                     if feature not in (MEASUREMENT, IGNORED_MEASUREMENT)]
                     for object_name in object_names]
         columns = module.get_measurement_columns(pipeline)
         self.assertEqual(sum([len(f) for f in features]), len(columns))
@@ -368,14 +370,20 @@ Relate:[module_num:8|svn_version:\'8866\'|variable_revision_number:2|show_window
                                                 fake_measurement=True)
         module.wants_per_parent_means.value = True
         m = workspace.measurements
+        self.assertTrue(isinstance(m, cpmeas.Measurements))
         m.add_measurement(CHILD_OBJECTS,MEASUREMENT, 
                           np.array([1.0,2.0,3.0,4.0]))
+        m.add_measurement(CHILD_OBJECTS, IGNORED_MEASUREMENT, 
+                          np.array([1,2,3,4]))
         expected = np.array([2.0, 3.0])
         module.run(workspace)
         name = "Mean_%s_%s"%(CHILD_OBJECTS, MEASUREMENT)
+        self.assertTrue(name in m.get_feature_names(PARENT_OBJECTS))
         data = m.get_current_measurement(PARENT_OBJECTS, name)
         self.assertTrue(np.all(data==expected))
         self.features_and_columns_match(workspace)
+        name = "Mean_%s_%s"%(CHILD_OBJECTS, IGNORED_MEASUREMENT)
+        self.assertFalse(name in m.get_feature_names(PARENT_OBJECTS))
         
     def test_04_00_distance_empty(self):
         '''Make sure we can handle labels matrices that are all zero'''

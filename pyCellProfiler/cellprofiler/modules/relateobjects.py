@@ -34,6 +34,8 @@ import cellprofiler.measurements as cpmeas
 import cellprofiler.settings as cps
 from cellprofiler.modules.identify import C_PARENT, C_CHILDREN
 from cellprofiler.modules.identify import FF_PARENT,FF_CHILDREN_COUNT
+from cellprofiler.modules.identify import \
+     M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y, M_NUMBER_OBJECT_NUMBER
 from cellprofiler.cpmath.cpmorphology import fixup_scipy_ndimage_result as fix
 from cellprofiler.cpmath.cpmorphology import centers_of_labels
 from cellprofiler.cpmath.outline import outline
@@ -45,7 +47,9 @@ D_BOTH = "Both"
 
 D_ALL = [D_NONE, D_CENTROID, D_MINIMUM, D_BOTH]
 
-FF_MEAN = 'Mean_%s_%s'
+C_MEAN = "Mean"
+
+FF_MEAN = '%s_%%s_%%s' % C_MEAN
 
 '''Distance category'''
 C_DISTANCE = 'Distance'
@@ -196,6 +200,8 @@ class RelateObjects(cpm.CPModule):
         if self.wants_per_parent_means.value:
             parent_indexes = np.arange(np.max(parents.segmented))+1
             for feature_name in m.get_feature_names(self.sub_object_name.value):
+                if not self.should_aggregate_feature(feature_name):
+                    continue
                 data = m.get_current_measurement(self.sub_object_name.value,
                                                  feature_name)
                 if data is not None:
@@ -398,6 +404,21 @@ class RelateObjects(cpm.CPModule):
             raise ValueError("Don't know how to relate %s to %s" %
                              (primary_parent, parent_name))
         return parents_of
+
+    ignore_features = set((M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y,
+                           M_NUMBER_OBJECT_NUMBER))
+    def should_aggregate_feature(self, feature_name):
+        '''Return True if aggregate measurements should be made on a feature
+        
+        feature_name - name of a measurement, such as Location_Center_X
+        '''
+        if feature_name.startswith(C_MEAN):
+            return False
+        if feature_name.startswith(C_PARENT):
+            return False
+        if feature_name in self.ignore_features:
+            return False
+        return True
         
     def validate_module(self, pipeline):
         '''Validate the module's settings
@@ -438,7 +459,8 @@ class RelateObjects(cpm.CPModule):
                          FF_MEAN%(self.sub_object_name.value, column[1]),
                          cpmeas.COLTYPE_FLOAT)
                         for column in child_columns
-                        if column[0] == self.sub_object_name.value]
+                        if column[0] == self.sub_object_name.value and
+                        self.should_aggregate_feature(column[1])]
         if self.find_parent_child_distances in (D_BOTH, D_CENTROID):
             for parent_name in self.get_parent_names():
                 columns += [(self.sub_object_name.value,
@@ -471,7 +493,9 @@ class RelateObjects(cpm.CPModule):
                     for category in c:
                         m = module.get_measurements(self.sub_object_name.value,
                                                     category)
-                        measurements += ["%s_%s"%(c,x) for x in m]
+                        measurements += ["%s_%s"%(c,x) for x in m
+                                         if self.should_aggregate_feature(
+                                         "%s_%s"%(c,x))]
                 return measurements
             elif category == "Children":
                 return ["%s_Count"%self.sub_object_name.value]

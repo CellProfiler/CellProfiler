@@ -124,8 +124,7 @@ class ExportToSpreadsheet(cpm.CPModule):
         
         self.add_metadata = cps.Binary("Add image metadata columns to your object data file?", False, doc = """Image_Metadata_ columns are normally exported in the Image data file, but if you check this box, they will also be exported with the Object data file(s).""")
         
-        self.add_indexes = cps.Binary("Add image/object numbers to output?", True,doc = """
-                            Checking this box will add an image number column to image data (otherwise, the image number is implied by the row of the spreadsheet). It will also add an image number column and an object number column to object data.""")
+        self.add_indexes = cps.Binary("No longer used, always saved", True)
         
         self.excel_limits = cps.Binary("Limit output to a size that is allowed in Excel?", False, doc = """
                             If your output has more than 256 columns, a window will open
@@ -215,8 +214,7 @@ class ExportToSpreadsheet(cpm.CPModule):
                   self.directory_choice]
         if self.directory_choice in (DIR_CUSTOM, DIR_CUSTOM_WITH_METADATA):
             result += [self.custom_directory]
-        result += [ self.add_metadata, self.add_indexes,
-                    self.excel_limits, self.pick_columns,
+        result += [ self.add_metadata, self.excel_limits, self.pick_columns,
                     self.wants_aggregate_means, self.wants_aggregate_medians,
                     self.wants_aggregate_std]
         previous_group = None
@@ -393,8 +391,7 @@ class ExportToSpreadsheet(cpm.CPModule):
             writer = csv.writer(fd,delimiter=self.delimiter_char)
             m = workspace.measurements
             image_features = m.get_feature_names(IMAGE)
-            if self.add_indexes.value:
-                image_features.insert(0, IMAGE_NUMBER)
+            image_features.insert(0, IMAGE_NUMBER)
             for index in image_set_indexes:
                 aggs = []
                 if self.wants_aggregate_means:
@@ -447,9 +444,8 @@ class ExportToSpreadsheet(cpm.CPModule):
             writer = csv.writer(fd,delimiter=self.delimiter_char)
             m = workspace.measurements
             features = []
-            if self.add_indexes.value:
-                features += [(IMAGE, IMAGE_NUMBER),
-                             (object_names[0], OBJECT_NUMBER)]
+            features += [(IMAGE, IMAGE_NUMBER),
+                         (object_names[0], OBJECT_NUMBER)]
             if self.add_metadata.value:
                 mdfeatures = [(IMAGE, name) 
                               for name in m.get_feature_names(IMAGE)

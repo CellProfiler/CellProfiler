@@ -4,12 +4,17 @@ performs basic arithmetic operations
 The arithmetic operations available in this module include addition,
 subtraction, multiplication and division. The result can be
 log-transformed or raised to a power and can be used in further
-calculations if another Calculate Math module is added to the pipeline. 
+calculations if another <b>CalculateMath</b> module is added to the pipeline. 
 
-<p>The module can make its calculations on a per-image basis (for example, multiplying the area occupied by a stain in the image by the total intensity in the image) or on an object-by-object basis (for example, dividing the intensity in the nucleus by the intensity in the cytoplasm for each cell).
+<p>The module can make its calculations on a per-image basis (for example, multiplying the area occupied by a stain
+in the image by the total intensity in the image) or on an object-by-object basis (for example, dividing the intensity
+in the nucleus by the intensity in the cytoplasm for each cell).
 
-<p>The result of this module is a new measurement in the "Math" category. If both input measurements are whole-image measurements, then the resulting calculated measurement will also be a whole-image measurement. Similarly, if both input measurements are individual object measurements, then the resulting calculated measurement will also be an object measurement. In this case, the measurement will be associated with <i>both<\i> objects that were involved in the measurement. If one measure is object-based and one 
-image-based, then the resulting calculated measurement will be an object measurement.
+<p>The result of this module is a new measurement in the "Math" category. If both input measurements are whole-image
+measurements, then the resulting calculated measurement will also be a whole-image measurement. Similarly, if both input
+measurements are individual object measurements, then the resulting calculated measurement will also be an object
+measurement. In this case, the measurement will be associated with <i>both<\i> objects that were involved in the measurement.
+If one measure is object-based and one image-based, then the resulting calculated measurement will be an object measurement.
 
 See also all <b>Measure</b> modules.
 '''

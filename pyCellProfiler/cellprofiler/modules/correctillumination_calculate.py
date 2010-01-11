@@ -1,11 +1,11 @@
 '''<b>Correct Illumination - Calculate</b> calculates an illumination function, used to correct uneven
-illumination/lighting/shading or to reduce uneven background in images.
+illumination/lighting/shading or to reduce uneven background in images
 <hr>
 This module calculates an illumination function which can be saved to the
 hard drive for later use, or it can be immediately applied to images later in the
 pipeline. This will correct for the uneven illumination in images.  
 If saving, select '.mat' format in <b>SaveImages</b>.  
-Use the CorrectIllumination_Apply module to apply the
+Use the <b>CorrectIllumination_Apply</b> module to apply the
 function to the image to be corrected.
 
 Illumination correction is a challenge to do properly; please see the CellProfiler website for further advice.
@@ -111,7 +111,7 @@ class CorrectIllumination_Calculate(cpm.CPModule):
                                             <i>(Used if the Regular method is selected)</i><br>
                                             Do you want to dilate objects in the final averaged image?
                                             For some applications, the incoming images are binary and each object
-                                            should be dilated with a gaussian filter in the final averaged
+                                            should be dilated with a Gaussian filter in the final averaged
                                             (projection) image. This is for a sophisticated method of illumination
                                             correction where model objects are produced.''')
         
@@ -161,8 +161,8 @@ class CorrectIllumination_Calculate(cpm.CPModule):
                                             you would apply smoothing until you obtain a fairly smooth pattern
                                             without sharp bright or dim regions.  Note that smoothing is a
                                             time-consuming process, and fitting a polynomial is fastest but does not
-                                            allow a very tight fit as compared to the slower median and gaussian 
-                                            filtering methods. We typically recommend median vs. gaussian because median 
+                                            allow a very tight fit as compared to the slower median and Gaussian 
+                                            filtering methods. We typically recommend median vs. Gaussian because median 
                                             is less sensitive to outliers, although the results are also slightly 
                                             less smooth and the fact that images are in the range of 0 to 1 means that
                                             outliers typically will not dominate too strongly anyway. A less commonly

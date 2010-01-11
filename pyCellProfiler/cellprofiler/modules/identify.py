@@ -191,7 +191,7 @@ class Identify(cellprofiler.cpmodule.CPModule):
             example, when the background brightness varies substantially among the
             parent objects. 
             <p>Important: the per-object method requires that you run an
-            IdentifyPrimAutomatic module to identify the parent objects upstream in the
+            <b>IdentifyPrimAutomatic</b> module to identify the parent objects upstream in the
             pipeline. After the parent objects are identified in the pipeline, you
             must then also run a <b>Crop</b> module with the following inputs: 
             <ul>
@@ -199,7 +199,7 @@ class Identify(cellprofiler.cpmodule.CPModule):
             <li>Select <i>Objects</i> as the shape to crop into.</li>
             <li>Select the parent objects (e.g., Nuclei) as the objects to use as a cropping mask.</li>
             </ul>
-            Finally, in the IdentifyPrimAutomatic module, select the cropped image as input image.</ul>
+            Finally, in the <b>IdentifyPrimAutomatic</b> module, select the cropped image as input image.</ul>
             
             <p>Selecting manual thresholding allows you to enter a single value between 0 and 1
             as the threshold value. This setting can be useful when you are certain what the
@@ -215,7 +215,7 @@ class Identify(cellprofiler.cpmodule.CPModule):
             too stringent or too lenient. You may need to enter an adjustment factor
             which you empirically determine is suitable for your images. The number 1
             means no adjustment, 0 to 1 makes the threshold more lenient and greater
-            than 1 (e.g. 1.3) makes the threshold more stringent. For example, the
+            than 1 (e.g., 1.3) makes the threshold more stringent. For example, the
             Otsu automatic thresholding inherently assumes that 50% of the image is
             covered by objects. If a larger percentage of the image is covered, the
             Otsu method will give a slightly biased threshold that may have to be

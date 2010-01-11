@@ -1,6 +1,6 @@
-'''<b>CalculateStatistics</b> calculates measures of assay quality 
+'''<b>Calculate Statistics</b> calculates measures of assay quality 
 (V and Z' factors) and dose response data (EC50) for all measured features
-made from images.
+made from images
 <hr>
 The V and Z' factors are statistical measures of assay quality and are
 calculated for each per-image measurement and for each average per-object 
@@ -15,7 +15,7 @@ measured values (Intensity, AreaShape, Texture, etc.). These measurements
 can be exported as the "Experiment" set of data.
 <p>
 For both Z' and V factors, the highest possible value (best assay
-quality) is 1 and they can range into negative values (for assays where
+quality) is 1, and they can range into negative values (for assays where
 distinguishing between positive and negative controls is difficult or
 impossible). A Z' factor > 0 is potentially screenable; a Z' factor > 0.5
 is considered an excellent assay.
@@ -27,7 +27,7 @@ minimum and maximum responses. When there are only two doses in the assay
 factor.
 <p>
 The one-tailed Z' factor is an attempt to overcome a limitation of the original 
-Z'-factor formulation (it assumes a gaussian distribution) and is 
+Z'-factor formulation (it assumes a Gaussian distribution) and is 
 informative for populations with moderate or high amounts
 of skewness. In these cases, long tails opposite to the mid-range point
 lead to a high standard deviation for either population, which results 
@@ -38,7 +38,7 @@ between the positive/negative population means. This is not yet a well-
 established measure of assay robustness.
 <p>
 NOTE: If the standard deviation of a measured feature is zero for a
-particular set of samples (e.g. all the positive controls), the Z' and V
+particular set of samples (e.g., all the positive controls), the Z' and V
 factors will equal 1 despite the fact that the assay quality is poor. 
 This can occur when there is only one sample at each dose.
 This also occurs for some non-informative measured features, like the
@@ -62,7 +62,10 @@ Ravkin: http://www.ravkin.net. Carlos Evangelista donated his copyrighted
 dose-response-related code.
 <p>
 Features measured:
-Note: whereas most CellProfiler measurements are calculated for each object (per-object) or for each image (per-image), the Calculate Statistics module produces per-experiment values; for example, one Z' factor is calculated for each measurement, across the entire analysis run.
+Note: whereas most CellProfiler measurements are calculated for each object
+(per-object) or for each image (per-image), the <b>CalculateStatistics</> module
+produces per-experiment values; for example, one Z' factor is calculated for
+each measurement, across the entire analysis run.
 <ul>
 <li>Zfactor</li>
 <li>Vfactor</li>
@@ -71,9 +74,11 @@ Note: whereas most CellProfiler measurements are calculated for each object (per
 </ul>
 <p>
 Example format for a file to be loaded by <b>LoadText</b> for this module:
-LoadText loads information from a CSV file. The first line of this file is a 
+<b>LoadText</b> loads information from a CSV file. The first line of this file is a 
 header that names the items.
-Each subsequent line represents data for one image set, so your file should have the header line plus one line per image to be processed. You can also make a file for LoadText to load that contains the positive/negative control and dose designations *plus* the image file names to be processed, which is a good way to guarantee that images are matched
+Each subsequent line represents data for one image set, so your file should have
+the header line plus one line per image to be processed. You can also make a
+file for <b>LoadText</b> to load that contains the positive/negative control and dose designations *plus* the image file names to be processed, which is a good way to guarantee that images are matched
 with the correct data. Here is an example file:<br>
 <code>
 <table>
@@ -143,7 +148,7 @@ class CalculateStatistics(cpm.CPModule):
             a text file outside of CellProfiler and then load that file in the pipeline
             using <b>LoadText</b>. In that case, choose the
             measurement that matches the column header of the measurement
-            in LoadText's input file. See the help for this module for an example text file.''')
+            in <b>LoadText</b>'s input file. See the help for this module for an example text file.''')
         self.dose_values = []
         self.add_dose_value(can_remove = False)
         self.add_dose_button = cps.DoSomething("","Add another dose specification",
@@ -167,7 +172,7 @@ class CalculateStatistics(cpm.CPModule):
             a text file outside of CellProfiler and then load that file in the pipeline
             using <b>LoadText</b>. In that case, choose the
             measurement that matches the column header of the measurement
-            in LoadText's input file. See the help for this module for an example text file.
+            in <b>LoadText<b>'s input file. See the help for this module for an example text file.
             """))
         group.append("log_transform",cps.Binary(
             "Log-transform dose values?",

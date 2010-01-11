@@ -1,6 +1,6 @@
-'''<b>CorrectIllumination_Apply:</b> Applies an illumination function, usually created by
-CorrectIllumination_Calculate, to an image in order to correct for uneven
-illumination (uneven shading).
+'''<b>Correct Illumination - Apply</b> applies an illumination function, usually created by
+<b>CorrectIllumination_Calculate</b>, to an image in order to correct for uneven
+illumination (uneven shading)
 <hr>
 
 This module applies a previously created illumination correction function,
@@ -74,7 +74,7 @@ class CorrectIllumination_Apply(cpm.CPModule):
         
         illum_correct_function_image_name = cps.ImageNameSubscriber("Select the illumination function","None", doc = '''
                                         What did you call the illumination correction function image that will be used to carry out the correction (produced by another module 
-                                        or loaded as a .mat format image using Load Single Image)?''')
+                                        or loaded as a .mat format image using <b>LoadSingleImage</b>)?''')
         
         divide_or_subtract = cps.Choice("Select how the illumination function is applied",
                                         [DOS_DIVIDE, DOS_SUBTRACT], doc = '''

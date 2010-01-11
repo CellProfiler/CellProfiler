@@ -1,6 +1,6 @@
-'''<b>Align</b> aligns images relative to each other, for example to correct 
+'''<b>Align</b> aligns images relative to each other, for example, to correct 
 shifts in the optical path of a microscope in each channel of a multi-channel 
-set of images.
+set of images
 <hr>
 
 For two or more input images, this module determines the optimal alignment 

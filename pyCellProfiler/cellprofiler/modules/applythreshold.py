@@ -1,6 +1,6 @@
-"""<b>Apply Threshold</b> sets pixel intensities below or above a certain threshold to zero.
+"""<b>Apply Threshold</b> sets pixel intensities below or above a certain threshold to zero
 <hr>
-ApplyThreshold allows you to produce either a grayscale or binary image
+<b>ApplyThreshold</b> allows you to produce either a grayscale or binary image
 based on a threshold which can be pre-selected or calculated automatically using one of many methods.
 """
 
@@ -80,7 +80,7 @@ class ApplyThreshold(Identify):
                                 <i>(Only used if the output image is grayscale and pixels above a given intensity are to be set to zero)</i><br>
                                 This setting is useful to adjust when you are attempting to exclude bright artifactual objects: you can 
                                 first set the threshold to exclude these bright objects, but it may also be desirable to expand the
-                                thresholded region around those bright objects by a certain distance so as to avoid a 'halo' effect.''')
+                                thresholded region around those bright objects by a certain distance so as to avoid a "halo" effect.''')
 
         self.create_threshold_settings(threshold_methods)
         

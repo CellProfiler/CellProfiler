@@ -1,22 +1,22 @@
-'''<b>ClassifyObjects</b> classifies objects into different classes according 
-to the value of measurements you choose.
+'''<b>Classify Objects</b> classifies objects into different classes according 
+to the value of measurements you choose
 <hr>
 This module classifies objects into a number of different bins
 according to the value of a measurement (e.g. by size, intensity, shape).
 It reports how many objects fall into each class as well as the
 percentage of objects that fall into each class. The module requests that
 you select the measurement feature to be used to classify your objects and
-specify the bins to use. This module requires that you run a measurement
+specify the bins to use. It requires you to run a measurement
 module previous to this module in the pipeline so that the measurement
 values can be used to classify the objects. If you are classifying by the
-ratio of two measurements, you must put a CalculateRatios module previous
+ratio of two measurements, you must put a <b>CalculateRatios</b> module previous
 to this module in the pipeline.
-<br>
+<p>
 There are two flavors of classification. The first classifies each object
 according to the measurements you choose and assigns each object to one
 class per measurement. You may specify more than two classification bins per
 measurement. 
-<br>
+<p>
 The second classifies each object according to two measurements and two
 threshold values. The module classifies each object once per measurement
 resulting in four possible object classes. The module then stores one
@@ -68,8 +68,8 @@ class ClassifyObjects(cpm.CPModule):
             "Should each classification decision be based on a single measurement or on the combination of a pair of measurements?",
             [BY_SINGLE_MEASUREMENT, BY_TWO_MEASUREMENTS],
             doc="""This setting controls how classifications are recorded:<br>
-            <ul><li><i>Single measurements</i>: ClassifyObjects will classify each object based on a single measurement.</li>
-            <li><i>Pair of measurements</i>: ClassifyObjects will classify each object based on a pair of measurements taken together (that is, an object must meet two criteria to belong to a class).</li></ul>""")
+            <ul><li><i>Single measurements</i>: <b>ClassifyObjects</b> will classify each object based on a single measurement.</li>
+            <li><i>Pair of measurements</i>: <b>ClassifyObjects</b> will classify each object based on a pair of measurements taken together (that is, an object must meet two criteria to belong to a class).</li></ul>""")
         
         ############### Single measurement settings ##################
         #
@@ -209,7 +209,7 @@ class ClassifyObjects(cpm.CPModule):
             doc="""This is the name of the objects to be classified. You can
             choose from objects created by any previous module. See
             <b>IdentifyPrimAutomatic</b>, <b>IdentifySecondary</b> or
-            <b>IdentifyTertiarySubregion</b>"""))
+            <b>IdentifyTertiarySubregion</b>."""))
         
         def object_fn():
             return group.object_name.value

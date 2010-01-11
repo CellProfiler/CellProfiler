@@ -954,6 +954,105 @@ class test_IdentifyPrimaryObjects(unittest.TestCase):
                          I.O_WEIGHTED_VARIANCE)
         self.assertEqual(module.assign_middle_to_foreground.value,
                          I.O_FOREGROUND)
+    
+    def test_04_05_load_v5(self):
+        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:1
+SVNRevision:9008
+
+LoadImages:[module_num:1|svn_version:\'8947\'|variable_revision_number:4|show_window:True|notes:\x5B\x5D]
+    What type of files are you loading?:individual images
+    How do you want to load these files?:Text-Exact match
+    How many images are there in each group?:3
+    Type the text that the excluded images have in common:Do not use
+    Analyze all subfolders within the selected folder?:No
+    Image location:Default Image Folder
+    Enter the full path to the images:
+    Do you want to check image sets for missing or duplicate files?:Yes
+    Do you want to group image sets by metadata?:No
+    Do you want to exclude certain files?:No
+    What metadata fields do you want to group by?:
+    Type the text that these images have in common (case-sensitive):
+    What do you want to call this image in CellProfiler?:DNA
+    What is the position of this image in each group?:1
+    Do you want to extract metadata from the file name, the subfolder path or both?:None
+    Type the regular expression that finds metadata in the file name\x3A:^(?P<Plate>.*)_(?P<Well>\x5BA-P\x5D\x5B0-9\x5D{2})_s(?P<Site>\x5B0-9\x5D)
+    Type the regular expression that finds metadata in the subfolder path\x3A:.*\x5B\\\\/\x5D(?P<Date>.*)\x5B\\\\/\x5D(?P<Run>.*)$
+
+IdentifyPrimaryObjects:[module_num:2|svn_version:\'8981\'|variable_revision_number:5|show_window:True|notes:\x5B\x5D]
+    Select the input image:DNA
+    Name the identified primary objects:MyObjects
+    Typical diameter of objects, in pixel units (Min,Max)\x3A:12,42
+    Discard objects outside the diameter range?:Yes
+    Try to merge too small objects with nearby larger objects?:No
+    Discard objects touching the border of the image?:Yes
+    Select the thresholding method:RobustBackground Global
+    Threshold correction factor:1.2
+    Lower and upper bounds on threshold\x3A:0.1,0.6
+    Approximate fraction of image covered by objects?:0.01
+    Method to distinguish clumped objects:Shape
+    Method to draw dividing lines between clumped objects:Distance
+    Size of smoothing filter\x3A:10
+    Suppress local maxima within this distance\x3A:7
+    Speed up by using lower-resolution image to find local maxima?:Yes
+    Name the outline image:MyOutlines
+    Fill holes in identified objects?:Yes
+    Automatically calculate size of smoothing filter?:Yes
+    Automatically calculate minimum size of local maxima?:Yes
+    Enter manual threshold\x3A:0.0
+    Select binary image\x3A:MyBinaryImage
+    Save outlines of the identified objects?:No
+    Calculate the Laplacian of Gaussian threshold automatically?:Yes
+    Enter Laplacian of Gaussian threshold\x3A:0.5
+    Two-class or three-class thresholding?:Two classes
+    Minimize the weighted variance or the entropy?:Weighted variance
+    Assign pixels in the middle intensity class to the foreground or the background?:Foreground
+    Automatically calculate the size of objects for the Laplacian of Gaussian filter?:Yes
+    Enter LoG filter diameter\x3A :5
+    How do you want to handle images with large numbers of objects?:Truncate
+    Maximum # of objects\x3A:305
+"""
+        pipeline = cellprofiler.pipeline.Pipeline()
+        def callback(caller,event):
+            self.assertFalse(
+                isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO.StringIO(data))
+        self.assertEqual(len(pipeline.modules()),2)
+        module = pipeline.modules()[-1]
+        self.assertTrue(isinstance(module, ID.IdentifyPrimaryObjects))
+        self.assertEqual(module.image_name, "DNA")
+        self.assertEqual(module.object_name, "MyObjects")
+        self.assertEqual(module.size_range.min, 12)
+        self.assertEqual(module.size_range.max, 42)
+        self.assertTrue(module.exclude_size)
+        self.assertFalse(module.merge_objects)
+        self.assertTrue(module.exclude_border_objects)
+        self.assertEqual(module.threshold_method, T.TM_ROBUST_BACKGROUND_GLOBAL)
+        self.assertAlmostEqual(module.threshold_correction_factor.value, 1.2)
+        self.assertAlmostEqual(module.threshold_range.min, 0.1)
+        self.assertAlmostEqual(module.threshold_range.max, 0.6)
+        self.assertEqual(module.object_fraction.value, "0.01")
+        self.assertEqual(module.unclump_method, ID.UN_SHAPE)
+        self.assertEqual(module.watershed_method, ID.WA_DISTANCE)
+        self.assertEqual(module.smoothing_filter_size, 10)
+        self.assertEqual(module.maxima_suppression_size, 7)
+        self.assertFalse(module.should_save_outlines)
+        self.assertEqual(module.save_outlines, "MyOutlines")
+        self.assertTrue(module.fill_holes)
+        self.assertTrue(module.automatic_smoothing)
+        self.assertTrue(module.automatic_suppression)
+        self.assertEqual(module.manual_threshold, 0)
+        self.assertEqual(module.binary_image, "MyBinaryImage")
+        self.assertTrue(module.wants_automatic_log_threshold)
+        self.assertAlmostEqual(module.manual_log_threshold.value, 0.5)
+        self.assertEqual(module.two_class_otsu, I.O_TWO_CLASS)
+        self.assertEqual(module.use_weighted_variance, I.O_WEIGHTED_VARIANCE)
+        self.assertEqual(module.assign_middle_to_foreground, I.O_FOREGROUND)
+        self.assertTrue(module.wants_automatic_log_diameter)
+        self.assertEqual(module.log_diameter, 5)
+        self.assertEqual(module.limit_choice, ID.LIMIT_TRUNCATE)
+        self.assertEqual(module.maximum_object_count, 305)
         
     def test_05_01_discard_large(self):
         x = ID.IdentifyPrimAutomatic()
@@ -1634,6 +1733,119 @@ class test_IdentifyPrimaryObjects(unittest.TestCase):
         else:
             unedited_segmented = np.array([0,2,1])[my_objects.unedited_segmented]
         self.assertTrue(np.all(unedited_segmented[mask] == expected[mask]))
+    
+    def test_18_01_truncate_objects(self):
+        '''Set up a limit on the # of objects and exceed it'''
+        for maximum_object_count in range(2,5):
+            pixels = np.zeros((20,21))
+            pixels[2:8,2:8] = .5
+            pixels[12:18,2:8] = .5
+            pixels[2:8,12:18] = .5
+            pixels[12:18,12:18] = .5
+            image = cellprofiler.cpimage.Image(pixels)
+            image_set_list = cellprofiler.cpimage.ImageSetList()
+            image_set = image_set_list.get_image_set(0)
+            image_set.add("my_image", image)
+            object_set = cellprofiler.objects.ObjectSet()
+            
+            x = ID.IdentifyPrimAutomatic()
+            x.object_name.value = "my_object"
+            x.image_name.value = "my_image"
+            x.exclude_size.value = False
+            x.unclump_method.value = ID.UN_NONE
+            x.watershed_method.value = ID.WA_NONE
+            x.threshold_method.value = T.TM_MANUAL
+            x.manual_threshold.value = .25
+            x.threshold_correction_factor.value = 1
+            x.limit_choice = ID.LIMIT_TRUNCATE
+            x.maximum_object_count.value = maximum_object_count
+            x.module_num = 1
+            pipeline = cellprofiler.pipeline.Pipeline()
+            pipeline.add_module(x)
+            measurements = cpmeas.Measurements()
+            workspace = Workspace(pipeline, x, image_set, object_set, measurements, 
+                                  image_set_list)
+            x.run(workspace)
+            self.assertEqual(measurements.get_current_image_measurement(
+                "Count_my_object"), maximum_object_count)
+            my_objects = object_set.get_objects("my_object")
+            self.assertEqual(np.max(my_objects.segmented), maximum_object_count)
+            self.assertEqual(np.max(my_objects.unedited_segmented), 4)
+        
+    def test_18_02_erase_objects(self):
+        '''Set up a limit on the # of objects and exceed it - erasing objects'''
+        maximum_object_count = 3
+        pixels = np.zeros((20,21))
+        pixels[2:8,2:8] = .5
+        pixels[12:18,2:8] = .5
+        pixels[2:8,12:18] = .5
+        pixels[12:18,12:18] = .5
+        image = cellprofiler.cpimage.Image(pixels)
+        image_set_list = cellprofiler.cpimage.ImageSetList()
+        image_set = image_set_list.get_image_set(0)
+        image_set.add("my_image", image)
+        object_set = cellprofiler.objects.ObjectSet()
+        
+        x = ID.IdentifyPrimAutomatic()
+        x.object_name.value = "my_object"
+        x.image_name.value = "my_image"
+        x.exclude_size.value = False
+        x.unclump_method.value = ID.UN_NONE
+        x.watershed_method.value = ID.WA_NONE
+        x.threshold_method.value = T.TM_MANUAL
+        x.manual_threshold.value = .25
+        x.threshold_correction_factor.value = 1
+        x.limit_choice = ID.LIMIT_ERASE
+        x.maximum_object_count.value = maximum_object_count
+        x.module_num = 1
+        pipeline = cellprofiler.pipeline.Pipeline()
+        pipeline.add_module(x)
+        measurements = cpmeas.Measurements()
+        workspace = Workspace(pipeline, x, image_set, object_set, measurements, 
+                              image_set_list)
+        x.run(workspace)
+        self.assertEqual(measurements.get_current_image_measurement(
+            "Count_my_object"), 0)
+        my_objects = object_set.get_objects("my_object")
+        self.assertTrue(np.all(my_objects.segmented == 0))
+        self.assertEqual(np.max(my_objects.unedited_segmented), 4)
+
+    def test_18_03_dont_erase_objects(self):
+        '''Ask to erase objects, but don't'''
+        maximum_object_count = 5
+        pixels = np.zeros((20,21))
+        pixels[2:8,2:8] = .5
+        pixels[12:18,2:8] = .5
+        pixels[2:8,12:18] = .5
+        pixels[12:18,12:18] = .5
+        image = cellprofiler.cpimage.Image(pixels)
+        image_set_list = cellprofiler.cpimage.ImageSetList()
+        image_set = image_set_list.get_image_set(0)
+        image_set.add("my_image", image)
+        object_set = cellprofiler.objects.ObjectSet()
+        
+        x = ID.IdentifyPrimAutomatic()
+        x.object_name.value = "my_object"
+        x.image_name.value = "my_image"
+        x.exclude_size.value = False
+        x.unclump_method.value = ID.UN_NONE
+        x.watershed_method.value = ID.WA_NONE
+        x.threshold_method.value = T.TM_MANUAL
+        x.manual_threshold.value = .25
+        x.threshold_correction_factor.value = 1
+        x.limit_choice = ID.LIMIT_ERASE
+        x.maximum_object_count.value = maximum_object_count
+        x.module_num = 1
+        pipeline = cellprofiler.pipeline.Pipeline()
+        pipeline.add_module(x)
+        measurements = cpmeas.Measurements()
+        workspace = Workspace(pipeline, x, image_set, object_set, measurements, 
+                              image_set_list)
+        x.run(workspace)
+        self.assertEqual(measurements.get_current_image_measurement(
+            "Count_my_object"), 4)
+        my_objects = object_set.get_objects("my_object")
+        self.assertEqual(np.max(my_objects.segmented), 4)
 
 def add_noise(img, fraction):
     '''Add a fractional amount of noise to an image to make it look real'''

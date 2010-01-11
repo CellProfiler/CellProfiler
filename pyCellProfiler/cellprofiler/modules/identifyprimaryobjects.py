@@ -197,9 +197,13 @@ AUTOMATIC_MAXIMA_SUPPRESSION    = 19
 MANUAL_THRESHOLD_VAR            = 20
 BINARY_IMAGE_VAR                = 21
 
+LIMIT_NONE = "No action"
+LIMIT_TRUNCATE = "Truncate"
+LIMIT_ERASE = "Erase"
+
 class IdentifyPrimaryObjects(cpmi.Identify):
             
-    variable_revision_number = 4
+    variable_revision_number = 5
     category =  "Object Processing"
     module_name = "IdentifyPrimaryObjects"
     
@@ -436,6 +440,31 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             <p>This is the size used when calculating the Laplacian of 
             Gaussian filter. The filter enhances the local maxima of objects 
             whose diameters are roughly the entered number or smaller.""")
+        self.limit_choice = cps.Choice(
+            "How do you want to handle images with large numbers of objects?",
+            [LIMIT_NONE, LIMIT_TRUNCATE, LIMIT_ERASE],
+            doc = """This setting lets you handle images that are segmented
+            into an unreasonable number of objects. This might happen if
+            the module calculates a low threshold or if the image has
+            unusual artifacts. <b>IdentifyPrimaryObjects</b> can handle
+            this condition in one of three ways:
+            <br><ul><li><i>%(LIMIT_NONE)s</i>: don't check for large numbers
+            of objects.</li>
+            <li><i>%(LIMIT_TRUNCATE)s</i>: limit the number of objects.
+            Arbitrarily erase objects to limit the number to the maximum
+            allowed.</li>
+            <li><i>%(LIMIT_ERASE)s</i>: erase all objects if the number of
+            objects exceeds the maximum. This results in an image with
+            no primary objects. This option is a good choice if a large
+            number of objects indicates that the image should not be
+            processed.</li></ul>""" % globals())
+        self.maximum_object_count = cps.Integer(
+            "Maximum # of objects:",
+            value = 500,
+            minval = 2,
+            doc = """This setting limits the number of objects in the
+            image. See the documentation for the setting above this one
+            for details.""")
 
     def settings(self):
         return [self.image_name,self.object_name,self.size_range,
@@ -453,7 +482,8 @@ class IdentifyPrimaryObjects(cpmi.Identify):
                 self.manual_log_threshold,
                 self.two_class_otsu, self.use_weighted_variance,
                 self.assign_middle_to_foreground,
-                self.wants_automatic_log_diameter, self.log_diameter]
+                self.wants_automatic_log_diameter, self.log_diameter,
+                self.limit_choice, self.maximum_object_count]
     
     def upgrade_settings(self, setting_values, variable_revision_number, 
                          module_name, from_matlab):
@@ -549,7 +579,11 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             # Added more LOG options
             setting_values = setting_values + [cps.YES, "5"]
             variable_revision_number = 4
-             
+        
+        if (not from_matlab) and variable_revision_number == 4:
+            # Added # of object limits
+            setting_values = setting_values + [LIMIT_NONE, "500"]
+            variable_revision_number = 5
         return setting_values, variable_revision_number, from_matlab
             
     def visible_settings(self):
@@ -575,7 +609,9 @@ class IdentifyPrimaryObjects(cpmi.Identify):
         vv += [self.should_save_outlines]
         if self.should_save_outlines.value:
             vv += [self.save_outlines]
-        vv += [self.fill_holes]
+        vv += [self.fill_holes, self.limit_choice]
+        if self.limit_choice != LIMIT_NONE:
+            vv += [self.maximum_object_count]
         return vv
     
     def is_interactive(self):
@@ -642,6 +678,18 @@ class IdentifyPrimaryObjects(cpmi.Identify):
         
         # Relabel the image
         labeled_image,object_count = relabel(labeled_image)
+        new_labeled_image, new_object_count = self.limit_object_count(
+            labeled_image, object_count)
+        if new_object_count < object_count:
+            # Add the labels that were filtered out into the border
+            # image.
+            border_excluded_mask = ((border_excluded_labeled_image > 0) |
+                                    ((labeled_image > 0) & 
+                                     (new_labeled_image == 0)))
+            border_excluded_labeled_image = scipy.ndimage.label(border_excluded_mask,
+                                                                np.ones((3,3),bool))[0]
+            object_count = new_object_count
+            labeled_image = new_labeled_image
         #
         # Fill again - sometimes a small object gets filtered out of the
         # middle of a larger object
@@ -710,6 +758,44 @@ class IdentifyPrimaryObjects(cpmi.Identify):
                                 parent_image = image)
             workspace.image_set.add(self.save_outlines.value, out_img)
     
+    def limit_object_count(self, labeled_image, object_count):
+        '''Limit the object count according to the rules
+        
+        labeled_image - image to be limited
+        object_count - check to see if this exceeds the maximum
+        
+        returns a new labeled_image and object count
+        '''
+        if object_count > self.maximum_object_count.value:
+            if self.limit_choice == LIMIT_ERASE:
+                labeled_image = np.zeros(labeled_image.shape, int)
+                object_count = 0
+            elif self.limit_choice == LIMIT_TRUNCATE:
+                #
+                # Pick arbitrary objects, doing so in a repeatable,
+                # but pseudorandom manner.
+                #
+                np.random.seed(np.sum(labeled_image))
+                #
+                # Pick an arbitrary ordering of the label numbers
+                #
+                index = np.random.permutation(object_count) + 1
+                #
+                # Pick only maximum_object_count of them
+                #
+                index = index[:self.maximum_object_count.value]
+                #
+                # Make a vector that maps old object numbers to new
+                #
+                mapping = np.zeros(object_count+1, int)
+                mapping[index] = np.arange(1,len(index)+1)
+                #
+                # Relabel
+                #
+                labeled_image = mapping[labeled_image]
+                object_count = len(index)
+        return labeled_image, object_count
+        
     def smooth_image(self, image, mask,sigma):
         """Apply the smoothing filter to the image"""
         

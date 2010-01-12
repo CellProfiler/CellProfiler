@@ -41,12 +41,13 @@ class ProgressFrame(wx.Frame):
         wx.Frame.__init__(self, *args, **kwds)
         self.Show()
         if wx.Platform == '__WXMAC__' and hasattr(self, 'MacGetTopLevelWindowRef'):
-            from AppKit import NSWindow, NSApp, NSFloatingWindowLevel
-            window_ref = self.MacGetTopLevelWindowRef()
-            print "window_ref =", window_ref
-            nsw = NSWindow.alloc().initWithWindowRef_(window_ref)
-            print "nsw =", nsw
-            nsw.setLevel_(NSFloatingWindowLevel)
+            try:
+                from AppKit import NSWindow, NSApp, NSFloatingWindowLevel
+                window_ref = self.MacGetTopLevelWindowRef()
+                nsw = NSWindow.alloc().initWithWindowRef_(window_ref)
+                nsw.setLevel_(NSFloatingWindowLevel)
+            except ImportError:
+                print "No AppKit module => can't make progress window stay on top."
 
         self.start_time = time.time()
         self.end_times = None

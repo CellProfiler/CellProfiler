@@ -86,7 +86,9 @@ class ScatterPlot(cpm.CPModule):
                                    xscale=self.xscale.value,
                                    yscale=self.yscale.value,
                                    title='%s (cycle %s)'%(self.title.value, workspace.image_set.number+1))
-                
+
+    def run_as_data_tool(self, workspace):
+        self.run(workspace)
     
     def backwards_compatibilize(self, setting_values, variable_revision_number, 
                                 module_name, from_matlab):

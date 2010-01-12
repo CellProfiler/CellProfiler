@@ -525,10 +525,17 @@ class CPFigureFrame(wx.Frame):
                         ylabel='',
                         xscale='linear',
                         yscale='linear',
+                        title='',
                         clear=True):
         """Put a scatterplot into a subplot
         
         x,y - subplot's column and row
+        points - values to plot (a sequence of pairs)
+        xlabel - string label for x axis
+        ylabel - string label for y axis
+        xscale - scaling of the x axis (e.g. 'log' or 'linear')
+        yscale - scaling of the y axis (e.g. 'log' or 'linear')
+        title  - string title for the plot
         """
         self.figure.set_facecolor((1,1,1))
         self.figure.set_edgecolor((1,1,1))
@@ -541,6 +548,7 @@ class CPFigureFrame(wx.Frame):
                             facecolor=(0.0, 0.62, 1.0),
                             edgecolor='none',
                             alpha=0.75)
+        axes.set_title(title)
         axes.set_xlabel(xlabel)
         axes.set_ylabel(ylabel)
         axes.set_xscale(xscale)
@@ -551,8 +559,9 @@ class CPFigureFrame(wx.Frame):
     def subplot_histogram(self, x, y, points,
                           bins=20, 
                           xlabel='',
-                          xscale='linear',
+                          xscale=None,
                           yscale='linear',
+                          title='',
                           clear=True):
         """Put a histogram into a subplot
         
@@ -560,15 +569,16 @@ class CPFigureFrame(wx.Frame):
         points - values to plot
         bins - number of bins to aggregate data in
         xlabel - string label for x axis
-        logx - 
-        logy -
+        xscale - 'log' to log-transform the data
+        yscale - scaling of the y axis (e.g. 'log')
+        title  - string title for the plot
         """
-        self.figure.set_facecolor((1,1,1))
-        self.figure.set_edgecolor((1,1,1))
-        points = np.array(points)
         if clear:
             self.clear_subplot(x, y)
         axes = self.subplot(x, y)
+        self.figure.set_facecolor((1,1,1))
+        self.figure.set_edgecolor((1,1,1))
+        points = np.array(points)
         if xscale=='log':
             points = np.log(self.points)
             xlabel = 'Log(%s)'%(xlabel or '?')
@@ -584,6 +594,86 @@ class CPFigureFrame(wx.Frame):
                           log=(yscale=='log'),
                           alpha=0.75)
         axes.set_xlabel(xlabel)
+        axes.set_title(title)
+        
+        return plot
+
+
+    def subplot_density(self, x, y, points,
+                        gridsize=100,
+                        xlabel='',
+                        ylabel='',
+                        xscale='linear',
+                        yscale='linear',
+                        bins=None, 
+                        cmap='jet',
+                        title='',
+                        clear=True):
+        """Put a histogram into a subplot
+        
+        x,y - subplot's column and row
+        points - values to plot
+        gridsize - x & y bin size for data aggregation
+        xlabel - string label for x axis
+        ylabel - string label for y axis
+        xscale - scaling of the x axis (e.g. 'log' or 'linear')
+        yscale - scaling of the y axis (e.g. 'log' or 'linear')
+        bins - scaling of the color map (e.g. None or 'log', see mpl.hexbin)
+        title  - string title for the plot
+        """
+        if clear:
+            self.clear_subplot(x, y)
+        axes = self.subplot(x, y)
+        self.figure.set_facecolor((1,1,1))
+        self.figure.set_edgecolor((1,1,1))
+        
+        points = np.array(points)
+        
+        # Clip to positives if in log space
+        if xscale == 'log':
+            points = points[(points[:,0]>0)]
+        if yscale == 'log':
+            points = points[(points[:,1]>0)]
+        
+        # nothing to plot?
+        if len(points)==0 or points==[[]]: return
+            
+        axes = self.subplot(x, y)
+        plot = axes.hexbin(points[:, 0], points[:, 1], 
+                           gridsize=gridsize,
+                           xscale=xscale,
+                           yscale=yscale,
+                           bins=bins,
+                           cmap=matplotlib.cm.get_cmap(cmap))
+        cb = self.figure.colorbar(plot)
+        if bins=='log':
+            cb.set_label('log10(N)')
+            
+        axes.set_xlabel(xlabel)
+        axes.set_ylabel(ylabel)
+        axes.set_title(title)
+        
+        xmin = np.nanmin(points[:,0])
+        xmax = np.nanmax(points[:,0])
+        ymin = np.nanmin(points[:,1])
+        ymax = np.nanmax(points[:,1])
+
+        # Pad all sides
+        if xscale=='log':
+            xmin = xmin/1.5
+            xmax = xmax*1.5
+        else:
+            xmin = xmin-(xmax-xmin)/20.
+            xmax = xmax+(xmax-xmin)/20.
+            
+        if yscale=='log':
+            ymin = ymin/1.5
+            ymax = ymax*1.5
+        else:
+            ymin = ymin-(ymax-ymin)/20.
+            ymax = ymax+(ymax-ymin)/20.
+
+        axes.axis([xmin, xmax, ymin, ymax])
         
         return plot
         

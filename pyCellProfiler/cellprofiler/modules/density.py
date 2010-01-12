@@ -1,4 +1,4 @@
-'''scatter.py - the ScatterPlot module
+'''density.py - the DensityPlot module
 
 CellProfiler is distributed under the GNU General Public License.
 See the accompanying file LICENSE for details.
@@ -17,14 +17,14 @@ import numpy as np
 import cellprofiler.cpimage as cpi
 import cellprofiler.cpmodule as cpm
 import cellprofiler.settings as cps
+import matplotlib.cm
 
-
-class ScatterPlot(cpm.CPModule):
+class DensityPlot(cpm.CPModule):
     '''
     SHORT DESCRIPTION:
     Plots stuff.  duh.
     '''
-    module_name = "ScatterPlot"
+    module_name = "DensityPlot"
     category = "Other"
     variable_revision_number = 1
     
@@ -39,13 +39,19 @@ class ScatterPlot(cpm.CPModule):
         self.x_axis = cps.Measurement('Which measurement do you want to plot on the x-axis?', self.get_x_object, 'None')
         self.y_object = cps.ObjectNameSubscriber("From which object do you want to plot measurements on the y-axis?","None")
         self.y_axis = cps.Measurement('Which measurement do you want to plot on the y-axis?', self.get_y_object, 'None')
+        self.gridsize = cps.Integer('What grid size do you want to use?', 100, 1, 1000)
         self.xscale = cps.Choice('How should the X axis be scaled?', ['linear', 'log'], None)
         self.yscale = cps.Choice('How should the Y axis be scaled?', ['linear', 'log'], None)
+        self.bins = cps.Choice('How should the colorbar be scaled?', ['linear', 'log'], None)
+        maps = [m for m in matplotlib.cm.datad.keys() if not m.endswith("_r")]
+        maps.sort()
+        self.colormap = cps.Choice('Which color map do you want to use?', maps, 'jet')
         self.title = cps.Text('Optionally enter a title for this plot.', '')
         
     def settings(self):
         return [self.x_object, self.x_axis, self.y_object, self.y_axis,
-                self.xscale, self.yscale, self.title]
+                self.gridsize, self.xscale, self.yscale, self.bins, 
+                self.colormap, self.title]
 
     def visible_settings(self):
         return self.settings()
@@ -59,13 +65,20 @@ class ScatterPlot(cpm.CPModule):
         for xx, yy in zip(x,y):
             data += [[xx,yy]]
         
+        bins = None
+        if self.bins.value != 'linear':
+            bins = self.bins.value
+            
         if workspace.frame:
             figure = workspace.create_or_find_figure(subplots=(1,1))
-            figure.subplot_scatter(0, 0, data,
+            figure.subplot_density(0, 0, data,
+                                   gridsize=self.gridsize.value,
                                    xlabel=self.x_axis.value,
                                    ylabel=self.y_axis.value,
                                    xscale=self.xscale.value,
                                    yscale=self.yscale.value,
+                                   bins=bins,
+                                   cmap=self.colormap.value,
                                    title='%s (cycle %s)'%(self.title.value, workspace.image_set.number+1))
                 
     

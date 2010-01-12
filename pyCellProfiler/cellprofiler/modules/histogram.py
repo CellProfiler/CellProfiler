@@ -35,9 +35,13 @@ class Histogram(cpm.CPModule):
         self.object = cps.ObjectNameSubscriber("From which object do you want to plot measurements?","None")
         self.x_axis = cps.Measurement('Which measurement do you want to plot?', self.get_object, 'None')
         self.bins = cps.Integer('How many bins do you want?', 100, 1, 1000)
+        self.xscale = cps.Choice('Transform the data?', ['no', 'log'], None)
+        self.yscale = cps.Choice('How should the Y axis be scaled?', ['linear', 'log'], None)
+        self.title = cps.Text('Optionally enter a title for this plot.', '')
         
     def settings(self):
-        return [self.object, self.x_axis, self.bins]
+        return [self.object, self.x_axis, self.bins, self.xscale, self.yscale,
+                self.title]
 
     def visible_settings(self):
         return self.settings()
@@ -49,7 +53,10 @@ class Histogram(cpm.CPModule):
             figure = workspace.create_or_find_figure(subplots=(1,1))
             figure.subplot_histogram(0, 0, x, 
                                      bins=self.bins.value,
-                                     xlabel=self.x_axis.value)
+                                     xlabel=self.x_axis.value,
+                                     xscale=self.xscale.value,
+                                     yscale=self.yscale.value,
+                                     title='%s (cycle %s)'%(self.title.value, workspace.image_set.number+1))
             
     
     def backwards_compatibilize(self, setting_values, variable_revision_number, 

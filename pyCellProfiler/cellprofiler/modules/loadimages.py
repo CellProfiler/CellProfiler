@@ -84,7 +84,7 @@ if has_bioformats:
 else:
     FF = [FF_INDIVIDUAL_IMAGES, FF_STK_MOVIES]
 
-USE_BIOFORMATS_FIRST = [".flex",".stk"]
+USE_BIOFORMATS_FIRST = [".tiff", ".tif", ".flex",".stk"]
 DIR_DEFAULT_IMAGE = 'Default Image Folder'
 DIR_DEFAULT_OUTPUT = 'Default Output Folder'
 DIR_OTHER = 'Elsewhere...'
@@ -1492,7 +1492,7 @@ class LoadImagesImageProvider(cpimage.AbstractImageProvider):
         else:
             # try PIL first, for speed
             try:
-                img = load_using_PIL(self.get_full_name())    
+                img = load_using_PIL(self.get_full_name())
             except:
                 if has_bioformats:
                     img = load_using_bioformats(self.get_full_name())

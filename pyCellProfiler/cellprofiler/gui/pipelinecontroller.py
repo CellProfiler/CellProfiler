@@ -31,6 +31,7 @@ import cellprofiler.gui.moduleview
 from cellprofiler.gui.movieslider import EVT_TAKE_STEP
 import cellprofiler.utilities.get_revision as get_revision
 from progress import ProgressFrame
+from errordialog import display_error_dialog, ED_CONTINUE, ED_STOP
 
 class PipelineController:
     """Controls the pipeline through the UI
@@ -314,9 +315,16 @@ class PipelineController:
                 pass
             if error_msg is None:
                 error_msg = event.error.message
-            message = "Error while processing %s:\n%s\n\nDo you want to stop processing?"%(event.module.module_name,error_msg)
-            if wx.MessageBox(message,"Pipeline error",wx.YES_NO | wx.ICON_ERROR,self.__frame) == wx.NO:
+            message = (("Error while processing %s:\n"
+                        "%s\n\nDo you want to stop processing?") %
+                       (event.module.module_name,error_msg))
+            result = display_error_dialog(self.__frame,
+                                          event.error,
+                                          self.__pipeline,
+                                          message)
+            if result == ED_CONTINUE:
                 event.cancel_run = False
+                
         elif isinstance(event, cellprofiler.pipeline.LoadExceptionEvent):
             if event.module is None:
                 module_name = event.module_name

@@ -143,8 +143,8 @@ class HiddenCount(Setting):
     It should be tied to a sequence variable which gives the number of
     items which is the value for this variable.
     """
-    def __init__(self, sequence):
-        super(HiddenCount,self).__init__("Hidden", str(len(sequence)))
+    def __init__(self, sequence, text = "Hidden"):
+        super(HiddenCount,self).__init__(text, str(len(sequence)))
         self.__sequence = sequence
 
     def set_value(self, value):

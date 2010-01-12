@@ -53,7 +53,7 @@ class TestFilterObjects(unittest.TestCase):
         workspace, module = self.make_workspace({ "my_objects": np.zeros((10,10),int) })
         module.object_name.value = "my_objects"
         module.target_name.value = "my_result"
-        module.measurement.value = "my_measurement"
+        module.measurements[0].measurement.value = "my_measurement"
         module.filter_choice = F.FI_MAXIMAL
         m = workspace.measurements
         m.add_measurement("my_objects","my_measurement",np.zeros((0,)))
@@ -69,7 +69,7 @@ class TestFilterObjects(unittest.TestCase):
         module.object_name.value = "my_objects"
         module.target_name.value = "my_result"
         module.enclosing_object_name.value = "my_enclosing_objects"
-        module.measurement.value = "my_measurement"
+        module.measurements[0].measurement.value = "my_measurement"
         module.filter_choice = F.FI_MAXIMAL_PER_OBJECT
         m = workspace.measurements
         m.add_measurement("my_objects","my_measurement",np.zeros((0,)))
@@ -82,10 +82,10 @@ class TestFilterObjects(unittest.TestCase):
         workspace, module = self.make_workspace({ "my_objects": np.zeros((10,10),int) })
         module.object_name.value = "my_objects"
         module.target_name.value = "my_result"
-        module.measurement.value = "my_measurement"
+        module.measurements[0].measurement.value = "my_measurement"
         module.filter_choice = F.FI_LIMITS
-        module.min_limit.value = 0
-        module.max_limit.value = 1000
+        module.measurements[0].min_limit.value = 0
+        module.measurements[0].max_limit.value = 1000
         m = workspace.measurements
         m.add_measurement("my_objects","my_measurement",np.zeros((0,)))
         module.run(workspace)
@@ -103,7 +103,7 @@ class TestFilterObjects(unittest.TestCase):
         workspace, module = self.make_workspace({ "my_objects": labels })
         module.object_name.value = "my_objects"
         module.target_name.value = "my_result"
-        module.measurement.value = "my_measurement"
+        module.measurements[0].measurement.value = "my_measurement"
         module.filter_choice = F.FI_MINIMAL
         m = workspace.measurements
         m.add_measurement("my_objects","my_measurement",np.array([2,1]))
@@ -126,7 +126,7 @@ class TestFilterObjects(unittest.TestCase):
         workspace, module = self.make_workspace({ "my_objects": labels })
         module.object_name.value = "my_objects"
         module.target_name.value = "my_result"
-        module.measurement.value = "my_measurement"
+        module.measurements[0].measurement.value = "my_measurement"
         module.filter_choice = F.FI_MAXIMAL
         m = workspace.measurements
         m.add_measurement("my_objects","my_measurement",np.array([1,2]))
@@ -149,7 +149,7 @@ class TestFilterObjects(unittest.TestCase):
         module.object_name.value = "my_objects"
         module.target_name.value = "my_result"
         module.enclosing_object_name.value = 'my_enclosing_objects'
-        module.measurement.value = "my_measurement"
+        module.measurements[0].measurement.value = "my_measurement"
         module.filter_choice = F.FI_MINIMAL_PER_OBJECT
         m = workspace.measurements
         m.add_measurement("my_objects","my_measurement",np.array([2,1,3,4]))
@@ -172,7 +172,7 @@ class TestFilterObjects(unittest.TestCase):
         module.object_name.value = "my_objects"
         module.target_name.value = "my_result"
         module.enclosing_object_name.value = 'my_enclosing_objects'
-        module.measurement.value = "my_measurement"
+        module.measurements[0].measurement.value = "my_measurement"
         module.filter_choice = F.FI_MAXIMAL_PER_OBJECT
         m = workspace.measurements
         m.add_measurement("my_objects","my_measurement",np.array([1,2,4,3]))
@@ -199,10 +199,12 @@ class TestFilterObjects(unittest.TestCase):
         workspace, module = self.make_workspace({ "my_objects": labels })
         module.object_name.value = "my_objects"
         module.target_name.value = "my_result"
-        module.measurement.value = "my_measurement"
+        module.measurements[0].measurement.value = "my_measurement"
         module.filter_choice = F.FI_LIMITS
-        module.min_limit.value = my_min
-        module.max_limit.value = my_max
+        module.measurements[0].wants_minimum.value = True
+        module.measurements[0].min_limit.value = my_min
+        module.measurements[0].wants_maximum.value = True
+        module.measurements[0].max_limit.value = my_max
         m = workspace.measurements
         m.add_measurement("my_objects","my_measurement",values)
         module.run(workspace)
@@ -227,11 +229,11 @@ class TestFilterObjects(unittest.TestCase):
         workspace, module = self.make_workspace({ "my_objects": labels })
         module.object_name.value = "my_objects"
         module.target_name.value = "my_result"
-        module.measurement.value = "my_measurement"
+        module.measurements[0].measurement.value = "my_measurement"
         module.filter_choice = F.FI_LIMITS
-        module.min_limit.value = my_min
-        module.max_limit.value = .7
-        module.wants_maximum.value = False
+        module.measurements[0].min_limit.value = my_min
+        module.measurements[0].max_limit.value = .7
+        module.measurements[0].wants_maximum.value = False
         m = workspace.measurements
         m.add_measurement("my_objects","my_measurement",values)
         module.run(workspace)
@@ -256,13 +258,46 @@ class TestFilterObjects(unittest.TestCase):
         workspace, module = self.make_workspace({ "my_objects": labels })
         module.object_name.value = "my_objects"
         module.target_name.value = "my_result"
-        module.measurement.value = "my_measurement"
+        module.measurements[0].measurement.value = "my_measurement"
         module.filter_choice = F.FI_LIMITS
-        module.min_limit.value = .3
-        module.wants_minimum.value = False
-        module.max_limit.value = my_max
+        module.measurements[0].min_limit.value = .3
+        module.measurements[0].wants_minimum.value = False
+        module.measurements[0].max_limit.value = my_max
         m = workspace.measurements
         m.add_measurement("my_objects","my_measurement",values)
+        module.run(workspace)
+        labels = workspace.object_set.get_objects("my_result")
+        self.assertTrue(np.all(labels.segmented==expected))
+        
+    def test_03_04_filter_two(self):
+        '''Filter objects by two measurements'''
+        n = 40
+        labels = np.zeros((10,n*10),int)
+        for i in range(40):
+            labels[2:5,i*10+3:i*10+7] = i+1
+        np.random.seed(0)
+        values = np.zeros((n,2))
+        values = np.random.uniform(size=(n,2))
+        idx = 1
+        my_max = np.array([.7,.5])
+        expected = np.zeros(labels.shape, int)
+        for i, v1,v2 in zip(range(n), values[:,0],values[:,1]):
+            if v1 <= my_max[0] and v2 <= my_max[1]:
+                expected[labels == i+1] = idx
+                idx += 1 
+        workspace, module = self.make_workspace({ "my_objects": labels })
+        module.object_name.value = "my_objects"
+        module.target_name.value = "my_result"
+        module.add_measurement()
+        m = workspace.measurements
+        for i in range(2):
+            measurement_name = "measurement%d" % (i+1)
+            module.measurements[i].measurement.value = measurement_name
+            module.filter_choice = F.FI_LIMITS
+            module.measurements[i].min_limit.value = .3
+            module.measurements[i].wants_minimum.value = False
+            module.measurements[i].max_limit.value = my_max[i]
+            m.add_measurement("my_objects",measurement_name,values[:,i])
         module.run(workspace)
         labels = workspace.object_set.get_objects("my_result")
         self.assertTrue(np.all(labels.segmented==expected))
@@ -291,10 +326,10 @@ class TestFilterObjects(unittest.TestCase):
                                                  "my_alternates": alternates })
         module.object_name.value = "my_objects"
         module.target_name.value = "my_result"
-        module.measurement.value = "my_measurement"
+        module.measurements[0].measurement.value = "my_measurement"
         module.filter_choice = F.FI_LIMITS
-        module.min_limit.value = my_min
-        module.max_limit.value = my_max
+        module.measurements[0].min_limit.value = my_min
+        module.measurements[0].max_limit.value = my_max
         module.add_additional_object()
         module.additional_objects[0].object_name.value="my_alternates"
         module.additional_objects[0].target_name.value = "my_additional_result"
@@ -333,9 +368,9 @@ FilterByObjectMeasurement:[module_num:1|svn_version:\'8913\'|variable_revision_n
         self.assertTrue(isinstance(module, F.FilterByObjectMeasurement))
         self.assertEqual(module.object_name, "MyObjects")
         self.assertEqual(module.target_name, "MyFilteredObjects")
-        self.assertEqual(module.measurement, "Texture_Granulectomy")
+        self.assertEqual(module.measurements[0].measurement, "Texture_Granulectomy")
         self.assertEqual(module.filter_choice, F.FI_LIMITS)
-        self.assertAlmostEqual(module.max_limit.value, 0.85)
+        self.assertAlmostEqual(module.measurements[0].max_limit.value, 0.85)
         self.assertEqual(module.outlines_name, "MyOutlines")
 
     def test_05_01_load_matlab(self):
@@ -410,25 +445,25 @@ Module #3: FilterByObjectMeasurement revision - 6
         self.assertEqual(klo.enclosing_object_name.value, 'FilteredNuclei')
         self.assertEqual(klo.target_name.value, 'TargetObjects')
         self.assertEqual(klo.filter_choice.value, F.FI_MAXIMAL_PER_OBJECT)
-        self.assertEqual(klo.measurement.value, 'AreaShape_Area')
+        self.assertEqual(klo.measurements[0].measurement.value, 'AreaShape_Area')
         self.assertFalse(klo.wants_outlines.value)
         
         self.assertEqual(fbom1.object_name.value,'LargestObjects')
         self.assertEqual(fbom1.target_name.value,'FilteredNuclei')
         self.assertEqual(fbom1.filter_choice.value, F.FI_LIMITS)
-        self.assertEqual(fbom1.measurement.value, 'AreaShape_Perimeter')
-        self.assertTrue(fbom1.wants_minimum.value)
-        self.assertEqual(fbom1.min_limit.value, 200)
-        self.assertFalse(fbom1.wants_maximum.value)
+        self.assertEqual(fbom1.measurements[0].measurement.value, 'AreaShape_Perimeter')
+        self.assertTrue(fbom1.measurements[0].wants_minimum.value)
+        self.assertEqual(fbom1.measurements[0].min_limit.value, 200)
+        self.assertFalse(fbom1.measurements[0].wants_maximum.value)
         self.assertFalse(fbom1.wants_outlines.value)
         
         self.assertEqual(fbom2.object_name.value,'TargetObjects')
         self.assertEqual(fbom2.target_name.value,'FilteredNuclei')
         self.assertEqual(fbom2.filter_choice.value, F.FI_LIMITS)
-        self.assertEqual(fbom2.measurement.value, 'Intensity_MeanIntensity')
-        self.assertFalse(fbom2.wants_minimum.value)
-        self.assertTrue(fbom2.wants_maximum.value)
-        self.assertEqual(fbom2.max_limit.value, .25)
+        self.assertEqual(fbom2.measurements[0].measurement.value, 'Intensity_MeanIntensity')
+        self.assertFalse(fbom2.measurements[0].wants_minimum.value)
+        self.assertTrue(fbom2.measurements[0].wants_maximum.value)
+        self.assertEqual(fbom2.measurements[0].max_limit.value, .25)
         self.assertTrue(fbom2.wants_outlines.value)
         self.assertEqual(fbom2.outlines_name.value, 'OutlineObjects')
         
@@ -819,12 +854,12 @@ Module #3: FilterByObjectMeasurement revision - 6
         module = pipeline.modules()[4]
         self.assertEqual(module.target_name.value, 'FilteredNuclei')
         self.assertEqual(module.object_name.value, 'Nuclei')
-        self.assertEqual(module.measurement.value, 'Intensity_IntegratedIntensity_DNA')
+        self.assertEqual(module.measurements[0].measurement.value, 'Intensity_IntegratedIntensity_DNA')
         self.assertEqual(module.filter_choice.value, F.FI_LIMITS)
-        self.assertTrue(module.wants_minimum.value)
-        self.assertEqual(module.min_limit.value, 300)
-        self.assertTrue(module.wants_maximum.value)
-        self.assertEqual(module.max_limit.value, 500)
+        self.assertTrue(module.measurements[0].wants_minimum.value)
+        self.assertEqual(module.measurements[0].min_limit.value, 300)
+        self.assertTrue(module.measurements[0].wants_maximum.value)
+        self.assertEqual(module.measurements[0].max_limit.value, 500)
         self.assertEqual(len(module.additional_objects), 1)
         self.assertEqual(module.additional_objects[0].object_name.value, 'Cells')
         self.assertEqual(module.additional_objects[0].target_name.value, 'FilteredCells')
@@ -907,7 +942,7 @@ Module #3: FilterByObjectMeasurement revision - 6
         self.assertEqual(module.rules_or_measurement, F.ROM_RULES)
         self.assertEqual(module.rules_directory_choice, F.DIR_DEFAULT_OUTPUT)
         self.assertEqual(module.rules_file_name, "myrules.txt")
-        self.assertEqual(module.measurement, "Intensity_MeanIntensity_DNA_1")
+        self.assertEqual(module.measurements[0].measurement, "Intensity_MeanIntensity_DNA_1")
     
     def test_05_05_load_v3(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
@@ -944,15 +979,173 @@ FilterObjects:[module_num:1|svn_version:\'8955\'|variable_revision_number:3|show
         self.assertEqual(module.rules_or_measurement, F.ROM_MEASUREMENTS)
         self.assertEqual(module.rules_directory_choice, F.DIR_DEFAULT_OUTPUT)
         self.assertEqual(module.rules_file_name, "myrules.txt")
-        self.assertEqual(module.measurement, "Intensity_MeanIntensity_DNA")
+        self.assertEqual(module.measurements[0].measurement, "Intensity_MeanIntensity_DNA")
         self.assertEqual(module.filter_choice, F.FI_MINIMAL)
+    
+    def test_05_06_load_v4(self):
+        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:1
+SVNRevision:9025
+
+LoadImages:[module_num:1|svn_version:\'9020\'|variable_revision_number:4|show_window:True|notes:\x5B\x5D]
+    What type of files are you loading?:individual images
+    How do you want to load these files?:Text-Exact match
+    How many images are there in each group?:3
+    Type the text that the excluded images have in common:Do not use
+    Analyze all subfolders within the selected folder?:No
+    Image location:Default Image Folder
+    Enter the full path to the images:
+    Do you want to check image sets for missing or duplicate files?:Yes
+    Do you want to group image sets by metadata?:No
+    Do you want to exclude certain files?:No
+    What metadata fields do you want to group by?:
+    Type the text that these images have in common (case-sensitive):
+    What do you want to call this image in CellProfiler?:DNA
+    What is the position of this image in each group?:1
+    Do you want to extract metadata from the file name, the subfolder path or both?:None
+    Type the regular expression that finds metadata in the file name\x3A:^(?P<Plate>.*)_(?P<Well>\x5BA-P\x5D\x5B0-9\x5D{2})_s(?P<Site>\x5B0-9\x5D)
+    Type the regular expression that finds metadata in the subfolder path\x3A:.*\x5B\\\\/\x5D(?P<Date>.*)\x5B\\\\/\x5D(?P<Run>.*)$
+
+IdentifyPrimaryObjects:[module_num:2|svn_version:\'9010\'|variable_revision_number:5|show_window:True|notes:\x5B\x5D]
+    Select the input image:DNA
+    Name the identified primary objects:MyObjects
+    Typical diameter of objects, in pixel units (Min,Max)\x3A:10,40
+    Discard objects outside the diameter range?:Yes
+    Try to merge too small objects with nearby larger objects?:No
+    Discard objects touching the border of the image?:Yes
+    Select the thresholding method:Otsu Global
+    Threshold correction factor:1.0
+    Lower and upper bounds on threshold\x3A:0.000000,1.000000
+    Approximate fraction of image covered by objects?:0.01
+    Method to distinguish clumped objects:Intensity
+    Method to draw dividing lines between clumped objects:Intensity
+    Size of smoothing filter\x3A:10
+    Suppress local maxima within this distance\x3A:7
+    Speed up by using lower-resolution image to find local maxima?:Yes
+    Name the outline image:PrimaryOutlines
+    Fill holes in identified objects?:Yes
+    Automatically calculate size of smoothing filter?:Yes
+    Automatically calculate minimum size of local maxima?:Yes
+    Enter manual threshold\x3A:0.0
+    Select binary image\x3A:None
+    Save outlines of the identified objects?:No
+    Calculate the Laplacian of Gaussian threshold automatically?:Yes
+    Enter Laplacian of Gaussian threshold\x3A:0.5
+    Two-class or three-class thresholding?:Two classes
+    Minimize the weighted variance or the entropy?:Weighted variance
+    Assign pixels in the middle intensity class to the foreground or the background?:Foreground
+    Automatically calculate the size of objects for the Laplacian of Gaussian filter?:Yes
+    Enter LoG filter diameter\x3A :5
+    How do you want to handle images with large numbers of objects?:No action
+    Maximum # of objects\x3A:500
+
+IdentifySecondaryObjects:[module_num:3|svn_version:\'9007\'|variable_revision_number:3|show_window:True|notes:\x5B\x5D]
+    Select the input objects:MyObjects
+    Name the identified objects:Cells
+    Select the method to identify the secondary objects:Propagation
+    Select the input image:DNA
+    Select the thresholding method:Otsu Global
+    Threshold correction factor:1.0
+    Lower and upper bounds on threshold\x3A:0.000000,1.000000
+    Approximate fraction of image covered by objects?:0.01
+    Number of pixels by which to expand the primary objects\x3A:10
+    Regularization factor\x3A:0.05
+    Name the outline image:SecondaryOutlines
+    Enter manual threshold\x3A:0.0
+    Select binary image\x3A:None
+    Save outlines of the identified objects?:No
+    Two-class or three-class thresholding?:Two classes
+    Minimize the weighted variance or the entropy?:Weighted variance
+    Assign pixels in the middle intensity class to the foreground or the background?:Foreground
+    Do you want to discard objects that touch the edge of the image?:No
+    Do you want to discard associated primary objects?:No
+    New primary objects name\x3A:FilteredNuclei
+
+IdentifyTertiaryObjects:[module_num:4|svn_version:\'8957\'|variable_revision_number:1|show_window:True|notes:\x5B\x5D]
+    Select the larger identified objects:Cells
+    Select the smaller identified objects:MyObjects
+    Name the identified subregion objects:Cytoplasm
+    Name the outline image:CytoplasmOutlines
+    Retain the outlines for use later in the pipeline (for example, in SaveImages)?:No
+
+MeasureObjectIntensity:[module_num:5|svn_version:\'9000\'|variable_revision_number:3|show_window:True|notes:\x5B\x5D]
+    Hidden:1
+    Select an image to use for intensity measurements:DNA
+    Select objects to measure:MyObjects
+
+FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:4|show_window:True|notes:\x5B\x5D]
+    Name the output objects:MyFilteredObjects
+    Select the object to filter:MyObjects
+    Filter using classifier rules or measurements?:Measurements
+    Select the filtering method:Limits
+    What did you call the objects that contain the filtered objects?:None
+    Retain the outlines of filtered objects for use later in the pipeline (for example, in SaveImages)?:No
+    Name the outline image:FilteredObjects
+    Rules file location:Default input folder
+    Rules folder name:./rules
+    Rules file name:myrules.txt
+    Hidden:2
+    Hidden:2
+    Select the measurement to filter by:Intensity_LowerQuartileIntensity_DNA
+    Filter using a minimum measurement value?:Yes
+    Minimum value:0.2
+    Filter using a maximum measurement value?:No
+    Maximum value:1.5
+    Select the measurement to filter by:Intensity_UpperQuartileIntensity_DNA
+    Filter using a minimum measurement value?:No
+    Minimum value:0.9
+    Filter using a maximum measurement value?:Yes
+    Maximum value:1.8
+    Select additional object to relabel:Cells
+    Name the relabeled objects:FilteredCells
+    Save outlines of relabeled objects?:No
+    Name the outline image:OutlinesFilteredCells
+    Select additional object to relabel:Cytoplasm
+    Name the relabeled objects:FilteredCytoplasm
+    Save outlines of relabeled objects?:No
+    Name the outline image:OutlinesFilteredCytoplasm
+"""
+        pipeline = cpp.Pipeline()
+        def callback(caller,event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO.StringIO(data))
+        self.assertEqual(len(pipeline.modules()), 6)
+        module = pipeline.modules()[-1]
+        self.assertTrue(isinstance(module, F.FilterObjects))
+        self.assertEqual(module.target_name, "MyFilteredObjects")
+        self.assertEqual(module.object_name, "MyObjects")
+        self.assertEqual(module.rules_or_measurement, F.ROM_MEASUREMENTS)
+        self.assertEqual(module.filter_choice, F.FI_LIMITS)
+        self.assertEqual(module.rules_directory_choice, F.DIR_DEFAULT_INPUT)
+        self.assertEqual(module.rules_directory, "./rules")
+        self.assertEqual(module.rules_file_name, "myrules.txt")
+        self.assertEqual(module.measurement_count.value, 2)
+        self.assertEqual(module.additional_object_count.value, 2)
+        self.assertEqual(module.measurements[0].measurement, 
+                         "Intensity_LowerQuartileIntensity_DNA")
+        self.assertTrue(module.measurements[0].wants_minimum)
+        self.assertFalse(module.measurements[0].wants_maximum)
+        self.assertAlmostEqual(module.measurements[0].min_limit.value, 0.2)
+        self.assertAlmostEqual(module.measurements[0].max_limit.value, 1.5)
+        self.assertEqual(module.measurements[1].measurement,
+                         "Intensity_UpperQuartileIntensity_DNA")
+        self.assertFalse(module.measurements[1].wants_minimum)
+        self.assertTrue(module.measurements[1].wants_maximum)
+        self.assertAlmostEqual(module.measurements[1].min_limit.value, 0.9)
+        self.assertAlmostEqual(module.measurements[1].max_limit.value, 1.8)
+        for group, name in zip(module.additional_objects,('Cells','Cytoplasm')):
+            self.assertEqual(group.object_name, name)
+            self.assertEqual(group.target_name, "Filtered%s" % name)
+            self.assertEqual(group.outlines_name, "OutlinesFiltered%s" % name)
+            self.assertFalse(group.wants_outlines)
         
     def test_06_01_get_measurement_columns(self):
         '''Test the get_measurement_columns function'''
         workspace, module = self.make_workspace({ "my_objects": np.zeros((10,10),int) })
         module.object_name.value = "my_objects"
         module.target_name.value = "my_result"
-        module.measurement.value = "my_measurement"
+        module.measurements[0].measurement.value = "my_measurement"
         module.filter_choice = F.FI_MAXIMAL
         m = workspace.measurements
         m.add_measurement("my_objects","my_measurement",np.zeros((0,)))

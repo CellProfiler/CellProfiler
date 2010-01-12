@@ -75,7 +75,7 @@ class FilterObjects(cpm.CPModule):
 
     module_name = 'FilterObjects'
     category = "Object Processing"
-    variable_revision_number = 3
+    variable_revision_number = 4
     
     def create_settings(self):
         '''Create the initial settings and name the module'''
@@ -101,13 +101,15 @@ class FilterObjects(cpm.CPModule):
             a rules file as produced by CellProfiler Analyst. If you choose
             "Rules", you will have to ensure that this pipeline makes every
             measurement in that rules file.""")
-        self.measurement = cps.Measurement('Select the measurement to filter by', 
-                                self.object_name.get_value, "AreaShape_Area", doc = """
-                                See the help of the Measurements modules
-                                for more information on the features measured.""")
-        
         self.spacer_2 = cps.Divider(line=False)
         
+        self.measurements = []
+        self.measurement_count = cps.HiddenCount(self.measurements, 
+                                                 "Measurement count")
+        self.add_measurement(False)
+        self.add_measurement_button = cps.DoSomething(
+            "Add another measurement",
+            "Add", self.add_measurement)
         self.filter_choice = cps.Choice("Select the filtering method", FI_ALL, FI_LIMITS, doc = """
                                 There are five different ways to filter objects:
                                 <ul>
@@ -127,22 +129,6 @@ class FilterObjects(cpm.CPModule):
                                 in each cell).  You do not have to explicitly relate objects before using this module.</li>
                                 <li><i>Minimal per object:</i> Same as Maximal per object, except use minimum to filter.</li>
                                 </ul>""")
-        
-        self.wants_minimum = cps.Binary('Filter using a minimum measurement value?', True, doc = """
-                                <i>(Used if Limits is selected for filtering method)</i><br>
-                                Check this box to filter the objects based on a minimum acceptable object
-                                measurement value. Objects which are greater than or equal to this value
-                                will be retained.""")
-        
-        self.min_limit = cps.Float('Minimum value',0)
-        
-        self.wants_maximum = cps.Binary('Filter using a maximum measurement value?', True, doc = """
-                                <i>(Used if Limits is selected for filtering method)</i><br>
-                                Check this box to filter the objects based on a maximum acceptable object
-                                measurement value. Objects which are less than or equal to this value
-                                will be retained.""")
-        
-        self.max_limit = cps.Float('Maximum value',1)
         
         self.enclosing_object_name = cps.ObjectNameSubscriber('What did you call the objects that contain the filtered objects?','None', doc = """
                                 <i>(Used if a Per-Object filtering method is selected)</i><br>
@@ -184,8 +170,9 @@ class FilterObjects(cpm.CPModule):
                                  pipeline) <br> Choose a name, which will allow the outline image to be 
                                  selected later in the pipeline. Special note on saving images: Using the settings in this module, object outlines can be passed along to the module OverlayOutlines and then saved with the SaveImages module. The identified objects themselves can be passed along to the object processing module ConvertToImage and then saved with the SaveImages module.
 ''')
-        
         self.additional_objects = []
+        self.additional_object_count = cps.HiddenCount(self.additional_objects,
+                                                       "Additional object count")
         self.spacer_3 = cps.Divider(line=False)
         
         self.additional_object_button = cps.DoSomething('Relabel additional objects to match the filtered object?',
@@ -194,6 +181,39 @@ class FilterObjects(cpm.CPModule):
                                 the filtered object. This is useful in making sure that labeling is maintained 
                                 between related objects (e.g., primary and secondary objects) after filtering.""")
     
+    def add_measurement(self, can_delete = True):
+        '''Add another measurement to the filter list'''
+        group = cps.SettingsGroup()
+        group.append("measurement", cps.Measurement(
+            'Select the measurement to filter by', 
+            self.object_name.get_value, "AreaShape_Area", doc = """
+            See the help of the Measurements modules
+            for more information on the features measured."""))
+        
+        group.append("wants_minimum", cps.Binary(
+            'Filter using a minimum measurement value?', True, doc = """
+            <i>(Used if Limits is selected for filtering method)</i><br>
+            Check this box to filter the objects based on a minimum acceptable object
+            measurement value. Objects which are greater than or equal to this value
+            will be retained."""))
+        
+        group.append("min_limit", cps.Float('Minimum value',0))
+        
+        group.append("wants_maximum", cps.Binary(
+            'Filter using a maximum measurement value?', True, doc = """
+            <i>(Used if Limits is selected for filtering method)</i><br>
+            Check this box to filter the objects based on a maximum acceptable object
+            measurement value. Objects which are less than or equal to this value
+            will be retained."""))
+        
+        group.append("max_limit", cps.Float('Maximum value',1))
+        group.append("divider", cps.Divider())
+        self.measurements.append(group)
+        if can_delete:
+            group.append("remover", cps.RemoveSettingButton(
+                "Remove above measurement", "Remove",
+                self.measurements, group))
+        
     def add_additional_object(self):
         group = cps.SettingsGroup()
         group.append("object_name",
@@ -215,24 +235,27 @@ class FilterObjects(cpm.CPModule):
     def prepare_settings(self, setting_values):
         '''Make sure the # of slots for additional objects matches 
            the anticipated number of additional objects'''
-        setting_count = len(setting_values)
-        assert ((setting_count - FIXED_SETTING_COUNT) % 
-                ADDITIONAL_OBJECT_SETTING_COUNT) == 0
-        additional_object_count = ((setting_count - FIXED_SETTING_COUNT) /
-                                   ADDITIONAL_OBJECT_SETTING_COUNT)
+        additional_object_count = int(setting_values[11])
         while len(self.additional_objects) > additional_object_count:
             self.remove_additional_object(self.additional_objects[-1].key)
         while len(self.additional_objects) < additional_object_count:
             self.add_additional_object()
+            
+        measurement_count = int(setting_values[10])
+        while len(self.measurements) > measurement_count:
+            del self.measurements[-1]
+        while len(self.measurements) < measurement_count:
+            self.add_measurement()
 
     def settings(self):
-        result =[self.target_name, self.object_name, self.measurement,
+        result =[self.target_name, self.object_name, self.rules_or_measurement,
                  self.filter_choice, self.enclosing_object_name,
-                 self.wants_minimum, self.min_limit,
-                 self.wants_maximum, self.max_limit,
                   self.wants_outlines, self.outlines_name,
-                  self.rules_or_measurement, self.rules_directory_choice,
-                  self.rules_directory, self.rules_file_name]
+                  self.rules_directory_choice, self.rules_directory, 
+                  self.rules_file_name,
+                  self.measurement_count, self.additional_object_count]
+        for x in self.measurements:
+            result += x.pipeline_settings()
         for x in self.additional_objects:
             result += [x.object_name, x.target_name, x.wants_outlines, x.outlines_name]
         return result
@@ -245,18 +268,27 @@ class FilterObjects(cpm.CPModule):
             if self.rules_directory_choice == DIR_CUSTOM:
                 result += [self.rules_directory]
         else:
-            result += [self.spacer_1, self.measurement, 
-                       self.filter_choice]
-            if self.filter_choice.value in (FI_MINIMAL_PER_OBJECT, 
-                                            FI_MAXIMAL_PER_OBJECT):
-                result.append(self.enclosing_object_name)
+            result += [self.spacer_1, self.filter_choice]
+            if self.filter_choice in (FI_MINIMAL, FI_MAXIMAL):
+                result += [self.measurements[0].measurement,
+                           self.measurements[0].divider]
+            elif self.filter_choice in (FI_MINIMAL_PER_OBJECT, 
+                                        FI_MAXIMAL_PER_OBJECT):
+                result += [self.measurements[0].measurement,
+                           self.enclosing_object_name,
+                           self.measurements[0].divider]
             elif self.filter_choice == FI_LIMITS:
-                result.append(self.wants_minimum)
-                if self.wants_minimum.value:
-                    result.append(self.min_limit)
-                result.append(self.wants_maximum)
-                if self.wants_maximum.value:
-                    result.append(self.max_limit)
+                for i,group in enumerate(self.measurements):
+                    result += [group.measurement, group.wants_minimum]
+                    if group.wants_minimum:
+                        result.append(group.min_limit)
+                    result.append(group.wants_maximum)
+                    if group.wants_maximum.value:
+                        result.append(group.max_limit)
+                    if i > 0:
+                        result += [group.remover]
+                    result += [group.divider]
+                result += [self.add_measurement_button]
         result.append(self.wants_outlines)
         if self.wants_outlines.value:
             result.append(self.outlines_name)
@@ -272,11 +304,13 @@ class FilterObjects(cpm.CPModule):
     def validate_module(self, pipeline):
         '''Make sure that the user has selected some limits when filtering'''
         if (self.rules_or_measurement == ROM_MEASUREMENTS and
-            self.filter_choice == FI_LIMITS and
-            self.wants_minimum.value == False and
-            self.wants_maximum.value == False):
-            raise cps.ValidationError('Please enter a minimum and/or maximum limit for your measurement',
-                                      self.wants_minimum)
+            self.filter_choice == FI_LIMITS):
+            for group in self.measurements:
+                if (group.wants_minimum.value == False and
+                    group.wants_maximum.value == False):
+                    raise cps.ValidationError(
+                        'Please enter a minimum and/or maximum limit for your measurement',
+                        group.wants_minimum)
         if self.rules_or_measurement == ROM_RULES:
             try:
                 self.get_rules()
@@ -417,7 +451,7 @@ class FilterObjects(cpm.CPModule):
         workspace - workspace passed into Run
         src_objects - the Objects instance to be filtered
         '''
-        measurement = self.measurement.value
+        measurement = self.measurements[0].measurement.value
         src_name = self.object_name.value
         values = workspace.measurements.get_current_measurement(src_name,
                                                                 measurement)
@@ -433,7 +467,7 @@ class FilterObjects(cpm.CPModule):
         workspace - workspace passed into Run
         src_objects - the Objects instance to be filtered
         '''
-        measurement = self.measurement.value
+        measurement = self.measurements[0].measurement.value
         src_name = self.object_name.value
         enclosing_name = self.enclosing_object_name.value
         src_objects = workspace.get_objects(src_name)
@@ -478,27 +512,30 @@ class FilterObjects(cpm.CPModule):
         return indexes[1:] if len(indexes)>0 and indexes[0] == 0 else indexes
     
     def keep_within_limits(self, workspace, src_objects):
-        '''Return an array containing the single object to keep
+        '''Return an array containing the indices of objects to keep
         
         workspace - workspace passed into Run
         src_objects - the Objects instance to be filtered
         '''
-        measurement = self.measurement.value
         src_name = self.object_name.value
-        values = workspace.measurements.get_current_measurement(src_name,
-                                                                measurement)
-        low_limit = self.min_limit.value
-        high_limit = self.max_limit.value
-        if self.wants_minimum.value:
-            if self.wants_maximum.value:
-                hits = np.logical_and(values >= low_limit,
-                                      values <= high_limit)
-            else:
-                hits = values >= low_limit
-        elif self.wants_maximum.value:
-            hits = values <= high_limit
-        else:
-            hits = np.ones(values.shape,bool)
+        hits = None
+        m = workspace.measurements
+        for group in self.measurements:
+            measurement = group.measurement.value
+            values = m.get_current_measurement(src_name,
+                                               measurement)
+            if hits is None:
+                hits = np.ones(len(values), bool)
+            elif len(hits) < len(values):
+                temp = np.ones(len(values), bool)
+                temp[~ hits] = False
+                hits = temp
+            low_limit = group.min_limit.value
+            high_limit = group.max_limit.value
+            if group.wants_minimum.value:
+                hits[values < low_limit] = False
+            if group.wants_maximum.value:
+                hits[values > high_limit] = False
         indexes = np.argwhere(hits)[:,0] 
         indexes = indexes + 1
         return indexes
@@ -743,6 +780,28 @@ class FilterObjects(cpm.CPModule):
             setting_values =  (setting_values[:14]+ ["rules.txt"] +
                                setting_values[14:])
             variable_revision_number = 3
+        if (not from_matlab) and variable_revision_number == 3:
+            #
+            # Allowed multiple measurements
+            # Structure changed substantially.
+            #
+            target_name, object_name, measurement, filter_choice, \
+            enclosing_objects, wants_minimum, minimum_value, \
+            wants_maximum, maximum_value, wants_outlines, \
+            outlines_name, rules_or_measurements, rules_directory_choice, \
+            rules_path_name, rules_file_name = setting_values[:15]
+            additional_object_settings = setting_values[15:]
+            additional_object_count = len(additional_object_settings) / 4
+            
+            setting_values = [
+                target_name, object_name, rules_or_measurements,
+                filter_choice, enclosing_objects, wants_outlines,
+                outlines_name, rules_directory_choice, rules_path_name,
+                rules_file_name, "1", str(additional_object_count),
+                measurement, wants_minimum, minimum_value,
+                wants_maximum, maximum_value] + additional_object_settings
+            variable_revision_number = 4
+            
         return setting_values, variable_revision_number, from_matlab
 
 #

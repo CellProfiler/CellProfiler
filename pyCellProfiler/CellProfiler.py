@@ -155,44 +155,44 @@ if options.show_gui:
     from cellprofiler.cellprofilerapp import CellProfilerApp
     App = CellProfilerApp(0)
 
-#
-# Important to go headless ASAP
-#
-import cellprofiler.preferences as cpprefs
-if not options.show_gui:
-    cpprefs.set_headless()
-    # What's there to do but run if you're running headless?
-    # Might want to change later if there's some headless setup 
-    options.run_pipeline = True
-
-from cellprofiler.utilities.get_revision import version
-print "Subversion revision: %d"%version
-if options.run_pipeline and not options.pipeline_filename:
-    raise ValueError("You must specify a pipeline filename to run")
-
-if not options.first_image_set is None:
-    if not options.first_image_set.isdigit():
-        raise ValueError("The --first-image-set option takes a numeric argument")
-    else:
-        image_set_start = int(options.first_image_set)
-else:
-    image_set_start = None
-
-if not options.last_image_set is None:
-    if not options.last_image_set.isdigit():
-        raise ValueError("The --last-image-set option takes a numeric argument")
-    else:
-        image_set_end = int(options.last_image_set)
-else:
-    image_set_end = None
-
-if options.output_directory:
-    cpprefs.set_default_output_directory(options.output_directory)
-
-if options.image_directory:
-    cpprefs.set_default_image_directory(options.image_directory)
-
 try:
+    #
+    # Important to go headless ASAP
+    #
+    import cellprofiler.preferences as cpprefs
+    if not options.show_gui:
+        cpprefs.set_headless()
+        # What's there to do but run if you're running headless?
+        # Might want to change later if there's some headless setup 
+        options.run_pipeline = True
+    
+    from cellprofiler.utilities.get_revision import version
+    print "Subversion revision: %d"%version
+    if options.run_pipeline and not options.pipeline_filename:
+        raise ValueError("You must specify a pipeline filename to run")
+    
+    if not options.first_image_set is None:
+        if not options.first_image_set.isdigit():
+            raise ValueError("The --first-image-set option takes a numeric argument")
+        else:
+            image_set_start = int(options.first_image_set)
+    else:
+        image_set_start = None
+    
+    if not options.last_image_set is None:
+        if not options.last_image_set.isdigit():
+            raise ValueError("The --last-image-set option takes a numeric argument")
+        else:
+            image_set_end = int(options.last_image_set)
+    else:
+        image_set_end = None
+    
+    if options.output_directory:
+        cpprefs.set_default_output_directory(options.output_directory)
+    
+    if options.image_directory:
+        cpprefs.set_default_image_directory(options.image_directory)
+
     if options.show_gui:
         import cellprofiler.gui.cpframe as cpgframe
         if options.pipeline_filename:

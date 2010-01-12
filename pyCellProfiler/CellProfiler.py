@@ -115,6 +115,15 @@ if (not hasattr(sys, 'frozen')) and options.build_extensions:
         compile_scripts += [(os.path.join('cellprofiler','ffmpeg','setup.py'),
                              cellprofiler.ffmpeg.setup)]
     current_directory = os.path.abspath(os.curdir)
+    old_pythonpath = os.getenv('PYTHONPATH', None)
+
+    # if we're using a local site_packages, the subprocesses will need
+    # to be able to find it.
+    if old_pythonpath:
+        os.environ['PYTHONPATH'] = site_packages + ':' + old_pythonpath
+    else:
+        os.environ['PYTHONPATH'] = site_packages
+
     for compile_script, my_module in compile_scripts:
         script_path, script_file = os.path.split(compile_script)
         os.chdir(os.path.join(root, script_path))
@@ -137,6 +146,10 @@ if (not hasattr(sys, 'frozen')) and options.build_extensions:
                                   "build_ext", "-i"])
         p.communicate()
     os.chdir(current_directory)
+    if old_pythonpath:
+        os.environ['PYTHONPATH'] = old_pythonpath
+    else:
+        del os.environ['PYTHONPATH']
 
 if options.show_gui:
     from cellprofiler.cellprofilerapp import CellProfilerApp

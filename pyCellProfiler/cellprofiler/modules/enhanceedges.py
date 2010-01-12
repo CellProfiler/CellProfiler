@@ -51,16 +51,22 @@ class EnhanceEdges(cpm.CPModule):
     variable_revision_number = 2
 
     def create_settings(self):
-        self.image_name = cps.ImageNameSubscriber("Select the input image","None", 
-                                                  doc = '''What did you call the image in which you want to enhance the edges?''')
-        self.output_image_name = cps.ImageNameProvider("Name the output image","EdgedImage",
-                                                    doc = '''What do you want to call the image with edges enhanced?''')
-        self.wants_automatic_threshold = cps.Binary("Automatically calculate the threshold?", True,
-                                                    doc = '''(Only used with the Canny option) <br> 
-                                                    If automatic thresholding is selected, it is done using a three-category
-                                                    Otsu algorithm performed on the Sobel transform of the image.''')
-        self.manual_threshold = cps.Float("Absolute threshold",.2,0,1, doc = '''You can enter a threshold
-        between 0 and 1.''')
+        self.image_name = cps.ImageNameSubscriber(
+            "Select the input image","None", 
+            doc = '''What did you call the image in which you want to enhance the edges?''')
+        self.output_image_name = cps.ImageNameProvider(
+            "Name the output image","EdgedImage",
+            doc = '''What do you want to call the image with edges enhanced?''')
+        self.wants_automatic_threshold = cps.Binary(
+            "Automatically calculate the threshold?", True,
+            doc = '''(Only used with the Canny option) <br> 
+            If automatic thresholding is selected, it is done using a three-category
+            Otsu algorithm performed on the Sobel transform of the image.''')
+        self.manual_threshold = cps.Float(
+            "Absolute threshold",.2,0,1, doc = '''
+            This is the upper cutoff for Canny edges. All Sobel-transformed 
+            pixels with this value or higher will be marked as an edge.
+            You can enter a threshold between 0 and 1.''')
         self.threshold_adjustment_factor = cps.Float(
             "Threshold adjustment factor",1, doc = '''
             This threshold adjustment factor is a multiplier that is applied to
@@ -68,26 +74,27 @@ class EnhanceEdges(cpm.CPModule):
             automatically. An adjustment factor of 1 indicates no adjustment.
             The adjustment factor has no effect on any manually-entered
             threshold.''')
-        self.method = cps.Choice("Select an edge-finding method",
-                                 [M_SOBEL, M_PREWITT, M_ROBERTS,
-                                  M_LOG, M_CANNY], doc = '''There are several methods that can be used to enhance edges:
-                                  <ul><li>Sobel Method: finds edges using the Sobel approximation to the derivative. 
-                                  The Sobel method derives a horizontal and vertical gradient measure and returns the 
-                                  square-root of the sum of the two squared signals.</li>
-                                  <li>Prewitt Method: finds edges using the Prewitt approximation to the derivative.
-                                  It returns edges at those points where the gradient of the image is maximum.</li>
-                                  <li>Roberts Method: finds edges using the Roberts approximation to the derivative. 
-                                  The Roberts method looks for gradients in the diagonal and anti-diagonal directions 
-                                  and returns the square-root of the sum of the two squared signals. The method is fast,
-                                   but it creates diagonal artifacts that may need to be removed by smoothing.</li> 
-                                  <li>LoG Method: This method applies a Laplacian of Gaussian filter to the image 
-                                  and finds zero crossings. </li>
-                                  <li>Canny Method - The Canny method finds edges by looking for local maxima 
-                                  of the gradient of the image. The gradient is calculated using the derivative
-                                   of a Gaussian filter. The method uses two thresholds, to detect strong and weak 
-                                   edges, and includes the weak edges in the output only if they are connected to 
-                                   strong edges. This method is therefore less likely than the others to be fooled 
-                                   by noise, and more likely to detect true weak edges.</li></ul>''')
+        self.method = cps.Choice(
+            "Select an edge-finding method",
+            [M_SOBEL, M_PREWITT, M_ROBERTS,
+             M_LOG, M_CANNY], doc = '''There are several methods that can be used to enhance edges:
+             <ul><li>Sobel Method: finds edges using the Sobel approximation to the derivative. 
+             The Sobel method derives a horizontal and vertical gradient measure and returns the 
+             square-root of the sum of the two squared signals.</li>
+             <li>Prewitt Method: finds edges using the Prewitt approximation to the derivative.
+             It returns edges at those points where the gradient of the image is maximum.</li>
+             <li>Roberts Method: finds edges using the Roberts approximation to the derivative. 
+             The Roberts method looks for gradients in the diagonal and anti-diagonal directions 
+             and returns the square-root of the sum of the two squared signals. The method is fast,
+             but it creates diagonal artifacts that may need to be removed by smoothing.</li> 
+             <li>LoG Method: This method applies a Laplacian of Gaussian filter to the image 
+             and finds zero crossings. </li>
+             <li>Canny Method - The Canny method finds edges by looking for local maxima 
+             of the gradient of the image. The gradient is calculated using the derivative
+             of a Gaussian filter. The method uses two thresholds, to detect strong and weak 
+             edges, and includes the weak edges in the output only if they are connected to 
+             strong edges. This method is therefore less likely than the others to be fooled 
+             by noise, and more likely to detect true weak edges.</li></ul>''')
         self.direction = cps.Choice("Select edge direction to enhance",
                                     [ E_ALL, E_HORIZONTAL, E_VERTICAL], doc = '''(Only used for Prewitt and Sobel methods) <br> 
                                     This is the direction of the edges
@@ -95,8 +102,15 @@ class EnhanceEdges(cpm.CPModule):
                                     or both).''')
         self.wants_automatic_sigma = cps.Binary("Calculate Gaussian's sigma automatically?", True)
         self.sigma = cps.Float("Gaussian's sigma value", 10)
-        self.wants_automatic_low_threshold = cps.Binary("Calculate value for low threshold automatically?", True)
-        self.low_threshold = cps.Float("Low threshold value",.1,0,1)
+        self.wants_automatic_low_threshold = cps.Binary(
+            "Calculate value for low threshold automatically?", True, 
+            doc="""Automatically calculate the low / soft threshold cutoff for
+            the Canny method""")
+        self.low_threshold = cps.Float(
+            "Low threshold value",.1,0,1,
+            doc="""This is the soft threshold cutoff for the Canny method.
+            The Canny method will mark all Sobel-transformed pixels with values
+            below this threshold as not being edges.""")
 
     def settings(self):
         return [self.image_name, self.output_image_name, 

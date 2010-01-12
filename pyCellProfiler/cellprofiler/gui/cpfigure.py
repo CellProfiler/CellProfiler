@@ -519,7 +519,74 @@ class CPFigureFrame(wx.Frame):
         table.auto_set_font_size(False)
         table.set_fontsize(cpprefs.get_table_font_size())
         # table.set_fontfamily(cpprefs.get_table_font_name())
-    
+        
+    def subplot_scatter(self, x, y, points, 
+                        xlabel='',
+                        ylabel='',
+                        xscale='linear',
+                        yscale='linear',
+                        clear=True):
+        """Put a scatterplot into a subplot
+        
+        x,y - subplot's column and row
+        """
+        self.figure.set_facecolor((1,1,1))
+        self.figure.set_edgecolor((1,1,1))
+        points = np.array(points)
+        if clear:
+            self.clear_subplot(x, y)
+
+        axes = self.subplot(x, y)
+        plot = axes.scatter(points[:,0], points[:,1],
+                            facecolor=(0.0, 0.62, 1.0),
+                            edgecolor='none',
+                            alpha=0.75)
+        axes.set_xlabel(xlabel)
+        axes.set_ylabel(ylabel)
+        axes.set_xscale(xscale)
+        axes.set_yscale(yscale)
+        
+        return plot
+        
+    def subplot_histogram(self, x, y, points,
+                          bins=20, 
+                          xlabel='',
+                          xscale='linear',
+                          yscale='linear',
+                          clear=True):
+        """Put a histogram into a subplot
+        
+        x,y - subplot's column and row
+        points - values to plot
+        bins - number of bins to aggregate data in
+        xlabel - string label for x axis
+        logx - 
+        logy -
+        """
+        self.figure.set_facecolor((1,1,1))
+        self.figure.set_edgecolor((1,1,1))
+        points = np.array(points)
+        if clear:
+            self.clear_subplot(x, y)
+        axes = self.subplot(x, y)
+        if xscale=='log':
+            points = np.log(self.points)
+            xlabel = 'Log(%s)'%(xlabel or '?')
+        # hist apparently doesn't like nans, need to preen them out first
+        self.points = points[~ np.isnan(points)]
+        # nothing to plot?
+        if len(points)==0 or points==[[]]: return
+        
+        axes = self.subplot(x, y)
+        plot = axes.hist(points, bins, 
+                          facecolor=(0.0, 0.62, 1.0), 
+                          edgecolor='none',
+                          log=(yscale=='log'),
+                          alpha=0.75)
+        axes.set_xlabel(xlabel)
+        
+        return plot
+        
 def renumber_labels_for_display(labels):
     """Scramble the label numbers randomly to make the display more discernable
     

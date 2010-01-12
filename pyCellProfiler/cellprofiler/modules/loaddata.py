@@ -345,7 +345,11 @@ class LoadData(cpm.CPModule):
     def prepare_run(self, pipeline, image_set_list, frame):
         '''Load the CSV file at the outset and populate the image set list'''
         if pipeline.in_batch_mode():
-            return True
+            if os.path.exists(self.csv_path):
+                return True
+            raise ValueError(('''Can't find the CSV file, "%s". ''' 
+                              '''Please check that the name matches exactly, '''
+                              '''including the case''') % self.csv_path)
         fd = open(self.csv_path, 'rb')
         reader = csv.reader(fd)
         header = [header_to_column(column) for column in reader.next()]

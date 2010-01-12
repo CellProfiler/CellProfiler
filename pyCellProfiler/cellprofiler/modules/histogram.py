@@ -1,4 +1,4 @@
-'''scatter.py - the ScatterPlot module
+'''histogram.py - the Histogram module
 
 CellProfiler is distributed under the GNU General Public License.
 See the accompanying file LICENSE for details.
@@ -32,12 +32,25 @@ class Histogram(cpm.CPModule):
         return self.object.value
     
     def create_settings(self):
-        self.object = cps.ObjectNameSubscriber("From which object do you want to plot measurements?","None")
-        self.x_axis = cps.Measurement('Which measurement do you want to plot?', self.get_object, 'None')
-        self.bins = cps.Integer('How many bins do you want?', 100, 1, 1000)
-        self.xscale = cps.Choice('Transform the data?', ['no', 'log'], None)
-        self.yscale = cps.Choice('How should the Y axis be scaled?', ['linear', 'log'], None)
-        self.title = cps.Text('Optionally enter a title for this plot.', '')
+        # XXX: Need docs
+        self.object = cps.ObjectNameSubscriber(
+            'From which object do you want to plot measurements?','None',
+            doc=''' ''')
+        self.x_axis = cps.Measurement(
+            'Which measurement do you want to plot?', self.get_object, 'None',
+            doc=''' ''')
+        self.bins = cps.Integer(
+            'How many bins do you want?', 100, 1, 1000,
+            doc=''' ''')
+        self.xscale = cps.Choice(
+            'Transform the data?', ['no', 'log'], None,
+            doc=''' ''')
+        self.yscale = cps.Choice(
+            'How should the Y axis be scaled?', ['linear', 'log'], None,
+            doc=''' ''')
+        self.title = cps.Text(
+            'Optionally enter a title for this plot.', '',
+            doc=''' ''')
         
     def settings(self):
         return [self.object, self.x_axis, self.bins, self.xscale, self.yscale,

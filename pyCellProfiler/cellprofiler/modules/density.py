@@ -35,18 +35,39 @@ class DensityPlot(cpm.CPModule):
         return self.y_object.value
     
     def create_settings(self):
-        self.x_object = cps.ObjectNameSubscriber("From which object do you want to plot measurements on the x-axis?","None")
-        self.x_axis = cps.Measurement('Which measurement do you want to plot on the x-axis?', self.get_x_object, 'None')
-        self.y_object = cps.ObjectNameSubscriber("From which object do you want to plot measurements on the y-axis?","None")
-        self.y_axis = cps.Measurement('Which measurement do you want to plot on the y-axis?', self.get_y_object, 'None')
-        self.gridsize = cps.Integer('What grid size do you want to use?', 100, 1, 1000)
-        self.xscale = cps.Choice('How should the X axis be scaled?', ['linear', 'log'], None)
-        self.yscale = cps.Choice('How should the Y axis be scaled?', ['linear', 'log'], None)
-        self.bins = cps.Choice('How should the colorbar be scaled?', ['linear', 'log'], None)
-        maps = [m for m in matplotlib.cm.datad.keys() if not m.endswith("_r")]
+        # Need docs
+        self.x_object = cps.ObjectNameSubscriber(
+            'From which object do you want to plot measurements on the x-axis?','None',
+            doc=''' ''')
+        self.x_axis = cps.Measurement(
+            'Which measurement do you want to plot on the x-axis?', self.get_x_object, 'None',
+            doc=''' ''')
+        self.y_object = cps.ObjectNameSubscriber(
+            'From which object do you want to plot measurements on the y-axis?','None',
+            doc=''' ''')
+        self.y_axis = cps.Measurement(
+            'Which measurement do you want to plot on the y-axis?', self.get_y_object, 'None',
+            doc=''' ''')
+        self.gridsize = cps.Integer(
+            'What grid size do you want to use?', 100, 1, 1000,
+            doc=''' ''')
+        self.xscale = cps.Choice(
+            'How should the X axis be scaled?', ['linear', 'log'], None,
+            doc=''' ''')
+        self.yscale = cps.Choice(
+            'How should the Y axis be scaled?', ['linear', 'log'], None,
+            doc=''' ''')
+        self.bins = cps.Choice(
+            'How should the colorbar be scaled?', ['linear', 'log'], None,
+            doc=''' ''')
+        maps = [m for m in matplotlib.cm.datad.keys() if not m.endswith('_r')]
         maps.sort()
-        self.colormap = cps.Choice('Which color map do you want to use?', maps, 'jet')
-        self.title = cps.Text('Optionally enter a title for this plot.', '')
+        self.colormap = cps.Choice(
+            'Which color map do you want to use?', maps, 'jet',
+            doc=''' ''')
+        self.title = cps.Text(
+            'Optionally enter a title for this plot.', '',
+            doc=''' ''')
         
     def settings(self):
         return [self.x_object, self.x_axis, self.y_object, self.y_axis,

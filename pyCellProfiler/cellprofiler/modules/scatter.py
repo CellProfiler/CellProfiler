@@ -35,13 +35,32 @@ class ScatterPlot(cpm.CPModule):
         return self.y_object.value
     
     def create_settings(self):
-        self.x_object = cps.ObjectNameSubscriber("From which object do you want to plot measurements on the x-axis?","None")
-        self.x_axis = cps.Measurement('Which measurement do you want to plot on the x-axis?', self.get_x_object, 'None')
-        self.y_object = cps.ObjectNameSubscriber("From which object do you want to plot measurements on the y-axis?","None")
-        self.y_axis = cps.Measurement('Which measurement do you want to plot on the y-axis?', self.get_y_object, 'None')
-        self.xscale = cps.Choice('How should the X axis be scaled?', ['linear', 'log'], None)
-        self.yscale = cps.Choice('How should the Y axis be scaled?', ['linear', 'log'], None)
-        self.title = cps.Text('Optionally enter a title for this plot.', '')
+        # XXX: Need docs
+        self.x_object = cps.ObjectNameSubscriber(
+            'From which object do you want to plot measurements on the x-axis?',
+            'None', 
+            doc=''' ''')
+        self.x_axis = cps.Measurement(
+            'Which measurement do you want to plot on the x-axis?', 
+            self.get_x_object, 'None', 
+            doc=''' ''')
+        self.y_object = cps.ObjectNameSubscriber(
+            'From which object do you want to plot measurements on the y-axis?',
+            'None', 
+            doc=''' ''')
+        self.y_axis = cps.Measurement(
+            'Which measurement do you want to plot on the y-axis?', 
+            self.get_y_object, 'None',
+            doc=''' ''')
+        self.xscale = cps.Choice(
+            'How should the X axis be scaled?', ['linear', 'log'], None,
+            doc=''' ''')
+        self.yscale = cps.Choice(
+            'How should the Y axis be scaled?', ['linear', 'log'], None,
+            doc=''' ''')
+        self.title = cps.Text(
+            'Optionally enter a title for this plot.', '',
+            doc=''' ''')
         
     def settings(self):
         return [self.x_object, self.x_axis, self.y_object, self.y_axis,

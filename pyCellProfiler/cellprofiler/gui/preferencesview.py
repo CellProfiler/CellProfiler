@@ -57,15 +57,34 @@ class PreferencesView:
         text_static = wx.StaticText(panel,-1,string.capitalize(text)+':')
         edit_box = wx.TextCtrl(panel,-1)
         edit_box.SetValue(value)
-        browse_button = wx.Button(panel,-1,'Browse...')
+        browse_bmp = wx.ArtProvider.GetBitmap(wx.ART_FOLDER_OPEN,
+                                              wx.ART_CMN_DIALOG,
+                                              (16,16))
+        browse_button = wx.BitmapButton(panel,-1,bitmap = browse_bmp)
+        browse_button.SetToolTipString("Browse for %s folder" % text)
+        
+        new_bmp = wx.ArtProvider.GetBitmap(wx.ART_NEW_DIR,
+                                           wx.ART_CMN_DIALOG,
+                                           (16,16))
+        new_button = wx.BitmapButton(panel,-1,bitmap=new_bmp)
+        new_button.SetToolTipString("Make a new sub-folder")
         sizer.AddMany([(help_button,0,wx.ALL,1),
                        (text_static,0,wx.EXPAND,1),
                        (edit_box,3,wx.EXPAND|wx.ALL,1),
-                       (browse_button,0,0|wx.ALL,1)])
+                       (browse_button,0,0|wx.ALL,1),
+                       (new_button,0,0|wx.ALL,1)])
         panel.SetSizer(sizer)
+        def on_new_folder(event):
+            if os.path.exists(edit_box.Value):
+                return
+            if wx.MessageBox("Do you really want to create the %s folder?" %
+                             edit_box.Value,style=wx.YES_NO) == wx.YES:
+                os.makedirs(edit_box.Value)
+                self.__on_edit_box_change(event, edit_box, text, actions)                
         panel.Bind(wx.EVT_BUTTON, lambda event: self.__on_help(event, helpfile))
         panel.Bind(wx.EVT_BUTTON, lambda event: self.__on_browse(event, edit_box, text), browse_button)
         panel.Bind(wx.EVT_TEXT, lambda event: self.__on_edit_box_change(event, edit_box, text, actions), edit_box)
+        panel.Bind(wx.EVT_BUTTON, on_new_folder, new_button)
         return edit_box
     
     def __make_odds_and_ends_panel(self):

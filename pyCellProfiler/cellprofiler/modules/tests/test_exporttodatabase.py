@@ -1192,4 +1192,15 @@ ExportToDatabase:[module_num:2|svn_version:\'8947\'|variable_revision_number:12|
             if hasattr(module, "connection"):
                 module.connection.close()
             finally_fn()
+            
+    def test_04_01_stable_column_mapper(self):
+        '''Make sure the column mapper always yields the same output'''
+        mapping = E.ColumnNameMapping()
+        k1 = 'abcdefghijkABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABC'
+        k2 = 'ebcdefghijkABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABC'
+        mapping.add(k1)
+        mapping.add(k2)
+        mapping.do_mapping()
+        self.assertEqual(mapping[k1],'bcdefghijkABCEFGHIJABCDEGIJABCEFGHIJABCDEFIJBCDEHIJABCDEFGHIJABC')
+        self.assertEqual(mapping[k2],'bABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABC')
         

@@ -54,6 +54,7 @@ __version__="$Revision$"
 
 import csv
 import datetime
+import hashlib
 import numpy as np
 import os
 import random
@@ -1548,6 +1549,7 @@ class ColumnNameMapping:
         """Scan the dictionary for feature names > max_len and shorten"""
         reverse_dictionary = {}
         problem_names = []
+        seeded_random = False
         valid_name_regexp = "^[0-9a-zA-Z_$]+$"
         for key,value in self.__dictionary.iteritems():
             reverse_dictionary[value] = key
@@ -1585,14 +1587,35 @@ class ColumnNameMapping:
                                 break
                     if remove_count == to_remove:
                         break
-    
+                
+                rng = None
                 while name in reverse_dictionary.keys():
                     # if, improbably, removing the vowels hit an existing name
-                    # try deleting random characters
+                    # try deleting "random" characters. This has to be
+                    # done in a very repeatable fashion, so I use a message
+                    # digest to initialize a random # generator and then
+                    # rehash the message digest to get the next
+                    if rng is None:
+                        rng = random_number_generator(starting_name)
                     name = starting_name
                     while len(name) > self.__max_len:
-                        index = int(random.uniform(0,len(name)))
+                        index = rng.next() % len(name)
                         name = name[:index]+name[index+1:]
             reverse_dictionary.pop(orig_name)
             reverse_dictionary[name] = key
             self.__dictionary[key] = name
+
+def random_number_generator(seed):
+    '''This is a very repeatable pseudorandom number generator
+    
+    seed - a string to seed the generator
+    
+    yields integers in the range 0-65535 on iteration
+    '''
+    m = hashlib.md5()
+    m.update(seed)
+    while True:
+        digest = m.digest()
+        m.update(digest)
+        yield ord(digest[0]) + 256 * ord(digest[1])
+    

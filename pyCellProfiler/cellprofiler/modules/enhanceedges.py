@@ -61,8 +61,13 @@ class EnhanceEdges(cpm.CPModule):
                                                     Otsu algorithm performed on the Sobel transform of the image.''')
         self.manual_threshold = cps.Float("Absolute threshold",.2,0,1, doc = '''You can enter a threshold
         between 0 and 1.''')
-        self.threshold_adjustment_factor = cps.Float("Threshold adjustment factor",1, doc = '''
-                                An adjustment factor of 1 indicates no adjustment.''')
+        self.threshold_adjustment_factor = cps.Float(
+            "Threshold adjustment factor",1, doc = '''
+            This threshold adjustment factor is a multiplier that is applied to
+            both the lower and upper Canny thresholds if they are calculated
+            automatically. An adjustment factor of 1 indicates no adjustment.
+            The adjustment factor has no effect on any manually-entered
+            threshold.''')
         self.method = cps.Choice("Select an edge-finding method",
                                  [M_SOBEL, M_PREWITT, M_ROBERTS,
                                   M_LOG, M_CANNY], doc = '''There are several methods that can be used to enhance edges:
@@ -102,11 +107,6 @@ class EnhanceEdges(cpm.CPModule):
 
     def visible_settings(self):
         settings = [self.image_name, self.output_image_name]
-        if self.method == M_CANNY:
-            settings += [self.wants_automatic_threshold]
-            if not self.wants_automatic_threshold.value:
-                settings += [self.manual_threshold]
-            settings += [self.threshold_adjustment_factor]
         settings += [self.method]
         if self.method in (M_SOBEL, M_PREWITT):
             settings += [self.direction]
@@ -115,9 +115,15 @@ class EnhanceEdges(cpm.CPModule):
             if not self.wants_automatic_sigma.value:
                 settings += [self.sigma]
         if self.method == M_CANNY:
+            settings += [self.wants_automatic_threshold]
+            if not self.wants_automatic_threshold.value:
+                settings += [self.manual_threshold]
             settings += [self.wants_automatic_low_threshold]
             if not self.wants_automatic_low_threshold.value:
                 settings += [self.low_threshold]
+            if (self.wants_automatic_threshold or 
+                self.wants_automatic_low_threshold):
+                settings += [self.threshold_adjustment_factor]
         return settings
     
     def run(self, workspace):

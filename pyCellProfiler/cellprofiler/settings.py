@@ -477,11 +477,11 @@ class IntegerOrUnboundedRange(Setting):
     def get_display_max(self):
         """What to display for the maximum"""
         if self.unbounded_max:
-            return "0"
+            return END
         elif self.max is not None:
             return str(abs(self.max))
         else:
-            return str(self.max).split(',')[1]
+            return str(self).split(',')[1]
     display_max = property(get_display_max)
     
     def test_valid(self, pipeline):

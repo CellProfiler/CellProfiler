@@ -80,10 +80,10 @@ class CorrectIllumination_Apply(cpm.CPModule):
                                         [DOS_DIVIDE, DOS_SUBTRACT], doc = '''
                                         This choice depends on how the illumination function was calculated
                                         and on your physical model of how illumination variation affects the background of images relative to 
-                                        the objects in images, and is also somewhat empirical. <ul><li>Subtract: Use <i>Subtract</i> if the background signal is significant relative to the real signal
+                                        the objects in images, and is also somewhat empirical. <ul><li>Select <i>Subtract</i> if the background signal is significant relative to the real signal
                                         coming from the cells.  If you created the illumination correction function using <i>Background</i>,
-                                        then you will want to choose <i>Subtract</i> here.</li><li>Divide: Use <i>Divide</i> if the the signal to background ratio 
-                                        is quite high (the cells are stained very strongly).  If you created the illumination correction function using <i>Regular</i>,
+                                        then you will want to choose <i>Subtract</i> here.</li><li>Select <i>Divide</i> if the the signal to background ratio 
+                                        is high (the cells are stained very strongly). If you created the illumination correction function using <i>Regular</i>,
                                         then you will want to choose <i>Divide</i> here.</ul>''')
         
         rescale_option = cps.Choice("Select the rescaling method",
@@ -93,7 +93,7 @@ class CorrectIllumination_Apply(cpm.CPModule):
                                     range (0 to 1).  However, if the image is not in this range, or the intensity gradient within the image is still very great,
                                     you may want to rescale the image.  There are two methods for rescaling:<ul><li>Stretch the image from 0 to 1.<li>Match the maximum of the corrected image
                                     to the maximum of the original image.</li></ul>
-Rescaling is only necessary when using the <i>Divide</i> method (because in the  <i>Subtract</i> method, any pixels that end up negative are set to zero, so no rescaling is necessary). ''')
+Rescaling is only necessary when using the <i>Divide</i> method (because in the <i>Subtract</i> method, any resulting negative pixels are set to zero, so no rescaling is necessary). ''')
         image_settings = cps.SettingsGroup()
         image_settings.append("image_name", image_name)
         image_settings.append("corrected_image_name", corrected_image_name)

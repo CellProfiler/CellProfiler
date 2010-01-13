@@ -107,11 +107,11 @@ class Identify(cellprofiler.cpmodule.CPModule):
             The threshold affects the stringency of the lines between the objects 
             and the background. You can have the threshold automatically calculated 
             using several methods, or you can enter an absolute number between 0 
-            and 1 for the threshold (to see the pixel intensities for your images 
+            and 1 for the threshold. (To see the pixel intensities for your images 
             in the appropriate range of 0 to 1, use <i>Tools &gt; Show pixel data</i> 
-            in a window showing your image). There are advantages either way. 
+            in a window showing your image.) Both options have advantages. 
             An absolute number treats every image identically, but is not robust 
-            to slight changes in lighting/staining conditions between images. An
+            with regard to slight changes in lighting/staining conditions between images. An
             automatically calculated threshold adapts to changes in
             lighting/staining conditions between images and is usually more
             robust/accurate, but it can occasionally produce a poor threshold for
@@ -125,7 +125,7 @@ class Identify(cellprofiler.cpmodule.CPModule):
             
             <p>There are six methods for finding thresholds automatically:
             <ul><li><i>Otsu:</i> This method is probably best if you don't know 
-            anything about the image, or if the percent of the image covered by 
+            anything about the image, or if the percentage of the image covered by 
             objects varies substantially from image to image. Our implementation 
             takes into account the max and min values in the image and log-transforming the
             image prior to calculating the threshold. If you know that the object 
@@ -159,7 +159,7 @@ class Identify(cellprofiler.cpmodule.CPModule):
             background of the image. </li>
             <li><i>Robust background:</i> This method trims the brightest and 
             dimmest 5% of pixel intensities in the hopes that the remaining pixels 
-            represent a gaussian of intensity values that are mostly background 
+            represent a Gaussian of intensity values that are mostly background 
             pixels. It then calculates the mean and standard deviation of the 
             remaining pixels and calculates the threshold as the mean + 2 times 
             the standard deviation.</li>
@@ -167,8 +167,8 @@ class Identify(cellprofiler.cpmodule.CPModule):
             often very similar to Otsu's - according to
             Sezgin and Sankur's paper (<i>Journal of Electronic Imaging</i>, 2004), Otsu's 
             overall quality on testing 40 nondestructive testing images is slightly 
-            better than Ridler's (Average error - Otsu: 0.318, Ridler: 0.401). 
-            It chooses an initial threshold, and then iteratively calculates the next 
+            better than Ridler's (average error: Otsu: 0.318, Ridler: 0.401). 
+            It chooses an initial threshold and then iteratively calculates the next 
             one by taking the mean of the average intensities of the background and 
             foreground pixels determined by the first threshold, repeating this until 
             the threshold converges.</li>
@@ -190,14 +190,14 @@ class Identify(cellprofiler.cpmodule.CPModule):
             threshold for each parent object. This is especially helpful, for
             example, when the background brightness varies substantially among the
             parent objects. 
-            <p>Important: the per-object method requires that you run an
+            <br>Important: the per-object method requires that you run an
             <b>IdentifyPrimAutomatic</b> module to identify the parent objects upstream in the
             pipeline. After the parent objects are identified in the pipeline, you
             must then also run a <b>Crop</b> module with the following inputs: 
             <ul>
             <li>The input image is the image containing the sub-objects to be identified.</li>
             <li>Select <i>Objects</i> as the shape to crop into.</li>
-            <li>Select the parent objects (e.g., Nuclei) as the objects to use as a cropping mask.</li>
+            <li>Select the parent objects (e.g., <i>Nuclei</i>) as the objects to use as a cropping mask.</li>
             </ul>
             Finally, in the <b>IdentifyPrimAutomatic</b> module, select the cropped image as input image.</ul>
             
@@ -232,14 +232,14 @@ class Identify(cellprofiler.cpmodule.CPModule):
             'Approximate fraction of image covered by objects?', 
             ['0.01','0.1','0.2','0.3', '0.4','0.5','0.6','0.7', '0.8','0.9',
              '0.99'], doc="""\
-            <i>(Only used when applying the Mixture of Gaussian thresholding method)</i>
-            <p>An estimate of how much of the image is covered with objects, which
+            <i>(Used only when applying the Mixture of Gaussian thresholding method)</i><br>
+            An estimate of how much of the image is covered with objects, which
             is used to estimate the distribution of pixel intensities.""")
         
         self.manual_threshold = cps.Float("Enter manual threshold:", 
                                           value=0.0, minval=0.0, maxval=1.0,doc="""\
-            <i>(Only used if Manual selected for thresholding method)</i>
-            <p>Enter the value that will act as an absolute threshold for the image""")
+            <i>(Used only if Manual selected for thresholding method)</i><br>
+            Enter the value that will act as an absolute threshold for the image""")
         
         self.binary_image = cps.ImageNameSubscriber(
             "Select binary image:", "None", doc = """What is the binary thresholding image?""")
@@ -247,8 +247,8 @@ class Identify(cellprofiler.cpmodule.CPModule):
         self.two_class_otsu = cps.Choice(
             'Two-class or three-class thresholding?',
             [O_TWO_CLASS, O_THREE_CLASS],doc="""
-            <i>(Only used for the Otsu thresholding method)</i> 
-            <p>Select <i>Two</i> if the grayscale levels are readily distinguishable into foregound 
+            <i>(Used only for the Otsu thresholding method)</i> <br>
+            Select <i>Two</i> if the grayscale levels are readily distinguishable into foregound 
             (i.e., objects) and background. Select <i>Three</i> if there is an 
             middle set of grayscale levels which belong to neither the
             foreground nor background. 
@@ -268,8 +268,8 @@ class Identify(cellprofiler.cpmodule.CPModule):
         self.assign_middle_to_foreground = cps.Choice(
             'Assign pixels in the middle intensity class to the foreground '
             'or the background?', [O_FOREGROUND, O_BACKGROUND],doc="""
-            <i>Only used for the Otsu thresholding method with three-class thresholding)</i>
-            <p>Select whether you want the middle grayscale intensities to be assigned 
+            <i>(Used only for the Otsu thresholding method with three-class thresholding)</i><br>
+            Select whether you want the middle grayscale intensities to be assigned 
             to the foreground pixels or the background pixels.""")
     
     def get_threshold_visible_settings(self):

@@ -1,13 +1,12 @@
 '''<b>Define Grid</b> produces a grid of desired specifications either manually, or
-automatically based on previously identified objects.
+automatically based on previously identified objects
 <hr>
 This module defines the location of a grid that can be used by modules
-downstream. When used in combination with <b>IdentifyObjectsInGrid</b>, it
-allows the measurement of the size, shape, intensity and texture of each
+downstream. You can use it in combination with <b>IdentifyObjectsInGrid</b> to measure the size, shape, intensity and texture of each
 object or location in a grid. The grid is defined by the location of marker spots
-(control spots) in the grid, which are either indicated manually or are
-found automatically using previous modules in the pipeline. The grid can then
-be used to make measurements (using <b>IdentifyObjectsInGrid</b>). Text annotation of a grid can be shown on top of an image using the <b>DisplayGridInfo</b> module (coming soon).
+(control spots), which are either indicated manually or 
+found automatically using previous modules in the pipeline. You can then
+use the grid to make measurements (using <b>IdentifyObjectsInGrid</b>). Text annotation of a grid can be shown on top of an image using the <b>DisplayGridInfo</b> module (coming soon).
 
 If you are using images of plastic plates, it may be useful to precede
 this module with an <b>IdentifyPrimAutomatic</b> module to find the plastic
@@ -108,7 +107,7 @@ class DefineGrid(cpm.CPModule):
         create_settings is called at the end of initialization.
         """
         self.grid_image = cps.GridNameProvider("Name the grid", doc="""
-                        This is the name for the grid. You can use this name to
+                        This is the name of the grid. You can use this name to
                         retrieve the grid in subsequent modules.""")
         
         self.grid_rows = cps.Integer("Number of rows",8,1)
@@ -118,26 +117,26 @@ class DefineGrid(cpm.CPModule):
         self.origin = cps.Choice("Location of the first spot",
                         [NUM_TOP_LEFT, NUM_BOTTOM_LEFT,
                         NUM_TOP_RIGHT, NUM_BOTTOM_RIGHT], doc="""
-                        Grid cells are numbered consecutively; this option picks the
+                        Grid cells are numbered consecutively; this option identifies the
                         origin for the numbering system and the direction for numbering.
-                        For instance, if you choose "Top left", the top left cell is
+                        For instance, if you choose <i>Top left</i>, the top left cell is
                         cell #1 and cells to the right and bottom are indexed with
                         larger numbers.""")
         
         self.ordering = cps.Choice("Order of the spots", [NUM_BY_ROWS, NUM_BY_COLUMNS], doc="""
                         Grid cells can either be numbered by rows, then columns or by
                         columns, then rows. For instance, you might ask to start numbering
-                        a 96-well plate at the top-left (by specifying the location of the first spot). 
-                        If you choose, <i>Rows</i>, then well <i>A01</i> will be assigned
-                        the index <i>1</i>, <i>B01</i>, the index <i>2</i> and so on up to H01 which
-                        receives the index <i>8</i>. Well <i>A02</i> will be assigned the index, 
-                        <i>9</i>. Conversely, if you choose <i>Columns</i>, well <i>A02</i> will be assigned,
-                        <i>2</i>, well <i>A12</i> will be assigned <i>12</i> and well <i>B01</i> will be assigned
+                        a 96-well plate at the top left (by specifying the location of the first spot). 
+                        If you choose <i>Rows</i>, then well A01 will be assigned
+                        the index <i>1</i>, B01 the index <i>2</i>, and so on up to H01 which
+                        receives the index <i>8</i>. Well A02 will be assigned the index 
+                        <i>9</i>. Conversely, if you choose <i>Columns</i>, well A02 will be assigned
+                        <i>2</i>, well A12will be assigned <i>12</i> and well B01 will be assigned
                         <i>13</i>.""")
         
         self.each_or_once = cps.Choice(
                         "Define a grid for which cycle?",
-                        [EO_EACH, EO_ONCE], doc="""
+                        [EO_EACH, EO_ONCE], doc=""" 
                         Would you like to define a new grid for each image cycle, 
                         or define a grid once and use it for all images? 
                         <ul>
@@ -158,7 +157,7 @@ class DefineGrid(cpm.CPModule):
                         you have identified in a previous module) or manually? This setting 
                         controls how the grid is defined:
                         <ul>
-                        <li><b>Manual mode:</b> In manual mode, you manually indicate
+                        <li><i>Manual mode:</i> In manual mode, you manually indicate
                         known locations of marker spots in the grid and have the rest of 
                         the positions calculated from those marks, no matter what the 
                         image itself looks like. You can define the grid either by
@@ -183,14 +182,14 @@ class DefineGrid(cpm.CPModule):
         
         self.object_name = cps.ObjectNameSubscriber(
                         "Select the previously identified objects", "None",doc="""
-                        <i>(Used if Automatic is selected to define the grid)</i><br>
+                        <i>(Used if you selected Automatic to define the grid)</i><br>
                         What are the previously identified objects you want to use to 
                         define the grid? Use this setting to specify the name of the objects that will
                         be used to define the grid.""")
         
         self.manual_choice = cps.Choice(
                         "Select the method to define the grid manually",[MAN_MOUSE, MAN_COORDINATES], doc="""
-                        <i>(Used if Manual is selected to define the grid)</i><br>
+                        <i>(Used if you selected Manual to define the grid)</i><br>
                         Do you want to define the grid using the mouse or by entering
                         the coordinates of the cells?
                         <ul>
@@ -233,9 +232,9 @@ class DefineGrid(cpm.CPModule):
                         "Column number of the first cell",1, minval=1,doc="""
                         Enter the column index for the first cell here. Columns
                         are numbered starting at the origin. For instance, if you chose
-                        <i>Top left</i> as your origin, well <i>A01</i> will be column number <i>1</i>
-                        and <i>A12</i> will be column number <i>12</i>. If you chose <i>Top right</i>,
-                        <i>A01</i> and <i>A12</i> will be <i>12</i> and <i>1</i>, respectively.""")
+                        <i>Top left</i> as your origin, well A01 will be column number <i>1</i>
+                        and A12 will be column number <i>12</i>. If you chose <i>Top right</i>,
+                        A01 and A12 will be <i>12</i> and <i>1</i>, respectively.""")
         
         self.second_spot_coordinates = cps.Coordinates(
                         "Coordinates of the second cell",
@@ -250,17 +249,17 @@ class DefineGrid(cpm.CPModule):
                         "Row number of the second cell", 1, minval=1, doc="""
                         What is this cell's row number? Enter the row index for the second cell here. Rows are
                         numbered starting at the origin. For instance, if you chose
-                        <i>Top left</i> as your origin, well <i>A01</i> will be row number <i>1</i>
-                        and <i>H01</i> will be row number <i>8</i>. If you chose <i>Bottom left</i>,
-                        <i>A01</i> will be row number <i>8</i> and <i>H01</i> will be row number <i>12</i>.""")
+                        <i>Top left</i> as your origin, well A01 will be row number <i>1</i>
+                        and H01 will be row number <i>8</i>. If you chose <i>Bottom left</i>,
+                        A01 will be row number <i>8</i> and H01 will be row number <i>12</i>.""")
         
         self.second_spot_col = cps.Integer(
                         "Column number of the second cell",1, minval=1, doc="""
                         What is this cell's column number? Enter the column index for the second cell here. Columns
                         are numbered starting at the origin. For instance, if you chose
-                        <i>Top left</i> as your origin, well <i>A01</i> will be column number <i>1</i>
-                        and <i>A12</i> will be column number <i>12</i>. If you chose <i>Top right</i>,
-                        <i>A01</i> and <i>A12</i> will be <i>12</i> and <i>1</i>, respectively.""")
+                        <i>Top left</i> as your origin, well A01 will be column number <i>1</i>
+                        and A12 will be column number <i>12</i>. If you chose <i>Top right</i>,
+                        A01 and A12 will be <i>12</i> and <i>1</i>, respectively.""")
         
         self.wants_image = cps.Binary(
                         "Retain an image of the grid for use later in the pipeline (for example, in SaveImages)?", False, doc = """
@@ -290,10 +289,9 @@ class DefineGrid(cpm.CPModule):
                         to errors:            
                         <ul>
                         <li><i>No</i>: The module will stop the pipeline if gridding fails.</li>
-                        <li><i> Use any previous grid</i>: The module will use the gridding from
+                        <li><i> Use any previous grid</i>: The module will use the 
                         the most recent successful gridding.</li>
-                        <li><i> Use the first cycle's grid</i>: The module will use the gridding from
-                        the first gridding.</li>
+                        <li><i> Use the first cycle's grid</i>: The module will use the first gridding.</li>
                         </ul>
                         The pipeline will stop in all cases if gridding fails on the first image.""")
 

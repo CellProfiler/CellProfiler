@@ -8,10 +8,10 @@ an image processing pipeline.
 If your computer mounts the file system differently than the cluster computers,
 <b>CreateBatchFiles</b> can replace the necessary parts of the paths to the 
 image and output files. For instance, a Windows machine may 
-access files images by mounting the file system using a drive letter, like this:
-<i>Z:\imaging_analysis</i>
-and the cluster computers access the same file system like this:
-<i>/imaging/analysis</i>
+access files images by mounting the file system using a drive letter, like this:<br><br>
+<i>Z:\imaging_analysis</i><br><br>
+and the cluster computers access the same file system like this:<br><br>
+<i>/imaging/analysis</i><br><br>
 In this case, the local root path is <i>Z:\imaging_analysis</i> and the cluster 
 root path is <i>/imaging/analysis</i>.
 '''
@@ -107,11 +107,11 @@ class CreateBatchFiles(cpm.CPModule):
                                 the batch files). If <b>CreateBatchFiles</b> finds
                                 any pathname that matches the local root path at the begining, it will replace the
                                 start with the cluster root path.
-                                <p>For example, if you have mapped the remote cluster machine as:<br><br>
+                                <p>For example, if you have mapped the remote cluster machine like this:<br><br>
                                 <i>Z:\your_data\images</i> (on a Windows machine, for instance)<br><br>
-                                and the cluster machine sees the same folder as:<br><br>
+                                and the cluster machine sees the same folder like this:<br><br>
                                 <i>/server_name/your_name/your_data/images</i><br><br>
-                                you would want to put <i>Z:</i> here and <i>/server_name/your_name/</i> 
+                                you would want to enter <i>Z:</i> here and <i>/server_name/your_name/</i> 
                                 for the cluster path in the next setting."""))
 
         group.append("remote_directory",
@@ -120,11 +120,11 @@ class CreateBatchFiles(cpm.CPModule):
                                 What is the path to files on the cluster? This is the cluster 
                                 root path, i.e, how the cluster machine sees the
                                 top-most folder where your input/output files are stored.
-                                <p>For example, if you have mapped the remote cluster machine as:<br><br>
+                                <p>For example, if you have mapped the remote cluster machine like this:<br><br>
                                 <i>Z:\your_data\images</i> (on a Windows machine, for instance)<br><br>
-                                and the cluster machine sees the same folder as:<br><br>
+                                and the cluster machine sees the same folder like this:<br><br>
                                 <i>/server_name/your_name/your_data/images</i><br><br>
-                                you would want to put <i>Z:</i> in the previous setting for the
+                                you would want to enter <i>Z:</i> in the previous setting for the
                                 local machine path and <i>/server_name/your_name/</i> here. """))
         group.append("remover",
                      cps.RemoveSettingButton("", "Remove this path mapping", self.mappings, group))

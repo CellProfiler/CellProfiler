@@ -57,12 +57,12 @@ class ConvertObjectsToImage(cpm.CPModule):
                                 What colors should the resulting image use? Choose how you would like
                                 the objects to appear:
                                 <ul>
-                                <li><i>Color:</i> Allows you to choose a colormap which will
+                                <li><i>Color:</i> Allows you to choose a colormap that will
                                 produce jumbled colors for your objects. </li>
                                 <li><i>Grayscale:</i> Gives each object
                                 a graylevel pixel intensity value corresponding to its number (also
                                 called label), so it usually results in objects on the left side of the
-                                image being very dark, and progressing towards white on the right side of
+                                image being very dark, progressing toward white on the right side of
                                 the image. </li>
                                 </ul>
                                 You can choose <i>Color</i> with a <i>Gray</i> colormap to produce
@@ -70,7 +70,7 @@ class ConvertObjectsToImage(cpm.CPModule):
         
         self.colormap = cps.Choice("Select the colormap",
                                 COLORMAPS,doc="""
-                                What do you want the colormap to be? Affect how the objects are colored. 
+                                What do you want the colormap to be? This setting affects how the objects are colored. 
                                 You can look up your default colormap under <i>File > Set Preferences</i>.""")
 
     def settings(self):

@@ -71,10 +71,10 @@ with respect to the first image.""")
                                            M_ALL, doc='''
              Which alignment method would you like to use? Two options are available:<br>
              <ul>
-             <li><i>Mutual Information method:</i> With this method, alignment works whether the 
+             <li><i>Mutual Information method:</i> Alignment works whether the 
              images are correlated (bright in one = bright in the other) or 
              anti-correlated (bright in one = dim in the other). </li>
-             <li><i>Normalized Cross Correlation method:</i> With this method, alignment works only 
+             <li><i>Normalized Cross Correlation method:</i> Alignment works only 
              when the images are correlated (bright in one = bright in the 
              other). When using the cross correlation method, the second 
              image should serve as a template and be smaller than the first 
@@ -84,7 +84,7 @@ with respect to the first image.""")
                                          True, doc='''
              If you choose to crop, all output images are cropped to retain 
              just those regions that exist in all channels after alignment. 
-             If you do not choose to crop, the unaligned portions of each
+             If you choose not to crop, the unaligned portions of each
              image are padded (with zeroes) and appear as black space.''')
     
     def add_image(self, can_remove = True):

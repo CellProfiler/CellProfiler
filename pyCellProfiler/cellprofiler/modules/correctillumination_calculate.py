@@ -1,10 +1,10 @@
 '''<b>Correct Illumination - Calculate</b> calculates an illumination function, used to correct uneven
 illumination/lighting/shading or to reduce uneven background in images
 <hr>
-This module calculates an illumination function which can be saved to the
-hard drive for later use, or it can be immediately applied to images later in the
-pipeline. This will correct for the uneven illumination in images.  
-If saving, select '.mat' format in <b>SaveImages</b>.  
+This module calculates an illumination function that can either be saved to the
+hard drive for later use or immediately applied to images later in the
+pipeline. This function will correct for the uneven illumination in images.  
+If saving, select <i>.mat</i> format in <b>SaveImages</b>.  
 Use the <b>CorrectIllumination_Apply</b> module to apply the
 function to the image to be corrected.
 
@@ -91,10 +91,10 @@ class CorrectIllumination_Calculate(cpm.CPModule):
                                             small set of images with few objects, there will be regions in the
                                             average image that contain no objects and smoothing by median filtering
                                             is unlikely to work well.
-                                            Note: it does not make sense to choose (<i>Regular + No Smoothing + Each</i>)
+                                            <i>Note:</i> it does not make sense to choose (<i>Regular + No Smoothing + Each</i>)
                                             because the illumination function would be identical to the original
                                             image and applying it will yield a blank image. You either need to smooth
-                                            each image or you need to use <i>All</i> images.</li>
+                                            each image, or you need to use <i>All</i> images.</li>
                                             <li><i>Background intensities:</i>
                                             If you think that the background (dim points) between objects show the
                                             same pattern of illumination as your objects of interest, you can choose the
@@ -102,7 +102,7 @@ class CorrectIllumination_Calculate(cpm.CPModule):
                                             intensities in blocks across the image (or group of images if you are in
                                             <i>All</i> mode) and is most often applied by subtraction using the
                                             <b>CorrectIllumination_Apply</b> module.
-                                            Note: if you will be using the <i>Subtract</i> option in the
+                                            <i>Note:</i> if you will be using the <i>Subtract</i> option in the
                                             <b>CorrectIllumination_Apply</b> module, you almost certainly do not want to
                                             <i>Rescale</i>. </li>
                                             </ul> ''')
@@ -127,13 +127,12 @@ class CorrectIllumination_Calculate(cpm.CPModule):
         self.rescale_option = cps.Choice("Rescale the illumination function?",
                                          [cps.YES, cps.NO, RE_MEDIAN], doc = '''
                                         The illumination function can be rescaled so that the pixel intensities
-                                        are all equal to or greater than one. This is recommended if you plan to
+                                        are all equal to or greater than 1. This is recommended if you plan to
                                         use the <i>Division</i> option in <b>CorrectIllumination_Apply</b> so that the
                                         corrected images are in the range 0 to 1. It is not recommended if you
                                         plan to use the <i>Subtract</i> option in <b>CorrectIllumination_Apply</b>. Note that
                                         as a result of the illumination function being rescaled from 1 to
-                                        infinity, if there is substantial variation across the field of view, the
-                                        rescaling of each image might be dramatic, causing the corrected images
+                                        infinity, the rescaling of each image might be dramatic if there is substantial variation across the field of view, causing the corrected images
                                         to be very dark. The <i>Median</i> option chooses the median value in the 
                                         image to rescale so that division increases some values and decreases others.''')
         
@@ -157,11 +156,11 @@ class CorrectIllumination_Calculate(cpm.CPModule):
                                             this is almost certainly necessary. If you have few objects in each image or a
                                             small image set, you may want to smooth. The goal is to smooth to the
                                             point where the illumination function resembles a believable pattern.
-                                            That is, if it is a lamp illumination problem you are trying to correct,
-                                            you would apply smoothing until you obtain a fairly smooth pattern
+                                            For example, if you are trying to correct a lamp illumination problem, 
+                                            apply smoothing until you obtain a fairly smooth pattern
                                             without sharp bright or dim regions.  Note that smoothing is a
-                                            time-consuming process, and fitting a polynomial is fastest but does not
-                                            allow a very tight fit as compared to the slower median and Gaussian 
+                                            time-consuming process; fitting a polynomial is fastest but does not
+                                            allow a very tight fit compared to the slower median and Gaussian 
                                             filtering methods. We typically recommend median vs. Gaussian because median 
                                             is less sensitive to outliers, although the results are also slightly 
                                             less smooth and the fact that images are in the range of 0 to 1 means that
@@ -188,11 +187,11 @@ class CorrectIllumination_Calculate(cpm.CPModule):
         self.save_average_image = cps.Binary("Retain the averaged image for use later in the pipeline (for example, in SaveImages)?", False, doc = '''
                                             The averaged image is the illumination function
                                             prior to dilation or smoothing. It is an image produced during the calculations, not typically
-                                            needed for downstream modules. It can be helpful to retain it if you may wish to try several different smoothing methods without taking the time to recalculate the averaged image each time.''')
+                                            needed for downstream modules. It can be helpful to retain it in case you wish to try several different smoothing methods without taking the time to recalculate the averaged image each time.''')
         
         self.average_image_name = cps.ImageNameProvider("Name the averaged image","IllumBlueAvg",doc = '''
-                                            <i>(Only used if the averaged image is to be retained for later use in the pipeline)</i><br>
-                                            Choose a name, which will allow the averaged image to be selected later in the pipeline.''')
+                                            <i>(Used only if the averaged image is to be retained for later use in the pipeline)</i><br>
+                                            Enter a name, which will allow the averaged image to be selected later in the pipeline.''')
         
         self.save_dilated_image = cps.Binary("Retain the dilated image for use later in the pipeline (for example, in SaveImages)?", False, doc = '''                                            
                                             The dilated image is the illumination function                                            
@@ -200,8 +199,8 @@ class CorrectIllumination_Calculate(cpm.CPModule):
                                             needed for downstream modules.''')
         
         self.dilated_image_name = cps.ImageNameProvider("Name the dilated image","IllumBlueDilated",doc='''
-                                            <i>(Only used if the dilated image is to be retained for later use in the pipeline)</i><br>
-                                            Choose a name, which will allow the dilated image to be selected later in the pipeline.''')
+                                            <i>(Used only if the dilated image is to be retained for later use in the pipeline)</i><br>
+                                            Enter a name, which will allow the dilated image to be selected later in the pipeline.''')
 
     def settings(self):
         return [ self.image_name, self.illumination_image_name,

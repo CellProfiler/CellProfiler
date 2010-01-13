@@ -1,14 +1,13 @@
 '''
 <b> Color to Gray</b> converts an image with 3 color channels to 1 <i>or</i> 3 grayscale images
 <hr>
-Converts RGB (Red, Green, Blue) color images to grayscale. All channels
-can be merged into one grayscale image (<i>Combine</i> option) or each channel 
-can be extracted into a separate grayscale image (<i>Split</i> option). If using <i>Combine</i>, 
+This module converts RGB (Red, Green, Blue) color images to grayscale. All channels
+can be merged into one grayscale image (<i>Combine</i> option), or each channel 
+can be extracted into a separate grayscale image (<i>Split</i> option). If you use <i>Combine</i>, 
 the relative weights will adjust the contribution of the colors relative to each other.<br>
 <br>
-<b>Note:</b> This module is helpful as all <b>Identify</b> modules require grayscale images.
-<br>
-See also <b>GrayToColor</b>.
+<i>Note:</i> This module is helpful, as all <b>Identify</b> modules require grayscale images.
+<p>See also <b>GrayToColor</b>.
 '''
 # CellProfiler is distributed under the GNU General Public License.
 # See the accompanying file LICENSE for details.
@@ -49,9 +48,9 @@ class ColorToGray(cpm.CPModule):
                                            [COMBINE,SPLIT],doc='''
                                            How do you want to convert the color image? 
                                            <ul>
-                                           <li><i>Split:</i> Takes a color image and splits the three channels
-                                           (red, green, blue) into three separate grayscale images. </li>
-                                           <li><i>Combine:</i> Takes a color image and converts it to a grayscale 
+                                           <li><i>Split:</i> Splits the three channels
+                                           (red, green, blue) of a color image into three separate grayscale images. </li>
+                                           <li><i>Combine:</i> Converts a color image to a grayscale 
                                            image by combining the three channels (red, green, blue) together.</li>
                                            </ul>''')
         

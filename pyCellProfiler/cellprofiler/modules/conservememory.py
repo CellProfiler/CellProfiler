@@ -1,9 +1,9 @@
 '''<b>Conserve Memory</b> speeds up CellProfiler by removing images from memory
 <hr>
-This module removes images from memory which can speed up processing and
+This module removes images from memory, which can speed up processing and
 prevent out-of-memory errors.
 
-Note: CellProfiler 1.0's <b>SpeedUpCellProfiler</b> had an option that let you 
+<i>Note:</i> CellProfiler 1.0's <b>SpeedUpCellProfiler</b> had an option that let you 
 choose how often the output file was saved. This option has been
 moved to the preferences settings (<i>File > Preferences</i>).
 '''
@@ -45,8 +45,8 @@ class ConserveMemory(cpm.CPModule):
         self.how_to_remove = cps.Choice("Specify which images?",
                                         [C_REMOVE, C_KEEP], 
                                         doc="""
-            Choose <i>%s</i> to remove some images from memory and keep the rest.
-            Choose <i>%s</i> to keep some images and remove the rest."""%
+            <ul><li>Choose <i>%s</i> to remove some images from memory and keep the rest.</li>
+            <li>Choose <i>%s</i> to keep some images and remove the rest.</li></ul>"""%
                                 (C_REMOVE, C_KEEP))
         self.spacer_top = cps.Divider(line=False)
         self.image_names = []

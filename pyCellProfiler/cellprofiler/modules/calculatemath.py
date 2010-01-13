@@ -76,10 +76,10 @@ class CalculateMath(cpm.CPModule):
                                             the type of measurement that is requested.""")
                 
                 self.__multiplicand = cps.Float("Multiply the above operand by",1,doc="""
-                                            What number would you like to multiply the above operand by?""")
+                                            By what number would you like to multiply the above operand?""")
                 
                 self.__exponent = cps.Float("Raise the power of above operand by",1,doc="""
-                                            What power would you like to raise the above operand to?""")
+                                            To what power would you like to raise the above operand?""")
             
             @property
             def operand_choice(self):
@@ -182,10 +182,10 @@ class CalculateMath(cpm.CPModule):
                                     Do you want the log (base 10) of the result?""")
         
         self.final_multiplicand = cps.Float("Multiply the result by",1,doc="""
-                                    What number would you like to multiply the result by?""")
+                                    By what number would you like to multiply the result?""")
         
         self.final_exponent = cps.Float("Raise the power of result by",1,doc="""
-                                    What power would you like to raise the result to?""")
+                                    To what power would you like to raise the result?""")
             
     def settings(self):
         return ([self.output_feature_name, self.operation] +

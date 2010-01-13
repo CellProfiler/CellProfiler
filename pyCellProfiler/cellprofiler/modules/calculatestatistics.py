@@ -5,7 +5,7 @@ made from images
 The V and Z' factors are statistical measures of assay quality and are
 calculated for each per-image measurement and for each average per-object 
 measurement that you have made
-in the pipeline. For example, the Z' factor indicates how well-separated
+in the pipeline. For example, the Z' factor indicates how well separated
 the positive and negative controls are. Calculating these values by
 placing this module at the end of a pipeline allows you to identify which
 measured features are most powerful for distinguishing positive and
@@ -34,10 +34,9 @@ lead to a high standard deviation for either population, which results
 in a low Z' factor even though the population means and samples between
 the means may be well-separated. Therefore, the one-tailed Z' factor is 
 calculated with the same formula but using only those samples that lie 
-between the positive/negative population means. This is not yet a well-
-established measure of assay robustness.
+between the positive/negative population means. This is not yet a well established measure of assay robustness.
 <p>
-NOTE: If the standard deviation of a measured feature is zero for a
+<i>Note:</i> If the standard deviation of a measured feature is zero for a
 particular set of samples (e.g., all the positive controls), the Z' and V
 factors will equal 1 despite the fact that the assay quality is poor. 
 This can occur when there is only one sample at each dose.
@@ -49,20 +48,20 @@ each measurement. These scripts will require Matlab and the statistics
 toolbox in order to run. See <a href='#wants_save_figure'>
 Do you want to create dose/response plots?</a>
 <p>
-The reference for Z' factor is: JH Zhang, TD Chung, et al. (1999) "A
+The reference for Z' factor is JH Zhang, TD Chung, et al. (1999) "A
 simple statistical parameter for use in evaluation and validation of high
-throughput screening assays." J Biomolecular Screening 4(2): 67-73.
+throughput screening assays." <i>J Biomolecular Screening</i> 4(2): 67-73.
 <p>
-The reference for V factor is: I Ravkin (2004): Poster #P12024 - Quality
-Measures for Imaging-based Cellular Assays. Society for Biomolecular
-Screening Annual Meeting Abstracts. This is likely to be published.
+The reference for V factor is I Ravkin (2004): Poster #P12024 - Quality
+Measures for Imaging-based Cellular Assays. <i>Society for Biomolecular
+Screening Annual Meeting Abstracts</i>. This is likely to be published.
 <p>
 Code for the calculation of Z' and V factors was kindly donated by Ilya
 Ravkin: http://www.ravkin.net. Carlos Evangelista donated his copyrighted 
 dose-response-related code.
 <p>
-Features measured:
-Note: whereas most CellProfiler measurements are calculated for each object
+Features measured:<br><br>
+<i>Note:</i> whereas most CellProfiler measurements are calculated for each object
 (per-object) or for each image (per-image), the <b>CalculateStatistics</> module
 produces per-experiment values; for example, one Z' factor is calculated for
 each measurement, across the entire analysis run.
@@ -72,14 +71,13 @@ each measurement, across the entire analysis run.
 <li>EC50</li>
 <li>One-tailed Zfactor</li>
 </ul>
-<p>
-Example format for a file to be loaded by <b>LoadText</b> for this module:
+<p>Example format for a file to be loaded by <b>LoadText</b> for this module.<br><br>
 <b>LoadText</b> loads information from a CSV file. The first line of this file is a 
 header that names the items.
 Each subsequent line represents data for one image set, so your file should have
 the header line plus one line per image to be processed. You can also make a
 file for <b>LoadText</b> to load that contains the positive/negative control and dose designations *plus* the image file names to be processed, which is a good way to guarantee that images are matched
-with the correct data. Here is an example file:<br>
+with the correct data. Here is an example file:<br><br>
 <code>
 <table>
 <tr><td>Image_FileName_CY3,</td><td>Image_PathName_CY3,</td><td>Control,</td><td>Dose</td></tr>
@@ -132,11 +130,11 @@ class CalculateStatistics(cpm.CPModule):
             lambda : cpmeas.IMAGE,
             doc = '''The Z' factor, a measure of assay quality, is calculated by this 
             module based on measurements from images that are specified as positive controls 
-            and images that are specified as negative controls (images that are neither are 
-            ignored when calculating this statistic). The module uses the convention that 
+            and images that are specified as negative controls. (Images that are neither are 
+            ignored when calculating this statistic.) The module uses the convention that 
             all of the negative controls are specified by a minimum value, all of the
             positive controls are specified by a maximum value, and all other images have an 
-            intermediate value - this might allow you to use your dosing information to also 
+            intermediate value; this might allow you to use your dosing information to also 
             specify the positive and negative controls. If you are not using actual dose 
             data to designate your controls, a common way to designate them is: -1 is a 
             negative control, 0 is an experimental sample, and 1 is a positive control.  
@@ -172,7 +170,7 @@ class CalculateStatistics(cpm.CPModule):
             a text file outside of CellProfiler and then load that file in the pipeline
             using <b>LoadText</b>. In that case, choose the
             measurement that matches the column header of the measurement
-            in <b>LoadText<b>'s input file. See the help for this module for an example text file.
+            in <b>LoadText</b>'s input file. See the help for this module for an example text file.
             """))
         group.append("log_transform",cps.Binary(
             "Log-transform dose values?",
@@ -180,7 +178,7 @@ class CalculateStatistics(cpm.CPModule):
             doc = '''This option allows you to log-transform the dose values 
             before fitting a sigmoid curve. Check
             this box if you have dose-response data. Leave the box unchecked
-            if your data values only indicate positive vs negative controls.'''))
+            if your data values only indicate positive vs. negative controls.'''))
         group.append('wants_save_figure', cps.Binary(
             '''Create dose/response plots?''',
             False,

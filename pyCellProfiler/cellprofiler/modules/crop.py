@@ -1,7 +1,7 @@
 '''<b>Crop</b> crops or masks an image
 <hr>
 This module crops images into a rectangle, ellipse, an arbitrary shape provided by
-the user, the shape of object(s) identified by an <b>Identify</b> module, or a shape created using a previous <b>Crop</b> module in the pipeline.
+you, the shape of object(s) identified by an <b>Identify</b> module, or a shape created using a previous <b>Crop</b> module in the pipeline.
 
 <p>Keep in mind that cropping changes the size of your images, which may
 have unexpected consequences. For example, identifying objects in a
@@ -9,15 +9,15 @@ cropped image and then trying to measure their intensity in the
 <i>original<i> image will not work because the two images are not the same
 size.</p>
 
-Features that can be measured by this module:
+This module can measure the following features:
 <ul>
 <li>AreaRetainedAfterCropping</li>
 <li>OriginalImageArea</li>
 </ul>
 
-Special note on saving images: You can save the cropping shape that you have defined in this module (e.g. an ellipse
-you drew), so that in future analyses you can use the Image option. To do
-this, choose to save either the mask or cropping in <b>SaveImages</b> See the help for the <b>SaveImages</b> module for more information on saving cropping shapes.
+<i>Special note on saving images:</i> You can save the cropping shape that you have defined in this module (e.g., an ellipse
+you drew) so that you can use the <i>Image</i> option in future analyses. To do
+this, save either the mask or cropping in <b>SaveImages</b> See the help for the <b>SaveImages</b> module for more information on saving cropping shapes.
 '''
 
 # CellProfiler is distributed under the GNU General Public License.
@@ -109,8 +109,8 @@ class Crop(cpm.CPModule):
                             binary image using this module (e.g. using the <i>Ellipse</i> option) and saved
                             it using the <b>SaveImages</b> module.<br>
                             In any case, the image must be the exact same starting size as your image
-                            and should contain a contiguous block of white pixels, because keep in
-                            mind that the cropping module may remove rows and columns that are
+                            and should contain a contiguous block of white pixels, because 
+                            the cropping module may remove rows and columns that are
                             completely blank.</li>
                             <li><i>Objects:</i> Crop based on labeled objects identified by a previous
                             <b>Identify</b> module.</li>
@@ -124,10 +124,10 @@ class Crop(cpm.CPModule):
         self.crop_method = cps.Choice("Select the cropping method",
                             [CM_COORDINATES, CM_MOUSE], CM_COORDINATES, doc = """                                      
                             Would you like to crop by typing in pixel coordinates or clicking with the mouse?
-                            For ellipse, you will be asked to click five or more
+                            For <i>Ellipse</i>, you will be asked to click five or more
                             points to define an ellipse around the part of the image you want to
                             analyze.  Keep in mind that the more points you click, the longer it will
-                            take to calculate the ellipse shape. For rectangle, you can click as many
+                            take to calculate the ellipse shape. For <i>Rectangle</i>, you can click as many
                             points as you like that are in the interior of the region you wish to
                             retain.""")
         
@@ -136,7 +136,7 @@ class Crop(cpm.CPModule):
                             IO_INDIVIDUALLY, doc = """
                             Should the cropping pattern in the first image cycle be 
                             applied to all subsequent image cycles (<i>First</i>) or 
-                            should every image cycle be cropped individually (<i>Every</i>?)""")
+                            should every image cycle be cropped individually (<i>Every</i>)?""")
         
         self.horizontal_limits = cps.IntegerOrUnboundedRange("Left and right rectangle positions",
                             minval=0, doc = """
@@ -193,31 +193,29 @@ class Crop(cpm.CPModule):
                             Do you want to use Plate Fix? 
                             To be used only when cropping based on previously identified
                             objects. When attempting to crop based on a previously identified object
-                            (such as a rectangular plate), sometimes the identified plate does not have
+                            such as a rectangular plate, the plate may not have
                             precisely straight edges - there might be a tiny, almost unnoticeable
-                            'appendage' sticking out of the plate.  Without plate fix, the crop
-                            module would not crop the image tightly enough - it would include enough
-                            of the image to retain even the tiny appendage, so there would be a lot
-                            of blank space around the plate. This can cause problems with later
-                            modules (especially IlluminationCorrection). PlateFix takes the
+                            "appendage" sticking out. Without Plate Fix, the <b>Crop</b>
+                            module would not crop the image tightly enough - it would retain the tiny appendage, leaving a lot
+                            of blank space around the plate and potentially causing problems with later
+                            modules (especially IlluminationCorrection). Plate Fix takes the
                             identified object and crops to exclude any minor appendages (technically,
                             any horizontal or vertical line where the object covers less than 50% of
                             the image). It also sets pixels around the edge of the object (for
-                            regions &gt; 50% but less than 100%) that otherwise would be zero to the
-                            background pixel value of your image thus avoiding the problems with
-                            other modules. Important note: PlateFix uses the coordinates
-                            entered in the boxes normally used for rectangle cropping (Top, Left) and
-                            (Bottom, Right) to tighten the edges around your identified plate. This
+                            regions greater than 50% but less than 100%) that otherwise would be zero to the
+                            background pixel value of your image, thus avoiding problems with
+                            other modules. <i>Important note:</i> Plate Fix uses the coordinates
+                            entered in the boxes normally used for rectangle cropping (<i>Top, Left</i> and
+                            <i>Bottom, Right</i>) to tighten the edges around your identified plate. This
                             is done because in the majority of plate identifications you do not want
                             to include the sides of the plate. If you would like the entire plate to
-                            be shown, you should enter 1:end for both coordinates. If you would like
-                            to crop 80 pixels from each edge of the plate, you could enter <i>80</i>
-                            for (Top, Left) and (Bottom, Right) and select <i>From edge</i>.""")
+                            be shown, you should enter <i>1:end</i> for both coordinates. If, for example, you would like
+                            to crop 80 pixels from each edge of the plate, you could enter <i>Top, Left</i> and <i>Bottom, Right</i> values of <i>80</i> and select <i>From edge</i>.""")
         
         self.remove_rows_and_columns = cps.Choice("Remove empty rows and columns?",
                             [RM_NO, RM_EDGES, RM_ALL],
                             RM_NO, doc = """
-                            Do you want to remove rows and columns that lack objects? The options are:
+                            Do you want to remove rows and columns that lack objects? Options are:
                             <ul>
                             <li><i>No:</i> Leave the image the same size. The cropped areas will be trned to black (zeroes)</li>
                             <li><i>Edges:</i> Crop the image so that its top, bottom, left and right are at

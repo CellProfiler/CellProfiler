@@ -2,10 +2,9 @@
 to the value of measurements you choose
 <hr>
 This module classifies objects into a number of different bins
-according to the value of a measurement (e.g. by size, intensity, shape).
+according to the value of a measurement (e.g., by size, intensity, shape).
 It reports how many objects fall into each class as well as the
-percentage of objects that fall into each class. The module requests that
-you select the measurement feature to be used to classify your objects and
+percentage of objects that fall into each class. The module asks you to select the measurement feature to be used to classify your objects and
 specify the bins to use. It requires you to run a measurement
 module previous to this module in the pipeline so that the measurement
 values can be used to classify the objects. If you are classifying by the
@@ -143,9 +142,9 @@ class ClassifyObjects(cpm.CPModule):
             doc="""Objects are classified as being above or below a cutoff
             value for a measurement. You can set this cutoff threshold in one
             of three ways:<br>
-            <ul><li><i>Mean</i>: The threshold is set at the mean
+            <ul><li><i>Mean</i>: At the mean
             of the measurement's value for all objects in the image set.</li>
-            <li><i>Median</i>: The threshold is set at the median of the
+            <li><i>Median</i>: At the median of the
             measurement's value for all objects in the image set.</li>
             <li><i>Custom</i>: You specify a custom threshold value.</li></ul>""")
         
@@ -225,8 +224,8 @@ class ClassifyObjects(cpm.CPModule):
             upper and lower limits, or you can specify custom values that
             define the edges of each bin with a threshold. 
             
-            <i>Note:</i> If you would like two bins, choose "Custom-defined bins" and then provide a single threshold when asked. 
-            "Evenly spaced bins" creates the indicated number of bins
+            <i>Note:</i> If you would like two bins, choose <i>Custom-defined bins</i> and then provide a single threshold when asked. 
+            <i>Evenly spaced bins</i> creates the indicated number of bins
             at evenly-spaced intervals between the low and high threshold.
             You also have the option to create bins for objects that fall below
             or above the low and high threhsold"""))
@@ -257,7 +256,7 @@ class ClassifyObjects(cpm.CPModule):
             minval = cps.NumberConnector(min_upper_threshold),
             doc="""This is the threshold that separates the last bin from
             the others.
-            <i>Note:</i> If you would like two bins, choose "Custom-defined bins"."""))
+            <i>Note:</i> If you would like two bins, choose <i>Custom-defined bins</i>."""))
         
         group.append("wants_high_bin", cps.Binary(
             "Do you want a bin for objects above the threshold?", False,
@@ -269,10 +268,10 @@ class ClassifyObjects(cpm.CPModule):
             "Enter the custom thresholds separating the values between bins",
             "0,1",
             doc="""
-            <i>(Used if custom thresholds is selected)</i><br>
+            <i>(Used if you select Custom thresholds)</i><br>
             This setting establishes the threshold values for the
             bins. You should enter one threshold between each bin, separating
-            thresholds with commas (for example, "0.3, 1.5, 2.1" for four bins).
+            thresholds with commas (for example, <i>0.3, 1.5, 2.1</i> for four bins).
             The module will create one more bin than there are thresholds."""))
         
         group.append("wants_custom_names", cps.Binary(
@@ -285,8 +284,8 @@ class ClassifyObjects(cpm.CPModule):
             "Enter the bin names separated by commas","None",
             doc="""
             <i>(Used if user wants to name the bins)</i><br>
-            Enter names for each of the bins with commas in-between.
-            An example for three bins might be, "First,Second,Third"."""))
+            Enter names for each of the bins, separated by commas.
+            An example including three bins might be <i>First,Second,Third</i>."""))
         
         group.append("wants_images", cps.Binary(
             "Retain an image of the objects classified by their measurements, for use later in the pipeline (for example, in SaveImages)?",

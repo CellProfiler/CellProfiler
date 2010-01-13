@@ -1,7 +1,7 @@
 '''<b>Enhance Or Suppress Features</b> enhances or suppresses certain image features (such as speckles, ring shapes, and neurites), which can improve subsequent identification of objects
 <hr>
 This module enhances or suppresses the intensity of certain pixels relative
-to the rest of the image, by applying image processing filters to the image. It produces a grayscale image in which objects can be identified using an <b>Identify module</>.
+to the rest of the image, by applying image processing filters to the image. It produces a grayscale image in which objects can be identified using an <b>Identify module</b>.
 '''
 
 # CellProfiler is distributed under the GNU General Public License.
@@ -61,13 +61,13 @@ class EnhanceOrSuppressFeatures(cpm.CPModule):
                                         relative to its immediate neighborhood. The module enhances
                                         speckles using a white tophat filter, which is the image minus the
                                         morphological grayscale opening of the image. The opening operation
-                                        suppresses the speckles by applying a grayscale erosion to reduce everything
+                                        first suppresses the speckles by applying a grayscale erosion to reduce everything
                                         within a given radius to the lowest value within that radius, then uses
                                         a grayscale dilation to restore objects larger than the radius to an
-                                        approximation of their former shape. The white top-hat filter enhances 
+                                        approximation of their former shape. The white tophat filter enhances 
                                         speckles by subtracting the effects of opening from the original image.
                                         </li>
-                                        <li><i>Neurites</i>: Here, the neurites are taken to be long, thin features
+                                        <li><i>Neurites</i>: Neurites are taken to be long, thin features
                                         of enhanced intensity. The module takes the difference of the
                                         white and black tophat filters (a black tophat filter is the 
                                         morphological grayscale opening of the image minus the image itself). 
@@ -90,14 +90,14 @@ class EnhanceOrSuppressFeatures(cpm.CPModule):
                                         What is the feature size? 
                                         This is the diameter of the largest speckle (or the width of the neurites) to be enhanced or suppressed, which
                                         will be used to calculate an adequate filter size. If you don't know the width 
-                                        of your objects, you can use the <i>Tools -> Show pixel data</i> image tool 
+                                        of your objects, use the <i>Tools > Show pixel data</i> image tool 
                                         in the image window menu to find out.""")
         
         self.hole_size = cps.IntegerRange('Range of hole sizes',
                                         value=(1,10),minval=1, doc="""
                                         <i>(Used if dark hole detection is selected)</i><br>
                                         This is the range of hole sizes to be enhanced. The algorithm will
-                                        only identify holes whose diameters fall between these two 
+                                        identify only holes whose diameters fall between these two 
                                         values""")
 
     def settings(self):

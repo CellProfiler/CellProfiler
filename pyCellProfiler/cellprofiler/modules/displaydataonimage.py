@@ -1,8 +1,8 @@
-'''<b>DisplayDataOnImage</b> - 
-Produces an image with measured data on top of identified objects.
+'''<b>Display DataOn Image</b> 
+produces an image with measured data on top of identified objects
 <hr>
 This module displays either a single image measurement on an image of
-your choosing or displays one object measurement per object on top
+your choosing, or one object measurement per object on top
 of every object in an image. The display itself is an image which you
 can save to a file using <b>SaveImages</b>.
 '''
@@ -56,8 +56,8 @@ class DisplayDataOnImage(cpm.CPModule):
         self.objects_or_image = cps.Choice(
             "Do you want to display object or image measurements?",
             [OI_OBJECTS, OI_IMAGE],
-            doc = """Choose "Image" to display a single measurement made
-            on an image. Choose "Object" to display measurements made on
+            doc = """Choose <i>Image</i> to display a single measurement made
+            on an image. Choose <i>Object</i> to display measurements made on
             objects.""")
         self.objects_name = cps.ObjectNameSubscriber(
             "Which objects' measurements do you want to display?", "None",
@@ -98,8 +98,8 @@ class DisplayDataOnImage(cpm.CPModule):
         self.display_image = cps.ImageNameProvider(
             "Name the output image, which has the measurements displayed","DisplayImage",
             doc="""This is the name that will be given to the image with
-            the measurements superimposed. You can refer to the image in
-            subsequent modules (such as <b>SaveImages</b>) using this name.""")
+            the measurements superimposed. You can use this name to refer to the image in
+            subsequent modules (such as <b>SaveImages</b>).""")
         self.dpi = cps.Float(
             "Resolution (pixels per inch)",96.0,minval=1.0,
             doc="""This is the resolution to be used when displaying the image
@@ -107,12 +107,14 @@ class DisplayDataOnImage(cpm.CPModule):
         self.saved_image_contents = cps.Choice(
             "What elements do you want to save?",
             [E_IMAGE, E_FIGURE, E_AXES],
-            doc="""This setting controls the level of annotation on the image.
-            If you choose "Image", the module will save the image with
-            the overlaid measurement annotations. If you choose "Axes",
-            the module adds axes with tick marks and image coordinates.
-            If you choose "Figure", the module adds a title and other
-            decorations.""")
+            doc="""This setting controls the level of annotation on the image:
+            <ul><li>
+            <i>Image</i>: The module will save the image with
+            the overlaid measurement annotations.</li>
+            <li><i>Axes</i>:
+            The module adds axes with tick marks and image coordinates.</li>
+            <li><i>Figure</i>: The module adds a title and other
+            decorations.</li></ul>""")
         
     def settings(self):
         """Return the settings to be loaded or saved to/from the pipeline

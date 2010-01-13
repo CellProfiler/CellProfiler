@@ -8,15 +8,15 @@ stops when an object becomes a single pixel). The module can separate touching
 objects without otherwise shrinking
 the objects.
 
-ExpandOrShrink can perform some specialized morphological operations that 
-remove pixels without completely removing an object.  See the settings (below)
+<b>ExpandOrShrinkObjects</b> can perform some specialized morphological operations that 
+remove pixels without completely removing an object. See the settings (below)
 for more detail.
 
-Special note on saving images: Using the settings in this module, object
+<i>Special note on saving images:</i> Using the settings in this module, object
 outlines can be passed along to the module <b>OverlayOutlines</b> and then saved
 with the <b>SaveImages</b> module. The identified objects themselves can be passed along to the
 object processing module <b>ConvertToImage</b> and then saved with the
-SaveImages module.
+<b>SaveImages</b> module.
 
 See also <b>Identify</b> modules.'''
 # CellProfiler is distributed under the GNU General Public License.
@@ -98,7 +98,7 @@ class ExpandOrShrinkObjects(cpm.CPModule):
                                     image. The user can choose the number of times to expand. Processing stops
                                     automatically if there are no more background pixels.</li>
                                     <li><i>Skeletonize each object:</i> Erode each object to its skeleton.</li>
-                                    <li><i>Remove spurs:<i> Remove or reduce the length of spurs in a skeletonized image.
+                                    <li><i>Remove spurs:</i> Remove or reduce the length of spurs in a skeletonized image.
                                     The algorithm reduces spur size by the number of pixels indicated in the
                                     setting "Number of pixels by which to expand or shrink."</li> </ul>              
                                     ''')

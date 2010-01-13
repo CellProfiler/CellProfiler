@@ -160,6 +160,9 @@ class PipelineController:
         self.__test_controls_panel.Bind(wx.EVT_BUTTON, self.on_debug_next_group, self.__tcp_next_group)
         self.__test_controls_panel.Bind(wx.EVT_BUTTON, self.on_debug_prev_group, self.__tcp_prev_group)
 
+    def attach_to_preferences_view(self, preferences_view):
+        self.check_preferences = preferences_view.check_preferences
+        
     def __on_load_pipeline(self,event):
         dlg = wx.FileDialog(self.__frame,
                             "Choose a pipeline file to open",
@@ -455,9 +458,31 @@ class PipelineController:
         self.__progress_frame.start_module(*args)
             
     def on_analyze_images(self,event):
-        if len(self.__setting_errors):
-            wx.MessageBox("Please correct the errors in your pipeline before running.","Can't run pipeline",self.__frame)
-            return
+        '''Handle a user request to start running the pipeline'''
+        ##################################
+        #
+        # Preconditions:
+        # * Pipeline has no errors
+        # * Default input and output directories are valid
+        #
+        ##################################
+        
+        ok, reason = self.check_preferences()
+        if ok:
+            try:
+                self.__pipeline.test_valid()
+            except cellprofiler.settings.ValidationError, v:
+                ok = False
+                reason = v.message
+        if not ok:
+            if wx.MessageBox("%s\nAre you sure you want to continue?" % reason,
+                             "Problems with pipeline", wx.YES_NO) != wx.YES:
+                return
+        ##################################
+        #
+        # Start the pipeline
+        #
+        ##################################
         self.__module_view.disable()
         output_path = self.get_output_file_path()
         if output_path:

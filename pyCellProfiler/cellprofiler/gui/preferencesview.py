@@ -68,6 +68,8 @@ class PreferencesView:
                                            (16,16))
         new_button = wx.BitmapButton(panel,-1,bitmap=new_bmp)
         new_button.SetToolTipString("Make a new sub-folder")
+        if os.path.isdir(value):
+            new_button.Disable()
         sizer.AddMany([(help_button,0,wx.ALL,1),
                        (text_static,0,wx.EXPAND,1),
                        (edit_box,3,wx.EXPAND|wx.ALL,1),
@@ -80,10 +82,22 @@ class PreferencesView:
             if wx.MessageBox("Do you really want to create the %s folder?" %
                              edit_box.Value,style=wx.YES_NO) == wx.YES:
                 os.makedirs(edit_box.Value)
-                self.__on_edit_box_change(event, edit_box, text, actions)                
+                self.__on_edit_box_change(event, edit_box, text, actions)
+            
+        def on_edit_box_change(event):
+            if os.path.isdir(edit_box.Value):
+                new_button.Disable()
+                new_button.SetToolTipString("%s is a directory" % 
+                                            edit_box.Value)
+            else:
+                new_button.Enable()
+                new_button.SetToolTipString("Press button to create the %s directory" %
+                                            edit_box.Value)
+            self.__on_edit_box_change(event, edit_box, text, actions)
+            
         panel.Bind(wx.EVT_BUTTON, lambda event: self.__on_help(event, helpfile))
         panel.Bind(wx.EVT_BUTTON, lambda event: self.__on_browse(event, edit_box, text), browse_button)
-        panel.Bind(wx.EVT_TEXT, lambda event: self.__on_edit_box_change(event, edit_box, text, actions), edit_box)
+        panel.Bind(wx.EVT_TEXT, on_edit_box_change, edit_box)
         panel.Bind(wx.EVT_BUTTON, on_new_folder, new_button)
         return edit_box
     
@@ -109,6 +123,30 @@ class PreferencesView:
         cellprofiler.preferences.add_output_directory_listener(self.__on_preferences_output_directory_event)
         panel.Bind(wx.EVT_WINDOW_DESTROY, self.__on_destroy, panel)
     
+    def check_preferences(self):
+        '''Return True if preferences are OK (e.g. directories exist)'''
+        path = self.__image_edit_box.Value
+        if not os.path.isdir(path):
+            if wx.MessageBox(('The default image directory is "%s", but '
+                              'the directory does not exist. Do you want to '
+                              'create it?') % path, 
+                             "Warning, cannot run pipeline",
+                             style = wx.YES_NO) == wx.NO:
+                return False, "Image directory does not exist"
+            os.makedirs(path)
+            cellprofiler.preferences.set_default_image_directory(path)
+        path = self.__output_edit_box.Value
+        if not os.path.isdir(path):
+            if wx.MessageBox(('The default output directory is "%s", but '
+                              'the directory does not exist. Do you want to '
+                              'create it?') % path, 
+                             "Warning, cannot run pipeline",
+                             style = wx.YES_NO) == wx.NO:
+                return False, "Output directory does not exist"
+            os.makedirs(path)
+            cellprofiler.preferences.set_default_output_directory(path)
+        return True, "OK"
+                          
     def __on_destroy(self, event):
         cellprofiler.preferences.remove_image_directory_listener(self.__on_preferences_image_directory_event)
         cellprofiler.preferences.remove_output_directory_listener(self.__on_preferences_output_directory_event)

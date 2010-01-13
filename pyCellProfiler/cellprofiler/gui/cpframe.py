@@ -358,6 +358,7 @@ class CPFrame(wx.Frame):
         self.__preferences_view.attach_to_pipeline_list_view(self.__pipeline_list_view)
         self.__directory_view = DirectoryView(self.__file_list_panel)
         self.__pipeline_controller.attach_to_directory_view(self.__directory_view)
+        self.__pipeline_controller.attach_to_preferences_view(self.__preferences_view)
 
     def __do_layout(self):
         splitter = self.__splitter

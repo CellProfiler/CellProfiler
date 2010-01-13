@@ -203,11 +203,12 @@ class ProgressFrame(wx.Frame):
                 # as slow as the slowest one we've seen so far.
                 per_module_estimates[module_index] = current_module_so_far
                 per_module_estimates[module_index:] = per_module_estimates[:module_index+1].max()
-            print "current_module_so_far =", current_module_so_far, "; adjusted_time =", self.adjusted_time(), "; end_times =", self.end_times
-            print "durations:"
-            print durations
-            print "per_module_estimates:"
-            print per_module_estimates
+            if False:
+                print "current_module_so_far =", current_module_so_far, "; adjusted_time =", self.adjusted_time(), "; end_times =", self.end_times
+                print "durations:"
+                print durations
+                print "per_module_estimates:"
+                print per_module_estimates
             per_module_estimates[:module_index] *= self.num_image_sets - self.image_set_index - 1
             per_module_estimates[module_index:] *= self.num_image_sets - self.image_set_index
             per_module_estimates[module_index] -= current_module_so_far

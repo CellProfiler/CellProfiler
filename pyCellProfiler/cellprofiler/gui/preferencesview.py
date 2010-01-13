@@ -163,6 +163,14 @@ class PreferencesView:
     def attach_to_pipeline_list_view(self, pipeline_list_view):
         self.__pipeline_list_view = pipeline_list_view
     
+    def start_debugging(self):
+        self.__analyze_images_button.Disable()
+        self.__stop_analysis_button.Disable()
+        
+    def stop_debugging(self):
+        self.__analyze_images_button.Enable()
+        self.__stop_analysis_button.Enable()
+        
     def on_analyze_images(self):
         self.__odds_and_ends_panel.Sizer.Hide(self.__analyze_images_button)
         self.__odds_and_ends_panel.Sizer.Show(self.__stop_analysis_button)

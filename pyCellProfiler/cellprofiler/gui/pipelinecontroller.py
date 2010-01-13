@@ -160,9 +160,6 @@ class PipelineController:
         self.__test_controls_panel.Bind(wx.EVT_BUTTON, self.on_debug_next_group, self.__tcp_next_group)
         self.__test_controls_panel.Bind(wx.EVT_BUTTON, self.on_debug_prev_group, self.__tcp_prev_group)
 
-    def attach_to_preferences_view(self, preferences_view):
-        self.check_preferences = preferences_view.check_preferences
-        
     def __on_load_pipeline(self,event):
         dlg = wx.FileDialog(self.__frame,
                             "Choose a pipeline file to open",
@@ -467,7 +464,7 @@ class PipelineController:
         #
         ##################################
         
-        ok, reason = self.check_preferences()
+        ok, reason = self.__frame.preferences_view.check_preferences()
         if ok:
             try:
                 self.__pipeline.test_valid()
@@ -576,6 +573,7 @@ class PipelineController:
     
     def start_debugging(self):
         self.__pipeline_list_view.set_debug_mode(True)
+        self.__frame.preferences_view.start_debugging()
         self.__test_controls_panel.Show()
         self.__test_controls_panel.GetParent().GetSizer().Layout()
         self.__debug_measurements = cpm.Measurements(can_overwrite=True)
@@ -608,6 +606,7 @@ class PipelineController:
 
     def stop_debugging(self):
         self.__pipeline_list_view.set_debug_mode(False)
+        self.__frame.preferences_view.stop_debugging()
         self.__test_controls_panel.Hide()
         self.__test_controls_panel.GetParent().GetSizer().Layout()
         self.__frame.enable_debug_commands(False)

@@ -121,7 +121,8 @@ MeasureNeurons:[module_num:1|svn_version:\'8401\'|variable_revision_number:1|sho
         columns = module.get_measurement_columns(None)
         features = [c[1] for c in columns]
         features.sort()
-        expected = [M.F_NUMBER_NON_TRUNK_BRANCHES, M.F_NUMBER_TRUNKS]
+        expected = [M.F_NUMBER_NON_TRUNK_BRANCHES, M.F_NUMBER_TRUNKS, 
+                    M.F_NUMBER_BRANCH_ENDS]
         expected.sort()
         for feature, expected in zip(features, expected):
             expected_feature = "_".join((M.C_NEURON, expected, IMAGE_NAME))
@@ -135,10 +136,10 @@ MeasureNeurons:[module_num:1|svn_version:\'8401\'|variable_revision_number:1|sho
         self.assertEqual(len(module.get_categories(None, "Foo")), 0)
         
         measurements = module.get_measurements(None, OBJECT_NAME, M.C_NEURON)
-        self.assertEqual(len(measurements), 2)
+        self.assertEqual(len(measurements), 3)
         self.assertNotEqual(measurements[0], measurements[1])
         self.assertTrue(all([m in (M.F_NUMBER_NON_TRUNK_BRANCHES, 
-                                   M.F_NUMBER_TRUNKS)
+                                   M.F_NUMBER_TRUNKS, M.F_NUMBER_BRANCH_ENDS)
                              for m in measurements]))
         
         self.assertEqual(len(module.get_measurements(None,"Foo", M.C_NEURON)), 0)
@@ -154,7 +155,8 @@ MeasureNeurons:[module_num:1|svn_version:\'8401\'|variable_revision_number:1|sho
         module.run(workspace)
         m = workspace.measurements
         self.assertTrue(isinstance(m, cpmeas.Measurements))
-        for feature in (M.F_NUMBER_NON_TRUNK_BRANCHES, M.F_NUMBER_TRUNKS):
+        for feature in (M.F_NUMBER_NON_TRUNK_BRANCHES, M.F_NUMBER_TRUNKS,
+                        M.F_NUMBER_BRANCH_ENDS):
             mname = "_".join((M.C_NEURON, expected, IMAGE_NAME))
             data = m.get_current_measurement(OBJECT_NAME, mname)
             self.assertEqual(len(data), 0)

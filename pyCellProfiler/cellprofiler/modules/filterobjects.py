@@ -399,13 +399,16 @@ class FilterObjects(cpm.CPModule):
         target_name = self.target_name.value
         target_objects = workspace.get_objects(target_name)
         image = None
-        image_name = self.measurement.get_image_name(workspace.pipeline)
-        if image_name is None:
+        image_names = [image for image in 
+                       [m.measurement.get_image_name(workspace.pipeline)
+                        for m in self.measurements]
+                       if image is not None]
+        if len(image_names) == 0:
             # Measurement isn't image-based
             if src_objects.has_parent_image:
                 image = src_objects.parent_image
         else:
-            image = workspace.image_set.get_image(image_name)
+            image = workspace.image_set.get_image(image_names[0])
         if image is None:
             # Oh so sad - no image, just display the old and new labels
             figure = workspace.create_or_find_figure(subplots=(2,1))

@@ -24,15 +24,15 @@ if sys.platform.startswith('win'):
         print "CellProfiler will compile it, but may crash soon after."
         print "Restart CellProfiler and it will probably work."
 
-
-root = os.path.split(__file__)[0]
-if len(root) == 0:
-    root = os.curdir
-root = os.path.abspath(root)
-site_packages = os.path.join(root, 'site-packages')
-if os.path.exists(site_packages) and os.path.isdir(site_packages):
-    import site
-    site.addsitedir(site_packages)
+if not hasattr(sys, 'frozen'):
+    root = os.path.split(__file__)[0]
+    if len(root) == 0:
+        root = os.curdir
+    root = os.path.abspath(root)
+    site_packages = os.path.join(root, 'site-packages')
+    if os.path.exists(site_packages) and os.path.isdir(site_packages):
+        import site
+        site.addsitedir(site_packages)
 
 import optparse
 usage = """usage: %prog [options] [<measurement-file>])
@@ -77,11 +77,12 @@ parser.add_option("-g", "--group",
                         'pipeline. For instance, "-g ROW=H,COL=01", will '
                         'process only the group of image sets that match '
                         'the keys.'))
-parser.add_option("-b", "--do-not_build",
-                  dest="build_extensions",
-                  default=True,
-                  action="store_false",
-                  help="Do not build C and Cython extensions")
+if not hasattr(sys, 'frozen'):
+    parser.add_option("-b", "--do-not_build",
+                      dest="build_extensions",
+                      default=True,
+                      action="store_false",
+                      help="Do not build C and Cython extensions")
 parser.add_option("-d", "--done-file",
                   dest="done_file",
                   default=None,

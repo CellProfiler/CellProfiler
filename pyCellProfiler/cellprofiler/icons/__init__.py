@@ -14,6 +14,13 @@ __version__ = "$Revision: 8876 $"
 import wx
 import os.path
 import glob
+import sys
 
-for f in glob.glob(os.path.join(__path__[0], "*.png")):
-    globals()[os.path.basename(f)[:-4]] = wx.Image(f)
+if hasattr(sys, 'frozen'):
+    path = os.path.split(os.path.abspath(sys.argv[0]))[0]
+    path = os.path.join(path, 'cellprofiler','icons')
+else:
+    path = __path__[0]
+for f in glob.glob(os.path.join(path, "*.png")):
+    icon_name = os.path.basename(f)[:-4]
+    globals()[icon_name] = wx.Image(f)

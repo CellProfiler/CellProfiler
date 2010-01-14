@@ -47,6 +47,16 @@ try:
 except:
     has_bioformats = False
 import Image as PILImage
+#
+# Load all the PIL image plugins to initialize PIL in the
+# compiled version of CP
+#
+import BmpImagePlugin
+import DcxImagePlugin
+import EpsImagePlugin
+import GifImagePlugin
+import JpegImagePlugin
+import PngImagePlugin
 import TiffImagePlugin as TIFF
 import cellprofiler.dib
 import matplotlib.image

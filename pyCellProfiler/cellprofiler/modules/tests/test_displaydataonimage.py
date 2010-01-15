@@ -64,7 +64,6 @@ class TestDisplayDataOnImage(unittest.TestCase):
         self.assertEqual(module.image_name, "OrigBlue")
         self.assertEqual(module.text_color, "red")
         self.assertEqual(module.objects_or_image, D.OI_IMAGE)
-        self.assertAlmostEqual(module.dpi.value, 150)
         self.assertEqual(module.display_image, "OrigDataDisp")
         self.assertEqual(module.saved_image_contents, "Image")
         
@@ -107,7 +106,6 @@ class TestDisplayDataOnImage(unittest.TestCase):
         self.assertEqual(module.image_name, "OrigBlue")
         self.assertEqual(module.text_color, "blue")
         self.assertEqual(module.display_image, "Display")
-        self.assertAlmostEqual(module.dpi.value, 150)
         self.assertEqual(module.saved_image_contents, "Figure")
 
     def make_workspace(self, measurement, labels = None):

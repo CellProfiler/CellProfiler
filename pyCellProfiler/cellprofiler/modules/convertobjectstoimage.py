@@ -64,6 +64,13 @@ class ConvertObjectsToImage(cpm.CPModule):
                                 called label), so it usually results in objects on the left side of the
                                 image being very dark, progressing toward white on the right side of
                                 the image. </li>
+                                <li><i>uint16:</i> Gives each object a different number,
+                                from 1 to 65535 (the numbers that you can put in
+                                a 16-bit integer) and numbers all pixels in each
+                                object with the object's number. This format can
+                                be written out as a .MAT or .TIFF file if you
+                                want to process the label matrix image using
+                                another program.</li>
                                 </ul>
                                 You can choose <i>Color</i> with a <i>Gray</i> colormap to produce
                                 jumbled gray objects.""")

@@ -13,70 +13,74 @@ Website: http://www.cellprofiler.org
 __version__="$Revision$"
 
 import re
-from cellprofiler.cpmodule import CPModule
+import sys
+import os.path
+import glob
+import cellprofiler.cpmodule as cpm
+import cellprofiler.preferences as cpprefs
 
-# python modules and their corresponding cellprofiler.module classes
-pymodule_to_cpmodule = {'align' : 'Align',
-                        'applythreshold' : 'ApplyThreshold',
-                        'calculatemath' : 'CalculateMath',
-                        'calculatestatistics' : 'CalculateStatistics',
-                        'classifyobjects' : 'ClassifyObjects',
-                        'colortogray' : 'ColorToGray',
-                        'conservememory' : 'ConserveMemory',
-                        'convertobjectstoimage' : 'ConvertObjectsToImage',
-                        'correctillumination_calculate' : 'CorrectIllumination_Calculate',
-                        'correctillumination_apply' : 'CorrectIllumination_Apply',
-                        'createbatchfiles' : 'CreateBatchFiles',
-                        'crop' : 'Crop',
-                        'definegrid' : 'DefineGrid',
-                        'density' : 'DensityPlot',
-                        'displaydataonimage' : 'DisplayDataOnImage',
-                        'enhanceedges' : 'EnhanceEdges',
-                        'enhanceorsuppressfeatures' : 'EnhanceOrSuppressFeatures',
-                        'expandorshrinkobjects' : 'ExpandOrShrinkObjects',
-                        'exporttodatabase' : 'ExportToDatabase',
-                        'exporttospreadsheet' : 'ExportToSpreadsheet',
-                        'filterobjects' : 'FilterObjects',
-                        'flagimage' : 'FlagImage',
-                        'flipandrotate' : 'FlipAndRotate',
-                        'graytocolor' : 'GrayToColor',
-                        'histogram' : 'Histogram',
-                        'identifyobjectsingrid': 'IdentifyObjectsInGrid',
-                        'identifyprimaryobjects' : 'IdentifyPrimaryObjects',
-                        'identifysecondaryobjects' : 'IdentifySecondaryObjects',
-                        'identifytertiaryobjects' : 'IdentifyTertiaryObjects',
-                        'imagemath' : 'ImageMath',
-                        'invertforprinting' : 'InvertForPrinting',
-                        'loadimages' : 'LoadImages',
-                        'loadimagesnew' : 'LoadImagesNew',
-                        'loadsingleimage' : 'LoadSingleImage',
-                        'loaddata' : 'LoadData',
-                        'makeprojection' : 'MakeProjection',
-                        'maskimage' : 'MaskImage',
-                        'measurecorrelation' : 'MeasureCorrelation',
-                        'measureimageareaoccupied' : 'MeasureImageAreaOccupied',
-                        'measureimagegranularity' : 'MeasureImageGranularity',
-                        'measureimageintensity' : 'MeasureImageIntensity',
-                        'measureimagequality' : 'MeasureImageQuality',
-                        'measureobjectintensity' : 'MeasureObjectIntensity',
-                        'measureobjectsizeshape' : 'MeasureObjectSizeShape',
-                        'measureobjectneighbors' : 'MeasureObjectNeighbors',
-                        'measureobjectradialdistribution' : 'MeasureObjectRadialDistribution',
-                        'measureneurons': 'MeasureNeurons',
-                        'measuretexture' : 'MeasureTexture',
-                        'morph' : 'Morph',
-                        'overlay_outlines' : 'OverlayOutlines',
-                        'pausecellprofiler': 'PauseCellProfiler',
-                        'relateobjects' : 'RelateObjects',
-                        'reassignobjectnumbers': 'ReassignObjectNumbers',
-                        'rescaleintensity' : 'RescaleIntensity',
-                        'resize' : 'Resize',
-                        'saveimages' : 'SaveImages',
-                        'scatter' : 'ScatterPlot',
-                        'smooth' : 'Smooth',
-                        'trackobjects' : 'TrackObjects',
-                        'tile': 'Tile'
-                        }
+# the builtin CP modules that will be loaded from the cellprofiler.modules directory
+builtin_modules = ['align',
+                   'applythreshold',
+                   'calculatemath',
+                   'calculatestatistics',
+                   'classifyobjects',
+                   'colortogray',
+                   'conservememory',
+                   'convertobjectstoimage',
+                   'correctillumination_calculate',
+                   'correctillumination_apply',
+                   'createbatchfiles',
+                   'crop',
+                   'definegrid',
+                   'density',
+                   'displaydataonimage',
+                   'enhanceedges',
+                   'enhanceorsuppressfeatures',
+                   'expandorshrinkobjects',
+                   'exporttodatabase',
+                   'exporttospreadsheet',
+                   'filterobjects',
+                   'flagimage',
+                   'flipandrotate',
+                   'graytocolor',
+                   'histogram',
+                   'identifyobjectsingrid',
+                   'identifyprimaryobjects',
+                   'identifysecondaryobjects',
+                   'identifytertiaryobjects',
+                   'imagemath',
+                   'invertforprinting',
+                   'loadimages',
+                   'loadimagesnew',
+                   'loadsingleimage',
+                   'loaddata',
+                   'makeprojection',
+                   'maskimage',
+                   'measurecorrelation',
+                   'measureimageareaoccupied',
+                   'measureimagegranularity',
+                   'measureimageintensity',
+                   'measureimagequality',
+                   'measureobjectintensity',
+                   'measureobjectsizeshape',
+                   'measureobjectneighbors',
+                   'measureobjectradialdistribution',
+                   'measureneurons',
+                   'measuretexture',
+                   'morph',
+                   'overlay_outlines',
+                   'pausecellprofiler',
+                   'relateobjects',
+                   'reassignobjectnumbers',
+                   'rescaleintensity',
+                   'resize',
+                   'saveimages',
+                   'scatter',
+                   'smooth',
+                   'trackobjects',
+                   'tile',
+                   ]
 
 # CP-Matlab to CP-python module substitutions
 substitutions = {'Average': 'MakeProjection',
@@ -142,10 +146,16 @@ def check_module(module, name):
         return
     assert name == module.module_name, "Module %s should have module_name %s (is %s)"%(name, name, module.module_name)
     for method_name in do_not_override:
-        assert getattr(module, method_name) == getattr(CPModule, method_name), "Module %s should not override method %s"%(name, method_name)
+        assert getattr(module, method_name) == getattr(cpm.CPModule, method_name), "Module %s should not override method %s"%(name, method_name)
     for method_name in should_override:
-        assert getattr(module, method_name) != getattr(CPModule, method_name), "Module %s should override method %s"%(name, method_name)
+        assert getattr(module, method_name) != getattr(cpm.CPModule, method_name), "Module %s should override method %s"%(name, method_name)
     
+
+def find_cpmodule_name(m):
+    for v, val in m.__dict__.iteritems():
+        if isinstance(val, type) and issubclass(val, cpm.CPModule):
+            return val.module_name
+    raise "Could not find cpm.CPModule class in %s"%(m.__file__)
 
 def fill_modules():
     del pymodules[:]
@@ -153,25 +163,28 @@ def fill_modules():
     del datatools[:]
     all_modules.clear()
     svn_revisions.clear()
-    for mod, name in pymodule_to_cpmodule.items():
+
+    def add_module(mod, check_svn, rewrite_modulename):
         try:
-            m = __import__('cellprofiler.modules.' + mod, globals(), locals(), [name])
-            assert not name in all_modules, "Module %s appears more than once in module list"%(name)
+            m = __import__(mod, globals(), locals(), ['__all__'], 0)
+            name = find_cpmodule_name(m)
         except Exception, e:
             import traceback
             print traceback.print_exc(e)
             badmodules.append((mod, e))
-            continue
-        
+            return
+
         try:
             pymodules.append(m)
+            if name in all_modules:
+                sys.stderr.write("Warning, multiple definitions of module %s\n\told in %s\n\tnew in %s\n"%(name, sys.modules[all_modules[name].__module__].__file__, m.__file__))
             all_modules[name] = m.__dict__[name]
             check_module(m.__dict__[name], name)
             # attempt to instantiate
             all_modules[name]()
             if hasattr(all_modules[name], "run_as_data_tool"):
                 datatools.append(name)
-            if hasattr(m, '__version__'):
+            if check_svn and hasattr(m, '__version__'):
                 match = re.match('^\$Revision: ([0-9]+) \$$', m.__version__)
                 if match is not None:
                     svn_revisions[name] = match.groups()[0]
@@ -182,13 +195,17 @@ def fill_modules():
             if name in all_modules:
                 del all_modules[name]
                 del pymodules[-1]
+
+    for mod in builtin_modules:
+        add_module('cellprofiler.modules.'+ mod, True, False)
+
     datatools.sort()
     if len(badmodules) > 0:
         print "could not load these modules", badmodules
         
 fill_modules()
     
-__all__ = ['instantiate_module', 'get_module_classes', 'reload_modules']
+__all__ = ['instantiate_module', 'get_module_classes', 'reload_modules', 'get_module_doc']
 
 def instantiate_module(module_name):
     if module_name in substitutions: 

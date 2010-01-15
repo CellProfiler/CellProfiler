@@ -100,10 +100,10 @@ class DisplayDataOnImage(cpm.CPModule):
             doc="""This is the name that will be given to the image with
             the measurements superimposed. You can use this name to refer to the image in
             subsequent modules (such as <b>SaveImages</b>).""")
-        self.dpi = cps.Float(
-            "Resolution (pixels per inch)",96.0,minval=1.0,
-            doc="""This is the resolution to be used when displaying the image
-            (in pixels per inch).""")
+        self.font_size = cps.Integer(
+            "Font size (points)", 12, minval=1)
+        self.decimals = cps.Integer(
+            "Number of decimals", 2, minval=0)
         self.saved_image_contents = cps.Choice(
             "What elements do you want to save?",
             [E_IMAGE, E_FIGURE, E_AXES],
@@ -126,7 +126,7 @@ class DisplayDataOnImage(cpm.CPModule):
         """
         return [self.objects_or_image, self.objects_name, self.measurement,
                 self.image_name, self.text_color, self.display_image,
-                self.dpi, self.saved_image_contents]
+                self.font_size, self.decimals, self.saved_image_contents]
     
     def visible_settings(self):
         """The settings that are visible in the UI
@@ -135,7 +135,8 @@ class DisplayDataOnImage(cpm.CPModule):
         if self.objects_or_image == OI_OBJECTS:
             result += [self.objects_name]
         result += [self.measurement, self.image_name, self.text_color,
-                   self.display_image, self.dpi, self.saved_image_contents]
+                   self.display_image, self.font_size, self.decimals,
+                   self.saved_image_contents]
         return result
         
     def is_interactive(self):
@@ -175,19 +176,7 @@ class DisplayDataOnImage(cpm.CPModule):
         workspace.display_data.values = values
         workspace.display_data.x = x
         workspace.display_data.y = y
-        if self.saved_image_contents != E_FIGURE:
-            # Set the aspect ratio 
-            my_dpi = self.dpi.value * 2
-            height = float(image.pixel_data.shape[0]) * 4.0 / my_dpi
-            width = float(image.pixel_data.shape[1]) *4.0 / my_dpi
-            figure = matplotlib.figure.Figure(figsize=(width, height))
-        else:
-            # Set the aspect ratio 
-            my_dpi = self.dpi.value * 2
-            height = float(image.pixel_data.shape[0]) * 4.0 / my_dpi / .8
-            width = float(image.pixel_data.shape[1]) *4.0 / my_dpi / .8
-            figure = matplotlib.figure.Figure(figsize=(width, height))
-        figure.set_dpi(my_dpi)
+        figure = matplotlib.figure.Figure()
         self.display_on_figure(workspace, figure)
         if self.saved_image_contents == E_AXES:
             figure.subplots_adjust(0,0,1,1,0,0)
@@ -207,7 +196,6 @@ class DisplayDataOnImage(cpm.CPModule):
     def display(self, workspace):
         figure_frame = workspace.create_or_find_figure()
         figure_frame.clf()
-        figure_frame.figure.set_dpi(self.dpi.value)
         self.display_on_figure(workspace, figure_frame.figure)
         
     def display_on_figure(self, workspace, figure):
@@ -225,14 +213,12 @@ class DisplayDataOnImage(cpm.CPModule):
                                workspace.display_data.values):
             try:
                 fvalue = float(value)
-                if round(fvalue) == value:
-                    svalue = str(value)
-                else:
-                    svalue = round(fvalue,3)
+                svalue = "%.*f"%(self.decimals.value, value)
             except:
                 svalue = str(value)
             
             text = matplotlib.text.Text(x=x, y=y, text=svalue,
+                                        size=self.font_size.value,
                                         color=self.text_color.value,
                                         verticalalignment='center',
                                         horizontalalignment='center')
@@ -254,6 +240,13 @@ class DisplayDataOnImage(cpm.CPModule):
                 "red", data_image, dpi_to_save, saved_image_contents]
             from_matlab = False
             variable_revision_number = 1
-        
+        if variable_revision_number == 1:
+            objects_or_image, objects_name, measurement, \
+                image_name, text_color, display_image, \
+                dpi, saved_image_contents = setting_values
+            setting_values = [objects_or_image, objects_name, measurement,
+                              image_name, text_color, display_image,
+                              12, 2, saved_image_contents]
+            variable_revision_number = 2
         return setting_values, variable_revision_number, from_matlab
         

@@ -74,7 +74,8 @@ pymodule_to_cpmodule = {'align' : 'Align',
                         'saveimages' : 'SaveImages',
                         'scatter' : 'ScatterPlot',
                         'smooth' : 'Smooth',
-                        'trackobjects' : 'TrackObjects'
+                        'trackobjects' : 'TrackObjects',
+                        'tile': 'Tile'
                         }
 
 # CP-Matlab to CP-python module substitutions

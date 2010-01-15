@@ -21,6 +21,7 @@ See also <b>IdentifyPrimAutomatic, IdentifySecondary, IdentifyTertiarySubregion<
 __version__="$Revision$"
 
 import numpy as np
+from scipy.ndimage import distance_transform_edt
 
 import cellprofiler.cpmodule as cpm
 import cellprofiler.cpimage as cpi
@@ -44,7 +45,7 @@ COLOR_ORDER = ["Red", "Green", "Blue","Yellow","White","Black"]
 class OverlayOutlines(cpm.CPModule):
 
     module_name = 'OverlayOutlines'
-    variable_revision_number = 1
+    variable_revision_number = 2
     category = "Image Processing"
     
     def create_settings(self):
@@ -60,6 +61,10 @@ class OverlayOutlines(cpm.CPModule):
             Choose the image to serve as the background for the outlines.
             You can choose from images that were loaded or created by modules
             previous to this one""")
+        self.line_width = cps.Float(
+            "Line width:", "1",
+            doc = """This setting determines the width, in pixels, of your
+            outlines as displayed on the image""")
         self.output_image_name = cps.ImageNameProvider(
             "Name the output image:",
             "OrigOverlay",
@@ -120,14 +125,14 @@ class OverlayOutlines(cpm.CPModule):
         self.outlines.append(group)
 
     def prepare_settings(self, setting_values):
-        assert (len(setting_values) - 5) % 2 == 0
+        assert (len(setting_values) - 6) % 2 == 0
         self.outlines = []
-        for i in range((len(setting_values) - 5)/2):
+        for i in range((len(setting_values) - 6)/2):
             self.add_outline()
 
     def settings(self):
         result = [self.blank_image, self.image_name, self.output_image_name,
-                  self.wants_color, self.max_type]
+                  self.wants_color, self.max_type, self.line_width]
         for outline in self.outlines:
             result += [outline.outline_name, outline.color]
         return result
@@ -136,7 +141,8 @@ class OverlayOutlines(cpm.CPModule):
         result = [self.blank_image]
         if not self.blank_image.value:
             result += [self.image_name]
-        result += [self.output_image_name, self.wants_color, self.spacer]
+        result += [self.output_image_name, self.wants_color, 
+                   self.line_width, self.spacer]
         if (self.wants_color.value == WANTS_GRAYSCALE and not
             self.blank_image.value):
             result += [self.max_type]
@@ -226,12 +232,24 @@ class OverlayOutlines(cpm.CPModule):
             else:
                 pixel_data = pixel_data.copy()
         for outline in self.outlines:
-            mask = image_set.get_image(outline.outline_name.value,
-                                       must_be_binary=True).pixel_data
+            outline_img = self.get_outline(image_set, outline.outline_name.value)
             color = COLORS[outline.color.value]
             for i in range(3):
-                pixel_data[:,:,i][mask] = float(color[i])/255.0
+                pixel_data[:,:,i] = (pixel_data[:,:,i] * (1-outline_img) +
+                                     outline_img * float(color[i])/255.0)
         return pixel_data
+    
+    def get_outline(self, image_set, name):
+        '''Get outline, with aliasing and taking widths into account'''
+        mask = image_set.get_image(name, must_be_binary=True).pixel_data
+        half_width = self.line_width.value / 2
+        distance_image = distance_transform_edt(~mask)
+        output_image = np.zeros(mask.shape)
+        output_image[distance_image <= half_width] = 1
+        alias_mask = ((distance_image > half_width) &
+                      (distance_image < half_width+1))
+        output_image[alias_mask] = half_width+1 - distance_image[alias_mask]
+        return output_image
     
     def upgrade_settings(self, setting_values, variable_revision_number, 
                          module_name, from_matlab):
@@ -251,5 +269,11 @@ class OverlayOutlines(cpm.CPModule):
                               setting_values[4]]
             from_matlab = False
             variable_revision_number = 1
+        if (not from_matlab) and variable_revision_number == 1:
+            #
+            # Added line width
+            #
+            setting_values = setting_values[:5] + ["1"] + setting_values[5:]
+            variable_revision_number = 2
         return setting_values, variable_revision_number, from_matlab
 

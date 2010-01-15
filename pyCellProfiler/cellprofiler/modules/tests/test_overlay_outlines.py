@@ -130,6 +130,41 @@ class TestOverlayOutlines(unittest.TestCase):
         self.assertEqual(module.outlines[0].outline_name.value, "NucleiOutlines")
         self.assertEqual(module.outlines[0].color.value, "Green")
         self.assertEqual(module.max_type.value, O.MAX_IMAGE)
+        
+    def test_01_03_load_v2(self):
+        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:1
+SVNRevision:9063
+
+OverlayOutlines:[module_num:5|svn_version:\'9000\'|variable_revision_number:2|show_window:True|notes:\x5B\x5D]
+    Display outlines on a blank image?:No
+    Select image on which to display outlines:DNA
+    Name the output image\x3A:PrimaryOverlay
+    Select outline display mode\x3A:Color
+    Select method to determine brightness of outlines\x3A:Max of image
+    Line width\x3A:1.5
+    Select outlines to display\x3A:PrimaryOutlines
+    Select outline color\x3A:Red
+    Select outlines to display\x3A:SecondaryOutlines
+    Select outline color\x3A:Green
+"""
+        pipeline = cpp.Pipeline()
+        pipeline.load(StringIO(data))
+        self.assertEqual(len(pipeline.modules()),1)
+        module = pipeline.modules()[0]
+        self.assertTrue(isinstance(module, O.OverlayOutlines))
+        self.assertFalse(module.blank_image)
+        self.assertEqual(module.image_name, "DNA")
+        self.assertEqual(module.output_image_name, "PrimaryOverlay")
+        self.assertEqual(module.wants_color, "Color")
+        self.assertEqual(module.max_type, O.MAX_IMAGE)
+        self.assertAlmostEqual(module.line_width.value, 1.5)
+        self.assertEqual(len(module.outlines), 2)
+        for outline, name, color in zip(module.outlines,
+                                        ("PrimaryOutlines", "SecondaryOutlines"),
+                                        ("Red", "Green")):
+            self.assertEqual(outline.outline_name, name)
+            self.assertEqual(outline.color, color)
 
     def test_02_01_gray_to_color_outlines(self):
         np.random.seed(0)
@@ -144,6 +179,7 @@ class TestOverlayOutlines(unittest.TestCase):
         workspace, module = self.make_workspace(image, outline)
         module.wants_color.value = O.WANTS_COLOR
         module.outlines[0].color.value = "Red"
+        module.line_width.value = 0.0
         module.run(workspace)
         output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         self.assertTrue(np.all(output_image.pixel_data == expected))
@@ -161,6 +197,7 @@ class TestOverlayOutlines(unittest.TestCase):
         workspace, module = self.make_workspace(image, outline)
         module.wants_color.value = O.WANTS_COLOR
         module.outlines[0].color.value = "Red"
+        module.line_width.value = 0.0
         module.run(workspace)
         output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         self.assertTrue(np.all(output_image.pixel_data == expected))
@@ -179,6 +216,7 @@ class TestOverlayOutlines(unittest.TestCase):
         module.blank_image.value = True
         module.wants_color.value = O.WANTS_COLOR
         module.outlines[0].color.value = "Red"
+        module.line_width.value = 0.0
         module.run(workspace)
         output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         self.assertTrue(np.all(output_image.pixel_data == expected))
@@ -194,6 +232,7 @@ class TestOverlayOutlines(unittest.TestCase):
         workspace, module = self.make_workspace(image, outline)
         module.blank_image.value = True
         module.wants_color.value = O.WANTS_GRAYSCALE
+        module.line_width.value = 0.0
         module.run(workspace)
         output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         self.assertTrue(np.all(output_image.pixel_data == expected))
@@ -210,6 +249,7 @@ class TestOverlayOutlines(unittest.TestCase):
         module.blank_image.value = False
         module.wants_color.value = O.WANTS_GRAYSCALE
         module.max_type.value = O.MAX_IMAGE
+        module.line_width.value = 0.0
         module.run(workspace)
         output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         self.assertTrue(np.all(output_image.pixel_data == expected))
@@ -226,6 +266,7 @@ class TestOverlayOutlines(unittest.TestCase):
         module.blank_image.value = False
         module.wants_color.value = O.WANTS_GRAYSCALE
         module.max_type.value = O.MAX_POSSIBLE
+        module.line_width.value = 0.0
         module.run(workspace)
         output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         self.assertTrue(np.all(output_image.pixel_data == expected))

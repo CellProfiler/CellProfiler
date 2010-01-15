@@ -361,8 +361,7 @@ class PipelineListView(object):
         
     def __populate_row(self, module):
         """Populate a row in the grid with a module."""
-        import cellprofiler.cpmodule as cpm
-        assert isinstance(module, cpm.CPModule)
+        print "Populating %s at %d" % (module.module_name, module.module_num)
         row = module.module_num-1
         pause_item = wx.ListItem()
         pause_item.Mask = wx.LIST_MASK_IMAGE
@@ -403,9 +402,9 @@ class PipelineListView(object):
         
     def __on_module_moved(self,pipeline,event):
         if event.direction == cellprofiler.pipeline.DIRECTION_UP:
-            start = event.module_num - 2
-        else:
             start = event.module_num - 1
+        else:
+            start = event.module_num - 2
         first_selected = self.list_ctrl.IsSelected(start)
         second_selected = self.list_ctrl.IsSelected(start+1)
         self.list_ctrl.DeleteItem(start)
@@ -416,6 +415,7 @@ class PipelineListView(object):
         self.list_ctrl.Select(start+1, first_selected)
         self.__adjust_rows()
         self.__controller.enable_module_controls_panel_buttons()
+        self.list_ctrl.Refresh()
     
     def __on_item_selected(self,event):
         if self.__module_view:

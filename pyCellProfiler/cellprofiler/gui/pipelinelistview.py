@@ -361,7 +361,6 @@ class PipelineListView(object):
         
     def __populate_row(self, module):
         """Populate a row in the grid with a module."""
-        print "Populating %s at %d" % (module.module_name, module.module_num)
         row = module.module_num-1
         pause_item = wx.ListItem()
         pause_item.Mask = wx.LIST_MASK_IMAGE

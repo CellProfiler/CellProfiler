@@ -646,11 +646,12 @@ class Pipeline(object):
         s = s.replace('[','\\x5B').replace(']','\\x5D')
         return s
         
-    def savetxt(self, fd_or_filename):
+    def savetxt(self, fd_or_filename, modules_to_save = None):
         '''Save the pipeline in a text format
         
         fd_or_filename - can be either a "file descriptor" with a "write"
                          attribute or the path to the file to write.
+        modules_to_save - if present, the module numbers of the modules to save
                          
         The format of the file is the following:
         Strings are encoded using a backslash escape sequence. The colon
@@ -686,6 +687,9 @@ class Pipeline(object):
         attributes = ('module_num','svn_version','variable_revision_number',
                       'show_window','notes')
         for module in self.modules():
+            if ((modules_to_save is not None) and 
+                module.module_num not in modules_to_save):
+                continue
             fd.write("\n")
             attribute_values = [repr(getattr(module, attribute))
                                 for attribute in attributes]

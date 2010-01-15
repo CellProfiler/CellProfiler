@@ -15,11 +15,12 @@ __version__="$Revision$"
 from StringIO import StringIO
 import time
 import base64
+import math
 import zlib
 import wx
 import sys
 
-import cellprofiler.pipeline
+import cellprofiler.pipeline as cpp
 import cellprofiler.gui.movieslider as cpgmov
 from cellprofiler.gui.cpfigure import window_name
 
@@ -165,6 +166,9 @@ class PipelineListView(object):
         wx.EVT_IDLE(panel,self.on_idle)
         self.__adjust_rows()
         self.__first_dirty_module = 0
+        self.drag_underway = False
+        self.drag_start = None
+        self.list_ctrl.SetDropTarget(PipelineDropTarget(self))
 
     def make_list(self):
         '''Make the list control with the pipeline items in it'''
@@ -248,22 +252,22 @@ class PipelineListView(object):
         """Pipeline event notifications come through here
         
         """
-        if isinstance(event,cellprofiler.pipeline.PipelineLoadedEvent):
+        if isinstance(event,cpp.PipelineLoadedEvent):
             self.__on_pipeline_loaded(pipeline,event)
             self.__first_dirty_module = 0
-        elif isinstance(event,cellprofiler.pipeline.ModuleAddedPipelineEvent):
+        elif isinstance(event,cpp.ModuleAddedPipelineEvent):
             self.__on_module_added(pipeline,event)
             self.__first_dirty_module = min(self.__first_dirty_module, event.module_num - 1)
-        elif isinstance(event,cellprofiler.pipeline.ModuleMovedPipelineEvent):
+        elif isinstance(event,cpp.ModuleMovedPipelineEvent):
             self.__on_module_moved(pipeline,event)
             self.__first_dirty_module = min(self.__first_dirty_module, event.module_num - 2)
-        elif isinstance(event,cellprofiler.pipeline.ModuleRemovedPipelineEvent):
+        elif isinstance(event,cpp.ModuleRemovedPipelineEvent):
             self.__on_module_removed(pipeline,event)
             self.__first_dirty_module = min(self.__first_dirty_module, event.module_num - 1)
-        elif isinstance(event,cellprofiler.pipeline.PipelineClearedEvent):
+        elif isinstance(event,cpp.PipelineClearedEvent):
             self.__on_pipeline_cleared(pipeline, event)
             self.__first_dirty_module = 0
-        elif isinstance(event,cellprofiler.pipeline.ModuleEditedPipelineEvent):
+        elif isinstance(event,cpp.ModuleEditedPipelineEvent):
             self.__first_dirty_module = min(self.__first_dirty_module, event.module_num - 1)
     
     def notify_directory_change(self):
@@ -301,8 +305,6 @@ class PipelineListView(object):
                 if event.Position[0] < start + widths[subitem]:
                     break
                 start += widths[subitem]
-        print ("Item # %d, hit code %d (0x%x), subitem %d, x: %d, y: %d" % 
-                (item, hit_code, hit_code, subitem, event.Position[0], event.Position[1]))
         if (item >= 0 and item < self.list_ctrl.ItemCount and
             (hit_code & wx.LIST_HITTEST_ONITEM)):
             module = self.__pipeline.modules()[item]
@@ -321,8 +323,77 @@ class PipelineListView(object):
                 if figure is not None:
                     figure.Close()
             else:
-                event.Skip()
+                if self.list_ctrl.IsSelected(item):
+                    self.start_drag_operation()
+                else:
+                    event.Skip()
+        else:
+            event.Skip()
+
+    def start_drag_operation(self):
+        '''Start dragging whatever is selected'''
+        fd = StringIO()
+        modules_to_save = [m.module_num for m in self.get_selected_modules()]
+        self.__pipeline.savetxt(fd, modules_to_save)
+        pipeline_data_object = PipelineDataObject()
+        fd.seek(0)
+        pipeline_data_object.SetData(fd.read())
+
+        text_data_object = wx.TextDataObject()
+        fd.seek(0)
+        text_data_object.SetData(fd.read())
+        
+        data_object = wx.DataObjectComposite()
+        data_object.Add(pipeline_data_object)
+        data_object.Add(text_data_object)
+        drop_source = wx.DropSource(self.list_ctrl)
+        drop_source.SetData(data_object)
+        self.drag_underway = True
+        result = drop_source.DoDragDrop(wx.Drag_AllowMove)
+        self.drag_underway = False
+        
+        
+    def provide_drag_feedback(self, x, y, data):
+        pass
     
+    def on_drop(self, x, y):
+        return True
+    
+    def on_data(self, x, y, action, data):
+        selected_module_indexes = [m.module_num - 1
+                                   for m in self.get_selected_modules()]
+        #
+        # First, insert the new modules
+        #
+        index, code = self.list_ctrl.HitTest(wx.Point(x,y))
+        if code & wx.LIST_HITTEST_ONITEM:
+            wx.BeginBusyCursor()
+            try:
+                r = self.list_ctrl.GetItemRect(index)
+                #
+                # Put before or after depending on whether we are more or
+                # less than 1/2 of the way
+                #
+                if y > r[1]+ r[3]/2:
+                    index += 1
+                pipeline = cpp.Pipeline()
+                pipeline.load(StringIO(data))
+                for i, module in enumerate(pipeline.modules()):
+                    module.module_num = i+index + 1
+                    self.__pipeline.add_module(module)
+                #
+                # Then remove the old ones, in reverse order
+                #
+                if action == wx.DragMove:
+                    selected_module_indexes.sort(reverse = True)
+                    for i in selected_module_indexes:
+                        module_num = i+1
+                        if i >= index:
+                            module_num += len(pipeline.modules())
+                        self.__pipeline.remove_module(module_num)
+            finally:
+                wx.EndBusyCursor()
+                    
     def __on_pipeline_loaded(self,pipeline,event):
         """Repopulate the list view after the pipeline loads
         
@@ -413,7 +484,7 @@ class PipelineListView(object):
         self.__controller.enable_module_controls_panel_buttons()
         
     def __on_module_moved(self,pipeline,event):
-        if event.direction == cellprofiler.pipeline.DIRECTION_UP:
+        if event.direction == cpp.DIRECTION_UP:
             start = event.module_num - 1
         else:
             start = event.module_num - 2
@@ -497,3 +568,31 @@ class PipelineListView(object):
         event.RequestMore(False)
         
         self.__first_dirty_module = len(modules)
+
+PIPELINE_DATA_FORMAT = "CellProfiler.Pipeline"
+class PipelineDataObject(wx.CustomDataObject):
+    def __init__(self):
+        super(PipelineDataObject, self).__init__(
+            wx.CustomDataFormat(PIPELINE_DATA_FORMAT))
+        
+class PipelineDropTarget(wx.PyDropTarget):
+    def __init__(self, window):
+        super(PipelineDropTarget, self).__init__()
+        self.window = window
+        self.SetDataObject(PipelineDataObject())
+        
+    def OnDragOver(self, x, y, data):
+        self.window.provide_drag_feedback(x, y, data)
+        if wx.GetKeyState(wx.WXK_CONTROL) == 0:
+            return wx.DragMove
+        return wx.DragCopy
+    
+    def OnDrop(self, x, y):
+        return self.window.on_drop(x, y)
+    
+    def OnData(self, x, y, action):
+        if self.GetData():
+            data_object = self.GetDataObject()
+            self.window.on_data(x, y, action, data_object.GetDataHere(
+                wx.CustomDataFormat(PIPELINE_DATA_FORMAT)))
+        return action

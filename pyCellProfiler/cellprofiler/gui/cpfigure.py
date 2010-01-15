@@ -13,6 +13,7 @@ Website: http://www.cellprofiler.org
 __version__ = "$Revision$"
 
 import numpy as np
+import os
 import wx
 import matplotlib
 import matplotlib.cm
@@ -149,6 +150,7 @@ class CPFigureFrame(wx.Frame):
         self.MenuBar = wx.MenuBar()
         self.__menu_file = wx.Menu()
         self.__menu_file.Append(MENU_FILE_SAVE,"&Save")
+        wx.EVT_MENU(self, MENU_FILE_SAVE, self.on_file_save)
         self.MenuBar.Append(self.__menu_file,"&File")
         
         self.__menu_zoom = wx.Menu()
@@ -385,6 +387,24 @@ class CPFigureFrame(wx.Frame):
         self.figure.canvas.draw()
         self.Refresh()
     
+    def on_file_save(self, event):
+        dlg = wx.FileDialog(self, "Save figure", 
+                            wildcard = ("PDF file (*.pdf)|*.pdf|"
+                                        "Png image (*.png)|*.png|"
+                                        "Postscript file (*.ps)|*.ps"),
+                            style = wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT)
+        if dlg.ShowModal() == wx.ID_OK:
+            path = os.path.join(dlg.GetPath())
+            if dlg.FilterIndex == 1:
+                format = "png"
+            elif dlg.FilterIndex == 0:
+                format = "pdf"
+            elif dlg.FilterIndex == 2:
+                format = "ps"
+            else:
+                format = "pdf"
+            self.figure.savefig(path, format = format)
+            
     def subplot(self,x,y):
         """Return the indexed subplot
         

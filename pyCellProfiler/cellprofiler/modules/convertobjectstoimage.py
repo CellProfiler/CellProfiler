@@ -122,6 +122,7 @@ class ConvertObjectsToImage(cpm.CPModule):
             mapper = matplotlib.cm.ScalarMappable(cmap=cm)
             pixel_data = mapper.to_rgba(renumber_labels_for_display(labels))
             pixel_data = pixel_data[:,:,:3]
+            pixel_data[labels == 0,:] = 0
             if not workspace.frame is None:
                 figure.subplot_imshow_color(1,0,pixel_data, self.image_name.value)
         elif self.image_mode == IM_UINT16:

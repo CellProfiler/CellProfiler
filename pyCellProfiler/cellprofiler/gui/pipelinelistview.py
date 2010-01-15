@@ -289,7 +289,20 @@ class PipelineListView(object):
                 if self.list_ctrl.IsSelected(i)]
     
     def __on_list_left_down(self, event):
-        item, hit_code, subitem = self.list_ctrl.HitTestSubItem(event.Position)
+        if sys.platform.startswith("win"):
+            item, hit_code, subitem = self.list_ctrl.HitTestSubItem(event.Position)
+        else:
+            # Mac's HitTestSubItem does not work. Sorry.
+            #
+            item, hit_code = self.list_ctrl.HitTest(event.Position)
+            widths = [self.list_ctrl.GetColumnWidth(i) for i in range(4)]
+            start = 0
+            for subitem in range(4):
+                if event.Position[0] < start + widths[subitem]:
+                    break
+                start += widths[subitem]
+        print ("Item # %d, hit code %d (0x%x), subitem %d, x: %d, y: %d" % 
+                (item, hit_code, hit_code, subitem, event.Position[0], event.Position[1]))
         if (item >= 0 and item < self.list_ctrl.ItemCount and
             (hit_code & wx.LIST_HITTEST_ONITEM)):
             module = self.__pipeline.modules()[item]

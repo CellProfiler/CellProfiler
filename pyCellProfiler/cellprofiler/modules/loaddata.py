@@ -475,6 +475,9 @@ class LoadData(cpm.CPModule):
         elif self.csv_directory_choice == DIR_DEFAULT_OUTPUT:
             self.csv_directory_choice.value = DIR_OTHER
             self.csv_custom_directory.value = cpprefs.get_default_output_directory()
+        else:
+            self.csv_custom_directory.value = cpprefs.get_absolute_path(
+                self.csv_custom_directory.value)
         self.csv_custom_directory.value = fn_alter_path(self.csv_custom_directory.value)
         self.image_custom_directory.value = \
             fn_alter_path(self.image_custom_directory.value)

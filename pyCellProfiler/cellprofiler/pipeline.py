@@ -342,6 +342,7 @@ class Pipeline(object):
         self.__listeners = [];
         self.__measurement_columns = {}
         self.__measurement_column_hash = None
+        self.__test_mode = False
     
     def copy(self):
         '''Create a copy of the pipeline modules and settings'''
@@ -1202,6 +1203,13 @@ class Pipeline(object):
         '''
         for module in self.modules():
             module.turn_off_batch_mode()
+
+    def get_test_mode(self):
+        return self.__test_mode
+    def set_test_mode(self, val):
+        self.__test_mode = val
+    test_mode = property(get_test_mode, set_test_mode)
+    
 
     def clear(self):
         old_modules = self.__modules

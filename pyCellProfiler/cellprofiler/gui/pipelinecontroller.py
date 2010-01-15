@@ -583,6 +583,7 @@ class PipelineController:
         self.__debug_object_set = cpo.ObjectSet(can_overwrite=True)
         self.__frame.enable_debug_commands()
         assert isinstance(self.__pipeline, cellprofiler.pipeline.Pipeline)
+        self.__pipeline.test_mode = True
         try:
             self.__debug_image_set_list = self.__pipeline.prepare_run(self.__frame)
             self.__keys, self.__groupings = self.__pipeline.get_groupings(
@@ -619,6 +620,7 @@ class PipelineController:
         self.__debug_outlines = None
         self.__debug_grids = None
         self.__pipeline_list_view.on_stop_debugging()
+        self.__pipeline.test_mode = False
         self.__pipeline.end_run()
     
     def on_debug_step(self, event):

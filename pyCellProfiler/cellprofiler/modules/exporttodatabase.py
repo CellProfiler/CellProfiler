@@ -454,7 +454,8 @@ class ExportToDatabase(cpm.CPModule):
     def run(self, workspace):
         if (self.db_type == DB_MYSQL or self.db_type == DB_SQLITE):
             mappings = self.get_column_name_mappings(workspace.pipeline)
-            self.write_data_to_db(workspace, mappings)
+            if not workspace.pipeline.test_mode:
+                self.write_data_to_db(workspace, mappings)
             
     def post_run(self, workspace):
         if self.save_cpa_properties.value:

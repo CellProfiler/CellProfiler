@@ -723,10 +723,10 @@ class IdentifyPrimaryObjects(cpmi.Identify):
                 statistics.append(["Area covered by objects",
                                    "%.1f %%"%(100.0*float(object_area)/
                                               float(total_area))])
-                statistics.append(["Smoothing filter size",
-                                   "%.1f"%(self.calc_smoothing_filter_size())])
-                statistics.append(["Maxima suppression size",
-                                   "%.1f"%(maxima_suppression_size)])
+            statistics.append(["Smoothing filter size",
+                               "%.1f"%(self.calc_smoothing_filter_size())])
+            statistics.append(["Maxima suppression size",
+                               "%.1f"%(maxima_suppression_size)])
             workspace.display_data.image = image
             workspace.display_data.labeled_image = labeled_image
             workspace.display_data.outline_image = outline_image
@@ -850,12 +850,15 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             else:
                 maxima_suppression_size = (self.maxima_suppression_size.value *
                                            image_resize_factor+.5)
+            reported_maxima_suppression_size = \
+                    maxima_suppression_size / image_resize_factor
         else:
             image_resize_factor = 1.0
             if self.automatic_suppression.value:
                 maxima_suppression_size = self.size_range.min/1.5
             else:
                 maxima_suppression_size = self.maxima_suppression_size.value
+            reported_maxima_suppression_size = maxima_suppression_size
         maxima_mask = strel_disk(maxima_suppression_size-.5)
         distance_transformed_image = None
         if self.unclump_method == UN_LOG:
@@ -954,7 +957,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
                                          mask=labeled_image!=0)
         watershed_boundaries = -watershed_boundaries
         
-        return watershed_boundaries, object_count, maxima_suppression_size
+        return watershed_boundaries, object_count, reported_maxima_suppression_size
 
     def get_maxima(self,image,labeled_image,maxima_mask,image_resize_factor):
         if image_resize_factor < 1.0:

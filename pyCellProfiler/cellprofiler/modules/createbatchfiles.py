@@ -166,7 +166,7 @@ class CreateBatchFiles(cpm.CPModule):
     def prepare_run(self, pipeline, image_set_list, frame):
         '''Invoke the image_set_list pickling mechanism and save the pipeline'''
         if pipeline.test_mode:
-            return
+            return True
         if self.batch_mode.value:
             self.enter_batch_mode(pipeline, image_set_list)
             return True

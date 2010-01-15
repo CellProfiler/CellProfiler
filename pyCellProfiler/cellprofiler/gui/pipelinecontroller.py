@@ -383,6 +383,9 @@ class PipelineController:
         return self.__pipeline_list_view.get_selected_modules()
     
     def on_remove_module(self,event):
+        self.remove_selected_modules()
+        
+    def remove_selected_modules(self):
         selected_modules = self.__get_selected_modules()
         for module in selected_modules:
             for setting in module.settings():

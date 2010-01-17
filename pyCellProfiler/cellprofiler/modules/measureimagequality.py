@@ -71,6 +71,7 @@ __version__="$Revision$"
 
 import numpy as np
 import scipy.ndimage as scind
+from scipy.linalg.basic import lstsq
 
 from cellprofiler.cpmath.cpmorphology import fixup_scipy_ndimage_result as fix
 import cellprofiler.cpmodule as cpm
@@ -88,7 +89,7 @@ THRESHOLD = 'Threshold'
 MEAN_THRESH_ALL_IMAGES = 'MeanThresh_AllImages'
 MEDIAN_THRESH_ALL_IMAGES = 'MedianThresh_AllImages'
 STD_THRESH_ALL_IMAGES = 'StdThresh_AllImages'
-POWER_SPECTRUM_FEATURES = ['PowerSpectrum1stQuartile', 'PowerSpectrum2ndQuartile', 'PowerSpectrum3rdQuartile', 'PowerSpectrumSum']
+POWER_SPECTRUM_FEATURES = ['PowerSpectrum1stQuartile', 'PowerSpectrum2ndQuartile', 'PowerSpectrum3rdQuartile', 'PowerSpectrumSum', 'PowerSpectrumLogLogSlope']
 SETTINGS_PER_GROUP = 8
 
 class MeasureImageQuality(cpm.CPModule):
@@ -496,11 +497,20 @@ class MeasureImageQuality(cpm.CPModule):
             power1st = radii[cpower.searchsorted(0.25)]
             power2nd = radii[cpower.searchsorted(0.5)]
             power3rd = radii[cpower.searchsorted(0.75)]
+            # find slope of first half of power spectrum
+            radii = radii[:len(radii) / 2]
+            power = power[:radii.shape[0]]
+            radii = radii[power > 0].reshape((-1, 1))
+            power = power[power > 0].reshape((-1, 1))
+            if radii.shape[0] > 1:
+                slope = lstsq(np.hstack((np.log(radii), np.ones(radii.shape))), np.log(power))[0][0]
+            else:
+                slope = 0
         else:
-            power1st = power2nd = power3rd = 0
+            power1st = power2nd = power3rd = slope = 0
 
         result = []
-        for fname, val in zip(POWER_SPECTRUM_FEATURES, [power1st, power2nd, power3rd, powersum]):
+        for fname, val in zip(POWER_SPECTRUM_FEATURES, [power1st, power2nd, power3rd, powersum, slope]):
             workspace.add_measurement(cpmeas.IMAGE, 
                                       "%s_%s_%s"%(IMAGE_QUALITY, fname, image_name),
                                       val)

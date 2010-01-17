@@ -22,7 +22,6 @@ import matplotlib.cm
 class DensityPlot(cpm.CPModule):
     '''
     SHORT DESCRIPTION:
-    Plots stuff.  duh.
     '''
     module_name = "DensityPlot"
     category = "Other"

@@ -22,7 +22,6 @@ import cellprofiler.settings as cps
 class Histogram(cpm.CPModule):
     '''
     SHORT DESCRIPTION:
-    Plots stuff.  duh.
     '''
     module_name = "Histogram"
     category = "Other"

@@ -22,7 +22,6 @@ import cellprofiler.settings as cps
 class ScatterPlot(cpm.CPModule):
     '''
     SHORT DESCRIPTION:
-    Plots stuff.  duh.
     '''
     module_name = "ScatterPlot"
     category = "Other"

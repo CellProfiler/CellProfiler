@@ -77,7 +77,7 @@ class ScatterPlot(cpm.CPModule):
 
     def run(self, workspace):
         m = workspace.get_measurements()
-        if self.source.value == cpmeas.IMAGE and 
+        if self.source.value == cpmeas.IMAGE:
             x = m.get_all_measurements(cpmeas.IMAGE, self.y_axis.value)
             y = m.get_all_measurements(cpmeas.IMAGE, self.y_axis.value)
         else:

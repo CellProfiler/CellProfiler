@@ -324,13 +324,13 @@ class PipelineListView(object):
                     figure.Close()
             else:
                 if self.list_ctrl.IsSelected(item):
-                    self.start_drag_operation()
+                    self.start_drag_operation(event)
                 else:
                     event.Skip()
         else:
             event.Skip()
 
-    def start_drag_operation(self):
+    def start_drag_operation(self, event):
         '''Start dragging whatever is selected'''
         fd = StringIO()
         modules_to_save = [m.module_num for m in self.get_selected_modules()]
@@ -349,26 +349,53 @@ class PipelineListView(object):
         drop_source = wx.DropSource(self.list_ctrl)
         drop_source.SetData(data_object)
         self.drag_underway = True
-        result = drop_source.DoDragDrop(wx.Drag_AllowMove)
-        self.drag_underway = False
-        
+        self.drag_start = event.Position
+        self.drag_time = time.time()
+        selected_module_ids = [m.id for m in self.get_selected_modules()]
+        self.__pipeline.start_undoable_action()
+        try:
+            result = drop_source.DoDragDrop(wx.Drag_AllowMove)
+            self.drag_underway = False
+            if result == wx.DragMove:
+                for id in selected_module_ids:
+                    for module in self.__pipeline.modules():
+                        if module.id == id:
+                            self.__pipeline.remove_module(module.module_num)
+                            break
+        finally:
+            self.__pipeline.stop_undoable_action("Drag and drop")
         
     def provide_drag_feedback(self, x, y, data):
-        pass
-    
-    def on_drop(self, x, y):
+        if self.where_to_drop(x,y)  is None:
+            return False
+        if self.drag_underway:
+            #
+            # Internal drag - make sure that we have either moved the
+            # cursor a bit or enough time has elapsed.
+            #
+            if time.time() - self.drag_time > 3:
+                return True
+            distance = math.sqrt((x-self.drag_start[0])**2 +
+                                 (y-self.drag_start[1])**2)
+            return distance > 10
         return True
     
-    def on_data(self, x, y, action, data):
-        selected_module_indexes = [m.module_num - 1
-                                   for m in self.get_selected_modules()]
-        #
-        # First, insert the new modules
-        #
-        index, code = self.list_ctrl.HitTest(wx.Point(x,y))
-        if code & wx.LIST_HITTEST_ONITEM:
-            wx.BeginBusyCursor()
-            try:
+    def on_drop(self, x, y):
+        if self.where_to_drop(x,y)  is None:
+            return False
+        return True
+    
+    def where_to_drop(self, x, y):
+        nmodules = len(self.__pipeline.modules())
+        if nmodules == 0:
+            return 0
+        else:
+            last_rect = self.list_ctrl.GetItemRect(nmodules-1)
+            if last_rect[1] + last_rect[3] < y:
+                # Below last item. Insert after last
+                return nmodules
+            index, code = self.list_ctrl.HitTest(wx.Point(x,y))
+            if code & wx.LIST_HITTEST_ONITEM:
                 r = self.list_ctrl.GetItemRect(index)
                 #
                 # Put before or after depending on whether we are more or
@@ -376,21 +403,22 @@ class PipelineListView(object):
                 #
                 if y > r[1]+ r[3]/2:
                     index += 1
+                return index
+        return None
+    
+    def on_data(self, x, y, action, data):
+        index = self.where_to_drop(x,y)
+        if index is not None:
+            #
+            # Insert the new modules
+            #
+            wx.BeginBusyCursor()
+            try:
                 pipeline = cpp.Pipeline()
                 pipeline.load(StringIO(data))
                 for i, module in enumerate(pipeline.modules()):
                     module.module_num = i+index + 1
                     self.__pipeline.add_module(module)
-                #
-                # Then remove the old ones, in reverse order
-                #
-                if action == wx.DragMove:
-                    selected_module_indexes.sort(reverse = True)
-                    for i in selected_module_indexes:
-                        module_num = i+1
-                        if i >= index:
-                            module_num += len(pipeline.modules())
-                        self.__pipeline.remove_module(module_num)
             finally:
                 wx.EndBusyCursor()
                     
@@ -582,7 +610,8 @@ class PipelineDropTarget(wx.PyDropTarget):
         self.SetDataObject(PipelineDataObject())
         
     def OnDragOver(self, x, y, data):
-        self.window.provide_drag_feedback(x, y, data)
+        if not self.window.provide_drag_feedback(x, y, data):
+            return wx.DragNone
         if wx.GetKeyState(wx.WXK_CONTROL) == 0:
             return wx.DragMove
         return wx.DragCopy

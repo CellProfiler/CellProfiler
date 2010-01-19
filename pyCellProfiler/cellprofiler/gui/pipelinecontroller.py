@@ -62,6 +62,11 @@ class PipelineController:
         wx.EVT_MENU(frame,cpframe.ID_FILE_ANALYZE_IMAGES,self.on_analyze_images)
         wx.EVT_MENU(frame,cpframe.ID_FILE_STOP_ANALYSIS,self.on_stop_running)
         
+        wx.EVT_MENU(frame, cpframe.ID_EDIT_MOVE_UP, self.on_module_up)
+        wx.EVT_MENU(frame, cpframe.ID_EDIT_MOVE_DOWN, self.on_module_down)
+        wx.EVT_MENU(frame, cpframe.ID_EDIT_UNDO, self.on_undo)
+        wx.EVT_MENU(frame, cpframe.ID_EDIT_DELETE, self.on_remove_module)
+        
         wx.EVT_MENU(frame,cpframe.ID_DEBUG_TOGGLE,self.on_debug_toggle)
         wx.EVT_MENU(frame,cpframe.ID_DEBUG_STEP,self.on_debug_step)
         wx.EVT_MENU(frame,cpframe.ID_DEBUG_NEXT_IMAGE_SET,self.on_debug_next_image_set)
@@ -358,10 +363,14 @@ class PipelineController:
             if any([m.module_num == len(self.__pipeline.modules())
                     for m in selected_modules]):
                 enable_down = False
-        for control, state in ((self.__mcp_module_down_button, enable_down),
-                               (self.__mcp_module_up_button, enable_up),
-                               (self.__mcp_remove_module_button, enable_delete)):
+        for menu_id, control, state in (
+            (cpframe.ID_EDIT_MOVE_DOWN, self.__mcp_module_down_button, enable_down),
+            (cpframe.ID_EDIT_MOVE_UP, self.__mcp_module_up_button, enable_up),
+            (cpframe.ID_EDIT_DELETE, self.__mcp_remove_module_button, enable_delete)):
             control.Enable(state)
+            menu_item = self.__frame.menu_edit.FindItemById(menu_id)
+            if menu_item is not None:
+                menu_item.Enable(state)
         
     def __on_help(self,event):
         modules = self.__get_selected_modules()
@@ -420,6 +429,14 @@ class PipelineController:
         #
         if self.is_in_debug_mode():
             self.stop_debugging()
+            
+    def on_undo(self, event):
+        wx.BeginBusyCursor()
+        try:
+            if self.__pipeline.has_undo():
+                self.__pipeline.undo()
+        finally:
+            wx.EndBusyCursor()
     
     def on_add_to_pipeline(self,caller,event):
         """Add a module to the pipeline using the event's module loader"""

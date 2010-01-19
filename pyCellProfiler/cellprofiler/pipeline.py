@@ -343,6 +343,9 @@ class Pipeline(object):
         self.__measurement_columns = {}
         self.__measurement_column_hash = None
         self.__test_mode = False
+        self.__settings = []
+        self.__undo_stack = []
+        self.__undo_start = None
     
     def copy(self):
         '''Create a copy of the pipeline modules and settings'''
@@ -493,6 +496,9 @@ class Pipeline(object):
             #
             handles=handles["handles"][0,0]
         self.create_from_handles(handles)
+        self.__settings = [[str(setting) for setting in module.settings()]
+                           for module in self.modules()]
+        self.__undo_stack = []
     
     def loadtxt(self, fd_or_filename):
         '''Load a pipeline from a text file
@@ -617,6 +623,9 @@ class Pipeline(object):
         for module in self.modules():
             module.post_pipeline_load(self)
         self.notify_listeners(PipelineLoadedEvent())
+        self.__settings = [[str(setting) for setting in module.settings()]
+                           for module in self.modules()]
+        self.__undo_stack = []
         
     def save(self, fd_or_filename, format=FMT_NATIVE):
         """Save the pipeline to a file
@@ -1239,6 +1248,9 @@ class Pipeline(object):
             next_module.set_module_num(module_num)
             self.__modules[idx]=next_module
             self.__modules[idx+1]=module
+            next_settings = self.__settings[idx+1]
+            self.__settings[idx+1] = self.__settings[idx]
+            self.__settings[idx] = next_settings
         elif direction == DIRECTION_UP:
             if module_num <= 1:
                 raise ValueError('The module is at the top of the pipeline and can''t move up')
@@ -1249,10 +1261,59 @@ class Pipeline(object):
             prev_module.module_num = module_num
             self.__modules[idx]=self.__modules[idx-1]
             self.__modules[idx-1]=module
+            prev_settings = self.__settings[idx-1]
+            self.__settings[idx-1] = self.__settings[idx]
+            self.__settings[idx] = prev_settings
         else:
             raise ValueError('Unknown direction: %s'%(direction))    
         self.notify_listeners(ModuleMovedPipelineEvent(new_module_num,direction))
+        def undo():
+            self.move_module(module.module_num, 
+                             DIRECTION_DOWN if direction == DIRECTION_UP
+                             else DIRECTION_UP)
+        message = "Move %s %s" % (module.module_name, direction)
+        self.__undo_stack.append((undo, message))
+    
+    def has_undo(self):
+        '''True if an undo action can be performed'''
+        return len(self.__undo_stack)
+    
+    def undo(self):
+        '''Undo the last action'''
+        if len(self.__undo_stack):
+            action = self.__undo_stack.pop()[0]
+            real_undo_stack = self.__undo_stack
+            self.__undo_stack = []
+            try:
+                action()
+            finally:
+                self.__undo_stack = real_undo_stack
+            
+    def undo_action(self):
+        '''A user-interpretable string telling the user what the action was'''
+        if len(self.__undo_stack) == 0:
+            return "Nothing to undo"
+        return self.__undo_stack[-1][1]
+    
+    def start_undoable_action(self):
+        '''Start editing the pipeline
         
+        This marks a start of a series of actions which will be undone
+        all at once.
+        '''
+        self.__undo_start = len(self.__undo_stack)
+        
+    def stop_undoable_action(self, name = "Composite edit"):
+        '''Stop editing the pipeline, combining many actions into one'''
+        if len(self.__undo_stack) > self.__undo_start+1:
+            # Only combine if two or more edits
+            actions = self.__undo_stack[self.__undo_start:]
+            del self.__undo_stack[self.__undo_start:]
+            def undo():
+                for action, message in reversed(actions):
+                    action()
+            self.__undo_stack.append((undo, name))
+            
     def modules(self):
         return self.__modules
     
@@ -1274,6 +1335,12 @@ class Pipeline(object):
         for module,mn in zip(self.__modules[idx+1:],range(module_num+1,len(self.__modules)+1)):
             module.module_num = mn
         self.notify_listeners(ModuleAddedPipelineEvent(module_num))
+        self.__settings.insert(idx, [str(setting) 
+                                     for setting in new_module.settings()])
+        def undo():
+            self.remove_module(new_module.module_num)
+        self.__undo_stack.append((undo, 
+                                  "Add %s module" % new_module.module_name))
     
     def remove_module(self,module_num):
         """Remove a module from the pipeline
@@ -1282,18 +1349,37 @@ class Pipeline(object):
         ModuleNum - the one-based index of the module
         """
         idx =module_num-1
-        module = self.__modules[idx]
+        removed_module = self.__modules[idx]
         self.__modules = self.__modules[:idx]+self.__modules[idx+1:]
-        module.delete()
         for module in self.__modules[idx:]:
             module.module_num = module.module_num-1
         self.notify_listeners(ModuleRemovedPipelineEvent(module_num))
+        del self.__settings[idx]
+        def undo():
+            self.add_module(removed_module)
+        self.__undo_stack.append((undo, "Remove %s module" %
+                                  removed_module.module_name))
     
     def edit_module(self, module_num):
         """Notify listeners of a module edit
         
         """
+        idx = module_num - 1
+        old_settings = self.__settings[idx]
+        module = self.modules()[idx]
+        new_settings = [str(setting) for setting in module.settings()]
         self.notify_listeners(ModuleEditedPipelineEvent(module_num))
+        self.__settings[idx] = new_settings
+        variable_revision_number = module.variable_revision_number
+        module_name = module.module_name
+        def undo():
+            module = self.modules()[idx]
+            module.set_settings_from_values(old_settings,
+                                            variable_revision_number,
+                                            module_name, False)
+            self.notify_listeners(ModuleEditedPipelineEvent(module_num))
+            self.__settings[idx] = old_settings
+        self.__undo_stack.append((undo, "Edited %s" % module_name))
     
     def test_valid(self):
         """Throw a ValidationError if the pipeline isn't valid

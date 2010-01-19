@@ -17,6 +17,7 @@ __version__="$Revision$"
 import re
 import os
 import sys
+import uuid
 
 import numpy as np
 
@@ -77,6 +78,7 @@ class CPModule(object):
         self.__show_window = True
         self.__wants_pause = False
         self.__svn_version = "Unknown"
+        self.id = uuid.uuid4()
         self.batch_state = np.zeros((0,),np.uint8)
         # Set the name of the module based on the class name.  A
         # subclass can override this either by declaring a module_name
@@ -370,11 +372,6 @@ class CPModule(object):
     wants_pause = property(get_wants_pause, set_wants_pause)
 
 
-    def delete(self):
-        """Delete the module, notifying listeners that it's going away
-        
-        """
-    
     def get_notes(self):
         """The user-entered notes for a module
         """

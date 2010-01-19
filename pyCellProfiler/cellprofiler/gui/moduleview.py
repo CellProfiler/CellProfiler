@@ -207,6 +207,7 @@ class ModuleView:
         self.__value_listeners = []
         self.__module = None
         self.__sizer = None
+        self.__inside_notify = False
         self.__module_panel.SetVirtualSizeWH(0,0)
         self.__module_panel.SetupScrolling()
         wx.EVT_IDLE(module_panel,self.on_idle)
@@ -932,8 +933,12 @@ class ModuleView:
         self.__listeners.remove(listener)
     
     def notify(self,event):
-        for listener in self.__listeners:
-            listener(self,event)
+        self.__inside_notify = True
+        try:
+            for listener in self.__listeners:
+                listener(self,event)
+        finally:
+            self.__inside_notify = False
             
     def __on_column_sized(self,event):
         self.__module_panel.GetTopLevelParent().Layout()
@@ -986,6 +991,10 @@ class ModuleView:
         if (isinstance(event,cellprofiler.pipeline.PipelineLoadedEvent) or
             isinstance(event,cellprofiler.pipeline.PipelineClearedEvent)):
             self.clear_selection()
+        elif isinstance(event, cellprofiler.pipeline.ModuleEditedPipelineEvent):
+            if (not self.__inside_notify and self.__module is not None
+                and self.__module.module_num == event.module_num):
+                self.reset_view()
     
     def __on_do_something(self, event, setting):
         setting.on_event_fired()
@@ -1057,6 +1066,8 @@ class ModuleView:
         
         TO_DO: optimize this so that only things that have changed IRL change in the GUI
         """
+        if self.__module is None:
+            return
         focus_control = wx.Window.FindFocus()
         if not focus_control is None:
             focus_name = focus_control.GetName()

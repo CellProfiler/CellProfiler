@@ -43,6 +43,10 @@ ID_FILE_PRINT=wx.NewId()
 
 ID_EDIT_SELECT_ALL = wx.NewId()
 ID_EDIT_COPY = wx.NewId()
+ID_EDIT_UNDO = wx.NewId()
+ID_EDIT_MOVE_UP = wx.NewId()
+ID_EDIT_MOVE_DOWN = wx.NewId()
+ID_EDIT_DELETE = wx.NewId()
 
 ID_OPTIONS_PREFERENCES = wx.NewId()
 ID_CHECK_NEW_VERSION = wx.NewId()
@@ -132,6 +136,12 @@ class CPFrame(wx.Frame):
         # self.__menu_file.Append(ID_FILE_WIDGET_INSPECTOR,'Widget inspector','Run the widget inspector for debugging the UI')
         self.__menu_file.Append(ID_FILE_EXIT,'E&xit\tctrl+Q','Quit the application')
         self.__menu_bar.Append(self.__menu_file,'&File')
+        self.menu_edit = wx.Menu()
+        self.menu_edit.Append(ID_EDIT_UNDO, "&Undo\tctrl+Z", "Undo last action")
+        self.menu_edit.Append(ID_EDIT_MOVE_UP, "Move &up", "Move module toward the start of the pipeline")
+        self.menu_edit.Append(ID_EDIT_MOVE_DOWN, "Move &down", "Move module toward the end of the pipeline")
+        self.menu_edit.Append(ID_EDIT_DELETE, "&Delete", "Delete selected modules")
+        self.__menu_bar.Append(self.menu_edit, '&Edit')
         self.__menu_debug = wx.Menu()
         self.__menu_debug.Append(ID_DEBUG_TOGGLE,'&Start test run\tF5','Start the pipeline debugger')
         self.__menu_debug.Append(ID_DEBUG_STEP,'Ste&p to next module\tF6','Execute the currently selected module')
@@ -170,15 +180,18 @@ class CPFrame(wx.Frame):
         wx.EVT_MENU(self,ID_OPTIONS_PREFERENCES, self.__on_preferences)
         wx.EVT_MENU(self,ID_CHECK_NEW_VERSION, self.__on_check_new_version)
         wx.EVT_MENU(self,ID_WINDOW_CLOSE_ALL, self.__on_close_all)
-        accelerator_table = wx.AcceleratorTable([(wx.ACCEL_CMD,ord('N'),ID_FILE_ANALYZE_IMAGES),
-                                                 (wx.ACCEL_CMD,ord('O'),ID_FILE_LOAD_PIPELINE),
-                                                 (wx.ACCEL_CMD|wx.ACCEL_SHIFT,ord('S'),ID_FILE_SAVE_PIPELINE),
-                                                 (wx.ACCEL_CMD,ord('L'),ID_WINDOW_CLOSE_ALL),
-                                                 (wx.ACCEL_CMD,ord('Q'),ID_FILE_EXIT),
-                                                 (wx.ACCEL_NORMAL,wx.WXK_F5,ID_DEBUG_TOGGLE),
-                                                 (wx.ACCEL_NORMAL,wx.WXK_F6,ID_DEBUG_STEP),
-                                                 (wx.ACCEL_NORMAL,wx.WXK_F7,ID_DEBUG_NEXT_IMAGE_SET),
-                                                 (wx.ACCEL_NORMAL,wx.WXK_F8,ID_DEBUG_NEXT_GROUP)])
+        accelerator_table = wx.AcceleratorTable(
+            [(wx.ACCEL_CMD,ord('N'),ID_FILE_ANALYZE_IMAGES),
+             (wx.ACCEL_CMD,ord('O'),ID_FILE_LOAD_PIPELINE),
+             (wx.ACCEL_CMD|wx.ACCEL_SHIFT,ord('S'),ID_FILE_SAVE_PIPELINE),
+             (wx.ACCEL_CMD,ord('L'),ID_WINDOW_CLOSE_ALL),
+             (wx.ACCEL_CMD,ord('Q'),ID_FILE_EXIT),
+             (wx.ACCEL_NORMAL,wx.WXK_F5,ID_DEBUG_TOGGLE),
+             (wx.ACCEL_NORMAL,wx.WXK_F6,ID_DEBUG_STEP),
+             (wx.ACCEL_NORMAL,wx.WXK_F7,ID_DEBUG_NEXT_IMAGE_SET),
+             (wx.ACCEL_NORMAL,wx.WXK_F8,ID_DEBUG_NEXT_GROUP),
+             (wx.ACCEL_CMD,ord('Z'),ID_EDIT_UNDO),
+             (wx.ACCEL_NORMAL,wx.WXK_DELETE, ID_EDIT_DELETE)])
         self.SetAcceleratorTable(accelerator_table)
         
     def data_tools_menu(self):

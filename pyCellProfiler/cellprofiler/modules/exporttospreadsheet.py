@@ -1,12 +1,12 @@
 '''<b>Export To Spreadsheet</b> exports measurements into one or more files that can be
-opened in Excel or other spreadsheet programs.
+opened in Excel or other spreadsheet programs
 <hr>
 
 This module will convert the measurements to a comma-, tab-, or other 
 character-delimited text format and
 save them to the hard drive in one or several files, as requested. 
 <h2>Metadata tokens</h2>
-Export to Excel can write out separate files for groups of images based
+Export To Excel can write out separate files for groups of images based
 on their metadata. This is controlled by the directory and file names
 that you enter. For instance, you might have applied two treatments
 to each of your samples and labeled them with the metadata name, "Treatment1" 

@@ -1,8 +1,8 @@
 '''<b>Filter Objects</b> eliminates objects based on their measurements (e.g. area, shape,
 texture, intensity)
 <hr>
-This module removes selected objects based on their measurements produced by another module (e.g. 
-MeasureObjectAreaShape, MeasureObjectIntensity, MeasureTexture, etc). All objects that do not satisty  
+This module removes selected objects based on their measurements produced by another module (e.g., 
+<b>MeasureObjectAreaShape</b>, <b>MeasureObjectIntensity</b>, <b>MeasureTexture</b>, etc). All objects that do not satisty  
 the specified parameters will be discarded.
 
 See also: Any of the <b>MeasureObject*</b> modules, <b>MeasureTexture</b>,
@@ -88,7 +88,7 @@ class FilterObjects(cpm.CPModule):
                                 also controls which measurement choices will appear for filtering:
                                 you can only filter based on measurements made on the object you select.
                                 If you will use a measurement 
-                                calculated by the CalculateMath module to to filter objects, select
+                                calculated by the <b>CalculateMath</b> module to to filter objects, select
                                 the first operand's object here, because CalculateMath measurements
                                 are stored with the first operand's object.""")
         
@@ -166,7 +166,7 @@ class FilterObjects(cpm.CPModule):
         self.wants_outlines = cps.Binary('Retain the outlines of filtered objects for use later in the pipeline (for example, in SaveImages)?', False, doc = '''''')
         
         self.outlines_name = cps.ImageNameProvider('Name the outline image','FilteredObjects', doc = '''
-                                 (Only used if the outline image is to be retained for later use in the  
+                                 (Used only if the outline image is to be retained for later use in the  
                                  pipeline) <br> Choose a name, which will allow the outline image to be 
                                  selected later in the pipeline. Special note on saving images: Using the settings in this module, object outlines can be passed along to the module OverlayOutlines and then saved with the SaveImages module. The identified objects themselves can be passed along to the object processing module ConvertToImage and then saved with the SaveImages module.
 ''')

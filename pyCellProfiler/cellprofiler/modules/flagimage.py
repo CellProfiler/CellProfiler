@@ -8,7 +8,7 @@ you do not want to analyze, e.g. in CellProfiler Analyst. Additionally, you can
 use ExportToExcel to generate a file that includes the flag as a metadata measurement
 associated with the images. This file can then be used by the LoadText 
 module to put images that pass QC into one group and images that fail 
-into another. If you plan to use a flag in LoadText, give it a category of
+into another. If you plan to use a flag in <b>LoadText</b>, give it a category of
 "Metadata" so that it can be used in grouping.
 
 A flag can be based on one or more measurements. If you create a flag based

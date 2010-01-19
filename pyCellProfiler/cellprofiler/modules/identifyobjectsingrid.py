@@ -1,8 +1,8 @@
 '''<b>Identify Objects In Grid</b> identifies objects within each section of a grid that has been defined by
-the DefineGrid module.
+the DefineGrid module
 <hr>
-This module identifies objects that are in a grid pattern which allows
-you to measure the objects using measure modules. It requires that you
+This module identifies objects that are in a grid pattern, which allows
+you to measure the objects using measure modules. It requires you to
 create a grid in an earlier module using the <b>DefineGrid</b> module.
 
 For several of the automatic options, you will need to tell the module

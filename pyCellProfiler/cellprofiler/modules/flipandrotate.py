@@ -1,4 +1,4 @@
-'''<b>Flip and rotate</b>: Flips (mirror image) and/or rotates an image.
+'''<b>Flip and rotate</b>: Flips (mirror image) and/or rotates an image
 <hr>
 
 Features that can be measured by this module:
@@ -76,7 +76,7 @@ class FlipAndRotate(cpm.CPModule):
         
         self.wants_crop = cps.Binary(
             "Crop away the rotated edges?", True, doc=
-             '''(Only used when rotating images) <br> When an image is rotated, there will be black space at the 
+             '''(Used only when rotating images) <br> When an image is rotated, there will be black space at the 
              corners/edges unless you choose to crop away the incomplete rows 
              and columns of the image. This cropping will produce an image that 
              is not the exact same size as the original, which may affect 
@@ -94,7 +94,7 @@ class FlipAndRotate(cpm.CPModule):
             "Select how the points you specified should be aligned",
             C_ALL, doc = """(Only used when rotating images by entering coordinates)<br> Should the points you specified be horizontally or vertically aligned after the rotation is complete?""")
         self.angle = cps.Float(
-            "Enter angle of rotation", 0, doc = """(Only used when rotating images by entering an angle) <br> By what angle would you like to rotate the image 
+            "Enter angle of rotation", 0, doc = """(Used only when rotating images by entering an angle) <br> By what angle would you like to rotate the image 
             (in degrees; positive = counterclockwise and 
             negative = clockwise)?""")
     

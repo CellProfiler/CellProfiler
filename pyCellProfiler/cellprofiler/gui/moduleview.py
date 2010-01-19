@@ -584,7 +584,7 @@ class ModuleView:
             def on_cell_change(event, setting = v, control=control):
                 self.__on_cell_change(event, setting,control)
             self.__module_panel.Bind(wx.EVT_TEXT,on_cell_change,control)
-        elif control.Value != v.value:
+        elif control.Value != str(v.value):
             control.Value = str(v.value)
         return control
     

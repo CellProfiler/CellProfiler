@@ -19,7 +19,6 @@ import glob
 import cellprofiler.cpmodule as cpm
 import cellprofiler.preferences as cpprefs
 
-<<<<<<< .mine
 # python modules and their corresponding cellprofiler.module classes
 pymodule_to_cpmodule = {'align' : 'Align',
                         'applythreshold' : 'ApplyThreshold',
@@ -84,7 +83,7 @@ pymodule_to_cpmodule = {'align' : 'Align',
                         'tile' : 'Tile',
                         'calculateimageoverlap' : 'CalculateImageOverlap'
                         }
-=======
+
 # the builtin CP modules that will be loaded from the cellprofiler.modules directory
 builtin_modules = ['align',
                    'applythreshold',
@@ -147,7 +146,6 @@ builtin_modules = ['align',
                    'trackobjects',
                    'tile',
                    ]
->>>>>>> .r9078
 
 # CP-Matlab to CP-python module substitutions
 substitutions = {'Average': 'MakeProjection',

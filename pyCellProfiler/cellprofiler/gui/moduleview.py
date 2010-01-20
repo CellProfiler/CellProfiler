@@ -208,6 +208,7 @@ class ModuleView:
         self.__module = None
         self.__sizer = None
         self.__inside_notify = False
+        self.__handle_change = True
         self.__module_panel.SetVirtualSizeWH(0,0)
         self.__module_panel.SetupScrolling()
         wx.EVT_IDLE(module_panel,self.on_idle)
@@ -241,6 +242,7 @@ class ModuleView:
     def set_selection(self,module_num):
         """Initialize the controls in the view to the settings of the module"""
         self.module_panel.Freeze()
+        self.__handle_change = False
         try:
             reselecting         = (self.__module and
                                    self.__module.module_num == module_num)
@@ -354,6 +356,7 @@ class ModuleView:
         finally:
             self.module_panel.Thaw()
             self.module_panel.Refresh()
+            self.__handle_change = True
     
     def make_binary_control(self,v,control_name, control):
         """Make a checkbox control for a Binary setting"""
@@ -651,6 +654,8 @@ class ModuleView:
                                       style = wx.CB_DROPDOWN|wx.CB_READONLY)
             sizer.Add(absrel_ctrl,0,wx.EXPAND|wx.RIGHT,1)
             def on_min_change(event, setting = v, control=min_ctrl):
+                if not self.__handle_change:
+                    return
                 old_value = str(setting)
                 if setting.unbounded_max:
                     max_value = cps.END
@@ -664,6 +669,8 @@ class ModuleView:
             self.__module_panel.Bind(wx.EVT_TEXT,on_min_change,min_ctrl)
             def on_max_change(event, setting = v, control=max_ctrl, 
                               absrel_ctrl=absrel_ctrl):
+                if not self.__handle_change:
+                    return
                 old_value = str(setting)
                 if (absrel_ctrl.Value == ABSOLUTE):
                     max_value = str(control.Value)
@@ -677,6 +684,9 @@ class ModuleView:
                 self.notify(setting_edited_event)
             self.__module_panel.Bind(wx.EVT_TEXT,on_max_change,max_ctrl)
             def on_absrel_change(event, setting = v, control=absrel_ctrl):
+                if not self.__handle_change:
+                    return
+                
                 if not v.unbounded_max:
                     old_value = str(setting)
                     
@@ -733,6 +743,8 @@ class ModuleView:
             y_ctrl.SetInitialSize(wx.Size(best_width,-1))
             sizer.Add(y_ctrl,0,wx.EXPAND)
             def on_x_change(event, setting = v, control=x_ctrl):
+                if not self.__handle_change:
+                    return
                 old_value = str(setting)
                 proposed_value="%s,%s"%(str(control.Value),str(setting.y))
                 setting_edited_event = SettingEditedEvent(setting, self.__module,
@@ -740,6 +752,8 @@ class ModuleView:
                 self.notify(setting_edited_event)
             self.__module_panel.Bind(wx.EVT_TEXT,on_x_change,x_ctrl)
             def on_y_change(event, setting = v, control=y_ctrl):
+                if not self.__handle_change:
+                    return
                 old_value = str(setting)
                 proposed_value="%s,%s"%(str(setting.x),str(control.Value))
                 setting_edited_event = SettingEditedEvent(setting, self.__module,
@@ -836,6 +850,9 @@ class ModuleView:
                           object_ctrl = object_ctrl,
                           scale_ctrl = scale_ctrl):
                 '''Reconstruct the measurement value if anything changes'''
+                if not self.__handle_change:
+                    return
+                
                 def value_of(ctrl):
                     return ctrl.Value if ctrl.Selection != -1 else None
                 value = v.construct_value(value_of(category_ctrl),
@@ -944,14 +961,21 @@ class ModuleView:
         self.__module_panel.GetTopLevelParent().Layout()
     
     def __on_checkbox_change(self,event,setting,control):
+        if not self.__handle_change:
+            return
         self.__on_cell_change(event, setting, control)
         self.reset_view()
     
     def __on_combobox_change(self,event,setting,control):
+        if not self.__handle_change:
+            return
         self.__on_cell_change(event, setting, control)
         self.reset_view()
     
     def __on_multichoice_change(self, event, setting, control):
+        if not self.__handle_change:
+            return
+        
         old_value = str(setting)
         proposed_value = str(','.join([control.Items[i]
                                        for i in control.Selections]))
@@ -962,6 +986,8 @@ class ModuleView:
         self.reset_view()
         
     def __on_cell_change(self,event,setting,control):
+        if not self.__handle_change:
+            return
         old_value = str(setting)
         if isinstance(control,wx.CheckBox):
             proposed_value = (control.GetValue() and 'Yes') or 'No'
@@ -974,6 +1000,8 @@ class ModuleView:
         self.notify(setting_edited_event)
     
     def __on_min_change(self,event,setting,control):
+        if not self.__handle_change:
+            return
         old_value = str(setting)
         proposed_value="%s,%s"%(str(control.Value),str(setting.max))
         setting_edited_event = SettingEditedEvent(setting,self.__module, 
@@ -981,6 +1009,8 @@ class ModuleView:
         self.notify(setting_edited_event)
         
     def __on_max_change(self,event,setting,control):
+        if not self.__handle_change:
+            return
         old_value = str(setting)
         proposed_value="%s,%s"%(str(setting.min),str(control.Value))
         setting_edited_event = SettingEditedEvent(setting,self.__module, 

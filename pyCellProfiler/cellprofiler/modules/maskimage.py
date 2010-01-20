@@ -36,7 +36,7 @@ class MaskImage(cpm.CPModule):
 
     module_name = "MaskImage"
     category = "Image Processing"
-    variable_revision_number = 2
+    variable_revision_number = 3
     
     def create_settings(self):
         """Create the settings here and set the module name (initialization)

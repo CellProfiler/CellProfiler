@@ -223,9 +223,13 @@ class Image(object):
     
     def get_has_mask(self):
         """True if the image has a mask"""
-        if (not self.__has_mask) and self.parent_image != None:
+        if self.__has_mask:
+            return True
+        if self.has_crop_mask:
+            return True
+        if self.parent_image != None:
             return self.parent_image.has_mask
-        return self.__has_mask
+        return False
     
     has_mask = property(get_has_mask)
     

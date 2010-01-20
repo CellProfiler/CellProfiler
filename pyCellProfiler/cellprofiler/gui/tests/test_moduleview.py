@@ -37,10 +37,16 @@ class TestModuleView(unittest.TestCase):
 
     def set_setting(self, v):
         class TestModule(cpm.CPModule):
+            module_name = "TestModule"
+            category = "Test"
+            variable_revision_number = 1
             def __init__(self):
                 super(TestModule,self).__init__()
                 self.vv = [v]
+                self.module_num = 1
 
+            def settings(self):
+                return self.vv
             def visible_settings(self):
                 return self.vv
         

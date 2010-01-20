@@ -291,15 +291,16 @@ Multiply:[module_num:1|svn_version:\'8913\'|variable_revision_number:1|show_wind
         return image_set.get_image('outputimage')
     
     def check_expected(self, image, expected, mask=None):
-        if mask is None:
+        if mask is None and not image.has_crop_mask:
             self.assertTrue(np.all(np.abs(image.pixel_data - expected <
                                           np.sqrt(np.finfo(float).eps))))
             self.assertFalse(image.has_mask)
         else:
             self.assertTrue(image.has_mask)
-            self.assertTrue(np.all(mask == image.mask))
-            self.assertTrue(np.all(np.abs(image.pixel_data[mask] - 
-                                          expected[mask]) <
+            if not image.has_crop_mask:
+                self.assertTrue(np.all(mask == image.mask))
+            self.assertTrue(np.all(np.abs(image.pixel_data[image.mask] - 
+                                          expected[image.mask]) <
                                           np.sqrt(np.finfo(float).eps)))
         
     def test_02_01_exponent(self):

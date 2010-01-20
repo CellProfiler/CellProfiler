@@ -326,7 +326,8 @@ class PipelineController:
             result = display_error_dialog(self.__frame,
                                           event.error,
                                           self.__pipeline,
-                                          message)
+                                          message,
+                                          event.tb)
             if result == ED_CONTINUE:
                 event.cancel_run = False
                 

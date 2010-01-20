@@ -279,6 +279,7 @@ class ModuleRunner(threading.Thread):
         self.paused = False
         self.exited_run = False
         self.exception = None
+        self.tb = None
         workspace.add_disposition_listener(self.on_disposition_changed)
     
     def on_disposition_changed(self, event):
@@ -300,10 +301,11 @@ class ModuleRunner(threading.Thread):
         try:
             self.module.run(self.workspace)
         except Exception, instance:
+            self.exception = instance
+            self.tb = sys.exc_traceback
             traceback.print_exc()
             if os.getenv('CELLPROFILER_RERAISE') is not None:
                 raise
-            self.exception = instance
         if not self.paused:
             self.post_done()
         self.exited_run = True
@@ -946,6 +948,7 @@ class Pipeline(object):
                                                        module.module_name))
                     failure = 1
                     exception = None
+                    tb = None
                     frame_if_shown = frame if module.show_window else None
                     workspace = cpw.Workspace(self,
                                               module,
@@ -967,12 +970,14 @@ class Pipeline(object):
                         except Exception, instance:
                             traceback.print_exc()
                             exception = instance
+                            tb = sys.exc_traceback
                         yield measurements
                     elif module.is_interactive():
                         worker = ModuleRunner(module, workspace, frame)
                         worker.run()
                         if worker.exception is not None:
                             exception = worker.exception
+                            tb = worker.tb
                         yield measurements
                     else:
                         # Turn on checks for calls to create_or_find_figure() in workspace.
@@ -984,6 +989,7 @@ class Pipeline(object):
                         workspace.in_background = False
                         if worker.exception is not None:
                             exception = worker.exception
+                            tb = worker.tb
                     t1 = sum(os.times()[:-1])
                     delta_sec = max(0,t1-t0)
                     print ("%s: Image # %d, module %s # %d: %.2f sec%s" %
@@ -1001,7 +1007,7 @@ class Pipeline(object):
                     workspace.refresh()
                     failure = 0
                     if exception is not None:
-                        event = RunExceptionEvent(exception,module)
+                        event = RunExceptionEvent(exception,module, tb)
                         self.notify_listeners(event)
                         if event.cancel_run:
                             return
@@ -1550,11 +1556,16 @@ class ModuleEditedPipelineEvent(AbstractPipelineEvent):
 class RunExceptionEvent(AbstractPipelineEvent):
     """An exception was caught during a pipeline run
     
+    Initializer:
+    error - exception that was thrown
+    module - module that was executing
+    tb - traceback at time of exception, e.g from sys.exc_info
     """
-    def __init__(self,error,module):
+    def __init__(self, error, module, tb = None):
         self.error     = error
         self.cancel_run = True
         self.module    = module
+        self.tb = tb
     
     def event_type(self):
         return "Pipeline run exception"

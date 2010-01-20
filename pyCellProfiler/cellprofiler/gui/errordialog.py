@@ -24,7 +24,7 @@ ED_CONTINUE = "Continue"
 ERROR_HOST = 'imageweb'
 ERROR_URL = '/batchprofiler/cgi-bin/development/CellProfiler_2.0/reporterror.py'
 
-def display_error_dialog(frame, exc, pipeline, message=None):
+def display_error_dialog(frame, exc, pipeline, message=None, tb = None):
     '''Display an error dialog, returning an indication of whether to continue
     
     frame - parent frame for application
@@ -37,7 +37,10 @@ def display_error_dialog(frame, exc, pipeline, message=None):
     if message is None:
         message = exc.message
     
-    traceback_text = traceback.format_exc()
+    if tb is None:
+        traceback_text = traceback.format_exc()
+    else:
+        traceback_text = reduce(lambda x,y: x+y, traceback.format_tb(tb))
     dialog = wx.Dialog(frame, title="Pipeline error")
     sizer = wx.BoxSizer(wx.VERTICAL)
     dialog.SetSizer(sizer)

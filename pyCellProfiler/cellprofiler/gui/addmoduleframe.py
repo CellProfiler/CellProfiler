@@ -103,7 +103,8 @@ class AddModuleFrame(wx.Frame):
         self.SetIcon(icon)
         
     def __get_module_files(self):
-        self.__module_files = [ 'File Processing',
+        self.__module_files = [ 'All',
+                                'File Processing',
                                 'Image Processing',
                                 'Object Processing',
                                 'Measurement',
@@ -120,6 +121,7 @@ class AddModuleFrame(wx.Frame):
                 return module
             module = cellprofiler.modules.instantiate_module(mn)
             self.__module_dict[module.category][module.module_name] = loader
+            self.__module_dict['All'][module.module_name] = loader
     
     def __set_categories(self):
         self.__module_categories_list_box.AppendItems(self.__module_files)

@@ -99,6 +99,11 @@ COLORMAP = 'Colormap'
 MODULEDIRECTORY = 'ModuleDirectory'
 CHECKFORNEWVERSIONS = 'CheckForNewVersions'
 SKIPVERSION = 'SkipVersion'
+FF_RECENTFILES = 'RecentFile%d'
+RECENT_FILE_COUNT = 10
+
+def recent_file(index):
+    return FF_RECENTFILES % (index + 1)
 
 def module_directory():
     if not get_config().Exists(MODULEDIRECTORY):
@@ -348,3 +353,24 @@ def get_skip_version():
 
 def set_skip_version(ver):
     get_config().WriteInt(SKIPVERSION, ver)
+    
+__recent_files = None
+def get_recent_files():
+    global __recent_files
+    if __recent_files is None:
+        __recent_files = []
+        for i in range(RECENT_FILE_COUNT):
+            key = recent_file(i)
+            if get_config().Exists(key):
+                __recent_files.append(get_config().Read(key)) 
+    return __recent_files
+
+def add_recent_file(filename):
+    recent_files = get_recent_files()
+    if filename in recent_files:
+        recent_files.remove(filename)
+    recent_files.insert(0, filename)
+    if len(recent_files) > RECENT_FILE_COUNT:
+        del recent_files[-1]
+    for i, filename in enumerate(recent_files):
+        get_config().Write(recent_file(i), filename)

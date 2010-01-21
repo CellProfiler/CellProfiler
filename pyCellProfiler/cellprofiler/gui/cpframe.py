@@ -133,6 +133,8 @@ class CPFrame(wx.Frame):
         self.__menu_file.AppendSeparator()
         self.__menu_file.Append(ID_OPTIONS_PREFERENCES,"&Preferences...","Set global application preferences")
         self.__menu_file.Append(ID_CHECK_NEW_VERSION,"Check for updates...","Check for a new version of CellProfiler")
+        self.recent_files = wx.Menu()
+        self.__menu_file.AppendSubMenu(self.recent_files, "&Recent")
         # self.__menu_file.Append(ID_FILE_WIDGET_INSPECTOR,'Widget inspector','Run the widget inspector for debugging the UI')
         self.__menu_file.Append(ID_FILE_EXIT,'E&xit\tctrl+Q','Quit the application')
         self.__menu_bar.Append(self.__menu_file,'&File')

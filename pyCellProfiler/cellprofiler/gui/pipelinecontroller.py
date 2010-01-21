@@ -21,7 +21,7 @@ import traceback
 import scipy.io.matlab.mio
 import cpframe
 import cellprofiler.pipeline
-import cellprofiler.preferences
+import cellprofiler.preferences as cpprefs
 import cellprofiler.cpimage as cpi
 import cellprofiler.measurements as cpm
 import cellprofiler.workspace as cpw
@@ -32,6 +32,8 @@ from cellprofiler.gui.movieslider import EVT_TAKE_STEP
 import cellprofiler.utilities.get_revision as get_revision
 from progress import ProgressFrame
 from errordialog import display_error_dialog, ED_CONTINUE, ED_STOP
+
+RECENT_FILE_MENU_ID = [wx.NewId() for i in range(cpprefs.RECENT_FILE_COUNT)]
 
 class PipelineController:
     """Controls the pipeline through the UI
@@ -56,6 +58,7 @@ class PipelineController:
         self.__keys = None
         self.__groupings = None
         self.__grouping_index = None
+        self.populate_recent_files()
         wx.EVT_MENU(frame,cpframe.ID_FILE_LOAD_PIPELINE,self.__on_load_pipeline)
         wx.EVT_MENU(frame,cpframe.ID_FILE_SAVE_PIPELINE,self.__on_save_pipeline)
         wx.EVT_MENU(frame,cpframe.ID_FILE_CLEAR_PIPELINE,self.__on_clear_pipeline)
@@ -184,9 +187,10 @@ class PipelineController:
             self.__pipeline.load(pathname)
             self.__pipeline.turn_off_batch_mode()
             self.__clear_errors()
-            cellprofiler.preferences.set_current_pipeline_path(pathname)
+            self.set_current_pipeline_path(pathname)
             self.__dirty_pipeline = False
             self.set_title()
+            
         except Exception,instance:
             self.__frame.display_error('Failed during loading of %s'%(pathname),instance)
 
@@ -211,7 +215,7 @@ class PipelineController:
                             "Save pipeline",
                             wildcard=wildcard,
                             style=wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT)
-        path = cellprofiler.preferences.get_current_pipeline_path()
+        path = cpprefs.get_current_pipeline_path()
         if path is not None:
             dlg.Path = path
         if dlg.ShowModal() == wx.ID_OK:
@@ -222,15 +226,35 @@ class PipelineController:
                     file_name += ".cp"
             pathname = os.path.join(dlg.GetDirectory(), file_name)
             self.__pipeline.save(pathname)
-            cellprofiler.preferences.set_current_pipeline_path(dlg.Path)
+            self.set_current_pipeline_path(pathname)
             self.__dirty_pipeline = False
             self.set_title()
             return True
         return False
     
+    def set_current_pipeline_path(self, pathname):
+        cpprefs.set_current_pipeline_path(pathname)
+        cpprefs.add_recent_file(pathname)
+        self.populate_recent_files()
+        
+    def populate_recent_files(self):
+        '''Populate the recent files menu'''
+        recent_files = self.__frame.recent_files
+        assert isinstance(recent_files, wx.Menu)
+        while len(recent_files.MenuItems) > 0:
+            self.__frame.Unbind(wx.EVT_MENU, id = recent_files.MenuItems[0].Id)
+            recent_files.RemoveItem(recent_files.MenuItems[0])
+        for index, file_name in enumerate(cpprefs.get_recent_files()):
+            recent_files.Append(RECENT_FILE_MENU_ID[index], file_name)
+            def on_recent_file(event):
+                self.do_load_pipeline(file_name)
+            self.__frame.Bind(wx.EVT_MENU,
+                              on_recent_file,
+                              id = RECENT_FILE_MENU_ID[index])
+        
     def set_title(self):
         '''Set the title of the parent frame'''
-        pathname = cellprofiler.preferences.get_current_pipeline_path()
+        pathname = cpprefs.get_current_pipeline_path()
         if pathname is None:
             self.__frame.Title = "CellProfiler (v.%d)"%(get_revision.version)
             return
@@ -246,7 +270,7 @@ class PipelineController:
                          wx.YES_NO | wx.ICON_QUESTION, self.__frame) == wx.YES:
             self.__pipeline.clear()
             self.__clear_errors()
-            cellprofiler.preferences.set_current_pipeline_path(None)
+            cpprefs.set_current_pipeline_path(None)
             self.__dirty_pipeline = False
             self.set_title()
             self.enable_module_controls_panel_buttons()
@@ -872,8 +896,8 @@ class PipelineController:
                 
 
     def get_output_file_path(self):
-        path = os.path.join(cellprofiler.preferences.get_default_output_directory(),
-                            cellprofiler.preferences.get_output_file_name())
+        path = os.path.join(cpprefs.get_default_output_directory(),
+                            cpprefs.get_output_file_name())
         if os.path.exists(path):
             (first_part,ext)=os.path.splitext(path)
             start = 1
@@ -892,7 +916,7 @@ class PipelineController:
             user_choice = result.ShowModal()
             if user_choice & wx.YES:
                 path = alternate_name
-                cellprofiler.preferences.set_output_file_name(os.path.split(alternate_name)[1])
+                cpprefs.set_output_file_name(os.path.split(alternate_name)[1])
             else:
                 return None
         return path

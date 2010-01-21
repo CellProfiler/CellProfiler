@@ -27,10 +27,12 @@ root path is <i>/imaging/analysis</i>.
 
 __version__="$Revision$"
 
+import httplib
 import numpy as np
 import os
 import re
 import sys
+import urllib
 import wx
 import zlib
 
@@ -96,6 +98,13 @@ class CreateBatchFiles(cpm.CPModule):
         self.add_mapping_button = cps.DoSomething("", "Add another path mapping",
                                                   self.add_mapping, doc="""
                 Use this option if another path must be mapped because there is a difference between how the local computer sees a folder location vs. how the cluster computer sees the folder location.""")
+        self.check_path_button = cps.DoSomething(
+            "Press this button to check pathnames on the remote server",
+            "Check paths", self.check_paths,
+            doc = """This button will start a routine that will ask the
+            webserver to check whether the default image and default output
+            directories exist. It will also check whether all remote
+            path mappings exist.""")
     
     def add_mapping(self):
         group = cps.SettingsGroup()
@@ -160,7 +169,7 @@ class CreateBatchFiles(cpm.CPModule):
         result += [self.remote_host_is_windows]
         for mapping in self.mappings:
             result += mapping.visible_settings()
-        result += [self.add_mapping_button]
+        result += [self.add_mapping_button, self.check_path_button]
         return result
     
     def prepare_run(self, pipeline, image_set_list, frame):
@@ -251,6 +260,37 @@ class CreateBatchFiles(cpm.CPModule):
         self.batch_mode.value = False
         self.batch_state = np.zeros((0,),np.uint8)
     
+    def check_paths(self):
+        '''Check to make sure the default directories are remotely accessible'''
+        import wx
+        
+        def check(path):
+            more = urllib.urlencode(dict(path=path))
+            url = ("/batchprofiler/cgi-bin/development/"
+                   "CellProfiler_2.0/PathExists.py?%s") % more
+            conn = httplib.HTTPConnection("imageweb")
+            conn.request("GET",url)
+            result = conn.getresponse()
+            if result.status != httplib.OK:
+                raise RuntimeError("HTTP failed: %s" % result.reason)
+            body = result.read()
+            return body.find("OK") != -1
+        
+        all_ok = True
+        for mapping in self.mappings:
+            path = mapping.remote_directory.value
+            if not check(path):
+                wx.MessageBox("Cannot find %s on the server." % path)
+                all_ok = False
+        for path in (cpprefs.get_default_image_directory(),
+                     cpprefs.get_default_output_directory()):
+            if not check(self.alter_path(path)):
+                wx.MessageBox("Cannot find %s on the server." % path)
+                all_ok = False
+            
+        if all_ok:
+            wx.MessageBox("All paths are accessible")
+            
     def alter_path(self, path, **varargs):
         '''Modify the path passed so that it can be executed on the remote host
         

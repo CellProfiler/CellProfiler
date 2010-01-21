@@ -436,8 +436,21 @@ class CPFigureFrame(wx.Frame):
         """
         axes = self.subplot(x,y)
         axes.clear()
+        
+        
+    def show_imshow_popup_menu(self, (x, y), image, subplot=''):
+        popup = wx.Menu()
+        show_hist_item = wx.MenuItem(popup, -1, 'Show image histogram')
+        popup.AppendItem(show_hist_item)
+        def show_hist(evt):
+            new_title = '%s %s image histogram'%(self.Title, subplot)
+            fig = create_or_find(self, -1, new_title, subplots=(1,1), name=new_title)
+            fig.subplot_histogram(0, 0, image.flatten(), bins=200, xlabel='pixel intensity')
+            fig.figure.canvas.draw()
+        self.Bind(wx.EVT_MENU, show_hist, show_hist_item)
+        self.PopupMenu(popup, (x,y))
     
-    def subplot_imshow(self, x,y,image, title=None, clear=True,
+    def subplot_imshow(self, x,y, image, title=None, clear=True,
                        colormap=None, colorbar=False, vmin=None, vmax=None):
         '''Show an image in a subplot
         
@@ -466,6 +479,12 @@ class CPFigureFrame(wx.Frame):
                 self.colorbar[subplot] = axc
             cb = matplotlib.colorbar.Colorbar(axc, result)
             result.colorbar = cb
+            
+        def on_release(evt):
+            if evt.inaxes== subplot:
+                self.show_imshow_popup_menu((evt.x, self.figure.canvas.GetSize()[1]-evt.y), image, subplot=(x,y))
+        self.figure.canvas.mpl_connect('button_release_event', on_release)
+            
         return result
     
     def subplot_imshow_color(self, x, y, image, title=None, clear=True, 
@@ -486,6 +505,12 @@ class CPFigureFrame(wx.Frame):
         result = subplot.imshow(image,vmin=vmin, vmax=vmax)
         if title != None:
             self.set_subplot_title(title, x, y)
+            
+        def on_release(evt):
+            if evt.inaxes== subplot:
+                self.show_imshow_popup_menu((evt.x, self.figure.canvas.GetSize()[1]-evt.y), image, subplot=(x,y))
+        self.figure.canvas.mpl_connect('button_release_event', on_release)
+        
         return result
     
     def subplot_imshow_labels(self, x,y,labels, title=None, clear=True, 
@@ -600,7 +625,7 @@ class CPFigureFrame(wx.Frame):
         self.figure.set_edgecolor((1,1,1))
         points = np.array(points)
         if xscale=='log':
-            points = np.log(self.points)
+            points = np.log(points[points>0])
             xlabel = 'Log(%s)'%(xlabel or '?')
         # hist apparently doesn't like nans, need to preen them out first
         self.points = points[~ np.isnan(points)]

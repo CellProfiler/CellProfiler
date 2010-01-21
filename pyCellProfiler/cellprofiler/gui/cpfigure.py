@@ -435,20 +435,83 @@ class CPFigureFrame(wx.Frame):
         y - subplot's row
         """
         axes = self.subplot(x,y)
+        try:
+            del self.images[(x,y)]
+            del self.popup_menus[(x,y)]
+        except: pass
         axes.clear()
         
         
-    def show_imshow_popup_menu(self, (x, y), image, subplot=''):
-        popup = wx.Menu()
-        show_hist_item = wx.MenuItem(popup, -1, 'Show image histogram')
-        popup.AppendItem(show_hist_item)
-        def show_hist(evt):
-            new_title = '%s %s image histogram'%(self.Title, subplot)
-            fig = create_or_find(self, -1, new_title, subplots=(1,1), name=new_title)
-            fig.subplot_histogram(0, 0, image.flatten(), bins=200, xlabel='pixel intensity')
-            fig.figure.canvas.draw()
-        self.Bind(wx.EVT_MENU, show_hist, show_hist_item)
+    def show_imshow_popup_menu(self, (x, y), image, subplot):
+        '''
+        shows a popup menu at pos x,y with items to:
+        - Show image histogram
+        - Change contrast stretching
+        '''
+        # Manage a dict of popup menus keyed by each subplot (x,y) location
+        if 'popup_menus' not in self.__dict__:
+            self.popup_menus = {}
+        popup = self.popup_menus.get(subplot, None)
+        if popup == None:
+            # If no popup has been built for this subplot yet, then create one 
+            MENU_CONTRAST_NORMAL = wx.NewId()
+            MENU_CONTRAST_STRETCH = wx.NewId()
+            MENU_CONTRAST_LOG = wx.NewId()
+            self.popup_menus[subplot] = popup = wx.Menu()
+            show_hist_item = wx.MenuItem(popup, -1, 'Show image histogram')
+            popup.AppendItem(show_hist_item)
+            submenu = wx.Menu()
+            submenu.Append(MENU_CONTRAST_NORMAL, 'Normal', 'Do not transform pixel intensities', wx.ITEM_RADIO)
+            item_stretch = submenu.Append(MENU_CONTRAST_STRETCH, 'Stretched', 'Stretch pixel intensities to fit the interval [0,1]', wx.ITEM_RADIO)
+            submenu.Append(MENU_CONTRAST_LOG, 'Log stretched', 'Log transform pixel intensities, then stretch them to fit the interval [0,1]', wx.ITEM_RADIO)
+            popup.AppendMenu(-1, 'Image contrast', submenu)
+            
+            def show_hist(evt):
+                '''Callback for "Show image histogram" popup menu item'''
+                new_title = '%s %s image histogram'%(self.Title, subplot)
+                fig = create_or_find(self, -1, new_title, subplots=(1,1), name=new_title)
+                fig.subplot_histogram(0, 0, image.flatten(), bins=200, xlabel='pixel intensity')
+                fig.figure.canvas.draw()
+                
+            def change_contrast(evt):
+                '''Callback for Image contrast menu items'''
+                def log_transform(im):
+                    '''returns log(image) scaled to the interval [0,1]'''
+                    (min, max) = (im.min(), im.max())
+                    if np.any((im>min)&(im<max)):
+                        im = im.clip(im[im>0].min(), im.max())
+                        im = np.log(im)
+                        im -= im.min()
+                        if im.max() > 0:
+                            im /= im.max()
+                    return im
+                
+                def auto_contrast(im):
+                    '''returns image scaled to the interval [0,1]'''
+                    im = im.copy()
+                    (min, max) = (im.min(), im.max())
+                    # Check that the image isn't binary 
+                    if np.any((im>min)&(im<max)):
+                        im -= im.min()
+                        if im.max() > 0:
+                            im /= im.max()
+                    return im
+                
+                ax = self.subplot(subplot[0], subplot[1])
+                if evt.Id == MENU_CONTRAST_NORMAL:
+                    new_image = self.images[subplot]
+                elif evt.Id == MENU_CONTRAST_STRETCH:
+                    new_image = auto_contrast(self.images[subplot])
+                elif evt.Id == MENU_CONTRAST_LOG:
+                    new_image = log_transform(self.images[subplot])
+                ax.get_images()[0].set_array(new_image)
+                self.figure.canvas.draw()
+            self.Bind(wx.EVT_MENU, show_hist, show_hist_item)
+            self.Bind(wx.EVT_MENU, change_contrast, id=MENU_CONTRAST_NORMAL)
+            self.Bind(wx.EVT_MENU, change_contrast, id=MENU_CONTRAST_STRETCH)
+            self.Bind(wx.EVT_MENU, change_contrast, id=MENU_CONTRAST_LOG)
         self.PopupMenu(popup, (x,y))
+    
     
     def subplot_imshow(self, x,y, image, title=None, clear=True,
                        colormap=None, colorbar=False, vmin=None, vmax=None):
@@ -462,8 +525,11 @@ class CPFigureFrame(wx.Frame):
                    to assign colors to the image
         colorbar - display a colorbar if true
         ''' 
+        if 'images' not in self.__dict__:
+            self.images= {}
         if clear:
             self.clear_subplot(x, y)
+        self.images[(x,y)] = image
         subplot = self.subplot(x,y)
         if colormap == None:
             result = subplot.imshow(image)
@@ -481,8 +547,15 @@ class CPFigureFrame(wx.Frame):
             result.colorbar = cb
             
         def on_release(evt):
-            if evt.inaxes== subplot:
+            if evt.inaxes == subplot:
                 self.show_imshow_popup_menu((evt.x, self.figure.canvas.GetSize()[1]-evt.y), image, subplot=(x,y))
+        # NOTE: We bind this event each time imshow is called to a new closure
+        #    of on_release so that each function will be called when a
+        #    button_release_event is fired.  It might be cleaner to bind the
+        #    event outside of subplot_imshow, and define a handler that iterates
+        #    through each subplot to determine what kind of action should be
+        #    taken. In this case each subplot_xxx call would have to append
+        #    an action response to a dictionary keyed by subplot.
         self.figure.canvas.mpl_connect('button_release_event', on_release)
             
         return result
@@ -508,7 +581,7 @@ class CPFigureFrame(wx.Frame):
             
         def on_release(evt):
             if evt.inaxes== subplot:
-                self.show_imshow_popup_menu((evt.x, self.figure.canvas.GetSize()[1]-evt.y), image, subplot=(x,y))
+                self.show_imshow_popup_menu((evt.x, self.figure.canvas.GetSize()[1]-evt.y), image, subplot=(x,y)) 
         self.figure.canvas.mpl_connect('button_release_event', on_release)
         
         return result

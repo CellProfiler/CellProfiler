@@ -214,6 +214,13 @@ class PipelineListView(object):
         #
         self.list_ctrl.Bind(wx.EVT_LIST_ITEM_SELECTED, self.__on_item_selected, self.list_ctrl)
         self.list_ctrl.Bind(wx.EVT_LEFT_DOWN, self.__on_list_left_down, self.list_ctrl)
+        #
+        # Accelerators
+        #
+        from cellprofiler.gui.cpframe import ID_EDIT_DELETE
+        accelerator_table = wx.AcceleratorTable([
+             (wx.ACCEL_NORMAL,wx.WXK_DELETE, ID_EDIT_DELETE)])
+        self.list_ctrl.SetAcceleratorTable(accelerator_table)
         
     def set_debug_mode(self, mode):
         if self.__pipeline is not None:

@@ -246,7 +246,7 @@ class PipelineController:
             recent_files.RemoveItem(recent_files.MenuItems[0])
         for index, file_name in enumerate(cpprefs.get_recent_files()):
             recent_files.Append(RECENT_FILE_MENU_ID[index], file_name)
-            def on_recent_file(event):
+            def on_recent_file(event, file_name = file_name):
                 self.do_load_pipeline(file_name)
             self.__frame.Bind(wx.EVT_MENU,
                               on_recent_file,

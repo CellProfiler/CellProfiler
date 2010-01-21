@@ -192,8 +192,7 @@ class CPFrame(wx.Frame):
              (wx.ACCEL_NORMAL,wx.WXK_F6,ID_DEBUG_STEP),
              (wx.ACCEL_NORMAL,wx.WXK_F7,ID_DEBUG_NEXT_IMAGE_SET),
              (wx.ACCEL_NORMAL,wx.WXK_F8,ID_DEBUG_NEXT_GROUP),
-             (wx.ACCEL_CMD,ord('Z'),ID_EDIT_UNDO),
-             (wx.ACCEL_NORMAL,wx.WXK_DELETE, ID_EDIT_DELETE)])
+             (wx.ACCEL_CMD,ord('Z'),ID_EDIT_UNDO) ])
         self.SetAcceleratorTable(accelerator_table)
         
     def data_tools_menu(self):

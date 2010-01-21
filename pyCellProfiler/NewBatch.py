@@ -113,8 +113,10 @@ keys = { 'data_dir':lookup('data_dir', '/imaging/analysis'),
 
 batch_file = os.path.join(keys['data_dir'], F_BATCH_DATA)
 grouping_keys = None
+error_message = None
 if os.path.exists(batch_file):
     pipeline = cpp.Pipeline()
+    print "<span style='visibility:hidden'>"
     try:
         had_problem = [False]
         def error_callback(event, caller):
@@ -137,9 +139,10 @@ if os.path.exists(batch_file):
                 svn_revision = module.revision.value
                 break
     except:
-        traceback.print_exc()
-        print "Failed to open %s"%batch_file
-
+        error_message = "Failed to open %s\n%s" % (batch_file, traceback.format_exc())
+        error_message = error_message.replace("\n","<br/>")
+    print "</span>"
+    
 if (form_data.has_key('submit_batch') and 
     form_data['submit_batch'].value == 'yes' and
     grouping_keys is not None):
@@ -316,6 +319,8 @@ if grouping_keys is not None:
         print '<div>Batch_data.mat has %d image sets</div>'%image_set_list.count()
         if svn_revision is not None:
             print '<div>It was saved using CellProfiler SVN revision # %d</div>'%(svn_revision)
+elif error_message is not None:
+    print error_message
 else:
     print 'Directory does not contain a Batch_data.mat file'
 print '</form>'

@@ -34,12 +34,8 @@ def window_name(module):
     '''Return a module's figure window name'''
     return "CellProfiler:%s:%s" % (module.module_name, module.module_num)
 
-def create_or_find(parent=None, id=-1, title="", 
-                   pos=wx.DefaultPosition, size=wx.DefaultSize,
-                   style=wx.DEFAULT_FRAME_STYLE, name=wx.FrameNameStr,
-                   subplots=None,
-                   on_close=None):
-    """Create or find a figure frame window"""
+def find_fig(parent=None, title="", name=wx.FrameNameStr, subplots=None):
+    """Find a figure frame window. Returns the window or None"""
     if parent:
         window = parent.FindWindowByName(name)
         if window:
@@ -49,10 +45,17 @@ def create_or_find(parent=None, id=-1, title="",
             if subplots!=None:
                 window.subplots = np.zeros(subplots,dtype=object)
                 window.zoom_rects = np.zeros(subplots,dtype=object)
-                
-            return window
-    return CPFigureFrame(parent, id, title, pos, size, style, name, subplots,
-                         on_close)
+        return window
+
+def create_or_find(parent=None, id=-1, title="", 
+                   pos=wx.DefaultPosition, size=wx.DefaultSize,
+                   style=wx.DEFAULT_FRAME_STYLE, name=wx.FrameNameStr,
+                   subplots=None,
+                   on_close=None):
+    """Create or find a figure frame window"""
+    win = find_fig(parent, title, name, subplots)
+    return win or CPFigureFrame(parent, id, title, pos, size, style, name, 
+                                subplots, on_close)
 
 def close_all(parent):
     windows = [x for x in parent.GetChildren()
@@ -529,6 +532,7 @@ class CPFigureFrame(wx.Frame):
             self.images= {}
         if clear:
             self.clear_subplot(x, y)
+        # Store the raw image keyed by it's subplot location
         self.images[(x,y)] = image
         subplot = self.subplot(x,y)
         if colormap == None:
@@ -557,7 +561,12 @@ class CPFigureFrame(wx.Frame):
         #    taken. In this case each subplot_xxx call would have to append
         #    an action response to a dictionary keyed by subplot.
         self.figure.canvas.mpl_connect('button_release_event', on_release)
-            
+        
+        # Attempt to update histogram plot if one was created
+        hist_fig = find_fig(self, name='%s %s image histogram'%(self.Title, (x,y)))
+        if hist_fig:
+            hist_fig.subplot_histogram(0, 0, image.flatten(), bins=200, xlabel='pixel intensity')
+            hist_fig.figure.canvas.draw()
         return result
     
     def subplot_imshow_color(self, x, y, image, title=None, clear=True, 

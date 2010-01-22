@@ -285,6 +285,7 @@ def remove_output_file_name_listener(listener):
 def get_absolute_path(path, abspath_mode = ABSPATH_IMAGE):
     """Convert a path into an absolute path using the path conventions
     
+    If a path starts with http:, https: or ftp:, leave it unchanged.
     If a path starts with "./", then make the path relative to the
     default output directory.
     If a path starts with "&/", then make the path relative to the
@@ -300,7 +301,10 @@ def get_absolute_path(path, abspath_mode = ABSPATH_IMAGE):
         isep = '.'
     else:
         raise ValueError("Unknown abspath mode: %s"%abspath_mode)
-        
+    
+    for protocol in ('http','https','ftp'):
+        if path.lower().startswith('%s:' % protocol):
+            return path
     if (path.startswith(osep+os.path.sep) or
         ("altsep" in os.path.__all__ and os.path.altsep and
          path.startswith(osep+os.path.altsep))):

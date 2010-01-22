@@ -481,7 +481,7 @@ class MeasureImageQuality(cpm.CPModule):
         
         radii, magnitude, power = rps.rps(pixel_data)
         if sum(magnitude) > 0:
-            valid = (magnitude > 0) & (radii < min(pixel_data.shape) / 4)
+            valid = (magnitude > 0)
             radii = radii[valid].reshape((-1, 1))
             magnitude = magnitude[valid].reshape((-1, 1))
             power = power[valid].reshape((-1, 1))

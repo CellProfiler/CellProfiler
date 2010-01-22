@@ -20,7 +20,7 @@ import wx
 import wx.grid
 import sys
 
-import cellprofiler.pipeline
+import cellprofiler.pipeline as cpp
 import cellprofiler.settings as cps
 import cellprofiler.preferences
 from regexp_editor import edit_regexp
@@ -244,11 +244,12 @@ class ModuleView:
         self.module_panel.Freeze()
         self.__handle_change = False
         try:
+            new_module          = self.__pipeline.module(module_num)
             reselecting         = (self.__module and
-                                   self.__module.module_num == module_num)
+                                   self.__module.id == new_module.id)
             if not reselecting:
                 self.clear_selection()
-            self.__module       = self.__pipeline.module(module_num)
+            self.__module       = new_module
             self.__controls     = []
             self.__static_texts = []
             data                = []
@@ -1018,10 +1019,12 @@ class ModuleView:
         self.notify(setting_edited_event)
         
     def __on_pipeline_event(self,pipeline,event):
-        if (isinstance(event,cellprofiler.pipeline.PipelineLoadedEvent) or
-            isinstance(event,cellprofiler.pipeline.PipelineClearedEvent)):
+        if (isinstance(event,cpp.PipelineClearedEvent)):
             self.clear_selection()
-        elif isinstance(event, cellprofiler.pipeline.ModuleEditedPipelineEvent):
+        elif (isinstance(event, cpp.PipelineLoadedEvent)):
+            if len(self.__pipeline.modules()) == 0:
+                self.clear_selection()
+        elif isinstance(event, cpp.ModuleEditedPipelineEvent):
             if (not self.__inside_notify and self.__module is not None
                 and self.__module.module_num == event.module_num):
                 self.reset_view()

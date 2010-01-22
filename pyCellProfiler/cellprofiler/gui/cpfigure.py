@@ -652,31 +652,32 @@ class CPFigureFrame(wx.Frame):
         table.set_fontsize(cpprefs.get_table_font_size())
         # table.set_fontfamily(cpprefs.get_table_font_name())
         
-    def subplot_scatter(self, x, y, points, 
-                        xlabel='',
-                        ylabel='',
-                        xscale='linear',
-                        yscale='linear',
+    def subplot_scatter(self, row, col,
+                        xvals, yvals, 
+                        xlabel='', ylabel='',
+                        xscale='linear', yscale='linear',
                         title='',
                         clear=True):
         """Put a scatterplot into a subplot
         
-        x,y - subplot's column and row
-        points - values to plot (a sequence of pairs)
+        row, col - subplot's column and row
+        xvals, yvals - values to scatter
         xlabel - string label for x axis
         ylabel - string label for y axis
         xscale - scaling of the x axis (e.g. 'log' or 'linear')
         yscale - scaling of the y axis (e.g. 'log' or 'linear')
         title  - string title for the plot
         """
+        xvals = np.array(xvals).flatten()
+        yvals = np.array(yvals).flatten()
+        if clear:
+            self.clear_subplot(col, row)
+
         self.figure.set_facecolor((1,1,1))
         self.figure.set_edgecolor((1,1,1))
-        points = np.array(points)
-        if clear:
-            self.clear_subplot(x, y)
 
-        axes = self.subplot(x, y)
-        plot = axes.scatter(points[:,0], points[:,1],
+        axes = self.subplot(col, row)
+        plot = axes.scatter(xvals, yvals,
                             facecolor=(0.0, 0.62, 1.0),
                             edgecolor='none',
                             alpha=0.75)
@@ -688,7 +689,7 @@ class CPFigureFrame(wx.Frame):
         
         return plot
         
-    def subplot_histogram(self, x, y, points,
+    def subplot_histogram(self, x, y, values,
                           bins=20, 
                           xlabel='',
                           xscale=None,
@@ -698,7 +699,7 @@ class CPFigureFrame(wx.Frame):
         """Put a histogram into a subplot
         
         x,y - subplot's column and row
-        points - values to plot
+        values - values to plot
         bins - number of bins to aggregate data in
         xlabel - string label for x axis
         xscale - 'log' to log-transform the data
@@ -710,17 +711,22 @@ class CPFigureFrame(wx.Frame):
         axes = self.subplot(x, y)
         self.figure.set_facecolor((1,1,1))
         self.figure.set_edgecolor((1,1,1))
-        points = np.array(points)
+        values = np.array(values).flatten()
         if xscale=='log':
-            points = np.log(points[points>0])
+            values = np.log(values[values>0])
             xlabel = 'Log(%s)'%(xlabel or '?')
         # hist apparently doesn't like nans, need to preen them out first
-        self.points = points[~ np.isnan(points)]
+        self.values = values[~ np.isnan(values)]
         # nothing to plot?
-        if len(points)==0 or points==[[]]: return
+        if values.shape[0] == 0:
+            axes = self.subplot(x, y)
+            plot = axes.text(0.1, 0.5, "No valid values to plot.")
+            axes.set_xlabel(xlabel)
+            axes.set_title(title)
+            return plot
         
         axes = self.subplot(x, y)
-        plot = axes.hist(points, bins, 
+        plot = axes.hist(values, bins, 
                           facecolor=(0.0, 0.62, 1.0), 
                           edgecolor='none',
                           log=(yscale=='log'),

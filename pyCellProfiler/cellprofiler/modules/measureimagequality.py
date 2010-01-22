@@ -10,7 +10,7 @@ Features that can be measured by this module:
 <li>FocusScore: a measure of the intensity variance across image</li>
 <li>LocalFocusScore: a measure of the intensity variance between image parts</li>
 <li>Threshold: automatically-calculated threshold for image</li>
-<li>PowerSpectrum1stQuartile, PowerSpectrum2ndQuartile, PowerSpectrum3rdQuartile, PowerSpectrumSum: the radial power quartiles and total power in the image</li>
+<li>MagnitudeLogLogSlope, PowerLogLogSlope, The slope of the log-log magnitude and power spectra.</li>
 </ul>
 <br><br>
 Example Output:
@@ -36,24 +36,14 @@ Example Output:
 <td>0.0022854</td>
 </tr>
 <tr>
-<td>Power Spectrum Sum:</td>
+<td>Magnitude Spectrum Slope:</td>
 <td>RescaledOrig: </td>
-<td>20.0</td>
+<td>-2.2</td>
 </tr>
 <tr>
-<td>Power Spectrum 1st Quartile:</td>
+<td>Power Spectrum Slope:</td>
 <td>RescaledOrig: </td>
-<td>5.3</td>
-</tr>
-<tr>
-<td>Power Spectrum 2nd Quartile:</td>
-<td>RescaledOrig: </td>
-<td>9.2</td>
-</tr>
-<tr>
-<td>Power Spectrum 3rd Quartile:</td>
-<td>RescaledOrig: </td>
-<td>21.0</td>
+<td>-2.9</td>
 </tr>
 </table>'''
 
@@ -89,7 +79,7 @@ THRESHOLD = 'Threshold'
 MEAN_THRESH_ALL_IMAGES = 'MeanThresh_AllImages'
 MEDIAN_THRESH_ALL_IMAGES = 'MedianThresh_AllImages'
 STD_THRESH_ALL_IMAGES = 'StdThresh_AllImages'
-POWER_SPECTRUM_FEATURES = ['PowerSpectrum1stQuartile', 'PowerSpectrum2ndQuartile', 'PowerSpectrum3rdQuartile', 'PowerSpectrumSum', 'PowerSpectrumLogLogSlope']
+POWER_SPECTRUM_FEATURES = ['MagnitudeLogLogSlope', 'PowerLogLogSlope']
 SETTINGS_PER_GROUP = 8
 
 class MeasureImageQuality(cpm.CPModule):
@@ -489,28 +479,22 @@ class MeasureImageQuality(cpm.CPModule):
             else:
                 pixel_data[~ image.mask] = 0
         
-        radii, power = rps.rps(pixel_data)
-        cpower = np.cumsum(power)
-        powersum = cpower[-1]
-        if powersum > 0:
-            cpower /= powersum
-            power1st = radii[cpower.searchsorted(0.25)]
-            power2nd = radii[cpower.searchsorted(0.5)]
-            power3rd = radii[cpower.searchsorted(0.75)]
-            # find slope of first half of power spectrum
-            radii = radii[:len(radii) / 2]
-            power = power[:radii.shape[0]]
-            radii = radii[power > 0].reshape((-1, 1))
-            power = power[power > 0].reshape((-1, 1))
+        radii, magnitude, power = rps.rps(pixel_data)
+        if sum(magnitude) > 0:
+            valid = (magnitude > 0) & (radii < min(pixel_data.shape) / 4)
+            radii = radii[valid].reshape((-1, 1))
+            magnitude = magnitude[valid].reshape((-1, 1))
+            power = power[valid].reshape((-1, 1))
             if radii.shape[0] > 1:
-                slope = lstsq(np.hstack((np.log(radii), np.ones(radii.shape))), np.log(power))[0][0]
+                magslope = lstsq(np.hstack((np.log(radii), np.ones(radii.shape))), np.log(magnitude))[0][0]
+                powerslope = lstsq(np.hstack((np.log(radii), np.ones(radii.shape))), np.log(power))[0][0]
             else:
-                slope = 0
+                magslope = powerslope = 0
         else:
-            power1st = power2nd = power3rd = slope = 0
+            magslope = powerslope = 0
 
         result = []
-        for fname, val in zip(POWER_SPECTRUM_FEATURES, [power1st, power2nd, power3rd, powersum, slope]):
+        for fname, val in zip(POWER_SPECTRUM_FEATURES, [magslope, powerslope]):
             workspace.add_measurement(cpmeas.IMAGE, 
                                       "%s_%s_%s"%(IMAGE_QUALITY, fname, image_name),
                                       val)

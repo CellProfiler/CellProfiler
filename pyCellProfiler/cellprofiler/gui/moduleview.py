@@ -1118,8 +1118,11 @@ class ModuleView:
 
     def enable(self):
         self.__module_panel.Enable()
-
         
+    def get_max_width(self):
+        sizer = self.__sizer
+        return sizer.calc_max_text_width() + sizer.calc_edit_size()[0] + sizer.calc_help_size()[0]
+
 class ModuleSizer(wx.PySizer):
     """The module sizer uses the maximum best width of the setting
     edit controls to compute the column widths, then it sets the text
@@ -1292,7 +1295,7 @@ class ModuleSizer(wx.PySizer):
                         item_location = panel.CalcScrolledPosition(item_location)
                         item.SetDimension(item_location, item_size)
                 height += self.get_row_height(i) + 2*height_border
-            panel.SetVirtualSizeWH(width,height+20)
+            panel.SetVirtualSizeWH(width, height+20)
         except:
             # This happens, hopefully transiently, on the Mac
             if not self.__printed_exception:

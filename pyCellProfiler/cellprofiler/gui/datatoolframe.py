@@ -51,12 +51,14 @@ class DataToolFrame(wx.Frame):
         self.load_measurements(measurements_file_name)
         self.module.module_num = len(self.pipeline.modules())+1
         self.pipeline.add_module(self.module)
-        self.Sizer = wx.BoxSizer(wx.VERTICAL)
-        panel = wx.lib.scrolledpanel.ScrolledPanel(self,-1,style=wx.SUNKEN_BORDER)
-        panel.BackgroundColour = cpprefs.get_background_color()
+
+        self.sizer = wx.BoxSizer(wx.VERTICAL)
+
+        module_panel = wx.lib.scrolledpanel.ScrolledPanel(self,-1,style=wx.SUNKEN_BORDER)
+        module_panel.BackgroundColour = cpprefs.get_background_color()
         self.BackgroundColour = cpprefs.get_background_color()
-        self.Sizer.Add(panel,1,wx.EXPAND)
-        self.module_view = ModuleView(panel, self.pipeline)
+
+        self.module_view = ModuleView(module_panel, self.pipeline)
         self.module_view.set_selection(self.module.module_num)
         def on_change(caller, event):
             setting = event.get_setting()
@@ -65,17 +67,25 @@ class DataToolFrame(wx.Frame):
             self.pipeline.edit_module(event.get_module().module_num)
             self.module_view.reset_view()
         self.module_view.add_listener(on_change)
+
         #
         # Add a panel for the "run" button
         #
         panel = wx.Panel(self)
-        self.Sizer.Add(panel, 0, wx.EXPAND)
-        panel.Sizer = wx.BoxSizer(wx.HORIZONTAL)
-        button = wx.Button(panel,label = "Run")
-        panel.Sizer.Add(button, 0, wx.EXPAND)
+        panel_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        button = wx.Button(panel, label = "Run")
+
+        self.sizer.Add(module_panel, 1, wx.EXPAND)
+        self.sizer.Add(panel, 0, wx.EXPAND)
+
+        panel_sizer.AddStretchSpacer()
+        panel_sizer.Add(button, 0, wx.RIGHT, button.Size[1])
+        panel.SetSizer(panel_sizer)
+
         wx.EVT_BUTTON(self, button.Id, self.on_run)
-        self.SetMinSize(wx.Size(320,240))
-        self.Sizer.Fit(self)
+        self.SetSizer(self.sizer)
+        self.Size = (self.module_view.get_max_width(), self.Size[1])
+        module_panel.Layout()
         self.Show()
         self.tbicon = wx.TaskBarIcon()
         self.tbicon.SetIcon(get_icon(), "CellProfiler2.0")

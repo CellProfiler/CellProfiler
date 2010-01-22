@@ -78,24 +78,22 @@ class ScatterPlot(cpm.CPModule):
     def run(self, workspace):
         m = workspace.get_measurements()
         if self.source.value == cpmeas.IMAGE:
-            x = m.get_all_measurements(cpmeas.IMAGE, self.y_axis.value)
-            y = m.get_all_measurements(cpmeas.IMAGE, self.y_axis.value)
+            xvals = m.get_all_measurements(cpmeas.IMAGE, self.x_axis.value)
+            yvals = m.get_all_measurements(cpmeas.IMAGE, self.y_axis.value)
+            title = '%s'%(self.title.value)
         else:
-            x = m.get_current_measurement(self.get_x_object(), self.x_axis.value)
-            y = m.get_current_measurement(self.get_y_object(), self.y_axis.value)
-        
-        data = []
-        for xx, yy in zip(x,y):
-            data += [[xx,yy]]
+            xvals = m.get_current_measurement(self.get_x_object(), self.x_axis.value)
+            yvals = m.get_current_measurement(self.get_y_object(), self.y_axis.value)
+            title = '%s (cycle %d)'%(self.title.value, workspace.image_set.number+1)
         
         if workspace.frame:
             figure = workspace.create_or_find_figure(subplots=(1,1))
-            figure.subplot_scatter(0, 0, data,
+            figure.subplot_scatter(0, 0, xvals, yvals,
                                    xlabel=self.x_axis.value,
                                    ylabel=self.y_axis.value,
                                    xscale=self.xscale.value,
                                    yscale=self.yscale.value,
-                                   title='%s (cycle %s)'%(self.title.value, workspace.image_set.number+1))
+                                   title=title)
 
     def run_as_data_tool(self, workspace):
         self.run(workspace)

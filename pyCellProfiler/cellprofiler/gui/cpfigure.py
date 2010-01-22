@@ -64,6 +64,7 @@ def close_all(parent):
         window.Close()
         
 MENU_FILE_SAVE = wx.NewId()
+MENU_CLOSE_WINDOW = wx.NewId()
 MENU_ZOOM_IN = wx.NewId()
 MENU_ZOOM_OUT = wx.NewId()
 MENU_TOOLS_SHOW_PIXEL_DATA = wx.NewId()
@@ -172,6 +173,10 @@ class CPFigureFrame(wx.Frame):
                                               "Show &pixel data")
         self.MenuBar.Append(self.__menu_tools, "&Tools")
         wx.EVT_MENU(self, MENU_TOOLS_SHOW_PIXEL_DATA, self.on_show_pixel_data)
+        accelerators = wx.AcceleratorTable(
+            [(wx.ACCEL_CMD, ord('W'), MENU_CLOSE_WINDOW)])
+        self.SetAcceleratorTable(accelerators)
+        wx.EVT_MENU(self, MENU_CLOSE_WINDOW, self.on_close)
     
     def clf(self):
         '''Clear the figure window, resetting the display'''

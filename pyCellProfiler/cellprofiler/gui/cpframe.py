@@ -188,6 +188,7 @@ class CPFrame(wx.Frame):
              (wx.ACCEL_CMD|wx.ACCEL_SHIFT,ord('S'),ID_FILE_SAVE_PIPELINE),
              (wx.ACCEL_CMD,ord('L'),ID_WINDOW_CLOSE_ALL),
              (wx.ACCEL_CMD,ord('Q'),ID_FILE_EXIT),
+             (wx.ACCEL_CMD,ord('W'),ID_FILE_EXIT),
              (wx.ACCEL_NORMAL,wx.WXK_F5,ID_DEBUG_TOGGLE),
              (wx.ACCEL_NORMAL,wx.WXK_F6,ID_DEBUG_STEP),
              (wx.ACCEL_NORMAL,wx.WXK_F7,ID_DEBUG_NEXT_IMAGE_SET),

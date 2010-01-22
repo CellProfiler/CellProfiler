@@ -82,12 +82,17 @@ class AddModuleFrame(wx.Frame):
         selected_module_panel.SetSizer(selected_module_panel_sizer)
         
         self.__set_icon()
+        accelerators = wx.AcceleratorTable(
+            [(wx.ACCEL_CMD, ord('W'), cpframe.ID_FILE_EXIT)])
+        self.SetAcceleratorTable(accelerators)
+        
         self.Bind(wx.EVT_CLOSE,self.__on_close, self)
         self.Bind(wx.EVT_LISTBOX,self.__on_category_selected,self.__module_categories_list_box)
         self.Bind(wx.EVT_LISTBOX_DCLICK, self.__on_add_to_pipeline,self.__module_list_box)
         self.Bind(wx.EVT_BUTTON,self.__on_add_to_pipeline,add_to_pipeline_button)
         self.Bind(wx.EVT_BUTTON,self.__on_close,done_button)
         self.Bind(wx.EVT_BUTTON,self.__on_help, module_help_button)
+        self.Bind(wx.EVT_MENU, self.__on_close, id=cpframe.ID_FILE_EXIT)
         self.__get_module_files()
         self.__set_categories()
         self.__listeners = []

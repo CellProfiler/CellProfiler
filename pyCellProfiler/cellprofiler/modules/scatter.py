@@ -1,4 +1,4 @@
-'''scatter.py - the ScatterPlot module
+'''displayscatterplot.py - the ScatterPlot module
 
 CellProfiler is distributed under the GNU General Public License.
 See the accompanying file LICENSE for details.
@@ -22,13 +22,12 @@ import cellprofiler.measurements as cpmeas
 SOURCE_CHOICE = [cpmeas.IMAGE, "Object"]
 SCALE_CHOICE = ['linear', 'log']
 
-
-class ScatterPlot(cpm.CPModule):
+class DisplayScatterPlot(cpm.CPModule):
     '''
     SHORT DESCRIPTION:
     '''
-    module_name = "ScatterPlot"
-    category = "Other"
+    module_name = "DisplayScatterPlot"
+    category = "Data Tools"
     variable_revision_number = 1
     
     def create_settings(self):

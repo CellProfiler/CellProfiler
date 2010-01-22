@@ -53,7 +53,7 @@ C_MATH = "Math"
 class CalculateMath(cpm.CPModule):
 
     module_name = "CalculateMath"
-    category="Measurement"
+    category="Data Tools"
     variable_revision_number = 1
     
     def create_settings(self):
@@ -283,6 +283,9 @@ class CalculateMath(cpm.CPModule):
             for object_name in all_object_names:
                 m.add_measurement(object_name, feature, result)
 
+    def run_as_data_tool(self, workspace):
+        self.run(workspace)
+        
     def measurement_name(self):
         return "%s_%s" %(C_MATH,self.output_feature_name.value)
             

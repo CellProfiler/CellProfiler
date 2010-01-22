@@ -110,7 +110,7 @@ PC_CUSTOM      = "Custom"
 
 class CalculateStatistics(cpm.CPModule):
     module_name = "CalculateStatistics"
-    category = "Measurement"
+    category = "Data Tools"
     variable_revision_number = 1
     def create_settings(self):
         """Create your settings by subclassing this function

@@ -1,4 +1,4 @@
-'''density.py - the DensityPlot module
+'''dispaydensityplot.py - the DensityPlot module
 
 CellProfiler is distributed under the GNU General Public License.
 See the accompanying file LICENSE for details.
@@ -19,12 +19,12 @@ import cellprofiler.cpmodule as cpm
 import cellprofiler.settings as cps
 import matplotlib.cm
 
-class DensityPlot(cpm.CPModule):
+class DisplayDensityPlot(cpm.CPModule):
     '''
     SHORT DESCRIPTION:
     '''
-    module_name = "DensityPlot"
-    category = "Other"
+    module_name = "DisplayDensityPlot"
+    category = "Data Tools"
     variable_revision_number = 1
     
     def get_x_object(self):

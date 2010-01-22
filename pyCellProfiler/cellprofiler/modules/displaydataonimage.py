@@ -37,7 +37,7 @@ E_IMAGE = "Image"
 
 class DisplayDataOnImage(cpm.CPModule):
     module_name = 'DisplayDataOnImage'
-    category = 'Other'
+    category = 'Data Tools'
     variable_revision_number = 1
     
     def create_settings(self):

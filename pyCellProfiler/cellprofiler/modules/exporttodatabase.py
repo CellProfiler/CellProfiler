@@ -156,7 +156,7 @@ class ExportToDatabase(cpm.CPModule):
  
     module_name = "ExportToDatabase"
     variable_revision_number = 12
-    category = "File Processing"
+    category = "Data Tools"
 
     def create_settings(self):
         db_choices = ([DB_MYSQL, DB_MYSQL_CSV, DB_SQLITE] if HAS_MYSQL_DB
@@ -457,6 +457,9 @@ class ExportToDatabase(cpm.CPModule):
             if not workspace.pipeline.test_mode:
                 self.write_data_to_db(workspace, mappings)
             
+    def run_as_data_tool(self, workspace):
+        self.post_run(workspace)
+        
     def post_run(self, workspace):
         if self.save_cpa_properties.value:
             self.write_properties(workspace)

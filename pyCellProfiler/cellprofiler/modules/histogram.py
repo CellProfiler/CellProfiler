@@ -1,4 +1,4 @@
-'''histogram.py - the Histogram module
+'''displayhistogram.py - the Histogram module
 
 CellProfiler is distributed under the GNU General Public License.
 See the accompanying file LICENSE for details.
@@ -18,13 +18,12 @@ import cellprofiler.cpimage as cpi
 import cellprofiler.cpmodule as cpm
 import cellprofiler.settings as cps
 
-
-class Histogram(cpm.CPModule):
+class DisplayHistogram(cpm.CPModule):
     '''
     SHORT DESCRIPTION:
     '''
-    module_name = "Histogram"
-    category = "Other"
+    module_name = "DisplayHistogram"
+    category = "Data Tools"
     variable_revision_number = 2
     
     def get_object(self):

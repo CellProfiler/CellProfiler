@@ -85,7 +85,7 @@ DIR_CUSTOM_WITH_METADATA = "Custom folder with metadata"
 class ExportToSpreadsheet(cpm.CPModule):
 
     module_name = 'ExportToSpreadsheet'
-    category = 'File Processing'
+    category = "Data Tools"
     variable_revision_number = 3
     
     def create_settings(self):
@@ -263,6 +263,10 @@ class ExportToSpreadsheet(cpm.CPModule):
         # all of the work is done in post_run()
         pass
     
+    
+    def run_as_data_tool(self, workspace):
+        self.post_run(workspace)
+        
     def post_run(self, workspace):
         object_names = []
         #

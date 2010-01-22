@@ -108,12 +108,13 @@ class AddModuleFrame(wx.Frame):
         self.SetIcon(icon)
         
     def __get_module_files(self):
-        self.__module_files = [ 'All',
-                                'File Processing',
+        self.__module_files = [ 'File Processing',
                                 'Image Processing',
                                 'Object Processing',
                                 'Measurement',
-                                'Other'
+                                'Data Tools',
+                                'Other',
+                                'All'
                                ]
         self.__module_dict = {}
         for key in self.__module_files:

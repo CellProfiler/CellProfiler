@@ -111,8 +111,9 @@ from cellprofiler.modules.loadimages import LoadImagesImageProvider
 
 DIR_DEFAULT_IMAGE = 'Default Input Folder'
 DIR_DEFAULT_OUTPUT = 'Default Output Folder'
+DIR_NONE = 'None'
 DIR_OTHER = 'Elsewhere...'
-DIR_ALL = [DIR_DEFAULT_IMAGE, DIR_DEFAULT_OUTPUT,DIR_OTHER]
+DIR_ALL = [DIR_DEFAULT_IMAGE, DIR_DEFAULT_OUTPUT, DIR_NONE, DIR_OTHER]
 
 PATH_NAME = 'PathName'
 FILE_NAME = 'FileName'
@@ -209,7 +210,8 @@ class LoadData(cpm.CPModule):
             the general help for this module for more details).  Choose "Default Input Folder" to
             make the default input folder the base folder. Choose "Default Output
             Folder" to make the default output folder the base folder. Choose
-            "Elsewhere..." to specify a custom folder name.
+            "Elsewhere..." to specify a custom folder name. Choose "None" if
+            you have an Image_PathName field that supplies an absolute path.
             
             Custom folder names that start with "." are relative to the default input folder. Names that
             start with "&" are relative to the default output folder. Two periods ".." specify to go 
@@ -294,6 +296,8 @@ class LoadData(cpm.CPModule):
             path = cpprefs.get_default_image_directory()
         elif self.image_directory_choice == DIR_DEFAULT_OUTPUT:
             path = cpprefs.get_default_output_directory()
+        elif self.image_directory_choice == DIR_NONE:
+            path = ""
         else:
             path = cpprefs.get_absolute_path(self.image_custom_directory.value)
         return path
@@ -494,8 +498,9 @@ class LoadData(cpm.CPModule):
                 for image_name in image_names:
                     path_name_feature = make_path_name_feature(image_name)
                     if dictionary.has_key(path_name_feature):
-                        path = os.path.join(path_base, 
-                                            dictionary[path_name_feature][index])
+                        path = dictionary[path_name_feature][index]
+                        if self.image_directory_choice != DIR_NONE:
+                            path = os.path.join(path_base, path)
                     else:
                         path = path_base
                     file_name_feature = make_file_name_feature(image_name)

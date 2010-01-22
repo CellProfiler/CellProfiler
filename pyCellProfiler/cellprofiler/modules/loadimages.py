@@ -26,10 +26,13 @@ __version__="$Revision$"
 import numpy as np
 import cgi
 import hashlib
+import httplib
 import os
 import re
 import sys
+import tempfile
 import traceback
+import urllib
 import wx
 import wx.html
 
@@ -1476,22 +1479,81 @@ def is_movie(filename):
     return ext in ('.avi', '.mpeg', '.stk','.flex')
 
 
-class LoadImagesImageProvider(cpimage.AbstractImageProvider):
-    """Provide an image by filename, loading the file as it is requested
-    """
-    def __init__(self,name,pathname,filename):
+class LoadImagesImageProviderBase(cpimage.AbstractImageProvider):
+    '''Base for image providers: handle pathname and filename & URLs'''
+    def __init__(self, name, pathname, filename):
+        '''Initializer
+        
+        name - name of image to be provided
+        pathname - path to file or base of URL
+        filename - filename of file or last chunk of URL
+        '''
         self.__name = name
         self.__pathname = pathname
         self.__filename = filename
+        self.__cached_file = None
+        self.__is_cached = False
+        self.__cacheing_tried = False
+
+    def get_name(self):
+        return self.__name
+    
+    def get_pathname(self):
+        return self.__pathname
+    
+    def get_filename(self):
+        return self.__filename
+    
+    def cache_file(self):
+        '''Cache a file that needs to be HTTP downloaded'''
+        if self.__cacheing_tried:
+            return
+        self.__cacheing_tried = True
+        #
+        # Check to see if the pathname can be accessed as a directory
+        # If so, handle normally
+        #
+        if os.path.exists(self.get_pathname()):
+            return
+        url = '/'.join((self.get_pathname(), self.get_filename()))
+        self.__cached_file, headers = urllib.urlretrieve(url)
+        self.__is_cached = True
+            
+    def get_full_name(self):
+        self.cache_file()
+        if self.__is_cached:
+            return self.__cached_file
+        return os.path.join(self.get_pathname(),self.get_filename())
+    
+    def release_memory(self):
+        '''Release any image memory
+        
+        Possibly delete the temporary file'''
+        if self.__is_cached:
+            try:
+                os.remove(self.__cached_file)
+                self.__is_cached = False
+                self.__cacheing_tried = False
+                self.__cached_file = None
+            except:
+                traceback.print_exc()
+        
+class LoadImagesImageProvider(LoadImagesImageProviderBase):
+    """Provide an image by filename, loading the file as it is requested
+    """
+    def __init__(self,name,pathname,filename):
+        super(LoadImagesImageProvider, self).__init__(name, pathname, filename)
     
     def provide_image(self, image_set):
         """Load an image from a pathname
         """
-        if self.__filename.lower().endswith(".mat"):
+        self.cache_file()
+        filename = self.get_filename()
+        if filename.lower().endswith(".mat"):
             imgdata = scipy.io.matlab.mio.loadmat(self.get_full_name(),
                                                   struct_as_record=True)
             img = imgdata["Image"]
-        elif (os.path.splitext(self.__filename.lower())[-1] 
+        elif (os.path.splitext(filename.lower())[-1] 
               in USE_BIOFORMATS_FIRST and
               has_bioformats):
             try:
@@ -1513,23 +1575,6 @@ class LoadImagesImageProvider(cpimage.AbstractImageProvider):
                              path_name = self.get_pathname(),
                              file_name = self.get_filename())
     
-    def get_name(self):
-        return self.__name
-    
-    def get_pathname(self):
-        return self.__pathname
-    
-    def get_filename(self):
-        return self.__filename
-    
-    def get_full_name(self):
-        return os.path.join(self.get_pathname(),self.get_filename())
-    
-    def release_memory(self):
-        '''Release any image memory
-        
-        The image is either loaded every time or cached so this is a no-op'''
-        pass
 
 def load_using_PIL(path, index=0, seekfn=None):
     '''Get the pixel data for an image using PIL
@@ -1659,14 +1704,12 @@ def load_using_bioformats(path, c=None, z=0, t=0, series=None):
         formatreader.jutil.detach()
     return image
     
-class LoadImagesMovieFrameProvider(cpimage.AbstractImageProvider):
+class LoadImagesMovieFrameProvider(LoadImagesImageProviderBase):
     """Provide an image by filename:frame, loading the file as it is requested
     """
     def __init__(self,name,pathname,filename,frame):
-        self.__name = name
-        self.__pathname = pathname
-        self.__filename = filename
-        self.__frame    = frame
+        super(LoadImagesMovieFrameProvider, self).__init__(name, pathname, filename)
+        self.__frame = frame
     
     def provide_image(self, image_set):
         """Load an image from a movie frame
@@ -1677,28 +1720,14 @@ class LoadImagesMovieFrameProvider(cpimage.AbstractImageProvider):
                               file_name = self.get_filename())
         return image
     
-    def get_name(self):
-        return self.__name
-    
-    def get_pathname(self):
-        return self.__pathname
-    
-    def get_filename(self):
-        return self.__filename
-    
-    def get_full_name(self):
-        return os.path.join(self.get_pathname(),self.get_filename())
-    
     def get_frame(self):
         return self.__frame
 
-class LoadImagesFlexFrameProvider(cpimage.AbstractImageProvider):
+class LoadImagesFlexFrameProvider(LoadImagesImageProviderBase):
     """Provide an image by filename:frame, loading the file as it is requested
     """
     def __init__(self,name,pathname,filename,channel, z, t, series):
-        self.__name = name
-        self.__pathname = pathname
-        self.__filename = filename
+        super(LoadImagesFlexFrameProvider, self).__init__(name, pathname, filename)
         self.__channel = channel
         self.__z = z
         self.__t = t
@@ -1716,18 +1745,6 @@ class LoadImagesFlexFrameProvider(cpimage.AbstractImageProvider):
                               file_name = self.get_filename())
         return image
     
-    def get_name(self):
-        return self.__name
-    
-    def get_pathname(self):
-        return self.__pathname
-    
-    def get_filename(self):
-        return self.__filename
-    
-    def get_full_name(self):
-        return os.path.join(self.get_pathname(),self.get_filename())
-    
     def get_c(self):
         '''Get the channel #'''
         return self.__channel
@@ -1743,14 +1760,8 @@ class LoadImagesFlexFrameProvider(cpimage.AbstractImageProvider):
     def get_series(self):
         '''Get the series #'''
         return self.__series
-
-    def release_memory(self):
-        '''Release any image memory
-        
-        The image is either loaded every time or cached so this is a no-op'''
-        pass
     
-class LoadImagesSTKFrameProvider(cpimage.AbstractImageProvider):
+class LoadImagesSTKFrameProvider(LoadImagesImageProviderBase):
     """Provide an image by filename:frame from an STK file"""
     def __init__(self, name, pathname, filename, frame):
         '''Initialize the provider
@@ -1760,9 +1771,7 @@ class LoadImagesSTKFrameProvider(cpimage.AbstractImageProvider):
         filename - name of the file
         frame - # of the frame to provide
         '''
-        self.__name = name
-        self.__pathname = pathname
-        self.__filename = filename
+        super(LoadImagesSTKFrameProvider, self).__init__(name, pathname, filename)
         self.__frame    = frame
         
     def provide_image(self, image_set):
@@ -1800,24 +1809,6 @@ class LoadImagesSTKFrameProvider(cpimage.AbstractImageProvider):
         return cpimage.Image(img,
                              path_name = self.get_pathname(),
                              file_name = self.get_filename())
-    def get_name(self):
-        return self.__name
-    
-    def get_pathname(self):
-        return self.__pathname
-    
-    def get_filename(self):
-        return "%s:%d" % (self.__filename, self.__frame)
-    
-    def get_full_name(self):
-        return os.path.join(self.get_pathname(),self.__filename)
-
     def get_frame(self):
         return self.__frame
 
-    def release_memory(self):
-        '''Release any image memory
-        
-        The image is either loaded every time or cached so this is a no-op'''
-        pass
-    

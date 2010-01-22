@@ -431,6 +431,15 @@ LoadImages:[module_num:1|svn_version:\'8913\'|variable_revision_number:1|show_wi
         pipeline.add_module(check_image)
         pipeline.run()
     
+    def test_05_05_load_url(self):
+        lip = LI.LoadImagesImageProvider(
+            "broad", 
+            "http://www.cellprofiler.org/linked_files",
+            "broad-logo.gif")
+        logo = lip.provide_image(None)
+        self.assertEqual(logo.pixel_data.shape, (38, 150, 3))
+        lip.release_memory()
+        
     def test_06_01_file_metadata(self):
         """Test file metadata on two sets of two files
         

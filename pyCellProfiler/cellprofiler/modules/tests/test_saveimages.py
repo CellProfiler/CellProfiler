@@ -14,7 +14,7 @@ __version__="$Revision$"
 
 import base64
 import matplotlib.image
-import numpy
+import numpy as np
 import os
 import sys
 import Image as PILImage
@@ -26,16 +26,23 @@ import zlib
 import cellprofiler.modules.saveimages as cpm_si
 import cellprofiler.modules.loadimages as cpm_li
 import cellprofiler.modules.applythreshold as cpm_a
+import cellprofiler.cpimage as cpi
+import cellprofiler.workspace as cpw
+import cellprofiler.objects as cpo
+import cellprofiler.measurements as cpm
 import cellprofiler.pipeline as cpp
 import cellprofiler.preferences as cpprefs
 import cellprofiler.modules.createbatchfiles as cpm_c
 from cellprofiler.utilities.get_proper_case_filename import get_proper_case_filename
 
 import cellprofiler.modules.tests as cpmt
+IMAGE_NAME = 'inputimage'
+FILE_NAME = 'filenm'
 
 class TestSaveImages(unittest.TestCase):
     def setUp(self):
         # Change the default image directory to a temporary file
+        cpprefs.set_headless()
         self.old_image_directory = cpprefs.get_default_image_directory()
         self.new_image_directory = get_proper_case_filename(tempfile.mkdtemp())
         cpprefs.set_default_image_directory(self.new_image_directory)
@@ -197,9 +204,9 @@ class TestSaveImages(unittest.TestCase):
         self.assertEqual(pathnames[0],pn)
         data = matplotlib.image.imread(img1_out_filename)
         expected_data = matplotlib.image.imread(img1_filename) 
-        self.assertTrue(numpy.all(data[expected_data < 255] ==
+        self.assertTrue(np.all(data[expected_data < 255] ==
                                   expected_data[expected_data < 255]))
-        self.assertTrue(numpy.all(data[expected_data == 255] == 0))
+        self.assertTrue(np.all(data[expected_data == 255] == 0))
 
     def test_01_02_save_all_to_same_tif(self):
         img1_filename = os.path.join(self.new_image_directory,'img1.tif')
@@ -252,10 +259,10 @@ class TestSaveImages(unittest.TestCase):
         self.assertEqual(pathnames[0],pn)
         data = matplotlib.image.imread(img1_out_filename)
         expected_data = matplotlib.image.imread(img1_filename) 
-        self.assertTrue(numpy.all(data==expected_data))
+        self.assertTrue(np.all(data==expected_data))
         data = matplotlib.image.imread(img2_out_filename)
         expected_data = matplotlib.image.imread(img2_filename) 
-        self.assertTrue(numpy.all(data==expected_data))
+        self.assertTrue(np.all(data==expected_data))
 
     def test_01_03_save_last_to_same_tif(self):
         img1_filename = os.path.join(self.new_image_directory,'img1.tif')
@@ -303,7 +310,7 @@ class TestSaveImages(unittest.TestCase):
         self.assertTrue(os.path.isfile(img2_out_filename))
         data = matplotlib.image.imread(img2_out_filename)
         expected_data = matplotlib.image.imread(img2_filename) 
-        self.assertTrue(numpy.all(data==expected_data))
+        self.assertTrue(np.all(data==expected_data))
 
     def test_01_04_save_all_to_output_tif(self):
         img1_filename = os.path.join(self.new_image_directory,'img1.tif')
@@ -356,10 +363,10 @@ class TestSaveImages(unittest.TestCase):
         self.assertEqual(pathnames[0],pn)
         data = matplotlib.image.imread(img1_out_filename)
         expected_data = matplotlib.image.imread(img1_filename)
-        self.assertTrue(numpy.all(data==expected_data))
+        self.assertTrue(np.all(data==expected_data))
         data = matplotlib.image.imread(img2_out_filename)
         expected_data = matplotlib.image.imread(img2_filename) 
-        self.assertTrue(numpy.all(data==expected_data))
+        self.assertTrue(np.all(data==expected_data))
 
     def test_01_05_save_all_to_custom_tif(self):
         img1_filename = os.path.join(self.new_image_directory,'img1.tif')
@@ -413,10 +420,10 @@ class TestSaveImages(unittest.TestCase):
         self.assertEqual(pathnames[0],pn)
         data = matplotlib.image.imread(img1_out_filename)
         expected_data = matplotlib.image.imread(img1_filename) 
-        self.assertTrue(numpy.all(data==expected_data))
+        self.assertTrue(np.all(data==expected_data))
         data = matplotlib.image.imread(img2_out_filename)
         expected_data = matplotlib.image.imread(img2_filename) 
-        self.assertTrue(numpy.all(data==expected_data))
+        self.assertTrue(np.all(data==expected_data))
 
     def test_01_06_save_all_to_custom_png(self):
         img1_filename = os.path.join(self.new_image_directory,'img1.tif')
@@ -472,12 +479,12 @@ class TestSaveImages(unittest.TestCase):
         data = matplotlib.image.pil_to_array(pil)
         pil = PILImage.open(img1_filename)
         expected_data = matplotlib.image.pil_to_array(pil) 
-        self.assertTrue(numpy.all(data==expected_data))
+        self.assertTrue(np.all(data==expected_data))
         pil = PILImage.open(img2_out_filename)
         data = matplotlib.image.pil_to_array(pil)
         pil = PILImage.open(img2_filename)
         expected_data = matplotlib.image.pil_to_array(pil) 
-        self.assertTrue(numpy.all(data==expected_data))
+        self.assertTrue(np.all(data==expected_data))
 
     def test_01_07_save_all_to_custom_jpg(self):
         img1_filename = os.path.join(self.new_image_directory,'img1.tif')
@@ -532,11 +539,11 @@ class TestSaveImages(unittest.TestCase):
         data = matplotlib.image.imread(img1_out_filename)
         expected_data = matplotlib.image.imread(img1_filename) 
         #crud - no lossless jpeg in PIL
-        self.assertTrue(numpy.all(numpy.abs(data.astype(int)-
+        self.assertTrue(np.all(np.abs(data.astype(int)-
                                             expected_data.astype(int))<=4))
         data = matplotlib.image.imread(img2_out_filename)
         expected_data = matplotlib.image.imread(img2_filename) 
-        self.assertTrue(numpy.all(numpy.abs(data.astype(int)-
+        self.assertTrue(np.all(np.abs(data.astype(int)-
                                             expected_data.astype(int))<=4))
 
     def test_01_08_save_all_to_custom_gif(self):
@@ -591,10 +598,10 @@ class TestSaveImages(unittest.TestCase):
         self.assertEqual(pathnames[0],pn)
         data = matplotlib.image.imread(img1_out_filename)
         expected_data = matplotlib.image.imread(img1_filename) 
-        self.assertTrue(numpy.all(data==expected_data))
+        self.assertTrue(np.all(data==expected_data))
         data = matplotlib.image.imread(img2_out_filename)
         expected_data = matplotlib.image.imread(img2_filename) 
-        self.assertTrue(numpy.all(data==expected_data))
+        self.assertTrue(np.all(data==expected_data))
 
     def test_01_09_save_single_to_custom_tif(self):
         img1_filename = os.path.join(self.new_image_directory,'img1.tif')
@@ -642,7 +649,7 @@ class TestSaveImages(unittest.TestCase):
         self.assertTrue(os.path.isfile(img1_out_filename))
         data = matplotlib.image.imread(img1_out_filename)
         expected_data = matplotlib.image.imread(img1_filename) 
-        self.assertTrue(numpy.all(data==expected_data))
+        self.assertTrue(np.all(data==expected_data))
     
     def test_02_01_prepare_to_create_batch(self):
         '''Test the "prepare_to_create_batch" method'''
@@ -678,11 +685,83 @@ class TestSaveImages(unittest.TestCase):
         for column in columns:
             self.assertEqual(column[0], "Image")
             self.assertTrue(column[1] in ("PathName_MyImage","FileName_MyImage"))
+            
+    def make_workspace(self, image, filename = None, path = None):
+        '''Make a workspace and module appropriate for running saveimages'''
+        image_set_list = cpi.ImageSetList()
+        image_set = image_set_list.get_image_set(0)
+        img = cpi.Image(image)
+        image_set.add(IMAGE_NAME, img)
+        
+        module = cpm_si.SaveImages()
+        module.module_num = 1
+        module.image_name.value = IMAGE_NAME
+        module.file_image_name.value = IMAGE_NAME
+        
+        m = cpm.Measurements()
+        if filename is not None:
+            m.add_image_measurement('_'.join(("FileName", IMAGE_NAME)), filename)
+        if path is not None:
+            m.add_image_measurement('_'.join(("PathName", IMAGE_NAME)), path)
+            
+        pipeline = cpp.Pipeline()
+        def callback(caller, event):
+            self.assertFalse(isinstance(event, cpp.RunExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.add_module(module)
+        
+        workspace = cpw.Workspace(pipeline, module, image_set,
+                                  cpo.Objects(), m, image_set_list)
+        return workspace, module
+    
+    def test_04_01_save_with_image_name_and_metadata(self):
+        np.random.seed(0)
+        image = np.random.uniform(size=(30,40))
+        workspace, module = self.make_workspace(image, FILE_NAME)
+        self.assertTrue(isinstance(module, cpm_si.SaveImages))
+        module.save_image_or_figure.value = cpm_si.IF_IMAGE
+        module.file_name_method.value = cpm_si.FN_IMAGE_FILENAME_WITH_METADATA
+        module.single_file_name.value = '\\g<Well>'
+        module.file_format.value = cpm_si.FF_PNG
+        
+        m = workspace.measurements
+        m.add_image_measurement('Metadata_Well','C08')
+        
+        module.run(workspace)
+        filename = os.path.join(cpprefs.get_default_output_directory(),
+                                "%sC08.%s" %(FILE_NAME, cpm_si.FF_PNG))
+        self.assertTrue(os.path.isfile(filename))
+        pixel_data = cpm_li.load_using_PIL(filename)
+        pixel_data = pixel_data.astype(float) / 255.0
+        self.assertEqual(pixel_data.shape, image.shape)
+        self.assertTrue(np.all(np.abs(image - pixel_data) < .02))
+        
+    def test_04_02_save_with_metadata(self):
+        np.random.seed(0)
+        image = np.random.uniform(size=(30,40))
+        workspace, module = self.make_workspace(image, FILE_NAME)
+        self.assertTrue(isinstance(module, cpm_si.SaveImages))
+        module.save_image_or_figure.value = cpm_si.IF_IMAGE
+        module.file_name_method.value = cpm_si.FN_WITH_METADATA
+        module.single_file_name.value = 'metadatatest\\g<Well>'
+        module.file_format.value = cpm_si.FF_PNG
+        
+        m = workspace.measurements
+        m.add_image_measurement('Metadata_Well','C08')
+        
+        module.run(workspace)
+        filename = os.path.join(cpprefs.get_default_output_directory(),
+                                "metadatatestC08.%s" %(cpm_si.FF_PNG))
+        self.assertTrue(os.path.isfile(filename))
+        pixel_data = cpm_li.load_using_PIL(filename)
+        pixel_data = pixel_data.astype(float) / 255.0
+        self.assertEqual(pixel_data.shape, image.shape)
+        self.assertTrue(np.all(np.abs(image - pixel_data) < .02))
         
     
-def make_array(encoded,shape,dtype=numpy.uint8):
+def make_array(encoded,shape,dtype=np.uint8):
     data = base64.b64decode(encoded)
-    a = numpy.fromstring(data,dtype)
+    a = np.fromstring(data,dtype)
     return a.reshape(shape)
 
 def make_file(filename, encoded):

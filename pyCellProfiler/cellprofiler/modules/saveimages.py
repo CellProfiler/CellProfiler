@@ -50,6 +50,7 @@ FN_SEQUENTIAL  = "Sequential numbers"
 FN_SINGLE_NAME = "Single name"
 SINGLE_NAME_TEXT = "Enter single file name:"
 FN_WITH_METADATA = "Name with metadata"
+FN_IMAGE_FILENAME_WITH_METADATA = "Image filename with metadata"
 METADATA_NAME_TEXT = ("""Enter file name with metadata""")
 SEQUENTIAL_NUMBER_TEXT = "Enter file prefix"
 FF_BMP         = "bmp"
@@ -109,7 +110,8 @@ class SaveImages(cpm.CPModule):
                 Select the module number/name for which you want to save the figure window.""")
         self.file_name_method = cps.Choice("Select method for constructing file names:",
                                            [FN_FROM_IMAGE,FN_SEQUENTIAL,
-                                            FN_SINGLE_NAME, FN_WITH_METADATA],
+                                            FN_SINGLE_NAME, FN_WITH_METADATA,
+                                            FN_IMAGE_FILENAME_WITH_METADATA],
                                            FN_FROM_IMAGE,doc="""
                 There are four choices available:
                 <ul>
@@ -130,6 +132,10 @@ class SaveImages(cpm.CPModule):
                 is included in a special tag format embedded in your file specification. 
                 Tags have the form <i>\g&lt;metadata-tag&gt;</i> where
                 <i>&lt;metadata-tag&gt</i>; is the name of your tag.</li>
+                <li><i>Image filename with metadata:</i> This is a combination of
+                <i>From image filename</i> and <i>Name with metadata</i>. It
+                appends an extension to the image filename with metadata
+                substitution.</li>
                 </ul>""")
         self.file_image_name = cps.FileImageNameSubscriber("Select image name for file prefix:",
                                                            "None",doc="""
@@ -251,7 +257,8 @@ class SaveImages(cpm.CPModule):
             else:
                 result.append(self.figure_name)
             result.append(self.file_name_method)
-            if (self.file_name_method != FN_FROM_IMAGE and
+            if (self.file_name_method not in 
+                (FN_FROM_IMAGE, FN_IMAGE_FILENAME_WITH_METADATA) and
                 self.pathname_choice == PC_WITH_IMAGE):
                 # Need just the file image name here to associate
                 # the file-name image path
@@ -259,6 +266,9 @@ class SaveImages(cpm.CPModule):
             if self.file_name_method == FN_FROM_IMAGE:
                 result.append(self.file_image_name)
                 result.append(self.file_name_suffix)
+            elif self.file_name_method == FN_IMAGE_FILENAME_WITH_METADATA:
+                self.single_file_name.text = METADATA_NAME_TEXT
+                result += [self.file_image_name, self.single_file_name]
             elif self.file_name_method == FN_SEQUENTIAL:
                 self.single_file_name.text = SEQUENTIAL_NUMBER_TEXT
                 result.append(self.single_file_name)
@@ -282,7 +292,9 @@ class SaveImages(cpm.CPModule):
                 self.file_format != FF_MAT):
                 result.append(self.rescale)
                 result.append(self.colormap)
-            if self.file_name_method in (FN_FROM_IMAGE,FN_SEQUENTIAL,FN_WITH_METADATA):
+            if self.file_name_method in (
+                FN_FROM_IMAGE, FN_SEQUENTIAL, FN_WITH_METADATA, 
+                FN_IMAGE_FILENAME_WITH_METADATA):
                 result.append(self.update_file_names)
                 result.append(self.create_subdirectories)
         else:
@@ -484,7 +496,10 @@ class SaveImages(cpm.CPModule):
             filename = measurements.get_current_measurement('Image',
                                                             file_name_feature)
             filename = os.path.splitext(filename)[0]
-            if self.file_name_suffix != cps.DO_NOT_USE:
+            if self.file_name_method == FN_IMAGE_FILENAME_WITH_METADATA:
+                filename += workspace.measurements.apply_metadata(
+                    self.single_file_name.value)
+            elif self.file_name_suffix != cps.DO_NOT_USE:
                 filename += str(self.file_name_suffix)
         filename = "%s.%s"%(filename,self.file_format.value)
         
@@ -498,7 +513,9 @@ class SaveImages(cpm.CPModule):
                 if pathname[:2]=='.'+os.path.sep:
                     pathname = os.path.join(cpp.get_default_output_directory(),
                                             pathname[2:])
-            if (self.file_name_method in (FN_FROM_IMAGE,FN_SEQUENTIAL,FN_WITH_METADATA) and
+            if (self.file_name_method in (
+                FN_FROM_IMAGE, FN_SEQUENTIAL, FN_WITH_METADATA,
+                FN_IMAGE_FILENAME_WITH_METADATA) and
                 self.create_subdirectories.value):
                 # Get the subdirectory name
                 path_name_feature = 'PathName_%s'%(self.file_image_name)

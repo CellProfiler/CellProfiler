@@ -381,6 +381,8 @@ class ExportToDatabase(cpm.CPModule):
                                           self.objects_choice)
             
     def prepare_run(self, pipeline, image_set_list, frame):
+        if pipeline.test_mode:
+            return True
         if self.db_type == DB_ORACLE:
             raise NotImplementedError("Writing to an Oracle database is not yet supported")
         if self.db_type in (DB_MYSQL, DB_SQLITE):
@@ -452,6 +454,8 @@ class ExportToDatabase(cpm.CPModule):
         self.output_directory.value = fn_alter_path(path)
             
     def run(self, workspace):
+        if workspace.pipeline.test_mode:
+            return
         if (self.db_type == DB_MYSQL or self.db_type == DB_SQLITE):
             mappings = self.get_column_name_mappings(workspace.pipeline)
             if not workspace.pipeline.test_mode:

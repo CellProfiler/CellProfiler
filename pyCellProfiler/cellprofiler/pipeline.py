@@ -1055,12 +1055,14 @@ class Pipeline(object):
         '''Tell everyone that a run is ending'''
         self.notify_listeners(EndRunEvent())
         
-    def prepare_run(self, frame):
+    def prepare_run(self, frame, test_mode = None):
         """Do "prepare_run" on each module to initialize the image_set_list
         
         returns the image_set_list or None if an exception was thrown
         """
-        image_set_list = cellprofiler.cpimage.ImageSetList()
+        if test_mode is None:
+            test_mode = self.test_mode
+        image_set_list = cellprofiler.cpimage.ImageSetList(test_mode)
         
         for module in self.modules():
             try:

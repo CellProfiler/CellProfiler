@@ -567,11 +567,17 @@ class ImageSetList(object):
     """Represents the list of image sets in a pipeline run
     
     """
-    def __init__(self):
+    def __init__(self, test_mode = False):
         self.__image_sets = []
         self.__image_sets_by_key = {}
         self.__legacy_fields = {}
         self.__associating_by_key = None
+        self.__test_mode = test_mode
+    
+    @property
+    def test_mode(self):
+        '''True if we are in test mode'''
+        return self.__test_mode
     
     def get_image_set(self,keys_or_number):
         """Return either the indexed image set (keys_or_number = index) or the image set with matching keys

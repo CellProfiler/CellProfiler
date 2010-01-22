@@ -627,7 +627,8 @@ class PipelineController:
         assert isinstance(self.__pipeline, cellprofiler.pipeline.Pipeline)
         self.__pipeline.test_mode = True
         try:
-            self.__debug_image_set_list = self.__pipeline.prepare_run(self.__frame)
+            self.__debug_image_set_list = \
+                self.__pipeline.prepare_run(self.__frame)
             self.__keys, self.__groupings = self.__pipeline.get_groupings(
                 self.__debug_image_set_list)
         except ValueError, v:

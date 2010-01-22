@@ -57,7 +57,7 @@ N_SETTINGS_PER_MEASUREMENT = 7
 
 class FlagImage(cpm.CPModule):
    
-    category = "Image Processing"
+    category = "Data Tools"
     variable_revision_number = 1
     module_name = "FlagImage"
     
@@ -232,6 +232,9 @@ class FlagImage(cpm.CPModule):
             figure.subplot_table(0,0, statistics,
                                  (.25,.25,.25,.125,.125))
 
+    def run_as_data_tool(self, workspace):
+        self.run(workspace)
+        
     def measurement_name(self, flag):
         return "_".join((flag.category.value, flag.feature_name.value))
 

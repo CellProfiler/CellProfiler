@@ -222,24 +222,99 @@ class FlagImage(cpm.CPModule):
         result += [self.add_flag_button]
         return result
     
+    def is_interactive(self):
+        return False
+    
     def run(self, workspace):
         statistics = [ ("Flag", "Source", "Measurement", "Value","Pass/Fail")]
         for flag in self.flags:
             statistics += self.run_flag(workspace, flag)
         if workspace.frame is not None:
-            figure = workspace.create_or_find_figure(subplots=(1,1))
-            assert isinstance(figure, cpf.CPFigureFrame)
-            figure.subplot_table(0,0, statistics,
-                                 (.25,.25,.25,.125,.125))
+            workspace.display_data.statistics = statistics
+        
+    def display(self, workspace):
+        figure = workspace.create_or_find_figure(subplots=(1,1))
+        assert isinstance(figure, cpf.CPFigureFrame)
+        figure.subplot_table(0,0, workspace.display_data.statistics,
+                             (.25,.25,.25,.125,.125))
 
     def run_as_data_tool(self, workspace):
         m = workspace.measurements
         assert isinstance(m, cpmeas.Measurements)
+        m.is_first_image = True
         image_set_count = m.image_set_count
         for i in range(image_set_count):
             self.run(workspace)
+            if workspace.frame is not None:
+                img_stats = workspace.display_data.statistics
+                if i == 0:
+                    statistics = [["Image set"] + list(img_stats[0])]
+                statistics += [[str(i+1)] + list(x)
+                               for x in img_stats[1:]]
             if i < image_set_count - 1:
                 m.next_image_set()
+        if workspace.frame is not None and image_set_count > 0:
+            import wx
+            from wx.grid import Grid, PyGridTableBase, EVT_GRID_LABEL_LEFT_CLICK
+            from cellprofiler.gui import get_icon
+            
+            frame = wx.Frame(workspace.frame, -1, "Flag image results")
+            sizer = wx.BoxSizer(wx.VERTICAL)
+            frame.SetSizer(sizer)
+            grid = Grid(frame, -1)
+            sizer.Add(grid, 1, wx.EXPAND)
+            #
+            # The flag table supplies the statistics to the grid
+            # using the grid table interface
+            #
+            sort_order = np.arange(len(statistics)-1)
+            sort_col = [None]
+            sort_ascending = [None]
+            def on_label_clicked(event):
+                col = event.GetCol()
+                if sort_col[0] == col:
+                    sort_ascending[0] = not sort_ascending[0]
+                else:
+                    sort_ascending[0] = True
+                sort_col[0] = col
+                data = [x[col] for x in statistics[1:]]
+                try:
+                    data = np.array(data,float)
+                except ValueError:
+                    data = np.array(data)
+                if sort_ascending[0]:
+                    sort_order[:] = np.lexsort((data,))
+                else:
+                    sort_order[::-1] = np.lexsort((data,))
+                grid.ForceRefresh()
+                
+            grid.Bind(EVT_GRID_LABEL_LEFT_CLICK, on_label_clicked)
+            
+            class FlagTable(PyGridTableBase):
+                def __init__(self):
+                    PyGridTableBase.__init__(self)
+                def GetColLabelValue(self, col):
+                    if col == sort_col[0]:
+                        if sort_ascending[0]:
+                            
+                            return statistics[0][col]+" v"
+                        else:
+                            return statistics[0][col]+" ^"
+                    return statistics[0][col]
+                def GetNumberRows(self):
+                    return len(statistics)-1
+                def GetNumberCols(self):
+                    return len(statistics[0])
+                def GetValue(self, row, col):
+                    return statistics[sort_order[row]+1][col]
+            grid.SetTable(FlagTable())
+            frame.Fit()
+            max_size = int(wx.SystemSettings.GetMetric(wx.SYS_SCREEN_Y) * 3 / 4)
+            if frame.Size[1] > max_size:
+                frame.SetSize((frame.Size[0], max_size))
+            frame.SetIcon(get_icon())
+            frame.Show()
+            
         
     def measurement_name(self, flag):
         return "_".join((flag.category.value, flag.feature_name.value))

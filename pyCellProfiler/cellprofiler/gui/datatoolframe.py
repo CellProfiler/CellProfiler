@@ -132,7 +132,7 @@ class DataToolFrame(wx.Frame):
         self.Close()
         
     def load_measurements(self, measurements_file_name):
-        self.measurements = cpmeas.Measurements()
+        self.measurements = cpmeas.Measurements(can_overwrite = True)
         self.measurements.load(measurements_file_name)
         
     def on_run(self, event):

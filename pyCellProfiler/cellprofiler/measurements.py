@@ -90,10 +90,19 @@ class Measurements(object):
             min_count = min(min_count, len(measurements))
         return min_count
     
-    @property
-    def is_first_image(self):
+    
+    def get_is_first_image(self):
         '''True if this is the first image in the set'''
         return self.__is_first_image
+    
+    def set_is_first_image(self, value):
+        if not value:
+            raise ValueError("Can only reset to be first image")
+        self.__is_first_image = value
+        self.__image_set_index = 0
+        self.__image_set_number = self.image_set_start_number
+        
+    is_first_image = property(get_is_first_image, set_is_first_image)
     
     @property
     def image_set_start_number(self):
@@ -137,7 +146,6 @@ class Measurements(object):
                 self.add_all_measurements(object_name,
                                           feature_name,
                                           values)
-        
     
     def add_image_measurement(self, feature_name, data):
         """Add a measurement to the "Image" category

@@ -233,7 +233,13 @@ class FlagImage(cpm.CPModule):
                                  (.25,.25,.25,.125,.125))
 
     def run_as_data_tool(self, workspace):
-        self.run(workspace)
+        m = workspace.measurements
+        assert isinstance(m, cpmeas.Measurements)
+        image_set_count = m.image_set_count
+        for i in range(image_set_count):
+            self.run(workspace)
+            if i < image_set_count - 1:
+                m.next_image_set()
         
     def measurement_name(self, flag):
         return "_".join((flag.category.value, flag.feature_name.value))

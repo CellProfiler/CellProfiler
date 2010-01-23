@@ -14,6 +14,7 @@ __version__="$Revision$"
 
 import numpy as np
 import re
+from scipy.io.matlab import loadmat
 
 AGG_MEAN = "Mean"
 AGG_STD_DEV= "StDev"
@@ -71,9 +72,23 @@ class Measurements(object):
             self.__image_set_number = explicit_image_set_number
         self.__image_set_index += 1
         self.__is_first_image = False
-        for object_features in self.__dictionary.values():
+        for object_name, object_features in self.__dictionary.iteritems():
+            if object_name in (EXPERIMENT, NEIGHBORS):
+                continue
             for measurements in object_features.values():
                 measurements.append(None)
+    
+    @property
+    def image_set_count(self):
+        '''The number of complete image sets measured'''
+        if len(self.__dictionary) == 0:
+            return 0
+        if not self.__dictionary.has_key(IMAGE):
+            return 0
+        min_count = np.iinfo(int).max
+        for measurements in self.__dictionary[IMAGE].values():
+            min_count = min(min_count, len(measurements))
+        return min_count
     
     @property
     def is_first_image(self):
@@ -103,6 +118,26 @@ class Measurements(object):
     def image_set_index(self):
         '''Return the index into the measurements for the current measurement'''
         return self.__image_set_index
+    
+    def load(self, measurements_file_name):
+        '''Load measurements from a matlab file'''
+        handles = loadmat(measurements_file_name, struct_as_record=True)
+        m = handles["handles"][0,0]["Measurements"][0,0]
+        for object_name in m.dtype.fields.keys():
+            omeas = m[object_name][0,0]
+            for feature_name in omeas.dtype.fields.keys():
+                if object_name == IMAGE:
+                    values = [x[0] for x in omeas[feature_name][0]]
+                elif object_name == EXPERIMENT:
+                    value = omeas[feature_name][0,0][0]
+                    self.add_experiment_measurement(feature_name, value)
+                    continue
+                else:
+                    values = omeas[feature_name][0].tolist()
+                self.add_all_measurements(object_name,
+                                          feature_name,
+                                          values)
+        
     
     def add_image_measurement(self, feature_name, data):
         """Add a measurement to the "Image" category

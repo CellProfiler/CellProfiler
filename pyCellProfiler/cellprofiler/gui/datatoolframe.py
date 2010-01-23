@@ -28,6 +28,10 @@ from cellprofiler.gui.moduleview import ModuleView
 from cellprofiler.modules import instantiate_module
 from cellprofiler.gui import get_icon
 
+ID_FILE_LOAD_MEASUREMENTS = wx.NewId()
+ID_FILE_SAVE_MEASUREMENTS = wx.NewId()
+ID_FILE_EXIT = wx.NewId()
+
 class DataToolFrame(wx.Frame):
     def __init__(self, *args, **kwds):
         '''Instantiate a data tool frame
@@ -83,6 +87,24 @@ class DataToolFrame(wx.Frame):
         panel.SetSizer(panel_sizer)
 
         wx.EVT_BUTTON(self, button.Id, self.on_run)
+        #
+        # Add a file menu
+        #
+        file_menu = wx.Menu()
+        file_menu.Append(ID_FILE_LOAD_MEASUREMENTS, "&Load measurements")
+        file_menu.Append(ID_FILE_SAVE_MEASUREMENTS, "&Save measurements")
+        file_menu.Append(ID_FILE_EXIT, "E&xit")
+        self.MenuBar = wx.MenuBar()
+        self.MenuBar.Append(file_menu, "&File")
+        self.Bind(wx.EVT_MENU, self.on_load_measurements, id=ID_FILE_LOAD_MEASUREMENTS)
+        self.Bind(wx.EVT_MENU, self.on_save_measurements, id=ID_FILE_SAVE_MEASUREMENTS)
+        self.Bind(wx.EVT_MENU, self.on_exit, id=ID_FILE_EXIT)
+        accelerators = wx.AcceleratorTable([
+            (wx.ACCEL_CMD, ord("W"), ID_FILE_EXIT),
+            (wx.ACCEL_CMD, ord("O"), ID_FILE_LOAD_MEASUREMENTS),
+            (wx.ACCEL_CMD, ord("S"), ID_FILE_SAVE_MEASUREMENTS)])
+        self.SetAcceleratorTable(accelerators)
+        
         self.SetSizer(self.sizer)
         self.Size = (self.module_view.get_max_width(), self.Size[1])
         module_panel.Layout()
@@ -91,20 +113,27 @@ class DataToolFrame(wx.Frame):
         self.tbicon.SetIcon(get_icon(), "CellProfiler2.0")
         self.SetIcon(get_icon())
     
+    def on_load_measurements(self, event):
+        dlg = wx.FileDialog(self, "Load a measurements file",
+                            wildcard = "Measurements file (*.mat)|*.mat",
+                            style = wx.FD_OPEN)
+        if dlg.ShowModal() == wx.ID_OK:
+            self.load_measurements(dlg.GetPath())
+    
+    def on_save_measurements(self, event):
+        dlg = wx.FileDialog(self, "Save measurements file",
+                            wildcard = "Measurements file (*.mat)|*.mat",
+                            style = wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT)
+        if dlg.ShowModal() == wx.ID_OK:
+            self.pipeline.save_measurements(dlg.GetPath(),
+                                            self.measurements)
+    
+    def on_exit(self, event):
+        self.Close()
+        
     def load_measurements(self, measurements_file_name):
-        handles = loadmat(measurements_file_name, struct_as_record=True)
-        m = handles["handles"][0,0][cpp.MEASUREMENTS][0,0]
         self.measurements = cpmeas.Measurements()
-        for object_name in m.dtype.fields.keys():
-            omeas = m[object_name][0,0]
-            for feature_name in omeas.dtype.fields.keys():
-                if object_name == cpmeas.IMAGE:
-                    values = [x[0] for x in omeas[feature_name][0]]
-                else:
-                    values = omeas[feature_name][0].tolist()
-                self.measurements.add_all_measurements(object_name,
-                                                       feature_name,
-                                                       values)
+        self.measurements.load(measurements_file_name)
         
     def on_run(self, event):
         image_set_list = cpi.ImageSetList()

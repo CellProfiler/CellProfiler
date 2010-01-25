@@ -494,6 +494,8 @@ LoadImages:[module_num:1|svn_version:\'8913\'|variable_revision_number:1|show_wi
                              "A")
             self.assertEqual(m.get_current_measurement("Image", "Metadata_well_col"),
                              "12")
+            self.assertEqual(m.get_current_image_measurement("Metadata_Well"),
+                             "A12")
             self.assertEqual(m.get_current_measurement("Image", "Metadata_site"),
                              "1")
             image_set = image_set_list.get_image_set(1)
@@ -744,21 +746,48 @@ LoadImages:[module_num:1|svn_version:\'8913\'|variable_revision_number:1|show_wi
             os.rmdir(directory)
             
     def test_07_01_get_measurement_columns(self):
-        data = 'eJztV+1u0zAUdT+1CgmNP2M/vX/boFHawdgqtK20IIqaUm1lYkIgvNZtLTlxlDhbC9o78Eg8Eo9AnLlNaqKmK0iA1Ehucq/vPef6OLUdo9ppVl/Ap5oOjWqn2CcUwzZFvM8cswJt5pLRY1hzMOK4B5lVgR0PwzcehfAZLOmV8n5lbx+Wdf0QLHGlGsZ9/3bi/+T9+5rf0rIrJ+1UpAn7DHNOrIGbA1mwKf3f/XaOHIIuKT5H1MNuSDHxN6w+64ztaZfBeh7FLWRGg/2r5ZmX2HHf9ieJsrtNRpiekS9YGcIk7BRfEZcwS+ZLfNU75WVc4Q10yIc6pGJ02Ij4RfxrEMZnY+IfROLXpU2sHrkiPQ9RSEw0mFYR8CfgrSt4onXwiBdfjlCXQxPx7lDg6Ak4qRmcFNiT/AcJeTmFX9iNZvOdIfOTeNMz+WnQYovp+FDhFXYd95FHOWwIEWGdOLjLmTP+pY68gje5JniFiP5J9Wdm6siAC3/2/kZe0jytgVm9hF0bIsvCtLwMb71VXahe9b0qgcXe64JSr7BfiYXQ8pcH6Rc47xNwthQcYX/Sdovbx+3np+z6SHu0EzzXGD36oBcPP34t3+xE8IcJ+AcKvrAF3gVGjgR8cnNLYTCLD0OSwFdH49Dzm/NYWlbX2pgzmyLXjIz7rvNaBqt5nTevm7m77SN/Yr1a5a3ykvJOwPz/Qdz5IjikDBzm2dA/umD7fxrvSt9/M+9bJC9ufYzuNyL+M5iv6y6Y1VXYXUyp7TDxPeVoZnDodzXKUO/21K01/cdG5ACujqcQwxOtK+0/bSTooI4/1OXH8TJ8mRi+ewl5WflFp+6zi+i+PSceKPE/AfCf5eY='
-        fd = StringIO(zlib.decompress(base64.b64decode(data)))
+        data = r'''CellProfiler Pipeline: http://www.cellprofiler.org
+Version:1
+SVNRevision:9157
+
+LoadImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_window:True|notes:\x5B\x5D]
+    What type of files are you loading?:individual images
+    How do you want to load these files?:Text-Exact match
+    How many images are there in each group?:3
+    Type the text that the excluded images have in common:ILLUM
+    Analyze all subfolders within the selected folder?:No
+    Image location:Default Image Folder
+    Enter the full path to the images:
+    Do you want to check image sets for missing or duplicate files?:Yes
+    Do you want to group image sets by metadata?:Yes
+    Do you want to exclude certain files?:Yes
+    What metadata fields do you want to group by?:
+    Type the text that these images have in common (case-sensitive):Channel2
+    What do you want to call this image in CellProfiler?:DNA
+    What is the position of this image in each group?:1
+    Do you want to extract metadata from the file name, the subfolder path or both?:File name
+    Type the regular expression that finds metadata in the file name\x3A:^.*-(?P<WellRow>.+)-(?P<WellCol>\x5B0-9\x5D{2})
+    Type the regular expression that finds metadata in the subfolder path\x3A:(?P<Year>\x5B0-9\x5D{4})-(?P<Month>\x5B0-9\x5D{2})-(?P<Day>\x5B0-9\x5D{2})
+    Type the text that these images have in common (case-sensitive):Channel1
+    What do you want to call this image in CellProfiler?:Cytoplasm
+    What is the position of this image in each group?:2
+    Do you want to extract metadata from the file name, the subfolder path or both?:File name
+    Type the regular expression that finds metadata in the file name\x3A:^.*-(?P<Row>.+)-(?P<Col>\x5B0-9\x5D{2})
+    Type the regular expression that finds metadata in the subfolder path\x3A:(?P<Year>\x5B0-9\x5D{4})-(?P<Month>\x5B0-9\x5D{2})-(?P<Day>\x5B0-9\x5D{2})
+'''
+        fd = StringIO(data)
         pipeline = cpp.Pipeline()
         pipeline.load(fd)
         module = pipeline.module(1)
         expected_cols = [('Image', 'FileName_DNA', 'varchar(128)'), 
                          ('Image', 'PathName_DNA', 'varchar(256)'),
                          ('Image', 'MD5Digest_DNA', 'varchar(32)'),
-                         ('Image', 'Metadata_Row', 'varchar(128)'), 
-                         ('Image', 'Metadata_Col', 'varchar(128)'), 
+                         ('Image', 'Metadata_WellRow', 'varchar(128)'), 
+                         ('Image', 'Metadata_WellCol', 'varchar(128)'), 
                          ('Image', 'FileName_Cytoplasm', 'varchar(128)'), 
                          ('Image', 'PathName_Cytoplasm', 'varchar(256)'), 
                          ('Image', 'MD5Digest_Cytoplasm', 'varchar(32)'),
-                         ('Image', 'Metadata_Row', 'varchar(128)'), 
-                         ('Image', 'Metadata_Col', 'varchar(128)')]
+                         ('Image', 'Metadata_Well', 'varchar(128)')]
         returned_cols = module.get_measurement_columns(pipeline)
         # check for duplicates
         assert len(returned_cols) == len(set(returned_cols))

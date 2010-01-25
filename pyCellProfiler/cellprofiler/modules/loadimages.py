@@ -1276,6 +1276,10 @@ class LoadImages(cpmodule.CPModule):
             path = os.path.abspath(path)
             metadata.update(cpm.extract_metadata(fd[FD_PATH_METADATA].value,
                                                  path))
+        if needs_well_metadata(metadata.keys()):
+            well_row_token, well_column_token = well_metadata_tokens(metadata.keys())
+            metadata[cpm.FTR_WELL] = (metadata[well_row_token] + 
+                                      metadata[well_column_token])
         return metadata
         
     def get_frame_count(self, pathname):
@@ -1314,6 +1318,8 @@ class LoadImages(cpmodule.CPModule):
             tags += cpm.find_metadata_tokens(fd[FD_PATH_METADATA].value)
         if self.file_types == FF_OTHER_MOVIES:
             tags += [M_Z, M_T, M_SERIES]
+        if needs_well_metadata(tags):
+            tags += [cpm.FTR_WELL]
         return tags
     
     def get_groupings(self, image_set_list):
@@ -1433,19 +1439,29 @@ class LoadImages(cpmodule.CPModule):
         cols = []
         for fd in self.images:
             name = fd[FD_IMAGE_NAME].value
-            cols += [('Image','FileName_'+name, cpm.COLTYPE_VARCHAR_FILE_NAME)]
-            cols += [('Image','PathName_'+name, cpm.COLTYPE_VARCHAR_PATH_NAME)]
-            cols += [('Image','MD5Digest_'+name, cpm.COLTYPE_VARCHAR_FORMAT%32)]
+            cols += [(cpm.IMAGE, 'FileName_'+name, cpm.COLTYPE_VARCHAR_FILE_NAME)]
+            cols += [(cpm.IMAGE, 'PathName_'+name, cpm.COLTYPE_VARCHAR_PATH_NAME)]
+            cols += [(cpm.IMAGE, 'MD5Digest_'+name, cpm.COLTYPE_VARCHAR_FORMAT%32)]
         
-        fd = self.images[0]    
+        fd = self.images[0]
+        all_tokens = []
         if fd[FD_METADATA_CHOICE]==M_FILE_NAME or fd[FD_METADATA_CHOICE]==M_BOTH:
             tokens = cpm.find_metadata_tokens(fd[FD_FILE_METADATA].value)
-            cols += [('Image', 'Metadata_'+token, cpm.COLTYPE_VARCHAR_FILE_NAME) for token in tokens]
+            cols += [(cpm.IMAGE, '_'.join((cpm.C_METADATA, token)), 
+                      cpm.COLTYPE_VARCHAR_FILE_NAME) for token in tokens]
+            all_tokens += tokens
         
         if fd[FD_METADATA_CHOICE]==M_PATH or fd[FD_METADATA_CHOICE]==M_BOTH:
             tokens = cpm.find_metadata_tokens(fd[FD_PATH_METADATA].value)
-            cols += [('Image', 'Metadata_'+token, cpm.COLTYPE_VARCHAR_PATH_NAME) for token in tokens]
-        
+            all_tokens += tokens
+            cols += [(cpm.IMAGE, '_'.join((cpm.C_METADATA,token)), 
+                      cpm.COLTYPE_VARCHAR_PATH_NAME) for token in tokens]
+        #
+        # Add a well feature if we have well row and well column
+        #
+        if needs_well_metadata(all_tokens):
+            cols += [(cpm.IMAGE, '_'.join((cpm.C_METADATA, cpm.FTR_WELL)),
+                      cpm.COLTYPE_VARCHAR_FILE_NAME)]
         if self.file_types == FF_OTHER_MOVIES:
             cols += [(cpm.IMAGE, M_Z, cpm.COLTYPE_INTEGER),
                      (cpm.IMAGE, M_T, cpm.COLTYPE_INTEGER),
@@ -1466,7 +1482,28 @@ class LoadImages(cpmodule.CPModule):
         #
         return True
             
-            
+def well_metadata_tokens(tokens):
+    '''Return the well row and well column tokens out of a set of metadata tokens'''
+
+    well_row_token = None
+    well_column_token = None
+    for token in tokens:
+        if cpm.is_well_row_token(token):
+            well_row_token = token
+        if cpm.is_well_column_token(token):
+            well_column_token = token
+    return well_row_token, well_column_token
+
+def needs_well_metadata(tokens):
+    '''Return true if, based on a set of metadata tokens, we need a well token
+    
+    Check for a row and column token and the absence of the well token.
+    '''
+    if cpm.FTR_WELL in tokens:
+        return False
+    well_row_token, well_column_token = well_metadata_tokens(tokens)
+    return (well_row_token is not None) and (well_column_token is not None)
+    
 def is_image(filename):
     '''Determine if a filename is a potential image file based on extension'''
     ext = os.path.splitext(filename)[1].lower()

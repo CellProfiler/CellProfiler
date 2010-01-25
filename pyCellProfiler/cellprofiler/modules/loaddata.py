@@ -533,6 +533,25 @@ class LoadData(cpm.CPModule):
             workspace.measurements.add_image_measurement(feature_name, value)
             statistics += [[feature_name, value]]
         #
+        # Add a metadata well measurement if only row and column exist
+        #
+        tokens = [feature for category, feature in
+                  [x.split('_',1) for x in dictionary.keys()]
+                  if category == cpmeas.C_METADATA]
+        if cpmeas.FTR_WELL not in tokens:
+            row_tokens = [x for x in tokens if cpmeas.is_well_row_token(x)]
+            col_tokens = [x for x in tokens if cpmeas.is_well_column_token(x)]
+            if len(row_tokens) > 0 and len(col_tokens) > 0:
+                md_well = '_'.join((cpmeas.C_METADATA, cpmeas.FTR_WELL))
+                row = dictionary['_'.join((cpmeas.C_METADATA, row_tokens[0]))]
+                col = dictionary['_'.join((cpmeas.C_METADATA, col_tokens[0]))]
+                row = row[index]
+                col = col[index]
+                if isinstance(col, int):
+                    col = "%02d" % col
+                well = row + col
+                workspace.measurements.add_image_measurement(md_well, well)
+        #
         # Calculate the MD5 hash of every image
         #
         for image_name in self.other_providers('imagegroup'):
@@ -605,6 +624,31 @@ class LoadData(cpm.CPModule):
                   [(cpmeas.IMAGE, 'MD5Digest_'+image_name,
                     cpmeas.COLTYPE_VARCHAR_FORMAT % 32)
                    for image_name in image_names])
+        #
+        # Try to make a well column out of well row and well column
+        #
+        well_column = None
+        well_row_column = None
+        well_col_column = None
+        for column in result:
+            category, feature = column[1].split('_',1)
+            if category == cpmeas.C_METADATA:
+                if cpmeas.is_well_column_token(feature):
+                    well_col_column = column
+                elif cpmeas.is_well_row_token(feature):
+                    well_row_column = column
+                elif feature.lower() == cpmeas.FTR_WELL:
+                    well_column = column
+        if (well_column is None and well_row_column is not None and
+            well_col_column is not None):
+            length = cpmeas.get_length_from_varchar(well_row_column[2])
+            if well_col_column[2] == cpmeas.COLTYPE_INTEGER:
+                length += 2
+            else:
+                length += cpmeas.get_length_from_varchar(well_col_column[2])
+            result += [(cpmeas.IMAGE, 
+                        '_'.join((cpmeas.C_METADATA, cpmeas.FTR_WELL)),
+                        cpmeas.COLTYPE_VARCHAR_FORMAT % length)]
         entry["measurement_columns"] = result
         return result
 
@@ -612,8 +656,9 @@ class LoadData(cpm.CPModule):
         if object_name != cpmeas.IMAGE:
             return []
         try:
-            header = self.get_header()
-            return [x.split('_')[0] for x in header]
+            columns = self.get_measurement_columns(pipeline)
+            result = set([column[1].split('_')[0] for column in columns])
+            return list(result)
         except:
             return []
 
@@ -621,10 +666,11 @@ class LoadData(cpm.CPModule):
         if object_name != cpmeas.IMAGE:
             return []
         try:
-            header = self.get_header()
-            return ['_'.join(x.split('_')[1:])
-                    for x in header
-                    if x.split('_')[0] == category]
+            columns = self.get_measurement_columns(pipeline)
+            result = [feature for c, feature in
+                      [column[1].split('_',1) for column in columns]
+                      if c == category]
+            return result
         except:
             return []
         

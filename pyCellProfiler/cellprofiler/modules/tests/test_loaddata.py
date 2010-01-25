@@ -175,6 +175,31 @@ class TestLoadData(unittest.TestCase):
         data = m.get_current_image_measurement("Metadata_Plate")
         self.assertEqual(data, "P-12345")
         os.remove(filename)
+        
+    def test_03_02_metadata_row_and_column(self):
+        csv_text = '''"Metadata_Row","Metadata_Column"
+"C","03"
+'''
+        pipeline, module, filename = self.make_pipeline(csv_text)
+        columns = module.get_measurement_columns(pipeline)
+        self.assertTrue(any([c[0] == cpmeas.IMAGE and
+                             c[1] == "Metadata_Row" and
+                             c[2] == "varchar(1)" for c in columns]))
+        self.assertTrue(any([c[0] == cpmeas.IMAGE and
+                             c[1] == "Metadata_Column" and
+                             c[2] == cpmeas.COLTYPE_INTEGER for c in columns]))
+        self.assertTrue(any([c[0] == cpmeas.IMAGE and
+                             c[1] == "Metadata_Well" and
+                             c[2] == "varchar(3)" for c in columns]))
+        m = pipeline.run()
+        features = module.get_measurements(pipeline, cpmeas.IMAGE, 
+                                           cpmeas.C_METADATA)
+        for feature, expected in (("Row", "C"),
+                                  ("Column", 3),
+                                  ("Well", "C03")):
+            self.assertTrue(feature in features)
+            value = m.get_current_image_measurement('_'.join((cpmeas.C_METADATA, feature)))
+            self.assertEqual(value, expected)
 
     def test_04_01_load_file(self):
         dir = os.path.join(example_images_directory(), "ExampleSBSImages")

@@ -44,6 +44,19 @@ FILE_NAME_LENGTH = 128
 COLTYPE_VARCHAR_FILE_NAME = COLTYPE_VARCHAR_FORMAT % FILE_NAME_LENGTH
 COLTYPE_VARCHAR_PATH_NAME = COLTYPE_VARCHAR_FORMAT % PATH_NAME_LENGTH
 
+'''The name of the metadata category'''
+C_METADATA = "Metadata"
+
+'''The name of the well metadata feature'''
+FTR_WELL = "Well"
+
+def get_length_from_varchar(x):
+    '''Retrieve the length of a varchar column from its coltype def'''
+    m = re.match(r'^varchar\(([0-9]+)\)$', x)
+    if m is None:
+        return None
+    return int(m.groups()[0])
+
 class Measurements(object):
     """Represents measurements made on images and objects
     """
@@ -477,23 +490,18 @@ def extract_metadata(pattern, text):
     else:
         return {}
 
+def is_well_row_token(x):
+    '''True if the string represents a well row metadata tag'''
+    return x.lower() in ("wellrow","well_row", "row")
+
+def is_well_column_token(x):
+    '''true if the string represents a well column metadata tag'''
+    return x.lower() in ("wellcol","well_col","wellcolumn","well_column",
+                         "column","col")
+
 def load_measurements(measurements_file_name):
     '''Load measurements from a .mat file'''
     
-    from cellprofiler.pipeline import MEASUREMENTS
-    from scipy.io.matlab import loadmat
-    handles = loadmat(measurements_file_name, struct_as_record=True)
-    m = handles["handles"][0,0][MEASUREMENTS][0,0]
-    measurements = Measurements()
-    for object_name in m.dtype.fields.keys():
-        omeas = m[object_name][0,0]
-        for feature_name in omeas.dtype.fields.keys():
-            if object_name == IMAGE:
-                values = [x[0] for x in omeas[feature_name][0]]
-            else:
-                values = omeas[feature_name][0].tolist()
-            measurements.add_all_measurements(object_name,
-                                                       feature_name,
-                                                       values)
-    return measurements
-
+    m = Measurements()
+    m.load(measurements_file_name)
+    return m

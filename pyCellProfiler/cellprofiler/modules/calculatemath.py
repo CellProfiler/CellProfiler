@@ -284,7 +284,12 @@ class CalculateMath(cpm.CPModule):
                 m.add_measurement(object_name, feature, result)
 
     def run_as_data_tool(self, workspace):
-        self.run(workspace)
+        workspace.measurements.is_first_image = True
+        image_set_count = workspace.measurements.image_set_count
+        for i in range(image_set_count):
+            self.run(workspace)
+            if i < image_set_count - 1:
+                workspace.measurements.next_image_set()
         
     def measurement_name(self):
         return "%s_%s" %(C_MATH,self.output_feature_name.value)

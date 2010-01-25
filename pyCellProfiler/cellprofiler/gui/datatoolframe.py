@@ -32,6 +32,8 @@ ID_FILE_LOAD_MEASUREMENTS = wx.NewId()
 ID_FILE_SAVE_MEASUREMENTS = wx.NewId()
 ID_FILE_EXIT = wx.NewId()
 
+ID_IMAGE_CHOOSE = wx.NewId()
+
 class DataToolFrame(wx.Frame):
     def __init__(self, *args, **kwds):
         '''Instantiate a data tool frame
@@ -104,6 +106,13 @@ class DataToolFrame(wx.Frame):
             (wx.ACCEL_CMD, ord("O"), ID_FILE_LOAD_MEASUREMENTS),
             (wx.ACCEL_CMD, ord("S"), ID_FILE_SAVE_MEASUREMENTS)])
         self.SetAcceleratorTable(accelerators)
+        #
+        # Add an image menu
+        #
+        image_menu = wx.Menu()
+        image_menu.Append(ID_IMAGE_CHOOSE, "&Choose")
+        self.MenuBar.Append(image_menu, "&Image")
+        self.Bind(wx.EVT_MENU, self.on_image_choose, id=ID_IMAGE_CHOOSE)
         
         self.SetSizer(self.sizer)
         self.Size = (self.module_view.get_max_width(), self.Size[1])
@@ -130,6 +139,46 @@ class DataToolFrame(wx.Frame):
     
     def on_exit(self, event):
         self.Close()
+        
+    def on_image_choose(self, event):
+        '''Choose an image from the image set'''
+        dlg = wx.Dialog(self)
+        dlg.Title = "Choose an image set"
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        dlg.SetSizer(sizer)
+        choose_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        sizer.Add(choose_sizer, 1, wx.EXPAND | wx.ALL, 5)
+        choose_sizer.Add(wx.StaticText(dlg, -1, label="Image set:"),
+                         0, wx.ALIGN_RIGHT | wx.ALIGN_CENTER_VERTICAL)
+        metadata_features = [ 
+            x for x in self.measurements.get_feature_names(cpmeas.IMAGE)
+            if x.startswith('Metadata')]
+        metadata_values = [ 
+            self.measurements.get_all_measurements(cpmeas.IMAGE, feature)
+            for feature in metadata_features]
+        metadata_kv = [ ','.join(['%s=%s' % (feature, value[i])
+                                  for feature, value in zip(metadata_features,
+                                                            metadata_values)])
+                        for i in range(self.measurements.image_set_count)]
+        choices = ["%d: %s" % (i+1, metadata_kv[i])
+                   for i in range(self.measurements.image_set_count)]
+        choice_ctl = wx.Choice(dlg, -1, choices=choices)
+        choose_sizer.Add(choice_ctl, 1, wx.EXPAND | wx.LEFT, 5)
+        button_sizer = wx.StdDialogButtonSizer()
+        ok_button = wx.Button(dlg, wx.ID_OK)
+        ok_button.SetDefault()
+        ok_button.SetHelpText("Press the OK button to change the current image to the one selected above")
+        button_sizer.AddButton(ok_button)
+        
+        cancel_button = wx.Button(dlg, wx.ID_CANCEL)
+        cancel_button.SetHelpText("Press the cancel button if you do not want to change the current image")
+        button_sizer.AddButton(cancel_button)
+        button_sizer.Realize()
+        sizer.Add(button_sizer, 0, wx.ALIGN_CENTER_VERTICAL | wx.ALIGN_RIGHT|wx.ALL, 5)
+        dlg.Fit()
+        if dlg.ShowModal() == wx.ID_OK:
+            index = choice_ctl.GetSelection()
+            self.measurements.image_set_number = index+1
         
     def load_measurements(self, measurements_file_name):
         self.measurements = cpmeas.Measurements(can_overwrite = True)

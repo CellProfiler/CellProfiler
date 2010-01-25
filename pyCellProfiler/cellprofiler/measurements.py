@@ -121,7 +121,11 @@ class Measurements(object):
         """
         return self.__image_set_number
     
-    image_set_number = property(get_image_set_number)
+    def set_image_set_number(self, number):
+        self.__image_set_index = number -1
+        self.__image_set_number = number
+    
+    image_set_number = property(get_image_set_number, set_image_set_number)
     
     @property
     def image_set_index(self):
@@ -146,6 +150,10 @@ class Measurements(object):
                 self.add_all_measurements(object_name,
                                           feature_name,
                                           values)
+        #
+        # Set the image set index to the end
+        #
+        self.__image_set_index = self.image_set_count - 1
     
     def add_image_measurement(self, feature_name, data):
         """Add a measurement to the "Image" category

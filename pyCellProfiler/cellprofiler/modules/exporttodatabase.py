@@ -11,7 +11,7 @@ an SQLite DB file if you do not have a server on which to run MySQL itself.
 
 This module must be run at the end of a pipeline, or second to last if 
 you are using the CreateBatchFiles module. If you forget this module, you
-can also run the ExportDatabase data tool (note: under construction) after processing is complete; 
+can also run the ExportDatabase data tool after processing is complete; 
 its functionality is the same.
 
 The database is set up with two primary tables. These tables are the

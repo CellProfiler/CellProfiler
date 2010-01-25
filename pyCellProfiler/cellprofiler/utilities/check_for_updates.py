@@ -41,3 +41,6 @@ class VersionChecker(threading.Thread):
 def check_for_updates(url, current_version, callback):
     vc = VersionChecker(url, current_version, callback)
     vc.start()
+
+
+# XXX - needs a test case written

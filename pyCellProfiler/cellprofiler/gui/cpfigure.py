@@ -450,7 +450,7 @@ class CPFigureFrame(wx.Frame):
         axes.clear()
         
         
-    def show_imshow_popup_menu(self, (x, y), image, subplot):
+    def show_imshow_popup_menu(self, (x, y), image, subplot, normalized=False):
         '''
         shows a popup menu at pos x,y with items to:
         - Show image histogram
@@ -469,9 +469,13 @@ class CPFigureFrame(wx.Frame):
             show_hist_item = wx.MenuItem(popup, -1, 'Show image histogram')
             popup.AppendItem(show_hist_item)
             submenu = wx.Menu()
-            submenu.Append(MENU_CONTRAST_NORMAL, 'Normal', 'Do not transform pixel intensities', wx.ITEM_RADIO)
+            item_normal = submenu.Append(MENU_CONTRAST_NORMAL, 'Normal', 'Do not transform pixel intensities', wx.ITEM_RADIO)
             item_stretch = submenu.Append(MENU_CONTRAST_STRETCH, 'Stretched', 'Stretch pixel intensities to fit the interval [0,1]', wx.ITEM_RADIO)
             submenu.Append(MENU_CONTRAST_LOG, 'Log stretched', 'Log transform pixel intensities, then stretch them to fit the interval [0,1]', wx.ITEM_RADIO)
+            if normalized:
+                item_stretch.Check()
+            else:
+                item_normal.Check()
             popup.AppendMenu(-1, 'Image contrast', submenu)
             
             def show_hist(evt):
@@ -522,7 +526,8 @@ class CPFigureFrame(wx.Frame):
     
     
     def subplot_imshow(self, x,y, image, title=None, clear=True,
-                       colormap=None, colorbar=False, vmin=None, vmax=None):
+                       colormap=None, colorbar=False, normalize=True,
+                       vmin=None, vmax=None):
         '''Show an image in a subplot
         
         x,y   - show image in this subplot
@@ -532,23 +537,40 @@ class CPFigureFrame(wx.Frame):
         colormap - for a grayscale or labels image, use this colormap
                    to assign colors to the image
         colorbar - display a colorbar if true
+        normalize - whether or not to normalize the image. If True, vmin, vmax
+                    are ignored.
+        vmin, vmax - Used to scale a luminance image to 0-1. If either is None, 
+                     the min and max of the luminance values will be used.
+                     If normalize is True, vmin and vmax will be ignored.
         ''' 
-        if 'images' not in self.__dict__:
-            self.images= {}
         if clear:
             self.clear_subplot(x, y)
+        if 'images' not in self.__dict__:
+            self.images = {}
         # Store the raw image keyed by it's subplot location
         self.images[(x,y)] = image
         subplot = self.subplot(x,y)
+        # Perform normalization
+        if normalize:
+            vmin = vmax = None
+            image = image.astype(np.float32)
+            im_min = np.min(image[:,:])
+            im_max = np.max(image[:,:])
+            if im_min != im_max:
+                image[:,:] -= im_min
+                image[:,:] /= (im_max - im_min)
+        # Draw
         if colormap == None:
-            result = subplot.imshow(image)
+            result = subplot.imshow(image, vmin=vmin, vmax=vmax, interpolation='nearest')
         else:
-            result = subplot.imshow(image, colormap, vmin=vmin, vmax=vmax)
+            result = subplot.imshow(image, colormap, vmin=vmin, vmax=vmax, interpolation='nearest')
+        # Set title
         if title != None:
             self.set_subplot_title(title, x, y)
+        # Update colorbar
         if colorbar:
             if self.colorbar.has_key(subplot):
-                axc =self.colorbar[subplot]
+                axc = self.colorbar[subplot]
             else:
                 axc, kw = matplotlib.colorbar.make_axes(subplot)
                 self.colorbar[subplot] = axc
@@ -557,7 +579,8 @@ class CPFigureFrame(wx.Frame):
             
         def on_release(evt):
             if evt.inaxes == subplot:
-                self.show_imshow_popup_menu((evt.x, self.figure.canvas.GetSize()[1]-evt.y), image, subplot=(x,y))
+                if evt.button != 1:
+                    self.show_imshow_popup_menu((evt.x, self.figure.canvas.GetSize()[1]-evt.y), image, subplot=(x,y), normalized=normalize)
         # NOTE: We bind this event each time imshow is called to a new closure
         #    of on_release so that each function will be called when a
         #    button_release_event is fired.  It might be cleaner to bind the
@@ -575,9 +598,24 @@ class CPFigureFrame(wx.Frame):
         return result
     
     def subplot_imshow_color(self, x, y, image, title=None, clear=True, 
-                             normalize=True, vmin=None,vmax=None):
+                             normalize=True, vmin=None, vmax=None):
+        '''
+        x,y - column and row of the subplot to draw in
+        image - the image data to draw
+        title - title for the subplot
+        clear - whether to clear the subplot before drawing over it
+        normalize - whether or not to normalize the image. If True, vmin, vmax
+                    are ignored.
+        vmin, vmax - Used to scale a luminance image to 0-1. If either is None, 
+                     the min and max of the luminance values will be used.
+                     If normalize is True, vmin and vmax will be ignored.
+        '''
         if clear:
             self.clear_subplot(x, y)
+        if 'images' not in self.__dict__:
+            self.images= {}
+        # Store the raw image keyed by it's subplot location
+        self.images[(x,y)] = image
         if normalize:
             image = image.astype(np.float32)
             for i in range(3):
@@ -589,13 +627,14 @@ class CPFigureFrame(wx.Frame):
         elif image.dtype.type == np.float64:
             image = image.astype(np.float32)
         subplot = self.subplot(x,y)
-        result = subplot.imshow(image,vmin=vmin, vmax=vmax)
+        result = subplot.imshow(image, vmin=vmin, vmax=vmax, interpolation='nearest')
         if title != None:
             self.set_subplot_title(title, x, y)
             
         def on_release(evt):
-            if evt.inaxes== subplot:
-                self.show_imshow_popup_menu((evt.x, self.figure.canvas.GetSize()[1]-evt.y), image, subplot=(x,y)) 
+            if evt.inaxes == subplot:
+                if evt.button != 1:
+                    self.show_imshow_popup_menu((evt.x, self.figure.canvas.GetSize()[1]-evt.y), image, subplot=(x,y), normalized=normalize) 
         self.figure.canvas.mpl_connect('button_release_event', on_release)
         
         return result
@@ -855,7 +894,7 @@ if __name__ == "__main__":
     class MyApp(wx.App):
         def OnInit(self):
             wx.InitAllImageHandlers()
-            self.frame = CPFigureFrame(subplots=(1, 1))
+            self.frame = CPFigureFrame(subplots=(2, 1))
             menu = wx.Menu()
             menu.Append(ID_TEST_ADD_IMAGE, "Add image")
 
@@ -870,6 +909,14 @@ if __name__ == "__main__":
             self.frame.MenuBar.Append(menu, "Test")
             self.SetTopWindow(self.frame)
             self.frame.Show()
+
+            img = np.random.uniform(.5, .6, size=(5, 5, 3))
+            self.frame.subplot_imshow_color(0, 0, img)
+            self.frame.subplot_imshow_color(1, 0, img, normalize=False)
+#            self.frame.subplot_imshow(0, 0, img, "Random image")
+#            self.frame.subplot_imshow(1, 0, img, "Random image", vmin=0, vmax=1.)
+            self.frame.figure.canvas.draw()
+
             return True
 
     app = MyApp()

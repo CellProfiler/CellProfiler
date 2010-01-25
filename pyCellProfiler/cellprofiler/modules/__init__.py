@@ -276,7 +276,8 @@ def fill_modules():
 
 fill_modules()        
     
-__all__ = ['instantiate_module', 'get_module_names', 'reload_modules']
+__all__ = ['instantiate_module', 'get_module_names', 'reload_modules', 
+           'output_html']
 
 def instantiate_module(module_name):
     if module_name in substitutions: 
@@ -302,3 +303,33 @@ def reload_modules():
         except:
             pass
     fill_modules()
+    
+def output_html():
+    '''Output an HTML page for each module'''
+    index_fd = open('index.html','w')
+    index_fd.write("""<html>
+<head>
+    <title>CellProfiler: Module table of contents</title>
+</head>
+<body>
+<h1>CellProfiler: Module table of contents</h1>
+<ul>\n""")
+    d = {}
+    for module_name in get_module_names():
+        module = instantiate_module(module_name)
+        if not d.has_key(module.category):
+            d[module.category] = {}
+        d[module.category][module_name] = module
+        fd = open("%s.html" % module_name, "w")
+        fd.write(module.get_help())
+        fd.close()
+    for category in sorted(d.keys()):
+        sub_d = d[category]
+        index_fd.write("<li><b>%s</b><br><ul>\n"%category)
+        for module_name in sorted(sub_d.keys()):
+            index_fd.write("<li><a href='%s.html'>%s</a></li>\n" %
+                           (module_name, module_name))
+        index_fd.write("</ul></li>\n")
+    index_fd.write("</ul></body>\n")
+    index_fd.close()
+        

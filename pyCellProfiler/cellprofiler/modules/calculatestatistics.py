@@ -62,7 +62,7 @@ dose-response-related code.
 <p>
 Features measured:<br><br>
 <i>Note:</i> whereas most CellProfiler measurements are calculated for each object
-(per-object) or for each image (per-image), the <b>CalculateStatistics</> module
+(per-object) or for each image (per-image), the <b>CalculateStatistics</b> module
 produces per-experiment values; for example, one Z' factor is calculated for
 each measurement, across the entire analysis run.
 <ul>

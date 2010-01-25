@@ -1,4 +1,4 @@
-'''<b>RescaleIntensity<\b>- Changes intensity range of an image to desired specifications.
+'''<b>RescaleIntensity</b>- Changes intensity range of an image to desired specifications.
 <hr>
 
 The intensity of the incoming images are rescaled by one of several

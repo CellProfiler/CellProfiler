@@ -6,7 +6,7 @@ you, the shape of object(s) identified by an <b>Identify</b> module, or a shape 
 <p>Keep in mind that cropping changes the size of your images, which may
 have unexpected consequences. For example, identifying objects in a
 cropped image and then trying to measure their intensity in the
-<i>original<i> image will not work because the two images are not the same
+<i>original</i> image will not work because the two images are not the same
 size.</p>
 
 This module can measure the following features:

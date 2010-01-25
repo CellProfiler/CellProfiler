@@ -77,6 +77,12 @@ parser.add_option("-g", "--group",
                         'pipeline. For instance, "-g ROW=H,COL=01", will '
                         'process only the group of image sets that match '
                         'the keys.'))
+parser.add_option("--html",
+                  action="store_true",
+                  dest="output_html",
+                  default = False,
+                  help = "Output HTML help for all modules")
+
 if not hasattr(sys, 'frozen'):
     parser.add_option("-b", "--do-not_build",
                       dest="build_extensions",
@@ -167,6 +173,10 @@ try:
         # Might want to change later if there's some headless setup 
         options.run_pipeline = True
     
+    if options.output_html:
+        from cellprofiler.modules import output_html
+        output_html()
+        
     from cellprofiler.utilities.get_revision import version
     print "Subversion revision: %d"%version
     if options.run_pipeline and not options.pipeline_filename:

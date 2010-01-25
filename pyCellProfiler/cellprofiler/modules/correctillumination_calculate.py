@@ -98,7 +98,7 @@ class CorrectIllumination_Calculate(cpm.CPModule):
                                             <li><i>Background intensities:</i>
                                             If you think that the background (dim points) between objects show the
                                             same pattern of illumination as your objects of interest, you can choose the
-                                            <i>Background<i> method. Background intensities finds the minimum pixel
+                                            <i>Background</i> method. Background intensities finds the minimum pixel
                                             intensities in blocks across the image (or group of images if you are in
                                             <i>All</i> mode) and is most often applied by subtraction using the
                                             <b>CorrectIllumination_Apply</b> module.

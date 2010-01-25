@@ -1,4 +1,4 @@
-'''<b>Image Math<b/> performs simple mathematical operations on image intensities
+'''<b>Image Math</b> performs simple mathematical operations on image intensities
 <hr>
 ImageMath can perform addition, subtraction, multiplication, division, or averaging
 of two or more images' intensities, as well as inversion, log transform, or scaling by 

@@ -30,9 +30,10 @@ import cellprofiler.pipeline as cpp
 import cellprofiler.workspace as cpw
 import cellprofiler.modules.exporttospreadsheet as E 
 
-class TestExportToExcel(unittest.TestCase):
+class TestExportToSpreadsheet(unittest.TestCase):
 
     def setUp(self):
+        cpprefs.set_headless()
         self.output_dir = tempfile.mkdtemp()
 
     def tearDown(self):
@@ -196,6 +197,77 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'8947\'|variable_revision_number:
                                                  ("PFX_Image.csv", "Nuclei.csv")):
             self.assertEqual(group.name, object_name)
             self.assertEqual(group.file_name, file_name)
+            self.assertFalse(group.wants_automatic_file_name)
+            
+    def test_000_05_load_v4(self):
+        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:1
+SVNRevision:9152
+
+ExportToSpreadsheet:[module_num:1|svn_version:\'9144\'|variable_revision_number:4|show_window:True|notes:\x5B\x5D]
+    Select or enter the column delimiter:Comma (",")
+    Prepend the output file name to the data file names?:No
+    Add image metadata columns to your object data file?:No
+    No longer used, always saved:No
+    Limit output to a size that is allowed in Excel?:No
+    Select the columns of measurements to export?:No
+    Calculate the per-image mean values for object measurements?:No
+    Calculate the per-image median values for object measurements?:No
+    Calculate the per-image standard deviation values for object measurements?:No
+    Where do you want to save the files?:Default output folder
+    Folder name\x3A:.
+    Export all measurements?:No
+    Data to export:Image
+    Combine these object measurements with those of the previous object?:No
+    File name\x3A:Image.csv
+    Use the object name for the file name?:Yes
+    Data to export:Nuclei
+    Combine these object measurements with those of the previous object?:No
+    File name\x3A:Nuclei.csv
+    Use the object name for the file name?:Yes
+    Data to export:PropCells
+    Combine these object measurements with those of the previous object?:No
+    File name\x3A:PropCells.csv
+    Use the object name for the file name?:Yes
+    Data to export:DistanceCells
+    Combine these object measurements with those of the previous object?:No
+    File name\x3A:DistanceCells.csv
+    Use the object name for the file name?:Yes
+    Data to export:DistCytoplasm
+    Combine these object measurements with those of the previous object?:No
+    File name\x3A:DistCytoplasm.csv
+    Use the object name for the file name?:Yes
+    Data to export:PropCytoplasm
+    Combine these object measurements with those of the previous object?:No
+    File name\x3A:PropCytoplasm.csv
+    Use the object name for the file name?:Yes
+"""
+        pipeline = cpp.Pipeline()
+        def callback(caller,event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO(data))
+        self.assertEqual(len(pipeline.modules()), 1)
+        module = pipeline.modules()[0]
+        self.assertTrue(isinstance(module,E.ExportToExcel))
+        self.assertEqual(module.delimiter, E.DELIMITER_COMMA)
+        self.assertFalse(module.prepend_output_filename)
+        self.assertFalse(module.add_metadata)
+        self.assertFalse(module.excel_limits)
+        self.assertFalse(module.pick_columns)
+        self.assertFalse(module.wants_aggregate_means)
+        self.assertFalse(module.wants_aggregate_medians)
+        self.assertFalse(module.wants_aggregate_std)
+        self.assertEqual(module.directory_choice, E.DIR_DEFAULT_OUTPUT)
+        self.assertFalse(module.wants_everything)
+        for group, object_name in zip(module.object_groups,
+                                      ("Image","Nuclei","PropCells",
+                                       "DistanceCells","DistCytoplasm",
+                                       "PropCytoplasm")):
+            self.assertEqual(group.name, object_name)
+            self.assertEqual(group.file_name, "%s.csv" % object_name)
+            self.assertFalse(group.previous_file)
+            self.assertTrue(group.wants_automatic_file_name)
             
     def test_00_00_no_measurements(self):
         '''Test an image set with objects but no measurements'''
@@ -203,8 +275,10 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'8947\'|variable_revision_number:
         module = E.ExportToExcel()
         module.module_num = 1
         module.prepend_output_filename.value = False
+        module.wants_everything.value = False
         module.object_groups[0].name.value = "my_object"
         module.object_groups[0].file_name.value = path
+        module.object_groups[0].wants_automatic_file_name.value = False
         m = cpmeas.Measurements()
         m.add_measurement("my_object","my_measurement",np.zeros((0,)))
         m.add_image_measurement("Count_my_object", 0)
@@ -235,8 +309,10 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'8947\'|variable_revision_number:
         module = E.ExportToExcel()
         module.module_num = 1
         module.prepend_output_filename.value = False
+        module.wants_everything.value = False
         module.object_groups[0].name.value = cpmeas.EXPERIMENT
         module.object_groups[0].file_name.value = path
+        module.object_groups[0].wants_automatic_file_name.value = False
         m = cpmeas.Measurements()
         m.add_experiment_measurement("my_measurement", "Hello, world")
         image_set_list = cpi.ImageSetList()
@@ -262,12 +338,15 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'8947\'|variable_revision_number:
             
     def test_01_02_two_experiment_measurements(self):
         '''Test writing two experiment measurements'''
-        path = os.path.join(self.output_dir, "my_file.csv")
+        path = os.path.join(self.output_dir, "%s.csv" % cpmeas.EXPERIMENT)
+        cpprefs.set_default_output_directory(self.output_dir)
         module = E.ExportToExcel()
         module.module_num = 1
         module.prepend_output_filename.value = False
+        module.wants_everything.value = False
         module.object_groups[0].name.value = cpmeas.EXPERIMENT
-        module.object_groups[0].file_name.value = path
+        module.object_groups[0].file_name.value = "badfile"
+        module.object_groups[0].wants_automatic_file_name.value = True
         m = cpmeas.Measurements()
         m.add_experiment_measurement("my_measurement", "Hello, world")
         m.add_experiment_measurement("my_other_measurement","Goodbye")
@@ -302,8 +381,11 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'8947\'|variable_revision_number:
         module = E.ExportToExcel()
         module.module_num = 1
         module.prepend_output_filename.value = True
+        module.wants_everything.value = False
+        module.directory_choice.value = E.DIR_CUSTOM
         module.object_groups[0].name.value = cpmeas.EXPERIMENT
         module.object_groups[0].file_name.value = path
+        module.object_groups[0].wants_automatic_file_name.value = False
         m = cpmeas.Measurements()
         m.add_experiment_measurement("my_measurement", "Hello, world")
         image_set_list = cpi.ImageSetList()
@@ -336,8 +418,10 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'8947\'|variable_revision_number:
         module = E.ExportToExcel()
         module.module_num = 1
         module.prepend_output_filename.value = False
+        module.wants_everything.value = False
         module.object_groups[0].name.value = cpmeas.IMAGE
         module.object_groups[0].file_name.value = path
+        module.object_groups[0].wants_automatic_file_name.value = False
         m = cpmeas.Measurements()
         m.add_image_measurement("my_measurement", "Hello, world")
         image_set_list = cpi.ImageSetList()
@@ -370,8 +454,10 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'8947\'|variable_revision_number:
         module = E.ExportToExcel()
         module.module_num = 1
         module.prepend_output_filename.value = False
+        module.wants_everything.value = False
         module.object_groups[0].name.value = cpmeas.IMAGE
         module.object_groups[0].file_name.value = path
+        module.object_groups[0].wants_automatic_file_name.value = False
         m = cpmeas.Measurements()
         image_set_list = cpi.ImageSetList()
         image_sets = [image_set_list.get_image_set(i)
@@ -412,8 +498,10 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'8947\'|variable_revision_number:
         module = E.ExportToExcel()
         module.module_num = 1
         module.prepend_output_filename.value = False
+        module.wants_everything.value = False
         module.object_groups[0].name.value = "my_object"
         module.object_groups[0].file_name.value = path
+        module.object_groups[0].wants_automatic_file_name.value = False
         m = cpmeas.Measurements()
         np.random.seed(0)
         mvalues = np.random.uniform(size=(1,))
@@ -451,8 +539,10 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'8947\'|variable_revision_number:
         module = E.ExportToExcel()
         module.module_num = 1
         module.prepend_output_filename.value = False
+        module.wants_everything.value = False
         module.object_groups[0].name.value = "my_object"
         module.object_groups[0].file_name.value = path
+        module.object_groups[0].wants_automatic_file_name.value = False
         m = cpmeas.Measurements()
         np.random.seed(0)
         mvalues = np.random.uniform(size=(2,3))
@@ -496,11 +586,14 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'8947\'|variable_revision_number:
         module = E.ExportToExcel()
         module.module_num = 1
         module.prepend_output_filename.value = False
+        module.wants_everything.value = False
         module.add_object_group()
         module.object_groups[0].name.value = "object_0"
         module.object_groups[0].file_name.value = path
+        module.object_groups[0].wants_automatic_file_name.value = False
         module.object_groups[1].previous_file.value = True
         module.object_groups[1].name.value = "object_1"
+        module.object_groups[1].wants_automatic_file_name.value = False
         m = cpmeas.Measurements()
         np.random.seed(0)
         # cell, measurement, object
@@ -561,8 +654,10 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'8947\'|variable_revision_number:
         module = E.ExportToExcel()
         module.module_num = 1
         module.prepend_output_filename.value = False
+        module.wants_everything.value = False
         module.object_groups[0].name.value = "my_object"
         module.object_groups[0].file_name.value = path
+        module.object_groups[0].wants_automatic_file_name.value = False
         m = cpmeas.Measurements()
         np.random.seed(0)
         mvalues = np.random.uniform(size=(4,))
@@ -614,8 +709,10 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'8947\'|variable_revision_number:
         module = E.ExportToExcel()
         module.module_num = 1
         module.prepend_output_filename.value = False
+        module.wants_everything.value = False
         module.object_groups[0].name.value = cpmeas.IMAGE
         module.object_groups[0].file_name.value = path
+        module.object_groups[0].wants_automatic_file_name.value = False
         m = cpmeas.Measurements()
         np.random.seed(0)
         mvalues = np.random.uniform(size=(4,))
@@ -667,10 +764,12 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'8947\'|variable_revision_number:
         module = E.ExportToExcel()
         module.module_num = 1
         module.prepend_output_filename.value = False
+        module.wants_everything.value = False
         module.directory_choice.value = E.DIR_CUSTOM_WITH_METADATA
         module.custom_directory.value = path
         module.object_groups[0].name.value = cpmeas.IMAGE
         module.object_groups[0].file_name.value = "output.csv"
+        module.object_groups[0].wants_automatic_file_name.value = False
         m = cpmeas.Measurements()
         np.random.seed(0)
         mvalues = np.random.uniform(size=(4,))
@@ -720,8 +819,10 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'8947\'|variable_revision_number:
         module = E.ExportToExcel()
         module.module_num = 1
         module.prepend_output_filename.value = False
+        module.wants_everything.value = False
         module.object_groups[0].name.value = cpmeas.IMAGE
         module.object_groups[0].file_name.value = path
+        module.object_groups[0].wants_automatic_file_name.value = False
         module.wants_aggregate_means.value = True
         module.wants_aggregate_medians.value = True
         module.wants_aggregate_std.value = True
@@ -741,8 +842,8 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'8947\'|variable_revision_number:
                                   m,
                                   image_set_list)
         module.post_run(workspace)
+        fd = open(path,"r")
         try:
-            fd = open(path,"r")
             reader = csv.reader(fd, delimiter=module.delimiter_char)
             header = reader.next()
             self.assertEqual(len(header),len(cpmeas.AGG_NAMES)+2)
@@ -768,8 +869,10 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'8947\'|variable_revision_number:
         module = E.ExportToExcel()
         module.module_num = 1
         module.prepend_output_filename.value = False
+        module.wants_everything.value = False
         module.object_groups[0].name.value = cpmeas.IMAGE
         module.object_groups[0].file_name.value = path
+        module.object_groups[0].wants_automatic_file_name.value = False
         module.wants_aggregate_means.value = False
         module.wants_aggregate_medians.value = False
         module.wants_aggregate_std.value = False
@@ -809,9 +912,11 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'8947\'|variable_revision_number:
         module = E.ExportToExcel()
         module.module_num = 1
         module.prepend_output_filename.value = False
+        module.wants_everything.value = False
         module.add_indexes.value = True
         module.object_groups[0].name.value = cpmeas.IMAGE
         module.object_groups[0].file_name.value = path
+        module.object_groups[0].wants_automatic_file_name.value = False
         m = cpmeas.Measurements()
         image_set_list = cpi.ImageSetList()
         data = ("The reverse side also has a reverse side. (Japanese proverb)",
@@ -852,8 +957,10 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'8947\'|variable_revision_number:
         module = E.ExportToExcel()
         module.module_num = 1
         module.prepend_output_filename.value = False
+        module.wants_everything.value = False
         module.object_groups[0].name.value = "my_objects"
         module.object_groups[0].file_name.value = path
+        module.object_groups[0].wants_automatic_file_name.value = False
         module.add_indexes.value = True
         m = cpmeas.Measurements()
         np.random.seed(0)
@@ -901,8 +1008,10 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'8947\'|variable_revision_number:
         module = E.ExportToExcel()
         module.module_num = 1
         module.prepend_output_filename.value = False
+        module.wants_everything.value = False
         module.object_groups[0].name.value = "my_objects"
         module.object_groups[0].file_name.value = path
+        module.object_groups[0].wants_automatic_file_name.value = False
         module.add_metadata.value = True
         m = cpmeas.Measurements()
         np.random.seed(0)
@@ -960,8 +1069,10 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'8947\'|variable_revision_number:
         module = E.ExportToExcel()
         module.module_num = 1
         module.prepend_output_filename.value = False
+        module.wants_everything.value = False
         module.object_groups[0].name.value = "my_objects"
         module.object_groups[0].file_name.value = path
+        module.object_groups[0].wants_automatic_file_name.value = False
         module.add_metadata.value = True
         m = cpmeas.Measurements()
         np.random.seed(0)

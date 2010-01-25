@@ -61,10 +61,8 @@ class TestMeasureImageQuality(unittest.TestCase):
                                    ("ImageQuality_LocalFocusScore_my_image_20",0),
                                    ("ImageQuality_PercentMaximal_my_image",100),
                                    ("ImageQuality_PercentMinimal_my_image",100),
-                                   ("ImageQuality_PowerSpectrumSum_my_image", 0.0),
-                                   ("ImageQuality_PowerSpectrum1stQuartile_my_image", None),
-                                   ("ImageQuality_PowerSpectrum2ndQuartile_my_image", None),
-                                   ("ImageQuality_PowerSpectrum3rdQuartile_my_image", None)):
+                                   ("ImageQuality_MagnitudeLogLogSlope_my_image", 0),
+                                   ("ImageQuality_PowerLogLogSlope_my_image", 0)):
             self.assertTrue(m.has_current_measurements(cpmeas.IMAGE,feature_name),
                             "Missing feature %s"%feature_name)
             m_value =m.get_current_measurement(cpmeas.IMAGE, feature_name)
@@ -101,10 +99,8 @@ class TestMeasureImageQuality(unittest.TestCase):
                                     ("ImageQuality_LocalFocusScore_my_image_20", 0),
                                     ("ImageQuality_PercentMaximal_my_image", 0),
                                     ("ImageQuality_PercentMinimal_my_image", 0),
-                                    ("ImageQuality_PowerSpectrumSum_my_image", 0.0),
-                                    ("ImageQuality_PowerSpectrum1stQuartile_my_image", 0.0),
-                                    ("ImageQuality_PowerSpectrum2ndQuartile_my_image", 0.0),
-                                    ("ImageQuality_PowerSpectrum3rdQuartile_my_image", 0.0)):
+                                    ("ImageQuality_MagnitudeLogLogSlope_my_image", 0),
+                                   ("ImageQuality_PowerLogLogSlope_my_image", 0)):
             self.assertTrue(m.has_current_measurements(cpmeas.IMAGE,feature_name), 
                             "Missing feature %s"%feature_name)
             m_value =m.get_current_measurement(cpmeas.IMAGE, feature_name)

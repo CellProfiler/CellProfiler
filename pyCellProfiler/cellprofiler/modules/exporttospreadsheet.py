@@ -57,7 +57,7 @@ DELIMITER_COMMA = 'Comma (",")'
 DELIMITERS = (DELIMITER_COMMA,DELIMITER_TAB)
 
 """Offset of the first object group in the settings"""
-SETTING_OG_OFFSET = 11
+SETTING_OG_OFFSET = 12
 
 """Offset of the object name setting within an object group"""
 SETTING_OBJECT_NAME_IDX = 0
@@ -68,8 +68,10 @@ SETTING_PREVIOUS_FILE_IDX = 1
 """Offset of the file name setting within an object group"""
 SETTING_FILE_NAME_IDX = 2
 
+SETTING_AUTOMATIC_FILE_NAME_IDX = 3
+
 """# of settings within an object group"""
-SETTING_OBJECT_GROUP_CT = 3
+SETTING_OBJECT_GROUP_CT = 4
 
 """The caption for the image set index"""
 IMAGE_NUMBER = "ImageNumber"
@@ -86,7 +88,7 @@ class ExportToSpreadsheet(cpm.CPModule):
 
     module_name = 'ExportToSpreadsheet'
     category = "Data Tools"
-    variable_revision_number = 3
+    variable_revision_number = 4
     
     def create_settings(self):
         self.delimiter = cps.CustomChoice('Select or enter the column delimiter',DELIMITERS, doc = """
@@ -148,6 +150,15 @@ class ExportToSpreadsheet(cpm.CPModule):
         
         self.wants_aggregate_std = cps.Binary("Calculate the per-image standard deviation values for object measurements?", False)
         
+        self.wants_everything = cps.Binary(
+            "Export all measurements?", True,
+            doc="""Check this setting to export every measurement.
+            <b>ExportToSpreadsheet</b> will create one file per object type,
+            including image and experiment. It will use the object name as
+            the file name, optionally prepending the output file name if
+            specified above. Leave this box unchecked to specify which
+            objects should be exported or to override the automatic names.""")
+        
         self.object_groups = []
         self.add_object_group()
         self.add_button = cps.DoSomething("", "Add another data set",
@@ -168,6 +179,14 @@ class ExportToSpreadsheet(cpm.CPModule):
                 of measurements made on this object and the one directly
                 above this one. Leave the box unchecked to create separate
                 files for this and the previous object."""))
+        
+        group.append("wants_automatic_file_name", cps.Binary(
+            "Use the object name for the file name?", True,
+            doc="""Use the object name as selected above to generate a file
+            name for the spreadsheet. For example, if you select, "Image",
+            above and have not checked the "Prepend output file name" option,
+            your output file will be named, "Image.csv". You can name
+            the file yourself if you leave this box unchecked."""))
         
         group.append("file_name", 
                      cps.Text(
@@ -203,9 +222,10 @@ class ExportToSpreadsheet(cpm.CPModule):
                   self.excel_limits, self.pick_columns,
                   self.wants_aggregate_means, self.wants_aggregate_medians,
                   self.wants_aggregate_std, self.directory_choice,
-                  self.custom_directory]
+                  self.custom_directory, self.wants_everything]
         for group in self.object_groups:
-            result += [group.name, group.previous_file, group.file_name]
+            result += [group.name, group.previous_file, group.file_name,
+                       group.wants_automatic_file_name]
         return result
 
     def visible_settings(self):
@@ -216,27 +236,29 @@ class ExportToSpreadsheet(cpm.CPModule):
             result += [self.custom_directory]
         result += [ self.add_metadata, self.excel_limits, self.pick_columns,
                     self.wants_aggregate_means, self.wants_aggregate_medians,
-                    self.wants_aggregate_std]
-        previous_group = None
-        for index, group in enumerate(self.object_groups):
-            result += [group.name]
-            if is_object_group(group):
-                if ((not previous_group is None) and
-                    is_object_group(previous_group)):
-                    #
-                    # Show the previous-group button if there was a previous
-                    # group and it was an object group
-                    #
-                    result += [group.previous_file]
-                    if not group.previous_file.value:
+                    self.wants_aggregate_std, self.wants_everything]
+        if not self.wants_everything:
+            previous_group = None
+            for index, group in enumerate(self.object_groups):
+                result += [group.name]
+                append_file_name = True
+                if is_object_group(group):
+                    if ((not previous_group is None) and
+                        is_object_group(previous_group)):
+                        #
+                        # Show the previous-group button if there was a previous
+                        # group and it was an object group
+                        #
+                        result += [group.previous_file]
+                        if group.previous_file.value:
+                            append_file_name = False
+                if append_file_name:
+                    result += [group.wants_automatic_file_name]
+                    if not group.wants_automatic_file_name:
                         result += [group.file_name]
-                else:
-                    result += [group.file_name]
-            else:
-                result += [group.file_name]
-            result += [group.remover, group.divider]
-            previous_group = group
-        result += [ self.add_button ]
+                result += [group.remover, group.divider]
+                previous_group = group
+            result += [ self.add_button ]
         return result
     
     def validate_module(self, pipeline):
@@ -268,6 +290,21 @@ class ExportToSpreadsheet(cpm.CPModule):
         self.post_run(workspace)
         
     def post_run(self, workspace):
+        '''Save measurements at end of run'''
+        #
+        # Don't export in test mode
+        #
+        if workspace.pipeline.test_mode:
+            return
+        #
+        # Export all measurements if requested
+        #
+        if self.wants_everything:
+            for object_name in workspace.measurements.get_object_names():
+                self.run_objects([object_name], 
+                                 "%s.csv" % object_name, workspace)
+            return
+        
         object_names = []
         #
         # Loop, collecting names of objects that get included in the same file
@@ -276,7 +313,10 @@ class ExportToSpreadsheet(cpm.CPModule):
             group = self.object_groups[i]
             last_in_file = self.last_in_file(i)
             if len(object_names) == 0:
-                filename = group.file_name.value
+                if group.wants_automatic_file_name:
+                    filename = "%s.csv" % group.name.value
+                else:
+                    filename = group.file_name.value
             object_names.append(group.name.value)
             if last_in_file:
                 self.run_objects(object_names, filename, workspace)
@@ -655,11 +695,21 @@ class ExportToSpreadsheet(cpm.CPModule):
             setting_values = (setting_values[:9] + [DIR_DEFAULT_OUTPUT, "."] +
                               setting_values[9:])
             variable_revision_number = 3
+        if variable_revision_number == 3 and not from_matlab:
+            # Added "wants everything" setting
+            #
+            new_setting_values = setting_values[:11] + [cps.NO]
+            for i in range(11, len(setting_values), 3):
+                new_setting_values += setting_values[i:i+3] + [cps.NO]
+
+            setting_values = new_setting_values
+            variable_revision_number = 4
+            
         return setting_values, variable_revision_number, from_matlab
 
 def is_object_group(group):
     """True if the group's object name is not one of the static names"""
-    return not group.name.value in (IMAGE,EXPERIMENT)
+    return not group.name.value in (IMAGE, EXPERIMENT)
 
 class EEObjectNameSubscriber(cps.ObjectNameSubscriber):
     """ExportToExcel needs to prepend "Image" and "Experiment" to the list of objects

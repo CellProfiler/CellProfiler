@@ -30,14 +30,13 @@ def __get_revision_of_module(module):
 
 
 def get_revision():
-    '''Return the maximum revision number from CellProfiler Python modules
-    
+    '''Return the maximum revision number from CellProfiler Python modules.
     Starting with cellprofiler, find the maximum revision number by looking
     at __version__ in all modules.
     '''
     version = 0
     for module_name in sys.modules.keys():
-        if module_name.lower().startswith('cellprofiler'):
+        if module_name.lower().startswith('cellprofiler') and ('plugins' not in module_name):
             sub_version = __get_revision_of_module(sys.modules[module_name])
             version = max(version, sub_version)
     for module in cpmodules.pymodules:

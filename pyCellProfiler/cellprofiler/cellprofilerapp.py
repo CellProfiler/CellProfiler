@@ -5,12 +5,19 @@ import wx
 from cellprofiler.icons import CellProfilerSplash
 import cStringIO
 import cellprofiler.preferences as cpp
-import cellprofiler.utilities.get_revision as get_revision
 
 class CellProfilerApp(wx.App):
 
     def OnInit(self):
+        # The wx.StandardPaths aren't available until this is set.
+        # SVN version checking imports cellprofiler.modules, which
+        # needs preferences that depend on StandardPaths.
+        self.SetAppName('CellProfiler2.0')
+        import cellprofiler.utilities.get_revision
+        self.version = cellprofiler.utilities.get_revision.version
+
         wx.InitAllImageHandlers()
+        
 
         # If the splash image has alpha, it shows up transparently on
         # windows, so we blend it into a white background.
@@ -34,7 +41,7 @@ class CellProfilerApp(wx.App):
         if cpp.get_check_new_versions() or force:
             import cellprofiler.utilities.check_for_updates as cfu
             cfu.check_for_updates('http://cellprofiler.org/CPupdate.html', 
-                                  0 if force else max(get_revision.version, cpp.get_skip_version()), 
+                                  0 if force else max(self.version, cpp.get_skip_version()), 
                                   self.new_version_cb)
 
     def new_version_cb(self, new_version, new_version_info):
@@ -50,7 +57,7 @@ class CellProfilerApp(wx.App):
             try: self.splash.Destroy()
             except: pass
 
-            if new_version <= get_revision.version:
+            if new_version <= self.version:
                 # special case: force must have been set in new_version_check, so give feedback to the user.
                 wx.MessageBox('Your copy of CellProfiler is up to date.', '', wx.ICON_INFORMATION)
                 return

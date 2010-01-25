@@ -17,7 +17,7 @@ import sys
 import os.path
 import glob
 import cellprofiler.cpmodule as cpm
-import cellprofiler.preferences as cpprefs
+from cellprofiler.modules.plugins import plugin_list
 
 # python modules and their corresponding cellprofiler.module classes
 pymodule_to_cpmodule = {'align' : 'Align',
@@ -232,7 +232,7 @@ def fill_modules():
     all_modules.clear()
     svn_revisions.clear()
 
-    def add_module(mod, check_svn, rewrite_modulename):
+    def add_module(mod, check_svn):
         try:
             m = __import__(mod, globals(), locals(), ['__all__'], 0)
             name = find_cpmodule_name(m)
@@ -265,15 +265,18 @@ def fill_modules():
                 del pymodules[-1]
 
     for mod in builtin_modules:
-        add_module('cellprofiler.modules.'+ mod, True, False)
+        add_module('cellprofiler.modules.'+ mod, True)
+
+    for mod in plugin_list():
+        add_module('cellprofiler.modules.plugins.' + mod, False)
 
     datatools.sort()
     if len(badmodules) > 0:
         print "could not load these modules", badmodules
-        
-fill_modules()
+
+fill_modules()        
     
-__all__ = ['instantiate_module', 'get_module_classes', 'reload_modules', 'get_module_doc']
+__all__ = ['instantiate_module', 'get_module_names', 'reload_modules']
 
 def instantiate_module(module_name):
     if module_name in substitutions: 

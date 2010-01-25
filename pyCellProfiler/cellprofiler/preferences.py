@@ -19,6 +19,7 @@ __version__="$Revision$"
 import random
 import cellprofiler
 import os
+import os.path
 import re
 import wx
 import sys
@@ -378,3 +379,8 @@ def add_recent_file(filename):
         del recent_files[-1]
     for i, filename in enumerate(recent_files):
         get_config().Write(recent_file(i), filename)
+
+def get_plugin_directory():
+    if not get_headless() and wx.GetApp() is not None:
+        return os.path.join(wx.StandardPaths.Get().GetUserDataDir(), 'plugins')
+    return None

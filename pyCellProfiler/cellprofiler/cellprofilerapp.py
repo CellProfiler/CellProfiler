@@ -7,6 +7,10 @@ import cStringIO
 import cellprofiler.preferences as cpp
 
 class CellProfilerApp(wx.App):
+    def __init__(self, *args, **kwargs):
+        # allow suppression of version checking (primarily for nosetests). 
+        self.check_for_new_version = kwargs.pop('check_for_new_version', False)
+        super(CellProfilerApp, self).__init__(*args, **kwargs)
 
     def OnInit(self):
         # The wx.StandardPaths aren't available until this is set.
@@ -17,7 +21,6 @@ class CellProfilerApp(wx.App):
         self.version = cellprofiler.utilities.get_revision.version
 
         wx.InitAllImageHandlers()
-        
 
         # If the splash image has alpha, it shows up transparently on
         # windows, so we blend it into a white background.
@@ -28,7 +31,8 @@ class CellProfilerApp(wx.App):
         dc.Destroy() # necessary to avoid a crash in splashscreen
         self.splash = wx.SplashScreen(splashbitmap, wx.SPLASH_CENTRE_ON_SCREEN | wx.SPLASH_TIMEOUT, 2000, None, -1)
 
-        self.new_version_check()
+        if self.check_for_new_version:
+            self.new_version_check()
 
         from cellprofiler.gui.cpframe import CPFrame
         self.frame = CPFrame(None, -1, "Cell Profiler")

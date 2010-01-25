@@ -50,7 +50,7 @@ my_pipeline = ('eJztWt1u0zAUTtoOsQ3BdjUufYO0wVqlhUlQoa1lZaKCbtVaQGjix2vc1cix'
 class Test_CellProfilerApp(unittest.TestCase):
     def get_app(self):
         """Get an instance of CellProfilerApp prepared to assert if there's an error"""
-        app = cellprofiler.cellprofilerapp.CellProfilerApp(redirect=False)
+        app = cellprofiler.cellprofilerapp.CellProfilerApp(redirect=False, check_for_new_version=False)
         def blowup(message,error):
             self.assertTrue(False,message)
         app.frame.add_error_listener(blowup)
@@ -83,7 +83,7 @@ class Test_CellProfilerApp(unittest.TestCase):
         
     def test_00_00_Init(self):
         """Start the GUI and exit"""
-        app = cellprofiler.cellprofilerapp.CellProfilerApp()
+        app = cellprofiler.cellprofilerapp.CellProfilerApp(check_for_new_version=False)
         app.Exit()
     
     def test_01_01_Load(self):

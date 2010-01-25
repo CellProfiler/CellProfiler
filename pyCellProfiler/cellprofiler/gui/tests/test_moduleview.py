@@ -25,7 +25,7 @@ import cellprofiler.gui.moduleview as cpmv
 class TestModuleView(unittest.TestCase):
     
     def set_pipeline(self, module):
-        app = cellprofiler.cellprofilerapp.CellProfilerApp(redirect=False)
+        app = cellprofiler.cellprofilerapp.CellProfilerApp(redirect=False, check_for_new_version=False)
         pipeline = app.frame.pipeline 
         while(len(pipeline.modules())):
             pipeline.remove_module(1)

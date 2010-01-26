@@ -1235,8 +1235,6 @@ class Pipeline(object):
     def clear(self):
         old_modules = self.__modules
         self.__modules = []
-        for module in old_modules:
-            module.delete()
         self.notify_listeners(PipelineClearedEvent())
     
     def move_module(self,module_num,direction):

@@ -394,7 +394,8 @@ class ExportToSpreadsheet(cpm.CPModule):
                 path = workspace.measurements.apply_metadata(path,
                                                              image_set_index)
             file_name = os.path.join(path, file_name)
-            file_name = os.path.abspath(file_name)
+            file_name = get_absolute_path(file_name,
+                                          abspath_mode = ABSPATH_OUTPUT)
         path, file = os.path.split(file_name)
         if not os.path.isdir(path):
             os.makedirs(path)

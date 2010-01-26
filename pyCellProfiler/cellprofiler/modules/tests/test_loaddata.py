@@ -201,6 +201,31 @@ class TestLoadData(unittest.TestCase):
             value = m.get_current_image_measurement('_'.join((cpmeas.C_METADATA, feature)))
             self.assertEqual(value, expected)
 
+    def test_03_03_metadata_row_and_column_and_well(self):
+        csv_text = '''"Metadata_Row","Metadata_Column","Metadata_Well"
+"C","03","B14"
+'''
+        pipeline, module, filename = self.make_pipeline(csv_text)
+        columns = module.get_measurement_columns(pipeline)
+        self.assertTrue(any([c[0] == cpmeas.IMAGE and
+                             c[1] == "Metadata_Row" and
+                             c[2] == "varchar(1)" for c in columns]))
+        self.assertTrue(any([c[0] == cpmeas.IMAGE and
+                             c[1] == "Metadata_Column" and
+                             c[2] == cpmeas.COLTYPE_INTEGER for c in columns]))
+        self.assertTrue(any([c[0] == cpmeas.IMAGE and
+                             c[1] == "Metadata_Well" and
+                             c[2] == "varchar(3)" for c in columns]))
+        m = pipeline.run()
+        features = module.get_measurements(pipeline, cpmeas.IMAGE, 
+                                           cpmeas.C_METADATA)
+        for feature, expected in (("Row", "C"),
+                                  ("Column", 3),
+                                  ("Well", "B14")):
+            self.assertTrue(feature in features)
+            value = m.get_current_image_measurement('_'.join((cpmeas.C_METADATA, feature)))
+            self.assertEqual(value, expected)
+
     def test_04_01_load_file(self):
         dir = os.path.join(example_images_directory(), "ExampleSBSImages")
         file_name = 'Channel2-01-A-01.tif'

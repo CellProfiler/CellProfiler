@@ -637,7 +637,7 @@ class LoadData(cpm.CPModule):
                     well_col_column = column
                 elif cpmeas.is_well_row_token(feature):
                     well_row_column = column
-                elif feature.lower() == cpmeas.FTR_WELL:
+                elif feature.lower() == cpmeas.FTR_WELL.lower():
                     well_column = column
         if (well_column is None and well_row_column is not None and
             well_col_column is not None):

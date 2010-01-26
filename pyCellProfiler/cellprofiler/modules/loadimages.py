@@ -1550,7 +1550,7 @@ class LoadImagesImageProviderBase(cpimage.AbstractImageProvider):
         # Check to see if the pathname can be accessed as a directory
         # If so, handle normally
         #
-        if os.path.exists(self.get_pathname()):
+        if len(self.get_pathname()) == 0 or os.path.exists(self.get_pathname()):
             return
         url = '/'.join((self.get_pathname(), self.get_filename()))
         self.__cached_file, headers = urllib.urlretrieve(url)

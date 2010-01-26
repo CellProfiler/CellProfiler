@@ -10,18 +10,18 @@ These files can be produced by spreadsheet programs and are organized into rows 
 columns. The lines of the file represent the rows (technically, each row
 is terminated by a newline character: ASCII 10). Each field in a row is
 separated by a comma. Text values may be optionally enclosed by double
-quotes. The <b>LoadText</b> module uses the first row of the file as a header. The fields
+quotes. The <b>LoadData</b> module uses the first row of the file as a header. The fields
 in this row provide the labels for each column of data. Subsequent rows
 provide the values for each image cycle. 
 <br><br>
 There are many reasons you might want to prepare a CSV file and load it
-via <b>LoadText</b>; using particular names for columns allows special 
+via <b>LoadData</b>; using particular names for columns allows special 
 functionality for some downstream modules:
 
 <ul>
 
 <li>
-<i>Columns with any name</i>. Any data loaded via <b>LoadText</b> will be exported 
+<i>Columns with any name</i>. Any data loaded via <b>LoadData</b> will be exported 
 as a per-image measurement along with CellProfiler-calculated data. This offers a
 convenient way for you to add data from your own sources to the files exported by
 CellProfiler.
@@ -53,7 +53,7 @@ A column whose name begins with "Metadata" can be used to group, or associate,
 files loaded by <b>LoadImages</b>. For instance, an experiment might require 
 that images created on the same day use an illumination correction function 
 calculated from all images from that day. In this case, the file loaded by 
-<b>LoadText</b> would have a "Metadata_Date" column and the
+<b>LoadData</b> would have a "Metadata_Date" column and the
 <b>LoadImages</b> module would extract the Metadata_Date field from the image
 file name. The pipeline will match image sets with corresponding illumination
 correction images based on matching Metadata_Date fields.
@@ -64,7 +64,7 @@ correction images based on matching Metadata_Date fields.
 The <b>CalculateStatistics</b> module can calculate metrics of assay quality for 
 an experiment if provided with information about which images represent positive
 and negative controls and/or what dose of treatment has been used for which images.
-This information is provided to <b>CalculateStatistics</b> via the <b>LoadText</b> 
+This information is provided to <b>CalculateStatistics</b> via the <b>LoadData</b> 
 module, using particular formats described in the help for <b>CalculateStatistics</b>. 
 </li>
 </ul>
@@ -201,7 +201,7 @@ class LoadData(cpm.CPModule):
                                               "None",doc="""
             Provide the file name of the CSV file containing the data.""")
         self.wants_images = cps.Binary("Load images based on this data?", True, doc="""
-            Check this box to have <b>LoadText</b> load images using the Image_FileName field and the Image_PathName fields (the latter is optional).""")
+            Check this box to have <b>LoadData</b> load images using the Image_FileName field and the Image_PathName fields (the latter is optional).""")
         self.image_directory_choice = cps.Choice("Base image location",
                                                  DIR_ALL, doc="""
             This is the parent (base) folder where images are located. If images are 
@@ -228,7 +228,7 @@ class LoadData(cpm.CPModule):
                                      False, doc="""
             Check this box if you want to process a subset of the rows in the CSV file.
             Rows are numbered starting at 1 (but do not count the header line). 
-            LoadText will process up to and including the end row.
+            LoadData will process up to and including the end row.
             This option can be used to break the image sets in an experiment into groups
             that can be processed by different nodes on a computing cluster.""")
         self.row_range = cps.IntegerRange("Rows to process",

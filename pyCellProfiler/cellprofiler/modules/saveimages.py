@@ -117,7 +117,7 @@ class SaveImages(cpm.CPModule):
                 <ul>
                 <li><i>From image filename:</i> The filename will be constructed based
                 on the original filename of an input image specified in <b>LoadImages</b>
-                or <b>LoadText</b>.</li>
+                or <b>LoadData</b>.</li>
                 <li><i>Sequential numbers:</i> Same as above, but in addition, each filename
                 will have a number appended to the end, corresponding to
                 the image set cycle number (starting at 1).</li>
@@ -126,7 +126,7 @@ class SaveImages(cpm.CPModule):
                 this option is used if want to have the file updated on every cycle as processing 
                 continues.</li>
                 <li><i>Name with metadata:</i> The filenames are constructed using the metadata
-                associated with an image set in <b>LoadImages</b> or <b>LoadText</b>. This is 
+                associated with an image set in <b>LoadImages</b> or <b>LoadData</b>. This is 
                 especially useful if you want your output given a unique label according to the
                 metadata corresponding to an image group. The name of the metadata to substitute 
                 is included in a special tag format embedded in your file specification. 
@@ -139,7 +139,7 @@ class SaveImages(cpm.CPModule):
                 </ul>""")
         self.file_image_name = cps.FileImageNameSubscriber("Select image name for file prefix:",
                                                            "None",doc="""
-                Select an image loaded using <b>LoadImages</b> or <b>LoadText</b>. The original filename will be
+                Select an image loaded using <b>LoadImages</b> or <b>LoadData</b>. The original filename will be
                 used as the prefix for the output filename.""")
         self.single_file_name = cps.Text(SINGLE_NAME_TEXT, "OrigBlue",doc="""
                 If you are constructing the filenames using:<br>

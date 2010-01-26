@@ -85,7 +85,7 @@ class RescaleIntensity(cpm.CPModule):
                                                 <li><i>Divide each image by the same value:</i> Divide the intensity value of each pixel by the value entered.</li>
                                                 <li><i>Divide by each image by a previously calculated value:</i> The intensity value of each pixel is divided by some previously calculated
                                                 measurement. This measurement can be the output of some other module
-                                                or can be a value loaded by the LoadText module.</li>
+                                                or can be a value loaded by the LoadData module.</li>
                                                 <li><i>Match the image's maximum to another image's maximum:</i> Scale an image so that its maximum value is the same as the maximum value
                                                 within the target image.</li>
                                                 <li><i>Convert to 8-bit:</i> Images in CellProfiler are normally stored as a floating point number in

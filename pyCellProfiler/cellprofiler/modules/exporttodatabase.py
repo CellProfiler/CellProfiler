@@ -24,7 +24,7 @@ measurements per object identified. The two tables are connected with the
 primary key column ImageNumber, which indicates to which image each object belongs. The Per_Object table has another primary
 key called ObjectNumber, which is unique per image. In the most typical use, if multiple types of objects are identified and measured in a pipeline, the number of those objects are equal to each other. For example, in most pipelines, each nucleus has exactly one cytoplasm, so the first row of the Per-Object table contains all of the information about object #1, including both nucleus- and cytoplasm-related measurements. If this one-to-one correspondence is <em>not</em> the case for all objects in the pipeline (for example, if dozens of speckles are identified and measured for each nucleus), then the ExportToDatabase module must be configured to export only objects that maintain the one-to-one correspondence (for example, export only Nucleus and Cytoplasm, but omit Speckles).
 
-If you have extracted "Plate" and "Well" metadata from image filenames or loaded "Plate" and "Well" metadata via LoadText, 
+If you have extracted "Plate" and "Well" metadata from image filenames or loaded "Plate" and "Well" metadata via LoadData, 
 you can ask CellProfiler to create a "per-well" table, which aggregates object measurements across wells.  
 This option will output a .SQL file (regardless of whether or not you choose to write directly to the database)
 which can be used to create the per-well table.  At the secure shell where you normally log in to mysql, type
@@ -278,7 +278,7 @@ class ExportToDatabase(cpm.CPModule):
             if you are measuring the area of the Nuclei objects and you check the aggregate
             mean box in this module, ExportToDatabase will create a table in database called
             Per_Well_Mean, with a column called Mean_Nuclei_AreaShape_Area. NOTE: this option is only
-            available if you have extracted plate and well metadata from the filename or via a LoadText module.
+            available if you have extracted plate and well metadata from the filename or via a LoadData module.
             This option will write out a .SQL file with the statements necessary to create the per_well
             table, regardless of the option chosen above. See the help for this module for more information.''')
         

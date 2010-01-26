@@ -6,9 +6,9 @@ value of the flag is '1' if the image meets the selected criteria (for example, 
 does not meet the criteria (if it passes QC). The flag can be used in post-processing to filter out images
 you do not want to analyze, e.g. in CellProfiler Analyst. Additionally, you can
 use ExportToExcel to generate a file that includes the flag as a metadata measurement
-associated with the images. This file can then be used by the LoadText 
+associated with the images. This file can then be used by the LoadData 
 module to put images that pass QC into one group and images that fail 
-into another. If you plan to use a flag in <b>LoadText</b>, give it a category of
+into another. If you plan to use a flag in <b>LoadData</b>, give it a category of
 "Metadata" so that it can be used in grouping.
 
 A flag can be based on one or more measurements. If you create a flag based
@@ -75,7 +75,7 @@ class FlagImage(cpm.CPModule):
         group.append("measurement_settings", [])
         group.append("measurement_count", cps.HiddenCount(group.measurement_settings))
         group.append("category", cps.Text("Name the flag's category","Metadata", doc = '''
-                                Name a measurement category the flag should reside in. Metadata allows you to later group images in the LoadImages module based on the flag, if you load the flag data in a future pipeline via the LoadText module.  Otherwise, you might choose to have the flag stored
+                                Name a measurement category the flag should reside in. Metadata allows you to later group images in the LoadImages module based on the flag, if you load the flag data in a future pipeline via the LoadData module.  Otherwise, you might choose to have the flag stored
                                 in the Image category or some other word you prefer.  The flag is stored as a Per-image measurement whose name is a combination of the
                                 flag's category and feature name, underscore delimited. 
                                 For instance, if the measurement category is

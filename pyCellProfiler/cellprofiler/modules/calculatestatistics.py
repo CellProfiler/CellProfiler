@@ -71,12 +71,12 @@ each measurement, across the entire analysis run.
 <li>EC50</li>
 <li>One-tailed Zfactor</li>
 </ul>
-<p>Example format for a file to be loaded by <b>LoadText</b> for this module.<br><br>
-<b>LoadText</b> loads information from a CSV file. The first line of this file is a 
+<p>Example format for a file to be loaded by <b>LoadData</b> for this module.<br><br>
+<b>LoadData</b> loads information from a CSV file. The first line of this file is a 
 header that names the items.
 Each subsequent line represents data for one image set, so your file should have
 the header line plus one line per image to be processed. You can also make a
-file for <b>LoadText</b> to load that contains the positive/negative control and dose designations *plus* the image file names to be processed, which is a good way to guarantee that images are matched
+file for <b>LoadData</b> to load that contains the positive/negative control and dose designations *plus* the image file names to be processed, which is a good way to guarantee that images are matched
 with the correct data. Here is an example file:<br><br>
 <code>
 <table>
@@ -144,9 +144,9 @@ class CalculateStatistics(cpm.CPModule):
             to exclude them from the Z' factor analysis.<p>
             The typical way to provide this information in the pipeline is to create 
             a text file outside of CellProfiler and then load that file in the pipeline
-            using <b>LoadText</b>. In that case, choose the
+            using <b>LoadData</b>. In that case, choose the
             measurement that matches the column header of the measurement
-            in <b>LoadText</b>'s input file. See the help for this module for an example text file.''')
+            in <b>LoadData</b>'s input file. See the help for this module for an example text file.''')
         self.dose_values = []
         self.add_dose_value(can_remove = False)
         self.add_dose_button = cps.DoSomething("","Add another dose specification",
@@ -168,9 +168,9 @@ class CalculateStatistics(cpm.CPModule):
             the dose of some treatment for each of your images. <p>
             The typical way to provide this information in the pipeline is to create 
             a text file outside of CellProfiler and then load that file in the pipeline
-            using <b>LoadText</b>. In that case, choose the
+            using <b>LoadData</b>. In that case, choose the
             measurement that matches the column header of the measurement
-            in <b>LoadText</b>'s input file. See the help for this module for an example text file.
+            in <b>LoadData</b>'s input file. See the help for this module for an example text file.
             """))
         group.append("log_transform",cps.Binary(
             "Log-transform dose values?",

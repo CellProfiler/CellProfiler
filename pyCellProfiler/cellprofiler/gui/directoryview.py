@@ -111,10 +111,15 @@ class DirectoryView(object):
                           (selection, str(x)),"Failed to display image")
     
     def __display_matlab_image(self,handles, filename):
-            frame = ImageFrame(self.__list_box.GetTopLevelParent(),
-                               filename,
-                               image=handles["Image"])
-            frame.Show()
+        image=handles["Image"]
+        frame = FIG.CPFigureFrame(self.__list_box.GetTopLevelParent(),
+                                  title = filename,
+                                  subplots = (1,1))
+        if image.ndim == 3:
+            frame.subplot_imshow_color(0,0,image,filename)
+        else:
+            frame.subplot_imshow_grayscale(0,0,image,filename)
+        frame.Refresh()
     
     def __display_image(self,filename):
         lip = LoadImagesImageProvider("dummy", "", filename)

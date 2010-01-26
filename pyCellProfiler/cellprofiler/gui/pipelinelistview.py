@@ -140,9 +140,10 @@ class PipelineListView(object):
     """View on a set of modules
     
     """
-    def __init__(self,panel):
+    def __init__(self, panel, frame):
         self.__pipeline = None
         self.__panel=panel
+        self.__frame = frame
         self.__module_controls_panel = None
         self.__sizer=wx.BoxSizer(wx.HORIZONTAL)
         self.__panel.SetSizer(self.__sizer)
@@ -214,6 +215,7 @@ class PipelineListView(object):
         #
         self.list_ctrl.Bind(wx.EVT_LIST_ITEM_SELECTED, self.__on_item_selected, self.list_ctrl)
         self.list_ctrl.Bind(wx.EVT_LEFT_DOWN, self.__on_list_left_down, self.list_ctrl)
+        self.list_ctrl.Bind(wx.EVT_RIGHT_DOWN, self.__on_list_right_down, self.list_ctrl)
         #
         # Accelerators
         #
@@ -336,6 +338,21 @@ class PipelineListView(object):
                     event.Skip()
         else:
             event.Skip()
+            
+    def __on_list_right_down(self, event):
+        from cellprofiler.gui.cpframe import ID_EDIT_DELETE, ID_HELP_MODULE
+        
+        item, hit_code = self.list_ctrl.HitTest(event.Position)
+        if hit_code & wx.LIST_HITTEST_ONITEM:
+            self.select_one_module(item+1)
+        if self.list_ctrl.SelectedItemCount > 0:
+            menu = wx.Menu()
+            menu.AppendSubMenu(self.__frame.menu_edit_add_module, "&Add")
+            menu.Append(ID_EDIT_DELETE, "&Delete")
+            menu.Append(ID_HELP_MODULE, "&Help")
+            self.__frame.PopupMenu(menu)
+        else:
+            self.__frame.PopupMenu(self.__frame.menu_edit_add_module)
 
     def start_drag_operation(self, event):
         '''Start dragging whatever is selected'''

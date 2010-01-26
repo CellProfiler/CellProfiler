@@ -59,6 +59,7 @@ class PipelineController:
         self.__groupings = None
         self.__grouping_index = None
         self.populate_recent_files()
+        self.populate_edit_menu()
         wx.EVT_MENU(frame,cpframe.ID_FILE_LOAD_PIPELINE,self.__on_load_pipeline)
         wx.EVT_MENU(frame,cpframe.ID_FILE_SAVE_PIPELINE,self.__on_save_pipeline)
         wx.EVT_MENU(frame,cpframe.ID_FILE_CLEAR_PIPELINE,self.__on_clear_pipeline)
@@ -413,6 +414,43 @@ class PipelineController:
         self.__add_module_frame.Show()
         self.__add_module_frame.Raise()
     
+    def populate_edit_menu(self):
+        '''Display a menu of modules to add'''
+        from cellprofiler.modules import get_module_names, instantiate_module
+        #
+        # Get a two-level dictionary of categories and names
+        #
+        d = { "All": [] }
+        for module_name in get_module_names():
+            module = cellprofiler.modules.instantiate_module(module_name)
+            category = module.category
+            if not d.has_key(category):
+                d[category] = []
+            d[category].append(module_name)
+            d["All"].append(module_name)
+         
+        menu = self.__frame.menu_edit_add_module
+        for category in sorted(d.keys()):
+            sub_menu = wx.Menu()
+            for module_name in sorted(d[category]):
+                menu_id = wx.NewId()
+                sub_menu.Append(menu_id, module_name)
+                ########################
+                #
+                # on_menu - add a module to the pipeline
+                #
+                ########################
+                def on_menu(event, module_name = module_name):
+                    module = instantiate_module(module_name)
+                    selected_modules = self.__get_selected_modules()
+                    if len(selected_modules) == 0:
+                        module.module_num = len(self.__pipeline.modules())+1
+                    else:
+                        module.module_num = selected_modules[0].module_num + 1
+                    self.__pipeline.add_module(module)
+                self.__frame.Bind(wx.EVT_MENU, on_menu, id = menu_id)
+            menu.AppendSubMenu(sub_menu, category)
+        
     def __get_selected_modules(self):
         return self.__pipeline_list_view.get_selected_modules()
     

@@ -143,6 +143,9 @@ class CPFrame(wx.Frame):
         self.menu_edit.Append(ID_EDIT_MOVE_UP, "Move &up", "Move module toward the start of the pipeline")
         self.menu_edit.Append(ID_EDIT_MOVE_DOWN, "Move &down", "Move module toward the end of the pipeline")
         self.menu_edit.Append(ID_EDIT_DELETE, "&Delete", "Delete selected modules")
+        self.menu_edit_add_module = wx.Menu()
+        self.menu_edit.AppendSubMenu(self.menu_edit_add_module, "&Add module")
+
         self.__menu_bar.Append(self.menu_edit, '&Edit')
         self.__menu_debug = wx.Menu()
         self.__menu_debug.Append(ID_DEBUG_TOGGLE,'&Start test run\tF5','Start the pipeline debugger')
@@ -360,7 +363,7 @@ class CPFrame(wx.Frame):
             fd.close()
 
     def __attach_views(self):
-        self.__pipeline_list_view = PipelineListView(self.__module_list_panel)
+        self.__pipeline_list_view = PipelineListView(self.__module_list_panel, self)
         self.__pipeline_controller = PipelineController(self.__pipeline,self)
         self.__pipeline_list_view.attach_to_pipeline(self.__pipeline,self.__pipeline_controller)
         self.__pipeline_controller.attach_to_test_controls_panel(self.__pipeline_test_panel)

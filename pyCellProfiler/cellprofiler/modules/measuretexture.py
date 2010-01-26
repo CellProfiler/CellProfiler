@@ -56,7 +56,7 @@ Venetian blinds would have high scores in the horizontal orientation.
 at each scale using the Gabor filter:
 <ul>
 <li>Divide the half-circle from 0 to 180 degrees by the number of desired
-angles. For instance, if the user choses two angles, MeasureTexture
+angles. For instance, if the user chooses two angles, MeasureTexture
 uses 0 degrees and 90 degrees (horizontal and vertical) for the filter
 orientations. This is the Theta value from the reference paper.</li>
 <li>For each angle, compute the Gabor filter for each object in the image

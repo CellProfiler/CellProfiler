@@ -174,6 +174,7 @@ class PipelineController:
                             "Choose a pipeline file to open",
                             wildcard = ("CellProfiler pipeline (*.cp)|*.cp|"
                                         "Measurements file or CP 1.0 pipeline (*.mat)|*.mat"))
+        dlg.Directory = cpprefs.get_default_output_directory()
         if dlg.ShowModal()==wx.ID_OK:
             pathname = os.path.join(dlg.GetDirectory(),dlg.GetFilename())
             self.do_load_pipeline(pathname)
@@ -219,6 +220,8 @@ class PipelineController:
         path = cpprefs.get_current_pipeline_path()
         if path is not None:
             dlg.Path = path
+        else:
+            dlg.Directory = cpprefs.get_default_output_directory()
         if dlg.ShowModal() == wx.ID_OK:
             file_name = dlg.GetFilename()
             if not sys.platform.startswith("win"):
@@ -931,7 +934,40 @@ class PipelineController:
                                 pass
                     self.__pipeline_measurements = None
                     self.__output_path = None
-                wx.MessageBox("Finished processing pipeline", "Analysis complete")
+                #
+                # A little dialog with a "save pipeline" button in addition
+                # to the "OK" button.
+                #
+                dlg = wx.Dialog(self.__frame, -1, "Analysis complete")
+                sizer = wx.BoxSizer(wx.VERTICAL)
+                dlg.SetSizer(sizer)
+                sub_sizer = wx.BoxSizer(wx.HORIZONTAL)
+                sizer.Add(sub_sizer, 1, wx.EXPAND)
+                font = wx.SystemSettings.GetFont(wx.SYS_SYSTEM_FONT)
+                text_ctrl = wx.StaticText(dlg, 
+                                          label="Finished processing pipeline.")
+                text_ctrl.Font = font
+                sub_sizer.Add(
+                    text_ctrl,
+                    1, wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_CENTER_VERTICAL | 
+                    wx.EXPAND | wx.ALL, 10)
+                bitmap = wx.ArtProvider.GetBitmap(wx.ART_INFORMATION,
+                                                  wx.ART_CMN_DIALOG,
+                                                  size=(32,32))
+                sub_sizer.Add(wx.StaticBitmap(dlg, -1, bitmap), 0,
+                              wx.EXPAND | wx.ALL, 10)
+                button_sizer = wx.StdDialogButtonSizer()
+                save_pipeline_button = wx.Button(dlg, -1, "Save pipeline")
+                button_sizer.AddButton(save_pipeline_button)
+                button_sizer.SetCancelButton(save_pipeline_button)
+                button_sizer.AddButton(wx.Button(dlg, wx.ID_OK))
+                sizer.Add(button_sizer, 0, 
+                          wx.ALIGN_CENTER_HORIZONTAL | wx.EXPAND | wx.ALL, 10)
+                dlg.Bind(wx.EVT_BUTTON, self.__on_save_pipeline, 
+                         save_pipeline_button)
+                button_sizer.Realize()
+                dlg.Fit()
+                dlg.ShowModal()
                 
 
     def get_output_file_path(self):

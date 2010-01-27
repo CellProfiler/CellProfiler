@@ -563,6 +563,62 @@ ExportToDatabase:[module_num:2|svn_version:\'8947\'|variable_revision_number:12|
         self.assertEqual(module.output_directory, r"./\g<Plate>")
         self.assertEqual(module.sql_file_prefix, "SQL_")
         self.assertEqual(module.db_name, "DefaultDB")
+        self.assertEqual(module.max_column_size, 64)
+        
+    def test_01_06_load_v13(self):
+        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:1
+SVNRevision:8952
+
+LoadText:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|show_window:False|notes:\x5B\x5D]
+    CSV file location:Default Input Folder
+    Path to the CSV file:.
+    Name of the CSV file:1049.csv
+    Load images from CSV data?:Yes
+    Image folder location:Default Input Folder
+    Path to the images:.
+    Process just a range of rows?:No
+    Rows to process:1,100000
+    Group images by metadata?:No
+    Select metadata fields for grouping:
+
+ExportToDatabase:[module_num:2|svn_version:\'8947\'|variable_revision_number:12|show_window:False|notes:\x5B\x5D]
+    Database type:MySQL
+    Database name:DefaultDB
+    Add a prefix to table names?:No
+    Table prefix:Expt_
+    SQL file prefix:SQL_
+    Where do you want to save files?:Custom folder with metadata
+    Enter the output folder:./\\g<Plate>
+    Create a CellProfiler Analyst properties file?:No
+    Database host:
+    Username:
+    Password:
+    Name the SQLite database file:DefaultDB.db
+    Calculate the per-image mean values of object measurements?:Yes
+    Calculate the per-image median values of object measurements?:No
+    Calculate the per-image standard deviation values of object measurements?:No
+    Calculate the per-well mean values of object measurements?:No
+    Calculate the per-well median values of object measurements?:No
+    Calculate the per-well standard deviation values of object measurements?:No
+    Export measurements for all objects to the database?:All
+    Select the objects:
+    Maximum # of characters in a column name:61
+"""
+        pipeline = cpp.Pipeline()
+        def callback(caller,event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO(data))
+        self.assertEqual(len(pipeline.modules()), 2)
+        module = pipeline.modules()[-1]
+        self.assertTrue(isinstance(module, E.ExportToDatabase))
+        self.assertEqual(module.db_type, E.DB_MYSQL)
+        self.assertEqual(module.directory_choice, E.DIR_CUSTOM_WITH_METADATA)
+        self.assertEqual(module.output_directory, r"./\g<Plate>")
+        self.assertEqual(module.sql_file_prefix, "SQL_")
+        self.assertEqual(module.db_name, "DefaultDB")
+        self.assertEqual(module.max_column_size, 61)
         
     def make_workspace(self, wants_files, alt_object=False, 
                        long_measurement=False, wierd_measurement=False):
@@ -1116,6 +1172,69 @@ ExportToDatabase:[module_num:2|svn_version:\'8947\'|variable_revision_number:12|
             statement = ("select ImageNumber, ObjectNumber, %s_%s,%s "
                          "from %sPer_Object order by ObjectNumber"%
                          (OBJECT_NAME, OBJ_MEASUREMENT, wierd_obj_column,
+                          module.table_prefix.value))
+            self.cursor.execute(statement)
+            for i, value in enumerate(OBJ_VALUE):
+                row = self.cursor.fetchone()
+                self.assertEqual(len(row), 4)
+                self.assertEqual(row[0], 1)
+                self.assertEqual(row[1], i+1)
+                self.assertAlmostEqual(row[2], value)
+                self.assertAlmostEqual(row[3], value)
+            self.assertRaises(StopIteration, self.cursor.next)
+        finally:
+            for table_suffix in ("Per_Image","Per_Object"):
+                table_name = module.table_prefix.value + table_suffix
+                try:
+                    self.cursor.execute("drop table %s.%s" %
+                                        (module.db_name.value, table_name))
+                except:
+                    print "Failed to drop table %s"%table_name
+                    
+    def test_02_06_write_direct_50_char_colname(self):
+        '''Write to MySQL, ensuring some columns have long names'''
+        workspace, module = self.make_workspace(False, long_measurement=True)
+        try:
+            self.assertTrue(isinstance(module, E.ExportToDatabase))
+            module.db_type = E.DB_MYSQL
+            module.wants_agg_mean.value = False
+            module.wants_agg_median.value = False
+            module.wants_agg_std_dev.value = False
+            module.objects_choice.value = E.O_ALL
+            module.max_column_size.value = 50
+            module.prepare_run(workspace.pipeline, workspace.image_set_list,None)
+            module.prepare_group(workspace.pipeline, workspace.image_set_list,
+                                 {}, [1])
+            module.run(workspace)
+            mappings = module.get_column_name_mappings(workspace.pipeline)
+            long_img_column = mappings["Image_%s"%LONG_IMG_MEASUREMENT]
+            long_obj_column = mappings["%s_%s"%(OBJECT_NAME, LONG_OBJ_MEASUREMENT)]
+            self.assertTrue(len(long_img_column) <= 50)
+            self.assertTrue(len(long_obj_column) <= 50)
+            self.cursor.execute("use CPUnitTest")
+            #
+            # Now read the image file from the database
+            #
+            image_table = module.table_prefix.value + "Per_Image"
+            statement = ("select ImageNumber, Image_%s, Image_%s, Image_%s,"
+                         "Image_Count_%s, %s "
+                         "from %s" %
+                         (INT_IMG_MEASUREMENT, FLOAT_IMG_MEASUREMENT,
+                          STRING_IMG_MEASUREMENT, OBJECT_NAME,
+                          long_img_column, image_table))
+            self.cursor.execute(statement)
+            row = self.cursor.fetchone()
+            self.assertEqual(len(row), 6)
+            self.assertEqual(row[0],1)
+            self.assertAlmostEqual(row[1], INT_VALUE)
+            self.assertAlmostEqual(row[2], FLOAT_VALUE)
+            self.assertEqual(row[3], STRING_VALUE)
+            self.assertEqual(row[4], len(OBJ_VALUE))
+            self.assertEqual(row[5], 100)
+            self.assertRaises(StopIteration, self.cursor.next)
+            statement = ("select ImageNumber, ObjectNumber, %s_%s,%s "
+                         "from %sPer_Object order by ObjectNumber"%
+                         (OBJECT_NAME, OBJ_MEASUREMENT, long_obj_column,
                           module.table_prefix.value))
             self.cursor.execute(statement)
             for i, value in enumerate(OBJ_VALUE):

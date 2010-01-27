@@ -155,7 +155,7 @@ def connect_sqlite(db_file):
 class ExportToDatabase(cpm.CPModule):
  
     module_name = "ExportToDatabase"
-    variable_revision_number = 12
+    variable_revision_number = 13
     category = "Data Tools"
 
     def create_settings(self):
@@ -306,6 +306,16 @@ class ExportToDatabase(cpm.CPModule):
             the objects that were created by prior modules. If you choose an
             object, its measurements will be written out to the Per_Object and/or
             Per_Well(s) tables, otherwise, the object's measurements will be skipped.""")
+        
+        self.max_column_size = cps.Integer(
+            "Maximum # of characters in a column name:", 64, 
+            minval = 10, maxval = 64,
+            doc="""This setting limits the number of characters that can appear
+            in the name of a field in the database. MySQL has a limit of 64
+            characters, but also has an overall limit to the number of characters
+            in all of the columns of a table. <b>ExportToDatabase</b> will
+            shorten all of the column names by removing characters, at the
+            same time, guaranteeing that no two columns have the same name.""")
                                                             
     def visible_settings(self):
         needs_default_output_directory =\
@@ -340,6 +350,7 @@ class ExportToDatabase(cpm.CPModule):
                    self.objects_choice]
         if self.objects_choice == O_SELECT:
             result += [self.objects_list]
+        result += [self.max_column_size]
         return result
     
     def settings(self):
@@ -351,7 +362,7 @@ class ExportToDatabase(cpm.CPModule):
                 self.wants_agg_mean, self.wants_agg_median,
                 self.wants_agg_std_dev, self.wants_agg_mean_well, 
                 self.wants_agg_median_well, self.wants_agg_std_dev_well,
-                self.objects_choice, self.objects_list]
+                self.objects_choice, self.objects_list, self.max_column_size]
     
     def validate_module(self,pipeline):
         if self.want_table_prefix.value:
@@ -520,7 +531,7 @@ class ExportToDatabase(cpm.CPModule):
     def get_column_name_mappings(self, pipeline):
         """Scan all the feature names in the measurements, creating column names"""
         columns = pipeline.get_measurement_columns()
-        mappings = ColumnNameMapping()
+        mappings = ColumnNameMapping(self.max_column_size.value)
         mappings.add("ImageNumber")
         mappings.add("ObjectNumber")
         for object_name, feature_name, coltype in columns:
@@ -1522,7 +1533,12 @@ check_tables = yes
             setting_values = ([ db_type ] + setting_values[1:8] +
                               setting_values[9:])
             variable_revision_number = 12
-
+        if (not from_matlab) and variable_revision_number == 12:
+            #
+            # Added maximum column size
+            #
+            setting_values = setting_values + ["64"]
+            variable_revision_number = 13
         return setting_values, variable_revision_number, from_matlab
     
 class ColumnNameMapping:

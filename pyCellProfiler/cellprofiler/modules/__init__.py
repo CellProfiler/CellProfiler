@@ -89,6 +89,7 @@ pymodule_to_cpmodule = {'align' : 'Align',
 # the builtin CP modules that will be loaded from the cellprofiler.modules directory
 builtin_modules = ['align',
                    'applythreshold',
+                   'calculateimageoverlap',
                    'calculatemath',
                    'calculatestatistics',
                    'classifyobjects',

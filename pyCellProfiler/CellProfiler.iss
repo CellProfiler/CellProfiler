@@ -7,16 +7,16 @@
 ; (To generate a new GUID, click Tools | Generate GUID inside the IDE.)
 AppId={{E6064576-236D-4C12-ACBD-BC8B606F9329}
 AppName=CellProfiler
-AppVerName=CellProfiler 2.0 r9051
+AppVerName=CellProfiler 2.0 r9178
 AppPublisher=Broad Institute
 AppPublisherURL=http://www.cellprofiler.org
 AppSupportURL=http://www.cellprofiler.org
 AppUpdatesURL=http://www.cellprofiler.org
 DefaultDirName={pf}\CellProfiler
 DefaultGroupName=CellProfiler
-OutputDir=C:\cellprofiler\trunk\CellProfiler\pyCellProfiler\output
+OutputDir=.\output
 OutputBaseFilename=CellProfilerSetup
-SetupIconFile=C:\cellprofiler\trunk\CellProfiler\pyCellProfiler\CellProfilerIcon.ico
+SetupIconFile=.\CellProfilerIcon.ico
 Compression=lzma
 SolidCompression=yes
 
@@ -27,8 +27,8 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-Source: "C:\cellprofiler\trunk\CellProfiler\pyCellProfiler\dist\CellProfiler.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\cellprofiler\trunk\CellProfiler\pyCellProfiler\dist\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: ".\dist\CellProfiler.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: ".\dist\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]

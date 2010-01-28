@@ -183,11 +183,9 @@ class Tile(cpm.CPModule):
         pixels = workspace.display_data.image
         name = self.output_image.value
         if pixels.ndim == 3:
-            figure.subplot_imshow_color(0, 0, pixels,
-                                        title = name)
+            figure.subplot_imshow(0, 0, pixels, title = name)
         else:
-            figure.subplot_imshow_grayscale(0, 0, pixels,
-                                            title = name)
+            figure.subplot_imshow_grayscale(0, 0, pixels, title = name)
 
     def is_interactive(self):
         return False

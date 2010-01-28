@@ -131,7 +131,7 @@ class ConvertObjectsToImage(cpm.CPModule):
             pixel_data = pixel_data[:,:,:3]
             pixel_data[labels == 0,:] = 0
             if not workspace.frame is None:
-                figure.subplot_imshow_color(1,0,pixel_data, self.image_name.value)
+                figure.subplot_imshow(1,0,pixel_data, self.image_name.value)
         elif self.image_mode == IM_UINT16:
             pixel_data = labels.copy()
             if not workspace.frame is None:

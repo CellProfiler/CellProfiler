@@ -250,9 +250,8 @@ class RescaleIntensity(cpm.CPModule):
                                                 title = image_name,
                                                 vmin = 0, vmax = 1)
             else:
-                figure.subplot_imshow_color(i,j,pixel_data,
-                                            title = image_name,
-                                            normalize=False)
+                figure.subplot_imshow(i, j, pixel_data, title=image_name,
+                                      normalize=False)
     
     def stretch(self, input_image):
         '''Stretch the input image to the range 0:1'''

@@ -120,8 +120,7 @@ class IdentifyObjectsManually(I.Identify):
         if workspace.frame is not None:
             figure = workspace.create_or_find_figure(subplots=(2,1))
             figure.subplot_imshow_labels(0, 0, labels, objects_name)
-            figure.subplot_imshow_color(
-                1, 0, self.draw_outlines(pixel_data, labels))
+            figure.subplot_imshow(1, 0, self.draw_outlines(pixel_data, labels))
 
     def draw_outlines(self, pixel_data, labels):
         '''Draw a color image that shows the objects

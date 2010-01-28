@@ -123,10 +123,10 @@ class Resize(cpm.CPModule):
                 figure.subplot_imshow_bw(1,0,output_pixels,
                                          title=self.resized_image_name.value)
             else:
-                figure.subplot_imshow_color(0,0,image_pixels,
-                                            title=self.image_name.value)
-                figure.subplot_imshow_color(1,0,output_pixels,
-                                            title=self.resized_image_name.value)
+                figure.subplot_imshow(0, 0, image_pixels, 
+                                      title=self.image_name.value)
+                figure.subplot_imshow(1, 0, output_pixels,
+                                      title=self.resized_image_name.value)
                 
                 
     def upgrade_settings(self, setting_values, variable_revision_number, 

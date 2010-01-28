@@ -116,7 +116,7 @@ class DirectoryView(object):
                                   title = filename,
                                   subplots = (1,1))
         if image.ndim == 3:
-            frame.subplot_imshow_color(0,0,image,filename)
+            frame.subplot_imshow(0,0,image,filename)
         else:
             frame.subplot_imshow_grayscale(0,0,image,filename)
         frame.Refresh()
@@ -128,7 +128,7 @@ class DirectoryView(object):
                                   title = filename,
                                   subplots=(1,1))
         if image.ndim == 3:
-            frame.subplot_imshow_color(0,0,image,filename)
+            frame.subplot_imshow(0,0,image,filename)
         else:
             frame.subplot_imshow_grayscale(0,0,image,filename)
         frame.Refresh()

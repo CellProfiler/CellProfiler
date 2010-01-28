@@ -104,10 +104,10 @@ class MakeProjection(cpm.CPModule):
             figure = workspace.create_or_find_figure(subplots=(2,1))
             provider_image = provider.provide_image(workspace.image_set)
             if provider_image.pixel_data.ndim == 3:
-                figure.subplot_imshow_color(0,0,image.pixel_data,
-                                            self.image_name.value)
-                figure.subplot_imshow_color(1,0,provider_image.pixel_data,
-                                            self.projection_image_name.value)
+                figure.subplot_imshow(0, 0, image.pixel_data,
+                                      self.image_name.value)
+                figure.subplot_imshow(1, 0, provider_image.pixel_data,
+                                      self.projection_image_name.value)
             else:
                 figure.subplot_imshow_bw(0,0,image.pixel_data,
                                          self.image_name.value)

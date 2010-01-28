@@ -204,7 +204,7 @@ class EnhanceEdges(cpm.CPModule):
                                     output_pixels.shape[1],3))
             color_image[:,:,0] = stretch(orig_pixels)
             color_image[:,:,1] = stretch(output_pixels)
-            figure.subplot_imshow_color(1,0, color_image,"Composite image")
+            figure.subplot_imshow(1,0, color_image,"Composite image")
         output_image = cpi.Image(output_pixels, parent_image = image)
         workspace.image_set.add(self.output_image_name.value, output_image)   
     

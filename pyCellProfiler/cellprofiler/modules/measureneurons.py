@@ -214,9 +214,8 @@ class MeasureNeurons(cpm.CPModule):
         figure = workspace.create_or_find_figure(subplots=(1,1))
         title = ("Branchpoints of %s and %s\nTrunks are red, others are green" %
                  (self.seed_objects_name.value, self.image_name.value))
-        figure.subplot_imshow_color(0, 0,
-                                    workspace.display_data.branchpoint_image,
-                                    title)
+        figure.subplot_imshow(0, 0, workspace.display_data.branchpoint_image,
+                              title)
     def get_measurement_columns(self, pipeline):
         '''Return database column definitions for measurements made here'''
         return [(self.seed_objects_name.value,

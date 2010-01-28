@@ -438,8 +438,7 @@ class FilterObjects(cpm.CPModule):
                 picture = np.dstack((pixel_data,pixel_data,pixel_data))
             red_channel = picture[:,:,0]
             red_channel[outs] = maxpix
-            figure.subplot_imshow_color(1,1,picture,
-                                        "Outlines")
+            figure.subplot_imshow(1, 1, picture, "Outlines")
             
             if workspace.frame != None:
                 number_of_src_objects = np.max(src_objects.segmented)

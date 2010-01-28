@@ -353,7 +353,7 @@ if __name__=='__main__':
                 cimg[:,:,0][m1]=img[m1]
                 cimg[:,:,1][m2]=img[m2]
                 cimg[:,:,2][m3]=img[m3]
-                self.frame.subplot_imshow_color(1, 0, cimg)
+                self.frame.subplot_imshow(1, 0, cimg)
                 self.frame.Refresh()
                 wx.MessageBox("Low threshold = %f, high threshold = %f"%(t1,t2),
                               parent=self.frame)

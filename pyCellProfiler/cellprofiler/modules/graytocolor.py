@@ -241,7 +241,7 @@ class GrayToColor(cpm.CPModule):
                                                   title=input_image_setting.value)
             for x,y in subplot_indices[len(input_image_settings):]:
                 my_frame.subplot(x,y).set_visible(False)
-            my_frame.subplot_imshow_color(1,1,rgb_pixel_data,
+            my_frame.subplot_imshow(1,1,rgb_pixel_data,
                                           title=self.rgb_image_name.value)
         ##############
         # Save image #

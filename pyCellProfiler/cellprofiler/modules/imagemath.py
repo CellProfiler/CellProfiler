@@ -259,9 +259,9 @@ class ImageMath(cpm.CPModule):
             figure = workspace.create_or_find_figure(subplots=(columns, 2))
             for i in range(len(display_pixel_data)):
                 if display_pixel_data[i].ndim == 3:
-                    figure.subplot_imshow_color(i%columns, int(i / columns),
-                                                display_pixel_data[i],
-                                                title=display_names[i])
+                    figure.subplot_imshow(i%columns, int(i / columns),
+                                          display_pixel_data[i],
+                                          title=display_names[i])
                 else:
                     figure.subplot_imshow_bw(i%columns, int(i / columns),
                                              display_pixel_data[i],

@@ -1039,6 +1039,8 @@ class MultiChoice(Setting):
         '''Ensure that the selections are among the choices'''
         for selection in self.get_selections():
             if selection not in self.choices:
+                if len(self.choices) == 0:
+                    raise ValidationError("No available choices", self)
                 raise ValidationError("%s is not one of %s" % 
                                       (selection, 
                                        reduce(lambda x,y: "%s,%s" % 
@@ -1066,6 +1068,10 @@ class SubscriberMultiChoice(MultiChoice):
         '''Get the choice list from name providers'''
         self.choices = get_name_provider_choices(pipeline, self, self.group)
     
+    @property
+    def group(self):
+        return self.__required_attributes["group"]
+    
     def matches(self, provider):
         '''Return true if the provider is compatible with this subscriber
         
@@ -1074,7 +1080,7 @@ class SubscriberMultiChoice(MultiChoice):
         FileImageNameProviders (images loaded from files), you can
         check that here.
         '''
-        return all([getattr(provider.provided_attributes, key, None) ==
+        return all([provider.provided_attributes.get(key, None) ==
                     self.__required_attributes[key]
                     for key in self.__required_attributes])
     

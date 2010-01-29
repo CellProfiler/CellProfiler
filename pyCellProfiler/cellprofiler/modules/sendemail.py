@@ -47,6 +47,9 @@ K_EMAIL = "Email"
 K_CYCLE = "Cycle"
 K_RESULT = "Result"
 
+'''Number of settings in an event'''
+EVENT_SETTING_COUNT = 4
+
 class SendEmail(cpm.CPModule):
     
     module_name = "SendEmail"
@@ -341,6 +344,17 @@ class SendEmail(cpm.CPModule):
                 setting_values += event
             variable_revision_number = 1
             from_matlab = False
+
+        #
+        # Standardize the event names
+        #
+        setting_values = list(setting_values)
+        event_count = int(setting_values[1])
+        event_idx = len(setting_values) - EVENT_SETTING_COUNT * event_count
+        for i in range(event_idx,len(setting_values), EVENT_SETTING_COUNT):
+            if S_DICTIONARY.has_key(setting_values[i]):
+                setting_values[i] = S_DICTIONARY[setting_values[i]]
+            
         return setting_values, variable_revision_number, from_matlab
                                
                 

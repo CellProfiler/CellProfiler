@@ -26,11 +26,14 @@ __version__="Revision: $1 "
 # 
 # Website: http://www.cellprofiler.org
 
+import hashlib
+import numpy as np
 import re
 import os
 
 import cellprofiler.cpimage as cpi
 import cellprofiler.cpmodule as cpm
+import cellprofiler.measurements as cpmeas
 import cellprofiler.preferences as cpprefs
 import cellprofiler.settings as cps
 from loadimages import LoadImagesImageProvider
@@ -188,16 +191,37 @@ class LoadSingleImage(cpm.CPModule):
         dict = self.get_file_names(workspace)
         root = self.get_base_directory(workspace)
         statistics = [("Image name","File")]
+        m = workspace.measurements
         for image_name in dict.keys():
             provider = LoadImagesImageProvider(image_name, root, 
                                                dict[image_name])
             workspace.image_set.providers.append(provider)
+            #
+            # Add measurements
+            #
+            m.add_measurement('Image','FileName_'+image_name, dict[image_name])
+            m.add_measurement('Image','PathName_'+image_name, root)
+            pixel_data = provider.provide_image(workspace.image_set).pixel_data
+            digest = hashlib.md5()
+            digest.update(np.ascontiguousarray(pixel_data).data)
+            m.add_measurement('Image','MD5Digest_'+image_name, digest.hexdigest())
             statistics += [(image_name, dict[image_name])]
         if workspace.frame:
             title = "Load single image: image set # %d"%(workspace.measurements.image_set_number+1)
             figure = workspace.create_or_find_figure(title=title,
                                                      subplots=(1,1))
             figure.subplot_table(0,0, statistics)
+    
+    def get_measurement_columns(self, pipeline):
+        columns = []
+        for file_setting in self.file_settings:
+            image_name = file_setting.image_name.value
+            columns += [(cpmeas.IMAGE, '_'.join((feature, image_name)), coltype)
+                        for feature, coltype in (
+                            ('FileName', cpmeas.COLTYPE_VARCHAR_FILE_NAME),
+                            ('PathName', cpmeas.COLTYPE_VARCHAR_PATH_NAME),
+                            ('MD5Digest', cpmeas.COLTYPE_VARCHAR_FORMAT % 32))]
+        return columns
     
     def upgrade_settings(self, setting_values, variable_revision_number, module_name, from_matlab):
         if from_matlab and variable_revision_number == 4:

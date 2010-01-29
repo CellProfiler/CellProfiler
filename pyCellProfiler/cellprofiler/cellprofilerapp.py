@@ -9,7 +9,7 @@ import cellprofiler.preferences as cpp
 class CellProfilerApp(wx.App):
     def __init__(self, *args, **kwargs):
         # allow suppression of version checking (primarily for nosetests). 
-        self.check_for_new_version = kwargs.pop('check_for_new_version', False)
+        self.check_for_new_version = kwargs.pop('check_for_new_version', True)
         super(CellProfilerApp, self).__init__(*args, **kwargs)
 
     def OnInit(self):
@@ -44,9 +44,10 @@ class CellProfilerApp(wx.App):
     def new_version_check(self, force=False):
         if cpp.get_check_new_versions() or force:
             import cellprofiler.utilities.check_for_updates as cfu
-            cfu.check_for_updates('http://cellprofiler.org/CPupdate.html', 
+            cfu.check_for_updates('http://cellprofiler.org/CPupdate.html',
                                   0 if force else max(self.version, cpp.get_skip_version()), 
-                                  self.new_version_cb)
+                                  self.new_version_cb,
+                                  user_agent='CellProfiler/2.0.%d'%(self.version))
 
     def new_version_cb(self, new_version, new_version_info):
         # called from a child thread, so use CallAfter to bump it to the gui thread

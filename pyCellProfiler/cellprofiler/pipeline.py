@@ -394,7 +394,16 @@ class Pipeline(object):
                 module.module_num = real_module_num
             except Exception,instance:
                 traceback.print_exc()
-                event = LoadExceptionEvent(instance,module, module_name)
+                number_of_variables = settings[NUMBERS_OF_VARIABLES][0,idx]
+                module_settings = [settings[VARIABLE_VALUES][idx, i]
+                                   for i in range(number_of_variables)]
+                module_settings = [('' if np.product(x.shape) == 0
+                                    else str(x[0])) if isinstance(x, np.ndarray)
+                                   else str(x)
+                                   for x in module_settings]
+                                   
+                event = LoadExceptionEvent(instance,module, module_name,
+                                           module_settings)
                 self.notify_listeners(event)
                 if event.cancel_run:
                     # The pipeline is somewhat loaded at this point
@@ -560,6 +569,7 @@ class Pipeline(object):
             line = rl()
             if line is None:
                 break
+            settings = []
             try:
                 module = None
                 module_name = None
@@ -572,7 +582,6 @@ class Pipeline(object):
                 # Decode the settings
                 #
                 last_module = False
-                settings = []
                 while True:
                     line = rl()
                     if line is None:
@@ -620,7 +629,8 @@ class Pipeline(object):
                                                 module_name, from_matlab)
             except Exception, instance:
                 traceback.print_exc()
-                event = LoadExceptionEvent(instance, module,  module_name)
+                event = LoadExceptionEvent(instance, module,  module_name,
+                                           settings)
                 self.notify_listeners(event)
                 if event.cancel_run:
                     break
@@ -1579,11 +1589,12 @@ class LoadExceptionEvent(AbstractPipelineEvent):
     """An exception was caught during pipeline loading
     
     """
-    def __init__(self, error, module, module_name = None):
+    def __init__(self, error, module, module_name = None, settings = None):
         self.error     = error
         self.cancel_run = True
         self.module    = module
         self.module_name = module_name
+        self.settings = settings
     
     def event_type(self):
         return "Pipeline load exception"

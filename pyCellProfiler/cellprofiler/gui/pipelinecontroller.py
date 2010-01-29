@@ -360,14 +360,7 @@ class PipelineController:
                 event.cancel_run = False
                 
         elif isinstance(event, cellprofiler.pipeline.LoadExceptionEvent):
-            if event.module is None:
-                module_name = event.module_name
-            else:
-                module_name = event.module.module_name
-            message = ("Error while loading %s: %s\nDo you want to stop processing?"%
-                       (module_name, event.error.message))
-            if wx.MessageBox(message,"Pipeline error",wx.YES_NO | wx.ICON_ERROR,self.__frame) == wx.NO:
-                event.cancel_run = False
+            self.on_load_exception_event(event)
         elif any([isinstance(event, x) for x in
                   (cellprofiler.pipeline.ModuleAddedPipelineEvent,
                    cellprofiler.pipeline.ModuleEditedPipelineEvent,
@@ -375,7 +368,28 @@ class PipelineController:
                    cellprofiler.pipeline.ModuleRemovedPipelineEvent)]):
             self.__dirty_pipeline = True
             self.set_title()
-
+            
+    def on_load_exception_event(self, event):
+        '''Handle a pipeline load exception'''
+        if event.module is None:
+            module_name = event.module_name
+        else:
+            module_name = event.module.module_name
+        if event.settings is None or len(event.settings) == 0:
+            message = ("Error while loading %s: %s\nDo you want to stop processing?"%
+                       (module_name, event.error.message))
+        else:
+            message = ("Error while loading %s: %s\n"
+                       "Do you want to stop processing?\n\n"
+                       "Module settings:\n"
+                       "\t%s") % ( module_name,
+                                   event.error.message,
+                                   '\n\t'.join(event.settings))
+        if wx.MessageBox(message, "Pipeline error",
+                         wx.YES_NO | wx.ICON_ERROR, 
+                         self.__frame) == wx.NO:
+            event.cancel_run = False
+        
     def enable_module_controls_panel_buttons(self):
         #
         # Enable/disable the movement buttons

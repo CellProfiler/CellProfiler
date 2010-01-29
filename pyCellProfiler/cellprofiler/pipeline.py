@@ -397,7 +397,9 @@ class Pipeline(object):
                 event = LoadExceptionEvent(instance,module, module_name)
                 self.notify_listeners(event)
                 if event.cancel_run:
-                    return
+                    # The pipeline is somewhat loaded at this point
+                    # so we break the loop and clean up as well as we can
+                    break
             if module is not None:    
                 self.__modules.append(module)
                 real_module_num += 1
@@ -566,6 +568,25 @@ class Pipeline(object):
                     raise ValueError("Invalid format for module header: %s" % line)
                 module_name = line[:split_loc]
                 attribute_string = line[(split_loc+1):]
+                #
+                # Decode the settings
+                #
+                last_module = False
+                settings = []
+                while True:
+                    line = rl()
+                    if line is None:
+                        last_module = True
+                        break
+                    if len(line) == 0:
+                        break
+                    if len(line.split(':')) != 2:
+                        raise ValueError("Invalid format for setting: %s" % line)
+                    text, setting = line.split(':')
+                    settings.append(setting.decode('string_escape'))
+                #
+                # Set up the module
+                #
                 module_name = module_name.decode('string_escape')
                 module = self.instantiate_module(module_name)
                 module.module_num = module_number
@@ -594,22 +615,6 @@ class Pipeline(object):
                         setattr(module, attribute, value)
                 if variable_revision_number is None:
                     raise ValueError("Module %s did not have a variable revision # attribute" % module_name)
-                #
-                # Decode the settings
-                #
-                last_module = False
-                settings = []
-                while True:
-                    line = rl()
-                    if line is None:
-                        last_module = True
-                        break
-                    if len(line) == 0:
-                        break
-                    if len(line.split(':')) != 2:
-                        raise ValueError("Invalid format for setting: %s" % line)
-                    text, setting = line.split(':')
-                    settings.append(setting.decode('string_escape'))
                 module.set_settings_from_values(settings,
                                                 variable_revision_number,
                                                 module_name, from_matlab)
@@ -618,7 +623,7 @@ class Pipeline(object):
                 event = LoadExceptionEvent(instance, module,  module_name)
                 self.notify_listeners(event)
                 if event.cancel_run:
-                    return
+                    break
             if module is not None:
                 self.__modules.append(module)
                 module_number += 1

@@ -287,11 +287,36 @@ fill_modules()
 __all__ = ['instantiate_module', 'get_module_names', 'reload_modules', 
            'output_html']
 
+replaced_modules = {
+    'LoadImageDirectory':['LoadImages','LoadData'],
+    'GroupMovieFrames':['LoadImages'],
+    'IdentifyPrimLoG':['IdentifyPrimaryObjects'],
+    'FileNameMetadata':['LoadImages']
+    }
+depricated_modules = [
+    'CorrectIllumination_Calculate_kate',
+    'SubtractBackground'
+    ]
+unimplemented_modules = [
+    'LabelImages', 'Restart', 'SplitOrSpliceMovie'
+    ]
 def instantiate_module(module_name):
     if module_name in substitutions: 
         module_name = substitutions[module_name]
     module_class = module_name.split('.')[-1]
     if not all_modules.has_key(module_class):
+        if module_class in unimplemented_modules:
+            raise ValueError(("The %s module has not yet been implemented. "
+                              "It will be available in a later version "
+                              "of CellProfiler.") % module_class)
+        if module_class in depricated_modules:
+            raise ValueError(("The %s module has been depricated and will "
+                              "not be implemented in CellProfiler 2.0.") %
+                             module_class)
+        if replaced_modules.has_key(module_class):
+            raise ValueError(("The %s module no longer exists. You can find "
+                              "similar functionality in: %s") %
+                             (module_class, ", ".join(replaced_modules[module_class])))
         raise ValueError("Could not find the %s module"%module_class)
     module = all_modules[module_class]()
     if svn_revisions.has_key(module_name):

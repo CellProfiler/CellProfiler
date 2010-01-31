@@ -40,6 +40,7 @@ import numpy as np
 import matplotlib.cm
 from numpy.ma import masked_array
 from scipy.sparse import coo_matrix
+import scipy.ndimage as scind
 import sys
 
 import cellprofiler.cpmodule as cpm
@@ -54,6 +55,7 @@ from cellprofiler.cpmath.cpmorphology import distance_to_edge
 from cellprofiler.cpmath.cpmorphology import centers_of_labels
 from cellprofiler.cpmath.cpmorphology import maximum_position_of_labels
 from cellprofiler.cpmath.cpmorphology import color_labels
+from cellprofiler.cpmath.cpmorphology import fixup_scipy_ndimage_result as fix
 from cellprofiler.cpmath.propagate import propagate
 
 C_SELF = 'These objects'
@@ -283,9 +285,16 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
             d_to_edge = distance_to_edge(objects.segmented)
             if center_object_name is not None:
                 center_objects=workspace.object_set.get_objects(center_object_name)
-                i,j = (centers_of_labels(center_objects.segmented) + .5).astype(int)
-                center_labels = np.zeros(center_objects.segmented.shape, int)
-                center_labels[i,j] = objects.segmented[i,j]
+                center_labels = center_objects.segmented
+                pixel_counts = fix(scind.sum(np.ones(center_labels.shape),
+                                             center_labels,
+                                             np.arange(1, np.max(center_labels)+1)))
+                good = pixel_counts > 0
+                i,j = (centers_of_labels(center_labels) + .5).astype(int)
+                ig = i[good]
+                jg = j[good]
+                center_labels = np.zeros(center_labels.shape, int)
+                center_labels[ig,jg] = objects.segmented[ig,jg]
                 cl,d_from_center = propagate(np.zeros(center_labels.shape),
                                              center_labels,
                                              objects.segmented != 0, 1)

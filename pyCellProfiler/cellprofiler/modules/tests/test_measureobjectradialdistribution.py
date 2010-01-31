@@ -382,4 +382,25 @@ class TestMeasureObjectRadialDistribution(unittest.TestCase):
             data = m.get_current_measurement(OBJECT_NAME,
                                              feature_radial_cv(bin, 4))
             self.assertEqual(len(data), 1)
+            
+    def test_04_01_img_607(self):
+        '''Regression test of bug IMG-607
         
+        MeasureObjectRadialDistribution fails if there are no pixels for
+        some of the objects.
+        '''
+        np.random.seed(41)
+        labels = np.array([[ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ],
+                           [ 0, 1, 1, 1, 0, 0, 3, 3, 3, 0 ],
+                           [ 0, 1, 1, 1, 0, 0, 3, 3, 3, 0 ],
+                           [ 0, 1, 1, 1, 0, 0, 3, 3, 3, 0 ],
+                           [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]])
+        
+        image = np.random.uniform(size=labels.shape)
+        for center_labels in (labels, None):
+            m = self.run_module(image, labels, center_labels, 4)
+            for bin in range(1,5):
+                data = m.get_current_measurement(OBJECT_NAME, 
+                                                 feature_frac_at_d(bin, 4))
+                self.assertEqual(len(data), 3)
+                self.assertTrue(np.isnan(data[1]))

@@ -61,6 +61,7 @@ import identify as cpmi
 import cellprofiler.cpmath.threshold as cpthresh
 from cellprofiler.cpmath.propagate import propagate
 from cellprofiler.cpmath.cpmorphology import fill_labeled_holes
+from cellprofiler.cpmath.cpmorphology import fixup_scipy_ndimage_result as fix
 from cellprofiler.cpmath.watershed import fast_watershed as watershed
 from cellprofiler.cpmath.outline import outline
 
@@ -401,7 +402,7 @@ class IdentifySecondaryObjects(cpmi.Identify):
             lookup = scind.maximum(segmented_out,
                                    objects.segmented,
                                    range(np.max(objects.segmented)+1))
-            lookup = np.array(lookup, int)
+            lookup = fix(lookup)
             lookup[0] = 0
             segmented_labels = lookup[objects.segmented]
             new_objects = cpo.Objects()

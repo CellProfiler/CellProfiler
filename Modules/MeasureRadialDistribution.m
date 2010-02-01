@@ -206,13 +206,17 @@ NumObjects = max(CombinedLabels(:));
 %%% outer boundaries would be confused).
 [IgnoreLabels, DistanceFromEdges] = IdentifySecPropagateSubfunction(CPlabelperim(CombinedLabels), zeros(size(CenterLabels)), CombinedLabels > 0, 1.0);
 
+Mask = (LabelMatrixImage > 0);
+
+DistanceFromCenters(isinf(DistanceFromCenters) & Mask) = 0;
+DistanceFromEdges(isinf(DistanceFromEdges) & Mask) = 0;
+
 %%% Compute normalized distance.  Last term in the denominator prevents divide by zero, and also makes sure the largest value is less than 1
 NormalizedDistance = DistanceFromCenters ./ (DistanceFromCenters + DistanceFromEdges + 0.001);
-TotalDistance = DistanceFromCenters + DistanceFromEdges;
 
 %%% Bin the values.  Yay for "full(sparse(...))".
 BinIndexes = floor(NormalizedDistance * BinCount + 1);
-Mask = (LabelMatrixImage > 0);
+
 BinnedValues = full(sparse(LabelMatrixImage(Mask), BinIndexes(Mask), Image(Mask), NumObjects, BinCount));
 % Fraction of stain at a particular radius
 FractionAtDistance = BinnedValues ./ repmat(sum(BinnedValues, 2), 1, BinCount);

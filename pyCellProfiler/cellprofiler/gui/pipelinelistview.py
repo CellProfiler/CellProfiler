@@ -223,6 +223,13 @@ class PipelineListView(object):
         accelerator_table = wx.AcceleratorTable([
              (wx.ACCEL_NORMAL,wx.WXK_DELETE, ID_EDIT_DELETE)])
         self.list_ctrl.SetAcceleratorTable(accelerator_table)
+        if sys.platform.startswith('linux'):
+            # Linux machines seem to have two subwindows (headers & list?)
+            # which need mouse button down event capture instead of the
+            # official window.
+            for child in self.list_ctrl.GetChildren():
+                child.Bind(wx.EVT_LEFT_DOWN, self.__on_list_left_down)
+                child.Bind(wx.EVT_RIGHT_DOWN, self.__on_list_right_down)
         
     def set_debug_mode(self, mode):
         if self.__pipeline is not None:

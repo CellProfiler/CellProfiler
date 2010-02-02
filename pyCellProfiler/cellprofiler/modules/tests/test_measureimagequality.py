@@ -323,6 +323,9 @@ class TestMeasureImageQuality(unittest.TestCase):
             q.image_groups[idx].compute_power_spectrum.value = False
             q.image_groups[idx].threshold_method.value = tm
             q.image_groups[idx].object_fraction.value = object_fraction
+            q.image_groups[idx].two_class_otsu.value = miq.O_THREE_CLASS
+            q.image_groups[idx].assign_middle_to_foreground.value = miq.O_FOREGROUND
+            q.image_groups[idx].use_weighted_variance.value = miq.O_WEIGHTED_VARIANCE
         q.run(workspace)
         m = workspace.measurements
         for feature_name in ("ImageQuality_FocusScore_my_image_20",
@@ -333,7 +336,12 @@ class TestMeasureImageQuality(unittest.TestCase):
                                                         feature_name)) 
         for tm,idx in zip(cpthresh.TM_GLOBAL_METHODS,
                           range(len(cpthresh.TM_GLOBAL_METHODS))):
-            feature_name = "ImageQuality_Threshold%s_my_image"%tm.split(' ')[0]
+            if tm == cpthresh.TM_OTSU_GLOBAL:
+                feature_name = "ImageQuality_ThresholdOtsu_my_image_3FW"
+            elif tm == cpthresh.TM_MOG_GLOBAL:
+                feature_name = "ImageQuality_ThresholdMoG_my_image_20"
+            else:
+                feature_name = "ImageQuality_Threshold%s_my_image"%tm.split(' ')[0]
             self.assertTrue(m.has_current_measurements(cpmeas.IMAGE,
                                                        feature_name)) 
         self.features_and_columns_match(m, q)
@@ -389,3 +397,70 @@ MeasureImageSaturationBlur:[module_num:1|svn_version:\'8913\'|variable_revision_
             self.assertEqual(group.window_size, 25)
             self.assertTrue(group.check_saturation)
             self.assertFalse(group.calculate_threshold)
+            
+    def test_04_03_load_v3(self):
+        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:1
+SVNRevision:9207
+
+MeasureImageQuality:[module_num:1|svn_version:\'9143\'|variable_revision_number:3|show_window:True|notes:\x5B\x5D]
+    Select an image to measure:Alpha
+    Check for blur?:Yes
+    Window size for blur measurements:25
+    Check for saturation?:Yes
+    Calculate threshold?:Yes
+    Select a thresholding method:Otsu Global
+    Typical fraction of the image covered by objects:0.2
+    Calculate quartiles and sum of radial power spectrum?:Yes
+    Two-class or three-class thresholding?:Three classes
+    Minimize the weighted variance or the entropy?:Weighted variance
+    Assign pixels in the middle intensity class to the foreground or the background?:Foreground
+    Select an image to measure:Beta
+    Check for blur?:No
+    Window size for blur measurements:15
+    Check for saturation?:No
+    Calculate threshold?:No
+    Select a thresholding method:MoG Global
+    Typical fraction of the image covered by objects:0.3
+    Calculate quartiles and sum of radial power spectrum?:No
+    Two-class or three-class thresholding?:Two classes
+    Minimize the weighted variance or the entropy?:Entropy
+    Assign pixels in the middle intensity class to the foreground or the background?:Background
+"""
+        pipeline = cpp.Pipeline()
+        def callback(caller, event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO.StringIO(data))
+        self.assertEqual(len(pipeline.modules()), 1)
+        module = pipeline.modules()[0]
+        self.assertTrue(isinstance(module, miq.MeasureImageQuality))
+        self.assertEqual(len(module.image_groups),2)
+        
+        group = module.image_groups[0]
+        self.assertEqual(group.image_name, "Alpha")
+        self.assertTrue(group.check_blur)
+        self.assertEqual(group.window_size, 25)
+        self.assertTrue(group.check_saturation)
+        self.assertTrue(group.calculate_threshold)
+        self.assertEqual(group.threshold_method, miq.cpthresh.TM_OTSU_GLOBAL)
+        self.assertAlmostEqual(group.object_fraction.value, 0.2)
+        self.assertTrue(group.compute_power_spectrum)
+        self.assertEqual(group.two_class_otsu, miq.O_THREE_CLASS)
+        self.assertEqual(group.use_weighted_variance, miq.O_WEIGHTED_VARIANCE)
+        self.assertEqual(group.assign_middle_to_foreground, miq.O_FOREGROUND)
+        
+        group = module.image_groups[1]
+        self.assertEqual(group.image_name, "Beta")
+        self.assertFalse(group.check_blur)
+        self.assertEqual(group.window_size, 15)
+        self.assertFalse(group.check_saturation)
+        self.assertFalse(group.calculate_threshold)
+        self.assertEqual(group.threshold_method, miq.cpthresh.TM_MOG_GLOBAL)
+        self.assertAlmostEqual(group.object_fraction.value, 0.3)
+        self.assertFalse(group.compute_power_spectrum)
+        self.assertEqual(group.two_class_otsu, miq.O_TWO_CLASS)
+        self.assertEqual(group.use_weighted_variance, miq.O_ENTROPY)
+        self.assertEqual(group.assign_middle_to_foreground, miq.O_BACKGROUND)
+        
+        

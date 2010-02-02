@@ -69,6 +69,8 @@ import cellprofiler.measurements as cpmeas
 import cellprofiler.settings as cps
 import cellprofiler.cpmath.threshold as cpthresh
 import cellprofiler.cpmath.radial_power_spectrum as rps
+from identify import O_TWO_CLASS, O_THREE_CLASS, O_WEIGHTED_VARIANCE, O_ENTROPY
+from identify import O_FOREGROUND, O_BACKGROUND
 
 IMAGE_QUALITY = 'ImageQuality'
 FOCUS_SCORE = 'FocusScore'
@@ -80,12 +82,12 @@ MEAN_THRESH_ALL_IMAGES = 'MeanThresh_AllImages'
 MEDIAN_THRESH_ALL_IMAGES = 'MedianThresh_AllImages'
 STD_THRESH_ALL_IMAGES = 'StdThresh_AllImages'
 POWER_SPECTRUM_FEATURES = ['MagnitudeLogLogSlope', 'PowerLogLogSlope']
-SETTINGS_PER_GROUP = 8
+SETTINGS_PER_GROUP = 11
 
 class MeasureImageQuality(cpm.CPModule):
     module_name = "MeasureImageQuality"
     category = "Measurement"
-    variable_revision_number = 2
+    variable_revision_number = 3
 
     def create_settings(self):
         self.image_groups = []
@@ -162,6 +164,33 @@ class MeasureImageQuality(cpm.CPModule):
                                                   """(Only used if threshold are calculated and MoG thresholding is chosen) <br> 
                                                       Enter the approximate fraction of the typical image in the set
                                                       that is covered by objects."""))
+        group.append("two_class_otsu", cps.Choice(
+            'Two-class or three-class thresholding?',
+            [O_TWO_CLASS, O_THREE_CLASS],doc="""
+            <i>(Used only for the Otsu thresholding method)</i> <br>
+            Select <i>Two</i> if the grayscale levels are readily distinguishable into foregound 
+            (i.e., objects) and background. Select <i>Three</i> if there is an 
+            middle set of grayscale levels which belong to neither the
+            foreground nor background. 
+            <p>For example, three-class thresholding may
+            be useful for images in which you have nuclear staining along with a
+            low-intensity non-specific cell staining. Where two-class thresholding
+            might incorrectly assign this intemediate staining to the nuclei 
+            objects, three-class thresholding allows you to assign it to the 
+            foreground or background as desired. However, in extreme cases where either 
+            there are almost no objects or the entire field of view is covered with 
+            objects, three-class thresholding may perform worse than two-class."""))
+        
+        group.append("use_weighted_variance", cps.Choice(
+            'Minimize the weighted variance or the entropy?',
+            [O_WEIGHTED_VARIANCE, O_ENTROPY]))
+        
+        group.append("assign_middle_to_foreground", cps.Choice(
+            'Assign pixels in the middle intensity class to the foreground '
+            'or the background?', [O_FOREGROUND, O_BACKGROUND],doc="""
+            <i>(Used only for the Otsu thresholding method with three-class thresholding)</i><br>
+            Select whether you want the middle grayscale intensities to be assigned 
+            to the foreground pixels or the background pixels."""))
         group.append("compute_power_spectrum", cps.Binary("Calculate quartiles and sum of radial power spectrum?", True,
                                                       doc = "Would you like to calculate the quartiles and sum of the radial power spectrum? The Power Spectrum is computed via FFT and the radii of the first three quartiles and the total power are measured."))
         if can_remove:
@@ -183,14 +212,33 @@ class MeasureImageQuality(cpm.CPModule):
             result += [image_group.image_name, image_group.check_blur, image_group.window_size,
                        image_group.check_saturation, image_group.calculate_threshold,
                        image_group.threshold_method, image_group.object_fraction,
-                       image_group.compute_power_spectrum]
+                       image_group.compute_power_spectrum,
+                       image_group.two_class_otsu, 
+                       image_group.use_weighted_variance, 
+                       image_group.assign_middle_to_foreground]
         return result
 
     def visible_settings(self):
         '''The settings as displayed to the user'''
         result = []
-        for image_group in self.image_groups:
-            result += image_group.visible_settings()
+        for i, image_group in enumerate(self.image_groups):
+            if i != 0:
+                result += [ image_group.divider ]
+            result += [image_group.image_name, image_group.check_blur,
+                       image_group.window_size, image_group.check_saturation,
+                       image_group.calculate_threshold]
+            if image_group.calculate_threshold:
+                result += [image_group.threshold_method]
+                if image_group.threshold_method == cpthresh.TM_MOG_GLOBAL:
+                    result += [image_group.object_fraction]
+                elif image_group.threshold_method == cpthresh.TM_OTSU_GLOBAL:
+                    result += [image_group.use_weighted_variance, 
+                               image_group.two_class_otsu]
+                    if image_group.two_class_otsu == O_THREE_CLASS:
+                        result += [image_group.assign_middle_to_foreground]
+            result += [image_group.compute_power_spectrum]
+            if i != 0:
+                result += [image_group.remove_button]
         result += [self.add_button]
         return result
 
@@ -313,10 +361,17 @@ class MeasureImageQuality(cpm.CPModule):
                                measurement, image_name):
         '''Get the scales (window_sizes) for the given measurement'''
         if (object_name == cpmeas.IMAGE and
-            category == IMAGE_QUALITY and
-            measurement in (FOCUS_SCORE, LOCAL_FOCUS_SCORE)):
-            return [ig.window_size for ig in self.image_groups
-                    if ig.image_name == image_name]
+            category == IMAGE_QUALITY):
+            if measurement in (FOCUS_SCORE, LOCAL_FOCUS_SCORE):
+                return [ig.window_size for ig in self.image_groups
+                        if ig.image_name == image_name]
+            result = []
+            for group in self.image_groups:
+                if measurement == THRESHOLD+group.threshold_algorithm:
+                    scale = group.threshold_scale
+                    if scale is not None:
+                        result += [scale]
+            return result
         return []
 
     def run(self, workspace):
@@ -508,22 +563,36 @@ class MeasureImageQuality(cpm.CPModule):
                                               must_be_grayscale = True)
         threshold_method = image_group.threshold_algorithm
         object_fraction = image_group.object_fraction.value
+        two_class_otsu = (image_group.two_class_otsu == O_TWO_CLASS)
+        use_weighted_variance = (image_group.use_weighted_variance == O_WEIGHTED_VARIANCE)
+        assign_middle_to_foreground = (image_group.assign_middle_to_foreground == O_FOREGROUND)
         (local_threshold, global_threshold) = \
             (cpthresh.get_threshold(threshold_method,
                                     cpthresh.TM_GLOBAL,
                                     image.pixel_data,
                                     mask = image.mask,
-                                    object_fraction = object_fraction)
+                                    object_fraction = object_fraction,
+                                    two_class_otsu = two_class_otsu,
+                                    use_weighted_variance = use_weighted_variance,
+                                    assign_middle_to_foreground = assign_middle_to_foreground)
              if image.has_mask
              else
              cpthresh.get_threshold(threshold_method,
                                     cpthresh.TM_GLOBAL,
                                     image.pixel_data,
-                                    object_fraction = object_fraction))
+                                    object_fraction = object_fraction,
+                                    two_class_otsu = two_class_otsu,
+                                    use_weighted_variance = use_weighted_variance,
+                                    assign_middle_to_foreground = assign_middle_to_foreground))
         threshold_name = image_group.threshold_feature_name
+        scale = image_group.threshold_scale
+        if scale is None:
+            threshold_description = threshold_method
+        else:
+            threshold_description = threshold_method + " " + scale
         workspace.add_measurement(cpmeas.IMAGE, threshold_name,
                                   global_threshold)
-        return [["%s %s threshold"%(image_name, threshold_method), 
+        return [["%s %s threshold"%(image_name, threshold_description), 
                  str(global_threshold)]]
 
     def calculate_experiment_threshold(self, image_group, workspace):
@@ -648,7 +717,18 @@ class MeasureImageQuality(cpm.CPModule):
                 new_settings += [cps.YES]
             setting_values = new_settings
             variable_revision_number = 2
-
+            
+        if (not from_matlab) and variable_revision_number == 2:
+            # add otsu threshold settings
+            assert len(setting_values) % 8 == 0
+            num_images = len(setting_values) / 8
+            new_settings = []
+            for idx in range(num_images):
+                new_settings += setting_values[(idx * 8):(idx * 8 + 8)]
+                new_settings += [O_TWO_CLASS, O_WEIGHTED_VARIANCE,
+                                 O_FOREGROUND]
+            setting_values = new_settings
+            variable_revision_number = 3
         return setting_values, variable_revision_number, from_matlab
 
 
@@ -661,7 +741,38 @@ class MeasureImageQualitySettingsGroup(cps.SettingsGroup):
     @property
     def  threshold_feature_name(self):
         '''The feature name of the threshold measurement generated'''
-        return "%s_%s%s_%s"%(IMAGE_QUALITY, THRESHOLD, 
-                             self.threshold_algorithm,
-                             self.image_name.value)
+        scale = self.threshold_scale
+        if scale is None:
+            return "%s_%s%s_%s"%(IMAGE_QUALITY, THRESHOLD, 
+                                 self.threshold_algorithm,
+                                 self.image_name.value)
+        else:
+            return "%s_%s%s_%s_%s" % (IMAGE_QUALITY, THRESHOLD,
+                                      self.threshold_algorithm,
+                                      self.image_name.value,
+                                      scale)
+    @property
+    def threshold_scale(self):
+        '''The "scale" for the threshold = minor parameterizations'''
+        #
+        # Distinguish Otsu choices from each other
+        #
+        threshold_algorithm = self.threshold_algorithm
+        if threshold_algorithm == cpthresh.TM_OTSU:
+            if self.two_class_otsu == O_TWO_CLASS:
+                scale = "2"
+            else:
+                scale = "3"
+                if self.assign_middle_to_foreground == O_FOREGROUND:
+                    scale += "F"
+                else:
+                    scale += "B"
+            if self.use_weighted_variance == O_WEIGHTED_VARIANCE:
+                scale += "W"
+            else:
+                scale += "S"
+            return scale
+        elif threshold_algorithm == cpthresh.TM_MOG:
+            return str(int(self.object_fraction.value * 100))
+        
                     

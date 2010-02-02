@@ -710,10 +710,8 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             if object_count > 0:
                 areas = scipy.ndimage.histogram(labeled_image,1,object_count+1,object_count)
                 areas.sort()
-                low_diameter  = (math.sqrt(float(areas[object_count/10]))*2/
-                                 np.pi)
-                high_diameter = (math.sqrt(float(areas[object_count*9/10]))*2/
-                                 np.pi)
+                low_diameter  = (math.sqrt(float(areas[object_count/10])/np.pi)*2)
+                high_diameter = (math.sqrt(float(areas[object_count*9/10])/np.pi)*2)
                 statistics.append(["10th pctile diameter",
                                    "%.1f pixels"%(low_diameter)])
                 statistics.append(["90th pctile diameter",

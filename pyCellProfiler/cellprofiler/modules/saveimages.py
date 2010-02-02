@@ -174,7 +174,7 @@ class SaveImages(cpm.CPModule):
                 <li><i>Same folder as image:</i> The file will be stored in the folder of the
                 images from this image set.</li>
                 <li><i>Custom:</i> The file will be stored in a customizable folder. You can
-                prefix the folder name with "." (an period) to make the root folder the default
+                prefix the folder name with "." (n period) to make the root folder the default
                 output folder or "&" (an ampersand) to make the root folder the default image
                 folder.</li>
                 <li><i>Custom with metadata:</i> The file will be stored in a customizable folder

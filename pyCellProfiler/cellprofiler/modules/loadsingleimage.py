@@ -70,7 +70,10 @@ class LoadSingleImage(cpm.CPModule):
             specify a path that is based on metadata associated with the
             image set. For instance, if you have a "Plate" metadata element,
             you can specify a path name of "./\g&lt;Plate&gt;" to get files
-            from the folder associated with your image's plate.''')
+            from the folder associated with your image's plate.
+            You can prefix the folder name with "." (a period) to make the 
+            root folder the default input folder or "&" (an ampersand) 
+            to make the root folder the default output folder.''')
         self.file_settings = []
         self.add_file(can_remove = False)
         self.add_button = cps.DoSomething("", "Add another image", self.add_file)

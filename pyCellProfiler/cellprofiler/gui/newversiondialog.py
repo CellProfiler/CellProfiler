@@ -38,7 +38,7 @@ class NewVersionDialog(wx.Dialog):
         skip_button = buttons_sizer.GetNegativeButton()
         skip_button.SetLabel('Skip this version')
         remind_button = buttons_sizer.GetCancelButton()
-        remind_button.SetLabel('Reminder me later')
+        remind_button.SetLabel('Remind me later')
 
         # Layout
         sizer = wx.BoxSizer(wx.VERTICAL)

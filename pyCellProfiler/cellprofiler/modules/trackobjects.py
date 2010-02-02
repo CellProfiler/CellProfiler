@@ -91,6 +91,7 @@ import contrib.LAP as LAP
 from cellprofiler.cpmath.cpmorphology import fixup_scipy_ndimage_result as fix
 from cellprofiler.cpmath.cpmorphology import centers_of_labels
 from cellprofiler.cpmath.cpmorphology import associate_by_distance
+from identify import M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y
 
 TM_OVERLAP = 'Overlap'
 TM_DISTANCE = 'Distance'
@@ -120,6 +121,11 @@ F_LOST_OBJECT_COUNT = "LostObjectCount"
 F_DAUGHTER_OBJECT_COUNT = "DaughterObjectCount"
 '''# of objects in the current frame that are children of more than one parent'''
 F_MERGED_OBJECT_COUNT = "MergedObjectCount"
+'''Object area measurement for LAP method
+
+The final part of the LAP method needs the object area measurement
+which is stored using this name.'''
+F_AREA = "Area"
 
 F_ALL_COLTYPE_ALL = [(F_LABEL, cpmeas.COLTYPE_INTEGER),
                      (F_PARENT, cpmeas.COLTYPE_INTEGER),
@@ -133,11 +139,11 @@ F_ALL_COLTYPE_ALL = [(F_LABEL, cpmeas.COLTYPE_INTEGER),
 F_ALL = [feature for feature, coltype in F_ALL_COLTYPE_ALL]
 
 class TrackObjects(cpm.CPModule):
-    
+
     module_name = 'TrackObjects'
     category = "Object Processing"
-    variable_revision_number = 2
-    
+    variable_revision_number = 3
+
     def create_settings(self):
         self.tracking_method = cps.Choice('Choose a tracking method',
                                           TM_ALL, doc="""\
@@ -145,20 +151,20 @@ class TrackObjects(cpm.CPModule):
             to frame of your movie. For each, the maximum search distance that a 
             tracked object will looked for is specified with the Distance setting
             below:
-            
+
             <ul>
             <li><i>Overlap:</i>Compare the amount of overlaps between identified objects in 
             the previous frame with those in the current frame. The object with the
             greatest amount of overlap will be assigned the same label. Recommended
             for movies with high frame rates as compared to object motion.</li>
-            
+
             <li><i>Distance:</i> Compare the distance between the centroid of each identified
             object in the previous frame with that of the current frame. The 
             closest objects to each other will be assigned the same label.
             Distances are measured from the perimeter of each object. Recommended
             for movies with lower frame rates as compared to object motion, but
             the objects are clearly separable.</li>
-            
+
             <li><i>Measurement:</i> Compare the specified measurement of each object in the 
             current frame with that of objects in the previous frame. The object 
             with the closest measurement will be selected as a match and will be 
@@ -166,10 +172,10 @@ class TrackObjects(cpm.CPModule):
             specified Measurement module previous to this module in the pipeline so
             that the measurement values can be used to track the objects.</li>
             </ul>""")
-        
+
         self.object_name = cps.ObjectNameSubscriber(
             'Select the objects to track','None', """What did you call the objects you want to track?""")
-        
+
         self.measurement = cps.Measurement(
             'Select measurement to use',
             lambda : self.object_name.value, doc="""\
@@ -180,7 +186,7 @@ class TrackObjects(cpm.CPModule):
             the features measured by that module. Additional details such as the 
             image that the measurements originated from and the scale used are
             specified if neccesary.""")
-        
+
         self.pixel_radius = cps.Integer(
             'Select pixel distance',50,minval=1,doc="""\
             Within what pixel distance will objects be considered to find 
@@ -188,13 +194,98 @@ class TrackObjects(cpm.CPModule):
             next frame are to be compared. To determine pixel distances, you can look
             at the axis increments on each image (shown in pixel units) or
             using the <i>Tools > Show pixel data</i> of any CellProfiler figure window""")
+
+        self.born_cost = cps.Integer(
+            'Cost of being born', 100, minval=1, doc = '''What is the cost of an object being born?''')
+
+        self.die_cost = cps.Integer(
+            'Cost of dying', 100, minval=1, doc = '''What is the cost of an object dying?''')
         
-	self.born_cost = cps.Integer(
-	    'Cost of being born', 100, minval=1, doc = '''What is the cost of an object being born?''')
+        self.wants_second_phase = cps.Binary(
+        "Do you want to run the second phase of the LAP algorithm?", True,
+        doc="""Check this box to run the second phase of the LAP algorithm
+        after processing all images. Leave the box unchecked to omit the
+        second phase or to perform the second phase when running as a data
+        tool""")
         
-	self.die_cost = cps.Integer(
-	    'Cost of dying', 100, minval=1, doc = '''What is the cost of an object dying?''')
+        self.gap_termination_cost = cps.Integer(
+            'Gap termination cost:', 40, minval=1,
+            doc = '''This setting assigns a cost to terminating tracking of
+            an object where the alternative is tracking that object across
+            a gap in frames. It should be set lower if
+            objects from prior frames are being joined to ones of subsequent
+            frames despite being separated in space. It should be set higher
+            if objects are not present in a frame due to mis-segmentation
+            and are not tracked across frames.''')
+        self.split_termination_cost = cps.Integer(
+            'Split termination cost:', 40, minval=1,
+            doc = '''This setting assigns a cost to terminating tracking of
+            an object when the alternative would be to split that object into
+            two objects in a subsequent track. The split score takes into
+            account the area of the split object relative to the area of
+            the resulting objects and the displacement of the resulting
+            objects relative to the position of the original object and is
+            roughly measured in pixels.<br>
+            The split termination cost should be set lower if
+            objects are being split. It should be set higher if objects
+            that should be split are not.''')
+        self.gap_initiation_cost = cps.Integer(
+            'Gap initiation cost:', 40, minval=1,
+            doc = '''This setting assigns a cost to creating a new object
+            where the alternative is tracking an existing object across a
+            gap in frames. The value should be set lower if objects from
+            subsequent frames are being joined to objects from prior frames
+            and the mis-tracked object is missing from one or more frames.
+            The value should be set higher if objects are not being tracked
+            when the object is mis-segmented and missing from one of the
+            frames.''')
+        self.merge_initiation_cost = cps.Integer(
+            'Merge initiation cost:', 40, minval=1,
+            doc = '''This setting assigns a cost to creating a new object
+            when the alternative is tracking two prior objects that merge
+            to form the object. The merge score takes into account the areas
+            of the objects to be merged relative to the area of the resulting
+            object and the displacement of the resulting object relative to
+            the positions of the original objects. The score is roughly in
+            pixels. Set the merge initiation cost lower if objects are being
+            merged when they should otherwise be kept separate. Set the cost
+            higher if objects that are not merged should be merged.''')
+        self.max_gap_score = cps.Integer(
+            'Maximum gap displacement:', 50, minval=1,
+            doc = '''This setting acts as a filter for unreasonably large
+            displacements during the second phase. The measurement is roughly
+            the maximum displacement of an object's center from frame to frame.
+            The algorithm will run more slowly with a higher value. The
+            algorithm will not consider objects that would otherwise be
+            tracked between frames if set to a lower value.''')
         
+        self.max_merge_score = cps.Integer(
+            'Maximum merge score:', 50, minval=1,
+            doc = '''This setting acts as a filter for unreasonably large
+            merge scores. The merge score has two components: the area
+            of the resulting merged object relative to the area of the
+            two objects to be merged and the distances between the objects
+            to be merged and the resulting object. The algorithm will run
+            more slowly with a higher value. The algorithm will exclude
+            objects that would otherwise be merged if it is set to a lower
+            value.''')
+        self.max_split_score = cps.Integer(
+            'Maximum merge score:', 50, minval=1,
+            doc = '''This setting acts as a filter for unreasonably large
+            split scores. The split score has two components: the area
+            of the initial object relative to the area of the
+            two objects resulting from the split and the distances between the 
+            original and resulting objects. The algorithm will run
+            more slowly with a higher value. The algorithm will exclude
+            objects that would otherwise be split if it is set to a lower
+            value.''')
+        self.max_frame_distance = cps.Integer(
+            'Maximum gap', 5, minval=1,
+            doc = '''This setting controls the maximum # of frames that can
+            be skipped when merging a gap caused by an unsegmented object.
+            These gaps occur when an image is mis-segmented and identification
+            fails to find an object in one or more frames.''')
+
         self.display_type = cps.Choice(
             'Select display option',
             DT_ALL, doc="""\
@@ -202,30 +293,41 @@ class TrackObjects(cpm.CPModule):
             The output image can be saved as either a color-labelled image, with each tracked
             object assigned a unique color, or a color-labelled image with the tracked object 
             number superimposed.""")
-        
+
         self.wants_image = cps.Binary(
             "Save color-coded image?",
             False,doc="""
             Do you want to save the image with tracked, color-coded objects?
             Specify a name to give the image showing the tracked objects. This image
             can be saved with a <b>SaveImages</b> module placed after this module.""")
-        
+
         self.image_name = cps.ImageNameProvider(
             "Name the output image", "TrackedCells", doc = '''What do you want to call the images?''')
 
     def settings(self):
         return [self.tracking_method, self.object_name, self.measurement,
                 self.pixel_radius, self.display_type, self.wants_image,
-                self.image_name, self.born_cost, self.die_cost]
+                self.image_name, self.born_cost, self.die_cost, 
+                self.wants_second_phase,
+                self.gap_initiation_cost, self.gap_termination_cost,
+                self.split_termination_cost, self.merge_initiation_cost,
+                self.max_gap_score, self.max_split_score,
+                self.max_merge_score, self.max_frame_distance]
 
     def visible_settings(self):
         result = [self.tracking_method, self.object_name]
         if self.tracking_method == TM_MEASUREMENTS:
             result += [ self.measurement]
         result += [self.pixel_radius]
-	if self.tracking_method == TM_LAP:
-	    result += [self.born_cost, self.die_cost]
-	result +=[ self.display_type, self.wants_image]
+        if self.tracking_method == TM_LAP:
+            result += [self.born_cost, self.die_cost, self.wants_second_phase]
+            if self.wants_second_phase:
+                result += [ 
+                    self.gap_initiation_cost, self.gap_termination_cost,
+                    self.split_termination_cost, self.merge_initiation_cost,
+                    self.max_gap_score, self.max_split_score,
+                    self.max_merge_score, self.max_frame_distance]
+        result +=[ self.display_type, self.wants_image]
         if self.wants_image.value:
             result += [self.image_name]
         return result
@@ -233,7 +335,7 @@ class TrackObjects(cpm.CPModule):
     @property
     def module_key(self):
         return "TrackObjects_%d" % self.module_num
-    
+
     def get_dictionary(self, workspace):
         return workspace.image_set_list.legacy_fields[self.module_key]
 
@@ -241,71 +343,71 @@ class TrackObjects(cpm.CPModule):
         if self.get_dictionary(workspace).has_key(field):
             return self.get_dictionary(workspace)[field]
         return default
-    
+
     def __set(self, field, workspace, value):
         self.get_dictionary(workspace)[field] = value
-        
+
     def get_saved_measurements(self, workspace):
         return self.__get("measurements", workspace, np.array([], float))
-    
+
     def set_saved_measurements(self, workspace, value):
         self.__set("measurements", workspace, value)
-    
+
     def get_saved_coordinates(self, workspace):
         return self.__get("coordinates", workspace, np.zeros((2,0), int))
-    
+
     def set_saved_coordinates(self, workspace, value):
         self.__set("coordinates", workspace, value)
-    
+
     def get_orig_coordinates(self, workspace):
         '''The coordinates of the first occurrence of an object's ancestor'''
         return self.__get("orig coordinates", workspace, np.zeros((2,0), int))
-    
+
     def set_orig_coordinates(self, workspace, value):
         self.__set("orig coordinates", workspace, value)
-    
+
     def get_saved_labels(self, workspace):
         return self.__get("labels", workspace, None)
-    
+
     def set_saved_labels(self, workspace, value):
         self.__set("labels", workspace, value)
-    
+
     def get_saved_object_numbers(self, workspace):
         return self.__get("object_numbers", workspace, np.array([], int))
-    
+
     def set_saved_object_numbers(self, workspace, value):
         return self.__set("object_numbers", workspace, value)
-    
+
     def get_saved_ages(self, workspace):
         return self.__get("ages", workspace, np.array([], int))
-    
+
     def set_saved_ages(self, workspace, values):
         self.__set("ages", workspace, values)
-    
+
     def get_saved_distances(self, workspace):
         return self.__get("distances", workspace, np.zeros((0,)))
-    
+
     def set_saved_distances(self, workspace, values):
         self.__set("distances", workspace, values)
-    
+
     def get_max_object_number(self, workspace):
         return self.__get("max_object_number", workspace, 0)
-    
+
     def set_max_object_number(self, workspace, value):
         self.__set("max_object_number", workspace, value)
-    
+
     def prepare_run(self, pipeline, image_set_list, frame):
         '''Erase any tracking information at the start of a run'''
         image_set_list.legacy_fields[self.module_key] = {}
         return True
-    
+
     def measurement_name(self, feature):
         '''Return a measurement name for the given feature'''
         return "%s_%s_%s" % (F_PREFIX, feature, str(self.pixel_radius.value))
-    
+
     def add_measurement(self, workspace, feature, values):
         '''Add a measurement to the workspace's measurements
-        
+
         workspace - current image set's workspace
         feature - name of feature being measured
         values - one value per object
@@ -314,7 +416,7 @@ class TrackObjects(cpm.CPModule):
             self.object_name.value,
             self.measurement_name(feature),
             values)
-        
+
     def run(self, workspace):
         objects = workspace.object_set.get_objects(self.object_name.value)
         if self.tracking_method == TM_DISTANCE:
@@ -323,8 +425,8 @@ class TrackObjects(cpm.CPModule):
             self.run_overlap(workspace, objects)
         elif self.tracking_method == TM_MEASUREMENTS:
             self.run_measurements(workspace, objects)
-	elif self.tracking_method == TM_LAP:
-	    self.run_lapdistance(workspace, objects)
+        elif self.tracking_method == TM_LAP:
+            self.run_lapdistance(workspace, objects)
         else:
             raise NotImplementedError("Unimplemented tracking method: %s" %
                                       self.tracking_method.value)
@@ -356,15 +458,15 @@ class TrackObjects(cpm.CPModule):
             indexer = np.sum(bits.transpose() * (2 ** np.arange(7,-1,-1)), 1)
             labels = indexer[objects.segmented]
             cm = matplotlib.cm.get_cmap(cpprefs.get_default_colormap())
-	    cm.set_bad((0,0,0))
+            cm.set_bad((0,0,0))
             norm = matplotlib.colors.BoundaryNorm(range(256), 256)
             img = ax.imshow(numpy.ma.array(labels, mask=(labels==0)),
-			    cmap=cm, norm=norm)
+                            cmap=cm, norm=norm)
             i,j = centers_of_labels(objects.segmented)
             for n, x, y in zip(object_numbers, j, i):
-		if np.isnan(x) or np.isnan(y):
-		    # This happens if there are missing labels
-		    continue
+                if np.isnan(x) or np.isnan(y):
+                    # This happens if there are missing labels
+                    continue
                 ax.annotate(str(n), xy=(x,y),color='white',
                             arrowprops=dict(visible=False))
             if self.wants_image.value:
@@ -378,7 +480,7 @@ class TrackObjects(cpm.CPModule):
                 image_pixels.shape = (height, width, 3)
                 image = cpi.Image(image_pixels)
                 workspace.image_set.add(self.image_name.value, image)
-            
+
     def run_distance(self, workspace, objects):
         '''Track objects based on distance'''
         old_i, old_j = self.get_saved_coordinates(workspace)
@@ -418,12 +520,12 @@ class TrackObjects(cpm.CPModule):
             self.map_objects(workspace, np.zeros((0,),int), 
                              np.zeros(count,int), i,j)
         self.set_saved_labels(workspace, objects.segmented)
-    
+
     def run_lapdistance(self, workspace, objects):
         '''Track objects based on distance'''
-	costBorn = self.born_cost.value
-	costDie = self.die_cost.value
-	minDist = self.pixel_radius.value
+        costBorn = self.born_cost.value
+        costDie = self.die_cost.value
+        minDist = self.pixel_radius.value
         old_i, old_j = self.get_saved_coordinates(workspace)
         if len(old_i):
             new_i, new_j = centers_of_labels(objects.segmented)
@@ -444,7 +546,7 @@ class TrackObjects(cpm.CPModule):
             c = np.zeros(len(old_i))+costDie
             b = np.column_stack((a, b, c))
             t = np.insert(t, x, b, 0)
-            
+
             i,j = np.mgrid[0:len(new_i),0:len(old_i)+1]
             i = i+len(old_i)+1
             j = j+len(new_i)
@@ -456,29 +558,29 @@ class TrackObjects(cpm.CPModule):
             x = x.flatten()
             x = np.column_stack((i, j, x))
             t = np.vstack((t, x))
-        
+
             kk = np.ndarray.astype(t[0:(t.size/3),1], 'int32')
             cc = t[0:(t.size/3),2]
-        
+
             a = np.arange(len(old_i)+len(new_i)+2)
             first = np.bincount(np.ndarray.astype(t[0:(t.size/3),0], 'int32')+1)
             first = np.cumsum(first)+1
-        
+
             first[0] = 0
             kk = np.hstack((np.array((0)), kk))
             cc = np.hstack((np.array((0.0)), cc))
 
             x, y =  LAP.LAP(kk, first, cc, n)
             a = np.argwhere(x > len(new_i))
-	    b = np.argwhere(y >len(old_i))
+            b = np.argwhere(y >len(old_i))
             x[a[0:len(a)]] = 0
-	    y[b[0:len(b)]] = 0
-	    a = np.arange(len(old_i))+1
-	    b = np.arange(len(new_i))+1
+            y[b[0:len(b)]] = 0
+            a = np.arange(len(old_i))+1
+            b = np.arange(len(new_i))+1
             new_object_numbers = x[a[0:len(a)]]
-	    old_object_numbers = y[b[0:len(b)]]
-            
-            
+            old_object_numbers = y[b[0:len(b)]]
+
+
             i,j = (centers_of_labels(objects.segmented)+.5).astype(int)
             self.map_objects(workspace, 
                              new_object_numbers,
@@ -489,8 +591,15 @@ class TrackObjects(cpm.CPModule):
             count = len(i)
             self.map_objects(workspace, np.zeros((0,),int), 
                              np.zeros(count,int), i,j)
+        areas = fix(scipy.ndimage.sum(
+            np.ones(objects.segmented.shape), objects.segmented, 
+            np.arange(1, np.max(objects.segmented) + 1)))
+        areas = areas.astype(int)
+        workspace.measurements.add_measurement(self.object_name.value,
+                                               self.measurement_name(F_AREA),
+                                               areas)
         self.set_saved_labels(workspace, objects.segmented)
-    
+
     def run_overlap(self, workspace, objects):
         '''Track objects by maximum # of overlapping pixels'''
         current_labels = objects.segmented
@@ -532,7 +641,7 @@ class TrackObjects(cpm.CPModule):
                                  old_of_new,
                                  i,j)
         self.set_saved_labels(workspace, current_labels)
-    
+
     def run_measurements(self, workspace, objects):
         current_labels = objects.segmented
         new_measurements = workspace.measurements.get_current_measurement(
@@ -553,7 +662,7 @@ class TrackObjects(cpm.CPModule):
             best_child_measurement = (np.ones(len(old_measurements), int) *
                                       np.finfo(float).max)
             best_parent_measurement = (np.ones(len(new_measurements), int) *
-                                      np.finfo(float).max)
+                                       np.finfo(float).max)
             for old, new in associations:
                 diff = abs(old_measurements[old-1] - new_measurements[new-1])
                 if diff < best_child_measurement[old-1]:
@@ -565,10 +674,283 @@ class TrackObjects(cpm.CPModule):
             self.map_objects(workspace, best_child, best_parent, i,j)
         self.set_saved_labels(workspace,current_labels)
         self.set_saved_measurements(workspace, new_measurements)
-            
+
+    def run_as_data_tool(self, workspace):
+        self.post_run(workspace)
+
+    def flood(self, i, at, a, b, c, d, z):
+        z[i] = at
+        if(a[i] != -1 and z[a[i]] == 0):
+            z = self.flood(a[i], at, a, b, c, d, z)
+        if(b[i] != -1 and z[b[i]] == 0):
+            z = self.flood(b[i], at, a, b, c, d, z)
+        if(c[i] != -1 and z[c[i]] == 0):
+            z = self.flood(c[i], at, a, b, c, d, z)
+        if(c[i] != -1 and z[c[i]] == 0):
+            z = self.flood(c[i], at, a, b, c, d, z)
+        return z
+
+    def post_run(self, workspace):
+        if (self.tracking_method != TM_LAP or
+            not self.wants_second_phase):
+            return
+        para1 = self.max_gap_score.value #max upper-left
+        para2 = self.max_merge_score.value #max upper-middle
+        para3 = self.gap_termination_cost.value #value for upper-right
+        para4 = self.max_split_score.value #max for middle-left
+        para5 = self.split_termination_cost.value #value for middle-right
+        para6 = self.gap_initiation_cost.value #value for lower-left
+        para7 = self.merge_initiation_cost.value #value for lower-middle
+        para8 = self.max_frame_distance.value #max frame difference
+
+        m = workspace.measurements
+        label = m.get_all_measurements(self.object_name.value, 
+                                       self.measurement_name(F_LABEL))
+        a = m.get_all_measurements(self.object_name.value, M_LOCATION_CENTER_X)
+        b = m.get_all_measurements(self.object_name.value, M_LOCATION_CENTER_Y)
+        Area = m.get_all_measurements(self.object_name.value, 
+                                      self.measurement_name(F_AREA))
+        numFrames = len(b)
+
+        #Calculates the maximum number of cells in a single frame
+
+        i = 0
+        mlength = 0
+        while i<numFrames:
+            if(mlength < len(label[i])):
+                mlength = len(label[i])
+            i = i+1
+
+        #converts the ragged array into a two-dimensional array    
+
+        labelprime = np.zeros((numFrames, mlength), dtype=np.int)
+        aprime =  np.zeros((numFrames, mlength))
+        bprime =  np.zeros((numFrames, mlength))
+        Areaprime = np.zeros((numFrames, mlength))
+
+        i = 0
+        while i<numFrames:
+            labelprime[i] = np.hstack((label[i], np.zeros(mlength-len(label[i]), dtype=np.int)))
+            aprime[i] = np.hstack((a[i], np.zeros(mlength-len(label[i]))))
+            bprime[i] = np.hstack((b[i], np.zeros(mlength-len(label[i]))))
+            Areaprime[i] = np.hstack((Area[i], np.zeros(mlength-len(label[i]))))
+
+            i = i+1
+
+        #sets up the arrays F, L, P, and Q
+        #F is an array of all the cells that are the starts of segments, L is the ends, P includes all cells
+        #Q[i] is the segment that P[i] belongs to
+
+        N = np.amax(labelprime)
+        length = np.zeros(N, dtype=np.int)
+        F = np.zeros((N, 4), dtype=np.int)
+        L = np.zeros((N, 4), dtype=np.int)
+        P = np.zeros((0, 4), dtype=np.int)
+
+        Q = np.zeros(0)
+
+        i = 1
+        while i <= N:
+            l = np.argwhere(labelprime == i)
+            j = np.arange(len(l))
+            x = aprime[l[j, 0], l[j, 1]]
+            y = bprime[l[j, 0], l[j, 1]]
+
+            t = np.column_stack((x, y, l))
+
+            F[i-1] = t[0]
+            L[i-1] = t[len(l)-1]
+            length[i-1] = len(l)
+
+            P = np.vstack((P, t))
+            Q = np.hstack((Q, np.zeros(length[i-1], dtype=np.int)+i))
+
+            i = i+1
+
+        #Creates P1 and P2, which is P without the starts and ends of segments respectively, representing possible
+        #points of merges and splits respectively
+
+        Q = np.arange(len(P))
+        t = np.cumsum(length)-length
+        P1 = np.delete(P, t, 0)
+        Q1 = np.delete(Q, t, 0)
+        t = t+length-1
+        P2 = np.delete(P, t, 0)
+        Q2 = np.delete(Q, t, 0)
+
+        #creates the upper-left block
+
+        i, j = np.mgrid[0:len(F),0:len(F)]
+        d = np.sqrt((L[i, 0]-F[j, 0])**2 + (L[i, 1]-F[j, 1])**2)
+
+        #removes the possibility of gaps that have too large of a frame difference
+
+        y = F[j, 2]-L[i, 2]
+        x = np.argwhere(y > para8)
+        i = np.arange(len(x))
+        d[x[i,0], x[i,1]] = para1+1
+        x = np.argwhere(y <= 0)
+        i = np.arange(len(x))
+        d[x[i,0], x[i,1]] = para1+1
+
+        #finds possible merge points with a small enough gap difference, for upper-middle block
+
+        i = 0
+        j = np.arange(len(P1))
+        z = np.array([-1, -1])
+        while i <len(F):
+            y = P1[j, 2]-L[i, 2]
+            y = y.astype("int32")
+            x = np.argwhere((y <= para8) & (y > 0))
+            y = np.column_stack((np.zeros(len(x), dtype="int32")+i, x))
+            z = np.vstack((z, y))
+            i = i+1
+
+
+        #calculates actual cost according to the formula given in the supplmenetary notes    
+        AreaLast = Areaprime[L[z[1:len(z), 0], 2].astype("int32"), L[z[1:len(z), 0], 3].astype("int32")]
+        AreaBeforeMerge = Areaprime[P[Q1[z[1:len(z), 1]]-1, 2].astype("int32"), P[Q1[z[1:len(z), 1]]-1, 3].astype("int32")]
+        AreaAtMerge = Areaprime[P1[z[1:len(z), 1], 2].astype("int32"), P1[z[1:len(z), 1], 3].astype("int32")]
+        rho = ((AreaLast+AreaBeforeMerge)/AreaAtMerge)**2
+        px = np.argwhere(rho < 1)
+        if(len(x) > 0):
+            rho[x] = np.sqrt((1/rho[x]))
+        rho = np.sqrt((L[z[1:len(z), 0], 0]-P1[z[1:len(z), 1], 0])**2 + (L[z[1:len(z), 0], 1]-P1[z[1:len(z), 1], 1])**2)*rho
+        e = rho
+
+        #upper-right block
+
+        f = np.column_stack((np.arange(len(F)), np.arange(len(F))+len(F)+len(P1), np.zeros(len(F))+para3))
+
+        #filters out the costs that are too high
+
+        a = np.argwhere(d <= para1)
+        b = np.argwhere(e <= para2)
+
+        #puts together all the upper blocks
+
+        z = z[1:]
+        d = np.column_stack((a, d[a[0:len(a), 0], a[0:len(a), 1]]))
+        z = z[b].reshape((len(b), 2))
+        e = e[b].reshape((len(b)))
+        e = np.column_stack((z, e))
+        e[0:len(e), 1] = e[0:len(e), 1]+len(F)
+
+        #temp is a combination of the upper-left, upper-middle, middle-left used in order to create the lower-right block
+
+        temp = np.vstack((d, e))
+        d = np.vstack((d, e, f))
+
+        #similar process for the middle-left block as the upper-middle left block
+
+        i = 0
+        j = np.arange(len(F))
+        z = np.array([-1, -1])
+        while i < len(P1):
+            y = F[j, 2]-P2[i, 2]
+            y = y.astype("int32")
+            x = np.argwhere((y <= para8) & (y > 0))
+            y = np.column_stack((x, np.zeros(len(x), dtype="int32")+i))
+            z = np.vstack((z, y))
+            i = i+1
+
+        AreaFirst = Areaprime[F[z[1:len(z), 0], 2].astype("int32"), F[z[1:len(z), 0], 3].astype("int32")]
+        AreaAfterSplit = Areaprime[P[Q2[z[1:len(z), 1]]+1, 2].astype("int32"), P[Q2[z[1:len(z), 1]]+1, 3].astype("int32")]
+        AreaAtSplit = Areaprime[P2[z[1:len(z), 1], 2].astype("int32"), P2[z[1:len(z), 1], 3].astype("int32")]
+        rho = ((AreaFirst+AreaAfterSplit)/AreaAtSplit)**2
+        x = np.argwhere(rho < 1)
+        if(len(x) > 1):
+            rho[x] = (1/rho[x])*(1/rho[x])
+        rho = np.sqrt((F[z[1:len(z), 0], 0]-P2[z[1:len(z), 1], 0])**2 + (F[z[1:len(z), 0], 1]-P2[z[1:len(z), 1], 1])**2)*rho
+        e = rho
+
+        z = z[1:]
+        b = np.argwhere(e <= para4)
+        z = z[b].reshape((len(b), 2))
+        e = e[b].reshape((len(b)))
+        e = np.column_stack((z, e))
+
+        #middle-right block
+
+        f = np.column_stack((np.arange(len(P1))+len(F), np.arange(len(P1))+len(F)+len(P1)+len(F), np.zeros(len(P1))+para5))
+        e[0:len(e), 0] = e[0:len(e), 0]+len(F)
+
+        temp = np.vstack((temp, e))
+        d = np.vstack((d, e, f))
+
+        #lower-middle and lower-left blocks
+
+        a = np.column_stack((np.arange(len(F))+len(F)+len(P1), np.arange(len(F)), np.zeros(len(F))+para6))
+        b = np.column_stack((np.arange(len(P1))+len(F)+len(P1)+len(F), np.arange(len(P1))+len(F), np.zeros(len(P1))+para7))
+
+        d = np.vstack((d, a, b))
+
+        #creates the transpose for the lower-right block
+
+        w = np.column_stack((temp[0:len(temp), 1]+len(F)+len(P1), temp[0:len(temp), 0]+len(F)+len(P1), np.zeros(len(temp))+0.0001))
+
+        #sorts the list of costs, and add one to indices for costs to fit in with LAP
+
+        d = np.vstack((d, w))
+        indices = np.lexsort((d[:,1], d[:,0]))
+        d = d[indices]
+        d[:, 1] = d[:, 1]+1
+        d[:, 0] = d[:, 0]+1
+
+        #gets first, kk, and cc ready for LAP
+
+        first = np.bincount(np.ndarray.astype(d[0:(d.size/3),0], 'int32')+1)
+        first = np.cumsum(first)+1
+        first[0] = 0
+        kk = np.hstack((np.array((0)), d[:, 1]))
+        kk = kk.astype("int32")
+        cc = np.hstack((np.array((0.0)), d[:, 2]))
+
+        x, y =  LAP.LAP(kk, first, cc, len(F)*2+len(P1)*2)
+
+        #attaches different segments together if they are matches through the IAP
+        a = np.zeros(len(F)+1, dtype="int32")
+        b = np.zeros(len(F)+1, dtype="int32")
+        c = np.zeros(len(F)+1, dtype="int32")-1
+        d = np.zeros(len(F)+1, dtype="int32")-1
+        z = np.zeros(len(F)+1, dtype="int32")
+        i = 1
+        while i<=len(F):
+            if(y[i] <= len(F)):
+                b[i] = y[i]
+                c[b[i]] = i
+            elif(y[i] <= len(F)+len(P1)):
+                b[i] = labelprime[P2[y[i]-1-len(F)][2], P2[y[i]-1-len(F)][3]]
+                c[b[i]] = i
+            else:
+                b[i] = -1
+
+            if(x[i] <= len(F)):
+                a[i] = x[i]
+                d[a[i]] = i
+            elif(x[i] <= len(F)+len(P1)):
+                a[i] = labelprime[P1[x[i]-1-len(F)][2], P1[x[i]-1-len(F)][3]]
+                d[a[i]] = i
+            else:
+                a[i] = -1
+            i = i+1
+
+        i = 1
+        at = 0
+        while i<=len(F):
+            if(z[i] == 0):
+                at = at+1
+                z = self.flood(i, at, a, b, c, d, z)
+            #print z[i]
+            i = i+1
+
+        newlabel = [z[label[i]-1] for i in range(len(label))]
+        m.add_all_measurements(self.object_name.value, 
+                               self.measurement_name(F_LABEL), newlabel)
+
     def map_objects(self, workspace, new_of_old, old_of_new, i,j):
         '''Record the mapping of old to new objects and vice-versa
-        
+
         workspace - workspace for current image set
         new_to_old - an array of the new labels for every old label
         old_to_new - an array of the old labels for every new label
@@ -627,7 +1009,7 @@ class TrackObjects(cpm.CPModule):
             diff_i[has_old] = i[has_old] - old_i[old_indexes]
             diff_j[has_old] = j[has_old] - old_j[old_indexes]
             distance[has_old] = np.sqrt(diff_i[has_old]**2 + diff_j[has_old]**2)
-    
+
             idistance[has_old] = (old_distance[old_indexes] + 
                                   distance[has_old])
             odistance = np.sqrt((i-orig_i)**2 + (j-orig_j)**2)
@@ -652,10 +1034,14 @@ class TrackObjects(cpm.CPModule):
         self.set_saved_object_numbers(workspace, mapping)
 
     def get_measurement_columns(self, pipeline):
-        return [(self.object_name.value,
-                 self.measurement_name(feature),
-                 coltype)
-                for feature, coltype in F_ALL_COLTYPE_ALL]
+        result =  [(self.object_name.value,
+                    self.measurement_name(feature),
+                    coltype)
+                   for feature, coltype in F_ALL_COLTYPE_ALL]
+        if self.tracking_method == TM_LAP:
+            result += [( self.object_name.value,
+                         self.measurement_name(F_AREA),
+                         cpmeas.COLTYPE_INTEGER)]
 
     def get_categories(self, pipeline, object_name):
         if object_name == self.object_name.value:
@@ -665,18 +1051,20 @@ class TrackObjects(cpm.CPModule):
 
     def get_measurements(self, pipeline, object_name, category):
         if object_name == self.object_name.value and category == F_PREFIX:
-            return F_ALL
+            result = list(F_ALL)
+            if self.tracking_method == TM_LAP:
+                result += [F_AREA]
         return []
-    
+
     def get_measurement_scales(self, pipeline, object_name, category, feature,image_name):
         if (object_name == self.object_name.value and
             category == F_PREFIX and
-            feature in F_ALL):
+            feature in F_ALL + [F_AREA]):
             return [str(self.pixel_radius.value)]
         return []
-        
+
     def upgrade_settings(self, setting_values, variable_revision_number, 
-                                module_name, from_matlab):
+                         module_name, from_matlab):
         if from_matlab and variable_revision_number == 3:
             wants_image = setting_values[10] != cps.DO_NOT_USE
             measurement =  '_'.join(setting_values[2:6])
@@ -689,9 +1077,14 @@ class TrackObjects(cpm.CPModule):
                                setting_values[10]]
             variable_revision_number = 1
             from_matlab = False
-	if (not from_matlab) and variable_revision_number == 1:
-	    setting_values += [100,100]
-	    variable_revision_number = 2
+        if (not from_matlab) and variable_revision_number == 1:
+            setting_values = setting_values + ["100","100"]
+            variable_revision_number = 2
+        if (not from_matlab) and variable_revision_number == 2:
+            # Added phase 2 parameters
+            setting_values = setting_values + [
+                "40","40","40","40","50","50","50","5"]
+            variable_revision_number = 3
         return setting_values, variable_revision_number, from_matlab
 
-    
+

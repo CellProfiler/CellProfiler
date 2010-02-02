@@ -1620,7 +1620,18 @@ def load_using_PIL(path, index=0, seekfn=None):
     index - index of the image if stacked image format such as TIFF
     seekfn - a function for seeking to a given image in a stack
     '''
-    img = PILImage.open(path)
+    if path.lower().endswith(".tif"):
+        try:
+            img = PILImage.open(path)
+        except:
+            from contrib.tifffile import TIFFfile
+            tiffimg = TIFFfile(str(path))
+            img = tiffimg.asarray(squeeze=True)
+            if img.dtype == np.uint16:
+                img = (img.astype(np.float) - 2**15) / 2**12
+            return img
+    else:
+        img = PILImage.open(path)
     if seekfn is None:
         img.seek(index)
     else:

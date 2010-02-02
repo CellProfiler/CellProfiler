@@ -38,7 +38,7 @@ E_IMAGE = "Image"
 class DisplayDataOnImage(cpm.CPModule):
     module_name = 'DisplayDataOnImage'
     category = 'Data Tools'
-    variable_revision_number = 1
+    variable_revision_number = 2
     
     def create_settings(self):
         """Create your settings by subclassing this function
@@ -101,7 +101,7 @@ class DisplayDataOnImage(cpm.CPModule):
             the measurements superimposed. You can use this name to refer to the image in
             subsequent modules (such as <b>SaveImages</b>).""")
         self.font_size = cps.Integer(
-            "Font size (points)", 12, minval=1)
+            "Font size (points)", 10, minval=1)
         self.decimals = cps.Integer(
             "Number of decimals", 2, minval=0)
         self.saved_image_contents = cps.Choice(
@@ -176,38 +176,32 @@ class DisplayDataOnImage(cpm.CPModule):
         workspace.display_data.values = values
         workspace.display_data.x = x
         workspace.display_data.y = y
-        figure = matplotlib.figure.Figure()
-        self.display_on_figure(workspace, figure)
+        fig = self.display_on_figure(workspace)
         if self.saved_image_contents == E_AXES:
-            figure.subplots_adjust(0,0,1,1,0,0)
+            fig.figure.subplots_adjust(0,0,1,1,0,0)
         elif self.saved_image_contents == E_IMAGE:
-            figure.subplots_adjust(0,0,1,1,0,0)
-            axes = figure.axes[0]
-            assert isinstance(axes,matplotlib.axes.Axes)
-            axes.set_axis_off()
+            fig.figure.subplots_adjust(0,0,1,1,0,0)
+            fig.subplot(0,0).set_axis_off()
         else:
             figure.subplots_adjust(.1,.1,.9,.9,0,0)
             
-        canvas = matplotlib.backends.backend_wxagg.FigureCanvasAgg(figure)
-        pixel_data = figure_to_image(figure)
+        canvas = fig.figure.canvas
+        pixel_data = figure_to_image(fig.figure)
         image = cpi.Image(pixel_data)
         workspace.image_set.add(self.display_image.value, image)
         
     def display(self, workspace):
-        figure_frame = workspace.create_or_find_figure()
-        figure_frame.clf()
-        self.display_on_figure(workspace, figure_frame.figure)
+        self.display_on_figure(workspace)
         
-    def display_on_figure(self, workspace, figure):
-        import matplotlib
-        axes = figure.add_subplot(1,1,1)
-        assert isinstance(axes, matplotlib.axes.Axes)
-        axes.set_title("%s\n%s" % 
-                       (self.objects_name.value, self.measurement.value),
-                       fontname = cpprefs.get_title_font_name(),
-                       fontsize = cpprefs.get_title_font_size())
-        axes_image = axes.imshow(workspace.display_data.pixel_data,
-                                 cmap = matplotlib.cm.Greys)
+    def display_on_figure(self, workspace):
+        import matplotlib.cm
+        fig = workspace.create_or_find_figure(title="Display data on image",
+                                              subplots=(1,1))
+        fig.clf()
+        title = "%s\n%s" % (self.objects_name.value, self.measurement.value)
+        fig.subplot_imshow(0, 0, workspace.display_data.pixel_data, title=title,
+                           colormap = matplotlib.cm.Greys)
+        
         for x, y, value in zip(workspace.display_data.x,
                                workspace.display_data.y,
                                workspace.display_data.values):
@@ -222,8 +216,9 @@ class DisplayDataOnImage(cpm.CPModule):
                                         color=self.text_color.value,
                                         verticalalignment='center',
                                         horizontalalignment='center')
-            axes.add_artist(text)
+            fig.subplot(0,0).add_artist(text)
         
+        return fig
                 
             
     def upgrade_settings(self, setting_values, variable_revision_number, 
@@ -246,7 +241,7 @@ class DisplayDataOnImage(cpm.CPModule):
                 dpi, saved_image_contents = setting_values
             setting_values = [objects_or_image, objects_name, measurement,
                               image_name, text_color, display_image,
-                              12, 2, saved_image_contents]
+                              10, 2, saved_image_contents]
             variable_revision_number = 2
         return setting_values, variable_revision_number, from_matlab
         

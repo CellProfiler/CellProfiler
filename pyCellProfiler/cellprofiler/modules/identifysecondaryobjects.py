@@ -74,7 +74,7 @@ M_DISTANCE_B = "Distance - B"
 class IdentifySecondaryObjects(cpmi.Identify):
 
     module_name = "IdentifySecondaryObjects"
-    variable_revision_number = 3
+    variable_revision_number = 4
     category = "Object Processing"
     
     def create_settings(self):
@@ -194,6 +194,16 @@ class IdentifySecondaryObjects(cpmi.Identify):
             unedited objects - the unedited objects prevent operations
             that change the segmentation from using the pixels of objects
             that are edited out.""")
+        self.wants_primary_outlines = cps.Binary(
+            "Do you want to save outlines of the new primary objects?", False,
+            doc = """Check this setting in order to save images of the outlines
+            of the primary objects after filtering. You can save these images
+            using the <b>SaveImages</b> module.""")
+        self.new_primary_outlines_name = cps.ImageNameProvider(
+            "New primary objects outlines name:", "FilteredNucleiOutlines",
+            doc = """This setting lets you name the outline image of the
+            primary objects after filtering. You can refer to this image
+            using this name in subsequent modules such as <b>SaveImages</b>.""")
     
     def settings(self):
         return [ self.primary_objects, self.objects_name,   
@@ -206,7 +216,8 @@ class IdentifySecondaryObjects(cpmi.Identify):
                  self.two_class_otsu, self.use_weighted_variance,
                  self.assign_middle_to_foreground,
                  self.wants_discard_edge, self.wants_discard_primary,
-                 self.new_primary_objects_name]
+                 self.new_primary_objects_name, self.wants_primary_outlines,
+                 self.new_primary_outlines_name]
     
     def visible_settings(self):
         result = [self.image_name, self.primary_objects, self.objects_name,  
@@ -221,7 +232,10 @@ class IdentifySecondaryObjects(cpmi.Identify):
         if self.wants_discard_edge:
             result.append(self.wants_discard_primary)
             if self.wants_discard_primary:
-                result.append(self.new_primary_objects_name)
+                result += [self.new_primary_objects_name, 
+                           self.wants_primary_outlines]
+                if self.wants_primary_outlines:
+                    result.append(self.new_primary_outlines_name)
         result.append(self.use_outlines)
         if self.use_outlines.value:
             result.append(self.outlines_name)
@@ -287,6 +301,10 @@ class IdentifySecondaryObjects(cpmi.Identify):
             # Added discarding touching
             setting_values = setting_values + [cps.NO, cps.NO, "FilteredNuclei"]
             variable_revision_number = 3
+        if (not from_matlab) and variable_revision_number == 3:
+            # Added new primary outlines
+            setting_values = setting_values + [cps.NO, "FilteredNucleiOutlines"]
+            variable_revision_number = 4
         return setting_values, variable_revision_number, from_matlab
 
     def run(self, workspace):
@@ -412,7 +430,14 @@ class IdentifySecondaryObjects(cpmi.Identify):
             if objects.has_small_removed_segmented:
                 new_objects.small_removed_segmented = objects.small_removed_segmented
             new_objects.parent_image = objects.parent_image
-        primary_outline = outline(objects.segmented)
+            primary_outline = outline(segmented_labels)
+            if self.wants_primary_outlines:
+                out_img = cpi.Image(primary_outline.astype(bool),
+                                    parent_image = image)
+                workspace.image_set.add(self.new_primary_outlines_name.value, 
+                                        out_img)
+        else:
+            primary_outline = outline(objects.segmented)
         secondary_outline = outline(segmented_out) 
         if workspace.frame != None:
             object_area = np.sum(segmented_out > 0)

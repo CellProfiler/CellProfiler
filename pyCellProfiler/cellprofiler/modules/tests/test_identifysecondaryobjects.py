@@ -131,6 +131,67 @@ class TestIdentifySecondaryObjects(unittest.TestCase):
         self.assertTrue(module.wants_discard_primary)
         self.assertEqual(module.new_primary_objects_name, "FilteredNuclei")
         
+    def test_01_04_load_v4(self):
+        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:1
+SVNRevision:9210
+
+IdentifySecondaryObjects:[module_num:1|svn_version:\'9194\'|variable_revision_number:4|show_window:True|notes:\x5B\x5D]
+    Select the input objects:Primary
+    Name the identified objects:Secondary
+    Select the method to identify the secondary objects:Watershed - Image
+    Select the input image:Cytoplasm
+    Select the thresholding method:Otsu Adaptive
+    Threshold correction factor:1.2
+    Lower and upper bounds on threshold\x3A:0.05,0.95
+    Approximate fraction of image covered by objects?:0.02
+    Number of pixels by which to expand the primary objects\x3A:12
+    Regularization factor\x3A:0.08
+    Name the outline image:CellOutlines
+    Enter manual threshold\x3A:0.01
+    Select binary image\x3A:MyMask
+    Save outlines of the identified objects?:No
+    Two-class or three-class thresholding?:Three classes
+    Minimize the weighted variance or the entropy?:Entropy
+    Assign pixels in the middle intensity class to the foreground or the background?:Background
+    Do you want to discard objects that touch the edge of the image?:Yes
+    Do you want to discard associated primary objects?:Yes
+    New primary objects name\x3A:FilteredPrimary
+    Do you want to save outlines of the new primary objects?:Yes
+    New primary objects outlines name\x3A:FilteredPrimaryOutlines
+"""
+        pipeline = cpp.Pipeline()
+        def callback(caller,event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO.StringIO(data))
+        self.assertEqual(len(pipeline.modules()), 1)
+        module = pipeline.modules()[0]
+        self.assertTrue(isinstance(module, cpmi2.IdentifySecondary))
+        self.assertEqual(module.primary_objects, "Primary")
+        self.assertEqual(module.objects_name, "Secondary")
+        self.assertEqual(module.method, cpmi2.M_WATERSHED_I)
+        self.assertEqual(module.image_name, "Cytoplasm")
+        self.assertEqual(module.threshold_method, cpmi2.cpthresh.TM_OTSU_ADAPTIVE)
+        self.assertAlmostEqual(module.threshold_correction_factor.value, 1.2)
+        self.assertAlmostEqual(module.threshold_range.min, 0.05)
+        self.assertAlmostEqual(module.threshold_range.max, 0.95)
+        self.assertEqual(module.object_fraction, "0.02")
+        self.assertEqual(module.distance_to_dilate, 12)
+        self.assertAlmostEqual(module.regularization_factor.value, 0.08)
+        self.assertEqual(module.outlines_name, "CellOutlines")
+        self.assertAlmostEqual(module.manual_threshold.value, 0.01)
+        self.assertEqual(module.binary_image, "MyMask")
+        self.assertFalse(module.use_outlines)
+        self.assertEqual(module.two_class_otsu, cpmi.O_THREE_CLASS)
+        self.assertEqual(module.use_weighted_variance, cpmi.O_ENTROPY)
+        self.assertEqual(module.assign_middle_to_foreground, cpmi.O_BACKGROUND)
+        self.assertTrue(module.wants_discard_edge)
+        self.assertTrue(module.wants_discard_primary)
+        self.assertEqual(module.new_primary_objects_name, "FilteredPrimary")
+        self.assertTrue(module.wants_primary_outlines)
+        self.assertEqual(module.new_primary_outlines_name, "FilteredPrimaryOutlines")
+        
     def test_02_01_zeros_propagation(self):
         p = cpp.Pipeline()
         o_s = cpo.ObjectSet()
@@ -659,6 +720,52 @@ class TestIdentifySecondaryObjects(unittest.TestCase):
         outlines[3:6,3:6] = False
         self.assertTrue(np.all(objects_out.segmented==expected))
         self.assertTrue(np.all(outlines == outlines_out))
+
+    def test_06_02_save_primary_outlines(self):
+        '''Test saving new primary outlines'''
+        p = cpp.Pipeline()
+        o_s = cpo.ObjectSet()
+        i_l = cpi.ImageSetList()
+        img = np.zeros((10,10))
+        img[2:7,2:7] = .5
+        image = cpi.Image(img)
+        objects = cpo.Objects()
+        labels = np.zeros((10,10),int)
+        labels[3:6,3:6] = 1
+        objects.unedited_segmented = labels 
+        objects.small_removed_segmented = labels
+        objects.segmented = labels
+        o_s.add_objects(objects, "primary")
+        i_s = i_l.get_image_set(0)
+        i_s.add("my_image",image)
+        m = cpm.Measurements()
+        module = cpmi2.IdentifySecondary()
+        module.primary_objects.value="primary"
+        module.objects_name.value="my_objects"
+        module.image_name.value = "my_image"
+        module.use_outlines.value = True
+        module.outlines_name.value = "my_outlines"
+        module.wants_discard_edge.value = True
+        module.wants_discard_primary.value = True
+        module.wants_primary_outlines.value = True
+        module.new_primary_objects_name.value = "newprimary"
+        module.new_primary_outlines_name.value = "newprimaryoutlines"
+        module.method = cpmi2.M_WATERSHED_I
+        workspace = cpw.Workspace(p,module,i_s,o_s,m,i_l)
+        module.run(workspace)
+        self.assertTrue("my_objects" in m.get_object_names())
+        self.assertTrue("Image" in m.get_object_names())
+        self.assertTrue("Count_my_objects" in m.get_feature_names("Image"))
+        counts = m.get_current_measurement("Image", "Count_my_objects")
+        self.assertEqual(np.product(counts.shape), 1)
+        self.assertEqual(counts[0],1)
+        objects_out = o_s.get_objects("my_objects")
+        outlines_out = workspace.image_set.get_image("newprimaryoutlines",
+                                                     must_be_binary=True)
+        expected = np.zeros((10,10), bool)
+        expected[3:6,3:6] = True
+        expected[4,4] = False
+        self.assertTrue(np.all(outlines_out.pixel_data == expected))
 
     def test_07_01_measurements_no_new_primary(self):
         module = cpmi2.IdentifySecondary()

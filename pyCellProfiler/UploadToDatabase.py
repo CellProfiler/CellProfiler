@@ -26,17 +26,19 @@ table_lines = []
 image_prefix = None
 object_prefix = None
 sql_script_file = open(my_batch["data_dir"]+os.sep+sql_script,"r")
+in_table_defs = True
 try:
     for line in sql_script_file:
         match = re_load_line.search(line)
         if match:
+            in_table_defs = False
             if match.groups(1)[1] == 'image':
                 image_table = match.groups(1)[2]
                 image_prefix = match.groups(1)[0]
             else :
                 object_table = match.groups(1)[2]
                 object_prefix = match.groups(1)[0]
-        elif not re_ignore_line.search(line):
+        elif (not re_ignore_line.search(line)) and in_table_defs:
             table_lines.append(line)
 finally:
     sql_script_file.close()    

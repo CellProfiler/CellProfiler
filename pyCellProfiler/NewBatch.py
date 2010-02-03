@@ -217,7 +217,7 @@ td {
     for result in results:
         print "<tr><td>%(start)d</td><td>%(end)d</td>"%(result)
         for key in grouping_keys:
-            print "<tr>%s</tr>"% groups[i][0][key]
+            print "<td>%s</td>"% groups[i][0][key]
         print "<td>%(job)d</td></tr>"%(result)
     print "</table></body></html>"
     sys.exit()

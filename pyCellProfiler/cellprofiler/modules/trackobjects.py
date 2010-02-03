@@ -91,6 +91,7 @@ import contrib.LAP as LAP
 from cellprofiler.cpmath.cpmorphology import fixup_scipy_ndimage_result as fix
 from cellprofiler.cpmath.cpmorphology import centers_of_labels
 from cellprofiler.cpmath.cpmorphology import associate_by_distance
+from cellprofiler.cpmath.cpmorphology import all_connected_components
 from identify import M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y
 
 TM_OVERLAP = 'Overlap'
@@ -332,21 +333,24 @@ class TrackObjects(cpm.CPModule):
             result += [self.image_name]
         return result
 
-    @property
-    def module_key(self):
-        return "TrackObjects_%d" % self.module_num
-
-    def get_dictionary(self, workspace):
-        return workspace.image_set_list.legacy_fields[self.module_key]
+    def get_ws_dictionary(self, workspace):
+        return self.get_dictionary(workspace.image_set_list)
 
     def __get(self, field, workspace, default):
-        if self.get_dictionary(workspace).has_key(field):
-            return self.get_dictionary(workspace)[field]
+        if self.get_ws_dictionary(workspace).has_key(field):
+            return self.get_ws_dictionary(workspace)[field]
         return default
 
     def __set(self, field, workspace, value):
-        self.get_dictionary(workspace)[field] = value
+        self.get_ws_dictionary(workspace)[field] = value
 
+    def get_image_numbers(self, workspace):
+        '''get the image numbers for the current group'''
+        return self.__get("image_numbers", workspace, np.array([], int))
+    
+    def set_image_numbers(self, workspace, value):
+        self.__set("image_numbers", workspace, value)
+        
     def get_saved_measurements(self, workspace):
         return self.__get("measurements", workspace, np.array([], float))
 
@@ -396,9 +400,12 @@ class TrackObjects(cpm.CPModule):
     def set_max_object_number(self, workspace, value):
         self.__set("max_object_number", workspace, value)
 
-    def prepare_run(self, pipeline, image_set_list, frame):
+    def prepare_group(self, pipeline, image_set_list, grouping, image_numbers):
         '''Erase any tracking information at the start of a run'''
-        image_set_list.legacy_fields[self.module_key] = {}
+        d = self.get_dictionary(image_set_list)
+        d.clear()
+        d["image_numbers"] = np.array(image_numbers).copy()
+        
         return True
 
     def measurement_name(self, feature):
@@ -676,7 +683,10 @@ class TrackObjects(cpm.CPModule):
         self.set_saved_measurements(workspace, new_measurements)
 
     def run_as_data_tool(self, workspace):
-        self.post_run(workspace)
+        '''Assume that all images belong to the same group'''
+        image_numbers = np.arange(workspace.measurements.image_set_count)
+        self.set_image_numbers(workspace, image_numbers)
+        self.post_group(workspace, {})
 
     def flood(self, i, at, a, b, c, d, z):
         z[i] = at
@@ -690,7 +700,7 @@ class TrackObjects(cpm.CPModule):
             z = self.flood(c[i], at, a, b, c, d, z)
         return z
 
-    def post_run(self, workspace):
+    def post_group(self, workspace, grouping):
         if (self.tracking_method != TM_LAP or
             not self.wants_second_phase):
             return
@@ -703,13 +713,20 @@ class TrackObjects(cpm.CPModule):
         para7 = self.merge_initiation_cost.value #value for lower-middle
         para8 = self.max_frame_distance.value #max frame difference
 
+        image_numbers = self.get_image_numbers(workspace)
         m = workspace.measurements
         label = m.get_all_measurements(self.object_name.value, 
                                        self.measurement_name(F_LABEL))
+        orig_label = label
         a = m.get_all_measurements(self.object_name.value, M_LOCATION_CENTER_X)
         b = m.get_all_measurements(self.object_name.value, M_LOCATION_CENTER_Y)
         Area = m.get_all_measurements(self.object_name.value, 
                                       self.measurement_name(F_AREA))
+        #
+        # Reduce the lists to only the ones in the group
+        #
+        for mlist in (label, a, b, Area):
+            mlist = [mlist[image_number] for image_number in image_numbers]
         numFrames = len(b)
 
         #Calculates the maximum number of cells in a single frame
@@ -935,18 +952,25 @@ class TrackObjects(cpm.CPModule):
                 a[i] = -1
             i = i+1
 
-        i = 1
-        at = 0
-        while i<=len(F):
-            if(z[i] == 0):
-                at = at+1
-                z = self.flood(i, at, a, b, c, d, z)
-            #print z[i]
-            i = i+1
-
-        newlabel = [z[label[i]-1] for i in range(len(label))]
-        m.add_all_measurements(self.object_name.value, 
-                               self.measurement_name(F_LABEL), newlabel)
+        #
+        # At this point a & b are edge lists of a graph and we want to
+        # find all connected components to give labels to the things
+        # that are the same.
+        #
+        # Eliminate all unconnected edges
+        #
+        connect_mask = (a != -1) & (b != -1)
+        aa = a[connect_mask]
+        bb = b[connect_mask]
+        z = all_connected_components(aa, bb)+1
+        z = np.hstack(([0],z))
+        newlabel = [z[label[i]] for i in range(len(label))]
+        #
+        # Replace the labels for the image sets in the group
+        # inside the list retrieved from the measurements
+        #
+        for i, image_number in enumerate(image_numbers):
+            orig_label[image_number] = newlabel[i]
 
     def map_objects(self, workspace, new_of_old, old_of_new, i,j):
         '''Record the mapping of old to new objects and vice-versa

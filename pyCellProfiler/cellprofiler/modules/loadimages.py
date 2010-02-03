@@ -315,12 +315,48 @@ class LoadImages(cpmodule.CPModule):
         'Adds another image to the settings'
         img_index = len(self.images)
         new_uuid = uuid.uuid1()
+        def example_file_fn(path=None):
+            '''Get an example file for use in the file metadata regexp editor'''
+            if path == None:
+                path = self.image_directory()
+                default = "plateA-2008-08-06_A12_s1_w1_[89A882DE-E675-4C12-9F8E-46C9976C4ABE].tif"
+            else:
+                default = None
+            #
+            # Find out the index we expect from filter_filename
+            #
+            for i, group in enumerate(self.images):
+                if group[FD_KEY] == new_uuid:
+                    break
+                
+            filenames = [x for x in os.listdir(path)
+                         if x.find('.') != -1 and
+                         os.path.splitext(x)[1].upper() in
+                         ('.TIF','.JPG','.PNG','.BMP')]
+            filtered_filenames = [x for x in filenames
+                                  if self.filter_filename(x) == i]
+            if len(filtered_filenames) > 0:
+                return filtered_filenames[0]
+            if len(filenames) > 0:
+                return filenames[0]
+            if self.analyze_sub_dirs():
+                d = [x for x in [os.path.abspath(os.path.join(path, x))
+                                 for x in os.listdir(path)
+                                 if not x.startswith('.')]
+                     if os.path.isdir(x)]
+                for subdir in d:
+                    result = example_file_fn(subdir)
+                    if result is not None:
+                        return result
+            return default
+        
         def example_path_fn():
             '''Get an example path for use in the path metadata regexp editor'''
             root = self.image_directory()
-            d = [os.path.abspath(x)
-                 for x in os.listdir(root)
-                 if os.path.isdir(x) and not x.startswith('.')]
+            d = [x for x in [os.path.abspath(os.path.join(root, x))
+                             for x in os.listdir(root)
+                             if not x.startswith('.')]
+                 if os.path.isdir(x)]
             if len(d) > 0:
                 return d[0]
             return root
@@ -368,7 +404,9 @@ class LoadImages(cpmodule.CPModule):
                         <i>Do you want to group image sets by metadata?</i> setting) or simply used as 
                         additional columns in the exported measurements (see the <b>ExportToExcel</b> module)"""),
                FD_FILE_METADATA: cps.RegexpText('Type the regular expression that finds metadata in the file name:',
-                                                '^(?P<Plate>.*)_(?P<Well>[A-P][0-9]{2})_s(?P<Site>[0-9])',doc="""
+                                                '^(?P<Plate>.*)_(?P<Well>[A-P][0-9]{2})_s(?P<Site>[0-9])',
+                                                get_example_fn = example_file_fn,
+                        doc="""
                         <i>(Only used if you want to extract metadata from the file name)</i>
                         <p>The regular expression to extract the metadata from the file name is entered here. Note that
                         this field is available whether you have selected <i>Text-Regular expressions</i> to load

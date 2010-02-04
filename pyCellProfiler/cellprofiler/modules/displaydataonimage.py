@@ -144,7 +144,9 @@ class DisplayDataOnImage(cpm.CPModule):
     
     def run(self, workspace):
         import matplotlib
+        import matplotlib.cm
         import matplotlib.backends.backend_wxagg
+        import matplotlib.transforms
         from cellprofiler.gui.cpfigure import figure_to_image
         #
         # Get the image
@@ -176,32 +178,61 @@ class DisplayDataOnImage(cpm.CPModule):
         workspace.display_data.values = values
         workspace.display_data.x = x
         workspace.display_data.y = y
-        fig = self.display_on_figure(workspace)
-        if self.saved_image_contents == E_AXES:
-            fig.figure.subplots_adjust(0,0,1,1,0,0)
-        elif self.saved_image_contents == E_IMAGE:
-            fig.figure.subplots_adjust(0,0,1,1,0,0)
-            fig.subplot(0,0).set_axis_off()
-        else:
-            figure.subplots_adjust(.1,.1,.9,.9,0,0)
+        fig = matplotlib.figure.Figure()
+        axes = fig.add_subplot(1,1,1)
+        def imshow_fn(pixel_data):
+            axes.imshow(pixel_data,
+                        cmap = matplotlib.cm.Greys_r)
             
-        canvas = fig.figure.canvas
-        pixel_data = figure_to_image(fig.figure)
+        self.display_on_figure(workspace, axes, imshow_fn)
+        canvas = matplotlib.backends.backend_wxagg.FigureCanvasAgg(fig)
+        if self.saved_image_contents == E_AXES:
+            fig.set_frameon(False)
+            fig.subplots_adjust(0.1,.1,.9,.9,0,0)
+            shape = workspace.display_data.pixel_data.shape
+            width = float(shape[1]) / fig.dpi
+            height = float(shape[0]) / fig.dpi
+            fig.set_figheight(height)
+            fig.set_figwidth(width)
+        elif self.saved_image_contents == E_IMAGE:
+            fig.set_frameon(False)
+            axes.set_axis_off()
+            fig.subplots_adjust(0,0,1,1,0,0)
+            shape = workspace.display_data.pixel_data.shape
+            width = float(shape[1]) / fig.dpi
+            height = float(shape[0]) / fig.dpi
+            fig.set_figheight(height)
+            fig.set_figwidth(width)
+            bbox = matplotlib.transforms.Bbox(
+                np.array([[0.0, 0.0], [width, height]]))
+            transform = matplotlib.transforms.Affine2D(
+                np.array([[fig.dpi, 0, 0],
+                          [0, fig.dpi, 0],
+                          [0, 0, 1]]))
+            fig.bbox = matplotlib.transforms.TransformedBbox(bbox, transform)
+        else:
+            fig.subplots_adjust(.1,.1,.9,.9,0,0)
+            
+        pixel_data = figure_to_image(fig)
         image = cpi.Image(pixel_data)
         workspace.image_set.add(self.display_image.value, image)
         
     def display(self, workspace):
-        self.display_on_figure(workspace)
-        
-    def display_on_figure(self, workspace):
-        import matplotlib.cm
         fig = workspace.create_or_find_figure(title="Display data on image",
                                               subplots=(1,1))
         fig.clf()
         title = "%s\n%s" % (self.objects_name.value, self.measurement.value)
-        fig.subplot_imshow(0, 0, workspace.display_data.pixel_data, title=title,
-                           colormap = matplotlib.cm.Greys)
+        def imshow_fn(pixel_data):
+            if pixel_data.ndim == 3:
+                fig.subplot_imshow_color(0, 0, pixel_data, title=title)
+            else:
+                fig.subplot_imshow_grayscale(0, 0, pixel_data, title=title)
+
+        self.display_on_figure(workspace, fig.subplot(0,0), imshow_fn)
         
+    def display_on_figure(self, workspace, axes, imshow_fn):
+        import matplotlib
+        imshow_fn(workspace.display_data.pixel_data)
         for x, y, value in zip(workspace.display_data.x,
                                workspace.display_data.y,
                                workspace.display_data.values):
@@ -216,10 +247,7 @@ class DisplayDataOnImage(cpm.CPModule):
                                         color=self.text_color.value,
                                         verticalalignment='center',
                                         horizontalalignment='center')
-            fig.subplot(0,0).add_artist(text)
-        
-        return fig
-                
+            axes.add_artist(text)
             
     def upgrade_settings(self, setting_values, variable_revision_number, 
                          module_name, from_matlab):

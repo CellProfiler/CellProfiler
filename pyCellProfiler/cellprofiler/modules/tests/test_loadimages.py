@@ -19,6 +19,7 @@ import os
 import re
 import unittest
 import tempfile
+import time
 import sys
 import zlib
 from StringIO import StringIO
@@ -744,6 +745,77 @@ LoadImages:[module_num:1|svn_version:\'8913\'|variable_revision_number:1|show_wi
             for filename in filenames:
                 os.remove(os.path.join(directory,filename))
             os.rmdir(directory)
+            
+    def test_06_06_allowed_conflict(self):
+        """Test choice of newest file when there is a conflict"""
+        filenames = ["MMD-ControlSet-plateA-2008-08-06_A12_s1_w1_[89A882DE-E675-4C12-9F8E-46C9976C4ABE].tif",
+                     "MMD-ControlSet-plateA-2008-08-06_A12_s1_w2_[EFBB8532-9A90-4040-8974-477FE1E0F3CA].tif",
+                     "MMD-ControlSet-plateA-2008-08-06_A12_s1_w1_[138B5A19-2515-4D46-9AB7-F70CE4D56631].tif",
+                     "MMD-ControlSet-plateA-2008-08-06_A12_s2_w1_[138B5A19-2515-4D46-9AB7-F70CE4D56631].tif",
+                     "MMD-ControlSet-plateA-2008-08-06_A12_s2_w2_[59784AC1-6A66-44DE-A87E-E4BDC1A33A54].tif"
+                     ]
+        for chosen, order in ((2,(0,1,2,3,4)),(0,(2,1,0,3,4))):
+            #
+            # LoadImages should choose the file that was written last
+            #
+            directory = tempfile.mkdtemp()
+            data = base64.b64decode(T.tif_8_1)
+            for i in range(len(filenames)):
+                filename = filenames[order[i]]
+                fd = open(os.path.join(directory, filename),"wb")
+                fd.write(data)
+                fd.close()
+                if i == 0:
+                    # make sure times are different
+                    if os.stat_float_times():
+                        time.sleep(.01)
+                    else:
+                        time.sleep(1)
+            try:
+                load_images = LI.LoadImages()
+                load_images.add_imagecb()
+                load_images.file_types.value = LI.FF_INDIVIDUAL_IMAGES
+                load_images.match_method.value = LI.MS_REGEXP
+                load_images.location.value = LI.DIR_OTHER
+                load_images.location_other.value = directory
+                load_images.group_by_metadata.value = True
+                load_images.metadata_fields.value = ["plate", "well_row", 
+                                                     "well_col", "site"]
+                load_images.check_images.value = False
+                load_images.images[0][LI.FD_COMMON_TEXT].value = "^(?P<plate>.*?)_(?P<well_row>[A-P])(?P<well_col>[0-9]{2})_s(?P<site>[0-9]+)_w1_"
+                load_images.images[1][LI.FD_COMMON_TEXT].value = "^(?P<plate>.*?)_(?P<well_row>[A-P])(?P<well_col>[0-9]{2})_s(?P<site>[0-9]+)_w2_"
+                load_images.images[0][LI.FD_IMAGE_NAME].value = "Channel1"
+                load_images.images[1][LI.FD_IMAGE_NAME].value = "Channel2"
+                load_images.images[0][LI.FD_METADATA_CHOICE].value = LI.M_FILE_NAME
+                load_images.images[1][LI.FD_METADATA_CHOICE].value = LI.M_FILE_NAME
+                load_images.images[0][LI.FD_FILE_METADATA].value = "^(?P<plate>.*?)_(?P<well_row>[A-P])(?P<well_col>[0-9]{2})_s(?P<site>[0-9]+)_w1_"
+                load_images.images[1][LI.FD_FILE_METADATA].value = "^(?P<plate>.*?)_(?P<well_row>[A-P])(?P<well_col>[0-9]{2})_s(?P<site>[0-9]+)_w2_"
+                load_images.module_num = 1
+                pipeline = P.Pipeline()
+                pipeline.add_module(load_images)
+                pipeline.add_listener(self.error_callback)
+                image_set_list = I.ImageSetList()
+                load_images.prepare_run(pipeline, image_set_list, None)
+                d = dict(plate = "MMD-ControlSet-plateA-2008-08-06",
+                         well_row = "A",
+                         well_col = "12",
+                         Well = "A12",
+                         site = "1")
+                key_names, groupings = load_images.get_groupings(image_set_list)
+                self.assertEqual(len(groupings), 2)
+                my_groups = [x for x in groupings
+                             if all([d[key_name] == x[0][key_name]
+                                     for key_name in key_names])]
+                self.assertEqual(len(my_groups), 1)
+                load_images.prepare_group(pipeline, image_set_list,
+                                          d,  my_groups[0][1])
+                image_set = image_set_list.get_image_set(d)
+                image = image_set.get_image("Channel1")
+                self.assertEqual(image.file_name, filenames[chosen])
+            finally:
+                for filename in filenames:
+                    os.remove(os.path.join(directory,filename))
+                os.rmdir(directory)
             
     def test_07_01_get_measurement_columns(self):
         data = r'''CellProfiler Pipeline: http://www.cellprofiler.org

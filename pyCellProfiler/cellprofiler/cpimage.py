@@ -589,17 +589,22 @@ class ImageSetList(object):
             assert number <= len(self.__image_sets)
             if self.__associating_by_key is None:
                 self.__associating_by_key = False
+            k = make_dictionary_key(keys)
         else:
             keys = keys_or_number
-            if self.__image_sets_by_key.has_key(repr(keys)):
-                number = self.__image_sets_by_key[repr(keys)].get_number()
+            k = make_dictionary_key(keys)
+            if self.__image_sets_by_key.has_key(k):
+                number = self.__image_sets_by_key[k].get_number()
             else:
                 number = len(self.__image_sets)
             self.__associating_by_key = True
         if number == len(self.__image_sets):
-            image_set = ImageSet(number,keys,self.__legacy_fields)
+            image_set = ImageSet(number, keys, self.__legacy_fields)
             self.__image_sets.append(image_set)
-            self.__image_sets_by_key[repr(keys)] = image_set
+            self.__image_sets_by_key[k] = image_set
+            if self.associating_by_key:
+                k = make_dictionary_key(dict(number=number))
+                self.__image_sets_by_key[k] = image_set
         else:
             image_set = self.__image_sets[number]
         return image_set
@@ -702,6 +707,11 @@ class ImageSetList(object):
         #
         for i in range(count):
             self.get_image_set(all_keys[i])
+
+def make_dictionary_key(key):
+    '''Make a dictionary into a stable key for another dictionary'''
+    return ", ".join([":".join([str(y) for y in x])
+                      for x in sorted(key.iteritems())])
 
 def readc01(fname):
     '''Read a Cellomics file into an array

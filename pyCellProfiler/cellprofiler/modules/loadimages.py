@@ -30,6 +30,7 @@ import httplib
 import os
 import re
 import sys
+import stat
 import tempfile
 import traceback
 import urllib
@@ -863,6 +864,20 @@ class LoadImages(cpmodule.CPModule):
                     # There's already a match to this metadata
                     conflict = [fd, parent[value], (path,filename)]
                     conflicts.append(conflict)
+                    if not self.check_images:
+                        #
+                        # Disambiguate conflicts by picking the most recently
+                        # modified file.
+                        #
+                        old_path, old_filename = parent[value]
+                        old_stat = os.stat(os.path.join(self.image_directory(),
+                                                        old_path, old_filename))
+                        old_time = old_stat.st_mtime
+                        new_stat = os.stat(os.path.join(self.image_directory(),
+                                                        path, filename))
+                        new_time = new_stat.st_mtime
+                        if new_time > old_time:
+                            parent[value] = (path, filename)
                 else:
                     parent[value] = (path, filename)
         image_sets = self.get_image_sets(d)
@@ -900,6 +915,7 @@ class LoadImages(cpmodule.CPModule):
                                             (fd[FD_IMAGE_NAME].value,
                                              mi[1][i][0],mi[1][i][1]))
                 raise ValueError(message)
+                
         root = self.image_directory()
         for image_set in image_sets:
             keys = {}

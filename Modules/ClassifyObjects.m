@@ -427,7 +427,7 @@ if any(findobj == ThisModuleFigureNumber)
         end
     end
 
-    if NumberOfObjects > 1,
+    if NumberOfObjects > 1, % && (min(Measurements(~isinf(Measurements))) ~= max(Measurements(~isinf(Measurements)))),
         % If Edges([1 end]) is +/-inf, user specified a thredhold, so
         % set bounds to min/max Measurements
         if isinf(Edges(1))

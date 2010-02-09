@@ -48,15 +48,20 @@ folder this column is not needed.
 </li>
 
 <li>
-<i>Columns whose name begins with Metadata</i>.
-A column whose name begins with "Metadata" can be used to group, or associate, 
-files loaded by <b>LoadImages</b>. For instance, an experiment might require 
-that images created on the same day use an illumination correction function 
-calculated from all images from that day. In this case, the file loaded by 
-<b>LoadData</b> would have a "Metadata_Date" column and the
-<b>LoadImages</b> module would extract the Metadata_Date field from the image
-file name. The pipeline will match image sets with corresponding illumination
-correction images based on matching Metadata_Date fields.
+<i>Columns whose name begins with Metadata</i>. A column whose name begins with 
+"Metadata" can be used to group, or associate, files loaded by <b>LoadImages</b>.
+<p>For instance, an experiment might require that images created on the same day 
+use an illumination correction function calculated from all images from that day, 
+and furthermore, the date is captured in the filenames for the invidual image 
+sets and in a .csv file specifying the illumination correction functions. 
+<p>In this case, if the illumination correction images are loaded with the 
+LoadData module, the file should have a "Metadata_Date" 
+column which contains the date identifiers. Similarly, if the individual images 
+are loaded using the LoadImages module, LoadImages should be set to extract the 
+<Date> metadata field from the file names (see <b>LoadImages</b> for more details 
+on how to do so). The pipeline will then match the individual image sets with 
+their corresponding illumination correction functions based on matching 
+Metadata_Date fields.
 </li>
 
 <li>
@@ -70,9 +75,11 @@ module, using particular formats described in the help for <b>CalculateStatistic
 </ul>
 
 <h3>Example CSV file:</h3><br>
-Image_FileName_FITC, Image_PathName_FITC, Metadata_Plate, Titration_NaCl_uM<br>
-"04923_d1.tif","2009-07-08","P-12345",750<br>
-"51265_d1.tif","2009-07-09","P-12345",2750<br>
+<table border="0">
+<tr><td>Image_FileName_FITC,</td><td>Image_PathName_FITC,</td><td>Metadata_Plate,</td><td>Titration_NaCl_uM</td></tr><br>
+<tr><td>"04923_d1.tif",</td><td>"2009-07-08",</td><td>"P-12345",</td><td>750</td></tr>
+<tr><td>"51265_d1.tif",</td><td>"2009-07-09",</td><td>"P-12345",</td><td>2750</td></tr>
+</table>
 
 After the first row of header information (column names), the first 
 image-specific row specifies the file, "2009-07-08/04923_d1.tif" for the FITC 
@@ -194,14 +201,18 @@ class LoadData(cpm.CPModule):
             contained within the default input folder,
             and '&/../My_folder' looks in a folder called 'My_folder'
             at the same level as the output folder.""")
+        
         self.csv_custom_directory = cps.DirectoryPath("Custom file location",
                                                       ".", doc = 
                                                       """<i>(Only used if the file location is specified as Elsewhere)</i>""")
+        
         self.csv_file_name = cps.FilenameText("Name of the file",
                                               "None",doc="""
             Provide the file name of the CSV file containing the data.""")
+        
         self.wants_images = cps.Binary("Load images based on this data?", True, doc="""
             Check this box to have <b>LoadData</b> load images using the Image_FileName field and the Image_PathName fields (the latter is optional).""")
+        
         self.image_directory_choice = cps.Choice("Base image location",
                                                  DIR_ALL, doc="""
             This is the parent (base) folder where images are located. If images are 
@@ -222,15 +233,21 @@ class LoadData(cpm.CPModule):
         self.image_custom_directory = cps.DirectoryPath("Custom base image location",
                                                         ".", doc = 
                                                         """<i>(Only used if the base image location is specified as Elsewhere)</i><br>""")
+        
         self.wants_image_groupings = cps.Binary("Group images by metadata?", False)
-        self.metadata_fields = cps.MultiChoice("Select metadata fields for grouping", None)
+        
+        self.metadata_fields = cps.MultiChoice("Select metadata fields for grouping", None,doc="""
+            This option can be used to break the image sets in an experiment into groups
+            that can be processed by different nodes on a computing cluster. Each set of
+            files that share the metadata tags that you select will be processed
+            together. See <b>CreateBatchFiles</b> for details on submitted a 
+            CellProfiler pipeline to a computing cluster for processing.""")
+        
         self.wants_rows = cps.Binary("Process just a range of rows?",
                                      False, doc="""
             Check this box if you want to process a subset of the rows in the CSV file.
             Rows are numbered starting at 1 (but do not count the header line). 
-            LoadData will process up to and including the end row.
-            This option can be used to break the image sets in an experiment into groups
-            that can be processed by different nodes on a computing cluster.""")
+            LoadData will process up to and including the end row.""")
         self.row_range = cps.IntegerRange("Rows to process",
                                           (1,100000),1, doc = 
                                           """<i>(Only used if a range of rows is to be specified)</i><br>Enter the row numbers of the first and last row to be processed.""")

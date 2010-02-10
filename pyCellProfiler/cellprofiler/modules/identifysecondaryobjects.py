@@ -436,6 +436,7 @@ class IdentifySecondaryObjects(cpmi.Identify):
             lookup[0] = 0
             lookup[lookup != 0] = np.arange(np.sum(lookup != 0)) + 1
             segmented_labels = lookup[objects.segmented]
+            segmented_out = lookup[segmented_out]
             new_objects = cpo.Objects()
             new_objects.segmented = segmented_labels
             if objects.has_unedited_segmented:

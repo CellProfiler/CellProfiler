@@ -81,7 +81,9 @@ class IdentifySecondaryObjects(cpmi.Identify):
         self.primary_objects = cps.ObjectNameSubscriber("Select the input objects","Nuclei",doc="""
             Each primary object is associated with exaqctly one secondary object and it 
             is assumed to be completely contained within it.""")
+        
         self.objects_name = cps.ObjectNameProvider("Name the identified objects","Cells")
+        
         self.method = cps.Choice("Select the method to identify the secondary objects",
                                  [M_PROPAGATION, M_WATERSHED_G, M_WATERSHED_I, 
                                   M_DISTANCE_N, M_DISTANCE_B],
@@ -137,12 +139,16 @@ class IdentifySecondaryObjects(cpmi.Identify):
             secondary objects to be limited to a certain distance away from the edge
             of the primary objects.</li></ul></li>
             </ul>""")
+        
         self.image_name = cps.ImageNameSubscriber("Select the input image",
                                                   "None",doc="""
             The selected image will be used to find the edges of the secondary objects.
             For DISTANCE - N, this will not affect object identification, only the final display.""")
+        
         self.create_threshold_settings()
+        
         self.distance_to_dilate = cps.Integer("Number of pixels by which to expand the primary objects:",10,minval=1)
+        
         self.regularization_factor = cps.Float("Regularization factor:",0.05,minval=0,
                                                doc="""\
             (<i>For propagation method only</i>) 
@@ -161,10 +167,13 @@ class IdentifySecondaryObjects(cpmi.Identify):
             the intensity image is almost completely ignored and the dividing line
             will simply be halfway between the two competing primary objects.</li>
             </ul>""")
-        self.use_outlines = cps.Binary("Save outlines of the identified objects?",False)
+        
+        self.use_outlines = cps.Binary("Save outlines of the identified secondary objects?",False)
+        
         self.outlines_name = cps.OutlineNameProvider('Name the outline image',"SecondaryOutlines", doc="""\
             The outlines of the identified objects may be used by modules downstream,
             by selecting them from any drop-down image list.""")
+        
         self.wants_discard_edge = cps.Binary(
             "Do you want to discard objects that touch the edge of the image?",
             False,
@@ -174,6 +183,7 @@ class IdentifySecondaryObjects(cpmi.Identify):
             in the unedited labels; this prevents pixels in objects touching
             the edge from being considered in modules which modify the
             segmentation.""")
+        
         self.wants_discard_primary = cps.Binary(
             "Do you want to discard associated primary objects?",
             False,
@@ -194,11 +204,13 @@ class IdentifySecondaryObjects(cpmi.Identify):
             unedited objects - the unedited objects prevent operations
             that change the segmentation from using the pixels of objects
             that are edited out.""")
+        
         self.wants_primary_outlines = cps.Binary(
             "Do you want to save outlines of the new primary objects?", False,
             doc = """Check this setting in order to save images of the outlines
             of the primary objects after filtering. You can save these images
             using the <b>SaveImages</b> module.""")
+        
         self.new_primary_outlines_name = cps.ImageNameProvider(
             "New primary objects outlines name:", "FilteredNucleiOutlines",
             doc = """This setting lets you name the outline image of the

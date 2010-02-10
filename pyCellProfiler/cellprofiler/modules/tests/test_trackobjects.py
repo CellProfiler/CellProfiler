@@ -522,5 +522,277 @@ class TestTrackObjects(unittest.TestCase):
                                                    T.F_PREFIX, feature,"image")
             self.assertEqual(len(scales), 1)
             self.assertEqual(int(scales[0]), 10)
+
+    def make_lap2_workspace(self, objs, nimages):
+        '''Make a workspace to test the second half of LAP
         
+        objs - a N x 5 array of "objects" composed of the
+               following pieces per object
+               objs[0] - image set # for object
+               objs[1] - label for object
+               objs[2] - x coordinate for object
+               objs[3] - y coordinate for object
+               objs[4] - area for object
+        '''
+        module = T.TrackObjects()
+        module.module_num = 1
+        module.object_name.value = OBJECT_NAME
+        module.tracking_method.value = T.TM_LAP
+        module.wants_second_phase.value = True
+        module.pixel_radius.value = 50
         
+        pipeline = cpp.Pipeline()
+        def callback(caller, event):
+            self.assertFalse(isinstance(event, cpp.RunExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.add_module(module)
+        
+        m = cpmeas.Measurements()
+        for index, feature in (
+            (1, module.measurement_name(T.F_LABEL)),
+            (2, T.M_LOCATION_CENTER_X),
+            (3, T.M_LOCATION_CENTER_Y),
+            (4, module.measurement_name(T.F_AREA))):
+            values = [objs[objs[:,0] == i, index] for i in range(nimages)]
+            m.add_all_measurements(OBJECT_NAME, feature, values)
+        m.add_all_measurements(cpmeas.IMAGE, "ImageNumber", list(range(nimages)))
+        m.image_set_number = nimages
+        
+        image_set_list = cpi.ImageSetList()
+        for i in range(nimages):
+            image_set = image_set_list.get_image_set(i)
+        workspace = cpw.Workspace(pipeline, module, image_set, cpo.ObjectSet(),
+                                  m, image_set_list)
+        return workspace, module
+    
+    def test_07_01_lap_none(self):
+        '''Run the second part of LAP on one image of nothing'''
+        workspace, module = self.make_lap2_workspace(np.zeros((0,5)), 1)
+        self.assertTrue(isinstance(module, T.TrackObjects))
+        module.post_group(workspace, np.arange(1))
+        labels = workspace.measurements.get_all_measurements(
+            OBJECT_NAME, module.measurement_name(T.F_LABEL))
+        self.assertEqual(len(labels), 1)
+        self.assertEqual(len(labels[0]), 0)
+        
+    def test_07_02_lap_one(self):
+        '''Run the second part of LAP on one image of one object'''
+        workspace, module = self.make_lap2_workspace(
+            np.array([[0, 1, 100, 100, 25]]), 1)
+        self.assertTrue(isinstance(module, T.TrackObjects))
+        module.run_as_data_tool(workspace)
+        labels = workspace.measurements.get_all_measurements(
+            OBJECT_NAME, module.measurement_name(T.F_LABEL))
+        self.assertEqual(len(labels), 1)
+        self.assertEqual(len(labels[0]), 1)
+        self.assertEqual(labels[0][0], 1)
+        
+    def test_07_03_bridge_gap(self):
+        '''Bridge a gap of zero frames between two objects'''
+        workspace, module = self.make_lap2_workspace(
+            np.array([[0, 1, 0, 0, 25],
+                      [1, 2, 100, 100, 25]]), 2)
+        self.assertTrue(isinstance(module, T.TrackObjects))
+        #
+        # The cost of bridging the gap should be 141. We set the alternative
+        # score to 142 so that bridging wins.
+        #
+        module.gap_cost.value = 142
+        module.max_gap_score.value = 142
+        module.run_as_data_tool(workspace)
+        labels = workspace.measurements.get_all_measurements(
+            OBJECT_NAME, module.measurement_name(T.F_LABEL))
+        self.assertEqual(len(labels), 2)
+        self.assertEqual(len(labels[0]), 1)
+        self.assertEqual(labels[0][0], 1)
+        self.assertEqual(len(labels[1]), 1)
+        self.assertEqual(labels[1][0], 1)
+        
+    def test_07_04_maintain_gap(self):
+        '''Maintain object identity across a large gap'''
+        workspace, module = self.make_lap2_workspace(
+            np.array([[0, 1, 0, 0, 25],
+                      [1, 2, 100, 100, 25]]), 2)
+        self.assertTrue(isinstance(module, T.TrackObjects))
+        #
+        # The cost of creating the gap should be 140 and the cost of
+        # bridging the gap should be 141.
+        #
+        module.gap_cost.value = 140
+        module.max_gap_score.value = 142
+        module.run_as_data_tool(workspace)
+        labels = workspace.measurements.get_all_measurements(
+            OBJECT_NAME, module.measurement_name(T.F_LABEL))
+        self.assertEqual(len(labels), 2)
+        self.assertEqual(len(labels[0]), 1)
+        self.assertEqual(labels[0][0], 1)
+        self.assertEqual(len(labels[1]), 1)
+        self.assertEqual(labels[1][0], 2)
+        
+    def test_07_05_filter_gap(self):
+        '''Filter a gap due to an unreasonable score'''
+        workspace, module = self.make_lap2_workspace(
+            np.array([[0, 1, 0, 0, 25],
+                      [1, 2, 100, 100, 25]]), 2)
+        self.assertTrue(isinstance(module, T.TrackObjects))
+        #
+        # The cost of creating the gap should be 142 and the cost of
+        # bridging the gap should be 141. However, the gap should be filtered
+        # by the max score
+        #
+        module.gap_cost.value = 142
+        module.max_gap_score.value = 140
+        module.run_as_data_tool(workspace)
+        labels = workspace.measurements.get_all_measurements(
+            OBJECT_NAME, module.measurement_name(T.F_LABEL))
+        self.assertEqual(len(labels), 2)
+        self.assertEqual(len(labels[0]), 1)
+        self.assertEqual(labels[0][0], 1)
+        self.assertEqual(len(labels[1]), 1)
+        self.assertEqual(labels[1][0], 2)
+        
+    def test_07_06_split(self):
+        '''Track an object splitting'''
+        workspace, module = self.make_lap2_workspace(
+            np.array([[0, 1, 100, 100, 50],
+                      [1, 1, 110, 110, 25],
+                      [1, 2, 90,   90, 25],
+                      [2, 1, 110, 110, 25],
+                      [2, 2, 90,   90, 25]]), 3)
+        self.assertTrue(isinstance(module, T.TrackObjects))
+        #
+        # The split score should be between 14 and 15.  Set the split
+        # alternative cost to 15 so that the split is favored.
+        #
+        module.split_cost.value = 15
+        module.max_split_score.value = 30
+        module.run_as_data_tool(workspace)
+        labels = workspace.measurements.get_all_measurements(
+            OBJECT_NAME, module.measurement_name(T.F_LABEL))
+        self.assertEqual(len(labels), 3)
+        self.assertEqual(len(labels[0]), 1)
+        self.assertEqual(labels[0][0], 1)
+        self.assertEqual(len(labels[1]), 2)
+        self.assertEqual(labels[1][0], 1)
+        self.assertEqual(labels[1][1], 1)
+        
+    def test_07_07_dont_split(self):
+        '''Track an object splitting'''
+        workspace, module = self.make_lap2_workspace(
+            np.array([[0, 1, 100, 100, 50],
+                      [1, 1, 110, 110, 25],
+                      [1, 2, 90,   90, 25],
+                      [2, 1, 110, 110, 25],
+                      [2, 2, 90,   90, 25]]), 3)
+        self.assertTrue(isinstance(module, T.TrackObjects))
+        module.split_cost.value = 14
+        module.max_split_score.value = 30
+        module.run_as_data_tool(workspace)
+        labels = workspace.measurements.get_all_measurements(
+            OBJECT_NAME, module.measurement_name(T.F_LABEL))
+        self.assertEqual(len(labels), 3)
+        self.assertEqual(len(labels[0]), 1)
+        self.assertEqual(labels[0][0], 1)
+        self.assertEqual(len(labels[1]), 2)
+        self.assertEqual(labels[1][0], 1)
+        self.assertEqual(labels[1][1], 2)
+
+    def test_07_08_split_filter(self):
+        '''Prevent a split by setting the filter too low'''
+        workspace, module = self.make_lap2_workspace(
+            np.array([[0, 1, 100, 100, 50],
+                      [1, 1, 110, 110, 25],
+                      [1, 2, 90,   90, 25],
+                      [2, 1, 110, 110, 25],
+                      [2, 2, 90,   90, 25]]), 3)
+        self.assertTrue(isinstance(module, T.TrackObjects))
+        module.split_cost.value = 15
+        module.max_split_score.value = 14
+        module.run_as_data_tool(workspace)
+        labels = workspace.measurements.get_all_measurements(
+            OBJECT_NAME, module.measurement_name(T.F_LABEL))
+        self.assertEqual(len(labels), 3)
+        self.assertEqual(len(labels[0]), 1)
+        self.assertEqual(labels[0][0], 1)
+        self.assertEqual(len(labels[1]), 2)
+        self.assertEqual(labels[1][0], 1)
+        self.assertEqual(labels[1][1], 2)
+        
+    def test_07_09_merge(self):
+        '''Merge two objects into one'''
+        workspace, module = self.make_lap2_workspace(
+            np.array([[0, 1, 110, 110, 25],
+                      [0, 2, 90,   90, 25],
+                      [1, 1, 110, 110, 25],
+                      [1, 2, 90,   90, 25],
+                      [2, 1, 100, 100, 50]]), 3)
+        self.assertTrue(isinstance(module, T.TrackObjects))
+        module.merge_cost.value = 30
+        module.max_merge_score.value = 30
+        module.run_as_data_tool(workspace)
+        labels = workspace.measurements.get_all_measurements(
+            OBJECT_NAME, module.measurement_name(T.F_LABEL))
+        self.assertEqual(len(labels), 3)
+        self.assertEqual(len(labels[0]), 2)
+        self.assertEqual(labels[0][0], 1)
+        self.assertEqual(labels[0][1], 1)
+        self.assertEqual(len(labels[1]), 2)
+        self.assertEqual(labels[1][0], 1)
+        self.assertEqual(labels[1][1], 1)
+        self.assertEqual(len(labels[2]), 1)
+        self.assertEqual(labels[2][0], 1)
+
+    def test_07_10_dont_merge(self):
+        '''Don't merge because of low alternative merge cost'''
+        workspace, module = self.make_lap2_workspace(
+            np.array([[0, 1, 110, 110, 25],
+                      [0, 2, 90,   90, 25],
+                      [1, 1, 110, 110, 25],
+                      [1, 2, 90,   90, 25],
+                      [2, 1, 100, 100, 50]]), 3)
+        self.assertTrue(isinstance(module, T.TrackObjects))
+        #
+        # The cost of the merge is 2x 10x sqrt(2) which is between 28 and 29
+        #
+        module.merge_cost.value = 28
+        module.max_merge_score.value = 30
+        module.run_as_data_tool(workspace)
+        labels = workspace.measurements.get_all_measurements(
+            OBJECT_NAME, module.measurement_name(T.F_LABEL))
+        self.assertEqual(len(labels), 3)
+        self.assertEqual(len(labels[0]), 2)
+        self.assertEqual(labels[0][0], 1)
+        self.assertEqual(labels[0][1], 2)
+        self.assertEqual(len(labels[1]), 2)
+        self.assertEqual(labels[1][0], 1)
+        self.assertEqual(labels[1][1], 2)
+        self.assertEqual(len(labels[2]), 1)
+        self.assertEqual(labels[2][0], 1)
+
+    def test_07_11_filter_merge(self):
+        '''Don't merge because of low alternative merge cost'''
+        workspace, module = self.make_lap2_workspace(
+            np.array([[0, 1, 110, 110, 25],
+                      [0, 2, 90,   90, 25],
+                      [1, 1, 110, 110, 25],
+                      [1, 2, 90,   90, 25],
+                      [2, 1, 100, 100, 50]]), 3)
+        self.assertTrue(isinstance(module, T.TrackObjects))
+        #
+        # The cost of the merge is 2x 10x sqrt(2) which is between 28 and 29
+        #
+        module.merge_cost.value = 30
+        module.max_merge_score.value = 28
+        module.run_as_data_tool(workspace)
+        labels = workspace.measurements.get_all_measurements(
+            OBJECT_NAME, module.measurement_name(T.F_LABEL))
+        self.assertEqual(len(labels), 3)
+        self.assertEqual(len(labels[0]), 2)
+        self.assertEqual(labels[0][0], 1)
+        self.assertEqual(labels[0][1], 2)
+        self.assertEqual(len(labels[1]), 2)
+        self.assertEqual(labels[1][0], 1)
+        self.assertEqual(labels[1][1], 2)
+        self.assertEqual(len(labels[2]), 1)
+        self.assertEqual(labels[2][0], 1)
+                

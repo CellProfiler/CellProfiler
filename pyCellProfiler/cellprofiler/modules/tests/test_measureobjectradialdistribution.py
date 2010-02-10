@@ -404,3 +404,33 @@ class TestMeasureObjectRadialDistribution(unittest.TestCase):
                                                  feature_frac_at_d(bin, 4))
                 self.assertEqual(len(data), 3)
                 self.assertTrue(np.isnan(data[1]))
+                
+    def test_04_02_center_outside_of_object(self):
+        '''Make sure MeasureObjectRadialDistribution can handle oddly shaped objects'''
+        np.random.seed(41)
+        labels = np.array([[ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ],
+                           [ 0, 1, 1, 1, 1, 1, 1, 1, 1, 0 ],
+                           [ 0, 1, 0, 0, 0, 0, 0, 0, 1, 0 ],
+                           [ 0, 1, 0, 0, 0, 0, 0, 0, 1, 0 ],
+                           [ 0, 1, 0, 0, 0, 0, 0, 0, 1, 0 ],
+                           [ 0, 1, 0, 0, 0, 0, 0, 0, 1, 0 ],
+                           [ 0, 1, 0, 0, 0, 0, 0, 0, 1, 0 ],
+                           [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]])
+        
+        center_labels = np.zeros(labels.shape, int)
+        center_labels[int(center_labels.shape[0]/2),
+                      int(center_labels.shape[1]/2)] = 1
+        
+        image = np.random.uniform(size=labels.shape)
+        m = self.run_module(image, labels, center_labels, 4)
+        for bin in range(1,5):
+            data = m.get_current_measurement(OBJECT_NAME, 
+                                             feature_frac_at_d(bin, 4))
+            self.assertEqual(len(data), 1)
+
+        m = self.run_module(image, labels, None, 4)
+        for bin in range(1,5):
+            data = m.get_current_measurement(OBJECT_NAME, 
+                                             feature_frac_at_d(bin, 4))
+            self.assertEqual(len(data), 1)
+            

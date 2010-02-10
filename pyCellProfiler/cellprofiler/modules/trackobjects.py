@@ -209,46 +209,46 @@ class TrackObjects(cpm.CPModule):
         second phase or to perform the second phase when running as a data
         tool""")
         
-        self.gap_termination_cost = cps.Integer(
-            'Gap termination cost:', 40, minval=1,
-            doc = '''This setting assigns a cost to terminating tracking of
-            an object where the alternative is tracking that object across
-            a gap in frames. It should be set lower if
-            objects from prior frames are being joined to ones of subsequent
-            frames despite being separated in space. It should be set higher
-            if objects are not present in a frame due to mis-segmentation
-            and are not tracked across frames.''')
-        self.split_termination_cost = cps.Integer(
-            'Split termination cost:', 40, minval=1,
-            doc = '''This setting assigns a cost to terminating tracking of
-            an object when the alternative would be to split that object into
-            two objects in a subsequent track. The split score takes into
+        self.gap_cost = cps.Integer(
+            'Gap cost:', 40, minval=1,
+            doc = '''This setting assigns a cost to keeping a gap caused
+            when an object is missing from one of the frames of a track (the
+            alternative to keeping the gap is to bridge it by connecting
+            the tracks on either side of the missing frames).
+            The cost of bridging a gap is the distance, in pixels, of the 
+            displacement of the object between frames.<br>
+            Set the gap cost higher if tracks from objects in previous
+            frames are being erroneously joined, across a gap, to tracks from 
+            objects in subsequent frames. Set the cost lower if tracks
+            are not properly joined due to gaps caused by mis-segmentation.''')
+        self.split_cost = cps.Integer(
+            'Split alternative cost:', 40, minval=1,
+            doc = '''This setting is the cost of keeping two tracks distinct
+            where the alternative is to make them into one track that
+            splits. A split occurs when an object in one frame is assigned
+            to the same track as two objects in a subsequent frame.
+            The split score takes into
             account the area of the split object relative to the area of
             the resulting objects and the displacement of the resulting
             objects relative to the position of the original object and is
-            roughly measured in pixels.<br>
-            The split termination cost should be set lower if
-            objects are being split. It should be set higher if objects
+            roughly measured in pixels. The split alternative cost is 
+            (conceptually) subtracted from the cost of making the split.<br>
+            The split cost should be set lower if objects are being split
+            that should not be split. It should be set higher if objects
             that should be split are not.''')
-        self.gap_initiation_cost = cps.Integer(
-            'Gap initiation cost:', 40, minval=1,
-            doc = '''This setting assigns a cost to creating a new object
-            where the alternative is tracking an existing object across a
-            gap in frames. The value should be set lower if objects from
-            subsequent frames are being joined to objects from prior frames
-            and the mis-tracked object is missing from one or more frames.
-            The value should be set higher if objects are not being tracked
-            when the object is mis-segmented and missing from one of the
-            frames.''')
-        self.merge_initiation_cost = cps.Integer(
-            'Merge initiation cost:', 40, minval=1,
-            doc = '''This setting assigns a cost to creating a new object
-            when the alternative is tracking two prior objects that merge
-            to form the object. The merge score takes into account the areas
-            of the objects to be merged relative to the area of the resulting
-            object and the displacement of the resulting object relative to
-            the positions of the original objects. The score is roughly in
-            pixels. Set the merge initiation cost lower if objects are being
+        self.merge_cost = cps.Integer(
+            'Merge alternative cost:', 40, minval=1,
+            doc = '''This setting is the cost of keeping two tracks
+            distinct where the alternative is to merge them into one.
+            A merge occurs when two objects in one frame are assigned to
+            the same track as a single object in a subsequent frame.
+            The merge score takes into account the area of the two objects
+            to be merged relative to the area of the resulting objects and
+            the displacement of the original objects relative to the final
+            object. The merge cost is measured in pixels. The merge
+            alternative cost is (conceptually) subtracted from the
+            cost of making the merge.<br>
+            Set the merge alternative cost lower if objects are being
             merged when they should otherwise be kept separate. Set the cost
             higher if objects that are not merged should be merged.''')
         self.max_gap_score = cps.Integer(
@@ -271,7 +271,7 @@ class TrackObjects(cpm.CPModule):
             objects that would otherwise be merged if it is set to a lower
             value.''')
         self.max_split_score = cps.Integer(
-            'Maximum merge score:', 50, minval=1,
+            'Maximum split score:', 50, minval=1,
             doc = '''This setting acts as a filter for unreasonably large
             split scores. The split score has two components: the area
             of the initial object relative to the area of the
@@ -310,8 +310,7 @@ class TrackObjects(cpm.CPModule):
                 self.pixel_radius, self.display_type, self.wants_image,
                 self.image_name, self.born_cost, self.die_cost, 
                 self.wants_second_phase,
-                self.gap_initiation_cost, self.gap_termination_cost,
-                self.split_termination_cost, self.merge_initiation_cost,
+                self.gap_cost, self.split_cost, self.merge_cost,
                 self.max_gap_score, self.max_split_score,
                 self.max_merge_score, self.max_frame_distance]
 
@@ -324,8 +323,7 @@ class TrackObjects(cpm.CPModule):
             result += [self.born_cost, self.die_cost, self.wants_second_phase]
             if self.wants_second_phase:
                 result += [ 
-                    self.gap_initiation_cost, self.gap_termination_cost,
-                    self.split_termination_cost, self.merge_initiation_cost,
+                    self.gap_cost, self.split_cost, self.merge_cost,
                     self.max_gap_score, self.max_split_score,
                     self.max_merge_score, self.max_frame_distance]
         result +=[ self.display_type, self.wants_image]
@@ -704,13 +702,50 @@ class TrackObjects(cpm.CPModule):
         if (self.tracking_method != TM_LAP or
             not self.wants_second_phase):
             return
+        ############################################
+        #
+        # All of the scores going into the LAP must be positive
+        # so we have to balance the positive costs instead of
+        # doing something simpler, like subtracting the cost of a gap
+        # from the cost of bridging the gap.
+        #
+        # Variables we have to play with:
+        # Gap initiation - cost applied to a start
+        # Gap termination - cost applied to an end
+        # Split termination - alternative cost to splitting.
+        # Merge initiation - alternative cost to merging.
+        #
+        # Cost of gap = 2*gap_termination + 2*gap_initiation
+        # Alternative cost = gap_termination + displacement across gap + gap_initiation
+        #
+        # Cost of split = split displacement + area + split_termination
+        # Cost of alternative = gap_initiation + gap_termination
+        # split_termination = split_cost - gap_initiation + gap_termination
+        #
+        # Cost of merge = gap_initiation + merge displacement + area + gap_termination
+        # Cost of alternative = merge_initiation + gap_initiation
+        # merge_initiation = merge_cost - gap_initiation
+        ############################################
+        
+        gap_cost = float(self.gap_cost.value)
+        split_alternative_cost = float(self.split_cost.value)
+        merge_alternative_cost = float(self.merge_cost.value)
+        
+        # Make the gap closing cost high enough so that 
+        # gap_initiation + gap_termination > merge or split alternative costs
+        gap_closing_cost = split_alternative_cost + merge_alternative_cost
+        gap_initiation_cost = (gap_cost + gap_closing_cost) / 2
+        gap_termination_cost = (gap_cost + gap_closing_cost) / 2
+        split_termination_cost = split_alternative_cost + gap_initiation_cost + gap_termination_cost
+        merge_initiation_cost = merge_alternative_cost
+        
         para1 = self.max_gap_score.value #max upper-left
         para2 = self.max_merge_score.value #max upper-middle
-        para3 = self.gap_termination_cost.value #value for upper-right
+        para3 = gap_termination_cost #value for upper-right
         para4 = self.max_split_score.value #max for middle-left
-        para5 = self.split_termination_cost.value #value for middle-right
-        para6 = self.gap_initiation_cost.value #value for lower-left
-        para7 = self.merge_initiation_cost.value #value for lower-middle
+        para5 = split_termination_cost #value for middle-right
+        para6 = gap_initiation_cost #value for lower-left
+        para7 = merge_initiation_cost #value for lower-middle
         para8 = self.max_frame_distance.value #max frame difference
 
         image_numbers = self.get_image_numbers(workspace)
@@ -737,6 +772,11 @@ class TrackObjects(cpm.CPModule):
             if(mlength < len(label[i])):
                 mlength = len(label[i])
             i = i+1
+        #
+        # Quit if there's nothing to do
+        #
+        if mlength == 0:
+            return
 
         #converts the ragged array into a two-dimensional array    
 
@@ -794,6 +834,28 @@ class TrackObjects(cpm.CPModule):
         t = t+length-1
         P2 = np.delete(P, t, 0)
         Q2 = np.delete(Q, t, 0)
+        
+        ##################################################
+        #
+        # Addresses of supplementary nodes:
+        # The LAP array is composed of six address ranges.
+        # 
+        # 1 to T      = segment starts and ends
+        # T+1 to T+OB = split starts
+        # T+OB+1 to T * 2 + OB = gap alternatives
+        # T * 2 + OB + 1 to T * 2 + OB * 2 = merge ends
+        # T * 2 + OB * 2 + 1 to T * 2 + OB * 2 = split alternatives
+        # T * 2 + OB * 3 + 1 to T * 2 + OB * 3 = merge alternatives
+        #
+        # T = # tracks
+        # OB = # of objects that can serve as merge or split points
+        ##################################################
+        
+        ss_off = len(F)
+        ga_off = len(F) + len(P1)
+        me_off = len(F) * 2 + len(P1)
+        sa_off = len(F) * 2 + len(P1) * 2
+        ma_off = len(F) * 2 + len(P1) * 3
 
         #creates the upper-left block
 
@@ -810,10 +872,46 @@ class TrackObjects(cpm.CPModule):
         i = np.arange(len(x))
         d[x[i,0], x[i,1]] = para1+1
 
+        # Filter out costs that are too high
+        a = np.argwhere(d <= para1)
+        #
+        # Add the gap closing cost which is just an offset that guarantees
+        # that the gap initiation and gap termination are higher than
+        # split and merge coss
+        #
+        d += gap_closing_cost
+        d = np.column_stack((a, d[a[0:len(a), 0], a[0:len(a), 1]]))
+
+        #creates the transpose for the lower-right block
+
+        w = np.column_stack((d[:, 1]+len(F)+len(P1), 
+                             d[:, 0]+len(F)+len(P1), 
+                             np.zeros(len(d))+0.0001))
+        d = np.vstack((d, w))
+
+        #upper-right block (which provides terminating alternatives for gaps)
+
+        f = np.column_stack((np.arange(len(F)), 
+                             np.arange(len(F))+len(F)+len(P1), 
+                             np.zeros(len(F))+gap_termination_cost))
+        d = np.vstack((d, f))
+        
+        #lower-left (which provides initiating alternatives for gaps)
+
+        a = np.column_stack((np.arange(len(F))+len(F)+len(P1), 
+                             np.arange(len(F)), 
+                             np.zeros(len(F))+gap_initiation_cost))
+
+        d = np.vstack((d, a))
+
         #finds possible merge points with a small enough gap difference, for upper-middle block
 
         i = 0
         j = np.arange(len(P1))
+        #
+        # The first column of z is the index of the track that ends. The second
+        # is the index into P2 of the object to be merged into
+        #
         z = np.array([-1, -1])
         while i <len(F):
             y = P1[j, 2]-L[i, 2]
@@ -823,92 +921,129 @@ class TrackObjects(cpm.CPModule):
             z = np.vstack((z, y))
             i = i+1
 
-
         #calculates actual cost according to the formula given in the supplmenetary notes    
         AreaLast = Areaprime[L[z[1:len(z), 0], 2].astype("int32"), L[z[1:len(z), 0], 3].astype("int32")]
         AreaBeforeMerge = Areaprime[P[Q1[z[1:len(z), 1]]-1, 2].astype("int32"), P[Q1[z[1:len(z), 1]]-1, 3].astype("int32")]
         AreaAtMerge = Areaprime[P1[z[1:len(z), 1], 2].astype("int32"), P1[z[1:len(z), 1], 3].astype("int32")]
         rho = ((AreaLast+AreaBeforeMerge)/AreaAtMerge)**2
         px = np.argwhere(rho < 1)
-        if(len(x) > 0):
-            rho[x] = np.sqrt((1/rho[x]))
-        rho = np.sqrt((L[z[1:len(z), 0], 0]-P1[z[1:len(z), 1], 0])**2 + (L[z[1:len(z), 0], 1]-P1[z[1:len(z), 1], 1])**2)*rho
+        if(len(px) > 0):
+            rho[px] = np.sqrt((1/rho[px]))
+        rho = np.sqrt((L[z[1:len(z), 0], 0]-P2[z[1:len(z), 1], 0])**2 + (L[z[1:len(z), 0], 1]-P2[z[1:len(z), 1], 1])**2)*rho
         e = rho
-
-        #upper-right block
-
-        f = np.column_stack((np.arange(len(F)), np.arange(len(F))+len(F)+len(P1), np.zeros(len(F))+para3))
 
         #filters out the costs that are too high
 
-        a = np.argwhere(d <= para1)
         b = np.argwhere(e <= para2)
 
         #puts together all the upper blocks
 
         z = z[1:]
-        d = np.column_stack((a, d[a[0:len(a), 0], a[0:len(a), 1]]))
-        z = z[b].reshape((len(b), 2))
-        e = e[b].reshape((len(b)))
+        if len(b) > 0:
+            z = z[b].reshape((len(b), 2))
+            e = e[b].reshape((len(b)))
+        else:
+            z = np.zeros((0,2),z.dtype)
+            e = np.zeros((0,),e.dtype)
         e = np.column_stack((z, e))
-        e[0:len(e), 1] = e[0:len(e), 1]+len(F)
 
-        #temp is a combination of the upper-left, upper-middle, middle-left used in order to create the lower-right block
+        # link the alternative cost of merging to the merge-end node
+        # with a cost of zero (bookkeeping)
 
-        temp = np.vstack((d, e))
-        d = np.vstack((d, e, f))
+        f = np.column_stack((np.arange(len(P1))+ma_off,
+                             np.arange(len(P1))+me_off,
+                             np.zeros(len(P1))))
+        #
+        # Link the alternative cost of merging to the gap node
+        # with a cost that's equal to the gap termination cost minus
+        # the alternative penalty to merging
+        #
+        
+        g = np.column_stack((e[:,1] + ma_off,
+                             e[:,0] + ga_off,
+                             np.zeros(len(e))+ gap_termination_cost - merge_alternative_cost))
+        #
+        # We also need a path from every merge to every merge 
+        # initiator so that every merge can have an end. This is just
+        # bookkeeping, so again no cost.
+        #
+        h = np.column_stack((np.arange(len(P1))+me_off,
+                             np.arange(len(P1))+ma_off,
+                             np.zeros(len(P1))))
 
+        # Mark the first index as an index into P1 by moving it past the
+        # track number indices.
+        e[0:len(e), 1] = e[0:len(e), 1]+me_off
+        d = np.vstack((d, e, f, g, h))
+        
         #similar process for the middle-left block as the upper-middle left block
 
-        i = 0
-        j = np.arange(len(F))
-        z = np.array([-1, -1])
-        while i < len(P1):
-            y = F[j, 2]-P2[i, 2]
-            y = y.astype("int32")
-            x = np.argwhere((y <= para8) & (y > 0))
-            y = np.column_stack((x, np.zeros(len(x), dtype="int32")+i))
-            z = np.vstack((z, y))
-            i = i+1
+        if len(P1) > 0:
+            i = 0
+            j = np.arange(len(F))
+            # The first column of Z is the index of the object being split
+            # The second is the index of the track that results from
+            # the split.
+            #
+            z = np.array([-1, -1])
+            while i < len(P1):
+                y = F[j, 2]-P2[i, 2]
+                y = y.astype("int32")
+                x = np.argwhere((y <= para8) & (y > 0))
+                y = np.column_stack((np.zeros(len(x), dtype="int32")+i, x))
+                z = np.vstack((z, y))
+                i = i+1
+    
+            AreaFirst = Areaprime[F[z[1:len(z), 1], 2].astype("int32"), F[z[1:len(z), 1], 3].astype("int32")]
+            AreaAfterSplit = Areaprime[P[Q2[z[1:len(z), 0]]+1, 2].astype("int32"), P[Q2[z[1:len(z), 0]]+1, 3].astype("int32")]
+            AreaAtSplit = Areaprime[P2[z[1:len(z), 0], 2].astype("int32"), P2[z[1:len(z), 0], 3].astype("int32")]
+            rho = ((AreaFirst+AreaAfterSplit)/AreaAtSplit)**2
+            x = np.argwhere(rho < 1)
+            if(len(x) > 1):
+                rho[x] = (1/rho[x])*(1/rho[x])
+            rho = np.sqrt((F[z[1:len(z), 0], 0]-P2[z[1:len(z), 1], 0])**2 + (F[z[1:len(z), 0], 1]-P2[z[1:len(z), 1], 1])**2)*rho
+            e = rho
+    
+            z = z[1:]
+            b = np.argwhere(e <= para4)
+            if len(b) > 0:
+                z = z[b].reshape((len(b), 2))
+                e = e[b].reshape((len(b)))
+                e = np.column_stack((z, e))
+            else:
+                e = np.zeros((0,3))
+        else:
+            e = np.zeros((0,3))
 
-        AreaFirst = Areaprime[F[z[1:len(z), 0], 2].astype("int32"), F[z[1:len(z), 0], 3].astype("int32")]
-        AreaAfterSplit = Areaprime[P[Q2[z[1:len(z), 1]]+1, 2].astype("int32"), P[Q2[z[1:len(z), 1]]+1, 3].astype("int32")]
-        AreaAtSplit = Areaprime[P2[z[1:len(z), 1], 2].astype("int32"), P2[z[1:len(z), 1], 3].astype("int32")]
-        rho = ((AreaFirst+AreaAfterSplit)/AreaAtSplit)**2
-        x = np.argwhere(rho < 1)
-        if(len(x) > 1):
-            rho[x] = (1/rho[x])*(1/rho[x])
-        rho = np.sqrt((F[z[1:len(z), 0], 0]-P2[z[1:len(z), 1], 0])**2 + (F[z[1:len(z), 0], 1]-P2[z[1:len(z), 1], 1])**2)*rho
-        e = rho
+        #middle-right block - the alternative for each split is that it
+        # terminates with the split cost.
 
-        z = z[1:]
-        b = np.argwhere(e <= para4)
-        z = z[b].reshape((len(b), 2))
-        e = e[b].reshape((len(b)))
-        e = np.column_stack((z, e))
+        f = np.column_stack((np.arange(len(P1))+ss_off,
+                             np.arange(len(P1))+sa_off,
+                             np.zeros(len(P1))))
+        #
+        # For bookkeeping, we need to make a path from each segment start's
+        # terminator to each of these alternatives.
+        
+        g = np.column_stack((e[:,1] + ga_off,
+                             e[:,0] + sa_off,
+                             np.zeros(len(e))+gap_initiation_cost - split_alternative_cost))
+        #
+        # We also need a path from every split terminators to 
+        # every split so that every split can have a start. This is just
+        # bookkeeping, so again no cost.
+        #
+        h = np.column_stack((np.arange(len(P1))+sa_off,
+                             np.arange(len(P1))+ss_off,
+                             np.zeros(len(P1))))
 
-        #middle-right block
-
-        f = np.column_stack((np.arange(len(P1))+len(F), np.arange(len(P1))+len(F)+len(P1)+len(F), np.zeros(len(P1))+para5))
-        e[0:len(e), 0] = e[0:len(e), 0]+len(F)
-
-        temp = np.vstack((temp, e))
-        d = np.vstack((d, e, f))
-
-        #lower-middle and lower-left blocks
-
-        a = np.column_stack((np.arange(len(F))+len(F)+len(P1), np.arange(len(F)), np.zeros(len(F))+para6))
-        b = np.column_stack((np.arange(len(P1))+len(F)+len(P1)+len(F), np.arange(len(P1))+len(F), np.zeros(len(P1))+para7))
-
-        d = np.vstack((d, a, b))
-
-        #creates the transpose for the lower-right block
-
-        w = np.column_stack((temp[0:len(temp), 1]+len(F)+len(P1), temp[0:len(temp), 0]+len(F)+len(P1), np.zeros(len(temp))+0.0001))
-
+        # Add the # of tracks to the first column of Z (now E) in order
+        # to mark it as an index into P1.
+        e[0:len(e), 0] = e[0:len(e), 0]+ss_off
+ 
+        d = np.vstack((d, e, f, g, h))
         #sorts the list of costs, and add one to indices for costs to fit in with LAP
 
-        d = np.vstack((d, w))
         indices = np.lexsort((d[:,1], d[:,0]))
         d = d[indices]
         d[:, 1] = d[:, 1]+1
@@ -916,14 +1051,13 @@ class TrackObjects(cpm.CPModule):
 
         #gets first, kk, and cc ready for LAP
 
-        first = np.bincount(np.ndarray.astype(d[0:(d.size/3),0], 'int32')+1)
-        first = np.cumsum(first)+1
-        first[0] = 0
-        kk = np.hstack((np.array((0)), d[:, 1]))
-        kk = kk.astype("int32")
-        cc = np.hstack((np.array((0.0)), d[:, 2]))
+        counts = np.bincount(np.ndarray.astype(d[:,0], 'int32'))
+        first = np.ascontiguousarray(np.hstack((np.cumsum(counts) - counts+1,
+                                                [len(d)+1])))
+        kk = np.ascontiguousarray(np.hstack(([0],d[:, 1].astype("int32"))))
+        cc = np.ascontiguousarray(np.hstack(([0.0], d[:, 2])))
 
-        x, y =  LAP.LAP(kk, first, cc, len(F)*2+len(P1)*2)
+        x, y =  LAP.LAP(kk, first, cc, len(F)*2+len(P1)*4)
 
         #attaches different segments together if they are matches through the IAP
         a = np.zeros(len(F)+1, dtype="int32")
@@ -936,8 +1070,9 @@ class TrackObjects(cpm.CPModule):
             if(y[i] <= len(F)):
                 b[i] = y[i]
                 c[b[i]] = i
-            elif(y[i] <= len(F)+len(P1)):
-                b[i] = labelprime[P2[y[i]-1-len(F)][2], P2[y[i]-1-len(F)][3]]
+            elif(y[i] > ss_off and y[i] <= ss_off+len(P1)):
+                b[i] = labelprime[P2[y[i]-1-ss_off][2],
+                                  P2[y[i]-1-ss_off][3]]
                 c[b[i]] = i
             else:
                 b[i] = -1
@@ -945,25 +1080,36 @@ class TrackObjects(cpm.CPModule):
             if(x[i] <= len(F)):
                 a[i] = x[i]
                 d[a[i]] = i
-            elif(x[i] <= len(F)+len(P1)):
-                a[i] = labelprime[P1[x[i]-1-len(F)][2], P1[x[i]-1-len(F)][3]]
+            elif(x[i] > me_off and x[i] <= me_off+len(P1)):
+                a[i] = labelprime[P1[x[i]-1-me_off][2],
+                                  P1[x[i]-1-me_off][3]]
                 d[a[i]] = i
             else:
                 a[i] = -1
             i = i+1
 
         #
-        # At this point a & b are edge lists of a graph and we want to
-        # find all connected components to give labels to the things
-        # that are the same.
+        # At this point a gives the label # of the track that connects
+        # to the end of the indexed track. b gives the label # of the
+        # track that connects to the start of the indexed track.
+        # We convert these into edges.
         #
-        # Eliminate all unconnected edges
+        # aa and bb are the vertices of an edge list and aa[i],bb[i]
+        # make up an edge
         #
-        connect_mask = (a != -1) & (b != -1)
+        connect_mask = (a != -1)
         aa = a[connect_mask]
-        bb = b[connect_mask]
-        z = all_connected_components(aa, bb)+1
-        z = np.hstack(([0],z))
+        bb = np.argwhere(connect_mask).flatten()
+        connect_mask = (b != -1)
+        aa = np.hstack((aa, b[connect_mask]))
+        bb = np.hstack((bb, np.argwhere(connect_mask).flatten()))
+        #
+        # Connect self to self for indices that do not connect
+        #
+        disconnect_mask = (a == -1) & (b == -1)
+        aa = np.hstack((aa, np.argwhere(disconnect_mask).flatten()))
+        bb = np.hstack((bb, np.argwhere(disconnect_mask).flatten()))
+        z = all_connected_components(aa, bb)
         newlabel = [z[label[i]] for i in range(len(label))]
         #
         # Replace the labels for the image sets in the group
@@ -1066,6 +1212,7 @@ class TrackObjects(cpm.CPModule):
             result += [( self.object_name.value,
                          self.measurement_name(F_AREA),
                          cpmeas.COLTYPE_INTEGER)]
+        return result
 
     def get_categories(self, pipeline, object_name):
         if object_name == self.object_name.value:
@@ -1078,6 +1225,7 @@ class TrackObjects(cpm.CPModule):
             result = list(F_ALL)
             if self.tracking_method == TM_LAP:
                 result += [F_AREA]
+            return result
         return []
 
     def get_measurement_scales(self, pipeline, object_name, category, feature,image_name):
@@ -1107,7 +1255,7 @@ class TrackObjects(cpm.CPModule):
         if (not from_matlab) and variable_revision_number == 2:
             # Added phase 2 parameters
             setting_values = setting_values + [
-                "40","40","40","40","50","50","50","5"]
+                "40","40","40","50","50","50","5"]
             variable_revision_number = 3
         return setting_values, variable_revision_number, from_matlab
 

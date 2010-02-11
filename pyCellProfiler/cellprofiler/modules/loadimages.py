@@ -98,7 +98,7 @@ if has_bioformats:
 else:
     FF = [FF_INDIVIDUAL_IMAGES, FF_STK_MOVIES]
 
-USE_BIOFORMATS_FIRST = [".tiff", ".tif", ".flex",".stk"]
+USE_BIOFORMATS_FIRST = [".tiff", ".tif", ".flex",".stk",".dib"]
 DIR_DEFAULT_IMAGE = 'Default Image Folder'
 DIR_DEFAULT_OUTPUT = 'Default Output Folder'
 DIR_OTHER = 'Elsewhere...'

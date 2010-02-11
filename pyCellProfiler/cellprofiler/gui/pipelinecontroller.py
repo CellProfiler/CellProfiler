@@ -186,6 +186,9 @@ class PipelineController:
     
     def do_load_pipeline(self,pathname):
         try:
+            self.stop_debugging()
+            if self.__running_pipeline:
+                self.stop_running()
             self.__pipeline.load(pathname)
             self.__pipeline.turn_off_batch_mode()
             self.__clear_errors()

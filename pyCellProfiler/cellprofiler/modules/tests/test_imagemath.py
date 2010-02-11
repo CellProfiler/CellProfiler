@@ -75,7 +75,7 @@ Combine:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|show_windo
     What did you call the third image to be combined?:Do not use
     What do you want to call the combined image?:MyOutputImage
     Enter the weight you want to give the first image:0.2
-    Enter the weight you want to give the second image:0.8
+    Enter the weight you want to give the second image:0.7
     Enter the weight you want to give the third image:.10
     """
         pipeline = cpp.Pipeline()
@@ -90,7 +90,8 @@ Combine:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|show_windo
         self.assertEqual(module.images[0].image_name, "MyFirstImage")
         self.assertEqual(module.images[1].image_name, "MySecondImage")
         self.assertAlmostEqual(module.images[0].factor.value,0.2)
-        self.assertAlmostEqual(module.images[1].factor.value,0.8)
+        self.assertAlmostEqual(module.images[1].factor.value,0.7)
+        self.assertAlmostEqual(module.after_factor.value, 1.0/0.9)
         self.assertEqual(module.operation.value, I.O_ADD)
         self.assertEqual(module.output_image_name, "MyOutputImage")
     

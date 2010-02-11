@@ -289,14 +289,27 @@ class ImageMath(cpm.CPModule):
             variable_revision_number = 2
         if (from_matlab and module_name == 'Combine' and
             variable_revision_number == 3):
+            names_and_weights = [ 
+                (name, weight)
+                for name, weight in zip(setting_values[:3],
+                                        setting_values[4:])
+                if name.lower() != cps.DO_NOT_USE.lower()]
+            
+            multiplier = 1.0/sum([float(weight) 
+                                  for name, weight in names_and_weights])
             output_image = setting_values[3]
-            setting_values = (setting_values[:3] +
-                              ['Combine'] +
-                              setting_values[4:] +
-                              ['1','1',cps.NO, cps.NO,
-                               output_image])
+            setting_values = [O_ADD,  # Operation
+                              "1",    # Exponent
+                              str(multiplier),    # Post-operation multiplier
+                              "0",    # Post-operation offset
+                              cps.NO, # Truncate low
+                              cps.NO, # Truncate high
+                              output_image]
+            for name, weight in names_and_weights:
+                setting_values += [name, weight]
             module_name = 'ImageMath'
             variable_revision_number = 2
+            from_matlab = False
         if (from_matlab and module_name == 'InvertIntensity' and
             variable_revision_number == 1):
             image_name, output_image = setting_values

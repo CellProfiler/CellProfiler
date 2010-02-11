@@ -74,6 +74,7 @@ import cellprofiler.cpmodule as cpm
 import cellprofiler.settings as cps
 import cellprofiler.preferences as cpp
 import cellprofiler.measurements as cpmeas
+from identify import M_NUMBER_OBJECT_NUMBER
 
 ##############################################
 #
@@ -107,6 +108,24 @@ DIR_DEFAULT_OUTPUT = "Default output folder"
 DIR_DEFAULT_IMAGE = "Default image folder"
 DIR_CUSTOM = "Custom folder"
 DIR_CUSTOM_WITH_METADATA = "Custom folder with metadata"
+
+##############################################
+#
+# Choices for object table format
+#
+##############################################
+
+OT_PER_OBJECT = "One table per object type"
+OT_COMBINE = "Single object table"
+
+'''Index of the object table format choice in the settings'''
+OT_IDX = 18
+
+'''Use this dictionary to keep track of rewording of above if it happens'''
+OT_DICTIONARY = {
+    "One table per object type": OT_PER_OBJECT,
+    "Single object table": OT_COMBINE
+    }
 
 ##############################################
 #
@@ -155,7 +174,7 @@ def connect_sqlite(db_file):
 class ExportToDatabase(cpm.CPModule):
  
     module_name = "ExportToDatabase"
-    variable_revision_number = 13
+    variable_revision_number = 14
     category = "Data Tools"
 
     def create_settings(self):
@@ -316,6 +335,33 @@ class ExportToDatabase(cpm.CPModule):
             in all of the columns of a table. <b>ExportToDatabase</b> will
             shorten all of the column names by removing characters, at the
             same time, guaranteeing that no two columns have the same name.""")
+        self.separate_object_tables = cps.Choice(
+            "Do you want one table per object or a single object table?",
+            [OT_PER_OBJECT, OT_COMBINE],
+            doc = """<b>ExportToDatabase</b> can either create a table
+            for each type of object exported or it can create a single
+            object table.<br><ul>
+            <li><i>%(OT_PER_OBJECT)s</i> - <b>ExportToDatabase</b> will create one
+            table for each object type you export. The table name will reflect
+            the name of your objects. The table will have one row for each
+            of your objects. You can make SQL queries that join tables using
+            the Number_ObjectNumber columns of parent objects (such as those
+            created by <b>IdentifyPrimaryObjects</b>) with the corresponding
+            Parent_... column of the child objects. Choose 
+            <i>%(OT_PER_OBJECT)s</i> if parent objects can have more than
+            one child object, if you want a relational representation of
+            your objects in the database,
+            or if you need to split columns among different
+            tables and shorten column names because of database limitations.</li>
+            <li><i>%(OT_COMBINE)s</i> - this choice will create a single
+            database table that records all object measurements. <b>
+            ExportToDatabase</b> will prepend each column name with the
+            name of the object associated with that column's measurement.
+            Each row of the table will have measurements for all objects
+            that have the same image and object number. Choose
+            <i>%(OT_COMBINE)s</i> if parent objects have a single child,
+            or if you want a simple table structure in your database.</li>
+            </ul>""" % globals())
                                                             
     def visible_settings(self):
         needs_default_output_directory =\
@@ -350,7 +396,7 @@ class ExportToDatabase(cpm.CPModule):
                    self.objects_choice]
         if self.objects_choice == O_SELECT:
             result += [self.objects_list]
-        result += [self.max_column_size]
+        result += [self.separate_object_tables, self.max_column_size]
         return result
     
     def settings(self):
@@ -362,7 +408,8 @@ class ExportToDatabase(cpm.CPModule):
                 self.wants_agg_mean, self.wants_agg_median,
                 self.wants_agg_std_dev, self.wants_agg_mean_well, 
                 self.wants_agg_median_well, self.wants_agg_std_dev_well,
-                self.objects_choice, self.objects_list, self.max_column_size]
+                self.objects_choice, self.objects_list, self.max_column_size,
+                self.separate_object_tables]
     
     def validate_module(self,pipeline):
         if self.want_table_prefix.value:
@@ -392,7 +439,16 @@ class ExportToDatabase(cpm.CPModule):
                                           self.objects_choice)
             
     def prepare_run(self, pipeline, image_set_list, frame):
+        '''Prepare to run the pipeline'''
+        #
+        # This caches the list of measurement columns for the run,
+        # fixing the column order, etc.
+        #
+        self.get_pipeline_measurement_columns(pipeline, image_set_list)
+        
         if pipeline.test_mode:
+            return True
+        if pipeline.in_batch_mode():
             return True
         if self.db_type == DB_ORACLE:
             raise NotImplementedError("Writing to an Oracle database is not yet supported")
@@ -405,20 +461,39 @@ class ExportToDatabase(cpm.CPModule):
             elif self.db_type==DB_SQLITE:
                 db_file = self.get_output_directory()+'/'+self.sqlite_file.value
                 self.connection, self.cursor = connect_sqlite(db_file)
-            try:
-                object_table = self.get_table_prefix()+'Per_Object'
-                image_table = self.get_table_prefix()+'Per_Image'
-                r = execute(self.cursor, 'SELECT * FROM %s LIMIT 1'%(image_table))
-                if self.objects_choice != O_NONE:
-                    r = execute(self.cursor, 'SELECT * FROM %s LIMIT 1'%(object_table))
+            tables = [self.get_table_name(cpmeas.IMAGE)]
+            if self.objects_choice != O_NONE:
+                if self.separate_object_tables == OT_COMBINE:
+                    tables.append(self.get_table_name(cpmeas.OBJECT))
+                else:
+                    for object_name in self.objects_choice.choices:
+                        if not self.ignore_object(object_name, True):
+                            tables.append(self.get_table_name(object_name))
+            tables_that_exist = []
+            for table in tables:
+                try:
+                    r = execute(self.cursor, 
+                                'SELECT * FROM %s LIMIT 1'%(table))
+                    tables_that_exist.append(table)
+                except:
+                    pass
+            if len(tables_that_exist) > 0:
                 import wx
-                dlg = wx.MessageDialog(frame, 'ExportToDatabase will overwrite your tables "%s" and "%s". OK?'%(image_table, object_table),
-                                    'Overwrite per_image and per_object table?', style=wx.OK|wx.CANCEL|wx.ICON_QUESTION)
+                if len(tables_that_exist) == 1:
+                    table_msg = "%s table" % tables_that_exist[0]
+                else:
+                    table_msg = "%s and %s tables" % (
+                        ", ".join(tables_that_exist[:-1]), 
+                        tables_that_exist[-1])
+                dlg = wx.MessageDialog(
+                    frame, 
+                    'ExportToDatabase will overwrite the %s. OK?' % table_msg,
+                                    'Overwrite tables?', 
+                                    style=wx.OK|wx.CANCEL|wx.ICON_QUESTION)
                 if dlg.ShowModal() != wx.ID_OK:
                     return False
-            except:
-                pass
-            mappings = self.get_column_name_mappings(pipeline)
+
+            mappings = self.get_column_name_mappings(pipeline, image_set_list)
             column_defs = self.get_pipeline_measurement_columns(pipeline, 
                                                                 image_set_list)
             if self.objects_choice != O_ALL:
@@ -427,10 +502,7 @@ class ExportToDatabase(cpm.CPModule):
                     onames += self.objects_list.selections
                 column_defs = [column for column in column_defs
                                if column[0] in onames]
-            self.create_database_tables(self.cursor, 
-                                        column_defs,
-                                        mappings,
-                                        not pipeline.in_batch_mode())
+            self.create_database_tables(self.cursor, pipeline, image_set_list)
         return True
     
     def prepare_to_create_batch(self, pipeline, image_set_list, fn_alter_path):
@@ -468,9 +540,8 @@ class ExportToDatabase(cpm.CPModule):
         if workspace.pipeline.test_mode:
             return
         if (self.db_type == DB_MYSQL or self.db_type == DB_SQLITE):
-            mappings = self.get_column_name_mappings(workspace.pipeline)
             if not workspace.pipeline.test_mode:
-                self.write_data_to_db(workspace, mappings)
+                self.write_data_to_db(workspace)
             
     def run_as_data_tool(self, workspace):
         self.post_run(workspace)
@@ -478,15 +549,14 @@ class ExportToDatabase(cpm.CPModule):
     def post_run(self, workspace):
         if self.save_cpa_properties.value:
             self.write_properties(workspace)
-        mappings = self.get_column_name_mappings(workspace.pipeline)
         if self.db_type == DB_MYSQL_CSV:
             path = self.get_output_directory(workspace)
             if not os.path.isdir(path):
                 os.makedirs(path)
-            per_image, per_object = self.write_mysql_table_defs(workspace, mappings)
-            self.write_data(workspace, mappings, per_image, per_object)
+            self.write_mysql_table_defs(workspace)
+            self.write_data(workspace)
         elif self.wants_well_tables:
-            per_well = self.write_mysql_table_per_well(workspace, mappings)
+            per_well = self.write_mysql_table_per_well(workspace)
         if self.db_type in (DB_MYSQL, DB_SQLITE):
             # commit changes to db here or in run?
             print 'Commit'
@@ -507,7 +577,7 @@ class ExportToDatabase(cpm.CPModule):
         
         If strict is True, then we ignore objects based on the object selection
         """
-        if object_name in ('Experiment','Neighbors'):
+        if object_name in (cpmeas.EXPERIMENT, cpmeas.NEIGHBORS):
             return True
         if strict and self.objects_choice == O_NONE:
             return True
@@ -528,9 +598,10 @@ class ExportToDatabase(cpm.CPModule):
             return True
         return False
     
-    def get_column_name_mappings(self, pipeline):
+    def get_column_name_mappings(self, pipeline, image_set_list):
         """Scan all the feature names in the measurements, creating column names"""
-        columns = pipeline.get_measurement_columns()
+        columns = self.get_pipeline_measurement_columns(pipeline, 
+                                                        image_set_list)
         mappings = ColumnNameMapping(self.max_column_size.value)
         mappings.add("ImageNumber")
         mappings.add("ObjectNumber")
@@ -543,6 +614,42 @@ class ExportToDatabase(cpm.CPModule):
                     mappings.add('%s_%s_%s'%(agg_name, object_name, feature_name))
         return mappings
     
+    def get_aggregate_columns(self, pipeline, image_set_list):
+        '''Get object aggregate columns for the PerImage table
+        
+        pipeline - the pipeline being run
+        image_set_list - for cacheing column data
+        
+        returns a tuple:
+        result[0] - object_name = name of object generating the aggregate
+        result[1] - feature name
+        result[2] - aggregation operation
+        result[3] - column name in Image database
+        '''
+        columns = self.get_pipeline_measurement_columns(pipeline, 
+                                                        image_set_list)
+        mappings = self.get_column_name_mappings(pipeline, image_set_list)
+        ob_tables = self.get_object_names(pipeline, image_set_list)
+        result = []
+        for ob_table in ob_tables:
+            for obname, feature, ftype in columns:
+                if obname==ob_table and not self.ignore_feature(obname, feature):
+                    feature_name = '%s_%s'%(obname, feature)
+                    # create per_image aggregate column defs 
+                    result += [(obname, feature, aggname,
+                                '%s_%s' % (aggname, feature_name))
+                               for aggname in self.agg_names ]
+        return result
+    
+    def get_object_names(self, pipeline, image_set_list):
+        '''Get the names of the objects whose measurements are being taken'''
+        column_defs = self.get_pipeline_measurement_columns(pipeline,
+                                                            image_set_list)
+        obnames = set([c[0] for c in column_defs])
+        return [ obname for obname in obnames
+                 if not self.ignore_object(obname, True) and
+                 obname not in (cpmeas.IMAGE, cpmeas.EXPERIMENT, 
+                                cpmeas.NEIGHBORS)]
     @property
     def agg_names(self):
         '''The list of selected aggregate names'''
@@ -566,100 +673,111 @@ class ExportToDatabase(cpm.CPModule):
     #
     # Create per_image and per_object tables in MySQL
     #
-    def create_database_tables(self, cursor, column_defs, mappings, 
-                               create_database):
+    def create_database_tables(self, cursor, pipeline, image_set_list):
         '''Creates empty image and object tables
         
         Creates the MySQL database (if MySQL), drops existing tables of the
-        same name and creates the tables. Also initializes image_col_order,
-        object_col_order and col_dict.
+        same name and creates the tables.
         
         cursor - database cursor for creating the tables
         column_defs - column definitions as returned by get_measurement_columns
         mappings - mappings from measurement feature names to column names
-        create_database - True to actually create the database, False if
-                          we have to call this just to do the initialization
-                          of image_col_order etc. during batch mode
         '''
-        self.image_col_order = {}
-        self.object_col_order = {}
-        
-        object_table = self.get_table_prefix()+'Per_Object'
-        image_table = self.get_table_prefix()+'Per_Image'
-        
-        # Build a dictionary keyed by object type of measurement cols
-        self.col_dict = {}
-        for c in column_defs:
-            if c[0]!=cpmeas.EXPERIMENT:
-                if c[0] in self.col_dict.keys():
-                    self.col_dict[c[0]] += [c]
-                else:
-                    self.col_dict[c[0]] = [c]
-        
         # Create the database
-        if self.db_type==DB_MYSQL and create_database:
+        if self.db_type==DB_MYSQL:
             execute(cursor, 'CREATE DATABASE IF NOT EXISTS %s'%(self.db_name.value))
             execute(cursor, 'USE %s'% self.db_name.value)
-        
-        agg_column_defs = []
+
+        columns = self.get_pipeline_measurement_columns(pipeline, 
+                                                        image_set_list)
+            
         if self.objects_choice != O_NONE:
             # Object table
-            ob_tables = set([obname for obname, _, _ in column_defs 
-                             if obname!=cpmeas.IMAGE and obname!=cpmeas.EXPERIMENT])
-            statement = 'CREATE TABLE '+object_table+' (\n'
-            statement += 'ImageNumber INTEGER,\n'
-            statement += 'ObjectNumber INTEGER'
-            c = 2
-            for ob_table in ob_tables:
-                for obname, feature, ftype in column_defs:
-                    if obname==ob_table and not self.ignore_feature(obname, feature):
-                        feature_name = '%s_%s'%(obname, feature)
-                        # create per_image aggregate column defs 
-                        for aggname in self.agg_names:
-                            agg_column_defs += [(cpmeas.IMAGE,
-                                                 '%s_%s'%(aggname,feature_name),
-                                                 cpmeas.COLTYPE_FLOAT)]
-                        self.object_col_order[feature_name] = c
-                        c+=1
-                        statement += ',\n%s %s'%(mappings[feature_name], ftype)
-            statement += ',\nPRIMARY KEY (ImageNumber, ObjectNumber) )'
-            
-            if create_database:
-                execute(cursor, 'DROP TABLE IF EXISTS %s'%(object_table))
+            if self.separate_object_tables == OT_COMBINE:
+                execute(cursor, 'DROP TABLE IF EXISTS %s' %
+                        self.get_table_name(cpmeas.OBJECT))
+                statement = self.get_create_object_table_statement(
+                    None, pipeline, image_set_list)
                 execute(cursor, statement)
-        
-        # Image table
-        statement = 'CREATE TABLE '+image_table+' (\n'
-        statement += 'ImageNumber INTEGER'
-        c = 1
-        for obname, feature, ftype in column_defs+agg_column_defs:
-            if obname==cpmeas.IMAGE and not self.ignore_feature(obname, feature):
-                if feature not in [d[1] for d in agg_column_defs]:
-                    feature_name = '%s_%s'%(obname, feature)
-                else:
-                    feature_name = feature
-                self.image_col_order[feature_name] = c
-                statement += ',\n%s %s'%(mappings[feature_name], ftype)
-                c+=1
-        statement += ',\nPRIMARY KEY (ImageNumber) )'
+            else:
+                for object_name in self.get_object_names(pipeline, 
+                                                         image_set_list):
+                    execute(cursor, 'DROP TABLE IF EXISTS %s' %
+                            self.get_table_name(object_name))
+                    statement = self.get_create_object_table_statement(
+                        object_name, pipeline, image_set_list)
+                    execute(cursor, statement)
 
-        if create_database:
-            execute(cursor, 'DROP TABLE IF EXISTS %s'%(image_table))
-            execute(cursor, statement)
-            print 'Commit'
-            cursor.connection.commit()
+        statement = self.get_create_image_table_statement(pipeline, 
+                                                          image_set_list)
+        execute(cursor, 'DROP TABLE IF EXISTS %s' % 
+                self.get_table_name(cpmeas.IMAGE))
+        execute(cursor, statement)
+        cursor.connection.commit()
     
-    def write_mysql_table_defs(self, workspace, mappings):
-        """Returns dictionaries mapping per-image and per-object column names to column #s"""
+    def get_create_image_table_statement(self, pipeline, image_set_list):
+        '''Return a SQL statement that generates the image table'''
+        statement = 'CREATE TABLE '+ self.get_table_name(cpmeas.IMAGE) +' (\n'
+        statement += 'ImageNumber INTEGER'
+
+        mappings = self.get_column_name_mappings(pipeline, image_set_list)
+        for obname, feature, ftype in self.get_pipeline_measurement_columns(
+            pipeline, image_set_list):
+            if obname==cpmeas.IMAGE and not self.ignore_feature(obname, feature):
+                feature_name = '%s_%s' % (obname, feature)
+                statement += ',\n%s %s'%(mappings[feature_name], ftype)
+        for column in self.get_aggregate_columns(pipeline, image_set_list):
+            statement += ',\n%s %s' % (column[3], cpmeas.COLTYPE_FLOAT)
+        statement += ',\nPRIMARY KEY (ImageNumber) )'
+        return statement
         
-        m_cols = self.get_pipeline_measurement_columns(workspace.pipeline, 
-                                                       workspace.image_set_list)
+    def get_create_object_table_statement(self, object_name, pipeline, 
+                                          image_set_list):
+        '''Get the "CREATE TABLE" statement for the given object table
         
-        per_image = {"ImageNumber":0}
-        per_object = {"ImageNumber":0,"ObjectNumber":1}
-        per_image_idx = 1
-        per_object_idx = 2
+        object_name - None = PerObject, otherwise a specific table
+        '''
+        if object_name == None:
+            object_table = self.get_table_name(cpmeas.OBJECT)
+        else:
+            object_table = self.get_table_name(object_name)
+        statement = 'CREATE TABLE '+object_table+' (\n'
+        statement += 'ImageNumber INTEGER\n'
+        if object_name == None:
+            statement += ',ObjectNumber INTEGER'
+            object_pk = 'ObjectNumber'
+        else:
+            object_pk = "_".join((object_name,M_NUMBER_OBJECT_NUMBER))
+        column_defs = self.get_pipeline_measurement_columns(pipeline,
+                                                            image_set_list)
+        mappings = self.get_column_name_mappings(pipeline, image_set_list)
+        if object_name is None:
+            ob_tables = self.get_object_names(pipeline, image_set_list)
+        else:
+            ob_tables = [object_name]
+        for ob_table in ob_tables:
+            for obname, feature, ftype in column_defs:
+                if obname==ob_table and not self.ignore_feature(obname, feature):
+                    feature_name = '%s_%s'%(obname, feature)
+                    statement += ',\n%s %s'%(mappings[feature_name], ftype)
+        statement += ',\nPRIMARY KEY (ImageNumber, %s) )' % object_pk
+        return statement
+        
+    def write_mysql_table_defs(self, workspace):
+        """Write the table definitions to the SETUP.SQL file
+        
+        The column order here is the same as in get_pipeline_measurement_columns
+        with the aggregates following the regular image columns.
+        """
+        
+        pipeline = workspace.pipeline
+        image_set_list = workspace.image_set_list
         measurements = workspace.measurements
+
+        m_cols = self.get_pipeline_measurement_columns(pipeline, 
+                                                       image_set_list)
+        mappings = self.get_column_name_mappings(pipeline, image_set_list)
+        
         file_name_width, path_name_width = self.get_file_path_width(workspace)
         metadata_name_width = 128
         file_name = "%s_SETUP.SQL"%(self.sql_file_prefix)
@@ -667,72 +785,42 @@ class ExportToDatabase(cpm.CPModule):
         fid = open(path_name,"wt")
         fid.write("CREATE DATABASE IF NOT EXISTS %s;\n"%(self.db_name.value))
         fid.write("USE %s;\n"%(self.db_name.value))
-        fid.write("CREATE TABLE %sPer_Image (ImageNumber INTEGER PRIMARY KEY"%
-                  (self.get_table_prefix()))
-        for object_name, feature, coltype in m_cols:
-            if object_name != cpmeas.IMAGE:
-                continue
-            if self.ignore_feature(object_name, feature, measurements):
-                continue
-            feature_name = "%s_%s"%(object_name,feature)
-            colname = mappings[feature_name]
-            if coltype.upper() == 'FLOAT':
-                coltype = 'FLOAT'
-            fid.write(",\n%s %s"%(colname, coltype))
-            per_image[feature_name] = per_image_idx
-            per_image_idx += 1
-        #
-        # Put mean and std dev measurements for objects in the per_image table
-        #
-        for aggname in self.agg_names:
-            for object_name in workspace.measurements.get_object_names():
-                if object_name == 'Image':
-                    continue
-                for feature in measurements.get_feature_names(object_name):
-                    if self.ignore_feature(object_name, feature, measurements):
-                        continue
-                    feature_name = "%s_%s_%s"%(aggname,object_name,feature)
-                    colname = mappings[feature_name]
-                    fid.write(",\n%s FLOAT"%(colname))
-                    per_image[feature_name] = per_image_idx
-                    per_image_idx += 1
-        fid.write(");\n\n")
-        
+        fid.write(self.get_create_image_table_statement(pipeline, 
+                                                        image_set_list) + ";\n")
         #
         # Write out the per-object table
         #
         if self.objects_choice != O_NONE:
-            fid.write("""CREATE TABLE %sPer_Object(
-ImageNumber INTEGER,
-ObjectNumber INTEGER"""%(self.get_table_prefix()))
-            for object_name in workspace.measurements.get_object_names():
-                if object_name == 'Image':
-                    continue
-                for feature in measurements.get_feature_names(object_name):
-                    if self.ignore_feature(object_name, feature, measurements, True):
-                        continue
-                    feature_name = '%s_%s'%(object_name,feature)
-                    fid.write(",\n%s FLOAT"%(mappings[feature_name]))
-                    per_object[feature_name]=per_object_idx
-                    per_object_idx += 1
-            fid.write(""",
-PRIMARY KEY (ImageNumber, ObjectNumber));
-
-LOAD DATA LOCAL INFILE '%s_image.CSV' REPLACE INTO TABLE %sPer_Image 
+            if self.separate_object_tables == OT_COMBINE:
+                data = [(None, cpmeas.OBJECT)]
+            else:
+                data = [ (x, x) for x in self.get_object_names(
+                    pipeline, image_set_list)]
+            
+            for gcot_name, object_name in data:
+                fid.write(self.get_create_object_table_statement(
+                    gcot_name, pipeline, image_set_list) + ";\n")
+        else:
+            data = []
+        fid.write("""
+LOAD DATA LOCAL INFILE '%s_image.CSV' REPLACE INTO TABLE %s
 FIELDS TERMINATED BY ',' 
 OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
+""" %
+                  (self.base_name(workspace), self.get_table_name(cpmeas.IMAGE)))
 
-LOAD DATA LOCAL INFILE '%s_object.CSV' REPLACE INTO TABLE %sPer_Object 
+        for gcot_name, object_name in data:
+            fid.write("""
+LOAD DATA LOCAL INFILE '%s_%s.CSV' REPLACE INTO TABLE %s 
 FIELDS TERMINATED BY ',' 
 OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
-"""%(self.base_name(workspace),self.get_table_prefix(),
-     self.base_name(workspace),self.get_table_prefix()))
+""" % (self.base_name(workspace), object_name,
+       self.get_table_name(object_name)))
         if self.wants_well_tables:
-            self.write_mysql_table_per_well(workspace, mappings, fid)
+            self.write_mysql_table_per_well(workspace, fid)
         fid.close()
-        return per_image, per_object
     
-    def write_mysql_table_per_well(self, workspace, mappings, fid=None):
+    def write_mysql_table_per_well(self, workspace, fid=None):
         '''Write SQL statements to generate a per-well table
         
         workspace - workspace at the end of the run
@@ -754,6 +842,11 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
         # Do in two passes. Pass # 1 makes the column name mappings for the
         # well table. Pass # 2 writes the SQL
         #
+        pipeline = workspace.pipeline
+        image_set_list = workspace.image_set_list
+        mappings = self.get_column_name_mappings(pipeline, image_set_list)
+        object_names = self.get_object_names(pipeline, image_set_list)
+        columns = self.get_pipeline_measurement_columns(pipeline, image_set_list)
         for aggname in self.agg_well_names:
             measurements = workspace.measurements
             well_mappings = ColumnNameMapping()
@@ -761,26 +854,70 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                 if do_write:
                     fid.write("CREATE TABLE %sPer_Well_%s AS SELECT " %
                               (self.get_table_prefix(), aggname))
-                for object_name in workspace.measurements.get_object_names():
-                        if object_name == 'Image':
+                for i, object_name in enumerate(object_names + [cpmeas.IMAGE]):
+                    if object_name == cpmeas.IMAGE:
+                        object_table_name = "IT"
+                    elif self.separate_object_tables == OT_COMBINE:
+                        object_table_name = "OT"
+                    else:
+                        object_table_name = "OT%d" % (i+1)
+                    for feature in measurements.get_feature_names(object_name):
+                        if self.ignore_feature(object_name, feature, measurements):
                             continue
-                        for feature in measurements.get_feature_names(object_name):
-                            if self.ignore_feature(object_name, feature, measurements):
-                                continue
-                            feature_name = "%s_%s"%(object_name,feature)
-                            colname = mappings[feature_name]
-                            well_colname = "%s_%s" % (aggname, colname)
-                            if do_mapping:
-                                well_mappings.add(well_colname)
-                            if do_write:
-                                fid.write("%s(OT.%s) as %s,\n" %
-                                          (aggname, colname, 
-                                           well_mappings[well_colname]))
-            fid.write("""IT.Image_Metadata_Plate, IT.Image_Metadata_Well
-            FROM %sPer_Image IT JOIN %sPer_Object OT 
-            ON IT.ImageNumber = OT.ImageNumber
-            GROUP BY IT.Image_Metadata_Plate, IT.Image_Metadata_Well;\n\n""" %
-                      (table_prefix, table_prefix))
+                        #
+                        # Don't take an aggregate on a string column
+                        #
+                        if not any([True for column in columns
+                                    if column[0] == object_name and
+                                    column[1] == feature and
+                                    not column[2].startswith(cpmeas.COLTYPE_VARCHAR)]):
+                            continue
+                        feature_name = "%s_%s"%(object_name,feature)
+                        colname = mappings[feature_name]
+                        well_colname = "%s_%s" % (aggname, colname)
+                        if do_mapping:
+                            well_mappings.add(well_colname)
+                        if do_write:
+                            fid.write("%s(%s.%s) as %s,\n" %
+                                      (aggname, object_table_name, colname, 
+                                       well_mappings[well_colname]))
+            fid.write("IT.Image_Metadata_Plate, IT.Image_Metadata_Well "
+                      "FROM %sPer_Image IT\n" % table_prefix)
+            if len(object_names) == 0:
+                pass
+            elif self.separate_object_tables == OT_COMBINE:
+                fid.write("JOIN %s OT ON IT.ImageNumber = OT.ImageNumber\n" %
+                          self.get_table_name(cpmeas.OBJECT))
+            elif len(object_names) == 1:
+                fid.write("JOIN %s OT1 ON IT.ImageNumber = OT1.ImageNumber\n" %
+                          self.get_table_name(object_names[0]))
+            else:
+                #
+                # We make up a table here that lists all of the possible
+                # image and object numbers from any of the object numbers.
+                # We need this to do something other than a cartesian join
+                # between object tables.
+                #
+                fid.write(
+                    "RIGHT JOIN (SELECT DISTINCT ImageNumber, ObjectNumber FROM\n")
+                fid.write("(SELECT ImageNumber, %s_%s as ObjectNumber FROM %s\n" %
+                          (object_names[0], M_NUMBER_OBJECT_NUMBER, 
+                           self.get_table_name(object_names[0])))
+                for object_name in object_names[1:]:
+                    fid.write("UNION SELECT ImageNumber, %s_%s as ObjectNumber "
+                              "FROM %s\n" % 
+                              (object_name, M_NUMBER_OBJECT_NUMBER, 
+                               self.get_table_name(object_name)))
+                fid.write(") N_INNER) N ON IT.ImageNumber = N.ImageNumber\n")
+                for i, object_name in enumerate(object_names):
+                    fid.write("LEFT JOIN %s OT%d " % 
+                              (self.get_table_name(object_name), i+1))
+                    fid.write("ON N.ImageNumber = OT%d.ImageNumber " % (i+1))
+                    fid.write("AND N.ObjectNumber = OT%d.%s_%s\n" %
+                              (i+1, object_name, M_NUMBER_OBJECT_NUMBER))
+            fid.write("GROUP BY IT.Image_Metadata_Plate, "
+                      "IT.Image_Metadata_Well;\n\n""")
+                
         if needs_close:
             fid.close()
     
@@ -794,44 +931,8 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
         last = m.image_set_number
         return '%s%d_%d'%(self.sql_file_prefix, first, last)
     
-    
-#    def write_data(self, workspace, mappings, per_image, per_object):
-#        """Write the data in the measurements out to the csv files
-#        workspace - contains the measurements
-#        mappings  - map a feature name to a column name
-#        per_image - map a feature name to its column index in the per_image table
-#        per_object - map a feature name to its column index in the per_object table
-#        """
-#        measurements = workspace.measurements
-#        image_filename = os.path.join(self.get_output_directory(),
-#                                      '%s_image.CSV'%(self.base_name(workspace)))
-#        object_filename = os.path.join(self.get_output_directory(),
-#                                       '%s_object.CSV'%(self.base_name(workspace)))
-#        fid_per_image = open(image_filename,"wt")
-#        csv_per_image = csv.writer(fid_per_image)
-#        fid_per_object = open(object_filename,"wt")
-#        csv_per_object = csv.writer(fid_per_object)
-#        
-#        per_image_cols = max(per_image.values())+1
-#        per_object_cols = max(per_object.values())+1
-#        
-#        image_rows, object_rows = self.get_measurement_rows(measurements, per_image, per_object)
-#        
-#        print 'write data'
-#        print image_rows
-#        print object_rows
-#        
-#        for row in image_rows:
-#            csv_per_image.writerow(row)
-#        for row in object_rows:
-#            csv_per_object.writerow(row)
-#        
-#        fid_per_image.close()
-#        fid_per_object.close()
         
-        
-        
-    def write_data(self, workspace, mappings, per_image, per_object):
+    def write_data(self, workspace):
         """Write the data in the measurements out to the csv files
         workspace - contains the measurements
         mappings  - map a feature name to a column name
@@ -840,212 +941,204 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
         """
         zeros_for_nan = False
         measurements = workspace.measurements
+        pipeline = workspace.pipeline
+        image_set_list = workspace.image_set_list
         image_filename = os.path.join(self.get_output_directory(workspace),
                                       '%s_image.CSV'%(self.base_name(workspace)))
-        object_filename = os.path.join(self.get_output_directory(workspace),
-                                       '%s_object.CSV'%(self.base_name(workspace)))
         fid_per_image = open(image_filename,"wb")
-        if self.objects_choice != O_NONE:
-            fid_per_object = open(object_filename,"wb")
-            csv_per_object = csv.writer(fid_per_object, lineterminator='\n')
-        
-        per_image_cols = max(per_image.values())+1
-        per_object_cols = max(per_object.values())+1
+        columns = self.get_pipeline_measurement_columns(pipeline, 
+                                                        image_set_list)
+        agg_columns = self.get_aggregate_columns(pipeline, image_set_list)
         for i in range(measurements.image_set_index+1):
-            # Loop once per image set
-            image_row = [None for k in range(per_image_cols)]
+            image_row = []
             image_number = i+measurements.image_set_start_number
-            image_row[per_image['ImageNumber']] = image_number
-            #
-            # Fill in the image table
-            #
-            #
-            # The individual feature measurements
-            #
-            max_count = 0
-            max_rows = 0
-            for feature in measurements.get_feature_names('Image'):
-                if self.ignore_feature('Image', feature, measurements):
+            image_row.append(image_number)
+            for object_name, feature, coltype in columns:
+                if object_name != cpmeas.IMAGE:
                     continue
-                feature_name = "%s_%s"%('Image',feature)
-                value = measurements.get_measurement('Image',feature, i)
+                if self.ignore_feature(object_name, feature, measurements):
+                    continue
+                feature_name = "%s_%s" % (object_name,feature)
+                value = measurements.get_measurement(cpmeas.IMAGE, feature, i)
                 if isinstance(value, np.ndarray):
-                    if value.dtype.kind in ('O','S','U'):
-                        if value[0] is None:
-                            value = "NULL"
-                        else:
-                            value = '"'+MySQLdb.escape_string(value[0])+'"'
-                    elif np.isnan(value[0]):
+                    value = value[0]
+                if coltype.startswith(cpmeas.COLTYPE_VARCHAR):
+                    if isinstance(value, str) or isinstance(value, unicode):
+                        value = '"'+MySQLdb.escape_string(value)+'"'
+                    elif value is None:
                         value = "NULL"
                     else:
-                        value = value[0]
-                elif isinstance(value, str) or isinstance(value, unicode):
-                    value = '"'+MySQLdb.escape_string(value)+'"'
+                        value = '"'+MySQLdb.escape_string(value)+'"'
                 elif np.isnan(value):
                     value = "NULL"
                     
-                image_row[per_image[feature_name]] = value
-                if feature_name.startswith('Image_Count_'):
-                    max_count = max(max_count,int(value))
-                    object_name = feature_name[len('Image_Count_'):]
-                    if not self.ignore_object(object_name, True):
-                        max_rows = max(max_rows, int(value))
-            if max_count == 0:
-                for object_name in measurements.get_object_names():
-                    if object_name == 'Image':
-                        continue
-                    for feature in measurements.get_feature_names(object_name):
-                        if self.ignore_feature(object_name, feature, measurements):
-                            continue
-                        for agg_name in self.agg_names:
-                            feature_name = "%s_%s_%s"%(agg_name,object_name, feature)
-                            image_row[per_image[feature_name]] = 0
-            else:
-                #
-                # The aggregate measurements
-                #
-                agg_dict = measurements.compute_aggregate_measurements(
-                    i, self.agg_names)
-                for feature_name in agg_dict.keys():
-                    value = agg_dict[feature_name]
-                    if np.isnan(value):
-                        value = "NULL"
-                    image_row[per_image[feature_name]] = value
-                #
-                # Allocate an array for the per_object values
-                #
-                object_rows = np.zeros((max_count,per_object_cols))
-                object_rows[:,per_object['ImageNumber']] = image_number
-                object_rows[:,per_object['ObjectNumber']] = np.array(range(max_count))+1
-                #
-                # Loop through the objects, collecting their values
-                #
-                if self.objects_choice != O_NONE and max_rows > 0:
-                    for object_name in measurements.get_object_names():
-                        if (object_name == 'Image' or
-                            self.ignore_object(object_name, True)):
-                            continue
-                        for feature in measurements.get_feature_names(object_name):
-                            if self.ignore_feature(object_name, feature, measurements):
-                                continue
-                            feature_name = "%s_%s"%(object_name, feature)
-                            values = measurements.get_measurement(object_name, feature, i)
-                            if zeros_for_nan:
-                                values[np.logical_not(np.isfinite(values))] = 0
-                            nvalues = np.product(values.shape)
-                            if (nvalues < max_rows):
-                                sys.stderr.write("Warning: too few measurements for %s in image set #%d, got %d, expected %d\n"%(feature_name,image_number,nvalues,max_rows))
-                            elif nvalues > max_count:
-                                sys.stderr.write("Warning: too many measurements for %s in image set #%d, got %d, expected %d\n"%(feature_name,image_number,nvalues,max_rows))
-                                values = values[:max_rows]
-                            object_rows[:nvalues,per_object[feature_name]] = values
-                    for row in range(max_rows):
-                        row_values = ["NULL" if np.isnan(value) else value
-                                      for value in object_rows[row,:]]
-                        csv_per_object.writerow(row_values)
+                image_row.append(value)
+            #
+            # Add the aggregate measurements
+            #
+            agg_dict = measurements.compute_aggregate_measurements(
+                i, self.agg_names)
+            image_row += [agg_dict[col[3]] for col in agg_columns]
             fid_per_image.write(','.join([str(x) for x in image_row])+"\n")
         fid_per_image.close()
-        if self.objects_choice != O_NONE:
-            fid_per_object.close()
+        #
+        # Object tables
+        #
+        object_names = self.get_object_names(pipeline, image_set_list)
+        if len(object_names) == 0:
+            return
         
-    def write_data_to_db(self, workspace, mappings):
+        if self.separate_object_tables == OT_COMBINE:
+            data = [(cpmeas.OBJECT, object_names)]
+        else:
+            data = [(object_name, [object_name])
+                    for object_name in object_names]
+        for file_object_name, object_list in data:
+            file_name = "%s_%s.CSV" % (self.base_name(workspace), 
+                                       file_object_name)
+            fid = open(file_name, "wb")
+            csv_writer = csv.writer(fid, lineterminator='\n')
+            for i in range(measurements.image_set_index+1):
+                image_number = i+measurements.image_set_start_number
+                max_count = 0
+                for object_name in object_list:
+                    count = measurements.get_measurement(cpmeas.IMAGE,
+                                                         "Count_%s" % 
+                                                         object_name, i)
+                    max_count = max(max_count, int(count))
+                for j in range(max_count):
+                    object_row = [image_number]
+                    if file_object_name == cpmeas.OBJECT:
+                        # the object number
+                        object_row.append(j+1)
+                    for object_name, feature, coltype in columns:
+                        if object_name not in object_list:
+                            continue
+                        values = measurements.get_measurement(object_name,
+                                                              feature, i)
+                        if (values is None or len(values) <= j or
+                            np.isnan(values[j])):
+                            value = "NULL"
+                        else:
+                            value = values[j]
+                        object_row.append(value)
+                    csv_writer.writerow(object_row)
+            fid.close()
+            
+    def write_data_to_db(self, workspace):
         """Write the data in the measurements out to the database
         workspace - contains the measurements
         mappings  - map a feature name to a column name
         """
         zeros_for_nan = False
         measurements = workspace.measurements
-        measurement_cols = self.get_pipeline_measurement_columns(workspace.pipeline,
-                                                                 workspace.image_set_list)
+        pipeline = workspace.pipeline
+        image_set_list = workspace.image_set_list
+        measurement_cols = self.get_pipeline_measurement_columns(pipeline,
+                                                                 image_set_list)
+        mapping = self.get_column_name_mappings(pipeline, image_set_list)
         index = measurements.image_set_index
         
-        # TODO:
-        # Check that all image and object columns reported by 
-        #  get_measurement_columns agree with measurements.get_feature_names
-#        for obname, col in self.col_dict.items():
-#            f1 = measurements.get_feature_names(obname)
-#            f2 = [c[1] for c in self.col_dict[obname]]
-#            diff = set(f1).difference(set(f2))
-#            assert not diff, 'The following columns were returned by measurements.get_feature_names and not pipeline.get_measurements: \n %s'%(diff)
-#            diff = set(f2).difference(set(f1))
-#            assert not diff, 'The following columns were returned by pipeline.get_measurements and not measurements.get_feature_names: \n %s'%(diff)
-        
-        # Fill image row with non-aggregate cols    
-        max_count = 0
-        max_rows = 0
+        ###########################################
+        #
+        # The image table
+        #
+        ###########################################
         image_number = index + measurements.image_set_start_number
-        image_row = [None for k in range(len(self.image_col_order)+1)]
-        image_row[0] = (image_number, cpmeas.COLTYPE_INTEGER, 'ImageNumber')
-        if cpmeas.IMAGE in self.col_dict.keys():
-            for m_col in self.col_dict[cpmeas.IMAGE]:
-                feature_name = "%s_%s"%(cpmeas.IMAGE, m_col[1])
-                value = measurements.get_measurement(cpmeas.IMAGE, m_col[1], index)
-                if isinstance(value, np.ndarray):
-                    value=value[0]
-                if isinstance(value, float) and not np.isfinite(value) and zeros_for_nan:
-                    value = 0
-                if feature_name in self.image_col_order.keys():
-                    image_row[self.image_col_order[feature_name]] =\
-                             (value, m_col[2], feature_name)
-                    if feature_name.startswith('Image_Count_'):
-                        max_count = max(max_count,int(value))
-                        object_name = feature_name[len('Image_Count_'):]
-                        if not self.ignore_object(object_name, True):
-                            max_rows = max(max_rows, int(value))
+        image_row = [(image_number, cpmeas.COLTYPE_INTEGER, "ImageNumber")]
+        for m_col in measurement_cols:
+            if m_col[0] != cpmeas.IMAGE:
+                continue
+            feature_name = "%s_%s"%(cpmeas.IMAGE, m_col[1])
+            value = measurements.get_current_image_measurement(m_col[1])
+            if isinstance(value, np.ndarray):
+                value=value[0]
+            if isinstance(value, float) and not np.isfinite(value) and zeros_for_nan:
+                value = 0
+            image_row.append((value, m_col[2], feature_name))
+        #
+        # Aggregates for the image table
+        #
+        agg_dict = measurements.compute_aggregate_measurements(index,
+                                                               self.agg_names)
+        agg_columns = self.get_aggregate_columns(pipeline, image_set_list)
+        image_row += [(agg_dict[agg[3]], 
+                       cpmeas.COLTYPE_FLOAT, 
+                       agg[3])
+                      for agg in agg_columns]
         
-        # The object columns in order
-        object_cols = (['ImageNumber','ObjectNumber'] + 
-                       [ None] * len(self.object_col_order))
-        for key in self.object_col_order.keys():
-            object_cols[self.object_col_order[key]] = key
-
-        if max_count == 0:
-            for obname, cols in self.col_dict.items():
-                if obname==cpmeas.IMAGE:
-                    continue
-                for col in cols:
-                    for agg_name in self.agg_names:
-                        feature_name = "%s_%s_%s"%(agg_name, obname, col[1])
-                        if feature_name in self.image_col_order.keys():
-                            image_row[self.image_col_order[feature_name]] =\
-                                     (0, cpmeas.COLTYPE_FLOAT, feature_name)
+        #
+        # Delete any prior data for this image
+        #
+        stmt = ('DELETE FROM %s WHERE ImageNumber=%d'%
+                (self.get_table_name(cpmeas.IMAGE), image_number))
+        execute(self.cursor, stmt)
+        
+        ########################################
+        #
+        # Object tables
+        #
+        ########################################
+        object_names = self.get_object_names(pipeline, image_set_list)
+        if self.separate_object_tables == OT_COMBINE:
+            data = [(cpmeas.OBJECT, object_names)]
+        else:
+            data = [(object_name, [object_name])
+                    for object_name in object_names]
+        for table_object_name, object_list in data:
+            table_name = self.get_table_name(table_object_name)
+            columns = [column for column in measurement_cols
+                       if column[0] in object_list]
+            max_count = 0
+            for object_name in object_list:
+                count = measurements.get_current_image_measurement(
+                    "Count_%s" % object_name)
+                max_count = max(max_count, int(count))
+            object_cols = ["ImageNumber"]
+            if table_object_name == cpmeas.OBJECT:
+                object_cols += ["ObjectNumber"]
+        
+            object_cols += [mapping["%s_%s" % (column[0], column[1])]
+                            for column in columns]
             object_rows = []
-        else:    
-            # Compute and insert the aggregate measurements
-            agg_dict = measurements.compute_aggregate_measurements(
-                index, self.agg_names)
-            for feature_name, value in agg_dict.items():
-                if feature_name in self.image_col_order.keys():
-                    image_row[self.image_col_order[feature_name]] =\
-                             (value, cpmeas.COLTYPE_FLOAT, feature_name)
-            
-            object_rows = np.zeros((max_rows, len(self.object_col_order)+2), 
-                                   dtype=object)
-            
-            for i in xrange(max_rows):
-                object_rows[i,0] = (image_number, cpmeas.COLTYPE_INTEGER)
-                object_rows[i,1] = (i+1, cpmeas.COLTYPE_INTEGER)
-
-            # Loop through the object columns, setting all object values for each column
-            for obname, cols in self.col_dict.items():
-                if obname==cpmeas.IMAGE or obname==cpmeas.EXPERIMENT:
-                    continue
-                for _, feature, ftype in cols:
-                    feature_name = "%s_%s"%(obname, feature)
-                    values = measurements.get_measurement(obname, feature, index)
-                    if zeros_for_nan:
-                        values[np.logical_not(np.isfinite(values))] = 0
-                    nvalues = np.product(values.shape)
-                    if (nvalues < max_rows):
-                        sys.stderr.write("Warning: too few measurements for %s in image set #%d, got %d, expected %d\n"%(feature_name,image_number,nvalues,max_rows))
-                        new_values = np.zeros(max_rows, dtype=values.dtype)
-                        new_values[:nvalues] = values.flatten()
-                        values = new_values
-                    elif nvalues > max_rows:
-                        sys.stderr.write("Warning: too many measurements for %s in image set #%d, got %d, expected %d\n"%(feature_name,image_number,nvalues,max_count))
-                        values = values[:max_rows]
-                    for i in xrange(max_rows):
-                        object_rows[i,self.object_col_order[feature_name]] = (values[i], cpmeas.COLTYPE_FLOAT)
+            for j in range(max_count):
+                object_row = [image_number]
+                if table_object_name == cpmeas.OBJECT:
+                    # the object number
+                    object_row.append(j+1)
+                for object_name, feature, coltype in columns:
+                    values = measurements.get_current_measurement(object_name,
+                                                                  feature)
+                    if (values is None or len(values) <= j or
+                        np.isnan(values[j])):
+                        value = None
+                    else:
+                        value = str(values[j])
+                    object_row.append(value)
+                object_rows.append(object_row)
+            #
+            # Delete any prior data for this image
+            #
+            stmt = ('DELETE FROM %s WHERE ImageNumber=%d'%
+                    (table_name, image_number))
+            execute(self.cursor, stmt)
+            #
+            # Write the object table data
+            #
+            stmt = ('INSERT INTO %s (%s) VALUES (%s)'%
+                    (table_name,
+                     ','.join(object_cols),
+                     ','.join(['%s']*len(object_cols))))
+    
+            if self.db_type == DB_MYSQL:
+                # Write 25 rows at a time (to get under the max_allowed_packet limit)
+                for i in range(0,len(object_rows), 25):
+                    my_rows = object_rows[i:min(i+25, len(object_rows))]
+                    self.cursor.executemany(stmt, my_rows)
+            else:
+                for row in object_rows:
+                    row_stmt = stmt % tuple(row)
+                    self.cursor.execute(row_stmt)
         
         # wrap non-numeric types in quotes
         image_row_formatted = [("NULL" if np.isnan(val)
@@ -1055,38 +1148,12 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                                else "'%s'"%MySQLdb.escape_string(str(val)) 
                                for val, dtype, colname in image_row]
         
-        image_table = self.get_table_prefix()+'Per_Image'
-        object_table = self.get_table_prefix()+'Per_Object'
-        #
-        # Delete any prior data for this image
-        #
-        for table_name in (image_table, object_table):
-            stmt = ('DELETE FROM %s WHERE ImageNumber=%d'%
-                    (table_name, image_number))
-            execute(self.cursor, stmt)
-        
+        image_table = self.get_table_name(cpmeas.IMAGE)
         stmt = ('INSERT INTO %s (%s) VALUES (%s)' % 
                 (image_table, 
-                 ','.join([mappings[colname] for val, dtype, colname in image_row]),
+                 ','.join([mapping[colname] for val, dtype, colname in image_row]),
                  ','.join([str(v) for v in image_row_formatted])))
         execute(self.cursor, stmt)
-        stmt = ('INSERT INTO %s (%s) VALUES (%s)'%
-                (object_table,
-                 ','.join([mappings[col] for col in object_cols]),
-                 ','.join(['%s']*len(object_cols))))
-
-        if self.db_type == DB_MYSQL:
-            # Write 25 rows at a time (to get under the max_allowed_packet limit)
-            for i in range(0,len(object_rows), 25):
-                my_rows = object_rows[i:min(i+25, len(object_rows))]
-                self.cursor.executemany(stmt,[ [ None if np.isnan(v)
-                                                 else str(v) for v,t in ob_row] 
-                                               for ob_row in my_rows])
-        else:
-            for row in object_rows:
-                row_stmt = stmt % tuple([None if np.isnan(v) else str(v) 
-                                         for v,t in row])
-                self.cursor.execute(row_stmt)
         self.connection.commit()
         
     
@@ -1359,11 +1426,39 @@ check_tables = yes
             return self.table_prefix.value
         return ""
     
+    def get_table_name(self, object_name):
+        '''Return the table name associated with a given object
+        
+        object_name - name of object or "Image", "Object" or "Well"
+        '''
+        return self.get_table_prefix()+'Per_'+object_name
+    
     def get_pipeline_measurement_columns(self, pipeline, image_set_list):
         '''Get the measurement columns for this pipeline, possibly cached'''
         d = self.get_dictionary(image_set_list)
         if not d.has_key(D_MEASUREMENT_COLUMNS):
             d[D_MEASUREMENT_COLUMNS] = pipeline.get_measurement_columns()
+            d[D_MEASUREMENT_COLUMNS] = \
+             [x for x in d[D_MEASUREMENT_COLUMNS]
+              if not self.ignore_feature(x[0], x[1], True)]
+            #
+            # put Image ahead of any other object
+            # put Number_ObjectNumber ahead of any other column
+            #
+            def cmpfn(x, y):
+                if x[0] != y[0]:
+                    if x[0] == cpmeas.IMAGE:
+                        return -1
+                    elif y[0] == cpmeas.IMAGE:
+                        return 1
+                    else:
+                        return cmp(x[0], y[0])
+                if x[1] == M_NUMBER_OBJECT_NUMBER:
+                    return -1
+                if y[1] == M_NUMBER_OBJECT_NUMBER:
+                    return 1
+                return cmp(x[1], y[1])
+            d[D_MEASUREMENT_COLUMNS].sort(cmp=cmpfn)
         return d[D_MEASUREMENT_COLUMNS]
     
     def upgrade_settings(self,setting_values,variable_revision_number,
@@ -1539,6 +1634,16 @@ check_tables = yes
             #
             setting_values = setting_values + ["64"]
             variable_revision_number = 13
+        if (not from_matlab) and variable_revision_number == 13:
+            #
+            # Added single/multiple table choice
+            #
+            setting_values = setting_values + [OT_COMBINE]
+            variable_revision_number = 14
+        
+        setting_values = list(setting_values)
+        setting_values[OT_IDX] = OT_DICTIONARY.get(setting_values[OT_IDX],
+                                                   setting_values[OT_IDX])
         return setting_values, variable_revision_number, from_matlab
     
 class ColumnNameMapping:
@@ -1593,24 +1698,27 @@ class ColumnNameMapping:
                         i += 1
                     name = name + str(i)
             starting_name = name
-            # remove vowels 
-            to_remove = len(name)-self.__max_len
-            if to_remove > 0:
-                remove_count = 0
-                for to_drop in (('a','e','i','o','u'),
-                                ('b','c','d','f','g','h','j','k','l','m','n',
-                                 'p','q','r','s','t','v','w','x','y','z'),
-                                ('A','B','C','D','E','F','G','H','I','J','K',
-                                 'L','M','N','O','P','Q','R','S','T','U','V',
-                                 'W','X','Y','Z')):
-                    for index in range(len(name)-1,-1,-1):
-                        if name[index] in to_drop:
-                            name = name[:index]+name[index+1:]
-                            remove_count += 1
-                            if remove_count == to_remove:
-                                break
-                    if remove_count == to_remove:
-                        break
+            starting_positions = [x for x in [name.find("_"), 0]
+                                  if x != -1]
+            for pos in starting_positions:
+                # remove vowels 
+                to_remove = len(name)-self.__max_len
+                if to_remove > 0:
+                    remove_count = 0
+                    for to_drop in (('a','e','i','o','u'),
+                                    ('b','c','d','f','g','h','j','k','l','m','n',
+                                     'p','q','r','s','t','v','w','x','y','z'),
+                                    ('A','B','C','D','E','F','G','H','I','J','K',
+                                     'L','M','N','O','P','Q','R','S','T','U','V',
+                                     'W','X','Y','Z')):
+                        for index in range(len(name)-1,pos-1,-1):
+                            if name[index] in to_drop:
+                                name = name[:index]+name[index+1:]
+                                remove_count += 1
+                                if remove_count == to_remove:
+                                    break
+                        if remove_count == to_remove:
+                            break
                 
                 rng = None
                 while name in reverse_dictionary.keys():

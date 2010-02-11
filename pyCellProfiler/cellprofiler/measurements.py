@@ -30,6 +30,9 @@ EXPERIMENT = "Experiment"
 """The neighbor association measurement category"""
 NEIGHBORS = "Neighbors"
 
+"""The per-object "category" (if anyone needs the word, "Object")"""
+OBJECT = "Object"
+
 COLTYPE_INTEGER = "integer"
 COLTYPE_FLOAT = "float"
 '''SQL format for a varchar column
@@ -37,6 +40,7 @@ COLTYPE_FLOAT = "float"
 To get a varchar column of width X: COLTYPE_VARCHAR_FORMAT % X
 '''
 COLTYPE_VARCHAR_FORMAT = "varchar(%d)"
+COLTYPE_VARCHAR = "varchar"
 '''# of characters reserved for path name in the database'''
 PATH_NAME_LENGTH = 256
 '''# of characters reserved for file name in the database'''
@@ -406,24 +410,25 @@ class Measurements(object):
                 feature_name = "%s_%s"%(object_name, feature)
                 values = self.get_measurement(object_name, feature, 
                                               image_set_number)
-                values = values[np.isfinite(values)] 
+                if values is not None:
+                    values = values[np.isfinite(values)] 
                 #
                 # Compute the mean and standard deviation
                 #
                 if AGG_MEAN in aggs:
                     mean_feature_name = '%s_%s_%s'%(AGG_MEAN, object_name,
                                                      feature)
-                    mean = values.mean()
+                    mean = values.mean() if values is not None else np.NaN
                     d[mean_feature_name] = mean
                 if AGG_MEDIAN in aggs:
                     median_feature_name = '%s_%s_%s'%(AGG_MEDIAN, 
                                                       object_name, feature)
-                    median = np.median(values)
+                    median = np.median(values) if values is not None else np.NaN
                     d[median_feature_name] = median
                 if AGG_STD_DEV in aggs:
                     stdev_feature_name = '%s_%s_%s'%(AGG_STD_DEV,
                                                      object_name, feature)
-                    stdev = values.std()
+                    stdev = values.std() if values is not None else np.NaN
                     d[stdev_feature_name] = stdev
         return d
     

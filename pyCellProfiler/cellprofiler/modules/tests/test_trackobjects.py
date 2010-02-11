@@ -178,6 +178,55 @@ class TestTrackObjects(unittest.TestCase):
         self.assertEqual(module.display_type.value, "Color and Number")
         self.assertFalse(module.wants_image)
         
+    def test_01_04_load_v3(self):
+        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:1
+SVNRevision:9227
+
+TrackObjects:[module_num:1|svn_version:\'9227\'|variable_revision_number:3|show_window:False|notes:\x5B\x5D]
+    Choose a tracking method:LAP
+    Select the objects to track:Nuclei
+    Select measurement to use:AreaShape_Area
+    Select pixel distance:80
+    Select display option:Color and Number
+    Save color-coded image?:No
+    Name the output image:TrackedCells
+    Cost of being born:100
+    Cost of dying:100
+    Do you want to run the second phase of the LAP algorithm?:Yes
+    Gap cost\x3A:40
+    Split alternative cost\x3A:41
+    Merge alternative cost\x3A:42
+    Maximum gap displacement\x3A:53
+    Maximum split score\x3A:54
+    Maximum merge score\x3A:55
+    Maximum gap:6
+"""
+        pipeline = cpp.Pipeline()
+        def callback(caller,event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO(data))
+        module = pipeline.modules()[0]
+        self.assertTrue(isinstance(module, T.TrackObjects))
+        self.assertEqual(module.tracking_method, T.TM_LAP)
+        self.assertEqual(module.object_name.value, "Nuclei")
+        self.assertEqual(module.pixel_radius.value, 80)
+        self.assertEqual(module.display_type.value, "Color and Number")
+        self.assertFalse(module.wants_image)
+        self.assertEqual(module.measurement, "AreaShape_Area")
+        self.assertEqual(module.image_name, "TrackedCells")
+        self.assertEqual(module.born_cost, 100)
+        self.assertEqual(module.die_cost, 100)
+        self.assertTrue(module.wants_second_phase)
+        self.assertEqual(module.split_cost, 41)
+        self.assertEqual(module.merge_cost, 42)
+        self.assertEqual(module.max_gap_score, 53)
+        self.assertEqual(module.max_split_score, 54)
+        self.assertEqual(module.max_merge_score, 55)
+        self.assertEqual(module.max_frame_distance, 6)
+                         
+        
     def runTrackObjects(self, labels_list, fn = None, measurement = None):
         '''Run two cycles of TrackObjects
         

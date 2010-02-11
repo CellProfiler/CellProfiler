@@ -1356,8 +1356,19 @@ ExportToDatabase:[module_num:2|svn_version:\'8947\'|variable_revision_number:12|
         mapping.add(k1)
         mapping.add(k2)
         mapping.do_mapping()
-        self.assertEqual(mapping[k1],'bcdefghijkABCEFGHIJABCDEGIJABCEFGHIJABCDEFIJBCDEHIJABCDEFGHIJABC')
-        self.assertEqual(mapping[k2],'bABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABC')
+        self.assertEqual(mapping[k1],'bABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABC')
+        self.assertEqual(mapping[k2],'ebcdefghijkABCDFHIJABCDEFGHIJABCFGHIACDEFGHJABCDEFHIJABCDEFIJABC')
+        
+    def test_04_02_leave_start_intact(self):
+        '''The column mapper should leave stuff before the first _ alone'''
+        mapping = E.ColumnNameMapping(25)
+        k1 = 'leaveme_EVEN_THOUGH_WE_LIKE_REMOVING_LOWER_CASE_VOWELS'
+        k2 = 'keepmee_EVEN_THOUGH_WE_LIKE_REMOVING_LOWER_CASE_VOWELS'
+        mapping.add(k1)
+        mapping.add(k2)
+        mapping.do_mapping()
+        self.assertTrue(mapping[k1].startswith('leaveme_'))
+        self.assertTrue(mapping[k2].startswith('keepmee_'))
         
     def per_object_statement(self, module, object_name, fields):
         '''Return a statement that will select the given fields from the table'''

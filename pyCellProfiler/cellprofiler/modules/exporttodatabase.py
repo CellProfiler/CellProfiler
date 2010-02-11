@@ -1680,7 +1680,8 @@ class ColumnNameMapping:
         problem_names = []
         seeded_random = False
         valid_name_regexp = "^[0-9a-zA-Z_$]+$"
-        for key,value in self.__dictionary.iteritems():
+        for key in sorted(self.__dictionary.keys()):
+            value = self.__dictionary[key]
             reverse_dictionary[value] = key
             if len(value) > self.__max_len:
                 problem_names.append(value)

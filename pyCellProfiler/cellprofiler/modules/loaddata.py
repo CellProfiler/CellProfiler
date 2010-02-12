@@ -441,26 +441,28 @@ class LoadData(cpm.CPModule):
             if not images[image].has_key(FILE_NAME):
                 raise ValueError('The CSV file has an Image_PathName_%s metadata column without a corresponding Image_FileName_%s column'%
                                  (image,image))
-        #
-        # Populate the image set list 
-        #
-        use_key = (image_set_list.associating_by_key != False)
-        for i in range(len(rows)):
-            if len(metadata) and use_key:
-                key = {}
-                for k in metadata.keys():
-                    md = metadata[k][i]
-                    if hasattr(md, "dtype"):
-                        if md.dtype.name.startswith('string'):
-                            md = str(md)
-                        elif md.dtype.name.startswith('int'):
-                            md = int(md)
-                        elif md.dtype.name.startswith('float'):
-                            md = float(md)
-                    key[k] = md
-                image_set = image_set_list.get_image_set(key)
-            else:
-                image_set = image_set_list.get_image_set(i)
+        if self.wants_images:
+            #
+            # Populate the image set list 
+            #
+            use_key = (image_set_list.associating_by_key != False)
+                
+            for i in range(len(rows)):
+                if len(metadata) and use_key:
+                    key = {}
+                    for k in metadata.keys():
+                        md = metadata[k][i]
+                        if hasattr(md, "dtype"):
+                            if md.dtype.name.startswith('string'):
+                                md = str(md)
+                            elif md.dtype.name.startswith('int'):
+                                md = int(md)
+                            elif md.dtype.name.startswith('float'):
+                                md = float(md)
+                        key[k] = md
+                    image_set = image_set_list.get_image_set(key)
+                else:
+                    image_set = image_set_list.get_image_set(i)
         #
         # Hide the measurements in the image_set_list
         #
@@ -537,10 +539,18 @@ class LoadData(cpm.CPModule):
                 failure = False
                 for key in image_set_keys.keys():
                     md_key = "Metadata_%s"%(key)
-                    column = dictionary[md_key]
-                    if column[index] != image_set_keys[key]:
-                        failure = True
-                        break
+                    if dictionary.has_key(md_key):
+                        column_value = dictionary[md_key][index]
+                        isk = image_set_keys[key]
+                        if isinstance(column_value, (int, float)):
+                            try:
+                                if float(isk) == column_value:
+                                    continue
+                            except:
+                                pass
+                        if column_value != isk:
+                            failure = True
+                            break
                 if not failure:
                     break
         else:

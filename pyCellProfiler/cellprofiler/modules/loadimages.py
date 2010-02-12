@@ -1150,11 +1150,12 @@ class LoadImages(cpmodule.CPModule):
         # list is composed of tuples of pathname and frame #
         #
         image_set_count = 0
-        for pathname,image_index in files:
-            pathname = os.path.join(self.image_directory(), pathname)
+        for file_pathname,image_index in files:
+            pathname = os.path.join(self.image_directory(), file_pathname)
             formatreader.jutil.attach()
             path, filename = os.path.split(pathname)
-            metadata = self.get_filename_metadata(self.images[0], filename, path)
+            metadata = self.get_filename_metadata(self.images[0], filename, 
+                                                  file_pathname)
             try:
                 rdr = ImageReader()
                 rdr.setId(pathname)
@@ -1327,7 +1328,7 @@ class LoadImages(cpmodule.CPModule):
             metadata.update(cpm.extract_metadata(fd[FD_FILE_METADATA].value,
                                                  filename))
         if fd[FD_METADATA_CHOICE].value in (M_BOTH, M_PATH):
-            path = os.path.abspath(path)
+            path = os.path.abspath(os.path.join(self.image_directory(), path))
             metadata.update(cpm.extract_metadata(fd[FD_PATH_METADATA].value,
                                                  path))
         if needs_well_metadata(metadata.keys()):

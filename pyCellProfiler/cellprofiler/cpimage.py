@@ -539,6 +539,10 @@ class ImageSet(object):
         self.get_image_provider(name).release_memory()
         if self.__images.has_key(name):
             del self.__images[name]
+            
+    def clear_cache(self):
+        '''Remove all of the cached images'''
+        self.__images.clear()
     
     def get_names(self):
         """Get the image provider names
@@ -620,6 +624,7 @@ class ImageSetList(object):
     def purge_image_set(self, number):
         """Remove the memory associated with an image set"""
         keys = self.__image_sets[number].keys
+        self.__image_sets[number].clear_cache()
         self.__image_sets[number] = None
         self.__image_sets_by_key[repr(keys)] = None
     

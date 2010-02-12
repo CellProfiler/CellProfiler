@@ -440,6 +440,14 @@ class ExportToDatabase(cpm.CPModule):
             
     def prepare_run(self, pipeline, image_set_list, frame):
         '''Prepare to run the pipeline'''
+        if self.db_type==DB_MYSQL:
+            self.connection, self.cursor = connect_mysql(self.db_host.value, 
+                                                         self.db_user.value, 
+                                                         self.db_passwd.value,
+                                                         self.db_name.value)
+        elif self.db_type==DB_SQLITE:
+            db_file = self.get_output_directory()+'/'+self.sqlite_file.value
+            self.connection, self.cursor = connect_sqlite(db_file)
         #
         # This caches the list of measurement columns for the run,
         # fixing the column order, etc.
@@ -453,14 +461,6 @@ class ExportToDatabase(cpm.CPModule):
         if self.db_type == DB_ORACLE:
             raise NotImplementedError("Writing to an Oracle database is not yet supported")
         if self.db_type in (DB_MYSQL, DB_SQLITE):
-            if self.db_type==DB_MYSQL:
-                self.connection, self.cursor = connect_mysql(self.db_host.value, 
-                                                             self.db_user.value, 
-                                                             self.db_passwd.value,
-                                                             self.db_name.value)
-            elif self.db_type==DB_SQLITE:
-                db_file = self.get_output_directory()+'/'+self.sqlite_file.value
-                self.connection, self.cursor = connect_sqlite(db_file)
             tables = [self.get_table_name(cpmeas.IMAGE)]
             if self.objects_choice != O_NONE:
                 if self.separate_object_tables == OT_COMBINE:

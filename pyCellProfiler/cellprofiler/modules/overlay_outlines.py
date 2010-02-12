@@ -181,14 +181,14 @@ class OverlayOutlines(cpm.CPModule):
                                              "Original: %s" %
                                              self.image_name.value)
                 else:
-                    figure.subplot_imshow(0, 0, image.pixel_data,
+                    figure.subplot_imshow_color(0, 0, image.pixel_data,
                                           "Original: %s" %self.image_name.value,
                                           normalize=False)
                 if self.wants_color.value:
                     pixel_data = (pixel_data * 255.0).astype(np.uint8)
-                    figure.subplot_imshow(1, 0, pixel_data, 
-                                          self.output_image_name.value,
-                                          normalize=False)
+                    figure.subplot_imshow_color(1, 0, pixel_data, 
+                                                self.output_image_name.value,
+                                                normalize=False)
                 else:
                     figure.subplot_imshow_bw(1, 0, pixel_data,
                                              self.output_image_name.value)
@@ -241,13 +241,16 @@ class OverlayOutlines(cpm.CPModule):
     def get_outline(self, image_set, name):
         '''Get outline, with aliasing and taking widths into account'''
         mask = image_set.get_image(name, must_be_binary=True).pixel_data
-        half_width = self.line_width.value / 2
-        distance_image = distance_transform_edt(~mask)
         output_image = np.zeros(mask.shape)
-        output_image[distance_image <= half_width] = 1
-        alias_mask = ((distance_image > half_width) &
-                      (distance_image < half_width+1))
-        output_image[alias_mask] = half_width+1 - distance_image[alias_mask]
+        if self.line_width == 1:
+            output_image[mask] = 1
+        else:
+            half_width = self.line_width.value / 2
+            distance_image = distance_transform_edt(~mask)
+            output_image[distance_image <= half_width] = 1
+            alias_mask = ((distance_image > half_width) &
+                          (distance_image < half_width+1))
+            output_image[alias_mask] = half_width+1 - distance_image[alias_mask]
         return output_image
     
     def upgrade_settings(self, setting_values, variable_revision_number, 

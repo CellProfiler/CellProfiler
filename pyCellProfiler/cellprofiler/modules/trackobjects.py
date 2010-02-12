@@ -1001,7 +1001,7 @@ class TrackObjects(cpm.CPModule):
             x = np.argwhere(rho < 1)
             if(len(x) > 1):
                 rho[x] = (1/rho[x])*(1/rho[x])
-            rho = np.sqrt((F[z[1:len(z), 0], 0]-P2[z[1:len(z), 1], 0])**2 + (F[z[1:len(z), 0], 1]-P2[z[1:len(z), 1], 1])**2)*rho
+            rho = np.sqrt((F[z[1:len(z), 1], 0]-P2[z[1:len(z), 1], 0])**2 + (F[z[1:len(z), 1], 1]-P2[z[1:len(z), 1], 1])**2)*rho
             e = rho
     
             z = z[1:]

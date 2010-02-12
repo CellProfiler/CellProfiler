@@ -765,12 +765,11 @@ LoadImages:[module_num:1|svn_version:\'8913\'|variable_revision_number:1|show_wi
                 fd = open(os.path.join(directory, filename),"wb")
                 fd.write(data)
                 fd.close()
-                if i == 0:
-                    # make sure times are different
-                    if os.stat_float_times():
-                        time.sleep(.01)
-                    else:
-                        time.sleep(1)
+                # make sure times are different
+                if os.stat_float_times():
+                    time.sleep(.01)
+                else:
+                    time.sleep(1)
             try:
                 load_images = LI.LoadImages()
                 load_images.add_imagecb()

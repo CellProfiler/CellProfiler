@@ -180,6 +180,9 @@ def combobox_ctrl_name(v):
 def colorbar_ctrl_name(v):
     return "%s_colorbar"%(str(v.key()))
 
+def help_ctrl_name(v):
+    return "%s_help" % str(v.key())
+
 def encode_label(text):
     """Encode text escapes for the static control and button labels
     
@@ -344,9 +347,17 @@ class ModuleView:
                     control = self.make_text_control(v, control_name, control)
                 sizer.Add(control, 0, flag, border)
                 self.__controls.append(control)
-                help_control = (wx.StaticText(self.__module_panel, -1, "")
-                                if v.doc is None else
-                                self.make_help_control(v.doc, v.text))
+                help_name = help_ctrl_name(v)
+                help_control = self.module_panel.FindWindowByName(help_name)
+                    
+                if help_control is None:
+                    if v.doc is None:
+                        help_control = wx.StaticText(self.__module_panel, 
+                                                     -1, "",
+                                                     name = help_name)
+                    else:
+                        help_control = self.make_help_control(v.doc, v.text, 
+                                                              name = help_name)
                 sizer.Add(help_control)
             self.module_panel.FitInside()
         finally:
@@ -930,13 +941,16 @@ class ModuleView:
         set_up_combobox(scale_ctrl, scale_text_ctrl, scales, scale)
         return panel
     
-    def make_help_control(self, content, title="Help"):
-        control = wx.Button(self.__module_panel, -1, '?', style=wx.BU_EXACTFIT)
+    def make_help_control(self, content, title="Help", 
+                          name = wx.ButtonNameStr):
+        control = wx.Button(self.__module_panel, -1, '?', 
+                            style=wx.BU_EXACTFIT,
+                            name = name)
         def callback(event):
             dialog = HTMLDialog(self.__module_panel, title, content)
             dialog.CentreOnParent()
             dialog.Show()
-        self.module_panel.Bind(wx.EVT_BUTTON, callback, control)
+        control.Bind(wx.EVT_BUTTON, callback, control)
         return control
 
     def add_listener(self,listener):
@@ -1132,7 +1146,7 @@ class ModuleSizer(wx.PySizer):
         self.__min_text_width = 150
         self.__printed_exception = False
     
-    def Reset(self, rows, cols=2, destroy_windows=True):
+    def Reset(self, rows, cols=3, destroy_windows=True):
         if destroy_windows:
             windows = []
             for j in range(self.__rows):

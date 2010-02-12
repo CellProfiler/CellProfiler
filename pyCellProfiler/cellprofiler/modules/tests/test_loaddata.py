@@ -284,7 +284,7 @@ class TestLoadData(unittest.TestCase):
         try:
             module.wants_images.value = False
             pipeline.run()
-            self.assertTrue(c0_ran[0])
+            self.assertFalse(c0_ran[0])
         finally:
             os.remove(filename)
     

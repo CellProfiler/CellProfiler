@@ -183,6 +183,9 @@ def colorbar_ctrl_name(v):
 def help_ctrl_name(v):
     return "%s_help" % str(v.key())
 
+def subedit_control_name(v):
+    return "%s_subedit" % str(v.key())
+
 def encode_label(text):
     """Encode text escapes for the static control and button labels
     
@@ -343,6 +346,8 @@ class ModuleView:
                                                     name = control_name)
                     flag = wx.EXPAND|wx.ALL
                     border = 2
+                elif isinstance(v, cps.FilenameText):
+                    control = self.make_filename_text_control(v, control)
                 else:
                     control = self.make_text_control(v, control_name, control)
                 sizer.Add(control, 0, flag, border)
@@ -584,6 +589,47 @@ class ModuleView:
                 text_control.Value = v.value
         return control
      
+    def make_filename_text_control(self, v, control):
+        """Make a filename text control"""
+        edit_name = subedit_control_name(v)
+        control_name = edit_control_name(v)
+        button_name = button_control_name(v)
+        if control is None:
+            control = wx.Panel(self.module_panel, -1, 
+                               name = control_name)
+            sizer = wx.BoxSizer(wx.HORIZONTAL)
+            control.SetSizer(sizer)
+            edit_control = wx.TextCtrl(control, -1, str(v), name = edit_name)
+            sizer.Add(edit_control, 1, wx.EXPAND | wx.ALIGN_BOTTOM)
+            def on_cell_change(event, setting = v, control=edit_control):
+                self.__on_cell_change(event, setting, control)
+            self.__module_panel.Bind(wx.EVT_TEXT, on_cell_change, edit_control)
+
+            bitmap = wx.ArtProvider.GetBitmap(wx.ART_FILE_OPEN,
+                                              wx.ART_BUTTON, (16,16))
+            button_control = wx.BitmapButton(control, bitmap=bitmap,
+                                             name = button_name)
+            def on_press(event):
+                '''Open a file browser'''
+                dlg = wx.FileDialog(control, v.browse_msg)
+                if v.get_directory_fn is not None:
+                    dlg.Directory = v.get_directory_fn()
+                if v.exts is not None:
+                    dlg.Wildcard = "|".join(["|".join(tuple(x)) for x in v.exts])
+                if dlg.ShowModal() == wx.ID_OK:
+                    if v.set_directory_fn is not None:
+                        v.set_directory_fn(dlg.Directory)
+                    v.value = dlg.Filename
+                    self.reset_view()
+                    
+            button_control.Bind(wx.EVT_BUTTON, on_press)
+            sizer.Add(button_control, 0, wx.EXPAND | wx.ALL, 2)
+        else:
+            edit_control = self.module_panel.FindWindowByName(edit_name)
+            if edit_control.Value != v.value:
+                edit_control.Value = v.value
+        return control
+    
     def make_text_control(self, v, control_name, control):
         """Make a textbox control"""
         if not control:

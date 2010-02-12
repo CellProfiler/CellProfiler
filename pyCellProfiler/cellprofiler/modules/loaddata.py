@@ -206,9 +206,28 @@ class LoadData(cpm.CPModule):
                                                       ".", doc = 
                                                       """<i>(Only used if the file location is specified as Elsewhere)</i>""")
         
-        self.csv_file_name = cps.FilenameText("Name of the file",
-                                              "None",doc="""
-            Provide the file name of the CSV file containing the data.""")
+        def get_directory_fn():
+            '''Get the directory for the CSV file name'''
+            return self.csv_path
+        
+        def set_directory_fn(path):
+            if os.path.abspath(path) == cpprefs.get_default_image_directory():
+                self.csv_directory_choice.value = DIR_DEFAULT_IMAGE
+            elif os.path.abspath(path) == cpprefs.get_default_output_directory():
+                self.csv_directory_choice.value = DIR_DEFAULT_OUTPUT
+            else:
+                self.csv_directory_choice.value = DIR_OTHER
+                self.csv_custom_directory.value = path
+                
+        self.csv_file_name = cps.FilenameText(
+            "Name of the file",
+            "None",
+            doc="""Provide the file name of the CSV file containing the data.""",
+            get_directory_fn = get_directory_fn,
+            set_directory_fn = set_directory_fn,
+            browse_msg = "Choose CSV file",
+            exts = [("Data file (*.csv)","*.csv"),("All files (*.*)","*.*")]
+        )
         
         self.wants_images = cps.Binary("Load images based on this data?", True, doc="""
             Check this box to have <b>LoadData</b> load images using the Image_FileName field and the Image_PathName fields (the latter is optional).""")

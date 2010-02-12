@@ -189,8 +189,22 @@ class DirectoryPath(Text):
 
 class FilenameText(Text):
     """A setting that displays a file name
+    
+    optional arguments - 
+       get_directory_fn is a function that gets the initial directory
+           for the browse button
+       set_directory_fn is a function that sets the directory after browsing
+       browse_msg - message at top of file browser
+       exts - a list of tuples where the first is the user-displayed text
+       and the second is the file filter for an extension, like 
+       [("Pipeline (*.cp)","*.cp")]
     """
     def __init__(self, text, value, *args, **kwargs):
+        kwargs = kwargs.copy()
+        self.get_directory_fn = kwargs.pop("get_directory_fn", None)
+        self.set_directory_fn = kwargs.pop("set_directory_fn", None)
+        self.browse_msg = kwargs.pop("browse_msg", "Choose a file")
+        self.exts = kwargs.pop("exts", None)
         super(FilenameText,self).__init__(text, value, *args, **kwargs)
 
 class ImageFileSpecifier(Text):

@@ -83,7 +83,26 @@ class LoadSingleImage(cpm.CPModule):
         group = cps.SettingsGroup()
         if can_remove:
             group.append("divider", cps.Divider(line=False))
-        group.append("file_name", cps.Text("What image file do you want to load? Include the extension like .tif","None"))
+        def get_directory_fn():
+            if self.dir_choice == DIR_DEFAULT_IMAGE_FOLDER:
+                return cpprefs.get_default_image_directory()
+            elif self.dir_choice == DIR_DEFAULT_OUTPUT_FOLDER:
+                return cpprefs.get_default_output_directory()
+            elif self.dir_choice == DIR_CUSTOM_FOLDER:
+                return self.custom_directory.value
+            return os.curdir()
+        
+        group.append("file_name", cps.FilenameText(
+            "What image file do you want to load? Include the extension like .tif",
+            "None",
+            get_directory_fn = get_directory_fn,
+            exts = [("Tagged image file (*.tif)","*.tif"),
+                    ("Portable network graphics (*.png)", "*.png"),
+                    ("JPEG file (*.jpg)", "*.jpg"),
+                    ("Bitmap file (*.bmp)", "*.bmp"),
+                    ("GIF file (*.gif)", "*.gif"),
+                    ("Matlab image (*.mat)","*.mat"),
+                    ("All files (*.*)", "*.*")] ))
         group.append("image_name", cps.FileImageNameProvider("What do you want to call that image?", "OrigBlue"))
         if can_remove:
             group.append("remove", cps.RemoveSettingButton("", "Remove this image", self.file_settings, group))

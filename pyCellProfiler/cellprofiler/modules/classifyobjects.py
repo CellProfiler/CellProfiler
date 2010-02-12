@@ -307,12 +307,28 @@ class ClassifyObjects(cpm.CPModule):
                 value += 1
             return value
         group.number_of_bins = number_of_bins
+        def measurement_name():
+            '''Get the measurement name to use inside the bin name
+            
+            Account for conflicts with previous measurements
+            '''
+            measurement_name = group.measurement.value
+            other_same = 0
+            for other in self.single_measurements:
+                if id(other) == id(group):
+                    break
+                if other.measurement.value == measurement_name:
+                    other_same += 1
+            if other_same > 0:
+                measurement_name += str(other_same)
+            return measurement_name
+        
         def bin_feature_names():
             '''Return the feature names for each bin'''
             if group.wants_custom_names:
                 return [name.strip() 
                         for name in group.bin_names.value.split(",")]
-            return ['_'.join((group.measurement.value,
+            return ['_'.join((measurement_name(),
                               'Bin_%d'%(i+1)))
                     for i in range(number_of_bins())]
         group.bin_feature_names = bin_feature_names

@@ -169,6 +169,7 @@ class PipelineListView(object):
         self.__first_dirty_module = 0
         self.drag_underway = False
         self.drag_start = None
+        self.drag_time = None
         self.list_ctrl.SetDropTarget(PipelineDropTarget(self))
 
     def make_list(self):
@@ -399,13 +400,9 @@ class PipelineListView(object):
     def provide_drag_feedback(self, x, y, data):
         if self.where_to_drop(x,y)  is None:
             return False
-        if self.drag_underway:
-            #
-            # Internal drag - make sure that we have either moved the
-            # cursor a bit or enough time has elapsed.
-            #
-            if time.time() - self.drag_time > 3:
-                return True
+        if self.drag_time is not None and time.time() - self.drag_time > 3:
+            return True
+        if self.drag_start is not None:
             distance = math.sqrt((x-self.drag_start[0])**2 +
                                  (y-self.drag_start[1])**2)
             return distance > 10

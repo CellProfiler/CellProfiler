@@ -348,9 +348,9 @@ class ModuleView:
                                 if v.doc is None else
                                 self.make_help_control(v.doc, v.text))
                 sizer.Add(help_control)
+            self.module_panel.FitInside()
         finally:
             self.module_panel.Thaw()
-            self.module_panel.FitInside()
             self.module_panel.Refresh()
             self.__handle_change = True
     

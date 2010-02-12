@@ -213,11 +213,6 @@ class ModuleView:
         self.__module_panel.SetupScrolling()
         wx.EVT_IDLE(module_panel,self.on_idle)
 
-    def __set_columns(self):
-        self.__grid.SetColLabelValue(0,'Setting description')
-        self.__grid.SetColLabelValue(1,'Value')
-        self.__grid.SetColSize(1,70)
-    
     def get_module_panel(self):
         """The panel that hosts the module controls
         
@@ -353,9 +348,9 @@ class ModuleView:
                                 if v.doc is None else
                                 self.make_help_control(v.doc, v.text))
                 sizer.Add(help_control)
-            self.__module_panel.Layout()
         finally:
             self.module_panel.Thaw()
+            self.module_panel.FitInside()
             self.module_panel.Refresh()
             self.__handle_change = True
     
@@ -1276,6 +1271,7 @@ class ModuleSizer(wx.PySizer):
                     item_location = wx.Point(text_width - third_width / 2, 
                                              height + border + item_height / 2)
                     item_size = wx.Size(third_width, edit_item.Size[1])
+                    item_location = panel.CalcScrolledPosition(item_location)
                     edit_item.SetDimension(item_location, item_size)
                 else:
                     text_item.Show(True)

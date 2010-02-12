@@ -155,7 +155,7 @@ class MaskObjects(I.Identify):
             produced after masking. These outlines can be displayed over
             images using the <b>OverlayOutlines</b> module.""")
         
-        self.outlines_name = cps.ImageNameProvider(
+        self.outlines_name = cps.OutlineNameProvider(
             "Outlines name:", "MaskedOutlines",
             doc = """This setting names the outline image. Subsequent modules
             can refer to the binary outline image using this name.""")
@@ -177,7 +177,7 @@ class MaskObjects(I.Identify):
             result += [self.overlap_fraction]
         
         result += [self.retain_or_renumber, self.wants_outlines]
-        if self.wants_outlines:
+        if self.wants_outlines.value:
             result += [self.outlines_name]
         return result
     
@@ -272,7 +272,7 @@ class MaskObjects(I.Identify):
         #
         # Add an outline if asked to do so
         #
-        if self.wants_outlines:
+        if self.wants_outlines.value:
             outline_image = cpi.Image(outline(labels) > 0,
                                       parent_image = original_objects.parent_image)
             workspace.image_set.add(self.outlines_name.value, outline_image)

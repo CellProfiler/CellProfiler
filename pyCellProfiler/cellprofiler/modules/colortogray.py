@@ -1,12 +1,12 @@
 '''
-<b> Color to Gray</b> converts an image with 3 color channels to 1 <i>or</i> 3 grayscale images
+<b> Color to Gray</b> converts an image with three color channels to one <i>or</i> three grayscale images
 <hr>
 This module converts RGB (Red, Green, Blue) color images to grayscale. All channels
-can be merged into one grayscale image (<i>Combine</i> option), or each channel 
-can be extracted into a separate grayscale image (<i>Split</i> option). If you use <i>Combine</i>, 
+can be merged into one grayscale image (<i>Combine</i>), or each channel 
+can be extracted into a separate grayscale image (<i>Split</i>). If you use <i>Combine</i>, 
 the relative weights will adjust the contribution of the colors relative to each other.<br>
 <br>
-<i>Note:</i> This module is helpful, as all <b>Identify</b> modules require grayscale images.
+<i>Note:</i>All <b>Identify</b> modules require grayscale images.
 <p>See also <b>GrayToColor</b>.
 '''
 # CellProfiler is distributed under the GNU General Public License.

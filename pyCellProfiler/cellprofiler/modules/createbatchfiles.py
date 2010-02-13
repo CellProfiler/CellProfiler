@@ -2,7 +2,7 @@
 separately on a cluster of computers
 <hr>
 This module creates files that can be submitted in parallel to a
-cluster for faster processing. This module should be placed at the end of
+cluster for faster processing. It should be placed at the end of
 an image processing pipeline.
 
 If your computer mounts the file system differently than the cluster computers,
@@ -127,7 +127,7 @@ class CreateBatchFiles(cpm.CPModule):
                      cps.Text("Cluster root path",
                                 cpprefs.get_default_image_directory(),doc="""
                                 What is the path to files on the cluster? This is the cluster 
-                                root path, i.e, how the cluster machine sees the
+                                root path, i.e., how the cluster machine sees the
                                 top-most folder where your input/output files are stored.
                                 <p>For example, if you have mapped the remote cluster machine like this:<br><br>
                                 <i>Z:\your_data\images</i> (on a Windows machine, for instance)<br><br>

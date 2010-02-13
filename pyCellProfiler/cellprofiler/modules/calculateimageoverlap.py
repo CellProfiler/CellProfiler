@@ -2,17 +2,17 @@
 <hr>
 This module calculates overlap by determining precision, recall, F-factor, false positive rate, and false 
 negative rate.  One image is considered the "ground truth" (possibly the result of hand-segmentation) and the other
-is the "test image", so the images are considered to overlap most completely when the test image matches the ground
+is the "test image"; the images are determined to overlap most completely when the test image matches the ground
 truth perfectly.  The module requires binary (black and white) input, where the objects that have been segmented 
-are white and the background is black.  If you segment your images in CellProfiler using IdentifyPrimaryObjects, 
-simply use ConvertObjectsToImage and select Binary as the color type.  
+are white and the background is black.  If you segment your images in CellProfiler using <b>IdentifyPrimaryObjects</b>, 
+simply use <b>ConvertObjectsToImage</b> and select <i>Binary</i> as the color type.  
 
 If your images have been segmented using other image processing software, or you have hand-segmented them in software 
 such as Photoshop, you may need to use one or more of the following:
 <ul>
-<li> ImageMath : if the objects are black and the background is white, you must invert the intensity</li>
-<li> ApplyThreshold : if the image is grayscale, and you must make it binary </li>
-<li> ColorToGray : if the image is color, you must first convert it to grayscale, and then use ApplyThreshold to generate a binary image </li>
+<li> <b>ImageMath</b>: if the objects are black and the background is white, you must invert the intensity.</li>
+<li> <b>ApplyThreshold</b>: if the image is grayscale, and you must make it binary. </li>
+<li> <b>ColorToGray</b>: if the image is color, you must first convert it to grayscale, and then use <b>ApplyThreshold</b> to generate a binary image. </li>
 </ul>
 
 In the test image, any foreground (white) pixels that overlap with the foreground of the ground
@@ -23,7 +23,7 @@ be considered a "false negative" (since it should have been labeled as part of t
 while a background pixel that overlaps with foreground in the ground truth will be considered a "false positive"
 (since it was labeled as part of the foreground, but should not be).
 
-This module measures:
+This module measures the following:
 <ul>
 <li> False positive rate: total false positive pixels / total number of actual negative pixels </li>
 <li> False negative rate: total false negative pixels / total number of actual postive pixels </li>
@@ -71,7 +71,7 @@ class CalculateImageOverlap(cpm.CPModule):
 
     def create_settings(self):
         self.ground_truth = cps.ImageNameSubscriber("Which image do you want to use as the basis for calculating the amount of overlap? ", "None", doc = 
-                                                    '''This binary (black and white) image is known as the "ground truth" image.  It can be hand-outlined segmentation, or
+                                                    '''This binary (black and white) image is known as the "ground truth" image.  It can be the product of hand-outlined segmentation, or
                                                     simply the result of another segmentation algorithm you would like to test.''')
         self.test_img = cps.ImageNameSubscriber("Which image do you want to compare for overlap?", "None", doc = ''' This 
                                                 binary (black and white) image is the result of some image processing algorithm (either in CellProfiler 

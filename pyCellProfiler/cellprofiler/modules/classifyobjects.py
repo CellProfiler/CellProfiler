@@ -5,7 +5,7 @@ This module classifies objects into a number of different bins
 according to the value of a measurement (e.g., by size, intensity, shape).
 It reports how many objects fall into each class as well as the
 percentage of objects that fall into each class. The module asks you to select the measurement feature to be used to classify your objects and
-specify the bins to use. It requires you to run a measurement
+specify the bins to use. It also requires you to run a measurement
 module previous to this module in the pipeline so that the measurement
 values can be used to classify the objects. If you are classifying by the
 ratio of two measurements, you must put a <b>CalculateRatios</b> module previous
@@ -118,9 +118,9 @@ class ClassifyObjects(cpm.CPModule):
             doc="""Objects are classified as being above or below a cutoff
             value for a measurement. You can set this cutoff threshold in one
             of three ways:<br>
-            <ul><li><i>Mean</i>: The threshold is set at the mean
+            <ul><li><i>Mean</i>: At the mean
             of the measurement's value for all objects in the image set.</li>
-            <li><i>Median</i>: The threshold is set at the median of the
+            <li><i>Median</i>: At the median of the
             measurement's value for all objects in the image set.</li>
             <li><i>Custom</i>: You specify a custom threshold value.</li></ul>""")
         
@@ -157,39 +157,39 @@ class ClassifyObjects(cpm.CPModule):
             "Use custom names for the bins?", False,
             doc="""Check this if you want to specify the names of each bin 
             measurement. If you leave the box unchecked, the module will
-            create names based on the measurements (for instance, for
-            Intensity_MeanIntensity_Green and Intensity_TotalIntensity_Blue,
+            create names based on the measurements. (For instance, for
+            <i>Intensity_MeanIntensity_Green</i> and <i>Intensity_TotalIntensity_Blue</i>,
             the module generates measurements such as
-            Classify_Intensity_MeanIntensity_Green_High_Intensity_TotalIntensity_Low).""")
+            <i>Classify_Intensity_MeanIntensity_Green_High_Intensity_TotalIntensity_Low</i>).""")
         
         self.low_low_custom_name = cps.Text(
             "Enter the low-low bin name","low_low",
-            doc="""This is the name of the measurement for objects that
-            fall below the threshold for both measurements""")
+            doc="""Name of the measurement for objects that
+            fall below the threshold for both measurements.""")
         
         self.low_high_custom_name = cps.Text(
             "Enter the low-high bin name","low_high",
-            doc="""This is the name of the measurement for objects whose
+            doc="""Name of the measurement for objects whose
             first measurement is below threshold and whose second measurement
-            is above threshold""")
+            is above threshold.""")
         
         self.high_low_custom_name = cps.Text(
             "Enter the high-low bin name","high_low",
-            doc="""This is the name of the measurement for objects whose
+            doc="""Name of the measurement for objects whose
             first measurement is above threshold and whose second measurement
-            is below threshold""")
+            is below threshold.""")
         
         self.high_high_custom_name = cps.Text(
             "Enter the high-high bin name","high_high",
-            doc="""This is the name of the measurement for objects that
-            are above the threshold for both measurements""")
+            doc="""Name of the measurement for objects that
+            are above the threshold for both measurements.""")
         
         self.wants_image = cps.Binary(
             "Retain an image of the objects classified by their measurements, for use later in the pipeline (for example, in SaveImages)?", False)
         
         self.image_name = cps.ImageNameProvider(
             "Enter the image name","None",
-            doc="""This is the name that will be associated with the graph
+            doc="""Name that will be associated with the graph
             image. You can specify this name in a <b>SaveImages</b> module
             if you want to save the image.""")
 
@@ -205,7 +205,7 @@ class ClassifyObjects(cpm.CPModule):
             
         group.append("object_name",cps.ObjectNameSubscriber(
             "Select the object to be classified","None",
-            doc="""This is the name of the objects to be classified. You can
+            doc="""The name of the objects to be classified. You can
             choose from objects created by any previous module. See
             <b>IdentifyPrimAutomatic</b>, <b>IdentifySecondary</b> or
             <b>IdentifyTertiarySubregion</b>."""))
@@ -215,7 +215,7 @@ class ClassifyObjects(cpm.CPModule):
         group.append("measurement", cps.Measurement(
             "Select the measurement to classify by",object_fn,
             doc="""Select a measurement made by a previous module. The objects
-            will be classified according to their value for this 
+            will be classified according to their values for this 
             measurement."""))
         group.append("bin_choice", cps.Choice(
             "Select bin spacing",
@@ -239,7 +239,7 @@ class ClassifyObjects(cpm.CPModule):
         group.append("low_threshold", cps.Float(
             "Lower threshold", 0,
             doc="""This is the threshold that separates the lowest bin from the
-            others. The lower threshold, upper threshold and number of bins
+            others. The lower threshold, upper threshold, and number of bins
             define the thresholds of bins between the lowest and highest."""))
         
         group.append("wants_low_bin",cps.Binary(

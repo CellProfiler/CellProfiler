@@ -127,7 +127,7 @@ class CorrectIllumination_Calculate(cpm.CPModule):
         self.rescale_option = cps.Choice("Rescale the illumination function?",
                                          [cps.YES, cps.NO, RE_MEDIAN], doc = '''
                                         The illumination function can be rescaled so that the pixel intensities
-                                        are all equal to or greater than 1. This is recommended if you plan to
+                                        are all equal to or greater than 1. Rescaling is recommended if you plan to
                                         use the <i>Division</i> option in <b>CorrectIllumination_Apply</b> so that the
                                         corrected images are in the range 0 to 1. It is not recommended if you
                                         plan to use the <i>Subtract</i> option in <b>CorrectIllumination_Apply</b>. Note that
@@ -154,7 +154,7 @@ class CorrectIllumination_Calculate(cpm.CPModule):
                                             If requested, the resulting image is smoothed. See the help for the
                                             <b>EnhanceOrSuppressSpeckles</b> module for more details. If you are using <i>Each</i> mode,
                                             this is almost certainly necessary. If you have few objects in each image or a
-                                            small image set, you may want to smooth. The goal is to smooth to the
+                                            small image set, you may want to smooth. You should smooth to the
                                             point where the illumination function resembles a believable pattern.
                                             For example, if you are trying to correct a lamp illumination problem, 
                                             apply smoothing until you obtain a fairly smooth pattern

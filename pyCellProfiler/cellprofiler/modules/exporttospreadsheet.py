@@ -6,16 +6,15 @@ This module will convert the measurements to a comma-, tab-, or other
 character-delimited text format and
 save them to the hard drive in one or several files, as requested. 
 <h2>Metadata tokens</h2>
-Export To Excel can write out separate files for groups of images based
+<b>ExportToExcel can write out separate files for groups of images based
 on their metadata. This is controlled by the directory and file names
 that you enter. For instance, you might have applied two treatments
-to each of your samples and labeled them with the metadata name, "Treatment1" 
-and "Treatment2" and you might want to create separate files for each 
+to each of your samples and labeled them with the metadata names "Treatment1" 
+and "Treatment2", and you might want to create separate files for each 
 combination of treatments, storing all measurements with a given "Treatment1"
-in separate directories. You can do this by specifying metadata tags in
-for the folder name and file name.
+in separate directories. You can do this by specifying metadata tags for the folder name and file name.
 <br>
-To do this, you would choose, "Custom folder with metadata", enter the
+To do this, choose, <i>Custom folder with metadata</i>, enter the
 directory name, "\g&lt;Treatment1&gt;" and enter the file name, 
 "\g&lt;Treatment2&gt;". Here's an example table of the files that
 would be generated:<br><tt>
@@ -104,15 +103,15 @@ class ExportToSpreadsheet(cpm.CPModule):
              DIR_CUSTOM_WITH_METADATA],
             doc="""This setting lets you choose the folder for the output
             files.<br><ul>
-            <li><i>Default output folder</i>: saves the .csv files in the
+            <li><i>Default output folder</i> saves the .csv files in the
             default output folder</li>
-            <li><i>Default image folder</i>: saves the .csv files in the
+            <li><i>Default image folder</i> saves the .csv files in the
             default image folder</li>
-            <li><i>Custom folder</i>: lets you specify the folder name. Start
+            <li><i>Custom folder</i> lets you specify the folder name. Start
             the folder name with "." to name a sub-folder of the output folder
             (for instance, "./data"). Start the folder name with "&" to name
             a sub-folder of the image folder.</li>
-            <li><i>Custom folder with metadata</i>: uses metadata substitution
+            <li><i>Custom folder with metadata</i> uses metadata substitution
             to name the folder and to group the image sets by metadata tag.
             For instance, if you have a metadata tag named, "Plate", you can
             create a folder per-plate using the metadata tag, "./&lt;Plate&gt;".
@@ -124,25 +123,25 @@ class ExportToSpreadsheet(cpm.CPModule):
             (for instance, "./data"). Start the folder name with "&" to name
             a sub-folder of the image folder.""")
         
-        self.add_metadata = cps.Binary("Add image metadata columns to your object data file?", False, doc = """Image_Metadata_ columns are normally exported in the Image data file, but if you check this box, they will also be exported with the Object data file(s).""")
+        self.add_metadata = cps.Binary("Add image metadata columns to your object data file?", False, doc = """<i>Image_Metadata_</i> columns are normally exported in the Image data file, but if you check this box they will also be exported with the Object data file(s).""")
         
         self.add_indexes = cps.Binary("No longer used, always saved", True)
         
         self.excel_limits = cps.Binary("Limit output to a size that is allowed in Excel?", False, doc = """
                             If your output has more than 256 columns, a window will open
-                            which allows you to select which columns you'd like to export. If your output exceeds
+                            which allows you to select the columns you'd like to export. If your output exceeds
                             65,000 rows, you can still open the .csv in Excel, but not all rows will be visible.""")
         
         self.pick_columns = cps.Binary("Select the columns of measurements to export?", False, doc = """
-                            Checking this setting will open up a window that allows you to select which columns to export.""")
+                            Checking this setting will open up a window that allows you to select the columns to export.""")
         
         self.wants_aggregate_means = cps.Binary("Calculate the per-image mean values for object measurements?", False, doc = """
-                            ExportToExcel can calculate population statistics over all the 
+                            <b>ExportToExcel</b> can calculate population statistics over all the 
                             objects in each image and save that value as an aggregate 
                             measurement in the Image file.  For instance, if you are measuring 
-                            the area of the Nuclei objects and you check the box for this option, ExportToExcel will 
-                            create a column in the Image file called Mean_Nuclei_AreaShape_Area. 
-                            <p>You may not want to use ExportToExcel to calculate these 
+                            the area of the Nuclei objects and you check the box for this option, <b>ExportToExcel</b> will 
+                            create a column in the Image file called <i>Mean_Nuclei_AreaShape_Area</i>. 
+                            <p>You may not want to use <b>ExportToExcel</b> to calculate these 
                             measurements if your pipeline generates a large number of per-object 
                             measurements; doing so might exceed Excel's limits on the number of columns (256). """)
         
@@ -168,7 +167,7 @@ class ExportToSpreadsheet(cpm.CPModule):
         group = cps.SettingsGroup()
         group.append(
             "name", EEObjectNameSubscriber("Data to export",
-            doc="""Choose either "Image", "Experiment" or an object name
+            doc="""Choose <i>Image</i>, <i>Experiment</i> or an object name
             from the list. <b>ExportToSpreadsheet</b> will write out a
             file of measurements for the given category."""))
     
@@ -177,15 +176,15 @@ class ExportToSpreadsheet(cpm.CPModule):
                 "Combine these object measurements with those of the previous object?",
                 False,doc="""Check this setting to create a file composed
                 of measurements made on this object and the one directly
-                above this one. Leave the box unchecked to create separate
+                above it. Leave the box unchecked to create separate
                 files for this and the previous object."""))
         
         group.append("wants_automatic_file_name", cps.Binary(
             "Use the object name for the file name?", True,
             doc="""Use the object name as selected above to generate a file
-            name for the spreadsheet. For example, if you select, "Image",
-            above and have not checked the "Prepend output file name" option,
-            your output file will be named, "Image.csv". You can name
+            name for the spreadsheet. For example, if you selected <i>Image</i>,
+            above and have not checked the <i>Prepend output file name</i> option,
+            your output file will be named, <i>Image.csv</i>. You can name
             the file yourself if you leave this box unchecked."""))
         
         group.append("file_name", 

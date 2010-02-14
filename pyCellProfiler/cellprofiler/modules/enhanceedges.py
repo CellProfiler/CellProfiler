@@ -3,7 +3,7 @@ identification or other downstream image processing
 <hr>
 This module enhances the edges (gradients) in a grayscale image. All methods
 other than Canny produce a grayscale image that can be used in an 
-<b>Identify</b> module, or thresholded using the <b>ApplyThreshold</b> module 
+<b>Identify</b> module or thresholded using the <b>ApplyThreshold</b> module 
 to produce a binary (black/white) mask of edges. The Canny algorithm
 produces a binary (black/white) mask image consisting of the edge pixels.
 
@@ -77,18 +77,18 @@ class EnhanceEdges(cpm.CPModule):
             "Select an edge-finding method",
             [M_SOBEL, M_PREWITT, M_ROBERTS,
              M_LOG, M_CANNY], doc = '''There are several methods that can be used to enhance edges:
-             <ul><li>Sobel Method: finds edges using the Sobel approximation to the derivative. 
+             <ul><li><i>Sobel Method:</i> finds edges using the Sobel approximation to the derivative. 
              The Sobel method derives a horizontal and vertical gradient measure and returns the 
              square-root of the sum of the two squared signals.</li>
-             <li>Prewitt Method: finds edges using the Prewitt approximation to the derivative.
+             <li><i>Prewitt Method:</i> finds edges using the Prewitt approximation to the derivative.
              It returns edges at those points where the gradient of the image is maximum.</li>
-             <li>Roberts Method: finds edges using the Roberts approximation to the derivative. 
+             <li><i>Roberts Method:</i> finds edges using the Roberts approximation to the derivative. 
              The Roberts method looks for gradients in the diagonal and anti-diagonal directions 
              and returns the square-root of the sum of the two squared signals. This method is fast,
              but it creates diagonal artifacts that may need to be removed by smoothing.</li> 
-             <li>LoG Method: This method applies a Laplacian of Gaussian filter to the image 
+             <li><i>LoG Method:</i> This method applies a Laplacian of Gaussian filter to the image 
              and finds zero crossings. </li>
-             <li>Canny Method - The Canny method finds edges by looking for local maxima 
+             <li><i>Canny Method:</i> finds edges by looking for local maxima 
              of the gradient of the image. The gradient is calculated using the derivative
              of a Gaussian filter. The method uses two thresholds to detect strong and weak 
              edges, and includes the weak edges in the output only if they are connected to 

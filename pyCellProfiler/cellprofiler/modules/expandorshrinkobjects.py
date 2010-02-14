@@ -56,7 +56,7 @@ O_SPUR = 'Remove spurs'
 O_ALL = [O_SHRINK_INF, O_EXPAND_INF, O_DIVIDE, O_SHRINK, O_EXPAND,
          O_SKELETONIZE, O_SPUR]
 
-DOC_FILL_HOLES = '''The shrink algorithm preserves each object's Euler number
+DOC_FILL_HOLES = '''The shrink algorithm preserves each object's Euler number,
 which means that it will erode an object with a hole to a ring in order to
 keep the hole and it will erode an object with two holes to two rings
 connected by a line in order to keep from breaking up the object or breaking
@@ -90,17 +90,17 @@ class ExpandOrShrinkObjects(cpm.CPModule):
                                     (break an object in two, remove the object completely or open a hole in
                                     an object).</li>
                                     <li><i>Shrink objects by a specified number of pixels:</i> Remove pixels around the perimeter of an object unless doing
-                                    so would break the object in two, remove the object completely or open
-                                    a hole in the object. The user can choose the number of times to remove
-                                    perimeter pixels. Processing stops automatically when there are no more
+                                    so would change the object's Euler number (break the object in two, remove the object completely or open
+                                    a hole in the object). You can specify the number of times 
+                                    perimeter pixels should be removed. Processing stops automatically when there are no more
                                     pixels to remove.</li>
                                     <li><i>Expand objects by a specified number of pixels:</i> Expand each object by adding background pixels adjacent to the
-                                    image. The user can choose the number of times to expand. Processing stops
+                                    image. You can choose the number of times to expand. Processing stops
                                     automatically if there are no more background pixels.</li>
                                     <li><i>Skeletonize each object:</i> Erode each object to its skeleton.</li>
                                     <li><i>Remove spurs:</i> Remove or reduce the length of spurs in a skeletonized image.
                                     The algorithm reduces spur size by the number of pixels indicated in the
-                                    setting "Number of pixels by which to expand or shrink."</li> </ul>              
+                                    setting <i>Number of pixels by which to expand or shrink</i>.</li> </ul>              
                                     ''')
         
         self.iterations = cps.Integer("Number of pixels by which to expand or shrink",
@@ -115,7 +115,7 @@ class ExpandOrShrinkObjects(cpm.CPModule):
         self.outlines_name = cps.OutlineNameProvider("Name the outline image",
                                     "ShrunkenNucleiOutlines", doc = """
                                     <i>(Used only if outlines are to be retained for later use in the pipeline)</i><br>
-                                    Choose a name for the outlines of the identified objects, which will allow them to be selected as an image later in the pipeline.""")
+                                    Choose a name for the outlines of the identified objects that will allow them to be selected as an image later in the pipeline.""")
 
     def settings(self):
         return [self.object_name, self.output_object_name, self.operation,

@@ -2,17 +2,17 @@
 <hr>
 This module allows you to remove objects through a user interface. The
 module displays three images: the objects as originally segmented,
-the objects that have not been removed and the objects that have been
+the objects that have not been removed, and the objects that have been
 removed.
 
 If you click on an object in the "not removed" image, it moves to the
 "removed" image and will be removed. If you click on an object in the
 "removed" image, it moves to the "not removed" image and will not be
-removed. If you click on an object in the original image, it will
-toggle its "removed" state.
+removed. Clicking on an object in the original image 
+toggles its "removed" state.
 
 The pipeline pauses once per processed image when it reaches this module.
-You have to press the continue button to accept the selected objects
+You have to press the <i>Continue</i> button to accept the selected objects
 and continue the pipeline.
 
 See also <b>FilterByObjectMeasurement</b>, <b>Exclude</b>,
@@ -62,7 +62,7 @@ class EditObjectsManually(I.Identify):
         self.object_name = cps.ObjectNameSubscriber("Select the input objects", "None",
                                                     doc="""
             This setting allows you to choose a set of objects from a prior
-            module for editing such as those produced by one of the
+            module for editing, such as those produced by one of the
             <b>Identify</b> modules""")
         self.filtered_objects = cps.ObjectNameProvider(
             "Name the objects left after editing","EditedObjects",
@@ -78,7 +78,7 @@ class EditObjectsManually(I.Identify):
         self.outlines_name = cps.OutlineNameProvider(
             "What do you want to call the outlines?", "EditedObjectOutlines",
             doc="""Use this setting to give a name to the outline image. This
-            setting is only available if you check the outlines box""")
+            setting is available only if you check the outlines box""")
         self.renumber_choice = cps.Choice(
             "Do you want to renumber the objects created by this module or retain the original numbering?",
             [R_RENUMBER, R_RETAIN],

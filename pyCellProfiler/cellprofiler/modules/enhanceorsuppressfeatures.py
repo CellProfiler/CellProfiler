@@ -1,7 +1,7 @@
 '''<b>Enhance Or Suppress Features</b> enhances or suppresses certain image features (such as speckles, ring shapes, and neurites), which can improve subsequent identification of objects
 <hr>
 This module enhances or suppresses the intensity of certain pixels relative
-to the rest of the image, by applying image processing filters to the image. It produces a grayscale image in which objects can be identified using an <b>Identify module</b>.
+to the rest of the image, by applying image processing filters to the image. It produces a grayscale image in which objects can be identified using an <b>Identify</b> module.
 '''
 
 # CellProfiler is distributed under the GNU General Public License.
@@ -48,10 +48,10 @@ class EnhanceOrSuppressFeatures(cpm.CPModule):
         
         self.method = cps.Choice('Select the operation',
                                         [ ENHANCE, SUPPRESS],doc="""
-                                        Do you want to enhance or suppress the feature you designate?
-                                        Choose <i>Enhance</i> to get an image whose intensity is largely composed of
-                                        the features of interest. Choose <i>Suppress</i> to produce an image with the feature largely
-                                        removed.""")
+                                        Do you want to enhance or suppress the features you designated?
+                                        <ul><li><i>Enhance</i> produces an image whose intensity is largely composed of
+                                        the features of interest. <li>Choose <i>Suppress</i> to produce an image with the features largely
+                                        removed.</li></ul>""")
         
         self.enhance_method = cps.Choice('Feature type',
                                         [E_SPECKLES, E_NEURITES, E_DARK_HOLES],

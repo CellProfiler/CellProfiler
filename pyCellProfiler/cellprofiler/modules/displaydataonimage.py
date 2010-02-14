@@ -56,9 +56,9 @@ class DisplayDataOnImage(cpm.CPModule):
         self.objects_or_image = cps.Choice(
             "Do you want to display object or image measurements?",
             [OI_OBJECTS, OI_IMAGE],
-            doc = """Choose <i>Image</i> to display a single measurement made
-            on an image. Choose <i>Object</i> to display measurements made on
-            objects.""")
+            doc = """<ul><li> <i>Image</i> displays a single measurement made
+            on an image.</li> <li><i>Object</i> displays measurements made on
+            objects.</li></ul>""")
         self.objects_name = cps.ObjectNameSubscriber(
             "Which objects' measurements do you want to display?", "None",
             doc = """Choose the name of objects identified by some previous
@@ -82,18 +82,18 @@ class DisplayDataOnImage(cpm.CPModule):
         self.text_color = cps.Text(
             "Text color","red",
             doc="""This is the color that will be used when displaying the text.
-            There are several different ways to specify the color:<br>
-            <ul><li>Single letter: b=blue, g=green, r=red, c=cyan, m=magenta,
-            y=yellow, k=black, w=white</li>
-            <li>By name: You can use any name supported by HTML. The following
+            There are several different ways by which you can specify the color:<br>
+            <ul><li>Single letter: "b"=blue, "g"=green, "r"=red, "c"=cyan, "m"=magenta,
+            "y"=yellow, "k"=black, "w"=white</li>
+            <li>Name: You can use any name supported by HTML. The following
             link has a list of colors:
-            http://www.w3schools.com/html/html_colornames.asp
+            <a href=http://www.w3schools.com/html/html_colors.asp>http://www.w3schools.com/html/html_colors.asp</a>
             </li>
-            <li>By RGB code: You can specify the color as a combination of
+            <li>RGB code: You can specify the color as a combination of
             the red, green and blue intensities, for instance, "#FFFF00"
-            for yellow (yellow = (red:FF, green:FF, blue:00) where FF is
-            hexadecimal for 255, the highest intensity). See
-            http://www.w3schools.com/html/html_colors.asp for a more detailed
+            for yellow; yellow = (red:"FF", green:"FF", blue:"00"), where <i>FF</i> is
+            hexadecimal for 255, the highest intensity. See
+            <a href=http://www.w3schools.com/html/html_colors.asp>http://www.w3schools.com/html/html_colors.asp</a> for a more detailed
             explanation</li></ul>""")
         self.display_image = cps.ImageNameProvider(
             "Name the output image, which has the measurements displayed","DisplayImage",

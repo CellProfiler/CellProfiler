@@ -144,10 +144,10 @@ class Crop(cpm.CPModule):
                             Specify the left and right positions for the bounding rectangle. Select<br>
                             <ul><li><i>Absolute</i> to specify these values as absolute pixel
                             coordinates in the original image. For instance, you might enter
-                            25, 225 and "Absolute" to create a 200x200 pixel image that is
+                            "25", "225", and "Absolute" to create a 200x200 pixel image that is
                             25 pixels from the top-left corner.</li>
                             <li><i>From edge</i> to specify position relative to the original image's
-                            edge. For instance, you might enter 25, 25 and "Edge" to
+                            edge. For instance, you might enter "25", "25", and "Edge" to
                             crop 25 pixels from both the left and right edges of the image, irrespective
                             of the image's original size.</li></ul>""")
         

@@ -34,7 +34,7 @@ Features that can be measured by this module:
 </ul>
 The last three are related to the questions the module asks you about the grid.
 
-See also: <b>IdentifyObjectsInGrid</b>
+See also <b>IdentifyObjectsInGrid</b>.
 '''
 # CellProfiler is distributed under the GNU General Public License.
 # See the accompanying file LICENSE for details.
@@ -167,9 +167,9 @@ class DefineGrid(cpm.CPModule):
                         automatically, an <b>IdentifyPrimAutomatic</b> module must be run prior to 
                         this module to identify the objects which will be used to define 
                         the grid. The left-most, right-most, top-most, and bottom-most 
-                        object will be used to define the edges of the grid and the rows 
+                        object will be used to define the edges of the grid, and the rows 
                         and columns will be evenly spaced between these edges. Note that 
-                        automatic mode requires that the incoming objects are nicely 
+                        Automatic mode requires that the incoming objects are nicely 
                         defined - for example, if there is an object at the edge of the 
                         images that is not really an object that ought to be in the grid, 
                         a skewed grid will result. You might wish to use a 
@@ -265,7 +265,7 @@ class DefineGrid(cpm.CPModule):
                         "Retain an image of the grid for use later in the pipeline (for example, in SaveImages)?", False, doc = """
                         Do you want to retain an image of the grid for use later in the pipeline? 
                         This module can create an annotated image of the grid
-                        which can be saved using the <b>SaveImages</b> module. Check
+                        that can be saved using the <b>SaveImages</b> module. Check
                         this box if you want to save the annotated image. """)
         
         self.display_image_name = cps.ImageNameSubscriber(

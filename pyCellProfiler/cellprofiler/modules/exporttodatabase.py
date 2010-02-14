@@ -1,41 +1,41 @@
 '''<b>Export To Database</b> exports data directly to a database, or in 
-database readable format, including an importing file
-with column names and a CellProfiler Analyst properties file, if desired.
+database readable format, including an imported file
+with column names and a CellProfiler Analyst properties file, if desired
 <hr>
 
-This module exports measurements directly to a database, or to a SQL compatible format. 
-It allows you to create MySQL and associated data files which will create a
-database and import the data into it and gives you the option of creating
+This module exports measurements directly to a database or to a SQL-compatible format. 
+It allows you to create and import MySQL and associated data files into a
+database and gives you the option of creating
 a properties file for use with CellProfiler Analyst. Optionally, you can create
-an SQLite DB file if you do not have a server on which to run MySQL itself.
+an SQLite database file if you do not have a server on which to run MySQL itself.
 
 This module must be run at the end of a pipeline, or second to last if 
-you are using the CreateBatchFiles module. If you forget this module, you
-can also run the ExportDatabase data tool after processing is complete; 
+you are using the <b>CreateBatchFiles</b> module. If you forget this module, you
+can also run the <i>ExportDatabase</i> data tool after processing is complete; 
 its functionality is the same.
 
 The database is set up with two primary tables. These tables are the
-Per_Image table and the Per_Object table (which may have a prefix if you
-specify). The <em>Per_Image</em> table consists of all the per-image measurements made during the pipeline, plus
+<i>Per_Image</i> table and the <i>Per_Object</i> table (which may have a prefix if you
+specify). The Per_Image table consists of all the per-image measurements made during the pipeline, plus
 per-image population statistics (such as mean, median, and standard deviation) of the object measurements. There is one
-Per_Image row for every "cycle" that CellProfiler processes (usually, a cycle is a single field of view, and a single cycle usually contains several image files, each representing a different channel of the same field of view). The<em> Per_Object</em> table contains all the
+Per_Image row for every "cycle" that CellProfiler processes (a cycle is usually a single field of view, and a single cycle usually contains several image files, each representing a different channel of the same field of view). The Per_Object table contains all the
 measurements for individual objects. There is one row of object
 measurements per object identified. The two tables are connected with the
-primary key column ImageNumber, which indicates to which image each object belongs. The Per_Object table has another primary
-key called ObjectNumber, which is unique per image. In the most typical use, if multiple types of objects are identified and measured in a pipeline, the number of those objects are equal to each other. For example, in most pipelines, each nucleus has exactly one cytoplasm, so the first row of the Per-Object table contains all of the information about object #1, including both nucleus- and cytoplasm-related measurements. If this one-to-one correspondence is <em>not</em> the case for all objects in the pipeline (for example, if dozens of speckles are identified and measured for each nucleus), then the ExportToDatabase module must be configured to export only objects that maintain the one-to-one correspondence (for example, export only Nucleus and Cytoplasm, but omit Speckles).
+primary key column <i>ImageNumber</i>, which indicates the image to which each object belongs. The Per_Object table has another primary
+key called <i>ObjectNumber</i>, which is unique to each image. Typically, if multiple types of objects are identified and measured in a pipeline, the numbers of those objects are equal to each other. For example, in most pipelines, each nucleus has exactly one cytoplasm, so the first row of the Per-Object table contains all of the information about object #1, including both nucleus- and cytoplasm-related measurements. If this one-to-one correspondence is <i>not</i> the case for all objects in the pipeline (for example, if dozens of speckles are identified and measured for each nucleus), then you must configure <b>ExportToDatabase</b> to export only objects that maintain the one-to-one correspondence (for example, export only <i>Nucleus</i> and <i>Cytoplasm</i>, but omit <i>Speckles</i>).
 
-If you have extracted "Plate" and "Well" metadata from image filenames or loaded "Plate" and "Well" metadata via LoadData, 
+If you have extracted "Plate" and "Well" metadata from image filenames or loaded "Plate" and "Well" metadata via <b>LoadData</b>, 
 you can ask CellProfiler to create a "per-well" table, which aggregates object measurements across wells.  
-This option will output a .SQL file (regardless of whether or not you choose to write directly to the database)
-which can be used to create the per-well table.  At the secure shell where you normally log in to mysql, type
+This option will output a SQL file (regardless of whether you choose to write directly to the database)
+that can be used to create the per-well table. At the secure shell where you normally log in to MySQL, type
 the following, replacing the italics with references to your database and files:
 
 mysql -h <i>hostname</i> -u <i>username</i> -p <i>databasename</i> &lt<i>pathtoimages/perwellsetupfile.SQL</i>
 
- and the commands written by CellProfiler to create the per-well table will be executed.
+The commands written by CellProfiler to create the per-well table will be executed.
 
 Oracle is not currently fully supported; you can create your own Oracle DB using
-the .csv output option, and writing a simple script to upload to the DB.
+the .csv output option and writing a simple script to upload to the database.
 
 See also <b>ExportToExcel</b>.
 
@@ -185,20 +185,20 @@ class ExportToDatabase(cpm.CPModule):
             "Database type",
             db_choices, default_db, doc = """
             What type of database do you want to use? <ul><li><i>MySQL:</i>
-            This option will allow the data to be written directly to a MySQL 
-            database. MySQL is open-source software and may require help from 
+            Allows the data to be written directly to a MySQL 
+            database. MySQL is open-source software; you may require help from 
             your local Information Technology group to set up a database 
             server.</li>
-            <li><i>MySQL / CSV:</i> This option will write a script file that
-            contains SQL statements to create a database and upload the
-            Per_Image and Per_Object tables. It will write out the Per_Image
-            and Per_Object table data to two CSV files; these files can be
-            used directly if you want to import the data into an application
+            <li><i>MySQL / CSV:</i> Writes a script file that
+            contains SQL statements for creating a database and uploading the
+            Per_Image and Per_Object tables. This option will write out the Per_Image
+            and Per_Object table data to two CSV files; you can use these files can be
+            used to import the data directly into an application
             that accepts CSV data.</li>
-            <li><i>SQLite:</i> This option will write 
-            sqlite files directly. SQLite is simpler to set up than MySQL and 
-            can more readily be run on your local computer rather than a 
-            database server. More information about sqlite can be found at 
+            <li><i>SQLite:</i> Writes 
+            SQLite files directly. SQLite is simpler to set up than MySQL and 
+            can more readily be run on your local computer rather than requiring a 
+            database server. More information about SQLite can be found at 
             <a href="http://www.sqlite.org/"> http://www.sqlite.org/</a> </li></ul>""")
         
         self.db_name = cps.Text(
@@ -208,7 +208,7 @@ class ExportToDatabase(cpm.CPModule):
         self.want_table_prefix = cps.Binary(
             "Add a prefix to table names?", False, doc = """
             Do you want to add a prefix to your table names?
-            This gives you the option to prepend text to your table names
+            This option enables you to prepend text to your table names
             (Per_Image and Per_Object).  CellProfiler will warn you before overwriting an existing table.""")
         
         self.table_prefix = cps.Text(
@@ -225,18 +225,18 @@ class ExportToDatabase(cpm.CPModule):
             "Where do you want to save files?",
             [DIR_DEFAULT_OUTPUT, DIR_DEFAULT_IMAGE, DIR_CUSTOM, 
              DIR_CUSTOM_WITH_METADATA],
-            doc="""This setting determines where the .CSV files are saved if
+            doc="""This setting determines where the .csv files are saved if
             you decide to save measurements to files instead of writing them
             directly to the database.
-            <br><ul><li><i>Default output folder</i>: saves files in the
+            <br><ul><li><i>Default output folder</i> saves files in the
             default output folder.</li>
-            <li><i>Default image folder</i>: saves files in the default
+            <li><i>Default image folder</i> saves files in the default
             image folder.</li>
-            <li><i>Custom folder</i>: lets you specify the folder name. If
+            <li><i>Custom folder</i> lets you specify the folder name. If
             the folder name starts with ".", the folder will be a subfolder
             of the default output folder. If the folder name starts with "&amp;",
             the folder will be a subfolder of the default image folder.</li>
-            <li><i>Custom folder with metadata</i>: will substitute the metadata
+            <li><i>Custom folder with metadata</i> will substitute the metadata
             values for the last image set processed for any metadata tokens
             in the path name.</li></ul>""")
         
@@ -271,16 +271,16 @@ class ExportToDatabase(cpm.CPModule):
             What is the SQLite database filename to which you want to write?""")
         
         self.wants_agg_mean = cps.Binary("Calculate the per-image mean values of object measurements?", True, doc = """
-            ExportToDatabase can calculate population statistics over all the objects in each image
+            <b>ExportToDatabase</b> can calculate population statistics over all the objects in each image
             and store the results in the database. For instance, if
-            you are measuring the area of the Nuclei objects and you check the box for this option, ExportToDatabase will create a column in the Per_Image
-            table called Mean_Nuclei_AreaShape_Area.
-            <p>You may not want to use ExportToDatabase to calculate these population statistics if your pipeline generates
+            you are measuring the area of the Nuclei objects and you check the box for this option, <b>ExportToDatabase</b> will create a column in the Per_Image
+            table called <i>Mean_Nuclei_AreaShape_Area</i>.
+            <p>You may not want to use <b>ExportToDatabase</b> to calculate these population statistics if your pipeline generates
             a large number of per-object measurements; doing so might exceed database
             column limits. These columns can be created manually for selected measurements directly in MySQL.
-            For instance, the following SQL command creates the Mean_Nuclei_AreaShape_Area column:
+            For instance, the following SQL command creates the <i>Mean_Nuclei_AreaShape_Area</i> column:
             
-                ALTER TABLE Per_Image ADD (Mean_Nuclei_AreaShape_Area);
+                <p>ALTER TABLE Per_Image ADD (Mean_Nuclei_AreaShape_Area);
                 UPDATE Per_Image SET Mean_Nuclei_AreaShape_Area = 
                     (SELECT AVG(Nuclei_AreaShape_Area)
                      FROM Per_Object
@@ -292,14 +292,14 @@ class ExportToDatabase(cpm.CPModule):
         
         self.wants_agg_mean_well = cps.Binary(
             "Calculate the per-well mean values of object measurements?", False, doc = '''
-            ExportToDatabase can calculate statistics over all the objects in each well 
-            and store the results as columns in a Per_Well table in the database. For instance, 
+            <b>ExportToDatabase</b> can calculate statistics over all the objects in each well 
+            and store the results as columns in a "per-well" table in the database. For instance, 
             if you are measuring the area of the Nuclei objects and you check the aggregate
-            mean box in this module, ExportToDatabase will create a table in database called
-            Per_Well_Mean, with a column called Mean_Nuclei_AreaShape_Area. NOTE: this option is only
-            available if you have extracted plate and well metadata from the filename or via a LoadData module.
-            This option will write out a .SQL file with the statements necessary to create the per_well
-            table, regardless of the option chosen above. See the help for this module for more information.''')
+            mean box in this module, <b>ExportToDatabase</b> will create a table in database called
+            <i>Per_Well_Mean</i>, with a column called <i>Mean_Nuclei_AreaShape_Area</i>. <i>Note:</i> this option is only
+            available if you have extracted plate and well metadata from the filename or via a <b>LoadData</b> module.
+            It will write out a .sql file with the statements necessary to create the Per_Well
+            table, regardless of the option chosen above. See <b>LoadData</b>help for more information.''')
         
         self.wants_agg_median_well = cps.Binary(
             "Calculate the per-well median values of object measurements?", False)
@@ -310,8 +310,7 @@ class ExportToDatabase(cpm.CPModule):
         self.objects_choice = cps.Choice(
             "Export measurements for all objects to the database?",
             [O_ALL, O_NONE, O_SELECT], doc = """
-            This option lets you choose the objects that will have
-            their measurements saved in the Per_Object and Per_Well(s) database tables.
+            This option lets you choose the objects whose measurements will be saved in the Per_Object and Per_Well(s) database tables.
             <ul>
             <li><i>All:</i> Export measurements from all objects</li>
             <li><i>None:</i> Do not export data to a Per_Object table. Save only Per_Image or Per_Well measurements (which nonetheless include population statistics from objects).</li>
@@ -321,7 +320,7 @@ class ExportToDatabase(cpm.CPModule):
         self.objects_list = cps.ObjectSubscriberMultiChoice(
             "Select the objects", doc = """
             <i>(Used if Select is chosen for adding objects)</i><br>
-            Choose one or more objects from this list (click using shift or command keys to select multiple objects from the list). The list includes
+            Choose one or more objects from this list (click using shift or command keys to select multiple objects). The list includes
             the objects that were created by prior modules. If you choose an
             object, its measurements will be written out to the Per_Object and/or
             Per_Well(s) tables, otherwise, the object's measurements will be skipped.""")
@@ -331,29 +330,29 @@ class ExportToDatabase(cpm.CPModule):
             minval = 10, maxval = 64,
             doc="""This setting limits the number of characters that can appear
             in the name of a field in the database. MySQL has a limit of 64
-            characters, but also has an overall limit to the number of characters
+            characters per field, but also has an overall limit on the number of characters
             in all of the columns of a table. <b>ExportToDatabase</b> will
             shorten all of the column names by removing characters, at the
-            same time, guaranteeing that no two columns have the same name.""")
+            same time guaranteeing that no two columns have the same name.""")
         self.separate_object_tables = cps.Choice(
             "Do you want one table per object or a single object table?",
             [OT_PER_OBJECT, OT_COMBINE],
-            doc = """<b>ExportToDatabase</b> can either create a table
-            for each type of object exported or it can create a single
+            doc = """<b>ExportToDatabase</b> can create either one table
+            for each type of object exported or a single
             object table.<br><ul>
-            <li><i>%(OT_PER_OBJECT)s</i> - <b>ExportToDatabase</b> will create one
+            <li><i>%(OT_PER_OBJECT)s:</i> Creates one
             table for each object type you export. The table name will reflect
             the name of your objects. The table will have one row for each
-            of your objects. You can make SQL queries that join tables using
-            the Number_ObjectNumber columns of parent objects (such as those
+            of your objects. You can write SQL queries that join tables using
+            the <i>Number_ObjectNumber</i> columns of parent objects (such as those
             created by <b>IdentifyPrimaryObjects</b>) with the corresponding
-            Parent_... column of the child objects. Choose 
+            <i>Parent_...</i> column of the child objects. Choose 
             <i>%(OT_PER_OBJECT)s</i> if parent objects can have more than
             one child object, if you want a relational representation of
             your objects in the database,
             or if you need to split columns among different
             tables and shorten column names because of database limitations.</li>
-            <li><i>%(OT_COMBINE)s</i> - this choice will create a single
+            <li><i>%(OT_COMBINE)s:</i> Creates a single
             database table that records all object measurements. <b>
             ExportToDatabase</b> will prepend each column name with the
             name of the object associated with that column's measurement.

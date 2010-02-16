@@ -342,7 +342,18 @@ def reload_modules():
     
 def output_html():
     '''Output an HTML page for each module'''
-    index_fd = open('index.html','w')
+    root = os.path.split(__file__)[0]
+    if len(root) == 0:
+        root = os.curdir
+    root = os.path.abspath(root)
+    module_html = os.path.join(root, 'html')
+    if not (os.path.exists(module_html) and os.path.isdir(module_html)):
+        try:
+            os.mkdir(module_html)
+        except IOError:
+            module_html = root
+    index_fd = open(os.path.join(module_html,'index.html'),'w')
+        
     index_fd.write("""<html>
 <head>
     <title>CellProfiler: Module table of contents</title>
@@ -356,7 +367,7 @@ def output_html():
         if not d.has_key(module.category):
             d[module.category] = {}
         d[module.category][module_name] = module
-        fd = open("%s.html" % module_name, "w")
+        fd = open(os.path.join(module_html,"%s.html" % module_name), "w")
         fd.write(module.get_help())
         fd.close()
     for category in sorted(d.keys()):

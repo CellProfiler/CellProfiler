@@ -1,5 +1,5 @@
-'''<b>Identify tertiary objects</b> identifies tertiary objects (e.g. cytoplasm) by removing smaller primary
-objects (e.g. nuclei) from larger secondary objects (e.g. cells), leaving a ring shape
+'''<b>Identify tertiary objects</b> identifies tertiary objects (e.g., cytoplasm) by removing smaller primary
+objects (e.g. nuclei) from larger secondary objects (e.g., cells), leaving a ring shape
 <hr>
 This module will take the smaller identified objects and remove them from
 the larger identified objects. For example, "subtracting" the nuclei from
@@ -7,16 +7,16 @@ the cells will leave just the cytoplasm, the properties of which can then
 be measured by <b>Measure</b> modules. The larger objects should therefore be
 equal in size or larger than the smaller objects and must completely
 contain the smaller objects.  Both inputs should be objects produced by
-identify modules, not grayscale images.
+<b>Identify</b> modules, not grayscale images.
 
-<p>Note: Creating subregions using this module can result in objects that
+<p><i>Note:</i> Creating subregions using this module can result in objects that
 are not contiguous, which does not cause problems when running the
 <b>Measure Intensity</b> and <b>Measure Texture</b> modules, but does cause 
 problems when running the <b>Measure AreaShape</b> module because calculations 
 of the perimeter, aspect ratio, solidity, etc. cannot be made for noncontiguous
 objects.
 
-Special note on saving images: Using the settings in this module, object outlines can be passed along to the module <b>OverlayOutlines</b> and then saved with the <b>SaveImages</b> module. The identified objects themselves can be passed along to the object processing module <b>ConvertToImage</b> and then saved with the <b>SaveImages</b> module.
+<i>Special note on saving images:</i> You can use the settings in this module to pass object outlines along object outlines can be passed along to the module <b>OverlayOutlines</b> and then save them with the <b>SaveImages</b> module. The identified objects themselves can be passed along to the object processing module <b>ConvertToImage</b> and then saved with the <b>SaveImages</b> module.
 
 See also <b>Identify Primary</b> and <b>Identify Secondary</b> modules.
 '''
@@ -71,7 +71,7 @@ class IdentifyTertiaryObjects(cpm.CPModule):
         self.use_outlines = cps.Binary("Retain the outlines for use later in the pipeline (for example, in SaveImages)?",False)
         
         self.outlines_name = cps.OutlineNameProvider("Name the outline image","CytoplasmOutlines", doc="""\
-            <i>(Only used if outlines are to be retained for later use in the pipeline)</i>
+            <i>(Used only if outlines are to be retained for later use in the pipeline)</i><br>
             <p> Choose a name, which will allow the outlines to be selected later in the pipeline.""") 
 
     def settings(self):

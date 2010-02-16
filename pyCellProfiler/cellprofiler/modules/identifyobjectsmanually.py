@@ -1,17 +1,17 @@
-'''<b>IdentifyObjectsManually</b> - Identify objects in an image by selecting
-them using the user interface.<br>
+'''<b>IdentifyObjectsManually</b> identifies objects in an image by selecting
+them using the user interface<br>
 <hr>
 <br>
 This module lets you outline the objects in an image using the mouse. The
 user interface has several mouse tools:<br>
-<ul><li><b>Outline tool</b> - This tool lets you draw an outline around an
+<ul><li><i>Outline:</i> Lets you draw an outline around an
 object. Press the left mouse button at the start of the outline and draw
 the outline around your object. The tool will close your outline when
 you release the left mouse button.</li>
-<li><b>Zoom in tool</b> - This tool lets you draw a rectangle and zoom the
+<li><i>Zoom in:</i> Lets you draw a rectangle and zoom the
 display to within that rectangle.</li>
-<li><b>Zoom out tool</b> - reverses the effect of the last zoom-in</li>
-<li><b>Erase tool</b> - erases an object if you click on it</li></ul>
+<li><i>Zoom out:</i> Reverses the effect of the last zoom-in.</li>
+<li><i>Erase:</i> Erases an object if you click on it.</li></ul>
 '''
 
 __version__ = "$Revision$"
@@ -56,9 +56,9 @@ class IdentifyObjectsManually(I.Identify):
             as a binary image""")
         self.outlines_name = cps.ImageNameProvider(
             "Outlines name:", "CellOutlines",
-            doc = """This is the name of the outline image. You can refer to
+            doc = """This is the name of the outlines image. You can refer to
             this image in any subsequent module that uses images. You can
-            save the outline image using the <b>SaveImages</b> module.""")
+            save the outlines image using the <b>SaveImages</b> module.""")
         
     def settings(self):
         '''The settings as saved in the pipeline'''

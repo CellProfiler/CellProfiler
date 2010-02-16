@@ -1,13 +1,13 @@
 '''<b>Image Math</b> performs simple mathematical operations on image intensities
 <hr>
-ImageMath can perform addition, subtraction, multiplication, division, or averaging
+<b>ImageMath</b> can perform addition, subtraction, multiplication, division, or averaging
 of two or more images' intensities, as well as inversion, log transform, or scaling by 
 a constant for individual image intensities.
 
-<i>Multiply factors</i> The final image may have a substantially different range of pixel
+<i>Multiply factors:</i> The final image may have a substantially different range of pixel
 intensities than the originals, so each image can be multiplied by a 
 factor prior to the operation. This factor can be any real number.  
-See the <b>Rescale Intensity</b> module for more scaling options.
+See the <b>RescaleIntensity</b> module for more scaling options.
 <br>
 <br>
 See also <b>SubtractBackground</b>, <b>RescaleIntensity</b>, <b>CorrectIllumination_Calculate</b>.
@@ -78,10 +78,10 @@ class ImageMath(cpm.CPModule):
             <li><i>Divide </i> divides the first image by the second.
             
             <li><i>Average</i> calculates the mean intensity of the images loaded in the module.  
-            This is equivalent to the "add" option divided by the number of images loaded 
+            This is equivalent to the Add option divided by the number of images loaded 
             by this module.  If you would like to average all of the images in 
-            an entire pipeline, i.e. across cycles, you should instead use the CorrectIllumination_Calculate module 
-            and choose the 'All' (vs. 'Each') option.</li>
+            an entire pipeline, i.e., across cycles, you should instead use the <b>CorrectIllumination_Calculate</b> module 
+            and choose the <i>All</i> (vs. <i>Each</i>) option.</li>
             
             <li><i>Invert</i> subtracts the image intensities from 1. This makes the darkest
             color the brightest and vice-versa.</li>
@@ -96,12 +96,12 @@ class ImageMath(cpm.CPModule):
         self.exponent = cps.Float("Raise to exponent", 1, doc="""Enter an exponent to raise the result to *after* the chosen operation""")
         self.after_factor = cps.Float("Multiply by", 1, doc="""Enter a factor to multiply the result by *after* the chosen operation""")
         self.addend = cps.Float("Add to result", 0, doc ="""Enter a number to add to the result *after* the chosen operation""")
-        self.truncate_low = cps.Binary("Set values less than 0 equal to 0?", True, doc="""Do you want negative values to be set to zero?
+        self.truncate_low = cps.Binary("Set values less than 0 equal to 0?", True, doc="""Do you want negative values to be set to 0?
             Values outside the range 0 to 1 might not be handled well by other modules. 
-            Here, you have the option of setting negative values to 0.""")
-        self.truncate_high = cps.Binary("Set values greater than 1 equal to 1?", True, doc ="""Do you want values greater than one to be set to one?
+            Here you have the option of setting negative values to 0.""")
+        self.truncate_high = cps.Binary("Set values greater than 1 equal to 1?", True, doc ="""Do you want values greater than one to be set to 1?
             Values outside the range 0 to 1 might not be handled well by other modules. 
-            Here, you have the option of setting values greater than 1 to a maximum value of 1.""")
+            Here you have the option of setting values greater than 1 to a maximum value of 1.""")
         self.output_image_name = cps.ImageNameProvider("Name the output image", "ImageAfterMath", doc="""What do you want to call the resulting image?""")
         self.add_button = cps.DoSomething("", "Add another image", self.add_image, True)
         self.divider_bottom = cps.Divider(line=False)

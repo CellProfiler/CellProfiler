@@ -1,35 +1,33 @@
 '''<b>Identify Objects In Grid</b> identifies objects within each section of a grid that has been defined by
-the DefineGrid module
+the <b>DefineGrid</b> module
 <hr>
-This module identifies objects that are in a grid pattern, which allows
-you to measure the objects using measure modules. It requires you to
-create a grid in an earlier module using the <b>DefineGrid</b> module.
+This module identifies objects that are in a grid pattern, allowing 
+you to measure the objects using <b>Measure</b> modules. It requires you to have 
+created a grid earlier in the pipeline, using the <b>DefineGrid</b> module.
 
-For several of the automatic options, you will need to tell the module
-what you called previously identified objects. Typically, you roughly
-identify objects of interest in a previous <b>Identify</b> module, and the
-locations and/or shapes of these rough objects are refined in this
-module. Within this module, objects are re-numbered according to the grid
-definitions rather than their original numbering from the original 
-Identify module. For the <i>Natural Shape</i> option, if an object does not 
+For several of the automatic options, you will need to enter the names of previously identified objects. Typically,
+this module is used to refine locations and/or shapes of objects of interest that 
+you roughly identified in a previous <b>Identify</b> module. Within this module, objects are re-numbered according to the grid
+definitions rather than their original numbering from the earlier  
+<b>Identify</b> module. For the <i>Natural Shape</i> option, if an object does not 
 exist within a grid compartment, an object consisting of one single pixel 
 in the middle of the grid square will be created. Also, for the <i>Natural 
 Shape</i> option, if a grid compartment contains two partial objects, they 
-will be combined together as a single object.
+will be combined together into a single object.
 
 If placing the objects within the grid is impossible for some reason (the
 grid compartments are too close together to fit the proper sized circles,
 for example) the grid will fail and processing will be canceled unless
-you choose to re-use any previous grid or the first grid in the in the 
+you choose to re-use any previous grid or the first grid in the  
 image cycle.
 
-Special note on saving images: Using the settings in this module, object
-outlines can be passed along to the module <b>OverlayOutlines</b> and then
-saved with the </b>SaveImages</b> module. Objects themselves can be passed along
+<i>Special note on saving images:</i> You can use the settings in this module to
+pass object outlines along to the <b>OverlayOutlines</b>module and then
+save them with the </b>SaveImages</b> module. Objects themselves can be passed along
 to the object processing module <b>ConvertToImage</b> and then saved with the
-SaveImages module.
+<b>SaveImages</b> module.
 
-See also <b>DefineGrid</b>.
+<p>See also <b>DefineGrid</b>.
 '''
 # CellProfiler is distributed under the GNU General Public License.
 # See the accompanying file LICENSE for details.
@@ -82,19 +80,18 @@ class IdentifyObjectsInGrid(cpm.CPModule):
         create_settings is called at the end of initialization.
         """
         self.grid_name = cps.GridNameSubscriber("Select the defined grid","None",doc="""
-            This is the name of a grid created by a previous <b>DefineGrid</b>
+            The name of a grid created by a previous <b>DefineGrid</b>
             module.""")
         
         self.output_objects_name = cps.ObjectNameProvider(
             "Name the identified objects","Wells",
-            doc="""Enter the name you want to use for the grid objects that
-            are created by this module. These objects will be available in
+            doc="""Enter the name you want to use for the grid objects created by this module. These objects will be available in
             subsequent modules.""")
         
         self.shape_choice = cps.Choice(
             "Select object shape",[SHAPE_RECTANGLE, SHAPE_CIRCLE_FORCED,
                              SHAPE_CIRCLE_NATURAL, SHAPE_NATURAL],
-            doc="""This setting chooses the grid object shape and the
+            doc="""Use this setting to choose the grid object shape and the
             algorithm used to create that shape:
             <ul>
             <li><i>Rectangle</i>: Each object occupies the entire grid
@@ -116,26 +113,26 @@ class IdentifyObjectsInGrid(cpm.CPModule):
         self.diameter_choice = cps.Choice(
             "Specify the circle diameter automatically?",
             [AM_AUTOMATIC, AM_MANUAL],
-            doc="""<i>(Used if Circle selected as object shape)</i><br>
+            doc="""<i>(Used if Circle is selected as object shape)</i><br>
             The automatic method uses the average diameter of guiding
             objects as the diameter. The manual method lets you specify the
             diameter directly.""")
         
         self.diameter = cps.Integer(
             "Circle diameter", 20, minval=2,
-            doc="""<i>(Used if Circle selected as object shape and diameter is 
+            doc="""<i>(Used if Circle is selected as object shape and diameter is 
             specified manually)</i><br>
             Enter the diameter to be used for each grid circle""")
         
         self.guiding_object_name = cps.ObjectNameSubscriber(
             "Select the guiding objects", "None",
-            doc="""<i>(Used if Circle selected as object shape and diameter is 
+            doc="""<i>(Used if Circle is selected as object shape and diameter is 
             specified automatically, or if Natural Location is selected as object 
             shape)</i><br>
-            This is the name of previously identified objects that
+            The names of previously identified objects that
             will be used to guide placement of the objects created by this
             module. These objects may used to automatically calculate the
-            diameter of the circles to be used, placeement of the circles
+            diameter of the circles, placement of the circles
             within the grid or the shape of the objects created by this
             module, depending on the module's settings.""")
         

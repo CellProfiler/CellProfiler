@@ -127,7 +127,7 @@ class Identify(cellprofiler.cpmodule.CPModule):
             <ul><li><i>Otsu:</i> This method is probably best if you don't know 
             anything about the image, or if the percentage of the image covered by 
             objects varies substantially from image to image. Our implementation 
-            takes into account the max and min values in the image and log-transforming the
+            takes into account the maximum and minimum values in the image and log-transforming the
             image prior to calculating the threshold. If you know that the object 
             coverage percentage does not vary much from image
             to image, the MoG method can be better, especially if the coverage percentage is
@@ -151,9 +151,9 @@ class Identify(cellprofiler.cpmodule.CPModule):
             which most of the image is background. It finds the mode of the 
             histogram of the image, which is assumed to be the background of the 
             image, and chooses a threshold at twice that value (which you can 
-            adjust with a Threshold Correction Factor,
+            adjust with a Threshold Correction Factor;
             see below).  Note that the mode is protected from a high number of 
-            saturated pixels by only counting pixels < 0.95. This can be very helpful,
+            saturated pixels by counting only pixels &lt; 0.95. This can be very helpful,
             for example, if your images vary in overall brightness but the objects of 
             interest are always twice (or actually, any constant) as bright as the 
             background of the image. </li>
@@ -164,10 +164,10 @@ class Identify(cellprofiler.cpmodule.CPModule):
             remaining pixels and calculates the threshold as the mean + 2 times 
             the standard deviation.</li>
             <li><i>Ridler-Calvard:</i> This method is simple and its results are
-            often very similar to Otsu's - according to
+            often very similar to Otsu's. According to
             Sezgin and Sankur's paper (<i>Journal of Electronic Imaging</i>, 2004), Otsu's 
             overall quality on testing 40 nondestructive testing images is slightly 
-            better than Ridler's (average error: Otsu: 0.318, Ridler: 0.401). 
+            better than Ridler's (average error: Otsu, 0.318; Ridler, 0.401). 
             It chooses an initial threshold and then iteratively calculates the next 
             one by taking the mean of the average intensities of the background and 
             foreground pixels determined by the first threshold, repeating this until 
@@ -179,18 +179,18 @@ class Identify(cellprofiler.cpmodule.CPModule):
             </ul>
             
             <p>You can also choose between <i>Global</i>, <i>Adaptive</i>, and 
-            <i>Per-Object</i> thresholding for the automatic methods:
+            <i>Per-object</i> thresholding for the automatic methods:
             <ul>
             <li><i>Global:</i> One threshold is used for the entire image (fast)</li>
-            <li><i>Adaptive:</i> The threshold varies across the image - a bit slower but
+            <li><i>Adaptive:</i> The threshold varies across the image; a bit slower but
             provides more accurate edge determination which may help to separate
             clumps, especially if you are not using a clump-separation method </li>
             <li><i>Per-Object:</i> If you are using this module to find child objects located
-            <i>within</i> parent objects, the per object method will calculate a distinct
+            <i>within</i> parent objects, the per-object method will calculate a distinct
             threshold for each parent object. This is especially helpful, for
             example, when the background brightness varies substantially among the
             parent objects. 
-            <br>Important: the per-object method requires that you run an
+            <br><i>Important:</i> the per-object method requires that you run an
             <b>IdentifyPrimAutomatic</b> module to identify the parent objects upstream in the
             pipeline. After the parent objects are identified in the pipeline, you
             must then also run a <b>Crop</b> module with the following inputs: 
@@ -253,7 +253,7 @@ class Identify(cellprofiler.cpmodule.CPModule):
             middle set of grayscale levels which belong to neither the
             foreground nor background. 
             <p>For example, three-class thresholding may
-            be useful for images in which you have nuclear staining along with a
+            be useful for images in which you have nuclear staining along with 
             low-intensity non-specific cell staining. Where two-class thresholding
             might incorrectly assign this intemediate staining to the nuclei 
             objects, three-class thresholding allows you to assign it to the 
@@ -269,7 +269,7 @@ class Identify(cellprofiler.cpmodule.CPModule):
             'Assign pixels in the middle intensity class to the foreground '
             'or the background?', [O_FOREGROUND, O_BACKGROUND],doc="""
             <i>(Used only for the Otsu thresholding method with three-class thresholding)</i><br>
-            Select whether you want the middle grayscale intensities to be assigned 
+            Choose whether you want the middle grayscale intensities to be assigned 
             to the foreground pixels or the background pixels.""")
     
     def get_threshold_visible_settings(self):

@@ -299,7 +299,7 @@ class ExportToDatabase(cpm.CPModule):
             <i>Per_Well_Mean</i>, with a column called <i>Mean_Nuclei_AreaShape_Area</i>. <i>Note:</i> this option is only
             available if you have extracted plate and well metadata from the filename or via a <b>LoadData</b> module.
             It will write out a .sql file with the statements necessary to create the Per_Well
-            table, regardless of the option chosen above. See <b>LoadData</b>help for more information.''')
+            table, regardless of the option chosen above. See <b>LoadData</b> help for more information.''')
         
         self.wants_agg_median_well = cps.Binary(
             "Calculate the per-well median values of object measurements?", False)

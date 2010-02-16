@@ -2,12 +2,12 @@
 <hr>
 This module allows you to assign a flag if
 an image meets certain measurement criteria that you specify (for example, if the image fails a quality control measurement).  The
-value of the flag is '1' if the image meets the selected criteria (for example, if it fails QC), and '0' if it
+value of the flag is <i>1</i> if the image meets the selected criteria (for example, if it fails QC), and <i>0</i> if it
 does not meet the criteria (if it passes QC). The flag can be used in post-processing to filter out images
-you do not want to analyze, e.g. in CellProfiler Analyst. Additionally, you can
-use ExportToExcel to generate a file that includes the flag as a metadata measurement
-associated with the images. This file can then be used by the LoadData 
-module to put images that pass QC into one group and images that fail 
+you do not want to analyze, e.g., in CellProfiler Analyst. In addition, you can
+use <b>ExportToSpreadsheet</b> to generate a file that includes the flag as a metadata measurement
+associated with the images. The <b>LoadData</b> module can then use this flag 
+to put images that pass QC into one group and images that fail 
 into another. If you plan to use a flag in <b>LoadData</b>, give it a category of
 "Metadata" so that it can be used in grouping.
 
@@ -75,25 +75,25 @@ class FlagImage(cpm.CPModule):
         group.append("measurement_settings", [])
         group.append("measurement_count", cps.HiddenCount(group.measurement_settings))
         group.append("category", cps.Text("Name the flag's category","Metadata", doc = '''
-                                Name a measurement category the flag should reside in. Metadata allows you to later group images in the LoadImages module based on the flag, if you load the flag data in a future pipeline via the LoadData module.  Otherwise, you might choose to have the flag stored
-                                in the Image category or some other word you prefer.  The flag is stored as a Per-image measurement whose name is a combination of the
+                                Name a measurement category in which the flag should reside. Metadata allows you to later group images in the <b>LoadImages</b> module based on the flag, if you load the flag data in a future pipeline via the <b>LoadData</b> module.  Otherwise, you might choose to have the flag stored
+                                in the "Image" category or using some other word you prefer.  The flag is stored as a per-image measurement whose name is a combination of the
                                 flag's category and feature name, underscore delimited. 
                                 For instance, if the measurement category is
-                                Metadata and the feature name is QCFlag, then the default
-                                measurement name would be Metadata_QCFlag.'''))
+                                "Metadata" and the feature name is "QCFlag", then the default
+                                measurement name would be "Metadata_QCFlag".'''))
         
         group.append("feature_name", cps.Text("Name the flag","QCFlag", doc = '''
-                                The flag is stored as a Per-image measurement whose name is a combination of the
+                                The flag is stored as a per-Image measurement whose name is a combination of the
                                 flag's category and feature name, underscore delimited. 
                                 For instance, if the measurement category is
-                                Metadata and the feature name is QCFlag, then the default
-                                measurement name would be Metadata_QCFlag.'''))
+                                "Metadata" and the feature name is "QCFlag", then the default
+                                measurement name would be "Metadata_QCFlag".'''))
         
         group.append("combination_choice", cps.Choice("Flag if any, or all, measurement(s) fails to meet the criteria?",
                                 [ C_ANY, C_ALL], doc = '''
                                 <ul>
-                                <li><i>Any:</i> An image will be assigned a flag if any of its measurements fail. This can be useful
-                                for flagging images possessing varied QC flaws; for example, you can flag all bright images and all out of focus images with one flag.</li>
+                                <li><i>Any:</i> An image will be flagged if any of its measurements fail. This can be useful
+                                for flagging images possessing multiple QC flaws; for example, you can flag all bright images and all out of focus images with one flag.</li>
                                 <li><i>All:</i> A flag will only be assigned if all measurements fail.  This can be useful for flagging  images that possess only a combination
                                 of QC flaws; for example, you can flag only images that are both bright and out of focus.</li>
                                 </ul>'''))
@@ -117,12 +117,10 @@ class FlagImage(cpm.CPModule):
                      cps.Choice(
                 "Flag is based on", S_ALL, doc = '''
                 <ul>
-                <li><i> Whole-image measurement:</i> This will flag an image based
-                on a per-image measurement, such as intensity or granularity.</li>
-                <li><i> Average measurement for all objects in each image:</i> This will flag
-                an image based on the average of all object measurements in the image.</li>
-                <li><i> Measurements for all objects in each image:</i> This will flag an image based on all the 
-                object measurements in an image, without averaging. In other words, if <em>any</em> of the objects meet the criteria, the image will be flagged.</li>
+                <li><i> Whole-image measurement:</i> A per-image measurement, such as intensity or granularity.</li>
+                <li><i> Average measurement for all objects in each image:</i> The average of all object measurements in the image.</li>
+                <li><i> Measurements for all objects in each image:</i> All the 
+                object measurements in an image, without averaging. In other words, if <i>any</i> of the objects meet the criteria, the image will be flagged.</li>
                 </ul>'''))
         group.append("object_name",
                      cps.ObjectNameSubscriber(

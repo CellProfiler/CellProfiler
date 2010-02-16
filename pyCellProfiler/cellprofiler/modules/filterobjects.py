@@ -1,11 +1,11 @@
-'''<b>Filter Objects</b> eliminates objects based on their measurements (e.g. area, shape,
+'''<b>Filter Objects</b> eliminates objects based on their measurements (e.g., area, shape,
 texture, intensity)
 <hr>
-This module removes selected objects based on their measurements produced by another module (e.g., 
+This module removes selected objects based on measurements produced by another module (e.g., 
 <b>MeasureObjectAreaShape</b>, <b>MeasureObjectIntensity</b>, <b>MeasureTexture</b>, etc). All objects that do not satisty  
 the specified parameters will be discarded.
 
-See also: Any of the <b>MeasureObject*</b> modules, <b>MeasureTexture</b>,
+See also any of the <b>MeasureObject*</b> modules: <b>MeasureTexture</b>,
 <b>MeasureCorrelation</b> and <b>CalculateRatios</b>.
 '''
 # CellProfiler is distributed under the GNU General Public License.
@@ -85,11 +85,11 @@ class FilterObjects(cpm.CPModule):
         
         self.object_name = cps.ObjectNameSubscriber('Select the object to filter','None', doc = """
                                 What object would you like to filter? This setting 
-                                also controls which measurement choices will appear for filtering:
+                                also controls which measurement choices appear for filtering:
                                 you can only filter based on measurements made on the object you select.
-                                If you will use a measurement 
+                                If you intend to use a measurement 
                                 calculated by the <b>CalculateMath</b> module to to filter objects, select
-                                the first operand's object here, because CalculateMath measurements
+                                the first operand's object here, because <b>CalculateMath</b> measurements
                                 are stored with the first operand's object.""")
         
         self.spacer_1 = cps.Divider(line=False)
@@ -97,9 +97,9 @@ class FilterObjects(cpm.CPModule):
         self.rules_or_measurement = cps.Choice(
             'Filter using classifier rules or measurements?',
             [ROM_MEASUREMENTS, ROM_RULES],
-            doc = """You can either pick a measurement made on the objects or
-            a rules file as produced by CellProfiler Analyst. If you choose
-            "Rules", you will have to ensure that this pipeline makes every
+            doc = """You can choose either a measurement made on the objects or
+            a rules file produced by CellProfiler Analyst. If you choose
+            <i>Rules</i>, you will have to ensure that this pipeline makes every
             measurement in that rules file.""")
         self.spacer_2 = cps.Divider(line=False)
         
@@ -120,26 +120,26 @@ class FilterObjects(cpm.CPModule):
                                 <li><i>Minimal:</i> Keep the object with the minimum value for the measurement
                                 of interest. If multiple objects share a minimal value, retain one object 
                                 selected arbitrarily per image.</li>
-                                <li><i>Maximal per object:</i> This option requires a choice of parent objects
-                                objects. The parent object might contain several child objects of
+                                <li><i>Maximal per object:</i> This option requires you to choose a parent object.
+                                The parent object might contain several child objects of
                                 choice (for instance, mitotic spindles within a cell or FISH
-                                probe spots within a nucleus). This option will keep only the child
-                                object with the maximum value for the child measurements among the
-                                set of children objects within the parent (for example, the longest spindle
+                                probe spots within a nucleus). Only the child object whose measurements equal the maximum child-measurement
+                                value among the set of child objects belonging to that parent will
+                                (for example, the longest spindle
                                 in each cell).  You do not have to explicitly relate objects before using this module.</li>
-                                <li><i>Minimal per object:</i> Same as Maximal per object, except use minimum to filter.</li>
+                                <li><i>Minimal per object:</i> Same as Maximal per object, except filtering is based on the minimum value.</li>
                                 </ul>""")
         
         self.enclosing_object_name = cps.ObjectNameSubscriber('What did you call the objects that contain the filtered objects?','None', doc = """
                                 <i>(Used if a Per-Object filtering method is selected)</i><br>
-                                This setting selects the container (i.e, parent) objects for the <i>Maximal per object</i> 
+                                This setting selects the container (i.e., parent) objects for the <i>Maximal per object</i> 
                                 and <i>Minimal per object</i> filtering choices.""")
         
         self.rules_file_name = cps.Text(
             "Rules file name","rules.txt",
-            doc="""The filename of the file holding the rules. Each line of
-            this file should be a rule, naming a measurement to be made
-            on the object you selected. For instance, a rule might be:
+            doc="""The name of the file holding the rules. Each line of
+            this file should be a rule naming a measurement to be made
+            on the object you selected, for instance:
             <br><tt>
             IF (Nuclei_AreaShape_Area < 351.3, [0.79, -0.79], [-0.94, 0.94])
             </tt><br>
@@ -151,11 +151,12 @@ class FilterObjects(cpm.CPModule):
         self.rules_directory_choice = cps.Choice(
             "Rules file location",
             [DIR_DEFAULT_INPUT, DIR_DEFAULT_OUTPUT, DIR_CUSTOM],
-            doc = """Select the location of the rules file that will be used for filtering. Choose "Default input
-            folder" if the rules file is in the default input folder, 
-            "Default output folder" if the rules file is in the default output
-            folder or "Custom folder" if you want to enter a folder name other
-            than the default input or output folder.""")
+            doc = """Select the location of the rules file that will be used for filtering:
+            <ul><li><i>Default input
+            folder</i> if the rules file is in the default input folder.</li> 
+            <li><i>Default output folder</i> if the rules file is in the default output
+            folder.</li><li><i>Custom folder</i> if you want to enter a folder name other
+            than the default input or output folder.</li></ul>""")
         self.rules_directory = cps.Text(
             "Rules folder name",".",
             doc="""Enter the path to the folder containing the rules file. You
@@ -166,9 +167,9 @@ class FilterObjects(cpm.CPModule):
         self.wants_outlines = cps.Binary('Retain the outlines of filtered objects for use later in the pipeline (for example, in SaveImages)?', False, doc = '''''')
         
         self.outlines_name = cps.ImageNameProvider('Name the outline image','FilteredObjects', doc = '''
-                                 (Used only if the outline image is to be retained for later use in the  
-                                 pipeline) <br> Choose a name, which will allow the outline image to be 
-                                 selected later in the pipeline. Special note on saving images: Using the settings in this module, object outlines can be passed along to the module OverlayOutlines and then saved with the SaveImages module. The identified objects themselves can be passed along to the object processing module ConvertToImage and then saved with the SaveImages module.
+                                 <i>(Used only if the outline image is to be retained for later use in the  
+                                 pipeline)</i> <br> Choose a name by which the outline image can be 
+                                 selected later in the pipeline. <p><i>Special note on saving images:</i> You can use the settings in this module to pass object outlines along to the module <b>OverlayOutlines</b>, and then save them with the <b>SaveImages</b> module. Also, the identified objects themselves can be passed along to the object processing module <b>ConvertToImage</b> and then saved with the <b>SaveImages</b module.
 ''')
         self.additional_objects = []
         self.additional_object_count = cps.HiddenCount(self.additional_objects,
@@ -187,7 +188,7 @@ class FilterObjects(cpm.CPModule):
         group.append("measurement", cps.Measurement(
             'Select the measurement to filter by', 
             self.object_name.get_value, "AreaShape_Area", doc = """
-            See the help of the Measurements modules
+            See the <b>Measurements</b> modules help pages 
             for more information on the features measured."""))
         
         group.append("wants_minimum", cps.Binary(

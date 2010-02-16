@@ -1,7 +1,7 @@
-'''<b>Identify Secondary Objects</b> identifies objects (e.g. cell edges) using "seed" objects identified by
-an Identify Primary module (e.g. nuclei).
+'''<b>Identify Secondary Objects</b> identifies objects (e.g., cell edges) using "seed" objects identified by
+an Identify Primary module (e.g., nuclei).
 <hr>
-This module identifies secondary objects (e.g. cell edges) based on two
+This module identifies secondary objects (e.g., cell edges) based on two
 inputs: 
 <ol>
 <li>A previous module's identification of primary objects (e.g.
@@ -9,8 +9,8 @@ nuclei)</li>
 <li>An image stained for the secondary objects (not required
 for the <i>Distance - N</i> option).</li>
 </ol>
-<p>Each primary object is assumed to be completely
-within a secondary object (e.g. nuclei are completely within cells
+<p>Each primary object is assumed to be completely contained 
+within a secondary object (e.g., nuclei are completely contained within cells
 stained for actin).
 
 <h2>Technical notes:</h2>
@@ -79,7 +79,7 @@ class IdentifySecondaryObjects(cpmi.Identify):
     
     def create_settings(self):
         self.primary_objects = cps.ObjectNameSubscriber("Select the input objects","Nuclei",doc="""
-            Each primary object is associated with exaqctly one secondary object and it 
+            Each primary object is associated with exactly one secondary object and it 
             is assumed to be completely contained within it.""")
         
         self.objects_name = cps.ObjectNameProvider("Name the identified objects","Cells")
@@ -103,38 +103,38 @@ class IdentifySecondaryObjects(cpmi.Identify):
             <ul>
             <li><i>Propagation:</i> For task (1), this method will find dividing lines
             between clumped objects where the image stained for secondary objects
-            shows a change in staining (i.e. either a dimmer or a brighter line).
-            Smoother lines work better, but unlike the watershed method, small gaps
+            shows a change in staining (i.e., either a dimmer or a brighter line).
+            Smoother lines work better, but unlike the Watershed method, small gaps
             are tolerated. This method is considered an improvement on the
-            traditional watershed method. The dividing lines between objects are
+            traditional Watershed method. The dividing lines between objects are
             determined by a combination of the distance to the nearest primary object
             and intensity gradients. This algorithm uses local image similarity to
             guide the location of boundaries between cells. Boundaries are
             preferentially placed where the image's local appearance changes
-            perpendicularly to the boundary <i>(TR Jones, AE Carpenter, P
-            Golland (2005) Voronoi-Based Segmentation of Cells on Image Manifolds,
+            perpendicularly to the boundary (TR Jones, AE Carpenter, P
+            Golland (2005) <i>Voronoi-Based Segmentation of Cells on Image Manifolds</i>,
             ICCV Workshop on Computer Vision for Biomedical Image Applications, pp.
-            535-543)</i>. For task (2), thresholding is used.</li>
+            535-543). For task (2), thresholding is used.</li>
            
             <li><i>Watershed:</i> For task (1), this method will find dividing lines between
             objects by looking for dim lines between objects. For task (2),
-            thresholding is used. <i>(Vincent, Luc, and Pierre Soille,
-            "Watersheds in Digital Spaces: An Efficient Algorithm Based on Immersion
-            Simulations," IEEE Transactions of Pattern Analysis and Machine
-            Intelligence, Vol. 13, No. 6, June 1991, pp. 583-598)</i></li>
+            thresholding is used (Vincent, Luc and Pierre Soille,
+            <i>Watersheds in Digital Spaces: An Efficient Algorithm Based on Immersion
+            Simulations</i>, IEEE Transactions of Pattern Analysis and Machine
+            Intelligence, Vol. 13, No. 6, June 1991, pp. 583-598).</li>
            
             <li><i>Distance:</i> This method is bit unusual because the edges of the primary
             objects are expanded a specified distance to create the secondary
             objects. For example, if nuclei are labeled but there is no stain to help
             locate cell edges, the nuclei can simply be expanded in order to estimate
-            the cell's location. This is often called the 'doughnut' or 'annulus' or
-            'ring' approach for identifying the cytoplasmic compartment. 
-            There are two methods that can be used here:
+            the cell's location. This is often called the "doughnut" or "annulus" or
+            "ring" approach for identifying the cytoplasmic compartment. 
+            There are two methods that can be used:
             <ul>
             <li><i>Distance - N</i>: In this method, the image of the secondary 
             staining is not used at all, and these expanded objects are the 
             final secondary objects. 
-            <li><i>Distance - B</i>: Here, thresholding is used to eliminate background
+            <li><i>Distance - B</i>: Thresholding is used to eliminate background
             regions from the secondary objects. This allows the extent of the
             secondary objects to be limited to a certain distance away from the edge
             of the primary objects.</li></ul></li>
@@ -159,11 +159,11 @@ class IdentifySecondaryObjects(cpmi.Identify):
             image. The regularization factor controls the balance between these two
             considerations: 
             <ul>
-            <li>A value of zero means that the distance to the nearest
+            <li>A value of 0 means that the distance to the nearest
             primary object is ignored and the decision is made entirely on the
             intensity gradient between the two competing primary objects. </li>
             <li>Larger values weight the distance between the two values more and more heavily.
-            The regularization factor can be infinitely large, but around 10 or so,
+            The regularization factor can be infinitely large, but around 10 or so
             the intensity image is almost completely ignored and the dividing line
             will simply be halfway between the two competing primary objects.</li>
             </ul>""")
@@ -201,7 +201,7 @@ class IdentifySecondaryObjects(cpmi.Identify):
             aren't discarded. These objects will all have secondary objects
             that don't touch the edge of the image. Any primary object
             whose secondary object touches the edge will be added to the
-            unedited objects - the unedited objects prevent operations
+            unedited objects; the unedited objects prevent operations
             that change the segmentation from using the pixels of objects
             that are edited out.""")
         

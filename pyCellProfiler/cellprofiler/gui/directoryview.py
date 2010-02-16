@@ -80,7 +80,7 @@ class DirectoryView(object):
             return
         files = [x 
                  for x in os.listdir(cellprofiler.preferences.get_default_image_directory()) 
-                     if is_image(x)]
+                 if is_image(x) or x.endswith(".cp")]
         files.sort()
         self.__list_box.AppendItems(files)
     
@@ -96,7 +96,9 @@ class DirectoryView(object):
         filename = os.path.join(cellprofiler.preferences.get_default_image_directory(),selection)
 
         try:
-            if os.path.splitext(selection)[1].lower() =='.mat':
+            if os.path.splitext(selection)[1].lower() == '.cp':
+                self.notify_pipeline_listeners(LoadPipelineRequestEvent(filename))
+            elif os.path.splitext(selection)[1].lower() == '.mat':
                 # A matlab file might be an image or a pipeline
                 handles=scipy.io.matlab.mio.loadmat(filename, struct_as_record=True)
                 if handles.has_key('Image'):

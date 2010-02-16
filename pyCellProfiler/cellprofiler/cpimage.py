@@ -624,7 +624,10 @@ class ImageSetList(object):
     def purge_image_set(self, number):
         """Remove the memory associated with an image set"""
         keys = self.__image_sets[number].keys
-        self.__image_sets[number].clear_cache()
+        image_set = self.__image_sets[number]
+        image_set.clear_cache()
+        for provider in image_set.providers:
+            provider.release_memory()
         self.__image_sets[number] = None
         self.__image_sets_by_key[repr(keys)] = None
     

@@ -309,6 +309,9 @@ class MeasureTexture(cpm.CPModule):
                                   'float')]
         return cols
 
+    def is_interactive(self):
+        return False
+    
     def run(self, workspace):
         """Run, computing the area measurements for the objects"""
         
@@ -328,9 +331,13 @@ class MeasureTexture(cpm.CPModule):
                                                      object_name, 
                                                      scale,
                                                      workspace)
-        if not workspace.frame is None:
-            figure = workspace.create_or_find_figure(subplots=(1,1))
-            figure.subplot_table(0,0,statistics,ratio=(.20,.20,.20,.20,.20))
+        if workspace.frame is not None:
+            workspace.display_data.statistics = statistics
+    
+    def display(self, workspace):
+        figure = workspace.create_or_find_figure(subplots=(1,1))
+        figure.subplot_table(0, 0, workspace.display_data.statistics,
+                             ratio=(.20,.20,.20,.20,.20))
     
     def run_one(self, image_name, object_name, scale, workspace):
         """Run, computing the area measurements for a single map of objects"""

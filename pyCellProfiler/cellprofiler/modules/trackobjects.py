@@ -422,6 +422,9 @@ class TrackObjects(cpm.CPModule):
             self.measurement_name(feature),
             values)
 
+    def is_interactive(self):
+        return False
+    
     def run(self, workspace):
         objects = workspace.object_set.get_objects(self.object_name.value)
         if self.tracking_method == TM_DISTANCE:
@@ -435,56 +438,72 @@ class TrackObjects(cpm.CPModule):
         else:
             raise NotImplementedError("Unimplemented tracking method: %s" %
                                       self.tracking_method.value)
-        draw = False
-        if workspace.frame is not None:
-            frame = workspace.create_or_find_figure(subplots=(1,1))
-            figure = frame.figure
-            figure.clf()
-            canvas = figure.canvas
-            draw = True
-        elif self.wants_image.value:
+        if self.wants_image.value:
+            import matplotlib.transforms
+            from cellprofiler.gui.cpfigure import figure_to_image
+            
             figure = matplotlib.figure.Figure()
             canvas = matplotlib.backends.backend_agg.FigureCanvasAgg(figure)
-            draw=True
-        if draw:
             ax = figure.add_subplot(1,1,1)
-            objects = workspace.object_set.get_objects(self.object_name.value)
-            object_numbers = self.get_saved_object_numbers(workspace)
-            indexer = np.zeros(len(object_numbers)+1,int)
-            indexer[1:] = object_numbers
+            self.draw(workspace, ax)
             #
-            # We want to keep the colors stable, but we also want the
-            # largest possible separation between adjacent colors. So, here
-            # we reverse the significance of the bits in the indices so
-            # that adjacent number (e.g. 0 and 1) differ by 128, roughly
+            # This is the recipe for just showing the axis
             #
-            pow_of_2 = 2**np.mgrid[0:8,0:len(indexer)][0]
-            bits = (indexer & pow_of_2).astype(bool)
-            indexer = np.sum(bits.transpose() * (2 ** np.arange(7,-1,-1)), 1)
-            labels = indexer[objects.segmented]
-            cm = matplotlib.cm.get_cmap(cpprefs.get_default_colormap())
-            cm.set_bad((0,0,0))
-            norm = matplotlib.colors.BoundaryNorm(range(256), 256)
-            img = ax.imshow(numpy.ma.array(labels, mask=(labels==0)),
-                            cmap=cm, norm=norm)
-            i,j = centers_of_labels(objects.segmented)
-            for n, x, y in zip(object_numbers, j, i):
-                if np.isnan(x) or np.isnan(y):
-                    # This happens if there are missing labels
-                    continue
-                ax.annotate(str(n), xy=(x,y),color='white',
-                            arrowprops=dict(visible=False))
-            if self.wants_image.value:
-                # This is the recipe that gets a canvas to render itself
-                # and then convert the resulting raster into the typical
-                # Numpy color image format.
-                canvas.draw()
-                width, height = canvas.get_width_height()
-                data = canvas.tostring_rgb()
-                image_pixels = np.fromstring(data,np.uint8)
-                image_pixels.shape = (height, width, 3)
-                image = cpi.Image(image_pixels)
-                workspace.image_set.add(self.image_name.value, image)
+            figure.set_frameon(False)
+            ax.set_axis_off()
+            figure.subplots_adjust(0, 0, 1, 1, 0, 0)
+            shape = objects.segmented.shape
+            dpi = figure.dpi
+            width = float(shape[1]) / dpi
+            height = float(shape[0]) / dpi
+            figure.set_figheight(height)
+            figure.set_figwidth(width)
+            bbox = matplotlib.transforms.Bbox(
+                np.array([[0.0, 0.0], [width, height]]))
+            transform = matplotlib.transforms.Affine2D(
+                np.array([[dpi, 0, 0],
+                          [0, dpi, 0],
+                          [0,   0, 1]]))
+            figure.bbox = matplotlib.transforms.TransformedBbox(bbox, transform)
+            
+            image_pixels = figure_to_image(figure)
+            image = cpi.Image(image_pixels)
+            workspace.image_set.add(self.image_name.value, image)
+            
+    def display(self, workspace):
+        frame = workspace.create_or_find_figure(subplots=(1,1))
+        figure = frame.figure
+        figure.clf()
+        ax = figure.add_subplot(1,1,1)
+        self.draw(workspace, ax)
+
+    def draw(self, workspace, ax):
+        objects = workspace.object_set.get_objects(self.object_name.value)
+        object_numbers = self.get_saved_object_numbers(workspace)
+        indexer = np.zeros(len(object_numbers)+1,int)
+        indexer[1:] = object_numbers
+        #
+        # We want to keep the colors stable, but we also want the
+        # largest possible separation between adjacent colors. So, here
+        # we reverse the significance of the bits in the indices so
+        # that adjacent number (e.g. 0 and 1) differ by 128, roughly
+        #
+        pow_of_2 = 2**np.mgrid[0:8,0:len(indexer)][0]
+        bits = (indexer & pow_of_2).astype(bool)
+        indexer = np.sum(bits.transpose() * (2 ** np.arange(7,-1,-1)), 1)
+        labels = indexer[objects.segmented]
+        cm = matplotlib.cm.get_cmap(cpprefs.get_default_colormap())
+        cm.set_bad((0,0,0))
+        norm = matplotlib.colors.BoundaryNorm(range(256), 256)
+        img = ax.imshow(numpy.ma.array(labels, mask=(labels==0)),
+                        cmap=cm, norm=norm)
+        i,j = centers_of_labels(objects.segmented)
+        for n, x, y in zip(object_numbers, j, i):
+            if np.isnan(x) or np.isnan(y):
+                # This happens if there are missing labels
+                continue
+            ax.annotate(str(n), xy=(x,y),color='white',
+                        arrowprops=dict(visible=False))
 
     def run_distance(self, workspace, objects):
         '''Track objects based on distance'''

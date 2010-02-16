@@ -710,10 +710,10 @@ TrackObjects:[module_num:1|svn_version:\'9227\'|variable_revision_number:3|show_
                       [2, 2, 90,   90, 25]]), 3)
         self.assertTrue(isinstance(module, T.TrackObjects))
         #
-        # The split score should be between 14 and 15.  Set the split
+        # The split score should be between 28 and 30.  Set the split
         # alternative cost to 15 so that the split is favored.
         #
-        module.split_cost.value = 15
+        module.split_cost.value = 30
         module.max_split_score.value = 30
         module.run_as_data_tool(workspace)
         labels = workspace.measurements.get_all_measurements(
@@ -734,7 +734,7 @@ TrackObjects:[module_num:1|svn_version:\'9227\'|variable_revision_number:3|show_
                       [2, 1, 110, 110, 25],
                       [2, 2, 90,   90, 25]]), 3)
         self.assertTrue(isinstance(module, T.TrackObjects))
-        module.split_cost.value = 14
+        module.split_cost.value = 28
         module.max_split_score.value = 30
         module.run_as_data_tool(workspace)
         labels = workspace.measurements.get_all_measurements(
@@ -755,8 +755,8 @@ TrackObjects:[module_num:1|svn_version:\'9227\'|variable_revision_number:3|show_
                       [2, 1, 110, 110, 25],
                       [2, 2, 90,   90, 25]]), 3)
         self.assertTrue(isinstance(module, T.TrackObjects))
-        module.split_cost.value = 15
-        module.max_split_score.value = 14
+        module.split_cost.value = 30
+        module.max_split_score.value = 28
         module.run_as_data_tool(workspace)
         labels = workspace.measurements.get_all_measurements(
             OBJECT_NAME, module.measurement_name(T.F_LABEL))

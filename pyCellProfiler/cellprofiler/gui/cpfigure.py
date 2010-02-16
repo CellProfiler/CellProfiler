@@ -713,7 +713,8 @@ class CPFigureFrame(wx.Frame):
             cm = matplotlib.cm.get_cmap(cpprefs.get_default_colormap())
             cm.set_bad((0,0,0))
             labels = numpy.ma.array(labels, mask=labels==0)
-        return self.subplot_imshow(x, y, labels, title, clear, cm)
+        return self.subplot_imshow(x, y, labels, title, clear, cm, 
+                                   normalize=False, vmin = None, vmax = None)
     
     def subplot_imshow_grayscale(self, x, y, image, title=None, clear=True,
                                  normalize=True, vmin=0, vmax=1):

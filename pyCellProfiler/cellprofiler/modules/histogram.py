@@ -30,25 +30,55 @@ class DisplayHistogram(cpm.CPModule):
         return self.object.value
     
     def create_settings(self):
-        # XXX: Need docs
         self.object = cps.ObjectNameSubscriber(
-            'From which object do you want to plot measurements?','None',
-            doc=''' ''')
+                            'From which object do you want to plot measurements?','None',
+                            doc='''
+                            Choose the name of objects identified by some previous 
+                            module (such as <b>IdentifyPrimAutomatic</b> or 
+                            <b>IdentifySecondary</b>) to be displayed.''')
+        
         self.x_axis = cps.Measurement(
-            'Which measurement do you want to plot?', self.get_object, 'None',
-            doc=''' ''')
+                            'Which measurement do you want to plot?', self.get_object, 'None',
+                            doc='''
+                            Choose the object measurement made by a previous 
+                            module to plot.''')
+        
         self.bins = cps.Integer(
-            'How many bins do you want?', 100, 1, 1000,
-            doc=''' ''')
+                            'How many bins do you want?', 100, 1, 1000,
+                            doc='''
+                            Enter the number of equally-spaced bins that you want 
+                            used on the x-axis.''')
+        
         self.xscale = cps.Choice(
-            'Transform the data?', ['no', 'log'], None,
-            doc=''' ''')
+                            'Transform the data?', ['no', 'log'], None,
+                            doc='''
+                            The measurement data can be scaled either with a 
+                            linear scale (<i>No</i>) or with a <i>log</i> (base 10) 
+                            scaling.
+                            <p>Using a log scaling is useful when one of the 
+                            measurements being plotted covers a large range of 
+                            values; a log scale can bring out features in the 
+                            measurements that would not easily be seen if the 
+                            measurement is plotted linearly.<p>''')
+        
         self.yscale = cps.Choice(
-            'How should the Y axis be scaled?', ['linear', 'log'], None,
-            doc=''' ''')
+                            'How should the Y axis be scaled?', ['linear', 'log'], None,
+                            doc='''
+                            The Y-axis can be scaled either with a <i>linear</i> 
+                            scale or with a <i>log</i> (base 10) scaling. 
+                            <p>Using a log scaling is useful when one of the 
+                            measurements being plotted covers a large range of 
+                            values; a log scale can bring out features in the 
+                            measurements that would not easily be seen if the 
+                            measurement is plotted linearly.</p>''')
+        
         self.title = cps.Text(
-            'Optionally enter a title for this plot.', '',
-            doc=''' ''')
+                            'Optionally enter a title for this plot.', '',
+                            doc = '''
+                            Enter a title for the plot. If no title is desired,
+                            leave this setting blank and the title will default 
+                            to <i>(cycle N)</i> where <i>N</i> is the current image 
+                            cycle being executed.''')
         
     def settings(self):
         return [self.object, self.x_axis, self.bins, self.xscale, self.yscale,

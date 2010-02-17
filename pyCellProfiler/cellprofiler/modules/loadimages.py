@@ -46,9 +46,12 @@ try:
         ChannelSeparator = formatreader.make_reader_wrapper_class(
             "loci/formats/ChannelSeparator")
         has_bioformats = True
+        print "Has bioformats"
     finally:
         formatreader.jutil.detach()
 except:
+    traceback.print_exc()
+    print "No bioformats"
     has_bioformats = False
 import Image as PILImage
 #
@@ -1649,6 +1652,7 @@ class LoadImagesImageProvider(LoadImagesImageProviderBase):
               in USE_BIOFORMATS_FIRST and
               has_bioformats):
             try:
+                print "Using Bioformats to load %s" % self.get_full_name()
                 img = load_using_bioformats(self.get_full_name())
             except:
                 traceback.print_exc()

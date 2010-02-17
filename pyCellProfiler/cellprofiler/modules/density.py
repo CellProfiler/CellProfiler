@@ -34,39 +34,89 @@ class DisplayDensityPlot(cpm.CPModule):
         return self.y_object.value
     
     def create_settings(self):
-        # Need docs
         self.x_object = cps.ObjectNameSubscriber(
-            'From which object do you want to plot measurements on the x-axis?','None',
-            doc=''' ''')
+                            'Select the object to display on x-axis?','None',
+                            doc='''
+                            Choose the name of objects identified by some previous 
+                            module (such as <b>IdentifyPrimAutomatic</b> or 
+                            <b>IdentifySecondary</b>) to be displayed on the x-axis.''')
+        
         self.x_axis = cps.Measurement(
-            'Which measurement do you want to plot on the x-axis?', self.get_x_object, 'None',
-            doc=''' ''')
+                            'Select the object measurement to plot on the x-axis', self.get_x_object, 'None',
+                            doc='''
+                            Choose the object measurement made by a previous 
+                            module to display on the x-axis.''')
+        
         self.y_object = cps.ObjectNameSubscriber(
-            'From which object do you want to plot measurements on the y-axis?','None',
-            doc=''' ''')
+                            'Select the object to display on y-axis','None',
+                            doc=''' 
+                            Choose the name of objects identified by some previous 
+                            module (such as <b>IdentifyPrimAutomatic</b> or 
+                            <b>IdentifySecondary</b>) to be displayed on the y-axis.''')
+        
         self.y_axis = cps.Measurement(
-            'Which measurement do you want to plot on the y-axis?', self.get_y_object, 'None',
-            doc=''' ''')
+                            'Select the object measurement to plot on the y-axis?', self.get_y_object, 'None',
+                            doc='''
+                            Choose the object measurement made by a previous 
+                            module to display on the y-axis''')
+        
         self.gridsize = cps.Integer(
-            'What grid size do you want to use?', 100, 1, 1000,
-            doc=''' ''')
+                            'Select the grid size', 100, 1, 1000,
+                            doc='''
+                            Enter the number of grid points you want used on each
+                            axis. Increasing the number of points increases the
+                            resolution of the plot.''')
+        
         self.xscale = cps.Choice(
-            'How should the X axis be scaled?', ['linear', 'log'], None,
-            doc=''' ''')
+                            'How should the X axis be scaled?', ['linear', 'log'], None,
+                            doc='''
+                            The X-axis can be scaled either with a <i>linear</i> 
+                            scale or with a <i>log</i> (base 10) scaling. 
+                            <p>Using a log scaling is useful when one of the 
+                            measurements being plotted covers a large range of 
+                            values; a log scale can bring out features in the 
+                            measurements that would not easily be seen if the 
+                            measurement is plotted linearly.</p>''')
+        
         self.yscale = cps.Choice(
-            'How should the Y axis be scaled?', ['linear', 'log'], None,
-            doc=''' ''')
+                            'How should the Y axis be scaled?', ['linear', 'log'], None,
+                            doc='''
+                            The Y-axis can be scaled either with a <i>linear</i> 
+                            scale or with a <i>log</i> (base 10) scaling. 
+                            <p>Using a log scaling is useful when one of the 
+                            measurements being plotted covers a large range of 
+                            values; a log scale can bring out features in the 
+                            measurements that would not easily be seen if the 
+                            measurement is plotted linearly.</p>''')
+        
         self.bins = cps.Choice(
-            'How should the colorbar be scaled?', ['linear', 'log'], None,
-            doc=''' ''')
+                            'How should the colorbar be scaled?', ['linear', 'log'], None,
+                            doc='''
+                            The colorbar can be scaled either with a <i>linear</i> 
+                            scale or with a <i>log</i> (base 10) scaling.
+                            <p>Using a log scaling is useful when one of the 
+                            measurements being plotted covers a large range of 
+                            values; a log scale can bring out features in the 
+                            measurements that would not easily be seen if the 
+                            measurement is plotted linearly.''')
+        
         maps = [m for m in matplotlib.cm.datad.keys() if not m.endswith('_r')]
         maps.sort()
+        
         self.colormap = cps.Choice(
-            'Which color map do you want to use?', maps, 'jet',
-            doc=''' ''')
+                            'Select the color map', maps, 'jet',
+                            doc='''
+                            Select the color map for the density plot. See this 
+                            <a href="http://www.astro.princeton.edu/~msshin/science/code/matplotlib_cm/">
+                            page</a> for pictures of the available colormaps.''')
+        
         self.title = cps.Text(
-            'Optionally enter a title for this plot.', '',
-            doc=''' ''')
+                            'Optionally enter a title for this plot.', '',
+                            doc='''
+                             Enter a title for the plot. If no title is desired,
+                            leave this setting blank and the title will default 
+                            to <i>(cycle N)</i> where <i>N</i> is the current image 
+                            cycle being executed.''')
         
     def settings(self):
         return [self.x_object, self.x_axis, self.y_object, self.y_axis,

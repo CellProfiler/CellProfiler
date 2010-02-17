@@ -93,12 +93,12 @@ segmentation of cell nuclei in tissue sections.</i> J Microsc 215, 67-76.</li>
 
 <h2>Technical notes:</h2> The initial step of identifying local maxima is
 performed on the user-controlled heavily smoothed image, the
-foreground/background is done on a hard-coded slightly smoothed image,
-and the dividing lines between clumped objects (watershed) is done on the
+foreground/background is  on a hard-coded slightly smoothed image,
+and the dividing lines between clumped objects (watershed) are done on the
 non-smoothed image.
 
 <h3>Laplacian of Gaussian method:</h3>
-<p>The Laplacian of Gaussian (LoG) method uses a Laplacian of Gaussian (or Mexican
+<p>The Laplacian of Gaussian (LoG) method uses a LoG (or Mexican
 Hat) filter to enhance local maxima of a desired size in the image.
 <b>IdentifyPrimAutomatic</b> can use the the LoG filter to identify the seed points
 for the watershed. This involves thresholding the filtered image. 
@@ -106,10 +106,10 @@ for the watershed. This involves thresholding the filtered image.
 unless you specify a custom threshold value.
 
 <h3>Special note on saving images</h3> 
-<p>Using the settings in this module, object outlines can be passed along to the
-module <b>OverlayOutlines</b> and then saved with the <b>SaveImages</b> module. 
-The objects themselves can be passed along to the object processing module 
-<b>ConvertToImage</b> and then saved with the <b>SaveImages module</b>. This module 
+<p>Using the settings in this module, you can pass object outlines along to the
+module <b>OverlayOutlines</b> and then save them with the <b>SaveImages</b> module. 
+You can also pass along the objects themselves to the object processing module 
+<b>ConvertToImage</b> and then save them with the <b>SaveImages module</b>. This module 
 produces several additional types of objects with names that are automatically 
 passed along with the following naming structure: <ul><li> The unedited segmented 
 image, which includes objects on the edge of the image and objects that are 
@@ -119,7 +119,7 @@ image which excludes objects smaller than your selected size range can be
 saved using the name "SmallRemovedSegmented" + whatever you called the
 objects (e.g., "SmallRemovedSegmentedNuclei").</li></ul>
 
-See also <b>IdentifySecondary</b>,<b>IdentifyTertiarySubregion</b>, and <b>IdentifyPrimManual</b>.
+See also <b>IdentifySecondary</b>, <b>IdentifyTertiarySubregion</b>, and <b>IdentifyPrimManual</b>.
 '''
 
 # CellProfiler is distributed under the GNU General Public License.
@@ -238,13 +238,13 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             <b>FilterByObjectMeasurement</b> module to further discard objects based on some
             other measurement. After processing, the window for this module will
             show objects outlined in three colors:
-            <ul><li><i>Green:</i> Acceptable; passed all criteria</li><li><i>Red:</i> Discarded 
-            based on their size</li><li><i>Yellow:</i> Discarded because they touch the border</li></ul>''')
+            <ul><li>Green: Acceptable; passed all criteria</li><li>Red: Discarded 
+            based on their size</li><li>Yellow: Discarded because they touch the border</li></ul>''')
         self.merge_objects = cps.Binary(
             "Try to merge too small objects with nearby larger objects?", 
             False, doc='''\
             Use caution when choosing <i>Yes</i> for this option! It takes objects that were discarded because they were
-            smaller than the specified Minimum diameter and tries to merge them with
+            smaller than the specified minimum diameter and tries to merge them with
             other surrounding objects. This is helpful in cases when an object was
             incorrectly split into two objects, one of which is actually just a tiny
             piece of the larger object. However, this could be problematic if you have
@@ -265,7 +265,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             'Method to distinguish clumped objects', 
             [UN_INTENSITY, UN_SHAPE, UN_LOG, UN_NONE], doc="""\
             This setting allows you to choose the method that is used to segment
-            objects, i.e., "declump" a large, merged objects into the appropriate  
+            objects, i.e., "declump" a large, merged object into the appropriate  
             objects of interest. To decide between these methods, you can try each of them in Test mode.
             <ul>
             <li><i>Intensity:</i> For objects that tend to have only one peak of brightness
@@ -288,14 +288,14 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             method you choose. Technical description: The binary thresholded image is
             distance-transformed and object centers are defined as peaks in this
             image. </li>
-            <li><i>Laplacian of Gaussian:</i> For objects that have an increasing intensity
-            gradient toward their center, this option performs a Laplacian of Gaussian
+            <li><i>Laplacian of Gaussian (LoG):</i> For objects that have an increasing intensity
+            gradient toward their center, this option performs a LoG
             transform on the image which accentuates pixels that are local maxima. It
             thresholds the result and finds pixels that are both local maxima and above
             threshold. These pixels are used as the seeds for objects in the watershed.</li>
             <li><i>None</i> (fastest option): If objects are far apart and are very well
             separated, it may be unnecessary to attempt to separate clumped objects.
-            Using the None option, a simple threshold will be used to identify
+            Using the <i>None</i> option, a simple threshold will be used to identify
             objects. This will override any declumping method chosen in the next
             question.</li></ul>""")
 
@@ -316,7 +316,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             image.</li>
             <li><i>None</i> (fastest option): If objects are far apart and are very well
             separated, it may be unnecessary to attempt to separate clumped objects.
-            Using the None option, the thresholded image will be used to identify
+            Using the <i>None</i> option, the thresholded image will be used to identify
             objects. This will override any declumping method chosen in the above
             question.</li></ul>""")
         
@@ -377,7 +377,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             It is a positive integer and does not affect the dividing lines between 
             an object and the background. This setting looks for the maximum intensity in the size 
             specified by the user. The local intensity histogram is smoothed to 
-            remove the peaks within this distance. So if you see too many objects 
+            remove the peaks within this distance. If you see too many objects 
             merged that ought to be separated (under-segmentation), the value 
             should be lower. If you see too many objects split up that ought to 
             be merged (over-segmentation), the value should be higher.
@@ -402,7 +402,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
         self.save_outlines = cps.OutlineNameProvider(
             'Name the outline image',"PrimaryOutlines", doc="""\
             <i>(Used only if outlines are to be saved)</i><br>
-            The outlines of the identified objects may be used by modules downstream,
+            You can use the outlines of the identified objects in modules downstream,
             by selecting them from any drop-down image list.""")
         
         self.fill_holes = cps.Binary(
@@ -425,9 +425,9 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             'Automatically calculate the size of objects '
             'for the Laplacian of Gaussian filter?', True,
             doc="""\
-            <i>(Used only when applying the Laplacian of Gaussian thresholding method)</i><br>
+            <i>(Used only when applying the LoG thresholding method)</i><br>
             Check this box to use the filtering diameter range above 
-            when constructing the Laplacian of Gaussian filter. Uncheck the
+            when constructing the LoG filter. Uncheck the
             box in order to enter a size that is not related to the filtering 
             size. You may want to specify a custom size if you want to filter 
             using loose criteria, but have objects that are generally of 
@@ -436,9 +436,8 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             'Enter LoG filter diameter: ', 
             5, minval=1, maxval=100,
             doc="""\
-            <i>(Used only when applying the Laplacian of Gaussian thresholding method)</i><br>
-            The size to use when calculating the Laplacian of 
-            Gaussian filter. The filter enhances the local maxima of objects 
+            <i>(Used only when applying the LoG thresholding method)</i><br>
+            The size to use when calculating the LoG filter. The filter enhances the local maxima of objects 
             whose diameters are roughly the entered number or smaller.""")
         self.limit_choice = cps.Choice(
             "How do you want to handle images with large numbers of objects?",

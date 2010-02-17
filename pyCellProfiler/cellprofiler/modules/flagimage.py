@@ -2,7 +2,7 @@
 <hr>
 This module allows you to assign a flag if
 an image meets certain measurement criteria that you specify (for example, if the image fails a quality control measurement).  The
-value of the flag is <i>1</i> if the image meets the selected criteria (for example, if it fails QC), and <i>0</i> if it
+value of the flag is 1 if the image meets the selected criteria (for example, if it fails QC), and 0 if it
 does not meet the criteria (if it passes QC). The flag can be used in post-processing to filter out images
 you do not want to analyze, e.g., in CellProfiler Analyst. In addition, you can
 use <b>ExportToSpreadsheet</b> to generate a file that includes the flag as a metadata measurement
@@ -83,7 +83,7 @@ class FlagImage(cpm.CPModule):
                                 measurement name would be "Metadata_QCFlag".'''))
         
         group.append("feature_name", cps.Text("Name the flag","QCFlag", doc = '''
-                                The flag is stored as a per-Image measurement whose name is a combination of the
+                                The flag is stored as a per-image measurement whose name is a combination of the
                                 flag's category and feature name, underscore delimited. 
                                 For instance, if the measurement category is
                                 "Metadata" and the feature name is "QCFlag", then the default

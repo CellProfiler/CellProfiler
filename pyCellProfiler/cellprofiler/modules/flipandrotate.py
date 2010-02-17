@@ -1,4 +1,4 @@
-'''<b>Flip and rotate</b>: Flips (mirror image) and/or rotates an image
+'''<b>Flip and rotate</b> flips (mirror image) and/or rotates an image
 <hr>
 
 Features that can be measured by this module include the angle of rotation.

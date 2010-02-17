@@ -128,11 +128,11 @@ class DefineGrid(cpm.CPModule):
                         columns, then rows. For instance, you might ask to start numbering
                         a 96-well plate at the top left (by specifying the location of the first spot). 
                         If you choose <i>Rows</i>, then well A01 will be assigned
-                        the index <i>1</i>, B01 the index <i>2</i>, and so on up to H01 which
-                        receives the index <i>8</i>. Well A02 will be assigned the index 
+                        the index 1, B01 the index 2, and so on up to H01 which
+                        receives the index 8. Well A02 will be assigned the index 
                         <i>9</i>. Conversely, if you choose <i>Columns</i>, well A02 will be assigned
-                        <i>2</i>, well A12will be assigned <i>12</i> and well B01 will be assigned
-                        <i>13</i>.""")
+                        2, well A12 will be assigned 12 and well B01 will be assigned
+                        13.""")
         
         self.each_or_once = cps.Choice(
                         "Define a grid for which cycle?",
@@ -170,7 +170,7 @@ class DefineGrid(cpm.CPModule):
                         object will be used to define the edges of the grid, and the rows 
                         and columns will be evenly spaced between these edges. Note that 
                         Automatic mode requires that the incoming objects are nicely 
-                        defined - for example, if there is an object at the edge of the 
+                        defined: for example, if there is an object at the edge of the 
                         images that is not really an object that ought to be in the grid, 
                         a skewed grid will result. You might wish to use a 
                         <b>FilterByObjectMeasurement</b> module to clean up badly 
@@ -224,9 +224,9 @@ class DefineGrid(cpm.CPModule):
                         "Row number of the first cell", 1, minval=1, doc="""
                         What is this cell's row number? Enter the row index for the first cell here. Rows are
                         numbered starting at the origin. For instance, if you chose
-                        <i>Top left</i> as your origin, well <i>A01</i> will be row number <i>1</i>
-                        and <i>H01</i> will be row number <i>8</i>. If you chose <i>Bottom left</i>,
-                        <i>A01</i> will be row number <i>8</i> and <i>H01</i> will be row number <i>12</i>.""")
+                        <i>Top left</i> as your origin, well A01 will be row number 1
+                        and H01 will be row number 8. If you chose <i>Bottom left</i>,
+                        A01 will be row number 8 and H01 will be row number 12.""")
         
         self.first_spot_col = cps.Integer(
                         "Column number of the first cell",1, minval=1,doc="""
@@ -249,17 +249,17 @@ class DefineGrid(cpm.CPModule):
                         "Row number of the second cell", 1, minval=1, doc="""
                         What is this cell's row number? Enter the row index for the second cell here. Rows are
                         numbered starting at the origin. For instance, if you chose
-                        <i>Top left</i> as your origin, well A01 will be row number <i>1</i>
-                        and H01 will be row number <i>8</i>. If you chose <i>Bottom left</i>,
-                        A01 will be row number <i>8</i> and H01 will be row number <i>12</i>.""")
+                        <i>Top left</i> as your origin, well A01 will be row number 1
+                        and H01 will be row number 8. If you chose <i>Bottom left</i>,
+                        A01 will be row number 8 and H01 will be row number 12.""")
         
         self.second_spot_col = cps.Integer(
                         "Column number of the second cell",1, minval=1, doc="""
                         What is this cell's column number? Enter the column index for the second cell here. Columns
                         are numbered starting at the origin. For instance, if you chose
-                        <i>Top left</i> as your origin, well A01 will be column number <i>1</i>
-                        and A12 will be column number <i>12</i>. If you chose <i>Top right</i>,
-                        A01 and A12 will be <i>12</i> and <i>1</i>, respectively.""")
+                        <i>Top left</i> as your origin, well A01 will be column number 1
+                        and A12 will be column number 12. If you chose <i>Top right</i>,
+                        A01 and A12 will be 12 and 1, respectively.""")
         
         self.wants_image = cps.Binary(
                         "Retain an image of the grid for use later in the pipeline (for example, in SaveImages)?", False, doc = """

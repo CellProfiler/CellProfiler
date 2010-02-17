@@ -1,20 +1,19 @@
 '''<b>Load Data</b> loads text or numerical data to be associated with images, and 
-can also load images specified by filenames
+can also load images specified by file names
 <hr>
-This module loads a file that supplies text or numerical data to be
-associated with the images to be processed, e.g. sample names, plate names, well 
+This module loads a file that supplies text or numerical data associated with the images to be processed, e.g., sample names, plate names, well 
 identifiers, or even a list of image filenames to be processed in the analysis run.
 
-The module currently reads files formatted as CSV (comma-separated values). 
+The module currently reads files in CSV (comma-separated values) format. 
 These files can be produced by spreadsheet programs and are organized into rows and
-columns. The lines of the file represent the rows (technically, each row
-is terminated by a newline character: ASCII 10). Each field in a row is
+columns. The lines of the file represent the rows. (Technically, each row
+is terminated by the newline character ASCII 10.) Each field in a row is
 separated by a comma. Text values may be optionally enclosed by double
 quotes. The <b>LoadData</b> module uses the first row of the file as a header. The fields
 in this row provide the labels for each column of data. Subsequent rows
 provide the values for each image cycle. 
 <br><br>
-There are many reasons you might want to prepare a CSV file and load it
+There are many reasons why you might want to prepare a CSV file and load it
 via <b>LoadData</b>; using particular names for columns allows special 
 functionality for some downstream modules:
 
@@ -22,7 +21,7 @@ functionality for some downstream modules:
 
 <li>
 <i>Columns with any name</i>. Any data loaded via <b>LoadData</b> will be exported 
-as a per-image measurement along with CellProfiler-calculated data. This offers a
+as a per-image measurement along with CellProfiler-calculated data. This is a
 convenient way for you to add data from your own sources to the files exported by
 CellProfiler.
 </li>
@@ -30,10 +29,10 @@ CellProfiler.
 <li>
 <i>Columns whose name begins with Image_FileName.</i>
 A column whose name begins with "Image_FileName" can be used to supply the file 
-name of an image that you want to load using this module.
+name of an image that you want to load.
 The image's name within CellProfiler appears afterward. For instance,
-"Image_FileName_CY3", would supply the file name for the CY3-stained image, and
-choosing the "Load images based on this data?" option allows the CY3 images to be 
+"Image_FileName_CY3" would supply the file name for the CY3-stained image, and
+choosing the <i>Load images based on this data?</i> option allows the CY3 images to be 
 selected later in the pipeline.
 </li>
 
@@ -42,22 +41,22 @@ selected later in the pipeline.
 A column whose name begins with "Image_PathName" can be used to supply the 
 path name of an image that you want to load (relative to the base folder). 
 The image's name within CellProfiler appears
-afterward. For instance, "Image_PathName_CY3", would supply the path names
-for the CY3-stained images. This is optional - if all image files are in the base 
-folder this column is not needed. 
+afterward. For instance, "Image_PathName_CY3" would supply the path names
+for the CY3-stained images. This is optional; if all image files are in the base 
+folder, this column is not needed. 
 </li>
 
 <li>
 <i>Columns whose name begins with Metadata</i>. A column whose name begins with 
-"Metadata" can be used to group, or associate, files loaded by <b>LoadImages</b>.
+"Metadata" can be used to group or associate files loaded by <b>LoadImages</b>.
 <p>For instance, an experiment might require that images created on the same day 
 use an illumination correction function calculated from all images from that day, 
-and furthermore, the date is captured in the filenames for the invidual image 
+and furthermore, that the date be captured in the file names for the individual image 
 sets and in a .csv file specifying the illumination correction functions. 
 <p>In this case, if the illumination correction images are loaded with the 
-LoadData module, the file should have a "Metadata_Date" 
+<b>LoadData</b> module, the file should have a "Metadata_Date" 
 column which contains the date identifiers. Similarly, if the individual images 
-are loaded using the LoadImages module, LoadImages should be set to extract the 
+are loaded using the <b>LoadImages</b> module, <b>LoadImages</b> should be set to extract the 
 <Date> metadata field from the file names (see <b>LoadImages</b> for more details 
 on how to do so). The pipeline will then match the individual image sets with 
 their corresponding illumination correction functions based on matching 
@@ -81,12 +80,12 @@ module, using particular formats described in the help for <b>CalculateStatistic
 <tr><td>"51265_d1.tif",</td><td>"2009-07-09",</td><td>"P-12345",</td><td>2750</td></tr>
 </table>
 
-After the first row of header information (column names), the first 
+After the first row of header information (the column names), the first 
 image-specific row specifies the file, "2009-07-08/04923_d1.tif" for the FITC 
 image (2009-07-08 is the name of the subfolder that contains the image, 
-relative to the default input folder). The plate metadata is 'P-12345' and 
+relative to the default input folder). The plate metadata is "P-12345" and 
 the NaCl titration used in the well is 750 uM. The second image-specific row 
-has the values "2009-07-09/51265_d1.tif", 'P-12345' and 2750 uM. The NaCl 
+has the values "2009-07-09/51265_d1.tif", "P-12345'\" and 2750 uM. The NaCl 
 titration for the image is available for modules that use numeric metadata, 
 such as <b>CalculateStatistics</b>.
 
@@ -190,21 +189,23 @@ class LoadData(cpm.CPModule):
 
     def create_settings(self):
         self.csv_directory_choice = cps.Choice("File location", DIR_ALL, doc="""
-            This is the folder that contains the CSV file. Choose "Default Input Folder"
-            if the CSV file is in the default input folder. Choose "Default Output
-            Folder" if the CSV file is in the default output folder. Choose
-            "Elsewhere..." to specify a custom folder name. 
+            The folder that contains the CSV file. You can choose among the following options:
+            <ul><li><i>Default Input Folder</i>: 
+            The CSV file is in the default input folder.</li>
+            <li><i>Default Output
+            Folder:</i> The CSV file is in the default output folder.</li>
+            <li><i>Elsewhere...</i>: You can enter a custom folder name.</li></ul> 
             
-            Custom folder names that start with "." are relative to the default input folder. Names that
+            <p>Custom folder names that start with "." are relative to the default input folder. Names that
             start with "&" are relative to the default output folder. Two periods ".." specify to go 
-            up one folder level. For example, './CSVfiles' looks for a folder called CSVfiles that is 
+            up one folder level. For example, "./CSVfiles" looks for a folder called <i>CSVfiles</i> that is 
             contained within the default input folder,
-            and '&/../My_folder' looks in a folder called 'My_folder'
+            and <i>&/../My_folder" looks in a folder called "My_folder"
             at the same level as the output folder.""")
         
         self.csv_custom_directory = cps.DirectoryPath("Custom file location",
                                                       ".", doc = 
-                                                      """<i>(Only used if the file location is specified as Elsewhere)</i>""")
+                                                      """<i>(Used only if the file location is specified as Elsewhere)</i>""")
         
         def get_directory_fn():
             '''Get the directory for the CSV file name'''
@@ -234,42 +235,42 @@ class LoadData(cpm.CPModule):
         
         self.image_directory_choice = cps.Choice("Base image location",
                                                  DIR_ALL, doc="""
-            This is the parent (base) folder where images are located. If images are 
+            The parent (base) folder where images are located. If images are 
             contained in subfolders, then the file you load with this module should 
             contain a column with path names relative to the base image folder (see 
-            the general help for this module for more details).  Choose "Default Input Folder" to
-            make the default input folder the base folder. Choose "Default Output
-            Folder" to make the default output folder the base folder. Choose
-            "Elsewhere..." to specify a custom folder name. Choose "None" if
-            you have an Image_PathName field that supplies an absolute path.
+            the general help for this module for more details). Again, you can choose among the following options:
+            <ul><li><i>Default Input Folder:</i> Make the default input folder the base folder.</li>
+            <li><i>Default Output Folder:</i> Make the default output folder the base folder.</li>
+            <li><i>Elsewhere...:</i> You can enter a custom folder name.</li>
+            <li><i>None:</i> You have an Image_PathName field that supplies an absolute path.</li></ul>
             
-            Custom folder names that start with "." are relative to the default input folder. Names that
+            <p>Custom folder names that start with "." are relative to the default input folder. Names that
             start with "&" are relative to the default output folder. Two periods ".." specify to go 
-            up one folder level. For example, './CSVfiles' looks for a folder called CSVfiles that is 
+            up one folder level. For example, "./CSVfiles" looks for a folder called <i>CSVfiles</i> that is 
             contained within the default input folder,
-            and '&/../My_folder' looks in a folder called 'My_folder'
+            and "&/../My_folder" looks in a folder called <i>My_folder</i>
             at the same level as the output folder.""")
         self.image_custom_directory = cps.DirectoryPath("Custom base image location",
                                                         ".", doc = 
-                                                        """<i>(Only used if the base image location is specified as Elsewhere)</i><br>""")
+                                                        """<i>(Used only if the base image location is specified as Elsewhere)</i><br>""")
         
         self.wants_image_groupings = cps.Binary("Group images by metadata?", False)
         
         self.metadata_fields = cps.MultiChoice("Select metadata fields for grouping", None,doc="""
-            This option can be used to break the image sets in an experiment into groups
+            Use this option to break the image sets in an experiment into groups
             that can be processed by different nodes on a computing cluster. Each set of
-            files that share the metadata tags that you select will be processed
-            together. See <b>CreateBatchFiles</b> for details on submitted a 
+            files that share your selected metadata tags will be processed
+            together. See <b>CreateBatchFiles</b> for details on submitting a 
             CellProfiler pipeline to a computing cluster for processing.""")
         
         self.wants_rows = cps.Binary("Process just a range of rows?",
                                      False, doc="""
             Check this box if you want to process a subset of the rows in the CSV file.
             Rows are numbered starting at 1 (but do not count the header line). 
-            LoadData will process up to and including the end row.""")
+            <b>LoadData</b> will process up to and including the end row.""")
         self.row_range = cps.IntegerRange("Rows to process",
                                           (1,100000),1, doc = 
-                                          """<i>(Only used if a range of rows is to be specified)</i><br>Enter the row numbers of the first and last row to be processed.""")
+                                          """<i>(Used only if a range of rows is to be specified)</i><br>Enter the row numbers of the first and last row to be processed.""")
 
     def settings(self):
         return [self.csv_directory_choice, self.csv_custom_directory,

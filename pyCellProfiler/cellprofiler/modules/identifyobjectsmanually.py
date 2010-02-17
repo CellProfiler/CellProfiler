@@ -49,11 +49,11 @@ class IdentifyObjectsManually(I.Identify):
             doc = """Enter the name that you want to use for the objects
             that you outline using this module. You can use this name to
             refer to your objects in any subsequent module that uses objects
-            as an input""")
+            as an input.""")
         self.wants_outlines = cps.Binary(
             "Save outlines?", False,
             doc = """Check this setting to save the outlines around the objects
-            as a binary image""")
+            as a binary image.""")
         self.outlines_name = cps.ImageNameProvider(
             "Outlines name:", "CellOutlines",
             doc = """This is the name of the outlines image. You can refer to

@@ -11,13 +11,13 @@ size.</p>
 
 This module can measure the following features:
 <ul>
-<li><i>AreaRetainedAfterCropping</i></li>
-<li><i>OriginalImageArea</i></li>
+<li>AreaRetainedAfterCropping</li>
+<li>OriginalImageArea</li>
 </ul>
 
 <i>Special note on saving images:</i> You can save the cropping shape that you have defined in this module (e.g., an ellipse
 you drew) so that you can use the <i>Image</i> option in future analyses. To do
-this, save either the mask or cropping in <b>SaveImages</b> See the help for the <b>SaveImages</b> module for more information on saving cropping shapes.
+this, save either the mask or cropping in <b>SaveImages</b>. See the <b>SaveImages</b> module help for more information on saving cropping shapes.
 '''
 
 # CellProfiler is distributed under the GNU General Public License.
@@ -108,7 +108,7 @@ class Crop(cpm.CPModule):
                             the parts you want to retain. Alternately, you may have previously generated a
                             binary image using this module (e.g., using the <i>Ellipse</i> option) and saved
                             it using the <b>SaveImages</b> module.<br>
-                            In any case, the image must be the exact same starting size as your image
+                            In any case, the image must be exactly the same starting size as your image
                             and should contain a contiguous block of white pixels, because 
                             the cropping module may remove rows and columns that are
                             completely blank.</li>
@@ -141,7 +141,7 @@ class Crop(cpm.CPModule):
         self.horizontal_limits = cps.IntegerOrUnboundedRange("Left and right rectangle positions",
                             minval=0, doc = """
                             <i>(Used if Rectangle selected as cropping shape, or if using Plate Fix)</i><br>
-                            Specify the left and right positions for the bounding rectangle. Select<br>
+                            Specify the left and right positions for the bounding rectangle by selecting one of the following:<br>
                             <ul><li><i>Absolute</i> to specify these values as absolute pixel
                             coordinates in the original image. For instance, you might enter
                             "25", "225", and "Absolute" to create a 200x200 pixel image that is
@@ -154,7 +154,7 @@ class Crop(cpm.CPModule):
         self.vertical_limits = cps.IntegerOrUnboundedRange("Top and bottom rectangle positions",
                             minval=0, doc = """
                             <i>(Used if Rectangle selected as cropping shape, or if using Plate Fix)</i><br>
-                            Specify the top and bottom positions for the bounding rectangle. Select<br>
+                            Specify the top and bottom positions for the bounding rectangle by selecting one of the following:<br>
                             <ul><li><i>Absolute</i> to specify these values as absolute pixel coordinates.
                             For instance, you might enter "25", "225", and "Absolute" 
                             to create a 200x200 pixel image that's 25 pixels 
@@ -194,9 +194,9 @@ class Crop(cpm.CPModule):
                             (<i>Note:</i> Plate Fix is to be used only when cropping based on previously identified
                             objects.) When attempting to crop based on a previously identified object
                             such as a rectangular plate, the plate may not have
-                            precisely straight edges - there might be a tiny, almost unnoticeable
+                            precisely straight edges: there might be a tiny, almost unnoticeable
                             "appendage" sticking out. Without Plate Fix, the <b>Crop</b>
-                            module would not crop the image tightly enough - it would retain the tiny appendage, leaving a lot
+                            module would not crop the image tightly enough: it would retain the tiny appendage, leaving a lot
                             of blank space around the plate and potentially causing problems with later
                             modules (especially IlluminationCorrection). Plate Fix takes the
                             identified object and crops to exclude any minor appendages (technically,
@@ -210,7 +210,7 @@ class Crop(cpm.CPModule):
                             is done because in the majority of plate identifications you do not want
                             to include the sides of the plate. If you would like the entire plate to
                             be shown, you should enter <i>1:end</i> for both coordinates. If, for example, you would like
-                            to crop 80 pixels from each edge of the plate, you could enter <i>Top, Left</i> and <i>Bottom, Right</i> values of <i>80</i> and select <i>From edge</i>.""")
+                            to crop 80 pixels from each edge of the plate, you could enter <i>Top, Left</i> and <i>Bottom, Right</i> values of 80 and select <i>From edge</i>.""")
         
         self.remove_rows_and_columns = cps.Choice("Remove empty rows and columns?",
                             [RM_NO, RM_EDGES, RM_ALL],

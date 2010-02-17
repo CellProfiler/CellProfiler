@@ -16,9 +16,12 @@ problems when running the <b>Measure AreaShape</b> module because calculations
 of the perimeter, aspect ratio, solidity, etc. cannot be made for noncontiguous
 objects.
 
-<i>Special note on saving images:</i> You can use the settings in this module to pass object outlines along object outlines can be passed along to the module <b>OverlayOutlines</b> and then save them with the <b>SaveImages</b> module. The identified objects themselves can be passed along to the object processing module <b>ConvertToImage</b> and then saved with the <b>SaveImages</b> module.
+<i>Special note on saving images:</i> You can use the settings in this module to pass object outlines along object
+outlines can be passed along to the module <b>OverlayOutlines</b> and then
+save them with the <b>SaveImages</b> module. You can also pass the identified objects themselves along to the object
+processing module <b>ConvertToImage</b> and then save them with the <b>SaveImages</b> module.
 
-See also <b>Identify Primary</b> and <b>Identify Secondary</b> modules.
+See also <b>IdentifyPrimaryObject</b> and <b>IdentifySecondaryObject</b> modules.
 '''
 
 # CellProfiler is distributed under the GNU General Public License.
@@ -72,7 +75,7 @@ class IdentifyTertiaryObjects(cpm.CPModule):
         
         self.outlines_name = cps.OutlineNameProvider("Name the outline image","CytoplasmOutlines", doc="""\
             <i>(Used only if outlines are to be retained for later use in the pipeline)</i><br>
-            <p> Choose a name, which will allow the outlines to be selected later in the pipeline.""") 
+            <p> Choose a name that will allow the outlines to be selected later in the pipeline.""") 
 
     def settings(self):
         """All of the settings to be loaded and saved in the pipeline file

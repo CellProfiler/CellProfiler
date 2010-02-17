@@ -127,11 +127,11 @@ class FilterObjects(cpm.CPModule):
                                 value among the set of child objects belonging to that parent will
                                 (for example, the longest spindle
                                 in each cell).  You do not have to explicitly relate objects before using this module.</li>
-                                <li><i>Minimal per object:</i> Same as Maximal per object, except filtering is based on the minimum value.</li>
+                                <li><i>Minimal per object:</i> Same as <i>Maximal per object</i>, except filtering is based on the minimum value.</li>
                                 </ul>""")
         
         self.enclosing_object_name = cps.ObjectNameSubscriber('What did you call the objects that contain the filtered objects?','None', doc = """
-                                <i>(Used if a Per-Object filtering method is selected)</i><br>
+                                <i>(Used if a per-object filtering method is selected)</i><br>
                                 This setting selects the container (i.e., parent) objects for the <i>Maximal per object</i> 
                                 and <i>Minimal per object</i> filtering choices.""")
         

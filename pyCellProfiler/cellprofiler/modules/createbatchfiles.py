@@ -85,7 +85,7 @@ class CreateBatchFiles(cpm.CPModule):
                                                  False,doc="""
                 Check this box if the cluster computers are running one of the Microsoft
                 Windows operating systems. If you check this box, <b>CreateBatchFiles</b> will
-                modify all paths to use the Windows file separator (backslash, &#92;). If you
+                modify all paths to use the Windows file separator (backslash &#92;). If you
                 leave the box unchecked, <b>CreateBatchFiles</b> will modify all paths to use
                 the Unix or Macintosh file separator (slash,&#47;).""")
         

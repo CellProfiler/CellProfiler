@@ -6,8 +6,7 @@ The V and Z' factors are statistical measures of assay quality and are
 calculated for each per-image measurement and for each average per-object 
 measurement that you have made
 in the pipeline. For example, the Z' factor indicates how well separated
-the positive and negative controls are. Calculating these values by
-placing this module at the end of a pipeline allows you to identify which
+the positive and negative controls are. Placing this module at the end of a pipeline in order to calculate these values allows you to identify which
 measured features are most powerful for distinguishing positive and
 negative control samples, or for accurately quantifying the assay's
 response to dose. Both Z' and V factors will be calculated for all
@@ -71,7 +70,7 @@ each measurement, across the entire analysis run.
 <li>EC50</li>
 <li>One-tailed Zfactor</li>
 </ul>
-<p>Example format for a file to be loaded by <b>LoadData</b> for this module.<br><br>
+<p><i>Example format for a file to be loaded by <b>LoadData</b> for this module:</i> 
 <b>LoadData</b> loads information from a CSV file. The first line of this file is a 
 header that names the items.
 Each subsequent line represents data for one image set, so your file should have
@@ -188,7 +187,7 @@ class CalculateStatistics(cpm.CPModule):
             "Figure prefix?","",
             doc = '''CellProfiler will create a file name by appending the measurement name
             to the prefix you enter here. For instance, if you have objects
-            named, "Cells", the <i>AreaShape_Area measurement</i>, and a prefix of "Dose_",
+            named, "Cells", the "AreaShape_Area measurement", and a prefix of "Dose_",
             CellProfiler will save the figure as <i>Dose_Cells_AreaShape_Area.m</i>.
             Leave this setting blank if you do not want a prefix.'''
         ))
@@ -196,16 +195,16 @@ class CalculateStatistics(cpm.CPModule):
             "File output location",
             [PC_DEFAULT, PC_CUSTOM],
             doc="""
-            This setting lets you control the folder used to store the file. Choose either:            <ul>
-            <li><i>Default output folder</i></li>
-            <li><i>Custom:</i> The file will be stored in a customizable folder. You can
+            This setting lets you control the folder used to store the file. Choose either             <ul>
+            <i>Default output folder</i> or 
+            <i>Custom.</i> If you choose <i>Custom</i>, the file will be stored in a customizable folder. You can
             prefix the folder name with "." (a period) to make the root folder the default
             output folder or "&" (an ampersand) to make the root folder the default image
             folder.</li></ul>"""))
         group.append('pathname', cps.Text(
             "Folder pathname:",
             ".",doc="""
-                Enter the pathname to save the images here. The pathname can be referenced with respect 
+                Enter the pathname for saving the images here. The pathname can be referenced with respect 
                 to the default output folder specified in the main CellProfiler window with a period (".") or the default input 
                 folder with an ampersand ("&") as the root folder."""))
             

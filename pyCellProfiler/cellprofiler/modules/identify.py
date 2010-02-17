@@ -185,7 +185,7 @@ class Identify(cellprofiler.cpmodule.CPModule):
             <li><i>Adaptive:</i> The threshold varies across the image; a bit slower but
             provides more accurate edge determination which may help to separate
             clumps, especially if you are not using a clump-separation method </li>
-            <li><i>Per-Object:</i> If you are using this module to find child objects located
+            <li><i>Per-object:</i> If you are using this module to find child objects located
             <i>within</i> parent objects, the per-object method will calculate a distinct
             threshold for each parent object. This is especially helpful, for
             example, when the background brightness varies substantially among the
@@ -232,7 +232,7 @@ class Identify(cellprofiler.cpmodule.CPModule):
             'Approximate fraction of image covered by objects?', 
             ['0.01','0.1','0.2','0.3', '0.4','0.5','0.6','0.7', '0.8','0.9',
              '0.99'], doc="""\
-            <i>(Used only when applying the Mixture of Gaussian thresholding method)</i><br>
+            <i>(Used only when applying the MoG thresholding method)</i><br>
             An estimate of how much of the image is covered with objects, which
             is used to estimate the distribution of pixel intensities.""")
         

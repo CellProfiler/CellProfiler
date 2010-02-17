@@ -10,9 +10,9 @@ simply use <b>ConvertObjectsToImage</b> and select <i>Binary</i> as the color ty
 If your images have been segmented using other image processing software, or you have hand-segmented them in software 
 such as Photoshop, you may need to use one or more of the following:
 <ul>
-<li> <b>ImageMath</b>: if the objects are black and the background is white, you must invert the intensity.</li>
-<li> <b>ApplyThreshold</b>: if the image is grayscale, and you must make it binary. </li>
-<li> <b>ColorToGray</b>: if the image is color, you must first convert it to grayscale, and then use <b>ApplyThreshold</b> to generate a binary image. </li>
+<li> <b>ImageMath</b>: If the objects are black and the background is white, you must invert the intensity.</li>
+<li> <b>ApplyThreshold</b>: If the image is grayscale, you must make it binary. </li>
+<li> <b>ColorToGray</b>: If the image is in color, you must first convert it to grayscale, and then use <b>ApplyThreshold</b> to generate a binary image. </li>
 </ul>
 
 In the test image, any foreground (white) pixels that overlap with the foreground of the ground

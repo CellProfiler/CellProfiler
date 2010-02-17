@@ -81,7 +81,7 @@ class EnhanceOrSuppressFeatures(cpm.CPModule):
                                         from the previous reconstructed image. This leaves circular bright
                                         spots with a radius equal to the number of iterations performed.
                                         </li></ul>
-                                        In addition, this module can suppress certain features (such as speckles)
+                                        In addition, this module enables you to suppress certain features (such as speckles)
                                         by specifying the feature size.""")
         
         self.object_size = cps.Integer('Feature size',

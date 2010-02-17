@@ -1,7 +1,7 @@
 '''<b>Image Math</b> performs simple mathematical operations on image intensities
 <hr>
-<b>ImageMath</b> can perform addition, subtraction, multiplication, division, or averaging
-of two or more images' intensities, as well as inversion, log transform, or scaling by 
+This module can perform addition, subtraction, multiplication, division, or averaging
+of two or more image intensities, as well as inversion, log transform, or scaling by 
 a constant for individual image intensities.
 
 <i>Multiply factors:</i> The final image may have a substantially different range of pixel
@@ -86,9 +86,9 @@ class ImageMath(cpm.CPModule):
             <li><i>Invert</i> subtracts the image intensities from 1. This makes the darkest
             color the brightest and vice-versa.</li>
 
-            <i>Log transform (base 2)</i> log transforms each pixel's intensity. 
+            <li><i>Log transform (base 2)</i> log transforms each pixel's intensity. </li>
 
-            <i>None</i> is useful if you simply want to select some of the later options in the module, such as adding, multiplying, or exponentiating your image by a constant.
+            <li><i>None</i> is useful if you simply want to select some of the later options in the module, such as adding, multiplying, or exponentiating your image by a constant.
             
             <li> Note that <i>Invert</i>, <i>Log Transform</i>, and <i>None</i> operate only on a single image.
             </ul>""")

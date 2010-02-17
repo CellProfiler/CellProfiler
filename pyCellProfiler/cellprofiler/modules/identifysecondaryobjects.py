@@ -1,10 +1,10 @@
 '''<b>Identify Secondary Objects</b> identifies objects (e.g., cell edges) using "seed" objects identified by
-an Identify Primary module (e.g., nuclei).
+an <b>IdentifyPrimaryObjects</b> module (e.g., nuclei)
 <hr>
 This module identifies secondary objects (e.g., cell edges) based on two
 inputs: 
 <ol>
-<li>A previous module's identification of primary objects (e.g.
+<li>A previous module's identification of primary objects (e.g.,
 nuclei)</li>
 <li>An image stained for the secondary objects (not required
 for the <i>Distance - N</i> option).</li>
@@ -25,7 +25,7 @@ there is no separation between adjacent areas with different labels (as there
 would be using, e.g., watershed). Such boundaries must be added in a
 postprocess.
 
-For the theshold-related settings in this module please refer to 
+For the threshold-related settings in this module, please refer to 
 <b>IdentifyPrimaryObjects</b>.
 
 Also see the other <b>Identify</b> modules.
@@ -93,13 +93,13 @@ class IdentifySecondaryObjects(cpmi.Identify):
             <li>Finding the dividing lines 
             between secondary objects which touch each other. Three methods are 
             available: <i>Propagation</i>, <i>Watershed</i> (an older version of 
-            Propagation), and <i>Distance</i>.</li>
+            <i>Propagation</i>), and <i>Distance</i>.</li>
             <li>finding the dividing lines between the secondary objects and the
             background of the image. This is done by thresholding the image stained
             for secondary objects, except when using <i>Distance - N</i>.</li>
             </ol>
             
-            <p>Description of the idenitification methods:
+            <p>Description of the identification methods:
             <ul>
             <li><i>Propagation:</i> For task (1), this method will find dividing lines
             between clumped objects where the image stained for secondary objects
@@ -143,7 +143,7 @@ class IdentifySecondaryObjects(cpmi.Identify):
         self.image_name = cps.ImageNameSubscriber("Select the input image",
                                                   "None",doc="""
             The selected image will be used to find the edges of the secondary objects.
-            For DISTANCE - N, this will not affect object identification, only the final display.""")
+            For <i>Distance - N</n> this will not affect object identification, only the final display.""")
         
         self.create_threshold_settings()
         
@@ -151,7 +151,7 @@ class IdentifySecondaryObjects(cpmi.Identify):
         
         self.regularization_factor = cps.Float("Regularization factor:",0.05,minval=0,
                                                doc="""\
-            (<i>For propagation method only</i>) 
+            (<i>For Propagation method only</i>) 
             In the range 0 to infinity.
             This method takes two factors into account when deciding where to draw
             the dividing line between two touching secondary objects: the distance to
@@ -197,7 +197,7 @@ class IdentifySecondaryObjects(cpmi.Identify):
             
         self.new_primary_objects_name = cps.ObjectNameProvider(
             "New primary objects name:", "FilteredNuclei",
-            doc = """This setting lets you name the primary objects that
+            doc = """You can name the primary objects that
             aren't discarded. These objects will all have secondary objects
             that don't touch the edge of the image. Any primary object
             whose secondary object touches the edge will be added to the
@@ -213,7 +213,7 @@ class IdentifySecondaryObjects(cpmi.Identify):
         
         self.new_primary_outlines_name = cps.ImageNameProvider(
             "New primary objects outlines name:", "FilteredNucleiOutlines",
-            doc = """This setting lets you name the outline image of the
+            doc = """You can name the outline image of the
             primary objects after filtering. You can refer to this image
             using this name in subsequent modules such as <b>SaveImages</b>.""")
     

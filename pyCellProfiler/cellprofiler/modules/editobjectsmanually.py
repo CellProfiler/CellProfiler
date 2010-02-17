@@ -1,6 +1,6 @@
-'''<b>EditObjectsManually</b> allows users to remove objects from an image via a user interface.
+'''<b>EditObjectsManually</b> allows users to remove objects from an image via a user interface
 <hr>
-This module allows you to remove objects through a user interface. The
+This module allows you to remove objects via a user interface. The
 module displays three images: the objects as originally segmented,
 the objects that have not been removed, and the objects that have been
 removed.

@@ -23,8 +23,8 @@ image cycle.
 
 <i>Special note on saving images:</i> You can use the settings in this module to
 pass object outlines along to the <b>OverlayOutlines</b>module and then
-save them with the </b>SaveImages</b> module. Objects themselves can be passed along
-to the object processing module <b>ConvertToImage</b> and then saved with the
+save them with the </b>SaveImages</b> module. You can also pass along objects themselves 
+to the object processing module <b>ConvertToImage</b> and then save them with the
 <b>SaveImages</b> module.
 
 <p>See also <b>DefineGrid</b>.
@@ -122,7 +122,7 @@ class IdentifyObjectsInGrid(cpm.CPModule):
             "Circle diameter", 20, minval=2,
             doc="""<i>(Used if Circle is selected as object shape and diameter is 
             specified manually)</i><br>
-            Enter the diameter to be used for each grid circle""")
+            Enter the diameter to be used for each grid circle.""")
         
         self.guiding_object_name = cps.ObjectNameSubscriber(
             "Select the guiding objects", "None",
@@ -140,7 +140,7 @@ class IdentifyObjectsInGrid(cpm.CPModule):
             "Save outlines of the identified objects?", False,
             doc="""The module can create a binary image of the outlines
             of the objects it creates. You can then use <b>OverlayOutlines</b>
-            to overlay the outlines on an image or use <b>SaveImages</b>.
+            to overlay the outlines on an image or use <b>SaveImages</b>
             to save them""")
         
         self.outlines_name = cps.OutlineNameProvider(

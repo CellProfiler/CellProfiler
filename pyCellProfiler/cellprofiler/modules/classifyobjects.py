@@ -158,9 +158,9 @@ class ClassifyObjects(cpm.CPModule):
             doc="""Check this if you want to specify the names of each bin 
             measurement. If you leave the box unchecked, the module will
             create names based on the measurements. (For instance, for
-            <i>Intensity_MeanIntensity_Green</i> and <i>Intensity_TotalIntensity_Blue</i>,
+            "Intensity_MeanIntensity_Green" and "Intensity_TotalIntensity_Blue",
             the module generates measurements such as
-            <i>Classify_Intensity_MeanIntensity_Green_High_Intensity_TotalIntensity_Low</i>).""")
+            "Classify_Intensity_MeanIntensity_Green_High_Intensity_TotalIntensity_Low").""")
         
         self.low_low_custom_name = cps.Text(
             "Enter the low-low bin name","low_low",
@@ -226,7 +226,7 @@ class ClassifyObjects(cpm.CPModule):
             
             <i>Note:</i> If you would like two bins, choose <i>Custom-defined bins</i> and then provide a single threshold when asked. 
             <i>Evenly spaced bins</i> creates the indicated number of bins
-            at evenly-spaced intervals between the low and high threshold.
+            at evenly spaced intervals between the low and high threshold.
             You also have the option to create bins for objects that fall below
             or above the low and high threhsold"""))
         

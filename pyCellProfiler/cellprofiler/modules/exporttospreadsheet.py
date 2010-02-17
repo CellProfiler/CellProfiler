@@ -6,7 +6,7 @@ This module will convert the measurements to a comma-, tab-, or other
 character-delimited text format and
 save them to the hard drive in one or several files, as requested. 
 <h2>Metadata tokens</h2>
-<b>ExportToExcel can write out separate files for groups of images based
+<b>ExportToSpreadsheet</b> can write out separate files for groups of images based
 on their metadata. This is controlled by the directory and file names
 that you enter. For instance, you might have applied two treatments
 to each of your samples and labeled them with the metadata names "Treatment1" 
@@ -104,9 +104,9 @@ class ExportToSpreadsheet(cpm.CPModule):
             doc="""This setting lets you choose the folder for the output
             files.<br><ul>
             <li><i>Default output folder</i> saves the .csv files in the
-            default output folder</li>
+            default output folder.</li>
             <li><i>Default image folder</i> saves the .csv files in the
-            default image folder</li>
+            default image folder.</li>
             <li><i>Custom folder</i> lets you specify the folder name. Start
             the folder name with "." to name a sub-folder of the output folder
             (for instance, "./data"). Start the folder name with "&" to name
@@ -114,16 +114,16 @@ class ExportToSpreadsheet(cpm.CPModule):
             <li><i>Custom folder with metadata</i> uses metadata substitution
             to name the folder and to group the image sets by metadata tag.
             For instance, if you have a metadata tag named, "Plate", you can
-            create a folder per-plate using the metadata tag, "./&lt;Plate&gt;".
+            create a folder per-plate using the metadata tag "./&lt;Plate&gt;".
             </li></ul>""")
         self.custom_directory = cps.Text(
-            "Folder name:", ".", doc="""This is the folder that will be used
+            "Folder name:", ".", doc="""Name of the folder that will be used
             to store the output files. Start
             the folder name with "." to name a sub-folder of the output folder
             (for instance, "./data"). Start the folder name with "&" to name
             a sub-folder of the image folder.""")
         
-        self.add_metadata = cps.Binary("Add image metadata columns to your object data file?", False, doc = """<i>Image_Metadata_</i> columns are normally exported in the Image data file, but if you check this box they will also be exported with the Object data file(s).""")
+        self.add_metadata = cps.Binary("Add image metadata columns to your object data file?", False, doc = """&qt;Image_Metadata_&qt; columns are normally exported in the Image data file, but if you check this box they will also be exported with the Object data file(s).""")
         
         self.add_indexes = cps.Binary("No longer used, always saved", True)
         
@@ -136,12 +136,12 @@ class ExportToSpreadsheet(cpm.CPModule):
                             Checking this setting will open up a window that allows you to select the columns to export.""")
         
         self.wants_aggregate_means = cps.Binary("Calculate the per-image mean values for object measurements?", False, doc = """
-                            <b>ExportToExcel</b> can calculate population statistics over all the 
+                            <b>ExportToSpreadsheet</b> can calculate population statistics over all the 
                             objects in each image and save that value as an aggregate 
                             measurement in the Image file.  For instance, if you are measuring 
-                            the area of the Nuclei objects and you check the box for this option, <b>ExportToExcel</b> will 
+                            the area of the Nuclei objects and you check the box for this option, <b>ExportToSpreadsheet</b> will 
                             create a column in the Image file called <i>Mean_Nuclei_AreaShape_Area</i>. 
-                            <p>You may not want to use <b>ExportToExcel</b> to calculate these 
+                            <p>You may not want to use <b>ExportToSpreadsheet</b> to calculate these 
                             measurements if your pipeline generates a large number of per-object 
                             measurements; doing so might exceed Excel's limits on the number of columns (256). """)
         

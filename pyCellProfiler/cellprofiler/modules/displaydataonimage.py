@@ -91,13 +91,13 @@ class DisplayDataOnImage(cpm.CPModule):
             </li>
             <li>RGB code: You can specify the color as a combination of
             the red, green and blue intensities, for instance, "#FFFF00"
-            for yellow; yellow = (red:"FF", green:"FF", blue:"00"), where <i>FF</i> is
+            for yellow; yellow = red("FF") + green("FF") + blue("00"), where <i>FF</i> is
             hexadecimal for 255, the highest intensity. See
             <a href=http://www.w3schools.com/html/html_colors.asp>http://www.w3schools.com/html/html_colors.asp</a> for a more detailed
             explanation</li></ul>""")
         self.display_image = cps.ImageNameProvider(
             "Name the output image, which has the measurements displayed","DisplayImage",
-            doc="""This is the name that will be given to the image with
+            doc="""The name that will be given to the image with
             the measurements superimposed. You can use this name to refer to the image in
             subsequent modules (such as <b>SaveImages</b>).""")
         self.font_size = cps.Integer(

@@ -10,7 +10,7 @@ function to the image to be corrected.
 
 Illumination correction is a challenge to do properly; please see the CellProfiler website for further advice.
 
-See also <b>CorrectIllumination_Apply</b> and <b>EnhanceOrSuppressSpeckles</b> modules.
+See also <b>CorrectIllumination_Apply</b> and <b>EnhanceOrSuppressFeatures</b> modules.
 '''
 # CellProfiler is distributed under the GNU General Public License.
 # See the accompanying file LICENSE for details.
@@ -151,8 +151,8 @@ class CorrectIllumination_Calculate(cpm.CPModule):
                                             SM_MEDIAN_FILTER, 
                                             SM_GAUSSIAN_FILTER,
                                             SM_TO_AVERAGE], doc = '''
-                                            If requested, the resulting image is smoothed. See the help for the
-                                            <b>EnhanceOrSuppressSpeckles</b> module for more details. If you are using <i>Each</i> mode,
+                                            If requested, the resulting image is smoothed. See the
+                                            <b>EnhanceOrSuppressFeatures</b> module help for more details. If you are using <i>Each</i> mode,
                                             this is almost certainly necessary. If you have few objects in each image or a
                                             small image set, you may want to smooth. You should smooth to the
                                             point where the illumination function resembles a believable pattern.
@@ -191,7 +191,7 @@ class CorrectIllumination_Calculate(cpm.CPModule):
         
         self.average_image_name = cps.ImageNameProvider("Name the averaged image","IllumBlueAvg",doc = '''
                                             <i>(Used only if the averaged image is to be retained for later use in the pipeline)</i><br>
-                                            Enter a name, which will allow the averaged image to be selected later in the pipeline.''')
+                                            Enter a name that will allow the averaged image to be selected later in the pipeline.''')
         
         self.save_dilated_image = cps.Binary("Retain the dilated image for use later in the pipeline (for example, in SaveImages)?", False, doc = '''                                            
                                             The dilated image is the illumination function                                            
@@ -200,7 +200,7 @@ class CorrectIllumination_Calculate(cpm.CPModule):
         
         self.dilated_image_name = cps.ImageNameProvider("Name the dilated image","IllumBlueDilated",doc='''
                                             <i>(Used only if the dilated image is to be retained for later use in the pipeline)</i><br>
-                                            Enter a name, which will allow the dilated image to be selected later in the pipeline.''')
+                                            Enter a name that will allow the dilated image to be selected later in the pipeline.''')
 
     def settings(self):
         return [ self.image_name, self.illumination_image_name,

@@ -12,10 +12,10 @@ the objects.
 remove pixels without completely removing an object. See the settings (below)
 for more detail.
 
-<i>Special note on saving images:</i> Using the settings in this module, object
-outlines can be passed along to the module <b>OverlayOutlines</b> and then saved
-with the <b>SaveImages</b> module. The identified objects themselves can be passed along to the
-object processing module <b>ConvertToImage</b> and then saved with the
+<i>Special note on saving images:</i> You can use the settings in this module to pass object
+outlines along to the module <b>OverlayOutlines</b> and then save them 
+with the <b>SaveImages</b> module. You can also pass the identified objects themselves along to the
+object processing module <b>ConvertToImage</b> and then save them with the
 <b>SaveImages</b> module.
 
 See also <b>Identify</b> modules.'''

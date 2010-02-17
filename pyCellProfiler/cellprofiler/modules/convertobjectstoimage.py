@@ -75,8 +75,8 @@ class ConvertObjectsToImage(cpm.CPModule):
                                 You can choose <i>Color</i> with a <i>Gray</i> colormap to produce
                                 jumbled gray objects.""")
         
-        self.colormap = cps.Choice("Select the colormap",
-                                COLORMAPS,doc="""
+        self.colormap = cps.Colormap("Select the colormap",
+                                doc="""
                                 What do you want the colormap to be? This setting affects how the objects are colored. 
                                 You can look up your default colormap under <i>File > Set Preferences</i>.""")
 

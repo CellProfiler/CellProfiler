@@ -363,6 +363,8 @@ class ModuleView:
                     else:
                         help_control = self.make_help_control(v.doc, v.text, 
                                                               name = help_name)
+                else:
+                    help_control.Show()
                 sizer.Add(help_control)
             self.module_panel.FitInside()
         finally:

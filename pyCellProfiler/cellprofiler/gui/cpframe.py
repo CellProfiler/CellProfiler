@@ -21,6 +21,7 @@ from cellprofiler.modules import get_data_tool_names
 from cellprofiler.gui import get_icon, get_cp_bitmap
 from cellprofiler.gui.pipelinelistview import PipelineListView
 from cellprofiler.gui.cpfigure import close_all
+from cellprofiler.gui.help import MAIN_HELP, make_help_menu
 from cellprofiler.pipeline import Pipeline
 from cellprofiler.gui.pipelinecontroller import PipelineController
 from cellprofiler.gui.moduleview import ModuleView
@@ -172,7 +173,7 @@ class CPFrame(wx.Frame):
                                   "Hide all module display windows for all modules during analysis")
         self.__menu_window.AppendSeparator()
         self.__menu_bar.Append(self.__menu_window,"&Window")
-        self.__menu_help = wx.Menu()
+        self.__menu_help = make_help_menu(MAIN_HELP, self)
         self.__menu_help.Append(ID_HELP_MODULE,'Module help','Display help from the module''s .m file')
         self.__menu_help.Append(ID_HELP_DEVELOPERS_GUIDE,"Developer's guide",
                                 "Launch the developer's guide webpage")

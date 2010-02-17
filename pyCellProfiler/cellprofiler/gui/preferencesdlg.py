@@ -16,6 +16,8 @@ import wx
 import matplotlib.cm
 
 import cellprofiler.preferences as cpprefs
+import cellprofiler.gui.help as cphelp
+from cellprofiler.gui.htmldialog import HTMLDialog
 
 DIRBROWSE = "Browse"
 FONT = "Font"
@@ -35,13 +37,17 @@ class PreferencesDlg(wx.Dialog):
         wx.Dialog.__init__(self, parent, ID, title, pos, size, style,name)
         p = self.get_preferences()
         top_sizer = wx.BoxSizer(wx.VERTICAL)
-        sizer = wx.GridBagSizer(len(p),3)
+        sizer = wx.GridBagSizer(len(p),4)
         sizer.SetFlexibleDirection(wx.HORIZONTAL)
         sizer.AddGrowableCol(1,1)
+        sizer.AddGrowableCol(3,.1)
         top_sizer.Add(sizer,1, wx.EXPAND|wx.ALL, 5)
         index = 0
         controls = []
-        for text, getter, setter, ui_info in p:
+        help_bitmap = wx.ArtProvider.GetBitmap(wx.ART_HELP,
+                                               wx.ART_CMN_DIALOG,
+                                               (16,16))
+        for text, getter, setter, ui_info, help_text in p:
             text_ctl = wx.StaticText(self, label=text)
             sizer.Add(text_ctl,(index,0))
             if getattr(ui_info,"__getitem__",False) and not isinstance(ui_info,str):
@@ -94,6 +100,12 @@ class PreferencesDlg(wx.Dialog):
                 button = wx.Button(self,id,ui_info)
                 self.Bind(wx.EVT_BUTTON, on_press, button,id)
                 sizer.Add(button, (index, 2))
+            button = wx.BitmapButton(self, -1, bitmap=help_bitmap)
+            def on_help(event, help_text = help_text):
+                dlg = HTMLDialog(self, "Preferences help", help_text)
+                dlg.Show()
+            sizer.Add(button, (index, 3))
+            self.Bind(wx.EVT_BUTTON, on_help, button)
             index += 1
         top_sizer.Add(wx.StaticLine(self), 0, wx.EXPAND | wx.ALL, 2)
         btnsizer = wx.StdDialogButtonSizer()
@@ -116,7 +128,8 @@ class PreferencesDlg(wx.Dialog):
     def show_modal(self):
         if self.ShowModal() == wx.ID_OK:
             p = self.get_preferences()
-            for control, (text, getter, setter, ui_info) in zip(self.controls, p):
+            for control, (text, getter, setter, ui_info, help_text) in \
+                zip(self.controls, p):
                 if ui_info == COLOR:
                     setter(control.BackgroundColour)
                 else:
@@ -135,14 +148,35 @@ class PreferencesDlg(wx.Dialog):
         '''
         cmaps = list(matplotlib.cm.datad.keys())
         cmaps.sort()
-        return [["Matlab module directory",cpprefs.module_directory, cpprefs.set_module_directory,DIRBROWSE],
-                ["Default image directory",cpprefs.get_default_image_directory, cpprefs.set_default_image_directory,DIRBROWSE],
-                ["Default output directory",cpprefs.get_default_output_directory, cpprefs.set_default_output_directory,DIRBROWSE],
-                ["Title font", self.get_title_font, self.set_title_font, FONT],
-                ["Table font", self.get_table_font, self.set_table_font, FONT],
-                ["Default colormap", cpprefs.get_default_colormap, cpprefs.set_default_colormap, cmaps],
-                ["Window background", cpprefs.get_background_color, cpprefs.set_background_color, COLOR],
-                ["Check for updates", cpprefs.get_check_new_versions, cpprefs.set_check_new_versions, CHOICE],
+        return [#["Matlab module directory",cpprefs.module_directory, cpprefs.set_module_directory,DIRBROWSE],
+                [ "Default image folder",
+                  cpprefs.get_default_image_directory, 
+                  cpprefs.set_default_image_directory,
+                  DIRBROWSE, cphelp.DEFAULT_IMAGE_FOLDER_HELP],
+                [ "Default output folder",
+                  cpprefs.get_default_output_directory, 
+                  cpprefs.set_default_output_directory,
+                  DIRBROWSE, cphelp.DEFAULT_OUTPUT_FOLDER_HELP],
+                [ "Title font", 
+                  self.get_title_font, 
+                  self.set_title_font, 
+                  FONT, cphelp.TITLE_FONT_HELP],
+                ["Table font", 
+                 self.get_table_font, 
+                 self.set_table_font, 
+                 FONT, cphelp.TABLE_FONT_HELP],
+                ["Default colormap", 
+                 cpprefs.get_default_colormap, 
+                 cpprefs.set_default_colormap, 
+                 cmaps, cphelp.DEFAULT_COLORMAP_HELP],
+                ["Window background", 
+                 cpprefs.get_background_color, 
+                 cpprefs.set_background_color, 
+                 COLOR, cphelp.WINDOW_BACKGROUND_HELP],
+                ["Check for updates", 
+                 cpprefs.get_check_new_versions, 
+                 cpprefs.set_check_new_versions, 
+                 CHOICE, cphelp.CHECK_FOR_UPDATES_HELP],
                 ]
     
     def get_title_font(self):

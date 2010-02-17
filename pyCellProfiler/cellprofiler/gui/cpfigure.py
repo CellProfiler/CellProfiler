@@ -26,6 +26,7 @@ from cStringIO import StringIO
 import sys
 
 from cellprofiler.gui import get_icon
+from cellprofiler.gui.help import make_help_menu, FIGURE_HELP
 import cellprofiler.preferences as cpprefs
 
 
@@ -206,6 +207,7 @@ class CPFigureFrame(wx.Frame):
             [(wx.ACCEL_CMD, ord('W'), MENU_CLOSE_WINDOW)])
         self.SetAcceleratorTable(accelerators)
         wx.EVT_MENU(self, MENU_CLOSE_WINDOW, self.on_close)
+        self.MenuBar.Append(make_help_menu(FIGURE_HELP, self), "&Help")
     
     def clf(self):
         '''Clear the figure window, resetting the display'''

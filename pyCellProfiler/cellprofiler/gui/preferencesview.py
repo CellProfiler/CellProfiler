@@ -16,6 +16,9 @@ import os
 import string
 import wx
 import cellprofiler.preferences
+from cellprofiler.gui.htmldialog import HTMLDialog
+from cellprofiler.gui.help import \
+     DEFAULT_IMAGE_FOLDER_HELP, DEFAULT_OUTPUT_FOLDER_HELP, OUTPUT_FILENAME_HELP
 
 WELCOME_MESSAGE = 'Welcome to CellProfiler'
 
@@ -29,15 +32,15 @@ class PreferencesView:
         self.__image_folder_panel = wx.Panel(panel,-1)
         self.__image_edit_box = self.__make_folder_panel(self.__image_folder_panel,
                                                          cellprofiler.preferences.get_default_image_directory(),
-                                                         'default input folder',
-                                                         'HelpDefaultImageFolder.m',
+                                                         'default image folder',
+                                                         DEFAULT_IMAGE_FOLDER_HELP,
                                                          [cellprofiler.preferences.set_default_image_directory,
                                                           self.__notify_pipeline_list_view_directory_change])
         self.__output_folder_panel = wx.Panel(panel,-1)
         self.__output_edit_box = self.__make_folder_panel(self.__output_folder_panel,
                                                           cellprofiler.preferences.get_default_output_directory(),
                                                           'default output folder',
-                                                          'HelpDefaultOutputFolder.m',
+                                                          DEFAULT_OUTPUT_FOLDER_HELP,
                                                           [cellprofiler.preferences.set_default_output_directory,
                                                            self.__notify_pipeline_list_view_directory_change])
         self.__odds_and_ends_panel = wx.Panel(panel,-1)
@@ -51,7 +54,7 @@ class PreferencesView:
         self.__errors = set()
         self.__pipeline_list_view = None
         
-    def __make_folder_panel(self, panel, value, text, helpfile, actions):
+    def __make_folder_panel(self, panel, value, text, help_text, actions):
         sizer = wx.BoxSizer(wx.HORIZONTAL)
         help_button = wx.Button(panel,-1,'?',(0,0),(25,25))
         text_static = wx.StaticText(panel,-1,string.capitalize(text)+':')
@@ -95,7 +98,8 @@ class PreferencesView:
                                             edit_box.Value)
             self.__on_edit_box_change(event, edit_box, text, actions)
             
-        panel.Bind(wx.EVT_BUTTON, lambda event: self.__on_help(event, helpfile))
+        panel.Bind(wx.EVT_BUTTON, lambda event: self.__on_help(event, help_text),
+                   help_button)
         panel.Bind(wx.EVT_BUTTON, lambda event: self.__on_browse(event, edit_box, text), browse_button)
         panel.Bind(wx.EVT_TEXT, on_edit_box_change, edit_box)
         panel.Bind(wx.EVT_BUTTON, on_new_folder, new_button)
@@ -116,7 +120,9 @@ class PreferencesView:
                        (self.__stop_analysis_button, 0, wx.ALL,1)])
         sizer.Hide(self.__stop_analysis_button)
         panel.SetSizer(sizer)
-        panel.Bind(wx.EVT_BUTTON,lambda event: self.__on_help(event,"HelpOutputFileName.m"),output_filename_help_button)
+        panel.Bind(wx.EVT_BUTTON,
+                   lambda event: self.__on_help(event, OUTPUT_FILENAME_HELP),
+                   output_filename_help_button)
         panel.Bind(wx.EVT_TEXT, self.__on_output_filename_changed, self.__output_filename_edit_box)
         cellprofiler.preferences.add_output_file_name_listener(self.__on_preferences_output_filename_event)
         cellprofiler.preferences.add_image_directory_listener(self.__on_preferences_image_directory_event)
@@ -218,8 +224,9 @@ class PreferencesView:
         else:
             self.set_error_text(error_text)
     
-    def __on_help(self,event,helpfile):
-        pass
+    def __on_help(self,event, help_text):
+        dlg = HTMLDialog(self.__panel, "Help", help_text)
+        dlg.Show()
     
     def __on_pixel_size_changed(self,event):
         error_text = 'Pixel size must be a number'

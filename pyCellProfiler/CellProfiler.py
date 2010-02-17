@@ -170,7 +170,9 @@ try:
     
     if options.output_html:
         from cellprofiler.modules import output_html
+        from cellprofiler.gui.help import output_gui_html
         output_html()
+        output_gui_html()
         
     from cellprofiler.utilities.get_revision import version
     print "Subversion revision: %d"%version

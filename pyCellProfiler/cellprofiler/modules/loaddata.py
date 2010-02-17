@@ -651,7 +651,9 @@ class LoadData(cpm.CPModule):
                                     len_field + PATH_PADDING)
                 if coltypes[index] == cpmeas.COLTYPE_INTEGER:
                     try:
-                        int(field)
+                        if isinstance(int(field), long):
+                            # "integers" that don't fit are saved as strings
+                            coltypes[index] = cpmeas.COLTYPE_VARCHAR_FORMAT % len(field)
                         continue
                     except ValueError:
                         coltypes[index] = cpmeas.COLTYPE_FLOAT
@@ -783,6 +785,10 @@ def best_cast(sequence):
     '''
     
     try:
+        if any([isinstance(int(x), long)
+                for x in sequence]):
+            # Cast very long "integers" as strings
+            return np.array(sequence)
         return np.array([int(x) for x in sequence])
     except ValueError:
         try:

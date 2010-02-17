@@ -163,7 +163,19 @@ class TestLoadData(unittest.TestCase):
         pipeline, module, filename = self.make_pipeline(csv_text)
         m = pipeline.run()
         data = m.get_current_image_measurement("Test_Measurement")
+        self.assertTrue(isinstance(data, int))
         self.assertEqual(data, 1)
+        os.remove(filename)
+    
+    def test_02_04_long_int_image_measurement(self):
+        csv_text = '''"Test_Measurement"
+1234567890123
+'''
+        pipeline, module, filename = self.make_pipeline(csv_text)
+        m = pipeline.run()
+        data = m.get_current_image_measurement("Test_Measurement")
+        self.assertTrue(isinstance(data, str))
+        self.assertEqual(data, "1234567890123")
         os.remove(filename)
     
     def test_03_01_metadata(self):
@@ -373,6 +385,30 @@ class TestLoadData(unittest.TestCase):
         finally:
             os.remove(filename)
         
+    def test_07_03_long_integer_column(self):
+        '''This is a regression test of IMG-644 where a 13-digit number got turned into an int'''
+        colnames = ('Long_Integer_Measurement','Float_Measurement','String_Measurement')
+        coltypes = [cpmeas.COLTYPE_VARCHAR_FORMAT % 13,cpmeas.COLTYPE_FLOAT,
+                    cpmeas.COLTYPE_VARCHAR_FORMAT%9]
+        csv_text = '''"%s","%s","%s"
+1,1,1
+2,1.5,"Hi"
+3,1,"Hello"
+4,1.7,"Hola"
+5,1.2,"Bonjour"
+6,1.5,"Gutentag"
+7,1.1,"Hej"
+1234567890123,2.3,"Bevakasha"
+'''%colnames
+        pipeline, module, filename = self.make_pipeline(csv_text)
+        columns = module.get_measurement_columns(None)
+        for colname, coltype in zip(colnames, coltypes):
+            self.assertTrue(any([(column[0] == cpmeas.IMAGE and
+                                  column[1] == colname and
+                                  column[2] == coltype) for column in columns]),
+                            'Failed to find %s'%colname)
+        os.remove(filename)
+    
     def test_08_01_get_groupings(self):
         '''Test the get_groupings method'''
         dir = os.path.join(example_images_directory(), "ExampleSBSImages")

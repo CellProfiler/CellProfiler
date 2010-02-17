@@ -345,16 +345,17 @@ def output_html():
     root = os.path.split(__file__)[0]
     if len(root) == 0:
         root = os.curdir
-    root = os.path.abspath(root)
-    module_html = os.path.join(root, 'html')
-    if not (os.path.exists(module_html) and os.path.isdir(module_html)):
+    root = os.path.split(os.path.abspath(root))[0] # Back up one level
+    webpage_path = os.path.join(root, 'help')
+    if not (os.path.exists(webpage_path) and os.path.isdir(webpage_path)):
         try:
-            os.mkdir(module_html)
+            os.mkdir(webpage_path)
         except IOError:
-            module_html = root
-    index_fd = open(os.path.join(module_html,'index.html'),'w')
+            webpage_path = root
+    index_fd = open(os.path.join(webpage_path,'index.html'),'w')
         
-    index_fd.write("""<html>
+    index_fd.write("""
+<html style="font-family:arial">
 <head>
     <title>CellProfiler: Module table of contents</title>
 </head>
@@ -362,12 +363,20 @@ def output_html():
 <h1>CellProfiler: Module table of contents</h1>
 <ul>\n""")
     d = {}
+    module_dir = 'modules'
+    module_path = os.path.join(webpage_path,module_dir)
+    if not (os.path.exists(module_path) and os.path.isdir(module_path)):
+        try:
+            os.mkdir(module_path)
+        except IOError:
+            raise ValueError("Could not create directory %s" % module_path)
+        
     for module_name in get_module_names():
         module = instantiate_module(module_name)
         if not d.has_key(module.category):
             d[module.category] = {}
         d[module.category][module_name] = module
-        fd = open(os.path.join(module_html,"%s.html" % module_name), "w")
+        fd = open(os.path.join(module_path,"%s.html" % module_name), "w")
         fd.write(module.get_help())
         fd.close()
     for category in sorted(d.keys()):
@@ -375,7 +384,7 @@ def output_html():
         index_fd.write("<li><b>%s</b><br><ul>\n"%category)
         for module_name in sorted(sub_d.keys()):
             index_fd.write("<li><a href='%s.html'>%s</a></li>\n" %
-                           (module_name, module_name))
+                           (os.path.join(module_dir,module_name), module_name))
         index_fd.write("</ul></li>\n")
     index_fd.write("</ul></body>\n")
     index_fd.close()

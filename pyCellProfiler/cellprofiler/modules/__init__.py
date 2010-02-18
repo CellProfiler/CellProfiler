@@ -288,7 +288,7 @@ def fill_modules():
 fill_modules()        
     
 __all__ = ['instantiate_module', 'get_module_names', 'reload_modules', 
-           'output_html']
+           'output_module_html']
 
 replaced_modules = {
     'LoadImageDirectory':['LoadImages','LoadData'],
@@ -340,7 +340,7 @@ def reload_modules():
             pass
     fill_modules()
     
-def output_html():
+def output_module_html():
     '''Output an HTML page for each module'''
     root = os.path.split(__file__)[0]
     if len(root) == 0:
@@ -352,15 +352,15 @@ def output_html():
             os.mkdir(webpage_path)
         except IOError:
             webpage_path = root
-    index_fd = open(os.path.join(webpage_path,'index.html'),'w')
+    index_fd = open(os.path.join(webpage_path,'module_index.html'),'w')
         
     index_fd.write("""
 <html style="font-family:arial">
 <head>
-    <title>CellProfiler: Module table of contents</title>
+    <title>Modules</title>
 </head>
 <body>
-<h1>CellProfiler: Module table of contents</h1>
+<h1><a name = "modules">Modules</a></h1>
 <ul>\n""")
     d = {}
     module_dir = 'modules'

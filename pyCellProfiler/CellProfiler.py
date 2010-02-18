@@ -181,10 +181,38 @@ try:
             options.run_pipeline = True
     
     if options.output_html:
-        from cellprofiler.modules import output_html
+        from cellprofiler.modules import output_module_html
         from cellprofiler.gui.help import output_gui_html
-        output_html()
+        # Write the individual topic files
+        output_module_html()
         output_gui_html()
+        
+        # Produce one html to unit them
+        root = os.path.split(__file__)[0]
+        if len(root) == 0:
+            root = os.curdir
+        webpage_path = os.path.join(root, 'cellprofiler', 'help')
+        if not (os.path.exists(webpage_path) and os.path.isdir(webpage_path)):
+            try:
+                os.mkdir(webpage_path)
+            except IOError:
+                webpage_path = root
+        index_fd = open(os.path.join(webpage_path,'index.html'),'w')
+        
+        index_fd.write("""
+        <html style="font-family:arial">
+        <head>
+            <title>CellProfiler: Table of contents</title>
+        </head>
+        <body>
+        <h1>CellProfiler: Table of contents</h1>
+        <ul>
+        <li><a href = "gui_index.html">Using CellProfiler</a></li>
+        <li><a href = "module_index.html">Modules</a></li>
+        </ul>""")
+        
+        index_fd.write("</body>\n")
+        index_fd.close()
         
     if options.print_measurements:
         if options.pipeline_filename is None:

@@ -50,8 +50,10 @@ to another machine with a different drive mapping.</p>
 <p>Use the Browse button (to the right of the text box) to select the folder, or 
 type the full folder path in the edit box. If you type the folder path and it 
 cannot be found, the message box below will indicate this fact until corrected. 
-You can change the folder which is the default image folder upon CellProfiler 
-startup by using <i>File > Preferences...</i> in the main window.</p>
+If you specify a folder which does not exist but you want to create it, you can 
+click on the <i>New folder</i> icon to the right of the <i>Browse folder</i> icon 
+to create it. You can change the folder which is the default image folder upon 
+CellProfiler startup by using <i>File > Preferences...</i> in the main window.</p>
 
 <p>The contents of the folder are shown to the left, which allows you to confirm 
 recognized file names or view recognized images from within CellProfiler.
@@ -78,8 +80,10 @@ to another machine with a different drive mapping.</p>
 <p>Use the Browse button (to the right of the text box) to select the folder, or 
 type the full folder path in the edit box. If you type the folder path and it 
 cannot be found, the message box below will indicate this fact until corrected. 
-You can change the folder which is the default image folder upon CellProfiler 
-startup by using <i>File > Preferences...</i> in the main window.</p>"""
+If you specify a folder which does not exist but you want to create it, you can 
+click on the <i>New folder</i> icon to the right of the <i>Browse folder</i> icon 
+to create it. You can change the folder which is the default image folder upon 
+CellProfiler startup by using <i>File > Preferences...</i> in the main window.</p>"""
 
 OUTPUT_FILENAME_HELP = """
 <p>Specify the name of the output file, which is where all of the information 
@@ -97,12 +101,11 @@ use it.</p>"""
 
 WHEN_CAN_I_USE_CELLPROFILER_HELP = """ """
 
-MAKING_A_PIPELINE_HELP = """
+BUILDING_A_PIPELINE_HELP = """
 <h2>Making a pipeline</h2>
-<p>A <i>pipeline<i> is a sequential set of individual image analysis modules. The 
+<p>A <i>pipeline</i> is a sequential set of individual image analysis modules. The 
 best way to learn how to use CellProfiler is to load an example pipeline 
-(from our <a href="http:\\www.cellprofiler.org\examples.htm" 
-target="_blank">Examples</a> page) and try it out. Or, you can build a 
+from the Examples page on the CellProfiler website and try it out. Or, you can build a 
 pipeline from scratch. See also the "?" button in the main window to get
 help for a specific module.</p>
 
@@ -128,8 +131,8 @@ information on pipeline files.</li>
 
 <h3>Building a pipeline from scratch</h3>
 <ol>
-<li> <i>Place modules in a new pipeline.</i><br>
-<p>Choose image analysis modules to add to your pipeline by clicking '+' or 
+<li><p><i>Place modules in a new pipeline.</i><br>
+Choose image analysis modules to add to your pipeline by clicking '+' or 
 right-clicking in the module list window and selecting a module from the 
 pop-up box that appears. Typically, the first module which must be run is 
 the <b>Load Images</b> module, where you specify the identity of the images 
@@ -156,30 +159,30 @@ cytoplasm objects, which are tertiary objects).</li>
 <p>A note on saving images in your pipeline: Due to the typically high number 
 of intermediate images produced during processing, images produced during 
 processing are not saved to the hard drive unless you specifically request it, 
-using a <b>Save Images</b> module.</p>
-</li> 
-<li><i>Adjust the settings in each module.</i><br>
-<p>In the CellProfiler main window, click a module in the pipeline to see its 
+using a <b>Save Images</b> module.</p></li> 
+
+<li><p><i>Adjust the settings in each module.</i><br>
+In the CellProfiler main window, click a module in the pipeline to see its 
 settings in the main workspace. To learn more about the settings for each 
 module, select the module in the pipeline and click the "?" button to the 
 right of each setting, or click the "?" button at the bottom of the module
 list window for the help for all the settings for that module.</p>
 </li>
-<li>Set the default image folder, default output folder and output filename.
-For more help, click their nearby "?" buttons in the main window. 
-</li>
-<li><i>Click Analyze images to start processing.</i><br> 
+<li><p>Set the default image folder, default output folder and output filename.
+For more help, click their nearby "?" buttons in the main window. </p></li>
+
+<li><p><i>Click Analyze images to start processing.</i><br> 
 All of the images in the selected folder(s) will be analyzed using the modules 
 and settings you have specified.  You will have the option to cancel at any time. 
-At the end of each cycle, the measurements are saved in the output file.
-</li>
-<li><i>Using test mode to preview results</i><br>
+At the end of each cycle, the measurements are saved in the output file.</p></li>
+
+<li><p><i>Using test mode to preview results</i><br>
 You can test an analysis on a selected image cycle using the <i>Test</i> mode from 
 the main menu. Using this setting will allow you to run the pipeline on a selected
 image, preview the results and adjust the module settings on the fly. See 
-<i>Help > General Help > Test Mode </i> for more details.
+<i>Help > General Help > Test Mode </i> for more details.</p>
 </li>
-<li>Save your pipeline via <i>File > Save Pipeline</i>.
+<li><p>Save your pipeline via <i>File > Save Pipeline</i>.</p>
 </li>
 </ol>
 """
@@ -190,23 +193,24 @@ MEMORY_AND_SPEED_HELP = """
 <p>There are several options in CellProfiler for dealing with out-of-memory
 errors associated with analyzing images: </p>
 <ul>
-<li><i>Resize the input images.</i><br>
+<li><p><i>Resize the input images.</i><br>
 If the image is high-resolution, it may be helpful to determine whether the 
 features of interest can be processed (and accurate data obtained) by using a 
 lower-resolution image. If this is the  case, use the <b>Resize</b> module (under 
-Image Processing) to scale down the image to a more manageable size, and
-perform the desired operations on the smaller image.</li>
-<li><i>Use the <b>ConserveMemory</b> module.</i><br>                                 
+<i>Image Processing</i> category) to scale down the image to a more manageable size, and
+perform the desired operations on the smaller image.</p></li>
+
+<li><p><i>Use the <b>ConserveMemory</b> module.</i><br>                                 
 The ConserveMemory module permits the user to clear the images stored in memory 
 with the exception of those specified by the user. Please see the help for the 
-ConserveMemory module for more details.</li>
+ConserveMemory module for more details.</p></li>
 </ul>
 
-<p>In addiiton, there are several options in CellProfiler for dealing with 
+<p>In addition, there are several options in CellProfiler for dealing with 
 out-of-memory errors associated with analyzing images: </p>
 
 <ul>
-<li><i>Running without display windows</i><br>
+<li><p><i>Running without display windows</i><br>
 Each module is associated with a display window which takes time to render and/or
 update. CLosing these windows gives some amount of gain in speed. Do do this,
 to the left of each module, there is an icon (an eye) which indicates the whether
@@ -214,15 +218,15 @@ the module window will be displayed during the analysis run. You can turn off an
 of the module windows by either clicking on the icon (when the eye is closed, the window 
 will not be shown) or selecting <i>Window > Hide all windows</i> to prevent display
 of all module windows. Once your pipeline is properly set up, we recommend    
-running the entire cycle without any windows displayed.</li>           
+running the entire cycle without any windows displayed.</p></li>           
                                                                             
-<li><i>Use care in object identification </i><br>                                   
+<li><p><i>Use care in object identification </i><br>                                   
 If you have a large image which contains a large number of small        
 objects, a good deal of computer time will be used in processing each   
 individual object, many of which you might not need. In this case, make 
 sure that you adjust the diameter options in <b>IdentifyPrimaryObjects</b> to   
 exclude small objects you are not interested in, or use a <b>FilterObjects</b> 
-module to eliminate objects that are not of interest.</li>               
+module to eliminate objects that are not of interest.</p></li>               
 </ul>
 """
 
@@ -232,6 +236,55 @@ TEST_MODE_HELP = """
 <p>You can test an analysis on a selected image cycle using the <i>Test</i> mode from 
 the main menu. Using this setting will allow you to run the pipeline on a selected
 image, preview the results and adjust the module settings on the fly.</p>
+
+<p>You can enter into Test mode at any time via <i>Test > Start test run</i> in the
+menu bar in the main GUI. At this point, you will see the following features appear
+<ul>
+<li>Th module view will have a slider bar appearing on the far left.</li>
+<li>A Pause icon ("||") appearing to the left of each module.</li>
+<li>A series of buttons will appear at the bottom of the module list above the 
+module adjustment buttons.</li>
+<li>The grayed out items in the <i>Test</i> menu will become active, and the 
+<i>Analyze Images</i> button will become inactive.
+</ul>
+</p>
+
+<p>You can run your pipeline in Test mode by selecting <i>Test > Step to next module</i>
+or click the Continue button (">||"). The pipeline will execute normally but you will
+be able to back up to a previous module or jump to a downstream module, change
+module settings to see the results, or execute the pipeline on the image of your choice.
+The additional controls will allow you to do the following:
+<ul>
+<li><i>Slider:</i> Execution of the pipeline can be started/resumed at any module in the 
+pipeline.
+<li><i>Pause ("||" icon):</i> Clicking the pause icon will cause the pipeline test run to halt
+execution when that module is reached (the paused module itself is not executed). The icon 
+changes from black to yellow to indicate that a pause has been inserted at that point.</li>
+<li><i>Continue ("&gt;||" button)</i>: Execution of the pipeline will be started/resumed until
+the next module pause is reached. When all modules have been executed for a given image set,
+execution will stop.
+<li><i>Next image set ("&gt;&gt;|" button), Previous image set ("|&lt;&lt;" button):</i> These buttons 
+will skip ahead / jump back to the next /previous image set as determined by the image 
+order in <b>LoadImages</b>/<b>LoadData</b>. The slider will automatically return to the 
+first module in the pipeline.</li>
+<li><i>Next group ("|&gt;&gt;" button), Previous group ("|&lt;&lt;" button):</i> This is only useful
+if image grouping has been enabled in <b>LoadImages</b> or <b>LoadData</b>. Clicking these
+buttons will skip ahead / jump back to the next / previous image group as determined by the group 
+order in LoadImages or LoadData. If no groups have been made, clicking these buttons will have
+no effect since CellProfiler treats this case as if only one group encompassing all the image
+sets had been made.</li>
+</ul>
+</p>
+<p>From the <i>Test</i> menu, you can also choose additional options:
+<ul>
+<li><i>Stop test run:</i>This exits <i>Test</i> mode. Loading a new pipeline or adding/subtracting
+modules will also automatically exit test mode.
+<i>Choose image set / group:</i> This allows you to choose the image set or group to jump to.
+Upon choosing, the slider will automatically return to the first module in the pipeline.</li>
+<li><i>Reload modules source:</i> For developers only. This option will reload the module source 
+code so any changes to the code will be reflected immediately.</li>
+</ul>
+</p>
 """
 
 BATCHPROCESSING_HELP = """ 
@@ -251,7 +304,7 @@ the rest.
 MAIN_HELP = (
     ( "Getting started", (
         ("When to use CellProfiler",WHEN_CAN_I_USE_CELLPROFILER_HELP),
-        ("Making a Pipeline", MAKING_A_PIPELINE_HELP) ) ),
+        ("How to build a pipeline", BUILDING_A_PIPELINE_HELP) ) ),
     ( "General help", (
         ("Memory and Speed", MEMORY_AND_SPEED_HELP),
         ("Test Mode",TEST_MODE_HELP),
@@ -398,22 +451,22 @@ def output_gui_html():
     root = os.path.split(__file__)[0]
     if len(root) == 0:
         root = os.curdir
-    root = os.path.abspath(root)
-    gui_html = os.path.join(root, 'html')
-    if not (os.path.exists(gui_html) and os.path.isdir(gui_html)):
+    root = os.path.split(os.path.abspath(root))[0] # Back up one level
+    webpage_path = os.path.join(root, 'help')
+    if not (os.path.exists(webpage_path) and os.path.isdir(webpage_path)):
         try:
-            os.mkdir(gui_html)
+            os.mkdir(webpage_path)
         except IOError:
-            gui_html = root
-    index_fd = open(os.path.join(gui_html,'index.html'),'w')
+            webpage_path = root
+    index_fd = open(os.path.join(webpage_path,'gui_index.html'),'w')
         
     index_fd.write("""
 <html style="font-family:arial">
 <head>
-    <title>CellProfiler: User guide table of contents</title>
+    <title>User guide</title>
 </head>
 <body>
-<h1>CellProfiler: User guide table of contents</h1>""")
+<h1><a name = "user_guide">User guide</a></h1>""")
     def write_menu(prefix, h):
         index_fd.write("<ul>\n")
         for key, value in h:
@@ -423,17 +476,25 @@ def output_gui_html():
                 write_menu(prefix+"_"+key, value)
             else:
                 file_name = "%s_%s.html" % (prefix, key)
-                path = os.path.join(gui_html, file_name)
-                fd = open(path, "w")
+                fd = open(os.path.join(gui_path, file_name),"w")
                 fd.write("<html style=""font-family:arial""><head><title>%s</title></head>\n" % key)
                 fd.write("<body><h1>%s</h1>\n<div>\n" % key)
                 fd.write(value)
                 fd.write("</div></body>\n")
                 fd.close()
                 index_fd.write("<a href='%s'>%s</a>\n" % 
-                               (file_name, key) )
+                               (os.path.join(gui_dir,file_name), key) )
             index_fd.write("</li>\n")
         index_fd.write("</ul>\n")
+        
+    gui_dir = 'gui'
+    gui_path = os.path.join(webpage_path,gui_dir)
+    if not (os.path.exists(gui_path) and os.path.isdir(gui_path)):
+        try:
+            os.mkdir(gui_path)
+        except IOError:
+            raise ValueError("Could not create directory %s" % gui_path)
+        
     write_menu("help", HELP)
     index_fd.write("</body>\n")
     index_fd.close()

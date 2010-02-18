@@ -204,8 +204,11 @@ class LoadData(cpm.CPModule):
             at the same level as the output folder.""")
         
         self.csv_custom_directory = cps.DirectoryPath("Custom file location",
-                                                      ".", doc = 
-                                                      """<i>(Used only if the file location is specified as Elsewhere)</i>""")
+            ".", doc = 
+            """<i>(Used only if the file location is specified as Elsewhere)</i><br>
+            Enter the pathname to the CSV file to be loaded. The pathname can referenced 
+            with respect to the default output folder with a period (".") or 
+            the default input folder with an ampersand ("&") as the root folder.""")
         
         def get_directory_fn():
             '''Get the directory for the CSV file name'''
@@ -231,7 +234,8 @@ class LoadData(cpm.CPModule):
         )
         
         self.wants_images = cps.Binary("Load images based on this data?", True, doc="""
-            Check this box to have <b>LoadData</b> load images using the Image_FileName field and the Image_PathName fields (the latter is optional).""")
+            Check this box to have <b>LoadData</b> load images using the <i>Image_FileName</i> field and the 
+            <i>Image_PathName</i> fields (the latter is optional).""")
         
         self.image_directory_choice = cps.Choice("Base image location",
                                                  DIR_ALL, doc="""
@@ -250,18 +254,27 @@ class LoadData(cpm.CPModule):
             contained within the default input folder,
             and "&/../My_folder" looks in a folder called <i>My_folder</i>
             at the same level as the output folder.""")
+        
         self.image_custom_directory = cps.DirectoryPath("Custom base image location",
                                                         ".", doc = 
-                                                        """<i>(Used only if the base image location is specified as Elsewhere)</i><br>""")
+            """<i>(Used only if the base image location is specified as Elsewhere)</i><br>
+            Enter the pathname to the images to be loaded. The pathname can referenced 
+            with respect to the default output folder with a period (".") or 
+            the default input folder with an ampersand ("&") as the root folder.""")
         
-        self.wants_image_groupings = cps.Binary("Group images by metadata?", False)
-        
-        self.metadata_fields = cps.MultiChoice("Select metadata fields for grouping", None,doc="""
+        self.wants_image_groupings = cps.Binary("Group images by metadata?", False,doc = """
             Use this option to break the image sets in an experiment into groups
             that can be processed by different nodes on a computing cluster. Each set of
             files that share your selected metadata tags will be processed
             together. See <b>CreateBatchFiles</b> for details on submitting a 
             CellProfiler pipeline to a computing cluster for processing.""")
+        
+        self.metadata_fields = cps.MultiChoice("Select metadata fields for grouping", None,doc="""
+            <i>(Used only if images are to be grouped by metadata)</i><br>
+            Select the fields that you want group the image files by here. Multiple tags may be selected. For
+            example, if a set of images had metadata for <i>Run</i>,<i>Plate</i>,<i>Well</i> and
+            <i>Site</i>, selecting <i>Run</i> and <i>Plate</i> will create groups containing 
+            images that share the same [<i>Run</i>,<i>Plate</i>] pair of fields.""")
         
         self.wants_rows = cps.Binary("Process just a range of rows?",
                                      False, doc="""

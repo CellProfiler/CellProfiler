@@ -319,6 +319,8 @@ class LoadData(cpm.CPModule):
     @property
     def csv_path(self):
         '''The path and file name of the CSV file to be loaded'''
+        if cpprefs.get_data_file() is not None:
+            return cpprefs.get_data_file()
         if self.csv_directory_choice == DIR_DEFAULT_IMAGE:
             path = cpprefs.get_default_image_directory()
         elif self.csv_directory_choice == DIR_DEFAULT_OUTPUT:

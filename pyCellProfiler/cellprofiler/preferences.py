@@ -384,3 +384,14 @@ def get_plugin_directory():
     if not get_headless() and wx.GetApp() is not None:
         return os.path.join(wx.StandardPaths.Get().GetUserDataDir(), 'plugins')
     return None
+
+__data_file=None
+
+def get_data_file():
+    '''Get the path to the LoadData data file specified on the command-line'''
+    global __data_file
+    return __data_file
+
+def set_data_file(path):
+    global __data_file
+    __data_file = path

@@ -94,6 +94,17 @@ parser.add_option("-d", "--done-file",
                   default=None,
                   help=('The path to the "Done" file, written by CellProfiler'
                         ' shortly before exiting'))
+parser.add_option("--measurements",
+                  dest="print_measurements",
+                  default=False,
+                  action="store_true",
+                  help="Open the pipeline file specified by the -p switch "
+                  "and print the measurements made by that pipeline")
+parser.add_option("--data-file",
+                  dest="data_file",
+                  default = None,
+                  help = "Specify a data file for LoadData modules that "
+                  'use the "From command-line" option')
 options, args = parser.parse_args()
 
 # necessary to prevent matplotlib trying to use Tkinter as its backend.
@@ -166,13 +177,34 @@ try:
         cpprefs.set_headless()
         # What's there to do but run if you're running headless?
         # Might want to change later if there's some headless setup 
-        options.run_pipeline = True
+        if (not options.output_html) and (not options.print_measurements):
+            options.run_pipeline = True
     
     if options.output_html:
         from cellprofiler.modules import output_html
         from cellprofiler.gui.help import output_gui_html
         output_html()
         output_gui_html()
+        
+    if options.print_measurements:
+        if options.pipeline_filename is None:
+            raise ValueError("Can't print measurements, no pipeline file")
+        import cellprofiler.pipeline as cpp
+        pipeline = cpp.Pipeline()
+        def callback(pipeline, event):
+            if isinstance(event, cpp.LoadExceptionEvent):
+                raise ValueError("Failed to load %s" % options.pipeline_filename)
+        pipeline.add_listener(callback)
+        pipeline.load(options.pipeline_filename)
+        columns = pipeline.get_measurement_columns()
+        print "--- begin measurements ---"
+        print "Object,Feature,Type"
+        for object_name, feature, data_type in columns:
+            print "%s,%s,%s" % (object_name, feature, data_type)
+        print "--- end measurements ---"
+    
+    if options.data_file is not None:
+        cpprefs.set_data_file(os.path.abspath(options.data_file))
         
     from cellprofiler.utilities.get_revision import version
     print "Subversion revision: %d"%version
@@ -208,7 +240,7 @@ try:
             if options.run_pipeline:
                 App.frame.Command(cpgframe.ID_FILE_ANALYZE_IMAGES)
         App.MainLoop()
-    else:
+    elif options.run_pipeline:
         from cellprofiler.pipeline import Pipeline, EXIT_STATUS
         import cellprofiler.measurements as cpmeas
         pipeline = Pipeline()

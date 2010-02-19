@@ -99,6 +99,34 @@ an output filename), CellProfiler will prevent you from overwritting this file
 on a subsequent run by generating a new file name and prompting if you want to 
 use it.</p>"""
 
+NEW_FEATURES_HELP = """ 
+A number of new features have been incorporated into CellProfiler 2.0:
+<ul>
+<li>Resizable main GUI</li>
+<li>Help provided for each module setting.</li>
+<li>Context-dependent module settings: Additional settings are shown based on 
+reponses to other settings.</li>
+<li>An arbitrary number of images/objects can be provided as input for some modules. 
+For example, in OverlayOutlines, any number of outlines may be specified in one
+module to be overlaid on an image.</li>
+<li>Image grouping: Images which share a common metadata tag can be processed 
+together, which may be optimal for cluster computing.</li>
+<li>Test mode, which allows the user to preview the result of a setting selection,
+and step backward or forward in the pipeline to optimize the results prior to the
+actual analysis run.</li>
+<li>Module drag/drop: Modules can be dragged and dropped into another instance of
+CellProfiler, with the associated settings intact.</li>
+<li>Recent pipeline listing, showing a selectable list of recently used pipelines
+for easy access.</li>
+<li>Improved Otsu thresholding: Choose two- or three-class thresholding to handle
+images where there may be an intermediate intensity level between foreground and 
+background.</li>
+<li>Seondary object identification permits discarding of objects touching the image
+border, along with the associated primary objects.</li>
+<li>
+</ul>
+"""
+
 WHEN_CAN_I_USE_CELLPROFILER_HELP = """ """
 
 BUILDING_A_PIPELINE_HELP = """
@@ -185,6 +213,66 @@ image, preview the results and adjust the module settings on the fly. See
 <li><p>Save your pipeline via <i>File > Save Pipeline</i>.</p>
 </li>
 </ol>
+"""
+
+NEW_MODULE_NAMES_HELP = """
+<h2>Changes to module names in CellProfiler</h2>
+
+<p>Some of the modules have changed their names between CellProfiler 1.0 and 2.0. 
+In some cases, the change was made to make the nomenclature more consistent. 
+In other cases, it was to make the module name suitably generic. </p>
+
+<p>A pipeline created in CP1.0 loaded into CP2.0 will have the appropriate modules 
+converted to their new names automatically. However, if you are looking for a 
+module in CP2.0 and can't find it using the familiar CP1.0 name, below is a 
+list of modules that have changed names, with the former name in parentheses
+<ul>
+<li>ConserveMemory (from SpeedUpCellProfiler)
+<li>LoadData (from LoadText)
+<li>EnhanceEdges (from FindEdges)</li>
+<li>EnhanceOrSuppressFeatures (from EnhanceOrSuppressSpeckles)</li>
+<li>MeasureObjectSizeShape (from MeasureObjectAreaShape)</li>
+<li>ReassignObjectNumbers (from RelabelObjects)</li>
+<li>RelateObjects (from Relate)</li>
+<li>IdentifyPrimaryObjects (from IdentifyPrimAutomatic)</li>
+<li>IdentifySecondaryObjects (from IdentifySecondary)</li>
+<li>IdentifyTertiaryObjects (from IdentifyTertiarySubregion)</li>
+<li>ConvertObjectsToImage (from ConvertToImage)</li>
+<li>ExpandOrShrinkObjects (from ExpandOrShrink)</li>
+<li>FilterObjects (from FilterByObjectMeasurement)</li>
+<li>ExportToSpreadsheet (from ExportToExcel)</li>
+<li>FlagImage (from FlagImageForQC)</li>
+<li>Smooth (from SmoothOrEnhance)</li>
+</ul>
+</p>
+
+<p>The functionality of some modules has superseded by others. These original 
+modules are now deprecated, and are no longer present. Below are the deprecated 
+modules and the names of the modules that should be used in their place in 
+parentheses:
+<ul>
+<li>LoadImageDirectory (use MakeProjection, along with LoadImages with metadata)</li>
+<li>KeepLargestObject (use FilterObjects)</li>
+<li>Combine (use ImageMath)</li>
+<li>PlaceAdjacent (use Tile)</li>
+<li>FilenameMetadata (use LoadImages with metadata)</li>
+<li>SubtractBackground (use ApplyThreshold with grayscale setting)</li>
+<li>CalculateRatios (use CalculateMath with 'divide' as the operation)</li>
+</ul>
+</p>
+
+<p>Also, a new module categories <i>Data Tools</i> has been created and some 
+modules have been moved from their original categories. These modules may also 
+be found in the  <i>Data Tools</i> menu option. The moved modules are listed 
+below along with the former category in parentheses:
+<ul>
+<li>CalculateMath (from Measurement)</li>
+<li>CalculateStatistics (from Measurement)</li>
+<li>ExportToDatabase(from File Processing)</li>
+<li>ExportToSpreadsheet (from File Processing)</li>
+<li>FlagImage (from Image Processing)</li>
+</ul>
+</p>
 """
 
 MEMORY_AND_SPEED_HELP = """
@@ -302,8 +390,10 @@ the rest.
 MAIN_HELP = (
     ( "Getting started", (
         ("When to use CellProfiler",WHEN_CAN_I_USE_CELLPROFILER_HELP),
+        ("New features",NEW_FEATURES_HELP),
         ("How to build a pipeline", BUILDING_A_PIPELINE_HELP) ) ),
     ( "General help", (
+        ("Updates to module names",NEW_MODULE_NAMES_HELP),
         ("Memory and Speed", MEMORY_AND_SPEED_HELP),
         ("Test Mode",TEST_MODE_HELP),
         ("Batch Processing", BATCHPROCESSING_HELP) ) ),

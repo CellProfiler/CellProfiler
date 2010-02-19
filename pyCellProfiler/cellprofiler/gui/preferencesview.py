@@ -56,7 +56,7 @@ class PreferencesView:
         
     def __make_folder_panel(self, panel, value, text, help_text, actions):
         sizer = wx.BoxSizer(wx.HORIZONTAL)
-        help_button = wx.Button(panel,-1,'?',(0,0),(25,25))
+        help_button = wx.Button(panel,-1,'?',(0,0), (30,-1))
         text_static = wx.StaticText(panel,-1,string.capitalize(text)+':')
         edit_box = wx.TextCtrl(panel,-1)
         edit_box.SetValue(value)
@@ -73,8 +73,8 @@ class PreferencesView:
         new_button.SetToolTipString("Make a new sub-folder")
         if os.path.isdir(value):
             new_button.Disable()
-        sizer.AddMany([(help_button,0,wx.ALL,1),
-                       (text_static,0,wx.EXPAND,1),
+        sizer.AddMany([(help_button,0,wx.ALL | wx.ALIGN_CENTER, 1),
+                       (text_static,0,wx.ALIGN_CENTER, 1),
                        (edit_box,3,wx.EXPAND|wx.ALL,1),
                        (browse_button,0,0|wx.ALL,1),
                        (new_button,0,0|wx.ALL,1)])
@@ -109,13 +109,13 @@ class PreferencesView:
         panel = self.__odds_and_ends_panel
         output_filename_text = wx.StaticText(panel,-1,'Output filename:')
         self.__output_filename_edit_box = wx.TextCtrl(panel,-1,'DefaultOUT.mat')
-        output_filename_help_button = wx.Button(panel,-1,'?',(0,0),(25,25))
+        output_filename_help_button = wx.Button(panel,-1,'?', (0,0), (30,-1))
         self.__analyze_images_button = wx.Button(panel,-1,'Analyze images')
         self.__stop_analysis_button = wx.Button(panel,-1,'Stop analysis')
         sizer = wx.BoxSizer(wx.HORIZONTAL)
-        sizer.AddMany([(output_filename_text,0,wx.ALL,1),
-                       (self.__output_filename_edit_box,3,wx.EXPAND|wx.ALL,1),
-                       (output_filename_help_button,0,wx.ALL,1),
+        sizer.AddMany([(output_filename_help_button,0,wx.ALIGN_CENTER|wx.ALL,1),
+                       (output_filename_text,0,wx.ALIGN_CENTER,1),
+                       (self.__output_filename_edit_box,3,wx.ALL,1),
                        (self.__analyze_images_button,0,wx.ALL,1),
                        (self.__stop_analysis_button, 0, wx.ALL,1)])
         sizer.Hide(self.__stop_analysis_button)

@@ -147,27 +147,21 @@ class PipelineController:
         """
         self.__test_controls_panel = test_controls_panel
         self.__tcp_sizer = wx.BoxSizer(wx.HORIZONTAL)
-        self.__tcp_continue = wx.Button(test_controls_panel, -1, ">||", (0,0), (50,25))
-        self.__tcp_next_imageset = wx.Button(test_controls_panel, -1, ">>|", (0,0), (50,25))
-        self.__tcp_prev_imageset = wx.Button(test_controls_panel, -1, "|<<", (0,0), (50,25))
-        self.__tcp_next_group = wx.Button(test_controls_panel, -1, ">>>", (0,0), (50,25))
-        self.__tcp_prev_group = wx.Button(test_controls_panel, -1, "<<<", (0,0), (50,25))
-        self.__tcp_sizer.AddMany([(button, 0, wx.EXPAND) 
-                                  for button in 
-                                  [self.__tcp_continue, 
-                                   self.__tcp_next_imageset, self.__tcp_prev_imageset,
-                                   self.__tcp_next_group, self.__tcp_prev_group]])
+        self.__tcp_continue = wx.Button(test_controls_panel, -1, "Run", (0,0))
+        self.__tcp_step = wx.Button(test_controls_panel, -1, "Step", (0,0))
+        self.__tcp_next_imageset = wx.Button(test_controls_panel, -1, "Next Imageset", (0,0))
+        self.__tcp_sizer.AddMany([(self.__tcp_continue, 0, wx.ALL | wx.EXPAND, 2),
+                                  ((1, 1), 1),
+                                  (self.__tcp_step, 0, wx.ALL | wx.EXPAND, 2),
+                                  ((1, 1), 1),
+                                  (self.__tcp_next_imageset, 0, wx.ALL | wx.EXPAND, 2)])
         self.__test_controls_panel.SetSizer(self.__tcp_sizer)
-        self.__tcp_continue.SetToolTip(wx.ToolTip("Continue to next pause"))
-        self.__tcp_next_imageset.SetToolTip(wx.ToolTip("Next image set"))
-        self.__tcp_prev_imageset.SetToolTip(wx.ToolTip("Previous image set"))
-        self.__tcp_next_group.SetToolTip(wx.ToolTip("Next group"))
-        self.__tcp_prev_group.SetToolTip(wx.ToolTip("Previous group"))
+        self.__tcp_continue.SetToolTip(wx.ToolTip("Run to next pause"))
+        self.__tcp_step.SetToolTip(wx.ToolTip("Step to next module"))
+        self.__tcp_next_imageset.SetToolTip(wx.ToolTip("Jump to next image set"))
         self.__test_controls_panel.Bind(wx.EVT_BUTTON, self.on_debug_continue, self.__tcp_continue)
+        self.__test_controls_panel.Bind(wx.EVT_BUTTON, self.on_debug_step, self.__tcp_step)
         self.__test_controls_panel.Bind(wx.EVT_BUTTON, self.on_debug_next_image_set, self.__tcp_next_imageset)
-        self.__test_controls_panel.Bind(wx.EVT_BUTTON, self.on_debug_prev_image_set, self.__tcp_prev_imageset)
-        self.__test_controls_panel.Bind(wx.EVT_BUTTON, self.on_debug_next_group, self.__tcp_next_group)
-        self.__test_controls_panel.Bind(wx.EVT_BUTTON, self.on_debug_prev_group, self.__tcp_prev_group)
 
     def __on_load_pipeline(self,event):
         dlg = wx.FileDialog(self.__frame,
@@ -767,8 +761,8 @@ class PipelineController:
         if ((module.module_name != 'Restart' or failure==-1) and
             self.__debug_measurements != None):
             module_error_measurement = 'ModuleError_%02d%s'%(module.module_num,module.module_name)
-            self.__debug_measurements.add_measurement('Image'
-                                                      ,module_error_measurement,
+            self.__debug_measurements.add_measurement('Image',
+                                                      module_error_measurement,
                                                       failure);
         return failure==0
     
@@ -786,11 +780,15 @@ class PipelineController:
             return False
 
     def on_debug_step(self, event):
+        if len(self.__pipeline.modules()) == 0:
+            return
         success = self.do_step(self.current_debug_module())
         if success:
             self.next_debug_module()
         
     def on_debug_continue(self, event):
+        if len(self.__pipeline.modules()) == 0:
+            return
         while True:
             module = self.current_debug_module()
             success = self.do_step(module)
@@ -807,6 +805,8 @@ class PipelineController:
         # the image indexes within the groups
         #
         keys, image_numbers = self.__groupings[self.__grouping_index]
+        if len(image_numbers) == 0:
+            return
         self.__within_group_index = ((self.__within_group_index + 1) % 
                                      len(image_numbers))
         image_number = image_numbers[self.__within_group_index]

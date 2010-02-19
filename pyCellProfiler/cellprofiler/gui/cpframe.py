@@ -379,6 +379,9 @@ class CPFrame(wx.Frame):
         self.__pipeline_controller.attach_to_directory_view(self.__directory_view)
 
     def __do_layout(self):
+        width = wx.SystemSettings.GetMetric(wx.SYS_SCREEN_X)
+        height = wx.SystemSettings.GetMetric(wx.SYS_SCREEN_Y)
+        self.SetSize((int(width * 2 / 3), int(height * 2 / 3)))
         splitter = self.__splitter
         left_win = self.__left_win
         right_win = self.__right_win

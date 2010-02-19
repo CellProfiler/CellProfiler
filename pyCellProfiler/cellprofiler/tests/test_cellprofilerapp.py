@@ -76,7 +76,7 @@ class Test_CellProfilerApp(unittest.TestCase):
     
     def get_identify_prim_automatic_loader(self):
         def loader(module_num):
-            module = cellprofiler.modules.identifyprimautomatic.IdentifyPrimAutomatic()
+            module = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimAutomatic()
             module.set_module_num(module_num)
             return module
         return loader
@@ -189,7 +189,7 @@ class Test_CellProfilerApp(unittest.TestCase):
         app.frame.pipeline_controller.on_add_to_pipeline(self,event)
         self.assertEqual(len(app.frame.pipeline.modules()),2)
         self.assertEqual(app.frame.pipeline.module(1).module_name, "LoadImages")
-        self.assertEqual(app.frame.pipeline.module(2).module_name, "IdentifyPrimAutomatic")
+        self.assertEqual(app.frame.pipeline.module(2).module_name, "IdentifyPrimaryObjects")
        
 
     

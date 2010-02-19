@@ -25,6 +25,7 @@ import os
 import scipy.ndimage as scind
 import traceback
 
+from cellprofiler.modules.identify import FF_PARENT, FF_CHILDREN_COUNT
 import cellprofiler.cpimage as cpi
 import cellprofiler.cpmodule as cpm
 import cellprofiler.objects as cpo
@@ -61,8 +62,6 @@ FIXED_SETTING_COUNT = 15
 
 '''The number of settings per additional object'''
 ADDITIONAL_OBJECT_SETTING_COUNT = 4
-
-FF_PARENT = "Parent_%s"
 
 ROM_RULES = "Rules"
 ROM_MEASUREMENTS = "Measurements"
@@ -589,9 +588,12 @@ class FilterObjects(cpm.CPModule):
                          for x in self.additional_objects])
         columns = []
         for src_name, target_name in object_list:
-            columns.append((target_name, 
-                            FF_PARENT%src_name, 
-                            cpmeas.COLTYPE_INTEGER))
+            columns += [(target_name, 
+                         FF_PARENT % src_name, 
+                         cpmeas.COLTYPE_INTEGER),
+                        (src_name,
+                         FF_CHILDREN_COUNT % target_name,
+                         cpmeas.COLTYPE_INTEGER)]
             columns += get_object_measurement_columns(target_name)
         return columns
     

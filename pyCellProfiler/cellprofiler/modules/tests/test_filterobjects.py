@@ -1151,29 +1151,30 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:4|show
         m.add_measurement("my_objects","my_measurement",np.zeros((0,)))
         module.run(workspace)
         image_features = m.get_feature_names(cpm.IMAGE)
-        object_features = m.get_feature_names("my_result")
+        result_features = m.get_feature_names("my_result")
         columns = module.get_measurement_columns(workspace.pipeline)
-        self.assertEqual(len(columns), 5)
+        self.assertEqual(len(columns), 6)
         for feature in image_features:
             self.assertTrue(any([(column[0] == cpm.IMAGE and 
                                   column[1] == feature)
                                  for column in columns]))
-        for feature in object_features:
+        for feature in result_features:
             self.assertTrue(any([(column[0] == "my_result" and
                                   column[1] == feature)
                                  for column in columns]))
         
         for column in columns:
-            self.assertTrue(column[0] in (cpm.IMAGE, "my_result"))
+            self.assertTrue(column[0] in (cpm.IMAGE, "my_result", "my_objects"))
             if column[0] == cpm.IMAGE:
                 self.assertTrue(column[1] in image_features)
             elif column[0] == "my_result":
-                self.assertTrue(column[1] in object_features)
+                self.assertTrue(column[1] in result_features)
         
         for feature, coltype in (("Location_Center_X", cpm.COLTYPE_FLOAT),
                                  ("Location_Center_Y", cpm.COLTYPE_FLOAT),
                                  ("Number_Object_Number", cpm.COLTYPE_INTEGER),
                                  ("Parent_my_objects", cpm.COLTYPE_INTEGER),
+                                 ("Children_my_result_Count", cpm.COLTYPE_INTEGER),
                                  ("Count_my_result", cpm.COLTYPE_INTEGER)):
             fcolumns = [x for x in columns if x[1] == feature]
             self.assertEqual(len(fcolumns),1,"Missing or duplicate column: %s"%feature)

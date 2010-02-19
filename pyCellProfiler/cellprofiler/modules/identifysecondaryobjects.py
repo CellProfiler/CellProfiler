@@ -13,7 +13,15 @@ for the <i>Distance - N</i> option).</li>
 within a secondary object (e.g., nuclei are completely contained within cells
 stained for actin).
 
-<h2>Technical notes:</h2>
+In order to identify the edges of secondary objects, this module performs two tasks: 
+            <ol>
+            <li>Finding the dividing lines between secondary objects which touch each other. 
+            <li>Finding the dividing lines between the secondary objects and the
+            background of the image. This is done by thresholding the image stained
+            for secondary objects, except when using the <i>Distance - N</i> option.</li>
+            </ol>
+
+<h3>Technical notes:</h3>
 The <i>Propagation</i> algorithm labels from LABELS_IN to LABELS_OUT, steered by
 IMAGE and limited to MASK. MASK should be a logical array. LAMBDA is a
 regularization parameter, larger being closer to Euclidean distance in
@@ -24,9 +32,6 @@ with LAMBDA via sqrt(differences<sup>2</sup> + LAMBDA<sup>2</sup>). Note that
 there is no separation between adjacent areas with different labels (as there
 would be using, e.g., watershed). Such boundaries must be added in a
 postprocess.
-
-For the threshold-related settings in this module, please refer to 
-<b>IdentifyPrimaryObjects</b>.
 
 Also see the other <b>Identify</b> modules.
 '''
@@ -76,8 +81,9 @@ class IdentifySecondaryObjects(cpmi.Identify):
     
     def create_settings(self):
         self.primary_objects = cps.ObjectNameSubscriber("Select the input objects","Nuclei",doc="""
-            Each primary object is associated with exactly one secondary object and it 
-            is assumed to be completely contained within it.""")
+            What did you call the objects you want to use as "seeds" to identify a secondary 
+            object around each one? By definition, each primary object must be associated with exactly one 
+            secondary object and completely contained within it.""")
         
         self.objects_name = cps.ObjectNameProvider("Name the identified objects","Cells")
         
@@ -85,25 +91,15 @@ class IdentifySecondaryObjects(cpmi.Identify):
                                  [M_PROPAGATION, M_WATERSHED_G, M_WATERSHED_I, 
                                   M_DISTANCE_N, M_DISTANCE_B],
                                  M_PROPAGATION, doc="""\
-            This setting performs two tasks: 
-            <ol>
-            <li>Finding the dividing lines 
-            between secondary objects which touch each other. Three methods are 
-            available: <i>Propagation</i>, <i>Watershed</i> (an older version of 
-            <i>Propagation</i>), and <i>Distance</i>.</li>
-            <li>finding the dividing lines between the secondary objects and the
-            background of the image. This is done by thresholding the image stained
-            for secondary objects, except when using <i>Distance - N</i>.</li>
-            </ol>
-            
-            <p>Description of the identification methods:
+            <p>There are several methods available to find the dividing lines 
+            between secondary objects which touch each other:
             <ul>
-            <li><i>Propagation:</i> For task (1), this method will find dividing lines
+            <li><i>Propagation:</i> This method will find dividing lines
             between clumped objects where the image stained for secondary objects
             shows a change in staining (i.e., either a dimmer or a brighter line).
             Smoother lines work better, but unlike the Watershed method, small gaps
             are tolerated. This method is considered an improvement on the
-            traditional Watershed method. The dividing lines between objects are
+            traditional <i>Watershed</i> method. The dividing lines between objects are
             determined by a combination of the distance to the nearest primary object
             and intensity gradients. This algorithm uses local image similarity to
             guide the location of boundaries between cells. Boundaries are
@@ -111,36 +107,35 @@ class IdentifySecondaryObjects(cpmi.Identify):
             perpendicularly to the boundary (TR Jones, AE Carpenter, P
             Golland (2005) <i>Voronoi-Based Segmentation of Cells on Image Manifolds</i>,
             ICCV Workshop on Computer Vision for Biomedical Image Applications, pp.
-            535-543). For task (2), thresholding is used.</li>
+            535-543).</li>
            
-            <li><i>Watershed:</i> For task (1), this method will find dividing lines between
-            objects by looking for dim lines between objects. For task (2),
-            thresholding is used (Vincent, Luc and Pierre Soille,
+            <li><i>Watershed:</i> This method will find dividing lines between
+            objects by looking for dim lines between objects (Vincent, Luc and Pierre Soille,
             <i>Watersheds in Digital Spaces: An Efficient Algorithm Based on Immersion
             Simulations</i>, IEEE Transactions of Pattern Analysis and Machine
             Intelligence, Vol. 13, No. 6, June 1991, pp. 583-598).</li>
            
-            <li><i>Distance:</i> This method is bit unusual because the edges of the primary
+            <li><i>Distance:</i> In this method, the edges of the primary
             objects are expanded a specified distance to create the secondary
             objects. For example, if nuclei are labeled but there is no stain to help
             locate cell edges, the nuclei can simply be expanded in order to estimate
             the cell's location. This is often called the "doughnut" or "annulus" or
-            "ring" approach for identifying the cytoplasmic compartment. 
+            "ring" approach for identifying the cytoplasmt. 
             There are two methods that can be used:
             <ul>
             <li><i>Distance - N</i>: In this method, the image of the secondary 
-            staining is not used at all, and these expanded objects are the 
+            staining is not used at all; the expanded objects are the 
             final secondary objects. 
-            <li><i>Distance - B</i>: Thresholding is used to eliminate background
+            <li><i>Distance - B</i>: Thresholding of the secondary staining image is used to eliminate background
             regions from the secondary objects. This allows the extent of the
             secondary objects to be limited to a certain distance away from the edge
-            of the primary objects.</li></ul></li>
+            of the primary objects without including regions of background.</li></ul></li>
             </ul>""")
         
         self.image_name = cps.ImageNameSubscriber("Select the input image",
                                                   "None",doc="""
             The selected image will be used to find the edges of the secondary objects.
-            For <i>Distance - N</n> this will not affect object identification, only the final display.""")
+            For <i>Distance - N</i> this will not affect object identification, only the final display.""")
         
         self.create_threshold_settings()
         
@@ -148,7 +143,7 @@ class IdentifySecondaryObjects(cpmi.Identify):
         
         self.regularization_factor = cps.Float("Regularization factor:",0.05,minval=0,
                                                doc="""\
-            (<i>For Propagation method only</i>) 
+            <i>(For Propagation method only)</i> <br>
             In the range 0 to infinity.
             This method takes two factors into account when deciding where to draw
             the dividing line between two touching secondary objects: the distance to
@@ -168,7 +163,7 @@ class IdentifySecondaryObjects(cpmi.Identify):
         self.use_outlines = cps.Binary("Save outlines of the identified secondary objects?",False)
         
         self.outlines_name = cps.OutlineNameProvider('Name the outline image',"SecondaryOutlines", doc="""\
-            The outlines of the identified objects may be used by modules downstream,
+            Once the outline image is named here, the outlines of the identified objects may be used by modules downstream,
             by selecting them from any drop-down image list.""")
         
         self.wants_discard_edge = cps.Binary(
@@ -176,15 +171,15 @@ class IdentifySecondaryObjects(cpmi.Identify):
             False,
             doc = """This option will discard objects which have an edge
             that falls on the border of the image. The objects are discarded
-            from the labels that are used for measurements, but they appear
-            in the unedited labels; this prevents pixels in objects touching
-            the edge from being considered in modules which modify the
+            with respect to downstream measurement modules, but they are retained in memory
+            as "unedited objects"; this allows them to be considered in downstream modules that modify the
             segmentation.""")
         
         self.wants_discard_primary = cps.Binary(
             "Do you want to discard associated primary objects?",
             False,
-            doc = """It might be appropriate to discard the primary object
+            doc = """<i>(Used only if secondary objects touching the edge are discarded)</i> <br>
+            It might be appropriate to discard the primary object
             for any secondary object that touches the edge of the image.
             The module will create a new set of objects that mirrors your
             primary objects if you check this setting. The new objects
@@ -193,24 +188,26 @@ class IdentifySecondaryObjects(cpmi.Identify):
             touches the edge of the image.""")
             
         self.new_primary_objects_name = cps.ObjectNameProvider(
-            "New primary objects name:", "FilteredNuclei",
-            doc = """You can name the primary objects that
-            aren't discarded. These objects will all have secondary objects
-            that don't touch the edge of the image. Any primary object
-            whose secondary object touches the edge will be added to the
-            unedited objects; the unedited objects prevent operations
-            that change the segmentation from using the pixels of objects
-            that are edited out.""")
+            "Name the new primary objects", "FilteredNuclei",
+            doc = """<i>(Used only if associated primary objects are discarded)</i> <br
+            You can name the primary objects that remain after the discarding step.
+            These objects will all have secondary objects
+            that do not touch the edge of the image. Note that any primary object
+            whose secondary object touches the edge will be retained in memory as an
+            "unedited object"; this allows them to be considered in downstream modules that modify the
+            segmentation.""")
         
         self.wants_primary_outlines = cps.Binary(
             "Do you want to save outlines of the new primary objects?", False,
-            doc = """Check this setting in order to save images of the outlines
+            doc = """<i>(Used only if associated primary objects are discarded)</i>
+            Check this setting in order to save images of the outlines
             of the primary objects after filtering. You can save these images
             using the <b>SaveImages</b> module.""")
         
         self.new_primary_outlines_name = cps.ImageNameProvider(
             "New primary objects outlines name:", "FilteredNucleiOutlines",
-            doc = """You can name the outline image of the
+            doc = """<i>(Used only when saving outlines of new primary objects)</i>
+            You can name the outline image of the
             primary objects after filtering. You can refer to this image
             using this name in subsequent modules such as <b>SaveImages</b>.""")
     

@@ -2,15 +2,16 @@
 of intensities within each object
 <hr>
 Given an image with objects identified, this module measures the
-intensity distribution from the center of those objects to their
-boundary within a user-controlled number of bins, for each object.
+intensity distribution from objects' center to their boundary 
+within a user-controlled number of bins, for each object.
 
-The distribution can be measured within an object (e.g., cells),
-in which case it is relative to the "center" of the object as
-defined as the point farthest from the boundary. Alternatively, the 
-distribution can be measured relative to another object
-(e.g., measure the radial distribution 
-of intensity within a cell relative to the nucleus within each cell).
+The distribution is measured from the center of the object, where 
+the center is defined as the point farthest from any edge.
+Alternatively, if primary objects exist within the object of interest
+(e.g. nuclei within cells), you may choose the center of the the primary
+objects as the center from which to measure the radial distribution.
+This might be useful in cytoplasm-to-nucleus translocation experiments, 
+for example.
 
 Features that can be measured by this module:
 <ul>
@@ -107,7 +108,8 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
         if can_remove:
             group.append("divider", cps.Divider(line=False))
         group.append("image_name", cps.ImageNameSubscriber(
-                "Select an image to use for radial distribution measurements", "None"))
+                "Select an image to use for radial distribution measurements", "None",doc="""
+                What did you call the images you want to process?"""))
         if can_remove:
             group.append("remover", cps.RemoveSettingButton("", "Remove this image", self.images, group))
         self.images.append(group)
@@ -118,7 +120,8 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
         if can_remove:
             group.append("divider", cps.Divider(line=False))
         group.append("object_name", cps.ObjectNameSubscriber(
-                "Select objects to measure", "None"))
+                "Select objects to measure", "None",doc="""
+                What did you call the objects you want to measure?"""))
         group.append("center_choice", cps.Choice(
                 "Select which objects to use as the center", C_ALL,doc="""
                 There are two options for the center of the radial measurement:

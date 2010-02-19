@@ -18,6 +18,8 @@ import unittest
 import tempfile
 
 import scipy.io.matlab.mio
+from cellprofiler.preferences import set_headless
+set_headless()
 
 def example_images_directory():
     if os.environ.has_key('CP_EXAMPLEIMAGES'):

@@ -6,12 +6,8 @@ Features that can be measured by this module include the angle of rotation.
 
 __version__="$Revision$"
 
-import matplotlib
-import matplotlib.cm
-from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg
 import numpy as np
 import scipy.ndimage as scind
-import wx
 
 import cellprofiler.cpimage as cpi
 import cellprofiler.cpmodule as cpm
@@ -255,6 +251,8 @@ class FlipAndRotate(cpm.CPModule):
                                       vmax=vmax)
     def angle_from_mouse(self, workspace, pixel_data):
         '''Run a UI that gets an angle from the user'''
+        import wx
+
         if self.how_often == IO_ONCE:
             d = self.get_dictionary(workspace.image_set_list)
             if d.has_key(D_ANGLE):

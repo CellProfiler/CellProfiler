@@ -43,8 +43,6 @@ Also see the other <b>Identify</b> modules.
 
 __version__="$Revision$"
 
-import matplotlib
-import matplotlib.cm
 import numpy as np
 import os
 import scipy.ndimage as scind
@@ -56,7 +54,6 @@ import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo
 import cellprofiler.workspace as cpw
 import cellprofiler.settings as cps
-import cellprofiler.gui.cpfigure as cpf
 import identify as cpmi
 import cellprofiler.cpmath.threshold as cpthresh
 from cellprofiler.cpmath.propagate import propagate

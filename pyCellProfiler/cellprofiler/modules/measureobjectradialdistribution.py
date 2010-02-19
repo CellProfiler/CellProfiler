@@ -49,7 +49,6 @@ import cellprofiler.objects as cpo
 import cellprofiler.preferences as cpprefs
 import cellprofiler.settings as cps
 import cellprofiler.workspace as cpw
-import cellprofiler.gui.cpfigure as cpf
 
 from cellprofiler.cpmath.cpmorphology import distance_to_edge
 from cellprofiler.cpmath.cpmorphology import centers_of_labels
@@ -221,7 +220,6 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
             images = [d[key][0] for key in d.keys()]
             names = d.keys()
             figure = workspace.create_or_find_figure(subplots=(1,len(images)))
-            assert isinstance(figure, cpf.CPFigureFrame)
             figure.figure.clf()
             nimages = len(images)
             shrink = .05

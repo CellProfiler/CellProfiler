@@ -34,8 +34,6 @@ import stat
 import tempfile
 import traceback
 import urllib
-import wx
-import wx.html
 
 try:
     import bioformats.formatreader as formatreader
@@ -1055,6 +1053,8 @@ class LoadImages(cpmodule.CPModule):
                         a missing image
         frame: the parent for the error report
         """
+        import wx
+        import wx.html
         my_frame = wx.Frame(frame, title="Load images: Error report",
                             size=(600,800),
                             pos =(frame.Position[0],

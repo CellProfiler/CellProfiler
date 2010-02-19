@@ -137,21 +137,15 @@ __version__="$Revision$"
 import math
 import scipy.ndimage
 import scipy.sparse
-import matplotlib.backends.backend_wxagg
-import matplotlib.figure
-import matplotlib.pyplot
-import matplotlib.cm
 import numpy as np
 import re
 import scipy.stats
-import wx
 
 import identify as cpmi
 import cellprofiler.cpmodule
 import cellprofiler.cpimage as cpi
 import cellprofiler.measurements as cpmeas
 import cellprofiler.settings as cps
-import cellprofiler.gui.cpfigure as cpf
 import cellprofiler.preferences as cpp
 from cellprofiler.cpmath.otsu import otsu
 from cellprofiler.cpmath.cpmorphology import fill_labeled_holes, strel_disk
@@ -1064,6 +1058,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
         return labeled_image
     
     def display(self, workspace):
+        import cellprofiler.gui.cpfigure as cpf
         if workspace.frame != None:
             """Display the image and labeling"""
             window_name = "CellProfiler:%s:%d"%(self.module_name, self.module_num)

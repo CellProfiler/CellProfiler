@@ -25,7 +25,6 @@ import cellprofiler.settings as cps
 import identify as I
 from cellprofiler.cpmath.cpmorphology import fixup_scipy_ndimage_result as fix
 from cellprofiler.cpmath.outline import outline
-from cellprofiler.gui.cpfigure import renumber_labels_for_display
 import cellprofiler.preferences as cpprefs
 
 MC_OBJECTS = "Objects"
@@ -287,6 +286,7 @@ class MaskObjects(I.Identify):
     def display(self, workspace):
         '''Create an informative display for the module'''
         import matplotlib
+        from cellprofiler.gui.cpfigure import renumber_labels_for_display
         original_labels = workspace.display_data.original_labels
         final_labels = workspace.display_data.final_labels
         mask = workspace.display_data.mask

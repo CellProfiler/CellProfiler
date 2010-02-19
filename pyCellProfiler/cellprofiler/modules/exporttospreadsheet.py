@@ -42,7 +42,6 @@ import csv
 import numpy as np
 import os
 import sys
-import wx
 
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
@@ -544,6 +543,7 @@ class ExportToSpreadsheet(cpm.CPModule):
             (self.excel_limits.value == False or len(columns) < 256))):
             return columns
         
+        import wx
         dlg = wx.Dialog(frame,title = title,
                         style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
         sizer = wx.BoxSizer(wx.VERTICAL)

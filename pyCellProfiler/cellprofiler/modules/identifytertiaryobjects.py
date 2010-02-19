@@ -46,7 +46,6 @@ import cellprofiler.cpimage as cpi
 import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo
 import cellprofiler.settings as cps
-import cellprofiler.gui.cpfigure as cpf
 import cellprofiler.preferences as cpprefs
 from cellprofiler.cpmath.outline import outline
 
@@ -182,6 +181,7 @@ class IdentifyTertiaryObjects(cpm.CPModule):
             primary_objects.relate_children(tertiary_objects)
         
         if workspace.frame != None:
+            import cellprofiler.gui.cpfigure as cpf
             #
             # Draw the primary, secondary and tertiary labels
             # and the outlines

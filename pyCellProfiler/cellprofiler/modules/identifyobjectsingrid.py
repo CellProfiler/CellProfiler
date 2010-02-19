@@ -52,7 +52,6 @@ import cellprofiler.objects as cpo
 from cellprofiler.modules.identify import add_object_count_measurements
 from cellprofiler.modules.identify import add_object_location_measurements
 from cellprofiler.modules.identify import get_object_measurement_columns
-import cellprofiler.gui.cpfigure
 from cellprofiler.cpmath.outline import outline
 from cellprofiler.cpmath.cpmorphology import centers_of_labels
 

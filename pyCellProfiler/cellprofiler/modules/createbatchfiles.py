@@ -33,7 +33,6 @@ import os
 import re
 import sys
 import urllib
-import wx
 import zlib
 
 import cellprofiler.cpimage as cpi
@@ -235,6 +234,7 @@ class CreateBatchFiles(cpm.CPModule):
             path = cpprefs.get_absolute_path(self.custom_output_directory.value)
         path = os.path.join(path, F_BATCH_DATA)
         if os.path.exists(path) and frame is not None:
+            import wx
             if (wx.MessageBox("%s already exists. Do you want to overwrite it?"%
                               path,
                               "Overwriting %s" % F_BATCH_DATA,

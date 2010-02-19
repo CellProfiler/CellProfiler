@@ -39,23 +39,26 @@ class IdentifyObjectsManually(I.Identify):
     
     def create_settings(self):
         self.image_name = cps.ImageNameSubscriber(
-            "Image name:", "None",
+            "Select the input image", "None",
             doc = """Choose the name of the image to display in the object
             selection user interface. This can be an image from a file loaded
             by <b>LoadImages</b> or <b>LoadData</b> or a derived image
             from a module previous to this one.""")
+        
         self.objects_name = cps.ObjectNameProvider(
-            "Objects name:", "Cells",
+            "Select the input objects", "Cells",
             doc = """Enter the name that you want to use for the objects
             that you outline using this module. You can use this name to
             refer to your objects in any subsequent module that uses objects
             as an input.""")
+        
         self.wants_outlines = cps.Binary(
-            "Save outlines?", False,
+            "Save outlines of the identified objects?", False,
             doc = """Check this setting to save the outlines around the objects
             as a binary image.""")
+        
         self.outlines_name = cps.ImageNameProvider(
-            "Outlines name:", "CellOutlines",
+            "Name the outlines", "CellOutlines",
             doc = """This is the name of the outlines image. You can refer to
             this image in any subsequent module that uses images. You can
             save the outlines image using the <b>SaveImages</b> module.""")

@@ -20,7 +20,7 @@ neighbors, after the objects have been expanded to the specified distance</li>
 vertex and the first and second closest object centers along the vectors.</li>
 </ul>
 
-You can save the image of objects colored by numbers of neighbors or 
+You can retain the image of objects colored by numbers of neighbors or 
 colored by the percentage of pixels that are touching other objects.
 CellProfiler creates a color image using the color map you choose. Use
 the <b>SaveImages</b> module to save the image to a file. See the settings help 

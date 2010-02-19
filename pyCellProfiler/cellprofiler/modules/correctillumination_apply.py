@@ -2,10 +2,9 @@
 <b>CorrectIllumination_Calculate</b>, to an image in order to correct for uneven
 illumination (uneven shading)
 <hr>
-
 This module applies a previously created illumination correction function,
 either loaded by <b>LoadSingleImage</b> or created by <b>CorrectIllumination_Calculate</b>.
-This module corrects each image in the pipeline using the function you specify. 
+This module corrects each image in the pipeline using the function specified. 
 
 See also <b>CorrectIllumination_Calculate</b>.'''
 

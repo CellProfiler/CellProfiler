@@ -97,7 +97,7 @@ class ExportToSpreadsheet(cpm.CPModule):
                             This can be useful if you want to run a pipeline multiple 
                             times without overwriting the old results.""")
         self.directory_choice = cps.Choice(
-            "Where do you want to save the files?",
+            "Output file location",
             [DIR_DEFAULT_OUTPUT, DIR_DEFAULT_IMAGE, DIR_CUSTOM,
              DIR_CUSTOM_WITH_METADATA],
             doc="""This setting lets you choose the folder for the output

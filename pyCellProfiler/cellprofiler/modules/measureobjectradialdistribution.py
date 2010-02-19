@@ -108,7 +108,7 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
         if can_remove:
             group.append("divider", cps.Divider(line=False))
         group.append("image_name", cps.ImageNameSubscriber(
-                "Select an image to use for radial distribution measurements", "None",doc="""
+                "Select the input image", "None",doc="""
                 What did you call the images you want to process?"""))
         if can_remove:
             group.append("remover", cps.RemoveSettingButton("", "Remove this image", self.images, group))
@@ -120,10 +120,10 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
         if can_remove:
             group.append("divider", cps.Divider(line=False))
         group.append("object_name", cps.ObjectNameSubscriber(
-                "Select objects to measure", "None",doc="""
+                "Select the input objects", "None",doc="""
                 What did you call the objects you want to measure?"""))
         group.append("center_choice", cps.Choice(
-                "Select which objects to use as the center", C_ALL,doc="""
+                "Object to use as center?", C_ALL,doc="""
                 There are two options for the center of the radial measurement:
                 <ul>
                 <li><i>These objects</i>: Use the centers of these objects for the 

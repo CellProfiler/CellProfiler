@@ -66,11 +66,11 @@ class IdentifyTertiaryObjects(cpm.CPModule):
         self.primary_objects_name = cps.ObjectNameSubscriber("Select the smaller identified objects","None",doc="""
             What did you call the smaller identified objects?""")
         
-        self.subregion_objects_name = cps.ObjectNameProvider("Name the identified subregion objects","Cytoplasm",doc="""
+        self.subregion_objects_name = cps.ObjectNameProvider("Name the identified tertiary objects","Cytoplasm",doc="""
             What do you want to call the new subregions? The new tertiary subregion 
             will consist of the smaller object subtracted from the larger object.""")
         
-        self.use_outlines = cps.Binary("Retain the outlines for use later in the pipeline (for example, in SaveImages)?",False)
+        self.use_outlines = cps.Binary("Save outlines of the tertiary objects?",False)
         
         self.outlines_name = cps.OutlineNameProvider("Name the outline image","CytoplasmOutlines", doc="""\
             <i>(Used only if outlines are to be retained for later use in the pipeline)</i><br>

@@ -203,7 +203,7 @@ class TrackObjects(cpm.CPModule):
             'Cost of dying', 100, minval=1, doc = '''What is the cost of an object dying?''')
         
         self.wants_second_phase = cps.Binary(
-        "Do you want to run the second phase of the LAP algorithm?", True,
+        "Run the second phase of the LAP algorithm?", True,
         doc="""Check this box to run the second phase of the LAP algorithm
         after processing all images. Leave the box unchecked to omit the
         second phase or to perform the second phase when running as a data

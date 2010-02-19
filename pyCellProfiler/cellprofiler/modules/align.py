@@ -55,21 +55,21 @@ class Align(cpm.CPModule):
 with respect to the first image.""")
         self.first_output_image = cps.ImageNameProvider("Name the first output image",
                                                         "AlignedRed",doc="""
-                                                        What do you want to call the aligned first image?""")
+                                                        What is the name of the first aligned image?""")
         self.separator_1 = cps.Divider(line=False)
         self.second_input_image = cps.ImageNameSubscriber("Select the second input image",
                                                           "None",doc="""
                                                           What is the name of the second image to align?""")
         self.second_output_image = cps.ImageNameProvider("Name the second output image",
                                                          "AlignedGreen",doc="""
-                                                         What do you want to call the aligned second image?""")
+                                                         What is the name of the second aligned image?""")
         self.separator_2 = cps.Divider(line=False)
         self.additional_images = []
         self.add_button = cps.DoSomething("", "Add another image",
                                           self.add_image)
         self.alignment_method = cps.Choice("Select the alignment method",
                                            M_ALL, doc='''
-             Which alignment method would you like to use? Two options are available:<br>
+             Two options for the alignment method are available:<br>
              <ul>
              <li><i>Mutual Information:</i> Alignment works whether the 
              images are correlated (bright in one = bright in the other) or 
@@ -82,9 +82,9 @@ with respect to the first image.""")
              </ul>''')
         self.wants_cropping = cps.Binary("Crop output images to retain just the aligned regions?",
                                          True, doc='''
-             If you choose to crop, all output images are cropped to retain 
+             If cropping is chosen, all output images are cropped to retain 
              just those regions that exist in all channels after alignment. 
-             If you choose not to crop, the unaligned portions of each
+             If cropping is not chosen, the unaligned portions of each
              image are padded (with zeroes) and appear as black space.''')
     
     def add_image(self, can_remove = True):
@@ -100,12 +100,12 @@ with respect to the first image.""")
         group.append("output_image_name",
                      cps.ImageNameProvider("Name the output image",
                                             "AlignedBlue",doc="""
-                                            What do you want to call the aligned image?"""))
+                                            What is the name of the aligned image?"""))
         group.append("align_choice",
                      cps.Choice("Select how the alignment is to be applied",
                                                [A_SIMILARLY, A_SEPARATELY],doc="""
-                                               Do you want to align this image similarly to the second one or do you 
-                                               want to calculate a separate alignment to the first image?<br>
+                                               An additional image can either be aligned similarly to the second one or  
+                                               a separate alignment to the first image can be calculated:<br>
                                                <ul>
                                                <li><i>Similarly:</i> The same alignment measurements obtained from
                                                the first two input images are applied to this additional image.</li>

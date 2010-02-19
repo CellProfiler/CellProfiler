@@ -54,13 +54,13 @@ class DisplayDataOnImage(cpm.CPModule):
             self.smoothing_size = cellprofiler.settings.Float(...)
         """
         self.objects_or_image = cps.Choice(
-            "Do you want to display object or image measurements?",
+            "Display object or image measurements?",
             [OI_OBJECTS, OI_IMAGE],
             doc = """<ul><li> <i>Image</i> displays a single measurement made
             on an image.</li> <li><i>Object</i> displays measurements made on
             objects.</li></ul>""")
         self.objects_name = cps.ObjectNameSubscriber(
-            "Which objects' measurements do you want to display?", "None",
+            "Select the input objects", "None",
             doc = """Choose the name of objects identified by some previous
             module (such as <b>IdentifyPrimAutomatic</b> or
             <b>IdentifySecondary</b>).""")
@@ -105,7 +105,7 @@ class DisplayDataOnImage(cpm.CPModule):
         self.decimals = cps.Integer(
             "Number of decimals", 2, minval=0)
         self.saved_image_contents = cps.Choice(
-            "What elements do you want to save?",
+            "image elements to save",
             [E_IMAGE, E_FIGURE, E_AXES],
             doc="""This setting controls the level of annotation on the image:
             <ul><li>

@@ -93,7 +93,7 @@ class LoadSingleImage(cpm.CPModule):
             return os.curdir()
         
         group.append("file_name", cps.FilenameText(
-            "What image file do you want to load? Include the extension like .tif",
+            "Filename of the image to load (Include the extension, e.g., .tif)",
             "None",
             get_directory_fn = get_directory_fn,
             exts = [("Tagged image file (*.tif)","*.tif"),

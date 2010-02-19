@@ -99,7 +99,7 @@ class MeasureImageQuality(cpm.CPModule):
         group = MeasureImageQualitySettingsGroup() # helper class defined below
         if can_remove:
             group.append("divider", cps.Divider(line=True))
-        group.append("image_name", cps.ImageNameSubscriber("Select an image to measure","None", 
+        group.append("image_name", cps.ImageNameSubscriber("Select the input image","None", 
                                                            doc = '''What did you call the grayscale images whose quality you want to measure?'''))
         group.append("check_blur", cps.Binary("Check for blur?",
                                               True, 

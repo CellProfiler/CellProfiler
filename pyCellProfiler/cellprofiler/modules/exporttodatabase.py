@@ -18,11 +18,17 @@ The database is set up with two primary tables. These tables are the
 <i>Per_Image</i> table and the <i>Per_Object</i> table (which may have a prefix if you
 specify). The Per_Image table consists of all the per-image measurements made during the pipeline, plus
 per-image population statistics (such as mean, median, and standard deviation) of the object measurements. There is one
-per_image row for every "cycle" that CellProfiler processes (a cycle is usually a single field of view, and a single cycle usually contains several image files, each representing a different channel of the same field of view). The Per_Object table contains all the
+per_image row for every "cycle" that CellProfiler processes (a cycle is usually a single field of view, and a single cycle 
+usually contains several image files, each representing a different channel of the same field of view). The Per_Object table contains all the
 measurements for individual objects. There is one row of object
 measurements per object identified. The two tables are connected with the
 primary key column <i>ImageNumber</i>, which indicates the image to which each object belongs. The Per_Object table has another primary
-key called <i>ObjectNumber</i>, which is unique to each image. Typically, if multiple types of objects are identified and measured in a pipeline, the numbers of those objects are equal to each other. For example, in most pipelines, each nucleus has exactly one cytoplasm, so the first row of the Per-Object table contains all of the information about object #1, including both nucleus- and cytoplasm-related measurements. If this one-to-one correspondence is <i>not</i> the case for all objects in the pipeline (for example, if dozens of speckles are identified and measured for each nucleus), then you must configure <b>ExportToDatabase</b> to export only objects that maintain the one-to-one correspondence (for example, export only <i>Nucleus</i> and <i>Cytoplasm</i>, but omit <i>Speckles</i>).
+key called <i>ObjectNumber</i>, which is unique to each image. Typically, if multiple types of objects are identified and measured in a pipeline, 
+the numbers of those objects are equal to each other. For example, in most pipelines, each nucleus has exactly one cytoplasm, so the first row 
+of the Per-Object table contains all of the information about object #1, including both nucleus- and cytoplasm-related measurements. If this 
+one-to-one correspondence is <i>not</i> the case for all objects in the pipeline (for example, if dozens of speckles are identified and 
+measured for each nucleus), then you must configure <b>ExportToDatabase</b> to export only objects that maintain the one-to-one correspondence 
+(for example, export only <i>Nucleus</i> and <i>Cytoplasm</i>, but omit <i>Speckles</i>).
 
 If you have extracted "Plate" and "Well" metadata from image filenames or loaded "Plate" and "Well" metadata via <b>LoadData</b>, 
 you can ask CellProfiler to create a "Per_Well" table, which aggregates object measurements across wells.  
@@ -222,7 +228,7 @@ class ExportToDatabase(cpm.CPModule):
             What prefix do you want to use to name the SQL file?""")
         
         self.directory_choice = cps.Choice(
-            "Where do you want to save files?",
+            "Output file location",
             [DIR_DEFAULT_OUTPUT, DIR_DEFAULT_IMAGE, DIR_CUSTOM, 
              DIR_CUSTOM_WITH_METADATA],
             doc="""This setting determines where the .csv files are saved if
@@ -335,7 +341,7 @@ class ExportToDatabase(cpm.CPModule):
             shorten all of the column names by removing characters, at the
             same time guaranteeing that no two columns have the same name.""")
         self.separate_object_tables = cps.Choice(
-            "Do you want one table per object or a single object table?",
+            "Create one table per object or a single object table?",
             [OT_PER_OBJECT, OT_COMBINE],
             doc = """<b>ExportToDatabase</b> can create either one table
             for each type of object exported or a single

@@ -41,21 +41,21 @@ class InvertForPrinting(cpm.CPModule):
             "Input image type",
             CC_ALL, doc = """Are you combining several grayscale images or loading a single color image?""")
         self.wants_red_input = cps.Binary(
-            "Load a red image?",
+            "Use a red image?",
             True, """Do you want to load an image for the red channel? Leave checked unless there is
             no red component to your grayscale image.""")
         self.red_input_image = cps.ImageNameSubscriber(
             "Select the red image",
             "None", doc = '''What did you call the red image?''')
         self.wants_green_input = cps.Binary(
-            "Load a green image?",
+            "Use a green image?",
             True, doc = """Do you want to load an image for the green channel? Leave checked unless there is
             no red component to your grayscale image.""")
         self.green_input_image = cps.ImageNameSubscriber(
             "Select the green image", "None",
             doc = '''What did you call the green image?''')
         self.wants_blue_input = cps.Binary(
-            "Load a blue image?", True, doc = """Do you want to load an image for the blue channel?
+            "Use a blue image?", True, doc = """Do you want to load an image for the blue channel?
             Leave checked unless there is no red component to your grayscale image.""")
         self.blue_input_image = cps.ImageNameSubscriber(
             "Select the blue image", "None", 

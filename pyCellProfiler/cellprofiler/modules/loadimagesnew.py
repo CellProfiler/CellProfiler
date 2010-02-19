@@ -91,7 +91,7 @@ class LoadImagesNew(cpmodule.CPModule):
 
     def create_settings(self):
         # Settings
-        self.file_types = cps.Choice('What type of files are you loading?', FF_CHOICES, doc="""
+        self.file_types = cps.Choice('File type to be loaded', FF_CHOICES, doc="""
                 The following image file types are permissible for input into CellProfiler:
                 <ul>
                 <li><i>Individual images:</i>Each file represents a single image. 
@@ -115,7 +115,7 @@ class LoadImagesNew(cpmodule.CPModule):
         self.top_spacer = cps.Divider()
 
         # Images settings
-        self.exclude = cps.Binary('Do you want to exclude some files?', False,doc="""
+        self.exclude = cps.Binary('Exclude certain files?', False,doc="""
                 <p>This settings allows you exclude certain files (such as thumbnails) from further consideration.""")
         
         # should this be a regexp?
@@ -152,7 +152,7 @@ class LoadImagesNew(cpmodule.CPModule):
 
         group = cps.SettingsGroup()
         group.append("image_name", 
-                     cps.FileImageNameProvider('What do you want to call this image in CellProfiler?', 
+                     cps.FileImageNameProvider('Name of this image in CellProfiler', 
                                                default_cpimage_name(len(self.images)), doc="""
                         Give your images a meaningful name that you will use when referring to
                         these images in later modules.  Keep the following points in mind when deciding 

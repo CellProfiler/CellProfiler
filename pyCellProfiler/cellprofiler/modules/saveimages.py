@@ -180,11 +180,11 @@ class SaveImages(cpm.CPModule):
                 <li><i>Custom with metadata:</i> The file will be stored in a customizable folder
                 with metadata substitution (see the <i>Name with metadata</i> setting above)</li>
                 </ul>""")
-        self.pathname = cps.Text("Enter the pathname of the folder where you want to save images:",".",doc="""
+        self.pathname = cps.Text("Pathname of the saved image",".",doc="""
                 Enter the pathname to save the images here. The pathname can referenced with respect 
                 to the Default Output Folder with a period (".") or the Default Input 
                 folder with an ampersand ("&") as the root folder.""")
-        self.bit_depth = cps.Choice("Enter the bit depth at which to save the images:",
+        self.bit_depth = cps.Choice("Enter the bit depth at which to save the images",
                                     ["8","12","16"])
         self.overwrite = cps.Binary("Overwrite existing files without warning?",False)
         self.when_to_save = cps.Choice("Select how often to save:",

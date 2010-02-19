@@ -57,9 +57,9 @@ class FlipAndRotate(cpm.CPModule):
                                       FLIP_ALL, doc = """How do you want to flip the image? Left to right, Top to bottom, or both?""")
         self.rotate_choice = cps.Choice("Select method to rotate image",
                                         ROTATE_ALL, doc='''
-             <ul> <li> <i>Angle:</i> You provide the numerical angle by which the 
+             <ul> <li> <i>Angle:</i> Provide the numerical angle by which the 
              image should be rotated.</li>
-             <li><i>Coordinates:</i> You provide the X,Y pixel locations of 
+             <li><i>Coordinates:</i> Provide the X,Y pixel locations of 
              two points in the image that should be aligned horizontally or 
              vertically.</li> 
              <li> <i>Mouse:</i> CellProfiler will pause so you can select the 
@@ -78,15 +78,17 @@ class FlipAndRotate(cpm.CPModule):
              downstream modules.''')
                 
         self.how_often = cps.Choice("Calculate rotation",
-            IO_ALL, doc = "<i>(Used only when rotating images with the mouse)</i> <br> Do you want to determine the amount of rotation for each image "
-            "individually as you cycle through, or do you want to define it "
-            "only once (on the first image) and then apply it to all images?")
+            IO_ALL, doc = 
+            '''<i>(Used only when rotating images with the mouse)</i> <br> 
+            Do you want to determine the amount of rotation for each image
+            individually as you cycle through, or do you want to define it
+            only once (on the first image) and then apply it to all images?''')
         self.first_pixel = cps.Coordinates(
             "Enter coordinates of the top or left pixel", (0,0))
         self.second_pixel = cps.Coordinates(
             "Enter the coordinates of the bottom or right pixel", (0,100))
         self.horiz_or_vert = cps.Choice(
-            "Select how the points you specified should be aligned",
+            "Select how the specified points should be aligned",
             C_ALL, doc = """<i>(Used only when rotating images by entering coordinates)</i><br> Should the points you specified be horizontally or vertically aligned after the rotation is complete?""")
         self.angle = cps.Float(
             "Enter angle of rotation", 0, doc = """<i>(Used only when rotating images by entering an angle)</i> <br> By what angle would you like to rotate the image 

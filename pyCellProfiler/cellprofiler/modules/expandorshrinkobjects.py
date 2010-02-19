@@ -106,7 +106,7 @@ class ExpandOrShrinkObjects(cpm.CPModule):
         self.iterations = cps.Integer("Number of pixels by which to expand or shrink",
                                       1, minval=1)
         
-        self.wants_fill_holes = cps.Binary("Do you want to fill holes in objects so that all objects shrink to a single point?",
+        self.wants_fill_holes = cps.Binary("Fill holes in objects so that all objects shrink to a single point?",
                                     False, doc=DOC_FILL_HOLES)
         
         self.wants_outlines = cps.Binary("Retain the outlines of the identified objects for use later in the pipeline (for example, in SaveImages)?",

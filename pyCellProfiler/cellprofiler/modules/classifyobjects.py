@@ -4,7 +4,8 @@ to the value of measurements you choose
 This module classifies objects into a number of different bins
 according to the value of a measurement (e.g., by size, intensity, shape).
 It reports how many objects fall into each class as well as the
-percentage of objects that fall into each class. The module asks you to select the measurement feature to be used to classify your objects and
+percentage of objects that fall into each class. The module asks you to 
+select the measurement feature to be used to classify your objects and
 specify the bins to use. It also requires you to run a measurement
 module previous to this module in the pipeline so that the measurement
 values can be used to classify the objects. If you are classifying by the
@@ -113,7 +114,7 @@ class ClassifyObjects(cpm.CPModule):
             module.""")
         
         self.first_threshold_method = cps.Choice(
-            "How do you want to select the cutoff?",
+            "Method to select the cutoff",
             [TM_MEAN, TM_MEDIAN, TM_CUSTOM],
             doc="""Objects are classified as being above or below a cutoff
             value for a measurement. You can set this cutoff threshold in one
@@ -137,7 +138,7 @@ class ClassifyObjects(cpm.CPModule):
             module.""")
         
         self.second_threshold_method = cps.Choice(
-            "How do you want to select the cutoff?",
+            "Method to select the cutoff",
             [TM_MEAN, TM_MEDIAN, TM_CUSTOM],
             doc="""Objects are classified as being above or below a cutoff
             value for a measurement. You can set this cutoff threshold in one
@@ -231,7 +232,7 @@ class ClassifyObjects(cpm.CPModule):
             or above the low and high threhsold"""))
         
         group.append("bin_count", cps.Integer(
-            "How many bins?", 3, minval= 1,
+            "Number of bins", 3, minval= 1,
             doc="""This is the number of bins that will be created between
             the low and high threshold"""
         ))
@@ -243,7 +244,7 @@ class ClassifyObjects(cpm.CPModule):
             define the thresholds of bins between the lowest and highest."""))
         
         group.append("wants_low_bin",cps.Binary(
-            "Do you want a bin for objects below the threshold?", False,
+            "Use a bin for objects below the threshold?", False,
             doc="""Check this box if you want to create a bin for objects
             whose values fall below the low threshold. Leave the box unchecked
             if you do not want a bin for these objects."""))
@@ -259,7 +260,7 @@ class ClassifyObjects(cpm.CPModule):
             <i>Note:</i> If you would like two bins, choose <i>Custom-defined bins</i>."""))
         
         group.append("wants_high_bin", cps.Binary(
-            "Do you want a bin for objects above the threshold?", False,
+            "Use a bin for objects above the threshold?", False,
             doc="""Check this box if you want to create a bin for objects
             whose values are above the high threshold. Leave the box unchecked
             if you do not want a bin for these objects."""))

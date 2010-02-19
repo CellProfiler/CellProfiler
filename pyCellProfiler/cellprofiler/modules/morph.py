@@ -413,13 +413,13 @@ class Morph(cpm.CPModule):
     variable_revision_number = 1
     
     def create_settings(self):
-        self.image_name = cps.ImageNameSubscriber("Select the input image:","None",doc="""
+        self.image_name = cps.ImageNameSubscriber("Select the input image","None",doc="""
             What image do you want to morph?
             This is the input image to the module. A grayscale image can be
             converted to binary using the <b>ApplyThreshold</b> module. Objects can be
             converted to binary using the <b>ConvertToImage</b> module.""")
         
-        self.output_image_name = cps.ImageNameProvider("Name the output image:","MorphBlue",doc="""
+        self.output_image_name = cps.ImageNameProvider("Name the output image","MorphBlue",doc="""
         What do you want to call the resulting image?
             This is the output of the module. It will be of the same type as the
             input image.""")

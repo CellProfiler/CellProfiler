@@ -66,16 +66,16 @@ class MeasureImageIntensity(cpm.CPModule):
         if can_remove:
             group.append("divider", cps.Divider())
         
-        group.append("image_name", cps.ImageNameSubscriber("Select an image to measure",
+        group.append("image_name", cps.ImageNameSubscriber("Select an input image",
                                                             "None", doc = '''What did you call the images whose intensity you want to measure? Choose an image name from the drop-down menu to calculate intensity for that
                                                             image. Use the "Add image" button below to add additional images which will be
                                                             measured. You can add the same image multiple times if you want to measure
                                                             the intensity within several different objects.'''))
         
-        group.append("wants_objects", cps.Binary("Do you want to measure intensity only from areas of the image that contain particular objects?",
+        group.append("wants_objects", cps.Binary("Measure the intensity only from areas enclosed by objects?",
                                                   False, doc = "Check this option to restrict the pixels being measured to those within the boundaries of an object."))
         
-        group.append("object_name",cps.ObjectNameSubscriber("Select the objects to use to constrain the measurement","None", 
+        group.append("object_name",cps.ObjectNameSubscriber("Select the input objects","None", 
                                                            doc = '''What is the name of the objects to use? The intensity measurement will be restricted to within these objects.'''))
         if can_remove:
             group.append("remover", cps.RemoveSettingButton("", 

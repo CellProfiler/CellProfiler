@@ -70,10 +70,10 @@ class CalculateImageOverlap(cpm.CPModule):
     module_name = "CalculateImageOverlap"
 
     def create_settings(self):
-        self.ground_truth = cps.ImageNameSubscriber("Which image do you want to use as the ground truth basis for calculating the amount of overlap? ", "None", doc = 
+        self.ground_truth = cps.ImageNameSubscriber("Select the image to be used as the ground truth basis for calculating the amount of overlap", "None", doc = 
                                                     '''This binary (black and white) image is known as the "ground truth" image.  It can be the product of segmentation performed by hand, or
                                                    the result of another segmentation algorithm whose results you would like to compare.''')
-        self.test_img = cps.ImageNameSubscriber("Which image do you want to test for overlap?", "None", doc = ''' This 
+        self.test_img = cps.ImageNameSubscriber("Select the image to be used to test for overlap", "None", doc = ''' This 
                                                 binary (black and white) image is what you will compare with the ground truth image. It is known as the "test image".''')
 
     

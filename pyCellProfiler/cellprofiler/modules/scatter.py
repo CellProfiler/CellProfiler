@@ -62,7 +62,7 @@ class DisplayScatterPlot(cpm.CPModule):
                             <b>IdentifySecondary</b>) to be displayed on the x-axis.''')
         
         self.x_axis = cps.Measurement(
-                            'Which measurement do you want to plot on the x-axis?', 
+                            'Select the measurement to plot on the x-axis', 
                             self.get_x_object, 'None',doc = '''
                             Choose the image or object measurement made by a previous 
                             module to plot on the x-axis.''')

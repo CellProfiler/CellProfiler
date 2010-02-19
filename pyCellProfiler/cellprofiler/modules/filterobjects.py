@@ -129,7 +129,7 @@ class FilterObjects(cpm.CPModule):
                                 <li><i>Minimal per object:</i> Same as <i>Maximal per object</i>, except filtering is based on the minimum value.</li>
                                 </ul>""")
         
-        self.enclosing_object_name = cps.ObjectNameSubscriber('What did you call the objects that contain the filtered objects?','None', doc = """
+        self.enclosing_object_name = cps.ObjectNameSubscriber('Select the objects that contain the filtered objects','None', doc = """
                                 <i>(Used if a per-object filtering method is selected)</i><br>
                                 This setting selects the container (i.e., parent) objects for the <i>Maximal per object</i> 
                                 and <i>Minimal per object</i> filtering choices.""")

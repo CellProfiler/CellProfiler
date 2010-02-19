@@ -62,11 +62,11 @@ class OverlayOutlines(cpm.CPModule):
             You can choose from images that were loaded or created by modules
             previous to this one""")
         self.line_width = cps.Float(
-            "Line width:", "1",
+            "Line width", "1",
             doc = """This setting determines the width, in pixels, of your
             outlines as displayed on the image""")
         self.output_image_name = cps.ImageNameProvider(
-            "Name the output image:",
+            "Name the output image",
             "OrigOverlay",
             doc="""
             What do you want to call the image with the outlines displayed?
@@ -74,7 +74,7 @@ class OverlayOutlines(cpm.CPModule):
             show up in image lists in later modules (for instance 
             <b>SaveImages</b>)""")
         self.wants_color = cps.Choice(
-            "Select outline display mode:",
+            "Select outline display mode",
             [WANTS_COLOR, WANTS_GRAYSCALE], doc="""
             This option chooses how to display the outline contours around
             your objects. Color outlines produce a clearer display for
@@ -84,7 +84,7 @@ class OverlayOutlines(cpm.CPModule):
             as the brightest pixel in the image.""")
         self.spacer = cps.Divider(line=False)
         self.max_type = cps.Choice(
-            "Select method to determine brightness of outlines:",
+            "Select method to determine brightness of outlines",
             [MAX_IMAGE, MAX_POSSIBLE],
             doc = """Would you like the intensity (brightness) of the outlines to be "
             "the same as the brightest point in the image, or the maximum "
@@ -104,7 +104,7 @@ class OverlayOutlines(cpm.CPModule):
             
         group.append("outline_name",
                      cps.OutlineNameSubscriber(
-                "Select outlines to display:",
+                "Select outlines to display",
                 "None", doc="""
                     Choose an outline from a previous <b>IdentifyPrimAutomatic</b>,
                     <b>IdentifySecondary</b> or <b>IdentifyTertiarySubregion</b>

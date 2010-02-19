@@ -42,20 +42,20 @@ class DisplayHistogram(cpm.CPModule):
     
     def create_settings(self):
         self.object = cps.ObjectNameSubscriber(
-                            'From which object do you want to plot measurements?','None',
+                            'Select the object','None',
                             doc='''
                             Choose the name of objects identified by some previous 
                             module (such as <b>IdentifyPrimAutomatic</b> or 
                             <b>IdentifySecondary</b>) to be displayed.''')
         
         self.x_axis = cps.Measurement(
-                            'Which measurement do you want to plot?', self.get_object, 'None',
+                            'Select the measurement to plot', self.get_object, 'None',
                             doc='''
                             Choose the object measurement made by a previous 
                             module to plot.''')
         
         self.bins = cps.Integer(
-                            'How many bins do you want?', 100, 1, 1000,
+                            'Number of bins', 100, 1, 1000,
                             doc='''
                             Enter the number of equally-spaced bins that you want 
                             used on the x-axis.''')

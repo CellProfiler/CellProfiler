@@ -167,7 +167,7 @@ class IdentifySecondaryObjects(cpmi.Identify):
             by selecting them from any drop-down image list.""")
         
         self.wants_discard_edge = cps.Binary(
-            "Do you want to discard objects that touch the edge of the image?",
+            "Discard secondary objects that touch the edge of the image?",
             False,
             doc = """This option will discard objects which have an edge
             that falls on the border of the image. The objects are discarded
@@ -176,7 +176,7 @@ class IdentifySecondaryObjects(cpmi.Identify):
             segmentation.""")
         
         self.wants_discard_primary = cps.Binary(
-            "Do you want to discard associated primary objects?",
+            "Discard the associated primary objects?",
             False,
             doc = """<i>(Used only if secondary objects touching the edge are discarded)</i> <br>
             It might be appropriate to discard the primary object
@@ -198,7 +198,7 @@ class IdentifySecondaryObjects(cpmi.Identify):
             segmentation.""")
         
         self.wants_primary_outlines = cps.Binary(
-            "Do you want to save outlines of the new primary objects?", False,
+            "Save outlines of the new primary objects?", False,
             doc = """<i>(Used only if associated primary objects are discarded)</i>
             Check this setting in order to save images of the outlines
             of the primary objects after filtering. You can save these images

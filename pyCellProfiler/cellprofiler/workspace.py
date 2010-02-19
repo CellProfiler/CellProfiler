@@ -12,7 +12,6 @@ Website: http://www.cellprofiler.org
 """
 __version__="$Revision$"
 
-import cellprofiler.gui.cpfigure as cpf
 from cellprofiler.cpgridinfo import CPGridInfo
 
 '''Continue to run the pipeline
@@ -185,7 +184,8 @@ class Workspace(object):
 
     def create_or_find_figure(self,title=None,subplots=None,window_name = None):
         """Create a matplotlib figure window or find one already created"""
-        
+        import cellprofiler.gui.cpfigure as cpf
+
         # catch any background threads trying to call display functions.
         assert not self.__in_background 
 

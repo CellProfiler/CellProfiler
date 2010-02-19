@@ -38,7 +38,6 @@ import sys
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.settings as cps
-import cellprofiler.gui.cpfigure as cpf
 
 C_ANY = "Flag if any fail"
 C_ALL = "Flag if all fail"
@@ -232,7 +231,6 @@ class FlagImage(cpm.CPModule):
         
     def display(self, workspace):
         figure = workspace.create_or_find_figure(subplots=(1,1))
-        assert isinstance(figure, cpf.CPFigureFrame)
         figure.subplot_table(0,0, workspace.display_data.statistics,
                              (.25,.25,.25,.125,.125))
 

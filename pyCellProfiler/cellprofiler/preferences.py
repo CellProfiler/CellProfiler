@@ -21,7 +21,6 @@ import cellprofiler
 import os
 import os.path
 import re
-import wx
 import sys
 
 from cellprofiler.utilities.get_proper_case_filename import get_proper_case_filename
@@ -62,6 +61,7 @@ def get_config():
     global __is_headless,__headless_config
     if __is_headless:
         return __headless_config
+    import wx
     try:
         config = wx.Config.Get(False)
     except wx.PyNoAppError:
@@ -235,6 +235,7 @@ def get_background_color():
     Return wx.Colour that will be applied as
     the background for all frames and dialogs
     '''
+    import wx
     if not get_config().Exists(BACKGROUND_COLOR):
         return wx.Colour(red=143,green=188,blue=143) # darkseagreen
     else:
@@ -381,7 +382,10 @@ def add_recent_file(filename):
         get_config().Write(recent_file(i), filename)
 
 def get_plugin_directory():
-    if not get_headless() and wx.GetApp() is not None:
+    if get_headless():
+        return None
+    import wx
+    if wx.GetApp() is not None:
         return os.path.join(wx.StandardPaths.Get().GetUserDataDir(), 'plugins')
     return None
 

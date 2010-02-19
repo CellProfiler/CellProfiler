@@ -20,7 +20,7 @@ import zlib
 import cellprofiler.cellprofilerapp
 import cellprofiler.gui.moduleview as mv
 import cellprofiler.settings as vvv
-import cellprofiler.modules.identifyprimautomatic
+import cellprofiler.modules.identifyprimaryobjects
 import cellprofiler.gui.cpframe
 import cellprofiler.gui.addmoduleframe
 

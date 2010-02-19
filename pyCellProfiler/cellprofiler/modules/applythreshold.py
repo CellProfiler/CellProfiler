@@ -6,7 +6,6 @@ based on a threshold which can be pre-selected or calculated automatically using
 
 __version__="$Revision: 6746 $"
 
-import wx
 import matplotlib.cm
 import matplotlib.backends.backend_wxagg
 

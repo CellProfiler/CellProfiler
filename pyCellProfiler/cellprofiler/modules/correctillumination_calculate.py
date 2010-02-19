@@ -27,7 +27,6 @@ __version__="$Revision$"
 import numpy as np
 import scipy.ndimage as scind
 import scipy.linalg
-import wx
 
 import cellprofiler.cpimage  as cpi
 import cellprofiler.cpmodule as cpm
@@ -260,7 +259,8 @@ class CorrectIllumination_Calculate(cpm.CPModule):
                 image_set = image_set_list.get_image_set(image_number-1)
                 image_set.providers.extend(image_providers)
             if pipeline.is_image_from_file(self.image_name.value):
-                if not pipeline.in_batch_mode():
+                if not pipeline.in_batch_mode() and not cpp.get_headless():
+                    import wx
                     progress_dialog = wx.ProgressDialog("#%d: CorrectIllumination_Calculate for %s"%(self.module_num, self.image_name),
                                                         "CorrectIllumination_Calculate is averaging %d images while preparing for run"%(len(image_numbers)),
                                                         len(image_numbers),

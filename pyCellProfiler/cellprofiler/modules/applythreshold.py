@@ -6,13 +6,10 @@ based on a threshold which can be pre-selected or calculated automatically using
 
 __version__="$Revision: 6746 $"
 
-import matplotlib.cm
-import matplotlib.backends.backend_wxagg
 
 from cellprofiler.cpmodule import CPModule
 from cellprofiler import cpimage
 import cellprofiler.settings as cpsetting
-from cellprofiler.gui import cpfigure
 from cellprofiler.modules.identify import Identify, O_BACKGROUND, O_ENTROPY
 from cellprofiler.modules.identify import O_FOREGROUND, O_THREE_CLASS
 from cellprofiler.modules.identify import O_TWO_CLASS, O_WEIGHTED_VARIANCE

@@ -20,17 +20,10 @@ the relative weights will adjust the contribution of the colors relative to each
 # Website: http://www.cellprofiler.org
 __version__="$Revision$"
 
-import wx
-import matplotlib.cm
-import matplotlib.backends.backend_wxagg
-
-__version__="$Revision$"
 
 import cellprofiler.cpmodule as cpm
 import cellprofiler.settings as cps
 import cellprofiler.cpimage  as cpi
-
-import cellprofiler.gui.cpfigure as cpf
 
 COMBINE = "Combine"
 SPLIT = "Split"
@@ -174,6 +167,8 @@ class ColorToGray(cpm.CPModule):
        
     
     def display_combine(self, workspace):
+        import matplotlib.cm
+
         input_image = workspace.display_data.input_image
         output_image = workspace.display_data.output_image
         figure=workspace.create_or_find_figure(title="Color to gray",
@@ -206,6 +201,8 @@ class ColorToGray(cpm.CPModule):
         workspace.display_data.disp_collection = disp_collection
     
     def display_split(self, workspace):
+        import matplotlib.cm
+
         input_image = workspace.display_data.input_image
         disp_collection = workspace.display_data.disp_collection
         ndisp = len(disp_collection)

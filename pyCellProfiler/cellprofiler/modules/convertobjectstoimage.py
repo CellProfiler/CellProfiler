@@ -17,13 +17,11 @@ them into an image according to a colormap you select, which can then be saved w
 __version__="$Revision$"
 
 import numpy as np
-import matplotlib.cm
 
 import cellprofiler.cpmodule as cpm
 import cellprofiler.settings as cps
 import cellprofiler.cpimage as cpi
 import cellprofiler.preferences as cpprefs
-from cellprofiler.gui.cpfigure import renumber_labels_for_display
 
 DEFAULT_COLORMAP = "Default"
 COLORCUBE = "colorcube"
@@ -108,6 +106,8 @@ class ConvertObjectsToImage(cpm.CPModule):
             if not workspace.frame is None:
                 figure.subplot_imshow_grayscale(1,0,pixel_data,self.image_name.value)
         elif self.image_mode == IM_COLOR:
+            import matplotlib.cm
+            from cellprofiler.gui.cpfigure import renumber_labels_for_display
             if self.colormap.value == DEFAULT_COLORMAP:
                 cm_name = cpprefs.get_default_colormap()
             elif self.colormap.value == COLORCUBE:

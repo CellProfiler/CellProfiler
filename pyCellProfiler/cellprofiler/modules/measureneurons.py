@@ -76,7 +76,7 @@ class MeasureNeurons(cpm.CPModule):
         self.branchpoint_image_name = cps.ImageNameProvider(
             "Name the branchpoint image","BranchpointImage",
             doc="""
-            <i>(Only used if an bracjhpoint image is requested)</i><br>
+            <i>(Used only if an bracjhpoint image is requested)</i><br>
             Enter a name for the branchpoint image here. You can
             use this name in a later module, such as <b>SaveImages</b> to
             refer to this image.""")

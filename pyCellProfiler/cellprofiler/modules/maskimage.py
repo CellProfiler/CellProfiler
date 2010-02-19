@@ -60,12 +60,12 @@ class MaskImage(cpm.CPModule):
         
         self.object_name = cps.ObjectNameSubscriber(
             "Select object for mask","None",
-            doc = """<i>(Only used if mask is to be made from objects)</i> <br> 
+            doc = """<i>(Used only if mask is to be made from objects)</i> <br> 
             Which objects would you like to use to mask the input image?""")
         
         self.masking_image_name = cps.ImageNameSubscriber(
             "Select image for mask","None",
-            doc = """<i>(Only used if mask is to be made from an image)</i> <br> 
+            doc = """<i>(Used only if mask is to be made from an image)</i> <br> 
             Which image would you like to use to mask the input image?""")
         
         self.image_name = cps.ImageNameSubscriber(

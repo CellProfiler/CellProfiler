@@ -253,13 +253,13 @@ class LoadImages(cpmodule.CPModule):
                 </ul>""")
         
         self.exclude = cps.Binary('Do you want to exclude certain files?', False,doc="""
-                <i>(Only used if loading files using Text-Exact match is selected)</i> 
+                <i>(Used only if loading files using Text-Exact match is selected)</i> 
                 <p>The image/movie files specified with the <i>Text</i> options may also include
                 files that you want to exclude from analysis (such as thumbnails created 
                 by an imaging system).""")
         
         self.match_exclude = cps.Text('Type the text that the excluded images have in common', cps.DO_NOT_USE,doc="""
-                <i>(Only used if file exclusion is selected)</i> 
+                <i>(Used only if file exclusion is selected)</i> 
                 <p>Here you can specify text that mark files for exclusion. This text is treated as a 
                 exact match within the filename and not as a regular expression. """)
         
@@ -286,7 +286,7 @@ class LoadImages(cpmodule.CPModule):
                 to select the metadata tags by which to group.""")
         
         self.metadata_fields = cps.MultiChoice('What metadata fields do you want to group by?',[],doc="""
-                <i>(Only used if grouping image sets by metadata)</i> 
+                <i>(Used only if grouping image sets by metadata)</i> 
                 <p>Select the fields that you want group the image files by here. Multiple tags may be selected. For
                 example, if a set of images had metadata for <i>Run</i>,<i>Plate</i>,<i>Well</i> and
                 <i>Site</i>, selecting <i>Run</i> and <i>Plate</i> will create groups containing 
@@ -304,7 +304,7 @@ class LoadImages(cpmodule.CPModule):
                 You have the choice of loading the image files from the Default Input folder, the Default Output
                 folder or another location entirely.""")
         self.location_other = cps.DirectoryPath("Enter the full path to the images", '',doc="""
-                <i>(Only used if your images are located Elsewhere)</i> 
+                <i>(Used only if your images are located Elsewhere)</i> 
                 <p>Type the full path to where the images are located. Note that this
                 path is fixed with respect to your local machine, which means that transfering
                 your pipeline to another machine may cause it to fail if it does not share the
@@ -407,7 +407,7 @@ class LoadImages(cpmodule.CPModule):
                                                 '^(?P<Plate>.*)_(?P<Well>[A-P][0-9]{2})_s(?P<Site>[0-9])',
                                                 get_example_fn = example_file_fn,
                         doc="""
-                        <i>(Only used if you want to extract metadata from the file name)</i>
+                        <i>(Used only if you want to extract metadata from the file name)</i>
                         <p>The regular expression to extract the metadata from the file name is entered here. Note that
                         this field is available whether you have selected <i>Text-Regular expressions</i> to load
                         the files or not. Please see the module help for more information on construction of
@@ -442,7 +442,7 @@ class LoadImages(cpmodule.CPModule):
                         '.*[\\\\/](?P<Date>.*)[\\\\/](?P<Run>.*)$',
                         get_example_fn = example_path_fn,
                         doc="""
-                        <i>(Only used if you want to extract metadata from the path)</i>
+                        <i>(Used only if you want to extract metadata from the path)</i>
                         <p>The regular expression to extract the metadata from the path is entered here. Note that
                         this field is available whether you have selected <i>Text-Regular expressions</i> to load
                         the files or not. Please see the module help for more information on construction of

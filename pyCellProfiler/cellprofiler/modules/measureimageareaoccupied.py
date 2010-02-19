@@ -71,7 +71,7 @@ class MeasureImageAreaOccupied(cpm.CPModule):
         group.append("should_save_image", cps.Binary("Retain a binary image of the object regions for use later in the pipeline (for example, in SaveImages)?", False))
         
         group.append("image_name", cps.ImageNameProvider("Name the output binary image", "Stain",doc="""
-                                        <i>(Only used if the binary image of the objects is to be retained for later use in the pipeline)</i> <br> 
+                                        <i>(Used only if the binary image of the objects is to be retained for later use in the pipeline)</i> <br> 
                                         Choose a name, which will allow the binary image of the objects to be selected later in the pipeline."""))
         if can_remove:
             group.append("remover", cps.RemoveSettingButton("", "Remove this object", self.objects, group))

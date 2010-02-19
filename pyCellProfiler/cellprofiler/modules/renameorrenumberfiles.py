@@ -110,7 +110,7 @@ class RenameOrRenumberFiles(cpm.CPModule):
             "Number of digits for numbers",
             4, minval=0,
             doc="""
-            <i>(Only used if Renumber is used)</i><br>
+            <i>(Used only if Renumber is used)</i><br>
             Use this setting to pad numbers with zeros so that they
             all have a uniform number of characters. For instance, padding
             with four digits has the following result:<br>

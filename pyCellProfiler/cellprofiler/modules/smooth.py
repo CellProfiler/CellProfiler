@@ -83,13 +83,13 @@ class Smooth(cpm.CPModule):
             </ul>""")
         
         self.wants_automatic_object_size = cps.Binary('Calculate object size automatically?',True,doc="""
-            <i>(Only used if Gaussian, Median or Smooth Keeping Edges is selected)</i>
+            <i>(Used only if Gaussian, Median or Smooth Keeping Edges is selected)</i>
             <p>If this box is checked, the module will choose an object size based on
             the size of the image. The minimum size it will choose is 30 pixels,
             otherwise the size is 1/40 of the size of the image.""")
         
         self.object_size = cps.Float('Size of objects:',16.0,doc="""
-            <i>(Only used if chosing the object size automatically is unchecked)</i>
+            <i>(Used only if chosing the object size automatically is unchecked)</i>
             <p>Enter the approximate diameter of the features to be removed by
             the smoothing algorithm. This value is used to calculate the size of 
             the spatial filer. To measure distances easily in an open image, use 
@@ -97,7 +97,7 @@ class Smooth(cpm.CPModule):
             the pixel intensities will appear in the bottom bar of the figure window.""")
         
         self.sigma_range = cps.Float('Edge intensity difference:', .1,doc="""
-            <i>(Only used if Smooth Keeping Edges is selected)</i>
+            <i>(Used only if Smooth Keeping Edges is selected)</i>
             <p>What are the differences in intensity in the edges that you want to preserve?
             Enter the intensity step that is indicative of an edge in an image.
             Edges are locations where the intensity changes precipitously, so this

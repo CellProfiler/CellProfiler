@@ -115,28 +115,28 @@ class GrayToColor(cpm.CPModule):
         
         self.cyan_adjustment_factor = cps.Float(
             "Relative weight for the cyan image", value=1,
-            minval=0,doc='''<i>(Only used if CMYK is selected)</i><br>
+            minval=0,doc='''<i>(Used only if CMYK is selected)</i><br>
 			Enter the relative weights: If all relative weights are equal, all 
                         colors contribute equally in the final image. To weight colors relative to each other, 
                         increase or decrease the relative weights.''')
         
         self.magenta_adjustment_factor = cps.Float(
             "Relative weight for the magenta image", value=1,
-            minval=0,doc='''<i>(Only used if CMYK is selected)</i><br>
+            minval=0,doc='''<i>(Used only if CMYK is selected)</i><br>
                             Enter the relative weights: If all relative weights are equal, all 
                             colors contribute equally in the final image. To weight colors relative to each other, 
                             increase or decrease the relative weights.''')
         
         self.yellow_adjustment_factor = cps.Float(
             "Relative weight for the yellow image", value=1,
-            minval=0,doc='''<i>(Only used if CMYK is selected)</i><br>
+            minval=0,doc='''<i>(Used only if CMYK is selected)</i><br>
                             Enter the relative weights: If all relative weights are equal, all 
                             colors contribute equally in the final image. To weight colors relative to each other, 
                             increase or decrease the relative weights.''')
         
         self.gray_adjustment_factor = cps.Float(
             "Relative weight for the brightness image", value=1,
-            minval=0,doc='''<i>(Only used if CMYK is selected)</i><br>
+            minval=0,doc='''<i>(Used only if CMYK is selected)</i><br>
                             Enter the relative weights: If all relative weights are equal, all 
                             colors contribute equally in the final image. To weight colors relative to each other, 
                             increase or decrease the relative weights.''')

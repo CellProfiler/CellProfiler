@@ -120,7 +120,7 @@ class LoadImagesNew(cpmodule.CPModule):
         
         # should this be a regexp?
         self.match_exclude_text = cps.Text('Substring in files to be excluded', cps.DO_NOT_USE,doc="""
-                <i>(Only used if file exclusion is selected)</i> 
+                <i>(Used only if file exclusion is selected)</i> 
                 <p>Here you can specify substring that marks files for exclusion.</p>""")
 
 

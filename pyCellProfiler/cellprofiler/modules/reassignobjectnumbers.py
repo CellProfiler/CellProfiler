@@ -101,7 +101,7 @@ class ReassignObjectNumbers(cpm.CPModule):
         self.image_name = cps.ImageNameSubscriber(
             "Select the grayscale image", "None",
             doc="""
-            <i>(Only used if an image is used for unification)</i><br>
+            <i>(Used only if an image is used for unification)</i><br>
             This is the name of an image from a previous module. The
             image is used during unification to determine if the intensities
             between objects are within 90% of that at the centroids""")
@@ -109,7 +109,7 @@ class ReassignObjectNumbers(cpm.CPModule):
         self.minimum_intensity_fraction = cps.Float(
             "Minimum intensity fraction", .9, minval=0, maxval=1,
             doc="""
-            <i>(Only used if an image is used for unification)</i><br>
+            <i>(Used only if an image is used for unification)</i><br>
             The grayscale algorithm finds the points along the line
             connecting two objects' centroids. Two objects can only be connected
             if the points along this line are all greater than a fraction
@@ -123,7 +123,7 @@ class ReassignObjectNumbers(cpm.CPModule):
             "Method to find object intensity",
             [CA_CLOSEST_POINT, CA_CENTROIDS],
             doc = """
-            <i>(Only used if an image is used for unification)</i><br>
+            <i>(Used only if an image is used for unification)</i><br>
             You can use one of two algorithms to determine whether two
             objects are touching:
             <ul>

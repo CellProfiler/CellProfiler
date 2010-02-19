@@ -130,7 +130,7 @@ class MeasureImageQuality(cpm.CPModule):
                                             '''))
         group.append("window_size", cps.Integer("Window size for blur measurements",
                                                 20, minval =1,
-                                                doc = '''(Only used if blur measurements are to be calculated) <br> 
+                                                doc = '''(Used only if blur measurements are to be calculated) <br> 
                                                   The local focus score is measured within an NxN pixel window 
                                                   applied to the image. What value of N would you like to use? A suggested 
                                                   value is twice the typical object diameter. You
@@ -157,11 +157,11 @@ class MeasureImageQuality(cpm.CPModule):
         group.append("threshold_method", cps.Choice("Select a thresholding method",
                                                     cpthresh.TM_GLOBAL_METHODS,
                                                     cpthresh.TM_OTSU_GLOBAL, 
-                                                    doc = '''(Only used if thresholds are to be calculated) <br> This setting allows you to access automatic thresholding 
+                                                    doc = '''(Used only if thresholds are to be calculated) <br> This setting allows you to access automatic thresholding 
                                                        methods used in the <b>Identify</b> modules.
                                                        For more help on thresholding, see the Identify modules.'''))
         group.append("object_fraction", cps.Float("Typical fraction of the image covered by objects", 0.1,0,1, doc = 
-                                                  """(Only used if threshold are calculated and MoG thresholding is chosen) <br> 
+                                                  """(Used only if threshold are calculated and MoG thresholding is chosen) <br> 
                                                       Enter the approximate fraction of the typical image in the set
                                                       that is covered by objects."""))
         group.append("two_class_otsu", cps.Choice(

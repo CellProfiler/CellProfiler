@@ -125,7 +125,7 @@ class MeasureObjectNeighbors(cpm.CPModule):
         self.count_image_name = cps.ImageNameProvider('Name the output image',
                                                       'ObjectNeighborCount', 
                                                       doc = """
-            <i>(Only used if the image of objects colored by numbers of neighbors 
+            <i>(Used only if the image of objects colored by numbers of neighbors 
             is to be retained for later use in the pipeline)</i> <br> Choose a name, 
             which will allow the the image of objects colored by numbers of neighbors 
             to be selected later in the pipeline.""")
@@ -143,7 +143,7 @@ class MeasureObjectNeighbors(cpm.CPModule):
         self.touching_image_name = cps.ImageNameProvider('Name the output image',
                                                          'PercentTouching', 
                                                          doc = """
-            <i>(Only used if the image of objects colored by numbers of neighbors 
+            <i>(Used only if the image of objects colored by numbers of neighbors 
             is to be retained for later use in the pipeline)</i> <br> Choose a name, 
             which will allow the the image of objects colored by percent of touching 
             pixels to be selected later in the pipeline.""")

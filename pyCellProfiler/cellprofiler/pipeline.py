@@ -926,6 +926,7 @@ class Pipeline(object):
             image_set_count = -1
             
             measurements = None
+            last_image_number = None
             for image_number, closure in group(image_set_list):
                 if image_number is None:
                     if not closure(workspace):
@@ -936,6 +937,9 @@ class Pipeline(object):
                 image_set_count += 1
                 if not closure():
                     return
+                if last_image_number is not None:
+                    image_set_list.purge_image_set(last_image_number-1)
+                last_image_number = image_number
                 if measurements is None:
                     measurements = cpmeas.Measurements(
                         image_set_start=image_number - 1)
@@ -1047,7 +1051,6 @@ class Pipeline(object):
                         measurements.add_experiment_measurement(EXIT_STATUS,
                                                                 "Failure")
                         return
-                image_set_list.purge_image_set(image_number-1)
             
             if measurements is not None:
                 measurements.add_experiment_measurement(EXIT_STATUS, "Complete")

@@ -191,13 +191,13 @@ AUTOMATIC_MAXIMA_SUPPRESSION    = 19
 MANUAL_THRESHOLD_VAR            = 20
 BINARY_IMAGE_VAR                = 21
 
-LIMIT_NONE = "No action"
+LIMIT_NONE = "Continue"
 LIMIT_TRUNCATE = "Truncate"
 LIMIT_ERASE = "Erase"
 
 class IdentifyPrimaryObjects(cpmi.Identify):
             
-    variable_revision_number = 5
+    variable_revision_number = 6
     category =  "Object Processing"
     module_name = "IdentifyPrimaryObjects"
     
@@ -433,10 +433,11 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             <i>(Used only when applying the LoG thresholding method)</i><br>
             The size to use when calculating the LoG filter. The filter enhances the local maxima of objects 
             whose diameters are roughly the entered number or smaller.""")
+        
         self.limit_choice = cps.Choice(
-            "How do you want to handle images with large numbers of objects?",
+            "Handling of objects if excessive number of objects identified",
             [LIMIT_NONE, LIMIT_TRUNCATE, LIMIT_ERASE],
-            doc = """This setting lets you handle images that are segmented
+            doc = """This setting deals with images that are segmented
             into an unreasonable number of objects. This might happen if
             the module calculates a low threshold or if the image has
             unusual artifacts. <b>IdentifyPrimaryObjects</b> can handle
@@ -451,6 +452,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             no primary objects. This option is a good choice if a large
             number of objects indicates that the image should not be
             processed.</li></ul>""" % globals())
+        
         self.maximum_object_count = cps.Integer(
             "Maximum # of objects:",
             value = 500,
@@ -577,6 +579,12 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             # Added # of object limits
             setting_values = setting_values + [LIMIT_NONE, "500"]
             variable_revision_number = 5
+            
+        if (not from_matlab) and variable_revision_number == 5:
+            # Changed object number limit option from "No action" to "Continue"
+            setting_values[-2] = "Continue"
+            variable_revision_number = 6
+            
         return setting_values, variable_revision_number, from_matlab
             
     def visible_settings(self):

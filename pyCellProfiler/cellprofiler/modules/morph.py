@@ -2,16 +2,19 @@
 <b>Morph</b> performs low-level morphological operations on binary or grayscale images
 <hr>
 This module performs a series of morphological operations on a binary
-image or grayscale image, resulting in an image of the same type.
-    
-The following operations are supported:<br>
+image or grayscale image, resulting in an image of the same type. Many require some image processing knowledge to understand how best to use these morphological filters in order to achieve the desired result. Note that the algorithms minimize the interference of masked pixels; for instance,
+the dilate operation will only consider unmasked pixels in the neighborhood
+of a pixel when determining the maximum within that neighborhood.
+<br>
+<br>
+The following operations are available:<br>
 <table border="1">
 <tr><td><b>Operation</b></td><td><b>Description</b></td>
-<td><b>Input image supported</b></td></tr>
+<td><b>Input image type allowed</b></td></tr>
 <tr>
 <td><i>Bothat</i></td>
 <td>Bottom-hat filter: A bottom-hat filter enhances black spots in a white background. 
-It subtracts the morphological "close" of the image from the image.</td>
+It subtracts the morphological <i>Close</i> of the image from the image. See below for a description of <i>Close</i>.</td>
 <td>Binary, grayscale</td>
 </tr>
 <tr><td><i>Branchpoints</i></td>
@@ -345,9 +348,6 @@ in a black background.</td>
   <td>Binary</td>
 </tr>
 </table>
-<p>The algorithms minimize the interference of masked pixels; for instance,
-the dilate operation will only consider unmasked pixels in the neighborhood
-of a pixel when determining the maximum within that neighborhood.</p>
 '''
 
 # CellProfiler is distributed under the GNU General Public License.
@@ -413,11 +413,11 @@ class Morph(cpm.CPModule):
     variable_revision_number = 1
     
     def create_settings(self):
-        self.image_name = cps.ImageNameSubscriber("Select input image:","None",doc="""
+        self.image_name = cps.ImageNameSubscriber("Select the input image:","None",doc="""
             What image do you want to morph?
             This is the input image to the module. A grayscale image can be
             converted to binary using the <b>ApplyThreshold</b> module. Objects can be
-            converted to binary using the <b>ConvertToImage module</b>.""")
+            converted to binary using the <b>ConvertToImage</b> module.""")
         
         self.output_image_name = cps.ImageNameProvider("Name the output image:","MorphBlue",doc="""
         What do you want to call the resulting image?
@@ -427,9 +427,8 @@ class Morph(cpm.CPModule):
         self.add_button = cps.DoSomething("", "Add another operation",
                                           self.add_function,doc="""                                    
             Press this button to add an operation that will be applied to the
-            image resulting from the previous transformation. The module repeats
-            the previous transformation the number of times indicated by the
-            instructions before applying the operation added by this button.""")
+            image resulting from the previous operation(s). The module repeats
+            the previous operation the number of times you select before applying the operation added by this button.""")
         self.functions = []
         self.add_function(can_remove = False)
     
@@ -437,19 +436,19 @@ class Morph(cpm.CPModule):
         group = MorphSettingsGroup()
         if can_remove:
             group.append("divider", cps.Divider(line=False))
-        group.append("function", cps.Choice("Select operation to perform:",
+        group.append("function", cps.Choice("Select the operation to perform:",
                                            F_ALL, F_OPEN,doc="""
                                            What operation do you want to perform?
-                    This is one of the functions listed in the module Help."""))
+                    Choose one of the operations described in this module's Help."""))
         group.append("repeats_choice", cps.Choice("Repeat operation:",
                                                   R_ALL,doc="""
                     This setting controls the number of times that the same operation is applied
                     successively to the image.
                     <ul>
-                    <li><i>Once:</i> Perform one transformation on the image</li>
-                    <li><i>Forever:</i> Perform the transformation on the image until successive
-                    transformations yield the same image.</li>
-                    <li><i>Custom:</i> Perform the transformation a custom number of times.</li>
+                    <li><i>Once:</i> Perform the operation once on the image</li>
+                    <li><i>Forever:</i> Perform the operation on the image until successive
+                    iterations yield the same image.</li>
+                    <li><i>Custom:</i> Perform the operation a custom number of times.</li>
                     </ul>"""))
         group.append("custom_repeats", cps.Integer("Custom # of repeats",2,1))
         if can_remove:

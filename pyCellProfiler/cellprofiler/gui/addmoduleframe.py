@@ -31,13 +31,13 @@ class AddModuleFrame(wx.Frame):
         """
         kwds["style"] = wx.DEFAULT_FRAME_STYLE
         wx.Frame.__init__(self, *args, **kwds)
-        self.SetSize(wx.Size(320,360))
+        self.SetSize(wx.Size(425, 360))
         # Top level panels
         left_panel = wx.Panel(self,-1)
         right_panel = wx.Panel(self,-1)
         self.SetBackgroundColour(left_panel.GetBackgroundColour())
         # Module categories (in left panel)
-        module_categories_text = wx.StaticText(left_panel,-1,'Module Categories',style=wx.TEXT_ALIGNMENT_CENTER)
+        module_categories_text = wx.StaticText(left_panel,-1,'Module Categories',style=wx.ALIGN_CENTER)
         font = module_categories_text.GetFont()
         module_categories_text.SetFont(wx.Font(font.GetPointSize()*1.2,font.GetFamily(),font.GetStyle(),wx.FONTWEIGHT_BOLD))
         self.__module_categories_list_box = wx.ListBox(left_panel,-1)
@@ -54,13 +54,13 @@ class AddModuleFrame(wx.Frame):
         self.__module_list_box = wx.ListBox(right_panel,-1)
         # Sizers
         top_sizer = wx.BoxSizer(wx.HORIZONTAL)
-        top_sizer.AddMany([(left_panel,1,wx.EXPAND|wx.LEFT,5),
+        top_sizer.AddMany([(left_panel,0,wx.EXPAND|wx.LEFT,5),
                            (right_panel,1,wx.EXPAND)])
         self.SetSizer(top_sizer)
         left_sizer = wx.BoxSizer(wx.VERTICAL)
-        left_sizer.Add(module_categories_text,0,wx.CENTER|wx.ALL|wx.EXPAND,5)
+        left_sizer.Add(module_categories_text,0,wx.EXPAND)
         left_sizer.AddSpacer(4)
-        left_sizer.Add(self.__module_categories_list_box,1,wx.EXPAND|wx.LEFT|wx.RIGHT,10)
+        left_sizer.Add(self.__module_categories_list_box,1,wx.EXPAND)
         left_sizer.AddSpacer((-1,10))
         left_sizer.Add(selected_module_panel,0,wx.EXPAND)
         left_sizer.AddSpacer((-1,10))

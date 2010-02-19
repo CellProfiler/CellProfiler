@@ -309,6 +309,15 @@ class CPFigureFrame(wx.Frame):
             self.figure.canvas.draw()
             self.Refresh()
     
+
+    def find_image_for_axes(self, axes):
+        for i, sl in enumerate(self.subplots):
+            for j, slax in enumerate(sl):
+                if axes == slax:
+                    return self.images.get((i, j), None)
+        return None
+
+
     def on_mouse_move_show_pixel_data(self, event, x0, y0, x1, y1):
         if event.xdata is None or event.ydata is None:
             return
@@ -316,23 +325,21 @@ class CPFigureFrame(wx.Frame):
         yi = int(event.ydata+.5)
         fields = ["X: %d"%xi, "Y: %d"%yi]
         if event.inaxes:
-            images = event.inaxes.get_images()
-            if len(images) == 1:
-                image = images[0]
-                array = image.get_array()
-                if array.dtype.type == np.uint8:
-                    def fn(x):
-                        return float(x) / 255.0
-                else:
-                    def fn(x):
-                        return x
-                if array.ndim == 2:
-                    fields += ["Intensity: %.4f"%fn(array[yi,xi])]
-                elif array.ndim == 3:
-                    fields += ["Red: %.4f"%fn(array[yi,xi,0]),
-                               "Green: %.4f"%fn(array[yi,xi,1]),
-                               "Blue: %.4f"%fn(array[yi,xi,2])]
-        if self.mouse_down is not None:
+            im = self.find_image_for_axes(event.inaxes)
+            if im is None:
+                return
+            if im.dtype.type == np.uint8:
+                im = im.astype(float) / 255.0
+            if im.ndim == 2:
+                fields += ["Intensity: %.4f"%(im[yi,xi])]
+            elif im.ndim == 3 and im.shape[2] == 3:
+                fields += ["Red: %.4f"%(im[yi,xi,0]),
+                           "Green: %.4f"%(im[yi,xi,1]),
+                           "Blue: %.4f"%(im[yi,xi,2])]
+            elif im.ndim == 3: 
+                fields += ["Channel %d: %.4f"%(idx + 1, im[yi, xi, idx]) for idx in im.shape[2]]
+                           
+        if None and self.mouse_down is not None:
             length = np.sqrt((x0-x1)**2 +(y0-y1)**2)
             fields.append("Length: %.1f"%length)
             if self.length_arrow is not None:

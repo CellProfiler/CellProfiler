@@ -1,9 +1,9 @@
-'''<b>MaskObjects</b> - Removes objects outside of specified region.<br>
+'''<b>MaskObjects</b> removes objects outside of specified region.
 <hr>
 This image analysis module allows you to delete the objects and portions
 of objects that are outside of a region you specify (e.g. nuclei outside
 of a tissue region).  The objects and the region should both result from
-any Identify module (Primary, Secondary, or Tertiary). Alternatively, you
+any <b>Identify</b> module (Primary, Secondary, or Tertiary). Alternatively, you
 can use a binary image as a mask and remove objects outside of the mask.
 You can transform a grayscale image into a binary image using the
 <b>ApplyThreshold</b> module.<p>
@@ -68,14 +68,14 @@ class MaskObjects(I.Identify):
     def create_settings(self):
         '''Create the settings that control this module'''
         self.object_name = cps.ObjectNameSubscriber(
-            "Objects to be masked:","None",
+            "Select objects to be masked","None",
             doc="""These are the objects that will be masked by the masking
             objects or image. You can choose from any objects created by
             a previous module, such as <b>IdentifyPrimaryObjects</b>,
             <b>IdentifySecondaryObjects</b> or <b>IdentifyTertiaryObjects</b>""")
         
         self.remaining_objects = cps.ObjectNameProvider(
-            "Name the masked objects:", "MaskedNuclei",
+            "Name the masked objects", "MaskedNuclei",
             doc="""This setting gives a name to the objects that remain after
             the masking operation. You can refer to the masked objects in
             subsequent modules using this name.""")
@@ -87,14 +87,14 @@ class MaskObjects(I.Identify):
             or you can mask them using a binary image.""")
         
         self.masking_objects = cps.ObjectNameSubscriber(
-            "Masking objects:","None",
+            "Select the masking object","None",
             doc="""These are the objects that will be used to define the
             masking region. Objects that do not overlap the masking objects
             will be masked out. You can choose from any objects created
             by a previous module, such as <b>IdentifyPrimaryObjects</b>""")
         
         self.masking_image = cps.ImageNameSubscriber(
-            "Masking image:","None",
+            "Select the masking image","None",
             doc="""This is the name of an image that was either loaded or
             created by a previous module. The image should be a binary image.
             Images can be loaded from disk by <b>LoadImages</b> or
@@ -104,7 +104,7 @@ class MaskObjects(I.Identify):
             the masking image will be masked out.""")
         
         self.overlap_choice = cps.Choice(
-            "How do you want to handle objects that are partially masked?",
+            "Handling of objects that are partially masked",
             [P_MASK, P_KEEP, P_REMOVE, P_REMOVE_PERCENTAGE],
             doc="""An object can partially overlap the mask region with
             pixels both inside and outside the region. <b>MaskObjects</b>
@@ -128,7 +128,7 @@ class MaskObjects(I.Identify):
             region.</li></ul>""")
         
         self.overlap_fraction = cps.Float(
-            "How much of the object must overlap?", .5, 
+            "Fraction of object that must overlap", .5, 
             minval = 0, maxval = 1,
             doc = """This setting specifies the minimum fraction of an object
             that must overlap the masking region for that object to be retained.
@@ -136,7 +136,7 @@ class MaskObjects(I.Identify):
             must be within the masking region for that object to be retained.""")
         
         self.retain_or_renumber = cps.Choice(
-            "Retain original numbering or renumber objects?",
+            "Numbering of resulting objects",
             [R_RENUMBER, R_RETAIN],
             doc="""This setting controls the numbering of the objects that 
             remain after masking. If you choose, "Renumber",
@@ -150,13 +150,13 @@ class MaskObjects(I.Identify):
             associated with your original objects.""")
 
         self.wants_outlines = cps.Binary(
-            "Save outlines for the resulting objects?", False,
+            "Save outlines of the resulting objects?", False,
             doc = """You can save the outlines of the objects that are
             produced after masking. These outlines can be displayed over
             images using the <b>OverlayOutlines</b> module.""")
         
         self.outlines_name = cps.OutlineNameProvider(
-            "Outlines name:", "MaskedOutlines",
+            "Name the outline image", "MaskedOutlines",
             doc = """This setting names the outline image. Subsequent modules
             can refer to the binary outline image using this name.""")
         

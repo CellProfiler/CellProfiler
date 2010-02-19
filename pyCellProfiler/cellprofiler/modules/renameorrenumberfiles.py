@@ -1,9 +1,8 @@
-'''<b>RenameOrRenumberFiles</b> - Renames or renumbers files on the hard drive.
+'''<b>Rename Or Renumber Files</b> renames or renumbers files on the hard drive.
 <hr>
-
 This file renaming utility adjusts text within image file names. 
-<i style='color:red'>Be very careful with this module because its purpose is 
-to rename (= overwrite) files!!</i> You will have the opportunity to confirm 
+<i><b>Be very careful with this module because its purpose is 
+to rename (and overwrite) files!!</b></i> You will have the opportunity to confirm 
 the name change for the first cycle only. The folder containing the files must 
 not contain subfolders or the subfolders and their contents will also be
 renamed. The module will not rename the file in test mode. You should use
@@ -17,10 +16,13 @@ in numerical order when processed by LoadImages.<br>
 Examples:<br>
 <br>
 Renumber:<br>
-DrosDAPI_1.tif    -> DrosDAPI_001.tif<br>
-DrosDAPI_10.tif   -> DrosDAPI_010.tif<br>
-DrosDAPI_100.tif  -> DrosDAPI_100.tif<br>
-(to accomplish this, retain 4 characters at the end, retain 9 characters
+<table border = "1">
+<tr><td><i>Original name</i></td><td><i>New name</i></td></tr>
+<tr><td>DrosDAPI_1.tif</td>  <td>DrosDAPI_001.tif</td></tr>
+<tr><td>DrosDAPI_10.tif</td> <td>DrosDAPI_010.tif</td></tr>
+<tr><td>DrosDAPI_100.tif</td><td>DrosDAPI_100.tif</td></tr>
+</table>
+To accomplish this, retain 4 characters at the end, retain 9 characters
 at the beginning, and use 3 numerical digits between).<br>
 <br>
 Renumbering is especially useful when numbers within image filenames do
@@ -36,12 +38,15 @@ DrosDAPI_4.tif<br>
 ...<br>
 <br>
 Rename:<br>
-1DrosophilaDAPI_1.tif    -> 1DrosDP_1.tif<br>
-2DrosophilaDAPI_10.tif   -> 2DrosDP_10.tif<br>
-3DrosophilaDAPI_100.tif  -> 3DrosDP_100.tif<br>
-(to accomplish this, retain 4 characters at the end, retain 5 characters
-at the beginning, enter "DP" as text to place between, and leave
-numerical digits as is).
+<table border = "1">
+<tr><td><i>Original name</i></td><td><i>New name</i></td></tr>
+<tr><td>1DrosophilaDAPI_1.tif</td>   <td>1DrosDP_1.tif</td></tr>
+<tr><td>2DrosophilaDAPI_10.tif</td>  <td>2DrosDP_10.tif</td></tr>
+<tr><td>3DrosophilaDAPI_100.tif</td> <td>3DrosDP_100.tif</td></tr>
+</table>
+To accomplish this, retain 4 characters at the end, retain 5 characters
+at the beginning, enter <i>DP</i> as text to place between, and leave
+numerical digits as is.
 '''
 
 __version__="$Revision$"
@@ -65,29 +70,33 @@ class RenameOrRenumberFiles(cpm.CPModule):
         self.warning = cps.Divider(
             "This module allows you to rename (overwrite) your files. Please "
             "see the help for this module for warnings.")
+        
         self.image_name = cps.FileImageNameSubscriber(
-            'Image name:','None',
+            'Select the input image','None',
             doc="""This is the name of the image associated with the file
             you want to rename. It should be an image loaded by 
             <b>LoadImages</b>, <b>LoadData</b> or <b>LoadSingleImage</b>.
             Be very careful because you will be renaming this file!""")
+        
         self.number_characters_prefix = cps.Integer(
-            "Number of characters to retain at start of file name:", 6,
+            "Number of characters to retain at start of file name", 6,
             minval=0,
             doc="""This is the number of characters at the start of the old
             file name that will be copied over to the new file name. For
             instance, if this setting is "6" and the file name is 
             "Image-734.tif", the output file name will also start with 
             "Image-".""")
+        
         self.number_characters_suffix = cps.Integer(
-            "Number of characters to retain at the end of file name:", 4,
+            "Number of characters to retain at the end of file name", 4,
             minval=0,
             doc="""This is the number of characters at the end of the old
             file name that will be copied over to the new file name. For
             instance, if this setting is "4" and the file name is
             "Image-734.tif", the output file name will also end with ".tif".""")
+        
         self.action = cps.Choice(
-            "What do you want to do with the remaining characters?",
+            "Handling of remaining characters",
             [A_RENUMBER, A_DELETE],
             doc ="""You can either treat the characters between the start and
             end as numbers or you can delete them. If you treat them as numbers,
@@ -96,10 +105,13 @@ class RenameOrRenumberFiles(cpm.CPModule):
             instance, if you were to renumber the highlighted portion of the
             file, "Image-<u>734</u>.tif", using four digits, the result would
             be, "Image-0734.tif".""")
+        
         self.number_digits = cps.Integer(
-            "How many numerical digits would you like to use?",
+            "Number of digits for numbers",
             4, minval=0,
-            doc="""Use this setting to pad numbers with zeros so that they
+            doc="""
+            <i>(Only used if Renumber is used)</i><br>
+            Use this setting to pad numbers with zeros so that they
             all have a uniform number of characters. For instance, padding
             with four digits has the following result:<br>
             <code><table>
@@ -109,13 +121,15 @@ class RenameOrRenumberFiles(cpm.CPModule):
             <tr><td>100</td><td>0100</td></tr>
             <tr><td>1000</td><td>1000</td></tr>
             </table></code>""")
+        
         self.wants_text = cps.Binary(
-            "Do you want to add text to the file name?", False,
+            "Add text to the file name?", False,
             doc="""You can check this setting if you want to add text
-            to the file name. If you chose "Renumber" above,
-            <b>RenameOrRenumberFiles</b> will add the text after your number.
-            If you chose "Delete", <b>RenameOrRenumberFiles</b> will replace
+            to the file name. If you chose <i>Renumber</i> above,
+            the module will add the text after your number.
+            If you chose <i>Delete</i>, the module will replace
             the deleted text with the text you enter here.""")
+        
         self.text_to_add = cps.Text(
             "Replacement text","",
             doc="""This is the text that appears either after your number or

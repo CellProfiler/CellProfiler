@@ -1,18 +1,18 @@
-'''<b>Tile</b> Tiles images together to form one large image, either across image cycles or within a cycle
+'''<b>Tile</b> tiles images together to form one large image, either across image cycles or within a cycle
 <hr>
 Allows many images to be viewed simultaneously in a grid layout you specify (e.g., in the actual layout in which the
 images were collected).  If you want to view a large number of images, you will generate an extremely large file
 (roughly the size of all the images' sizes added together).  This will cause memory errors, so we offer a few suggestions:
 <ol>
-<li>Resize the images to a fraction of their original size by using the Resize module just before this module.</li>
+<li>Resize the images to a fraction of their original size by using the <b>Resize</b> module just before this module.</li>
 <li>Rescale the images to 8-bit, which decreases the number of graylevels in the image (thus decreasing resolution)
 but also decreases the size of the image. </li>
-<li> Use the SpeedUpCellProfiler module just before this module to clear out images that are stored in memory. 
-Place this module just prior to the Tile module (and maybe also afterwards) and ask it to retain only those 
+<li> Use the <b>ConserveMemory</b> module just before this module to clear out images that are stored in memory. 
+Place this module prior to the Tile module (and maybe also afterwards) and ask it to retain only those 
 images which are needed for downstream modules. </li>
 </ol>
 
-This module combines the functionality of both Tile and PlaceAdjacent.
+This module replaces the functionality of the module PlaceAdjacent.
 '''
 __version__ = "$Revision: 9034 $"
 
@@ -69,10 +69,10 @@ class Tile(cpm.CPModule):
                                            T_ALL, doc='''
              How would you like to tile images? Two options are available:<br>
              <ul>
-             <li><i>Tile within cycles:</i> This option takes the place of the PlaceAdjacent module.  For example, 
+             <li><i>Tile within cycles:</i> This option takes the place of the <b>PlaceAdjacent</b> module.  For example, 
              you may tile three different channels (OrigRed, OrigBlue, and OrigGreen), and a new tiled image will 
              be created for every image cycle.</li>
-             <li><i>Tile across cycles:</i> This module replicates the original Tile functionality.  For example, 
+             <li><i>Tile across cycles:</i> This module replicates the original <b>Tile</b> functionality.  For example, 
              you may tile all the images you wish to analyze (OrigBlue), and one final tiled image will be created 
              when processing is complete.</li>
              </ul>''')

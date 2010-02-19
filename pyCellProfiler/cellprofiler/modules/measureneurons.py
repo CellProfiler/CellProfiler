@@ -1,15 +1,15 @@
-'''<b>Measure Neurons</b>: This module will measure branching information of
+'''<b>Measure Neurons</b> measures branching information of
 skeleton objects from seed points.
 <hr>
-This module measures the number of trunks and branches for each neuron in
+<p>This module measures the number of trunks and branches for each neuron in
 an image. The module takes a skeletonized image of the neuron and seed objects
 (for instance, the neuron soma) and finds the number of axon or dendrite
 trunks that emerge from the soma and the number of branches along the
-axons and dendrites.
+axons and dendrites.</p>
 
-The module finds distances from the seed objects along the axons and dendrites 
+<p>The module finds distances from the seed objects along the axons and dendrites 
 and assigns branchpoints to the closest seed object when two seed objects
-appear to be attached to the same dendrite or axon.
+appear to be attached to the same dendrite or axon.</p>
 '''
 # CellProfiler is distributed under the GNU General Public License.
 # See the accompanying file LICENSE for details.
@@ -56,23 +56,28 @@ class MeasureNeurons(cpm.CPModule):
     def create_settings(self):
         '''Create the UI settings for the module'''
         self.seed_objects_name = cps.ObjectNameSubscriber(
-            "Seed objects name:", "None",
+            "Select the seed objects", "None",
             doc = """This setting selects the objects that are used as the
             seeds for distance measurement. Branches and trunks are assigned
             per seed object""")
+        
         self.image_name = cps.ImageNameSubscriber(
-            "Skeletonized image name:", "None",
+            "Select the skeletonized image", "None",
             doc = """This should be a skeletonized image of the dendrites
             and / or axons as produced by the <b>Morph</b> module's
             "skeletonize" operation""")
+        
         self.wants_branchpoint_image = cps.Binary(
-            "Do you want to save the branchpoint image?", False,
+            "Save the branchpoint image?", False,
             doc="""Check this setting if you want to save the color image of
             branchpoints and trunks. This is the image that is displayed
             as the visualization for this module.""")
+        
         self.branchpoint_image_name = cps.ImageNameProvider(
-            "Branchpoint image name:","BranchpointImage",
-            doc="""Enter a name for the branchpoint image here. You can
+            "Name the branchpoint image","BranchpointImage",
+            doc="""
+            <i>(Only used if an bracjhpoint image is requested)</i><br>
+            Enter a name for the branchpoint image here. You can
             use this name in a later module, such as <b>SaveImages</b> to
             refer to this image.""")
     

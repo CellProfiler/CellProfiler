@@ -1,18 +1,14 @@
-'''<b>Reassign Object Numbers</b>
-Relabels objects so that objects within a specified distance of each
-other, or objects with a straight line connecting
-their centroids that has a relatively uniform intensity, 
-get the same label and thereby become the same object.
-Optionally, if an object consists of two or more unconnected components, this
-module can relabel them so that the components become separate objects.
+'''<b>Reassign Object Numbers</b> relabels objects so that either adjacent objects 
+become the same object, or single objects with unconnected 
+components become separate objects.
 <hr>
-Relabeling objects changes the labels of the pixels in an object such
-that it either becomes equal to the label of another (unify) or changes
+Reassigning object numbers changes the labels of the pixels in an object such
+that it either becomes equal to the label of another (<i>Unify</i>) or changes
 the labels to distinguish two different components of an object such that
-they are two different objects (Split).
+they are two different objects (<i>Split</i>).
 
 If the distance threshold is zero (the default), only
-objects that are touching will be unified. Note that selecting "unify" will not connect or bridge
+objects that are touching will be unified. Note that selecting <i>Unify</i> will not connect or bridge
 the two objects by adding any new pixels. The new, unified object
 may consist of two or more unconnected components.
  
@@ -24,7 +20,7 @@ intensity of any of these pixels is below 90 percent of either
 centroid, the objects are not unified.
 
 In order to ensure that objects are labeled consecutively (which
-other modules depend on), RelabelObjects may change the label (i.e.,
+other modules depend on), ReassignObjectNumbers may change the label (i.e.,
 the object number) of any object.  A new "measurement" will be added
 for each input object.  This "measurement" is a number that
 indicates the relabeled object number.
@@ -71,41 +67,50 @@ class ReassignObjectNumbers(cpm.CPModule):
     
     def create_settings(self):
         self.objects_name = cps.ObjectNameSubscriber(
-            "Enter original objects name:",
+            "Select the input objects",
             "None",
             doc="""This setting names the objects that will be relabeled.
             You can use any objects that were created in previous modules
             (for instance, in <b>IdentifyPrimAutomatic</b> or
             <b>IdentifySecondary</b>""")
+        
         self.output_objects_name = cps.ObjectNameProvider(
-            "Enter new objects name:","RelabeledNuclei",
+            "Name the new objects","RelabeledNuclei",
             doc="""This setting names the objects that are the result of
             the "relate" operation. You can use this name in subsequent
             modules that take objects as inputs.""")
+        
         self.relabel_option = cps.Choice(
-            "Unify or split objects?",[OPTION_UNIFY, OPTION_SPLIT],
+            "Operation to perform",[OPTION_UNIFY, OPTION_SPLIT],
             doc="""Choose "Unify" to turn nearby or touching objects into
             a single object. Choose "Split" to break non-adjacent pieces of
             objects into separate objects.""")
+        
         self.distance_threshold = cps.Integer(
-            "What is the maximum distance between two objects that should be unified?",
+            "Maximum adjacent object distance for unification",
             0,minval=0)
+        
         self.wants_image = cps.Binary(
-            "Do you want to use an image during unification?", False,
+            "Unify using a grayscale image", False,
             doc="""Unify can use image information to determine whether two
             objects should be unified. Unify will unify two objects if they
             are within the minimum distance and all points along the line
             connecting the centroids are at least 90% of the intensity
             at the centroids""")
+        
         self.image_name = cps.ImageNameSubscriber(
-            "Grayscale image name:", "None",
-            doc="""This is the name of an image from a previous module. The
+            "Select the grayscale image", "None",
+            doc="""
+            <i>(Only used if an image is used for unification)</i><br>
+            This is the name of an image from a previous module. The
             image is used during unification to determine if the intensities
             between objects are within 90% of that at the centroids""")
         
         self.minimum_intensity_fraction = cps.Float(
             "Minimum intensity fraction", .9, minval=0, maxval=1,
-            doc="""The grayscale algorithm finds the points along the line
+            doc="""
+            <i>(Only used if an image is used for unification)</i><br>
+            The grayscale algorithm finds the points along the line
             connecting two objects' centroids. Two objects can only be connected
             if the points along this line are all greater than a fraction
             of the intensity of the dimmest centroid. This setting determines
@@ -115,28 +120,34 @@ class ReassignObjectNumbers(cpm.CPModule):
             of min(.75, .50) * .9 = .50 * .9 = .45""")
         
         self.where_algorithm = cps.Choice(
-            "How do you want to find the object intensity?",
+            "Method to find object intensity",
             [CA_CLOSEST_POINT, CA_CENTROIDS],
             doc = """
+            <i>(Only used if an image is used for unification)</i><br>
             You can use one of two algorithms to determine whether two
-            objects are touching. The "Centroids" method draws a line
+            objects are touching:
+            <ul>
+            <li><i>Centroids:</i> Draws a line
             between the centroids of two cells and each point on that line.
             The algorithm records the lower of the two centroid intensities.
             Each point along the line must be at least a fraction of this
             intensity. This is good for round cells whose maximum intensity
-            is in the center of the cell.
+            is in the center of the cell.</li>
             
-            The "Closest point" method finds the closest point to each point
-            in the background. Two objects touch<br>
-            <ul><li>if each has a nearby background pixel that is
+            <li><i>Closest point:</i> Finds the closest point to each point
+            in the background. Two objects touch
+            <ul>
+            <li>If each has a nearby background pixel that is
             at most 1/2 of the maximum distance from the object</li>
             <li>if the background pixel's intensity is at least the
             minimum intensity fraction of its nearest pixel in the cell</li>
             <li>if one of these background pixels in one object is adjacent
-            to one of these background pixels in the other object</li></ul><br>
-            The "Closest point" method is best to use for irregularly-shaped
+            to one of these background pixels in the other object</li>
+            </ul>
+            This method is best to use for irregularly-shaped
             objects that are connected by pixels of roughly the same intensity
-            as that of the edge of the objects to be connected.""")
+            as that of the edge of the objects to be connected.</li>
+            </ul>""")
 
         
     def settings(self):

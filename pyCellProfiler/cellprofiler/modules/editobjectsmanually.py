@@ -64,23 +64,27 @@ class EditObjectsManually(I.Identify):
             This setting allows you to choose a set of objects from a prior
             module for editing, such as those produced by one of the
             <b>Identify</b> modules""")
+        
         self.filtered_objects = cps.ObjectNameProvider(
-            "Name the objects left after editing","EditedObjects",
+            "Name the remaining objects","EditedObjects",
             doc="""Enter a descriptive name for the objects that are left over
             after editing. These objects will be available for use by
             subsequent modules""")
+        
         self.wants_outlines = cps.Binary(
-            "Do you want to save outlines of the edited objects?", False,
+            "Save outlines of the edited objects?", False,
             doc="""Check this box if you want to keep images of the outlines
             of the perimeters of the objects left after editing. These images
             can be saved by downstream modules or overlayed on other images
             using the <b>OverlayOutlines</b> module.""")
+        
         self.outlines_name = cps.OutlineNameProvider(
-            "What do you want to call the outlines?", "EditedObjectOutlines",
+            "Name the outline image", "EditedObjectOutlines",
             doc="""Use this setting to give a name to the outline image. This
             setting is available only if you check the outlines box""")
+        
         self.renumber_choice = cps.Choice(
-            "Do you want to renumber the objects created by this module or retain the original numbering?",
+            "Numbering of the remaining objects",
             [R_RENUMBER, R_RETAIN],
             doc = """
             This setting controls how the objects are associated with their predecessors.

@@ -1,5 +1,5 @@
-'''<b>SendEmail</b> - Send emails to a specified address at desired stages
-of processing.<br>
+'''<b>SendEmail</b> send emails to a specified address at desired stages
+of processing.
 <hr>
 This module emails the user-specified recipients about the current
 progress of the image processing. The user can specify how often emails
@@ -71,32 +71,37 @@ class SendEmail(cpm.CPModule):
             user = os.environ.get("USERNAME","yourname@yourdomain")
         else:
             user = os.environ.get("USER","yourname@yourdomain")
+            
         self.from_address = cps.Text(
-            "From:", user,
+            "Sender address", user,
             doc="""Enter the email address for the email's "from" field.""")
+        
         self.subject = cps.Text(
-            "Subject:","CellProfiler notification",
+            "Subject line","CellProfiler notification",
             doc="""Enter the text for the email's subject line. You can use
             metadata tags here. For instance, if you have plate metadata,
             you might use the line, "CellProfiler: processing plate \\g<Plate>".""")
+        
         self.smtp_server = cps.Text(
-            "SMTP server:", "mail",
+            "SMTP server", "mail",
             doc="""Enter the address of your SMTP server. You can ask your
             network administrator for your outgoing mail server which is often
             made up of part of your email address, e.g., 
             "Something@company.com". You might be able to find this information
             by checking your settings or preferences in whatever email program
             you use.""")
+        
         self.port = cps.Integer(
-            "SMTP port:", smtplib.SMTP_PORT, 0, 65535,
+            "SMTP port", smtplib.SMTP_PORT, 0, 65535,
             doc="""Enter your server's SMTP port. The default (25) is the
             port used by most SMTP servers. Your network administrator may
             have set up SMTP to use a different port.""")
         self.when = []
         self.when_count = cps.HiddenCount(self.when)
         self.add_when(False)
+        
         self.add_when_button = cps.DoSomething(
-            "Add another event","Add event", self.add_when,
+            "Add another email event","Add event", self.add_when,
             doc="""Press this button to add another event or condition.
             <b>SendEmail</b> will send an email when this event happens""")
         
@@ -104,7 +109,7 @@ class SendEmail(cpm.CPModule):
         '''Add a recipient for the email to the list of emails'''
         group = cps.SettingsGroup()
         group.append("recipient", cps.Text(
-            "To:","recipient@domain",
+            "Recepient address","recipient@domain",
             doc="""Enter the email address of someone who should receive this
             email."""))
         if can_delete:
@@ -137,27 +142,31 @@ class SendEmail(cpm.CPModule):
             the image set number if you select this choice. You can add
             more events if you want emails after more than one image set.</li>
             </ul>"""))
+        
         group.append("image_set_number", cps.Integer(
-            "Image set number:", 1, minval = 1,
+            "Image set number", 1, minval = 1,
             doc="""Send an email during processing of the given image set.
             For instance, if the image set number is 4, then <b>SendEmail</b>
             will send an email during processing of the fourth image set."""))
+        
         group.append("image_set_count", cps.Integer(
-            "Image set count:", 1, minval = 1,
+            "Image set count", 1, minval = 1,
             doc="""Send an email each time this number of image sets have
             been processed. For instance, if the image set count is 4,
             then <b>SendEmail</b> will send an email during processing of
             the fourth, eighth, twelfth, etc. image set."""))
+        
         group.append("message", cps.Text(
-            "Message:","Notification from CellProfiler",
+            "Message text","Notification from CellProfiler",
             doc="""This is the body of the message sent from CellProfiler.
             You can include metadata values in your message. For instance,
             if you group by plate and want an email after processing each
             plate, you could use the message, 
             "Finished processing plate \\g<Plate>". """))
+        
         if can_delete:
             group.append("remover", cps.RemoveSettingButton(
-                "Remove above event", "Remove event", self.when, group))
+                "Remove this email event", "Remove event", self.when, group))
         group.append("divider", cps.Divider())
         self.when.append(group)
         

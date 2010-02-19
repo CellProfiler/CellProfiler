@@ -53,7 +53,7 @@ class IdentifyObjectsManually(I.Identify):
             as an input.""")
         
         self.wants_outlines = cps.Binary(
-            "Save outlines of the identified objects?", False,
+            "Retain outlines of the identified objects?", False,
             doc = """Check this setting to save the outlines around the objects
             as a binary image.""")
         

@@ -136,7 +136,7 @@ class IdentifyObjectsInGrid(cpm.CPModule):
             module, depending on the module's settings.""")
         
         self.wants_outlines = cps.Binary(
-            "Save outlines of the identified objects?", False,
+            "Retain outlines of the identified objects?", False,
             doc="""The module can create a binary image of the outlines
             of the objects it creates. You can then use <b>OverlayOutlines</b>
             to overlay the outlines on an image or use <b>SaveImages</b>

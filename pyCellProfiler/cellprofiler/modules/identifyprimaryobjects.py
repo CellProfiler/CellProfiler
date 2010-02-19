@@ -353,7 +353,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             <i>Yes</i> will have no effect.""")
 
         self.should_save_outlines = cps.Binary(
-            'Save outlines of the identified objects?', False)
+            'Retain outlines of the identified objects?', False)
         
         self.save_outlines = cps.OutlineNameProvider(
             'Name the outline image',"PrimaryOutlines", doc="""\

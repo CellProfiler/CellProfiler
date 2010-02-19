@@ -160,7 +160,7 @@ class IdentifySecondaryObjects(cpmi.Identify):
             will simply be halfway between the two competing primary objects.</li>
             </ul>""")
         
-        self.use_outlines = cps.Binary("Save outlines of the identified secondary objects?",False)
+        self.use_outlines = cps.Binary("Retain outlines of the identified secondary objects?",False)
         
         self.outlines_name = cps.OutlineNameProvider('Name the outline image',"SecondaryOutlines", doc="""\
             Once the outline image is named here, the outlines of the identified objects may be used by modules downstream,
@@ -198,7 +198,7 @@ class IdentifySecondaryObjects(cpmi.Identify):
             segmentation.""")
         
         self.wants_primary_outlines = cps.Binary(
-            "Save outlines of the new primary objects?", False,
+            "Retain outlines of the new primary objects?", False,
             doc = """<i>(Used only if associated primary objects are discarded)</i>
             Check this setting in order to save images of the outlines
             of the primary objects after filtering. You can save these images

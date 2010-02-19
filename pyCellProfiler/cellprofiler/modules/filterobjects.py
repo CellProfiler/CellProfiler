@@ -223,7 +223,7 @@ class FilterObjects(cpm.CPModule):
                      cps.ObjectNameProvider('Name the relabeled objects','FilteredGreen'))
         
         group.append("wants_outlines",
-                     cps.Binary('Save outlines of relabeled objects?', False))
+                     cps.Binary('Retain outlines of relabeled objects?', False))
         
         group.append("outlines_name",
                      cps.ImageNameProvider('Name the outline image','OutlinesFilteredGreen'))

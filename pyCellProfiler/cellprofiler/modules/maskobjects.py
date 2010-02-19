@@ -149,7 +149,7 @@ class MaskObjects(I.Identify):
             associated with your original objects.""")
 
         self.wants_outlines = cps.Binary(
-            "Save outlines of the resulting objects?", False,
+            "Retain outlines of the resulting objects?", False,
             doc = """You can save the outlines of the objects that are
             produced after masking. These outlines can be displayed over
             images using the <b>OverlayOutlines</b> module.""")

@@ -72,7 +72,7 @@ class EditObjectsManually(I.Identify):
             subsequent modules""")
         
         self.wants_outlines = cps.Binary(
-            "Save outlines of the edited objects?", False,
+            "Retain outlines of the edited objects?", False,
             doc="""Check this box if you want to keep images of the outlines
             of the perimeters of the objects left after editing. These images
             can be saved by downstream modules or overlayed on other images

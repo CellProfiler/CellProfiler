@@ -150,7 +150,7 @@ class PipelineController:
         self.__tcp_sizer = wx.BoxSizer(wx.HORIZONTAL)
         self.__tcp_continue = wx.Button(test_controls_panel, -1, "Run", (0,0))
         self.__tcp_step = wx.Button(test_controls_panel, -1, "Step", (0,0))
-        self.__tcp_next_imageset = wx.Button(test_controls_panel, -1, "Next Imageset", (0,0))
+        self.__tcp_next_imageset = wx.Button(test_controls_panel, -1, "Next Image Set", (0,0))
         self.__tcp_sizer.AddMany([(self.__tcp_continue, 0, wx.ALL | wx.EXPAND, 2),
                                   ((1, 1), 1),
                                   (self.__tcp_step, 0, wx.ALL | wx.EXPAND, 2),

@@ -1,27 +1,27 @@
-'''<b>Calculate Image Overlap </b> calculates the overlap of two image sets
+'''<b>Calculate Image Overlap </b> calculates how much overlap occurs between the white portions of two black and white images
 <hr>
 This module calculates overlap by determining precision, recall, F-factor, false positive rate, and false 
 negative rate.  One image is considered the "ground truth" (possibly the result of hand-segmentation) and the other
 is the "test image"; the images are determined to overlap most completely when the test image matches the ground
 truth perfectly.  The module requires binary (black and white) input, where the objects that have been segmented 
 are white and the background is black.  If you segment your images in CellProfiler using <b>IdentifyPrimaryObjects</b>, 
-simply use <b>ConvertObjectsToImage</b> and select <i>Binary</i> as the color type.  
+you can create such an image using <b>ConvertObjectsToImage</b> by selecting <i>Binary</i> as the color type.  
 
 If your images have been segmented using other image processing software, or you have hand-segmented them in software 
-such as Photoshop, you may need to use one or more of the following:
+such as Photoshop, you may need to use one or more of the following to prepare the images for this module:
 <ul>
-<li> <b>ImageMath</b>: If the objects are black and the background is white, you must invert the intensity.</li>
-<li> <b>ApplyThreshold</b>: If the image is grayscale, you must make it binary. </li>
-<li> <b>ColorToGray</b>: If the image is in color, you must first convert it to grayscale, and then use <b>ApplyThreshold</b> to generate a binary image. </li>
+<li> <b>ImageMath</b>: If the objects are black and the background is white, you must invert the intensity using this module.</li>
+<li> <b>ApplyThreshold</b>: If the image is grayscale, you must make it binary using this module, or alternately use an <b>Identify</b> module followed by <b>ConvertObjectsToImage</b> as described above. </li>
+<li> <b>ColorToGray</b>: If the image is in color, you must first convert it to grayscale using this module, and then use <b>ApplyThreshold</b> to generate a binary image. </li>
 </ul>
 
 In the test image, any foreground (white) pixels that overlap with the foreground of the ground
 truth will be considered "true positives", since they are correctly labeled as foreground.  Background (black) 
 pixels that overlap with the background of the ground truth image are considered "true negatives", 
-since they are correctly labeled as background.  A foreground pixel that overlaps with the background will
-be considered a "false negative" (since it should have been labeled as part of the foreground), 
-while a background pixel that overlaps with foreground in the ground truth will be considered a "false positive"
-(since it was labeled as part of the foreground, but should not be).
+since they are correctly labeled as background.  A foreground pixel in the test image that overlaps with the background in the ground truth image will
+be considered a "false positive" (since it should have been labeled as part of the background), 
+while a background pixel in the test image that overlaps with foreground in the ground truth will be considered a "false negative"
+(since it was labeled as part of the background, but should not be).
 
 This module measures the following:
 <ul>
@@ -70,12 +70,11 @@ class CalculateImageOverlap(cpm.CPModule):
     module_name = "CalculateImageOverlap"
 
     def create_settings(self):
-        self.ground_truth = cps.ImageNameSubscriber("Which image do you want to use as the basis for calculating the amount of overlap? ", "None", doc = 
-                                                    '''This binary (black and white) image is known as the "ground truth" image.  It can be the product of hand-outlined segmentation, or
-                                                    simply the result of another segmentation algorithm you would like to test.''')
-        self.test_img = cps.ImageNameSubscriber("Which image do you want to compare for overlap?", "None", doc = ''' This 
-                                                binary (black and white) image is the result of some image processing algorithm (either in CellProfiler 
-                                                or any image processing software) that you would like to compare with the ground truth image.''')
+        self.ground_truth = cps.ImageNameSubscriber("Which image do you want to use as the ground truth basis for calculating the amount of overlap? ", "None", doc = 
+                                                    '''This binary (black and white) image is known as the "ground truth" image.  It can be the product of segmentation performed by hand, or
+                                                   the result of another segmentation algorithm whose results you would like to compare.''')
+        self.test_img = cps.ImageNameSubscriber("Which image do you want to test for overlap?", "None", doc = ''' This 
+                                                binary (black and white) image is what you will compare with the ground truth image. It is known as the "test image".''')
 
     
     def settings(self):

@@ -1,15 +1,29 @@
-'''dispaydensityplot.py - the DensityPlot module
+'''<b>Display Density Plot </b> plots measurements as a two-dimensional density plot.
+<hr>
+A density plots show the values of two measurements binned into an equally-spaced 
+array of points, where the color of each point represents the tabulated frequency 
+of the measurements being plotted (i.e, a 2-D histogram). You can specify the 
+number of points to use for the grid, as well as a color map 
+for the relation between the value at a point and its color.
 
-CellProfiler is distributed under the GNU General Public License.
-See the accompanying file LICENSE for details.
+<p>The module shows the values generated for the current cycle. However, 
+this module can also be run as a Data Tool, in which you will first be asked
+for the output file produced by the analysis run. The resultant plot is 
+created from all the measurements collected during the run.</p>
 
-Developed by the Broad Institute
-Copyright 2003-2009
-
-Please see the AUTHORS file for credits.
-
-Website: http://www.cellprofiler.org
+See also <b>DisplayScatterPlot</b>, <b>DisplayHistogram</b>
 '''
+
+#CellProfiler is distributed under the GNU General Public License.
+#See the accompanying file LICENSE for details.
+#
+#Developed by the Broad Institute
+#Copyright 2003-2009
+#
+#Please see the AUTHORS file for credits.
+#
+#Website: http://www.cellprofiler.org
+
 __version__="$Revision$"
 
 import numpy as np
@@ -20,9 +34,7 @@ import cellprofiler.settings as cps
 import matplotlib.cm
 
 class DisplayDensityPlot(cpm.CPModule):
-    '''
-    SHORT DESCRIPTION:
-    '''
+    
     module_name = "DisplayDensityPlot"
     category = "Data Tools"
     variable_revision_number = 1

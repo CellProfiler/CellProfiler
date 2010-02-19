@@ -1,15 +1,27 @@
-'''displayscatterplot.py - the ScatterPlot module
+'''<b>Display Scatter Plot </b> plots the values for two measurements.
+<hr>
+A scatter plot displays the relationship between two measurements as a 
+collection of points, one on each axis. You can specify the type of scaling used
+for each axis.
 
-CellProfiler is distributed under the GNU General Public License.
-See the accompanying file LICENSE for details.
+<p>The module shows the values generated for the current cycle. However, 
+this module can also be run as a Data Tool, in which you will first be asked
+for the output file produced by the analysis run. The resultant plot is 
+created from all the measurements collected during the run.</p>
 
-Developed by the Broad Institute
-Copyright 2003-2009
-
-Please see the AUTHORS file for credits.
-
-Website: http://www.cellprofiler.org
+See also <b>DisplayDensitylot</b>, <b>DisplayHistogram</b>
 '''
+
+#CellProfiler is distributed under the GNU General Public License.
+#See the accompanying file LICENSE for details.
+#
+#Developed by the Broad Institute
+#Copyright 2003-2009
+#
+#Please see the AUTHORS file for credits.
+#
+#Website: http://www.cellprofiler.org
+
 __version__="$Revision$"
 
 import numpy as np
@@ -23,9 +35,7 @@ SOURCE_CHOICE = [cpmeas.IMAGE, "Object"]
 SCALE_CHOICE = ['linear', 'log']
 
 class DisplayScatterPlot(cpm.CPModule):
-    '''
-    SHORT DESCRIPTION:
-    '''
+    
     module_name = "DisplayScatterPlot"
     category = "Data Tools"
     variable_revision_number = 1

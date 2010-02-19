@@ -1,15 +1,28 @@
-'''displayhistogram.py - the Histogram module
+'''<b>Display Histogram </b> plots a histogram of the desired measurement.
+<hr>
+A histogram is a plot of tabulated data frequencies (each of which is
+shown as a bar), created by binning the measurement data. You can specify the 
+number of bins to use, as well as whether the data is to be transformed
+beforehand.
 
-CellProfiler is distributed under the GNU General Public License.
-See the accompanying file LICENSE for details.
+<p>The module shows the values generated for the current cycle. However, 
+this module can also be run as a Data Tool, in which you will first be asked
+for the output file produced by the analysis run. The resultant plot is 
+created from all the measurements collected during the run.</p>
 
-Developed by the Broad Institute
-Copyright 2003-2009
-
-Please see the AUTHORS file for credits.
-
-Website: http://www.cellprofiler.org
+See also <b>DisplayDensityPlot</b>, <b>DisplayScatterPlot</b>
 '''
+
+#CellProfiler is distributed under the GNU General Public License.
+#See the accompanying file LICENSE for details.
+#
+#Developed by the Broad Institute
+#Copyright 2003-2009
+#
+#Please see the AUTHORS file for credits.
+#
+#Website: http://www.cellprofiler.org
+
 __version__="$Revision$"
 
 import numpy as np
@@ -19,9 +32,7 @@ import cellprofiler.cpmodule as cpm
 import cellprofiler.settings as cps
 
 class DisplayHistogram(cpm.CPModule):
-    '''
-    SHORT DESCRIPTION:
-    '''
+    
     module_name = "DisplayHistogram"
     category = "Data Tools"
     variable_revision_number = 2

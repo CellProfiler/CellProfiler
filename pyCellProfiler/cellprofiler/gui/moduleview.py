@@ -365,7 +365,7 @@ class ModuleView:
                                                               name = help_name)
                 else:
                     help_control.Show()
-                sizer.Add(help_control)
+                sizer.Add(help_control, 0, wx.LEFT, 2)
             self.module_panel.FitInside()
         finally:
             self.module_panel.Thaw()
@@ -991,8 +991,7 @@ class ModuleView:
     
     def make_help_control(self, content, title="Help", 
                           name = wx.ButtonNameStr):
-        control = wx.Button(self.__module_panel, -1, '?', 
-                            style=wx.BU_EXACTFIT,
+        control = wx.Button(self.__module_panel, -1, '?', (0, 0), (30, -1), 
                             name = name)
         def callback(event):
             dialog = HTMLDialog(self.__module_panel, title, content)
@@ -1262,7 +1261,7 @@ class ModuleSizer(wx.PySizer):
             size = item.CalcMin()
             height += size[1]
             width = max(width, size[0])
-        return wx.Size(width,height)
+        return wx.Size(width, height)
         
     def calc_help_size(self):
         return self.calc_column_size(2)

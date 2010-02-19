@@ -69,6 +69,9 @@ class ImageMath(cpm.CPModule):
             """What operation would you like performed?
                         
             <ul>
+            <li><b>Note:</b> If more than 2 images are chosen, then operations will be 
+            performed sequentially from first to last, e.g. for "Divide", (Image1 / Image2) / Image3
+            
             <li><i>Add</i> adds the first image to the second, and so on.
 
             <li><i>Subtract</i> subtracts the second image from the first.

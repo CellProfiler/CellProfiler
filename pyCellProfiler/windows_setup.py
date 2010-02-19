@@ -52,6 +52,7 @@ class CellProfilerMSI(distutils.core.Command):
 
 opts = {
     'py2exe': { "includes" : ["numpy", "scipy","PIL","wx","matplotlib",
+                              "email.iterators",
                               "cellprofiler.modules.*"],
                 'excludes': ['pylab','Tkinter'],
                 'dll_excludes': ["jvm.dll"]

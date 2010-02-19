@@ -117,7 +117,7 @@ class OverlayOutlines(cpm.CPModule):
                          if len(self.outlines) < len(COLOR_ORDER)
                          else COLOR_ORDER[0])
         group.append("color", cps.Choice(
-                "Select outline color:",
+                "Select outline color",
                 COLORS.keys(), default_color))
         if can_remove:
             group.append("remover", cps.RemoveSettingButton("", "Remove this outline", self.outlines, group))

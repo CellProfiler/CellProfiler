@@ -436,11 +436,11 @@ class Morph(cpm.CPModule):
         group = MorphSettingsGroup()
         if can_remove:
             group.append("divider", cps.Divider(line=False))
-        group.append("function", cps.Choice("Select the operation to perform:",
+        group.append("function", cps.Choice("Select the operation to perform",
                                            F_ALL, F_OPEN,doc="""
                                            What operation do you want to perform?
                     Choose one of the operations described in this module's Help."""))
-        group.append("repeats_choice", cps.Choice("Repeat operation:",
+        group.append("repeats_choice", cps.Choice("Repeat operation",
                                                   R_ALL,doc="""
                     This setting controls the number of times that the same operation is applied
                     successively to the image.

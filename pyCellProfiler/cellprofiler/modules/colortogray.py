@@ -50,19 +50,19 @@ class ColorToGray(cpm.CPModule):
         # The following settings are used for the combine option
         self.grayscale_name = cps.NameProvider("Name the output image",
                                                "imagegroup","OrigGray")
-        self.red_contribution = cps.Float("Relative weight of the red channel:",
+        self.red_contribution = cps.Float("Relative weight of the red channel",
                                           1,0,doc='''
                                           Relative weights: If all relative weights are equal, all three 
                                           colors contribute equally in the final image. To weight colors relative 
                                           to each other, the relative weights can be increased or decreased.''')
         
-        self.green_contribution = cps.Float("Relative weight of the green channel:",
+        self.green_contribution = cps.Float("Relative weight of the green channel",
                                             1,0,doc='''
                                             Relative weights: If all relative weights are equal, all three 
                                             colors contribute equally in the final image. To weight colors relative 
                                             to each other, the relative weights can be increased or decreased.''')
         
-        self.blue_contribution = cps.Float("Relative weight of the blue channel:",
+        self.blue_contribution = cps.Float("Relative weight of the blue channel",
                                            1,0,doc='''
                                            Relative weights: If all relative weights are equal, all three 
                                            colors contribute equally in the final image. To weight colors relative 

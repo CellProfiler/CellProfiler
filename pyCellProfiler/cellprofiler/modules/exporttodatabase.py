@@ -332,7 +332,7 @@ class ExportToDatabase(cpm.CPModule):
             Per_Well(s) tables, otherwise, the object's measurements will be skipped.""")
         
         self.max_column_size = cps.Integer(
-            "Maximum # of characters in a column name:", 64, 
+            "Maximum # of characters in a column name", 64, 
             minval = 10, maxval = 64,
             doc="""This setting limits the number of characters that can appear
             in the name of a field in the database. MySQL has a limit of 64

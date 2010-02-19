@@ -175,7 +175,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             "Nuclei",doc="""
             What do you want to call the objects identified by this module?""")
         self.size_range = cps.IntegerRange(
-            "Typical diameter of objects, in pixel units (Min,Max):", 
+            "Typical diameter of objects, in pixel units (Min,Max)", 
             (10,40), minval=1, doc='''\
             Most options within this module use this estimate of the
             size range of the objects in order to distinguish them from noise in the

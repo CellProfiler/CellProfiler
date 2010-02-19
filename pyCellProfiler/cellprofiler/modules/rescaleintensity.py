@@ -132,31 +132,31 @@ class RescaleIntensity(cpm.CPModule):
                                                 will be less than zero.</li>
                                                 </ul>''')
         
-        self.custom_low_truncation = cps.Float("Enter custom value:",0, doc = """
+        self.custom_low_truncation = cps.Float("Enter custom value",0, doc = """
                                                 <i>(Used if a custom rescaling range and a custom lower limit value is selected)</i><br>
                                                 What custom value should be assigned to pixels with values below the lower limit?""")
         
-        self.high_truncation_choice = cps.Choice('Select method for rescaling pixels above the upper limit:',
+        self.high_truncation_choice = cps.Choice('Select method for rescaling pixels above the upper limit',
                                                 [R_MASK, R_SET_TO_ONE, 
                                                  R_SET_TO_CUSTOM, R_SCALE], doc = """
                                                 <i>(Used if specific values are to be chosen for a custom range)</i><br>
                                                 How do you want to handle values that are greater than the upper limit of the intensity range?""")
         
-        self.custom_high_truncation = cps.Float("Enter custom value:",0, doc = """
+        self.custom_high_truncation = cps.Float("Enter custom value",0, doc = """
                                                 <i>(Used if a custom rescaling range and a custom upper limit value is selected)</i><br>
                                                 What custom value should be assigned to pixels with values above the upper limit?""")
         
-        self.matching_image_name = cps.ImageNameSubscriber("Select image to match in maximum intensity:", "None",
+        self.matching_image_name = cps.ImageNameSubscriber("Select image to match in maximum intensity", "None",
                                                            doc = """
                                                            <i>(Used if the maximum for an image is to be matched to another image)</i><br>
                                                            What did you call the image whose maximum you want the rescaled image to match?""")
         
-        self.divisor_value = cps.Float("Enter the divisor:",
+        self.divisor_value = cps.Float("Enter the divisor",
                                        1,minval=np.finfo(float).eps, doc = """
                                        <i>(Used if the same value is used as a divisor)</i><br>
                                        What value should be used as the divisor for the final image?""")
         
-        self.divisor_measurement = cps.Measurement("Select the measurement to use as a divisor:",
+        self.divisor_measurement = cps.Measurement("Select the measurement to use as a divisor",
                                                    lambda : cpmeas.IMAGE, doc = """
                                                    <i>(Used if the previously calculated value is used as a divisor)</i><br>
                                                    What measurement value should be used as the divisor for the final image?""")

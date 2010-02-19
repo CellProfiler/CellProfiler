@@ -202,7 +202,7 @@ class CalculateStatistics(cpm.CPModule):
             output folder or "&" (an ampersand) to make the root folder the default image
             folder.</li></ul>"""))
         group.append('pathname', cps.Text(
-            "Folder pathname:",
+            "Folder pathname",
             ".",doc="""
                 Enter the pathname for saving the images here. The pathname can be referenced with respect 
                 to the default output folder specified in the main CellProfiler window with a period (".") or the default input 

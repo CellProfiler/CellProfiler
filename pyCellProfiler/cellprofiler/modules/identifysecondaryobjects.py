@@ -139,9 +139,9 @@ class IdentifySecondaryObjects(cpmi.Identify):
         
         self.create_threshold_settings()
         
-        self.distance_to_dilate = cps.Integer("Number of pixels by which to expand the primary objects:",10,minval=1)
+        self.distance_to_dilate = cps.Integer("Number of pixels by which to expand the primary objects",10,minval=1)
         
-        self.regularization_factor = cps.Float("Regularization factor:",0.05,minval=0,
+        self.regularization_factor = cps.Float("Regularization factor",0.05,minval=0,
                                                doc="""\
             <i>(For Propagation method only)</i> <br>
             In the range 0 to infinity.
@@ -205,7 +205,7 @@ class IdentifySecondaryObjects(cpmi.Identify):
             using the <b>SaveImages</b> module.""")
         
         self.new_primary_outlines_name = cps.ImageNameProvider(
-            "New primary objects outlines name:", "FilteredNucleiOutlines",
+            "Name the new primary object outlines", "FilteredNucleiOutlines",
             doc = """<i>(Used only when saving outlines of new primary objects)</i>
             You can name the outline image of the
             primary objects after filtering. You can refer to this image

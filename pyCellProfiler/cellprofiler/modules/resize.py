@@ -45,13 +45,13 @@ class Resize(cpm.CPModule):
                                                   "None", doc = '''What did you call the image to be resized?''')
         self.resized_image_name = cps.ImageNameProvider("Name the output image",
                                                         "ResizedBlue", doc = '''What do you want to call the resized image?''')
-        self.size_method = cps.Choice("Select resizing method:",
+        self.size_method = cps.Choice("Select resizing method",
                                       R_ALL, doc = """How do you want to resize the image?""")
-        self.resizing_factor = cps.Float("Resizing factor:",
+        self.resizing_factor = cps.Float("Resizing factor",
                                          .25, minval=0, doc = '''Numbers less than one will shrink the image, Numbers greater than one will enlarge it''')
-        self.specific_width = cps.Integer("Width of the final image:", 100, minval=1)
-        self.specific_height = cps.Integer("Height of the final image:", 100, minval=1)
-        self.interpolation = cps.Choice("Interpolation method:",
+        self.specific_width = cps.Integer("Width of the final image", 100, minval=1)
+        self.specific_height = cps.Integer("Height of the final image", 100, minval=1)
+        self.interpolation = cps.Choice("Interpolation method",
                                         I_ALL, doc = '''<ul><li>Nearest Neighbor: Each output pixel is given the intensity of the nearest
                                         corresponding pixel in the input image.</li>
                                         <li>Bilinear: Each output pixel is given the intensity of the weighted average

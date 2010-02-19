@@ -86,7 +86,7 @@ class SaveImages(cpm.CPModule):
     category = "File Processing"
     
     def create_settings(self):
-        self.save_image_or_figure = cps.Choice("Select the type of image to save:",
+        self.save_image_or_figure = cps.Choice("Select the type of image to save",
                                                [IF_IMAGE, IF_MASK, IF_CROPPING, IF_MOVIE,IF_FIGURE],IF_IMAGE,doc="""
                 Do you want to save an image, the image's crop mask, the image's cropping, a movie or a figure window?
                 <ul>
@@ -104,11 +104,11 @@ class SaveImages(cpm.CPModule):
                 <li><i>Figure window:</i> The window associated with a module can be saved, which
                 will include all the panels and text within that window.</li>
                 </ul>""")
-        self.image_name  = cps.ImageNameSubscriber("Select the image to save:","None", doc = """
+        self.image_name  = cps.ImageNameSubscriber("Select the image to save","None", doc = """
         What did you call the images you want to save?""")
-        self.figure_name = cps.FigureSubscriber("Select the figure to save:","None",doc="""
+        self.figure_name = cps.FigureSubscriber("Select the figure to save","None",doc="""
                 Select the module number/name for which you want to save the figure window.""")
-        self.file_name_method = cps.Choice("Select method for constructing file names:",
+        self.file_name_method = cps.Choice("Select method for constructing file names",
                                            [FN_FROM_IMAGE,FN_SEQUENTIAL,
                                             FN_SINGLE_NAME, FN_WITH_METADATA,
                                             FN_IMAGE_FILENAME_WITH_METADATA],
@@ -137,7 +137,7 @@ class SaveImages(cpm.CPModule):
                 appends an extension to the image filename with metadata
                 substitution.</li>
                 </ul>""")
-        self.file_image_name = cps.FileImageNameSubscriber("Select image name for file prefix:",
+        self.file_image_name = cps.FileImageNameSubscriber("Select image name for file prefix",
                                                            "None",doc="""
                 Select an image loaded using <b>LoadImages</b> or <b>LoadData</b>. The original filename will be
                 used as the prefix for the output filename.""")
@@ -151,20 +151,20 @@ class SaveImages(cpm.CPModule):
                 produces the output filename <i>Illum_XG45_A01</i>.</li>
                 </ul>
                 Do not enter the file extension in this setting; it will be appended automatically.""")
-        self.file_name_suffix = cps.Text("Enter text to append to the image name:",cps.DO_NOT_USE,doc="""
+        self.file_name_suffix = cps.Text("Enter text to append to the image name",cps.DO_NOT_USE,doc="""
                 Enter the text that will be appended to the filename specified above.""")
-        self.file_format = cps.Choice("Select file format:",
+        self.file_format = cps.Choice("Select file format",
                                       [FF_BMP,FF_GIF,FF_HDF,FF_JPG,FF_JPEG,
                                        FF_PBM,FF_PCX,FF_PGM,FF_PNG,FF_PNM,
                                        FF_PPM,FF_RAS,FF_TIF,FF_TIFF,FF_XWD,
                                        FF_AVI,FF_MAT],FF_BMP,doc="""
                 Select the image or movie format to save the image(s). Most of the 
                 most-common formats are supported.""")
-        self.pathname_choice = cps.Choice("Select location to save file:",
+        self.pathname_choice = cps.Choice("Select location to save file",
                                           [PC_DEFAULT,PC_WITH_IMAGE,
                                            PC_CUSTOM, PC_WITH_METADATA],
                                           PC_DEFAULT, doc = """ Where do you want to store the file?""")
-        self.movie_pathname_choice = cps.Choice("Select location to save file:",
+        self.movie_pathname_choice = cps.Choice("Select location to save file",
                                           [PC_DEFAULT,PC_CUSTOM],
                                           PC_DEFAULT,doc="""
                 This setting lets you control the folder used to store the file. The
@@ -187,10 +187,10 @@ class SaveImages(cpm.CPModule):
         self.bit_depth = cps.Choice("Enter the bit depth at which to save the images",
                                     ["8","12","16"])
         self.overwrite = cps.Binary("Overwrite existing files without warning?",False)
-        self.when_to_save = cps.Choice("Select how often to save:",
+        self.when_to_save = cps.Choice("Select how often to save",
                                        [WS_EVERY_CYCLE,WS_FIRST_CYCLE,WS_LAST_CYCLE],
                                        WS_EVERY_CYCLE)
-        self.when_to_save_movie = cps.Choice("Select how often to save:",
+        self.when_to_save_movie = cps.Choice("Select how often to save",
                                              [WS_LAST_CYCLE,"1","2","3","4","5","10","20"],
                                              WS_LAST_CYCLE,doc="""
                 Specify at what point during pipeline execution to save your movie. 

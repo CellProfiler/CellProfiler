@@ -127,7 +127,7 @@ class RelateObjects(cpm.CPModule):
     def add_step_parent(self, can_delete = True):
         group = cps.SettingsGroup()
         group.append("step_parent_name", cps.Choice(
-            "Parent name:", ["None"], choices_fn = self.get_step_parents,
+            "Parent name", ["None"], choices_fn = self.get_step_parents,
             doc = """Choose another parent. The <b>Relate</b> module will 
             measure the distance from this parent to the child objects
             in the same manner as it does to the immediate parents.

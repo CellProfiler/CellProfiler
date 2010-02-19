@@ -116,7 +116,7 @@ class ExportToSpreadsheet(cpm.CPModule):
             create a folder per-plate using the metadata tag "./&lt;Plate&gt;".
             </li></ul>""")
         self.custom_directory = cps.Text(
-            "Folder name:", ".", doc="""Name of the folder that will be used
+            "Folder name", ".", doc="""Name of the folder that will be used
             to store the output files. Start
             the folder name with "." to name a sub-folder of the output folder
             (for instance, "./data"). Start the folder name with "&" to name
@@ -188,7 +188,7 @@ class ExportToSpreadsheet(cpm.CPModule):
         
         group.append("file_name", 
                      cps.Text(
-                         "File name:", "DATA.csv",
+                         "File name", "DATA.csv",
                          doc="""Enter a file name for the named objects' 
                          measurements. <b>ExportToSpreadsheet</b> will
                          prepend the name of the measurements file to this

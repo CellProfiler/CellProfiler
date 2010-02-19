@@ -76,15 +76,15 @@ class Tile(cpm.CPModule):
              you may tile all the images you wish to analyze (OrigBlue), and one final tiled image will be created 
              when processing is complete.</li>
              </ul>''')
-        self.rows = cps.Integer("Number of rows in final tiled image:",
+        self.rows = cps.Integer("Number of rows in final tiled image",
                                          8, doc='''How many rows would you like to have in the tiled image?
                                          For example, if you want to show your images in a 96-well format, you would
                                          enter 8.''')
-        self.columns = cps.Integer("Number of columns in final tiled image:",
+        self.columns = cps.Integer("Number of columns in final tiled image",
                                          12, doc='''How many columns would you like to have in the tiled image?
                                          For example, if you want to show your images in a 96-well format, you would
                                          enter 12.''')
-        self.place_first = cps.Choice("Begin tiling in this corner of the final image:", P_ALL, doc = '''
+        self.place_first = cps.Choice("Begin tiling in this corner of the final image", P_ALL, doc = '''
             Where do you want the first image to be placed?  You would begin in the upper left-hand corner
             for a typical multi-well plate format where the first image is A01.''')
         self.tile_style = cps.Choice("Begin tiling across a row, or down a column?", S_ALL, doc = '''
@@ -117,7 +117,7 @@ class Tile(cpm.CPModule):
             group.append("divider", cps.Divider(line=True))
         
         group.append("input_image_name", 
-                     cps.ImageNameSubscriber("Select an additional image:",
+                     cps.ImageNameSubscriber("Select an additional image",
                                             "None",doc="""
                                             What is the name of the additional image to tile?"""))
         if can_remove:

@@ -1,14 +1,14 @@
-'''<b>Identify Primary Objects</b> identifies objects via thresholding and contouring
+'''<b>Identify Primary Objects</b> identifies objects in an image
 <hr>
 This module identifies primary objects (e.g., nuclei) in grayscale images
 containing bright objects on a dark background. It has many
-options which vary in terms of speed and sophistication. The identified 
+options, which vary in terms of speed and sophistication. The identified 
 objects are displayed with arbitrary colors: the colors themselves do not mean 
 anything but simply help you distingush the various objects. You can 
-change the colormap in <i>File > Set Preferences</i>.
+change the colormap in <i>File > Preferences</i>.
 
-Requirements for the images to be input into this module:
-<ul><li>If the objects are dark on a light background, they must first be
+Steps to prepare images for this module:
+<ul><li>If the objects in your images are dark on a light background, they must first be
 inverted using the Invert operation in the <b>ImageMath</b> module.</li>
 <li>If you are working with color images, they must first be converted to
 grayscale using the <b>ColorToGray</b> module.</li></ul>
@@ -22,8 +22,8 @@ thresholding methods are available, including global and adaptive, using
 Otsu's (<i>Otsu, 1979</i>) and our own version of a Mixture of Gaussians
 algorithm (<i>O. Friman, unpublished</i>). 
 
-<p>Since some nuclei are touching for
-most biological images, CellProfiler contains a novel modular
+<p>Since objects often touch each other in 
+biological images, CellProfiler contains a modular
 three-step strategy based on previously published algorithms (<i>Malpica et
 al., 1997; Meyer and Beucher, 1990; Ortiz de Solorzano et al., 1999;
 Wahlby, 2003; Wahlby et al., 2004</i>). Choosing different options for each
@@ -204,7 +204,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
     def create_settings(self):
         self.image_name = cps.ImageNameSubscriber(
             "Select the input image",doc="""
-            What did you call the images you want to process?""")
+            What did you call the images you want to use to identify objects?""")
         self.object_name = cps.ObjectNameProvider(
             "Name the identified primary objects",
             "Nuclei",doc="""

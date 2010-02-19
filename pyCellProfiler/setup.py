@@ -28,12 +28,14 @@ if sys.platform == "darwin":
 
 APPNAME = 'CellProfiler2.0'
 APP = ['CellProfiler.py']
-DATA_FILES = [('cellprofiler/icons', glob.glob(os.path.join('.', 'cellprofiler', 'icons', '*.png')))]
+DATA_FILES = [('cellprofiler/icons', glob.glob(os.path.join('.', 'cellprofiler', 'icons', '*.png'))),
+              ('bioformats', ['bioformats/loci_tools.jar'])]
 OPTIONS = {'argv_emulation': True,
-           'packages': ['cellprofiler', 'cellprofiler.cpmath'],
+           'packages': ['cellprofiler'],
            'includes': ['numpy', 'wx', 'matplotlib'],
-           'excludes': ['pylab', 'nose', 'wx.tools'],
+           'excludes': ['pylab', 'nose', 'wx.tools', 'Tkinter', 'Cython', 'scipy.weave'],
            'resources': ['CellProfilerIcon.png', 'cellprofiler/icons'],
+           'iconfile' : 'CellProfilerIcon.icns',
            }
 
 setup(

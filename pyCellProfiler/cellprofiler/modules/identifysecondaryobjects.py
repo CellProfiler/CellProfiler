@@ -33,7 +33,7 @@ there is no separation between adjacent areas with different labels (as there
 would be using, e.g., watershed). Such boundaries must be added in a
 postprocess.
 
-Also see the other <b>Identify</b> modules.
+See also the other <b>Identify</b> modules.
 '''
 
 # CellProfiler is distributed under the GNU General Public License.

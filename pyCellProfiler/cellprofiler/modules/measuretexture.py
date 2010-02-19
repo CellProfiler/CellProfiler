@@ -192,7 +192,7 @@ class MeasureTexture(cpm.CPModule):
         if can_remove:
             group.append("divider", cps.Divider(line=False))
         group.append('image_name', 
-                     cps.ImageNameSubscriber("Select the input image","None", 
+                     cps.ImageNameSubscriber("Select an image to measure","None", 
                                              doc="""What did you call the grayscale images whose texture you want to measure?"""))
         if can_remove:
             group.append("remover", cps.RemoveSettingButton("", "Remove this image", self.image_groups, group))
@@ -208,7 +208,7 @@ class MeasureTexture(cpm.CPModule):
         if can_remove:
             group.append("divider", cps.Divider(line=False))
         group.append('object_name', 
-                     cps.ObjectNameSubscriber("Select the input objects","None",
+                     cps.ObjectNameSubscriber("Select objects to measure","None",
                                               doc="""What did you call the objects whose texture you want to measure? You can select <i>None</i> if you only want to measure the texture for the image overall."""))
         if can_remove:
             group.append("remover", cps.RemoveSettingButton("", "Remove this object", self.object_groups, group))

@@ -107,7 +107,7 @@ class MeasureObjectIntensity(cpm.CPModule):
         group = cps.SettingsGroup()
         if can_remove:
             group.append("divider", cps.Divider(line=False))
-        group.append("name", cps.ImageNameSubscriber("Select an image to use for intensity measurements","None", doc = 
+        group.append("name", cps.ImageNameSubscriber("Select an image to measure","None", doc = 
                                                      """What did you call the grayscale images whose intensity you want to measure?"""))
         if can_remove:
             group.append("remover", cps.RemoveSettingButton("", "Remove this image", self.images, group))

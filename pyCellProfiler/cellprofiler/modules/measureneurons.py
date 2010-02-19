@@ -68,7 +68,7 @@ class MeasureNeurons(cpm.CPModule):
             "skeletonize" operation""")
         
         self.wants_branchpoint_image = cps.Binary(
-            "Save the branchpoint image?", False,
+            "Retain the branchpoint image?", False,
             doc="""Check this setting if you want to save the color image of
             branchpoints and trunks. This is the image that is displayed
             as the visualization for this module.""")

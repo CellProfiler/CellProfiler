@@ -66,7 +66,7 @@ class MeasureImageAreaOccupied(cpm.CPModule):
         if can_remove:
             group.append("divider", cps.Divider(line=True))
         
-        group.append("object_name", cps.ObjectNameSubscriber("Select the input objects", "None"))
+        group.append("object_name", cps.ObjectNameSubscriber("Select objects to measure", "None"))
         
         group.append("should_save_image", cps.Binary("Retain a binary image of the object regions for use later in the pipeline (for example, in SaveImages)?", False))
         

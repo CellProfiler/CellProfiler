@@ -108,7 +108,7 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
         if can_remove:
             group.append("divider", cps.Divider(line=False))
         group.append("image_name", cps.ImageNameSubscriber(
-                "Select the input image", "None",doc="""
+                "Select an image to measure", "None",doc="""
                 What did you call the images you want to process?"""))
         if can_remove:
             group.append("remover", cps.RemoveSettingButton("", "Remove this image", self.images, group))
@@ -120,7 +120,7 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
         if can_remove:
             group.append("divider", cps.Divider(line=False))
         group.append("object_name", cps.ObjectNameSubscriber(
-                "Select the input objects", "None",doc="""
+                "Select objects to meaasure", "None",doc="""
                 What did you call the objects you want to measure?"""))
         group.append("center_choice", cps.Choice(
                 "Object to use as center?", C_ALL,doc="""

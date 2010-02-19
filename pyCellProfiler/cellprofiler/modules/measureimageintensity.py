@@ -66,7 +66,7 @@ class MeasureImageIntensity(cpm.CPModule):
         if can_remove:
             group.append("divider", cps.Divider())
         
-        group.append("image_name", cps.ImageNameSubscriber("Select an input image",
+        group.append("image_name", cps.ImageNameSubscriber("Select the image to measure",
                                                             "None", doc = '''What did you call the images whose intensity you want to measure? Choose an image name from the drop-down menu to calculate intensity for that
                                                             image. Use the "Add image" button below to add additional images which will be
                                                             measured. You can add the same image multiple times if you want to measure

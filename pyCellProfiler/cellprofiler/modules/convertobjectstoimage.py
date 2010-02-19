@@ -76,7 +76,7 @@ class ConvertObjectsToImage(cpm.CPModule):
         self.colormap = cps.Colormap("Select the colormap",
                                 doc="""
                                 What do you want the colormap to be? This setting affects how the objects are colored. 
-                                You can look up your default colormap under <i>File > Set Preferences</i>.""")
+                                You can look up your default colormap under <i>File > Preferences</i>.""")
 
     def settings(self):
         return [self.object_name, self.image_name, self.image_mode, 

@@ -444,6 +444,14 @@ class RelateObjects(cpm.CPModule):
                         group.step_parent_name.value,
                         group.step_parent_name)
                 step_parents.add(group.step_parent_name.value)
+    
+    def get_child_columns(self, pipeline):
+        child_columns = pipeline.get_measurement_columns(self)
+        child_columns = [column
+                         for column in child_columns
+                         if column[0] == self.sub_object_name.value and
+                         self.should_aggregate_feature(column[1])]
+        return child_columns
         
     def get_measurement_columns(self, pipeline):
         '''Return the column definitions for this module's measurements'''
@@ -454,13 +462,11 @@ class RelateObjects(cpm.CPModule):
                     FF_CHILDREN_COUNT%self.sub_object_name.value,
                     cpmeas.COLTYPE_INTEGER)]
         if self.wants_per_parent_means.value:
-            child_columns = pipeline.get_measurement_columns(self)
+            child_columns = self.get_child_columns(pipeline)
             columns += [(self.parent_name.value,
                          FF_MEAN%(self.sub_object_name.value, column[1]),
                          cpmeas.COLTYPE_FLOAT)
-                        for column in child_columns
-                        if column[0] == self.sub_object_name.value and
-                        self.should_aggregate_feature(column[1])]
+                        for column in child_columns]
         if self.find_parent_child_distances in (D_BOTH, D_CENTROID):
             for parent_name in self.get_parent_names():
                 columns += [(self.sub_object_name.value,
@@ -475,8 +481,10 @@ class RelateObjects(cpm.CPModule):
 
     def get_categories(self, pipeline, object_name):
         if object_name == self.parent_name.value:
-            return ["Mean_%s"%self.sub_object_name.value,
-                    "Children"]
+            if self.wants_per_parent_means:
+                return ["Mean_%s" % self.sub_object_name, "Children"]
+            else:
+                return ["Children"]
         elif object_name == self.sub_object_name.value:
             result = ["Parent"]
             if self.find_parent_child_distances != D_NONE:
@@ -488,14 +496,8 @@ class RelateObjects(cpm.CPModule):
         if object_name == self.parent_name.value:
             if category == "Mean_%s"%self.sub_object_name.value:
                 measurements = []
-                for module in pipeline.modules():
-                    c = module.get_categories(self.sub_object_name.value)
-                    for category in c:
-                        m = module.get_measurements(self.sub_object_name.value,
-                                                    category)
-                        measurements += ["%s_%s"%(c,x) for x in m
-                                         if self.should_aggregate_feature(
-                                         "%s_%s"%(c,x))]
+                child_columns = self.get_child_columns(pipeline)
+                measurements += [column[1] for column in child_columns]
                 return measurements
             elif category == "Children":
                 return ["%s_Count"%self.sub_object_name.value]

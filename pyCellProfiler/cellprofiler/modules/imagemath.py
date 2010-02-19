@@ -60,8 +60,8 @@ class ImageMath(cpm.CPModule):
         # the list of per image settings (name & scaling factor)
         self.images = []
         # create the first two images (the default number)
-        self.add_image()
-        self.add_image()
+        self.add_image(False)
+        self.add_image(False)
 
         # other settings
         self.operation = cps.Choice("Operation", 
@@ -103,10 +103,10 @@ class ImageMath(cpm.CPModule):
             Values outside the range 0 to 1 might not be handled well by other modules. 
             Here you have the option of setting values greater than 1 to a maximum value of 1.""")
         self.output_image_name = cps.ImageNameProvider("Name the output image", "ImageAfterMath", doc="""What do you want to call the resulting image?""")
-        self.add_button = cps.DoSomething("", "Add another image", self.add_image, True)
+        self.add_button = cps.DoSomething("", "Add another image", self.add_image)
         self.divider_bottom = cps.Divider(line=False)
     
-    def add_image(self, removable=False):
+    def add_image(self, removable=True):
         # The text for these settings will be replaced in renumber_settings()
         group = cps.SettingsGroup()
         group.append("image_name", cps.ImageNameSubscriber("", ""))

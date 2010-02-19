@@ -133,7 +133,7 @@ class ImageMath(cpm.CPModule):
         return result
 
     def visible_settings(self):
-        result = [self.operation, self.divider_top]
+        result = [self.operation, self.output_image_name, self.divider_top]
         self.renumber_settings()
         single_image = self.operation.value in (O_INVERT, O_LOG_TRANSFORM, O_NONE)
         for index, image in enumerate(self.images):
@@ -147,7 +147,7 @@ class ImageMath(cpm.CPModule):
         else:
             result += [self.add_button, self.divider_bottom]
 
-        result += [self.output_image_name, self.exponent, self.after_factor, 
+        result += [self.exponent, self.after_factor, 
                    self.addend, self.truncate_low, self.truncate_high]
         return result
 

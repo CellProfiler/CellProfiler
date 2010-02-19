@@ -12,8 +12,6 @@ Website: http://www.cellprofiler.org
 """
 __version__="$Revision$"
 
-from cellprofiler.preferences import set_headless
-set_headless()
 import re
 import sys
 import os.path

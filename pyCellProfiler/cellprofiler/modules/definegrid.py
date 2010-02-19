@@ -792,6 +792,21 @@ class DefineGrid(cpm.CPModule):
         if (self.failed_grid_choice == FAIL_ANY_PREVIOUS or
             not d.has_key(GOOD_GRIDDING)):
             d[GOOD_GRIDDING] =gridding
+            
+    def validate_module(self, pipeline):
+        '''Make sure that the row and column are different'''
+        if (self.auto_or_manual == AM_MANUAL and 
+            self.manual_choice == MAN_COORDINATES):
+            if self.first_spot_row.value == self.second_spot_row.value:
+                raise cps.ValidationError(
+                    "The first and second row numbers must be different in "
+                    "order to calculate the distance between rows.",
+                    self.second_spot_row)
+            if self.first_spot_col.value ==  self.second_spot_col.value:
+                raise cps.ValidationError(
+                    "The first and second column numbers must be different "
+                    "in order to calculate the distance between columns.",
+                    self.second_spot_col)
     
     def upgrade_settings(self,setting_values,variable_revision_number,
                          module_name,from_matlab):

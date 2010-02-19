@@ -118,20 +118,21 @@ class PipelineController:
         panel.
         """
         self.__module_controls_panel = module_controls_panel
-        self.__mcp_sizer = wx.BoxSizer(wx.HORIZONTAL)
-        self.__help_button = wx.Button(self.__module_controls_panel,-1,"?",(0,0),(25,25))
+        mcp_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        self.__help_button = wx.Button(self.__module_controls_panel,-1,"?",(0,0), (30, -1))
         self.__mcp_text = wx.StaticText(self.__module_controls_panel,-1,"Adjust modules:")
-        self.__mcp_add_module_button = wx.Button(self.__module_controls_panel,-1,"+",(0,0),(25,25))
-        self.__mcp_remove_module_button = wx.Button(self.__module_controls_panel,-1,"-",(0,0),(25,25))
-        self.__mcp_module_up_button = wx.Button(self.__module_controls_panel,-1,"^",(0,0),(25,25))
-        self.__mcp_module_down_button = wx.Button(self.__module_controls_panel,-1,"v",(0,0),(25,25))
-        self.__mcp_sizer.AddMany([(self.__help_button,0,wx.EXPAND),
-                                  (self.__mcp_text,0,wx.EXPAND),
-                                  (self.__mcp_add_module_button,0,wx.EXPAND),
-                                  (self.__mcp_remove_module_button,0,wx.EXPAND),
-                                  (self.__mcp_module_up_button,0,wx.EXPAND),
-                                  (self.__mcp_module_down_button,0,wx.EXPAND)])
-        self.__module_controls_panel.SetSizer(self.__mcp_sizer)
+        self.__mcp_add_module_button = wx.Button(self.__module_controls_panel,-1,"+",(0,0), (30, -1))
+        self.__mcp_remove_module_button = wx.Button(self.__module_controls_panel,-1,"-",(0,0), (30, -1))
+        self.__mcp_module_up_button = wx.Button(self.__module_controls_panel,-1,"^",(0,0), (30, -1))
+        self.__mcp_module_down_button = wx.Button(self.__module_controls_panel,-1,"v",(0,0), (30, -1))
+        mcp_sizer.AddMany([(self.__help_button, 0, wx.ALIGN_CENTER | wx.ALL, 3),
+                           ((1, 3), 3),
+                           (self.__mcp_text, 0, wx.ALIGN_CENTER | wx.ALL, 3),
+                           (self.__mcp_add_module_button, 0, wx.ALIGN_CENTER | wx.ALL, 3),
+                           (self.__mcp_remove_module_button, 0, wx.ALIGN_CENTER | wx.ALL, 3),
+                           (self.__mcp_module_up_button, 0, wx.ALIGN_CENTER | wx.ALL, 3),
+                           (self.__mcp_module_down_button, 0, wx.ALIGN_CENTER | wx.ALL, 3)])
+        self.__module_controls_panel.SetSizer(mcp_sizer)
         self.__module_controls_panel.Bind(wx.EVT_BUTTON, self.__on_help, self.__help_button)
         self.__module_controls_panel.Bind(wx.EVT_BUTTON, self.__on_add_module,self.__mcp_add_module_button)
         self.__module_controls_panel.Bind(wx.EVT_BUTTON, self.on_remove_module,self.__mcp_remove_module_button)

@@ -2,7 +2,7 @@
 each object maintains a unique identity in the output measurements.
 <hr>
 This module must be run after the object to be tracked has been 
-identified using an Identification module (e.g., <b>IdentifyPrimAutomatic</b>).
+identified using an Identification module (e.g., <b>IdentifyPrimaryObjects</b>).
 
 Since the image sequence (whether a series of images or a movie file) is processed 
 sequentially by frame, to process a collection of images/movies, you will need to 
@@ -59,7 +59,7 @@ resulted from the merging of child objects in the previous frame.</li>
 </li>
 </ul>
 
-See also: Any of the <b>Measure*</b> modules, <b>IdentifyPrimAutomatic</b>, <b>LoadImages</b>
+See also: Any of the <b>Measure*</b> modules, <b>IdentifyPrimaryObjects</b>, <b>LoadImages</b>
 """
 # CellProfiler is distributed under the GNU General Public License.
 # See the accompanying file LICENSE for details.

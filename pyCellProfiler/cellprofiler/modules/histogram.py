@@ -45,8 +45,8 @@ class DisplayHistogram(cpm.CPModule):
                             'Select the object','None',
                             doc='''
                             Choose the name of objects identified by some previous 
-                            module (such as <b>IdentifyPrimAutomatic</b> or 
-                            <b>IdentifySecondary</b>) to be displayed.''')
+                            module (such as <b>IdentifyPrimaryObjects</b> or 
+                            <b>IdentifySecondaryObjects</b>) to be displayed.''')
         
         self.x_axis = cps.Measurement(
                             'Select the measurement to plot', self.get_object, 'None',

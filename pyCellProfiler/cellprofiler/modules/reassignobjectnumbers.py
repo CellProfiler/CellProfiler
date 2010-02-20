@@ -71,8 +71,8 @@ class ReassignObjectNumbers(cpm.CPModule):
             "None",
             doc="""This setting names the objects that will be relabeled.
             You can use any objects that were created in previous modules
-            (for instance, in <b>IdentifyPrimAutomatic</b> or
-            <b>IdentifySecondary</b>""")
+            (for instance, in <b>IdentifyPrimaryObjects</b> or
+            <b>IdentifySecondaryObjects</b>""")
         
         self.output_objects_name = cps.ObjectNameProvider(
             "Name the new objects","RelabeledNuclei",

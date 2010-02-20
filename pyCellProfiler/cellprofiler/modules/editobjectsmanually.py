@@ -91,7 +91,7 @@ class EditObjectsManually(I.Identify):
             <p>
             If you choose <i>Renumber</i>, the edited objects' object numbers
             won't correspond to those of the unedited objects and any allied
-            objects (such as those created by <b>IdentifySecondary</b>). This
+            objects (such as those created by <b>IdentifySecondaryObjects</b>). This
             is the proper choice if you only take measurements of the edited
             objects and their antecedants.
             <p>

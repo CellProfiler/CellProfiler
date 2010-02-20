@@ -4,7 +4,7 @@ Given an image with identified objects (e.g. nuclei or cells), this
 module extracts area and shape features of each object. Note that these
 features are only reliable for objects that are completely inside the
 image borders, so you may wish to exclude objects touching the edge of
-the image using <b>IdentifyPrimAutomatic</b>.
+the image using <b>IdentifyPrimaryObjects</b>.
 
 Features that can be measured by this module:
 <ul>

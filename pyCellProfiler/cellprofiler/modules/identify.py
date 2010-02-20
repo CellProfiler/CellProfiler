@@ -191,7 +191,7 @@ class Identify(cellprofiler.cpmodule.CPModule):
             example, when the background brightness varies substantially among the
             parent objects. 
             <br><i>Important:</i> the per-object method requires that you run an
-            <b>IdentifyPrimAutomatic</b> module to identify the parent objects upstream in the
+            <b>IdentifyPrimaryObjects</b> module to identify the parent objects upstream in the
             pipeline. After the parent objects are identified in the pipeline, you
             must then also run a <b>Crop</b> module with the following inputs: 
             <ul>
@@ -199,7 +199,7 @@ class Identify(cellprofiler.cpmodule.CPModule):
             <li>Select <i>Objects</i> as the shape to crop into.</li>
             <li>Select the parent objects (e.g., <i>Nuclei</i>) as the objects to use as a cropping mask.</li>
             </ul>
-            Finally, in the <b>IdentifyPrimAutomatic</b> module, select the cropped image as input image.</ul>
+            Finally, in the <b>IdentifyPrimaryObjects</b> module, select the cropped image as input image.</ul>
             
             <p>Selecting manual thresholding allows you to enter a single value between 0 and 1
             as the threshold value. This setting can be useful when you are certain what the

@@ -50,8 +50,8 @@ class DisplayDensityPlot(cpm.CPModule):
                             'Select the object to display on x-axis?','None',
                             doc='''
                             Choose the name of objects identified by some previous 
-                            module (such as <b>IdentifyPrimAutomatic</b> or 
-                            <b>IdentifySecondary</b>) to be displayed on the x-axis.''')
+                            module (such as <b>IdentifyPrimaryObjects</b> or 
+                            <b>IdentifySecondaryObjects</b>) to be displayed on the x-axis.''')
         
         self.x_axis = cps.Measurement(
                             'Select the object measurement to plot on the x-axis', self.get_x_object, 'None',
@@ -63,8 +63,8 @@ class DisplayDensityPlot(cpm.CPModule):
                             'Select the object to display on y-axis','None',
                             doc=''' 
                             Choose the name of objects identified by some previous 
-                            module (such as <b>IdentifyPrimAutomatic</b> or 
-                            <b>IdentifySecondary</b>) to be displayed on the y-axis.''')
+                            module (such as <b>IdentifyPrimaryObjects</b> or 
+                            <b>IdentifySecondaryObjects</b>) to be displayed on the y-axis.''')
         
         self.y_axis = cps.Measurement(
                             'Select the object measurement to plot on the y-axis?', self.get_y_object, 'None',

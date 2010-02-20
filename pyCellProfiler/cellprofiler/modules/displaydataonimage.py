@@ -62,8 +62,8 @@ class DisplayDataOnImage(cpm.CPModule):
         self.objects_name = cps.ObjectNameSubscriber(
             "Select the input objects", "None",
             doc = """Choose the name of objects identified by some previous
-            module (such as <b>IdentifyPrimAutomatic</b> or
-            <b>IdentifySecondary</b>).""")
+            module (such as <b>IdentifyPrimaryObjects</b> or
+            <b>IdentifySecondaryObjects</b>).""")
         def object_fn():
             if self.objects_or_image == OI_OBJECTS:
                 return self.objects_name.value

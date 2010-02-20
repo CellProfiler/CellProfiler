@@ -104,9 +104,9 @@ class RelateObjects(cpm.CPModule):
             some other objects. These objects must be either parents or
             children of your parent object in order for this module to
             determine the distances. For instance, you might find "Nuclei" using
-            <b>IdentifyPrimAutomatic</b>, find "Cells" using
-            <b>IdentifySecondary</b> and find "Cytoplasm" using
-            <b>IdentifyTertiary</b>. You can use <b>Relate</b> to relate
+            <b>IdentifyPrimaryObjects</b>, find "Cells" using
+            <b>IdentifySecondaryObjects</b> and find "Cytoplasm" using
+            <b>IdentifyTertiaryObjects</b>. You can use <b>Relate</b> to relate
             speckles to cells and then measure distances to nuclei and
             cytoplasm. You could not use <b>Relate</b> to relate speckles to
             cytoplasm, and then measure distances to nuclei because nuclei is

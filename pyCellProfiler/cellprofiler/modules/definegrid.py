@@ -9,7 +9,7 @@ found automatically using previous modules in the pipeline. You can then
 use the grid to make measurements (using <b>IdentifyObjectsInGrid</b>). Text annotation of a grid can be shown on top of an image using the <b>DisplayGridInfo</b> module (coming soon).
 
 If you are using images of plastic plates, it may be useful to precede
-this module with an <b>IdentifyPrimAutomatic</b> module to find the plastic
+this module with an <b>IdentifyPrimaryObjects</b> module to find the plastic
 plate, followed by a <b>Crop</b> module to remove the plastic edges of the
 plate, so that the grid can be defined within the smooth portion of the
 plate only. If the plates are not centered in exactly the same position
@@ -164,7 +164,7 @@ class DefineGrid(cpm.CPModule):
                         clicking on the image with a mouse or by entering coordinates.
                         </li>
                         <li><i>Automatic mode:</i> If you would like the grid to be defined
-                        automatically, an <b>IdentifyPrimAutomatic</b> module must be run prior to 
+                        automatically, an <b>IdentifyPrimaryObjects</b> module must be run prior to 
                         this module to identify the objects which will be used to define 
                         the grid. The left-most, right-most, top-most, and bottom-most 
                         object will be used to define the edges of the grid, and the rows 

@@ -454,7 +454,7 @@ class IdentifyObjectsInGrid(cpm.CPModule):
         return setting_values, variable_revision_number, from_matlab
 
     def get_measurement_columns(self, pipeline):
-        '''Column definitions for measurements made by IdentifyPrimAutomatic'''
+        '''Column definitions for measurements made by IdentifyPrimaryObjects'''
         return get_object_measurement_columns(self.output_objects_name.value)
              
     def get_categories(self,pipeline, object_name):

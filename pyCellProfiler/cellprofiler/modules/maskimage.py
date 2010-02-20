@@ -8,7 +8,7 @@ Note that the image that is created by this module for further processing
 downstream is grayscale. If a binary mask is desired in subsequent modules, use 
 the <b>ApplyThreshold</b> module instead of <b>MaskImage</b>.
 
-See also <b>ApplyThreshold</b>, <b>IdentifyPrimAutomatic</b>, <b>IdentifyPrimManual</b>.
+See also <b>ApplyThreshold</b>, <b>IdentifyPrimaryObjects</b>, <b>IdentifyObjectsManually</b>.
 
 """
 # CellProfiler is distributed under the GNU General Public License.
@@ -48,7 +48,7 @@ class MaskImage(cpm.CPModule):
             doc="""You can mask an image in two ways:
             <ul>
             <li><i>Objects</i>: Here, you use objects created by another
-            module (for instance <b>IdentifyPrimAutomatic</b>). The module
+            module (for instance <b>IdentifyPrimaryObjects</b>). The module
             will mask out all parts of the image that are not within one
             of the objects (unless you invert the mask).</li>
             <li><i>Image</i>: Here, you use a binary image as the mask, where black 

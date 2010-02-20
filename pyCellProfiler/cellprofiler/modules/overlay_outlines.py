@@ -5,7 +5,7 @@ Outlines (in a special format produced by an identify module) can be
 placed on any desired image (grayscale, color, or blank) and then this 
 resulting image can be saved using the SaveImages module.
 
-See also <b>IdentifyPrimAutomatic, IdentifySecondary, IdentifyTertiarySubregion</b>
+See also <b>IdentifyPrimaryObjects, IdentifySecondaryObjects, IdentifyTertiaryObjects</b>
 '''
 
 # CellProfiler is distributed under the GNU General Public License.
@@ -106,8 +106,8 @@ class OverlayOutlines(cpm.CPModule):
                      cps.OutlineNameSubscriber(
                 "Select outlines to display",
                 "None", doc="""
-                    Choose an outline from a previous <b>IdentifyPrimAutomatic</b>,
-                    <b>IdentifySecondary</b> or <b>IdentifyTertiarySubregion</b>
+                    Choose an outline from a previous <b>IdentifyPrimaryObjects</b>,
+                    <b>IdentifySecondaryObjects</b> or <b>IdentifyTertiaryObjects</b>
                     module. Each of the Identify modules has a checkbox that
                     determines whether the outlines are saved. If you check this,
                     you'll be asked to supply a name for the outline; you

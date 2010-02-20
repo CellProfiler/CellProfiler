@@ -1,13 +1,13 @@
 """<b> Measure Image Area Occupied</b> measures the total area in an image that is occupied by objects
 <hr>
 This module reports the sum of the areas of the objects defined by one
-of the Identify modules (<b>IdentifyPrimAutomatic</b>, <b>IdentifyPrimSecondary</b>, etc.).
+of the Identify modules (<b>IdentifyPrimaryObjects</b>, <b>IdentifySecondaryObjects</b>, etc.).
 Both the area occupied and the total image area will respect
 the masking, if any, of the primary image used by the Identify module.
 
 If you want to measure the number of pixels
 above a threshold, this can be done by using this module preceded by
-thresholding performed by <b>IdentifyPrimAutomatic</b>.
+thresholding performed by <b>IdentifyPrimaryObjects</b>.
 <br>
 <br>
 Features that can be measured by this module:
@@ -198,7 +198,7 @@ class MeasureImageAreaOccupied(cpm.CPModule):
         """
         if from_matlab:
             raise NotImplementedError("The MeasureImageAreaOccupied module has changed substantially. \n"
-                                      "You should threshold your image using IdentifyPrimAutomatic\n"
+                                      "You should threshold your image using IdentifyPrimaryObjects\n"
                                       "and then measure the resulting objects' area using this module.")
         if variable_revision_number == 1:
             # We added the ability to process multiple objects in v2, but

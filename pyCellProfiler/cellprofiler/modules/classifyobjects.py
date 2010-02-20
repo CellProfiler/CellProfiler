@@ -99,8 +99,8 @@ class ClassifyObjects(cpm.CPModule):
             "Enter the object name","None",
             doc="""Select the object that you want to measure from the list.
             This should be an object created by a previous module such as
-            <b>IdentifyPrimAutomatic</b>, <b>IdentifySecondary</b> or
-            <b>IdentifyTertiarySubregion</b>.""")
+            <b>IdentifyPrimaryObjects</b>, <b>IdentifySecondaryObjects</b> or
+            <b>IdentifyTertiaryObjects</b>.""")
         #
         # The two measurements for the contrasting method
         #
@@ -208,8 +208,8 @@ class ClassifyObjects(cpm.CPModule):
             "Select the object to be classified","None",
             doc="""The name of the objects to be classified. You can
             choose from objects created by any previous module. See
-            <b>IdentifyPrimAutomatic</b>, <b>IdentifySecondary</b> or
-            <b>IdentifyTertiarySubregion</b>."""))
+            <b>IdentifyPrimaryObjects</b>, <b>IdentifySecondaryObjects</b> or
+            <b>IdentifyTertiaryObjects</b>."""))
         
         def object_fn():
             return group.object_name.value

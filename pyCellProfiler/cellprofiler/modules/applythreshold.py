@@ -39,12 +39,12 @@ class ApplyThreshold(Identify):
     def create_settings(self):
         threshold_methods = [method for method in TM_METHODS
                              if method != TM_BINARY_IMAGE]
-        self.image_name = cpsetting.NameSubscriber("Select the input image",
-                                "imagegroup", "None", doc = '''
+        self.image_name = cpsetting.ImageNameSubscriber("Select the input image",
+                                doc = '''
                                 Specify the image to be thresholded''')
         
-        self.thresholded_image_name = cpsetting.NameProvider("Name the output image",
-                                "imagegroup", "ThreshBlue", doc = '''
+        self.thresholded_image_name = cpsetting.ImageNameProvider("Name the output image",
+                                "ThreshBlue", doc = '''
                                 Give a name to the thresholded image?''')
         
         self.binary = cpsetting.Choice("Select the output image type", [GRAYSCALE, BINARY], doc = '''

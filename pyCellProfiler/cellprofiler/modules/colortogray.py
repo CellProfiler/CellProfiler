@@ -35,8 +35,8 @@ class ColorToGray(cpm.CPModule):
     category = "Image Processing"
     
     def create_settings(self):
-        self.image_name = cps.NameSubscriber("Select the input image",
-                                             "imagegroup","None")
+        self.image_name = cps.ImageNameSubscriber("Select the input image",
+                                             "None")
         self.combine_or_split = cps.Choice("Conversion method",
                                            [COMBINE,SPLIT],doc='''
                                            How do you want to convert the color image? 
@@ -48,8 +48,8 @@ class ColorToGray(cpm.CPModule):
                                            </ul>''')
         
         # The following settings are used for the combine option
-        self.grayscale_name = cps.NameProvider("Name the output image",
-                                               "imagegroup","OrigGray")
+        self.grayscale_name = cps.ImageNameProvider("Name the output image",
+                                               "OrigGray")
         self.red_contribution = cps.Float("Relative weight of the red channel",
                                           1,0,doc='''
                                           Relative weights: If all relative weights are equal, all three 
@@ -70,16 +70,16 @@ class ColorToGray(cpm.CPModule):
         
         # The following settings are used for the split option
         self.use_red = cps.Binary('Convert red to gray?',True)
-        self.red_name = cps.NameProvider('Name the output image',
-                                         "imagegroup","OrigRed")
+        self.red_name = cps.ImageNameProvider('Name the output image',
+                                         "OrigRed")
         
         self.use_green = cps.Binary('Convert green to gray?',True)
-        self.green_name = cps.NameProvider('Name the output image',
-                                         "imagegroup","OrigGreen")
+        self.green_name = cps.ImageNameProvider('Name the output image',
+                                         "OrigGreen")
         
         self.use_blue = cps.Binary('Convert blue to gray?',True)
-        self.blue_name = cps.NameProvider('Name the output image',
-                                         "imagegroup","OrigBlue")
+        self.blue_name = cps.ImageNameProvider('Name the output image',
+                                         "OrigBlue")
 
     def visible_settings(self):
         """Return either the "combine" or the "split" settings"""
@@ -159,9 +159,8 @@ class ColorToGray(cpm.CPModule):
                         input_image[:,:,1] * self.green_contribution.value + 
                         input_image[:,:,2] * self.blue_contribution.value) / denominator
         image = cpi.Image(output_image,parent_image=image)
-        workspace.image_set.add(self.grayscale_name,image)
+        workspace.image_set.add(self.grayscale_name.value,image)
 
-        
         workspace.display_data.input_image = input_image
         workspace.display_data.output_image = output_image
        
@@ -184,7 +183,7 @@ class ColorToGray(cpm.CPModule):
         output_axes.set_title("Grayscale image: %s"%(self.grayscale_name))
         
     def run_split(self, workspace, image):
-        """Combine images to make a grayscale one
+        """Split image into individual components
         """
         input_image  = image.pixel_data
         disp_collection = []

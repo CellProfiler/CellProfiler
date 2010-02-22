@@ -100,31 +100,59 @@ on a subsequent run by generating a new file name and prompting if you want to
 use it.</p>"""
 
 NEW_FEATURES_HELP = """ 
-A number of new features have been incorporated into CellProfiler 2.0:
+<h2>New Features in CellProfiler 2.0</h2>
+A number of new features have been incorporated into this Python version of CellProfiler:
+<h3>Interface</h3>
 <ul>
 <li>Resizable main GUI</li>
-<li>Help provided for each module setting.</li>
-<li>Context-dependent module settings: Additional settings are shown based on 
-reponses to other settings.</li>
-<li>An arbitrary number of images/objects can be provided as input for some modules. 
-For example, in OverlayOutlines, any number of outlines may be specified in one
-module to be overlaid on an image.</li>
-<li>Image grouping: Images which share a common metadata tag can be processed 
-together, which may be optimal for cluster computing.</li>
-<li>Test mode, which allows the user to preview the result of a setting selection,
-and step backward or forward in the pipeline to optimize the results prior to the
-actual analysis run.</li>
-<li>Module drag/drop: Modules can be dragged and dropped into another instance of
-CellProfiler, with the associated settings intact.</li>
-<li>Recent pipeline listing, showing a selectable list of recently used pipelines
-for easy access.</li>
-<li>Improved Otsu thresholding: Choose two- or three-class thresholding to handle
+<li><i>Help for individual module settings:<i> Each setting in a module now has 
+a help button, displaying information and advice for that setting.</li>
+<li><i>Context-dependent module settings</i>: Prior versions of CellProfiler 
+displayed all settings for each module, whether or not the values were needed by
+the user. With this version, settings which require additional 
+information will display the follow-up settings only if called for.</li>
+<li><i>Unlimited image/object input:</i> An arbitrary number of images or objects 
+can be provided as input for some modules, and any of the inputs can be
+dynamically added or removed as needed.<br>
+For example, in OverlayOutlines, any number of outlines may be specified to be 
+overlaid on an image; beforehand, multiple OverlayOutline modules
+would need to be strung together.</li>
+<li><i>Image grouping:</i> Images which share common metadata tags, whether 
+provided in the filename or in an accompanying text data file, can be processed together.
+This is useful for any situation in which the images are organized
+in some manner and each group needs to be analyzed as an individual set, such as 
+illumination correction for multiple plates.</li>
+<li><i>Test mode for assay development:</i> This feature allows the user to 
+preview the result of a module setting on their data, and step backward or forward 
+in the pipeline to optimize the results prior to the actual analysis run.</li>
+<li><i>Module drag and drop:</i> Modules can be selected and dragged and dropped 
+into another instance of CellProfiler, with the associated settings intact.</li>
+<li><i>Listing of recent pipelines:</i> A selectable list of recently used pipelines
+is available from the menu bar, for easy access.</li>
+</ul>
+
+<h3>Module improvements</h3>
+<ul>
+<li><i>Improved Otsu thresholding:</i> Choose two- or three-class thresholding to handle
 images where there may be an intermediate intensity level between foreground and 
 background.</li>
-<li>Seondary object identification permits discarding of objects touching the image
-border, along with the associated primary objects.</li>
-<li>
+<li>Secondary object identification now permits discarding of objects touching 
+the image border, along with the associated primary objects.</li>
+<li>Filtering objects by measurements now permits any number of measurements to 
+filter a set of objects with.</li>
+<li>A new module, <i>MeasureNeurons</i>, has been added which measures the number 
+of trunks and branches for each neuron in an image.</li>
+<li>Object data may be exported to a database as a single table which contains
+all user-defined object measurements, or as separate tables, one for each object.
+<li><i>SQLite support:</i> Data can be exported in SQLite, which is a 
+self-contained database format. Users can create their own local databases and 
+no longer need access to a separate database server. Additionally, CellProfiler 
+Analyst also supports SQLite, so any user can access Analyst's
+suite of data exploration and machine-leaning tools.</li>
 </ul>
+
+<h3>Speed and Memory</h3>
+[#XXX - Insert info here]
 """
 
 WHEN_CAN_I_USE_CELLPROFILER_HELP = """ """
@@ -228,20 +256,22 @@ module in CP2.0 and can't find it using the familiar CP1.0 name, below is a
 list of modules that have changed names, with the former name in parentheses
 <ul>
 <li>ConserveMemory (from SpeedUpCellProfiler)
-<li>LoadData (from LoadText)
+<li>ConvertObjectsToImage (from ConvertToImage)</li>
+<li>FilterObjects (from FilterByObjectMeasurement)</li>
 <li>EnhanceEdges (from FindEdges)</li>
 <li>EnhanceOrSuppressFeatures (from EnhanceOrSuppressSpeckles)</li>
-<li>MeasureObjectSizeShape (from MeasureObjectAreaShape)</li>
-<li>ReassignObjectNumbers (from RelabelObjects)</li>
-<li>RelateObjects (from Relate)</li>
+<li>ExpandOrShrinkObjects (from ExpandOrShrink)</li>
+<li>ExportToSpreadsheet (from ExportToExcel)</li>
+<li>FlagImage (from FlagImageForQC)</li>
+<li>IdentifyObjectsManually (from IdentifyPrimManual)</li>
 <li>IdentifyPrimaryObjects (from IdentifyPrimAutomatic)</li>
 <li>IdentifySecondaryObjects (from IdentifySecondary)</li>
 <li>IdentifyTertiaryObjects (from IdentifyTertiarySubregion)</li>
-<li>ConvertObjectsToImage (from ConvertToImage)</li>
-<li>ExpandOrShrinkObjects (from ExpandOrShrink)</li>
-<li>FilterObjects (from FilterByObjectMeasurement)</li>
-<li>ExportToSpreadsheet (from ExportToExcel)</li>
-<li>FlagImage (from FlagImageForQC)</li>
+<li>LoadData (from LoadText)
+<li>MaskObjects (from Exclude)
+<li>MeasureObjectSizeShape (from MeasureObjectAreaShape)</li>
+<li>ReassignObjectNumbers (from RelabelObjects)</li>
+<li>RelateObjects (from Relate)</li>
 <li>Smooth (from SmoothOrEnhance)</li>
 </ul>
 </p>
@@ -249,10 +279,11 @@ list of modules that have changed names, with the former name in parentheses
 <p>The functionality of some modules has superseded by others. These original 
 modules are now deprecated, and are no longer present. Below are the deprecated 
 modules and the names of the modules that should be used in their place in 
-parentheses:
+parentheses. Where possible, old modules will automatically be converted into
+the new one with the appropriate settings:
 <ul>
 <li>LoadImageDirectory (use MakeProjection, along with LoadImages with metadata)</li>
-<li>KeepLargestObject (use FilterObjects)</li>
+<li>KeepLargestObject (use FilterObjects with filtering method set to Maximal)</li>
 <li>Combine (use ImageMath)</li>
 <li>PlaceAdjacent (use Tile)</li>
 <li>FilenameMetadata (use LoadImages with metadata)</li>

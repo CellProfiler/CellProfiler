@@ -4,7 +4,7 @@ This module masks an image and saves it in the handles structure for
 future use. The masked image is based on the original image and the
 masking object or image that is selected. 
 
-Note that the image that is created by this module for further processing 
+Note that the image created by this module for further processing 
 downstream is grayscale. If a binary mask is desired in subsequent modules, use 
 the <b>ApplyThreshold</b> module instead of <b>MaskImage</b>.
 
@@ -47,16 +47,16 @@ class MaskImage(cpm.CPModule):
             [IO_OBJECTS, IO_IMAGE],
             doc="""You can mask an image in two ways:
             <ul>
-            <li><i>Objects</i>: Here, you use objects created by another
+            <li><i>Objects</i>: Using objects created by another
             module (for instance <b>IdentifyPrimaryObjects</b>). The module
             will mask out all parts of the image that are not within one
             of the objects (unless you invert the mask).</li>
-            <li><i>Image</i>: Here, you use a binary image as the mask, where black 
+            <li><i>Image</i>: Using a binary image as the mask, where black 
             portions of the image (false or zero-value pixels) will be masked out.
             If the image is not binary, the module will use
             all pixels whose intensity is greater than .5 as the mask's
-            foreground (white area). You may instead use <b>ApplyThreshold</b> to create a binary
-            image with finer control over the intensity choice.</li></ul>""")
+            foreground (white area). You can use <b>ApplyThreshold</b> instead to create a binary
+            image and have finer control over the intensity choice.</li></ul>""")
         
         self.object_name = cps.ObjectNameSubscriber(
             "Select object for mask","None",

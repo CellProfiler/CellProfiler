@@ -1,9 +1,9 @@
-'''<b>Overlay outlines</b> places outlines produced by an identify module over a desired image.
+'''<b>Overlay outlines</b> places outlines produced by an <b>Identify module</b> over a desired image
 <hr>
 
-Outlines (in a special format produced by an identify module) can be
+Outlines (in a special format produced by an <b>Identify</b> module) can be
 placed on any desired image (grayscale, color, or blank) and then this 
-resulting image can be saved using the SaveImages module.
+resulting image can be saved using the <b>SaveImages</b> module.
 
 See also <b>IdentifyPrimaryObjects, IdentifySecondaryObjects, IdentifyTertiaryObjects</b>
 '''
@@ -70,13 +70,13 @@ class OverlayOutlines(cpm.CPModule):
             "OrigOverlay",
             doc="""
             What do you want to call the image with the outlines displayed?
-            This setting names the overlay image. The name you provide will
-            show up in image lists in later modules (for instance 
+            This will be the name of the overlay image. The name you provide will
+            show up in image lists in later modules (for instance,  
             <b>SaveImages</b>)""")
         self.wants_color = cps.Choice(
             "Select outline display mode",
             [WANTS_COLOR, WANTS_GRAYSCALE], doc="""
-            This option chooses how to display the outline contours around
+            Specify how to display the outline contours around
             your objects. Color outlines produce a clearer display for
             images where the cell borders have a high intensity, but take
             up more space in memory. Grayscale outlines are displayed with
@@ -86,9 +86,9 @@ class OverlayOutlines(cpm.CPModule):
         self.max_type = cps.Choice(
             "Select method to determine brightness of outlines",
             [MAX_IMAGE, MAX_POSSIBLE],
-            doc = """Would you like the intensity (brightness) of the outlines to be "
-            "the same as the brightest point in the image, or the maximum "
-            "possible value for this image format?
+            doc = """Would you like the intensity (brightness) of the outlines to be 
+            the same as the brightest point in the image, or the maximum 
+            possible value for this image format?
             If your image is quite dim, then putting bright white lines
             onto it may not be useful. It may be preferable to make the
             outlines equal to the maximal brightness already occurring 
@@ -108,7 +108,7 @@ class OverlayOutlines(cpm.CPModule):
                 "None", doc="""
                     Choose an outline from a previous <b>IdentifyPrimaryObjects</b>,
                     <b>IdentifySecondaryObjects</b> or <b>IdentifyTertiaryObjects</b>
-                    module. Each of the Identify modules has a checkbox that
+                    module. Each of the <b>Identify</b> modules has a checkbox that
                     determines whether the outlines are saved. If you check this,
                     you'll be asked to supply a name for the outline; you
                     can then select that name here.

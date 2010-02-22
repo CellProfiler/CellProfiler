@@ -173,7 +173,7 @@ class DefineGrid(cpm.CPModule):
                         defined: for example, if there is an object at the edge of the 
                         images that is not really an object that ought to be in the grid, 
                         a skewed grid will result. You might wish to use a 
-                        <b>FilterByObjectMeasurement</b> module to clean up badly 
+                        <b>FilterObjects</b> module to clean up badly 
                         identified objects prior to defining the grid. If the spots are 
                         slightly out of alignment with each other from one image cycle to 
                         the next, this allows the identification to be a bit flexible and 

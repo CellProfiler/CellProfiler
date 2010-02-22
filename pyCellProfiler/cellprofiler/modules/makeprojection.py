@@ -12,18 +12,18 @@ output of this module is not complete until all image processing cycles have com
 <h2>Technical notes:</h2>
 This module will create a projection of all images specified in <b>LoadImages</b>. 
 Previously, the module <b>LoadImageDirectory</b> could be used for the same 
-functionality, but on a per-folder basis, i.e., a projection would be created 
+functionality, but on a per-folder basis; i.e., a projection would be created 
 for each set of images in a folder, for all input folders. The
-functionality of LoadImageDirectory can be achieved by using image grouping with
-metadata, with the following setting specifications in LoadImages:
+functionality of <b>LoadImageDirectory</b> can be achieved using image grouping with
+metadata, with the following setting specifications in <b>LoadImages</b>:
 <ol>
 <li>Specify that all subfolders under the Default input folder are to be analyzed.</li>
 <li>Extract metadata from the input image path by using a regular expression to capture
 the subfolder name.</li>
 <li>Enable grouping of image sets by metadata and specify the subfolder metadata token
-as the field to group by.
+as the field by which to group.
 </ol>
-However, unlike LoadImageDirectory, this per-folder projection is also not 
+However, unlike <b>LoadImageDirectory</b>, this per-folder projection is also not 
 immediately available in subsequent modules until all image processing cycles for 
 the given subfolder have completed.
 
@@ -63,9 +63,9 @@ class MakeProjection(cpm.CPModule):
         self.projection_type = cps.Choice('Type of projection',
                                           P_ALL, doc = '''
                                           What kind of projection would you like to make?
-                                          <ul><li>Average: The average pixel intensity at each pixel position
-                                          will be used to create the final image.</li>
-                                          <li>Maximum: The maximum pixel value at each pixel position will be used to
+                                          <ul><li>Average: Use the average pixel intensity at each pixel position
+                                          to create the final image.</li>
+                                          <li>Maximum: Use the maximum pixel value at each pixel position to
                                           create the final image.</li></ul>''')
         self.projection_image_name = cps.ImageNameProvider(
             'Name the output image',

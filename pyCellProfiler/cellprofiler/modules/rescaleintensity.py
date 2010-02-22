@@ -1,8 +1,8 @@
-'''<b>RescaleIntensity</b>- Changes intensity range of an image to desired specifications.
+'''<b>RescaleIntensity</b> changes intensity range of an image to your desired specifications
 <hr>
 
-The intensity of the incoming images are rescaled by one of several
-methods. This is especially helpful for converting 12-bit images saved in
+This module lets you rescale the intensity of the incoming images by any of several
+methods. This is especially helpful when converting 12-bit images saved in
 16-bit format to the correct range.
 
 '''
@@ -67,10 +67,10 @@ class RescaleIntensity(cpm.CPModule):
                                                 (or the whole image if there is no mask) and rescale every pixel so that 
                                                 the minimum has an intensity of zero and the maximum has an intensity of one.</li>
                                                 <li><i>Choose specific values to be reset to the full intensity range:</i> Pixels are
-                                                scaled from their user-specified original range to the range, 0 to 1.
+                                                scaled from their user-specified original range to the range 0 to 1.
                                                 Options are available to handle values outside of the original range.<br>
                                                 To convert 12-bit images saved in 16-bit format to the correct range,
-                                                use the range, 0 to 0.0625. The value 0.0625 is equivalent 
+                                                use the range 0 to 0.0625. The value 0.0625 is equivalent 
                                                 to 2<sup>12</sup> divided by 2<sup>16</sup>, so it will convert a 16 bit image containing 
                                                 only 12 bits of data to the proper range.</li>
                                                 <li><i>Choose specific values to be reset to a custom range:</i> Pixels are scaled from their original range to
@@ -78,35 +78,35 @@ class RescaleIntensity(cpm.CPModule):
                                                 of the original range.</li>
                                                 <li><i>Divide by image's minimum:</i> Divide the intensity value of each pixel by the image's minimum intensity
                                                 value so that all pixel intensities are equal to or greater than 1.
-                                                You can use the output from this option in CorrectIllumination_Apply.
+                                                You can use the output from this option in <b>CorrectIllumination_Apply</b>.
                                                 The image becomes an illumination correction function.</li>
                                                 <li><i>Divide by image's maximum:</i> Divide the intensity value of each pixel by the image's maximum intensity
                                                 value so that all pixel intensities are less than or equal to 1.</li>
                                                 <li><i>Divide each image by the same value:</i> Divide the intensity value of each pixel by the value entered.</li>
-                                                <li><i>Divide by each image by a previously calculated value:</i> The intensity value of each pixel is divided by some previously calculated
+                                                <li><i>Divide each image by a previously calculated value:</i> The intensity value of each pixel is divided by some previously calculated
                                                 measurement. This measurement can be the output of some other module
-                                                or can be a value loaded by the LoadData module.</li>
+                                                or can be a value loaded by the <b>LoadData</b> module.</li>
                                                 <li><i>Match the image's maximum to another image's maximum:</i> Scale an image so that its maximum value is the same as the maximum value
                                                 within the target image.</li>
                                                 <li><i>Convert to 8-bit:</i> Images in CellProfiler are normally stored as a floating point number in
                                                 the range of 0 to 1. This option converts these images to class uint8, 
-                                                meaning an 8 bit integer in the range of 0 to 255.  This is useful to
-                                                reduce the amount of memory required to store the image. Warning: Most
+                                                meaning an 8 bit integer in the range of 0 to 255, 
+                                                reducing the amount of memory required to store the image. <i>Warning:</i> Most
                                                 CellProfiler modules require the incoming image to be in the standard 0
                                                 to 1 range, so this conversion may cause downstream modules to behave 
-                                                unexpectedly.</li></ul>''')
+                                                in unexpected ways.</li></ul>''')
         
         self.wants_automatic_low = cps.Binary('Use the minimum intensity value as the lower limit?',
                                               False, doc = """
                                               <i>(Used if specific values are to be chosen for a custom range)</i><br>
-                                              This setting will use the minimum intensity in the original image
-                                              as the lower limit of intensity range in the rescaled image.""")
+                                              This setting specifies the minimum intensity in the original image
+                                              as the lower limit of the intensity range in the rescaled image.""")
         
         self.wants_automatic_high = cps.Binary('Use the maximum intensity value as the upper limit?',
                                                False, doc = """
                                                <i>(Used if specific values are to be chosen for a custom range)</i><br>
-                                               This setting will use the maximum intensity in the original image
-                                               as the upper limit of intensity range in the rescaled image.""")
+                                               This setting specifies the maximum intensity in the original image
+                                               as the upper limit of the intensity range in the rescaled image.""")
         
         self.source_low = cps.Float('Enter the lower limit for the intensity range for the original image',0)
         

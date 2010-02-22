@@ -1,6 +1,6 @@
-"""<b>Resize</b> - Resizes images
+"""<b>Resize</b> resizes images
 <hr>
-Images are resized (smaller or larger) based on the user's inputs. You
+Images are resized (made smaller or larger) based on user input. You
 can resize an image by applying a resizing factor or by specifying a
 pixel size for the resized image. You can also select which interpolation
 method to use. 
@@ -52,11 +52,11 @@ class Resize(cpm.CPModule):
         self.specific_width = cps.Integer("Width of the final image", 100, minval=1)
         self.specific_height = cps.Integer("Height of the final image", 100, minval=1)
         self.interpolation = cps.Choice("Interpolation method",
-                                        I_ALL, doc = '''<ul><li>Nearest Neighbor: Each output pixel is given the intensity of the nearest
+                                        I_ALL, doc = '''<ul><li><i>Nearest Neighbor:</i> Each output pixel is given the intensity of the nearest
                                         corresponding pixel in the input image.</li>
-                                        <li>Bilinear: Each output pixel is given the intensity of the weighted average
+                                        <li><i>Bilinear:</i> Each output pixel is given the intensity of the weighted average
                                         of the 2x2 neighborhood at the corresponding position in the input image.</li>
-                                        <li>Bicubic: Each output pixel is given the intensity of the weighted average
+                                        <li><i>Bicubic:</i> Each output pixel is given the intensity of the weighted average
                                         of the 4x4 neighborhood at the corresponding position in the input image.</li>
                                         </ul>''')
 

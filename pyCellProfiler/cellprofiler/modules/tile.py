@@ -1,18 +1,18 @@
 '''<b>Tile</b> tiles images together to form one large image, either across image cycles or within a cycle
 <hr>
-Allows many images to be viewed simultaneously in a grid layout you specify (e.g., in the actual layout in which the
+This module allows many images to be viewed simultaneously in a grid layout you specify (e.g., in the actual layout in which the
 images were collected).  If you want to view a large number of images, you will generate an extremely large file
 (roughly the size of all the images' sizes added together).  This will cause memory errors, so we offer a few suggestions:
 <ol>
-<li>Resize the images to a fraction of their original size by using the <b>Resize</b> module just before this module.</li>
+<li>Resize the images to a fraction of their original size, using the <b>Resize</b> module just before this module in the pipeline.</li>
 <li>Rescale the images to 8-bit, which decreases the number of graylevels in the image (thus decreasing resolution)
 but also decreases the size of the image. </li>
 <li> Use the <b>ConserveMemory</b> module just before this module to clear out images that are stored in memory. 
-Place this module prior to the Tile module (and maybe also afterwards) and ask it to retain only those 
+Place this module prior to the <b>Tile</b> module (and maybe also afterwards) and ask it to retain only those 
 images which are needed for downstream modules. </li>
 </ol>
 
-This module replaces the functionality of the module PlaceAdjacent.
+This module replaces the functionality of the module <b>PlaceAdjacent</b>.
 '''
 __version__ = "$Revision: 9034 $"
 
@@ -78,17 +78,17 @@ class Tile(cpm.CPModule):
              </ul>''')
         self.rows = cps.Integer("Number of rows in final tiled image",
                                          8, doc='''How many rows would you like to have in the tiled image?
-                                         For example, if you want to show your images in a 96-well format, you would
+                                         For example, if you want to show your images in a 96-well format, 
                                          enter 8.''')
         self.columns = cps.Integer("Number of columns in final tiled image",
                                          12, doc='''How many columns would you like to have in the tiled image?
-                                         For example, if you want to show your images in a 96-well format, you would
+                                         For example, if you want to show your images in a 96-well format, 
                                          enter 12.''')
         self.place_first = cps.Choice("Begin tiling in this corner of the final image", P_ALL, doc = '''
-            Where do you want the first image to be placed?  You would begin in the upper left-hand corner
+            Where do you want the first image to be placed?  Begin in the upper left-hand corner
             for a typical multi-well plate format where the first image is A01.''')
         self.tile_style = cps.Choice("Begin tiling across a row, or down a column?", S_ALL, doc = '''
-            Are the images arranged in rows or columns?  If your images are named A01, A02, etc, you would
+            Are the images arranged in rows or columns?  If your images are named A01, A02, etc, 
             enter "row".''')
         self.meander = cps.Binary("Tile in meander mode?", False, '''Meander mode tiles adjacent images in one direction, 
                                 then the next row/column in the opposite direction.  Some microscopes capture images

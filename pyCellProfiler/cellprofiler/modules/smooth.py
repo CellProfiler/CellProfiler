@@ -1,7 +1,7 @@
 '''<b>Smooth</b> smooths (i.e., blurs) images
 <hr>
-Note that smoothing is a time-consuming process, and fitting a polynomial
-is fastest but does not allow a very tight fit as compared to the slower
+Note that smoothing is a time-consuming process; fitting a polynomial
+is fastest but does not allow a very tight fit compared to the slower
 median filtering method. Artifacts with widths over ~50 take substantial
 mounts of time to process.
 '''
@@ -61,12 +61,11 @@ class Smooth(cpm.CPModule):
             to the edges again.</li>
             <li><i>Gaussian Filter:</i> This method convolves the image with a Gaussian whose
             full width at half maximum is the object size entered.
-            The effect of the filter is to blur and obscure features
+            Its effect is to blur and obscure features
             smaller than the object size and spread bright or
             dim features over a radius of the object size.</li>
             <li><i>Median Filter:</i> This method finds the median pixel value within the
-            diameter specified by the object size. The effect is
-            to remove bright or dim features that are much smaller
+            diameter specified by the object size. It removes bright or dim features that are much smaller
             than the object size.</li>
             <li><i>Smooth Keeping Edges:</i> This method uses a bilateral filter which
             limits Gaussian smoothing across an edge while 
@@ -99,7 +98,7 @@ class Smooth(cpm.CPModule):
         self.sigma_range = cps.Float('Edge intensity difference:', .1,doc="""
             <i>(Used only if Smooth Keeping Edges is selected)</i>
             <p>What are the differences in intensity in the edges that you want to preserve?
-            Enter the intensity step that is indicative of an edge in an image.
+            Enter the intensity step that indicates an edge in an image.
             Edges are locations where the intensity changes precipitously, so this
             setting is used to adjust the rough magnitude of these changes. A lower
             number will preserve more edges. A higher number will smooth more edges.

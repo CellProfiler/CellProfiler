@@ -2,11 +2,10 @@
 <hr>
 Because CellProfiler usually performs many image analysis steps on many
 groups of images, it does <i>not</i> save any of the resulting images to the
-hard drive unless you use the <b>SaveImages</b> module to do so. Any of the
-processed images created by CellProfiler during the analysis can be
-saved using this module.
+hard drive unless you do so with the <b>SaveImages</b> module. You can save any of the
+processed images created by CellProfiler during the analysis using this module.
 
-<p>You can choose from among 18 image formats to save your files in. This
+<p>You can choose from among 18 image formats for saving your files. This
 allows you to use the module as a file format converter, by loading files
 in their original format and then saving them in an alternate format.
 
@@ -14,7 +13,7 @@ in their original format and then saving them in an alternate format.
 has not been extensively tested. In particular, saving of images in 12- or 16-bit
 is not supported.
  
-See also <b>LoadImages</b>, <b>SpeedUpCellProfiler</b>.
+See also <b>LoadImages</b>, <b>ConserveMemory</b>.
 '''
 
 # CellProfiler is distributed under the GNU General Public License.
@@ -91,13 +90,13 @@ class SaveImages(cpm.CPModule):
                 Do you want to save an image, the image's crop mask, the image's cropping, a movie or a figure window?
                 <ul>
                 <li><i>Image:</i> Any the images produced upstream of the module can be selected for saving.</li>
-                <li><i>Crop mask (Only relevant if the Crop module is used):</i> The <b>Crop</b> module 
+                <li><i>Crop mask (Relevant only if the Crop module is used):</i> The <b>Crop</b> module 
                 creates a mask of the pixels of interest in the image. Saving the mask will produce a 
                 binary image in which the pixels of interest are set to 1; otherwise the pixels are 
                 set to 0 elsewhere.</li>
-                <li><i>Image's cropping (Only relevant if the Crop module is used):</i> The <b>Crop</b> 
+                <li><i>Image's cropping (Relevant only if the Crop module is used):</i> The <b>Crop</b> 
                 module also creates a cropping image which is typically the same size as the original 
-                image. However, since the <b>Crop</b> permits removal the rows and columns that are left 
+                image. However, since the <b>Crop</b> permits removal of the rows and columns that are left 
                 blank, the cropping can be of a different size than the mask.</li>
                 <li><i>Movie:</i> A sequence of images can be saved as a movie file, such as an AVI. Each image 
                 is a frame of the movie.</li>
@@ -119,11 +118,11 @@ class SaveImages(cpm.CPModule):
                 on the original filename of an input image specified in <b>LoadImages</b>
                 or <b>LoadData</b>.</li>
                 <li><i>Sequential numbers:</i> Same as above, but in addition, each filename
-                will have a number appended to the end, corresponding to
+                will have a number appended to the end that corresponds to
                 the image set cycle number (starting at 1).</li>
                 <li><i>Single file name:</i> A single, fixed name will be given to the
-                file. Since this file will therefore be overwritten with each cycyle, usually 
-                this option is used if want to have the file updated on every cycle as processing 
+                file. Since this file will therefore be overwritten with each cycle, usually 
+                this option would usually be used if you wanted to have the file updated in every cycle as processing 
                 continues.</li>
                 <li><i>Name with metadata:</i> The filenames are constructed using the metadata
                 associated with an image set in <b>LoadImages</b> or <b>LoadData</b>. This is 
@@ -167,12 +166,10 @@ class SaveImages(cpm.CPModule):
         self.movie_pathname_choice = cps.Choice("Select location to save file",
                                           [PC_DEFAULT,PC_CUSTOM],
                                           PC_DEFAULT,doc="""
-                This setting lets you control the folder used to store the file. The
-                choices are:
-                <ul>
+                There are four choices available:                <ul>
                 <li><i>Default output folder</i></li>
-                <li><i>Same folder as image:</i> The file will be stored in the folder of the
-                images from this image set.</li>
+                <li><i>Same folder as image:</i> The file will be stored in the folder to which the
+                images from this image set belong.</li>
                 <li><i>Custom:</i> The file will be stored in a customizable folder. You can
                 prefix the folder name with "." (n period) to make the root folder the default
                 output folder or "&" (an ampersand) to make the root folder the default image
@@ -182,7 +179,7 @@ class SaveImages(cpm.CPModule):
                 </ul>""")
         self.pathname = cps.Text("Pathname of the saved image",".",doc="""
                 Enter the pathname to save the images here. The pathname can referenced with respect 
-                to the Default Output Folder with a period (".") or the Default Input 
+                to the default output folder with a period (".") or the default input 
                 folder with an ampersand ("&") as the root folder.""")
         self.bit_depth = cps.Choice("Enter the bit depth at which to save the images",
                                     ["8","12","16"])
@@ -198,17 +195,17 @@ class SaveImages(cpm.CPModule):
                 a movie frame is added each cycle, saving at the last cycle will output the 
                 fully completed movie. 
                 <p>You also have the option to save the movie periodically 
-                during image processing, so that the partial movie will be available in case 
-                image processing is canceled partway through. Saving movies in .avi format is 
-                quite slow, so you can enter an cycle increment to save the movie. For example, 
+                during image processing, so that the partial movie will be available if you cancel  
+                image processing partway through. Saving movies in .avi format is 
+                quite slow, so you can enter an cycle increment for saving the movie. For example, 
                 entering a 1 will save the movie after every cycle. Since saving movies is 
-                time-consuming, use any value other than "Last cycyle" with caution.
-                <p>The movie will be saved in uncompressed avi format, which can be quite large. 
+                time-consuming, use any value other than "Last cycle" with caution.
+                <p>The movie will be saved in uncompressed .avi format, which can be quite large. 
                 We recommended converting the movie to a compressed movie format, 
                 such as .mov using third-party software. """)
         self.rescale = cps.Binary("Rescale the images? ",False,doc="""
                 Check this box if you want the image to occupy the full dynamic range of the bit 
-                depth you have chosen. For example, for a image to be saved to a 8-bit file, the
+                depth you have chosen. For example, if you save an image to an 8-bit file, the
                 smallest grayscale value will be mapped to 0 and the largest value will be mapped 
                 to 2<sup>8</sup>-1 = 255. 
                 <p>This will increase the contrast of the output image but will also effectively 
@@ -223,16 +220,16 @@ class SaveImages(cpm.CPModule):
         self.update_file_names = cps.Binary("Update file names within CellProfiler?",False,doc="""
                 This setting stores file- and pathname data as a per-image measurement. 
                 This is useful when exporting to a database, allowing access to the saved image.  
-                This also allows downstream modules (e.g. <b>CreateWebPage</b>) to look up the newly
+                This also allows downstream modules (e.g., <b>CreateWebPage</b>) to look up the newly
                 saved files on the hard drive. Normally, whatever files are present on
                 the hard drive when CellProfiler processing begins (and when the
-                <b>LoadImages</b> module processes its first cycle) are the only files that are
+                <b>LoadImages</b> module processes its first cycle) are the only files 
                 accessible within CellProfiler. This setting allows the newly saved files
                 to be accessible to downstream modules. This setting might yield unusual
                 consequences if you are using the <b>SaveImages</b> module to save an image
-                directly as loaded (e.g. using the <b>SaveImages</b> module to convert file
-                formats), because it will, in some places in the output file, overwrite
-                the file names of the loaded files with the file names of the the saved
+                directly as loaded (e.g., using the <b>SaveImages</b> module to convert file
+                formats), because in some places in the output file it will overwrite
+                the file names of the loaded files with the file names of the saved
                 files. Because this function is rarely needed and may introduce
                 complications, the default setting is unchecked.""")
         self.create_subdirectories = cps.Binary("Create subfolders in the output folder?",False,

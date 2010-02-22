@@ -7,7 +7,7 @@ the dilate operation will only consider unmasked pixels in the neighborhood
 of a pixel when determining the maximum within that neighborhood.
 <br>
 <br>
-The following operations are available:<br>
+The following operations are available:<br><br>
 <table border="1">
 <tr><td><b>Operation</b></td><td><b>Description</b></td>
 <td><b>Input image type allowed</b></td></tr>
@@ -18,7 +18,7 @@ It subtracts the morphological <i>Close</i> of the image from the image. See bel
 <td>Binary, grayscale</td>
 </tr>
 <tr><td><i>Branchpoints</i></td>
-<td>Remove all pixels except those that are the branchpoints of a skeleton.
+<td>Removess all pixels except those that are the branchpoints of a skeleton.
 This operation should be applied to an image after skeletonizing. It leaves
 only those pixels that are at the intersection of branches.<br>
 <table>
@@ -42,7 +42,7 @@ only those pixels that are at the intersection of branches.<br>
 </td></tr>
 <tr>
 <td><i>Bridge</i></td>
-<td>Set a pixel to one if it has two non-zero neighbors that are on opposite 
+<td>Sets a pixel to 1 if it has two non-zero neighbors that are on opposite 
 sides of this pixel:<br>
 <table> 
 <tr>
@@ -64,7 +64,7 @@ sides of this pixel:<br>
 </tr>
 <tr>
 <td><i>Clean</i></td>
-<td>Remove isolated pixels:<br>
+<td>Removes isolated pixels:<br>
 <table> 
 <tr>
 <td><table border=1>
@@ -92,15 +92,15 @@ fill holes and join nearby objects.
 </tr>
 <tr>
 <td><i>Convex hull</i></td>
-<td>Find the convex hull of a binary image. The convex hull is the smallest
-convex polygon that fits around all foreground pixels of the image - it is
+<td>Finds the convex hull of a binary image. The convex hull is the smallest
+convex polygon that fits around all foreground pixels of the image: it is
 the shape that a rubber band would take if stretched around the foreground
 pixels. The convex hull can be used to regularize the boundary of a large,
 single object in an image, for instance, the edge of a well.</td>
 <td>Binary</td>
 <tr>
 <td><i>Diag</i></td>
-<td>Fill in pixels whose neighbors are diagnonally connected to 4-connect 
+<td>Fills in pixels whose neighbors are diagnonally connected to 4-connect 
 pixels that are 8-connected:<br>
 <table>
 <tr>
@@ -130,26 +130,26 @@ pixels that are 8-connected:<br>
 </tr>
 <tr>
 <td><i>Dilate</i></td>
-<td>For binary, any 0 pixel is replaced by 1 if any of its neighbors is 1. 
+<td>For binary, replaces any 0 pixel by 1 if any of its neighbors is 1. 
 For grayscale, each pixel is replaced by the maximum of its neighbors and itself.</td>
 <td>Binary, grayscale</td>
 </tr>
 <tr>
 <td><i>Distance</i></td>
-<td>Compute the distance transform of a binary image. The distance of each
+<td>Computes the distance transform of a binary image. The distance of each
 foreground pixel is computed to the nearest background pixel. The resulting
 image is then scaled so that the largest distance is 1.</td>
 <td>Binary</td>
 </tr>
 <tr>        
 <td><i>Erode</i></td>
-<td>For binary, any 1 pixel is replaced by 0 if any of its neighbors is 0. 
+<td>For binary, replaces any 1 pixel by 0 if any of its neighbors is 0. 
 For grayscale, each pixel is replaced by the minimum of its neighbors and itself.</td>
 <td>Binary, grayscale</td>
 </tr>
 <tr>
 <td>Endpoints</td>
-<td>Remove all pixels except the ones that are at the end of a skeleton:<br>
+<td>Removes all pixels except the ones that are at the end of a skeleton:<br>
 <table>
 <tr>
 <td><table border=1>
@@ -174,7 +174,7 @@ For grayscale, each pixel is replaced by the minimum of its neighbors and itself
 </tr>
 <tr>
 <td>Fill</td>
-<td>Set a pixel to 1 if all of its neighbors are 1:<br>
+<td>Sets a pixel to 1 if all of its neighbors are 1:<br>
 <table>
 <tr>
 <td><table border=1>
@@ -216,7 +216,7 @@ For grayscale, each pixel is replaced by the minimum of its neighbors and itself
 </tr>
 <tr>
 <td><i>Invert</i></td>
-<td>For a binary image, transform background to foreground and vice-versa.
+<td>For a binary image, transforms background to foreground and vice-versa.
 For a grayscale image, invert its intensity.
 </td><td>Binary, Grayscale</td>
 </tr>
@@ -250,7 +250,7 @@ break bridges between objects and remove single pixels.</td>
 <tr>
 <td><i>Remove</i></td>
 <td>Removes pixels that are otherwise surrounded by others (4 connected). 
-The effect is to be left with the perimeter of a solid object:<br>
+The effect is to leave the perimeter of a solid object:<br>
 <table>
 <tr>
 <td><table border=1>
@@ -271,22 +271,22 @@ The effect is to be left with the perimeter of a solid object:<br>
 </tr>
 <tr>
 <td><i>Shrink</i></td>
-<td>Perform a thinning operation that erodes unless that operation
+<td>Performs a thinning operation that erodes unless that operation
 would change the image's Euler number. This means that blobs are reduced to single 
 points and blobs with holes are reduced to rings if shrunken indefinitely.</td>
 <td>Binary</td>
 </tr>
 <tr>
 <td><i>Skel</i></td>
-<td>Perform a skeletonizing operation (medial axis transform). Preserves 
+<td>Performs a skeletonizing operation (medial axis transform). Preserves 
 the points at the edges of objects but erodes everything else to lines that connect those edges.
 See <a href="http://homepages.inf.ed.ac.uk/rbf/HIPR2/skeleton.htm">here</a> for a description.</td>
 <td>Binary</td>
 </tr>
 <tr>
 <td><i>Spur</i></td>
-<td>Remove spur pixels. These are pixels that are only diagonally
-connected to other pixels and connected in only one direction:<br>
+<td>Removes spur pixels. These are pixels that are connected only diagonally
+to other pixels and connected in only one direction:<br>
 <table>
 <tr>
 <td><table border=1>
@@ -309,7 +309,7 @@ connected to other pixels and connected in only one direction:<br>
 </tr>
 <tr>
 <td><i>Thicken</i></td>
-<td>Dilate the exteriors of objects where that dilation does not
+<td>Dilates the exteriors of objects where that dilation does not
 8-connect the object with another. The image is labeled and the labeled objects are filled. 
 Unlabeled points adjacent to uniquely labeled points change from background to foreground.</td>
 <td>Binary</td>
@@ -323,7 +323,7 @@ page 359. The result generally preserves the lines in an image while eroding the
 </tr>
 <tr>
 <td><i>Tophat</i></td>
-<td>Subtract the morphological opening of the image from the image. This enhances white spots 
+<td>Subtracts the morphological opening of the image from the image. This enhances white spots 
 in a black background.</td>
 <td>Binary, grayscale</td>
 </tr>
@@ -439,13 +439,13 @@ class Morph(cpm.CPModule):
         group.append("function", cps.Choice("Select the operation to perform",
                                            F_ALL, F_OPEN,doc="""
                                            What operation do you want to perform?
-                    Choose one of the operations described in this module's Help."""))
+                    Choose one of the operations described in this module's help."""))
         group.append("repeats_choice", cps.Choice("Repeat operation",
                                                   R_ALL,doc="""
                     This setting controls the number of times that the same operation is applied
                     successively to the image.
                     <ul>
-                    <li><i>Once:</i> Perform the operation once on the image</li>
+                    <li><i>Once:</i> Perform the operation once on the image.</li>
                     <li><i>Forever:</i> Perform the operation on the image until successive
                     iterations yield the same image.</li>
                     <li><i>Custom:</i> Perform the operation a custom number of times.</li>

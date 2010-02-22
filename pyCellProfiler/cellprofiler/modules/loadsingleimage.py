@@ -1,15 +1,15 @@
-"""<b>LoadSingleImage</b> loads a single image, which will be used for all image cycles.
+"""<b>Load Single Image</b> loads a single image for use in all image cycles
 <hr>
-Note: for most purposes, you will probably want to use the Load Images
+<i>Note:</i> For most purposes, you will probably want to use the <b>LoadImages</b>
 module, not this one.
 
-Tells CellProfiler where to retrieve a single image and gives the image a
-meaningful name for the other modules to access.  The module only
-executes the first time through the pipeline, and thereafter the image
-is accessible to all subsequent cycles being processed. This is
-particularly useful for loading an image like an Illumination correction
-image to be used by the CorrectIllumination_Apply module. Note: Actually,
-you can load four 'single' images using this module.
+This module tells CellProfiler where to retrieve a single image and gives the image a
+meaningful name by which the other modules can access it. The module 
+executes only the first time through the pipeline; thereafter the image
+is accessible to all subsequent processing cycles. This is
+particularly useful for loading an image like an illumination correction
+image for use by the <b>CorrectIllumination_Apply</b> module. <i>Note:</i> Actually,
+you can use this module to load four "single" images.
 
 See also <b>LoadImages</b>.
 
@@ -61,13 +61,13 @@ class LoadSingleImage(cpm.CPModule):
             doc = '''It is best to store your illumination function
             in either the input or output folder, so that the correct image is loaded into 
             the pipeline and typos are avoided.  If you must store it in another folder, 
-            select 'Custom'. You can use metadata from the image set to
-            construct the name by selecting 'Custom with metadata'.''')
+            select <i>Custom folder</i>. You can use metadata from the image set to
+            construct the name by selecting <i>Custom with metadata</i>.''')
         self.custom_directory = cps.Text(
             "What is the name of the folder containing the image files?",".",
             doc='''This is the name of the folder that has your illumination
-            files in it. If you chose "Custom with metadata" above, you can
-            specify a path that is based on metadata associated with the
+            files in it. If you chose <i>Custom with metadata</i> above, you can
+            specify a path based on metadata associated with the
             image set. For instance, if you have a "Plate" metadata element,
             you can specify a path name of "./\g&lt;Plate&gt;" to get files
             from the folder associated with your image's plate.

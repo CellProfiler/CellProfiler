@@ -32,9 +32,12 @@ import cellprofiler.preferences as cpprefs
 
 def log_transform(im):
     '''returns log(image) scaled to the interval [0,1]'''
-    (min, max) = (im[im > 0].min(), im.max())
-    if (max > min) and (max > 0):
-        return (np.log(im.clip(min, max)) - np.log(min)) / (np.log(max) - np.log(min))
+    try:
+        (min, max) = (im[im > 0].min(), im.max())
+        if (max > min) and (max > 0):
+            return (np.log(im.clip(min, max)) - np.log(min)) / (np.log(max) - np.log(min))
+    except:
+        pass
     return im
 
 def auto_contrast(im):
@@ -49,8 +52,40 @@ def auto_contrast(im):
     return im
 
 def is_color_image(im):
-    return im.ndim==3 and im.shape[2]>=3
+    return im.ndim==3 and im.shape[2]>=2
 
+
+COLOR_NAMES = ['Red', 'Green', 'Blue', 'Yellow', 'Cyan', 'Magenta', 'White']
+COLOR_VALS = [[1, 0, 0],
+              [0, 1, 0],
+              [0, 0, 1],
+              [1, 1, 0],
+              [0, 1, 1],
+              [1, 0, 1],
+              [1, 1, 1]]
+def wraparound(list):
+    while True:
+        for l in list:
+            yield l
+
+def make_1_or_3_channels(im):
+    if im.ndim == 2 or im.shape[2] == 1 or im.shape[2] == 3:
+        return im
+    out = np.zeros((im.shape[0], im.shape[1], 3), np.float)
+    for chanidx, weights in zip(range(im.shape[2]), wraparound(COLOR_VALS)):
+        for idx, v in enumerate(weights):
+            out[:, :, idx] += v * im[:, :, chanidx]
+    return out.clip(0, 1)
+
+def match_rgbmask_to_image(rgb_mask, image):
+    rgb_mask = list(rgb_mask) # copy
+    nchannels = image.shape[2]
+    del rgb_mask[nchannels:]
+    if len(rgb_mask) < nchannels:
+        rgb_mask = rgb_mask + [1] * (nchannels - len(rgb_mask))
+    return rgb_mask
+
+    
 
 window_ids = []
 
@@ -342,26 +377,29 @@ class CPFigureFrame(wx.Frame):
         if self.mouse_down is not None:
             length = np.sqrt((x0-x1)**2 +(y0-y1)**2)
             fields.append("Length: %.1f"%length)
-            if self.length_arrow is not None:
-                self.length_arrow.remove()
             xinterval = event.inaxes.xaxis.get_view_interval()
             yinterval = event.inaxes.yaxis.get_view_interval()
             diagonal = np.sqrt((xinterval[1]-xinterval[0])**2 +
                                   (yinterval[1]-yinterval[0])**2)
             mutation_scale = min(int(length*100/diagonal), 20) 
-            self.length_arrow =\
-                matplotlib.patches.FancyArrowPatch((self.mouse_down[0],
-                                                    self.mouse_down[1]),
-                                                   (event.xdata,
-                                                    event.ydata),
-                                                   edgecolor='red',
-                                                   arrowstyle='<->',
-                                                   mutation_scale=mutation_scale)
-            try:
-                event.inaxes.add_patch(self.length_arrow)
-            except:
-                print "Failed to add arrow from %f,%f to %f,%f"%(x0,y0,x1,y1)
-                self.length_arrow = None
+            if self.length_arrow is not None:
+                self.length_arrow.set_positions((self.mouse_down[0],
+                                                        self.mouse_down[1]),
+                                                       (event.xdata,
+                                                        event.ydata))
+            else:
+                self.length_arrow =\
+                    matplotlib.patches.FancyArrowPatch((self.mouse_down[0],
+                                                        self.mouse_down[1]),
+                                                       (event.xdata,
+                                                        event.ydata),
+                                                       edgecolor='red',
+                                                       arrowstyle='<->',
+                                                       mutation_scale=mutation_scale)
+                try:
+                    event.inaxes.add_patch(self.length_arrow)
+                except:
+                    self.length_arrow = None
             self.figure.canvas.draw()
             self.Refresh()
         self.status_bar.SetFields(fields)
@@ -502,9 +540,6 @@ class CPFigureFrame(wx.Frame):
             MENU_CONTRAST_RAW = wx.NewId()
             MENU_CONTRAST_NORMALIZED = wx.NewId()
             MENU_CONTRAST_LOG = wx.NewId()
-            MENU_CHANNELS_RED = wx.NewId()
-            MENU_CHANNELS_GREEN = wx.NewId()
-            MENU_CHANNELS_BLUE = wx.NewId()
             self.popup_menus[subplot] = popup = wx.Menu()
             open_in_new_figure_item = wx.MenuItem(popup, -1, 'Open image in new figure')
             popup.AppendItem(open_in_new_figure_item)
@@ -551,31 +586,26 @@ class CPFigureFrame(wx.Frame):
                 
             if is_color_image(image):
                 submenu = wx.Menu()
-                item_r = submenu.Append(MENU_CHANNELS_RED, 'Red', 'Show/Hide the red channel', wx.ITEM_CHECK)
-                item_g = submenu.Append(MENU_CHANNELS_GREEN, 'Green', 'Show/Hide the green channel', wx.ITEM_CHECK)
-                item_b = submenu.Append(MENU_CHANNELS_BLUE, 'Blue', 'Show/Hide the blue channel', wx.ITEM_CHECK)
-                if imshow_kwargs['rgb_mask'][0]: item_r.Check()
-                if imshow_kwargs['rgb_mask'][1]: item_g.Check()
-                if imshow_kwargs['rgb_mask'][2]: item_b.Check()
+                rgb_mask = match_rgbmask_to_image(imshow_kwargs['rgb_mask'], image)
+                ids = [wx.NewId() for _ in rgb_mask]
+                for name, value, id in zip(wraparound(COLOR_NAMES), rgb_mask, ids):
+                    item = submenu.Append(id, name, 'Show/Hide the %s channel'%(name), wx.ITEM_CHECK)
+                    if value != 0:
+                        item.Check()
                 popup.AppendMenu(-1, 'Channels', submenu)
                 
                 def toggle_channels(evt):
                     '''Callback for channel menu items.'''
                     if 'rgb_mask' not in params:
-                        params['rgb_mask'] = [1, 1, 1]
-                    if evt.Id == MENU_CHANNELS_RED:
-                        params['rgb_mask'][0] = not params['rgb_mask'][0]
-                    elif evt.Id == MENU_CHANNELS_GREEN:
-                        params['rgb_mask'][1] = not params['rgb_mask'][1]
-                    elif evt.Id == MENU_CHANNELS_BLUE:
-                        params['rgb_mask'][2] = not params['rgb_mask'][2]
-    
+                        params['rgb_mask'] = list(rgb_mask)
+                    for idx, id in enumerate(ids):
+                        if id == evt.Id:
+                            params['rgb_mask'][idx] = not params['rgb_mask'][idx]
                     self.subplot_imshow(subplot[0], subplot[1], self.images[subplot], **imshow_kwargs)
                     self.figure.canvas.draw()
 
-                self.Bind(wx.EVT_MENU, toggle_channels, id=MENU_CHANNELS_RED)
-                self.Bind(wx.EVT_MENU, toggle_channels, id=MENU_CHANNELS_GREEN)
-                self.Bind(wx.EVT_MENU, toggle_channels, id=MENU_CHANNELS_BLUE)
+                for id in ids:
+                    self.Bind(wx.EVT_MENU, toggle_channels, id=id)
             
             self.Bind(wx.EVT_MENU, open_image_in_new_figure, open_in_new_figure_item)
             self.Bind(wx.EVT_MENU, show_hist, show_hist_item)
@@ -660,17 +690,16 @@ class CPFigureFrame(wx.Frame):
                 image = np.dstack([log_transform(image[:,:,ch]) for ch in range(image.shape[2])])
             else:
                 image = log_transform(image)
-        
+                
         # Apply rgb mask to hide/show channels
-        if rgb_mask != [1,1,1]:
-            image *= rgb_mask
+        if is_color_image(image):
+            rgb_mask = match_rgbmask_to_image(rgb_mask, image)
+            image = image * rgb_mask
 
         # Draw
         subplot = self.subplot(x,y)
-        if colormap == None:
-            result = subplot.imshow(image, vmin=vmin, vmax=vmax, interpolation='nearest')
-        else:
-            result = subplot.imshow(image, colormap, vmin=vmin, vmax=vmax, interpolation='nearest')
+        result = subplot.imshow(make_1_or_3_channels(image), colormap, vmin=vmin, vmax=vmax, interpolation='nearest')
+
         # Set title
         if title != None:
             self.set_subplot_title(title, x, y)

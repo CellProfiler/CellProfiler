@@ -35,6 +35,7 @@ OFF_BLUE_ADJUSTMENT_FACTOR = 6
 
 SCHEME_RGB = "RGB"
 SCHEME_CMYK = "CMYK"
+SCHEME_STACK = "Stack"
 LEAVE_THIS_BLACK = "Leave this black"
 
 class GrayToColor(cpm.CPModule):
@@ -44,7 +45,7 @@ class GrayToColor(cpm.CPModule):
     def create_settings(self):
         self.scheme_choice = cps.Choice(
             "Select a color scheme",
-            [SCHEME_RGB, SCHEME_CMYK],
+            [SCHEME_RGB, SCHEME_CMYK, SCHEME_STACK],
             doc="""This module can use one of two color schemes to combine images:<br/>
             <ul><li><i>RGB</i>: Each input image determines the intensity of
             one of the color channels: red, green, and blue.</li>
@@ -52,7 +53,8 @@ class GrayToColor(cpm.CPModule):
             the colors (cyan, magenta, and yellow) and a fourth is used only for brightness. The cyan
             image adds equally to the green and blue intensities. The magenta
             image adds equally to the red and blue intensities. The yellow
-            image adds equally to the red and green intensities.</li></ul>""")
+            image adds equally to the red and green intensities.</li>
+            <li><i>Stack</i>: The channels are stacked in order (arbitrary number).</li></ul>""")
         # # # # # # # # # # # # # # # #
         # 
         # RGB settings
@@ -141,6 +143,23 @@ class GrayToColor(cpm.CPModule):
                             colors contribute equally in the final image. To weight colors relative to each other, 
                             increase or decrease the relative weights.''')
     
+        # # # # # # # # # # # # # #
+        #
+        # Stack settings
+        #
+        # # # # # # # # # # # # # #
+
+        self.stack_channels = []
+        self.add_stack_channel_cb(can_remove = False)
+        self.add_stack_channel = cps.DoSomething("","Add another channel", self.add_stack_channel_cb)
+
+    def add_stack_channel_cb(self, can_remove=True):
+        group = cps.SettingsGroup()
+        group.append("image_name", cps.ImageNameSubscriber("Select the input image to add to the stacked image", "None"))
+        if can_remove:
+            group.append("remover", cps.RemoveSettingButton("", "Remove this image", self.stack_channels, group))
+        self.stack_channels.append(group)
+
     @property
     def color_scheme_settings(self):
         if self.scheme_choice == SCHEME_RGB:
@@ -150,7 +169,7 @@ class GrayToColor(cpm.CPModule):
                                         self.green_adjustment_factor, 0,1,0),
                     ColorSchemeSettings(self.blue_image_name,
                                         self.blue_adjustment_factor, 0,0,1)]
-        else:
+        elif self.scheme_choice == SCHEME_CMYK:
             return [ColorSchemeSettings(self.cyan_image_name,
                                         self.cyan_adjustment_factor, 0,.5,.5),
                     ColorSchemeSettings(self.magenta_image_name,
@@ -160,17 +179,27 @@ class GrayToColor(cpm.CPModule):
                     ColorSchemeSettings(self.gray_image_name,
                                         self.gray_adjustment_factor, 
                                         1./3., 1./3., 1./3.)]
+        else:
+            return []
 
     def settings(self):
-        return [self.scheme_choice,
-                self.red_image_name,self.green_image_name,self.blue_image_name,
-                self.rgb_image_name, self.red_adjustment_factor, 
-                self.green_adjustment_factor, self.blue_adjustment_factor,
-                self.cyan_image_name,self.magenta_image_name, 
-                self.yellow_image_name, self.gray_image_name,
-                self.cyan_adjustment_factor, self.magenta_adjustment_factor,
-                self.yellow_adjustment_factor, self.gray_adjustment_factor]
+        result = [self.scheme_choice,
+                 self.red_image_name,self.green_image_name,self.blue_image_name,
+                 self.rgb_image_name, self.red_adjustment_factor, 
+                 self.green_adjustment_factor, self.blue_adjustment_factor,
+                 self.cyan_image_name,self.magenta_image_name, 
+                 self.yellow_image_name, self.gray_image_name,
+                 self.cyan_adjustment_factor, self.magenta_adjustment_factor,
+                 self.yellow_adjustment_factor, self.gray_adjustment_factor]
+        result += [sc.image_name for sc in self.stack_channels]
+        return result
     
+    def prepare_settings(self, setting_values):
+        num_stack_images = max(len(setting_values) - 16, 1)
+        del self.stack_channels[num_stack_images:]
+        while len(self.stack_channels) < num_stack_images:
+            self.add_stack_channel_cb()
+
     def visible_settings(self):
         result = [self.scheme_choice]
         result += [color_scheme_setting.image_name 
@@ -179,6 +208,10 @@ class GrayToColor(cpm.CPModule):
         for color_scheme_setting in self.color_scheme_settings:
             if not color_scheme_setting.image_name.is_blank:
                 result.append(color_scheme_setting.adjustment_factor)
+        if self.scheme_choice == SCHEME_STACK:
+            for sc_group in self.stack_channels:
+                result += sc_group.visible_settings()
+            result += [self.add_stack_channel]
         return result
     
     def validate_module(self,pipeline):
@@ -186,51 +219,70 @@ class GrayToColor(cpm.CPModule):
         
         We need at least one image name to be filled in
         """
-        if all([color_scheme_setting.image_name.is_blank
-                for color_scheme_setting in self.color_scheme_settings]):
-            raise cps.ValidationError("At least one of the images must not be blank",\
-                                      self.color_scheme_settings[0].image_name)
+        if self.scheme_choice != SCHEME_STACK:
+            if all([color_scheme_setting.image_name.is_blank
+                    for color_scheme_setting in self.color_scheme_settings]):
+                raise cps.ValidationError("At least one of the images must not be blank",\
+                                              self.color_scheme_settings[0].image_name)
     def run(self,workspace):
         parent_image = None
         parent_image_name = None
         imgset = workspace.image_set
         rgb_pixel_data = None
         input_image_settings = []
-        for color_scheme_setting in self.color_scheme_settings:
-            if color_scheme_setting.image_name.is_blank:
-                continue
-            input_image_settings.append(color_scheme_setting.image_name)
-            image = imgset.get_image(color_scheme_setting.image_name.value,
-                                     must_be_grayscale=True)
-            multiplier = (color_scheme_setting.intensities *
-                          color_scheme_setting.adjustment_factor.value)
-            pixel_data = image.pixel_data
-            if parent_image != None:
-                if (parent_image.pixel_data.shape != pixel_data.shape):
+        if self.scheme_choice != SCHEME_STACK:
+            for color_scheme_setting in self.color_scheme_settings:
+                if color_scheme_setting.image_name.is_blank:
+                    continue
+                input_image_settings.append(color_scheme_setting.image_name)
+                image = imgset.get_image(color_scheme_setting.image_name.value,
+                                         must_be_grayscale=True)
+                multiplier = (color_scheme_setting.intensities *
+                              color_scheme_setting.adjustment_factor.value)
+                pixel_data = image.pixel_data
+                if parent_image != None:
+                    if (parent_image.pixel_data.shape != pixel_data.shape):
+                        raise ValueError("The %s image and %s image have different sizes (%s vs %s)"%
+                                         (parent_image_name, 
+                                          color_scheme_setting.image_name.value,
+                                          parent_image.pixel_data.shape,
+                                          image.pixel_data.shape))
+                    rgb_pixel_data += np.dstack([pixel_data]*3) * multiplier
+                else:
+                    parent_image = image
+                    parent_image_name = color_scheme_setting.image_name.value
+                    rgb_pixel_data = np.dstack([pixel_data]*3) * multiplier
+        else:
+            source_channels = [imgset.get_image(sc.image_name, must_be_grayscale=True).pixel_data 
+                               for sc in self.stack_channels]
+            parent_image = source_channels[0]
+            for idx, pd in enumerate(source_channels):
+                if pd.shape != source_channels[0].shape:
                     raise ValueError("The %s image and %s image have different sizes (%s vs %s)"%
-                                     (parent_image_name, 
-                                      color_scheme_setting.image_name.value,
-                                      parent_image.pixel_data.shape,
-                                      image.pixel_data.shape))
-                rgb_pixel_data += np.dstack([pixel_data]*3) * multiplier
-            else:
-                parent_image = image
-                parent_image_name = self.green_image_name.value
-                rgb_pixel_data = np.dstack([pixel_data]*3) * multiplier
+                                     (self.stack_channels[0].image_name.value,
+                                      self.stack_channels[idx].image_name.value,
+                                      source_channels[0].shape,
+                                      pd.pixel_data.shape))
+            rgb_pixel_data = np.dstack(source_channels)
+            print "stacked", rgb_pixel_data.shape, len(source_channels)
 
         ###############
         # Draw images #
         ###############
         if workspace.frame != None:
             title = "Gray to color #%d"%(self.module_num)
-            if len(input_image_settings) == 4:
+            if self.scheme_choice == SCHEME_CMYK:
                 subplots = (3,2)
                 subplot_indices = ((0,0),(0,1),(1,0),(1,1),(2,0))
                 color_subplot = (2,1)
-            else:
+            elif self.scheme_choice == SCHEME_RGB:
                 subplots = (2,2)
                 subplot_indices = ((0,0),(0,1),(1,0))
                 color_subplot = (1,1)
+            else:
+                subplots = (1, 1)
+                subplot_indices = []
+                color_subplot = (0, 0)
             my_frame = workspace.create_or_find_figure(title, subplots)
             for i, input_image_setting in enumerate(input_image_settings):
                 x,y = subplot_indices[i]

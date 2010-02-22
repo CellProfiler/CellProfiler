@@ -223,7 +223,7 @@ try:
             if isinstance(event, cpp.LoadExceptionEvent):
                 raise ValueError("Failed to load %s" % options.pipeline_filename)
         pipeline.add_listener(callback)
-        pipeline.load(options.pipeline_filename)
+        pipeline.load(os.path.expanduser(options.pipeline_filename))
         columns = pipeline.get_measurement_columns()
         print "--- begin measurements ---"
         print "Object,Feature,Type"
@@ -264,7 +264,7 @@ try:
     if options.show_gui:
         import cellprofiler.gui.cpframe as cpgframe
         if options.pipeline_filename:
-            App.frame.pipeline.load(options.pipeline_filename)
+            App.frame.pipeline.load(os.path.expanduser(options.pipeline_filename))
             if options.run_pipeline:
                 App.frame.Command(cpgframe.ID_FILE_ANALYZE_IMAGES)
         App.MainLoop()
@@ -272,7 +272,7 @@ try:
         from cellprofiler.pipeline import Pipeline, EXIT_STATUS
         import cellprofiler.measurements as cpmeas
         pipeline = Pipeline()
-        pipeline.load(options.pipeline_filename)
+        pipeline.load(os.path.expanduser(options.pipeline_filename))
         if options.groups is not None:
             kvs = [x.split('=') for x in options.groups.split(',')]
             groups = dict(kvs)

@@ -1,15 +1,15 @@
-'''<b>Display Scatter Plot </b> plots the values for two measurements.
+'''<b>Display Scatter Plot </b> plots the values for two measurements
 <hr>
-A scatter plot displays the relationship between two measurements as a 
-collection of points, one on each axis. You can specify the type of scaling used
-for each axis.
+A scatter plot displays the relationship between two measurements (that is, features) as a 
+collection of points.  If there are too many data points on the plot, you should consider 
+using <b>DisplayDensityPlot</b> instead.
 
-<p>The module shows the values generated for the current cycle. However, 
+<p>The module will show a plot shows the values generated for the current cycle. However, 
 this module can also be run as a Data Tool, in which you will first be asked
 for the output file produced by the analysis run. The resultant plot is 
 created from all the measurements collected during the run.</p>
 
-See also <b>DisplayDensitylot</b>, <b>DisplayHistogram</b>
+See also <b>DisplayDensityPlot</b>, <b>DisplayHistogram</b>
 '''
 
 #CellProfiler is distributed under the GNU General Public License.
@@ -44,44 +44,47 @@ class DisplayScatterPlot(cpm.CPModule):
         self.source = cps.Choice("Type of measurement to plot", SOURCE_CHOICE,doc = '''
                             You can plot two types of measurements:
                             <ul>
-                            <li><i>Image:</i> Per-image measurements are produced from
-                            <b>MeasureImage</b>, or modules which generate per-image 
-                            measurements (e.g., object counts in <b>IdentifyObject</b> 
-                            modules). For these type of measurements, one 
-                            measurement is produced for each image analyzed.</li>
-                            <li><i>Object:</i> Per-object measurements are produced from
-                            <b>MeasureObject<b> modules. For these type of measurements, 
-                            one measureement is produced for each identified object.</li>
+                            <li><i>Image:</i> For a per-image measurement, one numerical value is 
+                            recorded for each image analyzed.
+                            Per-image measurements are produced by
+                            many modules. Many have <b>MeasureImage</b> in the name but others do not
+                            (e.g., the number of objects in each image is a per-image 
+                            measurement made by <b>IdentifyObject</b> 
+                            modules).</li>
+                            <li><i>Object:</i> For a per-object measurement, each identified 
+                            object is measured, so there may be none or many 
+                            numerical values recorded for each image analyzed. These are usually produced from
+                            modules with <b>MeasureObject<b> in the name.</li>
                             </ul>''')
         
         self.x_object = cps.ObjectNameSubscriber(
-                            'Select the object to plot on the x-axis',
+                            'Select the object to plot on the X-axis',
                             'None',doc = '''
                             Choose the name of objects identified by some previous 
                             module (such as <b>IdentifyPrimaryObjects</b> or 
-                            <b>IdentifySecondaryObjects</b>) to be displayed on the x-axis.''')
+                            <b>IdentifySecondaryObjects</b>) whose measurements are to be displayed on the X-axis.''')
         
         self.x_axis = cps.Measurement(
-                            'Select the measurement to plot on the x-axis', 
+                            'Select the measurement to plot on the X-axis', 
                             self.get_x_object, 'None',doc = '''
-                            Choose the image or object measurement made by a previous 
-                            module to plot on the x-axis.''')
+                            Choose the measurement (made by a previous 
+                            module) to plot on the X-axis.''')
         
         self.y_object = cps.ObjectNameSubscriber(
-                            'Select the object to plot on the y-axis',
+                            'Select the object to plot on the Y-axis',
                             'None',doc = '''
                             Choose the name of objects identified by some previous 
                             module (such as <b>IdentifyPrimaryObjects</b> or 
-                            <b>IdentifySecondaryObjects</b>) to be displayed on the x-axis.''')
+                            <b>IdentifySecondaryObjects</b>) whose measurements are to be displayed on the Y-axis.''')
         
         self.y_axis = cps.Measurement(
-                            'Which measurement do you want to plot on the y-axis?', 
+                            'Select the measurement to plot on the Y-axis', 
                             self.get_y_object, 'None', doc = '''
-                            Choose the image or object measurement made by a previous 
-                            module to plot on the y-axis.''')
+                            Choose the measurement (made by a previous 
+                            module) to plot on the Y-axis.''')
         
         self.xscale = cps.Choice(
-                            'How should the X axis be scaled?', SCALE_CHOICE, None, doc='''
+                            'How should the X-axis be scaled?', SCALE_CHOICE, None, doc='''
                             The X-axis can be scaled either with a <i>linear</i> 
                             scale or with a <i>log</i> (base 10) scaling. 
                             <p>Using a log scaling is useful when one of the 
@@ -91,7 +94,7 @@ class DisplayScatterPlot(cpm.CPModule):
                             measurement is plotted linearly.</p>''')
         
         self.yscale = cps.Choice(
-                            'How should the Y axis be scaled?', SCALE_CHOICE, None, doc='''
+                            'How should the Y-axis be scaled?', SCALE_CHOICE, None, doc='''
                             The Y-axis can be scaled either with a <i>linear</i> 
                             scale or with a <i>log</i> (base 10) scaling. 
                             <p>Using a log scaling is useful when one of the 
@@ -101,9 +104,9 @@ class DisplayScatterPlot(cpm.CPModule):
                             measurement is plotted linearly.</p>''')
         
         self.title = cps.Text(
-                            'Optionally enter a title for this plot.', '',doc = '''
-                            Enter a title for the plot. If no title is desired,
-                            leave this setting blank and the title will default 
+                            'Enter a title for the plot, if desired', '',doc = '''
+                            Enter a title for the plot. If you leave this blank,
+                            the title will default 
                             to <i>(cycle N)</i> where <i>N</i> is the current image 
                             cycle being executed.''')
 

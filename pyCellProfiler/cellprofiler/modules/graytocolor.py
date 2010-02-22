@@ -224,9 +224,9 @@ class GrayToColor(cpm.CPModule):
         if workspace.frame != None:
             title = "Gray to color #%d"%(self.module_num)
             if len(input_image_settings) == 4:
-                subplots = (2,3)
-                subplot_indices = ((0,0),(0,1),(1,0),(1,1),(2,2))
-                color_subplot = (1,2)
+                subplots = (3,2)
+                subplot_indices = ((0,0),(0,1),(1,0),(1,1),(2,0))
+                color_subplot = (2,1)
             else:
                 subplots = (2,2)
                 subplot_indices = ((0,0),(0,1),(1,0))
@@ -241,8 +241,9 @@ class GrayToColor(cpm.CPModule):
                                                   title=input_image_setting.value)
             for x,y in subplot_indices[len(input_image_settings):]:
                 my_frame.subplot(x,y).set_visible(False)
-            my_frame.subplot_imshow(1,1,rgb_pixel_data,
-                                          title=self.rgb_image_name.value)
+            my_frame.subplot_imshow(color_subplot[0], color_subplot[1]
+                                    ,rgb_pixel_data,
+                                    title=self.rgb_image_name.value)
         ##############
         # Save image #
         ##############

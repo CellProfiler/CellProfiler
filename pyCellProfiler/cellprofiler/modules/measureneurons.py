@@ -1,8 +1,8 @@
-'''<b>Measure Neurons</b> measures branching information of
-skeleton objects from seed points.
+'''<b>Measure Neurons</b> measures branching information for neurons, or
+any skeleton objects with seed points.
 <hr>
 <p>This module measures the number of trunks and branches for each neuron in
-an image. The module takes a skeletonized image of the neuron and seed objects
+an image. The module takes a skeletonized image of the neuron plus previously identified seed objects
 (for instance, the neuron soma) and finds the number of axon or dendrite
 trunks that emerge from the soma and the number of branches along the
 axons and dendrites.</p>
@@ -57,29 +57,29 @@ class MeasureNeurons(cpm.CPModule):
         '''Create the UI settings for the module'''
         self.seed_objects_name = cps.ObjectNameSubscriber(
             "Select the seed objects", "None",
-            doc = """This setting selects the objects that are used as the
-            seeds for distance measurement. Branches and trunks are assigned
-            per seed object""")
+            doc = """Select the previously identified objects that you want to use as the
+            seeds for measuring branches and distances. Branches and trunks are assigned
+            per seed object. Seed objects are typically not single points/pixels but 
+            instead are usually objects of varying sizes.""")
         
         self.image_name = cps.ImageNameSubscriber(
             "Select the skeletonized image", "None",
-            doc = """This should be a skeletonized image of the dendrites
+            doc = """Select the skeletonized image of the dendrites
             and / or axons as produced by the <b>Morph</b> module's
-            "skeletonize" operation""")
+            "skeletonize" operation.""")
         
         self.wants_branchpoint_image = cps.Binary(
             "Retain the branchpoint image?", False,
             doc="""Check this setting if you want to save the color image of
             branchpoints and trunks. This is the image that is displayed
-            as the visualization for this module.""")
+            in the output window for this module.""")
         
         self.branchpoint_image_name = cps.ImageNameProvider(
             "Name the branchpoint image","BranchpointImage",
             doc="""
-            <i>(Used only if an bracjhpoint image is requested)</i><br>
-            Enter a name for the branchpoint image here. You can
-            use this name in a later module, such as <b>SaveImages</b> to
-            refer to this image.""")
+            <i>(Used only if a branchpoint image is to be retained)</i><br>
+            Enter a name for the branchpoint image here. You can then 
+            use this image in a later module, such as <b>SaveImages</b>.""")
     
     def settings(self):
         '''The settings, in the order that they are saved in the pipeline'''

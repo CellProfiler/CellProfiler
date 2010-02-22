@@ -1,16 +1,17 @@
-'''<b>MaskObjects</b> removes objects outside of specified region.
+'''<b>MaskObjects</b> removes objects outside of a specified region or regions.
 <hr>
 This image analysis module allows you to delete the objects and portions
-of objects that are outside of a region you specify (e.g. nuclei outside
-of a tissue region).  The objects and the region should both result from
+of objects that are outside of a region (mask) you specify. For example, you might
+want to exclude all nuclei that are outside
+of a tissue region.  The objects and the region should both result from
 any <b>Identify</b> module (Primary, Secondary, or Tertiary). Alternatively, you
-can use a binary image as a mask and remove objects outside of the mask.
+can use a binary image where the white portion of the image will be the region.
 You can transform a grayscale image into a binary image using the
 <b>ApplyThreshold</b> module.<p>
 
-You can choose to remove only the portions of objects that are outside of
-your region or mask, remove the whole object if it is partially or fully
-outside of the region or retain the whole object unless it is fully outside
+You can choose to remove only the portion of each object that is outside of
+the region, remove the whole object if it is partially or fully
+outside of the region, or retain the whole object unless it is fully outside
 of the region.
 '''
 __version__="$Revision$"
@@ -68,22 +69,23 @@ class MaskObjects(I.Identify):
         '''Create the settings that control this module'''
         self.object_name = cps.ObjectNameSubscriber(
             "Select objects to be masked","None",
-            doc="""These are the objects that will be masked by the masking
-            objects or image. You can choose from any objects created by
-            a previous module, such as <b>IdentifyPrimaryObjects</b>,
-            <b>IdentifySecondaryObjects</b> or <b>IdentifyTertiaryObjects</b>""")
+            doc="""These are the objects that will be masked (excluded in whole 
+            or in part based on the other settings in the module). 
+            You can choose from any objects created by
+            a previous <b>Identify</b> module, such as <b>IdentifyPrimaryObjects</b>,
+            <b>IdentifySecondaryObjects</b> or <b>IdentifyTertiaryObjects</b>.""")
         
         self.remaining_objects = cps.ObjectNameProvider(
             "Name the masked objects", "MaskedNuclei",
-            doc="""This setting gives a name to the objects that remain after
-            the masking operation. You can refer to the masked objects in
+            doc="""What do you want to call the objects that remain after
+            the masking operation? You can refer to the masked objects in
             subsequent modules using this name.""")
         
         self.mask_choice = cps.Choice(
-            "Mask using other objects or binary image?",
+            "Mask using a region defined by other objects or by binary image?",
             [MC_OBJECTS, MC_IMAGE],
-            doc="""You can either mask your objects using some other objects
-            or you can mask them using a binary image.""")
+            doc="""You can mask your objects by defining a region using objects
+            you previously identified in your pipeline or using a binary image.""")
         
         self.masking_objects = cps.ObjectNameSubscriber(
             "Select the masking object","None",
@@ -156,7 +158,7 @@ class MaskObjects(I.Identify):
         
         self.outlines_name = cps.OutlineNameProvider(
             "Name the outline image", "MaskedOutlines",
-            doc = """This setting names the outline image. Subsequent modules
+            doc = """What do you want to call the outline image? Subsequent modules
             can refer to the binary outline image using this name.""")
         
     def settings(self):

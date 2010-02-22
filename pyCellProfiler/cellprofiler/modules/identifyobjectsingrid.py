@@ -50,10 +50,10 @@ from cellprofiler.modules.identify import get_object_measurement_columns
 from cellprofiler.cpmath.outline import outline
 from cellprofiler.cpmath.cpmorphology import centers_of_labels
 
-SHAPE_RECTANGLE = "Rectangle"
+SHAPE_RECTANGLE = "Rectangle Forced Location"
 SHAPE_CIRCLE_FORCED = "Circle Forced Location"
 SHAPE_CIRCLE_NATURAL = "Circle Natural Location"
-SHAPE_NATURAL = "Natural Shape"
+SHAPE_NATURAL = "Natural Shape and Location"
 
 AM_AUTOMATIC = "Automatic"
 AM_MANUAL = "Manual"
@@ -65,7 +65,7 @@ FAIL_FIRST = "The First"
 class IdentifyObjectsInGrid(cpm.CPModule):
     
     module_name = "IdentifyObjectsInGrid"
-    variable_revision_number = 1
+    variable_revision_number = 2
     category = "Object Processing"
     
     def create_settings(self):
@@ -457,6 +457,15 @@ class IdentifyObjectsInGrid(cpm.CPModule):
                               wants_outlines, save_outlines]
             variable_revision_number = 1
             from_matlab = False
+            
+        if (not from_matlab) and variable_revision_number == 1:
+            # Change shape_choice names: Rectangle > Rectangle Forced Location, Natural Shape > Natural Shape and Location
+            if setting_values[2] == "Rectangle":
+                setting_values[2] = SHAPE_RECTANGLE
+            elif setting_values[2] == "Natural shape":
+                setting_values[2] = SHAPE_NATURAL
+            variable_revision_number = 2
+            
         return setting_values, variable_revision_number, from_matlab
 
     def get_measurement_columns(self, pipeline):

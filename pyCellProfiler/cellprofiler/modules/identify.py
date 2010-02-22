@@ -242,7 +242,9 @@ class Identify(cellprofiler.cpmodule.CPModule):
             Enter the value that will act as an absolute threshold for the image""")
         
         self.binary_image = cps.ImageNameSubscriber(
-            "Select binary image", "None", doc = """What is the binary thresholding image?""")
+            "Select binary image", "None", doc = """
+            <i>(Used only if Binary image selected for thresholding method)</i><br>
+            What is the binary thresholding image?""")
         
         self.two_class_otsu = cps.Choice(
             'Two-class or three-class thresholding?',

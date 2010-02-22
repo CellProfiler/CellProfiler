@@ -170,10 +170,12 @@ class IdentifyPrimaryObjects(cpmi.Identify):
         self.image_name = cps.ImageNameSubscriber(
             "Select the input image",doc="""
             What did you call the images you want to use to identify objects?""")
+        
         self.object_name = cps.ObjectNameProvider(
             "Name the identified primary objects",
             "Nuclei",doc="""
             What do you want to call the objects identified by this module?""")
+        
         self.size_range = cps.IntegerRange(
             "Typical diameter of objects, in pixel units (Min,Max)", 
             (10,40), minval=1, doc='''\
@@ -188,6 +190,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             will be shown in pixel units. Note that for non-round objects, the 
             diameter here is actually the "equivalent diameter", i.e.,
             the diameter of a circle with the same area as the object.''')
+        
         self.exclude_size = cps.Binary(
             "Discard objects outside the diameter range?",
             True, doc='''\
@@ -197,6 +200,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             based on size are outlined in red in the module's display. See also the
             <b>FilterObjects</b> module to further discard objects based on some
             other measurement.''')
+        
         self.merge_objects = cps.Binary(
             "Try to merge too small objects with nearby larger objects?", 
             False, doc='''\
@@ -211,6 +215,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             objects again. It is therefore a good idea to run the
             module first without merging objects to make sure the settings are
             reasonably effective.''')
+        
         self.exclude_border_objects = cps.Binary(
             "Discard objects touching the border of the image?", 
             True, doc='''\
@@ -219,7 +224,9 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             objects that are not fully within the field of view (because, for
             example, the morphological measurements would not be accurate).  Objects 
             discarded due to border touching are outlined in yellow in the module's display. ''')
+        
         self.create_threshold_settings()
+        
         self.unclump_method = cps.Choice(
             'Method to distinguish clumped objects', 
             [UN_INTENSITY, UN_SHAPE, UN_LOG, UN_NONE], doc="""\
@@ -367,12 +374,10 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             to be filled.""")
         
         self.test_mode = cps.Binary(
-            'Run in test mode where each method for '
-            'distinguishing clumped objects is compared?', False)
+            'Run in test mode where each method for distinguishing clumped objects is compared?', False)
         
         self.wants_automatic_log_threshold = cps.Binary(
-            'Automatically calculate the threshold '
-            'using the Otsu method?', True)
+            'Automatically calculate the threshold using the Otsu method?', True)
         
         self.manual_log_threshold = cps.Float('Enter Laplacian of '
                                               'Gaussian threshold', .5, 0, 1)
@@ -388,6 +393,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             size. You may want to specify a custom size if you want to filter 
             using loose criteria, but have objects that are generally of 
             similar sizes.""")
+        
         self.log_diameter = cps.Float(
             'Enter LoG filter diameter', 
             5, minval=1, maxval=100,
@@ -551,6 +557,39 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             
         return setting_values, variable_revision_number, from_matlab
             
+    def help_settings(self):
+        return [self.image_name, 
+                self.object_name,
+                self.size_range,
+                self.exclude_size, 
+                self.merge_objects,
+                self.exclude_border_objects, 
+                self.threshold_method,
+                self.binary_image,
+                self.manual_threshold, 
+                self.two_class_otsu, 
+                self.use_weighted_variance,
+                self.assign_middle_to_foreground,
+                self.object_fraction, 
+                self.wants_automatic_log_diameter,
+                self.log_diameter,
+                self.wants_automatic_log_threshold,
+                self.manual_log_threshold,
+                self.threshold_correction_factor, 
+                self.threshold_range,
+                self.unclump_method,
+                self.watershed_method, 
+                self.automatic_smoothing, 
+                self.smoothing_filter_size,
+                self.automatic_suppression,
+                self.maxima_suppression_size,
+                self.low_res_maxima,
+                self.should_save_outlines,
+                self.save_outlines, 
+                self.fill_holes, 
+                self.limit_choice,
+                self.maximum_object_count ]
+
     def visible_settings(self):
         vv = [self.image_name,self.object_name,self.size_range,
               self.exclude_size, self.merge_objects,

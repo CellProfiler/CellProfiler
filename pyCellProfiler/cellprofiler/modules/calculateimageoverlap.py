@@ -25,10 +25,10 @@ while a background pixel in the test image that overlaps with foreground in the 
 
 This module measures the following:
 <ul>
-<li> False positive rate: total false positive pixels / total number of actual negative pixels </li>
-<li> False negative rate: total false negative pixels / total number of actual postive pixels </li>
-<li> Precision: true positive pixels / (true positive pixels + false positive pixels) </li>
-<li> Recall: true positive pixels/ (true positive pixels + false negative pixels) </li>
+<li> False positive rate: total number of false positive pixels / total number of actual negative pixels </li>
+<li> False negative rate: total number of false negative pixels / total number of actual postive pixels </li>
+<li> Precision: number of true positive pixels / (number of true positive pixels + number of false positive pixels) </li>
+<li> Recall: number of true positive pixels/ (number of true positive pixels + number of false negative pixels) </li>
 <li> F- factor: 2 x (precision x recall)/(precision + recall) </li>
 </ul>
 

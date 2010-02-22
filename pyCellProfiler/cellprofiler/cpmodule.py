@@ -215,7 +215,7 @@ class CPModule(object):
         result += "<body><h1>%s</h1><div>" % self.module_name + doc
         first_setting_doc = True
         seen_setting_docs = set()
-        for setting in self.settings():
+        for setting in self.help_settings():
             if setting.doc is not None:
                 key = (setting.text, setting.doc)
                 if key not in seen_setting_docs:
@@ -340,6 +340,10 @@ class CPModule(object):
         order so they can be matched to the strings in the pipeline.
         """
         return self.__settings
+    
+    def help_settings(self):
+        '''Override this if you want the settings for help to be in a different order'''
+        return self.settings()
 
     def setting(self,setting_num):
         """Reference a setting by its one-based setting number

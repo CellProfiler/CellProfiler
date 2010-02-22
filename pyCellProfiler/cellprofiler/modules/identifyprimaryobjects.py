@@ -545,7 +545,8 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             
         if (not from_matlab) and variable_revision_number == 5:
             # Changed object number limit option from "No action" to "Continue"
-            setting_values[-2] = "Continue"
+            if setting_values[-2] == "No action":
+                setting_values[-2] = LIMIT_NONE
             variable_revision_number = 6
             
         return setting_values, variable_revision_number, from_matlab

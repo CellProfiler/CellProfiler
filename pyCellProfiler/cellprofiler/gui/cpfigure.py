@@ -339,7 +339,7 @@ class CPFigureFrame(wx.Frame):
             elif im.ndim == 3: 
                 fields += ["Channel %d: %.4f"%(idx + 1, im[yi, xi, idx]) for idx in im.shape[2]]
                            
-        if None and self.mouse_down is not None:
+        if self.mouse_down is not None:
             length = np.sqrt((x0-x1)**2 +(y0-y1)**2)
             fields.append("Length: %.1f"%length)
             if self.length_arrow is not None:

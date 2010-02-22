@@ -1,10 +1,13 @@
-'''<b>Display Density Plot </b> plots measurements as a two-dimensional density plot.
+'''<b>Display Density Plot </b> plots measurements as a two-dimensional density plot
 <hr>
-A density plots show the values of two measurements binned into an equally-spaced 
-array of points, where the color of each point represents the tabulated frequency 
-of the measurements being plotted (i.e, a 2-D histogram). You can specify the 
-number of points to use for the grid, as well as a color map 
-for the relation between the value at a point and its color.
+A density plot displays the relationship between two measurements (that is, features)
+but instead of showing each data point as a dot, as in a scatter plot, the data
+points are binned into an equally-spaced 
+grid of points, where the color of each point in the grid represents the tabulated frequency 
+of the measurements within that region of the grid. A density plot is also known as a 2-D histogram;
+in a conventional histogram the height of a bar indicates how many data points fall
+in that region. By contrast, in a density plot (2-D histogram), the color of a portion of the plot
+indicates the number of data points in that region. 
 
 <p>The module shows the values generated for the current cycle. However, 
 this module can also be run as a Data Tool, in which you will first be asked
@@ -47,40 +50,40 @@ class DisplayDensityPlot(cpm.CPModule):
     
     def create_settings(self):
         self.x_object = cps.ObjectNameSubscriber(
-                            'Select the object to display on x-axis?','None',
+                            'Select the object to display on the X-axis','None',
                             doc='''
                             Choose the name of objects identified by some previous 
                             module (such as <b>IdentifyPrimaryObjects</b> or 
-                            <b>IdentifySecondaryObjects</b>) to be displayed on the x-axis.''')
+                            <b>IdentifySecondaryObjects</b>) whose measurements are to be displayed on the X-axis.''')
         
         self.x_axis = cps.Measurement(
-                            'Select the object measurement to plot on the x-axis', self.get_x_object, 'None',
+                            'Select the object measurement to plot on the X-axis', self.get_x_object, 'None',
                             doc='''
                             Choose the object measurement made by a previous 
-                            module to display on the x-axis.''')
+                            module to display on the X-axis.''')
         
         self.y_object = cps.ObjectNameSubscriber(
-                            'Select the object to display on y-axis','None',
+                            'Select the object to display on the Y-axis','None',
                             doc=''' 
                             Choose the name of objects identified by some previous 
                             module (such as <b>IdentifyPrimaryObjects</b> or 
-                            <b>IdentifySecondaryObjects</b>) to be displayed on the y-axis.''')
+                            <b>IdentifySecondaryObjects</b>) whose measurements are to be displayed on the Y-axis.''')
         
         self.y_axis = cps.Measurement(
-                            'Select the object measurement to plot on the y-axis?', self.get_y_object, 'None',
+                            'Select the object measurement to plot on the Y-axis', self.get_y_object, 'None',
                             doc='''
                             Choose the object measurement made by a previous 
-                            module to display on the y-axis''')
+                            module to display on the Y-axis.''')
         
         self.gridsize = cps.Integer(
                             'Select the grid size', 100, 1, 1000,
                             doc='''
-                            Enter the number of grid points you want used on each
-                            axis. Increasing the number of points increases the
+                            Enter the number of grid regions you want used on each
+                            axis. Increasing the number of grid regions increases the
                             resolution of the plot.''')
         
         self.xscale = cps.Choice(
-                            'How should the X axis be scaled?', ['linear', 'log'], None,
+                            'How should the X-axis be scaled?', ['linear', 'log'], None,
                             doc='''
                             The X-axis can be scaled either with a <i>linear</i> 
                             scale or with a <i>log</i> (base 10) scaling. 
@@ -91,7 +94,7 @@ class DisplayDensityPlot(cpm.CPModule):
                             measurement is plotted linearly.</p>''')
         
         self.yscale = cps.Choice(
-                            'How should the Y axis be scaled?', ['linear', 'log'], None,
+                            'How should the Y-axis be scaled?', ['linear', 'log'], None,
                             doc='''
                             The Y-axis can be scaled either with a <i>linear</i> 
                             scale or with a <i>log</i> (base 10) scaling. 
@@ -123,10 +126,9 @@ class DisplayDensityPlot(cpm.CPModule):
                             page</a> for pictures of the available colormaps.''')
         
         self.title = cps.Text(
-                            'Optionally enter a title for this plot.', '',
-                            doc='''
-                             Enter a title for the plot. If no title is desired,
-                            leave this setting blank and the title will default 
+                            'Enter a title for the plot, if desired', '',doc = '''
+                            Enter a title for the plot. If you leave this blank,
+                            the title will default 
                             to <i>(cycle N)</i> where <i>N</i> is the current image 
                             cycle being executed.''')
         

@@ -1,7 +1,9 @@
-'''<b>EditObjectsManually</b> allows users to remove objects from an image via a user interface
+'''<b>EditObjectsManually</b> allows you to remove specific objects
+from each image by pointing and clicking
 <hr>
-This module allows you to remove objects via a user interface. The
-module displays three images: the objects as originally segmented,
+This module allows you to remove specific objects via a user interface 
+where you point and click to select objects for removal. The
+module displays three images: the objects as originally identified,
 the objects that have not been removed, and the objects that have been
 removed.
 
@@ -12,10 +14,10 @@ removed. Clicking on an object in the original image
 toggles its "removed" state.
 
 The pipeline pauses once per processed image when it reaches this module.
-You have to press the <i>Continue</i> button to accept the selected objects
+You must press the <i>Continue</i> button to accept the selected objects
 and continue the pipeline.
 
-See also <b>FilterObjects</b>, <b>Exclude</b>,
+See also <b>FilterObjects</b>, <b>Exclude</b>, <b>MaskObjects>
 <b>OverlayOutlines</b>, <b>ConvertToImage</b>.
 '''
 
@@ -59,46 +61,49 @@ class EditObjectsManually(I.Identify):
             # Ask the user for a parameter
             self.smoothing_size = cellprofiler.settings.Float(...)
         """
-        self.object_name = cps.ObjectNameSubscriber("Select the input objects", "None",
+        self.object_name = cps.ObjectNameSubscriber("Select the objects to be edited", "None",
                                                     doc="""
-            This setting allows you to choose a set of objects from a prior
-            module for editing, such as those produced by one of the
-            <b>Identify</b> modules""")
+            Choose a set of previously identified objects
+            for editing, such as those produced by one of the
+            <b>Identify</b> modules.""")
         
         self.filtered_objects = cps.ObjectNameProvider(
-            "Name the remaining objects","EditedObjects",
-            doc="""Enter a descriptive name for the objects that are left over
-            after editing. These objects will be available for use by
-            subsequent modules""")
+            "Name the edited objects","EditedObjects",
+            doc="""What do you want to call the objects that remain
+            after editing? These objects will be available for use by
+            subsequent modules.""")
         
         self.wants_outlines = cps.Binary(
             "Retain outlines of the edited objects?", False,
             doc="""Check this box if you want to keep images of the outlines
-            of the perimeters of the objects left after editing. These images
+            of the objects that remain after editing. This image
             can be saved by downstream modules or overlayed on other images
             using the <b>OverlayOutlines</b> module.""")
         
         self.outlines_name = cps.OutlineNameProvider(
             "Name the outline image", "EditedObjectOutlines",
-            doc="""Use this setting to give a name to the outline image. This
-            setting is available only if you check the outlines box""")
+            doc="""<i>(Used only if you have selected to retain outlines of edited objects)</i><br>
+            What do you want to call the outline image?""")
         
         self.renumber_choice = cps.Choice(
-            "Numbering of the remaining objects",
+            "Numbering of the edited objects",
             [R_RENUMBER, R_RETAIN],
-            doc = """
-            This setting controls how the objects are associated with their predecessors.
+            doc="""Choose how to number the objects that 
+            remain after editing, which controls how edited objects are associated with their predecessors:
             <p>
-            If you choose <i>Renumber</i>, the edited objects' object numbers
-            won't correspond to those of the unedited objects and any allied
-            objects (such as those created by <b>IdentifySecondaryObjects</b>). This
-            is the proper choice if you only take measurements of the edited
-            objects and their antecedants.
+            If you choose <i>Renumber</i>,
+            this module will number the objects that remain 
+            using consecutive numbers. This
+            is a good choice if you do not plan to use measurements from the
+            original objects and you only want to use the edited objects in downstream modules; the
+            objects that remain after editing will not have gaps in numbering
+            where removed objects are missing.
             <p>
-            If you choose <i>Retain</i>, there will be gaps in your measurements,
-            generally filled with zero values, for removed objects. However,
-            the remaining objects will have the same associations to allied
-            objects as the unedited objects.""")
+            If you choose <i>Retain</i>,
+            this module will retain each object's original number so that the edited object's number matches its original number. This allows any measurements you make from 
+            the edited objects to be directly aligned with measurements you might 
+            have made of the original, unedited objects (or objects directly 
+            associated with them).""")
     
     def settings(self):
         """Return the settings to be loaded or saved to/from the pipeline

@@ -136,14 +136,17 @@ class MaskObjects(I.Identify):
             "Numbering of resulting objects",
             [R_RENUMBER, R_RETAIN],
             doc="""Choose how to number the objects that 
-            remain after masking. If you choose <i>Renumber</i>,
+            remain after masking, which controls how remaining objects are associated with their predecessors:
+            <p>
+            If you choose <i>Renumber</i>,
             <b>MaskObjects</b> will number the objects that remain 
-            using consecutive numbers. If you choose, <i>Retain</i>,
-            <b>MaskObjects</b> will retain the original numbers. Renumbering
-            is a good choice if you will not use measurements from the
-            original unmasked objects; your object measurements for the
-            masked objects will not have gaps (where removed objects are missing). 
-            Retaining original numbering allows any measurements you make from 
+            using consecutive numbers. This
+            is a good choice if you do not plan to use measurements from the
+            original objects; your object measurements for the
+            masked objects will not have gaps (where removed objects are missing).
+            <p>
+            If you choose <i>Retain</i>,
+            <b>MaskObjects</b> will retain the original numbers. This allows any measurements you make from 
             the masked objects to be directly aligned with measurements you might 
             have made of the original, unmasked objects (or objects directly 
             associated with them).""")

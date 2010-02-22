@@ -43,7 +43,7 @@ The commands written by CellProfiler to create the Per-Well table will be execut
 Oracle is not fully supported at present; you can create your own Oracle DB using
 the .csv output option and writing a simple script to upload to the database.
 
-See also <b>ExportToExcel</b>.
+See also <b>ExportToSpreadsheet</b>.
 
 '''
 # CellProfiler is distributed under the GNU General Public License.
@@ -286,11 +286,11 @@ class ExportToDatabase(cpm.CPModule):
             column limits. These columns can be created manually for selected measurements directly in MySQL.
             For instance, the following SQL command creates the Mean_Nuclei_AreaShape_Area column:
             
-                <p>ALTER TABLE Per_Image ADD (Mean_Nuclei_AreaShape_Area);
+                <p><tt>ALTER TABLE Per_Image ADD (Mean_Nuclei_AreaShape_Area);
                 UPDATE Per_Image SET Mean_Nuclei_AreaShape_Area = 
                     (SELECT AVG(Nuclei_AreaShape_Area)
                      FROM Per_Object
-                     WHERE Per_Image.ImageNumber = Per_Object.ImageNumber);""")
+                     WHERE Per_Image.ImageNumber = Per_Object.ImageNumber);</tt>""")
         
         self.wants_agg_median = cps.Binary("Calculate the per-image median values of object measurements?", False)
         

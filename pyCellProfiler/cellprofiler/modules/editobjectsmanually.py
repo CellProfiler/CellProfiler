@@ -15,7 +15,7 @@ The pipeline pauses once per processed image when it reaches this module.
 You have to press the <i>Continue</i> button to accept the selected objects
 and continue the pipeline.
 
-See also <b>FilterByObjectMeasurement</b>, <b>Exclude</b>,
+See also <b>FilterObjects</b>, <b>Exclude</b>,
 <b>OverlayOutlines</b>, <b>ConvertToImage</b>.
 '''
 

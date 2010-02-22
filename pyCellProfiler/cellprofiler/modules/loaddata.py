@@ -74,11 +74,11 @@ module, using particular formats described in the help for <b>CalculateStatistic
 </ul>
 
 <h3>Example CSV file:</h3><br>
-<table border="0">
+<tt><table border="0">
 <tr><td>Image_FileName_FITC,</td><td>Image_PathName_FITC,</td><td>Metadata_Plate,</td><td>Titration_NaCl_uM</td></tr><br>
 <tr><td>"04923_d1.tif",</td><td>"2009-07-08",</td><td>"P-12345",</td><td>750</td></tr>
 <tr><td>"51265_d1.tif",</td><td>"2009-07-09",</td><td>"P-12345",</td><td>2750</td></tr>
-</table>
+</table></tt>
 
 After the first row of header information (the column names), the first 
 image-specific row specifies the file, "2009-07-08/04923_d1.tif" for the FITC 

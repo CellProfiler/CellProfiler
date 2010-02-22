@@ -11,8 +11,8 @@ contain the smaller objects.  Both inputs should be objects produced by
 
 <p><i>Note:</i> Creating subregions using this module can result in objects that
 are not contiguous, which does not cause problems when running the
-<b>Measure Intensity</b> and <b>Measure Texture</b> modules, but does cause 
-problems when running the <b>Measure AreaShape</b> module because calculations 
+<b>MeasureImageIntensity</b> and <b>MeasureTexture</b> modules, but does cause 
+problems when running the <b>MeasureObjectAreaShape</b> module because calculations 
 of the perimeter, aspect ratio, solidity, etc. cannot be made for noncontiguous
 objects.
 

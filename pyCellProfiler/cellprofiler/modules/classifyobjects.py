@@ -6,11 +6,9 @@ according to the value of a measurement (e.g., by size, intensity, shape).
 It reports how many objects fall into each class as well as the
 percentage of objects that fall into each class. The module asks you to 
 select the measurement feature to be used to classify your objects and
-specify the bins to use. It also requires you to run a measurement
+specify the bins to use. It also requires you to have run a measurement or <b>CalculateMath</b>It also requires you to run a measurement
 module previous to this module in the pipeline so that the measurement
-values can be used to classify the objects. If you are classifying by the
-ratio of two measurements, you must put a <b>CalculateRatios</b> module previous
-to this module in the pipeline.
+values can be used to classify the objects. 
 <p>
 There are two flavors of classification. The first classifies each object
 according to the measurements you choose and assigns each object to one
@@ -21,6 +19,8 @@ The second classifies each object according to two measurements and two
 threshold values. The module classifies each object once per measurement
 resulting in four possible object classes. The module then stores one
 measurement per object, based on the object's class.
+<p>
+See also <b>CalculateMath</b> and any of the modules in the <b>Measure</b> category.
 '''
 
 # CellProfiler is distributed under the GNU General Public License.
@@ -68,8 +68,8 @@ class ClassifyObjects(cpm.CPModule):
             "Should each classification decision be based on a single measurement or on the combination of a pair of measurements?",
             [BY_SINGLE_MEASUREMENT, BY_TWO_MEASUREMENTS],
             doc="""This setting controls how classifications are recorded:<br>
-            <ul><li><i>Single measurements</i>: <b>ClassifyObjects</b> will classify each object based on a single measurement.</li>
-            <li><i>Pair of measurements</i>: <b>ClassifyObjects</b> will classify each object based on a pair of measurements taken together (that is, an object must meet two criteria to belong to a class).</li></ul>""")
+            <ul><li><i>Single measurements</i>: Classifies each object based on a single measurement.</li>
+            <li><i>Pair of measurements</i>: Classifies each object based on a pair of measurements taken together (that is, an object must meet two criteria to belong to a class).</li></ul>""")
         
         ############### Single measurement settings ##################
         #

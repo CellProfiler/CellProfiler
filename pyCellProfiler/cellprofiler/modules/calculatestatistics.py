@@ -56,7 +56,7 @@ Measures for Imaging-based Cellular Assays. <i>Society for Biomolecular
 Screening Annual Meeting Abstracts</i>. This is likely to be published.
 <p>
 Code for the calculation of Z' and V factors was kindly donated by Ilya
-Ravkin: http://www.ravkin.net. Carlos Evangelista donated his copyrighted 
+Ravkin: <a href="http://www.ravkin.net">http://www.ravkin.net</a>. Carlos Evangelista donated his copyrighted 
 dose-response-related code.
 <p>
 Features measured:<br><br>
@@ -78,13 +78,13 @@ the header line plus one line per image to be processed. You can also make a
 file for <b>LoadData</b> to load that contains the positive/negative control and dose designations *plus* the image file names to be processed, which is a good way to guarantee that images are matched
 with the correct data. Here is an example file:<br><br>
 <code>
-<table>
+<tt><table>
 <tr><td>Image_FileName_CY3,</td><td>Image_PathName_CY3,</td><td>Control,</td><td>Dose</td></tr>
 <tr><td>"Plate1_A01.tif",</td><td>"/images",</td><td>-1,</td><td>0</td></tr>
 <tr><td>"Plate1_A02.tif",</td><td>"/images",</td><td>1,</td><td>1E10</td></tr>
 <tr><td>"Plate1_A03.tif",</td><td>"/images",</td><td>0,</td><td>3E4</td></tr>
 <tr><td>"Plate1_A04.tif",</td><td>"/images",</td><td>0,</td><td>5E5</td></tr>
-</table>
+</table></tt>
 </code>
 <br>
 '''

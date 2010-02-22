@@ -189,7 +189,7 @@ class IdentifySecondaryObjects(cpmi.Identify):
             
         self.new_primary_objects_name = cps.ObjectNameProvider(
             "Name the new primary objects", "FilteredNuclei",
-            doc = """<i>(Used only if associated primary objects are discarded)</i> <br
+            doc = """<i>(Used only if associated primary objects are discarded)</i> <br>
             You can name the primary objects that remain after the discarding step.
             These objects will all have secondary objects
             that do not touch the edge of the image. Note that any primary object
@@ -199,14 +199,14 @@ class IdentifySecondaryObjects(cpmi.Identify):
         
         self.wants_primary_outlines = cps.Binary(
             "Retain outlines of the new primary objects?", False,
-            doc = """<i>(Used only if associated primary objects are discarded)</i>
+            doc = """<i>(Used only if associated primary objects are discarded)</i><br>
             Check this setting in order to save images of the outlines
             of the primary objects after filtering. You can save these images
             using the <b>SaveImages</b> module.""")
         
         self.new_primary_outlines_name = cps.ImageNameProvider(
             "Name the new primary object outlines", "FilteredNucleiOutlines",
-            doc = """<i>(Used only when saving outlines of new primary objects)</i>
+            doc = """<i>(Used only when saving outlines of new primary objects)</i><br>
             You can name the outline image of the
             primary objects after filtering. You can refer to this image
             using this name in subsequent modules such as <b>SaveImages</b>.""")

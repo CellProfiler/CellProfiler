@@ -17,7 +17,7 @@ in separate directories. You can do this by specifying metadata tags for the fol
 To do this, choose, <i>Custom folder with metadata</i>, enter the
 directory name, "\g&lt;Treatment1&gt;" and enter the file name, 
 "\g&lt;Treatment2&gt;". Here's an example table of the files that
-would be generated:<br><tt>
+would be generated:<br><br><tt>
 <table border="1"><tr><th>Treatment1</th><th>Treatment2</th><th>Path</th></tr>
 
 <tr><td>1M_NaCl</td><td>20uM_DMSO</td><td>1M_NaCl/20uM_DMSO.csv</td></tr>

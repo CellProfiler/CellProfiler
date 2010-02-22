@@ -41,7 +41,7 @@ they fail to meet certain your specified criteria. For example, partial objects
 at the border of the image can
 be discarded, and small objects can be discarded or merged with nearby larger 
 ones. A separate module,
-<b>FilterByObjectMeasurement</b>, can further refine the identified nuclei, if
+<b>FilterObjects</b>, can further refine the identified nuclei, if
 desired, by excluding objects that are a particular size, shape,
 intensity, or texture.</ol>
 
@@ -84,7 +84,7 @@ image which excludes objects smaller than your selected size range can be
 saved using the name "SmallRemovedSegmented" + whatever you called the
 objects (e.g., "SmallRemovedSegmentedNuclei").</li></ul>
 
-See also <b>IdentifySecondary</b>, <b>IdentifyTertiarySubregion</b>, and <b>IdentifyPrimManual</b>.
+See also <b>IdentifySecondaryObjects</b>, <b>IdentifyTertiaryObjects</b>, and <b>IdentifyPrimManual</b>.
 '''
 
 # CellProfiler is distributed under the GNU General Public License.
@@ -195,7 +195,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             This allows you to exclude small objects (e.g., dust, noise,
             and debris) or large objects (e.g., large clumps) if desired. Objects discarded 
             based on size are outlined in red in the module's display. See also the
-            <b>FilterByObjectMeasurement</b> module to further discard objects based on some
+            <b>FilterObjects</b> module to further discard objects based on some
             other measurement.''')
         self.merge_objects = cps.Binary(
             "Try to merge too small objects with nearby larger objects?", 
@@ -302,13 +302,13 @@ class IdentifyPrimaryObjects(cpmi.Identify):
         self.smoothing_filter_size = cps.Integer(
             'Size of smoothing filter', 10, doc="""\
             <i>(Used only when distinguishing between clumped objects)</i> <br>
-            <p>If you see too many objects merged that ought to be separated
+            If you see too many objects merged that ought to be separated
             (under-segmentation), the <i>Size of smoothing filter</i> value 
             should be lower. If you see too many 
             objects split up that ought to be merged (over-segmentation), the 
             value should be higher. Enter 0 to prevent any image smoothing in certain 
             cases; for example, for low resolution images with small objects 
-            ( &lt; ~5 pixels in diameter).</p>
+            ( &lt; ~5 pixels in diameter).
 
             <p>Reducing the texture of objects by increasing the
             smoothing increases the chance that each real, distinct object has only

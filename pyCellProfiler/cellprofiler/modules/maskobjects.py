@@ -1,18 +1,13 @@
-'''<b>MaskObjects</b> removes objects outside of a specified region or regions.
+'''<b>Mask Objects</b> removes objects outside of a specified region or regions
 <hr>
-This image analysis module allows you to delete the objects and portions
-of objects that are outside of a region (mask) you specify. For example, you might
+This module allows you to delete the objects or portions
+of objects that are outside of a region (mask) you specify. For example, after
+identifying nuclei and tissue regions in previous <b>Identify</b> modules, you might
 want to exclude all nuclei that are outside
-of a tissue region.  The objects and the region should both result from
-any <b>Identify</b> module (Primary, Secondary, or Tertiary). Alternatively, you
-can use a binary image where the white portion of the image will be the region.
-You can transform a grayscale image into a binary image using the
-<b>ApplyThreshold</b> module.<p>
-
-You can choose to remove only the portion of each object that is outside of
+of a tissue region.  You can choose to remove only the portion of each object that is outside of
 the region, remove the whole object if it is partially or fully
 outside of the region, or retain the whole object unless it is fully outside
-of the region.
+of the region. 
 '''
 __version__="$Revision$"
 import numpy as np
@@ -69,10 +64,10 @@ class MaskObjects(I.Identify):
         '''Create the settings that control this module'''
         self.object_name = cps.ObjectNameSubscriber(
             "Select objects to be masked","None",
-            doc="""These are the objects that will be masked (excluded in whole 
+            doc="""Select the objects that will be masked (that is, excluded in whole 
             or in part based on the other settings in the module). 
             You can choose from any objects created by
-            a previous <b>Identify</b> module, such as <b>IdentifyPrimaryObjects</b>,
+            a previous object processing module, such as <b>IdentifyPrimaryObjects</b>,
             <b>IdentifySecondaryObjects</b> or <b>IdentifyTertiaryObjects</b>.""")
         
         self.remaining_objects = cps.ObjectNameProvider(
@@ -85,35 +80,39 @@ class MaskObjects(I.Identify):
             "Mask using a region defined by other objects or by binary image?",
             [MC_OBJECTS, MC_IMAGE],
             doc="""You can mask your objects by defining a region using objects
-            you previously identified in your pipeline or using a binary image.""")
+            you previously identified in your pipeline or by defining a 
+            region based on the white regions in a binary image.""")
         
         self.masking_objects = cps.ObjectNameSubscriber(
-            "Select the masking object","None",
-            doc="""These are the objects that will be used to define the
-            masking region. Objects that do not overlap the masking objects
-            will be masked out. You can choose from any objects created
-            by a previous module, such as <b>IdentifyPrimaryObjects</b>""")
+            "Select the masking object(s)","None",
+            doc="""Select the objects that will be used to define the
+            masking region. You can choose from any objects created
+            by a previous object processing module, such as <b>IdentifyPrimaryObjects</b>,
+            <b>IdentifySecondaryObjects</b> or <b>IdentifyTertiaryObjects</b>.""")
         
         self.masking_image = cps.ImageNameSubscriber(
             "Select the masking image","None",
-            doc="""This is the name of an image that was either loaded or
-            created by a previous module. The image should be a binary image.
+            doc="""Select an image that was either loaded or
+            created by a previous module. The image should be a binary image where 
+            the white portion of the image is the region(s) you will use for masking.
             Images can be loaded from disk by <b>LoadImages</b> or
             <b>LoadData</b>. You can create a binary image from a grayscale
-            image using <b>ApplyThreshold</b> and can modify that image
-            using the <b>Morph</b> module. Objects that do not overlap
-            the masking image will be masked out.""")
-        
+            image using <b>ApplyThreshold</b> and you can modify that image
+            using the <b>Morph</b> module, including inverting black and white if needed.""")
+
         self.overlap_choice = cps.Choice(
             "Handling of objects that are partially masked",
             [P_MASK, P_KEEP, P_REMOVE, P_REMOVE_PERCENTAGE],
-            doc="""An object can partially overlap the mask region with
+            doc="""An object might partially overlap the mask region, with
             pixels both inside and outside the region. <b>MaskObjects</b>
             can handle this in one of three ways:<br>
             <ul><li><i>Keep overlapping region</i> - choosing this option
             will reduce the size of partially overlapping objects. The part
             of the object that overlaps the region will be retained. The
             part of the object that is outside of the region will be removed.
+            <li><i>Keep</i> - if you choose this option, <b>MaskObjects</b> 
+            will keep the whole object if any part of it overlaps the masking
+            region.</li>
             </li><li><i>Remove</i> - objects that are partially outside
             of the masking region will be completely removed if you choose
             this option.</li>
@@ -123,15 +122,12 @@ class MaskObjects(I.Identify):
             object if at least a certain fraction (which you enter below) of
             the object falls within the masking region. <b>MaskObjects</b>
             completely removes the object if too little of it overlaps
-            the masking region.</li>
-            <li><i>Keep</i> - if you choose this option, <b>MaskObjects</b> 
-            will keep the whole object if any part of it overlaps the masking
-            region.</li></ul>""")
+            the masking region.</li></ul>""")
         
         self.overlap_fraction = cps.Float(
             "Fraction of object that must overlap", .5, 
             minval = 0, maxval = 1,
-            doc = """This setting specifies the minimum fraction of an object
+            doc = """Specify the minimum fraction of an object
             that must overlap the masking region for that object to be retained.
             For instance, if the fraction is 0.75, then 3/4 of an object
             must be within the masking region for that object to be retained.""")
@@ -139,16 +135,18 @@ class MaskObjects(I.Identify):
         self.retain_or_renumber = cps.Choice(
             "Numbering of resulting objects",
             [R_RENUMBER, R_RETAIN],
-            doc="""This setting controls the numbering of the objects that 
-            remain after masking. If you choose, "Renumber",
+            doc="""Choose how to number the objects that 
+            remain after masking. If you choose <i>Renumber</i>,
             <b>MaskObjects</b> will number the objects that remain 
-            using consecutive numbers. If you choose, "Retain",
+            using consecutive numbers. If you choose, <i>Retain</i>,
             <b>MaskObjects</b> will retain the original numbers. Renumbering
             is a good choice if you will not use measurements from the
             original unmasked objects; your object measurements for the
-            masked objects won't have gaps. Retaining makes it eaiser to
-            analyze object measurement data if you want to measure objects
-            associated with your original objects.""")
+            masked objects will not have gaps (where removed objects are missing). 
+            Retaining original numbering allows any measurements you make from 
+            the masked objects to be directly aligned with measurements you might 
+            have made of the original, unmasked objects (or objects directly 
+            associated with them).""")
 
         self.wants_outlines = cps.Binary(
             "Retain outlines of the resulting objects?", False,

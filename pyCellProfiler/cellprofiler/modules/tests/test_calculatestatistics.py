@@ -22,6 +22,9 @@ import unittest
 import zlib
 from scipy.io.matlab import loadmat
 
+from cellprofiler.preferences import set_headless
+set_headless()
+
 import cellprofiler.cpmodule as cpm
 import cellprofiler.settings as cps
 import cellprofiler.measurements as cpmeas

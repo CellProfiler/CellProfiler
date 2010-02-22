@@ -16,6 +16,9 @@ import numpy as np
 import unittest
 import sys
 
+from cellprofiler.preferences import set_headless
+set_headless()
+
 import cellprofiler.pipeline as cpp
 import cellprofiler.settings as cps
 import cellprofiler.cpimage as cpi

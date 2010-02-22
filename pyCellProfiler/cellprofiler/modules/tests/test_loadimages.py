@@ -24,6 +24,9 @@ import sys
 import zlib
 from StringIO import StringIO
 
+from cellprofiler.preferences import set_headless
+set_headless()
+
 import cellprofiler.pipeline as cpp
 import cellprofiler.cpmodule as CPM
 import cellprofiler.modules.loadimages as LI

@@ -22,6 +22,9 @@ import tempfile
 import StringIO
 import zlib
 
+from cellprofiler.preferences import set_headless
+set_headless()
+
 import cellprofiler.modules.identifyprimaryobjects as ID
 import cellprofiler.modules.identify as I
 import cellprofiler.cpmath.threshold as T

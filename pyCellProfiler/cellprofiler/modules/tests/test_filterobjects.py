@@ -19,6 +19,9 @@ import tempfile
 import zlib
 import unittest
 
+from cellprofiler.preferences import set_headless
+set_headless()
+
 import cellprofiler.workspace as cpw
 import cellprofiler.pipeline as cpp
 import cellprofiler.objects as cpo

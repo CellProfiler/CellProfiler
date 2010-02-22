@@ -24,6 +24,9 @@ import unittest
 import uuid
 import zlib
 
+from cellprofiler.preferences import set_headless
+set_headless()
+
 import cellprofiler.cpmodule as cpm
 import cellprofiler.pipeline as cpp
 import cellprofiler.settings as cps

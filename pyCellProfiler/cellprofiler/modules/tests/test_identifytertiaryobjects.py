@@ -18,6 +18,9 @@ from StringIO import StringIO
 import unittest
 import zlib
 
+from cellprofiler.preferences import set_headless
+set_headless()
+
 import cellprofiler.modules.identify as cpmi
 import cellprofiler.modules.identifytertiaryobjects as cpmit
 import cellprofiler.workspace as cpw

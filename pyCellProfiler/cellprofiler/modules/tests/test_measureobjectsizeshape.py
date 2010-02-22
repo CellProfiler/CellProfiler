@@ -17,6 +17,9 @@ import numpy as np
 import unittest
 import StringIO
 
+from cellprofiler.preferences import set_headless
+set_headless()
+
 import cellprofiler.pipeline as cpp
 import cellprofiler.modules.measureobjectsizeshape as cpmoas
 import cellprofiler.modules.injectimage as ii

@@ -19,6 +19,9 @@ import unittest
 import StringIO
 import zlib
 
+from cellprofiler.preferences import set_headless
+set_headless()
+
 import cellprofiler.modules.identifysecondaryobjects as cpmi2
 import cellprofiler.modules.identify as cpmi
 import cellprofiler.pipeline as cpp

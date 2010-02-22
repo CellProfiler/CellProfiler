@@ -19,6 +19,9 @@ from StringIO import StringIO
 import unittest
 import zlib
 
+from cellprofiler.preferences import set_headless
+set_headless()
+
 import cellprofiler.modules.injectimage as II
 import cellprofiler.modules.measureobjectintensity as MOI
 import cellprofiler.pipeline as P

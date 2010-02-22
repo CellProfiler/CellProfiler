@@ -19,6 +19,9 @@ import numpy as np
 import StringIO
 import unittest
 
+from cellprofiler.preferences import set_headless
+set_headless()
+
 import cellprofiler.modules.measureimagequality as miq
 import cellprofiler.pipeline as cpp
 import cellprofiler.workspace as cpw

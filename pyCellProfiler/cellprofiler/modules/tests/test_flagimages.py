@@ -22,6 +22,9 @@ from StringIO import StringIO
 import unittest
 import zlib
 
+from cellprofiler.preferences import set_headless
+set_headless()
+
 import cellprofiler.pipeline as cpp
 import cellprofiler.settings as cps
 import cellprofiler.cpimage as cpi

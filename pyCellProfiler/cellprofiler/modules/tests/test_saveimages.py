@@ -23,6 +23,9 @@ import unittest
 import tempfile
 import zlib
 
+from cellprofiler.preferences import set_headless
+set_headless()
+
 import cellprofiler.modules.saveimages as cpm_si
 import cellprofiler.modules.loadimages as cpm_li
 import cellprofiler.modules.applythreshold as cpm_a

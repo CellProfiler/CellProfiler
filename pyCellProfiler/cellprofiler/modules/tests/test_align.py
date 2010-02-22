@@ -20,6 +20,9 @@ from StringIO import StringIO
 import unittest
 import zlib
 
+from cellprofiler.preferences import set_headless
+set_headless()
+
 from cellprofiler.modules.tests import example_images_directory
 import cellprofiler.pipeline as cpp
 import cellprofiler.cpmodule as cpm

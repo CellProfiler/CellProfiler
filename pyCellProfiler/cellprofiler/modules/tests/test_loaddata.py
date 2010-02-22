@@ -21,6 +21,9 @@ import tempfile
 import unittest
 import zlib
 
+from cellprofiler.preferences import set_headless
+set_headless()
+
 import cellprofiler.pipeline as cpp
 import cellprofiler.cpmodule as cpm
 import cellprofiler.cpimage as cpi

@@ -19,6 +19,9 @@ import StringIO
 import unittest
 import zlib
 
+from cellprofiler.preferences import set_headless
+set_headless()
+
 import cellprofiler.pipeline as cpp
 import cellprofiler.cpimage as cpi
 import cellprofiler.measurements as cpmeas

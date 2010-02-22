@@ -22,6 +22,9 @@ import unittest
 from StringIO import StringIO
 import zlib
 
+from cellprofiler.preferences import set_headless
+set_headless()
+
 import cellprofiler.modules.correctillumination_apply as cpmcia
 import cellprofiler.modules.injectimage as inj
 import cellprofiler.cpmodule as cpm

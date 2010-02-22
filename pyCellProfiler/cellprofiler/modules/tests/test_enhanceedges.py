@@ -18,6 +18,9 @@ import unittest
 from zlib import decompress
 from StringIO import StringIO
 
+from cellprofiler.preferences import set_headless
+set_headless()
+
 import cellprofiler.cpmodule as cpm
 import cellprofiler.cpimage as cpi
 import cellprofiler.measurements as cpmeas

@@ -22,6 +22,8 @@ their numbers reassigned. This reassignment information is stored and can be exp
 from CellProfiler like any other measurement: each original input object will have
 its reassigned object number stored as a feature in case you need to track the 
 reassignment.
+
+See also: <b>RelateObjects</b>.
 '''
 # CellProfiler is distributed under the GNU General Public License.
 # See the accompanying file LICENSE for details.

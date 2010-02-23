@@ -1,7 +1,7 @@
 '''<b>Relate Objects</b> assigns relationships; all objects (e.g. speckles) within a
 parent object (e.g. nucleus) become its children
 <hr>
-Allows associating "children" objects with "parent" objects. This is
+Allows associating <i>children</i> objects with <i>parent</i> objects. This is
 useful for counting the number of children associated with each parent,
 and for calculating mean measurement values for all children that are
 associated with each parent.
@@ -10,6 +10,8 @@ associated with each parent.
 touching a parent object. If an object is touching two parent objects,
 the object will be assigned to the parent that shares the largest
 number of pixels with the child.
+
+See also: <b>ReassignObjectNumbers</b>.
 '''
 
 # CellProfiler is distributed under the GNU General Public License.
@@ -79,17 +81,19 @@ class RelateObjects(cpm.CPModule):
         self.sub_object_name = cps.ObjectNameSubscriber('Select the input child objects',
                                                         'None',doc="""
             The child objects are defined as those objects contained within the
-            parent object.For example, to <b>Relate</b> a speckle to a containing
-            nucleus, the child is the speckle object(s).""")
+            parent object. For example, when relating a speckle to the
+            nucleus that contains it, the speckles are the children.""")
+
         self.parent_name = cps.ObjectNameSubscriber('Select the input parent objects',
                                                     'None',doc="""
             The parent objects are defined as those objects which encompass the 
-            child object. For example, to <b>Relate</b> a speckle to a 
-            containing nucleus, the parent is the nucleus object.""")
+            child object. For example, when relating a speckle to the
+            nucleus that contains it, the nuclei are the parents.""")
+
         self.find_parent_child_distances = cps.Choice(
-            "Find distances?",
+            "Calculate distances?",
             D_ALL,doc="""
-            Do you want to find the minimum distances of each child to its 
+            Do you want to calculate the distances of each child to its 
             parent?
             <br>
             <ul><li>The <i>minimum distance</i> is the distance from the 
@@ -99,7 +103,7 @@ class RelateObjects(cpm.CPModule):
             centroid of the child object to the centroid of the parent.
             </li></ul>""")
         self.wants_step_parent_distances = cps.Binary(
-            "Find distances to other parents?", False,
+            "Calculate distances to other parents?", False,
             doc = """You can calculate the distances of the child objects to 
             some other objects. These objects must be either parents or
             children of your parent object in order for this module to
@@ -110,11 +114,14 @@ class RelateObjects(cpm.CPModule):
             speckles to cells and then measure distances to nuclei and
             cytoplasm. You could not use <b>Relate</b> to relate speckles to
             cytoplasm, and then measure distances to nuclei because nuclei is
-            neither a direct parent or child of cytoplasm""")
+            neither a direct parent or child of cytoplasm.""")
         self.step_parent_names = []
+
         self.add_step_parent(can_delete = False)
+
         self.add_step_parent_button = cps.DoSomething("","Add another parent",
                                                       self.add_step_parent)
+
         self.wants_per_parent_means = cps.Binary('Calculate per-parent means for all child measurements?',
                                                  False,doc="""
             For every measurement that has been made of
@@ -128,10 +135,12 @@ class RelateObjects(cpm.CPModule):
         group = cps.SettingsGroup()
         group.append("step_parent_name", cps.Choice(
             "Parent name", ["None"], choices_fn = self.get_step_parents,
-            doc = """Choose another parent. The <b>Relate</b> module will 
+            doc = """
+            <i>(Used only if calculating distances to another parent)</i><br>
+            Choose the name of the other parent. The <b>Relate</b> module will 
             measure the distance from this parent to the child objects
-            in the same manner as it does to the immediate parents.
-            <b>Relate</b> only lets you choose the parents or children of
+            in the same manner as it does to the primary parents.
+            You can only choose the parents or children of
             the parent object."""))
         if can_delete:
             group.append("remove", cps.RemoveSettingButton(

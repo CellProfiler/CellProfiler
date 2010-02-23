@@ -1,8 +1,11 @@
-'''<b>RescaleIntensity</b> changes intensity range of an image to your desired specifications
+'''<b>RescaleIntensity</b> changes the intensity range of an image to your desired specifications
 <hr>
+This module lets you rescale the intensity of the input images by any of several
+methods. You should use caution when interpreting intensity and texture measurements
+derived from images that have been rescaled because certain options for this module
+do not preserve the relative intensities from image to image.
 
-This module lets you rescale the intensity of the incoming images by any of several
-methods. This is especially helpful when converting 12-bit images saved in
+Rescaling is especially helpful when converting 12-bit images saved in
 16-bit format to the correct range.
 
 '''
@@ -58,9 +61,9 @@ class RescaleIntensity(cpm.CPModule):
     def create_settings(self):
         self.image_name = cps.ImageNameSubscriber("Select the input image","None", doc = '''What did you call the image to be rescaled?''')
         
-        self.rescaled_image_name = cps.ImageNameProvider("Name the output image","RescaledBlue", doc = '''What do you want to call the rescaled image?''')
+        self.rescaled_image_name = cps.ImageNameProvider("Name the rescaled image","RescaledBlue", doc = '''What do you want to call the rescaled image?''')
         
-        self.rescale_method = cps.Choice('Select rescaling method:',
+        self.rescale_method = cps.Choice('Select rescaling method',
                                          choices=M_ALL, doc='''There are nine options for rescaling the input image: 
                                                 <ul>
                                                 <li><i>Stretch each image to use the full intensity range:</i> Find the minimum and maximum values within the unmasked part of the image 
@@ -76,18 +79,17 @@ class RescaleIntensity(cpm.CPModule):
                                                 <li><i>Choose specific values to be reset to a custom range:</i> Pixels are scaled from their original range to
                                                 the new target range. Options are available to handle values outside
                                                 of the original range.</li>
-                                                <li><i>Divide by image's minimum:</i> Divide the intensity value of each pixel by the image's minimum intensity
+                                                <li><i>Divide by the image's minimum:</i> Divide the intensity value of each pixel by the image's minimum intensity
                                                 value so that all pixel intensities are equal to or greater than 1.
-                                                You can use the output from this option in <b>CorrectIlluminationApply</b>.
-                                                The image becomes an illumination correction function.</li>
-                                                <li><i>Divide by image's maximum:</i> Divide the intensity value of each pixel by the image's maximum intensity
+                                                The rescaled image can serve as an illumination correction function in <b>CorrectIlluminationApply</b>.</li>
+                                                <li><i>Divide by the image's maximum:</i> Divide the intensity value of each pixel by the image's maximum intensity
                                                 value so that all pixel intensities are less than or equal to 1.</li>
                                                 <li><i>Divide each image by the same value:</i> Divide the intensity value of each pixel by the value entered.</li>
                                                 <li><i>Divide each image by a previously calculated value:</i> The intensity value of each pixel is divided by some previously calculated
                                                 measurement. This measurement can be the output of some other module
                                                 or can be a value loaded by the <b>LoadData</b> module.</li>
                                                 <li><i>Match the image's maximum to another image's maximum:</i> Scale an image so that its maximum value is the same as the maximum value
-                                                within the target image.</li>
+                                                within the reference image.</li>
                                                 <li><i>Convert to 8-bit:</i> Images in CellProfiler are normally stored as a floating point number in
                                                 the range of 0 to 1. This option converts these images to class uint8, 
                                                 meaning an 8 bit integer in the range of 0 to 255, 
@@ -98,28 +100,28 @@ class RescaleIntensity(cpm.CPModule):
         
         self.wants_automatic_low = cps.Binary('Use the minimum intensity value as the lower limit?',
                                               False, doc = """
-                                              <i>(Used if specific values are to be chosen for a custom range)</i><br>
-                                              This setting specifies the minimum intensity in the original image
+                                              <i>(Used only if specific values are to be chosen for a custom range)</i><br>
+                                              This setting specifies the minimum intensity in the input image
                                               as the lower limit of the intensity range in the rescaled image.""")
         
         self.wants_automatic_high = cps.Binary('Use the maximum intensity value as the upper limit?',
                                                False, doc = """
-                                               <i>(Used if specific values are to be chosen for a custom range)</i><br>
-                                               This setting specifies the maximum intensity in the original image
+                                               <i>(Used only if specific values are to be chosen for a custom range)</i><br>
+                                               This setting specifies the maximum intensity in the input image
                                                as the upper limit of the intensity range in the rescaled image.""")
         
-        self.source_low = cps.Float('Enter the lower limit for the intensity range for the original image',0)
+        self.source_low = cps.Float('Enter the lower limit for the intensity range for the input image',0)
         
-        self.source_high = cps.Float('Enter the upper limit for the intensity range for the original image',1)
+        self.source_high = cps.Float('Enter the upper limit for the intensity range for the input image',1)
         
-        self.source_scale = cps.FloatRange('Enter the intensity range for the original image',(0,1))
+        self.source_scale = cps.FloatRange('Enter the intensity range for the input image',(0,1))
         
-        self.dest_scale = cps.FloatRange('Enter the desired intensity range for the final image', (0,1))
+        self.dest_scale = cps.FloatRange('Enter the desired intensity range for the final, rescaled image', (0,1))
         
-        self.low_truncation_choice = cps.Choice('Select method for rescaling pixels below the lower limit:',
+        self.low_truncation_choice = cps.Choice('Select method for rescaling pixels below the lower limit',
                                                 [R_MASK, R_SET_TO_ZERO, 
                                                  R_SET_TO_CUSTOM, R_SCALE], doc = '''
-                                                <i>(Used if specific values are to be chosen for a custom range)</i><br>
+                                                <i>(Used only if specific values are to be chosen for a custom range)</i><br>
                                                 There are four ways to handle values less than the lower limit of the intensity range:
                                                 <ul>
                                                 <li><i>Mask pixels:</i> Creates a mask for the output image. All pixels below
@@ -132,33 +134,33 @@ class RescaleIntensity(cpm.CPModule):
                                                 will be less than zero.</li>
                                                 </ul>''')
         
-        self.custom_low_truncation = cps.Float("Enter custom value",0, doc = """
-                                                <i>(Used if a custom rescaling range and a custom lower limit value is selected)</i><br>
+        self.custom_low_truncation = cps.Float("Enter custom value for pixels below lower limit",0, doc = """
+                                                <i>(Used only if a custom rescaling range and a custom value for pixels below the lower limit is selected)</i><br>
                                                 What custom value should be assigned to pixels with values below the lower limit?""")
         
         self.high_truncation_choice = cps.Choice('Select method for rescaling pixels above the upper limit',
                                                 [R_MASK, R_SET_TO_ONE, 
                                                  R_SET_TO_CUSTOM, R_SCALE], doc = """
-                                                <i>(Used if specific values are to be chosen for a custom range)</i><br>
-                                                How do you want to handle values that are greater than the upper limit of the intensity range?""")
+                                                <i>(Used only if specific values are to be chosen for a custom range)</i><br>
+                                                How do you want to handle values that are greater than the upper limit of the intensity range? Options are described in the help for the equivalent lower limit question.""")
         
-        self.custom_high_truncation = cps.Float("Enter custom value",0, doc = """
-                                                <i>(Used if a custom rescaling range and a custom upper limit value is selected)</i><br>
+        self.custom_high_truncation = cps.Float("Enter custom value for pixels below upper limit",0, doc = """
+                                                <i>(Used only if a custom rescaling range and a custom value for pixels below the upper limit is selected)</i><br>
                                                 What custom value should be assigned to pixels with values above the upper limit?""")
         
         self.matching_image_name = cps.ImageNameSubscriber("Select image to match in maximum intensity", "None",
                                                            doc = """
-                                                           <i>(Used if the maximum for an image is to be matched to another image)</i><br>
+                                                           <i>(Used only if the maximum for an image is to be matched to another image)</i><br>
                                                            What did you call the image whose maximum you want the rescaled image to match?""")
         
         self.divisor_value = cps.Float("Enter the divisor",
                                        1,minval=np.finfo(float).eps, doc = """
-                                       <i>(Used if the same value is used as a divisor)</i><br>
+                                       <i>(Used only if the same value is used as a divisor)</i><br>
                                        What value should be used as the divisor for the final image?""")
         
         self.divisor_measurement = cps.Measurement("Select the measurement to use as a divisor",
                                                    lambda : cpmeas.IMAGE, doc = """
-                                                   <i>(Used if the previously calculated value is used as a divisor)</i><br>
+                                                   <i>(Used only if the previously calculated value is used as a divisor)</i><br>
                                                    What measurement value should be used as the divisor for the final image?""")
 
     def settings(self):
@@ -238,7 +240,7 @@ class RescaleIntensity(cpm.CPModule):
         return False
     
     def display(self, workspace):
-        '''Display the original and rescaled image'''
+        '''Display the input image and rescaled image'''
         figure = workspace.create_or_find_figure(subplots=(2,1))
         image_set = workspace.image_set
         for image_name, i,j in ((self.image_name, 0,0),

@@ -1,12 +1,12 @@
 '''<b>Correct Illumination - Apply</b> applies an illumination function, usually created by
-<b>CorrectIllumination_Calculate</b>, to an image in order to correct for uneven
+<b>CorrectIlluminationCalculate</b>, to an image in order to correct for uneven
 illumination (uneven shading)
 <hr>
 This module applies a previously created illumination correction function,
-either loaded by <b>LoadSingleImage</b> or created by <b>CorrectIllumination_Calculate</b>.
+either loaded by <b>LoadSingleImage</b> or created by <b>CorrectIlluminationCalculate</b>.
 This module corrects each image in the pipeline using the function specified. 
 
-See also <b>CorrectIllumination_Calculate</b>.'''
+See also <b>CorrectIlluminationCalculate</b>.'''
 
 # CellProfiler is distributed under the GNU General Public License.
 # See the accompanying file LICENSE for details.
@@ -51,10 +51,10 @@ RE_MATCH = "Match maximums"
 
 SETTINGS_PER_IMAGE = 5
 
-class CorrectIllumination_Apply(cpm.CPModule):
+class CorrectIlluminationApply(cpm.CPModule):
     category = "Image Processing"
     variable_revision_number = 2
-    module_name = "CorrectIllumination_Apply"
+    module_name = "CorrectIlluminationApply"
     
     def create_settings(self):
         """Make settings here (and set the module name)"""

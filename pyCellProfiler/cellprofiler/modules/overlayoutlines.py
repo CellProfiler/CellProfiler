@@ -1,4 +1,4 @@
-'''<b>Overlay outlines</b> places outlines produced by an <b>Identify module</b> over a desired image
+'''<b>Overlay Outlines</b> places outlines produced by an <b>Identify</b> module over a desired image
 <hr>
 This module places outlines (in a special format produced by an <b>Identify</b> module) on any desired image (grayscale, color, or blank). The 
 resulting image can be saved using the <b>SaveImages</b> module.

@@ -5,12 +5,12 @@ This module calculates an illumination function that can either be saved to the
 hard drive for later use or immediately applied to images later in the
 pipeline. This function will correct for the uneven illumination in images.  
 If saving, select <i>.mat</i> format in <b>SaveImages</b>.  
-Use the <b>CorrectIllumination_Apply</b> module to apply the
+Use the <b>CorrectIlluminationApply</b> module to apply the
 function to the image to be corrected.
 
 Illumination correction is a challenge to do properly; please see the CellProfiler website for further advice.
 
-See also <b>CorrectIllumination_Apply</b> and <b>EnhanceOrSuppressFeatures</b> modules.
+See also <b>CorrectIlluminationApply</b> and <b>EnhanceOrSuppressFeatures</b> modules.
 '''
 # CellProfiler is distributed under the GNU General Public License.
 # See the accompanying file LICENSE for details.
@@ -58,9 +58,9 @@ FI_MANUALLY        = "Manually"
 
 ROBUST_FACTOR      = .02 # For rescaling, take 2nd percentile value
 
-class CorrectIllumination_Calculate(cpm.CPModule):
+class CorrectIlluminationCalculate(cpm.CPModule):
     
-    module_name = "CorrectIllumination_Calculate"
+    module_name = "CorrectIlluminationCalculate"
     variable_revision_number = 1
     category = "Image Processing"
     
@@ -86,7 +86,7 @@ class CorrectIllumination_Calculate(cpm.CPModule):
                                             intensities makes the illumination function based on the intensity at
                                             each pixel of the image (or group of images if you are in <i>All</i> mode) and
                                             is most often rescaled (see below) and applied by division using
-                                            <b>CorrectIllumination_Apply.</b> Note that if you are in <i>Each</i> mode or using a
+                                            <b>CorrectIlluminationApply.</b> Note that if you are in <i>Each</i> mode or using a
                                             small set of images with few objects, there will be regions in the
                                             average image that contain no objects and smoothing by median filtering
                                             is unlikely to work well.
@@ -100,9 +100,9 @@ class CorrectIllumination_Calculate(cpm.CPModule):
                                             <i>Background</i> method. Background intensities finds the minimum pixel
                                             intensities in blocks across the image (or group of images if you are in
                                             <i>All</i> mode) and is most often applied by subtraction using the
-                                            <b>CorrectIllumination_Apply</b> module.
+                                            <b>CorrectIlluminationApply</b> module.
                                             <i>Note:</i> if you will be using the <i>Subtract</i> option in the
-                                            <b>CorrectIllumination_Apply</b> module, you almost certainly do not want to
+                                            <b>CorrectIlluminationApply</b> module, you almost certainly do not want to
                                             <i>Rescale</i>. </li>
                                             </ul> ''')
         
@@ -127,9 +127,9 @@ class CorrectIllumination_Calculate(cpm.CPModule):
                                          [cps.YES, cps.NO, RE_MEDIAN], doc = '''
                                         The illumination function can be rescaled so that the pixel intensities
                                         are all equal to or greater than 1. Rescaling is recommended if you plan to
-                                        use the <i>Division</i> option in <b>CorrectIllumination_Apply</b> so that the
+                                        use the <i>Division</i> option in <b>CorrectIlluminationApply</b> so that the
                                         corrected images are in the range 0 to 1. It is not recommended if you
-                                        plan to use the <i>Subtract</i> option in <b>CorrectIllumination_Apply</b>. Note that
+                                        plan to use the <i>Subtract</i> option in <b>CorrectIlluminationApply</b>. Note that
                                         as a result of the illumination function being rescaled from 1 to
                                         infinity, the rescaling of each image might be dramatic if there is substantial variation across the field of view, causing the corrected images
                                         to be very dark. The <i>Median</i> option chooses the median value in the 
@@ -261,8 +261,8 @@ class CorrectIllumination_Calculate(cpm.CPModule):
             if pipeline.is_image_from_file(self.image_name.value):
                 if not pipeline.in_batch_mode() and not cpp.get_headless():
                     import wx
-                    progress_dialog = wx.ProgressDialog("#%d: CorrectIllumination_Calculate for %s"%(self.module_num, self.image_name),
-                                                        "CorrectIllumination_Calculate is averaging %d images while preparing for run"%(len(image_numbers)),
+                    progress_dialog = wx.ProgressDialog("#%d: CorrectIlluminationCalculate for %s"%(self.module_num, self.image_name),
+                                                        "CorrectIlluminationCalculate is averaging %d images while preparing for run"%(len(image_numbers)),
                                                         len(image_numbers),
                                                         None,
                                                         wx.PD_APP_MODAL |

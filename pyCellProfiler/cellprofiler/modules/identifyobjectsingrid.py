@@ -78,7 +78,7 @@ class IdentifyObjectsInGrid(cpm.CPModule):
             module.""")
         
         self.output_objects_name = cps.ObjectNameProvider(
-            "Name the identified objects","Wells",
+            "Name the objects to be identified","Wells",
             doc="""What do you want to call the grid objects identified by this module? These objects will be available for further measurement and processing in
             subsequent modules.""")
         

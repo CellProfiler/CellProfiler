@@ -1,7 +1,6 @@
-'''<b>IdentifyObjectsManually</b> identifies objects in an image by selecting
-them using the user interface<br>
+'''<b>IdentifyObjectsManually</b> allows you to identify objects 
+in an image by hand rather than automatically
 <hr>
-<br>
 This module lets you outline the objects in an image using the mouse. The
 user interface has several mouse tools:<br>
 <ul><li><i>Outline:</i> Lets you draw an outline around an
@@ -41,16 +40,13 @@ class IdentifyObjectsManually(I.Identify):
         self.image_name = cps.ImageNameSubscriber(
             "Select the input image", "None",
             doc = """Choose the name of the image to display in the object
-            selection user interface. This can be an image from a file loaded
-            by <b>LoadImages</b> or <b>LoadData</b> or a derived image
-            from a module previous to this one.""")
+            selection user interface.""")
         
         self.objects_name = cps.ObjectNameProvider(
-            "Select the input objects", "Cells",
-            doc = """Enter the name that you want to use for the objects
-            that you outline using this module. You can use this name to
-            refer to your objects in any subsequent module that uses objects
-            as an input.""")
+            "Name the objects to be identified", "Cells",
+            doc = """What do you want to call the objects
+            that you identify using this module? You can use this name to
+            refer to your objects in subsequent modules.""")
         
         self.wants_outlines = cps.Binary(
             "Retain outlines of the identified objects?", False,
@@ -59,9 +55,8 @@ class IdentifyObjectsManually(I.Identify):
         
         self.outlines_name = cps.ImageNameProvider(
             "Name the outlines", "CellOutlines",
-            doc = """This is the name of the outlines image. You can refer to
-            this image in any subsequent module that uses images. You can
-            save the outlines image using the <b>SaveImages</b> module.""")
+            doc = """What do you want to call the outlines image? You can refer to
+            this image in subsequent modules, such as <b>SaveImages</b>.""")
         
     def settings(self):
         '''The settings as saved in the pipeline'''

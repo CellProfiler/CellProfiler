@@ -85,7 +85,7 @@ class IdentifySecondaryObjects(cpmi.Identify):
             object around each one? By definition, each primary object must be associated with exactly one 
             secondary object and completely contained within it.""")
         
-        self.objects_name = cps.ObjectNameProvider("Name the identified objects","Cells")
+        self.objects_name = cps.ObjectNameProvider("Name the objects to be identified","Cells")
         
         self.method = cps.Choice("Select the method to identify the secondary objects",
                                  [M_PROPAGATION, M_WATERSHED_G, M_WATERSHED_I, 

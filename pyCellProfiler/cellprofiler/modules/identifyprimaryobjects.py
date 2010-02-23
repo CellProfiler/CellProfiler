@@ -172,7 +172,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             What did you call the images you want to use to identify objects?""")
         
         self.object_name = cps.ObjectNameProvider(
-            "Name the identified primary objects",
+            "Name the primary objects to be identified",
             "Nuclei",doc="""
             What do you want to call the objects identified by this module?""")
         

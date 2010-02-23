@@ -1,8 +1,7 @@
-'''<b>Pause Cell Profiler</b> pauses CellProfiler.
+'''<b>Pause CellProfiler</b> pauses CellProfiler during the analysis run.
 <hr>
-
-This module pauses CellProfiler while analyzing and waits for you to
-continue. You can use this to pause the pipeline during analysis.
+This module allows you to pause CellProfiler's processing at the point where the module
+resides in the pipeline, which can be helpful if you want to examine the results before proceeding. 
 '''
 
 __version__="$Revision$"
@@ -46,15 +45,19 @@ class PauseCellProfiler(cpm.CPModule):
                                 doc = """
                                 There are three options:
                                 <ul>
-                                <li><i>%s</i> to pause CellProfiler
-                                at this module. The pipeline will stop and a window with a <i>Resume</i>
-                                button will appear. You can examine the module figures at this point.
+                                <li><i>%s</i> will pause CellProfiler
+                                at this module's position in the pipeline. The pipeline will stop 
+                                and a window with a <i>Resume</i>
+                                button will appear.
                                 The pipeline will continue when you hit the <i>Resume</i> button or will
                                 stop if you hit the <i>Stop analysis</i> button on the main window.</li>
-                                <li><i>%s</i> to skip the modules following this one. CellProfiler
-                                will still pause as described above. CellProfiler will advance to
-                                the next image set, if any, and the first module after you resume.</li>
-                                <li><i>%s</i> to continue pipeline execution without stopping.</li>
+                                <li><i>%s</i> will pause as described above, but if you choose to resume, 
+                                CellProfiler will skip all modules following the <b>PauseCellProfiler</b> 
+                                module and will advance to begin applying the first module in the pipeline
+                                to the next image set.</li>
+                                <li><i>%s</i> will continue pipeline execution without stopping. This 
+                                enables you to temporarily run the full pipeline without the inconvenience 
+                                of removing the <b>PauseCellProfiler</b> module from the pipeline.</li>
                                 </ul>""" %
                                 (cpw.DISPOSITION_PAUSE, cpw.DISPOSITION_SKIP, cpw.DISPOSITION_CONTINUE))
     

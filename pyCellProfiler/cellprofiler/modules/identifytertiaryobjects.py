@@ -66,7 +66,7 @@ class IdentifyTertiaryObjects(cpm.CPModule):
         self.primary_objects_name = cps.ObjectNameSubscriber("Select the smaller identified objects","None",doc="""
             What did you call the smaller identified objects?""")
         
-        self.subregion_objects_name = cps.ObjectNameProvider("Name the identified tertiary objects","Cytoplasm",doc="""
+        self.subregion_objects_name = cps.ObjectNameProvider("Name the tertiary objects to be identified","Cytoplasm",doc="""
             What do you want to call the new subregions? The new tertiary subregion 
             will consist of the smaller object subtracted from the larger object.""")
         

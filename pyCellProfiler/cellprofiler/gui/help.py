@@ -105,7 +105,7 @@ A number of new features have been incorporated into this Python version of Cell
 <h3>Interface</h3>
 <ul>
 <li>Resizable main GUI</li>
-<li><i>Help for individual module settings:<i> Each setting in a module now has 
+<li><i>Help for individual module settings:</i> Each setting in a module now has 
 a help button, displaying information and advice for that setting.</li>
 <li><i>Context-dependent module settings</i>: Prior versions of CellProfiler 
 displayed all settings for each module, whether or not the values were needed by

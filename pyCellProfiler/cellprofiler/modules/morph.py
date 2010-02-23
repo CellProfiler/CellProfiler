@@ -148,7 +148,7 @@ For grayscale, each pixel is replaced by the minimum of its neighbors and itself
 <td>Binary, grayscale</td>
 </tr>
 <tr>
-<td>Endpoints</td>
+<td><i>Endpoints</i></td>
 <td>Removes all pixels except the ones that are at the end of a skeleton:<br>
 <table>
 <tr>
@@ -173,7 +173,7 @@ For grayscale, each pixel is replaced by the minimum of its neighbors and itself
 <td>Binary</td>
 </tr>
 <tr>
-<td>Fill</td>
+<td><i>Fill</i></td>
 <td>Sets a pixel to 1 if all of its neighbors are 1:<br>
 <table>
 <tr>

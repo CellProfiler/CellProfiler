@@ -101,34 +101,51 @@ use it.</p>"""
 
 NEW_FEATURES_HELP = """ 
 <h2>New Features in CellProfiler 2.0</h2>
-A number of new features have been incorporated into this Python version of CellProfiler:
+A number of new features have been incorporated into this re-engineered Python 
+version of CellProfiler:
 <h3>Interface</h3>
 <ul>
-<li>Resizable main GUI</li>
+<li>Resizable user interface</li>
 <li><i>Help for individual module settings:</i> Each setting in a module now has 
 a help button, displaying information and advice for that setting.</li>
+<li><i>Settings verification:</i> CellProfiler is constantly checking for settings 
+that are not allowed, and are immediately flagged for the user.</li>
 <li><i>Context-dependent module settings</i>: Prior versions of CellProfiler 
-displayed all settings for each module, whether or not the values were needed by
-the user. With this version, settings which require additional 
-information will display the follow-up settings only if called for.</li>
-<li><i>Unlimited image/object input:</i> An arbitrary number of images or objects 
-can be provided as input for some modules, and any of the inputs can be
-dynamically added or removed as needed.<br>
+displayed all settings for each module, whether or not the values were necessary, 
+given existing choices for other settings. With this version, only those settings 
+that are required are displayed, simplifying the interface</li>
+<li><i>Test mode for assay development:</i> This feature allows the user to 
+preview the result of a module setting on their data, and step backward or forward 
+in the pipeline while modifying settings to optimize the results prior to the 
+actual analysis run.</li>
+<li><i>Unlimited number of images/objects as module input</i> An arbitrary number 
+of images or objects can be provided as input for some modules, and any of the inputs can be
+dynamically added or removed as needed. For example, any number of single images can be
+specified in LoadSingleImage, whereas previously, the module could only take
+three input images at a time.<br>
 For example, in OverlayOutlines, any number of outlines may be specified to be 
-overlaid on an image; beforehand, multiple OverlayOutline modules
+overlaid on an image, whereas previously, multiple OverlayOutline modules
 would need to be strung together.</li>
 <li><i>Image grouping:</i> Images which share common metadata tags, whether 
 provided in the filename or in an accompanying text data file, can be processed together.
 This is useful for any situation in which the images are organized
-in some manner and each group needs to be analyzed as an individual set, such as 
+in groups  and each group needs to be analyzed as an individual set, such as 
 illumination correction for multiple plates.</li>
-<li><i>Test mode for assay development:</i> This feature allows the user to 
-preview the result of a module setting on their data, and step backward or forward 
-in the pipeline to optimize the results prior to the actual analysis run.</li>
+
 <li><i>Module drag and drop:</i> Modules can be selected and dragged and dropped 
-into another instance of CellProfiler, with the associated settings intact.</li>
+within a pipeline or into another instance of CellProfiler, keeping the associated 
+settings intact.</li>
 <li><i>Listing of recent pipelines:</i> A selectable list of recently used pipelines
 is available from the menu bar, for easy access.</li>
+<li><i>Figure display choice:</i> Easier access to which windows are displayed is 
+now controlled within the pipeline, and is saved as part of the pipeline.
+<li><i>Context menus:</i>  The module list responds to right-clicks providing 
+easy access to module manipulation or help.</li>
+<li><i>Error handling:</i> Sends bug reports (stack traces) to our developers.
+<li><i>Better access for developers:</i> We are providing a developer's guide 
+as a practical introduction for programming in the CellProfiler environment, an 
+email list and wiki in addition to the forum avilable for users.
+
 </ul>
 
 <h3>Module improvements</h3>
@@ -140,8 +157,19 @@ background.</li>
 the image border, along with the associated primary objects.</li>
 <li>Filtering objects by measurements now permits any number of measurements to 
 filter a set of objects with.</li>
+<li><i>Masking of images/objects:</i> Masks may be created and used for both
+images and objects such that image/object measurements will include only those
+regions within the masked area.</li>
+<li><i>Improved loading of text information:</i> Previously, a text file could be used
+to load a limited amount of annotation relevant to your images. In this version, 
+comma-delimited files may be used to load tables of metadata, 
+in addition to file lists of input images for analysis./li>
+<li>Convex hull has been included as an image morphological operation.</li>
 <li>A new module, <i>MeasureNeurons</i>, has been added which measures the number 
 of trunks and branches for each neuron in an image.</li>
+<li><i>Detection of new features:<i> Neurities may be extracted from images of neurons.
+Branching points of line segments can be found as a image morphological opertation.
+Also, "dark holes" (dark spots surrounded bright rings) can also be detected. </li>
 <li>Object data may be exported to a database as a single table which contains
 all user-defined object measurements, or as separate tables, one for each object.
 <li><i>SQLite support:</i> Data can be exported in SQLite, which is a 

@@ -61,7 +61,7 @@ class RescaleIntensity(cpm.CPModule):
     def create_settings(self):
         self.image_name = cps.ImageNameSubscriber("Select the input image","None", doc = '''What did you call the image to be rescaled?''')
         
-        self.rescaled_image_name = cps.ImageNameProvider("Name the rescaled image","RescaledBlue", doc = '''What do you want to call the rescaled image?''')
+        self.rescaled_image_name = cps.ImageNameProvider("Name the output image","RescaledBlue", doc = '''What do you want to call the rescaled image?''')
         
         self.rescale_method = cps.Choice('Select rescaling method',
                                          choices=M_ALL, doc='''There are nine options for rescaling the input image: 

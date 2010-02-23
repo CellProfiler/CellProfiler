@@ -1,8 +1,8 @@
-"""<b>Resize</b> resizes images
+"""<b>Resize</b> resizes images (changes their resolution)
 <hr>
 Images are resized (made smaller or larger) based on user input. You
-can resize an image by applying a resizing factor or by specifying a
-pixel size for the resized image. You can also select which interpolation
+can resize an image by applying a resizing factor or by specifying the 
+desired dimensions, in pixels. You can also select which interpolation
 method to use. 
 """
 # CellProfiler is distributed under the GNU General Public License.
@@ -23,8 +23,8 @@ import cellprofiler.cpmodule as cpm
 import cellprofiler.cpimage as cpi
 import cellprofiler.settings as cps
 
-R_BY_FACTOR = "Resize by a factor of the original size"
-R_TO_SIZE = "Resize to a size in pixels"
+R_BY_FACTOR = "Resize by a fraction or multiple of the original size"
+R_TO_SIZE = "Resize by specifying desired final dimensions"
 R_ALL = [R_BY_FACTOR, R_TO_SIZE]
 
 I_NEAREST_NEIGHBOR = 'Nearest Neighbor'
@@ -43,14 +43,29 @@ class Resize(cpm.CPModule):
     def create_settings(self):
         self.image_name = cps.ImageNameSubscriber("Select the input image",
                                                   "None", doc = '''What did you call the image to be resized?''')
+
         self.resized_image_name = cps.ImageNameProvider("Name the output image",
                                                         "ResizedBlue", doc = '''What do you want to call the resized image?''')
+
         self.size_method = cps.Choice("Select resizing method",
-                                      R_ALL, doc = """How do you want to resize the image?""")
+                                      R_ALL, doc = """How do you want to resize the image? 
+                                      <ul><li><i>Resize by a fraction or multiple of the original size</i> </li>
+                                      <li><i>Resize by specifying desired final dimensions</i></li></ul>""")
+
         self.resizing_factor = cps.Float("Resizing factor",
-                                         .25, minval=0, doc = '''Numbers less than one will shrink the image, Numbers greater than one will enlarge it''')
-        self.specific_width = cps.Integer("Width of the final image", 100, minval=1)
-        self.specific_height = cps.Integer("Height of the final image", 100, minval=1)
+                                         .25, minval=0, doc = '''
+                                         <i>(Used only if resizing by a fraction or multiple of the original size)</i><br>
+                                         Numbers less than one (that is, fractions) will shrink the image; 
+                                         numbers greater than one (that is, multiples) will enlarge the image.''')
+
+        self.specific_width = cps.Integer("Width of the final image, in pixels", 100, minval=1, doc = '''
+                                         <i>(Used only if resizing by a fraction or multiple of the original size)</i><br>
+                                         Enter the desired width of the final image.''')
+
+        self.specific_height = cps.Integer("Height of the final image, in pixels", 100, minval=1, doc = '''
+                                         <i>(Used only if resizing by a fraction or multiple of the original size)</i><br>
+                                         Enter the desired height of the final image.''')
+
         self.interpolation = cps.Choice("Interpolation method",
                                         I_ALL, doc = '''<ul><li><i>Nearest Neighbor:</i> Each output pixel is given the intensity of the nearest
                                         corresponding pixel in the input image.</li>

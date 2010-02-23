@@ -1,10 +1,10 @@
-'''<b>Rename Or Renumber Files</b> renames or renumbers files on the hard drive
+'''<b>Rename or Renumber Files</b> renames or renumbers files on the hard drive
 <hr>
-This file renaming utility adjusts text within image file names. 
+This file-renaming utility adjusts text within image file names. 
 <i><b>Be very careful with this module because its purpose is 
-to rename (and overwrite) files!!</b></i> You will have the opportunity to confirm 
-the name change for the first cycle only. The folder containing the files must 
-not contain subfolders or the subfolders and their contents will also be
+to rename (and overwrite) files!</b></i>  You will have the opportunity to confirm 
+the name change for the first cycle only. If the folder containing the files 
+contains subfolders, the subfolders and their contents will also be
 renamed. The module will not rename the file in test mode, so you should use
 test mode to ensure that the settings are correct.
 
@@ -15,17 +15,7 @@ in numerical order when processed by <b>LoadImages</b>.<br>
 <br>
 Examples:<br>
 <br>
-Renumber:<br><br>
-<table border = "1">
-<tr><td><i>Original name</i></td><td><i>New name</i></td></tr>
-<tr><td>DrosDAPI_1.tif</td>  <td>DrosDAPI_001.tif</td></tr>
-<tr><td>DrosDAPI_10.tif</td> <td>DrosDAPI_010.tif</td></tr>
-<tr><td>DrosDAPI_100.tif</td><td>DrosDAPI_100.tif</td></tr>
-</table><br>
-To accomplish this, retain 4 characters at the end, retain 9 characters
-at the beginning, and use 3 numerical digits between).<br>
-<br>
-Renumbering is especially useful when numbers within image filenames do
+Renumbering can be useful when numbers within image filenames do
 not have a minimum number of digits and thus appear out of order when
 listed in some Unix/Mac OSX systems. For example, on some systems, files
 would appear like this and be measured out of expected sequence by
@@ -35,18 +25,28 @@ DrosDAPI_10.tif<br>
 DrosDAPI_2.tif<br>
 DrosDAPI_3.tif<br>
 DrosDAPI_4.tif<br>
-...<br>
+In this example, you would want to retain 4 
+characters at the end, retain 9 characters
+at the beginning, and renumber using 3 numerical digits between to accomplish this:<br>
 <br>
-Rename:<br><br>
+<table border = "1">
+<tr><td><i>Original name</i></td><td><i>New name</i></td></tr>
+<tr><td>DrosDAPI_1.tif</td>  <td>DrosDAPI_001.tif</td></tr>
+<tr><td>DrosDAPI_10.tif</td> <td>DrosDAPI_010.tif</td></tr>
+<tr><td>DrosDAPI_100.tif</td><td>DrosDAPI_100.tif</td></tr>
+</table><br>
+<br>
+Renaming can be useful when file names are too long or have characters that 
+interfere with other software or file systems. To accomplish the following, you would 
+want to set this module to retain 4 characters at the end, retain 5 characters
+at the beginning, enter <i>DP</i> as text to place between, and leave
+numerical digits as is:<br><br>
 <table border = "1">
 <tr><td><i>Original name</i></td><td><i>New name</i></td></tr>
 <tr><td>1DrosophilaDAPI_1.tif</td>   <td>1DrosDP_1.tif</td></tr>
 <tr><td>2DrosophilaDAPI_10.tif</td>  <td>2DrosDP_10.tif</td></tr>
 <tr><td>3DrosophilaDAPI_100.tif</td> <td>3DrosDP_100.tif</td></tr>
-</table><br>
-To accomplish this, retain 4 characters at the end, retain 5 characters
-at the beginning, enter <i>DP</i> as text to place between, and leave
-numerical digits as is.
+</table>
 '''
 
 __version__="$Revision$"
@@ -73,16 +73,16 @@ class RenameOrRenumberFiles(cpm.CPModule):
         
         self.image_name = cps.FileImageNameSubscriber(
             'Select the input image','None',
-            doc="""Name of the image associated with the file
-            you want to rename. It should be an image loaded by 
+            doc="""Select the images associated with the files
+            you want to rename. This should be an image loaded by 
             <b>LoadImages</b>, <b>LoadData</b>, or <b>LoadSingleImage</b>.
-            Be very careful because you will be renaming this file!""")
+            Be very careful because you will be renaming these files!""")
         
         self.number_characters_prefix = cps.Integer(
             "Number of characters to retain at start of file name", 6,
             minval=0,
             doc="""Number of characters at the start of the old
-            file name that will be copied over to the new file name. For
+            file name that will be copied over verbatim to the new file name. For
             instance, if this setting is "6" and the file name is 
             "Image-734.tif", the output file name will also start with 
             "Image-".""")
@@ -91,7 +91,7 @@ class RenameOrRenumberFiles(cpm.CPModule):
             "Number of characters to retain at the end of file name", 4,
             minval=0,
             doc="""Number of characters at the end of the old
-            file name that will be copied over to the new file name. For
+            file name that will be copied over verbatim to the new file name. For
             instance, if this setting is "4" and the file name is
             "Image-734.tif", the output file name will also end with ".tif".""")
         
@@ -132,8 +132,9 @@ class RenameOrRenumberFiles(cpm.CPModule):
         
         self.text_to_add = cps.Text(
             "Replacement text","",
-            doc="""The text that appears either after your number or
-            instead of the deleted text.""")
+            doc="""
+            <i>(Used only if you chose to add text to the file name)</i><br>
+            Enter the text that you want to add to each file name.""")
             
     def settings(self):
         '''Return settings in the order that they should appear in pipeline'''

@@ -8,8 +8,7 @@ meaningful name by which the other modules can access it. The module
 executes only the first time through the pipeline; thereafter the image
 is accessible to all subsequent processing cycles. This is
 particularly useful for loading an image like an illumination correction
-image for use by the <b>CorrectIllumination_Apply</b> module. <i>Note:</i> Actually,
-you can use this module to load four "single" images.
+image for use by the <b>CorrectIlluminationApply</b> module. 
 
 See also <b>LoadImages</b>.
 

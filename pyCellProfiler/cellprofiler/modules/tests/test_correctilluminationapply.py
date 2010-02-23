@@ -1,4 +1,4 @@
-"""test_correctillumination_apply.py
+"""test_correctilluminationapply.py
 
 CellProfiler is distributed under the GNU General Public License.
 See the accompanying file LICENSE for details.
@@ -25,7 +25,7 @@ import zlib
 from cellprofiler.preferences import set_headless
 set_headless()
 
-import cellprofiler.modules.correctillumination_apply as cpmcia
+import cellprofiler.modules.correctilluminationapply as cpmcia
 import cellprofiler.modules.injectimage as inj
 import cellprofiler.cpmodule as cpm
 import cellprofiler.cpimage as cpi
@@ -63,7 +63,7 @@ class TestCorrectIlluminationApply(unittest.TestCase):
         pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))    
         self.assertEqual(len(pipeline.modules()), 3)
         module = pipeline.modules()[2]
-        self.assertTrue(isinstance(module, cpmcia.CorrectIllumination_Apply))
+        self.assertTrue(isinstance(module, cpmcia.CorrectIlluminationApply))
         self.assertEqual(len(module.images), 1)
         image = module.images[0]
         self.assertEqual(image.image_name, "OrigPhase")
@@ -98,7 +98,7 @@ class TestCorrectIlluminationApply(unittest.TestCase):
         pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))        
         self.assertEqual(len(pipeline.modules()), 2)
         module = pipeline.modules()[1]
-        self.assertTrue(isinstance(module, cpmcia.CorrectIllumination_Apply))
+        self.assertTrue(isinstance(module, cpmcia.CorrectIlluminationApply))
         self.assertEqual(len(module.images), 1)
         image = module.images[0]
         self.assertEqual(image.image_name, "DNA")
@@ -135,7 +135,7 @@ class TestCorrectIlluminationApply(unittest.TestCase):
         pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 3)
         module = pipeline.modules()[2]
-        self.assertTrue(isinstance(module, cpmcia.CorrectIllumination_Apply))
+        self.assertTrue(isinstance(module, cpmcia.CorrectIlluminationApply))
         self.assertEqual(len(module.images), 2)
         image = module.images[0]
         self.assertEqual(image.image_name, "rawGFP")
@@ -160,7 +160,7 @@ class TestCorrectIlluminationApply(unittest.TestCase):
         illum_module = inj.InjectImage("IllumImage", illum)
         illum_module.module_num = 2
         pipeline.add_module(illum_module)
-        module = cpmcia.CorrectIllumination_Apply()
+        module = cpmcia.CorrectIlluminationApply()
         module.module_num = 3
         pipeline.add_module(module)
         image = module.images[0]
@@ -203,7 +203,7 @@ class TestCorrectIlluminationApply(unittest.TestCase):
         illum_module = inj.InjectImage("IllumImage", illum)
         illum_module.module_num = 2
         pipeline.add_module(illum_module)
-        module = cpmcia.CorrectIllumination_Apply()
+        module = cpmcia.CorrectIlluminationApply()
         module.module_num = 3
         pipeline.add_module(module)
         image = module.images[0]
@@ -247,7 +247,7 @@ class TestCorrectIlluminationApply(unittest.TestCase):
         illum_module = inj.InjectImage("IllumImage", illum)
         illum_module.module_num = 2
         pipeline.add_module(illum_module)
-        module = cpmcia.CorrectIllumination_Apply()
+        module = cpmcia.CorrectIlluminationApply()
         module.module_num = 3
         pipeline.add_module(module)
         i = module.images[0]
@@ -293,7 +293,7 @@ class TestCorrectIlluminationApply(unittest.TestCase):
         illum_module = inj.InjectImage("IllumImage", illum)
         illum_module.module_num = 2
         pipeline.add_module(illum_module)
-        module = cpmcia.CorrectIllumination_Apply()
+        module = cpmcia.CorrectIlluminationApply()
         module.module_num = 3
         pipeline.add_module(module)
         i = module.images[0]

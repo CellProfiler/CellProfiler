@@ -1,4 +1,4 @@
-'''test_overlay_outlines.py Test the OverlayOutlines module
+'''test_overlayoutlines.py Test the OverlayOutlines module
 CellProfiler is distributed under the GNU General Public License.
 See the accompanying file LICENSE for details.
 
@@ -27,7 +27,7 @@ import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo
 import cellprofiler.workspace as cpw
 
-import cellprofiler.modules.overlay_outlines as O
+import cellprofiler.modules.overlayoutlines as O
 
 INPUT_IMAGE_NAME = 'inputimage'
 OUTPUT_IMAGE_NAME = 'outputimage'

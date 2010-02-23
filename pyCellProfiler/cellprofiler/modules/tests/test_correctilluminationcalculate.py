@@ -1,4 +1,4 @@
-"""test_correctillumination_calculate.py - test the CorrectIllumination_Calculate module
+"""test_correctilluminationcalculate.py - test the CorrectIlluminationCalculate module
 
 CellProfiler is distributed under the GNU General Public License.
 See the accompanying file LICENSE for details.
@@ -26,7 +26,7 @@ import cellprofiler.workspace as cpw
 import cellprofiler.objects as cpo
 import cellprofiler.measurements as cpm
 import cellprofiler.modules.injectimage as inj
-import cellprofiler.modules.correctillumination_calculate as calc
+import cellprofiler.modules.correctilluminationcalculate as calc
 
 class TestCorrectImage_Calculate(unittest.TestCase):
     def error_callback(self, calller, event):
@@ -40,7 +40,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
         inj_module = inj.InjectImage("MyImage",np.zeros((10,10)))
         inj_module.module_num = 1
         pipeline.add_module(inj_module)
-        module = calc.CorrectIllumination_Calculate()
+        module = calc.CorrectIlluminationCalculate()
         module.module_num = 2
         pipeline.add_module(module)
         module.image_name.value = "MyImage"
@@ -97,7 +97,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
         inj_module = inj.InjectImage("MyImage",np.ones((10,10)))
         inj_module.module_num = 1
         pipeline.add_module(inj_module)
-        module = calc.CorrectIllumination_Calculate()
+        module = calc.CorrectIlluminationCalculate()
         module.module_num = 2
         pipeline.add_module(module)
         module.image_name.value = "MyImage"
@@ -153,7 +153,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
         inj_module = inj.InjectImage("MyImage", image, mask)
         inj_module.module_num = 1
         pipeline.add_module(inj_module)
-        module = calc.CorrectIllumination_Calculate()
+        module = calc.CorrectIlluminationCalculate()
         module.module_num = 2
         pipeline.add_module(module)
         module.image_name.value = "MyImage"
@@ -209,7 +209,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
         inj_module = inj.InjectImage("MyImage", image)
         inj_module.module_num = 1
         pipeline.add_module(inj_module)
-        module = calc.CorrectIllumination_Calculate()
+        module = calc.CorrectIlluminationCalculate()
         module.module_num = 2
         pipeline.add_module(module)
         module.image_name.value = "MyImage"
@@ -249,7 +249,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
         inj_module = inj.InjectImage(image_name, input_image)
         inj_module.module_num = 1
         pipeline.add_module(inj_module)
-        module = calc.CorrectIllumination_Calculate()
+        module = calc.CorrectIlluminationCalculate()
         module.module_num = 2
         pipeline.add_module(module)
         module.image_name.value = image_name
@@ -296,7 +296,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
             inj_module = inj.InjectImage(image_name, input_image)
             inj_module.module_num = 1
             pipeline.add_module(inj_module)
-            module = calc.CorrectIllumination_Calculate()
+            module = calc.CorrectIlluminationCalculate()
             module.module_num = 2
             pipeline.add_module(module)
             module.image_name.value = image_name
@@ -336,7 +336,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
         inj_module = inj.InjectImage(image_name, input_image)
         inj_module.module_num = 1
         pipeline.add_module(inj_module)
-        module = calc.CorrectIllumination_Calculate()
+        module = calc.CorrectIlluminationCalculate()
         module.module_num = 2
         pipeline.add_module(module)
         module.image_name.value = image_name
@@ -383,7 +383,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
         inj_module = inj.InjectImage(image_name, input_image)
         inj_module.module_num = 1
         pipeline.add_module(inj_module)
-        module = calc.CorrectIllumination_Calculate()
+        module = calc.CorrectIlluminationCalculate()
         module.module_num = 2
         pipeline.add_module(module)
         module.image_name.value = image_name
@@ -423,7 +423,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
         inj_module = inj.InjectImage(image_name, input_image)
         inj_module.module_num = 1
         pipeline.add_module(inj_module)
-        module = calc.CorrectIllumination_Calculate()
+        module = calc.CorrectIlluminationCalculate()
         module.module_num = 2
         pipeline.add_module(module)
         module.image_name.value = image_name
@@ -463,7 +463,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
             inj_module = inj.InjectImage("InputImage", np.zeros((10,10)))
             inj_module.module_num = 1
             pipeline.add_module(inj_module)
-            module = calc.CorrectIllumination_Calculate()
+            module = calc.CorrectIlluminationCalculate()
             module.module_num = 2
             pipeline.add_module(module)
             module.image_name.value = "InputImage"
@@ -509,7 +509,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
         inj_module = inj.InjectImage(image_name, input_image)
         inj_module.module_num = 1
         pipeline.add_module(inj_module)
-        module = calc.CorrectIllumination_Calculate()
+        module = calc.CorrectIlluminationCalculate()
         module.module_num = 2
         pipeline.add_module(module)
         module.image_name.value = image_name
@@ -551,7 +551,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
         inj_module = inj.InjectImage(image_name, input_image)
         inj_module.module_num = 1
         pipeline.add_module(inj_module)
-        module = calc.CorrectIllumination_Calculate()
+        module = calc.CorrectIlluminationCalculate()
         module.module_num = 2
         pipeline.add_module(module)
         module.image_name.value = image_name

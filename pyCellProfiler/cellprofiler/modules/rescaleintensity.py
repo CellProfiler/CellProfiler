@@ -78,7 +78,7 @@ class RescaleIntensity(cpm.CPModule):
                                                 of the original range.</li>
                                                 <li><i>Divide by image's minimum:</i> Divide the intensity value of each pixel by the image's minimum intensity
                                                 value so that all pixel intensities are equal to or greater than 1.
-                                                You can use the output from this option in <b>CorrectIllumination_Apply</b>.
+                                                You can use the output from this option in <b>CorrectIlluminationApply</b>.
                                                 The image becomes an illumination correction function.</li>
                                                 <li><i>Divide by image's maximum:</i> Divide the intensity value of each pixel by the image's maximum intensity
                                                 value so that all pixel intensities are less than or equal to 1.</li>

@@ -10,7 +10,7 @@ factor prior to the operation. This factor can be any real number.
 See the <b>RescaleIntensity</b> module for more scaling options.
 <br>
 <br>
-See also <b>SubtractBackground</b>, <b>RescaleIntensity</b>, <b>CorrectIllumination_Calculate</b>.
+See also <b>SubtractBackground</b>, <b>RescaleIntensity</b>, <b>CorrectIlluminationCalculate</b>.
 '''
 # CellProfiler is distributed under the GNU General Public License.
 # See the accompanying file LICENSE for details.
@@ -83,7 +83,7 @@ class ImageMath(cpm.CPModule):
             <li><i>Average</i> calculates the mean intensity of the images loaded in the module.  
             This is equivalent to the Add option divided by the number of images loaded 
             by this module.  If you would like to average all of the images in 
-            an entire pipeline, i.e., across cycles, you should instead use the <b>CorrectIllumination_Calculate</b> module 
+            an entire pipeline, i.e., across cycles, you should instead use the <b>CorrectIlluminationCalculate</b> module 
             and choose the <i>All</i> (vs. <i>Each</i>) option.</li>
             
             <li><i>Invert</i> subtracts the image intensities from 1. This makes the darkest

@@ -209,6 +209,7 @@ substitutions = {'Average': 'MakeProjection',
                  'SplitIntoContiguousObjects': 'ReassignObjectNumbers',
                  'Subtract': 'ImageMath',
                  'UnifyObjects': 'ReassignObjectNumbers',
+                 'cellprofiler.modules.overlay_outlines.OverlayOutlines':'OverlayOutlines',
                  'CorrectIllumination_Apply': 'CorrectIlluminationApply',
                  'CorrectIllumination_Calculate': 'CorrectIlluminationCalculate'
                  }

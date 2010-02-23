@@ -132,7 +132,7 @@ class Haralick(object):
         self.hx = -(px * np.log(px + eps)).sum(1)
         self.hy = -(py * np.log(py + eps)).sum(1)
         pxpy = np.array([np.dot(px[i,:,np.newaxis], py[i,np.newaxis])
-                         for i in range(self.nobjects)])
+                         for i in range(self.nobjects)]).reshape(self.P.shape)
         self.hxy1 = -(self.P * np.log(pxpy + eps)).sum(2).sum(1)
         self.hxy2 = -(pxpy * np.log(pxpy + eps)).sum(2).sum(1)
         self.eps = eps

@@ -49,6 +49,8 @@ def stretch(image, mask=None):
             return (image - minval) / (maxval - minval)
     else:
         significant_pixels = image[mask]
+        if significant_pixels.size == 0:
+            return image
         minval = np.min(significant_pixels)
         maxval = np.max(significant_pixels)
         if minval == maxval:

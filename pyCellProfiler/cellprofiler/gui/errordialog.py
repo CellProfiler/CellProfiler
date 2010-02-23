@@ -17,6 +17,7 @@ from StringIO import StringIO
 import urllib
 import wx
 import traceback
+import sys
 
 ED_STOP = "Stop"
 ED_CONTINUE = "Continue"
@@ -118,10 +119,26 @@ def display_error_dialog(frame, exc, pipeline, message=None, tb = None):
     
     report_button = wx.Button(dialog, -1, "Report...")
     report_button.SetToolTipString("Upload error report to imaging group at the Broad Institute")
-    aux_button_box.Add(report_button, 0, wx.EXPAND | wx.Bottom, 5)
+    aux_button_box.Add(report_button, 0, wx.EXPAND | wx.BOTTOM, 5)
     def handle_report(event):
         on_report(event, dialog, traceback_text, pipeline)
     dialog.Bind(wx.EVT_BUTTON, handle_report, report_button)
+
+    ############################################################
+    #
+    # Handle pdb button
+    #
+    ############################################################
+    
+    
+    if (tb is not None) and (not hasattr(sys, 'frozen')):
+        pdb_button = wx.Button(dialog, -1, "Debug in pdb...")
+        pdb_button.SetToolTipString("Debug in python's pdb on the console")
+        aux_button_box.Add(pdb_button, 0, wx.EXPAND | wx.BOTTOM, 5)
+        def handle_pdb(event):
+            import pdb
+            pdb.post_mortem(tb)
+        dialog.Bind(wx.EVT_BUTTON, handle_pdb, pdb_button)
 
     button_sizer = dialog.CreateStdDialogButtonSizer(wx.YES | wx.NO)
     sizer.Add(button_sizer,0,wx.EXPAND)

@@ -213,8 +213,10 @@ class Identify(cellprofiler.cpmodule.CPModule):
             using this module to find objects in an image that is already binary (where the foreground is 1 and 
             the background is 0), a manual value of 0.5 will identify the objects.
             
-            <p>Selecting thresholding via a <i>binary image</i> will essentially use the binary image as a mask for the
-            input image.''')
+            <p>Selecting thresholding via a <i>binary image</i> will use the binary image as a mask for the
+            input image. Note that unlike <b>MaskImage</b>, the binary image will not be stored permanently
+            as a mask. Also, even though no algorithm is actually used to find the threshold in this case, the 
+            final threshold value is reported as the Otsu threshold calculated for the foreground region.''')
 
         self.threshold_correction_factor = cps.Float('Threshold correction factor', 1,
                                                 doc="""\

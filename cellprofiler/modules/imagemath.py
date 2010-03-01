@@ -278,20 +278,20 @@ class ImageMath(cpm.CPModule):
             variable_revision_number == 3):
             subtract_image_name, basic_image_name, resulting_image_name,\
             multiply_factor_1, multiply_factor_2, truncate = setting_values
-            setting_values = [ basic_image_name,
-                               subtract_image_name,
-                               cps.DO_NOT_USE,
-                               "Subtract",
+            setting_values = [ O_SUBTRACT,
+                               1, # exponent
+                               1, # post-multiply factor
+                               0, # addend
+                               truncate, # truncate low
+                               cps.NO, # truncate high
+                               resulting_image_name,
+                               basic_image_name,
                                multiply_factor_2,
-                               multiply_factor_1,
-                               1, # multiply_factor_3
-                               1, # power
-                               1, # post-multipy factor
-                               truncate,
-                               cps.NO,
-                               resulting_image_name]
+                               subtract_image_name,
+                               multiply_factor_1]
             module_name = 'ImageMath'
-            variable_revision_number = 2
+            from_matlab = False
+            variable_revision_number = 1
         if (from_matlab and module_name == 'Combine' and
             variable_revision_number == 3):
             names_and_weights = [ 
@@ -424,6 +424,10 @@ class ImageMath(cpm.CPModule):
                     setting_values[0] = O_NONE
                 image_names = image_names[:2]
                 input_factors = input_factors[:2]
+                # Fix for variable_revision_number 2: subtract reversed operands
+                if old_operation == O_SUBTRACT:
+                    image_names.reverse()
+                    input_factors.reverse()
             for image_name, input_factor in zip(image_names, input_factors):
                 setting_values += [image_name, input_factor]
             from_matlab = False

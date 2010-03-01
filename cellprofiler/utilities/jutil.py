@@ -395,7 +395,13 @@ def get_nice_result(result, sig):
     env = get_env()
     if sig == 'Ljava/lang/String;':
         return env.get_string_utf(result)
-    elif sig == '[B':
+    if sig == 'Ljava/lang/Integer;':
+        return call(result, 'intValue', '()I')
+    if sig == 'Ljava/lang/Long':
+        return call(result, 'longValue', '()J')
+    if sig == 'Ljava/lang/Boolean;':
+        return call(result, 'booleanValue', '()Z')
+    if sig == '[B':
         # Convert a byte array into a numpy array
         return env.get_byte_array_elements(result)
     return result

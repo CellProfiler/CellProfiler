@@ -188,11 +188,9 @@ class Crop(cpm.CPModule):
                             <i>(Used if Objects selected as cropping shape)</i><br>
                             What are the objects to be used as a cropping mask?""")
         
-        self.use_plate_fix = cps.Binary("Use plate fix?",False,doc = """
-                            <i>(Used if Objects selected as cropping shape)</i><br>
-                            Do you want to use Plate Fix? 
-                            (<i>Note:</i> Plate Fix is to be used only when cropping based on previously identified
-                            objects.) When attempting to crop based on a previously identified object
+        self.use_plate_fix = cps.Binary("Use Plate Fix?",False,doc = """
+                            <i>(Used if Image selected as cropping shape)</i><br>
+                            Do you want to use Plate Fix? When attempting to crop based on a previously identified object
                             such as a rectangular plate, the plate may not have
                             precisely straight edges: there might be a tiny, almost unnoticeable
                             "appendage" sticking out. Without Plate Fix, the <b>Crop</b>

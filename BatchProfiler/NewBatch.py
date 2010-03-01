@@ -213,8 +213,8 @@ td {
         print '<th>%s</th>'%key
         
     print '<th>job #</th></tr></thead>'
-    i = 0
-    for result in results:
+    
+    for i,result in enumerate(results):
         print "<tr><td>%(start)d</td><td>%(end)d</td>"%(result)
         for key in grouping_keys:
             print "<td>%s</td>"% groups[i][0][key]

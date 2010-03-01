@@ -168,7 +168,7 @@ class ExportToSpreadsheet(cpm.CPModule):
         group = cps.SettingsGroup()
         group.append(
             "name", EEObjectNameSubscriber("Data to export",
-            doc="""Choose <i>Image</i>, <i>Experiment</i> or an object name
+            doc="""Choose <i>Image</i>, <i>Experiment</i>, or an object name
             from the list. <b>ExportToSpreadsheet</b> will write out a
             file of measurements for the given category."""))
     

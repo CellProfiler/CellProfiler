@@ -239,7 +239,7 @@ if __name__ == "__main__":
     filename = '/Users/afraser/Desktop/cpa_example/images/AS_09125_050116000001_A01f00d0.png'
     filename = '/Users/afraser/Desktop/wedding/header.jpg'
 
-    out_file = '/Users/afraser/Desktop/test_output.tiff'
+    out_file = '/Users/afraser/Desktop/test_output.avi'
     try:
         os.remove(out_file)
         print 'previous output file deleted'
@@ -304,31 +304,23 @@ if __name__ == "__main__":
     # writer testing
     ImageWriter = make_image_writer_class()
     writer = ImageWriter()
-    
-    meta = None
-
+        
     imeta = createOMEXMLMetadata()
     meta = wrap_imetadata_object(imeta)
+    
+    print jutil.to_string(metadata)
 
     meta.createRoot()
-    val = jutil.make_instance('java/lang/Boolean', '(Z)V', True)
-    meta.setPixelsBigEndian(val, 0, 0)
-    val = env.new_string_utf('XYCZT')
-    meta.setPixelsDimensionOrder(val, 0, 0)
-    val = jutil.static_call('loci/formats/FormatTools', 'getPixelTypeString', '(I)Ljava/lang/String;', pixel_type)
-    meta.setPixelsPixelType(val, 0, 0)
-    val = jutil.make_instance('java/lang/Integer', '(I)V', w)
-    meta.setPixelsSizeX(val, 0, 0)
-    val = jutil.make_instance('java/lang/Integer', '(I)V', h)
-    meta.setPixelsSizeY(val, 0, 0)
-    val = jutil.make_instance('java/lang/Integer', '(I)V', 3)
-    meta.setPixelsSizeC(val, 0, 0)
-    val = jutil.make_instance('java/lang/Integer', '(I)V', 1)
-    meta.setPixelsSizeZ(val, 0, 0)
-    val = jutil.make_instance('java/lang/Integer', '(I)V', 1)
-    meta.setPixelsSizeT(val, 0, 0)
-    val = jutil.make_instance('java/lang/Integer', '(I)V', 1)
-    meta.setLogicalChannelSamplesPerPixel(val, 0, 0)
+    
+    meta.setPixelsBigEndian(True, 0, 0)
+    meta.setPixelsDimensionOrder('XYCZT', 0, 0)
+    meta.setPixelsPixelType(FormatTools.getPixelTypeString(pixel_type), 0, 0)
+    meta.setPixelsSizeX(w, 0, 0)
+    meta.setPixelsSizeY(h, 0, 0)
+    meta.setPixelsSizeC(3, 0, 0)
+    meta.setPixelsSizeZ(1, 0, 0)
+    meta.setPixelsSizeT(1, 0, 0)
+    meta.setLogicalChannelSamplesPerPixel(3, 0, 0)
     
     print 'big endian:', jutil.to_string(meta.getPixelsBigEndian(0, 0))
     print 'dim order:', jutil.to_string(meta.getPixelsDimensionOrder(0, 0))
@@ -340,42 +332,6 @@ if __name__ == "__main__":
     print 'size t:', jutil.to_string(meta.getPixelsSizeT(0, 0))
     print 'samples per pixel:', jutil.to_string(meta.getLogicalChannelSamplesPerPixel(0, 0))
 
-
-    # Setup metadata brute force                
-#    meta = jutil.static_call('loci/formats/MetadataTools', 'createOMEXMLMetadata', '()Lloci/formats/meta/IMetadata;')
-#    jutil.call(meta, 'createRoot', '()V')
-#    val = jutil.make_instance('java/lang/Boolean', '(Z)V', True)
-#    jutil.call(meta, 'setPixelsBigEndian', '(Ljava/lang/Boolean;II)V', val, 0, 0)
-#    val = env.new_string_utf('XYCZT')
-#    jutil.call(meta, 'setPixelsDimensionOrder', '(Ljava/lang/String;II)V', val, 0 , 0)
-#    val = jutil.static_call('loci/formats/FormatTools', 'getPixelTypeString', '(I)Ljava/lang/String;', pixel_type)
-#    jutil.call(meta, 'setPixelsPixelType', '(Ljava/lang/String;II)V', val, 0, 0)
-#    val = jutil.make_instance('java/lang/Integer', '(I)V', w)
-#    jutil.call(meta, 'setPixelsSizeX', '(Ljava/lang/Integer;II)V', val, 0, 0)
-#    val = jutil.make_instance('java/lang/Integer', '(I)V', h)
-#    jutil.call(meta, 'setPixelsSizeY', '(Ljava/lang/Integer;II)V', val, 0, 0)
-#    val = jutil.make_instance('java/lang/Integer', '(I)V', nchannels)
-#    jutil.call(meta, 'setPixelsSizeC', '(Ljava/lang/Integer;II)V', val, 0, 0)
-#    val = jutil.make_instance('java/lang/Integer', '(I)V', 1)
-#    jutil.call(meta, 'setPixelsSizeZ', '(Ljava/lang/Integer;II)V', val, 0, 0)
-#    val = jutil.make_instance('java/lang/Integer', '(I)V', 1)
-#    jutil.call(meta, 'setPixelsSizeT', '(Ljava/lang/Integer;II)V', val, 0, 0)
-#    val = jutil.make_instance('java/lang/Integer', '(I)V', 1)
-#    jutil.call(meta, 'setLogicalChannelSamplesPerPixel', '(Ljava/lang/Integer;II)V', val, 0, 0)
-
-#    def tostring(java_int):
-#        return jutil.call(java_int, 'toString', '()Ljava/lang/String;')
-
-#    print 'big endian:', tostring(jutil.call(meta, 'getPixelsBigEndian', '(II)Ljava/lang/Boolean;', 0, 0))
-#    print 'dim order:', jutil.call(meta, 'getPixelsDimensionOrder', '(II)Ljava/lang/String;', 0 , 0)
-#    print 'pixel type:', jutil.call(meta, 'getPixelsPixelType', '(II)Ljava/lang/String;', 0, 0)
-#    print 'size x:', tostring(jutil.call(meta, 'getPixelsSizeX', '(II)Ljava/lang/Integer;', 0, 0))
-#    print 'size y:', tostring(jutil.call(meta, 'getPixelsSizeY', '(II)Ljava/lang/Integer;', 0, 0))
-#    print 'size c:', tostring(jutil.call(meta, 'getPixelsSizeC', '(II)Ljava/lang/Integer;', 0, 0))
-#    print 'size z:', tostring(jutil.call(meta, 'getPixelsSizeZ', '(II)Ljava/lang/Integer;', 0, 0))
-#    print 'size t:', tostring(jutil.call(meta, 'getPixelsSizeT', '(II)Ljava/lang/Integer;', 0, 0))
-#    print 'samples per pixel:', tostring(jutil.call(meta, 'getLogicalChannelSamplesPerPixel', '(II)Ljava/lang/Integer;', 0, 0))
-    
     if len(image.shape)==3 and image.shape[2] == 3:  
         save_im = np.array([image[:,:,0], image[:,:,1], image[:,:,2]]).astype(np.uint8).flatten()
     else:
@@ -390,12 +346,7 @@ if __name__ == "__main__":
     im = Image.open(out_file, 'r')
     im.show()
     
-    
-#    fig = mmmm.Figure()
-#    axes = fig.add_subplot(1,1,1)
-#    axes.imshow(image)
-#    frame = mmmm.FigureFrameWxAgg(1, fig)
-#    frame.Show()
     jutil.detach()
-
     app.MainLoop()
+    
+    

@@ -276,7 +276,9 @@ class SaveImages(cpm.CPModule):
                 stretch the image data, which may not be desirable in some 
                 circumstances. See <b>RescaleIntensity</b> for other rescaling options.</p>""")
         
-        self.colormap = cps.Colormap('Select colormap', doc= """
+        self.colormap = cps.Colormap('Select colormap', 
+                                     value = CM_GRAY,
+                                     doc= """
                 <i>(Used only when saving images or movies)</i><br>
                 This affects how images' intensities are displayed.
                 The colormap choice is critical for movie (avi) files. 
@@ -473,7 +475,11 @@ class SaveImages(cpm.CPModule):
                         img_max = np.max(pixels)
                         pixels=(pixels-img_min) / (img_max-img_min)
                 if pixels.ndim == 2 and self.colormap != CM_GRAY:
-                    cm = matplotlib.cm.get_cmap(self.colormap)
+                    if self.colormap == cps.DEFAULT:
+                        colormap = cpp.get_default_colormap()
+                    else:
+                        colormap = self.colormap.value
+                    cm = matplotlib.cm.get_cmap(colormap)
                     mapper = matplotlib.cm.ScalarMappable(cmap=cm)
                     if self.bit_depth == '8':
                         pixels = mapper.to_rgba(pixels,bytes=True)

@@ -91,7 +91,8 @@ class TestSaveImages(unittest.TestCase):
         self.assertEqual(module.image_name.value, "DNA")
         self.assertEqual(module.file_image_name.value, "OrigDNA")
         self.assertEqual(module.file_name_method.value, cpm_si.FN_FROM_IMAGE)
-        self.assertEqual(module.pathname_choice.value, cpm_si.PC_DEFAULT)
+        self.assertEqual(module.pathname_choice.value, 
+                         cpm_si.DEFAULT_OUTPUT_FOLDER_NAME)
         self.assertEqual(module.when_to_save.value, cpm_si.WS_EVERY_CYCLE)
         self.assertEqual(module.colormap.value, cpm_si.CM_GRAY)
         self.assertFalse(module.overwrite)
@@ -121,7 +122,8 @@ class TestSaveImages(unittest.TestCase):
         self.assertEqual(module.image_name.value, "DNA")
         self.assertEqual(module.file_image_name.value, "OrigDNA")
         self.assertEqual(module.file_name_method.value, cpm_si.FN_FROM_IMAGE)
-        self.assertEqual(module.pathname_choice.value, cpm_si.PC_DEFAULT)
+        self.assertEqual(module.pathname_choice.value, 
+                         cpm_si.DEFAULT_OUTPUT_FOLDER_NAME)
         self.assertEqual(module.when_to_save.value, cpm_si.WS_EVERY_CYCLE)
         self.assertEqual(module.colormap.value, cpm_si.CM_GRAY)
         self.assertFalse(module.overwrite)
@@ -151,7 +153,7 @@ class TestSaveImages(unittest.TestCase):
         self.assertEqual(module.image_name.value, "DNA")
         self.assertEqual(module.file_image_name.value, "OrigDNA")
         self.assertEqual(module.file_name_method.value, cpm_si.FN_FROM_IMAGE)
-        self.assertEqual(module.pathname_choice.value, cpm_si.PC_DEFAULT)
+        self.assertEqual(module.pathname_choice.value, cpm_si.DEFAULT_OUTPUT_FOLDER_NAME)
         self.assertEqual(module.when_to_save.value, cpm_si.WS_EVERY_CYCLE)
         self.assertEqual(module.colormap.value, cpm_si.CM_GRAY)
         self.assertFalse(module.overwrite)
@@ -347,7 +349,7 @@ class TestSaveImages(unittest.TestCase):
         save_images.file_name_method.value = cpm_si.FN_FROM_IMAGE
         save_images.file_name_suffix.value ='OUT'
         save_images.file_format.value = cpm_si.FF_TIF
-        save_images.pathname_choice.value = cpm_si.PC_DEFAULT
+        save_images.pathname_choice.value = cpm_si.DEFAULT_OUTPUT_FOLDER_NAME
         save_images.when_to_save.value = cpm_si.WS_EVERY_CYCLE
         save_images.update_file_names.value = True
         save_images.module_num = 3

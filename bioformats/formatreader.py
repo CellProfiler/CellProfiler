@@ -48,6 +48,11 @@ def make_format_tools_class():
         UINT16 = jutil.get_static_field(klass, 'UINT16', 'I')
         UINT32 = jutil.get_static_field(klass, 'UINT32', 'I')
         UINT8 = jutil.get_static_field(klass, 'UINT8', 'I')
+        
+        @classmethod
+        def getPixelTypeString(cls, pixel_type):
+            return jutil.static_call('loci/formats/FormatTools', 'getPixelTypeString', '(I)Ljava/lang/String;', pixel_type)
+        
     return FormatTools
 
 def make_iformat_reader_class():
@@ -68,8 +73,8 @@ def make_iformat_reader_class():
                                               '()Ljava/lang/String;',
                                               'Return the dimension order as a five-character string, e.g. "XYCZT"')
         getMetadata = jutil.make_method('getMetadata',
-                                              '()Ljava/util/Hashtable;',
-                                              'Obtains the hashtable containing the metadata field/value pairs')
+                                        '()Ljava/util/Hashtable;',
+                                        'Obtains the hashtable containing the metadata field/value pairs')
         getMetadataValue = jutil.make_method('getMetadataValue',
                                              '(Ljava/lang/String;)'
                                              'Ljava/lang/Object;',
@@ -147,6 +152,8 @@ def make_image_reader_class():
                                       'Get a string describing the format of this file')
         getReader = jutil.make_method('getReader',
                                       '()Lloci/formats/IFormatReader;')
+        getMetadataStore = jutil.make_method('getMetadataStore', '()Lloci/formats/meta/MetadataStore;',
+                                             'Retrieves the current metadata store for this reader.')
     return ImageReader
 
         

@@ -228,7 +228,6 @@ if __name__ == "__main__":
     
     app = wx.PySimpleApp()
 
-
 #    dlg = wx.FileDialog(None)
 #    if dlg.ShowModal()==wx.ID_OK:
 #        filename = dlg.Path
@@ -250,95 +249,100 @@ if __name__ == "__main__":
     ImageReader = make_image_reader_class()
     ChannelSeparator = make_reader_wrapper_class("loci/formats/ChannelSeparator")
     FormatTools = make_format_tools_class()
-    rdr = ImageReader()
-    
-    meta = jutil.static_call('loci/formats/MetadataTools', 'createOMEXMLMetadata', '()Lloci/formats/meta/IMetadata;')
-    rdr.setMetadataStore(meta);
-    
-    rdr.setId(filename)
-    print "Format = %s"%rdr.getFormat()
-    w = rdr.getSizeX()
-    h = rdr.getSizeY()
-    pixel_type = rdr.getPixelType()
-    little_endian = rdr.isLittleEndian()
-    metadata = rdr.getMetadata()
-    d = jutil.jdictionary_to_string_dictionary(metadata)
-    for key in d.keys():
-        print key+"="+d[key]
-    if pixel_type == FormatTools.INT8:
-        dtype = np.char
-    elif pixel_type == FormatTools.UINT8:
-        dtype = np.uint8
-    elif pixel_type == FormatTools.UINT16:
-        dtype = '<u2' if little_endian else '>u2'
-    elif pixel_type == FormatTools.INT16:
-        dtype = '<i2' if little_endian else '>i2'
-    elif pixel_type == FormatTools.UINT32:
-        dtype = '<u4' if little_endian else '>u4'
-    elif pixel_type == FormatTools.INT32:
-        dtype = '<i4' if little_endian else '>i4'
-    elif pixel_type == FormatTools.FLOAT:
-        dtype = '<f4' if little_endian else '>f4'
-    elif pixel_type == FormatTools.DOUBLE:
-        dtype = '<f8' if little_endian else '>f8'
-        
-    if rdr.getRGBChannelCount() > 1:
-        print 'Reading image as RGB'
-        rdr.close()
-        rdr = ChannelSeparator(ImageReader())
-        rdr.setId(filename)
-        red_image, green_image, blue_image = [
-            np.frombuffer(rdr.openBytes(rdr.getIndex(0,i,0)),dtype)
-            for i in range(3)]
-        image = np.dstack((red_image, green_image, blue_image))
-        image.shape=(h,w,3)
-        nchannels = 3
-    else:
-        print 'Reading image as grayscale'
-        image = np.frombuffer(rdr.openBytes(0),dtype)
-        image.shape = (h,w)
-        nchannels = 1
-    rdr.close()
-    
+#    rdr = ImageReader()
+#    
+#    meta = jutil.static_call('loci/formats/MetadataTools', 'createOMEXMLMetadata', '()Lloci/formats/meta/IMetadata;')
+#    rdr.setMetadataStore(meta);
+#    
+#    rdr.setId(filename)
+#    print "Format = %s"%rdr.getFormat()
+#    w = rdr.getSizeX()
+#    h = rdr.getSizeY()
+#    pixel_type = rdr.getPixelType()
+#    little_endian = rdr.isLittleEndian()
+#    metadata = rdr.getMetadata()
+#    d = jutil.jdictionary_to_string_dictionary(metadata)
+#    for key in d.keys():
+#        print key+"="+d[key]
+#    if pixel_type == FormatTools.INT8:
+#        dtype = np.char
+#    elif pixel_type == FormatTools.UINT8:
+#        dtype = np.uint8
+#    elif pixel_type == FormatTools.UINT16:
+#        dtype = '<u2' if little_endian else '>u2'
+#    elif pixel_type == FormatTools.INT16:
+#        dtype = '<i2' if little_endian else '>i2'
+#    elif pixel_type == FormatTools.UINT32:
+#        dtype = '<u4' if little_endian else '>u4'
+#    elif pixel_type == FormatTools.INT32:
+#        dtype = '<i4' if little_endian else '>i4'
+#    elif pixel_type == FormatTools.FLOAT:
+#        dtype = '<f4' if little_endian else '>f4'
+#    elif pixel_type == FormatTools.DOUBLE:
+#        dtype = '<f8' if little_endian else '>f8'
+#        
+#    if rdr.getRGBChannelCount() > 1:
+#        print 'Reading image as RGB'
+#        rdr.close()
+#        rdr = ChannelSeparator(ImageReader())
+#        rdr.setId(filename)
+#        red_image, green_image, blue_image = [
+#            np.frombuffer(rdr.openBytes(rdr.getIndex(0,i,0)),dtype)
+#            for i in range(3)]
+#        image = np.dstack((red_image, green_image, blue_image))
+#        image.shape=(h,w,3)
+#        nchannels = 3
+#    else:
+#        print 'Reading image as grayscale'
+#        image = np.frombuffer(rdr.openBytes(0),dtype)
+#        image.shape = (h,w)
+#        nchannels = 1
+#    rdr.close()
     
     # writer testing
     ImageWriter = make_image_writer_class()
     writer = ImageWriter()
-        
+    
+    w = 800
+    h = 800
+    c = 3
+    z = 1
+    t = 20
+    images = []
+    for tt in range(t):
+        images += [(np.random.rand(w, h, c) * 255).astype('uint8')]
+                
     imeta = createOMEXMLMetadata()
     meta = wrap_imetadata_object(imeta)
-    
-    print jutil.to_string(metadata)
-
     meta.createRoot()
-    
     meta.setPixelsBigEndian(True, 0, 0)
     meta.setPixelsDimensionOrder('XYCZT', 0, 0)
-    meta.setPixelsPixelType(FormatTools.getPixelTypeString(pixel_type), 0, 0)
+    meta.setPixelsPixelType(FormatTools.getPixelTypeString(FormatTools.UINT8), 0, 0)
     meta.setPixelsSizeX(w, 0, 0)
     meta.setPixelsSizeY(h, 0, 0)
-    meta.setPixelsSizeC(3, 0, 0)
-    meta.setPixelsSizeZ(1, 0, 0)
-    meta.setPixelsSizeT(1, 0, 0)
-    meta.setLogicalChannelSamplesPerPixel(3, 0, 0)
+    meta.setPixelsSizeC(c, 0, 0)
+    meta.setPixelsSizeZ(z, 0, 0)
+    meta.setPixelsSizeT(t, 0, 0)
+    meta.setLogicalChannelSamplesPerPixel(c, 0, 0)
     
-    print 'big endian:', jutil.to_string(meta.getPixelsBigEndian(0, 0))
-    print 'dim order:', jutil.to_string(meta.getPixelsDimensionOrder(0, 0))
-    print 'pixel type:', jutil.to_string(meta.getPixelsPixelType(0, 0))
-    print 'size x:', jutil.to_string(meta.getPixelsSizeX(0, 0))
-    print 'size y:', jutil.to_string(meta.getPixelsSizeY(0, 0))
-    print 'size c:', jutil.to_string(meta.getPixelsSizeC(0, 0))
-    print 'size z:', jutil.to_string(meta.getPixelsSizeZ(0, 0))
-    print 'size t:', jutil.to_string(meta.getPixelsSizeT(0, 0))
-    print 'samples per pixel:', jutil.to_string(meta.getLogicalChannelSamplesPerPixel(0, 0))
+    print 'big endian:', meta.getPixelsBigEndian(0, 0)
+    print 'dim order:', meta.getPixelsDimensionOrder(0, 0)
+    print 'pixel type:', meta.getPixelsPixelType(0, 0)
+    print 'size x:', meta.getPixelsSizeX(0, 0)
+    print 'size y:', meta.getPixelsSizeY(0, 0)
+    print 'size c:', meta.getPixelsSizeC(0, 0)
+    print 'size z:', meta.getPixelsSizeZ(0, 0)
+    print 'size t:', meta.getPixelsSizeT(0, 0)
+    print 'samples per pixel:', meta.getLogicalChannelSamplesPerPixel(0, 0)
 
-    if len(image.shape)==3 and image.shape[2] == 3:  
-        save_im = np.array([image[:,:,0], image[:,:,1], image[:,:,2]]).astype(np.uint8).flatten()
-    else:
-        save_im = image.astype(np.uint8).flatten()
     writer.setMetadataRetrieve(meta)
     writer.setId(out_file)
-    writer.saveBytes(env.make_byte_array(save_im), True)
+    for image in images:
+        if len(image.shape)==3 and image.shape[2] == 3:  
+            save_im = np.array([image[:,:,0], image[:,:,1], image[:,:,2]]).astype(np.uint8).flatten()
+        else:
+            save_im = image.astype(np.uint8).flatten()
+        writer.saveBytes(env.make_byte_array(save_im), (image is images[-1]))
     writer.close()
     
     print 'Done writing image :)'

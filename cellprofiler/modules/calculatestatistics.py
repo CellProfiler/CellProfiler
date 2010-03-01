@@ -437,7 +437,7 @@ class CalculateStatistics(cpm.CPModule):
                     
                     
         # Standardize input/output directory name references
-        SLOT_DIRCHOICE = 6
+        SLOT_DIRCHOICE = 5
         setting_values = standardize_default_folder_names(setting_values,SLOT_DIRCHOICE)
         
         return setting_values, variable_revision_number, from_matlab                              

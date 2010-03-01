@@ -13,6 +13,7 @@ Website: http://www.cellprofiler.org
 __version__="$Revision$"
 
 import numpy as np
+from StringIO import StringIO
 import unittest
 import sys
 
@@ -579,5 +580,109 @@ class TestCorrectImage_Calculate(unittest.TestCase):
         module.run(workspace)
         image = image_set.get_image("OutputImage")
         self.assertTrue(np.all(image.pixel_data == expected_image))
+        
+    def test_06_01_load_matlab(self):
+        pass
     
-    
+    def test_06_02_load_v1(self):
+        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:1
+SVNRevision:9411
+
+CorrectIlluminationCalculate:[module_num:1|svn_version:\'9401\'|variable_revision_number:1|show_window:True|notes:\x5B\x5D]
+    Select the input image:Image1
+    Name the output image:Illum1
+    Select how the illumination function is calculated:Regular
+    Dilate objects in the final averaged image?:No
+    Dilation radius:1
+    Block size:60
+    Rescale the illumination function?:Yes
+    Calculate function for each image individually, or based on all images?:Each
+    Smoothing method:No smoothing
+    Method to calculate smoothing filter size:Automatic
+    Approximate object size:10
+    Smoothing filter size:10
+    Retain the averaged image for use later in the pipeline (for example, in SaveImages)?:Yes
+    Name the averaged image:Illum1Average
+    Retain the dilated image for use later in the pipeline (for example, in SaveImages)?:Yes
+    Name the dilated image:Illum1Dilated
+
+CorrectIlluminationCalculate:[module_num:2|svn_version:\'9401\'|variable_revision_number:1|show_window:True|notes:\x5B\x5D]
+    Select the input image:Image2
+    Name the output image:Illum2
+    Select how the illumination function is calculated:Background
+    Dilate objects in the final averaged image?:No
+    Dilation radius:1
+    Block size:60
+    Rescale the illumination function?:No
+    Calculate function for each image individually, or based on all images?:All
+    Smoothing method:Median Filter
+    Method to calculate smoothing filter size:Manually
+    Approximate object size:10
+    Smoothing filter size:10
+    Retain the averaged image for use later in the pipeline (for example, in SaveImages)?:Yes
+    Name the averaged image:Illum1Avg
+    Retain the dilated image for use later in the pipeline (for example, in SaveImages)?:Yes
+    Name the dilated image:Illum1Dilated
+
+CorrectIlluminationCalculate:[module_num:3|svn_version:\'9401\'|variable_revision_number:1|show_window:True|notes:\x5B\x5D]
+    Select the input image:None
+    Name the output image:IllumBlue
+    Select how the illumination function is calculated:Regular
+    Dilate objects in the final averaged image?:No
+    Dilation radius:1
+    Block size:60
+    Rescale the illumination function?:Median
+    Calculate function for each image individually, or based on all images?:All
+    Smoothing method:Median Filter
+    Method to calculate smoothing filter size:Automatic
+    Approximate object size:10
+    Smoothing filter size:10
+    Retain the averaged image for use later in the pipeline (for example, in SaveImages)?:No
+    Name the averaged image:IllumBlueAvg
+    Retain the dilated image for use later in the pipeline (for example, in SaveImages)?:Yes
+    Name the dilated image:IllumBlueDilated
+
+CorrectIlluminationCalculate:[module_num:4|svn_version:\'9401\'|variable_revision_number:1|show_window:True|notes:\x5B\x5D]
+    Select the input image:None
+    Name the output image:IllumBlue
+    Select how the illumination function is calculated:Regular
+    Dilate objects in the final averaged image?:No
+    Dilation radius:1
+    Block size:60
+    Rescale the illumination function?:Median
+    Calculate function for each image individually, or based on all images?:All
+    Smoothing method:Gaussian Filter
+    Method to calculate smoothing filter size:Object size
+    Approximate object size:15
+    Smoothing filter size:10
+    Retain the averaged image for use later in the pipeline (for example, in SaveImages)?:No
+    Name the averaged image:IllumBlueAvg
+    Retain the dilated image for use later in the pipeline (for example, in SaveImages)?:Yes
+    Name the dilated image:IllumBlueDilated
+
+CorrectIlluminationCalculate:[module_num:5|svn_version:\'9401\'|variable_revision_number:1|show_window:True|notes:\x5B\x5D]
+    Select the input image:None
+    Name the output image:IllumBlue
+    Select how the illumination function is calculated:Regular
+    Dilate objects in the final averaged image?:No
+    Dilation radius:1
+    Block size:60
+    Rescale the illumination function?:Median
+    Calculate function for each image individually, or based on all images?:All
+    Smoothing method:Smooth to Average
+    Method to calculate smoothing filter size:Object size
+    Approximate object size:15
+    Smoothing filter size:10
+    Retain the averaged image for use later in the pipeline (for example, in SaveImages)?:No
+    Name the averaged image:IllumBlueAvg
+    Retain the dilated image for use later in the pipeline (for example, in SaveImages)?:No
+    Name the dilated image:IllumBlueDilated
+"""
+        pipeline = cpp.Pipeline()
+        def callback(caller,event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO(data))
+        self.assertEqual(len(pipeline.modules()), 5)
+        

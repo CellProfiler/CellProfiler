@@ -63,7 +63,8 @@ class TestCalculateStatistics(unittest.TestCase):
         self.assertFalse(module.dose_values[0].log_transform)
         self.assertTrue(module.dose_values[0].wants_save_figure)
         self.assertEqual(module.dose_values[0].figure_name, "DOSE")
-        self.assertEqual(module.dose_values[0].pathname_choice, C.PC_DEFAULT)
+        self.assertEqual(module.dose_values[0].pathname_choice, 
+                         C.DEFAULT_OUTPUT_FOLDER_NAME)
     
     def test_01_02_load_v1(self):
         data = ('eJztWNFu2jAUdWhA7SYmtJfx6KdpD12Wom5qUaUN6KohAasW1G5PlZuYNpKD'

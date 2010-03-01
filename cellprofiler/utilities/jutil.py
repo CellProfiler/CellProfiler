@@ -382,6 +382,12 @@ def get_nice_arg(arg, sig):
     if (sig in ('Ljava/lang/String;','Ljava/lang/Object;') and not
          isinstance(arg, javabridge.JB_Object)):
         return env.new_string_utf(str(arg))
+    if sig == 'Ljava/lang/Integer;' and type(arg) in [int, long, bool]:
+        return make_instance('java/lang/Integer', '(I)V', int(arg))
+    if sig == 'Ljava/lang/Long' and type(arg) in [int, long, bool]:
+        return make_instance('java/lang/Long', '(J)V', long(arg))
+    if sig == 'Ljava/lang/Boolean;' and type(arg) in [int, long, bool]:
+        return make_instance('java/lang/Boolean', '(Z)V', bool(arg))
     return arg
 
 def get_nice_result(result, sig):

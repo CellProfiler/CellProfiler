@@ -12,10 +12,12 @@ Website: http://www.cellprofiler.org
 """
 __version__="$Revision$"
 
+import base64
 import numpy as np
 from StringIO import StringIO
 import unittest
 import sys
+import zlib
 
 from cellprofiler.preferences import set_headless
 set_headless()
@@ -582,7 +584,37 @@ class TestCorrectImage_Calculate(unittest.TestCase):
         self.assertTrue(np.all(image.pixel_data == expected_image))
         
     def test_06_01_load_matlab(self):
-        pass
+        data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0s'
+                'SU1RyM+zUvDNz1PwTSxSMDBUMDSxMrW0MrRQMDIwNFAgGTAwevryMzAwLGdk'
+                'YKiYczZkr99hA4F9S17yd4TJRk44dCxC7AiHCBvbrVWuoj4nfO9emSTs3tnL'
+                'Jdx/QPmjgA1Df9NltVyhRcda+OaUeL37U3s/Mv13FMOHUPYVJ/Odd/Fpr3bb'
+                'OO2DgVziuc5s9lCDBwan6j3klecv4Dya7MLKl5Bb+O/a3I2/xfP3lhxf1vRI'
+                'rmhSQqbtQ58N8l/SDQ2j5CawLlP+1KWYa5jTMd/TYYb0R+W/OWWx0z/63J32'
+                'xTX1Mrvucv6zLnZH4g+w5T958F3oR5nI/SCtOdo3F7ecq2z0U158uaP0V9Pq'
+                'D68l6yT4N+pqfJr+1Zq1Rvfo9WkVovPmPXpZcC3wcWjQHi6bU5uDHkpqzmM0'
+                'PzFr+tv3DRUzhMRXz/ns2CZ/zDaNjS+5Rk+e2+Hn7yJNi2IB9bAp4Rdvnn/R'
+                '8tHUOPaYr+CD/6s/r3v77e/Tq6p8mza+NX648vUWY6u3U/o872h+i+qs/ft1'
+                '9+q/b7ye826b711k1/LD0fHuYp+7Bu+M7h8Xi+8zfXSK+/yd5XqLpskEyRw+'
+                'vzNQ+0a73v9ZljZTf5ZFbYrby3J+wpnzj0XfP5xea3ezqV/3XD3zpczepQDs'
+                'fe/W')
+        pipeline = cpp.Pipeline()
+        def callback(caller,event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
+        self.assertEqual(len(pipeline.modules()), 1)
+        module = pipeline.modules()[0]
+        self.assertTrue(isinstance(module, calc.CorrectIlluminationCalculate))
+        self.assertEqual(module.image_name, "IllumBlue")
+        self.assertEqual(module.illumination_image_name, "IllumOut")
+        self.assertEqual(module.intensity_choice, calc.IC_REGULAR)
+        self.assertFalse(module.dilate_objects)
+        self.assertEqual(module.rescale_option, cps.YES)
+        self.assertEqual(module.each_or_all, calc.EA_EACH)
+        self.assertEqual(module.smoothing_method, calc.SM_NONE)
+        self.assertEqual(module.automatic_object_width, calc.FI_AUTOMATIC)
+        self.assertFalse(module.save_average_image)
+        self.assertFalse(module.save_dilated_image)
     
     def test_06_02_load_v1(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
@@ -611,23 +643,23 @@ CorrectIlluminationCalculate:[module_num:2|svn_version:\'9401\'|variable_revisio
     Select the input image:Image2
     Name the output image:Illum2
     Select how the illumination function is calculated:Background
-    Dilate objects in the final averaged image?:No
-    Dilation radius:1
-    Block size:60
+    Dilate objects in the final averaged image?:Yes
+    Dilation radius:2
+    Block size:65
     Rescale the illumination function?:No
     Calculate function for each image individually, or based on all images?:All
     Smoothing method:Median Filter
     Method to calculate smoothing filter size:Manually
-    Approximate object size:10
-    Smoothing filter size:10
+    Approximate object size:15
+    Smoothing filter size:20
     Retain the averaged image for use later in the pipeline (for example, in SaveImages)?:Yes
-    Name the averaged image:Illum1Avg
+    Name the averaged image:Illum2Avg
     Retain the dilated image for use later in the pipeline (for example, in SaveImages)?:Yes
-    Name the dilated image:Illum1Dilated
+    Name the dilated image:Illum2Dilated
 
 CorrectIlluminationCalculate:[module_num:3|svn_version:\'9401\'|variable_revision_number:1|show_window:True|notes:\x5B\x5D]
-    Select the input image:None
-    Name the output image:IllumBlue
+    Select the input image:Image3
+    Name the output image:Illum3
     Select how the illumination function is calculated:Regular
     Dilate objects in the final averaged image?:No
     Dilation radius:1
@@ -639,13 +671,13 @@ CorrectIlluminationCalculate:[module_num:3|svn_version:\'9401\'|variable_revisio
     Approximate object size:10
     Smoothing filter size:10
     Retain the averaged image for use later in the pipeline (for example, in SaveImages)?:No
-    Name the averaged image:IllumBlueAvg
+    Name the averaged image:Illum3Avg
     Retain the dilated image for use later in the pipeline (for example, in SaveImages)?:Yes
-    Name the dilated image:IllumBlueDilated
+    Name the dilated image:Illum3Dilated
 
 CorrectIlluminationCalculate:[module_num:4|svn_version:\'9401\'|variable_revision_number:1|show_window:True|notes:\x5B\x5D]
-    Select the input image:None
-    Name the output image:IllumBlue
+    Select the input image:Image4
+    Name the output image:Illum4
     Select how the illumination function is calculated:Regular
     Dilate objects in the final averaged image?:No
     Dilation radius:1
@@ -657,13 +689,13 @@ CorrectIlluminationCalculate:[module_num:4|svn_version:\'9401\'|variable_revisio
     Approximate object size:15
     Smoothing filter size:10
     Retain the averaged image for use later in the pipeline (for example, in SaveImages)?:No
-    Name the averaged image:IllumBlueAvg
+    Name the averaged image:Illum4Avg
     Retain the dilated image for use later in the pipeline (for example, in SaveImages)?:Yes
-    Name the dilated image:IllumBlueDilated
+    Name the dilated image:Illum4Dilated
 
 CorrectIlluminationCalculate:[module_num:5|svn_version:\'9401\'|variable_revision_number:1|show_window:True|notes:\x5B\x5D]
-    Select the input image:None
-    Name the output image:IllumBlue
+    Select the input image:Image5
+    Name the output image:Illum5
     Select how the illumination function is calculated:Regular
     Dilate objects in the final averaged image?:No
     Dilation radius:1
@@ -675,9 +707,9 @@ CorrectIlluminationCalculate:[module_num:5|svn_version:\'9401\'|variable_revisio
     Approximate object size:15
     Smoothing filter size:10
     Retain the averaged image for use later in the pipeline (for example, in SaveImages)?:No
-    Name the averaged image:IllumBlueAvg
+    Name the averaged image:Illum5Avg
     Retain the dilated image for use later in the pipeline (for example, in SaveImages)?:No
-    Name the dilated image:IllumBlueDilated
+    Name the dilated image:Illum5Dilated
 """
         pipeline = cpp.Pipeline()
         def callback(caller,event):
@@ -685,4 +717,46 @@ CorrectIlluminationCalculate:[module_num:5|svn_version:\'9401\'|variable_revisio
         pipeline.add_listener(callback)
         pipeline.load(StringIO(data))
         self.assertEqual(len(pipeline.modules()), 5)
-        
+        for i, (image_name, illumination_image_name, intensity_choice, 
+                dilate_objects, object_dilation_radius, block_size, 
+                rescale_option, each_or_all, smoothing_method, 
+                automatic_object_width, object_width, size_of_smoothing_filter, 
+                save_average_image, average_image_name, save_dilated_image, 
+                dilated_image_name) in enumerate((
+                ("Image1", "Illum1", calc.IC_REGULAR, False, 1, 60, cps.YES, 
+                 calc.EA_EACH, calc.SM_NONE, calc.FI_AUTOMATIC, 10, 10, True,
+                 "Illum1Average", True, "Illum1Dilated"),
+                ("Image2", "Illum2", calc.IC_BACKGROUND, True, 2, 65, cps.NO,
+                 calc.EA_ALL, calc.SM_MEDIAN_FILTER, calc.FI_MANUALLY, 15, 20,
+                 True, "Illum2Avg", True, "Illum2Dilated"),
+                ("Image3", "Illum3", calc.IC_REGULAR, False, 1, 60,
+                 calc.RE_MEDIAN, calc.EA_ALL, calc.SM_MEDIAN_FILTER, 
+                 calc.FI_AUTOMATIC, 10, 10, False, "Illum3Avg", True,
+                 "Illum3Dilated"),
+                ("Image4","Illum4",calc.IC_REGULAR, cps.NO, 1, 60,
+                 calc.RE_MEDIAN, calc.EA_ALL, calc.SM_GAUSSIAN_FILTER,
+                 calc.FI_OBJECT_SIZE, 15, 10, False, "Illum4Avg", True, 
+                 "Illum4Dilated"),
+                ("Image5", "Illum5", calc.IC_REGULAR, cps.NO, 1, 60,
+                 calc.RE_MEDIAN, calc.EA_ALL, calc.SM_TO_AVERAGE,
+                 calc.FI_OBJECT_SIZE, 15, 10, False, "Illum5Avg",
+                 False, "Illum5Dilated"))):
+            module = pipeline.modules()[i]
+            self.assertTrue(isinstance(module, calc.CorrectIlluminationCalculate))
+            self.assertEqual(module.image_name, image_name)
+            self.assertEqual(module.illumination_image_name, illumination_image_name)
+            self.assertEqual(module.intensity_choice, intensity_choice)
+            self.assertEqual(module.dilate_objects, dilate_objects)
+            self.assertEqual(module.object_dilation_radius, object_dilation_radius)
+            self.assertEqual(module.block_size, block_size)
+            self.assertEqual(module.rescale_option, rescale_option)
+            self.assertEqual(module.each_or_all, each_or_all)
+            self.assertEqual(module.smoothing_method, smoothing_method)
+            self.assertEqual(module.automatic_object_width, automatic_object_width)
+            self.assertEqual(module.object_width, object_width)
+            self.assertEqual(module.size_of_smoothing_filter, size_of_smoothing_filter)
+            self.assertEqual(module.save_average_image, save_average_image)
+            self.assertEqual(module.average_image_name, average_image_name)
+            self.assertEqual(module.save_dilated_image, save_dilated_image)
+            self.assertEqual(module.dilated_image_name, dilated_image_name)
+            

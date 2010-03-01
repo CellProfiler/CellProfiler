@@ -72,6 +72,7 @@ def CreateBatchRecord(my_batch):
 
 def encode_group_string(x):
     '''Escape the characters '=' and ',' in a group key or value'''
+    x = str(x)
     return x.replace('\\','\\\\').replace('=','\\=').replace(',','\\,')
 
 def decode_group_string(x):

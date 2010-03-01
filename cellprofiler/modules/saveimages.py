@@ -138,7 +138,7 @@ class SaveImages(cpm.CPModule):
                 file, with no additional text prefixed or appended. Since the filename is fixed,
                 this file will be overwritten with each cycle. Unless you want the file to be 
                 updated every cycle during the analysis run, you would probably want to save it
-                on the last cycle (see the "Select how often to save" setting)</li>
+                on the last cycle (see the <a href='#when_to_save'><i>Select how often to save</i></a> setting)</li>
                 <li><i>Name with metadata:</i> The filenames are constructed using the metadata
                 associated with an image set in <b>LoadImages</b> or <b>LoadData</b>. This is 
                 especially useful if you want your output given a unique label according to the
@@ -234,9 +234,9 @@ class SaveImages(cpm.CPModule):
         
         self.when_to_save = cps.Choice("Select how often to save",
                 [WS_EVERY_CYCLE,WS_FIRST_CYCLE,WS_LAST_CYCLE],
-                WS_EVERY_CYCLE,doc="""
+                WS_EVERY_CYCLE,doc="""<a name='when_to_save'>
                 <i>(Used only when saving non-movie files)</i><br>
-                Specify at what point during pipeline execution to save your file. 
+                Specify at what point during pipeline execution to save your file. </a>
                 <ul>
                 <li><i>Every cycle:</i> Useful for when the image is updated every cycle and is
                 not dependent on results from a prior cycle.</li>

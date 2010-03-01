@@ -62,8 +62,8 @@ number of cytoplasm compartments per cell, which is always equal to 1.</p>
 
 <p>This module can create MATLAB scripts that display the EC50 curves for
 each measurement. These scripts will require MATLAB and the statistics
-toolbox in order to run. See "<a href='#wants_save_figure'>
-Create dose/response plots?</a>" below.</p>
+toolbox in order to run. See <a href='#wants_save_figure'>
+<i>Create dose/response plots?</i></a> below.</p>
 
 References
 <ul>
@@ -193,7 +193,7 @@ class CalculateStatistics(cpm.CPModule):
         group.append('wants_save_figure', cps.Binary(
             '''Create dose/response plots?''',
             False,
-            doc = '''<a name='wants_save_figure'/>Check this box if you want to create and save dose response plots. 
+            doc = '''<a name='wants_save_figure'>Check this box if you want to create and save dose response plots. 
             You will be asked for information on how to save the plots.</a>'''))
         group.append('figure_name', cps.Text(
             "Figure prefix","",

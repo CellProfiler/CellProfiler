@@ -102,12 +102,12 @@ class MeasureImageGranularity(cpm.CPModule):
             "Subsampling factor for background reduction",
             .25, minval = np.finfo(float).eps, maxval = 1,doc='''It is important to 
             remove low frequency image background variations as they will affect the final granularity 
-            measure. Any method can be used as a pre-processing step prior to this module; 
+            measurement. Any method can be used as a pre-processing step prior to this module; 
             we have chosen to simply subtract a highly open image. To do it quickly, we subsample the image 
             first. The subsampling factor for background reduction is usually [0.125 - 0.25].  This is 
             highly empirical, but a small factor should be used if the structures of interest are large. The 
             significance of background removal in the context of granulometry is that image 
-            volume at certain granular size is normalized by the total image volume, which depends on 
+            volume at certain granular size is normalized by total image volume, which depends on 
             how the background was removed.'''))
         
         group.append("element_size", cps.Integer(

@@ -176,7 +176,7 @@ images for analysis.</li>
 <li><i>Convex hull</i> has been included as an image morphological operation.</li>
 <li>A new module, MeasureNeurons, has been added, which measures the number 
 of trunks and branches for each neuron in an image.</li>
-<li><i>Detection of new features:<i> Neurites can be extracted from images of neurons.
+<li><i>Detection of new features:</i> Neurites can be extracted from images of neurons.
 Branching points of line segments can be found as an image morphological operation.
 Also, "dark holes" (dark spots surrounded bright rings) can be detected. </li>
 <li><i>Improvements to object tracking:</i> A new tracking algorithm has been added
@@ -433,7 +433,7 @@ below (former category in parentheses):
 <ul>
 <li><b>CalculateMath</b> (from Measurement)</li>
 <li><b>CalculateStatistics</b> (from Measurement)</li>
-<li><b>ExportToDatabase(from File Processing)</li>
+<li><b>ExportToDatabase</b>(from File Processing)</li>
 <li><b>ExportToSpreadsheet</b> (from File Processing)</li>
 <li><b>FlagImage</b>(from Image Processing)</li>
 </ul>

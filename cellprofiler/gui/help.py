@@ -789,6 +789,24 @@ PREFERENCES_HELP = (
     ( "Window background", WINDOW_BACKGROUND_HELP ),
     ( "Check for updates", CHECK_FOR_UPDATES_HELP ))
 
+#########################################################
+#
+# Misc. help
+#
+#########################################################
+
+'''The help to be displayed if someone asks for help on a module but none is selected'''
+HELP_ON_MODULE_BUT_NONE_SELECTED = (
+    "The help button can be used to obtain help for a particular module\n"
+    "selected in the pipeline window at the middle left of CellProfiler.\n"
+    "You currently have no modules in the pipeline. Add a module to the\n"
+    'pipeline using the "+" button or by using File > Load Pipeline.')
+
+#########################################################
+#
+# The top-level of help - used when building the HTML manual
+#
+#########################################################
 HELP = ( ("User guide", MAIN_HELP ), 
          ("Module figures", FIGURE_HELP ),
          ("Preferences", PREFERENCES_HELP))

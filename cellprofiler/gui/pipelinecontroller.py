@@ -29,6 +29,7 @@ import cellprofiler.objects as cpo
 from cellprofiler.gui.addmoduleframe import AddModuleFrame
 import cellprofiler.gui.moduleview
 from cellprofiler.gui.movieslider import EVT_TAKE_STEP
+from cellprofiler.gui.help import HELP_ON_MODULE_BUT_NONE_SELECTED
 import cellprofiler.utilities.get_revision as get_revision
 from progress import ProgressFrame
 from errordialog import display_error_dialog, ED_CONTINUE, ED_STOP
@@ -438,7 +439,8 @@ class PipelineController:
         if len(modules) > 0:
             self.__frame.do_help_modules(modules)
         else:
-            wx.MessageBox("Please select a module, then press the help button to get help for it", "No module selected",
+            wx.MessageBox(HELP_ON_MODULE_BUT_NONE_SELECTED, 
+                          "No module selected",
                           style=wx.OK|wx.ICON_INFORMATION)
         
     def __on_add_module(self,event):

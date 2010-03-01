@@ -283,7 +283,7 @@ def make_method(name, sig, doc='No documentation'):
     
     sig - a calling signature. 
           See http://java.sun.com/j2se/1.4.2/docs/guide/jni/spec/types.htm
-          An example: "(ILjava/lang/String;)I[" takes an integer and
+          An example: "(ILjava/lang/String;)[I" takes an integer and
           string as parameters and returns an array of integers.
           Cheat sheet:
           Z - boolean

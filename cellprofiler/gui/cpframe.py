@@ -34,6 +34,7 @@ import traceback
 import sys
 
 ID_FILE_LOAD_PIPELINE=wx.NewId()
+ID_FILE_URL_LOAD_PIPELINE = wx.NewId()
 ID_FILE_EXIT=wx.NewId()
 ID_FILE_WIDGET_INSPECTOR=wx.NewId()
 ID_FILE_SAVE_PIPELINE=wx.NewId()
@@ -126,8 +127,9 @@ class CPFrame(wx.Frame):
         """
         self.__menu_bar = wx.MenuBar()
         self.__menu_file = wx.Menu()
-        self.__menu_file.Append(ID_FILE_LOAD_PIPELINE,'Load Pipeline...\tctrl+O','Load a pipeline from a .MAT file')
-        self.__menu_file.Append(ID_FILE_SAVE_PIPELINE,'Save Pipeline as...\tctrl+shift+S','Save a pipeline as a .MAT file')
+        self.__menu_file.Append(ID_FILE_LOAD_PIPELINE,'Load Pipeline...\tctrl+O','Load a pipeline from a .MAT or .CP file')
+        self.__menu_file.Append(ID_FILE_URL_LOAD_PIPELINE, 'Load Pipeline from URL', 'Load a pipeline from the web')
+        self.__menu_file.Append(ID_FILE_SAVE_PIPELINE,'Save Pipeline as...\tctrl+shift+S','Save a pipeline as a .CP file')
         self.__menu_file.Append(ID_FILE_CLEAR_PIPELINE,'Clear pipeline','Remove all modules from the current pipeline')
         self.__menu_file.AppendSeparator()
         self.__menu_file.Append(ID_FILE_ANALYZE_IMAGES,'Analyze images\tctrl+N','Run the pipeline on the images in the image directory')

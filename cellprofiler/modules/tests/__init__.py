@@ -25,12 +25,11 @@ def example_images_directory():
     if os.environ.has_key('CP_EXAMPLEIMAGES'):
         return os.environ['CP_EXAMPLEIMAGES']
     fyle = os.path.abspath(__file__)
-    d = os.path.split(fyle)[0] # CellProfiler.Modules.tests
-    d = os.path.split(d)[0]        # CellProfiler.Modules
-    d = os.path.split(d)[0]        # CellProfiler
-    d = os.path.split(d)[0]        # pyCellProfiler
-    d = os.path.split(d)[0]        # CellProfiler
-    d = os.path.split(d)[0]        # either trunk or build directory
+    d = os.path.split(fyle)[0]   # trunk.CellProfiler.cellprofiler.modules.tests
+    d = os.path.split(d)[0]      # trunk.CellProfiler.cellprofiler.modules
+    d = os.path.split(d)[0]      # trunk.CellProfiler.cellprofiler
+    d = os.path.split(d)[0]      # trunk.CellProfiler
+    d = os.path.split(d)[0]      # trunk
     for imagedir in ["CP-CPEXAMPLEIMAGES","ExampleImages"]:
         path = os.path.join(d,imagedir)
         if os.path.exists(path):

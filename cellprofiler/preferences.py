@@ -307,10 +307,8 @@ def get_absolute_path(path, abspath_mode = ABSPATH_IMAGE):
         isep = '.'
     else:
         raise ValueError("Unknown abspath mode: %s"%abspath_mode)
-    
-    for protocol in ('http','https','ftp'):
-        if path.lower().startswith('%s:' % protocol):
-            return path
+    if is_url_path(path):
+        return path
     if (path.startswith(osep+os.path.sep) or
         ("altsep" in os.path.__all__ and os.path.altsep and
          path.startswith(osep+os.path.altsep))):
@@ -323,6 +321,13 @@ def get_absolute_path(path, abspath_mode = ABSPATH_IMAGE):
         return os.path.join(get_default_output_directory(), path)
     else:
         return str(get_proper_case_filename(os.path.abspath(path)))
+
+def is_url_path(path):
+    '''Return True if the path should be treated as a URL'''
+    for protocol in ('http','https','ftp'):
+        if path.lower().startswith('%s:' % protocol):
+            return True
+    return False
 
 def get_default_colormap():
     if not get_config().Exists(COLORMAP):

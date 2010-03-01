@@ -477,6 +477,16 @@ class Pipeline(object):
         if hasattr(fd_or_filename,'seek') and hasattr(fd_or_filename,'read'):
             fd = fd_or_filename
             needs_close = False
+        elif hasattr(fd_or_filename, 'read') and hasattr(fd_or_filename, 'url'):
+            # This is a URL file descriptor. Read into a StringIO so that
+            # seek is available.
+            fd = StringIO.StringIO()
+            while True:
+                text = fd_or_filename.read()
+                if len(text) == 0:
+                    break
+                fd.write(text)
+            fd.seek(0)
         else:
             fd = open(fd_or_filename,'r')
             needs_close = True

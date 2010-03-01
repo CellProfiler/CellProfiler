@@ -114,6 +114,7 @@ import hashlib
 import numpy as np
 import os
 import sys
+from StringIO import StringIO
 
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
@@ -296,9 +297,14 @@ class LoadData(cpm.CPModule):
 
     def validate_module(self, pipeline):
         csv_path = self.csv_path
-        if not os.path.isfile(csv_path):
-            raise cps.ValidationError("No such CSV file: %s"%csv_path,
-                                      self.csv_file_name)
+           
+        if not cpprefs.is_url_path(csv_path):
+            if not os.path.isfile(csv_path):
+                raise cps.ValidationError("No such CSV file: %s"%csv_path,
+                                          self.csv_file_name)
+            else:
+                # This will throw if the URL can't be retrieved
+                self.open_csv()
         else:
             try:
                 self.get_header()
@@ -318,12 +324,12 @@ class LoadData(cpm.CPModule):
             result += [self.wants_image_groupings]
             if self.wants_image_groupings.value:
                 result += [self.metadata_fields]
-                if os.path.isfile(self.csv_path):
+                try:
                     fields = [field[len("Metadata_"):] 
                               for field in self.get_header()
                               if field.startswith("Metadata_")]
                     self.metadata_fields.choices = fields
-                else:
+                except:
                     self.metadata_fields.choices = [ "No CSV file"]
                 
         result += [self.wants_rows]
@@ -342,6 +348,8 @@ class LoadData(cpm.CPModule):
             path = cpprefs.get_default_output_directory()
         else:
             path = cpprefs.get_absolute_path(self.csv_custom_directory.value)
+        if cpprefs.is_url_path(path):
+            return path + "/" + self.csv_file_name.value
         return os.path.join(path, self.csv_file_name.value)
     
     @property
@@ -365,11 +373,34 @@ class LoadData(cpm.CPModule):
         '''Get the cached information for the data file'''
         global header_cache
         entry = header_cache.get(self.csv_path, dict(ctime=0))
+        if cpprefs.is_url_path(self.csv_path):
+            return entry
         ctime = os.stat(self.csv_path).st_ctime
         if ctime > entry["ctime"]:
             entry = header_cache[self.csv_path] = {}
             entry["ctime"] = ctime
         return entry
+        
+    def open_csv(self):
+        '''Open the csv file or URL, returning a file descriptor'''
+        if cpprefs.is_url_path(self.csv_path):
+            entry = header_cache.get(self.csv_path, {})
+            if entry.has_key("URLFD"):
+                fd = entry["URLFD"]
+            else:
+                import urllib2
+                url_fd = urllib2.urlopen(self.csv_path)
+                fd = StringIO()
+                while True:
+                    text = url_fd.read()
+                    if len(text) == 0:
+                        break
+                    fd.write(text)
+                entry["URLFD"] = fd
+            fd.seek(0)
+            return fd
+        else:
+            return open(self.csv_path, 'rb')
         
     def get_header(self):
         '''Read the header fields from the csv file
@@ -380,8 +411,8 @@ class LoadData(cpm.CPModule):
         entry = self.get_cache_info()
         if entry.has_key("header"):
             return entry["header"]
-            
-        fd = open(self.csv_path, 'rb')
+        
+        fd = self.open_csv()
         reader = csv.reader(fd)
         header = reader.next()
         fd.close()
@@ -408,7 +439,7 @@ class LoadData(cpm.CPModule):
             raise ValueError(('''Can't find the CSV file, "%s". ''' 
                               '''Please check that the name matches exactly, '''
                               '''including the case''') % self.csv_path)
-        fd = open(self.csv_path, 'rb')
+        fd = self.open_csv()
         reader = csv.reader(fd)
         header = [header_to_column(column) for column in reader.next()]
         if self.wants_rows.value:
@@ -650,7 +681,7 @@ class LoadData(cpm.CPModule):
             entry = self.get_cache_info()
             if entry.has_key("measurement_columns"):
                 return entry["measurement_columns"]
-            fd = open(self.csv_path, 'rb')
+            fd = self.open_csv()
             reader = csv.reader(fd)
             header = [header_to_column(x) for x in reader.next()]
         except:

@@ -61,6 +61,7 @@ class PipelineController:
         self.populate_recent_files()
         self.populate_edit_menu()
         wx.EVT_MENU(frame,cpframe.ID_FILE_LOAD_PIPELINE,self.__on_load_pipeline)
+        wx.EVT_MENU(frame, cpframe.ID_FILE_URL_LOAD_PIPELINE, self.__on_url_load_pipeline)
         wx.EVT_MENU(frame,cpframe.ID_FILE_SAVE_PIPELINE,self.__on_save_pipeline)
         wx.EVT_MENU(frame,cpframe.ID_FILE_CLEAR_PIPELINE,self.__on_clear_pipeline)
         wx.EVT_MENU(frame,cpframe.ID_FILE_ANALYZE_IMAGES,self.on_analyze_images)
@@ -174,6 +175,17 @@ class PipelineController:
         if dlg.ShowModal()==wx.ID_OK:
             pathname = os.path.join(dlg.GetDirectory(),dlg.GetFilename())
             self.do_load_pipeline(pathname)
+            
+    def __on_url_load_pipeline(self, event):
+        dlg = wx.TextEntryDialog(self.__frame,
+                                 "Enter the pipeline's URL\n\n"
+                                 "Example: https://svn.broadinstitute.org/"
+                                 "CellProfiler/trunk/ExampleImages/"
+                                 "ExampleSBSImages/ExampleSBS.cp",
+                                 "Load pipeline via URL")
+        if dlg.ShowModal() == wx.ID_OK:
+            import urllib2
+            self.do_load_pipeline(urllib2.urlopen(dlg.Value))
     
     def __on_dir_load_pipeline(self,caller,event):
         if wx.MessageBox('Do you want to load the pipeline, "%s"?'%(os.path.split(event.Path)[1]),
@@ -188,7 +200,8 @@ class PipelineController:
             self.__pipeline.load(pathname)
             self.__pipeline.turn_off_batch_mode()
             self.__clear_errors()
-            self.set_current_pipeline_path(pathname)
+            if isinstance(pathname, (str, unicode)):
+                self.set_current_pipeline_path(pathname)
             self.__dirty_pipeline = False
             self.set_title()
             

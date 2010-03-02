@@ -1,6 +1,7 @@
 '''<b>Correct Illumination - Calculate</b> calculates an illumination function that is used to correct uneven
 illumination/lighting/shading or to reduce uneven background in images
 <hr>
+
 This module calculates an illumination function that can either be saved to the
 hard drive for later use or immediately applied to images later in the
 pipeline. This function will correct for the uneven illumination in images.  

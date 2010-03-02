@@ -89,7 +89,7 @@ class MaskObjects(I.Identify):
             doc="""Select the objects that will be used to define the
             masking region. You can choose from any objects created
             by a previous object processing module, such as <b>IdentifyPrimaryObjects</b>,
-            <b>IdentifySecondaryObjects</b> or <b>IdentifyTertiaryObjects</b>.""")
+            <b>IdentifySecondaryObjects</b>, or <b>IdentifyTertiaryObjects</b>.""")
         
         self.masking_image = cps.ImageNameSubscriber(
             "Select the masking image","None",

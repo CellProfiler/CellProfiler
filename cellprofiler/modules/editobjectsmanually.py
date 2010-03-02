@@ -1,6 +1,7 @@
-'''<b>EditObjectsManually</b> allows you to remove specific objects
+'''<b>Edit Objects Manually</b> allows you to remove specific objects
 from each image by pointing and clicking
 <hr>
+
 This module allows you to remove specific objects via a user interface 
 where you point and click to select objects for removal. The
 module displays three images: the objects as originally identified,

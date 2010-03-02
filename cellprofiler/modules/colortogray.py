@@ -1,6 +1,7 @@
 '''
 <b> Color to Gray</b> converts an image with three color channels to one <i>or</i> three grayscale images
 <hr>
+
 This module converts RGB (Red, Green, Blue) color images to grayscale. All channels
 can be merged into one grayscale image (<i>Combine</i>), or each channel 
 can be extracted into a separate grayscale image (<i>Split</i>). If you use <i>Combine</i>, 

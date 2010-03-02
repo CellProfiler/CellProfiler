@@ -70,7 +70,7 @@ This results in one score per Theta.</li>
 </ul>
     
 The original reference is Gabor, D. (1946). "Theory of communication," 
-<i>Journal of the Institute of Electrical Engineers</i>, 93:429-441.
+<i>Journal of the Institute of Electrical Engineers</i> 93:429-441.
 </li>
 </ul>
 """

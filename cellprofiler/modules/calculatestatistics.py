@@ -99,7 +99,7 @@ with the correct data. Here is an example file:<br><br>
 </code>
 <br>
 
-See also <b>LoadData</b>
+See also <b>LoadData</b>.
 '''
 __version__="$Revision$"
 

@@ -38,8 +38,8 @@ place at the end of the analysis run.
 References
 <ul>
 <li>Jaqaman K, Loerke D, Mettlen M, Kuwata H, Grinstein S, Schmid SL, Danuser G. (2008)
-<i>Robust single-particle tracking in live-cell time-lapse sequences.</i>
-Nature Methods 5(8),695-702.</li>
+"Robust single-particle tracking in live-cell time-lapse sequences."
+<i>Nature Methods</i> 5(8),695-702.</li>
 </ul>
 
 <h4>Available measurements</h4>
@@ -58,7 +58,7 @@ object from the previous frame to the curent frame.</li>
 previous frame to the curent frame (calculated as the magnititude of 
 the distance traveled vector).</li>
 <li>IntegratedDistance: The total distance traveled by the object during
-the lifetime of the object</li>
+the lifetime of the object.</li>
 <li>Linearity: A measure of how linear the object trajectity is during the
 object lifetime. Calculated as (distance from initial to final 
 location)/(integrated object distance). Value is in range of [0,1].</li>
@@ -71,9 +71,9 @@ lifetimes of all remaining objects are ouput.</li>
 <li><i>Image features</i>
 <ul>
 <li>LostObjectCount: Number of objects that appear in the previous frame
-but have no identifiable child in the current frame</li>
-<li><NewObjectCount: Number of objects that appear in the current frame but
-have no identifiable parent in the previous frame </li>
+but have no identifiable child in the current frame.</li>
+<li>NewObjectCount: Number of objects that appear in the current frame but
+have no identifiable parent in the previous frame. </li>
 <li>DaughterObjectCount: Number of objects in the current frame which 
 resulted from a split from a parent object in the previous frame.</li>
 <li>MergedObjectCount: Number of objects in the current frame which 
@@ -82,7 +82,7 @@ resulted from the merging of child objects in the previous frame.</li>
 </li>
 </ul>
 
-See also: Any of the <b>Measure</b> modules, <b>IdentifyPrimaryObjects</b>, <b>LoadImages</b>
+See also: Any of the <b>Measure</b> modules, <b>IdentifyPrimaryObjects</b>, <b>LoadImages</b>.
 """
 # CellProfiler is distributed under the GNU General Public License.
 # See the accompanying file LICENSE for details.

@@ -242,7 +242,7 @@ class SaveImages(cpm.CPModule):
                 not dependent on results from a prior cycle.</li>
                 <li><i>First cycle:</i> Useful for when you are saving an aggregate image created 
                 on the first cycle, e.g., <b>CorrectIlluminationCalc</b> with the <i>All</i>
-                setting used on images obtained directly from <b>LoadImages</b>/<b>LoadData</a>.</li>
+                setting used on images obtained directly from <b>LoadImages</b>/<b>LoadData</b></a>.</li>
                 <li><i>Last cycle:</i> Useful for when you are saving an aggregate image completed 
                 on the last cycle, e.g., <b>CorrectIlluminationCalc</b> with the <i>All</i>
                 setting used on intermediate images generated during each cycle.</li>

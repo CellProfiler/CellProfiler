@@ -161,7 +161,7 @@ class MeasureImageQuality(cpm.CPModule):
                                                        methods used in the <b>Identify</b> modules.
                                                        For more help on thresholding, see the <b>Identify</b> modules.'''))
         group.append("object_fraction", cps.Float("Typical fraction of the image covered by objects", 0.1,0,1, doc = 
-                                                  """<i>(Used only if threshold are calculated and MoG thresholding is chosen)</b> <br> 
+                                                  """<i>(Used only if threshold are calculated and MoG thresholding is chosen)</i> <br> 
                                                       Enter the approximate fraction of the typical image in the set
                                                       that is covered by objects."""))
         group.append("two_class_otsu", cps.Choice(

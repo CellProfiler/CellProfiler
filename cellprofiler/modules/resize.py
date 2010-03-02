@@ -1,5 +1,6 @@
 """<b>Resize</b> resizes images (changes their resolution)
 <hr>
+
 Images are resized (made smaller or larger) based on user input. You
 can resize an image by applying a resizing factor or by specifying the 
 desired dimensions, in pixels. You can also select which interpolation

@@ -17,8 +17,8 @@ save them in another, using CellProfiler as a file format converter.</p>
 metadata in CellProfiler</i> for more details on metadata usage and syntax. Briefly, <b>LoadImages</b> can
 extract metadata from the image filename using pattern-matching strings for grouping similar images 
 together for the analysis run and for metadata-specfic options in other modules; see the settings help for
-<i>Where to extract metadata</i> and, if an option for that setting is selected, <i>Regular expression
-to find metadata...</i> for the neccesary syntax.</p>
+<a href='#where_to_extract'><i>Where to extract metadata</i></a>, and if an option for that setting is selected, <a href='#regular_expression'><i>Regular expression 
+that finds metadata in the file name</i></a> for the necessary syntax.</p>
 
 <h4>Available measurements</h4>
 <ul>
@@ -416,19 +416,19 @@ class LoadImages(cpmodule.CPModule):
                FD_METADATA_CHOICE:cps.Choice('Select from where to extract metadata?',
                                              [M_NONE, M_FILE_NAME, 
                                               M_PATH, M_BOTH],doc="""
-                        Metadata fields can be specified from the image filename, the image path (including subfolders), or both. 
+                        <a name='where_to_extract'>Metadata fields can be specified from the image filename, the image path (including subfolders), or both. 
                         The metadata entered here can be used for image grouping (see the  
                         <a href='#group_by_metadata'><i>Group image sets by metadata?</i></a> setting) or simply used as 
-                        additional columns in the exported measurements (see the <b>ExportToSpreadsheet</b> module)"""),
+                        additional columns in the exported measurements (see the <b>ExportToSpreadsheet</b> module).</a>"""),
                FD_FILE_METADATA: cps.RegexpText('Regular expression that finds metadata in the file name',
                                                 '^(?P<Plate>.*)_(?P<Well>[A-P][0-9]{2})_s(?P<Site>[0-9])',
                                                 get_example_fn = example_file_fn,
                         doc="""
-                        <i>(Used only if you want to extract metadata from the file name)</i><br>
+                        <a name='regular_expression'><i>(Used only if you want to extract metadata from the file name)</i><br>
                         The regular expression to extract the metadata from the file name is entered here. Note that
                         this field is available whether you have selected <i>Text-Regular expressions</i> to load
                         the files or not. Please see the general module help for more information on construction of
-                        a regular expression.
+                        a regular expression.</a>
                         <p>Clicking the magnifying glass icon to the right will bring up a tool for
                         checking the accuracy of your regular expression. The regular expression syntax can be used to 
                         name different parts of your expression. The syntax <i>(?P&lt;fieldname&gt;expr)</i> will 

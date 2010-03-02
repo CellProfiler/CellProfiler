@@ -76,7 +76,7 @@ class SendEmail(cpm.CPModule):
             
         self.from_address = cps.Text(
             "Sender address", user,
-            doc="""Enter the address for the email's "from" field.""")
+            doc="""Enter the address for the email's "From" field.""")
         
         self.subject = cps.Text(
             "Subject line","CellProfiler notification",
@@ -167,7 +167,7 @@ class SendEmail(cpm.CPModule):
             doc="""The body of the message sent from CellProfiler.
             Your message can include metadata values. For instance,
             if you group by plate and want to send an email after processing each
-            plate, you could use the message, 
+            plate, you could use the message  
             "Finished processing plate \\g<Plate>". """))
         
         if can_delete:

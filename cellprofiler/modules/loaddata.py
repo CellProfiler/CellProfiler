@@ -204,9 +204,9 @@ class LoadData(cpm.CPModule):
             
             <p>Custom folder names that start with "." are relative to the Default Input Folder. Names that
             start with "&" are relative to the Default Output Folder. Two periods ".." specify to go 
-            up one folder level. For example, "./CSVfiles" looks for a folder called <i>CSVfiles</i> that is 
+            up one folder level. For example, "./CSVfiles" looks for a folder called "CSVfiles" that is 
             contained within the Default Input Folder,
-            and <i>&/../My_folder" looks in a folder called "My_folder"
+            and "&/../My_folder" looks in a folder called "My_folder"
             at the same level as the output folder.""")
         
         self.csv_custom_directory = cps.DirectoryPath("Custom file location",
@@ -275,8 +275,8 @@ class LoadData(cpm.CPModule):
         self.metadata_fields = cps.MultiChoice("Select metadata fields for grouping", None,doc="""
             <i>(Used only if images are to be grouped by metadata)</i><br>
             Select the fields by which you want to group the image files here. You can select multiple tags. For
-            example, if a set of images had metadata for <i>Run</i>,<i>Plate</i>,<i>Well</i> and
-            <i>Site</i>, selecting <i>Run</i> and <i>Plate</i> will create groups containing 
+            example, if a set of images had metadata for "Run", "Plate", "Well", and
+            "Site", selecting <i>Run</i> and <i>Plate</i> will create groups containing 
             images that share the same [<i>Run</i>,<i>Plate</i>] pair of fields.""")
         
         self.wants_rows = cps.Binary("Process just a range of rows?",

@@ -23,9 +23,9 @@ measurement per object, based on the object's class.</p>
 
 <h4>Available measurements</h4>
 <ul>
-<li>(Single measurement) Classification (true/false) of the N<sup>th</sup> bin for the M<sup>th</sup> measurement.
+<li>Single measurement: Classification (true/false) of the N<sup>th</sup> bin for the M<sup>th</sup> measurement.
 </li>
-<li>(Two measurement) Classification of the 1<sup>st</sup> measurement versus the 2<sup>nd</sup> measurement 
+<li>Two measurement: Classification of the 1<sup>st</sup> measurement versus the 2<sup>nd</sup> measurement 
 binned into bins above ("high") and below ("low") the cutoff.</li>
 </ul>
 
@@ -108,7 +108,7 @@ class ClassifyObjects(cpm.CPModule):
             "Enter the object name","None",
             doc="""Select the object that you want to measure from the list.
             This should be an object created by a previous module such as
-            <b>IdentifyPrimaryObjects</b>, <b>IdentifySecondaryObjects</b> or
+            <b>IdentifyPrimaryObjects</b>, <b>IdentifySecondaryObjects</b>, or
             <b>IdentifyTertiaryObjects</b>.""")
         #
         # The two measurements for the contrasting method
@@ -217,7 +217,7 @@ class ClassifyObjects(cpm.CPModule):
             "Select the object to be classified","None",
             doc="""The name of the objects to be classified. You can
             choose from objects created by any previous module. See
-            <b>IdentifyPrimaryObjects</b>, <b>IdentifySecondaryObjects</b> or
+            <b>IdentifyPrimaryObjects</b>, <b>IdentifySecondaryObjects</b>, or
             <b>IdentifyTertiaryObjects</b>."""))
         
         def object_fn():

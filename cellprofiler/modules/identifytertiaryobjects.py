@@ -1,4 +1,4 @@
-'''<b>Identify tertiary objects</b> identifies tertiary objects (e.g., cytoplasm) by removing smaller primary
+'''<b>Identify Tertiary Objects</b> identifies tertiary objects (e.g., cytoplasm) by removing smaller primary
 objects (e.g. nuclei) from larger secondary objects (e.g., cells), leaving a ring shape
 <hr>
 

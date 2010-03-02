@@ -2,7 +2,7 @@
 parent object (e.g. nucleus) become its children
 <hr>
 
-This module allows you to associate <i>children</i> objects with <i>parent</i> objects. This is
+This module allows you to associate <i>child</i> objects with <i>parent</i> objects. This is
 useful for counting the number of children associated with each parent,
 and for calculating mean measurement values for all children that are
 associated with each parent.

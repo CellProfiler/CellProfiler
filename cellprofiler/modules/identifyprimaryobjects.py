@@ -77,20 +77,20 @@ intensity, or texture.</ol>
 References
 <ul>
 <li>Malpica N, de Solorzano CO, Vaquero JJ, Santos, A, Vallcorba I, 
-Garcia-Sagredo JM, and del Pozo F (1997). <i>Applying watershed
-algorithms to the segmentation of clustered nuclei.</i> Cytometry 28,
+Garcia-Sagredo JM, and del Pozo F (1997). "Applying watershed
+algorithms to the segmentation of clustered nuclei." <i> Cytometry</i> 28,
 289-297.</li>
-<li>Meyer F, and Beucher S (1990). <i>Morphological segmentation.</i> J Visual
-Communication and Image Representation 1, 21-46.</li>
+<li>Meyer F, and Beucher S (1990). "Morphological segmentation." <i>J Visual
+Communication and Image Representation</i> 1, 21-46.</li>
 <li>Ortiz de Solorzano C, Rodriguez EG, Jones A, Pinkel D, Gray JW, 
-Sudar D, and Lockett SJ. (1999). <i>Segmentation of confocal
-microscope images of cell nuclei in thick tissue sections.</i> Journal of
-Microscopy-Oxford 193, 212-226.</li>
+Sudar D, and Lockett SJ. (1999). "Segmentation of confocal
+microscope images of cell nuclei in thick tissue sections." <i>Journal of
+Microscopy-Oxford</i> 193, 212-226.</li>
 <li>Wahlby C (2003) <i>Algorithms for applied digital image cytometry</i>, Ph.D.,
 Uppsala University, Uppsala.</li>
 <li>Wahlby C, Sintorn IM, Erlandsson F, Borgefors G, and Bengtsson E. (2004). 
-<i>Combining intensity, edge and shape information for 2D and 3D
-segmentation of cell nuclei in tissue sections.</i> J Microsc 215, 67-76.</li>
+"Combining intensity, edge and shape information for 2D and 3D
+segmentation of cell nuclei in tissue sections." <i>J Microsc</i> 215, 67-76.</li>
 </ul>
 
 <h3>Technical note</h3> 
@@ -234,7 +234,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
         self.merge_objects = cps.Binary(
             "Try to merge too small objects with nearby larger objects?", 
             False, doc='''\
-            Use caution when choosing <i>Yes</i> for this option. Objects that are
+            Use caution when choosing <i>Yes</i>. Objects that are
             smaller than the specified minimum diameter will be merged, if possible, with
             other surrounding objects. This is helpful in cases when an object was
             incorrectly split into two objects, one of which is actually just a tiny

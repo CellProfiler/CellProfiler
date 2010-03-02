@@ -147,7 +147,7 @@ class Tile(cpm.CPModule):
         
         self.tile_style = cps.Choice("Begin tiling across a row, or down a column?", S_ALL, doc = '''
             Are the images arranged in rows or columns?  If your images are named A01, A02, etc, 
-            enter "row".''')
+            enter <i>row</i>".''')
         
         self.meander = cps.Binary("Tile in meander mode?", False, doc = '''
             Meander mode tiles adjacent images in one direction, 

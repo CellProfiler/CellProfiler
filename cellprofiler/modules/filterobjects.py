@@ -19,8 +19,8 @@ object.</li>
 mass of the remaining objects.</li>
 </ul>
 
-See also any of the <b>MeasureObject</b> modules: <b>MeasureTexture</b>,
-<b>MeasureCorrelation</b> and <b>CalculateRatios</b>.
+See also any of the <b>MeasureObject</b> modules, <b>MeasureTexture</b>,
+<b>MeasureCorrelation</b>, and <b>CalculateRatios</b>.
 '''
 # CellProfiler is distributed under the GNU General Public License.
 # See the accompanying file LICENSE for details.
@@ -181,7 +181,12 @@ class FilterObjects(cpm.CPModule):
         self.outlines_name = cps.ImageNameProvider('Name the outline image','FilteredObjects', doc = '''
                                  <i>(Used only if the outline image is to be retained for later use in the  
                                  pipeline)</i> <br> Choose a name by which the outline image can be 
-                                 selected later in the pipeline. <p><i>Special note on saving images:</i> You can use the settings in this module to pass object outlines along to the module <b>OverlayOutlines</b>, and then save them with the <b>SaveImages</b> module. Also, the identified objects themselves can be passed along to the object processing module <b>ConvertToImage</b> and then saved with the <b>SaveImages</b module.
+                                 selected later in the pipeline.
+                                 <p><i>Special note on saving images:</i> You can use the settings in this module
+                                 to pass object outlines along to the module <b>OverlayOutlines</b>, and then save
+                                 them with the <b>SaveImages</b> module. Also, the identified objects themselves
+                                 can be passed along to the object processing module <b>ConvertToImage</b>
+                                 and then saved with the <b>SaveImages</b> module.
 ''')
         self.additional_objects = []
         self.additional_object_count = cps.HiddenCount(self.additional_objects,

@@ -131,10 +131,10 @@ in the pipeline as you modify settings, optimizing your results prior to running
 actual analysis.</li>
 <li><i>Unlimited number of images/objects as module input</i> Some modules can accept an arbitrary number 
 of images or objects as input, and you can dynamically add or remove any of these inputs as needed.
-For example, you can specify any number of single images in <b>LoadSingleImage</b>; previously,
+For example, you can specify any number of single images in LoadSingleImage; previously,
 the module could accept only three input images at a time.<br>
-For example, in <b>OverlayOutlines</b>, you can specify that any number of outlines be  
-overlaid on an image; previously, you would have had to string multiple <bOverlayOutline</b> modules
+For example, in OverlayOutlines, you can specify that any number of outlines be  
+overlaid on an image; previously, you would have had to string multiple OverlayOutline modules
 together.</li>
 <li><i>Image grouping:</i> Images which share common metadata tags, whether 
 provided in the filename or in an accompanying text data file, can be processed together.
@@ -154,7 +154,6 @@ easy access to module manipulation or help.</li>
 <li><i>Better access for developers:</i> We are providing a developer's guide 
 as a practical introduction for programming in the CellProfiler environment, an 
 email list, and wiki, in addition to the available user forum.
-
 </ul>
 
 <h3>Module improvements</h3>
@@ -191,47 +190,8 @@ Analyst also supports SQLite, any user can access CellProfiler Analyst's
 suite of data exploration and machine-leaning tools.</li>
 </ul>
 
-<h3>Speed and Memory</h3>
-
-There are several options in CellProfiler for dealing with out-of-memory errors 
-associated with analyzing images:                                  
-<ul>
-<li><i>Resize the input images</i><br>                                               
-If the image is high-resolution, it may be helpful to determine         
-whether the features of interest can be processed (and accurate         
-data obtained) by using a lower-resolution image. If this is the        
-case, use the <b>Resize</b> module (under Image Processing) to scale down      
-the image to a more manageable size, and perform the desired            
-operations on the smaller image.</li>                                  
-<li><i>Running without module display windows</i><br>                                  
-When your images are being analyzed, the display windows created by     
-each module in your pipeline requires memory to create. If you are      
-not interested in seeing the intermediate output as it is produced,     
-you can deactivate the creation of display windows. You can set which module
-display window by clicking the eye icon; when the eye is closed, no window
-will be displayed for that module. Selecting <i>Window > Close all windows</i>
-will insure that no windows are displayed. The status and error windows will 
-still be shown so you can see the pipeline progress as your images are analyzed.                      
-<li><i>Use the <b>ConserveMemory</b> module.</i><br>                                   
-The <b>ConserveMemory</b> module permits the user to clear the images     
-stored in memory with the exception of those specified by the user.</li>                                        
-         
-Also, there are several options for speeding up the analysis of your      
-pipeline:                                                                 
-<ul>
-<li><i>Running without display windows.</i><br>                                       
-By closing the module windows under <i>Window > Hide all windows</i>, you can turn 
-off all the module display windows which gives a bit of a gain in speed. Once 
-your pipeline is properly set up, we recommend running the entire cycle 
-without any windows displayed.</li>
-<li><i>Use care in object identification.</i><br>                                     
-If you have a large image which contains a large number of small objects, a good 
-deal of computer time will be used in processing each individual object, many of 
-which you might not need. In this case, make sure that you adjust settings in 
-<b>IdentifyPrimaryObjects</b> to exclude small objects you are not interested in 
-(e.g., use the diameter criteria or enable handling of excessive number of objects), 
-or use a <b>FilterObjects</b> module to eliminate objects that are not of interest.</li>
-</ul>
+<h3>Speed and Memory Performance</h3>
+[TO BE INSERTED]
 """
 
 WHEN_CAN_I_USE_CELLPROFILER_HELP = """ 

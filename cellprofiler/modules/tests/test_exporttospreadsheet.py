@@ -261,7 +261,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'9144\'|variable_revision_number:
         self.assertFalse(module.wants_aggregate_means)
         self.assertFalse(module.wants_aggregate_medians)
         self.assertFalse(module.wants_aggregate_std)
-        self.assertEqual(module.directory_choice, E.DIR_DEFAULT_OUTPUT)
+        self.assertEqual(module.directory_choice, E.DEFAULT_OUTPUT_FOLDER_NAME)
         self.assertFalse(module.wants_everything)
         for group, object_name in zip(module.object_groups,
                                       ("Image","Nuclei","PropCells",

@@ -1113,6 +1113,54 @@ class ObjectSubscriberMultiChoice(SubscriberMultiChoice):
         super(ObjectSubscriberMultiChoice, self).__init__(text, OBJECT_GROUP,
                                                           value, *args, **kwargs)
         
+class MeasurementMultiChoice(MultiChoice):
+    '''A multi-choice setting for selecting multiple measurements'''
+    def __init__(self, text, value='', *args, **kwargs):
+        '''Initialize the measurement multi-choice
+        
+        At initialization, the choices are empty because the measurements
+        can't be fetched here. It's done (bit of a hack) in test_valid.
+        '''
+        super(MeasurementMultiChoice, self).__init__(text, [], value, *args, **kwargs)
+    
+    def encode_object_name(self, object_name):
+        '''Encode object name, escaping |'''
+        return object_name.replace('|','||')
+    
+    def decode_object_name(self, object_name):
+        '''Decode the escaped object name'''
+        return object_name.replace('||','|')
+    
+    def split_choice(self, choice):
+        '''Split object and feature within a choice'''
+        subst_choice = choice.replace('||','++')
+        loc = subst_choice.find('|')
+        assert loc != -1
+        return (choice[:loc], choice[(loc+1):])
+    
+    def get_measurement_object(self, choice):
+        return self.decode_object_name(self.split_choice(choice)[0])
+    
+    def get_measurement_feature(self, choice):
+        return self.split_choice(choice)[1]
+    
+    def make_measurement_choice(self, object_name, feature):
+        return self.encode_object_name(object_name) + "|" + feature
+    
+    def test_valid(self, pipeline):
+        '''Get the choices here and call the superclass validator'''
+        #
+        # Find our module
+        #
+        for module in pipeline.modules():
+            for setting in module.visible_settings():
+                if id(setting) == id(self):
+                    break
+        columns = pipeline.get_measurement_columns(module)
+        self.set_choices([self.make_measurement_choice(object_name, feature)
+                          for object_name, feature, coltype in columns])
+        super(MeasurementMultiChoice, self).test_valid(pipeline)
+        
 class DoSomething(Setting):
     """Do something in response to a button press
     """

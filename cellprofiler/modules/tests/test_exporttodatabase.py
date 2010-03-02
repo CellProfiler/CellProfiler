@@ -113,7 +113,7 @@ ExportToDatabase:[module_num:1|svn_version:\'8913\'|variable_revision_number:4|s
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
         self.assertTrue(isinstance(module, E.ExportToDatabase))
-        self.assertEqual(module.directory_choice, E.DIR_DEFAULT_OUTPUT)
+        self.assertEqual(module.directory_choice, E.DEFAULT_OUTPUT_FOLDER_NAME)
         self.assertTrue(module.want_table_prefix)
         self.assertEqual(module.table_prefix, "ExptTbl_")
         self.assertEqual(module.sql_file_prefix, "SQLFile_")
@@ -142,7 +142,7 @@ ExportToDatabase:[module_num:1|svn_version:\'8913\'|variable_revision_number:5|s
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
         self.assertTrue(isinstance(module, E.ExportToDatabase))
-        self.assertEqual(module.directory_choice, E.DIR_DEFAULT_OUTPUT)
+        self.assertEqual(module.directory_choice, E.DEFAULT_OUTPUT_FOLDER_NAME)
         self.assertTrue(module.want_table_prefix)
         self.assertEqual(module.table_prefix, "ExptTbl_")
         self.assertEqual(module.sql_file_prefix, "SQLFile_")
@@ -172,7 +172,7 @@ ExportToDatabase:[module_num:1|svn_version:\'8913\'|variable_revision_number:6|s
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
         self.assertTrue(isinstance(module, E.ExportToDatabase))
-        self.assertEqual(module.directory_choice, E.DIR_DEFAULT_OUTPUT)
+        self.assertEqual(module.directory_choice, E.DEFAULT_OUTPUT_FOLDER_NAME)
         self.assertTrue(module.want_table_prefix)
         self.assertEqual(module.table_prefix, "ExptTbl_")
         self.assertEqual(module.sql_file_prefix, "SQLFile_")
@@ -205,7 +205,7 @@ ExportToDatabase:[module_num:1|svn_version:\'8913\'|variable_revision_number:7|s
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
         self.assertTrue(isinstance(module, E.ExportToDatabase))
-        self.assertEqual(module.directory_choice, E.DIR_DEFAULT_OUTPUT)
+        self.assertEqual(module.directory_choice, E.DEFAULT_OUTPUT_FOLDER_NAME)
         self.assertTrue(module.want_table_prefix)
         self.assertEqual(module.table_prefix, "ExptTbl_")
         self.assertEqual(module.sql_file_prefix, "SQLFile_")
@@ -245,7 +245,7 @@ ExportToDatabase:[module_num:1|svn_version:\'8913\'|variable_revision_number:8|s
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
         self.assertTrue(isinstance(module, E.ExportToDatabase))
-        self.assertEqual(module.directory_choice, E.DIR_DEFAULT_OUTPUT)
+        self.assertEqual(module.directory_choice, E.DEFAULT_OUTPUT_FOLDER_NAME)
         self.assertTrue(module.want_table_prefix)
         self.assertEqual(module.table_prefix, "ExptTbl_")
         self.assertEqual(module.sql_file_prefix, "SQLFile_")
@@ -290,7 +290,7 @@ ExportToDatabase:[module_num:1|svn_version:\'8913\'|variable_revision_number:9|s
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
         self.assertTrue(isinstance(module, E.ExportToDatabase))
-        self.assertEqual(module.directory_choice, E.DIR_DEFAULT_OUTPUT)
+        self.assertEqual(module.directory_choice, E.DEFAULT_OUTPUT_FOLDER_NAME)
         self.assertTrue(module.want_table_prefix)
         self.assertEqual(module.table_prefix, "ExptTbl_")
         self.assertEqual(module.sql_file_prefix, "SQLFile_")

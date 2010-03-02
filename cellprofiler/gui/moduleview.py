@@ -25,6 +25,7 @@ import cellprofiler.settings as cps
 import cellprofiler.preferences
 from regexp_editor import edit_regexp
 from htmldialog import HTMLDialog
+from treecheckboxdialog import TreeCheckboxDialog
 
 ERROR_COLOR = wx.RED
 RANGE_TEXT_WIDTH = 40 # number of pixels in a range text box TO_DO - calculate it
@@ -293,6 +294,9 @@ class ModuleView:
                 self.__static_texts.append(static_text)
                 if isinstance(v,cps.Binary):
                     control = self.make_binary_control(v,control_name,control)
+                elif isinstance(v, cps.MeasurementMultiChoice):
+                    control = self.make_measurement_multichoice_control(
+                        v, control_name, control)
                 elif isinstance(v, cps.MultiChoice):
                     control = self.make_multichoice_control(v, control_name, 
                                                             control)
@@ -431,6 +435,88 @@ class ModuleView:
         if (getattr(v,'has_tooltips',False) and 
             v.has_tooltips and v.tooltips.has_key(control.Value)):
             control.SetToolTip(wx.ToolTip(v.tooltips[control.Value]))
+        return control
+    
+    def make_measurement_multichoice_control(self, v, control_name, control):
+        '''Make a button that, when pressed, launches the tree editor'''
+        if control is None:
+            control = wx.Button(self.module_panel, -1,
+                                "Press to select measurements")
+            def on_press(event):
+                d = {}
+                assert isinstance(v, cps.MeasurementMultiChoice)
+                #
+                # Populate the tree
+                #
+                for choice in v.choices:
+                    object_name, feature = v.split_choice(choice)
+                    pieces = [object_name] + feature.split('_')
+                    d1 = d
+                    for piece in pieces:
+                        if not d1.has_key(piece):
+                            d1[piece] = {}
+                            d1[None] = 0
+                        d1 = d1[piece]
+                    d1[None] = False
+                #
+                # Mark selected leaf states as true
+                #
+                for selection in v.selections:
+                    object_name, feature = v.split_choice(selection)
+                    pieces = [object_name] + feature.split('_')
+                    d1 = d
+                    for piece in pieces:
+                        if not d1.has_key(piece):
+                            break
+                        d1 = d1[piece]
+                    d1[None] = True
+                #
+                # Backtrack recursively through tree to get branch states
+                #
+                def get_state(d):
+                    leaf_state = d[None]
+                    for subtree_key in [x for x in d.keys() if x is not None]:
+                        subtree_state = get_state(d[subtree_key])
+                        if leaf_state is 0:
+                            leaf_state = subtree_state
+                        elif leaf_state != subtree_state:
+                            leaf_state = None
+                    d[None] = leaf_state
+                    return leaf_state
+                get_state(d)
+                dlg = TreeCheckboxDialog(self.module_panel, d, size=(320,480))
+                choices = set(v.choices)
+                dlg.Title = "Select measurements"
+                if dlg.ShowModal() == wx.ID_OK:
+                    def collect_state(object_name, prefix, d):
+                        if d[None] is False:
+                            return []
+                        result = []
+                        if d[None] is True and prefix is not None:
+                            name = v.make_measurement_choice(object_name, prefix)
+                            if name in choices:
+                                result.append(name)
+                        for key in [x for x in d.keys() if x is not None]:
+                            if prefix is None:
+                                sub_prefix = key
+                            else:
+                                sub_prefix = '_'.join((prefix, key))
+                            result += collect_state(object_name, sub_prefix,
+                                                    d[key])
+                        return result
+                    selections = []
+                    for object_name in [x for x in d.keys() if x is not None]:
+                        selections += collect_state(object_name, None, 
+                                                    d[object_name])
+                    proposed_value = ','.join(selections)
+                    setting_edited_event = SettingEditedEvent(v, self.__module, 
+                                                              proposed_value, 
+                                                              event)
+                    self.notify(setting_edited_event)
+                    self.reset_view()
+            control.Bind(wx.EVT_BUTTON, on_press)
+        else:
+            control.Show()
         return control
     
     def make_multichoice_control(self, v, control_name, control):

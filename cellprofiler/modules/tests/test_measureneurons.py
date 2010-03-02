@@ -218,3 +218,22 @@ MeasureNeurons:[module_num:1|svn_version:\'8401\'|variable_revision_number:1|sho
             data = m.get_current_measurement(OBJECT_NAME, mname)
             self.assertEqual(len(data), 1)
             self.assertEqual(data[0], expected)
+
+    def test_02_05_branch(self):
+        '''Create an image with a one-pixel soma and a neurite with a branch'''
+        image = np.zeros((30,15),bool)
+        image[6:15,7] = True
+        image[15+np.arange(3),7+np.arange(3)] = True
+        image[15+np.arange(3),7-np.arange(3)] = True
+        labels = np.zeros((30,15), int)
+        labels[13,7] = 1
+        workspace, module = self.make_workspace(labels, image)
+        module.run(workspace)
+        m = workspace.measurements
+        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        for feature, expected in ((M.F_NUMBER_NON_TRUNK_BRANCHES, 1),
+                                  (M.F_NUMBER_TRUNKS, 1)):
+            mname = "_".join((M.C_NEURON, feature, IMAGE_NAME))
+            data = m.get_current_measurement(OBJECT_NAME, mname)
+            self.assertEqual(len(data), 1)
+            self.assertEqual(data[0], expected)

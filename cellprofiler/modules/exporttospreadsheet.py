@@ -56,7 +56,7 @@ DELIMITER_COMMA = 'Comma (",")'
 DELIMITERS = (DELIMITER_COMMA,DELIMITER_TAB)
 
 """Offset of the first object group in the settings"""
-SETTING_OG_OFFSET = 12
+SETTING_OG_OFFSET = 13
 
 """Offset of the object name setting within an object group"""
 SETTING_OBJECT_NAME_IDX = 0
@@ -85,7 +85,7 @@ class ExportToSpreadsheet(cpm.CPModule):
 
     module_name = 'ExportToSpreadsheet'
     category = "Data Tools"
-    variable_revision_number = 4
+    variable_revision_number = 5
     
     def create_settings(self):
         self.delimiter = cps.CustomChoice('Select or enter the column delimiter',DELIMITERS, doc = """
@@ -135,6 +135,11 @@ class ExportToSpreadsheet(cpm.CPModule):
         
         self.pick_columns = cps.Binary("Select the columns of measurements to export?", False, doc = """
                             Checking this setting will open up a window that allows you to select the columns to export.""")
+        
+        self.columns = cps.MeasurementMultiChoice(
+            "Press button to select measurements to export",
+            doc = """This setting controls the columns to be exported. Press
+            the button and check the measurements or categories to export""")
         
         self.wants_aggregate_means = cps.Binary("Calculate the per-image mean values for object measurements?", False, doc = """
                             <b>ExportToSpreadsheet</b> can calculate population statistics over all the 
@@ -223,7 +228,8 @@ class ExportToSpreadsheet(cpm.CPModule):
                   self.excel_limits, self.pick_columns,
                   self.wants_aggregate_means, self.wants_aggregate_medians,
                   self.wants_aggregate_std, self.directory_choice,
-                  self.custom_directory, self.wants_everything]
+                  self.custom_directory, self.wants_everything,
+                  self.columns]
         for group in self.object_groups:
             result += [group.name, group.previous_file, group.file_name,
                        group.wants_automatic_file_name]
@@ -235,8 +241,10 @@ class ExportToSpreadsheet(cpm.CPModule):
                   self.directory_choice]
         if self.directory_choice in (DIR_CUSTOM, DIR_CUSTOM_WITH_METADATA):
             result += [self.custom_directory]
-        result += [ self.add_metadata, self.excel_limits, self.pick_columns,
-                    self.wants_aggregate_means, self.wants_aggregate_medians,
+        result += [ self.add_metadata, self.excel_limits, self.pick_columns]
+        if self.pick_columns:
+            result += [ self.columns]
+        result += [ self.wants_aggregate_means, self.wants_aggregate_medians,
                     self.wants_aggregate_std, self.wants_everything]
         if not self.wants_everything:
             previous_group = None
@@ -269,9 +277,6 @@ class ExportToSpreadsheet(cpm.CPModule):
         if (len(self.delimiter.value) != 1 and
             not self.delimiter.value in (DELIMITER_TAB, DELIMITER_COMMA)):
             raise cps.ValidationError("The CSV field delimiter must be a single character", self.delimiter)
-        if pipeline.in_batch_mode() and self.pick_columns:
-            raise cps.ValidationError("You can't chose columns in batch mode",
-                                      self.pick_columns)
 
     @property
     def delimiter_char(self):
@@ -453,9 +458,8 @@ class ExportToSpreadsheet(cpm.CPModule):
                     ordered_agg_names.sort()
                     image_features += ordered_agg_names
                     image_features.sort()
-                    image_features = self.user_filter_columns(workspace.frame,
-                                                              "Image CSV file columns",
-                                                              image_features)
+                    image_features = self.filter_columns(image_features,
+                                                         cpmeas.IMAGE)
                     if image_features is None:
                         return
                     writer.writerow(image_features)
@@ -471,6 +475,16 @@ class ExportToSpreadsheet(cpm.CPModule):
                 writer.writerow(row)
         finally:
             fd.close()
+    
+    def filter_columns(self, features, object_name):
+        if self.pick_columns:
+            columns = [
+                self.columns.get_measurement_feature(x)
+                for x in self.columns.selections
+                if self.columns.get_measurement_object(x) == object_name]
+            columns = set(columns)
+            features = [x for x in features if x in columns]
+        return features
         
     def make_object_file(self, object_names, file_name, 
                          image_set_indexes, workspace):
@@ -499,14 +513,12 @@ class ExportToSpreadsheet(cpm.CPModule):
                 mdfeatures.sort()
                 features += mdfeatures
             for object_name in object_names:
+                ofeatures = m.get_feature_names(object_name)
+                ofeatures = self.filter_columns(ofeatures, object_name)
                 ofeatures = [(object_name, feature_name)
-                             for feature_name in m.get_feature_names(object_name)]
+                             for feature_name in ofeatures]
                 ofeatures.sort()
                 features += ofeatures
-            features = self.user_filter_columns(workspace.frame,
-                                                "Select columns for %s"%(file_name),
-                                                ["%s:%s"%x for x in features])
-            features = [x.split(':') for x in features]
             #
             # We write the object names in the first row of headers if there are
             # multiple objects. Otherwise, we just write the feature names
@@ -538,55 +550,6 @@ class ExportToSpreadsheet(cpm.CPModule):
                     writer.writerow(row)
         finally:
             fd.close()
-    
-    def user_filter_columns(self, frame, title, columns):
-        """Display a user interface for column selection"""
-        if (frame is None or
-            (self.pick_columns.value == False and
-            (self.excel_limits.value == False or len(columns) < 256))):
-            return columns
-        
-        import wx
-        dlg = wx.Dialog(frame,title = title,
-                        style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
-        sizer = wx.BoxSizer(wx.VERTICAL)
-        dlg.SetSizer(sizer)
-        list_box = wx.CheckListBox(dlg, choices=columns)
-        list_box.SetChecked(range(len(columns)))
-        sizer.Add(list_box,1,wx.EXPAND|wx.ALL,3)
-        sub_sizer = wx.BoxSizer(wx.HORIZONTAL)
-        sizer.Add(sub_sizer,0,wx.EXPAND)
-        count_text = wx.StaticText(dlg,label="%d columns selected"%len(columns))
-        sub_sizer.Add(count_text,0,wx.EXPAND|wx.ALL,3)
-        select_all_button = wx.Button(dlg, label="All")
-        sub_sizer.Add(select_all_button, 0, wx.ALIGN_LEFT|wx.ALL,3)
-        select_none_button = wx.Button(dlg, label="None")
-        sub_sizer.Add(select_none_button, 0, wx.ALIGN_LEFT|wx.ALL,3)
-        def check_all(event):
-            for i in range(len(columns)):
-                list_box.Check(i, True)
-            recount(event)
-        def uncheck_all(event):
-            for i in range(len(columns)):
-                list_box.Check(i, False)
-            recount(event)
-        def recount(event):
-            count = 0
-            for i in range(len(columns)):
-                if list_box.IsChecked(i):
-                    count += 1
-            count_text.Label = "%d columns selected"%(count)
-        dlg.Bind(wx.EVT_BUTTON, check_all, select_all_button)
-        dlg.Bind(wx.EVT_BUTTON, uncheck_all, select_none_button)
-        dlg.Bind(wx.EVT_CHECKLISTBOX, recount, list_box)
-        button_sizer = wx.StdDialogButtonSizer()
-        button_sizer.AddButton(wx.Button(dlg,wx.ID_OK))
-        button_sizer.AddButton(wx.Button(dlg,wx.ID_CANCEL))
-        button_sizer.Realize()
-        sizer.Add(button_sizer,0,wx.EXPAND|wx.ALL,3)
-        if dlg.ShowModal() == wx.ID_OK:
-            return [columns[i] for i in range(len(columns))
-                    if list_box.IsChecked(i)] 
     
     def prepare_to_create_batch(self, pipeline, image_set_list, fn_alter_path):
         '''Prepare to create a batch file
@@ -711,6 +674,11 @@ class ExportToSpreadsheet(cpm.CPModule):
 
             setting_values = new_setting_values
             variable_revision_number = 4
+        
+        if variable_revision_number == 4 and not from_matlab:
+            # Added column selector
+            setting_values = setting_values[:12] + ['None|None'] + setting_values[12:]
+            variable_revision_number = 5
             
         # Standardize input/output directory name references
         SLOT_DIRCHOICE = 9

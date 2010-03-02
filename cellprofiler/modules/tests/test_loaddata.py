@@ -78,11 +78,11 @@ class TestLoadData(unittest.TestCase):
         self.assertEqual(len(pipeline.modules()),3)
         module = pipeline.modules()[0]
         self.assertTrue(isinstance(module,L.LoadText))
-        self.assertEqual(module.csv_directory_choice, L.DIR_DEFAULT_IMAGE)
+        self.assertEqual(module.csv_directory_choice, L.DEFAULT_INPUT_FOLDER_NAME)
         self.assertEqual(module.csv_file_name, "1049.csv")
         self.assertTrue(module.wants_images.value)
         self.assertFalse(module.wants_image_groupings.value)
-        self.assertEqual(module.image_directory_choice, L.DIR_DEFAULT_IMAGE)
+        self.assertEqual(module.image_directory_choice, L.DEFAULT_INPUT_FOLDER_NAME)
         self.assertFalse(module.wants_rows.value)
     
     def test_01_02_load_v2(self):
@@ -110,7 +110,7 @@ class TestLoadData(unittest.TestCase):
         self.assertTrue(module.wants_image_groupings.value)
         self.assertEqual(len(module.metadata_fields.selections),1)
         self.assertEqual(module.metadata_fields.selections[0], "SBS_doses")
-        self.assertEqual(module.image_directory_choice, L.DIR_DEFAULT_IMAGE)
+        self.assertEqual(module.image_directory_choice, L.DEFAULT_INPUT_FOLDER_NAME)
         self.assertFalse(module.wants_rows.value)
     
     def test_01_03_load_v3(self):

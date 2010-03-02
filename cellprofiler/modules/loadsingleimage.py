@@ -104,7 +104,18 @@ class LoadSingleImage(cpm.CPModule):
                     ("Bitmap file (*.bmp)", "*.bmp"),
                     ("GIF file (*.gif)", "*.gif"),
                     ("Matlab image (*.mat)","*.mat"),
-                    ("All files (*.*)", "*.*")] ))
+                    ("All files (*.*)", "*.*")],doc = """
+                    The filename can be constructed in one of two ways:
+                    <ul>
+                    <li>As a fixed filename (e.g., <i>Exp1_D03f00d0.tif</i>). 
+                    <li>Using the metadata associated with an image set in 
+                    <b>LoadImages</b> or <b>LoadData</b>. This is especially useful 
+                    if you want your output given a unique label according to the
+                    metadata corresponding to an image group. The name of the metadata 
+                    to substitute is included in a special tag format embedded 
+                    in your file specification. %s. %s</li>
+                    </ul>
+                    In either case, the extension, if any, should be included."""% (USING_METADATA_TAGS_REF,USING_METADATA_HELP_REF) ))
         group.append("image_name", cps.FileImageNameProvider("Name the image that will be loaded", 
                     "OrigBlue", doc = '''What do you want to call the image you are loading? 
                     You can use this name to select the image in downstream modules.'''))

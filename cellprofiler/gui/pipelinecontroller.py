@@ -153,7 +153,7 @@ class PipelineController:
         self.__tcp_sizer = wx.BoxSizer(wx.HORIZONTAL)
         self.__tcp_continue = wx.Button(test_controls_panel, -1, "Run", (0,0))
         self.__tcp_step = wx.Button(test_controls_panel, -1, "Step", (0,0))
-        self.__tcp_next_imageset = wx.Button(test_controls_panel, -1, "Next Image Set", (0,0))
+        self.__tcp_next_imageset = wx.Button(test_controls_panel, -1, "Next Image", (0,0))
         self.__tcp_sizer.AddMany([(self.__tcp_continue, 0, wx.ALL | wx.EXPAND, 2),
                                   ((1, 1), 1),
                                   (self.__tcp_step, 0, wx.ALL | wx.EXPAND, 2),
@@ -162,7 +162,7 @@ class PipelineController:
         self.__test_controls_panel.SetSizer(self.__tcp_sizer)
         self.__tcp_continue.SetToolTip(wx.ToolTip("Run to next pause"))
         self.__tcp_step.SetToolTip(wx.ToolTip("Step to next module"))
-        self.__tcp_next_imageset.SetToolTip(wx.ToolTip("Jump to next image set"))
+        self.__tcp_next_imageset.SetToolTip(wx.ToolTip("Jump to next image cycle"))
         self.__test_controls_panel.Bind(wx.EVT_BUTTON, self.on_debug_continue, self.__tcp_continue)
         self.__test_controls_panel.Bind(wx.EVT_BUTTON, self.on_debug_step, self.__tcp_step)
         self.__test_controls_panel.Bind(wx.EVT_BUTTON, self.on_debug_next_image_set, self.__tcp_next_imageset)
@@ -922,10 +922,10 @@ class PipelineController:
         '''Choose one of the current image sets
         
         '''
-        dialog = wx.Dialog(self.__frame, title="Choose an image set")
+        dialog = wx.Dialog(self.__frame, title="Choose an image cycle")
         super_sizer = wx.BoxSizer(wx.VERTICAL)
         dialog.SetSizer(super_sizer)
-        super_sizer.Add(wx.StaticText(dialog, label = "Select an image set for testing:"),0,wx.EXPAND|wx.ALL,5)
+        super_sizer.Add(wx.StaticText(dialog, label = "Select an image cycle for testing:"),0,wx.EXPAND|wx.ALL,5)
         choices = []
         indexes = []
         for image_number in self.__groupings[self.__grouping_index][1]:
@@ -939,8 +939,8 @@ class PipelineController:
             text = ', '.join(text)
             choices.append(text)
         if len(choices) == 0:
-            wx.MessageBox("Sorry, there are no available image sets. Check your LoadImages module's settings",
-                          "Can't choose image set")
+            wx.MessageBox("Sorry, there are no available images. Check your LoadImages module's settings",
+                          "Can't choose image")
             return
         lb = wx.ListBox(dialog, -1, choices=choices)
         lb.Select(0)

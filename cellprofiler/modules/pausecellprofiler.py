@@ -55,7 +55,7 @@ class PauseCellProfiler(cpm.CPModule):
                                 <li><i>%s</i> will pause as described above, but if you choose to resume, 
                                 CellProfiler will skip all modules following the <b>PauseCellProfiler</b> 
                                 module and will advance to begin applying the first module in the pipeline
-                                to the next image set.</li>
+                                to the next image cycle.</li>
                                 <li><i>%s</i> will continue pipeline execution without stopping. This 
                                 enables you to temporarily run the full pipeline without the inconvenience 
                                 of removing the <b>PauseCellProfiler</b> module from the pipeline.</li>

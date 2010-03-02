@@ -16,9 +16,9 @@ def module_label(module):
 
 def image_set_label(image_set_index, num_image_sets):
     if image_set_index:
-        return "Image set: %(image_set_index)d of %(num_image_sets)d"%locals()
+        return "Image cycle: %(image_set_index)d of %(num_image_sets)d"%locals()
     else:
-        return "Image set:"
+        return "Image cycle:"
 
 def duration_label(duration):
     dur = int(round(duration))

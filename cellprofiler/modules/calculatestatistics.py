@@ -82,7 +82,7 @@ Evangelista donated his copyrighted dose-response-related code.</li>
 
 <b>LoadData</b> loads information from a CSV file. The first line of this file is a 
 header that names the items.
-Each subsequent line represents data for one image set, so your file should have
+Each subsequent line represents data for one image cycle, so your file should have
 the header line plus one line per image to be processed. You can also make a
 file for <b>LoadData</b> to load that contains the positive/negative control and 
 dose designations <i>plus</i> the image file names to be processed, which is a good way 

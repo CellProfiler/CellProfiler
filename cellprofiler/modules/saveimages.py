@@ -133,14 +133,14 @@ class SaveImages(cpm.CPModule):
                 additional text.</li>
                 <li><i>Sequential numbers:</i> Same as above, but in addition, each filename
                 will have a number appended to the end that corresponds to
-                the image set cycle number (starting at 1).</li>
+                the image cycle number (starting at 1).</li>
                 <li><i>Single file name:</i> A single, fixed name will be given to the
                 file, with no additional text prefixed or appended. Since the filename is fixed,
                 this file will be overwritten with each cycle. Unless you want the file to be 
                 updated every cycle during the analysis run, you would probably want to save it
                 on the last cycle (see the <a href='#when_to_save'><i>Select how often to save</i></a> setting)</li>
                 <li><i>Name with metadata:</i> The filenames are constructed using the metadata
-                associated with an image set in <b>LoadImages</b> or <b>LoadData</b>. This is 
+                associated with an image cycle in <b>LoadImages</b> or <b>LoadData</b>. This is 
                 especially useful if you want your output given a unique label according to the
                 metadata corresponding to an image group. The name of the metadata to substitute 
                 is included in a special tag format embedded in your file specification. 
@@ -193,7 +193,7 @@ class SaveImages(cpm.CPModule):
                 <li><i>Default Output Folder:</i> The file will be stored in the default output
                 folder.</li>
                 <li><i>Same folder as image:</i> The file will be stored in the folder to which the
-                images from this image set belong.</li>
+                images from this image cycle belong.</li>
                 <li><i>Custom:</i> The file will be stored in a customizable folder. This folder 
                 can be referenced against the default input or output folder.</li>
                 <li><i>Custom with metadata:</i> Same as <i>Custon</i> but also with metadata substitution 

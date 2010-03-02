@@ -475,8 +475,8 @@ sets and in a .csv file specifying the illumination correction functions. </p>
 <b>LoadData</b> module, the file should have a "Metadata_Date" 
 column which contains the date identifiers. Similarly, if the individual images 
 are loaded using the <b>LoadImages</b> module, <b>LoadImages</b> should be set to extract the 
-<Date> metadata field from the file names. The pipeline will then match the individual image sets with 
-their corresponding illumination correction functions based on matching 
+<Date> metadata field from the file names. The pipeline will then match the individual 
+images with their corresponding illumination correction functions based on matching 
 "Metadata_Date" fields.</p>
 
 <h3>Use of metadata-specific module settings</h3>
@@ -577,10 +577,10 @@ of interest, and move the slider to modules already executed.
 execution when that module is reached (the paused module itself is not executed). The icon 
 changes from black to yellow to indicate that a pause has been inserted at that point.</li>
 <li><i>Run:</i> Execution of the pipeline will be started/resumed until
-the next module pause is reached. When all modules have been executed for a given image set,
+the next module pause is reached. When all modules have been executed for a given image cycle,
 execution will stop.</li>
 <li><i>Step:</i> Execute the next module (as indicated by the slider location)</li>
-<li><i>Next image set:</i> Skip ahead to the next image set as determined by the image 
+<li><i>Next image cycle:</i> Skip ahead to the next image cycle as determined by the image 
 order in <b>LoadImages</b>/<b>LoadData</b>. The slider will automatically return to the 
 first module in the pipeline.</li>
 </ul>
@@ -590,7 +590,7 @@ first module in the pipeline.</li>
 <li><i>Stop test run:</i> Exit <i>Test</i> mode. Loading a new pipeline or adding/subtracting
 modules will also automatically exit test mode.</li>
 <li><i>Step to next module:</i> Execute the next module (as indicated by the slider location)</li>
-<li><i>Choose image set / group:</i>Choose the image set or group to jump to.
+<li><i>Choose image / group:</i>Choose the image or group to jump to.
 The slider will then automatically return to the first module in the pipeline.</li>
 <li><i>Reload modules source:</i> For developers only. This option will reload the module source 
 code, so any changes to the code will be reflected immediately.</li>

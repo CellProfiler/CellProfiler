@@ -51,7 +51,7 @@ sets and in a .csv file specifying the illumination correction functions.
 column which contains the date identifiers. Similarly, if the individual images 
 are loaded using the <b>LoadImages</b> module, <b>LoadImages</b> should be set to extract the 
 <Date> metadata field from the file names (see <b>LoadImages</b> for more details 
-on how to do so). The pipeline will then match the individual image sets with 
+on how to do so). The pipeline will then match the individual image with 
 their corresponding illumination correction functions based on matching 
 "Metadata_Date" fields.</li>
 

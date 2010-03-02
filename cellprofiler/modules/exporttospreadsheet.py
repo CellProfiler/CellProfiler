@@ -111,11 +111,11 @@ class ExportToSpreadsheet(cpm.CPModule):
             (for instance, "./data"). Start the folder name with "&" to name
             a subfolder of the image folder.</li>
             <li><i>Custom folder with metadata:</i> If you have metadata 
-            associated with your images, this setting uses metadata substitution
-            to name the folder and to group the image sets by the metadata tag.
-            For instance, if you have a metadata tag named, "Plate", you can
-            create a folder per-plate using the metadata tag "./&lt;Plate&gt;".
-            %s.</li></ul>"""% USING_METADATA_HELP_REF)
+            associated with your images, you can  name the folder using metadata
+            tags. %s. For instance, if you have a metadata tag named, 
+            "Plate", you can create a per-plate folder using the metadata 
+            tag "./&lt;Plate&gt;".
+            %s.</li></ul>"""%(USING_METADATA_TAGS_REF,USING_METADATA_HELP_REF))
         
         self.custom_directory = cps.Text(
             "Folder name", ".", doc="""Name of the folder that will be used

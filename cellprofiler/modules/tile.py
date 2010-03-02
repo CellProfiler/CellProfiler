@@ -161,7 +161,7 @@ class Tile(cpm.CPModule):
         self.wants_automatic_rows = cps.Binary(
             "Automatically calculate number of rows?", False,
             doc = """<b>Tile</b> can automatically calculate the number of rows
-            in the grid based on the number of image sets that will be processed.
+            in the grid based on the number of image cycles that will be processed.
             Check this box to create a grid that has the number of columns
             that you entered and enough rows to display all of your images.
             If you check both automatic rows and automatic columns, <b>Tile</b>
@@ -171,7 +171,7 @@ class Tile(cpm.CPModule):
         self.wants_automatic_columns = cps.Binary(
             "Automatically calculate number of columns?", False,
             doc = """<b>Tile</b> can automatically calculate the number of columns
-            in the grid from the number of image sets that will be processed.
+            in the grid from the number of image cycles that will be processed.
             Check this box to create a grid that has the number of rows
             that you entered and enough columns to display all of your images.
             If you check both automatic rows and automatic columns, <b>Tile</b>
@@ -259,7 +259,7 @@ class Tile(cpm.CPModule):
         return False
         
     def tile(self, workspace):
-        '''Tile images across image sets
+        '''Tile images across image cycles
         '''
         d = self.get_dictionary(workspace.image_set_list)
         rows, columns = self.get_grid_dimensions(d[IMAGE_COUNT])

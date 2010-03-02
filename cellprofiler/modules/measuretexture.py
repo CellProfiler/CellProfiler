@@ -7,12 +7,17 @@ entire image) without much texture has a smooth appearance; an
 object or image with a lot of texture will appear rough and show a wide 
 variety of pixel intensities.
 
+<p>This module can also measure textures of objects against grayscale images. 
+Any input objects specified will have their texture measured against <i>all</i> input
+images specfied, which may lead to image-object texture combinations that are unneccesary. 
+If you do not want this behavior, use multiple <b>MeasureTexture</b> modules to 
+specify the particular image-object measures that you want.</p>
+                        
+
 <h4>Available measurements</h4>
 <ul>
-<li>
-Haralick Features: Haralick texture features are derived from the 
-co-occurrence matrix, 
-which contains information about how image intensities in pixels with a 
+<li><i>Haralick Features:</i> Haralick texture features are derived from the 
+co-occurrence matrix, which contains information about how image intensities in pixels with a 
 certain position in relation to each other occur together. <b>MeasureTexture</b>
 can measure textures at different scales; the scale you choose determines
 how the co-occurrence matrix is constructed.
@@ -22,11 +27,8 @@ the right. <b>MeasureTexture</b> quantizes the image into eight intensity
 levels. There are then 8x8 possible ways to categorize a pixel with its
 scale-neighbor. <b>MeasureTexture</b> forms the 8x8 co-occurrence matrix
 by counting how many pixels and neighbors have each of the 8x8 intensity
-combinations. Features are then calculated for the image by performing
-mathematical operations on the co-occurrence matrix. The original reference for 
-the Haralick features is Haralick et al. (1973), "Textural Features for Image
-Classification," <i>IEEE Transaction on Systems Man, Cybernetics</i>,
-SMC-3(6):610-621, in which 14 features are described:
+combinations. Fourteen features are then calculated for the image by performing
+mathematical operations on the co-occurrence matrix:
 <ul>
 <li><i>H1:</i> Angular Second Moment</li>
 <li><i>H2:</i> Contrast</li>
@@ -44,14 +46,15 @@ SMC-3(6):610-621, in which 14 features are described:
 </ul>
 </li>
 <li>
-<i>Gabor "wavelet" features:</i> These features are similar to wavelet features, and they are obtained by
-applying so-called Gabor filters to the image. The Gabor filters measure
-the frequency content in different orientations. They are very similar to
-wavelets, and in the current context they work exactly as wavelets, but
+<i>Gabor "wavelet" features:</i> These features are similar to wavelet features, 
+and they are obtained by applying so-called Gabor filters to the image. The Gabor 
+filters measure the frequency content in different orientations. They are very 
+similar to wavelets, and in the current context they work exactly as wavelets, but
 they are not wavelets by a strict mathematical definition. The Gabor
 features detect correlated bands of intensities, for instance, images of
 Venetian blinds would have high scores in the horizontal orientation.
 
+<h3>Technical notes</h3> 
 <p><b>MeasureTexture</b> performs the following algorithm to compute a score
 at each scale using the Gabor filter:
 <ul>
@@ -68,10 +71,16 @@ in each object.</li>
 This results in one score per Theta.</li>
 <li>Save the maximum score over all Theta as the score at the desired scale.</li>
 </ul>
-    
-The original reference is Gabor, D. (1946). "Theory of communication," 
-<i>Journal of the Institute of Electrical Engineers</i> 93:429-441.
-</li>
+</p>
+
+
+References
+<ul>
+<li>Haralick et al. (1973), "Textural Features for Image
+Classification," <i>IEEE Transaction on Systems Man, Cybernetics</i>,
+SMC-3(6):610-621.</li>
+<li>Gabor D. (1946). "Theory of communication," 
+<i>Journal of the Institute of Electrical Engineers</i> 93:429-441.</li>
 </ul>
 """
 
@@ -193,7 +202,8 @@ class MeasureTexture(cpm.CPModule):
             group.append("divider", cps.Divider(line=False))
         group.append('image_name', 
                      cps.ImageNameSubscriber("Select an image to measure","None", 
-                                             doc="""What did you call the grayscale images whose texture you want to measure?"""))
+                                             doc="""
+                                             What did you call the grayscale images whose texture you want to measure?"""))
         if can_remove:
             group.append("remover", cps.RemoveSettingButton("", "Remove this image", self.image_groups, group))
         self.image_groups.append(group)
@@ -208,8 +218,15 @@ class MeasureTexture(cpm.CPModule):
         if can_remove:
             group.append("divider", cps.Divider(line=False))
         group.append('object_name', 
-                     cps.ObjectNameSubscriber("Select objects to measure","None",
-                                              doc="""What did you call the objects whose texture you want to measure? You can select <i>None</i> if you only want to measure the texture for the image overall."""))
+                     cps.ObjectNameSubscriber("Select objects to measure","None", doc="""
+                        What did you call the objects whose texture you want to measure? 
+                        You can select <i>None</i> if you only want to measure the texture 
+                        for the image overall. 
+                        <p>Objects specified here will have their
+                        texture measured against <i>all</i> images specfied above, which
+                        may lead to image-object combinations that are unneccesary. If you
+                        do not want this behavior, use multiple <b>MeasureTexture</b>
+                        modules to specify the particular image-object measures that you want.</p>"""))
         if can_remove:
             group.append("remover", cps.RemoveSettingButton("", "Remove this object", self.object_groups, group))
         self.object_groups.append(group)

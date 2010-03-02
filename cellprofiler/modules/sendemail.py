@@ -129,38 +129,38 @@ class SendEmail(cpm.CPModule):
             doc="""Select the kind of event that causes
             <b>SendEmail</b> to send an email. You have the following choices:
             <br><ul><li><i>After first cycle:</i> Send an email during
-            processing of the first image set.</li>
+            processing of the first image cycle.</li>
             <li><i>After last cycle:</i> Send an email after all processing
             is complete.</li>
             <li><i>After group start:</i> Send an email during the first
-            cycle of each group of image sets.</li>
+            cycle of each group of images.</li>
             <li><i>After group end:</i> Send an email after all processing
             for a group is complete.</li>
             <li><i>Every # of cycles</i> Send an email each time a certain
-            number of image sets has been processed. You will be prompted
-            for the number of image sets if you select this choice.</li>
+            number of image cycles have been processed. You will be prompted
+            for the number of image cycles if you select this choice.</li>
             <li><i>After cycle #:</i> Send an email after the given number
-            of image sets have been processed. You will be prompted for
-            the image set number if you select this choice. You can add
-            more events if you want emails after more than one image set.</li>
+            of image cycles have been processed. You will be prompted for
+            the image cycle number if you select this choice. You can add
+            more events if you want emails after more than one image cycle.</li>
             </ul>"""))
         
         group.append("image_set_number", cps.Integer(
-            "Image set number", 1, minval = 1,
+            "Image cycle number", 1, minval = 1,
             doc='''
             <i>(Used only if sending email after a particular cycle number)</i><br>
-            Send an email during processing of the given image set.
+            Send an email during processing of the given image cycle.
             For instance, if you enter 4, then <b>SendEmail</b>
-            will send an email during processing of the fourth image set.'''))
+            will send an email during processing of the fourth image cycle.'''))
         
         group.append("image_set_count", cps.Integer(
-            "Image set count", 1, minval = 1,
+            "Image cycle count", 1, minval = 1,
             doc='''
             <i>(Used only if sending email after every N cycles)</i><br>
-            Send an email each time this number of image sets have
+            Send an email each time this number of image cycles have
             been processed. For instance, if you enter 4,
             then <b>SendEmail</b> will send an email during processing of
-            the fourth, eighth, twelfth, etc. image set.'''))
+            the fourth, eighth, twelfth, etc. image cycles.'''))
         
         group.append("message", cps.Text(
             "Message text","Notification from CellProfiler",

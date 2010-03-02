@@ -129,7 +129,7 @@ class ClassifyObjects(cpm.CPModule):
             value for a measurement. You can set this cutoff threshold in one
             of three ways:<br>
             <ul><li><i>Mean</i>: At the mean
-            of the measurement's value for all objects in the image set.</li>
+            of the measurement's value for all objects in the image cycle.</li>
             <li><i>Median</i>: At the median of the
             measurement's value for all objects in the image set.</li>
             <li><i>Custom</i>: You specify a custom threshold value.</li></ul>""")
@@ -153,7 +153,7 @@ class ClassifyObjects(cpm.CPModule):
             value for a measurement. You can set this cutoff threshold in one
             of three ways:<br>
             <ul><li><i>Mean</i>: At the mean
-            of the measurement's value for all objects in the image set.</li>
+            of the measurement's value for all objects in the image cycle.</li>
             <li><i>Median</i>: At the median of the
             measurement's value for all objects in the image set.</li>
             <li><i>Custom</i>: You specify a custom threshold value.</li></ul>""")
@@ -442,7 +442,7 @@ class ClassifyObjects(cpm.CPModule):
         return False
     
     def run(self, workspace):
-        """Classify the objects in the image set"""
+        """Classify the objects in the image cycle"""
         if self.contrast_choice == BY_SINGLE_MEASUREMENT:
             if workspace.frame:
                 workspace.display_data.labels = []

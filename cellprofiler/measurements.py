@@ -221,7 +221,7 @@ class Measurements(object):
                     (object_name,feature_name,self.image_set_index))
             assert (self.__can_overwrite or not
                     self.has_current_measurements(object_name, feature_name)),\
-                   ("Feature %s.%s has already been set for this image set" %
+                   ("Feature %s.%s has already been set for this image cycle" %
                     (object_name,feature_name))
             #
             # These are for convenience - wrap measurement in an numpy array to make it a cell

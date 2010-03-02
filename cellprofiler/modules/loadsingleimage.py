@@ -244,7 +244,7 @@ class LoadSingleImage(cpm.CPModule):
             m.add_measurement('Image','MD5Digest_'+image_name, digest.hexdigest())
             statistics += [(image_name, dict[image_name])]
         if workspace.frame:
-            title = "Load single image: image set # %d"%(workspace.measurements.image_set_number+1)
+            title = "Load single image: image cycle # %d"%(workspace.measurements.image_set_number+1)
             figure = workspace.create_or_find_figure(title=title,
                                                      subplots=(1,1))
             figure.subplot_table(0,0, statistics)

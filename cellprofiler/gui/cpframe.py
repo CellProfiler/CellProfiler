@@ -155,10 +155,10 @@ class CPFrame(wx.Frame):
         self.__menu_debug = wx.Menu()
         self.__menu_debug.Append(ID_DEBUG_TOGGLE,'&Start test run\tF5','Start the pipeline debugger')
         self.__menu_debug.Append(ID_DEBUG_STEP,'Ste&p to next module\tF6','Execute the currently selected module')
-        self.__menu_debug.Append(ID_DEBUG_NEXT_IMAGE_SET,'&Next image set\tF7','Advance to the next image set')
+        self.__menu_debug.Append(ID_DEBUG_NEXT_IMAGE_SET,'&Next image cycle\tF7','Advance to the next image cycle in the image set')
         self.__menu_debug.Append(ID_DEBUG_NEXT_GROUP, 'Next &group\tF8','Advance to the next group in the image set')
         self.__menu_debug.Append(ID_DEBUG_CHOOSE_GROUP, 'Choose group', 'Choose which image set group to process in test-mode')
-        self.__menu_debug.Append(ID_DEBUG_CHOOSE_IMAGE_SET, 'Choose image set','Choose any of the available image sets in the current image set list')
+        self.__menu_debug.Append(ID_DEBUG_CHOOSE_IMAGE_SET, 'Choose image cycle','Choose any of the available image cycles in the current image set list')
         if not hasattr(sys, 'frozen'):
             self.__menu_debug.Append(ID_DEBUG_RELOAD, "Reload modules' source")
         self.__menu_debug.Enable(ID_DEBUG_STEP,False)

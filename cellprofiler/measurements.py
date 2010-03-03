@@ -203,6 +203,12 @@ class Measurements(object):
                 object_dict[feature_name] = [data]
             elif self.__can_overwrite:
                 object_dict[feature_name] = [data]
+            elif (object_name == IMAGE and 
+                  feature_name.startswith(C_METADATA)):
+                if object_dict[feature_name][0] != data:
+                    raise ValueError(
+                        "Metadata feature %s has conficting values: %s and %s" %
+                        (feature_name, object_dict[feature_name][0], data))
             else:
                 assert False,"Adding a feature for a second time: %s.%s"%(object_name,feature_name)
         else:
@@ -219,10 +225,14 @@ class Measurements(object):
             assert self.__dictionary[object_name].has_key(feature_name),\
                    ("Feature %s.%s added for the first time on pass # %d" %
                     (object_name,feature_name,self.image_set_index))
-            assert (self.__can_overwrite or not
-                    self.has_current_measurements(object_name, feature_name)),\
-                   ("Feature %s.%s has already been set for this image cycle" %
-                    (object_name,feature_name))
+            if (object_name == IMAGE and feature_name.startswith(C_METADATA)
+                and self.has_current_measurements(object_name, feature_name)):
+                assert self.get_current_image_measurement(feature_name) == data
+            else:
+                assert (self.__can_overwrite or not
+                        self.has_current_measurements(object_name, feature_name)),\
+                       ("Feature %s.%s has already been set for this image cycle" %
+                        (object_name,feature_name))
             #
             # These are for convenience - wrap measurement in an numpy array to make it a cell
             #

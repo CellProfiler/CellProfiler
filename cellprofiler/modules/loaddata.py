@@ -479,31 +479,39 @@ class LoadData(cpm.CPModule):
         dictionary = {}
         metadata = {}
         images = {}
-        for i in range(len(header)):
+        previous_columns = [x for x in pipeline.get_measurement_columns(self)
+                            if x[0] == cpmeas.IMAGE and x[1] in header]
+        previous_dict = {}
+        for object_name, feature, coltype in previous_columns:
+            previous_dict[feature] = coltype
+        for i, feature in enumerate(header):
             column = [row[i] for row in rows]
-            if header[i].startswith('Metadata_'):
-                key = header[i][len('Metadata_'):]
+            if feature.startswith('Metadata_'):
+                key = feature[len('Metadata_'):]
                 column = np.array(column)
-                dictionary[header[i]] = best_cast(column)
-                metadata[key] = dictionary[header[i]]
+                if previous_dict.has_key(feature):
+                    dictionary[feature] = best_cast(column, previous_dict[feature])
+                else:
+                    dictionary[feature] = best_cast(column)
+                metadata[key] = dictionary[feature]
             elif (self.wants_images.value and
-                  is_file_name_feature(header[i])):
+                  is_file_name_feature(feature)):
                 column = np.array(column)
-                image = get_image_name(header[i])
+                image = get_image_name(feature)
                 if not images.has_key(image):
                     images[image] = {}
                 images[image][FILE_NAME] = column
-                dictionary[header[i]] = column
+                dictionary[feature] = column
             elif (self.wants_images.value and
-                  is_path_name_feature(header[i])):
+                  is_path_name_feature(feature)):
                 column = np.array(column)
                 image = get_image_name(header[i])
                 if not images.has_key(image):
                     images[image] = {}
                 images[image][PATH_NAME] = column
-                dictionary[header[i]] = column
+                dictionary[feature] = column
             else:
-                dictionary[header[i]] = best_cast(column)
+                dictionary[feature] = best_cast(column)
         
         for image in images.keys():
             if not images[image].has_key(FILE_NAME):
@@ -623,9 +631,16 @@ class LoadData(cpm.CPModule):
                     break
         else:
             index = workspace.measurements.image_set_number-1
-        for feature_name in dictionary.keys():
+        features = [x[1] for x in 
+                    self.get_measurement_columns(workspace.pipeline)
+                    if dictionary.has_key(x[1])]
+        
+        for feature_name in features:
             value = dictionary[feature_name][index]
             workspace.measurements.add_image_measurement(feature_name, value)
+            
+        for feature_name in sorted(dictionary.keys()):
+            value = dictionary[feature_name][index]
             statistics += [[feature_name, value]]
         #
         # Add a metadata well measurement if only row and column exist
@@ -688,12 +703,22 @@ class LoadData(cpm.CPModule):
             if entry is not None:
                 entry["measurement_columns"] = []
             return []
+        previous_columns = pipeline.get_measurement_columns(self)
+        previous_fields = set([x[1] for x in previous_columns
+                               if x[0] == cpmeas.IMAGE])
+        already_output = [x in previous_fields for x in header]
         coltypes = [cpmeas.COLTYPE_INTEGER]*len(header)
         collen = [0]*len(header)
         for row in reader:
-            for field,index in zip(row,range(len(row))):
+            for index, field in enumerate(row):
+                if already_output[index]:
+                    continue
+                if ((not self.wants_images) and
+                    (field.startswith(PATH_NAME) or
+                     field.startswith(FILE_NAME))):
+                    continue
                 len_field = len(field)
-                if field.startswith(PATH_NAME) and self.wants_images:
+                if field.startswith(PATH_NAME):
                     # Account for possible rewrite of the pathname
                     # in batch data
                     len_field = max(cpmeas.PATH_NAME_LENGTH, 
@@ -716,11 +741,12 @@ class LoadData(cpm.CPModule):
                     collen[index] = len(field)
                     coltypes[index] = cpmeas.COLTYPE_VARCHAR_FORMAT%len(field)
         image_names = self.other_providers('imagegroup')
-        result = ([(cpmeas.IMAGE, colname, coltype)
-                   for colname, coltype in zip(header, coltypes)] +
-                  [(cpmeas.IMAGE, 'MD5Digest_'+image_name,
+        result = [(cpmeas.IMAGE, colname, coltype)
+                   for colname, coltype in zip(header, coltypes)
+                   if colname not in previous_fields] 
+        result += [(cpmeas.IMAGE, 'MD5Digest_'+image_name,
                     cpmeas.COLTYPE_VARCHAR_FORMAT % 32)
-                   for image_name in image_names])
+                   for image_name in image_names]
         #
         # Try to make a well column out of well row and well column
         #
@@ -836,7 +862,7 @@ class LoadData(cpm.CPModule):
 
 LoadText = LoadData
 
-def best_cast(sequence):
+def best_cast(sequence, coltype=None):
     '''Return the best cast (integer, float or string) of the sequence
     
     sequence - a sequence of strings
@@ -844,7 +870,10 @@ def best_cast(sequence):
     Try casting all elements to integer and float, returning a numpy
     array of values. If all fail, return a numpy array of strings.
     '''
-    
+    if (isinstance(coltype, (str, unicode)) and 
+        coltype.startswith(cpmeas.COLTYPE_VARCHAR)):
+        # Cast columns already defined as strings as same
+        return np.array(sequence)
     try:
         if any([isinstance(int(x), long)
                 for x in sequence]):

@@ -218,7 +218,7 @@ class PipelineListView(object):
     def select_one_module(self, module_num):
         """Select only the given module number in the list box"""
         for module in self.__pipeline.modules():
-            self.select_module(module.module_num, module.module_num == module_num)
+            self.list_ctrl.Select(module_num-1, module.module_num == module_num)
         self.__on_item_selected(None)
         
     def select_module(self,module_num,selected=True):

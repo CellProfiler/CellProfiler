@@ -287,7 +287,7 @@ class Crop(cpm.CPModule):
                 recalculate_flag = True
                 sys.stderr.write("""Image, "%s", size changed from %s to %s during cycle %d, recalculating"""%
                                  (self.image_name.value, 
-                                  str(self.__first_cropping.shape),
+                                  str(d[D_FIRST_CROPPING].shape),
                                   str(orig_image.pixel_data.shape[:2]),
                                   workspace.image_set.number+1))
         mask = None # calculate the mask after cropping unless set below

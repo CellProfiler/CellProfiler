@@ -361,7 +361,7 @@ class TestLoadData(unittest.TestCase):
 8,2.3,"Bevakasha"
 '''%colnames
         pipeline, module, filename = self.make_pipeline(csv_text)
-        columns = module.get_measurement_columns(None)
+        columns = module.get_measurement_columns(pipeline)
         for colname, coltype in zip(colnames, coltypes):
             self.assertTrue(any([(column[0] == cpmeas.IMAGE and
                                   column[1] == colname and
@@ -382,7 +382,7 @@ class TestLoadData(unittest.TestCase):
 '''%colnames
         pipeline, module, filename = self.make_pipeline(csv_text)
         try:
-            columns = module.get_measurement_columns(None)
+            columns = module.get_measurement_columns(pipeline)
             self.assertTrue('FileName_Foo' in [c[1] for c in columns])
             self.assertTrue('PathName_Foo' in [c[1] for c in columns])
         finally:
@@ -404,7 +404,7 @@ class TestLoadData(unittest.TestCase):
 1234567890123,2.3,"Bevakasha"
 '''%colnames
         pipeline, module, filename = self.make_pipeline(csv_text)
-        columns = module.get_measurement_columns(None)
+        columns = module.get_measurement_columns(pipeline)
         for colname, coltype in zip(colnames, coltypes):
             self.assertTrue(any([(column[0] == cpmeas.IMAGE and
                                   column[1] == colname and

@@ -271,7 +271,89 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'9144\'|variable_revision_number:
             self.assertEqual(group.file_name, "%s.csv" % object_name)
             self.assertFalse(group.previous_file)
             self.assertTrue(group.wants_automatic_file_name)
-            
+    
+    def test_000_06_load_v5(self):
+        data = r'''CellProfiler Pipeline: http://www.cellprofiler.org
+Version:1
+SVNRevision:9434
+
+ExportToSpreadsheet:[module_num:1|svn_version:\'9434\'|variable_revision_number:5|show_window:False|notes:\x5B\x5D]
+    Select or enter the column delimiter:Tab
+    Prepend the output file name to the data file names?:Yes
+    Add image metadata columns to your object data file?:No
+    No longer used, always saved:No
+    Limit output to a size that is allowed in Excel?:No
+    Select the columns of measurements to export?:Yes
+    Calculate the per-image mean values for object measurements?:No
+    Calculate the per-image median values for object measurements?:Yes
+    Calculate the per-image standard deviation values for object measurements?:No
+    Output file location:Default Output Folder
+    Folder name://iodine/imaging_analysis/People/Lee
+    Export all measurements?:No
+    Press button to select measurements to export:Image\x7CFileName_rawGFP,Image\x7CFileName_IllumGFP,Image\x7CFileName_IllumDNA,Image\x7CFileName_rawDNA,Image\x7CMetadata_SBS_Doses,Image\x7CMetadata_Well,Image\x7CMetadata_Controls
+    Data to export:Image
+    Combine these object measurements with those of the previous object?:No
+    File name:Image.csv
+    Use the object name for the file name?:No
+    Data to export:Nuclei
+    Combine these object measurements with those of the previous object?:No
+    File name:Nuclei.csv
+    Use the object name for the file name?:No
+    Data to export:PropCells
+    Combine these object measurements with those of the previous object?:No
+    File name:PropCells.csv
+    Use the object name for the file name?:No
+    Data to export:DistanceCells
+    Combine these object measurements with those of the previous object?:No
+    File name:DistanceCells.csv
+    Use the object name for the file name?:No
+    Data to export:DistCytoplasm
+    Combine these object measurements with those of the previous object?:No
+    File name:DistCytoplasm.csv
+    Use the object name for the file name?:No
+'''
+        pipeline = cpp.Pipeline()
+        def callback(caller,event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO(data))
+        self.assertEqual(len(pipeline.modules()), 1)
+        module = pipeline.modules()[0]
+        self.assertTrue(isinstance(module,E.ExportToExcel))
+        self.assertEqual(module.delimiter, E.DELIMITER_TAB)
+        self.assertTrue(module.prepend_output_filename)
+        self.assertEqual(module.directory_choice, E.DEFAULT_OUTPUT_FOLDER_NAME)
+        self.assertEqual(module.custom_directory, "//iodine/imaging_analysis/People/Lee")
+        self.assertFalse(module.add_metadata)
+        self.assertFalse(module.excel_limits)
+        self.assertTrue(module.pick_columns)
+        self.assertTrue(all([module.columns.get_measurement_object(x) == "Image"
+                             for x in module.columns.selections]))
+        self.assertEqual(len(module.columns.selections), 7)
+        features = set([module.columns.get_measurement_feature(x)
+                             for x in module.columns.selections])
+        for feature in (
+            "FileName_rawGFP", "FileName_IllumGFP", "FileName_IllumDNA",
+            "FileName_rawDNA", "Metadata_SBS_Doses", "Metadata_Well",
+            "Metadata_Controls"):
+            self.assertTrue(feature in features)
+        self.assertFalse(module.wants_aggregate_means)
+        self.assertTrue(module.wants_aggregate_medians)
+        self.assertFalse(module.wants_aggregate_std)
+        self.assertFalse(module.wants_everything)
+        self.assertEqual(len(module.object_groups), 5)
+        for i, (object_name, file_name) in enumerate((
+            ( "Image", "Image.csv"),
+            ( "Nuclei", "Nuclei.csv"),
+            ( "PropCells", "PropCells.csv"),
+            ( "DistanceCells", "DistanceCells.csv"),
+            ( "DistCytoplasm", "DistCytoplasm.csv"))):
+            group = module.object_groups[i]
+            self.assertFalse(group.previous_file)
+            self.assertFalse(group.wants_automatic_file_name)
+            self.assertEqual(group.name, object_name)
+            self.assertEqual(group.file_name, file_name)
+        
     def test_00_00_no_measurements(self):
         '''Test an image set with objects but no measurements'''
         path = os.path.join(self.output_dir, "my_file.csv")

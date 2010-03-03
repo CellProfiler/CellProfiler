@@ -253,7 +253,10 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             This is useful in cases when you do not want to make measurements of
             objects that are not fully within the field of view (because, for
             example, the morphological measurements would not be accurate).  Objects 
-            discarded due to border touching are outlined in yellow in the module's display. ''')
+            discarded due to border touching are outlined in yellow in the module's display.
+            Note that if a per-object thresholding method is used, objects that touch the 
+            border of the cropped region will be discarded with this setting
+            checked.''')
         
         self.create_threshold_settings()
         

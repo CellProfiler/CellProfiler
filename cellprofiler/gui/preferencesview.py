@@ -15,7 +15,7 @@ __version__="$Revision$"
 import os
 import string
 import wx
-import cellprofiler.preferences
+import cellprofiler.preferences as cpprefs
 from cellprofiler.gui.htmldialog import HTMLDialog
 from cellprofiler.gui.help import \
      DEFAULT_IMAGE_FOLDER_HELP, DEFAULT_OUTPUT_FOLDER_HELP, OUTPUT_FILENAME_HELP
@@ -30,19 +30,22 @@ class PreferencesView:
         self.__panel = panel
         self.__sizer = wx.BoxSizer(wx.VERTICAL)
         self.__image_folder_panel = wx.Panel(panel,-1)
-        self.__image_edit_box = self.__make_folder_panel(self.__image_folder_panel,
-                                                         cellprofiler.preferences.get_default_image_directory(),
-                                                         'Default Input Folder',
-                                                         DEFAULT_IMAGE_FOLDER_HELP,
-                                                         [cellprofiler.preferences.set_default_image_directory,
-                                                          self.__notify_pipeline_list_view_directory_change])
+        self.__image_edit_box = self.__make_folder_panel(
+            self.__image_folder_panel,
+            cpprefs.get_default_image_directory(),
+            'Default Input Folder',
+            DEFAULT_IMAGE_FOLDER_HELP,
+            [cpprefs.set_default_image_directory,
+             self.__notify_pipeline_list_view_directory_change],
+            refresh_action = self.refresh_input_directory)
         self.__output_folder_panel = wx.Panel(panel,-1)
-        self.__output_edit_box = self.__make_folder_panel(self.__output_folder_panel,
-                                                          cellprofiler.preferences.get_default_output_directory(),
-                                                          'Default Output Folder',
-                                                          DEFAULT_OUTPUT_FOLDER_HELP,
-                                                          [cellprofiler.preferences.set_default_output_directory,
-                                                           self.__notify_pipeline_list_view_directory_change])
+        self.__output_edit_box = self.__make_folder_panel(
+            self.__output_folder_panel,
+            cpprefs.get_default_output_directory(),
+            'Default Output Folder',
+            DEFAULT_OUTPUT_FOLDER_HELP,
+            [cpprefs.set_default_output_directory,
+             self.__notify_pipeline_list_view_directory_change])
         self.__odds_and_ends_panel = wx.Panel(panel,-1)
         self.__make_odds_and_ends_panel()
         self.__status_text = wx.StaticText(panel,-1,style=wx.SUNKEN_BORDER,label=WELCOME_MESSAGE)
@@ -54,7 +57,8 @@ class PreferencesView:
         self.__errors = set()
         self.__pipeline_list_view = None
         
-    def __make_folder_panel(self, panel, value, text, help_text, actions):
+    def __make_folder_panel(self, panel, value, text, help_text, actions,
+                            refresh_action = None):
         sizer = wx.BoxSizer(wx.HORIZONTAL)
         help_button = wx.Button(panel,-1,'?',(0,0), (30,-1))
         text_static = wx.StaticText(panel,-1,text+':')
@@ -75,8 +79,18 @@ class PreferencesView:
             new_button.Disable()
         sizer.AddMany([(help_button,0,wx.ALL | wx.ALIGN_CENTER, 1),
                        (text_static,0,wx.ALIGN_CENTER, 1),
-                       (edit_box,3,wx.EXPAND|wx.ALL,1),
-                       (browse_button,0,0|wx.ALL,1),
+                       (edit_box,3,wx.EXPAND|wx.ALL,1)])
+        if refresh_action is not None:
+            refresh_bitmap = wx.ArtProvider.GetBitmap(wx.ART_REDO,
+                                                      wx.ART_CMN_DIALOG,
+                                                      (16,16))
+            refresh_button = wx.BitmapButton(panel, -1, bitmap = refresh_bitmap)
+            sizer.Add(refresh_button, 0, wx.ALIGN_CENTER, 1)
+            refresh_button.SetToolTipString("Refresh the default input directory list")
+            def on_refresh(event):
+                refresh_action()
+            refresh_button.Bind(wx.EVT_BUTTON, on_refresh)
+        sizer.AddMany([(browse_button,0,0|wx.ALL,1),
                        (new_button,0,0|wx.ALL,1)])
         panel.SetSizer(sizer)
         def on_new_folder(event):
@@ -124,9 +138,9 @@ class PreferencesView:
                    lambda event: self.__on_help(event, OUTPUT_FILENAME_HELP),
                    output_filename_help_button)
         panel.Bind(wx.EVT_TEXT, self.__on_output_filename_changed, self.__output_filename_edit_box)
-        cellprofiler.preferences.add_output_file_name_listener(self.__on_preferences_output_filename_event)
-        cellprofiler.preferences.add_image_directory_listener(self.__on_preferences_image_directory_event)
-        cellprofiler.preferences.add_output_directory_listener(self.__on_preferences_output_directory_event)
+        cpprefs.add_output_file_name_listener(self.__on_preferences_output_filename_event)
+        cpprefs.add_image_directory_listener(self.__on_preferences_image_directory_event)
+        cpprefs.add_output_directory_listener(self.__on_preferences_output_directory_event)
         panel.Bind(wx.EVT_WINDOW_DESTROY, self.__on_destroy, panel)
     
     def check_preferences(self):
@@ -140,7 +154,7 @@ class PreferencesView:
                              style = wx.YES_NO) == wx.NO:
                 return False, "Image directory does not exist"
             os.makedirs(path)
-            cellprofiler.preferences.set_default_image_directory(path)
+            cpprefs.set_default_image_directory(path)
         path = self.__output_edit_box.Value
         if not os.path.isdir(path):
             if wx.MessageBox(('The Default Output Folder is "%s", but '
@@ -150,13 +164,13 @@ class PreferencesView:
                              style = wx.YES_NO) == wx.NO:
                 return False, "Output directory does not exist"
             os.makedirs(path)
-            cellprofiler.preferences.set_default_output_directory(path)
+            cpprefs.set_default_output_directory(path)
         return True, "OK"
                           
     def __on_destroy(self, event):
-        cellprofiler.preferences.remove_image_directory_listener(self.__on_preferences_image_directory_event)
-        cellprofiler.preferences.remove_output_directory_listener(self.__on_preferences_output_directory_event)
-        cellprofiler.preferences.remove_output_file_name_listener(self.__on_preferences_output_filename_event)
+        cpprefs.remove_image_directory_listener(self.__on_preferences_image_directory_event)
+        cpprefs.remove_output_directory_listener(self.__on_preferences_output_directory_event)
+        cpprefs.remove_output_file_name_listener(self.__on_preferences_output_filename_event)
 
     def attach_to_pipeline_controller(self, pipeline_controller):
         self.__panel.Bind(wx.EVT_BUTTON,
@@ -232,33 +246,36 @@ class PreferencesView:
         error_text = 'Pixel size must be a number'
         text = self.__pixel_size_edit_box.Value
         if text.isdigit():
-            cellprofiler.preferences.set_pixel_size(int(text))
+            cpprefs.set_pixel_size(int(text))
             self.pop_error_text(error_text)
         else:
             self.set_error_text(error_text)
     
     def __on_output_filename_changed(self,event):
-        cellprofiler.preferences.set_output_file_name(self.__output_filename_edit_box.Value)
+        cpprefs.set_output_file_name(self.__output_filename_edit_box.Value)
     
     def __on_preferences_output_filename_event(self,event):
         old_selection = self.__output_filename_edit_box.Selection
-        if self.__output_filename_edit_box.Value != cellprofiler.preferences.get_output_file_name():
-            self.__output_filename_edit_box.Value = cellprofiler.preferences.get_output_file_name()
+        if self.__output_filename_edit_box.Value != cpprefs.get_output_file_name():
+            self.__output_filename_edit_box.Value = cpprefs.get_output_file_name()
             self.__output_filename_edit_box.SetSelection(*old_selection)
         
     def __on_preferences_output_directory_event(self,event):
         old_selection = self.__output_edit_box.Selection
-        if self.__output_edit_box.Value != cellprofiler.preferences.get_default_output_directory():
-            self.__output_edit_box.Value = cellprofiler.preferences.get_default_output_directory()
+        if self.__output_edit_box.Value != cpprefs.get_default_output_directory():
+            self.__output_edit_box.Value = cpprefs.get_default_output_directory()
             self.__output_edit_box.SetSelection(*old_selection)
     
     def __on_preferences_image_directory_event(self, event):
         old_selection = self.__image_edit_box.Selection
-        if self.__image_edit_box.Value != cellprofiler.preferences.get_default_image_directory():
-            self.__image_edit_box.Value = cellprofiler.preferences.get_default_image_directory()
+        if self.__image_edit_box.Value != cpprefs.get_default_image_directory():
+            self.__image_edit_box.Value = cpprefs.get_default_image_directory()
             self.__image_edit_box.SetSelection(*old_selection)
 
     def __notify_pipeline_list_view_directory_change(self, path):
         # modules may need revalidation
         if self.__pipeline_list_view is not None:
             self.__pipeline_list_view.notify_directory_change()
+
+    def refresh_input_directory(self):
+        cpprefs.fire_image_directory_changed_event()

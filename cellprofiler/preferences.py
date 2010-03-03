@@ -144,8 +144,13 @@ def set_default_image_directory(path):
     path = str(path)
     __default_image_directory = path
     get_config().Write(DEFAULT_IMAGE_DIRECTORY,path)
+    fire_image_directory_changed_event()
+    
+def fire_image_directory_changed_event():
+    '''Notify listeners of a image directory change'''
+    global __default_image_directory
     for listener in __image_directory_listeners:
-        listener(DirectoryChangedEvent(path))
+        listener(DirectoryChangedEvent(__default_image_directory))
 
 __image_directory_listeners = []
 

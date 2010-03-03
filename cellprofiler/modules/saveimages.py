@@ -585,9 +585,7 @@ class SaveImages(cpm.CPModule):
                 pathname = str(self.pathname)
                 if self.pathname_choice == PC_WITH_METADATA:
                     pathname = workspace.measurements.apply_metadata(pathname)
-                if pathname[:2]=='.'+os.path.sep:
-                    pathname = os.path.join(cpp.get_default_output_directory(),
-                                            pathname[2:])
+                pathname = cpp.get_absolute_path(pathname, cpp.ABSPATH_IMAGE)
             if (self.file_name_method in (
                 FN_FROM_IMAGE, FN_SEQUENTIAL, FN_WITH_METADATA,
                 FN_IMAGE_FILENAME_WITH_METADATA) and

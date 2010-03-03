@@ -48,6 +48,7 @@ from scipy.ndimage import distance_transform_edt
 import cellprofiler.cpmodule as cpm
 import cellprofiler.settings as cps
 import cellprofiler.objects as cpo
+import cellprofiler.cpimage as cpi
 import cellprofiler.measurements as cpmeas
 from cellprofiler.modules.identify import add_object_count_measurements
 from cellprofiler.modules.identify import add_object_location_measurements
@@ -165,8 +166,9 @@ class ExpandOrShrinkObjects(cpm.CPModule):
                                          self.output_object_name.value,
                                          output_objects.segmented)
         if self.wants_outlines.value:
-            outlines = outline(output_objects.segmented)
-            workspace.add_outline(self.outlines_name.value, outlines)
+            outline_image = cpi.Image(outline(output_objects.segmented) > 0,
+                                      parent_image = input_objects.parent_image)
+            workspace.image_set.add(self.outlines_name.value, outline_image)
         
         if workspace.frame is not None:
             figure = workspace.create_or_find_figure(subplots=(1,2))

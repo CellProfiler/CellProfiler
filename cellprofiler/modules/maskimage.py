@@ -2,7 +2,9 @@
 <hr>
 This module masks an image and saves it in the handles structure for
 future use. The masked image is based on the original image and the
-masking object or image that is selected. 
+masking object or image that is selected. If using a masking image, the mask is 
+composed of the foreground (white portions); if using a masking object, the mask 
+is composed of the area within the object.
 
 Note that the image created by this module for further processing 
 downstream is grayscale. If a binary mask is desired in subsequent modules, use 
@@ -78,10 +80,16 @@ class MaskImage(cpm.CPModule):
         
         self.invert_mask = cps.Binary(
             "Invert the mask?",False, 
-            doc = """If using an image as the mask, selecting this option will use the 
-            white portions (or foreground) of the masking image. If a set of 
-            objects is used as the mask, the regions within the objects will
-            comprise the mask.""")
+            doc = """This option reverses the foreground/background relationship of
+            the mask. 
+            <ul>
+            <li>If unchecked, the mask will be composed of the foregound 
+            (white portion) of the masking image or the area within the masking 
+            objects.</li>
+            <li>If checked, the mask will instead be composed of the 
+            <i>background</i> (black portions) of the masking image or the area 
+            <i>outside</i> the masking objects.</li>
+            </ul>""")
 
     def settings(self):
         """Return the settings in the order that they will be saved or loaded

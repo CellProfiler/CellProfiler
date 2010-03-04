@@ -1,14 +1,17 @@
 '''<b>Mask Objects</b> removes objects outside of a specified region or regions
 <hr>
 
-This module allows you to delete the objects or portions
-of objects that are outside of a region (mask) you specify. For example, after
+This module allows you to delete the objects or portions of objects that are 
+outside of a region (mask) you specify. For example, after
 identifying nuclei and tissue regions in previous <b>Identify</b> modules, you might
-want to exclude all nuclei that are outside
-of a tissue region.  You can choose to remove only the portion of each object that is outside of
+want to exclude all nuclei that are outside of a tissue region.  
+
+<p>If using a masking image, the mask is composed of the foreground (white portions); 
+if using a masking object, the mask is composed of the area within the object. 
+You can choose to remove only the portion of each object that is outside of
 the region, remove the whole object if it is partially or fully
 outside of the region, or retain the whole object unless it is fully outside
-of the region. 
+of the region. </p>
 '''
 __version__="$Revision$"
 import numpy as np
@@ -102,11 +105,16 @@ class MaskObjects(I.Identify):
         
         self.wants_inverted_mask = cps.Binary(
             "Invert the mask?", False,
-            doc="""Check this setting to reverse the sense of the mask so
-            that the region of interest is the area not covered by an object
-            or the black portion of the masking image. Leave the
-            setting unchecked if the region of interest is the area within
-            objects or the white portion of the masking image.""")
+            doc="""This option reverses the foreground/background relationship of
+            the mask. 
+            <ul>
+            <li>If unchecked, the mask will be composed of the foregound 
+            (white portion) of the masking image or the area within the masking 
+            objects.</li>
+            <li>If checked, the mask will instead be composed of the 
+            <i>background</i> (black portions) of the masking image or the area 
+            <i>outside</i> the masking objects.</li>
+            </ul>""")
         
         self.overlap_choice = cps.Choice(
             "Handling of objects that are partially masked",

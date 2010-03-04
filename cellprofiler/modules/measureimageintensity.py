@@ -9,8 +9,8 @@ unmasked pixels will be measured.
 <h4>Available measurements</h4>
 <ul>
 <li><i>TotalIntensity:</i> Sum of all pixel intensity values.</li>
-<li><i>MeanIntensity:</i> Sum of all pixel intensity values divided by number of pixels measured.</li>
-<li><i>MinIntensity, MaxIntensity:</i> Minimum and maximum of pixel intensity values measured.</li>
+<li><i>MeanIntensity, MedianIntensity:</i> Mean and median of pixel intensity values.</li>
+<li><i>MinIntensity, MaxIntensity:</i> Minimum and maximum of pixel intensity values.</li>
 <li><i>TotalArea:</i> Number of pixels measured.</li>
 </ul>
 '''
@@ -41,6 +41,9 @@ F_TOTAL_INTENSITY = "Intensity_TotalIntensity_%s"
 '''Measurement feature name format for the MeanIntensity measurement'''
 F_MEAN_INTENSITY = 'Intensity_MeanIntensity_%s'
 
+'''Measurement feature name format for the MeanIntensity measurement'''
+F_MEDIAN_INTENSITY = 'Intensity_MedianIntensity_%s'
+
 '''Measurement feature name format for the MaxIntensity measurement'''
 F_MAX_INTENSITY = 'Intensity_MaxIntensity_%s'
 
@@ -49,6 +52,9 @@ F_MIN_INTENSITY = 'Intensity_MinIntensity_%s'
 
 '''Measurement feature name format for the TotalArea measurement'''
 F_TOTAL_AREA = 'Intensity_TotalArea_%s'
+
+ALL_MEASUREMENTS = ["TotalIntensity", "MeanIntensity", "MedianIntensity",
+                    "MinIntensity",  "MaxIntensity", "TotalArea"]
 
 class MeasureImageIntensity(cpm.CPModule):
 
@@ -164,16 +170,19 @@ class MeasureImageIntensity(cpm.CPModule):
         if pixel_count == 0:
             pixel_sum = 0
             pixel_mean = 0
+            pixel_median = 0
             pixel_min = 0
             pixel_max = 0
         else:
             pixel_sum = np.sum(pixels)
             pixel_mean = pixel_sum/float(pixel_count)
+            pixel_median = np.median(pixels)
             pixel_min = np.min(pixels)
             pixel_max = np.max(pixels)
         m = workspace.measurements
         m.add_image_measurement(F_TOTAL_INTENSITY%(measurement_name), pixel_sum)
         m.add_image_measurement(F_MEAN_INTENSITY%(measurement_name), pixel_mean)
+        m.add_image_measurement(F_MEDIAN_INTENSITY%(measurement_name), pixel_median)
         m.add_image_measurement(F_MAX_INTENSITY%(measurement_name), pixel_max)
         m.add_image_measurement(F_MIN_INTENSITY%(measurement_name), pixel_min)
         m.add_image_measurement(F_TOTAL_AREA%(measurement_name), pixel_count)
@@ -182,6 +191,7 @@ class MeasureImageIntensity(cpm.CPModule):
                  feature_name, str(value)]
                 for feature_name, value in (('Total intensity', pixel_sum),
                                             ('Mean intensity', pixel_mean),
+                                            ('Median intensity', pixel_median),
                                             ('Min intensity', pixel_min),
                                             ('Max intensity', pixel_max),
                                             ('Total area', pixel_count))]
@@ -192,6 +202,7 @@ class MeasureImageIntensity(cpm.CPModule):
         for im in self.get_non_redundant_image_measurements():
             for feature, coltype in ((F_TOTAL_INTENSITY, cpmeas.COLTYPE_FLOAT),
                                      (F_MEAN_INTENSITY, cpmeas.COLTYPE_FLOAT),
+                                     (F_MEDIAN_INTENSITY, cpmeas.COLTYPE_FLOAT),
                                      (F_MIN_INTENSITY, cpmeas.COLTYPE_FLOAT),
                                      (F_MAX_INTENSITY, cpmeas.COLTYPE_FLOAT),
                                      (F_TOTAL_AREA, cpmeas.COLTYPE_INTEGER)):
@@ -208,16 +219,14 @@ class MeasureImageIntensity(cpm.CPModule):
     def get_measurements(self, pipeline, object_name, category):
         if (object_name == cpmeas.IMAGE and
             category == "Intensity"):
-            return ["TotalIntensity", "MeanIntensity", "MinIntensity", 
-                    "MaxIntensity", "TotalArea"]
+            return ALL_MEASUREMENTS
         return []
 
     def get_measurement_objects(self, pipeline, object_name, 
                                 category, measurement):
         if (object_name == cpmeas.IMAGE and
             category == "Intensity" and
-            measurement in ["TotalIntensity", "MeanIntensity", "MinIntensity", 
-                    "MaxIntensity", "TotalArea"]):
+            measurement in ALL_MEASUREMENTS):
             return [ im.object_name.value for im in self.images
                     if im.wants_objects.value]
         return []
@@ -226,8 +235,7 @@ class MeasureImageIntensity(cpm.CPModule):
                                category, measurement):
         if (object_name == cpmeas.IMAGE and
             category == "Intensity" and
-            measurement in ["TotalIntensity", "MeanIntensity", "MinIntensity", 
-                    "MaxIntensity", "TotalArea"]):
+            measurement in ALL_MEASUREMENTS):
             return [im.image_name.value for im in self.images]
         return []
     

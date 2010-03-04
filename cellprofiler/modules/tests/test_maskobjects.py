@@ -159,6 +159,7 @@ MaskObjects:[module_num:4|svn_version:\'Unknown\'|variable_revision_number:1|sho
         self.assertEqual(module.retain_or_renumber.value, M.R_RENUMBER)
         self.assertEqual(module.overlap_choice.value, M.P_MASK)
         self.assertFalse(module.wants_outlines)
+        self.assertFalse(module.wants_inverted_mask)
 
         module = pipeline.modules()[1]
         self.assertTrue(isinstance(module, M.MaskObjects))
@@ -170,6 +171,7 @@ MaskObjects:[module_num:4|svn_version:\'Unknown\'|variable_revision_number:1|sho
         self.assertEqual(module.overlap_choice.value, M.P_KEEP)
         self.assertTrue(module.wants_outlines)
         self.assertEqual(module.outlines_name.value, "MaskedCellOutlines")
+        self.assertFalse(module.wants_inverted_mask)
         
         module = pipeline.modules()[2]
         self.assertTrue(isinstance(module, M.MaskObjects))
@@ -180,6 +182,7 @@ MaskObjects:[module_num:4|svn_version:\'Unknown\'|variable_revision_number:1|sho
         self.assertEqual(module.retain_or_renumber.value, M.R_RENUMBER)
         self.assertEqual(module.overlap_choice.value, M.P_REMOVE)
         self.assertFalse(module.wants_outlines)
+        self.assertFalse(module.wants_inverted_mask)
         
         module = pipeline.modules()[3]
         self.assertTrue(isinstance(module, M.MaskObjects))
@@ -191,6 +194,44 @@ MaskObjects:[module_num:4|svn_version:\'Unknown\'|variable_revision_number:1|sho
         self.assertEqual(module.overlap_choice.value, M.P_REMOVE_PERCENTAGE)
         self.assertAlmostEqual(module.overlap_fraction.value, .3)
         self.assertFalse(module.wants_outlines)
+        self.assertFalse(module.wants_inverted_mask)
+        
+    def test_01_03_load_v2(self):
+        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:1
+SVNRevision:9193
+
+MaskObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:1|show_window:True|notes:\x5B\x5D]
+    Objects to be masked\x3A:Nuclei
+    Name the masked objects\x3A:MaskedNuclei
+    Mask using other objects or binary image?:Objects
+    Masking objects\x3A:Wells
+    Masking image\x3A:None
+    How do you want to handle objects that are partially masked?:Keep overlapping region
+    How much of the object must overlap?:0.5
+    Retain original numbering or renumber objects?:Renumber
+    Save outlines for the resulting objects?:No
+    Outlines name\x3A:MaskedOutlines
+    Invert the mask?:Yes
+    """
+        pipeline = cpp.Pipeline()
+        def callback(caller,event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO(data))
+        self.assertEqual(len(pipeline.modules()), 1)
+        
+        module = pipeline.modules()[0]
+        self.assertTrue(isinstance(module, M.MaskObjects))
+        self.assertEqual(module.object_name.value, "Nuclei")
+        self.assertEqual(module.mask_choice.value, M.MC_OBJECTS)
+        self.assertEqual(module.masking_objects.value, "Wells")
+        self.assertEqual(module.remaining_objects.value, "MaskedNuclei")
+        self.assertEqual(module.retain_or_renumber.value, M.R_RENUMBER)
+        self.assertEqual(module.overlap_choice.value, M.P_MASK)
+        self.assertFalse(module.wants_outlines)
+        self.assertTrue(module.wants_inverted_mask)
+        
     
     def make_workspace(self, labels, overlap_choice, masking_objects = None, 
                        masking_image = None, renumber = True,
@@ -471,6 +512,28 @@ MaskObjects:[module_num:4|svn_version:\'Unknown\'|variable_revision_number:1|sho
         module.run(workspace)
         outlines = workspace.image_set.get_image(OUTPUT_OUTLINES)
         self.assertTrue(np.all(outlines.pixel_data == expected))
+        
+    def test_03_07_mask_invert(self):
+        labels = np.zeros((20,10), int)
+        labels[2:8, 3:7] = 1
+        labels[12:18, 3:7] = 2
+        #
+        # Make a mask that covers only object # 1 and that is missing
+        # one pixel of that object. Invert it in anticipation of invert op
+        #
+        mask = labels == 1
+        mask[2,3] = False
+        mask = ~ mask
+        expected = labels
+        expected[labels != 1] = 0
+        expected[2,3] = 0
+        workspace, module = self.make_workspace(labels, M.P_MASK,
+                                                masking_image = mask)
+        self.assertTrue(isinstance(module, M.MaskObjects))
+        module.wants_inverted_mask = True
+        module.run(workspace)
+        objects = workspace.object_set.get_objects(OUTPUT_OBJECTS)
+        self.assertTrue(np.all(objects.segmented == expected))
         
     def test_04_01_keep(self):
         labels = np.zeros((30,10), int)

@@ -59,7 +59,7 @@ class MaskObjects(I.Identify):
     
     category = "Object Processing"
     module_name = "MaskObjects"
-    variable_revision_number = 1
+    variable_revision_number = 2
     
     def create_settings(self):
         '''Create the settings that control this module'''
@@ -98,9 +98,16 @@ class MaskObjects(I.Identify):
             the white portion of the image is the region(s) you will use for masking.
             Images can be loaded from disk by <b>LoadImages</b> or
             <b>LoadData</b>. You can create a binary image from a grayscale
-            image using <b>ApplyThreshold</b> and you can modify that image
-            using the <b>Morph</b> module, including inverting black and white if needed.""")
-
+            image using <b>ApplyThreshold</b>.""")
+        
+        self.wants_inverted_mask = cps.Binary(
+            "Invert the mask?", False,
+            doc="""Check this setting to reverse the sense of the mask so
+            that the region of interest is the area not covered by an object
+            or the black portion of the masking image. Leave the
+            setting unchecked if the region of interest is the area within
+            objects or the white portion of the masking image.""")
+        
         self.overlap_choice = cps.Choice(
             "Handling of objects that are partially masked",
             [P_MASK, P_KEEP, P_REMOVE, P_REMOVE_PERCENTAGE],
@@ -168,13 +175,15 @@ class MaskObjects(I.Identify):
         return [self.object_name, self.remaining_objects, self.mask_choice,
                 self.masking_objects, self.masking_image, self.overlap_choice,
                 self.overlap_fraction, self.retain_or_renumber, 
-                self.wants_outlines, self.outlines_name]
+                self.wants_outlines, self.outlines_name, 
+                self.wants_inverted_mask]
     
     def visible_settings(self):
         '''The settings as they appear in the UI'''
         result = [self.object_name, self.remaining_objects, self.mask_choice,
                   self.masking_image if self.mask_choice == MC_IMAGE
-                  else self.masking_objects, self.overlap_choice]
+                  else self.masking_objects, self.wants_inverted_mask,
+                  self.overlap_choice]
 
         if self.overlap_choice == P_REMOVE_PERCENTAGE:
             result += [self.overlap_fraction]
@@ -203,6 +212,8 @@ class MaskObjects(I.Identify):
             masking_objects = workspace.object_set.get_objects(
                 self.masking_objects.value)
             mask = masking_objects.segmented > 0
+        if self.wants_inverted_mask:
+            mask = ~mask
         #
         # Apply the mask according to the overlap choice.
         #
@@ -386,6 +397,11 @@ class MaskObjects(I.Identify):
                 ".5", renumber, wants_outlines, save_outlines]
             from_matlab = False
             variable_revision_number = 1
+            
+        if variable_revision_number == 1 and not from_matlab:
+            # Added "wants_inverted_mask"
+            setting_values = setting_values + [cps.NO]
+            variable_revision_number = 2
             
         setting_values = list(setting_values)
         setting_values[5] = s_lookup(setting_values[5])

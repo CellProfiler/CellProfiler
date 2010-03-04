@@ -34,7 +34,7 @@ the branchpoints that lie outside the seed objects.</li>
 __version__="$Revision$"
 
 import numpy as np
-from scipy.ndimage import binary_erosion
+from scipy.ndimage import binary_erosion, grey_dilation
 import scipy.ndimage as scind
 
 import cellprofiler.cpimage as cpi
@@ -134,48 +134,76 @@ class MeasureNeurons(cpm.CPModule):
         # Erode the labels once so that all of the trunk branchpoints
         # will be within the labels
         #
-        seed_mask = binary_erosion((labels > 0))
+        #
+        # Dilate the objects, then subtract them to make a ring
+        #
+        my_disk = morph.strel_disk(1.5).astype(int)
+        dilated_labels = grey_dilation(labels, footprint=my_disk)
+        seed_mask = dilated_labels > 0
         combined_skel = skeleton | seed_mask
-        #
-        # Shrink the objects, then subtract them to make a ring
-        #
-        my_disk = morph.strel_disk(1.5)
-        seed_center = binary_erosion(seed_mask, my_disk)
+        
+        seed_center = labels > 0
         combined_skel = combined_skel & (~seed_center)
         #
-        # Fill in single holes
+        # Fill in single holes (but not a one-pixel hole made by
+        # a one-pixel image)
         #
-        combined_skel = morph.fill4(combined_skel)
+        combined_skel = morph.fill4(combined_skel, ~seed_center)
         #
         # Reskeletonize to make true branchpoints at the ring boundaries
         #
         combined_skel = morph.skeletonize(combined_skel)
         #
+        # The skeleton outside of the labels
+        #
+        outside_skel = combined_skel & (dilated_labels == 0)
+        #
         # Associate all skeleton points with seed objects
         #
         dlabels, distance_map = propagate.propagate(np.zeros(labels.shape),
-                                                    labels,
+                                                    dilated_labels,
                                                     combined_skel, 1)
         #
         # Find the branchpoints
         #
         branch_points = morph.branchpoints(combined_skel)
         #
+        # Find the branching counts for the trunks (# of extra branches
+        # eminating from a point other than the line it might be on).
+        #
+        branching_counts = morph.branchings(combined_skel)
+        branching_counts = np.array([0,0,0,1,2])[branching_counts]
+        #
+        # Only take branches within 1 of the outside skeleton
+        #
+        dilated_skel = scind.binary_dilation(outside_skel, morph.eight_connect)
+        branching_counts[~dilated_skel] = 0
+        #
         # Find the endpoints
         #
         end_points = morph.endpoints(combined_skel)
         #
-        # The trunks are the branchpoints that lie within the seed objects.
+        # We use two ranges for classification here:
+        # * anything within one pixel of the dilated image is a trunk
+        # * anything outside of that range is a branch
+        #
+        nearby_labels = dlabels.copy()
+        nearby_labels[distance_map > 1.5] = 0
+        
+        outside_labels = dlabels.copy()
+        outside_labels[nearby_labels > 0] = 0
+        #
+        # The trunks are the branchpoints that lie within one pixel of
+        # the dilated image.
         #
         if labels_count > 0:
-            trunk_counts = fix(scind.sum(branch_points, labels, label_range))
+            trunk_counts = fix(scind.sum(branching_counts, nearby_labels, 
+                                         label_range)).astype(int)
         else:
             trunk_counts = np.zeros((0,),int)
         #
         # The branches are the branchpoints that lie outside the seed objects
         #
-        outside_labels = dlabels.copy()
-        outside_labels[labels > 0] = 0
         if labels_count > 0:
             branch_counts = fix(scind.sum(branch_points, outside_labels, 
                                           label_range))
@@ -207,16 +235,16 @@ class MeasureNeurons(cpm.CPModule):
             branchpoint_image = np.zeros((skeleton.shape[0],
                                           skeleton.shape[1],
                                           3))
-            trunk_mask = branch_points & (labels != 0)
-            branch_mask = branch_points & (labels == 0)
-            end_mask = end_points & (labels == 0)
-            branchpoint_image[skeleton,:] = 1
+            trunk_mask = (branching_counts > 0) & (nearby_labels != 0)
+            branch_mask = branch_points & (outside_labels != 0)
+            end_mask = end_points & (outside_labels != 0)
+            branchpoint_image[outside_skel,:] = 1
             branchpoint_image[trunk_mask | branch_mask | end_mask,:] = 0
             branchpoint_image[trunk_mask,0] = 1
             branchpoint_image[branch_mask,1] = 1
             branchpoint_image[end_mask, 2] = 1
-            branchpoint_image[labels != 0,:] *= .875
-            branchpoint_image[labels != 0,:] += .1
+            branchpoint_image[dilated_labels != 0,:] *= .875
+            branchpoint_image[dilated_labels != 0,:] += .1
             if workspace.frame:
                 workspace.display_data.branchpoint_image = branchpoint_image
             if self.wants_branchpoint_image:
@@ -227,7 +255,7 @@ class MeasureNeurons(cpm.CPModule):
     def display(self, workspace):
         '''Display a visualization of the results'''
         figure = workspace.create_or_find_figure(subplots=(1,1))
-        title = ("Branchpoints of %s and %s\nTrunks are red, others are green" %
+        title = ("Branchpoints of %s and %s\nTrunks are red\nBranches are green\nEndpoints are blue" %
                  (self.seed_objects_name.value, self.image_name.value))
         figure.subplot_imshow(0, 0, workspace.display_data.branchpoint_image,
                               title)

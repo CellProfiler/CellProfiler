@@ -219,8 +219,43 @@ MeasureNeurons:[module_num:1|svn_version:\'8401\'|variable_revision_number:1|sho
             self.assertEqual(len(data), 1)
             self.assertEqual(data[0], expected)
 
-    def test_02_05_branch(self):
-        '''Create an image with a one-pixel soma and a neurite with a branch'''
+    def test_02_05_img_667(self):
+        '''Create an image with a one-pixel soma and a neurite with a branch
+        
+        Regression test of IMG-667
+        '''
+        image = np.zeros((30,15),bool)
+        image[6:15,7] = True
+        image[15+np.arange(3),7+np.arange(3)] = True
+        image[15+np.arange(3),7-np.arange(3)] = True
+        labels = np.zeros((30,15), int)
+        labels[10,7] = 1
+        workspace, module = self.make_workspace(labels, image)
+        module.run(workspace)
+        m = workspace.measurements
+        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        for feature, expected in ((M.F_NUMBER_NON_TRUNK_BRANCHES, 1),
+                                  (M.F_NUMBER_TRUNKS, 2)):
+            mname = "_".join((M.C_NEURON, feature, IMAGE_NAME))
+            data = m.get_current_measurement(OBJECT_NAME, mname)
+            self.assertEqual(len(data), 1)
+            self.assertEqual(data[0], expected, 
+                             "%s: expected %d, got %d" % (feature, expected, data[0]))
+
+    def test_02_06_quadrabranch(self):
+        '''An odd example that I noticed and thought was worthy of a test
+        
+        You get this pattern:
+              x
+              I
+            I   I
+            I   I
+            I   I
+              I
+            x   x
+            
+            And there should be 3 trunks (or possibly two trunks and a branch)
+        '''
         image = np.zeros((30,15),bool)
         image[6:15,7] = True
         image[15+np.arange(3),7+np.arange(3)] = True
@@ -231,9 +266,11 @@ MeasureNeurons:[module_num:1|svn_version:\'8401\'|variable_revision_number:1|sho
         module.run(workspace)
         m = workspace.measurements
         self.assertTrue(isinstance(m, cpmeas.Measurements))
-        for feature, expected in ((M.F_NUMBER_NON_TRUNK_BRANCHES, 1),
-                                  (M.F_NUMBER_TRUNKS, 1)):
+        for feature, expected in ((M.F_NUMBER_NON_TRUNK_BRANCHES, 0),
+                                  (M.F_NUMBER_TRUNKS, 3)):
             mname = "_".join((M.C_NEURON, feature, IMAGE_NAME))
             data = m.get_current_measurement(OBJECT_NAME, mname)
             self.assertEqual(len(data), 1)
-            self.assertEqual(data[0], expected)
+            self.assertEqual(data[0], expected, 
+                             "%s: expected %d, got %d" % (feature, expected, data[0]))
+            

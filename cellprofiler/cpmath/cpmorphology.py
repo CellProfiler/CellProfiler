@@ -2296,6 +2296,55 @@ def branchpoints(image, mask=None):
         result[~mask] = image[~mask]
     return result
 
+#####################################
+#
+# Branchings - this is the count of the number of branches that
+#              eminate from a pixel. A pixel with neighbors fore
+#              and aft has branches fore and aft = 2. An endpoint
+#              has one branch. A fork has 3. Finally, there's
+#              the quadrabranch which has 4:
+#  1 0 1
+#  0 1 0 -> 4
+#  1 0 1
+#####################################
+
+branchings_table = np.array([ 0 if (index & 16) == 0
+                             else scind.label(pattern_of(index-16))[1]
+                             for index in range(512)])
+
+def branchings(image, mask=None):
+    '''Count the number of branches eminating from each pixel
+    
+    image - a binary image
+    mask - optional mask of pixels not to consider
+
+    This is the count of the number of branches that
+    eminate from a pixel. A pixel with neighbors fore
+    and aft has branches fore and aft = 2. An endpoint
+    has one branch. A fork has 3. Finally, there's
+    the quadrabranch which has 4:
+    1 0 1
+    0 1 0 -> 4
+    1 0 1
+    '''
+    global branchings_table
+    if mask is None:
+        masked_image = image
+    else:
+        masked_image = image.astype(bool).copy()
+        masked_image[~mask] = False
+    #
+    # Not a binary operation, so we do a convolution with the following
+    # kernel to get the indices into the table.
+    #
+    kernel = np.array([[1,2,4],
+                       [8,16,32],
+                       [64,128,256]])
+    indexer = scind.convolve(masked_image.astype(int), kernel,
+                             mode='constant').astype(int)
+    result = branchings_table[indexer]
+    return result
+
 '''The table for computing binary bridge'''
 #
 # Either the center is already true or, if you label the pattern,

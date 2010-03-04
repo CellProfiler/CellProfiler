@@ -2908,3 +2908,30 @@ class TestAllConnectedComponents(unittest.TestCase):
             self.assertTrue(np.all(np.sum(corr != 0,0) <= 1))
             self.assertTrue(np.all(np.sum(corr != 0,1) <= 1))
             
+class TestBranchings(unittest.TestCase):
+    def test_00_00_zeros(self):
+        self.assertTrue(np.all(morph.branchings(np.zeros((10,11), bool)) == 0))
+        
+    def test_01_01_endpoint(self):
+        image = np.zeros((10,11), bool)
+        image[5,5:] = True
+        self.assertEqual(morph.branchings(image)[5,5], 1)
+        
+    def test_01_02_line(self):
+        image = np.zeros((10,11), bool)
+        image[1:9, 5] = True
+        self.assertTrue(np.all(morph.branchings(image)[2:8,5] == 2))
+        
+    def test_01_03_vee(self):
+        image = np.zeros((11,11), bool)
+        i,j = np.mgrid[-5:6,-5:6]
+        image[-i == abs(j)] = True
+        image[(j==0) & (i > 0)] = True
+        self.assertTrue(morph.branchings(image)[5,5] == 3)
+        
+    def test_01_04_quadrabranch(self):
+        image = np.zeros((11,11), bool)
+        i,j = np.mgrid[-5:6,-5:6]
+        image[abs(i) == abs(j)] = True
+        self.assertTrue(morph.branchings(image)[5,5] == 4)
+        

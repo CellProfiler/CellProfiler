@@ -184,13 +184,14 @@ class OverlayOutlines(cpm.CPModule):
                                              self.image_name.value)
                 else:
                     figure.subplot_imshow_color(0, 0, image.pixel_data,
-                                          "Original: %s" %self.image_name.value,
+                                          "Original: %s" %
+                                          self.image_name.value,
                                           normalize=False)
-                if self.wants_color.value:
-                    pixel_data = (pixel_data * 255.0).astype(np.uint8)
-                    figure.subplot_imshow_color(1, 0, pixel_data, 
-                                                self.output_image_name.value,
-                                                normalize=False)
+                if self.wants_color.value == WANTS_COLOR:
+##                    pixel_data = (pixel_data * 255.0).astype(np.uint8)
+                    figure.subplot_imshow(1, 0, pixel_data,
+                                          self.output_image_name.value,
+                                          normalize=False)
                 else:
                     figure.subplot_imshow_bw(1, 0, pixel_data,
                                              self.output_image_name.value)

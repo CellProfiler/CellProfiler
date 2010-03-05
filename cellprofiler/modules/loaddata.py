@@ -121,11 +121,14 @@ import cellprofiler.measurements as cpmeas
 import cellprofiler.settings as cps
 import cellprofiler.preferences as cpprefs
 from cellprofiler.modules.loadimages import LoadImagesImageProvider
-from cellprofiler.preferences import standardize_default_folder_names, DEFAULT_INPUT_FOLDER_NAME, DEFAULT_OUTPUT_FOLDER_NAME
+from cellprofiler.preferences import standardize_default_folder_names, \
+     DEFAULT_INPUT_FOLDER_NAME, DEFAULT_OUTPUT_FOLDER_NAME, NO_FOLDER_NAME, \
+     ABSOLUTE_FOLDER_NAME
 
 DIR_NONE = 'None'
 DIR_OTHER = 'Elsewhere...'
-DIR_ALL = [DEFAULT_INPUT_FOLDER_NAME, DEFAULT_OUTPUT_FOLDER_NAME, DIR_NONE, DIR_OTHER]
+DIR_ALL = [DEFAULT_INPUT_FOLDER_NAME, DEFAULT_OUTPUT_FOLDER_NAME, 
+           NO_FOLDER_NAME, ABSOLUTE_FOLDER_NAME]
 
 PATH_NAME = 'PathName'
 FILE_NAME = 'FileName'
@@ -191,43 +194,49 @@ class LoadData(cpm.CPModule):
     
     module_name = "LoadData"
     category = 'File Processing'
-    variable_revision_number = 3
+    variable_revision_number = 4
 
     def create_settings(self):
-        self.csv_directory_choice = cps.Choice("File location", DIR_ALL, doc="""
+        self.csv_directory = cps.DirectoryPath(
+            "File location", allow_metadata = False,
+            doc ="""
             The folder that contains the CSV file. You can choose among the following options:
             <ul><li><i>Default Input Folder</i>: 
             The CSV file is in the Default Input Folder.</li>
             <li><i>Default Output
             Folder:</i> The CSV file is in the Default Output Folder.</li>
-            <li><i>Elsewhere...</i>: You can enter a custom folder name.</li></ul> 
+            <li><i>Absolute path elsewhere</i>: You can enter a custom folder name.</li>
+            <li><i>Default input directory sub-folder</i>:
+            Enter the name of a subfolder of the default input folder or a path
+            that starts from the default input folder.</li>
+            <li><i>Default output directory sub-folder</i>:
+            Enter the name of a subfolder of the default output folder or a path
+            that starts from the default output folder.</li>
+            <li><i>URL</i>:
+            Enter the path part of the URL for the CSV file. For instance,
+            we have an example .CSV file at
+            https://svn.broadinstitute.org/CellProfiler/trunk/ExampleImages/ExampleSBSImages/1049_Images_Dose_Metadata.csv
+            To access this .CSV file, you would choose <i>URL</i> and enter
+            https://svn.broadinstitute.org/CellProfiler/trunk/ExampleImages/ExampleSBSImages
+            as the path location.</li>
+            </ul>
             
-            <p>Custom folder names that start with "." are relative to the Default Input Folder. Names that
-            start with "&" are relative to the Default Output Folder. Two periods ".." specify to go 
-            up one folder level. For example, "./CSVfiles" looks for a folder called "CSVfiles" that is 
-            contained within the Default Input Folder,
-            and "&/../My_folder" looks in a folder called "My_folder"
-            at the same level as the output folder.""")
-        
-        self.csv_custom_directory = cps.DirectoryPath("Custom file location",
-            ".", doc = 
-            """<i>(Used only if the file location is specified as Elsewhere)</i><br>
-            Enter the pathname to the CSV file to be loaded. The pathname can referenced 
-            with respect to the Default Output Folder with a period (".") or 
-            the Default Input Folder with an ampersand ("&") as the root folder.""")
+            <p><i>Absolute path elsewhere</i>, <i>Default input directory sub-folder</i>,
+            and <i>Default output directory sub-folder</i> all require an
+            additional path name. Two periods ".." specify to go 
+            up one folder level. For example, if you choose 
+            <i>Default input directory sub-folder</i>, "./CSVfiles" looks for a 
+            folder called "CSVfiles" that is contained within the 
+            Default Input Folder and "../My_folder" looks in a folder called 
+            "My_folder" at the same level as the input folder.""")
         
         def get_directory_fn():
             '''Get the directory for the CSV file name'''
-            return self.csv_path
+            return self.csv_directory.get_absolute_path()
         
         def set_directory_fn(path):
-            if os.path.abspath(path) == cpprefs.get_default_image_directory():
-                self.csv_directory_choice.value = DEFAULT_INPUT_FOLDER_NAME
-            elif os.path.abspath(path) == cpprefs.get_default_output_directory():
-                self.csv_directory_choice.value = DEFAULT_OUTPUT_FOLDER_NAME
-            else:
-                self.csv_directory_choice.value = DIR_OTHER
-                self.csv_custom_directory.value = path
+            dir_choice, custom_path = self.csv_directory.get_parts_from_path(path)
+            self.csv_directory.join_parts(dir_choice, custom_path)
                 
         self.csv_file_name = cps.FilenameText(
             "Name of the file",
@@ -243,27 +252,43 @@ class LoadData(cpm.CPModule):
             Check this box to have <b>LoadData</b> load images using the <i>Image_FileName</i> field and the 
             <i>Image_PathName</i> fields (the latter is optional).""")
         
-        self.image_directory_choice = cps.Choice("Base image location",
-                                                 DIR_ALL, doc="""
+        self.image_directory = cps.DirectoryPath(
+            "Base image location",
+            dir_choices = DIR_ALL, allow_metadata = False, doc="""
             The parent (base) folder where images are located. If images are 
             contained in subfolders, then the file you load with this module should 
             contain a column with path names relative to the base image folder (see 
             the general help for this module for more details). Again, you can choose among the following options:
-            <ul><li><i>Default Input Folder:</i> Make the Default Input Folder the base folder.</li>
-            <li><i>Default Output Folder:</i> Make the Default Output Folder the base folder.</li>
-            <li><i>Elsewhere...:</i> You can enter a custom folder name.</li>
-            <li><i>None:</i> You have an Image_PathName field that supplies an absolute path.</li></ul>""")
-        
-        self.image_custom_directory = cps.DirectoryPath("Custom base image location",
-                                                        ".", doc = 
-            """<i>(Used only if the base image location is specified as Elsewhere)</i><br>
-            Enter the pathname to the images to be loaded. Custom folder names that start with "." (a period) are 
-            relative to the Default Input Folder. Names that
-            start with "&" (an ampersand) are relative to the Default Output Folder. Two periods ".." specify the parent folder
-            above either of these. For example, "./MyFolder" looks for a folder called "MyFolder" that is 
-            contained within the Default Input Folder,
-            and "&/../MyFolder" looks in a folder called "MyFolder"
-            at the same level as the output folder.""")
+            <ul><li><i>Default Input Folder</i>: 
+            The CSV file is in the Default Input Folder.</li>
+            <li><i>Default Output
+            Folder:</i> The CSV file is in the Default Output Folder.</li>
+            <li><i>Absolute path elsewhere</i>: You can enter a custom folder name.</li>
+            <li><i>Default input directory sub-folder</i>:
+            Enter the name of a subfolder of the default input folder or a path
+            that starts from the default input folder.</li>
+            <li><i>Default output directory sub-folder</i>:
+            Enter the name of a subfolder of the default output folder or a path
+            that starts from the default output folder.</li>
+            <li><i>None:</i> You have an Image_PathName field that supplies an absolute path.</li>
+            <li><i>URL</i>:
+            Enter the path part of the URL for the CSV file. For instance,
+            we have an example .CSV file at
+            https://svn.broadinstitute.org/CellProfiler/trunk/ExampleImages/ExampleSBSImages/1049_Images_Dose_Metadata.csv
+            To access this .CSV file, you would choose <i>URL</i> and enter
+            https://svn.broadinstitute.org/CellProfiler/trunk/ExampleImages/ExampleSBSImages
+            as the path location.</li>
+            </ul>
+            
+            <p><i>Absolute path elsewhere</i>, <i>Default input directory sub-folder</i>,
+            and <i>Default output directory sub-folder</i> all require an
+            additional path name. Two periods ".." specify to go 
+            up one folder level. For example, if you choose 
+            <i>Default input directory sub-folder</i>, "./CSVfiles" looks for a 
+            folder called "CSVfiles" that is contained within the 
+            Default Input Folder and "../My_folder" looks in a folder called 
+            "My_folder" at the same level as the input folder.
+            """)
         
         self.wants_image_groupings = cps.Binary("Group images by metadata?", False,doc = """
             Use this option to break the image sets in an experiment into groups
@@ -289,16 +314,16 @@ class LoadData(cpm.CPModule):
                                           """<i>(Used only if a range of rows is to be specified)</i><br>Enter the row numbers of the first and last row to be processed.""")
 
     def settings(self):
-        return [self.csv_directory_choice, self.csv_custom_directory,
-                self.csv_file_name, self.wants_images, self.image_directory_choice,
-                self.image_custom_directory, self.wants_rows,
+        return [self.csv_directory,
+                self.csv_file_name, self.wants_images, self.image_directory,
+                self.wants_rows,
                 self.row_range, self.wants_image_groupings, 
                 self.metadata_fields]
 
     def validate_module(self, pipeline):
         csv_path = self.csv_path
            
-        if not cpprefs.is_url_path(csv_path):
+        if self.csv_directory.dir_choice != cps.URL_FOLDER_NAME:
             if not os.path.isfile(csv_path):
                 raise cps.ValidationError("No such CSV file: %s"%csv_path,
                                           self.csv_file_name)
@@ -313,15 +338,9 @@ class LoadData(cpm.CPModule):
                                           self.csv_path, self.csv_file_name)
 
     def visible_settings(self):
-        result = [self.csv_directory_choice]
-        if self.csv_directory_choice == DIR_OTHER:
-            result += [self.csv_custom_directory]
-        result += [self.csv_file_name, self.wants_images]
+        result = [self.csv_directory, self.csv_file_name, self.wants_images]
         if self.wants_images.value:
-            result += [self.image_directory_choice]
-            if self.image_directory_choice == DIR_OTHER:
-                result += [self.image_custom_directory]
-            result += [self.wants_image_groupings]
+            result += [self.image_directory, self.wants_image_groupings]
             if self.wants_image_groupings.value:
                 result += [self.metadata_fields]
                 try:
@@ -340,29 +359,14 @@ class LoadData(cpm.CPModule):
     @property
     def csv_path(self):
         '''The path and file name of the CSV file to be loaded'''
-        if cpprefs.get_data_file() is not None:
-            return cpprefs.get_data_file()
-        if self.csv_directory_choice == DEFAULT_INPUT_FOLDER_NAME:
-            path = cpprefs.get_default_image_directory()
-        elif self.csv_directory_choice == DEFAULT_OUTPUT_FOLDER_NAME:
-            path = cpprefs.get_default_output_directory()
-        else:
-            path = cpprefs.get_absolute_path(self.csv_custom_directory.value)
-        if cpprefs.is_url_path(path):
+        path = self.csv_directory.get_absolute_path()
+        if self.csv_directory.dir_choice == cps.URL_FOLDER_NAME:
             return path + "/" + self.csv_file_name.value
         return os.path.join(path, self.csv_file_name.value)
     
     @property
     def image_path(self):
-        if self.image_directory_choice == DEFAULT_INPUT_FOLDER_NAME:
-            path = cpprefs.get_default_image_directory()
-        elif self.image_directory_choice == DEFAULT_OUTPUT_FOLDER_NAME:
-            path = cpprefs.get_default_output_directory()
-        elif self.image_directory_choice == DIR_NONE:
-            path = ""
-        else:
-            path = cpprefs.get_absolute_path(self.image_custom_directory.value)
-        return path
+        return self.image_directory.get_absolute_path()
     
     @property
     def legacy_field_key(self):
@@ -568,18 +572,8 @@ class LoadData(cpm.CPModule):
             dictionary[key] = np.array([fn_alter_path(path) 
                                         for path in dictionary[key]])
         
-        if self.csv_directory_choice == DEFAULT_INPUT_FOLDER_NAME:
-            self.csv_directory_choice.value = DIR_OTHER
-            self.csv_custom_directory.value = cpprefs.get_default_image_directory()
-        elif self.csv_directory_choice == DEFAULT_OUTPUT_FOLDER_NAME:
-            self.csv_directory_choice.value = DIR_OTHER
-            self.csv_custom_directory.value = cpprefs.get_default_output_directory()
-        else:
-            self.csv_custom_directory.value = cpprefs.get_absolute_path(
-                self.csv_custom_directory.value)
-        self.csv_custom_directory.value = fn_alter_path(self.csv_custom_directory.value)
-        self.image_custom_directory.value = \
-            fn_alter_path(self.image_custom_directory.value)
+        self.csv_directory.alter_for_create_batch_files(fn_alter_path)
+        self.image_directory.alter_for_create_batch_files(fn_alter_path)
         return True
     
     def prepare_group(self, pipeline, image_set_list, grouping, image_numbers):
@@ -594,7 +588,7 @@ class LoadData(cpm.CPModule):
                     path_name_feature = make_path_name_feature(image_name)
                     if dictionary.has_key(path_name_feature):
                         path = dictionary[path_name_feature][index]
-                        if self.image_directory_choice != DIR_NONE:
+                        if self.image_directory.dir_choice != cps.NO_FOLDER_NAME:
                             path = os.path.join(path_base, path)
                     else:
                         path = path_base
@@ -852,11 +846,29 @@ class LoadData(cpm.CPModule):
         if variable_revision_number == 3 and (not from_matlab):
             module_name = self.module_name
            
+        if variable_revision_number == 3 and (not from_matlab):
+            # directory choice, custom directory merged
+            # input_directory_choice, custom_input_directory merged
+            csv_directory_choice, csv_custom_directory, \
+	    csv_file_name, wants_images, image_directory_choice,\
+	    image_custom_directory, wants_rows,\
+            row_range, wants_image_groupings, \
+            metadata_fields = setting_values
+            csv_directory = cps.DirectoryPath.static_join_string(
+                csv_directory_choice, csv_custom_directory)
+            image_directory = cps.DirectoryPath.static_join_string(
+                image_directory_choice, image_custom_directory)
+            setting_values = [
+                csv_directory, csv_file_name, wants_images,
+                image_directory, wants_rows, row_range, wants_image_groupings,
+                metadata_fields]
+            variable_revision_number = 4
+            
         # Standardize input/output directory name references
-        SLOT_CSVDIRCHOICE = 0
-        SLOT_IMAGEDIRCHOICE = 4
-        setting_values = standardize_default_folder_names(setting_values,SLOT_CSVDIRCHOICE)
-        setting_values = standardize_default_folder_names(setting_values,SLOT_IMAGEDIRCHOICE)
+        setting_values = list(setting_values)
+        for index in (0, 3):
+            setting_values[index] = cps.DirectoryPath.upgrade_setting(
+                setting_values[index])
             
         return setting_values, variable_revision_number, from_matlab 
 

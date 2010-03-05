@@ -22,7 +22,7 @@ import sys
 
 import cellprofiler.pipeline as cpp
 import cellprofiler.settings as cps
-import cellprofiler.preferences
+import cellprofiler.preferences as cpprefs
 from regexp_editor import edit_regexp
 from htmldialog import HTMLDialog
 from treecheckboxdialog import TreeCheckboxDialog
@@ -352,6 +352,9 @@ class ModuleView:
                     border = 2
                 elif isinstance(v, cps.FilenameText):
                     control = self.make_filename_text_control(v, control)
+                elif isinstance(v, cps.DirectoryPath):
+                    control = self.make_directory_path_control(v, control_name,
+                                                               control)
                 else:
                     control = self.make_text_control(v, control_name, control)
                 sizer.Add(control, 0, flag, border)
@@ -564,7 +567,7 @@ class ModuleView:
         """
         try:
             if v.value == cps.DEFAULT:
-                cmap_name = cellprofiler.preferences.get_default_colormap()
+                cmap_name = cpprefs.get_default_colormap()
             else:
                 cmap_name = v.value
             cm = matplotlib.cm.get_cmap(cmap_name)
@@ -646,7 +649,7 @@ class ModuleView:
                 file = "plateA-2008-08-06_A12_s1_w1_[89A882DE-E675-4C12-9F8E-46C9976C4ABE].tif"
                 try:
                     if setting.get_example_fn is None:
-                        path = cellprofiler.preferences.get_default_image_directory()
+                        path = cpprefs.get_default_image_directory()
                         filenames = [x for x in os.listdir(path)
                                      if x.find('.') != -1 and
                                      os.path.splitext(x)[1].upper() in
@@ -689,7 +692,7 @@ class ModuleView:
             sizer = wx.BoxSizer(wx.HORIZONTAL)
             control.SetSizer(sizer)
             edit_control = wx.TextCtrl(control, -1, str(v), name = edit_name)
-            sizer.Add(edit_control, 1, wx.EXPAND | wx.ALIGN_BOTTOM)
+            sizer.Add(edit_control, 1, wx.ALIGN_LEFT | wx.ALIGN_TOP)
             def on_cell_change(event, setting = v, control=edit_control):
                 self.__on_cell_change(event, setting, control)
             self.__module_panel.Bind(wx.EVT_TEXT, on_cell_change, edit_control)
@@ -712,11 +715,92 @@ class ModuleView:
                     self.reset_view()
                     
             button_control.Bind(wx.EVT_BUTTON, on_press)
-            sizer.Add(button_control, 0, wx.EXPAND | wx.ALL, 2)
+            sizer.Add(button_control, 0, wx.EXPAND | wx.LEFT, 2)
         else:
             edit_control = self.module_panel.FindWindowByName(edit_name)
             if edit_control.Value != v.value:
                 edit_control.Value = v.value
+        return control
+    
+    def make_directory_path_control(self, v, control_name, control):
+        assert isinstance(v, cps.DirectoryPath)
+        dir_ctrl_name = combobox_ctrl_name(v)
+        custom_ctrl_name = subedit_control_name(v)
+        browse_ctrl_name = button_control_name(v)
+        if control is None:
+            control = wx.Panel(self.module_panel, name=control_name)
+            sizer = wx.BoxSizer(wx.VERTICAL)
+            control.SetSizer(sizer)
+            dir_ctrl = wx.Choice(control, choices = v.dir_choices, 
+                                 name= dir_ctrl_name)
+            sizer.Add(dir_ctrl, 0, wx.ALIGN_LEFT | wx.BOTTOM, 2)
+            custom_sizer = wx.BoxSizer(wx.HORIZONTAL)
+            sizer.Add(custom_sizer, 1, wx.EXPAND)
+            custom_ctrl = wx.TextCtrl(control, value = v.custom_path,
+                                      name = custom_ctrl_name)
+            custom_sizer.Add(custom_ctrl, 1, wx.ALIGN_CENTER_VERTICAL)
+            browse_bitmap = wx.ArtProvider.GetBitmap(wx.ART_FOLDER,
+                                                     wx.ART_CMN_DIALOG,
+                                                     (16,16))
+            browse_ctrl = wx.BitmapButton(control, bitmap=browse_bitmap,
+                                          name = browse_ctrl_name)
+            custom_sizer.Add(browse_ctrl, 0, wx.ALIGN_CENTER | wx.LEFT, 2)
+
+            def on_dir_choice_change(event, v=v, dir_ctrl = dir_ctrl):
+                '''Handle a change to the directory choice combobox'''
+                if not self.__handle_change:
+                    return
+                proposed_value = v.join_string(dir_choice = dir_ctrl.StringSelection)
+                setting_edited_event = SettingEditedEvent(
+                    v, self.__module, proposed_value, event)
+                self.notify(setting_edited_event)
+                self.reset_view()
+                
+            def on_custom_path_change(event, v=v, custom_ctrl=custom_ctrl):
+                '''Handle a change to the custom path'''
+                if not self.__handle_change:
+                    return
+                proposed_value = v.join_string(custom_path = custom_ctrl.Value)
+                setting_edited_event = SettingEditedEvent(
+                    v, self.__module, proposed_value, event)
+                self.notify(setting_edited_event)
+                self.reset_view()
+                
+            def on_browse_pressed(event, v=v, dir_ctrl = dir_ctrl, 
+                                  custom_ctrl=custom_ctrl):
+                '''Handle browse button pressed'''
+                dlg = wx.DirDialog(self.module_panel,
+                                   v.text,
+                                   v.get_absolute_path())
+                if dlg.ShowModal() == wx.ID_OK:
+                    dir_choice, custom_path = v.get_parts_from_path(dlg.Path)
+                    proposed_value = v.join_string(dir_choice, custom_path)
+                    setting_edited_event = SettingEditedEvent(
+                        v, self.__module, proposed_value, event)
+                    self.notify(setting_edited_event)
+                    self.reset_view()
+            
+            dir_ctrl.Bind(wx.EVT_CHOICE, on_dir_choice_change)
+            custom_ctrl.Bind(wx.EVT_TEXT, on_custom_path_change)
+            browse_ctrl.Bind(wx.EVT_BUTTON, on_browse_pressed)
+        else:
+            dir_ctrl = self.module_panel.FindWindowByName(dir_ctrl_name)
+            custom_ctrl = self.module_panel.FindWindowByName(custom_ctrl_name)
+            browse_ctrl = self.module_panel.FindWindowByName(browse_ctrl_name)
+            if dir_ctrl.GetStringSelection() != v.dir_choice:
+                dir_ctrl.SetStringSelection(v.dir_choice)
+            if v.is_custom_choice:
+                custom_ctrl.Value = v.custom_path
+        if dir_ctrl.StringSelection != v.dir_choice:
+            dir_ctrl.StringSelection = v.dir_choice
+        if v.is_custom_choice:
+            custom_ctrl.Show()
+            if custom_ctrl.Value != v.custom_path:
+                custom_ctrl.Value = v.custom_path
+            browse_ctrl.Show()
+        else:
+            custom_ctrl.Hide()
+            browse_ctrl.Hide()
         return control
     
     def make_text_control(self, v, control_name, control):

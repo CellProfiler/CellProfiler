@@ -91,6 +91,22 @@ def resources_root_directory():
     
 DEFAULT_INPUT_FOLDER_NAME = 'Default Input Folder'
 DEFAULT_OUTPUT_FOLDER_NAME = 'Default Output Folder'
+ABSOLUTE_FOLDER_NAME = 'Absolute path elsewhere'
+DEFAULT_INPUT_SUBFOLDER_NAME = 'Default input directory sub-folder'
+DEFAULT_OUTPUT_SUBFOLDER_NAME = 'Default output directory sub-folder'
+URL_FOLDER_NAME = 'URL'
+NO_FOLDER_NAME = "None"
+
+'''Please add any new wordings of the above to this dictionary'''
+FOLDER_CHOICE_TRANSLATIONS = {
+    'Default Input Folder': DEFAULT_INPUT_FOLDER_NAME,
+    'Default Output Folder': DEFAULT_OUTPUT_FOLDER_NAME,
+    'Absolute path elsewhere': ABSOLUTE_FOLDER_NAME,
+    'Default input directory sub-folder': DEFAULT_INPUT_SUBFOLDER_NAME,
+    'Default output directory sub-folder': DEFAULT_OUTPUT_SUBFOLDER_NAME,
+    'URL': URL_FOLDER_NAME,
+    'None': NO_FOLDER_NAME
+    }
     
 DEFAULT_IMAGE_DIRECTORY = 'DefaultImageDirectory'
 DEFAULT_OUTPUT_DIRECTORY = 'DefaultOutputDirectory'
@@ -415,12 +431,17 @@ def set_data_file(path):
     __data_file = path
 
 def standardize_default_folder_names(setting_values,slot):
-    if setting_values[slot].startswith("Default Image") or setting_values[slot].startswith("Default image") or setting_values[slot].startswith("Default input"):
-        setting_values = (setting_values[:slot] +
-                            [DEFAULT_INPUT_FOLDER_NAME] +
-                            setting_values[slot+1:])
+    if setting_values[slot] in FOLDER_CHOICE_TRANSLATIONS.keys():
+        replacement = FOLDER_CHOICE_TRANSLATIONS[setting_values[slot]]
+    elif (setting_values[slot].startswith("Default Image") or 
+          setting_values[slot].startswith("Default image") or 
+          setting_values[slot].startswith("Default input")):
+        replacement = DEFAULT_INPUT_FOLDER_NAME
     elif setting_values[slot].startswith("Default output"):
-        setting_values = (setting_values[:slot] +
-                            [DEFAULT_OUTPUT_FOLDER_NAME] +
-                            setting_values[slot+1:])
+        replacement = DEFAULT_OUTPUT_FOLDER_NAME
+    else:
+        replacement = setting_values[slot]
+    setting_values = (setting_values[:slot] +
+                        [replacement] +
+                        setting_values[slot+1:])
     return setting_values

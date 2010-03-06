@@ -92,8 +92,8 @@ def resources_root_directory():
 DEFAULT_INPUT_FOLDER_NAME = 'Default Input Folder'
 DEFAULT_OUTPUT_FOLDER_NAME = 'Default Output Folder'
 ABSOLUTE_FOLDER_NAME = 'Absolute path elsewhere'
-DEFAULT_INPUT_SUBFOLDER_NAME = 'Default input directory sub-folder'
-DEFAULT_OUTPUT_SUBFOLDER_NAME = 'Default output directory sub-folder'
+DEFAULT_INPUT_SUBFOLDER_NAME = 'Default Input Folder sub-folder'
+DEFAULT_OUTPUT_SUBFOLDER_NAME = 'Default Output Folder sub-folder'
 URL_FOLDER_NAME = 'URL'
 NO_FOLDER_NAME = "None"
 
@@ -102,8 +102,8 @@ FOLDER_CHOICE_TRANSLATIONS = {
     'Default Input Folder': DEFAULT_INPUT_FOLDER_NAME,
     'Default Output Folder': DEFAULT_OUTPUT_FOLDER_NAME,
     'Absolute path elsewhere': ABSOLUTE_FOLDER_NAME,
-    'Default input directory sub-folder': DEFAULT_INPUT_SUBFOLDER_NAME,
-    'Default output directory sub-folder': DEFAULT_OUTPUT_SUBFOLDER_NAME,
+    'Default Input Folder sub-folder': DEFAULT_INPUT_SUBFOLDER_NAME,
+    'Default Output Folder sub-folder': DEFAULT_OUTPUT_SUBFOLDER_NAME,
     'URL': URL_FOLDER_NAME,
     'None': NO_FOLDER_NAME
     }

@@ -476,7 +476,7 @@ class LoadImages(cpmodule.CPModule):
                         <table border = "1">
                         <tr><td colspan = "2">.*[\\\/](?P&lt;Date&gt;.*)[\\\\/](?P&lt;Run&gt;.*)$</td></tr>
                         <tr><td>.*[\\\\/]</td><td>Skip characters at the beginning of the pathname until either a slash (/) or
-                        backslash (\\) is encountered (depending on the OS)</td></tr>
+                        backslash (\\) is encountered (depending on the operating system)</td></tr>
                         <tr><td>(?P&lt;Date&gt;</td><td>Name the captured field <i>Date</i></td></tr>
                         <tr><td>.*</td><td>Capture as many characters that follow</td></tr>
                         <tr><td>[\\\\/]</td><td>Discard the slash/backslash character</td></tr>
@@ -485,7 +485,7 @@ class LoadImages(cpmodule.CPModule):
                         <tr><td>$</td><td>The <i>Run</i> field must be at the end of the path string, i.e., the
                         last folder on the path. This also means that the Date field contains the parent
                         folder of the Date folder.</td></tr>
-                        </table>"""),
+                        </table></p>"""),
                FD_REMOVE_IMAGE:cps.DoSomething('', 'Remove this image',self.remove_imagecb, new_uuid)
                }
         self.images.append(fd)

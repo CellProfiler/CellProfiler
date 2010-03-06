@@ -220,7 +220,10 @@ class SaveImages(cpm.CPModule):
                 Names that start with "&" (an ampersand) are relative to the Default Output Folder. 
                 Two periods ".." specify the parent folder above either of these. For example, "./MyFolder" 
                 looks for a folder called <i>MyFolder</i> that is contained within the Default Input Folder,
-                and "&/../MyFolder" looks in a folder called <i>MyFolder</i> at the same level as the output folder.""")
+                and "&/../MyFolder" looks in a folder called <i>MyFolder</i> at the same level as the output folder.
+		<p>A useful tip: If slashes are needed to separate parts of a path, use '/' for a forward
+		slash and '\\\\' for a backslash (the extra slash is to escape the backslash). Which slash you
+		use will depend on your operating system.</p>""")
         
         self.bit_depth = cps.Choice("Image bit depth",
                 ["8","12","16"],doc="""

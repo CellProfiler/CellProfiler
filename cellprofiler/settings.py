@@ -233,7 +233,7 @@ class DirectoryPath(Text):
     @staticmethod
     def upgrade_setting(value):
         dir_choice, custom_path = DirectoryPath.split_string(value)
-        dir_choice = standardize_default_folder_names([value], 0)[0]
+        dir_choice = standardize_default_folder_names([dir_choice], 0)[0]
         return DirectoryPath.static_join_string(dir_choice, custom_path)
         
     def get_dir_choice(self):
@@ -1689,6 +1689,15 @@ class Colormap(Choice):
         names.sort()
         choices = [DEFAULT] + names
         super(Colormap,self).__init__(text, choices, value, *args, **kwargs)
+        
+class Color(Setting):
+    '''Represents a choice of color
+    
+    These are coded in hex unless a valid HTML name is available.
+    '''
+    def __init(self, text, value="gray", *args, **kwargs):
+        super(Color, self).__init(text, value, *args, **kwargs)
+        
 
 class SettingsGroup(object):
     '''A group of settings that are managed together in the UI.

@@ -515,7 +515,7 @@ class TrackObjects(cpm.CPModule):
                           [0,   0, 1]]))
             figure.bbox = matplotlib.transforms.TransformedBbox(bbox, transform)
             
-            image_pixels = figure_to_image(figure)
+            image_pixels = figure_to_image(figure, dpi=dpi)
             image = cpi.Image(image_pixels)
             workspace.image_set.add(self.image_name.value, image)
             

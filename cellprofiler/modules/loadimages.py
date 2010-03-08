@@ -102,6 +102,15 @@ UIC3_TAG = 33630
 '''STK TIFF TAG UIC4 - internal'''
 UIC4_TAG = 33631
 
+'''The FileName measurement category'''
+C_FILE_NAME = "FileName"
+
+'''The PathName measurement category'''
+C_PATH_NAME = "PathName"
+
+'''The MD5 digest measurement category'''
+C_MD5_DIGEST = "MD5Digest"
+
 # strings for choice variables
 MS_EXACT_MATCH = 'Text-Exact match'
 MS_REGEXP = 'Text-Regular expressions'
@@ -1294,15 +1303,15 @@ class LoadImages(cpmodule.CPModule):
                 row = [name, path, filename]
             metadata = self.get_filename_metadata(self.images[0] if do_flex 
                                                   else fd, filename, path)
-            m.add_measurement('Image','FileName_'+name, filename)
+            m.add_measurement('Image',"_".join((C_FILE_NAME, name)), filename)
             full_path = os.path.join(self.image_directory(),path)
-            m.add_measurement('Image','PathName_'+name, full_path)
+            m.add_measurement('Image',"_".join((C_PATH_NAME, name)), full_path)
             pixel_data = provider.provide_image(workspace.image_set).pixel_data
             digest = hashlib.md5()
             digest.update(np.ascontiguousarray(pixel_data).data)
-            m.add_measurement('Image','MD5Digest_'+name, digest.hexdigest())
+            m.add_measurement('Image',"_".join((C_MD5_DIGEST, name)), digest.hexdigest())
             for key in metadata:
-                measurement = 'Metadata_%s'%(key)
+                measurement = '_'.join((cpm.C_METADATA, key))
                 if not m.has_current_measurements('Image',measurement):
                     m.add_measurement('Image',measurement,metadata[key])
                 elif metadata[key] != m.get_current_measurement('Image',measurement):
@@ -1506,9 +1515,9 @@ class LoadImages(cpmodule.CPModule):
         cols = []
         for fd in self.images:
             name = fd[FD_IMAGE_NAME].value
-            cols += [(cpm.IMAGE, 'FileName_'+name, cpm.COLTYPE_VARCHAR_FILE_NAME)]
-            cols += [(cpm.IMAGE, 'PathName_'+name, cpm.COLTYPE_VARCHAR_PATH_NAME)]
-            cols += [(cpm.IMAGE, 'MD5Digest_'+name, cpm.COLTYPE_VARCHAR_FORMAT%32)]
+            cols += [(cpm.IMAGE, "_".join((C_FILE_NAME, name)), cpm.COLTYPE_VARCHAR_FILE_NAME)]
+            cols += [(cpm.IMAGE, "_".join((C_PATH_NAME, name)), cpm.COLTYPE_VARCHAR_PATH_NAME)]
+            cols += [(cpm.IMAGE, "_".join((C_MD5_DIGEST, name)), cpm.COLTYPE_VARCHAR_FORMAT%32)]
         
         fd = self.images[0]
         all_tokens = []

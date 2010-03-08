@@ -535,7 +535,7 @@ TrackObjects:[module_num:1|svn_version:\'9227\'|variable_revision_number:3|show_
             return values[0]
         self.assertEqual(m(T.F_LABEL), 2)
         self.assertEqual(m(T.F_PARENT), 2)
-    
+        
     def test_05_01_measurement_columns(self):
         '''Test get_measurement_columns function'''
         module = T.TrackObjects()
@@ -848,3 +848,32 @@ TrackObjects:[module_num:1|svn_version:\'9227\'|variable_revision_number:3|show_
         self.assertEqual(len(labels[2]), 1)
         self.assertEqual(labels[2][0], 1)
                 
+    def test_08_01_save_image(self):
+        module = T.TrackObjects()
+        module.module_num = 1
+        module.object_name.value = OBJECT_NAME
+        module.pixel_radius.value = 50
+        module.wants_image.value = True
+        module.image_name.value = "outimage"
+        measurements = cpmeas.Measurements()
+        pipeline = cpp.Pipeline()
+        pipeline.add_module(module)
+        image_set_list = cpi.ImageSetList()
+
+        module.prepare_run(pipeline, image_set_list, None)
+        
+        first = True
+        object_set = cpo.ObjectSet()
+        objects = cpo.Objects()
+        objects.segmented = np.zeros((640,480), int)
+        object_set.add_objects(objects, OBJECT_NAME)
+        image_set = image_set_list.get_image_set(0)
+        workspace = cpw.Workspace(pipeline, module, image_set,
+                                  object_set, measurements, image_set_list)
+        module.run(workspace)
+        image = workspace.image_set.get_image(module.image_name.value)
+        shape = image.pixel_data.shape
+        self.assertEqual(shape[0], 640)
+        self.assertEqual(shape[1], 480)
+        
+    

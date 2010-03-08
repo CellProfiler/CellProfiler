@@ -984,13 +984,15 @@ def renumber_labels_for_display(labels):
     label_copy[label_copy != 0] = renumber[label_copy[label_copy!=0]-1]+1
     return label_copy
 
-def figure_to_image(figure):
+def figure_to_image(figure, *args, **kwargs):
     '''Convert a figure to a numpy array'''
     #
     # Save the figure as a .PNG and then load it using scipy.misc.imread
     #
     fd = StringIO()
-    figure.savefig(fd, format='png')
+    kwargs = kwargs.copy()
+    kwargs["format"] = 'png'
+    figure.savefig(fd, *args, **kwargs)
     fd.seek(0)
     image = scipy.misc.imread(fd)
     return image[:,:,:3]

@@ -1039,131 +1039,137 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
         workspace - contains the measurements
         mappings  - map a feature name to a column name
         """
-        zeros_for_nan = False
-        measurements = workspace.measurements
-        pipeline = workspace.pipeline
-        image_set_list = workspace.image_set_list
-        measurement_cols = self.get_pipeline_measurement_columns(pipeline,
-                                                                 image_set_list)
-        mapping = self.get_column_name_mappings(pipeline, image_set_list)
-        index = measurements.image_set_index
-        
-        ###########################################
-        #
-        # The image table
-        #
-        ###########################################
-        image_number = index + measurements.image_set_start_number
-        image_row = [(image_number, cpmeas.COLTYPE_INTEGER, "ImageNumber")]
-        for m_col in measurement_cols:
-            if m_col[0] != cpmeas.IMAGE:
-                continue
-            feature_name = "%s_%s"%(cpmeas.IMAGE, m_col[1])
-            value = measurements.get_current_image_measurement(m_col[1])
-            if isinstance(value, np.ndarray):
-                value=value[0]
-            if isinstance(value, float) and not np.isfinite(value) and zeros_for_nan:
-                value = 0
-            image_row.append((value, m_col[2], feature_name))
-        #
-        # Aggregates for the image table
-        #
-        agg_dict = measurements.compute_aggregate_measurements(index,
-                                                               self.agg_names)
-        agg_columns = self.get_aggregate_columns(pipeline, image_set_list)
-        image_row += [(agg_dict[agg[3]], 
-                       cpmeas.COLTYPE_FLOAT, 
-                       agg[3])
-                      for agg in agg_columns]
-        
-        #
-        # Delete any prior data for this image
-        #
-        stmt = ('DELETE FROM %s WHERE ImageNumber=%d'%
-                (self.get_table_name(cpmeas.IMAGE), image_number))
-        execute(self.cursor, stmt)
-        
-        ########################################
-        #
-        # Object tables
-        #
-        ########################################
-        object_names = self.get_object_names(pipeline, image_set_list)
-        if self.separate_object_tables == OT_COMBINE:
-            data = [(cpmeas.OBJECT, object_names)]
-        else:
-            data = [(object_name, [object_name])
-                    for object_name in object_names]
-        for table_object_name, object_list in data:
-            table_name = self.get_table_name(table_object_name)
-            columns = [column for column in measurement_cols
-                       if column[0] in object_list]
-            max_count = 0
-            for object_name in object_list:
-                count = measurements.get_current_image_measurement(
-                    "Count_%s" % object_name)
-                max_count = max(max_count, int(count))
-            object_cols = ["ImageNumber"]
-            if table_object_name == cpmeas.OBJECT:
-                object_cols += ["ObjectNumber"]
-        
-            object_cols += [mapping["%s_%s" % (column[0], column[1])]
-                            for column in columns]
-            object_rows = []
-            for j in range(max_count):
-                object_row = [image_number]
-                if table_object_name == cpmeas.OBJECT:
-                    # the object number
-                    object_row.append(j+1)
-                for object_name, feature, coltype in columns:
-                    values = measurements.get_current_measurement(object_name,
-                                                                  feature)
-                    if (values is None or len(values) <= j or
-                        np.isnan(values[j])):
-                        value = None
-                    else:
-                        value = str(values[j])
-                    object_row.append(value)
-                object_rows.append(object_row)
+        try:            
+            zeros_for_nan = False
+            measurements = workspace.measurements
+            pipeline = workspace.pipeline
+            image_set_list = workspace.image_set_list
+            measurement_cols = self.get_pipeline_measurement_columns(pipeline,
+                                                                     image_set_list)
+            mapping = self.get_column_name_mappings(pipeline, image_set_list)
+            index = measurements.image_set_index
+            
+            ###########################################
+            #
+            # The image table
+            #
+            ###########################################
+            image_number = index + measurements.image_set_start_number
+            image_row = [(image_number, cpmeas.COLTYPE_INTEGER, "ImageNumber")]
+            for m_col in measurement_cols:
+                if m_col[0] != cpmeas.IMAGE:
+                    continue
+                feature_name = "%s_%s"%(cpmeas.IMAGE, m_col[1])
+                value = measurements.get_current_image_measurement(m_col[1])
+                if isinstance(value, np.ndarray):
+                    value=value[0]
+                if isinstance(value, float) and not np.isfinite(value) and zeros_for_nan:
+                    value = 0
+                image_row.append((value, m_col[2], feature_name))
+            #
+            # Aggregates for the image table
+            #
+            agg_dict = measurements.compute_aggregate_measurements(index,
+                                                                   self.agg_names)
+            agg_columns = self.get_aggregate_columns(pipeline, image_set_list)
+            image_row += [(agg_dict[agg[3]], 
+                           cpmeas.COLTYPE_FLOAT, 
+                           agg[3])
+                          for agg in agg_columns]
+            
             #
             # Delete any prior data for this image
             #
             stmt = ('DELETE FROM %s WHERE ImageNumber=%d'%
-                    (table_name, image_number))
+                    (self.get_table_name(cpmeas.IMAGE), image_number))
             execute(self.cursor, stmt)
+            
+            ########################################
             #
-            # Write the object table data
+            # Object tables
             #
-            stmt = ('INSERT INTO %s (%s) VALUES (%s)'%
-                    (table_name,
-                     ','.join(object_cols),
-                     ','.join(['%s']*len(object_cols))))
-    
-            if self.db_type == DB_MYSQL:
-                # Write 25 rows at a time (to get under the max_allowed_packet limit)
-                for i in range(0,len(object_rows), 25):
-                    my_rows = object_rows[i:min(i+25, len(object_rows))]
-                    self.cursor.executemany(stmt, my_rows)
+            ########################################
+            object_names = self.get_object_names(pipeline, image_set_list)
+            if self.separate_object_tables == OT_COMBINE:
+                data = [(cpmeas.OBJECT, object_names)]
             else:
-                for row in object_rows:
-                    row_stmt = stmt % tuple(row)
-                    self.cursor.execute(row_stmt)
+                data = [(object_name, [object_name])
+                        for object_name in object_names]
+            for table_object_name, object_list in data:
+                table_name = self.get_table_name(table_object_name)
+                columns = [column for column in measurement_cols
+                           if column[0] in object_list]
+                max_count = 0
+                for object_name in object_list:
+                    count = measurements.get_current_image_measurement(
+                        "Count_%s" % object_name)
+                    max_count = max(max_count, int(count))
+                object_cols = ["ImageNumber"]
+                if table_object_name == cpmeas.OBJECT:
+                    object_cols += ["ObjectNumber"]
+            
+                object_cols += [mapping["%s_%s" % (column[0], column[1])]
+                                for column in columns]
+                object_rows = []
+                for j in range(max_count):
+                    object_row = [image_number]
+                    if table_object_name == cpmeas.OBJECT:
+                        # the object number
+                        object_row.append(j+1)
+                    for object_name, feature, coltype in columns:
+                        values = measurements.get_current_measurement(object_name,
+                                                                      feature)
+                        if (values is None or len(values) <= j or
+                            np.isnan(values[j])):
+                            value = None
+                        else:
+                            value = str(values[j])
+                        object_row.append(value)
+                    object_rows.append(object_row)
+                #
+                # Delete any prior data for this image
+                #
+                stmt = ('DELETE FROM %s WHERE ImageNumber=%d'%
+                        (table_name, image_number))
+                execute(self.cursor, stmt)
+                #
+                # Write the object table data
+                #
+                stmt = ('INSERT INTO %s (%s) VALUES (%s)'%
+                        (table_name,
+                         ','.join(object_cols),
+                         ','.join(['%s']*len(object_cols))))
         
-        # wrap non-numeric types in quotes
-        image_row_formatted = [("NULL" if np.isnan(val)
-                                else str(val))
-                               if dtype in [cpmeas.COLTYPE_FLOAT, cpmeas.COLTYPE_INTEGER]
-                               else "NULL" if val is None
-                               else "'%s'"%MySQLdb.escape_string(str(val)) 
-                               for val, dtype, colname in image_row]
-        
-        image_table = self.get_table_name(cpmeas.IMAGE)
-        stmt = ('INSERT INTO %s (%s) VALUES (%s)' % 
-                (image_table, 
-                 ','.join([mapping[colname] for val, dtype, colname in image_row]),
-                 ','.join([str(v) for v in image_row_formatted])))
-        execute(self.cursor, stmt)
-        self.connection.commit()
+                if self.db_type == DB_MYSQL:
+                    # Write 25 rows at a time (to get under the max_allowed_packet limit)
+                    for i in range(0,len(object_rows), 25):
+                        my_rows = object_rows[i:min(i+25, len(object_rows))]
+                        self.cursor.executemany(stmt, my_rows)
+                else:
+                    for row in object_rows:
+                        row = [ 'NULL' if x is None else x for x in row]
+                        row_stmt = stmt % tuple(row)
+                        self.cursor.execute(row_stmt)
+            
+            # wrap non-numeric types in quotes
+            image_row_formatted = [("NULL" if np.isnan(val) or val is None
+                                    else str(val))
+                                   if dtype in [cpmeas.COLTYPE_FLOAT, cpmeas.COLTYPE_INTEGER]
+                                   else "NULL" if val is None
+                                   else "'%s'"%MySQLdb.escape_string(str(val)) 
+                                   for val, dtype, colname in image_row]
+            
+            image_table = self.get_table_name(cpmeas.IMAGE)
+            stmt = ('INSERT INTO %s (%s) VALUES (%s)' % 
+                    (image_table, 
+                     ','.join([mapping[colname] for val, dtype, colname in image_row]),
+                     ','.join([str(v) for v in image_row_formatted])))
+            execute(self.cursor, stmt)
+            self.connection.commit()
+        except:
+            traceback.print_exc()
+            self.connection.rollback()
+            raise
         
     
     def write_properties(self, workspace):

@@ -432,7 +432,7 @@ class ExportToDatabase(cpm.CPModule):
             if not re.match("^[A-Za-z0-9_].*$",self.sqlite_file.value):
                 raise cps.ValidationError("The sqlite file name has invalid characters",self.sqlite_file)
 
-        if self.db_type != DB_MYSQL_CSV:
+        if self.db_type == DB_MYSQL:
             if not re.match("^[A-Za-z0-9_]+$",self.db_user.value):
                 raise cps.ValidationError("The database user name has invalid characters",self.db_user)
             if not re.match("^[A-Za-z0-9_].*$",self.db_host.value):

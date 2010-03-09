@@ -255,15 +255,14 @@ BUILDING_A_PIPELINE_HELP = """
 <h2>Making a pipeline</h2>
 <p>A <i>pipeline</i> is a sequential set of individual image analysis modules. The 
 best way to learn how to use CellProfiler is to load an example pipeline 
-from the CellProfiler website Examples page and try it out. You can also build a 
+from the CellProfiler website Examples page and try it out, then adapt it for your own images. You can also build a 
 pipeline from scratch. Click the <i>?</i> button in the main window to get
 help for a specific module.</p>
 
-<p>To learn how to program in CellProfiler, see <i>Help > Developer's Guide</i>. 
-To learn how to use a cluster of computers to process 
-large batches of images, see <i>Help > General Help > Batch Processing</i>.</p>
+<p>To adjust the CellProfiler source code, see <i>Help > Developer's Guide</i>. 
+</p>
 
-<h3>Loading a pipeline</h3>
+<h3>Loading an existing pipeline</h3>
 <ol>
 <li>Put the images and pipeline into a folder on your computer.</li>
 <li> Set the Default Input and Output Folders (lower right of the main 
@@ -275,41 +274,52 @@ CellProfiler.</li>
 the main menu of CellProfiler and allow you to plot, view, or export your 
 measurements (e.g., to Excel).</li>   
 <li>If you modify the modules or settings in the pipeline, you can save the 
-pipeline using <i>File > Save Pipeline.</i> See the end of this document for more 
-information on pipeline files.</li> 
+pipeline using <i>File > Save Pipeline.</i></li>
+<li>To learn how to use a cluster of computers to process 
+large batches of images, see <i>Help > General Help > Batch Processing</i>.</li>
 </ol>
 
 <h3>Building a pipeline from scratch</h3>
 <ol>
 <li><p><i>Place modules in a new pipeline.</i><br>
 Choose image analysis modules to add to your pipeline by clicking "+" or 
-right-clicking in the module list window and selecting a module from the 
-pop-up box that appears. Typically, the first module you must run is 
-the <b>LoadImages</b> module, in which you specify the identity of the images 
-you want to analyze. Modules are added to the end of the pipeline, but you can
-adjust their order in the main window by selecting a module (or
-modules, using the shift key) and using the <i>Move up</i> ("^") and 
+right-clicking in the module list window
+[MARK: Should the window be labeled in the main GUI? Ray may have an opinion.
+Also, how will the user know what the module list window is when
+first starting? And perhaps "pipeline window" is better.]
+and selecting a module from the 
+pop-up box that appears. You can learn more about each module by clicking
+<i>Module Help</i> in the "Add modules" window or <i>?</i> after you place the module
+in the pipeline. Modules are added to the end of the pipeline, but you can
+adjust their order in the main window by dragging and dropping them, or by selecting a module (or
+modules, using the <i>Shift</i> key) and using the <i>Move up</i> ("^") and 
 <i>Move down</i> ("v") buttons. The "-" button will delete the selected 
 module(s) from the pipeline.</p> 
+<p>Typically, the first module you must run is 
+ <b>LoadImages</b>, in which you specify the identity of the images 
+you want to analyze. </p>
 <p>Most pipelines depend on one major step: identifying the objects. In 
 CellProfiler, the objects you identify are called <i>primary</i>, 
 <i>secondary</i>, or <i>tertiary</i>:
 <ul>
-<li><i>Identify Primary modules </i> identify objects without relying on any 
+<li><b>IdentifyPrimary</b> modules identify objects without relying on any 
 information other than a single grayscale input image (e.g., nuclei are 
 typically primary objects).</li>
-<li><i>Identify Secondary</i> modules require a grayscale image plus an image 
+<li><b>IdentifySecondary</b> modules require a grayscale image plus an image 
 where primary objects have already been identified, because the secondary 
 objects are determined based on the primary objects (e.g., cells can be 
-secondary objects). </li>
-<li><i>Identify Tertiary modules</i> require images in which two sets of objects have 
+secondary objects when their identification is based on the location of nuclei). </li>
+<li><b>IdentifyTertiary</b> modules require images in which two sets of objects have 
 already been identified (e.g., nuclei and cell regions are used to define the 
 cytoplasm objects, which are tertiary objects).</li>
 </ul></p>
-<p><i>A note on saving images in your pipeline:</i> Due to the typically high number 
+<p><i>Saving images in your pipeline:</i> Due to the typically high number 
 of intermediate images produced during processing, images produced during 
 processing are not saved to the hard drive unless you specifically request it, 
-using a <b>SaveImages</b> module.</p></li> 
+using a <b>SaveImages</b> module.</p>
+<p><i>Saving data in your pipeline:</i> All measurements will be stored in the CellProfiler-formatted
+output vile, but you can include an <b>Export</b> module to automatically export
+data in a format you prefer.</p></li> 
 
 <li><p><i>Adjust the settings in each module.</i><br>
 In the CellProfiler main window, click a module in the pipeline to see its 
@@ -323,14 +333,14 @@ For more help, click their nearby "?" buttons in the main window. </p></li>
 
 <li><p><i>Click <i>Analyze images</i> to start processing.</i><br> 
 All of the images in your selected folder(s) will be analyzed using the modules 
-and settings you have specified.You have the option to cancel at any time. 
-At the end of each cycle, CellProfiler savees the measurements in the output file.</p></li>
+and settings you have specified. You have the option to cancel at any time [MARK: BY...?]. 
+At the end of each cycle, CellProfiler saves the measurements in the output file.</p></li>
 
 <li><p><i>Use Test mode to preview results.</i><br>
-You can test the analysis of a selected image cycle by selecting the <i>Test</i> mode option from 
+You can optimize your pipeline by selecting the <i>Test</i> option from 
 the main menu. Test mode allows you to run the pipeline on a selected
 image, preview the results, and adjust the module settings on the fly. See 
-<i>Help > General Help > Test Mode </i> for more details.</p>
+<i>Help > General Help > Test </i> for more details.</p>
 </li>
 <li><p>Save your pipeline via <i>File > Save Pipeline</i>.</p>
 </li>
@@ -342,7 +352,7 @@ NEW_MODULE_NAMES_HELP = """
 
 <p>Some of the modules have changed their names between CellProfiler 1.0 and 2.0. 
 In some cases, the change was made to make the nomenclature more consistent;  
-in others, to make the module name suitably generic. </p>
+in others, to reflect new, broader functionality. </p>
 
 <p>A pipeline created in CellProfiler 1.0 and loaded into CellProfiler 2.0 will have the appropriate modules 
 converted to their new names automatically. However, if you are looking for a 
@@ -371,8 +381,8 @@ list of modules that have changed names (former name in parentheses):
 </p>
 
 <p>The functionality of some modules has been superseded by others. The modules listed
-below have been deprecated and are no longer present (names of the modules to be used in their place in 
-parentheses. Where possible, deprecated modules will automatically be imported as equivalent
+below have been deprecated and are no longer present (names of the modules to be used in their place appear in 
+parentheses). Where possible, deprecated modules will automatically be imported as equivalent
 modules with the appropriate settings:
 <ul>
 <li><b>LoadImageDirectory</b> (use MakeProjection, in conjunction with LoadImages 
@@ -393,7 +403,7 @@ below (former category in parentheses):
 <ul>
 <li><b>CalculateMath</b> (from Measurement)</li>
 <li><b>CalculateStatistics</b> (from Measurement)</li>
-<li><b>ExportToDatabase</b>(from File Processing)</li>
+<li><b>ExportToDatabase</b> (from File Processing)</li>
 <li><b>ExportToSpreadsheet</b> (from File Processing)</li>
 <li><b>FlagImage</b>(from Image Processing)</li>
 </ul>
@@ -419,40 +429,44 @@ the module and loading the rest of the pipeline.
 USING_METADATA_HELP = """
 <h2>Using Metadata in CellProfiler</h2>
 
-It is not uncommon for metadata (i.e, additional data about the data) to be included with the input images.
-This information can be used by CellProfiler to group images with common metadata identifiers (or "tags") 
-together for a processing run, output to a spreadsheet as annotated information or used to name 
-additional input/output files. Oftentimes, this is encountered in two forms:
+Metadata (i.e., additional data about image data) is sometimes available for input images.
+This information can be (a) used by CellProfiler to group images with common metadata identifiers (or "tags") 
+together for particular steps in a pipeline, (b) stored in the output file along with CP-measured features for
+annotation or sample-tracking purposes, (c) used to name additional input/output files.</p>
+<p>Two sources of metadata are:
 <ul>
-<li><i>Metadata provided in the image filename or location.</i> For example, images produced by an automated
-microscope may be given names similar to "Experiment1_A01_w1_s1.tif" in which the metadata about the
-plate ("Experiment1"), the well ("A01"), the wavelength number ("w1") and the site ("s1") are encapsulated. The
+<li><i>Metadata provided in the image filename or location (pathname).</i> For example, images produced by an automated
+microscope can be given names similar to "Experiment1_A01_w1_s1.tif" in which the metadata about the
+plate ("Experiment1"), the well ("A01"), the wavelength number ("w1") and the imaging site ("s1") are encapsulated. The
 name of the folder in which the images are saved may be meaningful and may also be considered metadata as well.
-If this is the case for your data, use <b>LoadImages</b> to extract this information.</li>
-<li><i>Metadata provided as a table of information</i> Often, information associated with each image (such as
-treatment, plate, well, etc) is given as a separate spreadsheet. If this is the case for your data, use 
+If this is the case for your data, use <b>LoadImages</b> to extract this information for
+use in the pipeline and storage in the output file.</li>
+<li><i>Metadata provided as a table of information</i>. Often, information associated with each image (such as
+treatment, plate, well, etc) is available as a separate spreadsheet. If this is the case for your data, use 
 <b>LoadData</b> to load this information.</li>
 </ul>
-Details for the metadata-specific help is given next to the appropriate setting. However, here is an overview
+Details for the metadata-specific help is given next to the appropriate setting
+[MARK: Within LoadImages and LoadData?]. However, here is an overview
 of how metadata is obtained and used.
 
 <h3>Associating images with metadata</h3>
 
-<p>In <b>LoadImages</b>, metadata is obtained from the filename and/or folder location using regular expression, 
-a specialized syntax used for text pattern-matching. These regular expressions can be used to name different 
+<p>In <b>LoadImages</b>, metadata can be extracted from the filename and/or folder location using regular expression, 
+a specialized syntax used for text pattern-matching. These regular expressions can be used to
+name [MARK: Identify?] different 
 parts of the filename / folder. The syntax <i>(?&lt;fieldname&gt;expr)</i> will extract whatever matches 
 <i>expr</i> and assign it to the image's <i>fieldname</i> measurement. A regular expression tool is available 
 which will allow you to check the accuracy of your regular expression.</p>
 
-<p>For instance, a researcher uses folder names with the date and subfolders containing the
-images with the run ID (e.g., <i>./2009_10_02/1234/</i>)
+<p>For instance, say a researcher has folder names with the date and subfolders containing the
+images with the run ID (e.g., <i>./2009_10_02/1234/</i>). 
 The following regular expression will capture the plate, well and site in the fields 
 <i>Date</i> and <i>Run</i>:<br>
 <table border = "1">
-<tr><td colspan = "2">.*[\\\/](?P&lt;Date&gt;.*)[\\\\/](?P&lt;Run&gt;.*)$</td></tr>
+<tr><td colspan = "2">.*[\\\/](?P&lt;Date&gt;.*)[\\\\/](?P&lt;Run&gt;.*)$ [MARK: Why only 2 slashes in first set of brackets, and 3 in the next table row? Correct?]</td></tr>
 <tr><td>.*[\\\\/]</td><td>Skip characters at the beginning of the pathname until either a slash (/) or
 backslash (\\) is encountered (depending on the OS)</td></tr>
-<tr><td>(?P&lt;Date&gt;</td><td>Name the captured field <i>Date</i></td></tr>
+<tr><td>(?P&lt;Date&gt;</td><td>Name the captured field <i>Date</i>[MARK: Why capital P at the beginning (and in 'Run' below)--'P' is not in the syntax at the beginning of this section.]</td></tr>
 <tr><td>.*</td><td>Capture as many characters that follow</td></tr>
 <tr><td>[\\\\/]</td><td>Discard the slash/backslash character</td></tr>
 <tr><td>(?P&lt;Run&gt;</td><td>Name the captured field <i>Run</i></td></tr>
@@ -462,9 +476,9 @@ last folder on the path. This also means that the <i>Date</i> field contains the
 folder of the <i>Date</i> folder.</td></tr>
 </table>
 
-<p>In <b>LoadData</b>, it is assumed that the metadata has already been gathered and is in the form
-of a CSV (comma-separated) file. Columns whose name begins with 
-"Metadata" can be used to group or associate files loaded by <b>LoadData</b>.</p>
+<p>In <b>LoadData</b>, metadata is extracted from a CSV (comma-separated) file (a spreadsheet). Columns whose name begins with 
+"Metadata" can be used to group or associate files loaded by <b>LoadData</b>.
+[MARK: This last sentence is not 100% clear to me.]</p>
 
 <p>For instance, an experiment might require that images created on the same day 
 use an illumination correction function calculated from all images from that day, 

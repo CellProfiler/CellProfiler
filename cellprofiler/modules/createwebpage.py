@@ -2,6 +2,10 @@
 (or their thumbnails, if desired), including a link to a zipped file with all 
 of the included images.
 <hr>
+
+This module will create an html file that will display the specified
+images with the option of also producing a ZIP file of these images with a link.
+
 '''
 
 # CellProfiler is distributed under the GNU General Public License.
@@ -24,6 +28,7 @@ import cellprofiler.cpmodule as cpm
 import cellprofiler.settings as cps
 import cellprofiler.preferences as cpprefs
 from cellprofiler.modules.loadimages import C_FILE_NAME, C_PATH_NAME
+from cellprofiler.gui.help import USING_METADATA_TAGS_REF, USING_METADATA_HELP_REF
 
 DIR_ABOVE = "One level over the images"
 DIR_SAME = "Same as the images"
@@ -88,67 +93,84 @@ class CreateWebPage(cpm.CPModule):
     
     def create_settings(self):
         self.orig_image_name = cps.ImageNameSubscriber(
-            "Full-size image name:", "None",
+            "Select the input images", "None",
             doc="""Select the images that the web page will link to.""")
         
         self.wants_thumbnails = cps.Binary(
             "Use thumbnail images?", False,
-            doc="""Check this option to add thumbnail images to the web page
-            that link to the full images. Leave it unchecked to display the 
-            full image directly on the web page.""")
+            doc="""Check this option to add thumbnail images (small versions of the 
+            images) to the web page that link to the full images. Leave it 
+            unchecked to display the full image directly on the web page.
+            <p>If you are going to use thumbnails, you will need to load
+            them using <b>LoadImages</b>/<b>LoadData</b>. For high-content
+            screening systems, it is not uncommon for these files to have
+            the text "thumb" in the name.</p>""")
         
         self.thumbnail_image_name = cps.ImageNameSubscriber(
-            "Thumbnail image name:", "None",
-            doc="""Choose the name of the image to use for thumbnails""")
+            "Select the thumbnail images", "None",
+            doc="""
+            <i>(Used only if using thumbnails)</i><br>
+            Choose the name of the image to use for thumbnails.""")
         
         self.web_page_file_name = cps.Text(
-            "Web page file name:", "images1",
+            "Webpage file name", "images1",
             doc="""Enter the file name for the web page. <b>CreateWebPage</b>
             will add the .html extension if no extension is specified.
-            You can use metadata in the file name, for example,
-            "\g<Plate>_\g<Well>" if you want to create separate web pages
-            based on your metadata.""")
+            If you have metadata associated with your images, you can name the 
+            file using metadata tags. %s. For instance, if you have metadata tags named "Plate" and 
+            "Well", you can create separate per-plate,per-well web pages based on
+            your metadata using "\g&lt;Plate&gt;_\g&lt;Well&gt;" to specify the 
+            name. %s."""%(USING_METADATA_TAGS_REF,USING_METADATA_HELP_REF))
         
         self.directory_choice = cps.Choice(
-            "Folder for the .html file:",
+            "Select the folder for the .html file",
             [ DIR_SAME, DIR_ABOVE],
             doc="""This setting determines how <b>CreateWebPage</b> selects the 
-            folder for the .html files it creates. Choose <i>%(DIR_SAME)s</i>
-            to put the .html files in the same folder as the files.
-            Choose <i>%(DIR_ABOVE)s</i> to put the .html files in the
-            image files' parent folder""" % globals())
+            folder for the .html files it creates. 
+            <ul>
+            <li><i>%(DIR_SAME)s</i>: Place the .html files in the same folder as 
+            the files.</li>
+            <li><i>%(DIR_ABOVE)s</i>: Place the .html files in the
+            image files' parent folder.</li>
+            </ul>""" % globals())
         
         self.title = cps.Text(
-            "Webpage title:", "Image",
+            "Webpage title", "Image",
             doc = """This is the title that appears at the top of the browser
-            window. You can use metadata substitutions in the title, for 
-            instance, "Plate: \g<Plate>", to display the plate metadata item""")
+            window. If you have metadata associated with your images, you can name the 
+            file using metadata tags. %s. For instance, if you have a metadata tag 
+            named "Plate", you can use the metadata substitutions "Plate: \g&lt;Plate&gt;", 
+            to display the plate metadata item. %s."""
+            %(USING_METADATA_TAGS_REF,USING_METADATA_HELP_REF))
         
         self.background_color = cps.Color(
-            "Webpage background color:", "White",
-            doc = """This setting controls the background color for the web page""")
+            "Webpage background color", "White",
+            doc = """This setting controls the background color for the web page.""")
         
         self.columns = cps.Integer(
-            "# of columns:", 1, minval = 1,
+            "Number of columns", 1, minval = 1,
             doc = """This setting determines how many images are displayed
             in each row.""")
         
         self.table_border_width = cps.Integer(
-            "Table border width:", 1, minval = 0,
+            "Table border width", 1, minval = 0,
             doc = """The table border width determines the width of the border
-            around the entire table and is measured in pixels""")
+            around the entire table and is measured in pixels. This value can be 
+            set to zero, in which case you will not see the table border.""")
         
         self.table_border_color = cps.Color(
-            "Table border color:", "White")
+            "Table border color", "White")
 
         self.image_spacing = cps.Integer(
-            "Image spacing:", 1, minval = 0,
+            "Image spacing", 1, minval = 0,
             doc = """The spacing between table cells in pixels.""")
         
         self.image_border_width = cps.Integer(
-            "Image border width:", 1, minval = 0,
+            "Image border width", 1, minval = 0,
             doc = """The image border width determines the width of
-            the border around each image and is measured in pixels.""")
+            the border around each image and is measured in pixels.
+            This value can be set to zero, in which case you will not see the 
+            image border.""")
         
         self.create_new_window = cps.Choice(
             "Open new window when viewing full image?",
@@ -159,13 +181,19 @@ class CreateWebPage(cpm.CPModule):
             images in the newly opened window. If you select <i>
             %(OPEN_EACH)s</i>, the browser will open a new window each time
             you click on a link. If you select, <i>%(OPEN_NO)s</i>, the
-            browser will reuse the current window to display the image""")
+            browser will reuse the current window to display the image"""% globals())
         
         self.wants_zip_file = cps.Binary(
-            "Make a zipfile containing the full-size images?", False)
+            "Make a ZIP file containing the full-size images?", False,doc="""
+            ZIP files are a popular archive and data compression file format.
+            Check this box to create a ZIP file that contains all your images 
+            compressed to reduce file size""")
         
         self.zipfile_name = cps.Text(
-            "Zipfile name:", "Images.zip")
+            "Enter the ZIP file name", "Images.zip",
+            doc="""
+            <i>(Used only if creating a ZIP file)</i><br>
+            Choose the name of the ZIP file used to contain the images.""")
         
     def settings(self):
         '''The settings as saved in the pipeline'''

@@ -562,6 +562,8 @@ class ImageSet(object):
     def add(self, name, image):
         old_providers = [provider for provider in self.providers
                          if provider.name == name]
+        if len(old_providers) > 0:
+            self.clear_image(name)
         for provider in old_providers:
             self.providers.remove(provider)
         provider = VanillaImageProvider(name,image)

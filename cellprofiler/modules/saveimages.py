@@ -33,7 +33,9 @@ import numpy as np
 import os
 import Image as PILImage
 import scipy.io.matlab.mio
-
+from bioformats.formatreader import *
+from bioformats.formatwriter import *
+from bioformats.metadatatools import *
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements
 import cellprofiler.settings as cps
@@ -71,6 +73,7 @@ FF_TIFF        = "tiff"
 FF_XWD         = "xwd"
 FF_AVI         = "avi"
 FF_MAT         = "mat"
+FF_MOV         = "mov"
 PC_WITH_IMAGE  = "Same folder as image"
 PC_CUSTOM      = "Custom"
 PC_WITH_METADATA = "Custom with metadata"
@@ -87,7 +90,9 @@ class SaveImages(cpm.CPModule):
     
     def create_settings(self):
         self.save_image_or_figure = cps.Choice("Select the type of image to save",
-                                               [IF_IMAGE, IF_MASK, IF_CROPPING, IF_MOVIE,IF_FIGURE],IF_IMAGE,doc="""
+                                               [IF_IMAGE, IF_MASK, IF_CROPPING, 
+                                                IF_MOVIE, IF_FIGURE],
+                                               IF_IMAGE,doc="""
                 The following types of images can be saved as a file on the hard drive:
                 <ul>
                 <li><i>Image:</i> Any of the images produced upstream of the module can be selected for saving. 
@@ -120,7 +125,7 @@ class SaveImages(cpm.CPModule):
                 Enter the module number/name for which you want to save the module display window.""")
         
         self.file_name_method = cps.Choice("Select method for constructing file names",
-                                           [FN_FROM_IMAGE,FN_SEQUENTIAL,
+                                           [FN_FROM_IMAGE, FN_SEQUENTIAL,
                                             FN_SINGLE_NAME, FN_WITH_METADATA,
                                             FN_IMAGE_FILENAME_WITH_METADATA],
                                             FN_FROM_IMAGE,doc="""
@@ -374,12 +379,14 @@ class SaveImages(cpm.CPModule):
                 result.append(self.create_subdirectories)
         else:
             result.append(self.image_name)
+            result.append(self.file_name_method)
             result.append(self.single_file_name)
+            result.append(self.file_image_name)
             result.append(self.movie_pathname_choice)
             if self.movie_pathname_choice == PC_CUSTOM:
                 result.append(self.pathname)
             result.append(self.overwrite)
-            result.append(self.when_to_save_movie)
+#            result.append(self.when_to_save_movie)
             result.append(self.rescale)
             result.append(self.colormap)
         return result
@@ -397,7 +404,11 @@ class SaveImages(cpm.CPModule):
         return True
 
     def prepare_group(self, pipeline, image_set_list, *args):
-        self.get_dictionary(image_set_list)["FIRST_IMAGE"] = True
+        d = self.get_dictionary(image_set_list)
+        d['FIRST_IMAGE'] = True
+        if self.save_image_or_figure == IF_MOVIE:
+            d['N_FRAMES'] = image_set_list.count()
+            d['CURRENT_FRAME'] = 0
         return True
     
     def prepare_to_create_batch(self, pipeline, image_set_list, fn_alter_path):
@@ -417,6 +428,8 @@ class SaveImages(cpm.CPModule):
         """
         if self.save_image_or_figure.value in (IF_IMAGE, IF_MASK, IF_CROPPING):
             should_save = self.run_image(workspace)
+        elif self.save_image_or_figure == IF_MOVIE:
+            should_save = self.run_movie(workspace)
         else:
             raise NotImplementedError(("Saving a %s is not yet supported"%
                                        (self.save_image_or_figure)))
@@ -428,6 +441,8 @@ class SaveImages(cpm.CPModule):
 
     def display(self, workspace):
         if workspace.frame != None:
+            if self.save_image_or_figure == IF_MOVIE:
+                return
             figure = workspace.create_or_find_figure(subplots=(1,1))
             outcome = ("Wrote %s" if workspace.display_data.wrote_image
                        else "Did not write %s")
@@ -455,10 +470,64 @@ class SaveImages(cpm.CPModule):
         self.save_image(workspace)
         return True
     
+    
+    def run_movie(self, workspace):
+        d = self.get_dictionary(workspace.image_set_list)
+        env = jutil.attach()
+        try:
+            image = workspace.image_set.get_image(self.image_name.value)
+            pixels = image.pixel_data
+            width = pixels.shape[1]
+            height = pixels.shape[0]
+            if pixels.ndim == 2:
+                channels = 1
+            elif pixels.ndim == 3 and pixels.shape[2] == 3:
+                channels = 3
+            else:
+                raise 'Image shape is not supported for saving to movie'
+            stacks = 1
+            frames = d['N_FRAMES']
+            
+            FormatTools = make_format_tools_class()
+            imeta = createOMEXMLMetadata()
+            meta = wrap_imetadata_object(imeta)
+            meta.createRoot()
+            meta.setPixelsBigEndian(True, 0, 0)
+            meta.setPixelsDimensionOrder('XYCZT', 0, 0)
+            meta.setPixelsPixelType(FormatTools.getPixelTypeString(FormatTools.UINT8), 0, 0)
+            meta.setPixelsSizeX(width, 0, 0)
+            meta.setPixelsSizeY(height, 0, 0)
+            meta.setPixelsSizeC(channels, 0, 0)
+            meta.setPixelsSizeZ(stacks, 0, 0)
+            meta.setPixelsSizeT(frames, 0, 0)
+            meta.setLogicalChannelSamplesPerPixel(channels, 0, 0)   
+            ImageWriter = make_image_writer_class()
+            writer = ImageWriter()    
+            writer.setMetadataRetrieve(meta)
+            out_file = self.get_filename(workspace)
+            writer.setId(out_file)
+            d['IMAGEJ_WRITER'] = writer
+    
+            writer = d['IMAGEJ_WRITER']
+            is_last_image = (d['CURRENT_FRAME'] == d['N_FRAMES']-1)
+            image = workspace.image_set.get_image(self.image_name.value)
+            pixels = image.pixel_data
+            pixels = (pixels*255).astype(np.uint8)
+            if len(pixels.shape)==3 and pixels.shape[2] == 3:  
+                save_im = np.array([pixels[:,:,0], pixels[:,:,1], pixels[:,:,2]]).flatten()
+            else:
+                save_im = pixels.flatten()
+            writer.saveBytes(env.make_byte_array(save_im), is_last_image)
+            writer.close()
+            d['CURRENT_FRAME'] += 1
+        finally:
+            jutil.detach()
+        
+    
     def post_group(self, workspace, *args):
         if self.when_to_save == WS_LAST_CYCLE:
             self.save_image(workspace)
-
+        
     def save_image(self, workspace):
         workspace.display_data.wrote_image = False
         image = workspace.image_set.get_image(self.image_name.value)
@@ -579,7 +648,8 @@ class SaveImages(cpm.CPModule):
                     self.single_file_name.value)
             elif self.file_name_suffix != cps.DO_NOT_USE:
                 filename += str(self.file_name_suffix)
-        filename = "%s.%s"%(filename,self.file_format.value)
+        
+        filename = "%s.%s"%(filename,self.get_file_format())
         
         if self.pathname_choice.value in (DEFAULT_OUTPUT_FOLDER_NAME, PC_CUSTOM, PC_WITH_METADATA):
             if self.pathname_choice == DEFAULT_OUTPUT_FOLDER_NAME:
@@ -615,6 +685,8 @@ class SaveImages(cpm.CPModule):
     def get_file_format(self):
         """Return the file format associated with the extension in self.file_format
         """
+        if self.save_image_or_figure == IF_MOVIE:
+            return FF_MOV
         if self.file_format == FF_JPG:
             return FF_JPEG
         if self.file_format == FF_TIF:

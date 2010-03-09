@@ -510,9 +510,9 @@ errors associated with image analysis: </p>
 <li><p><i>Resize the input images.</i><br>
 If the image is high-resolution, it may be helpful to determine whether the 
 features of interest can be processed (and accurate data obtained) by using a 
-lower-resolution image. If this is the  case, use the <b>Resize</b> module (in then
-<i>Image Processing</i> category) to scale down the image to a more manageable size, 
-perform the desired operations on the smaller image.</p></li>
+lower-resolution image. If this is the  case, use the <b>Resize</b> module (in the
+<i>Image Processing</i> category) to scale down the image to a more manageable size
+and perform the desired operations on the smaller image.</p></li>
 
 <li><p><i>Use the <b>ConserveMemory</b> module.</i><br>                                 
 The <b>ConserveMemory</b> module lets you clear the images stored in memory, 
@@ -526,12 +526,11 @@ with the exception of any you specify. Please see the
 <li><p><i>Run without display windows.</i><br>
 Each module is associated with a display window that takes time to render and/or
 update. Closing these windows improves speed somewhat. 
-To the left of each module listed in your pipeline there is an icon (an eye) that indicates the whether
+To the left of each module listed in your pipeline there is an icon (an eye) that indicates whether
 the module window will be displayed during the analysis run. You can turn off individual module windows by
 clicking on the icon (when the eye is closed, the window 
 will not be shown); select <i>Window > Hide all windows</i> to prevent display
-of all module windows. Once your pipeline is properly set up, we recommend    
-running the entire cycle without any windows displayed.</p></li>           
+of all module windows.</p></li>           
                                                                             
 <li><p><i>Use care in object identification </i><br>                                   
 If you have a large image which contains many small        
@@ -550,8 +549,8 @@ TEST_MODE_HELP = """
 the main menu. Test mode allows you to run the pipeline on a selected
 image, preview the results and adjust the module settings on the fly.</p>
 
-<p>You can enter into Test mode at any time via <i>Test > Start test run</i> in the
-menu bar in the main GUI. At this point, you will see the following features appear:
+<p>To enter Test mode once you have built a pipeline, choose <i>Test > Start test run</i> in the
+menu bar in the main window. At this point, you will see the following features appear:
 <ul>
 <li>The module view will have a slider bar appearing on the far left.</li>
 <li>A Pause icon ("||") will appear to the left of each module.</li>

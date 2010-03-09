@@ -293,7 +293,8 @@ class TestDirectoryPath(unittest.TestCase):
             
     def test_01_04_get_parts_from_image_folder_path(self):
         s = cps.DirectoryPath("whatever")
-        dir_choice, custom_path = s.get_parts_from_path(cpprefs.get_default_image_directory())
+        dir_choice, custom_path = s.get_parts_from_path(
+            cpprefs.get_default_image_directory())
         self.assertEqual(dir_choice, cps.DEFAULT_INPUT_FOLDER_NAME)
         
     def test_01_05_get_parts_from_output_folder_path(self):

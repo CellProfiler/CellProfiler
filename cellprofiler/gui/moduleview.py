@@ -355,6 +355,8 @@ class ModuleView:
                 elif isinstance(v, cps.DirectoryPath):
                     control = self.make_directory_path_control(v, control_name,
                                                                control)
+                elif isinstance(v, cps.Color):
+                    control = self.make_color_control(v, control_name, control)
                 else:
                     control = self.make_text_control(v, control_name, control)
                 sizer.Add(control, 0, flag, border)
@@ -610,6 +612,28 @@ class ModuleView:
                 combo.Value = v.value
             if not bitmap is None:
                 colorbar.SetBitmap(bitmap)
+        return control
+    
+    def make_color_control(self, v, control_name, control):
+        if control is None:
+            control = wx.Button(self.module_panel)
+            
+            def on_press(event, v=v, control=control):
+                color = wx.Colour()
+                color.SetFromName(v.value)
+                data = wx.ColourData()
+                data.SetColour(color)
+                dlg = wx.ColourDialog(self.module_panel, data)
+                dlg.Title = v.text
+                if dlg.ShowModal() == wx.ID_OK:
+                    proposed_value = dlg.GetColourData().GetColour().GetAsString(
+                        wx.C2S_NAME | wx.C2S_HTML_SYNTAX)
+                    setting_edited_event = SettingEditedEvent(
+                        v, self.__module, proposed_value, event)
+                    self.notify(setting_edited_event)
+                    self.reset_view()
+            control.Bind(wx.EVT_BUTTON, on_press)
+        control.SetBackgroundColour(v.value)
         return control
         
     def make_callback_control(self,v,control_name,control):

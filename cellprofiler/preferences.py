@@ -105,7 +105,8 @@ FOLDER_CHOICE_TRANSLATIONS = {
     'Default Input Folder sub-folder': DEFAULT_INPUT_SUBFOLDER_NAME,
     'Default Output Folder sub-folder': DEFAULT_OUTPUT_SUBFOLDER_NAME,
     'URL': URL_FOLDER_NAME,
-    'None': NO_FOLDER_NAME
+    'None': NO_FOLDER_NAME,
+    'Elsewhere...': ABSOLUTE_FOLDER_NAME
     }
     
 DEFAULT_IMAGE_DIRECTORY = 'DefaultImageDirectory'

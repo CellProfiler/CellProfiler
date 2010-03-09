@@ -249,65 +249,16 @@ if __name__ == "__main__":
     ImageReader = make_image_reader_class()
     ChannelSeparator = make_reader_wrapper_class("loci/formats/ChannelSeparator")
     FormatTools = make_format_tools_class()
-#    rdr = ImageReader()
-#    
-#    meta = jutil.static_call('loci/formats/MetadataTools', 'createOMEXMLMetadata', '()Lloci/formats/meta/IMetadata;')
-#    rdr.setMetadataStore(meta);
-#    
-#    rdr.setId(filename)
-#    print "Format = %s"%rdr.getFormat()
-#    w = rdr.getSizeX()
-#    h = rdr.getSizeY()
-#    pixel_type = rdr.getPixelType()
-#    little_endian = rdr.isLittleEndian()
-#    metadata = rdr.getMetadata()
-#    d = jutil.jdictionary_to_string_dictionary(metadata)
-#    for key in d.keys():
-#        print key+"="+d[key]
-#    if pixel_type == FormatTools.INT8:
-#        dtype = np.char
-#    elif pixel_type == FormatTools.UINT8:
-#        dtype = np.uint8
-#    elif pixel_type == FormatTools.UINT16:
-#        dtype = '<u2' if little_endian else '>u2'
-#    elif pixel_type == FormatTools.INT16:
-#        dtype = '<i2' if little_endian else '>i2'
-#    elif pixel_type == FormatTools.UINT32:
-#        dtype = '<u4' if little_endian else '>u4'
-#    elif pixel_type == FormatTools.INT32:
-#        dtype = '<i4' if little_endian else '>i4'
-#    elif pixel_type == FormatTools.FLOAT:
-#        dtype = '<f4' if little_endian else '>f4'
-#    elif pixel_type == FormatTools.DOUBLE:
-#        dtype = '<f8' if little_endian else '>f8'
-#        
-#    if rdr.getRGBChannelCount() > 1:
-#        print 'Reading image as RGB'
-#        rdr.close()
-#        rdr = ChannelSeparator(ImageReader())
-#        rdr.setId(filename)
-#        red_image, green_image, blue_image = [
-#            np.frombuffer(rdr.openBytes(rdr.getIndex(0,i,0)),dtype)
-#            for i in range(3)]
-#        image = np.dstack((red_image, green_image, blue_image))
-#        image.shape=(h,w,3)
-#        nchannels = 3
-#    else:
-#        print 'Reading image as grayscale'
-#        image = np.frombuffer(rdr.openBytes(0),dtype)
-#        image.shape = (h,w)
-#        nchannels = 1
-#    rdr.close()
-    
+
     # writer testing
     ImageWriter = make_image_writer_class()
     writer = ImageWriter()
     
-    w = 800
-    h = 800
+    w = 400
+    h = 400
     c = 3
     z = 1
-    t = 20
+    t = 4
     images = []
     for tt in range(t):
         images += [(np.random.rand(w, h, c) * 255).astype('uint8')]
@@ -346,9 +297,9 @@ if __name__ == "__main__":
     writer.close()
     
     print 'Done writing image :)'
-    import Image
-    im = Image.open(out_file, 'r')
-    im.show()
+#    import Image
+#    im = Image.open(out_file, 'r')
+#    im.show()
     
     jutil.detach()
     app.MainLoop()

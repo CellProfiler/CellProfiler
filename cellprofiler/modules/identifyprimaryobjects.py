@@ -1148,7 +1148,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             outline_img[workspace.display_data.outline_border_excluded_image != 0,2] = 0
             
             title = "%s outlines"%(self.object_name.value) 
-            my_frame.subplot_imshow(0,1,outline_img, title)
+            my_frame.subplot_imshow(0, 1, outline_img, title, normalize=False)
             
             table_axes.clear()
             table = table_axes.table(cellText=workspace.display_data.statistics,

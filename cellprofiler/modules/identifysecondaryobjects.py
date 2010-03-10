@@ -479,7 +479,8 @@ class IdentifySecondaryObjects(cpmi.Identify):
             secondary_outline_img[secondary_outline>0] = 1
             outline_img = np.dstack((secondary_outline_img,img,img))
             outline_img.shape=(img.shape[0],img.shape[1],3)
-            my_frame.subplot_imshow(0,1, outline_img,"Outlined image")
+            my_frame.subplot_imshow(0, 1, outline_img, "Outlined image",
+                                    normalize=False)
             
             primary_outline_img = img.copy()
             primary_outline_img[primary_outline>0] = 1
@@ -487,8 +488,9 @@ class IdentifySecondaryObjects(cpmi.Identify):
                                      primary_outline_img,
                                      img))
             primary_img.shape=(img.shape[0],img.shape[1],3)
-            my_frame.subplot_imshow(1,1,primary_img,
-                                    "Primary and output outlines")
+            my_frame.subplot_imshow(1, 1, primary_img,
+                                    "Primary and output outlines",
+                                    normalize=False)
             if global_threshold is not None:
                 my_frame.status_bar.SetFields(
                     ["Threshold: %.3f" % global_threshold,

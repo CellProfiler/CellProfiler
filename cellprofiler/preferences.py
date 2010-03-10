@@ -448,3 +448,23 @@ def standardize_default_folder_names(setting_values,slot):
                         [replacement] +
                         setting_values[slot+1:])
     return setting_values
+
+__cpfigure_position = (-1,-1)
+def get_next_cpfigure_position():
+    global __cpfigure_position
+    return __cpfigure_position
+
+def update_cpfigure_position():
+    global __cpfigure_position
+    import wx
+    try:
+        disp = wx.GetDisplaySize()
+    except:
+        disp = (800,600)
+    if (__cpfigure_position[0] + wx.DefaultSize[0] > disp[0] or
+        __cpfigure_position[1] + wx.DefaultSize[1] > disp[1]):
+        __cpfigure_position = (0, 0)
+    else:
+        __cpfigure_position = (__cpfigure_position[0] + 24,
+                               __cpfigure_position[1] + 24)
+    

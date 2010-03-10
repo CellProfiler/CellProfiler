@@ -21,6 +21,7 @@ import numpy.ma
 import matplotlib.patches
 import matplotlib.colorbar
 import matplotlib.backends.backend_wxagg
+from cellprofiler.preferences import update_cpfigure_position, get_next_cpfigure_position
 import scipy.misc
 from cStringIO import StringIO
 import sys
@@ -157,6 +158,9 @@ class CPFigureFrame(wx.Frame):
         on_close - a function to run when the window closes
         """
         global window_ids
+        if pos == wx.DefaultPosition:
+            pos = get_next_cpfigure_position()
+        update_cpfigure_position()
         super(CPFigureFrame,self).__init__(parent, id, title, pos, size, style, name)
         self.close_fn = on_close
         self.BackgroundColour = cpprefs.get_background_color()

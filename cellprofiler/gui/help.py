@@ -31,6 +31,33 @@ __version__="$Revision$"
 import os
 import wx
 import htmldialog
+import sys
+
+path = os.path.split(os.path.abspath(sys.argv[0]))[0]
+path = os.path.join(path, 'cellprofiler','icons')
+
+LOCATION_REFRESH_BUTTON = os.path.join(path,'folder_refresh.png')
+LOCATION_BROWSE_BUTTON = os.path.join(path,'folder_browse.png')
+LOCATION_CREATE_BUTTON = os.path.join(path,'folder_create.png')
+
+LOCATION_MODULE_HELP_BUTTON = os.path.join(path,'module_help.png')
+LOCATION_MODULE_MOVEUP_BUTTON = os.path.join(path,'module_moveup.png')
+LOCATION_MODULE_MOVEDOWN_BUTTON = os.path.join(path,'module_movedown.png')
+LOCATION_MODULE_ADD_BUTTON = os.path.join(path,'module_add.png')
+LOCATION_MODULE_REMOVE_BUTTON = os.path.join(path,'module_remove.png')
+
+LOCATION_TESTMODE_PAUSE_ICON = os.path.join(path,'IMG_PAUSE.png')
+LOCATION_TESTMODE_GO_ICON = os.path.join(path,'IMG_GO.png')
+
+LOCATION_DISPLAYMODE_SHOW_ICON = os.path.join(path,'IMG_EYE.png')
+LOCATION_DISPLAYMODE_HIDE_ICON = os.path.join(path,'IMG_CLOSED.png')
+
+LOCATION_SETTINGS_OK_ICON = os.path.join(path,'IMG_OK.png')
+LOCATION_SETTINGS_ERROR_ICON = os.path.join(path,'IMG_ERROR.png')
+
+LOCATION_RUNSTATUS_PAUSE_BUTTON = os.path.join(path,'status_pause.png')
+LOCATION_RUNSTATUS_STOP_BUTTON  = os.path.join(path,'status_stop.png')
+LOCATION_RUNSTATUS_SAVE_BUTTON  = os.path.join(path,'status_save.png')
 
 ##################################################
 #
@@ -50,22 +77,22 @@ computer. If, instead, you type specific folder path names into a module's setti
 your pipeline will not work on someone else's computer until you adjust those
 pathnames within each module.</p>
 
-<p>Use the <i>Browse</i> button (to the right of the text box) to specify 
+<p>Use the <i>Browse</i> button <img src="%(LOCATION_BROWSE_BUTTON)s"></img> to specify 
 the folder you would like to use as the Default Input Folder, or 
 type the full folder path in the edit box. If you type a folder path that  
 cannot be found, the message box below will indicate this fact until you correct the problem. 
 If you want to specify a folder that does not yet exist, type the desired name and 
-click on the <i>New folder</i> icon to the right of the <i>Browse folder</i> icon.
+click on the <i>New folder</i> button <img src="%(LOCATION_CREATE_BUTTON)s"></img>.
 The folder will be created according to the pathname you have typed.
 You can change which folder will appear as the Default Input Folder upon CellProfiler startup
 within the <i>File > Preferences...</i> option in the main window.</p>
 
-<p>The contents of the Default Input Folder are shown in the box to the left.
-Double-clicking image file names in this list opens them in a figure window.             
+<p>The contents of the Default Input Folder are shown in the file panel to the left.
+Double-clicking image file names in this panel opens them in a figure window.             
 If you double-click on .mat pipeline or output files (CellProfiler 1.0) or .cp 
 pipeline files (CellProfiler 2.0), you will be asked if you want to load a       
-pipeline from the file. To refresh the contents of this window, press    
-<i>Enter</i> in the Default Input Folder edit box.</p>"""
+pipeline from the file. To refresh the contents of this panel, click the <i>Refresh</i>
+button <img src="%(LOCATION_REFRESH_BUTTON)s"></img>.</p>"""%globals()
 
 DEFAULT_OUTPUT_FOLDER_HELP = """
 <p>The <i>Default Output Folder</i> is the folder that CellProfiler uses to
@@ -97,8 +124,8 @@ The output file is a
 output file can be accessed or exported
 using <b>Data Tools</b> from the main menu of CellProfiler.
 The pipeline with its settings can be be loaded from an output file using 
-<i>File > Load Pipeline...</i>, or by double-clicking the output file in the lower
-left window of CellProfiler.</p>
+<i>File > Load Pipeline...</i>, or by double-clicking the output file in the file
+list panel (located in the lower left corner of the CellProfiler main window).</p>
 
 <p>The output file will be saved in the Default Output Folder unless you type a 
 full path and file name into the output file name box. The path must not have 
@@ -146,9 +173,9 @@ within a pipeline or into another instance of CellProfiler, keeping their associ
 settings intact.</li>
 <li><i>Listing of recent pipelines:</i> A selectable list of recently used pipelines
 is available from the menu bar, for easy access.</li>
-<li><i>Figure display choice:</i> Easier access to which windows are displayed is 
-now controlled within the pipeline, and is saved as part of the pipeline.
-<li><i>Context menus:</i>  The module list responds to right-clicks, providing 
+<li><i>Figure display choice:</i> Easier access to which module figure display windows are shown.
+This functionality is now controlled within the pipeline, and is saved as part of the pipeline.
+<li><i>Context menus:</i>  The pipeline panel responds to right-clicks, providing 
 easy access to module manipulation or help.</li>
 <li><i>Error handling:</i> This feature sends bug reports (stack traces) to our developers.
 <li><i>Better access for developers:</i> We are providing a developer's guide 
@@ -256,7 +283,7 @@ BUILDING_A_PIPELINE_HELP = """
 <p>A <i>pipeline</i> is a sequential set of individual image analysis modules. The 
 best way to learn how to use CellProfiler is to load an example pipeline 
 from the CellProfiler website Examples page and try it out, then adapt it for your own images. You can also build a 
-pipeline from scratch. Click the <i>?</i> button in the main window to get
+pipeline from scratch. Click the <i>Help</i> <img src="%(LOCATION_MODULE_HELP_BUTTON)s"></img> button in the main window to get
 help for a specific module.</p>
 
 <p>To adjust the CellProfiler source code, see <i>Help > Developer's Guide</i>. 
@@ -280,20 +307,23 @@ large batches of images, see <i>Help > General Help > Batch Processing</i>.</li>
 </ol>
 
 <h3>Building a pipeline from scratch</h3>
+<p>Constructing a pipeline involves placing individual modules into a pipeline. The list
+of modules in the pipeline is shown in the <i>pipeline panel</i> (located on the 
+right-hand side of the CellProfiler window).</p>
 <ol>
 <li><p><i>Place modules in a new pipeline.</i><br>
-Choose image analysis modules to add to your pipeline by clicking "+" or 
-right-clicking in the module list window
-[MARK: Should the window be labeled in the main GUI? Ray may have an opinion.
-Also, how will the user know what the module list window is when
-first starting? And perhaps "pipeline window" is better.]
-and selecting a module from the 
+Choose image analysis modules to add to your pipeline by clicking the <i>Add</i> 
+<img src="%(LOCATION_MODULE_ADD_BUTTON)s"></img> button
+(located underneath the pipeline panel) or right-clicking in the pipeline panel
+itself and selecting a module from the 
 pop-up box that appears. You can learn more about each module by clicking
-<i>Module Help</i> in the "Add modules" window or <i>?</i> after you place the module
+<i>Module Help</i> in the "Add modules" window or the <i>Help</i> button after you place the module
 in the pipeline. Modules are added to the end of the pipeline, but you can
 adjust their order in the main window by dragging and dropping them, or by selecting a module (or
-modules, using the <i>Shift</i> key) and using the <i>Move up</i> ("^") and 
-<i>Move down</i> ("v") buttons. The "-" button will delete the selected 
+modules, using the <i>Shift</i> key) and using the <i>Move up</i> 
+<img src="%(LOCATION_MODULE_MOVEUP_BUTTON)s"></img> and <i>Move down</i> 
+<img src="%(LOCATION_MODULE_MOVEDOWN_BUTTON)s"></img> buttons. 
+The <i>Remove</i> <img src="%(LOCATION_MODULE_REMOVE_BUTTON)s"></img> button will delete the selected 
 module(s) from the pipeline.</p> 
 <p>Typically, the first module you must run is 
  <b>LoadImages</b>, in which you specify the identity of the images 
@@ -324,16 +354,34 @@ data in a format you prefer.</p></li>
 <li><p><i>Adjust the settings in each module.</i><br>
 In the CellProfiler main window, click a module in the pipeline to see its 
 settings in the main workspace. To learn more about the settings for each 
-module, select the module in the pipeline and click the "?" button to the 
-right of each setting, or click the "?" button at the bottom of the module
-list window for the help for all the settings for that module.</p>
+module, select the module in the pipeline and click the <i>Help</i> button to the 
+right of each setting, or at the bottom of the pipeline panel
+for the help for all the settings for that module.</p>
+<p>If there is an error with the settings (e.g., a reference to an image that doesn't exist yet), 
+a <img src="%(LOCATION_SETTINGS_ERROR_ICON)s"></img>  icon will appear next to the 
+module name. Once the errors have been resolved, a
+<img src="%(LOCATION_SETTINGS_OK_ICON)s"></img>  icon will appear indicating 
+that the module is ready to run.</p>
 </li>
 <li><p><i>Set your Default Input Folder, Default Output Folder and output filename.</i><br>
-For more help, click their nearby "?" buttons in the main window. </p></li>
+For more help, click their nearby <i>Help</i> buttons in the main window. </p></li>
 
 <li><p><i>Click <i>Analyze images</i> to start processing.</i><br> 
 All of the images in your selected folder(s) will be analyzed using the modules 
-and settings you have specified. You have the option to cancel at any time [MARK: BY...?]. 
+and settings you have specified. A status window will appear which has the following:
+<ul>
+<li>A <i>progress bar</i> which gives the elapsed time and estimates the time remaining to 
+process the full image set.</li>
+<li>A <i>pause button</i> <img src="%(LOCATION_RUNSTATUS_PAUSE_BUTTON)s"></img> 
+which pauses execution and allows you to subsequently 
+resume the analysis.
+<li>A <i>stop button</i> <img src="%(LOCATION_RUNSTATUS_STOP_BUTTON)s"></img> 
+which cancels execution after prompting you for a place to
+save the measurements collected to that point.</li>
+<li>A <i>save measurements</i> button <img src="%(LOCATION_RUNSTATUS_SAVE_BUTTON)s"></img> 
+which will prompt you for a place to
+save the measurements collected to that point while continuing the analysis run.</li>
+</ul> 
 At the end of each cycle, CellProfiler saves the measurements in the output file.</p></li>
 
 <li><p><i>Use Test mode to preview results.</i><br>
@@ -345,7 +393,7 @@ image, preview the results, and adjust the module settings on the fly. See
 <li><p>Save your pipeline via <i>File > Save Pipeline</i>.</p>
 </li>
 </ol>
-"""
+"""% globals()
 
 NEW_MODULE_NAMES_HELP = """
 <h2>Changes to module names in CellProfiler</h2>
@@ -430,9 +478,13 @@ USING_METADATA_HELP = """
 <h2>Using Metadata in CellProfiler</h2>
 
 Metadata (i.e., additional data about image data) is sometimes available for input images.
-This information can be (a) used by CellProfiler to group images with common metadata identifiers (or "tags") 
-together for particular steps in a pipeline, (b) stored in the output file along with CP-measured features for
-annotation or sample-tracking purposes, (c) used to name additional input/output files.</p>
+This information can be:
+<ol>
+<li>Used by CellProfiler to group images with common metadata identifiers (or "tags") 
+together for particular steps in a pipeline;</li>
+<li>Stored in the output file along with CellProfiler-measured features for
+annotation or sample-tracking purposes;
+<li>Used to name additional input/output files.</li></ol></p>
 <p>Two sources of metadata are:
 <ul>
 <li><i>Metadata provided in the image filename or location (pathname).</i> For example, images produced by an automated
@@ -445,17 +497,17 @@ use in the pipeline and storage in the output file.</li>
 treatment, plate, well, etc) is available as a separate spreadsheet. If this is the case for your data, use 
 <b>LoadData</b> to load this information.</li>
 </ul>
-Details for the metadata-specific help is given next to the appropriate setting
-[MARK: Within LoadImages and LoadData?]. However, here is an overview
-of how metadata is obtained and used.
+Details for the metadata-specific help is given next to the appropriate settings in 
+<b>LoadImages</b> and <b>LoadData</b>, as well the specific settings in other modules which
+can make use of metadata. However, here is an overview of how metadata is obtained and used.
 
 <h3>Associating images with metadata</h3>
 
-<p>In <b>LoadImages</b>, metadata can be extracted from the filename and/or folder location using regular expression, 
-a specialized syntax used for text pattern-matching. These regular expressions can be used to
-name [MARK: Identify?] different 
-parts of the filename / folder. The syntax <i>(?&lt;fieldname&gt;expr)</i> will extract whatever matches 
-<i>expr</i> and assign it to the image's <i>fieldname</i> measurement. A regular expression tool is available 
+<p>In <b>LoadImages</b>, metadata can be extracted from the filename and/or folder 
+location using regular expression, a specialized syntax used for text pattern-matching.
+These regular expressions can be used to identify different parts of the filename / folder. 
+The syntax <i>(?P&lt;fieldname&gt;expr)</i> will extract whatever matches <i>expr</i> and 
+assign it to the image's <i>fieldname</i> measurement. A regular expression tool is available 
 which will allow you to check the accuracy of your regular expression.</p>
 
 <p>For instance, say a researcher has folder names with the date and subfolders containing the
@@ -463,10 +515,11 @@ images with the run ID (e.g., <i>./2009_10_02/1234/</i>).
 The following regular expression will capture the plate, well and site in the fields 
 <i>Date</i> and <i>Run</i>:<br>
 <table border = "1">
-<tr><td colspan = "2">.*[\\\/](?P&lt;Date&gt;.*)[\\\\/](?P&lt;Run&gt;.*)$ [MARK: Why only 2 slashes in first set of brackets, and 3 in the next table row? Correct?]</td></tr>
+<tr><td colspan = "2">.*[\\\/](?P&lt;Date&gt;.*)[\\\\/](?P&lt;Run&gt;.*)$ </td></tr>
 <tr><td>.*[\\\\/]</td><td>Skip characters at the beginning of the pathname until either a slash (/) or
-backslash (\\) is encountered (depending on the OS)</td></tr>
-<tr><td>(?P&lt;Date&gt;</td><td>Name the captured field <i>Date</i>[MARK: Why capital P at the beginning (and in 'Run' below)--'P' is not in the syntax at the beginning of this section.]</td></tr>
+backslash (\\) is encountered (depending on the OS). The extra slash for the backslash is used as
+an escape sequence.</td></tr>
+<tr><td>(?P&lt;Date&gt;</td><td>Name the captured field <i>Date</i></td></tr>
 <tr><td>.*</td><td>Capture as many characters that follow</td></tr>
 <tr><td>[\\\\/]</td><td>Discard the slash/backslash character</td></tr>
 <tr><td>(?P&lt;Run&gt;</td><td>Name the captured field <i>Run</i></td></tr>
@@ -476,9 +529,10 @@ last folder on the path. This also means that the <i>Date</i> field contains the
 folder of the <i>Date</i> folder.</td></tr>
 </table>
 
-<p>In <b>LoadData</b>, metadata is extracted from a CSV (comma-separated) file (a spreadsheet). Columns whose name begins with 
-"Metadata" can be used to group or associate files loaded by <b>LoadData</b>.
-[MARK: This last sentence is not 100% clear to me.]</p>
+<p>In <b>LoadData</b>, metadata is extracted from a CSV (comma-separated) file 
+(a spreadsheet). Columns whose name begins with "Metadata" can be used to group 
+files loaded by <b>LoadData</b> that are associated with a common metadata value.
+The files thus grouped together are then processed as a distinct image set.</p>
 
 <p>For instance, an experiment might require that images created on the same day 
 use an illumination correction function calculated from all images from that day, 
@@ -540,10 +594,11 @@ with the exception of any you specify. Please see the
 <li><p><i>Run without display windows.</i><br>
 Each module is associated with a display window that takes time to render and/or
 update. Closing these windows improves speed somewhat. 
-To the left of each module listed in your pipeline there is an icon (an eye) that indicates whether
+To the left of each module listed in your pipeline an icon 
+<img src="%(LOCATION_DISPLAYMODE_SHOW_ICON)s"</img> indicates whether
 the module window will be displayed during the analysis run. You can turn off individual module windows by
-clicking on the icon (when the eye is closed, the window 
-will not be shown); select <i>Window > Hide all windows</i> to prevent display
+clicking on the icon; this icon <img src="%(LOCATION_DISPLAYMODE_HIDE_ICON)s"</img> indicates that the window 
+will not be shown. Select <i>Window > Hide all windows</i> to prevent display
 of all module windows.</p></li>           
                                                                             
 <li><p><i>Use care in object identification </i><br>                                   
@@ -554,7 +609,7 @@ sure that you adjust the diameter options in <b>IdentifyPrimaryObjects</b> to
 exclude small objects in which you are not interested, or use a <b>FilterObjects</b> 
 module to eliminate such objects.</p></li>               
 </ul>
-"""
+"""%globals()
 
 TEST_MODE_HELP = """ 
 <h2>Test mode for pipeline development</h2>
@@ -567,8 +622,8 @@ image, preview the results and adjust the module settings on the fly.</p>
 menu bar in the main window. At this point, you will see the following features appear:
 <ul>
 <li>The module view will have a slider bar appearing on the far left.</li>
-<li>A Pause icon ("||") will appear to the left of each module.</li>
-<li>A series of buttons will appear at the bottom of the module list above the 
+<li>A Pause icon <img src="%(LOCATION_TESTMODE_GO_ICON)s"></img> will appear to the left of each module.</li>
+<li>A series of buttons will appear at the bottom of the pipeline panel above the 
 module adjustment buttons.</li>
 <li>The grayed-out items in the <i>Test</i> menu will become active, and the 
 <i>Analyze Images</i> button will become inactive.
@@ -586,9 +641,11 @@ if the selected module depends on objects and/or images
 generated by prior modules, you will see an error message indicating that the data has not 
 been produced yet. To avoid this, it is best to actually run the pipeline up to the module
 of interest, and move the slider to modules already executed.
-<li><i>Pause ("||" icon):</i> Clicking the pause icon will cause the pipeline test run to halt
+<li><i>Pause:</i> Clicking the pause icon will cause the pipeline test run to halt
 execution when that module is reached (the paused module itself is not executed). The icon 
-changes from black to yellow to indicate that a pause has been inserted at that point.</li>
+changes from <img src="%(LOCATION_TESTMODE_GO_ICON)s"></img> to 
+<img src="%(LOCATION_TESTMODE_PAUSE_ICON)s"></img> to indicate that a pause has 
+been inserted at that point.</li>
 <li><i>Run:</i> Execution of the pipeline will be started/resumed until
 the next module pause is reached. When all modules have been executed for a given image cycle,
 execution will stop.</li>
@@ -609,7 +666,7 @@ The slider will then automatically return to the first module in the pipeline.</
 code, so any changes to the code will be reflected immediately.</li>
 </ul>
 </p>
-"""
+"""%globals()
 
 BATCHPROCESSING_HELP = """ 
 <h2>Batch processing in CellProfiler</h2>
@@ -695,8 +752,8 @@ IMAGE_TOOLS_HELP = """
 Right-clicking in an image displayed in a window will bring up a pop-up menu with
 the following options:
 <ul>
-<li><i>Open image in new window:</i> Displays the image in a new window. This is useful for getting a closer look at a window subplot that has
-a small image.</li>
+<li><i>Open image in new window:</i> Displays the image in a new window. This is useful 
+for getting a closer look at a window subplot that has a small image.</li>
 <li><i>Show image histogram:</i> Produces a new window containing a histogram 
 of the pixel intensities in the image. This is useful for qualitatively examining
 whether a threshold value determined by <b>IdentifyPrimaryObjects</b> seems 
@@ -771,7 +828,7 @@ PREFERENCES_HELP = (
 '''The help to be displayed if someone asks for help on a module but none is selected'''
 HELP_ON_MODULE_BUT_NONE_SELECTED = (
     "The help button can be used to obtain help for a particular module\n"
-    "selected in the pipeline window at the middle left of CellProfiler.\n"
+    "selected in the pipeline panel at the middle left of CellProfiler.\n"
     "You currently have no modules in the pipeline. Add a module to the\n"
     'pipeline using the "+" button or by using File > Load Pipeline.')
 

@@ -123,11 +123,16 @@ class PipelineController:
         self.__module_controls_panel = module_controls_panel
         mcp_sizer = wx.BoxSizer(wx.HORIZONTAL)
         self.__help_button = wx.Button(self.__module_controls_panel,-1,"?",(0,0), (30, -1))
+        self.__help_button.SetToolTipString("Get Help for selected module")
         self.__mcp_text = wx.StaticText(self.__module_controls_panel,-1,"Adjust modules:")
         self.__mcp_add_module_button = wx.Button(self.__module_controls_panel,-1,"+",(0,0), (30, -1))
+        self.__mcp_add_module_button.SetToolTipString("Add a module")
         self.__mcp_remove_module_button = wx.Button(self.__module_controls_panel,-1,"-",(0,0), (30, -1))
+        self.__mcp_remove_module_button.SetToolTipString("Remove selected module")
         self.__mcp_module_up_button = wx.Button(self.__module_controls_panel,-1,"^",(0,0), (30, -1))
+        self.__mcp_module_up_button.SetToolTipString("Move selected module up")
         self.__mcp_module_down_button = wx.Button(self.__module_controls_panel,-1,"v",(0,0), (30, -1))
+        self.__mcp_module_down_button.SetToolTipString("Move selected module down")
         mcp_sizer.AddMany([(self.__help_button, 0, wx.ALIGN_CENTER | wx.ALL, 3),
                            ((1, 3), 3),
                            (self.__mcp_text, 0, wx.ALIGN_CENTER | wx.ALL, 3),

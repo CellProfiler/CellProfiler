@@ -86,7 +86,7 @@ class PreferencesView:
                                                       (16,16))
             refresh_button = wx.BitmapButton(panel, -1, bitmap = refresh_bitmap)
             sizer.Add(refresh_button, 0, wx.ALIGN_CENTER, 1)
-            refresh_button.SetToolTipString("Refresh the default input directory list")
+            refresh_button.SetToolTipString("Refresh the Default Input Folder list")
             def on_refresh(event):
                 refresh_action()
             refresh_button.Bind(wx.EVT_BUTTON, on_refresh)
@@ -108,7 +108,7 @@ class PreferencesView:
                                             edit_box.Value)
             else:
                 new_button.Enable()
-                new_button.SetToolTipString("Press button to create the %s directory" %
+                new_button.SetToolTipString("Press button to create the %s folder" %
                                             edit_box.Value)
             self.__on_edit_box_change(event, edit_box, text, actions)
             
@@ -121,7 +121,7 @@ class PreferencesView:
     
     def __make_odds_and_ends_panel(self):
         panel = self.__odds_and_ends_panel
-        output_filename_text = wx.StaticText(panel,-1,'Output filename:')
+        output_filename_text = wx.StaticText(panel,-1,'Output Filename:')
         self.__output_filename_edit_box = wx.TextCtrl(panel,-1,'DefaultOUT.mat')
         output_filename_help_button = wx.Button(panel,-1,'?', (0,0), (30,-1))
         self.__analyze_images_button = wx.Button(panel,-1,'Analyze images')

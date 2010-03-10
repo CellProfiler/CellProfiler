@@ -681,13 +681,15 @@ class CPFigureFrame(wx.Frame):
             self.images = {}
         # Store the raw image keyed by it's subplot location
         self.images[(x,y)] = image
+        # create a copy to draw
         image = image.astype(np.float32)
         
         # Perform normalization
         if normalize == True:
             if is_color_image(image):
                 image = np.dstack([auto_contrast(image[:,:,ch]) for ch in range(image.shape[2])])
-            image = auto_contrast(image)
+            else:
+                image = auto_contrast(image)
         elif normalize == 'log':
             if is_color_image(image):
                 image = np.dstack([log_transform(image[:,:,ch]) for ch in range(image.shape[2])])

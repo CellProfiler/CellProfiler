@@ -160,9 +160,9 @@ class TestSaveImages(unittest.TestCase):
     
     def test_01_01_save_first_to_same_tif(self):
         img1_filename = os.path.join(self.new_image_directory,'img1.tif')
-        img1_out_filename = os.path.join(self.new_image_directory,'img1OUT.tif')
+        img1_out_filename = os.path.join(self.new_image_directory,'img1OUT.tiff')
         img2_filename = os.path.join(self.new_image_directory,'img2.tif') 
-        img2_out_filename = os.path.join(self.new_image_directory,'img2OUT.tif')
+        img2_out_filename = os.path.join(self.new_image_directory,'img2OUT.tiff')
         make_file(img1_filename, cpmt.tif_8_1)
         make_file(img2_filename, cpmt.tif_8_2)
         pipeline = cpp.Pipeline()
@@ -215,9 +215,9 @@ class TestSaveImages(unittest.TestCase):
 
     def test_01_02_save_all_to_same_tif(self):
         img1_filename = os.path.join(self.new_image_directory,'img1.tif')
-        img1_out_filename = os.path.join(self.new_image_directory,'img1OUT.tif')
+        img1_out_filename = os.path.join(self.new_image_directory,'img1OUT.tiff')
         img2_filename = os.path.join(self.new_image_directory,'img2.tif') 
-        img2_out_filename = os.path.join(self.new_image_directory,'img2OUT.tif')
+        img2_out_filename = os.path.join(self.new_image_directory,'img2OUT.tiff')
         make_file(img1_filename, cpmt.tif_8_1)
         make_file(img2_filename, cpmt.tif_8_2)
         pipeline = cpp.Pipeline()
@@ -271,9 +271,9 @@ class TestSaveImages(unittest.TestCase):
 
     def test_01_03_save_last_to_same_tif(self):
         img1_filename = os.path.join(self.new_image_directory,'img1.tif')
-        img1_out_filename = os.path.join(self.new_image_directory,'img1OUT.tif')
+        img1_out_filename = os.path.join(self.new_image_directory,'img1OUT.tiff')
         img2_filename = os.path.join(self.new_image_directory,'img2.tif') 
-        img2_out_filename = os.path.join(self.new_image_directory,'img2OUT.tif')
+        img2_out_filename = os.path.join(self.new_image_directory,'img2OUT.tiff')
         make_file(img1_filename, cpmt.tif_8_1)
         make_file(img2_filename, cpmt.tif_8_2)
         pipeline = cpp.Pipeline()
@@ -319,9 +319,9 @@ class TestSaveImages(unittest.TestCase):
 
     def test_01_04_save_all_to_output_tif(self):
         img1_filename = os.path.join(self.new_image_directory,'img1.tif')
-        img1_out_filename = os.path.join(self.new_output_directory,'img1OUT.tif')
+        img1_out_filename = os.path.join(self.new_output_directory,'img1OUT.tiff')
         img2_filename = os.path.join(self.new_image_directory,'img2.tif') 
-        img2_out_filename = os.path.join(self.new_output_directory,'img2OUT.tif')
+        img2_out_filename = os.path.join(self.new_output_directory,'img2OUT.tiff')
         make_file(img1_filename, cpmt.tif_8_1)
         make_file(img2_filename, cpmt.tif_8_2)
         pipeline = cpp.Pipeline()
@@ -375,9 +375,9 @@ class TestSaveImages(unittest.TestCase):
 
     def test_01_05_save_all_to_custom_tif(self):
         img1_filename = os.path.join(self.new_image_directory,'img1.tif')
-        img1_out_filename = os.path.join(self.custom_directory,'img1OUT.tif')
+        img1_out_filename = os.path.join(self.custom_directory,'img1OUT.tiff')
         img2_filename = os.path.join(self.new_image_directory,'img2.tif') 
-        img2_out_filename = os.path.join(self.custom_directory,'img2OUT.tif')
+        img2_out_filename = os.path.join(self.custom_directory,'img2OUT.tiff')
         make_file(img1_filename, cpmt.tif_8_1)
         make_file(img2_filename, cpmt.tif_8_2)
         pipeline = cpp.Pipeline()
@@ -493,9 +493,9 @@ class TestSaveImages(unittest.TestCase):
 
     def test_01_07_save_all_to_custom_jpg(self):
         img1_filename = os.path.join(self.new_image_directory,'img1.tif')
-        img1_out_filename = os.path.join(self.custom_directory,'img1OUT.jpg')
+        img1_out_filename = os.path.join(self.custom_directory,'img1OUT.jpeg')
         img2_filename = os.path.join(self.new_image_directory,'img2.tif') 
-        img2_out_filename = os.path.join(self.custom_directory,'img2OUT.jpg')
+        img2_out_filename = os.path.join(self.custom_directory,'img2OUT.jpeg')
         make_file(img1_filename, cpmt.tif_8_1)
         make_file(img2_filename, cpmt.tif_8_2)
         pipeline = cpp.Pipeline()
@@ -610,9 +610,9 @@ class TestSaveImages(unittest.TestCase):
 
     def test_01_09_save_single_to_custom_tif(self):
         img1_filename = os.path.join(self.new_image_directory,'img1.tif')
-        img1_out_filename = os.path.join(self.custom_directory,'img1OUT.tif')
+        img1_out_filename = os.path.join(self.custom_directory,'img1OUT.tiff')
         img2_filename = os.path.join(self.new_image_directory,'img2.tif') 
-        img2_out_filename = os.path.join(self.custom_directory,'img2OUT.tif')
+        img2_out_filename = os.path.join(self.custom_directory,'img2OUT.tiff')
         make_file(img1_filename, cpmt.tif_8_1)
         make_file(img2_filename, cpmt.tif_8_2)
         pipeline = cpp.Pipeline()

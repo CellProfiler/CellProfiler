@@ -417,7 +417,7 @@ class TestCreateBatchFiles(unittest.TestCase):
                 self.assertTrue(isinstance(li, LI.LoadImages))
                 module = pipeline.modules()[1]
                 self.assertTrue(isinstance(module, C.CreateBatchFiles))
-                li.location.value = LI.DIR_OTHER
+                li.location.value = LI.ABSOLUTE_FOLDER_NAME
                 li.location_other.value = ipath
                 module.wants_default_output_directory.value = False
                 module.custom_output_directory.value = bpath

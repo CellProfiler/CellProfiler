@@ -29,7 +29,7 @@ class TestPreferences(unittest.TestCase):
             (cpprefs.DEFAULT_OUTPUT_FOLDER_NAME, 'Default Output Folder'),
             (cpprefs.DEFAULT_INPUT_SUBFOLDER_NAME, 'Default input directory sub-folder'),
             (cpprefs.DEFAULT_OUTPUT_SUBFOLDER_NAME, 'Default output directory sub-folder')):
-            self.assertTrue(value in cpprefs.FOLDER_CHOICE_TRANSLATIONS.keys())
+            self.assertTrue(value in cpprefs.FOLDER_CHOICE_TRANSLATIONS.keys(), "%s not in dictionary" % value)
             self.assertEqual(expected, cpprefs.FOLDER_CHOICE_TRANSLATIONS[value])
             
     def test_01_02_slot_translations(self):
@@ -43,7 +43,9 @@ class TestPreferences(unittest.TestCase):
             (cpprefs.DEFAULT_INPUT_FOLDER_NAME, 'Default Input Folder'),
             (cpprefs.DEFAULT_OUTPUT_FOLDER_NAME, 'Default Output Folder'),
             (cpprefs.DEFAULT_INPUT_SUBFOLDER_NAME, 'Default input directory sub-folder'),
+            (cpprefs.DEFAULT_INPUT_SUBFOLDER_NAME, 'Default Input Folder sub-folder'),
             (cpprefs.DEFAULT_OUTPUT_SUBFOLDER_NAME, 'Default output directory sub-folder'),
+            (cpprefs.DEFAULT_OUTPUT_SUBFOLDER_NAME, 'Default Output Folder sub-folder'),
             (cpprefs.DEFAULT_INPUT_FOLDER_NAME, 'Default Image Directory')):
             for i in range(3):
                 setting_values = ["foo", "bar", "baz"]

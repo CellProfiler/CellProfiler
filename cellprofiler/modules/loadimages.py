@@ -89,7 +89,9 @@ import cellprofiler.cpimage as cpimage
 import cellprofiler.measurements as cpm
 import cellprofiler.preferences as preferences
 import cellprofiler.settings as cps
-from cellprofiler.preferences import standardize_default_folder_names, DEFAULT_INPUT_FOLDER_NAME, DEFAULT_OUTPUT_FOLDER_NAME
+from cellprofiler.preferences import \
+     standardize_default_folder_names, DEFAULT_INPUT_FOLDER_NAME, \
+     DEFAULT_OUTPUT_FOLDER_NAME, ABSOLUTE_FOLDER_NAME
 
 PILImage.init()
 
@@ -126,7 +128,6 @@ else:
     FF = [FF_INDIVIDUAL_IMAGES, FF_STK_MOVIES]
 
 USE_BIOFORMATS_FIRST = [".tiff", ".tif", ".flex",".stk",".dib"]
-DIR_OTHER = 'Elsewhere...'
 
 SB_GRAYSCALE = 'grayscale'
 SB_BINARY = 'binary'
@@ -326,7 +327,9 @@ class LoadImages(cpmodule.CPModule):
         
         # Location settings
         self.location = cps.Choice('Image location',
-                                        [DEFAULT_INPUT_FOLDER_NAME, DEFAULT_OUTPUT_FOLDER_NAME, DIR_OTHER],doc="""
+                [DEFAULT_INPUT_FOLDER_NAME, DEFAULT_OUTPUT_FOLDER_NAME, 
+                 ABSOLUTE_FOLDER_NAME],
+                doc="""
                 You have the choice of loading the image files from the Default Input Folder, the Default Output
                 folder or another location entirely.""")
         self.location_other = cps.Text("Enter the full path to the images", '',doc="""
@@ -557,7 +560,7 @@ class LoadImages(cpmodule.CPModule):
             varlist.append(fd[FD_REMOVE_IMAGE])
         varlist += [self.add_image]
         varlist += [self.location]
-        if self.location == DIR_OTHER:
+        if self.location == ABSOLUTE_FOLDER_NAME:
             varlist += [self.location_other]
         return varlist
     
@@ -635,8 +638,6 @@ class LoadImages(cpmodule.CPModule):
 
     def upgrade_settings(self, setting_values, variable_revision_number, module_name, from_matlab):
 
-        DIR_DEFAULT_IMAGE = 'Default input folder'
-        DIR_DEFAULT_OUTPUT = 'Default output folder'
         #
         # historic rewrites from CP1.0
         # 
@@ -687,11 +688,11 @@ class LoadImages(cpmodule.CPModule):
             new_values[self.SLOT_CHECK_IMAGES]           = setting_values[16]
             loc = setting_values[13]
             if loc == '.':
-                new_values[self.SLOT_LOCATION]           = DIR_DEFAULT_IMAGE
+                new_values[self.SLOT_LOCATION]           = DEFAULT_INPUT_FOLDER_NAME
             elif loc == '&':
-                new_values[self.SLOT_LOCATION]           = DIR_DEFAULT_OUTPUT
+                new_values[self.SLOT_LOCATION]           = DEFAULT_OUTPUT_FOLDER_NAME
             else:
-                new_values[self.SLOT_LOCATION]           = DIR_OTHER 
+                new_values[self.SLOT_LOCATION]           = ABSOLUTE_FOLDER_NAME 
             new_values[self.SLOT_LOCATION_OTHER]         = loc 
             for i in range(0,4):
                 text_to_find = setting_values[i*2+1]

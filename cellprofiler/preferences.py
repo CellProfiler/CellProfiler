@@ -91,7 +91,7 @@ def resources_root_directory():
     
 DEFAULT_INPUT_FOLDER_NAME = 'Default Input Folder'
 DEFAULT_OUTPUT_FOLDER_NAME = 'Default Output Folder'
-ABSOLUTE_FOLDER_NAME = 'Absolute path elsewhere'
+ABSOLUTE_FOLDER_NAME = 'Elsewhere...'
 DEFAULT_INPUT_SUBFOLDER_NAME = 'Default Input Folder sub-folder'
 DEFAULT_OUTPUT_SUBFOLDER_NAME = 'Default Output Folder sub-folder'
 URL_FOLDER_NAME = 'URL'

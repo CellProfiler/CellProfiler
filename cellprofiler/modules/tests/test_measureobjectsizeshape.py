@@ -200,6 +200,35 @@ MeasureObjectSizeShape:[module_num:1|svn_version:\'1\'|variable_revision_number:
                                                       "AreaShape_Perimeter")
         self.assertEqual(len(values), 1)
         self.assertEqual(values[0], 54)
+        
+    def test_04_01_extent(self):
+        module = cpmoas.MeasureObjectAreaShape()
+        module.object_groups[0].name.value = "SomeObjects"
+        module.calculate_zernikes.value = True
+        object_set = cpo.ObjectSet()
+        labels = np.zeros((10,20),int)
+        # 3/4 of a square is covered
+        labels[5:7,5:10] = 1
+        labels[7:9,5:15] = 1
+        objects = cpo.Objects()
+        objects.segmented = labels
+        object_set.add_objects(objects, "SomeObjects")
+        module.module_num = 1
+        image_set_list = cpi.ImageSetList()
+        measurements = cpmeas.Measurements()
+        pipeline = cpp.Pipeline()
+        pipeline.add_module(module)
+        def callback(caller, event):
+            self.assertFalse(isinstance(event, cpp.RunExceptionEvent))
+        pipeline.add_listener(callback)
+        workspace = cpw.Workspace(pipeline, module, 
+                                  image_set_list.get_image_set(0),
+                                  object_set, measurements, image_set_list)
+        module.run(workspace)
+        values = measurements.get_current_measurement(
+            "SomeObjects", "_".join((cpmoas.AREA_SHAPE, cpmoas.F_EXTENT)))
+        self.assertEqual(len(values), 1)
+        self.assertAlmostEqual(values[0], .75)
             
     def features_and_columns_match(self, measurements, module):
         self.assertEqual(len(measurements.get_object_names()), 2)

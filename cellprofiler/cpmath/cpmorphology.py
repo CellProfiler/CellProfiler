@@ -1557,7 +1557,7 @@ def ellipse_from_second_moments(image, labels, indexes):
 def calculate_extents(labels, indexes):
     """Return the area of each object divided by the area of its bounding box"""
     fix = fixup_scipy_ndimage_result
-    areas = fix(scind.sum(labels,labels,indexes))
+    areas = fix(scind.sum(np.ones(labels.shape),labels,indexes))
     y,x = np.mgrid[0:labels.shape[0],0:labels.shape[1]]
     xmin = fix(scind.minimum(x, labels, indexes))
     xmax = fix(scind.maximum(x, labels, indexes))
@@ -1641,15 +1641,19 @@ def calculate_perimeters(labels, indexes):
     m=np.zeros((labels.shape[0],labels.shape[1]),int)
     exponent = 0
     for i in range(-1,2):
-        ilow = (i==-1 and 1) or 1
+        ilow = (i==-1 and 1) or 0
         iend = (i==1 and labels.shape[0]-1) or labels.shape[0] 
         for j in range(-1,2):
-            jlow = (j==-1 and 1) or 1
-            jend = (j==1 and labels.shape[1]-1) or labels.shape[1] 
-            m[ilow:iend,jlow:jend] = \
-                (m[ilow:iend,jlow:jend] +
-                 (labels[ilow:iend,jlow:jend] == 
-                  labels[ilow+i:iend+i,jlow+j:jend+j])*2**exponent)
+            jlow = (j==-1 and 1) or 0
+            jend = (j==1 and labels.shape[1]-1) or labels.shape[1]
+            #
+            # Points outside of bounds are different from what's outside,
+            # so set untouched points to "different"
+            #
+            mask = np.zeros(labels.shape, bool)
+            mask[ilow:iend, jlow:jend] = (labels[ilow:iend,jlow:jend] == 
+                                          labels[ilow+i:iend+i,jlow+j:jend+j])
+            m[mask] += 2**exponent
             exponent += 1
     pixel_score = __perimeter_scoring[m]
     return fixup_scipy_ndimage_result(scind.sum(pixel_score, labels, indexes))

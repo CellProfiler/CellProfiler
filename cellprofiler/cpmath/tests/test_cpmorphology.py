@@ -839,7 +839,24 @@ class TestCalculateExtents(unittest.TestCase):
         labels[x*x+y*y<=250000] = 1
         extents = morph.calculate_extents(labels,[1])
         self.assertAlmostEqual(extents,np.pi/4,2)
-
+        
+    def test_01_03_two_objects(self):
+        '''Make sure that calculate_extents works with more than one object
+        
+        Regression test of a bug: was computing area like this:
+        scind.sum(labels, labels, indexes)
+        which works for the object that's labeled "1", but is 2x for 2, 3x
+        for 3, etc... oops.
+        '''
+        labels = np.zeros((10,20), int)
+        labels[3:7, 2:5] = 1
+        labels[3:5, 5:8] = 1
+        labels[2:8, 13:17] = 2
+        extents = morph.calculate_extents(labels, [1,2])
+        self.assertEqual(len(extents), 2)
+        self.assertAlmostEqual(extents[0], .75)
+        self.assertAlmostEqual(extents[1], 1)
+        
 class TestCalculatePerimeters(unittest.TestCase):
     def test_00_00_zeros(self):
         """The perimeters of a zeros matrix should be all zero"""
@@ -862,6 +879,17 @@ class TestCalculatePerimeters(unittest.TestCase):
         perimeter = morph.calculate_perimeters(labels, [1])
         epsilon = 20
         self.assertTrue(perimeter-np.pi*101<epsilon)
+        
+    def test_01_03_on_edge(self):
+        """Check the perimeter of objects touching edges of matrix"""
+        labels = np.zeros((10,20), int)
+        labels[:4,:4] = 1 # 4x4 square = 16 pixel perimeter
+        labels[-4:,-2:] = 2 # 4x2 square = 2+2+4+4 = 12
+        expected = [ 16, 12]
+        perimeter = morph.calculate_perimeters(labels, [1,2])
+        self.assertEqual(len(perimeter), 2)
+        self.assertEqual(perimeter[0], expected[0])
+        self.assertEqual(perimeter[1], expected[1])
 
 class TestCalculateConvexArea(unittest.TestCase):
     def test_00_00_degenerate_zero(self):

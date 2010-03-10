@@ -52,7 +52,7 @@ class testLoadImages(unittest.TestCase):
     def test_01_01load_image_text_match(self):
         l=LI.LoadImages()
         l.settings()[l.SLOT_MATCH_METHOD].set_value(LI.MS_EXACT_MATCH)
-        l.settings()[l.SLOT_LOCATION].value = LI.DIR_OTHER
+        l.settings()[l.SLOT_LOCATION].value = LI.ABSOLUTE_FOLDER_NAME
         l.settings()[l.SLOT_LOCATION_OTHER].value =\
             os.path.join(T.example_images_directory(),"ExampleSBSImages")
         l.settings()[l.SLOT_FIRST_IMAGE+l.SLOT_OFFSET_COMMON_TEXT].set_value("1-01-A-01.tif")
@@ -73,7 +73,7 @@ class testLoadImages(unittest.TestCase):
     def test_01_02load_image_text_match_many(self):
         l=LI.LoadImages()
         l.settings()[l.SLOT_MATCH_METHOD].set_value(LI.MS_EXACT_MATCH)
-        l.settings()[l.SLOT_LOCATION].value = LI.DIR_OTHER
+        l.settings()[l.SLOT_LOCATION].value = LI.ABSOLUTE_FOLDER_NAME
         l.settings()[l.SLOT_LOCATION_OTHER].value =\
             os.path.join(T.example_images_directory(),"ExampleSBSImages")
         for i in range(0,4):
@@ -100,7 +100,7 @@ class testLoadImages(unittest.TestCase):
     def test_02_01load_image_regex_match(self):
         l=LI.LoadImages()
         l.settings()[l.SLOT_MATCH_METHOD].set_value(LI.MS_REGEXP)
-        l.settings()[l.SLOT_LOCATION].value = LI.DIR_OTHER
+        l.settings()[l.SLOT_LOCATION].value = LI.ABSOLUTE_FOLDER_NAME
         l.settings()[l.SLOT_LOCATION_OTHER].value =\
             os.path.join(T.example_images_directory(),"ExampleSBSImages")
         l.settings()[l.SLOT_FIRST_IMAGE+l.SLOT_OFFSET_COMMON_TEXT].set_value("Channel1-[0-1][0-9]-A-01")
@@ -154,7 +154,7 @@ LoadImages:[module_num:1|svn_version:\'8913\'|variable_revision_number:1|show_wi
         self.assertEqual(module.images[1][LI.FD_IMAGE_NAME], "OtherImages")
         self.assertEqual(module.order_group_size, 5)
         self.assertTrue(module.analyze_sub_dirs())
-        self.assertEqual(module.location, LI.DIR_OTHER)
+        self.assertEqual(module.location, LI.ABSOLUTE_FOLDER_NAME)
         self.assertEqual(module.location_other, "./Images")
         
     def test_03_01_load_version_2(self):
@@ -297,7 +297,7 @@ LoadImages:[module_num:1|svn_version:\'8913\'|variable_revision_number:1|show_wi
         load_images.match_method.value = LI.MS_EXACT_MATCH
         load_images.images[0][LI.FD_COMMON_TEXT].value = filename
         load_images.images[0][LI.FD_IMAGE_NAME].value = 'Orig'
-        load_images.location.value = LI.DIR_OTHER
+        load_images.location.value = LI.ABSOLUTE_FOLDER_NAME
         load_images.location_other.value = path
         load_images.module_num = 1
         outer_self = self
@@ -337,7 +337,7 @@ LoadImages:[module_num:1|svn_version:\'8913\'|variable_revision_number:1|show_wi
         load_images.match_method.value = LI.MS_EXACT_MATCH
         load_images.images[0][LI.FD_COMMON_TEXT].value = filename
         load_images.images[0][LI.FD_IMAGE_NAME].value = 'Orig'
-        load_images.location.value = LI.DIR_OTHER
+        load_images.location.value = LI.ABSOLUTE_FOLDER_NAME
         load_images.location_other.value = path
         load_images.module_num = 1
         outer_self = self
@@ -373,7 +373,7 @@ LoadImages:[module_num:1|svn_version:\'8913\'|variable_revision_number:1|show_wi
         load_images.match_method.value = LI.MS_EXACT_MATCH
         load_images.images[0][LI.FD_COMMON_TEXT].value = filename
         load_images.images[0][LI.FD_IMAGE_NAME].value = 'Orig'
-        load_images.location.value = LI.DIR_OTHER
+        load_images.location.value = LI.ABSOLUTE_FOLDER_NAME
         load_images.location_other.value = path
         load_images.module_num = 1
         outer_self = self
@@ -409,7 +409,7 @@ LoadImages:[module_num:1|svn_version:\'8913\'|variable_revision_number:1|show_wi
         load_images.match_method.value = LI.MS_EXACT_MATCH
         load_images.images[0][LI.FD_COMMON_TEXT].value = filename
         load_images.images[0][LI.FD_IMAGE_NAME].value = 'Orig'
-        load_images.location.value = LI.DIR_OTHER
+        load_images.location.value = LI.ABSOLUTE_FOLDER_NAME
         load_images.location_other.value = path
         load_images.module_num = 1
         outer_self = self
@@ -464,7 +464,7 @@ LoadImages:[module_num:1|svn_version:\'8913\'|variable_revision_number:1|show_wi
             load_images.add_imagecb()
             load_images.file_types.value = LI.FF_INDIVIDUAL_IMAGES
             load_images.match_method.value = LI.MS_REGEXP
-            load_images.location.value = LI.DIR_OTHER
+            load_images.location.value = LI.ABSOLUTE_FOLDER_NAME
             load_images.location_other.value = directory
             load_images.group_by_metadata.value = True
             load_images.images[0][LI.FD_COMMON_TEXT].value = "^(?P<plate>.*?)_(?P<well_row>[A-P])(?P<well_col>[0-9]{2})_s(?P<site>[0-9]+)_w1_"
@@ -544,7 +544,7 @@ LoadImages:[module_num:1|svn_version:\'8913\'|variable_revision_number:1|show_wi
             load_images.file_types.value = LI.FF_INDIVIDUAL_IMAGES
             load_images.descend_subdirectories.value = True
             load_images.match_method.value = LI.MS_EXACT_MATCH
-            load_images.location.value = LI.DIR_OTHER
+            load_images.location.value = LI.ABSOLUTE_FOLDER_NAME
             load_images.location_other.value = directory
             load_images.group_by_metadata.value = True
             load_images.images[0][LI.FD_COMMON_TEXT].value = "w1.tif"
@@ -616,7 +616,7 @@ LoadImages:[module_num:1|svn_version:\'8913\'|variable_revision_number:1|show_wi
             load_images.add_imagecb()
             load_images.file_types.value = LI.FF_INDIVIDUAL_IMAGES
             load_images.match_method.value = LI.MS_REGEXP
-            load_images.location.value = LI.DIR_OTHER
+            load_images.location.value = LI.ABSOLUTE_FOLDER_NAME
             load_images.location_other.value = directory
             load_images.group_by_metadata.value = True
             load_images.check_images.value = True
@@ -658,7 +658,7 @@ LoadImages:[module_num:1|svn_version:\'8913\'|variable_revision_number:1|show_wi
             load_images.add_imagecb()
             load_images.file_types.value = LI.FF_INDIVIDUAL_IMAGES
             load_images.match_method.value = LI.MS_REGEXP
-            load_images.location.value = LI.DIR_OTHER
+            load_images.location.value = LI.ABSOLUTE_FOLDER_NAME
             load_images.location_other.value = directory
             load_images.group_by_metadata.value = True
             load_images.images[0][LI.FD_COMMON_TEXT].value = "^(?P<plate>.*?)_(?P<well_row>[A-P])(?P<well_col>[0-9]{2})_s(?P<site>[0-9]+)_w1_"
@@ -714,7 +714,7 @@ LoadImages:[module_num:1|svn_version:\'8913\'|variable_revision_number:1|show_wi
             load_images.add_imagecb()
             load_images.file_types.value = LI.FF_INDIVIDUAL_IMAGES
             load_images.match_method.value = LI.MS_REGEXP
-            load_images.location.value = LI.DIR_OTHER
+            load_images.location.value = LI.ABSOLUTE_FOLDER_NAME
             load_images.location_other.value = directory
             load_images.group_by_metadata.value = True
             load_images.images[0][LI.FD_COMMON_TEXT].value = "_w1_"
@@ -778,7 +778,7 @@ LoadImages:[module_num:1|svn_version:\'8913\'|variable_revision_number:1|show_wi
                 load_images.add_imagecb()
                 load_images.file_types.value = LI.FF_INDIVIDUAL_IMAGES
                 load_images.match_method.value = LI.MS_REGEXP
-                load_images.location.value = LI.DIR_OTHER
+                load_images.location.value = LI.ABSOLUTE_FOLDER_NAME
                 load_images.location_other.value = directory
                 load_images.group_by_metadata.value = True
                 load_images.metadata_fields.value = ["plate", "well_row", 
@@ -875,7 +875,7 @@ LoadImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show
         '''Get groupings for the SBS image set'''
         sbs_path = os.path.join(T.example_images_directory(),'ExampleSBSImages')
         module = LI.LoadImages()
-        module.location.value = LI.DIR_OTHER
+        module.location.value = LI.ABSOLUTE_FOLDER_NAME
         module.location_other.value = sbs_path
         module.group_by_metadata.value = True
         module.images[0][LI.FD_COMMON_TEXT].value = 'Channel1-'
@@ -917,7 +917,7 @@ LoadImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show
         module.file_types.value = LI.FF_AVI_MOVIES
         module.images[0][LI.FD_COMMON_TEXT].value = 'avi'
         module.images[0][LI.FD_IMAGE_NAME].value = 'MyImage'
-        module.location.value = LI.DIR_OTHER
+        module.location.value = LI.ABSOLUTE_FOLDER_NAME
         module.location_other.value = avi_path
         module.module_num = 1
         pipeline = P.Pipeline()
@@ -959,7 +959,7 @@ LoadImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show
         module.file_types.value = LI.FF_STK_MOVIES
         module.images[0][LI.FD_COMMON_TEXT].value = 'stk'
         module.images[0][LI.FD_IMAGE_NAME].value = 'MyImage'
-        module.location.value = LI.DIR_OTHER
+        module.location.value = LI.ABSOLUTE_FOLDER_NAME
         module.location_other.value = path
         module.module_num = 1
         pipeline = P.Pipeline()
@@ -998,7 +998,7 @@ LoadImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show
             module.file_types.value = LI.FF_INDIVIDUAL_IMAGES
             module.images[0][LI.FD_COMMON_TEXT].value = 'Channel1-'
             module.images[0][LI.FD_IMAGE_NAME].value = 'MyImage'
-            module.location.value = LI.DIR_OTHER
+            module.location.value = LI.ABSOLUTE_FOLDER_NAME
             module.location_other.value = path
             module.module_num = 1
             pipeline = P.Pipeline()

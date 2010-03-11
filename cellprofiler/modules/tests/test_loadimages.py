@@ -47,16 +47,17 @@ class testLoadImages(unittest.TestCase):
         x=LI.LoadImages()
     
     def test_00_01version(self):
-        self.assertEqual(LI.LoadImages().variable_revision_number,4,"LoadImages' version number has changed")
+        self.assertEqual(LI.LoadImages().variable_revision_number, 5,
+                         "LoadImages' version number has changed")
     
     def test_01_01load_image_text_match(self):
         l=LI.LoadImages()
-        l.settings()[l.SLOT_MATCH_METHOD].set_value(LI.MS_EXACT_MATCH)
-        l.settings()[l.SLOT_LOCATION].value = LI.ABSOLUTE_FOLDER_NAME
-        l.settings()[l.SLOT_LOCATION_OTHER].value =\
+        l.match_method.value = LI.MS_EXACT_MATCH
+        l.location.dir_choice = LI.ABSOLUTE_FOLDER_NAME
+        l.location.custom_path =\
             os.path.join(T.example_images_directory(),"ExampleSBSImages")
-        l.settings()[l.SLOT_FIRST_IMAGE+l.SLOT_OFFSET_COMMON_TEXT].set_value("1-01-A-01.tif")
-        l.settings()[l.SLOT_FIRST_IMAGE+l.SLOT_OFFSET_IMAGE_NAME].set_value("my_image")
+        l.images[0][LI.FD_COMMON_TEXT].value = "1-01-A-01.tif"
+        l.images[0][LI.FD_IMAGE_NAME].value = "my_image"
         l.module_num = 1
         image_set_list = I.ImageSetList()
         pipeline = P.Pipeline()
@@ -72,9 +73,9 @@ class testLoadImages(unittest.TestCase):
         
     def test_01_02load_image_text_match_many(self):
         l=LI.LoadImages()
-        l.settings()[l.SLOT_MATCH_METHOD].set_value(LI.MS_EXACT_MATCH)
-        l.settings()[l.SLOT_LOCATION].value = LI.ABSOLUTE_FOLDER_NAME
-        l.settings()[l.SLOT_LOCATION_OTHER].value =\
+        l.match_method.value = LI.MS_EXACT_MATCH
+        l.location.dir_choice = LI.ABSOLUTE_FOLDER_NAME
+        l.location.custom_path =\
             os.path.join(T.example_images_directory(),"ExampleSBSImages")
         for i in range(0,4):
             ii = i+1
@@ -99,9 +100,9 @@ class testLoadImages(unittest.TestCase):
         
     def test_02_01load_image_regex_match(self):
         l=LI.LoadImages()
-        l.settings()[l.SLOT_MATCH_METHOD].set_value(LI.MS_REGEXP)
-        l.settings()[l.SLOT_LOCATION].value = LI.ABSOLUTE_FOLDER_NAME
-        l.settings()[l.SLOT_LOCATION_OTHER].value =\
+        l.match_method.value = LI.MS_REGEXP
+        l.location.dir_choice = LI.ABSOLUTE_FOLDER_NAME
+        l.location.custom_path =\
             os.path.join(T.example_images_directory(),"ExampleSBSImages")
         l.settings()[l.SLOT_FIRST_IMAGE+l.SLOT_OFFSET_COMMON_TEXT].set_value("Channel1-[0-1][0-9]-A-01")
         l.settings()[l.SLOT_FIRST_IMAGE+l.SLOT_OFFSET_IMAGE_NAME].set_value("my_image")
@@ -154,8 +155,9 @@ LoadImages:[module_num:1|svn_version:\'8913\'|variable_revision_number:1|show_wi
         self.assertEqual(module.images[1][LI.FD_IMAGE_NAME], "OtherImages")
         self.assertEqual(module.order_group_size, 5)
         self.assertTrue(module.analyze_sub_dirs())
-        self.assertEqual(module.location, LI.ABSOLUTE_FOLDER_NAME)
-        self.assertEqual(module.location_other, "./Images")
+        self.assertEqual(module.location.dir_choice, 
+                         LI.DEFAULT_INPUT_SUBFOLDER_NAME)
+        self.assertEqual(module.location.custom_path, "./Images")
         
     def test_03_01_load_version_2(self):
         data = 'TUFUTEFCIDUuMCBNQVQtZmlsZSwgUGxhdGZvcm06IFBDV0lOLCBDcmVhdGVkIG9uOiBNb24gSmFuIDA1IDEwOjMwOjQ0IDIwMDkgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAABSU0PAAAAkAEAAHic7ZPNTsJAEMen5UOUZIPxwpEXEInEwJHEiyQKBgj3xS7NJku32bYEPXn0NXwLjz6au7iFbWkoEm+6yWQ70/n/djo7RQDwcQJQlntFmg3fq6R9yzDlj0kYUs8NSlCEuo5/SptiQfGMkSlmEQlgs+J435vzybO/efXAnYiRAV6YyXINosWMiGA4j4X69SNdETamLwSSK04bkSUNKPe0XvPT0Zi/gwck7a2w7YOV0QdkxNXzHWzzixn5dSO/pv0JWYWXI+JGDIsGWfmCBKrAQPF6ObzTFE/5T5xx0Qzp3KjrGM5QUPdWsQxOK4djJTgWXP3rflXXhsPm7ByS96l86jl0SZ0IswZdYDcx53l12AmeDQN+XP3NA88rJHQF8K7wWvdq7f8fq0YcZey9nHNrqb4pWzfLFTzyG7KFxP/LvHj3Yf89mPd+SB1nqTqUf8+x0zcGVXG6BqecwSkbHFv7qIoQquzqs+owv6em/VazfXPd6XTTc5t1vvndtnyyYXfe83RFqXq/+LlOnac0X7WHgow='
@@ -189,6 +191,8 @@ LoadImages:[module_num:1|svn_version:\'8913\'|variable_revision_number:1|show_wi
         self.assertEqual(module.image_name_vars()[2].value,'OrigBlue')
         self.assertEqual(module.text_to_find_vars()[2].value,'s1_w3.TIF')
         self.assertFalse(module.analyze_sub_dirs())
+        self.assertEqual(module.location.dir_choice, 
+                         LI.DEFAULT_INPUT_FOLDER_NAME)
         
     def test_03_03_load_new_version_2(self):
         data = 'eJztV91u2jAUNjRURZOm7qLaLn1ZtoIga6UWTbQMJo2NMFRYt6rqVhcMWHJiFJwONlXaI+yR9ih7hD3CbOpA8CJC6S42jUhOfI7Pd36+EzmOVWxWi8/hXiYLrWIz3SEUwzpFvMNcOw8dvgNLLkYctyFz8rDZ8+Arj8KsCXN7+V0zLyZmNnsAlrtiFeu+fIrbunhsiBFXSwklxwJDyg3MOXG6gwQwwCOl/y7GCXIJuqT4BFEPD6YhfH3F6bDmqD9Zsljbo7iG7KCxuGqefYndwZuOD1TLdTLEtEE+Y60E3+wYX5EBYY7CK/+6dhKXcS2u5GF/fcpDLISHrYBe2r8EU3sjxP5BwH5TycRpkyvS9hCFxEbdSRbS31GEv03NnxxNPOTpF0PU4tBGvNWTfrIRfmIzfmLgqV9/BC6hxZdypVp9ayl8VNz4DD4OamwxHh9qcaVcxh3kUQ4rkkRYJi5uceaOfstjXfPnX76/ZID/qPzXZvJYA6eie3fBRfG9AWbrlnKphxwHU3OZuOVacaF89fcjtyA/xgzOEP11sMR9jcC91uqU8oftw/ozuRHiQuZJ6qOU3mFKj9mnwlkxXT9P+ZoSo57tFM6y6YPzL7kd8/rGuEEEcqxMjf3KPHoReexreUhZ+jrFyFUBdq9TaamymMN7SmcqXRmNppo79je3yH6Q1PBSLo0461M0sJV+mX6bq34v1e8fxu2+H39in1rh/h/cEZj/PoedD8aHjK7LvD4URw/c/5fqXfH7d+K+BXBh+1zweyLtL8B8Xh+DWV6l3BJbfd9l8n/IzdjjQ/sgQxlq35yaM1UxrQQO0Ho9yZA4wbziYrYVwYNe/5SXn4fLxIuHxLsXgTPUH5nEvQe34317jj3Q7H8BnRn8NQ=='
@@ -207,6 +211,8 @@ LoadImages:[module_num:1|svn_version:\'8913\'|variable_revision_number:1|show_wi
         self.assertEqual(module.images[0][LI.FD_COMMON_TEXT], 'Channel2')
         self.assertEqual(module.images[1][LI.FD_IMAGE_NAME], 'Cytoplasm')
         self.assertEqual(module.images[1][LI.FD_COMMON_TEXT], 'Channel1')
+        self.assertEqual(module.location.dir_choice, 
+                         LI.DEFAULT_INPUT_FOLDER_NAME)
         
     def test_03_03_load_new_version_3(self):
         data = 'eJztV+1u0zAUdT+1CgmNP2M/vX/boFHawdgqtK20IIqaUm1lYkIgvNZtLTlxlDhbC9o78Eg8Eo9AnLlNaqKmK0iA1Ehucq/vPef6OLUdo9ppVl/Ap5oOjWqn2CcUwzZFvM8cswJt5pLRY1hzMOK4B5lVgR0PwzcehfAZLOmV8n5lbx+Wdf0QLHGlGsZ9/3bi/+T9+5rf0rIrJ+1UpAn7DHNOrIGbA1mwKf3f/XaOHIIuKT5H1MNuSDHxN6w+64ztaZfBeh7FLWRGg/2r5ZmX2HHf9ieJsrtNRpiekS9YGcIk7BRfEZcwS+ZLfNU75WVc4Q10yIc6pGJ02Ij4RfxrEMZnY+IfROLXpU2sHrkiPQ9RSEw0mFYR8CfgrSt4onXwiBdfjlCXQxPx7lDg6Ak4qRmcFNiT/AcJeTmFX9iNZvOdIfOTeNMz+WnQYovp+FDhFXYd95FHOWwIEWGdOLjLmTP+pY68gje5JniFiP5J9Wdm6siAC3/2/kZe0jytgVm9hF0bIsvCtLwMb71VXahe9b0qgcXe64JSr7BfiYXQ8pcH6Rc47xNwthQcYX/Sdovbx+3np+z6SHu0EzzXGD36oBcPP34t3+xE8IcJ+AcKvrAF3gVGjgR8cnNLYTCLD0OSwFdH49Dzm/NYWlbX2pgzmyLXjIz7rvNaBqt5nTevm7m77SN/Yr1a5a3ykvJOwPz/Qdz5IjikDBzm2dA/umD7fxrvSt9/M+9bJC9ufYzuNyL+M5iv6y6Y1VXYXUyp7TDxPeVoZnDodzXKUO/21K01/cdG5ACujqcQwxOtK+0/bSTooI4/1OXH8TJ8mRi+ewl5WflFp+6zi+i+PSceKPE/AfCf5eY='
@@ -227,6 +233,8 @@ LoadImages:[module_num:1|svn_version:\'8913\'|variable_revision_number:1|show_wi
         self.assertEqual(module.images[1][LI.FD_IMAGE_NAME], 'Cytoplasm')
         self.assertEqual(module.images[1][LI.FD_COMMON_TEXT], 'Channel1')
         self.assertEqual(module.images[1][LI.FD_FILE_METADATA], '^.*-(?P<Row>.+)-(?P<Col>[0-9]{2})')
+        self.assertEqual(module.location.dir_choice, 
+                         LI.DEFAULT_INPUT_FOLDER_NAME)
 
     def test_03_04_load_new_version_4(self):
         data = ('eJztVt1O2zAUdn9A65AmuBqXvgS0VGnpNqgmILRDVOqfoGJDVaeZ1m0tOXGV'
@@ -255,6 +263,184 @@ LoadImages:[module_num:1|svn_version:\'8913\'|variable_revision_number:1|show_wi
         self.assertEqual(module.metadata_fields.selections[0], "ROW")
         self.assertEqual(len(module.images), 1)
         self.assertEqual(module.images[0][LI.FD_FILE_METADATA], '^Channel[12]-[0-9]{2}-(?P<ROW>[A-H])-(?P<COL>[0-9]{2})')
+        self.assertEqual(module.location.dir_choice, 
+                         LI.DEFAULT_INPUT_FOLDER_NAME)
+        
+    def test_03_05_load_v5(self):
+        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:1
+SVNRevision:9497
+
+LoadImages:[module_num:1|svn_version:\'9497\'|variable_revision_number:5|show_window:True|notes:\x5B\x5D]
+    File type to be loaded:individual images
+    File selection method:Text-Exact match
+    Number of images in each group?:3
+    Type the text that the excluded images have in common:Thumb
+    Analyze all subfolders within the selected folder?:No
+    Image location:Default Input Folder\x7CNone
+    Check image sets for missing or duplicate files?:Yes
+    Group images by metadata?:No
+    Exclude certain files?:Yes
+    Specify metadata fields to group by:
+    Text that these images have in common (case-sensitive):Foo
+    Name of this image in CellProfiler:DNA
+    Position of this image in each group:1
+    Select from where to extract metadata?:None
+    Regular expression that finds metadata in the file name:^(?P<Plate>.*)
+    Type the regular expression that finds metadata in the subfolder path:.*\x5B\\\\/\x5D(?P<Date>.*)$
+    Text that these images have in common (case-sensitive):Bar
+    Name of this image in CellProfiler:Cytoplasm
+    Position of this image in each group:2
+    Select from where to extract metadata?:File name
+    Regular expression that finds metadata in the file name:^(?P<Plate>.*)_(?P<Well>\x5BA-P\x5D\x5B0-9\x5D{2})_s(?P<Site>\x5B0-9\x5D)
+    Type the regular expression that finds metadata in the subfolder path:.*\x5B\\\\/\x5D(?P<Date>.*)\x5B\\\\/\x5D(?P<Run>.*)$
+    Text that these images have in common (case-sensitive):Baz
+    Name of this image in CellProfiler:Other
+    Position of this image in each group:3
+    Select from where to extract metadata?:Path
+    Regular expression that finds metadata in the file name:^(?P<Plate>.*)_(?P<Well>\x5BA-P\x5D\x5B0-9\x5D{2})_s(?P<Site>\x5B0-9\x5D)
+    Type the regular expression that finds metadata in the subfolder path:.*\x5B\\\\/\x5D(?P<Date>.*)\x5B\\\\/\x5D(?P<Run>.*)$
+
+LoadImages:[module_num:2|svn_version:\'9497\'|variable_revision_number:5|show_window:True|notes:\x5B\x5D]
+    File type to be loaded:stk movies
+    File selection method:Text-Regular expressions
+    Number of images in each group?:3
+    Type the text that the excluded images have in common:Do not use
+    Analyze all subfolders within the selected folder?:Yes
+    Image location:Default Output Folder\x7CNone
+    Check image sets for missing or duplicate files?:Yes
+    Group images by metadata?:Yes
+    Exclude certain files?:No
+    Specify metadata fields to group by:Plate,Run
+    Text that these images have in common (case-sensitive):Whatever
+    Name of this image in CellProfiler:DNA
+    Position of this image in each group:1
+    Select from where to extract metadata?:Both
+    Regular expression that finds metadata in the file name:^(?P<Plate>.*)_(?P<Well>\x5BA-P\x5D\x5B0-9\x5D{2})_s(?P<Site>\x5B0-9\x5D)
+    Type the regular expression that finds metadata in the subfolder path:.*\x5B\\\\/\x5D(?P<Date>.*)\x5B\\\\/\x5D(?P<Run>.*)$
+
+LoadImages:[module_num:3|svn_version:\'9497\'|variable_revision_number:5|show_window:True|notes:\x5B\x5D]
+    File type to be loaded:avi movies
+    File selection method:Order
+    Number of images in each group?:5
+    Type the text that the excluded images have in common:Do not use
+    Analyze all subfolders within the selected folder?:No
+    Image location:Elsewhere...\x7C/imaging/analysis/People/Lee
+    Check image sets for missing or duplicate files?:Yes
+    Group images by metadata?:No
+    Exclude certain files?:No
+    Specify metadata fields to group by:
+    Text that these images have in common (case-sensitive):
+    Name of this image in CellProfiler:DNA
+    Position of this image in each group:2
+    Select from where to extract metadata?:None
+    Regular expression that finds metadata in the file name:^(?P<Plate>.*)_(?P<Well>\x5BA-P\x5D\x5B0-9\x5D{2})_s(?P<Site>\x5B0-9\x5D)
+    Type the regular expression that finds metadata in the subfolder path:.*\x5B\\\\/\x5D(?P<Date>.*)\x5B\\\\/\x5D(?P<Run>.*)$
+    Text that these images have in common (case-sensitive):
+    Name of this image in CellProfiler:Actin
+    Position of this image in each group:1
+    Select from where to extract metadata?:None
+    Regular expression that finds metadata in the file name:^(?P<Plate>.*)_(?P<Well>\x5BA-P\x5D\x5B0-9\x5D{2})_s(?P<Site>\x5B0-9\x5D)
+    Type the regular expression that finds metadata in the subfolder path:.*\x5B\\\\/\x5D(?P<Date>.*)\x5B\\\\/\x5D(?P<Run>.*)$
+
+LoadImages:[module_num:4|svn_version:\'9497\'|variable_revision_number:5|show_window:True|notes:\x5B\x5D]
+    File type to be loaded:tif,tiff,flex movies
+    File selection method:Text-Exact match
+    Number of images in each group?:3
+    Type the text that the excluded images have in common:Do not use
+    Analyze all subfolders within the selected folder?:No
+    Image location:Default Input Folder sub-folder\x7Cfoo
+    Check image sets for missing or duplicate files?:Yes
+    Group images by metadata?:No
+    Exclude certain files?:No
+    Specify metadata fields to group by:
+    Text that these images have in common (case-sensitive):
+    Name of this image in CellProfiler:DNA
+    Position of this image in each group:1
+    Select from where to extract metadata?:None
+    Regular expression that finds metadata in the file name:^(?P<Plate>.*)
+    Type the regular expression that finds metadata in the subfolder path:.*\x5B\\\\/\x5D(?P<Date>.*)\x5B\\\\/\x5D(?P<Run>.*)$
+
+LoadImages:[module_num:5|svn_version:\'9497\'|variable_revision_number:5|show_window:True|notes:\x5B\x5D]
+    File type to be loaded:individual images
+    File selection method:Text-Exact match
+    Number of images in each group?:3
+    Type the text that the excluded images have in common:Do not use
+    Analyze all subfolders within the selected folder?:No
+    Image location:Default Output Folder sub-folder\x7Cbar
+    Check image sets for missing or duplicate files?:Yes
+    Group images by metadata?:No
+    Exclude certain files?:No
+    Specify metadata fields to group by:
+    Text that these images have in common (case-sensitive):
+    Name of this image in CellProfiler:DNA
+    Position of this image in each group:1
+    Select from where to extract metadata?:None
+    Regular expression that finds metadata in the file name:^(?P<Plate>.*)_(?P<Well>\x5BA-P\x5D\x5B0-9\x5D{2})_s(?P<Site>\x5B0-9\x5D)
+    Type the regular expression that finds metadata in the subfolder path:.*\x5B\\\\/\x5D(?P<Date>.*)\x5B\\\\/\x5D(?P<Run>.*)$
+"""
+        pipeline = cpp.Pipeline()
+        def callback(caller, event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO(data))
+        self.assertEqual(len(pipeline.modules()), 5)
+        
+        module = pipeline.modules()[0]
+        self.assertTrue(isinstance(module, LI.LoadImages))
+        self.assertEqual(module.file_types, LI.FF_INDIVIDUAL_IMAGES)
+        self.assertEqual(module.match_method, LI.MS_EXACT_MATCH)
+        self.assertEqual(module.order_group_size, 3)
+        self.assertEqual(module.match_exclude, "Thumb")
+        self.assertFalse(module.descend_subdirectories)
+        self.assertEqual(module.location.dir_choice, LI.DEFAULT_INPUT_FOLDER_NAME)
+        self.assertTrue(module.check_images)
+        self.assertFalse(module.group_by_metadata)
+        self.assertTrue(module.exclude)
+        self.assertEqual(len(module.images), 3)
+        self.assertEqual(module.images[0][LI.FD_IMAGE_NAME], "DNA")
+        self.assertEqual(module.images[0][LI.FD_ORDER_POSITION], 1)
+        self.assertEqual(module.images[0][LI.FD_COMMON_TEXT], "Foo")
+        self.assertEqual(module.images[0][LI.FD_METADATA_CHOICE], LI.M_NONE)
+        self.assertEqual(module.images[0][LI.FD_FILE_METADATA], "^(?P<Plate>.*)")
+        self.assertEqual(module.images[0][LI.FD_PATH_METADATA],r".*[\\/](?P<Date>.*)$")
+        self.assertEqual(module.images[1][LI.FD_IMAGE_NAME], "Cytoplasm")
+        self.assertEqual(module.images[1][LI.FD_COMMON_TEXT], "Bar")
+        self.assertEqual(module.images[1][LI.FD_METADATA_CHOICE], LI.M_FILE_NAME)
+        self.assertEqual(module.images[2][LI.FD_IMAGE_NAME], "Other")
+        self.assertEqual(module.images[2][LI.FD_COMMON_TEXT], "Baz")
+        self.assertEqual(module.images[2][LI.FD_METADATA_CHOICE], LI.M_PATH)
+        
+        module = pipeline.modules()[1]
+        self.assertTrue(isinstance(module, LI.LoadImages))
+        self.assertEqual(module.file_types, LI.FF_STK_MOVIES)
+        self.assertEqual(module.match_method, LI.MS_REGEXP)
+        self.assertEqual(module.location.dir_choice, LI.DEFAULT_OUTPUT_FOLDER_NAME)
+        self.assertTrue(module.group_by_metadata)
+        self.assertTrue(module.descend_subdirectories)
+        self.assertEqual(len(module.metadata_fields.selections), 2)
+        self.assertEqual(module.metadata_fields.selections[0], "Plate")
+        self.assertEqual(module.metadata_fields.selections[1], "Run")
+        self.assertEqual(module.images[0][LI.FD_METADATA_CHOICE], LI.M_BOTH)
+        
+        module = pipeline.modules()[2]
+        self.assertTrue(isinstance(module, LI.LoadImages))
+        self.assertEqual(module.file_types, LI.FF_AVI_MOVIES)
+        self.assertEqual(module.match_method, LI.MS_ORDER)
+        self.assertEqual(module.location.dir_choice, LI.ABSOLUTE_FOLDER_NAME)
+        self.assertEqual(module.location.custom_path, "/imaging/analysis/People/Lee")
+
+        module = pipeline.modules()[3]
+        self.assertTrue(isinstance(module, LI.LoadImages))
+        self.assertEqual(module.file_types, LI.FF_OTHER_MOVIES)
+        self.assertEqual(module.location.dir_choice, LI.DEFAULT_INPUT_SUBFOLDER_NAME)
+        self.assertEqual(module.location.custom_path, "foo")
+        
+        module = pipeline.modules()[4]
+        self.assertTrue(isinstance(module, LI.LoadImages))
+        self.assertEqual(module.location.dir_choice, LI.DEFAULT_OUTPUT_SUBFOLDER_NAME)
+        self.assertEqual(module.location.custom_path, "bar")
+
         
     def test_04_01_load_save_and_load(self):
         data = 'TUFUTEFCIDUuMCBNQVQtZmlsZSwgUGxhdGZvcm06IFBDV0lOLCBDcmVhdGVkIG9uOiBNb24gSmFuIDA1IDExOjA2OjM5IDIwMDkgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAABSU0PAAAApwEAAHic5VTNTsJAEJ42BdEDwXjQY49eJCIXj8b4A4mCAUK8mYUudZO22/QHwafyEbj5Wu5KC8um0qV6c5LNdGZnvpn9OrtVAFhUAMpMMwU6LKWU2JqwuN3HUUQ8OyyBASeJf8HWEAUEjRw8RE6MQ1hJ6m97EzqY+6utR2rFDu4gVwxm0ondEQ7C7iRNTLafyAw7ffKOYVPSsB6ekpBQL8lP8GXvqi6NpLpVtlrGmgctg4cjwc/jr2Adb2TE14T4WrIGeBad3c7QODJdFI1fVXD2JRxuh42Xt0Z90L4T+rnMwdmTcLjdDYjdw5bSeX7q40LqowgO7+M+wNj7JQ7vp7kjLxUJp5L0c81GWaWPAymf2zfU9GhkxiFWP48qznkOjraBo0Hzj+u3cnAOJRxuE88iU2LFyDGJi+zV7VM5j76Bp0OHFuOhrshD1lzZAZqHY+Sk709VQX9o298Tkaes/Lw+s96Xb3LtgMa+ySjH/n/GK6p92P7fxLkqeq8eKLLawkWQ57mcU1dnX7WMPJV70ChYzyiQZ7DMz+Nl3vOOvJ5uiU8l9X8BnJqT/A=='
@@ -297,8 +483,8 @@ LoadImages:[module_num:1|svn_version:\'8913\'|variable_revision_number:1|show_wi
         load_images.match_method.value = LI.MS_EXACT_MATCH
         load_images.images[0][LI.FD_COMMON_TEXT].value = filename
         load_images.images[0][LI.FD_IMAGE_NAME].value = 'Orig'
-        load_images.location.value = LI.ABSOLUTE_FOLDER_NAME
-        load_images.location_other.value = path
+        load_images.location.dir_choice = LI.ABSOLUTE_FOLDER_NAME
+        load_images.location.custom_path = path
         load_images.module_num = 1
         outer_self = self
         class CheckImage(CPM.CPModule):
@@ -337,8 +523,8 @@ LoadImages:[module_num:1|svn_version:\'8913\'|variable_revision_number:1|show_wi
         load_images.match_method.value = LI.MS_EXACT_MATCH
         load_images.images[0][LI.FD_COMMON_TEXT].value = filename
         load_images.images[0][LI.FD_IMAGE_NAME].value = 'Orig'
-        load_images.location.value = LI.ABSOLUTE_FOLDER_NAME
-        load_images.location_other.value = path
+        load_images.location.dir_choice = LI.ABSOLUTE_FOLDER_NAME
+        load_images.location.custom_path = path
         load_images.module_num = 1
         outer_self = self
         class CheckImage(CPM.CPModule):
@@ -373,8 +559,8 @@ LoadImages:[module_num:1|svn_version:\'8913\'|variable_revision_number:1|show_wi
         load_images.match_method.value = LI.MS_EXACT_MATCH
         load_images.images[0][LI.FD_COMMON_TEXT].value = filename
         load_images.images[0][LI.FD_IMAGE_NAME].value = 'Orig'
-        load_images.location.value = LI.ABSOLUTE_FOLDER_NAME
-        load_images.location_other.value = path
+        load_images.location.dir_choice = LI.ABSOLUTE_FOLDER_NAME
+        load_images.location.custom_path = path
         load_images.module_num = 1
         outer_self = self
         class CheckImage(CPM.CPModule):
@@ -409,8 +595,8 @@ LoadImages:[module_num:1|svn_version:\'8913\'|variable_revision_number:1|show_wi
         load_images.match_method.value = LI.MS_EXACT_MATCH
         load_images.images[0][LI.FD_COMMON_TEXT].value = filename
         load_images.images[0][LI.FD_IMAGE_NAME].value = 'Orig'
-        load_images.location.value = LI.ABSOLUTE_FOLDER_NAME
-        load_images.location_other.value = path
+        load_images.location.dir_choice = LI.ABSOLUTE_FOLDER_NAME
+        load_images.location.custom_path = path
         load_images.module_num = 1
         outer_self = self
         class CheckImage(CPM.CPModule):
@@ -464,8 +650,8 @@ LoadImages:[module_num:1|svn_version:\'8913\'|variable_revision_number:1|show_wi
             load_images.add_imagecb()
             load_images.file_types.value = LI.FF_INDIVIDUAL_IMAGES
             load_images.match_method.value = LI.MS_REGEXP
-            load_images.location.value = LI.ABSOLUTE_FOLDER_NAME
-            load_images.location_other.value = directory
+            load_images.location.dir_choice = LI.ABSOLUTE_FOLDER_NAME
+            load_images.location.custom_path = directory
             load_images.group_by_metadata.value = True
             load_images.images[0][LI.FD_COMMON_TEXT].value = "^(?P<plate>.*?)_(?P<well_row>[A-P])(?P<well_col>[0-9]{2})_s(?P<site>[0-9]+)_w1_"
             load_images.images[1][LI.FD_COMMON_TEXT].value = "^(?P<plate>.*?)_(?P<well_row>[A-P])(?P<well_col>[0-9]{2})_s(?P<site>[0-9]+)_w2_"
@@ -544,8 +730,8 @@ LoadImages:[module_num:1|svn_version:\'8913\'|variable_revision_number:1|show_wi
             load_images.file_types.value = LI.FF_INDIVIDUAL_IMAGES
             load_images.descend_subdirectories.value = True
             load_images.match_method.value = LI.MS_EXACT_MATCH
-            load_images.location.value = LI.ABSOLUTE_FOLDER_NAME
-            load_images.location_other.value = directory
+            load_images.location.dir_choice = LI.ABSOLUTE_FOLDER_NAME
+            load_images.location.custom_path = directory
             load_images.group_by_metadata.value = True
             load_images.images[0][LI.FD_COMMON_TEXT].value = "w1.tif"
             load_images.images[1][LI.FD_COMMON_TEXT].value = "w2.tif"
@@ -616,8 +802,8 @@ LoadImages:[module_num:1|svn_version:\'8913\'|variable_revision_number:1|show_wi
             load_images.add_imagecb()
             load_images.file_types.value = LI.FF_INDIVIDUAL_IMAGES
             load_images.match_method.value = LI.MS_REGEXP
-            load_images.location.value = LI.ABSOLUTE_FOLDER_NAME
-            load_images.location_other.value = directory
+            load_images.location.dir_choice = LI.ABSOLUTE_FOLDER_NAME
+            load_images.location.custom_path = directory
             load_images.group_by_metadata.value = True
             load_images.check_images.value = True
             load_images.images[0][LI.FD_COMMON_TEXT].value = "^(?P<plate>.*?)_(?P<well_row>[A-P])(?P<well_col>[0-9]{2})_s(?P<site>[0-9]+)_w1_"
@@ -658,8 +844,8 @@ LoadImages:[module_num:1|svn_version:\'8913\'|variable_revision_number:1|show_wi
             load_images.add_imagecb()
             load_images.file_types.value = LI.FF_INDIVIDUAL_IMAGES
             load_images.match_method.value = LI.MS_REGEXP
-            load_images.location.value = LI.ABSOLUTE_FOLDER_NAME
-            load_images.location_other.value = directory
+            load_images.location.dir_choice = LI.ABSOLUTE_FOLDER_NAME
+            load_images.location.custom_path = directory
             load_images.group_by_metadata.value = True
             load_images.images[0][LI.FD_COMMON_TEXT].value = "^(?P<plate>.*?)_(?P<well_row>[A-P])(?P<well_col>[0-9]{2})_s(?P<site>[0-9]+)_w1_"
             load_images.images[1][LI.FD_COMMON_TEXT].value = "^(?P<plate>.*?)_(?P<well_row>[A-P])(?P<well_col>[0-9]{2})_s(?P<site>[0-9]+)_w2_"
@@ -714,8 +900,8 @@ LoadImages:[module_num:1|svn_version:\'8913\'|variable_revision_number:1|show_wi
             load_images.add_imagecb()
             load_images.file_types.value = LI.FF_INDIVIDUAL_IMAGES
             load_images.match_method.value = LI.MS_REGEXP
-            load_images.location.value = LI.ABSOLUTE_FOLDER_NAME
-            load_images.location_other.value = directory
+            load_images.location.dir_choice = LI.ABSOLUTE_FOLDER_NAME
+            load_images.location.custom_path = directory
             load_images.group_by_metadata.value = True
             load_images.images[0][LI.FD_COMMON_TEXT].value = "_w1_"
             load_images.images[1][LI.FD_COMMON_TEXT].value = "^illum"
@@ -778,8 +964,8 @@ LoadImages:[module_num:1|svn_version:\'8913\'|variable_revision_number:1|show_wi
                 load_images.add_imagecb()
                 load_images.file_types.value = LI.FF_INDIVIDUAL_IMAGES
                 load_images.match_method.value = LI.MS_REGEXP
-                load_images.location.value = LI.ABSOLUTE_FOLDER_NAME
-                load_images.location_other.value = directory
+                load_images.location.dir_choice = LI.ABSOLUTE_FOLDER_NAME
+                load_images.location.custom_path = directory
                 load_images.group_by_metadata.value = True
                 load_images.metadata_fields.value = ["plate", "well_row", 
                                                      "well_col", "site"]
@@ -875,8 +1061,8 @@ LoadImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show
         '''Get groupings for the SBS image set'''
         sbs_path = os.path.join(T.example_images_directory(),'ExampleSBSImages')
         module = LI.LoadImages()
-        module.location.value = LI.ABSOLUTE_FOLDER_NAME
-        module.location_other.value = sbs_path
+        module.location.dir_choice = LI.ABSOLUTE_FOLDER_NAME
+        module.location.custom_path = sbs_path
         module.group_by_metadata.value = True
         module.images[0][LI.FD_COMMON_TEXT].value = 'Channel1-'
         module.images[0][LI.FD_IMAGE_NAME].value = 'MyImage'
@@ -917,8 +1103,8 @@ LoadImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show
         module.file_types.value = LI.FF_AVI_MOVIES
         module.images[0][LI.FD_COMMON_TEXT].value = 'avi'
         module.images[0][LI.FD_IMAGE_NAME].value = 'MyImage'
-        module.location.value = LI.ABSOLUTE_FOLDER_NAME
-        module.location_other.value = avi_path
+        module.location.dir_choice = LI.ABSOLUTE_FOLDER_NAME
+        module.location.custom_path = avi_path
         module.module_num = 1
         pipeline = P.Pipeline()
         pipeline.add_module(module)
@@ -959,8 +1145,8 @@ LoadImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show
         module.file_types.value = LI.FF_STK_MOVIES
         module.images[0][LI.FD_COMMON_TEXT].value = 'stk'
         module.images[0][LI.FD_IMAGE_NAME].value = 'MyImage'
-        module.location.value = LI.ABSOLUTE_FOLDER_NAME
-        module.location_other.value = path
+        module.location.dir_choice = LI.ABSOLUTE_FOLDER_NAME
+        module.location.custom_path = path
         module.module_num = 1
         pipeline = P.Pipeline()
         pipeline.add_module(module)
@@ -998,8 +1184,8 @@ LoadImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show
             module.file_types.value = LI.FF_INDIVIDUAL_IMAGES
             module.images[0][LI.FD_COMMON_TEXT].value = 'Channel1-'
             module.images[0][LI.FD_IMAGE_NAME].value = 'MyImage'
-            module.location.value = LI.ABSOLUTE_FOLDER_NAME
-            module.location_other.value = path
+            module.location.dir_choice = LI.ABSOLUTE_FOLDER_NAME
+            module.location.custom_path = path
             module.module_num = 1
             pipeline = P.Pipeline()
             pipeline.add_module(module)

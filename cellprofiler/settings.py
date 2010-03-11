@@ -324,11 +324,11 @@ class DirectoryPath(Text):
         elif (cmp_path.startswith(img_dir) and 
               cmp_path[len(img_dir)] in seps):
             dir_choice = DEFAULT_INPUT_SUBFOLDER_NAME
-            custom_path = path[len(img_dir)+1]
+            custom_path = path[len(img_dir)+1:]
         elif (cmp_path.startswith(out_dir) and 
               cmp_path[len(out_dir)] in seps):
             dir_choice = DEFAULT_OUTPUT_SUBFOLDER_NAME
-            custom_path = path[len(out_dir)+1]
+            custom_path = path[len(out_dir)+1:]
         else:
             dir_choice = ABSOLUTE_FOLDER_NAME
             custom_path = path

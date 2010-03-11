@@ -92,7 +92,8 @@ import cellprofiler.preferences as preferences
 import cellprofiler.settings as cps
 from cellprofiler.preferences import \
      standardize_default_folder_names, DEFAULT_INPUT_FOLDER_NAME, \
-     DEFAULT_OUTPUT_FOLDER_NAME, ABSOLUTE_FOLDER_NAME
+     DEFAULT_OUTPUT_FOLDER_NAME, ABSOLUTE_FOLDER_NAME, \
+     DEFAULT_INPUT_SUBFOLDER_NAME, DEFAULT_OUTPUT_SUBFOLDER_NAME
 
 PILImage.init()
 
@@ -184,7 +185,7 @@ def default_cpimage_name(index):
 class LoadImages(cpmodule.CPModule):
 
     module_name = "LoadImages"
-    variable_revision_number = 4
+    variable_revision_number = 5
     category = "File Processing"
 
     def create_settings(self):
@@ -327,19 +328,48 @@ class LoadImages(cpmodule.CPModule):
         self.add_image = cps.DoSomething("", "Add another image", self.add_imagecb)
         
         # Location settings
-        self.location = cps.Choice('Image location',
-                [DEFAULT_INPUT_FOLDER_NAME, DEFAULT_OUTPUT_FOLDER_NAME, 
-                 ABSOLUTE_FOLDER_NAME],
-                doc="""
-                You have the choice of loading the image files from the Default Input Folder, the Default Output
-                folder or another location entirely.""")
-        self.location_other = cps.Text("Enter the full path to the images", '',doc="""
-                <i>(Used only if your images are located elsewhere)</i> <br>
-                Type the full path to where the images are located. Note that this
-                path is fixed with respect to your local machine, which means that transfering
-                your pipeline to another machine might cause it to fail if it does not 
-                map to the same location. We recommend using default input/output
-                folders since these locations are set relative to the local machine.""")
+        self.location = cps.DirectoryPath(
+            "Image location", 
+            dir_choices = [
+                DEFAULT_INPUT_FOLDER_NAME,  DEFAULT_OUTPUT_FOLDER_NAME,
+                ABSOLUTE_FOLDER_NAME, DEFAULT_INPUT_SUBFOLDER_NAME,
+                DEFAULT_OUTPUT_SUBFOLDER_NAME],
+            allow_metadata = False,
+            doc ="""
+            The folder that contains the CSV file. You can choose among the following options:
+            <ul><li><i>Default Input Folder</i>: 
+            The CSV file is in the Default Input Folder.</li>
+            <li><i>Default Output
+            Folder:</i> The CSV file is in the Default Output Folder.</li>
+            <li><i>Absolute path elsewhere</i>: You can enter a custom folder name.</li>
+            <li><i>Default input directory sub-folder</i>:
+            Enter the name of a subfolder of the default input folder or a path
+            that starts from the default input folder.</li>
+            <li><i>Default output directory sub-folder</i>:
+            Enter the name of a subfolder of the default output folder or a path
+            that starts from the default output folder.</li>
+            <li><i>URL</i>:
+            Enter the path part of the URL for the CSV file. For instance,
+            we have an example .CSV file at
+            https://svn.broadinstitute.org/CellProfiler/trunk/ExampleImages/ExampleSBSImages/1049_Images_Dose_Metadata.csv
+            To access this .CSV file, you would choose <i>URL</i> and enter
+            https://svn.broadinstitute.org/CellProfiler/trunk/ExampleImages/ExampleSBSImages
+            as the path location.</li>
+            </ul>
+            
+            <p><i>Absolute path elsewhere</i>, <i>Default input directory sub-folder</i>,
+            and <i>Default output directory sub-folder</i> all require an
+            additional path name. Two periods ".." specify to go 
+            up one folder level. For example, if you choose 
+            <i>Default input directory sub-folder</i>, "./CSVfiles" looks for a 
+            folder called "CSVfiles" that is contained within the 
+            Default Input Folder and "../My_folder" looks in a folder called 
+            "My_folder" at the same level as the input folder.<p>
+            Note that the path is fixed with respect to your local machine, 
+            which means that transfering your pipeline to another machine might 
+            cause it to fail if it does not map to the same location. We 
+            recommend using default input/output folders since these locations 
+            are set relative to the local machine.""")
 
     def add_imagecb(self):
         'Adds another image to the settings'
@@ -561,8 +591,6 @@ class LoadImages(cpmodule.CPModule):
             varlist.append(fd[FD_REMOVE_IMAGE])
         varlist += [self.add_image]
         varlist += [self.location]
-        if self.location == ABSOLUTE_FOLDER_NAME:
-            varlist += [self.location_other]
         return varlist
     
     #
@@ -574,15 +602,15 @@ class LoadImages(cpmodule.CPModule):
     SLOT_MATCH_EXCLUDE = 3
     SLOT_DESCEND_SUBDIRECTORIES = 4
     SLOT_LOCATION = 5
-    SLOT_LOCATION_OTHER = 6
-    SLOT_CHECK_IMAGES = 7
+    SLOT_CHECK_IMAGES = 6
+    SLOT_GROUP_BY_METADATA = 7
+    SLOT_EXCLUDE = 8
+    SLOT_GROUP_FIELDS = 9
     SLOT_FIRST_IMAGE_V1 = 8
-    SLOT_GROUP_BY_METADATA = 8
-    SLOT_EXCLUDE = 9
-    SLOT_GROUP_FIELDS = 10
     SLOT_FIRST_IMAGE_V2 = 9
     SLOT_FIRST_IMAGE_V3 = 10
-    SLOT_FIRST_IMAGE = 11
+    SLOT_FIRST_IMAGE_V4 = 11
+    SLOT_FIRST_IMAGE = 10
     
     SLOT_OFFSET_COMMON_TEXT = 0
     SLOT_OFFSET_IMAGE_NAME = 1
@@ -595,42 +623,27 @@ class LoadImages(cpmodule.CPModule):
     
     def settings(self):
         """Return the settings array in a consistent order"""
-        varlist = range(self.SLOT_FIRST_IMAGE + \
-                        self.SLOT_IMAGE_FIELD_COUNT * len(self.images))
-        varlist[self.SLOT_FILE_TYPE]              = self.file_types
-        varlist[self.SLOT_MATCH_METHOD]           = self.match_method
-        varlist[self.SLOT_ORDER_GROUP_SIZE]       = self.order_group_size
-        varlist[self.SLOT_EXCLUDE]                = self.exclude
-        varlist[self.SLOT_MATCH_EXCLUDE]          = self.match_exclude
-        varlist[self.SLOT_DESCEND_SUBDIRECTORIES] = self.descend_subdirectories
-        varlist[self.SLOT_LOCATION]               = self.location
-        varlist[self.SLOT_LOCATION_OTHER]         = self.location_other
-        varlist[self.SLOT_CHECK_IMAGES]           = self.check_images
-        varlist[self.SLOT_GROUP_BY_METADATA]      = self.group_by_metadata
-        varlist[self.SLOT_GROUP_FIELDS]           = self.metadata_fields
-        for i in range(len(self.images)):
-            ioff = i*self.SLOT_IMAGE_FIELD_COUNT + self.SLOT_FIRST_IMAGE
-            varlist[ioff+self.SLOT_OFFSET_COMMON_TEXT] = \
-                self.images[i][FD_COMMON_TEXT]
-            varlist[ioff+self.SLOT_OFFSET_IMAGE_NAME] = \
-                self.images[i][FD_IMAGE_NAME]
-            varlist[ioff+self.SLOT_OFFSET_ORDER_POSITION] = \
-                self.images[i][FD_ORDER_POSITION]
-            varlist[ioff+self.SLOT_OFFSET_METADATA_CHOICE] = \
-                self.images[i][FD_METADATA_CHOICE]
-            varlist[ioff+self.SLOT_OFFSET_FILE_METADATA] =\
-                self.images[i][FD_FILE_METADATA]
-            varlist[ioff+self.SLOT_OFFSET_PATH_METADATA] =\
-                self.images[i][FD_PATH_METADATA]
-        return varlist
+        setting_values = [
+            self.file_types, self.match_method, self.order_group_size,
+            self.match_exclude, self.descend_subdirectories, self.location,
+            self.check_images, self.group_by_metadata, self.exclude,
+            self.metadata_fields]
+        for image_group in self.images:
+            setting_values += [
+                image_group[FD_COMMON_TEXT], image_group[FD_IMAGE_NAME],
+                image_group[FD_ORDER_POSITION], image_group[FD_METADATA_CHOICE],
+                image_group[FD_FILE_METADATA], image_group[FD_PATH_METADATA]]
+        return setting_values
     
     def prepare_settings(self, setting_values):
         #
         # Figure out how many images are in the saved settings - make sure
         # the array size matches the incoming #
         #
-        assert (len(setting_values) - self.SLOT_FIRST_IMAGE) % self.SLOT_IMAGE_FIELD_COUNT == 0
-        image_count = (len(setting_values) - self.SLOT_FIRST_IMAGE) / self.SLOT_IMAGE_FIELD_COUNT
+        assert ((len(setting_values) - self.SLOT_FIRST_IMAGE) % 
+                self.SLOT_IMAGE_FIELD_COUNT == 0)
+        image_count = ((len(setting_values) - self.SLOT_FIRST_IMAGE) / 
+                       self.SLOT_IMAGE_FIELD_COUNT)
         while len(self.images) > image_count:
             self.remove_imagecb(self.image_keys[0])
         while len(self.images) < image_count:
@@ -680,21 +693,30 @@ class LoadImages(cpmodule.CPModule):
 
         def upgrade_5_to_new_1(setting_values):
             """Take the old LoadImages values and put them in the correct slots"""
-            new_values = range(self.SLOT_FIRST_IMAGE_V1)
-            new_values[self.SLOT_FILE_TYPE]              = setting_values[11]
-            new_values[self.SLOT_MATCH_METHOD]           = setting_values[0]
-            new_values[self.SLOT_ORDER_GROUP_SIZE]       = setting_values[9]
-            new_values[self.SLOT_MATCH_EXCLUDE]          = setting_values[10]
-            new_values[self.SLOT_DESCEND_SUBDIRECTORIES] = setting_values[12]
-            new_values[self.SLOT_CHECK_IMAGES]           = setting_values[16]
             loc = setting_values[13]
+            custom_path = loc
             if loc == '.':
-                new_values[self.SLOT_LOCATION]           = DEFAULT_INPUT_FOLDER_NAME
+                dir_choice = DEFAULT_INPUT_FOLDER_NAME
             elif loc == '&':
-                new_values[self.SLOT_LOCATION]           = DEFAULT_OUTPUT_FOLDER_NAME
+                dir_choice = DEFAULT_OUTPUT_FOLDER_NAME
+            elif loc.startswith('.'):
+                dir_choice = DEFAULT_INPUT_SUBFOLDER_NAME
+            elif loc.startswith('&'):
+                dir_choice = DEFAULT_OUTPUT_SUBFOLDER_NAME
+                custom_path = '.' + loc[1:]
             else:
-                new_values[self.SLOT_LOCATION]           = ABSOLUTE_FOLDER_NAME 
-            new_values[self.SLOT_LOCATION_OTHER]         = loc 
+                dir_choice = ABSOLUTE_FOLDER_NAME
+
+            new_values = [
+                setting_values[11],    # file_types
+                setting_values[0],     # match_method
+                setting_values[9],     # order_group_size
+                setting_values[10],    # match_exclude
+                setting_values[12],    # descend_subdirectories
+                dir_choice,            # was location
+                custom_path,           # was location_other
+                setting_values[16]]    # check_images
+            
             for i in range(0,4):
                 text_to_find = setting_values[i*2+1]
                 image_name = setting_values[i*2+2]
@@ -749,6 +771,25 @@ class LoadImages(cpmodule.CPModule):
             new_values += setting_values[self.SLOT_FIRST_IMAGE_V3:]
             return (new_values, 4)
 
+        def upgrade_new_4_to_5(setting_values):
+            """Combine the location and custom location values"""
+            setting_values = cps.standardize_default_folder_names(
+                setting_values, self.SLOT_LOCATION)
+            custom_location = setting_values[self.SLOT_LOCATION + 1]
+            location = setting_values[self.SLOT_LOCATION]
+            if location == ABSOLUTE_FOLDER_NAME:
+                if custom_location.startswith('.'):
+                    location = cps.DEFAULT_INPUT_SUBFOLDER_NAME
+                elif custom_location.startswith('&'):
+                    location = cps.DEFAULT_OUTPUT_SUBFOLDER_NAME
+                    custom_location = "." + custom_location[1:]
+            location = cps.DirectoryPath.static_join_string(
+                location, custom_location)
+            setting_values = (setting_values[:self.SLOT_LOCATION] +
+                              [location] + 
+                              setting_values[self.SLOT_LOCATION+2:])
+            return (setting_values, 5)
+            
         if from_matlab:
             if variable_revision_number == 1:
                 setting_values,variable_revision_number = upgrade_1_to_2(setting_values)
@@ -769,9 +810,12 @@ class LoadImages(cpmodule.CPModule):
             setting_values, variable_revision_number = upgrade_new_2_to_3(setting_values)
         if variable_revision_number == 3:
             setting_values, variable_revision_number = upgrade_new_3_to_4(setting_values)
+        if variable_revision_number == 4:
+            setting_values, variable_revision_number = upgrade_new_4_to_5(setting_values)
 
         # Standardize input/output directory name references
-        setting_values = standardize_default_folder_names(setting_values,self.SLOT_LOCATION)
+        setting_values[self.SLOT_LOCATION] = \
+            cps.DirectoryPath.upgrade_setting(setting_values[self.SLOT_LOCATION])
 
         assert variable_revision_number == self.variable_revision_number, "Cannot read version %d of %s"%(variable_revision_number, self.module_name)
 
@@ -1257,7 +1301,7 @@ class LoadImages(cpmodule.CPModule):
         for i in range(image_set_list.count()):
             image_set = image_set_list.get_image_set(i)
             self.modify_image_set_info(image_set, fn_alter_path)
-        self.location_other.value = fn_alter_path(self.location_other.value)
+        self.location.alter_for_create_batch_files(fn_alter_path)
         return True
     
     def prepare_group(self, pipeline, image_set_list, grouping,
@@ -1496,12 +1540,7 @@ class LoadImages(cpmodule.CPModule):
     def image_directory(self):
         """Return the image directory
         """
-        if self.location == DEFAULT_INPUT_FOLDER_NAME:
-            return preferences.get_default_image_directory()
-        elif self.location == DEFAULT_OUTPUT_FOLDER_NAME:
-            return preferences.get_default_output_directory()
-        else:
-            return preferences.get_absolute_path(self.location_other.value)
+        return self.location.get_absolute_path()
     
     def image_name_vars(self):
         """Return the list of values in the image name field (the name that later modules see)

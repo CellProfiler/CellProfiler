@@ -331,35 +331,37 @@ class SaveImages(cpm.CPModule):
     def visible_settings(self):
         """Return only the settings that should be shown"""
         result = [self.save_image_or_figure]
-        if self.save_image_or_figure in (IF_IMAGE,IF_MASK, IF_CROPPING, IF_FIGURE):
-            if self.save_image_or_figure in (IF_IMAGE, IF_MASK, IF_CROPPING):
-                result.append(self.image_name)
-            else:
-                result.append(self.figure_name)
-            result.append(self.file_name_method)
-            if (self.file_name_method not in 
-                (FN_FROM_IMAGE, FN_IMAGE_FILENAME_WITH_METADATA) and
-                self.pathname_choice == PC_WITH_IMAGE):
-                # Need just the file image name here to associate
-                # the file-name image path
-                result.append(self.file_image_name)
-            if self.file_name_method == FN_FROM_IMAGE:
-                result.append(self.file_image_name)
-                result.append(self.file_name_suffix)
-            elif self.file_name_method == FN_IMAGE_FILENAME_WITH_METADATA:
-                self.single_file_name.text = METADATA_NAME_TEXT
-                result += [self.file_image_name, self.single_file_name]
-            elif self.file_name_method == FN_SEQUENTIAL:
-                self.single_file_name.text = SEQUENTIAL_NUMBER_TEXT
-                result.append(self.single_file_name)
-            elif self.file_name_method == FN_SINGLE_NAME:
-                self.single_file_name.text = SINGLE_NAME_TEXT
-                result.append(self.single_file_name)
-            elif self.file_name_method == FN_WITH_METADATA:
-                self.single_file_name.text = METADATA_NAME_TEXT
-                result.append(self.single_file_name)
-            else:
-                raise NotImplementedError("Unhandled file name method: %s"%(self.file_name_method))
+        if self.save_image_or_figure == IF_FIGURE:
+            result.append(self.figure_name)
+        else:
+            result.append(self.image_name)
+
+        result.append(self.file_name_method)
+        if (self.file_name_method not in 
+            (FN_FROM_IMAGE, FN_IMAGE_FILENAME_WITH_METADATA) and
+            self.save_image_or_figure != IF_MOVIE and
+            self.pathname_choice == PC_WITH_IMAGE):
+            # Need just the file image name here to associate
+            # the file-name image path
+            result.append(self.file_image_name)
+        if self.file_name_method == FN_FROM_IMAGE:
+            result.append(self.file_image_name)
+            result.append(self.file_name_suffix)
+        elif self.file_name_method == FN_IMAGE_FILENAME_WITH_METADATA:
+            self.single_file_name.text = METADATA_NAME_TEXT
+            result += [self.file_image_name, self.single_file_name]
+        elif self.file_name_method == FN_SEQUENTIAL:
+            self.single_file_name.text = SEQUENTIAL_NUMBER_TEXT
+            result.append(self.single_file_name)
+        elif self.file_name_method == FN_SINGLE_NAME:
+            self.single_file_name.text = SINGLE_NAME_TEXT
+            result.append(self.single_file_name)
+        elif self.file_name_method == FN_WITH_METADATA:
+            self.single_file_name.text = METADATA_NAME_TEXT
+            result.append(self.single_file_name)
+        else:
+            raise NotImplementedError("Unhandled file name method: %s"%(self.file_name_method))
+        if self.save_image_or_figure != IF_MOVIE:
             result.append(self.file_format)
             result.append(self.pathname_choice)
             if self.pathname_choice.value in (PC_CUSTOM, PC_WITH_METADATA):
@@ -378,15 +380,10 @@ class SaveImages(cpm.CPModule):
                 result.append(self.update_file_names)
                 result.append(self.create_subdirectories)
         else:
-            result.append(self.image_name)
-            result.append(self.file_name_method)
-            result.append(self.single_file_name)
-            result.append(self.file_image_name)
             result.append(self.movie_pathname_choice)
             if self.movie_pathname_choice == PC_CUSTOM:
                 result.append(self.pathname)
             result.append(self.overwrite)
-#            result.append(self.when_to_save_movie)
             result.append(self.rescale)
             result.append(self.colormap)
         return result
@@ -474,6 +471,17 @@ class SaveImages(cpm.CPModule):
     
     def run_movie(self, workspace):
         d = self.get_dictionary(workspace.image_set_list)
+        out_file = self.get_filename(workspace)
+        if d["CURRENT_FRAME"] == 0 and os.path.exists(out_file):
+            if not self.check_overwrite(out_file):
+                d["CURRENT_FRAME"] = "Ignore"
+                return
+            else:
+                # Have to delete the old movie before making the new one
+                os.remove(out_file)
+        elif d["CURRENT_FRAME"] == "Ignore":
+            return
+            
         env = jutil.attach()
         try:
             image = workspace.image_set.get_image(self.image_name.value)
@@ -505,11 +513,8 @@ class SaveImages(cpm.CPModule):
             ImageWriter = make_image_writer_class()
             writer = ImageWriter()    
             writer.setMetadataRetrieve(meta)
-            out_file = self.get_filename(workspace)
             writer.setId(out_file)
-            d['IMAGEJ_WRITER'] = writer
-    
-            writer = d['IMAGEJ_WRITER']
+
             is_last_image = (d['CURRENT_FRAME'] == d['N_FRAMES']-1)
             if is_last_image:
                 print "Writing last image of %s" %out_file
@@ -581,15 +586,8 @@ class SaveImages(cpm.CPModule):
             mode = 'L'
         filename = self.get_filename(workspace)
 
-        if not self.overwrite.value and os.path.isfile(filename):
-            if cpp.get_headless():
-                raise 'SaveImages: trying to overwrite %s in headless mode, but Overwrite files is set to "No"'%(filename)
-            else:
-                import wx
-                over = wx.MessageBox("Do you want to overwrite %s?"%(filename),
-                                     "Warning: overwriting file", wx.YES_NO)
-                if over == wx.NO:
-                    return
+        if not self.check_overwrite(filename):
+            return
         if self.get_file_format() == FF_MAT:
             scipy.io.matlab.mio.savemat(filename,{"Image":pixels},format='5')
         else:
@@ -598,6 +596,23 @@ class SaveImages(cpm.CPModule):
         workspace.display_data.wrote_image = True
         if self.when_to_save != WS_LAST_CYCLE:
             self.save_filename_measurements(workspace)
+        
+    def check_overwrite(self, filename):
+        '''Check to see if it's legal to overwrite a file
+        
+        Throws an exception if can't overwrite and no GUI.
+        Returns False if can't overwrite otherwise
+        '''
+        if not self.overwrite.value and os.path.isfile(filename):
+            if cpp.get_headless():
+                raise 'SaveImages: trying to overwrite %s in headless mode, but Overwrite files is set to "No"'%(filename)
+            else:
+                import wx
+                over = wx.MessageBox("Do you want to overwrite %s?"%(filename),
+                                     "Warning: overwriting file", wx.YES_NO)
+                if over == wx.NO:
+                    return False
+        return True
         
     def save_filename_measurements(self, workspace):
         if self.update_file_names.value:

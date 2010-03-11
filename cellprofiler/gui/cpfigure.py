@@ -127,7 +127,7 @@ MENU_FILE_SAVE = wx.NewId()
 MENU_CLOSE_WINDOW = wx.NewId()
 MENU_ZOOM_IN = wx.NewId()
 MENU_ZOOM_OUT = wx.NewId()
-MENU_TOOLS_SHOW_PIXEL_DATA = wx.NewId()
+MENU_TOOLS_MEASURE_LENGTH = wx.NewId()
 
 '''mouse tool mode - do nothing'''
 MODE_NONE = 0
@@ -136,7 +136,7 @@ MODE_NONE = 0
 MODE_ZOOM = 1
 
 '''mouse tool mode - show pixel data'''
-MODE_SHOW_PIXEL_DATA = 2
+MODE_MEASURE_LENGTH = 2
 
 class CPFigureFrame(wx.Frame):
     """A wx.Frame with a figure inside"""
@@ -236,11 +236,11 @@ class CPFigureFrame(wx.Frame):
         self.MenuBar.Append(self.__menu_zoom, "&Zoom")
         
         self.__menu_tools = wx.Menu()
-        self.__menu_item_show_pixel_data = \
-            self.__menu_tools.AppendCheckItem(MENU_TOOLS_SHOW_PIXEL_DATA,
-                                              "Show &pixel data")
+        self.__menu_item_measure_length = \
+            self.__menu_tools.AppendCheckItem(MENU_TOOLS_MEASURE_LENGTH,
+                                              "Measure &length")
         self.MenuBar.Append(self.__menu_tools, "&Tools")
-        wx.EVT_MENU(self, MENU_TOOLS_SHOW_PIXEL_DATA, self.on_show_pixel_data)
+        wx.EVT_MENU(self, MENU_TOOLS_MEASURE_LENGTH, self.on_measure_length)
         accelerators = wx.AcceleratorTable(
             [(wx.ACCEL_CMD, ord('W'), MENU_CLOSE_WINDOW)])
         self.SetAcceleratorTable(accelerators)
@@ -273,7 +273,7 @@ class CPFigureFrame(wx.Frame):
     def on_zoom_in(self,event):
         if self.__menu_item_zoom_in.IsChecked():
             self.mouse_mode = MODE_ZOOM
-            self.__menu_item_show_pixel_data.Check(False)
+            self.__menu_item_measure_length.Check(False)
         elif self.mouse_mode == MODE_ZOOM:
             self.mouse_mode = MODE_NONE
 
@@ -287,12 +287,13 @@ class CPFigureFrame(wx.Frame):
         self.__menu_item_zoom_out.Enable(len(self.zoom_stack) > 0)
         self.Refresh()
     
-    def on_show_pixel_data(self, event):
-        if self.__menu_item_show_pixel_data.IsChecked():
-            self.mouse_mode = MODE_SHOW_PIXEL_DATA
+    def on_measure_length(self, event):
+        '''Measure length menu item selected.'''
+        if self.__menu_item_measure_length.IsChecked():
+            self.mouse_mode = MODE_MEASURE_LENGTH
             self.__menu_item_zoom_in.Check(False)
             self.Layout()
-        elif self.mouse_mode == MODE_SHOW_PIXEL_DATA:
+        elif self.mouse_mode == MODE_MEASURE_LENGTH:
             self.mouse_mode = MODE_NONE
             
     def on_button_press(self, event):
@@ -302,8 +303,8 @@ class CPFigureFrame(wx.Frame):
             self.mouse_down = (event.xdata,event.ydata)
             if self.mouse_mode == MODE_ZOOM:
                 self.on_zoom_mouse_down(event)
-            elif self.mouse_mode == MODE_SHOW_PIXEL_DATA:
-                self.on_show_pixel_data_mouse_down(event)
+            elif self.mouse_mode == MODE_MEASURE_LENGTH:
+                self.on_measure_length_mouse_down(event)
     
     def on_zoom_mouse_down(self, event):
         for x in range(self.subplots.shape[0]):
@@ -321,9 +322,9 @@ class CPFigureFrame(wx.Frame):
         self.figure.canvas.draw()
         self.Refresh()
     
-    def on_show_pixel_data_mouse_down(self, event):
+    def on_measure_length_mouse_down(self, event):
         pass
-    
+
     def on_mouse_move(self, event):
         if self.mouse_down is None:
             x0 = event.xdata
@@ -337,30 +338,28 @@ class CPFigureFrame(wx.Frame):
             y1 = max(self.mouse_down[1], event.ydata)
         if self.mouse_mode == MODE_ZOOM:
             self.on_mouse_move_zoom(event, x0, y0, x1, y1)
-        elif self.mouse_mode == MODE_SHOW_PIXEL_DATA:
+        elif self.mouse_mode == MODE_MEASURE_LENGTH:
+            self.on_mouse_move_measure_length(event, x0, y0, x1, y1)
+        elif not self.mouse_mode == MODE_MEASURE_LENGTH:
             self.on_mouse_move_show_pixel_data(event, x0, y0, x1, y1)
     
-    def on_mouse_move_zoom(self, event, x0, y0, x1, y1):
-        if event.inaxes in self.subplots.flatten() and self.mouse_down:
-            for zoom_rect in self.zoom_rects.flatten():
-                if zoom_rect:
-                    zoom_rect.set_x(x0)
-                    zoom_rect.set_y(y0)
-                    zoom_rect.set_width(x1-x0)
-                    zoom_rect.set_height(y1-y0)
-            self.figure.canvas.draw()
-            self.Refresh()
-    
-
-    def find_image_for_axes(self, axes):
-        for i, sl in enumerate(self.subplots):
-            for j, slax in enumerate(sl):
-                if axes == slax:
-                    return self.images.get((i, j), None)
-        return None
-
-
-    def on_mouse_move_show_pixel_data(self, event, x0, y0, x1, y1):
+    def get_pixel_data_fields_for_status_bar(self, im, xi, yi):
+        fields = []
+        if im is None:
+            return
+        if im.dtype.type == np.uint8:
+            im = im.astype(float) / 255.0
+        if im.ndim == 2:
+            fields += ["Intensity: %.4f"%(im[yi,xi])]
+        elif im.ndim == 3 and im.shape[2] == 3:
+            fields += ["Red: %.4f"%(im[yi,xi,0]),
+                       "Green: %.4f"%(im[yi,xi,1]),
+                       "Blue: %.4f"%(im[yi,xi,2])]
+        elif im.ndim == 3: 
+            fields += ["Channel %d: %.4f"%(idx + 1, im[yi, xi, idx]) for idx in im.shape[2]]
+        return fields
+                
+    def on_mouse_move_measure_length(self, event, x0, y0, x1, y1):
         if event.xdata is None or event.ydata is None:
             return
         xi = int(event.xdata+.5)
@@ -368,20 +367,14 @@ class CPFigureFrame(wx.Frame):
         fields = ["X: %d"%xi, "Y: %d"%yi]
         if event.inaxes:
             im = self.find_image_for_axes(event.inaxes)
-            if im is None:
-                return
-            if im.dtype.type == np.uint8:
-                im = im.astype(float) / 255.0
-            if im.ndim == 2:
-                fields += ["Intensity: %.4f"%(im[yi,xi])]
-            elif im.ndim == 3 and im.shape[2] == 3:
-                fields += ["Red: %.4f"%(im[yi,xi,0]),
-                           "Green: %.4f"%(im[yi,xi,1]),
-                           "Blue: %.4f"%(im[yi,xi,2])]
-            elif im.ndim == 3: 
-                fields += ["Channel %d: %.4f"%(idx + 1, im[yi, xi, idx]) for idx in im.shape[2]]
-                           
+            fields += self.get_pixel_data_fields_for_status_bar(im, x1, yi)
+                
         if self.mouse_down is not None:
+            x0 = min(self.mouse_down[0], event.xdata)
+            x1 = max(self.mouse_down[0], event.xdata)
+            y0 = min(self.mouse_down[1], event.ydata)
+            y1 = max(self.mouse_down[1], event.ydata)
+            
             length = np.sqrt((x0-x1)**2 +(y0-y1)**2)
             fields.append("Length: %.1f"%length)
             xinterval = event.inaxes.xaxis.get_view_interval()
@@ -411,6 +404,36 @@ class CPFigureFrame(wx.Frame):
             self.Refresh()
         self.status_bar.SetFields(fields)
     
+    def on_mouse_move_zoom(self, event, x0, y0, x1, y1):
+        if event.inaxes in self.subplots.flatten() and self.mouse_down:
+            for zoom_rect in self.zoom_rects.flatten():
+                if zoom_rect:
+                    zoom_rect.set_x(x0)
+                    zoom_rect.set_y(y0)
+                    zoom_rect.set_width(x1-x0)
+                    zoom_rect.set_height(y1-y0)
+            self.figure.canvas.draw()
+            self.Refresh()
+    
+    def on_mouse_move_show_pixel_data(self, event, x0, y0, x1, y1):
+        if event.xdata is None or event.ydata is None:
+            return
+        xi = int(event.xdata+.5)
+        yi = int(event.ydata+.5)
+        fields = ["X: %d"%xi, "Y: %d"%yi]
+        if event.inaxes:
+            im = self.find_image_for_axes(event.inaxes)
+            fields += self.get_pixel_data_fields_for_status_bar(im, xi, yi)
+        self.status_bar.SetFields(fields)
+        
+    def find_image_for_axes(self, axes):
+        for i, sl in enumerate(self.subplots):
+            for j, slax in enumerate(sl):
+                if axes == slax:
+                    return self.images.get((i, j), None)
+        return None
+
+
     def on_button_release(self,event):
         if not hasattr(self, "subplots"):
             return
@@ -421,13 +444,13 @@ class CPFigureFrame(wx.Frame):
             y1 = max(self.mouse_down[1], event.ydata)
             if self.mouse_mode == MODE_ZOOM:
                 self.on_zoom_done( event, x0, y0, x1, y1)
-            elif self.mouse_mode == MODE_SHOW_PIXEL_DATA:
-                self.on_show_pixel_data_done(event, x0, y0, x1, y1)
+            elif self.mouse_mode == MODE_MEASURE_LENGTH:
+                self.on_measure_length_done(event, x0, y0, x1, y1)
         elif self.mouse_down:
             if self.mouse_mode == MODE_ZOOM:
                 self.on_zoom_canceled(event)
-            elif self.mouse_mode == MODE_SHOW_PIXEL_DATA:
-                self.on_show_pixel_data_canceled(event)
+            elif self.mouse_mode == MODE_MEASURE_LENGTH:
+                self.on_measure_length_canceled(event)
         self.mouse_down = None
     
     def on_zoom_done(self, event, x0, y0, x1, y1):
@@ -464,10 +487,10 @@ class CPFigureFrame(wx.Frame):
         self.figure.canvas.draw()
         self.Refresh()
     
-    def on_show_pixel_data_done(self, event, x0, y0, x1, y1):
-        self.on_show_pixel_data_canceled(event)
+    def on_measure_length_done(self, event, x0, y0, x1, y1):
+        self.on_measure_length_canceled(event)
     
-    def on_show_pixel_data_canceled(self, event):
+    def on_measure_length_canceled(self, event):
         if self.length_arrow is not None:
             self.length_arrow.remove()
             self.length_arrow = None

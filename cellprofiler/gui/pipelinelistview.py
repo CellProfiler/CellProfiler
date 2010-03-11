@@ -22,7 +22,7 @@ import sys
 
 import cellprofiler.pipeline as cpp
 import cellprofiler.gui.movieslider as cpgmov
-from cellprofiler.gui.cpfigure import window_name
+from cellprofiler.gui.cpfigure import window_name, find_fig
 from cellprofiler.icons import IMG_OK, IMG_ERROR, IMG_EYE, IMG_CLOSED_EYE, IMG_PAUSE, IMG_GO
 
 NO_PIPELINE_LOADED = 'No pipeline loaded'
@@ -140,6 +140,7 @@ class PipelineListView(object):
         self.list_ctrl.Bind(wx.EVT_LIST_ITEM_SELECTED, self.__on_item_selected, self.list_ctrl)
         self.list_ctrl.Bind(wx.EVT_LIST_ITEM_DESELECTED, self.__on_item_deselected, self.list_ctrl)
         self.list_ctrl.Bind(wx.EVT_LEFT_DOWN, self.__on_list_left_down, self.list_ctrl)
+        self.list_ctrl.Bind(wx.EVT_LEFT_DCLICK, self.__on_list_dclick, self.list_ctrl)
         self.list_ctrl.Bind(wx.EVT_RIGHT_DOWN, self.__on_list_right_down, self.list_ctrl)
         #
         # Accelerators
@@ -233,6 +234,31 @@ class PipelineListView(object):
         return [self.__pipeline.modules()[i]
                 for i in range(self.list_ctrl.ItemCount) 
                 if self.list_ctrl.IsSelected(i)]
+        
+    def __on_list_dclick(self, event):
+        if sys.platform.startswith("win"):
+            item, hit_code, subitem = self.list_ctrl.HitTestSubItem(event.Position)
+        else:
+            # Mac's HitTestSubItem does not work. Sorry.
+            #
+            item, hit_code = self.list_ctrl.HitTest(event.Position)
+            widths = [self.list_ctrl.GetColumnWidth(i) for i in range(4)]
+            start = 0
+            for subitem in range(4):
+                if event.Position[0] < start + widths[subitem]:
+                    break
+                start += widths[subitem]
+        
+        if (item >= 0 and item < self.list_ctrl.ItemCount and
+            (hit_code & wx.LIST_HITTEST_ONITEM) and 
+            subitem == MODULE_NAME_COLUMN):
+            module = self.__pipeline.modules()[item]
+            name = window_name(module)
+            figure = self.__panel.TopLevelParent.FindWindowByName(name)
+            if figure is not None:
+                figure.Show(0)
+                figure.Show(1)
+                figure.SetFocus()
     
     def __on_list_left_down(self, event):
         if sys.platform.startswith("win"):

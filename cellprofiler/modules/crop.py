@@ -348,7 +348,7 @@ class Crop(cpm.CPModule):
         # Display the image
         #
         if workspace.frame != None:
-            window_name = "CellProfiler(%s:%d)"%(self.module_name,self.module_num)
+            window_name = "CellProfiler:%s:%d"%(self.module_name,self.module_num)
             my_frame=workspace.create_or_find_figure(
                         title="Crop image #%d"%(self.module_num), 
                         window_name=window_name, subplots=(2,1))

@@ -75,9 +75,10 @@ image-specific row specifies the file, "2009-07-08/04923_d1.tif" for the FITC
 image (2009-07-08 is the name of the subfolder that contains the image, 
 relative to the Default Input Folder). The plate metadata is "P-12345" and 
 the NaCl titration used in the well is 750 uM. The second image-specific row 
-has the values "2009-07-09/51265_d1.tif", "P-12345'\" and 2750 uM. The NaCl 
+has the values "2009-07-09/51265_d1.tif", "P-12345" and 2750 uM. The NaCl 
 titration for the image is available for modules that use numeric metadata, 
-such as <b>CalculateStatistics</b>.
+such as <b>CalculateStatistics</b>; "Titration" will be the category and "NaCl_uM"
+will be the measurement.
 
 <h2>Using metadata in LoadData</h2>
 

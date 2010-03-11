@@ -86,11 +86,20 @@ Each subsequent line represents data for one image cycle, so your file should ha
 the header line plus one line per image to be processed. You can also make a
 file for <b>LoadData</b> to load that contains the positive/negative control and 
 dose designations <i>plus</i> the image file names to be processed, which is a good way 
-to guarantee that images are matched
-with the correct data. Here is an example file:<br><br>
+to guarantee that images are matched with the correct data. The control and dose
+information can be designated in one of two ways:
+<ul>
+<li>As metadata (so that the column header is prefixed with
+the "Metadata_" tag). "Metadata" is the category and the name after the underscore
+is the measurement.</li>
+<li>As some other type of data, in which case the header needs
+to be of the form <i>&lt;prefix&gt;_&lt;measurement&gt;</i>. Select <i>&lt;prefix&gt;</i> as 
+the category and <i>&lt;measurement&gt;</i> as the measurement.</li>
+</ul>
+Here is an example file:<br><br>
 <code>
 <tt><table>
-<tr><td>Image_FileName_CY3,</td><td>Image_PathName_CY3,</td><td>Control,</td><td>Dose</td></tr>
+<tr><td>Image_FileName_CY3,</td><td>Image_PathName_CY3,</td><td>Data_Control,</td><td>Data_Dose</td></tr>
 <tr><td>"Plate1_A01.tif",</td><td>"/images",</td><td>-1,</td><td>0</td></tr>
 <tr><td>"Plate1_A02.tif",</td><td>"/images",</td><td>1,</td><td>1E10</td></tr>
 <tr><td>"Plate1_A03.tif",</td><td>"/images",</td><td>0,</td><td>3E4</td></tr>

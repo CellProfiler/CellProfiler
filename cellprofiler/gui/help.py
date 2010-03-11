@@ -33,8 +33,14 @@ import wx
 import htmldialog
 import sys
 
-path = os.path.split(os.path.abspath(sys.argv[0]))[0]
-path = os.path.join(path, 'cellprofiler','icons')
+#For some reason, Adobe doesn't like using absolute paths to assemble the PDF.
+#Also, Firefox doesn't like displaying the HTML image links using abs paths either.
+#So I have use relative ones. Should check this to see if works on the 
+#compiled version
+#path = os.path.split(os.path.abspath(sys.argv[0]))[0]
+#path = os.path.join(path, 'cellprofiler','icons')
+path = ".."
+path = os.path.join(path, 'icons')
 
 LOCATION_REFRESH_BUTTON = os.path.join(path,'folder_refresh.png')
 LOCATION_BROWSE_BUTTON = os.path.join(path,'folder_browse.png')
@@ -50,7 +56,7 @@ LOCATION_TESTMODE_PAUSE_ICON = os.path.join(path,'IMG_PAUSE.png')
 LOCATION_TESTMODE_GO_ICON = os.path.join(path,'IMG_GO.png')
 
 LOCATION_DISPLAYMODE_SHOW_ICON = os.path.join(path,'IMG_EYE.png')
-LOCATION_DISPLAYMODE_HIDE_ICON = os.path.join(path,'IMG_CLOSED.png')
+LOCATION_DISPLAYMODE_HIDE_ICON = os.path.join(path,'IMG_CLOSED_EYE.png')
 
 LOCATION_SETTINGS_OK_ICON = os.path.join(path,'IMG_OK.png')
 LOCATION_SETTINGS_ERROR_ICON = os.path.join(path,'IMG_ERROR.png')
@@ -595,9 +601,9 @@ with the exception of any you specify. Please see the
 Each module is associated with a display window that takes time to render and/or
 update. Closing these windows improves speed somewhat. 
 To the left of each module listed in your pipeline an icon 
-<img src="%(LOCATION_DISPLAYMODE_SHOW_ICON)s"</img> indicates whether
+<img src="%(LOCATION_DISPLAYMODE_SHOW_ICON)s"></img> indicates whether
 the module window will be displayed during the analysis run. You can turn off individual module windows by
-clicking on the icon; this icon <img src="%(LOCATION_DISPLAYMODE_HIDE_ICON)s"</img> indicates that the window 
+clicking on the icon; this icon <img src="%(LOCATION_DISPLAYMODE_HIDE_ICON)s"></img> indicates that the window 
 will not be shown. Select <i>Window > Hide all windows</i> to prevent display
 of all module windows.</p></li>           
                                                                             
@@ -867,44 +873,32 @@ def output_gui_html():
             os.mkdir(webpage_path)
         except IOError:
             webpage_path = root
-    index_fd = open(os.path.join(webpage_path,'gui_index.html'),'w')
-        
-    index_fd.write("""
-<html style="font-family:arial">
-<head>
-    <title>User guide</title>
-</head>
-<body>
-<h1><a name = "user_guide">User guide</a></h1>""")
-    def write_menu(prefix, h):
-        index_fd.write("<ul>\n")
+    
+    help_text = """
+<h2><a name = "user_guide">User guide</a></h2>"""
+    
+    def write_menu(prefix, h,help_text):
+        help_text += "<ul>\n"
         for key, value in h:
-            index_fd.write("<li>")
+            help_text += "<li>"
             if hasattr(value, "__iter__") and not isinstance(value, (str, unicode)):
-                index_fd.write("<b>%s</b>"%key)
-                write_menu(prefix+"_"+key, value)
+                help_text += "<b>%s</b>"%key
+                help_text = write_menu(prefix+"_"+key, value, help_text)
             else:
                 file_name = "%s_%s.html" % (prefix, key)
-                fd = open(os.path.join(gui_path, file_name),"w")
+                fd = open(os.path.join(webpage_path, file_name),"w")
                 fd.write("<html style=""font-family:arial""><head><title>%s</title></head>\n" % key)
                 fd.write("<body><h1>%s</h1>\n<div>\n" % key)
                 fd.write(value)
                 fd.write("</div></body>\n")
                 fd.close()
-                index_fd.write("<a href='%s'>%s</a>\n" % 
-                               (os.path.join(gui_dir,file_name), key) )
-            index_fd.write("</li>\n")
-        index_fd.write("</ul>\n")
+                help_text += "<a href='%s'>%s</a>\n" % (file_name, key)
+            help_text += "</li>\n"
+        help_text += "</ul>\n"
+        return help_text
         
-    gui_dir = 'gui'
-    gui_path = os.path.join(webpage_path,gui_dir)
-    if not (os.path.exists(gui_path) and os.path.isdir(gui_path)):
-        try:
-            os.mkdir(gui_path)
-        except IOError:
-            raise ValueError("Could not create directory %s" % gui_path)
-        
-    write_menu("help", HELP)
-    index_fd.write("</body>\n")
-    index_fd.close()
+    help_text = write_menu("Help", HELP, help_text)
+    help_text += "\n"
+    
+    return help_text
     

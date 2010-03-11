@@ -361,19 +361,12 @@ def output_module_html():
             os.mkdir(webpage_path)
         except IOError:
             webpage_path = root
-    index_fd = open(os.path.join(webpage_path,'module_index.html'),'w')
-        
-    index_fd.write("""
-<html style="font-family:arial">
-<head>
-    <title>Modules</title>
-</head>
-<body>
-<h1><a name = "modules">Modules</a></h1>
-<ul>\n""")
+            
+    help_text = """
+<h2><a name = "modules">Modules</a></h2>
+<ul>\n"""
     d = {}
-    module_dir = 'modules'
-    module_path = os.path.join(webpage_path,module_dir)
+    module_path = webpage_path
     if not (os.path.exists(module_path) and os.path.isdir(module_path)):
         try:
             os.mkdir(module_path)
@@ -390,11 +383,10 @@ def output_module_html():
         fd.close()
     for category in sorted(d.keys()):
         sub_d = d[category]
-        index_fd.write("<li><b>%s</b><br><ul>\n"%category)
+        help_text += "<li><b>%s</b><br><ul>\n"%category
         for module_name in sorted(sub_d.keys()):
-            index_fd.write("<li><a href='%s.html'>%s</a></li>\n" %
-                           (os.path.join(module_dir,module_name), module_name))
-        index_fd.write("</ul></li>\n")
-    index_fd.write("</ul></body>\n")
-    index_fd.close()
+            help_text += "<li><a href='%s.html'>%s</a></li>\n" % (module_name, module_name)
+        help_text += "</ul></li>\n"
+    help_text += "</ul>\n"
+    return help_text
         

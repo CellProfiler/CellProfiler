@@ -52,6 +52,7 @@ import stat
 import tempfile
 import traceback
 import urllib
+import urlparse
 
 try:
     import bioformats.formatreader as formatreader
@@ -1586,11 +1587,11 @@ def is_image(filename):
     ext = os.path.splitext(filename)[1].lower()
     if PILImage.EXTENSION.has_key(ext):
         return True
-    return ext in ('.avi', '.mpeg', '.mat', '.stk','.flex')
+    return ext in ('.avi', '.mpeg', '.mat', '.stk','.flex', '.mov')
 
 def is_movie(filename):
     ext = os.path.splitext(filename)[1].lower()
-    return ext in ('.avi', '.mpeg', '.stk','.flex')
+    return ext in ('.avi', '.mpeg', '.stk','.flex', '.mov')
 
 
 class LoadImagesImageProviderBase(cpimage.AbstractImageProvider):
@@ -1627,9 +1628,17 @@ class LoadImagesImageProviderBase(cpimage.AbstractImageProvider):
         # Check to see if the pathname can be accessed as a directory
         # If so, handle normally
         #
-        if len(self.get_pathname()) == 0 or os.path.exists(self.get_pathname()):
+        path = self.get_pathname()
+        if len(path) == 0 or os.path.exists(path):
             return
-        url = '/'.join((self.get_pathname(), self.get_filename()))
+        parsed_path = urlparse.urlparse(path)
+        #
+        # Scheme length == 0 means no scheme
+        # Scheme length == 1 - probably DOS drive letter
+        #
+        if len(parsed_path.scheme) < 2:
+            raise IOError("Test for access to directory failed. Directory: %s" %path)
+        url = '/'.join((path, self.get_filename()))
         self.__cached_file, headers = urllib.urlretrieve(url)
         self.__is_cached = True
             

@@ -132,7 +132,23 @@ MeasureObjectSizeShape:[module_num:1|svn_version:\'1\'|variable_revision_number:
         ff = measurements.get_current_measurement('OtherObjects',
                                                   'AreaShape_FormFactor')
         self.assertEqual(len(ff),1)
-        self.assertAlmostEqual(np.sqrt(ff[0]),1,1)
+        perim = measurements.get_current_measurement('OtherObjects',
+                                                     'AreaShape_Perimeter')
+        area = measurements.get_current_measurement('OtherObjects',
+                                                    'AreaShape_Area')
+        # The perimeter is obtained geometrically and is overestimated.
+        expected = 100 * np.pi
+        diff = abs((perim[0] - expected)/(perim[0] + expected))
+        self.assertTrue(diff < .05, "perimeter off by %f" % diff)
+        wrongness = (perim[0] / expected)**2
+        
+        # It's an approximate circle...
+        expected = np.pi * 50.0 **2
+        diff = abs((area[0] - expected) / (area[0] + expected))
+        self.assertTrue(diff < .05, "area off by %f" %diff)
+        wrongness *= expected / area[0]
+        
+        self.assertAlmostEqual(ff[0] * wrongness, 1.0)
         for object_name, object_count in (('SomeObjects',2),
                                           ('OtherObjects',1)):
             for measurement in module.get_measurements(pipeline,object_name,

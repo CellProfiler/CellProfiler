@@ -15,6 +15,7 @@ __version__="$Revision$"
 import matplotlib.cm
 import numpy as np
 import os
+import sys
 import re
 import uuid
 from cellprofiler.preferences import \
@@ -306,19 +307,26 @@ class DirectoryPath(Text):
         custom_path = self.custom_path
         img_dir = get_default_image_directory()
         out_dir = get_default_output_directory()
+        if sys.platform.startswith("win"):
+            # set to lower-case for comparisons
+            cmp_path = path.lower()
+            img_dir = img_dir.lower()
+            out_dir = out_dir.lower()
+        else:
+            cmp_path = path
         seps = [os.path.sep]
         if hasattr(os, 'altsep'):
             seps += [os.altsep]
-        if path == img_dir:
+        if cmp_path == img_dir:
             dir_choice = DEFAULT_INPUT_FOLDER_NAME
-        elif path == out_dir:
+        elif cmp_path == out_dir:
             dir_choice = DEFAULT_OUTPUT_FOLDER_NAME
-        elif (path.startswith(img_dir) and 
-              path[len(img_dir)] in seps):
+        elif (cmp_path.startswith(img_dir) and 
+              cmp_path[len(img_dir)] in seps):
             dir_choice = DEFAULT_INPUT_SUBFOLDER_NAME
             custom_path = path[len(img_dir)+1]
-        elif (path.startswith(out_dir) and 
-              path[len(out_dir)] in seps):
+        elif (cmp_path.startswith(out_dir) and 
+              cmp_path[len(out_dir)] in seps):
             dir_choice = DEFAULT_OUTPUT_SUBFOLDER_NAME
             custom_path = path[len(out_dir)+1]
         else:

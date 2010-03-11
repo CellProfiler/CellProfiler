@@ -465,6 +465,7 @@ def update_cpfigure_position():
         __cpfigure_position[1] + wx.DefaultSize[1] > disp[1]):
         __cpfigure_position = (0, 0)
     else:
-        __cpfigure_position = (__cpfigure_position[0] + 24,
+        # These offsets could be set in the preferences UI
+        __cpfigure_position = (__cpfigure_position[0] + 120,
                                __cpfigure_position[1] + 24)
     

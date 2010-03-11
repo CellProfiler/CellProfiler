@@ -492,14 +492,14 @@ class CPModule(object):
         returns a tuple of key_names and group_list:
         key_names - the names of the keys that identify the groupings
         group_list - a sequence composed of two-tuples.
-                     the first element of the tuple has the values for
-                     the key_names for this group.
+                     the first element of the tuple is a dictionary giving
+                     the metadata values for the metadata keys
                      the second element of the tuple is a sequence of
                      image numbers comprising the image sets of the group
         For instance, an experiment might have key_names of 'Metadata_Row'
         and 'Metadata_Column' and a group_list of:
-        [ (('A','01'), [0,96,192]),
-          (('A','02'), [1,97,193]),... ]
+        [ ({'Metadata_Row':'A','Metadata_Column':'01'}, [1,97,193]),
+          ({'Metadata_Row':'A','Metadata_Column':'02'), [2,98,194]),... ]
         
         Returns None to indicate that the module does not contribute any
         groupings.

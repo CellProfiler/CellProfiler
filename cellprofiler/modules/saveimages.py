@@ -403,11 +403,12 @@ class SaveImages(cpm.CPModule):
         image_set_list.legacy_fields[self.module_key] = {}
         return True
 
-    def prepare_group(self, pipeline, image_set_list, *args):
+    def prepare_group(self, pipeline, image_set_list, 
+                      grouping, image_numbers):
         d = self.get_dictionary(image_set_list)
         d['FIRST_IMAGE'] = True
         if self.save_image_or_figure == IF_MOVIE:
-            d['N_FRAMES'] = image_set_list.count()
+            d['N_FRAMES'] = len(image_numbers)
             d['CURRENT_FRAME'] = 0
         return True
     
@@ -510,6 +511,8 @@ class SaveImages(cpm.CPModule):
     
             writer = d['IMAGEJ_WRITER']
             is_last_image = (d['CURRENT_FRAME'] == d['N_FRAMES']-1)
+            if is_last_image:
+                print "Writing last image of %s" %out_file
             image = workspace.image_set.get_image(self.image_name.value)
             pixels = image.pixel_data
             pixels = (pixels*255).astype(np.uint8)

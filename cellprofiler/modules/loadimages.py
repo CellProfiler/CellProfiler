@@ -1401,12 +1401,49 @@ class LoadImages(cpmodule.CPModule):
         return tags
     
     def get_groupings(self, image_set_list):
-        '''Return the groupings as indicated by the metadata_fields setting'''
+        '''Return the groupings as indicated by the metadata_fields setting
+        
+        returns a tuple of key_names and group_list:
+        key_names - the names of the keys that identify the groupings
+        group_list - a sequence composed of two-tuples.
+                     the first element of the tuple is a dictionary giving
+                     the metadata values for the metadata keys
+                     the second element of the tuple is a sequence of
+                     image numbers comprising the image sets of the group
+        For instance, an experiment might have key_names of 'Metadata_Row'
+        and 'Metadata_Column' and a group_list of:
+        [ ({'Metadata_Row':'A','Metadata_Column':'01'}, [1,97,193]),
+          ({'Metadata_Row':'A','Metadata_Column':'02'), [2,98,194]),... ]
+        
+        Returns None to indicate that the module does not contribute any
+        groupings.
+        '''
         if self.group_by_metadata.value:
             keys = self.metadata_fields.selections
             if len(keys) == 0:
                 return None
             return image_set_list.get_groupings(keys)
+        elif self.load_movies():
+            keys = (C_FILE_NAME,)
+            #
+            # This dictionary has a key of the file name
+            # and a value which is a list of image numbers that match
+            #
+            file_to_image_numbers = {}
+            files = []
+            first_image_name = self.image_name_vars()[0].value
+            for i in range(image_set_list.count()):
+                image_set = image_set_list.get_image_set(i)
+                d = self.get_dictionary(image_set)
+                protocol, version, file_name, frame = d[first_image_name]
+                if not file_to_image_numbers.has_key(file_name):
+                    files.append(file_name)
+                    file_to_image_numbers[file_name] = []
+                file_to_image_numbers[file_name].append(i+1)
+            groupings = [ ({ C_FILE_NAME:file_name}, 
+                           file_to_image_numbers[file_name])
+                          for file_name in files]
+            return (keys, groupings)
         else:
             return None
     

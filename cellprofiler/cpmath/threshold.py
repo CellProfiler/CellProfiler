@@ -611,12 +611,16 @@ def sum_of_entropies(image, mask, threshold):
     # 
     fg = image[np.logical_and(mask, image >= threshold)]
     bg = image[np.logical_and(mask, image < threshold)]
+    if len(fg) == 0 or len(bg) == 0:
+        return 0
     log_fg = np.log2(fg)
     log_bg = np.log2(bg)
     #
     # Make these into histograms
-    hfg = scipy.ndimage.histogram(log_fg,lower,upper,256)
-    hbg = scipy.ndimage.histogram(log_bg,lower,upper,256)
+    hfg = np.histogram(log_fg, 256, new=True)[0]
+    hbg = np.histogram(log_bg, 256, new=True)[0]
+    #hfg = scipy.ndimage.histogram(log_fg,lower,upper,256)
+    #hbg = scipy.ndimage.histogram(log_bg,lower,upper,256)
     #
     # Drop empty bins
     #

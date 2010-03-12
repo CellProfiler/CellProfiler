@@ -61,7 +61,7 @@ class MeasureNeurons(cpm.CPModule):
     
     module_name = "MeasureNeurons"
     category = "Measurement"
-    variable_revision_number = 1
+    variable_revision_number = 2
     
     def create_settings(self):
         '''Create the UI settings for the module'''
@@ -90,11 +90,24 @@ class MeasureNeurons(cpm.CPModule):
             <i>(Used only if a branchpoint image is to be retained)</i><br>
             Enter a name for the branchpoint image here. You can then 
             use this image in a later module, such as <b>SaveImages</b>.""")
+        
+        self.wants_to_fill_holes = cps.Binary(
+            "Fill small holes?", True,
+            doc="""The algorithm reskeletonizes the image and this can leave
+            artifacts caused by small holes in the image prior to skeletonizing.
+            These holes result in false trunks and branchpoints. Check this
+            setting to fill in these small holes prior to skeletonizing.""")
+        self.maximum_hole_size = cps.Integer(
+            "Maximum hole size:", 10, minval = 1,
+            doc = """This is the area of the largest hole to fill, measured
+            in pixels. The algorithm will fill in any hole whose area is
+            this size or smaller""")
     
     def settings(self):
         '''The settings, in the order that they are saved in the pipeline'''
         return [self.seed_objects_name, self.image_name,
-                self.wants_branchpoint_image, self.branchpoint_image_name]
+                self.wants_branchpoint_image, self.branchpoint_image_name,
+                self.wants_branchpoint_image, self.maximum_hole_size]
     
     def visible_settings(self):
         '''The settings that are displayed in the GUI'''
@@ -102,6 +115,9 @@ class MeasureNeurons(cpm.CPModule):
                   self.wants_branchpoint_image]
         if self.wants_branchpoint_image:
             result += [self.branchpoint_image_name]
+        result += [self.wants_to_fill_holes]
+        if self.wants_to_fill_holes:
+            result += [self.maximum_hole_size]
         return result
     
     def is_interactive(self):
@@ -148,7 +164,9 @@ class MeasureNeurons(cpm.CPModule):
         # Fill in single holes (but not a one-pixel hole made by
         # a one-pixel image)
         #
-        combined_skel = morph.fill4(combined_skel, ~seed_center)
+        if self.wants_to_fill_holes:
+            combined_skel = morph.fill_labeled_holes(
+                combined_skel, self.maximum_hole_size.value, ~seed_center)
         #
         # Reskeletonize to make true branchpoints at the ring boundaries
         #

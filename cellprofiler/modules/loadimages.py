@@ -1406,7 +1406,13 @@ class LoadImages(cpmodule.CPModule):
                 rdr = ImageReader()
                 rdr.setId(pathname)
                 if self.file_types == FF_STK_MOVIES:
-                    return rdr.getSizeT()
+                    #
+                    # We've seen the frame count in both of these...
+                    #
+                    frame_count = rdr.getSizeT()
+                    if frame_count == 1:
+                        frame_count = rdr.getSizeZ()
+                    return frame_count
                 else:
                     return rdr.getSizeT()
             finally:
@@ -2007,7 +2013,7 @@ class LoadImagesSTKFrameProvider(LoadImagesImageProviderBase):
         except:
             if has_bioformats:
                 img = load_using_bioformats(self.get_full_name(),
-                                         t=self.__frame)
+                                            z=self.__frame)
             else:
                 raise
         return cpimage.Image(img,

@@ -116,6 +116,27 @@ class TestFillLabeledHoles(unittest.TestCase):
                              [0,0,0,0,0,0,0,0,0,0,0,0]])
         output = morph.fill_labeled_holes(image)
         self.assertTrue(np.all(output==expec))
+        
+    def test_08_fill_small_holes(self):
+        """Check filling only the small holes"""
+        image = np.zeros((10,20), int)
+        image[1:-1,1:-1] = 1
+        image[3:8,4:7] = 0 # A hole with area of 5*3 = 15 and not filled
+        expected = image.copy()
+        image[3:5, 11:18] = 0 # A hole with area 2*7 = 14 is filled
+        output = morph.fill_labeled_holes(image, max_area=14)
+        self.assertTrue(np.all(output == expected))
+        
+    def test_09_fill_binary_image(self):
+        """Make sure that we can fill a binary image too"""
+        image = np.zeros((10,20), bool)
+        image[1:-1,1:-1] = True
+        image[3:8,4:7] = False # A hole with area of 5*3 = 15 and not filled
+        expected = image.copy()
+        image[3:5, 11:18] = False # A hole with area 2*7 = 14 is filled
+        output = morph.fill_labeled_holes(image, max_area=14)
+        self.assertEqual(image.dtype.kind, output.dtype.kind)
+        self.assertTrue(np.all(output == expected))
 
 class TestAdjacent(unittest.TestCase):
     def test_00_00_zeros(self):

@@ -195,6 +195,15 @@ For grayscale, each pixel is replaced by the minimum of its neighbors and itself
 <td>Binary</td>
 </tr>
 <tr>
+<td><i>Fill small holes</i></td>
+<td>Sets background pixels surrounded by foreground pixels to 1.<br>
+This operation fills in small holes in a binary image. You can set the
+maximum area of a hole in order to restrict the operation to holes of
+a given size or smaller.
+</td>
+<td>Binary</td>
+</tr>
+<tr>
 <td><i>Hbreak</i></td>
 <td>Removes pixels that form vertical bridges between horizontal lines:<br>
 <table>
@@ -384,6 +393,7 @@ F_DISTANCE = 'distance'
 F_ENDPOINTS = 'endpoints'
 F_ERODE  = 'erode'
 F_FILL   = 'fill'
+F_FILL_SMALL = 'fill small holes'
 F_HBREAK = 'hbreak'
 F_INVERT = 'invert'
 F_LIFE   = 'life'
@@ -398,8 +408,8 @@ F_THIN   = 'thin'
 F_TOPHAT = 'tophat'
 F_VBREAK = 'vbreak'
 F_ALL = [F_BOTHAT, F_BRANCHPOINTS, F_BRIDGE, F_CLEAN, F_CLOSE, F_CONVEX_HULL,
-         F_DIAG, F_DILATE, F_DISTANCE, F_ENDPOINTS, F_ERODE,
-         F_FILL, F_HBREAK, F_INVERT, F_LIFE, F_MAJORITY, F_OPEN, F_REMOVE, 
+         F_DIAG, F_DILATE, F_DISTANCE, F_ENDPOINTS, F_ERODE, F_FILL, 
+         F_FILL_SMALL, F_HBREAK, F_INVERT, F_LIFE, F_MAJORITY, F_OPEN, F_REMOVE, 
          F_SHRINK, F_SKEL, F_SPUR, F_THICKEN, F_THIN, F_TOPHAT, F_VBREAK]
 
 R_ONCE = 'Once'
@@ -433,6 +443,8 @@ class Morph(cpm.CPModule):
         self.functions = []
         self.add_function(can_remove = False)
     
+    CUSTOM_REPEATS_TEXT = "Custom # of repeats"
+    CUSTOM_REPEATS_DOC = "Enter the number of times to repeat the operation"
     def add_function(self, can_remove = True):
         group = MorphSettingsGroup()
         if can_remove:
@@ -451,7 +463,8 @@ class Morph(cpm.CPModule):
                     iterations yield the same image.</li>
                     <li><i>Custom:</i> Perform the operation a custom number of times.</li>
                     </ul>"""))
-        group.append("custom_repeats", cps.Integer("Custom # of repeats",2,1))
+        group.append("custom_repeats", cps.Integer(self.CUSTOM_REPEATS_TEXT,2,1,
+                     doc=self.CUSTOM_REPEATS_DOC))
         if can_remove:
             group.append("remove", cps.RemoveSettingButton("", "Remove this operation", self.functions, group))
         self.functions.append(group)
@@ -476,8 +489,16 @@ class Morph(cpm.CPModule):
         result = [self.image_name, self.output_image_name]
         for function in self.functions:
             temp = function.visible_settings()
-            if function.repeats_choice != R_CUSTOM:
+            if function.function == F_FILL_SMALL:
+                temp.remove(function.repeats_choice)
+                function.custom_repeats.text = "Maximum hole area"
+                function.custom_repeats.doc = """Fill in all holes that have
+                this many pixels or fewer."""
+            elif function.repeats_choice != R_CUSTOM:
                 temp.remove(function.custom_repeats)
+            else:
+                function.custom_repeats.text = self.CUSTOM_REPEATS_TEXT
+                function.custom_repeats.doc = self.CUSTOM_REPEATS_DOC
             result += temp
         result += [self.add_button]
         return result
@@ -516,8 +537,9 @@ class Morph(cpm.CPModule):
         is_binary =  pixel_data.dtype.kind == 'b'
         if (function_name in (F_BRANCHPOINTS, F_BRIDGE, F_CLEAN, F_DIAG, 
                               F_CONVEX_HULL, F_DISTANCE, F_ENDPOINTS, F_FILL,
-                              F_HBREAK, F_LIFE, F_MAJORITY, F_REMOVE, F_SHRINK,
-                              F_SKEL, F_SPUR, F_THICKEN, F_THIN, F_VBREAK) 
+                              F_FILL_SMALL, F_HBREAK, F_LIFE, F_MAJORITY, 
+                              F_REMOVE, F_SHRINK, F_SKEL, F_SPUR, F_THICKEN, 
+                              F_THIN, F_VBREAK) 
             and not is_binary):
             # Apply a very crude threshold to the image for binary algorithms
             sys.stderr.write("Warning: converting image to binary for %s\n"%
@@ -526,6 +548,7 @@ class Morph(cpm.CPModule):
 
         if (function_name in (F_BRANCHPOINTS, F_BRIDGE, F_CLEAN, F_DIAG, 
                               F_CONVEX_HULL, F_DISTANCE, F_ENDPOINTS, F_FILL,
+                              F_FILL_SMALL,
                               F_HBREAK, F_INVERT, F_LIFE, F_MAJORITY, F_REMOVE,
                               F_SHRINK,
                               F_SKEL, F_SPUR, F_THICKEN, F_THIN, F_VBREAK) or
@@ -575,6 +598,8 @@ class Morph(cpm.CPModule):
                                             mask = mask)
             elif function_name == F_FILL:
                 return morph.fill(pixel_data, mask, count)
+            elif function_name == F_FILL_SMALL:
+                return morph.fill_labeled_holes(pixel_data, count, mask)
             elif function_name == F_HBREAK:
                 return morph.hbreak(pixel_data, mask, count)
             elif function_name == F_INVERT:

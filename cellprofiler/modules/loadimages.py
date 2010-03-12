@@ -15,7 +15,7 @@ save them in another, using CellProfiler as a file format converter.</p>
 
 <p>If you would like to use the metadata-specific settings, please see <i>Help > General help > Using
 metadata in CellProfiler</i> for more details on metadata usage and syntax. Briefly, <b>LoadImages</b> can
-extract metadata from the image filename using pattern-matching strings for grouping similar images 
+extract metadata from the image filename using pattern-matching strings, for grouping similar images 
 together for the analysis run and for metadata-specfic options in other modules; see the settings help for
 <a href='#where_to_extract'><i>Where to extract metadata</i></a>, and if an option for that setting is selected, <a href='#regular_expression'><i>Regular expression 
 that finds metadata in the file name</i></a> for the necessary syntax.</p>
@@ -24,7 +24,7 @@ that finds metadata in the file name</i></a> for the necessary syntax.</p>
 <ul>
 <li><i>Pathname, Filename:</i> The full path and the filename of each image.</li>
 <li><i>Metadata:</i> The metadata information extracted from the path and/or 
-filename if requested by the user.</li>
+filename, if requested.</li>
 </ul>
 
 See also <b>LoadData</b>, <b>LoadSingleImage</b>, <b>SaveImages</b>.
@@ -191,13 +191,13 @@ class LoadImages(cpmodule.CPModule):
     def create_settings(self):
         # Settings
         self.file_types = cps.Choice('File type to be loaded', FF, doc="""
-                CellProfiler accepts the following image file types (for movie file formats, the files are opened as a stack of images and each image is processed individually):
+                CellProfiler accepts the following image file types. For movie file formats, the files are opened as a stack of images and each image is processed individually, although <b> TrackObjects</b> can be used to relate objects across timepoints.
                 <ul>
                 <li><i>Individual images:</i> Each file represents a single image. 
                 Some methods of file compression sacrifice image quality ("lossy") and should be avoided for automated image analysis 
                 if at all possible (e.g., .jpg). Other file compression formats retain exactly the original image information but in 
                 a smaller file ("lossless") so they are perfectly acceptable for image analysis (e.g., .png, .tif, .gif). 
-                Uncompressed file formats are also fine for image analysis (e.g., .bmp)</li>
+                Uncompressed file formats are also fine for image analysis (e.g., .bmp).</li>
                 <li><i>AVI movies:</i> An AVI (Audio Video Interleave) file is a type of movie file. Only uncompressed AVIs are supported.</li>
                 <li><i>TIF, TIFF, FLEX movies:</i> A TIF/TIFF movie is a file that contains a series of images as individual frames. 
                 The same is true for the FLEX file format (used by Evotec Opera automated microscopes).</li>
@@ -210,19 +210,19 @@ class LoadImages(cpmodule.CPModule):
                 <ul>
                 <li><i>Order:</i> Used when image (or movie) files are present in a repeating order,
                 like "DAPI, FITC, Red; DAPI, FITC, Red;" and so on. Images are
-                loaded based on their location on the hard disk, and they are
+                loaded based on the order of their location on the hard disk, and they are
                 assigned an identity based on how many images are in each group and what position
                 within each group the file is located (e.g., three images per
                 group; DAPI is always first).
                 <li><i>Text-Exact match:</i> Used to load image (or movie) files that have a particular piece of
                 text in the name. The specific text that is entered will be searched for in the filenames and
-                the files that contain that text exactly will be loaded. 
+                the files that contain that text exactly will be loaded and given the name you specify. 
                 The search for the text is case-sensitive.</li>
                 <li><i>Text-Regular expressions:</i> Used to load image (or movie) files that match
                 a pattern of regular expressions. Patterns are specified using
                 combinations of metacharacters and literal characters. There are a few
                 classes of metacharacters, partially listed below. A more extensive
-                explanation can be found <a href="http://www.python.org/doc/2.3/lib/re-syntax.html">here</a>
+                explanation of regular expressions can be found <a href="http://www.python.org/doc/2.3/lib/re-syntax.html">here</a>
                 and a helpful quick reference can be found <a href="http://www.addedbytes.com/cheat-sheets/regular-expressions-cheat-sheet/">here</a>.
                 <p>The following metacharacters match exactly one character from its respective set of characters:<br><br>
                 <table border="1">
@@ -289,13 +289,13 @@ class LoadImages(cpmodule.CPModule):
         
         self.match_exclude = cps.Text('Type the text that the excluded images have in common', cps.DO_NOT_USE,doc="""
                 <i>(Used only if file exclusion is selected)</i> <br>
-                Specify text that mark files for exclusion. <b>LoadImages</b> treats this text as an 
+                Specify text that marks files for exclusion. <b>LoadImages</b> looks for this text as an 
                 exact match within the filename and not as a regular expression. """)
         
         self.order_group_size = cps.Integer('Number of images in each group?', 3,doc="""
                 <i>(Used only when Order is selected for file loading)</i><br>
                 Enter the number of images that comprise a group. For example, for images given in the order:
-                <i>DAPI, FITC, Red; DAPI, FITC, Red;</i> and so on, the number would be 3.""")
+                <i>DAPI, FITC, Red; DAPI, FITC, Red;</i> and so on, the number of images that in each group would be 3.""")
         
         self.descend_subdirectories = cps.Binary('Analyze all subfolders within the selected folder?', False, doc="""
                 If this box is checked, <b>LoadImages</b> will search all the subfolders under your specified image folder location
@@ -339,10 +339,10 @@ class LoadImages(cpmodule.CPModule):
             The folder containing the images to be loaded. 
             You can choose among the following options:
             <ul><li><i>Default Input Folder</i>: 
-            Load files from the default input folder and its sub-folders.</li>
+            Load files from the default input folder (and its sub-folders, if requested).</li>
             <li><i>Default Output
-            Folder:</i> Load files from the default output folder and its sub-folders.</li>
-            <li><i>Elsewhere...</i>: You can enter a custom folder name.</li>
+            Folder:</i> Load files from the default output folder (and its sub-folders, if requested).</li>
+            <li><i>Elsewhere...</i>: Load files from a particular folder you specify (and its sub-folders, if requested).</li>
             <li><i>Default input directory sub-folder</i>:
             Enter the name of a subfolder of the default input folder or a path
             that starts from the default input folder.</li>
@@ -351,19 +351,19 @@ class LoadImages(cpmodule.CPModule):
             that starts from the default output folder.</li>
             </ul>
             
-            <p><i>Elsewhere...</i>, <i>Default input directory sub-folder</i>,
-            and <i>Default output directory sub-folder</i> all require an
+            The latter three options all require you to enter an
             additional path name. Two periods ".." specify to go 
             up one folder level. For example, if you choose 
             <i>Default input directory sub-folder</i>, "./CSVfiles" looks for a 
             folder called "CSVfiles" that is contained within the 
             Default Input Folder and "../My_folder" looks in a folder called 
             "My_folder" at the same level as the input folder.<p>
-            Note that the path is fixed with respect to your local machine, 
-            which means that transfering your pipeline to another machine might 
-            cause it to fail if it does not map to the same location. We 
-            recommend using default input/output folders since these locations 
-            are set relative to the local machine.""")
+ 
+            In general, it is best to use default input/output folders so that you 
+            can readily run your pipeline on a different set of images or on a different
+            computer simply by adjusting the Default Input and Output Folders in the main
+            CellProfiler window, without further making adjustments within this or 
+            other modules in the pipeline.""")
 
     def add_imagecb(self):
         'Adds another image to the settings'
@@ -421,16 +421,16 @@ class LoadImages(cpmodule.CPModule):
                         For <i>Text-Exact match</i>, type the text string that all the images have in common. For example,
                         if all the images for the given channel end with the text "D.TIF", type <tt>D.TIF</tt> here.
                         <p>For <i>Text-Regular expression</i>, type the regular expression that would capture all
-                        the images for this channel."""),
+                        the images for this channel. See the module help for more information on regular expressions."""),
                FD_ORDER_POSITION:cps.Integer('Position of this image in each group', img_index+1,doc="""
                         <i>(Used only for the image-loading Order option)</i><br>
                         Enter the number in the image order that this image channel occupies. For example, if 
                         the order is "DAPI, FITC, Red; DAPI, FITC, Red;" and so on, the DAPI channel
                         would occupy position 1."""),
-               FD_IMAGE_NAME:cps.FileImageNameProvider('Name of this image in CellProfiler', 
+               FD_IMAGE_NAME:cps.FileImageNameProvider('Name this loaded image', 
                                                        default_cpimage_name(img_index),doc="""
-                        What do you want to call the images you are loading?  
-                        Give your images a meaningful name for use when referring to
+                        What do you want to call the images you are loading for use downstream in the pipeline?  
+                        Give your images a meaningful name that you can use to refer to
                         these images in later modules.  Keep the following points in mind:
                         <ul>
                         <li>Image names must begin with a letter, which may be followed by any 

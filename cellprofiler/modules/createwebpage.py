@@ -1,11 +1,9 @@
-'''<b>CreateWebPage</b>  Creates the html for a webpage to display images 
-(or their thumbnails, if desired), including a link to a zipped file with all 
-of the included images.
+'''<b>Create Web Page</b> creates the html file for a webpage to display images 
+(or their thumbnails, if desired)
 <hr>
 
-This module will create an html file that will display the specified
-images with the option of also producing a ZIP file of these images with a link.
-
+This module creates an html file that displays the specified
+images, and optionally a link to a compressed ZIP file of the images.
 '''
 
 # CellProfiler is distributed under the GNU General Public License.
@@ -94,27 +92,29 @@ class CreateWebPage(cpm.CPModule):
     def create_settings(self):
         self.orig_image_name = cps.ImageNameSubscriber(
             "Select the input images", "None",
-            doc="""Select the images that the web page will link to.""")
+            doc="""Select the images to display on the web page.""")
         
         self.wants_thumbnails = cps.Binary(
             "Use thumbnail images?", False,
-            doc="""Check this option to add thumbnail images (small versions of the 
+            doc="""Check this option to display thumbnail images (small versions of the 
             images) to the web page that link to the full images. Leave it 
             unchecked to display the full image directly on the web page.
             <p>If you are going to use thumbnails, you will need to load
-            them using <b>LoadImages</b>/<b>LoadData</b>. For high-content
-            screening systems, it is not uncommon for these files to have
+            them using <b>LoadImages</b>/<b>LoadData</b>; you can run a separate 
+            pipeline prior to this one to create thumbnails from your originals  
+            using the <b>Resize</b> module. For high-content
+            screening systems, these files sometimes have
             the text "thumb" in the name.</p>""")
         
         self.thumbnail_image_name = cps.ImageNameSubscriber(
             "Select the thumbnail images", "None",
             doc="""
             <i>(Used only if using thumbnails)</i><br>
-            Choose the name of the image to use for thumbnails.""")
+            Select the name of the images to use for thumbnails.""")
         
         self.web_page_file_name = cps.Text(
             "Webpage file name", "images1",
-            doc="""Enter the file name for the web page. <b>CreateWebPage</b>
+            doc="""Enter the desired file name for the web page. <b>CreateWebPage</b>
             will add the .html extension if no extension is specified.
             If you have metadata associated with your images, you can name the 
             file using metadata tags. %s. For instance, if you have metadata tags named "Plate" and 

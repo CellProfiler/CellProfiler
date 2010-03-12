@@ -336,28 +336,22 @@ class LoadImages(cpmodule.CPModule):
                 DEFAULT_OUTPUT_SUBFOLDER_NAME],
             allow_metadata = False,
             doc ="""
-            The folder that contains the CSV file. You can choose among the following options:
+            The folder containing the images to be loaded. 
+            You can choose among the following options:
             <ul><li><i>Default Input Folder</i>: 
-            The CSV file is in the Default Input Folder.</li>
+            Load files from the default input folder and its sub-folders.</li>
             <li><i>Default Output
-            Folder:</i> The CSV file is in the Default Output Folder.</li>
-            <li><i>Absolute path elsewhere</i>: You can enter a custom folder name.</li>
+            Folder:</i> Load files from the default output folder and its sub-folders.</li>
+            <li><i>Elsewhere...</i>: You can enter a custom folder name.</li>
             <li><i>Default input directory sub-folder</i>:
             Enter the name of a subfolder of the default input folder or a path
             that starts from the default input folder.</li>
             <li><i>Default output directory sub-folder</i>:
             Enter the name of a subfolder of the default output folder or a path
             that starts from the default output folder.</li>
-            <li><i>URL</i>:
-            Enter the path part of the URL for the CSV file. For instance,
-            we have an example .CSV file at
-            https://svn.broadinstitute.org/CellProfiler/trunk/ExampleImages/ExampleSBSImages/1049_Images_Dose_Metadata.csv
-            To access this .CSV file, you would choose <i>URL</i> and enter
-            https://svn.broadinstitute.org/CellProfiler/trunk/ExampleImages/ExampleSBSImages
-            as the path location.</li>
             </ul>
             
-            <p><i>Absolute path elsewhere</i>, <i>Default input directory sub-folder</i>,
+            <p><i>Elsewhere...</i>, <i>Default input directory sub-folder</i>,
             and <i>Default output directory sub-folder</i> all require an
             additional path name. Two periods ".." specify to go 
             up one folder level. For example, if you choose 

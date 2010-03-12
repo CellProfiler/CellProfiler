@@ -49,14 +49,17 @@ from cellprofiler.measurements import IMAGE, EXPERIMENT
 from cellprofiler.preferences import get_absolute_path, get_output_file_name
 from cellprofiler.preferences import ABSPATH_OUTPUT, ABSPATH_IMAGE
 from cellprofiler.gui.help import USING_METADATA_TAGS_REF, USING_METADATA_HELP_REF
-from cellprofiler.preferences import standardize_default_folder_names, DEFAULT_INPUT_FOLDER_NAME, DEFAULT_OUTPUT_FOLDER_NAME
+from cellprofiler.preferences import \
+     standardize_default_folder_names, DEFAULT_INPUT_FOLDER_NAME, \
+     DEFAULT_OUTPUT_FOLDER_NAME, ABSOLUTE_FOLDER_NAME, \
+     DEFAULT_INPUT_SUBFOLDER_NAME, DEFAULT_OUTPUT_SUBFOLDER_NAME
 
 DELIMITER_TAB = "Tab"
 DELIMITER_COMMA = 'Comma (",")'
 DELIMITERS = (DELIMITER_COMMA,DELIMITER_TAB)
 
 """Offset of the first object group in the settings"""
-SETTING_OG_OFFSET = 13
+SETTING_OG_OFFSET = 11
 
 """Offset of the object name setting within an object group"""
 SETTING_OBJECT_NAME_IDX = 0
@@ -85,7 +88,7 @@ class ExportToSpreadsheet(cpm.CPModule):
 
     module_name = 'ExportToSpreadsheet'
     category = "Data Tools"
-    variable_revision_number = 5
+    variable_revision_number = 6
     
     def create_settings(self):
         self.delimiter = cps.CustomChoice('Select or enter the column delimiter',DELIMITERS, doc = """
@@ -96,37 +99,31 @@ class ExportToSpreadsheet(cpm.CPModule):
                             This can be useful if you want to run a pipeline multiple 
                             times without overwriting the old results.""")
         
-        self.directory_choice = cps.Choice(
+        self.directory = cps.DirectoryPath(
             "Output file location",
-            [DEFAULT_OUTPUT_FOLDER_NAME, DEFAULT_INPUT_FOLDER_NAME, DIR_CUSTOM,
-             DIR_CUSTOM_WITH_METADATA],
+            dir_choices = [
+                DEFAULT_OUTPUT_FOLDER_NAME, DEFAULT_INPUT_FOLDER_NAME, 
+                ABSOLUTE_FOLDER_NAME, DEFAULT_INPUT_SUBFOLDER_NAME,
+                DEFAULT_OUTPUT_SUBFOLDER_NAME],
             doc="""This setting lets you choose the folder for the output
             files.<br><ul>
             <li><i>Default Output Folder:</i> Saves the .csv files in the
             Default Output Folder.</li>
             <li><i>Default Input Folder:</i> Saves the .csv files in the
             Default Input Folder.</li>
-            <li><i>Custom folder:</i> Lets you specify the folder name. Start
-            the folder name with "." to name a subfolder of the output folder
-            (for instance, "./data"). Start the folder name with "&" to name
-            a subfolder of the image folder.</li>
-            <li><i>Custom folder with metadata:</i> If you have metadata 
+            <li><i>Elsewhere...:</i> Lets you specify the folder name. </li>
+            <li><i>Default Input Folder sub-folder</i> Saves the .csv file
+            in a sub-folder of the default input folder.</li>
+            <li><i>Default Output Folder sub-folder</i> Saves the .csv file
+            in a sub-folder of the default output folder.</li>
+            If you have metadata 
             associated with your images, you can  name the folder using metadata
             tags. %s. For instance, if you have a metadata tag named, 
             "Plate", you can create a per-plate folder using the metadata 
             tag "./&lt;Plate&gt;".
             %s.</li></ul>"""%(USING_METADATA_TAGS_REF,USING_METADATA_HELP_REF))
         
-        self.custom_directory = cps.Text(
-            "Folder name", ".", doc="""Name of the folder that will be used
-            to store the output files. Start
-            the folder name with "." to name a sub-folder of the output folder
-            (for instance, "./data"). Start the folder name with "&" to name
-            a sub-folder of the image folder.""")
-        
         self.add_metadata = cps.Binary("Add image metadata columns to your object data file?", False, doc = """"Image_Metadata_" columns are normally exported in the Image data file, but if you check this box they will also be exported with the Object data file(s).""")
-        
-        self.add_indexes = cps.Binary("No longer used, always saved", True)
         
         self.excel_limits = cps.Binary("Limit output to a size that is allowed in Excel?", False, doc = """
                             If your output has more than 256 columns, a window will open
@@ -224,12 +221,10 @@ class ExportToSpreadsheet(cpm.CPModule):
     def settings(self):
         """Return the settings in the order used when storing """
         result = [self.delimiter, self.prepend_output_filename,
-                  self.add_metadata, self.add_indexes,
-                  self.excel_limits, self.pick_columns,
+                  self.add_metadata, self.excel_limits, self.pick_columns,
                   self.wants_aggregate_means, self.wants_aggregate_medians,
-                  self.wants_aggregate_std, self.directory_choice,
-                  self.custom_directory, self.wants_everything,
-                  self.columns]
+                  self.wants_aggregate_std, self.directory,
+                  self.wants_everything, self.columns]
         for group in self.object_groups:
             result += [group.name, group.previous_file, group.file_name,
                        group.wants_automatic_file_name]
@@ -238,9 +233,7 @@ class ExportToSpreadsheet(cpm.CPModule):
     def visible_settings(self):
         """Return the settings as seen by the user"""
         result = [self.delimiter, self.prepend_output_filename,
-                  self.directory_choice]
-        if self.directory_choice in (DIR_CUSTOM, DIR_CUSTOM_WITH_METADATA):
-            result += [self.custom_directory]
+                  self.directory]
         result += [ self.add_metadata, self.excel_limits, self.pick_columns]
         if self.pick_columns:
             result += [ self.columns]
@@ -362,8 +355,8 @@ class ExportToSpreadsheet(cpm.CPModule):
             return
         
         tags = cpmeas.find_metadata_tokens(file_name)
-        if self.directory_choice == DIR_CUSTOM_WITH_METADATA:
-            tags += cpmeas.find_metadata_tokens(self.custom_directory.value)
+        if self.directory.is_custom_choice:
+            tags += cpmeas.find_metadata_tokens(self.directory.custom_path)
         metadata_groups = workspace.measurements.group_by_metadata(tags)
         for metadata_group in metadata_groups:
             if len(object_names) == 1 and object_names[0] == IMAGE:
@@ -384,24 +377,13 @@ class ExportToSpreadsheet(cpm.CPModule):
           convention
         * Create any directories along the path
         """
-        if not image_set_index is None:
+        if image_set_index is not None and workspace is not None:
             file_name = workspace.measurements.apply_metadata(file_name,
                                                               image_set_index)
-        if self.directory_choice == DEFAULT_OUTPUT_FOLDER_NAME:
-            file_name = get_absolute_path(file_name,
-                                          abspath_mode = ABSPATH_OUTPUT)
-        elif self.directory_choice == DEFAULT_INPUT_FOLDER_NAME:
-            file_name = get_absolute_path(file_name,
-                                          abspath_mode = ABSPATH_IMAGE)
-        else:
-            path = self.custom_directory.value
-            if (self.directory_choice == DIR_CUSTOM_WITH_METADATA and
-                workspace is not None and image_set_index is not None):
-                path = workspace.measurements.apply_metadata(path,
-                                                             image_set_index)
-            file_name = os.path.join(path, file_name)
-            file_name = get_absolute_path(file_name,
-                                          abspath_mode = ABSPATH_OUTPUT)
+        measurements = None if workspace is None else workspace.measurements
+        path_name = self.directory.get_absolute_path(measurements, 
+                                                     image_set_index)
+        file_name = os.path.join(path_name, file_name)
         path, file = os.path.split(file_name)
         if not os.path.isdir(path):
             os.makedirs(path)
@@ -570,36 +552,8 @@ class ExportToSpreadsheet(cpm.CPModule):
         ExportToSpreadsheet has to convert the path to file names to
         something that can be used on the cluster.
         '''
-        if self.directory_choice == DEFAULT_OUTPUT_FOLDER_NAME:
-            self.directory_choice.value = DIR_CUSTOM
-            path = '.'
-        elif self.directory_choice == DEFAULT_INPUT_FOLDER_NAME:
-            self.directory_choice.value = DIR_CUSTOM
-            path = '&'
-        elif self.directory_choice == DIR_CUSTOM_WITH_METADATA:
-            # The patterns, "\g<...>" and "\(?", need to be protected
-            # from backslashification.
-            path = self.custom_directory.value
-            end_new_style = path.find("\\g<")
-            end_old_style = path.find("\(?")
-            end = (end_new_style 
-                   if (end_new_style != -1 and 
-                       (end_old_style == -1 or end_old_style > end_new_style))
-                   else end_old_style)
-            if end != -1:
-                pre_path = path[:end]
-                pre_path = get_absolute_path(pre_path, 
-                                             abspath_mode = ABSPATH_OUTPUT)
-                pre_path = fn_alter_path(pre_path)
-                path = pre_path + path[end:]
-                self.custom_directory.value = path
-                return True
-        else:
-            path = self.custom_directory.value
-        path = get_absolute_path(path, abspath_mode = ABSPATH_OUTPUT)
-        self.custom_directory.value = fn_alter_path(path)
+        self.directory.alter_for_create_batch_files(fn_alter_path)
         return True
-    
             
     def upgrade_settings(self, setting_values, variable_revision_number,
                          module_name, from_matlab):
@@ -607,9 +561,6 @@ class ExportToSpreadsheet(cpm.CPModule):
         
         """
         
-        DIR_DEFAULT_IMAGE = "Default image folder"
-        DIR_DEFAULT_OUTPUT = "Default output folder"
-
         if variable_revision_number == 1 and from_matlab:
             # Added create subdirectories questeion
             setting_values = list(setting_values)
@@ -632,9 +583,9 @@ class ExportToSpreadsheet(cpm.CPModule):
             #
             custom_directory = '.'
             if setting_values[8] == '.':
-                directory_choice = DIR_DEFAULT_OUTPUT
+                directory_choice = DEFAULT_OUTPUT_FOLDER_NAME
             elif setting_values[8] == '&':
-                directory_choice = DIR_DEFAULT_IMAGE
+                directory_choice = DEFAULT_INPUT_FOLDER_NAME
             elif setting_values[8].find(r"\(?<"):
                 directory_choice = DIR_CUSTOM_WITH_METADATA
                 custom_directory = setting_values[8]
@@ -662,7 +613,8 @@ class ExportToSpreadsheet(cpm.CPModule):
             variable_revision_number = 2
         if variable_revision_number == 2 and not from_matlab:
             # Added directory choice questions
-            setting_values = (setting_values[:9] + [DIR_DEFAULT_OUTPUT, "."] +
+            setting_values = (setting_values[:9] + 
+                              [DEFAULT_OUTPUT_FOLDER_NAME, "."] +
                               setting_values[9:])
             variable_revision_number = 3
         if variable_revision_number == 3 and not from_matlab:
@@ -680,9 +632,33 @@ class ExportToSpreadsheet(cpm.CPModule):
             setting_values = setting_values[:12] + ['None|None'] + setting_values[12:]
             variable_revision_number = 5
             
+        if variable_revision_number == 5 and not from_matlab:
+            # Combined directory_choice and custom_directory
+            # Removed add_indexes
+            directory_choice = setting_values[9]
+            custom_directory = setting_values[10]
+            if directory_choice in (DIR_CUSTOM, DIR_CUSTOM_WITH_METADATA):
+                if custom_directory.startswith('.'):
+                    directory_choice = DEFAULT_OUTPUT_SUBFOLDER_NAME
+                elif custom_directory.startswith('&'):
+                    directory_choice = DEFAULT_INPUT_SUBFOLDER_NAME
+                    custom_directory = '.'+custom_directory[1:]
+                else:
+                    directory_choice = ABSOLUTE_FOLDER_NAME
+            directory = cps.DirectoryPath.static_join_string(
+                directory_choice, custom_directory)
+            setting_values = (setting_values[:3] + 
+                              setting_values[4:9] +
+                              [directory] +
+                              setting_values[11:])
+            
         # Standardize input/output directory name references
-        SLOT_DIRCHOICE = 9
-        setting_values = standardize_default_folder_names(setting_values,SLOT_DIRCHOICE)
+        SLOT_DIRCHOICE = 8
+        directory = setting_values[SLOT_DIRCHOICE]
+        directory = cps.DirectoryPath.upgrade_setting(directory)
+        setting_values = (setting_values[:SLOT_DIRCHOICE] +
+                          [directory] + 
+                          setting_values[SLOT_DIRCHOICE+1:])
         
         return setting_values, variable_revision_number, from_matlab
 

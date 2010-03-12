@@ -202,7 +202,7 @@ class DirectoryPath(Text):
             dir_choices = DirectoryPath.DIR_ALL
         if value is None:
             value = DirectoryPath.static_join_string(
-                DEFAULT_INPUT_FOLDER_NAME, "None")
+                dir_choices[0], "None")
         self.dir_choices = dir_choices
         self.allow_metadata = allow_metadata
         super(DirectoryPath,self).__init__(text, value, *args, **kwargs)
@@ -262,7 +262,7 @@ class DirectoryPath(Text):
             ABSOLUTE_FOLDER_NAME, DEFAULT_INPUT_SUBFOLDER_NAME,
             DEFAULT_OUTPUT_SUBFOLDER_NAME, URL_FOLDER_NAME]
     
-    def get_absolute_path(self, measurements=None):
+    def get_absolute_path(self, measurements=None, image_set_index = None):
         '''Return the absolute path specified by the setting
         
         Concoct an absolute path based on the directory choice,
@@ -286,7 +286,8 @@ class DirectoryPath(Text):
             raise ValueError("Unknown directory choice: %s" % self.dir_choice)
         if self.allow_metadata:
             if measurements is not None:
-                custom_path = measurements.apply_metadata(self.custom_path)
+                custom_path = measurements.apply_metadata(self.custom_path,
+                                                          image_set_index)
             else:
                 # For UI, get the path up to the metadata.
                 custom_path = self.custom_path

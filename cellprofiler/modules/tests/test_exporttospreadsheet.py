@@ -144,7 +144,6 @@ class TestExportToSpreadsheet(unittest.TestCase):
         self.assertTrue(isinstance(module, E.ExportToExcel))
         self.assertTrue(module.prepend_output_filename)
         self.assertFalse(module.add_metadata)
-        self.assertTrue(module.add_indexes)
         self.assertFalse(module.excel_limits)
         self.assertFalse(module.pick_columns)
         self.assertTrue(module.wants_aggregate_means)
@@ -186,14 +185,14 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'8947\'|variable_revision_number:
         self.assertEqual(module.delimiter_char, "\t")
         self.assertTrue(module.prepend_output_filename)
         self.assertFalse(module.add_metadata)
-        self.assertTrue(module.add_indexes)
         self.assertFalse(module.excel_limits)
         self.assertTrue(module.pick_columns)
         self.assertFalse(module.wants_aggregate_means)
         self.assertTrue(module.wants_aggregate_medians)
         self.assertFalse(module.wants_aggregate_std)
-        self.assertEqual(module.directory_choice, E.DIR_CUSTOM_WITH_METADATA)
-        self.assertEqual(module.custom_directory,r"./\<?Plate>")
+        self.assertEqual(module.directory.dir_choice, 
+                         E.DEFAULT_OUTPUT_SUBFOLDER_NAME)
+        self.assertEqual(module.directory.custom_path, r"./\<?Plate>")
         self.assertEqual(len(module.object_groups), 2)
         for group, object_name, file_name in zip(module.object_groups,
                                                  ("Image", "Nuclei"),
@@ -261,7 +260,8 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'9144\'|variable_revision_number:
         self.assertFalse(module.wants_aggregate_means)
         self.assertFalse(module.wants_aggregate_medians)
         self.assertFalse(module.wants_aggregate_std)
-        self.assertEqual(module.directory_choice, E.DEFAULT_OUTPUT_FOLDER_NAME)
+        self.assertEqual(module.directory.dir_choice, 
+                         E.DEFAULT_OUTPUT_FOLDER_NAME)
         self.assertFalse(module.wants_everything)
         for group, object_name in zip(module.object_groups,
                                       ("Image","Nuclei","PropCells",
@@ -322,8 +322,10 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'9434\'|variable_revision_number:
         self.assertTrue(isinstance(module,E.ExportToExcel))
         self.assertEqual(module.delimiter, E.DELIMITER_TAB)
         self.assertTrue(module.prepend_output_filename)
-        self.assertEqual(module.directory_choice, E.DEFAULT_OUTPUT_FOLDER_NAME)
-        self.assertEqual(module.custom_directory, "//iodine/imaging_analysis/People/Lee")
+        self.assertEqual(module.directory.dir_choice, 
+                         E.DEFAULT_OUTPUT_FOLDER_NAME)
+        self.assertEqual(module.directory.custom_path, 
+                         "//iodine/imaging_analysis/People/Lee")
         self.assertFalse(module.add_metadata)
         self.assertFalse(module.excel_limits)
         self.assertTrue(module.pick_columns)
@@ -354,6 +356,182 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'9434\'|variable_revision_number:
             self.assertEqual(group.name, object_name)
             self.assertEqual(group.file_name, file_name)
         
+    def test_000_07_load_v6(self):
+        data = r'''CellProfiler Pipeline: http://www.cellprofiler.org
+Version:1
+SVNRevision:9434
+
+ExportToSpreadsheet:[module_num:1|svn_version:\'9434\'|variable_revision_number:6|show_window:False|notes:\x5B\x5D]
+    Select or enter the column delimiter:Tab
+    Prepend the output file name to the data file names?:Yes
+    Add image metadata columns to your object data file?:No
+    Limit output to a size that is allowed in Excel?:No
+    Select the columns of measurements to export?:Yes
+    Calculate the per-image mean values for object measurements?:No
+    Calculate the per-image median values for object measurements?:Yes
+    Calculate the per-image standard deviation values for object measurements?:No
+    Output file location:Default Output Folder\x7C//iodine/imaging_analysis/People/Lee
+    Export all measurements?:No
+    Press button to select measurements to export:Image\x7CFileName_rawGFP,Image\x7CFileName_IllumGFP,Image\x7CFileName_IllumDNA,Image\x7CFileName_rawDNA,Image\x7CMetadata_SBS_Doses,Image\x7CMetadata_Well,Image\x7CMetadata_Controls
+    Data to export:Image
+    Combine these object measurements with those of the previous object?:No
+    File name:Image.csv
+    Use the object name for the file name?:No
+    Data to export:Nuclei
+    Combine these object measurements with those of the previous object?:No
+    File name:Nuclei.csv
+    Use the object name for the file name?:No
+    Data to export:PropCells
+    Combine these object measurements with those of the previous object?:No
+    File name:PropCells.csv
+    Use the object name for the file name?:No
+    Data to export:DistanceCells
+    Combine these object measurements with those of the previous object?:No
+    File name:DistanceCells.csv
+    Use the object name for the file name?:No
+    Data to export:DistCytoplasm
+    Combine these object measurements with those of the previous object?:No
+    File name:DistCytoplasm.csv
+    Use the object name for the file name?:No
+
+ExportToSpreadsheet:[module_num:2|svn_version:\'9434\'|variable_revision_number:6|show_window:False|notes:\x5B\x5D]
+    Select or enter the column delimiter:Comma (",")
+    Prepend the output file name to the data file names?:Yes
+    Add image metadata columns to your object data file?:Yes
+    Limit output to a size that is allowed in Excel?:Yes
+    Select the columns of measurements to export?:No
+    Calculate the per-image mean values for object measurements?:Yes
+    Calculate the per-image median values for object measurements?:No
+    Calculate the per-image standard deviation values for object measurements?:Yes
+    Output file location:Default Input Folder\x7C//iodine/imaging_analysis/People/Lee
+    Export all measurements?:Yes
+    Press button to select measurements to export:Image\x7CFileName_rawGFP,Image\x7CFileName_IllumGFP,Image\x7CFileName_IllumDNA,Image\x7CFileName_rawDNA,Image\x7CMetadata_SBS_Doses,Image\x7CMetadata_Well,Image\x7CMetadata_Controls
+    Data to export:Image
+    Combine these object measurements with those of the previous object?:Yes
+    File name:Image.csv
+    Use the object name for the file name?:Yes
+
+ExportToSpreadsheet:[module_num:3|svn_version:\'9434\'|variable_revision_number:6|show_window:False|notes:\x5B\x5D]
+    Select or enter the column delimiter:Comma (",")
+    Prepend the output file name to the data file names?:Yes
+    Add image metadata columns to your object data file?:Yes
+    Limit output to a size that is allowed in Excel?:Yes
+    Select the columns of measurements to export?:No
+    Calculate the per-image mean values for object measurements?:Yes
+    Calculate the per-image median values for object measurements?:No
+    Calculate the per-image standard deviation values for object measurements?:Yes
+    Output file location:Default Input Folder sub-folder\x7C//iodine/imaging_analysis/People/Lee
+    Export all measurements?:Yes
+    Press button to select measurements to export:Image\x7CFileName_rawGFP,Image\x7CFileName_IllumGFP,Image\x7CFileName_IllumDNA,Image\x7CFileName_rawDNA,Image\x7CMetadata_SBS_Doses,Image\x7CMetadata_Well,Image\x7CMetadata_Controls
+    Data to export:Image
+    Combine these object measurements with those of the previous object?:Yes
+    File name:Image.csv
+    Use the object name for the file name?:Yes
+
+ExportToSpreadsheet:[module_num:4|svn_version:\'9434\'|variable_revision_number:6|show_window:False|notes:\x5B\x5D]
+    Select or enter the column delimiter:Comma (",")
+    Prepend the output file name to the data file names?:Yes
+    Add image metadata columns to your object data file?:Yes
+    Limit output to a size that is allowed in Excel?:Yes
+    Select the columns of measurements to export?:No
+    Calculate the per-image mean values for object measurements?:Yes
+    Calculate the per-image median values for object measurements?:No
+    Calculate the per-image standard deviation values for object measurements?:Yes
+    Output file location:Default Output Folder sub-folder\x7C//iodine/imaging_analysis/People/Lee
+    Export all measurements?:Yes
+    Press button to select measurements to export:Image\x7CFileName_rawGFP,Image\x7CFileName_IllumGFP,Image\x7CFileName_IllumDNA,Image\x7CFileName_rawDNA,Image\x7CMetadata_SBS_Doses,Image\x7CMetadata_Well,Image\x7CMetadata_Controls
+    Data to export:Image
+    Combine these object measurements with those of the previous object?:Yes
+    File name:Image.csv
+    Use the object name for the file name?:Yes
+
+ExportToSpreadsheet:[module_num:5|svn_version:\'9434\'|variable_revision_number:6|show_window:False|notes:\x5B\x5D]
+    Select or enter the column delimiter:Comma (",")
+    Prepend the output file name to the data file names?:Yes
+    Add image metadata columns to your object data file?:Yes
+    Limit output to a size that is allowed in Excel?:Yes
+    Select the columns of measurements to export?:No
+    Calculate the per-image mean values for object measurements?:Yes
+    Calculate the per-image median values for object measurements?:No
+    Calculate the per-image standard deviation values for object measurements?:Yes
+    Output file location:Elsewhere...\x7C//iodine/imaging_analysis/People/Lee
+    Export all measurements?:Yes
+    Press button to select measurements to export:Image\x7CFileName_rawGFP,Image\x7CFileName_IllumGFP,Image\x7CFileName_IllumDNA,Image\x7CFileName_rawDNA,Image\x7CMetadata_SBS_Doses,Image\x7CMetadata_Well,Image\x7CMetadata_Controls
+    Data to export:Image
+    Combine these object measurements with those of the previous object?:Yes
+    File name:Image.csv
+    Use the object name for the file name?:Yes
+'''
+        pipeline = cpp.Pipeline()
+        def callback(caller,event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO(data))
+        self.assertEqual(len(pipeline.modules()), 5)
+        module = pipeline.modules()[0]
+        self.assertTrue(isinstance(module,E.ExportToExcel))
+        self.assertEqual(module.delimiter, E.DELIMITER_TAB)
+        self.assertTrue(module.prepend_output_filename)
+        self.assertEqual(module.directory.dir_choice, 
+                         E.DEFAULT_OUTPUT_FOLDER_NAME)
+        self.assertEqual(module.directory.custom_path, 
+                         "//iodine/imaging_analysis/People/Lee")
+        self.assertFalse(module.add_metadata)
+        self.assertFalse(module.excel_limits)
+        self.assertTrue(module.pick_columns)
+        self.assertTrue(all([module.columns.get_measurement_object(x) == "Image"
+                             for x in module.columns.selections]))
+        self.assertEqual(len(module.columns.selections), 7)
+        features = set([module.columns.get_measurement_feature(x)
+                             for x in module.columns.selections])
+        for feature in (
+            "FileName_rawGFP", "FileName_IllumGFP", "FileName_IllumDNA",
+            "FileName_rawDNA", "Metadata_SBS_Doses", "Metadata_Well",
+            "Metadata_Controls"):
+            self.assertTrue(feature in features)
+        self.assertFalse(module.wants_aggregate_means)
+        self.assertTrue(module.wants_aggregate_medians)
+        self.assertFalse(module.wants_aggregate_std)
+        self.assertFalse(module.wants_everything)
+        self.assertEqual(len(module.object_groups), 5)
+        for i, (object_name, file_name) in enumerate((
+            ( "Image", "Image.csv"),
+            ( "Nuclei", "Nuclei.csv"),
+            ( "PropCells", "PropCells.csv"),
+            ( "DistanceCells", "DistanceCells.csv"),
+            ( "DistCytoplasm", "DistCytoplasm.csv"))):
+            group = module.object_groups[i]
+            self.assertFalse(group.previous_file)
+            self.assertFalse(group.wants_automatic_file_name)
+            self.assertEqual(group.name, object_name)
+            self.assertEqual(group.file_name, file_name)
+
+        module = pipeline.modules()[1]
+        self.assertTrue(isinstance(module,E.ExportToExcel))
+        self.assertEqual(module.delimiter, E.DELIMITER_COMMA)
+        self.assertTrue(module.prepend_output_filename)
+        self.assertEqual(module.directory.dir_choice, 
+                         E.DEFAULT_INPUT_FOLDER_NAME)
+        self.assertEqual(module.directory.custom_path, 
+                         "//iodine/imaging_analysis/People/Lee")
+        self.assertTrue(module.add_metadata)
+        self.assertTrue(module.excel_limits)
+        self.assertFalse(module.pick_columns)
+        self.assertTrue(module.wants_aggregate_means)
+        self.assertFalse(module.wants_aggregate_medians)
+        self.assertTrue(module.wants_aggregate_std)
+        self.assertTrue(module.wants_everything)
+        group = module.object_groups[0]
+        self.assertTrue(group.previous_file)
+        self.assertTrue(group.wants_automatic_file_name)
+        
+        for module, dir_choice in zip(pipeline.modules()[2:],
+                                      (E.DEFAULT_INPUT_SUBFOLDER_NAME,
+                                       E.DEFAULT_OUTPUT_SUBFOLDER_NAME,
+                                       E.ABSOLUTE_FOLDER_NAME)):
+            self.assertTrue(isinstance(module,E.ExportToExcel))
+            self.assertEqual(module.directory.dir_choice, dir_choice)
+
     def test_00_00_no_measurements(self):
         '''Test an image set with objects but no measurements'''
         path = os.path.join(self.output_dir, "my_file.csv")
@@ -445,8 +623,8 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'9434\'|variable_revision_number:
                                   m,
                                   image_set_list)
         module.post_run(workspace)
+        fd = open(path,"r")
         try:
-            fd = open(path,"r")
             reader = csv.reader(fd, delimiter=module.delimiter_char)
             row = reader.next()
             self.assertEqual(len(row),2)
@@ -462,14 +640,16 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'9434\'|variable_revision_number:
         
     def test_01_03_experiment_measurements_output_file(self):
         '''Test prepend_output_filename'''
-        path = os.path.join(self.output_dir, "my_file.csv")
+        file_name = "my_file.csv"
+        path = os.path.join(self.output_dir, file_name)
         module = E.ExportToExcel()
         module.module_num = 1
         module.prepend_output_filename.value = True
         module.wants_everything.value = False
-        module.directory_choice.value = E.DIR_CUSTOM
+        module.directory.dir_choice = E.ABSOLUTE_FOLDER_NAME
+        module.directory.custom_path = self.output_dir
         module.object_groups[0].name.value = cpmeas.EXPERIMENT
-        module.object_groups[0].file_name.value = path
+        module.object_groups[0].file_name.value = file_name
         module.object_groups[0].wants_automatic_file_name.value = False
         m = cpmeas.Measurements()
         m.add_experiment_measurement("my_measurement", "Hello, world")
@@ -486,8 +666,8 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'9434\'|variable_revision_number:
         file_name = cpprefs.get_output_file_name()[:-4]+"_my_file.csv"
         path = os.path.join(self.output_dir,file_name)
         self.assertTrue(os.path.isfile(path),"Could not find file %s"%path)
+        fd = open(path,"r")
         try:
-            fd = open(path,"r")
             reader = csv.reader(fd, delimiter=module.delimiter_char)
             row = reader.next()
             self.assertEqual(len(row),2)
@@ -850,8 +1030,8 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'9434\'|variable_revision_number:
         module.module_num = 1
         module.prepend_output_filename.value = False
         module.wants_everything.value = False
-        module.directory_choice.value = E.DIR_CUSTOM_WITH_METADATA
-        module.custom_directory.value = path
+        module.directory.dir_choice = E.ABSOLUTE_FOLDER_NAME
+        module.directory.custom_path = path
         module.object_groups[0].name.value = cpmeas.IMAGE
         module.object_groups[0].file_name.value = "output.csv"
         module.object_groups[0].wants_automatic_file_name.value = False
@@ -859,7 +1039,9 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'9434\'|variable_revision_number:
         np.random.seed(0)
         mvalues = np.random.uniform(size=(4,))
         image_set_list = cpi.ImageSetList()
-        for index,measurement,metadata in zip(range(4),mvalues,('foo','bar','bar','foo')):
+        metadata_values = ('foo','bar','bar','foo')
+        for index, (measurement, metadata) in \
+            enumerate(zip(mvalues,metadata_values)):
             image_set = image_set_list.get_image_set(index)
             m.add_image_measurement("my_measurement", measurement)
             m.add_image_measurement("Metadata_tag", metadata)
@@ -873,8 +1055,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'9434\'|variable_revision_number:
                                   object_set,
                                   m,
                                   image_set_list)
-        for i in range(4):
-            module.post_run(workspace)
+        module.post_run(workspace)
         for path_name,value_indexes in (("foo",(0,3)),
                                         ("bar",(1,2))):
             path = os.path.join(self.output_dir, path_name, "output.csv")
@@ -907,8 +1088,8 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'9434\'|variable_revision_number:
         module.module_num = 1
         module.prepend_output_filename.value = False
         module.wants_everything.value = False
-        module.directory_choice.value = E.DIR_CUSTOM
-        module.custom_directory.value = "./my_dir"
+        module.directory.dir_choice = E.DEFAULT_OUTPUT_SUBFOLDER_NAME
+        module.directory.custom_path = "./my_dir"
         module.object_groups[0].name.value = cpmeas.IMAGE
         module.object_groups[0].file_name.value = "my_file.csv"
         module.object_groups[0].wants_automatic_file_name.value = False
@@ -1032,13 +1213,12 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'9434\'|variable_revision_number:
             fd.close()
     
     def test_06_01_image_index_columns(self):
-        '''Test presence of index column if add_indexes is on'''
+        '''Test presence of index column'''
         path = os.path.join(self.output_dir, "my_file.csv")
         module = E.ExportToExcel()
         module.module_num = 1
         module.prepend_output_filename.value = False
         module.wants_everything.value = False
-        module.add_indexes.value = True
         module.object_groups[0].name.value = cpmeas.IMAGE
         module.object_groups[0].file_name.value = path
         module.object_groups[0].wants_automatic_file_name.value = False
@@ -1086,7 +1266,6 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'9434\'|variable_revision_number:
         module.object_groups[0].name.value = "my_objects"
         module.object_groups[0].file_name.value = path
         module.object_groups[0].wants_automatic_file_name.value = False
-        module.add_indexes.value = True
         m = cpmeas.Measurements()
         np.random.seed(0)
         # Three images with four objects each

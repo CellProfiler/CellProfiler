@@ -7,11 +7,11 @@ hard drive unless you specifically choose to do so with the <b>SaveImages</b>
 module. You can save any of the
 processed images created by CellProfiler during the analysis using this module.
 
-<p>You can choose from among 18 image formats for saving your files. This
+<p>You can choose from many different image formats for saving your files. This
 allows you to use the module as a file format converter, by loading files
 in their original format and then saving them in an alternate format.
 
-<p>Note that saving images in 12- or 16-bit is not supported.
+<p>Note that saving images in 12- or 16-bit format is not supported.
 <p>
 See also <b>LoadImages</b>, <b>ConserveMemory</b>.
 '''
@@ -95,7 +95,7 @@ class SaveImages(cpm.CPModule):
                                                IF_IMAGE,doc="""
                 The following types of images can be saved as a file on the hard drive:
                 <ul>
-                <li><i>Image:</i> Any of the images produced upstream of the module can be selected for saving. 
+                <li><i>Image:</i> Any of the images produced upstream of <b>SaveImages</b> can be selected for saving. 
                 Outlines created by <b>Identify</b> modules can also be saved with this option, but you must 
                 select "Retain outlines..." of identified objects within the <b>Identify</b> module. You might
                 also want to use the <b>OverlayOutlines</b> module prior to saving images.</li>
@@ -107,17 +107,17 @@ class SaveImages(cpm.CPModule):
                 module also creates a cropping image which is typically the same size as the original 
                 image. However, since the <b>Crop</b> permits removal of the rows and columns that are left 
                 blank, the cropping can be of a different size than the mask.</li>
-                <li><i>Movie:</i> A sequence of images can be saved as a movie file, such as an AVI. Each 
-                image becomes a frame of the movie. <b>Currently, this option is not yet implemented.</b></li>
+                <li><i>Movie:</i> A sequence of images can be saved as a movie file. Each 
+                image becomes a frame of the movie.</li>
                 <li><i>Module display window:</i> The window associated with a module can be saved, which
-                will include all the panels and text within that window. <b>Currently, this option is not yet implemented.</b></li>
+                will include all the panels and text within that window. <b>Currently, this option is not yet available.</b></li>
                 </ul>
                 Note that objects cannot be directly saved with the <b>SaveImages</b> module.
                 You must first use the <b>ConvertObjectsToImage</b> module to convert the objects to an image, 
                 followed by <b>SaveImages</b>.""")
         
         self.image_name  = cps.ImageNameSubscriber("Select the image to save","None", doc = """
-                <i>(Used only if saving images, crop masks and image croppings)</i><br>
+                <i>(Used only if saving images, crop masks, and image croppings)</i><br>
                 What did you call the images you want to save?""")
         
         self.figure_name = cps.FigureSubscriber("Select the module display window to save","None",doc="""
@@ -177,7 +177,7 @@ class SaveImages(cpm.CPModule):
         
         self.file_name_suffix = cps.Text("Text to append to the image name",cps.DO_NOT_USE,doc="""
                 <i>(Used only when constructing the filename from the image filename)</i><br>
-                Enter the text that will be appended to the filename specified above.""")
+                Enter the text that should be appended to the filename specified above.""")
         
         self.file_format = cps.Choice("Select file format to use",
                                       [FF_BMP,FF_GIF,FF_HDF,FF_JPG,FF_JPEG,
@@ -197,12 +197,11 @@ class SaveImages(cpm.CPModule):
                 <ul>
                 <li><i>Default Output Folder:</i> The file will be stored in the default output
                 folder.</li>
-                <li><i>Same folder as image:</i> The file will be stored in the folder to which the
-                images from this image cycle belong.</li>
-                <li><i>Custom:</i> The file will be stored in a customizable folder. This folder 
-                can be referenced against the default input or output folder.</li>
-                <li><i>Custom with metadata:</i> Same as <i>Custon</i> but also with metadata substitution 
-                (see the <i>Name with metadata</i> setting above for metadata usage)</li>
+                <li><i>Same folder as image:</i> The file will be stored in the same folder as the images loaded during this image cycle.</li>
+                <li><i>Custom:</i> The file will be stored in a folder you specify. This folder 
+                can be specified relative to the default input or output folder.</li>
+                <li><i>Custom with metadata:</i> Same as <i>Custom</i> but also with metadata substitution 
+                (see the <i>Name with metadata</i> setting above for metadata usage).</li>
                 </ul>""")
         
         self.movie_pathname_choice = cps.Choice("Select location to save file",
@@ -214,7 +213,7 @@ class SaveImages(cpm.CPModule):
                 <li><i>Default Output Folder:</i> The file will be stored in the default output
                 folder.</li>
                 <li><i>Custom:</i> The file will be stored in a customizable folder. This folder 
-                can be referenced against the default input or output folder.</li>
+                can be referenced relative to the default input or output folder.</li>
                 </ul>""")
         
         self.pathname = cps.Text("Pathname for the saved file",".",doc="""
@@ -233,42 +232,42 @@ class SaveImages(cpm.CPModule):
         self.bit_depth = cps.Choice("Image bit depth",
                 ["8","12","16"],doc="""
                 <i>(Used only when saving files in a non-MAT format)</i><br>
-                What is the bit-depth that you want to save the images in?
+                What is the bit-depth at which you want to save the images?
                 <b>Currently, saving images in 12- or 16-bit is not supported.</b>""")
         
         self.overwrite = cps.Binary("Overwrite existing files without warning?",False,doc="""
                 Check this box to automatically overwrite a file if it already exists. Otherwise, you
-                will be prompted for comfirmation first.""")
+                will be prompted for confirmation first.""")
         
         self.when_to_save = cps.Choice("Select how often to save",
                 [WS_EVERY_CYCLE,WS_FIRST_CYCLE,WS_LAST_CYCLE],
                 WS_EVERY_CYCLE,doc="""<a name='when_to_save'>
-                <i>(Used only when saving non-movie files)</i><br>
-                Specify at what point during pipeline execution to save your file. </a>
+                <i>(When saving non-movie files)</i><br>
+                Specify at what point during pipeline execution to save file(s). </a>
                 <ul>
-                <li><i>Every cycle:</i> Useful for when the image is updated every cycle and is
+                <li><i>Every cycle:</i> Useful for when the image of interest is created every cycle and is
                 not dependent on results from a prior cycle.</li>
                 <li><i>First cycle:</i> Useful for when you are saving an aggregate image created 
-                on the first cycle, e.g., <b>CorrectIlluminationCalc</b> with the <i>All</i>
+                on the first cycle, e.g., <b>CorrectIlluminationCalculate</b> with the <i>All</i>
                 setting used on images obtained directly from <b>LoadImages</b>/<b>LoadData</b></a>.</li>
                 <li><i>Last cycle:</i> Useful for when you are saving an aggregate image completed 
-                on the last cycle, e.g., <b>CorrectIlluminationCalc</b> with the <i>All</i>
+                on the last cycle, e.g., <b>CorrectIlluminationCalculate</b> with the <i>All</i>
                 setting used on intermediate images generated during each cycle.</li>
                 </ul> """)
         
         self.when_to_save_movie = cps.Choice("Select how often to save",
                                              [WS_LAST_CYCLE,"1","2","3","4","5","10","20"],
                                              WS_LAST_CYCLE,doc="""
-                <i>(Used only when saving movies)</i><br>
+                <i>(When saving movies)</i><br>
                 Specify at what point during pipeline execution to save your movie. 
                 The movie will be always be saved after the last cycle is processed; since 
-                a movie frame is added each cycle, saving at the last cycle will output the 
+                a movie frame is added each cycle, saving at the last cycle will output a 
                 fully completed movie. 
                 <p>You also have the option to save the movie periodically 
                 during image processing, so that the partial movie will be available if you cancel  
-                image processing partway through. Saving movies in .avi format is 
-                quite slow, so you can enter an cycle increment for saving the movie. For example, 
-                entering a 1 will save the movie after every cycle. Since saving movies is 
+                image processing partway through. Saving movies in some formats is 
+                quite slow, so you can speed processing by selecting a cycle increment. For example, 
+                entering a 2 will save the movie after every other cycle. Since saving movies is 
                 time-consuming, use any value other than <i>Last cycle</i> with caution.
                 <p>The movie will be saved in uncompressed .avi format, which can be quite large. 
                 We recommended converting the movie to a compressed movie format, 
@@ -289,7 +288,7 @@ class SaveImages(cpm.CPModule):
                                      doc= """
                 <i>(Used only when saving images or movies)</i><br>
                 This affects how images' intensities are displayed.
-                The colormap choice is critical for movie (avi) files. 
+                The colormap choice is critical for movie files. 
                 Choosing anything other than gray may degrade image 
                 quality or result in image stretching.
                 <p>All available colormaps can be seen 
@@ -301,12 +300,12 @@ class SaveImages(cpm.CPModule):
                 <p>This setting is useful when exporting measurements to a database, allowing 
                 access to the saved image. If you are using the machine-learning tools or image
                 viewer in CellProfiler Analyst, for example, you will want to check this box if you want
-                additional images to be displayed along with the original images.</p>
+                the images you are saving via this module to be displayed along with the original images.</p>
                 <p>This setting also allows downstream modules (e.g., <b>CreateWebPage</b>) to look up the newly
                 saved files on the hard drive. Normally, whatever files are present on
                 the hard drive when CellProfiler processing begins (and when the
                 <b>LoadImages</b> module processes its first cycle) are the only files 
-                accessible within CellProfiler. This setting allows the newly saved files
+                recognized within CellProfiler. This setting allows the newly saved files
                 to be accessible to downstream modules. This setting might yield unusual
                 consequences if you are using the <b>SaveImages</b> module to save an image
                 directly as loaded (e.g., using the <b>SaveImages</b> module to convert file

@@ -364,12 +364,14 @@ class CPFigureFrame(wx.Frame):
             return
         xi = int(event.xdata+.5)
         yi = int(event.ydata+.5)
-        fields = ["X: %d"%xi, "Y: %d"%yi]
+        im = None
         if event.inaxes:
+            fields = ["X: %d"%xi, "Y: %d"%yi]
             im = self.find_image_for_axes(event.inaxes)
-            fields += self.get_pixel_data_fields_for_status_bar(im, x1, yi)
+            if im is not None:
+                fields += self.get_pixel_data_fields_for_status_bar(im, x1, yi)
                 
-        if self.mouse_down is not None:
+        if self.mouse_down is not None and im is not None:
             x0 = min(self.mouse_down[0], event.xdata)
             x1 = max(self.mouse_down[0], event.xdata)
             y0 = min(self.mouse_down[1], event.ydata)
@@ -380,7 +382,7 @@ class CPFigureFrame(wx.Frame):
             xinterval = event.inaxes.xaxis.get_view_interval()
             yinterval = event.inaxes.yaxis.get_view_interval()
             diagonal = np.sqrt((xinterval[1]-xinterval[0])**2 +
-                                  (yinterval[1]-yinterval[0])**2)
+                               (yinterval[1]-yinterval[0])**2)
             mutation_scale = min(int(length*100/diagonal), 20) 
             if self.length_arrow is not None:
                 self.length_arrow.set_positions((self.mouse_down[0],
@@ -420,17 +422,18 @@ class CPFigureFrame(wx.Frame):
             return
         xi = int(event.xdata+.5)
         yi = int(event.ydata+.5)
-        fields = ["X: %d"%xi, "Y: %d"%yi]
         if event.inaxes:
+            fields = ["X: %d"%xi, "Y: %d"%yi]
             im = self.find_image_for_axes(event.inaxes)
-            fields += self.get_pixel_data_fields_for_status_bar(im, xi, yi)
+            if im is not None:
+                fields += self.get_pixel_data_fields_for_status_bar(im, xi, yi)
         self.status_bar.SetFields(fields)
         
     def find_image_for_axes(self, axes):
         for i, sl in enumerate(self.subplots):
             for j, slax in enumerate(sl):
-                if axes == slax:
-                    return self.images.get((i, j), None)
+                if axes == slax and 'images' in self.__dict__:
+                        return self.images.get((i, j), None)
         return None
 
 

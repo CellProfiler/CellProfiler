@@ -708,10 +708,10 @@ MAIN_HELP = (
 '''A couple of strings for generic insertion into module help'''
 USING_METADATA_HELP_REF = ''' 
 Please see <b>LoadImages</b>, <b>LoadData</b>, or <i>Help > General help > Using metadata in CellProfiler</i> 
-for more details on obtaining, extracting and using metadata tags from your images'''
+for more details on obtaining, extracting, and using metadata tags from your images'''
 
 USING_METADATA_TAGS_REF = '''
-Tags have the form <i>\g&lt;metadata-tag&gt;</i> where <i>&lt;metadata-tag&gt</i> is the name of the previously defined metadata field.'''
+Tags have the form <i>\g&lt;metadata-tag&gt;</i> where <i>&lt;metadata-tag&gt</i> is the name of the previously defined metadata field'''
 
 ####################################################
 #

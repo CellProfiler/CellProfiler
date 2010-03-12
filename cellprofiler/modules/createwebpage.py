@@ -3,7 +3,7 @@
 <hr>
 
 This module creates an html file that displays the specified
-images, and optionally a link to a compressed ZIP file of the images.
+images, and optionally a link to a compressed ZIP file of all of the images shown.
 '''
 
 # CellProfiler is distributed under the GNU General Public License.
@@ -97,13 +97,13 @@ class CreateWebPage(cpm.CPModule):
         self.wants_thumbnails = cps.Binary(
             "Use thumbnail images?", False,
             doc="""Check this option to display thumbnail images (small versions of the 
-            images) to the web page that link to the full images. Leave it 
+            images) on the web page that link to the full images. Leave it 
             unchecked to display the full image directly on the web page.
             <p>If you are going to use thumbnails, you will need to load
-            them using <b>LoadImages</b>/<b>LoadData</b>; you can run a separate 
+            them using <b>LoadImages</b> or <b>LoadData</b>; you can run a separate 
             pipeline prior to this one to create thumbnails from your originals  
-            using the <b>Resize</b> module. For high-content
-            screening systems, these files sometimes have
+            using the <b>Resize</b> and <b>SaveImages</b> modules. For some high-content
+            screening systems, thumbnail files are automatically created and have
             the text "thumb" in the name.</p>""")
         
         self.thumbnail_image_name = cps.ImageNameSubscriber(
@@ -118,7 +118,7 @@ class CreateWebPage(cpm.CPModule):
             will add the .html extension if no extension is specified.
             If you have metadata associated with your images, you can name the 
             file using metadata tags. %s. For instance, if you have metadata tags named "Plate" and 
-            "Well", you can create separate per-plate,per-well web pages based on
+            "Well", you can create separate per-plate, per-well web pages based on
             your metadata using "\g&lt;Plate&gt;_\g&lt;Well&gt;" to specify the 
             name. %s."""%(USING_METADATA_TAGS_REF,USING_METADATA_HELP_REF))
         
@@ -126,11 +126,11 @@ class CreateWebPage(cpm.CPModule):
             "Select the folder for the .html file",
             [ DIR_SAME, DIR_ABOVE],
             doc="""This setting determines how <b>CreateWebPage</b> selects the 
-            folder for the .html files it creates. 
+            folder for the .html file(s) it creates. 
             <ul>
-            <li><i>%(DIR_SAME)s</i>: Place the .html files in the same folder as 
+            <li><i>%(DIR_SAME)s</i>: Place the .html file(s) in the same folder as 
             the files.</li>
-            <li><i>%(DIR_ABOVE)s</i>: Place the .html files in the
+            <li><i>%(DIR_ABOVE)s</i>: Place the .html file(s) in the
             image files' parent folder.</li>
             </ul>""" % globals())
         
@@ -155,7 +155,7 @@ class CreateWebPage(cpm.CPModule):
         self.table_border_width = cps.Integer(
             "Table border width", 1, minval = 0,
             doc = """The table border width determines the width of the border
-            around the entire table and is measured in pixels. This value can be 
+            around the entire grid of displayed images (i.e., the "table" of images) and is measured in pixels. This value can be 
             set to zero, in which case you will not see the table border.""")
         
         self.table_border_color = cps.Color(
@@ -163,7 +163,7 @@ class CreateWebPage(cpm.CPModule):
 
         self.image_spacing = cps.Integer(
             "Image spacing", 1, minval = 0,
-            doc = """The spacing between table cells in pixels.""")
+            doc = """The spacing between images ("table cells"), in pixels.""")
         
         self.image_border_width = cps.Integer(
             "Image border width", 1, minval = 0,
@@ -185,15 +185,15 @@ class CreateWebPage(cpm.CPModule):
         
         self.wants_zip_file = cps.Binary(
             "Make a ZIP file containing the full-size images?", False,doc="""
-            ZIP files are a popular archive and data compression file format.
-            Check this box to create a ZIP file that contains all your images 
-            compressed to reduce file size""")
+            ZIP files are a common archive and data compression file format, making it convenient to download all of the images represented on the web page with a single click.
+            Check this box to create a ZIP file that contains all your images, 
+            compressed to reduce file size.""")
         
         self.zipfile_name = cps.Text(
             "Enter the ZIP file name", "Images.zip",
             doc="""
             <i>(Used only if creating a ZIP file)</i><br>
-            Choose the name of the ZIP file used to contain the images.""")
+            Specify the name for the ZIP file.""")
         
     def settings(self):
         '''The settings as saved in the pipeline'''

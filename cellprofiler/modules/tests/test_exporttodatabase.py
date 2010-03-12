@@ -86,7 +86,7 @@ class TestExportToDatabase(unittest.TestCase):
     def get_sqlite_cursor(self, module):
         from pysqlite2 import dbapi2 as sqlite
         self.assertTrue(isinstance( module, E.ExportToDatabase))
-        file_name = os.path.join(module.output_directory.value,
+        file_name = os.path.join(module.directory.get_absolute_path(),
                                  module.sqlite_file.value)
         connection = sqlite.connect(file_name)
         cursor = connection.cursor()
@@ -113,7 +113,7 @@ ExportToDatabase:[module_num:1|svn_version:\'8913\'|variable_revision_number:4|s
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
         self.assertTrue(isinstance(module, E.ExportToDatabase))
-        self.assertEqual(module.directory_choice, E.DEFAULT_OUTPUT_FOLDER_NAME)
+        self.assertEqual(module.directory.dir_choice, E.DEFAULT_OUTPUT_FOLDER_NAME)
         self.assertTrue(module.want_table_prefix)
         self.assertEqual(module.table_prefix, "ExptTbl_")
         self.assertEqual(module.sql_file_prefix, "SQLFile_")
@@ -142,7 +142,7 @@ ExportToDatabase:[module_num:1|svn_version:\'8913\'|variable_revision_number:5|s
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
         self.assertTrue(isinstance(module, E.ExportToDatabase))
-        self.assertEqual(module.directory_choice, E.DEFAULT_OUTPUT_FOLDER_NAME)
+        self.assertEqual(module.directory.dir_choice, E.DEFAULT_OUTPUT_FOLDER_NAME)
         self.assertTrue(module.want_table_prefix)
         self.assertEqual(module.table_prefix, "ExptTbl_")
         self.assertEqual(module.sql_file_prefix, "SQLFile_")
@@ -172,7 +172,7 @@ ExportToDatabase:[module_num:1|svn_version:\'8913\'|variable_revision_number:6|s
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
         self.assertTrue(isinstance(module, E.ExportToDatabase))
-        self.assertEqual(module.directory_choice, E.DEFAULT_OUTPUT_FOLDER_NAME)
+        self.assertEqual(module.directory.dir_choice, E.DEFAULT_OUTPUT_FOLDER_NAME)
         self.assertTrue(module.want_table_prefix)
         self.assertEqual(module.table_prefix, "ExptTbl_")
         self.assertEqual(module.sql_file_prefix, "SQLFile_")
@@ -205,7 +205,7 @@ ExportToDatabase:[module_num:1|svn_version:\'8913\'|variable_revision_number:7|s
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
         self.assertTrue(isinstance(module, E.ExportToDatabase))
-        self.assertEqual(module.directory_choice, E.DEFAULT_OUTPUT_FOLDER_NAME)
+        self.assertEqual(module.directory.dir_choice, E.DEFAULT_OUTPUT_FOLDER_NAME)
         self.assertTrue(module.want_table_prefix)
         self.assertEqual(module.table_prefix, "ExptTbl_")
         self.assertEqual(module.sql_file_prefix, "SQLFile_")
@@ -245,7 +245,7 @@ ExportToDatabase:[module_num:1|svn_version:\'8913\'|variable_revision_number:8|s
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
         self.assertTrue(isinstance(module, E.ExportToDatabase))
-        self.assertEqual(module.directory_choice, E.DEFAULT_OUTPUT_FOLDER_NAME)
+        self.assertEqual(module.directory.dir_choice, E.DEFAULT_OUTPUT_FOLDER_NAME)
         self.assertTrue(module.want_table_prefix)
         self.assertEqual(module.table_prefix, "ExptTbl_")
         self.assertEqual(module.sql_file_prefix, "SQLFile_")
@@ -290,7 +290,7 @@ ExportToDatabase:[module_num:1|svn_version:\'8913\'|variable_revision_number:9|s
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
         self.assertTrue(isinstance(module, E.ExportToDatabase))
-        self.assertEqual(module.directory_choice, E.DEFAULT_OUTPUT_FOLDER_NAME)
+        self.assertEqual(module.directory.dir_choice, E.DEFAULT_OUTPUT_FOLDER_NAME)
         self.assertTrue(module.want_table_prefix)
         self.assertEqual(module.table_prefix, "ExptTbl_")
         self.assertEqual(module.sql_file_prefix, "SQLFile_")
@@ -512,8 +512,9 @@ ExportToDatabase:[module_num:2|svn_version:\'8947\'|variable_revision_number:11|
         module = pipeline.modules()[-1]
         self.assertTrue(isinstance(module, E.ExportToDatabase))
         self.assertEqual(module.db_type, E.DB_MYSQL_CSV)
-        self.assertEqual(module.directory_choice, E.DIR_CUSTOM_WITH_METADATA)
-        self.assertEqual(module.output_directory, r"./\g<Plate>")
+        self.assertEqual(module.directory.dir_choice, 
+                         E.DEFAULT_OUTPUT_SUBFOLDER_NAME)
+        self.assertEqual(module.directory.custom_path, r"./\g<Plate>")
         self.assertEqual(module.sql_file_prefix, "SQL_")
         self.assertEqual(module.db_name, "DefaultDB")
         
@@ -565,8 +566,8 @@ ExportToDatabase:[module_num:2|svn_version:\'8947\'|variable_revision_number:12|
         module = pipeline.modules()[-1]
         self.assertTrue(isinstance(module, E.ExportToDatabase))
         self.assertEqual(module.db_type, E.DB_MYSQL)
-        self.assertEqual(module.directory_choice, E.DIR_CUSTOM_WITH_METADATA)
-        self.assertEqual(module.output_directory, r"./\g<Plate>")
+        self.assertEqual(module.directory.dir_choice, E.DEFAULT_OUTPUT_SUBFOLDER_NAME)
+        self.assertEqual(module.directory.custom_path, r"./\g<Plate>")
         self.assertEqual(module.sql_file_prefix, "SQL_")
         self.assertEqual(module.db_name, "DefaultDB")
         self.assertEqual(module.max_column_size, 64)
@@ -620,11 +621,69 @@ ExportToDatabase:[module_num:2|svn_version:\'8947\'|variable_revision_number:12|
         module = pipeline.modules()[-1]
         self.assertTrue(isinstance(module, E.ExportToDatabase))
         self.assertEqual(module.db_type, E.DB_MYSQL)
-        self.assertEqual(module.directory_choice, E.DIR_CUSTOM_WITH_METADATA)
-        self.assertEqual(module.output_directory, r"./\g<Plate>")
+        self.assertEqual(module.directory.dir_choice, E.DEFAULT_OUTPUT_SUBFOLDER_NAME)
+        self.assertEqual(module.directory.custom_path, r"./\g<Plate>")
         self.assertEqual(module.sql_file_prefix, "SQL_")
         self.assertEqual(module.db_name, "DefaultDB")
         self.assertEqual(module.max_column_size, 61)
+
+    def test_01_07_load_v15(self):
+        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:1
+SVNRevision:9503
+
+ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|show_window:True|notes:\x5B\x5D]
+    Database type:MySQL / CSV
+    Database name:Heel
+    Add a prefix to table names?:No
+    Table prefix:Ouch
+    SQL file prefix:LQS_
+    Output file location:Elsewhere...\x7C//achilles/red/shoes
+    Create a CellProfiler Analyst properties file?:No
+    Database host:Zeus
+    Username:Hera
+    Password:Athena
+    Name the SQLite database file:Poseidon
+    Calculate the per-image mean values of object measurements?:Yes
+    Calculate the per-image median values of object measurements?:No
+    Calculate the per-image standard deviation values of object measurements?:No
+    Calculate the per-well mean values of object measurements?:Yes
+    Calculate the per-well median values of object measurements?:Yes
+    Calculate the per-well standard deviation values of object measurements?:No
+    Export measurements for all objects to the database?:All
+    Select the objects:
+    Maximum # of characters in a column name:62
+    Create one table per object or a single object table?:One table per object type
+"""
+        pipeline = cpp.Pipeline()
+        def callback(caller,event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO(data))
+        self.assertEqual(len(pipeline.modules()), 1)
+        module = pipeline.modules()[-1]
+        self.assertTrue(isinstance(module, E.ExportToDatabase))
+        self.assertEqual(module.db_type, E.DB_MYSQL_CSV)
+        self.assertEqual(module.db_name, "Heel")
+        self.assertFalse(module.want_table_prefix)
+        self.assertEqual(module.table_prefix, "Ouch")
+        self.assertEqual(module.sql_file_prefix, "LQS_")
+        self.assertEqual(module.directory.dir_choice, E.ABSOLUTE_FOLDER_NAME)
+        self.assertEqual(module.directory.custom_path, "//achilles/red/shoes")
+        self.assertFalse(module.save_cpa_properties)
+        self.assertEqual(module.db_host, "Zeus")
+        self.assertEqual(module.db_user, "Hera")
+        self.assertEqual(module.db_passwd, "Athena")
+        self.assertEqual(module.sqlite_file, "Poseidon")
+        self.assertTrue(module.wants_agg_mean)
+        self.assertFalse(module.wants_agg_median)
+        self.assertFalse(module.wants_agg_std_dev)
+        self.assertTrue(module.wants_agg_mean_well)
+        self.assertTrue(module.wants_agg_median_well)
+        self.assertFalse(module.wants_agg_std_dev_well)
+        self.assertEqual(module.objects_choice, E.O_ALL)
+        self.assertEqual(module.max_column_size, 62)
+        self.assertEqual(module.separate_object_tables, E.OT_PER_OBJECT)
         
     def make_workspace(self, wants_files, alt_object=False, 
                        long_measurement=False, wierd_measurement=False,
@@ -759,8 +818,8 @@ ExportToDatabase:[module_num:2|svn_version:\'8947\'|variable_revision_number:12|
                 m.add_image_measurement(column[1],0)
         if wants_files or well_metadata:
             output_dir = tempfile.mkdtemp()
-            module.directory_choice.value = E.DIR_CUSTOM
-            module.output_directory.value = output_dir
+            module.directory.dir_choice = E.ABSOLUTE_FOLDER_NAME
+            module.directory.custom_path = output_dir
             def finally_fn():
                 for filename in os.listdir(output_dir):
                     os.remove(os.path.join(output_dir, filename))
@@ -778,8 +837,8 @@ ExportToDatabase:[module_num:2|svn_version:\'8947\'|variable_revision_number:12|
             module.wants_agg_median.value = False
             module.wants_agg_std_dev.value = False
             module.objects_choice.value = E.O_ALL
-            module.directory_choice.value = E.DIR_CUSTOM
-            module.output_directory.value = output_dir
+            module.directory.dir_choice = E.ABSOLUTE_FOLDER_NAME
+            module.directory.custom_path = output_dir
             module.separate_object_tables.value = E.OT_COMBINE
             module.post_run(workspace)
             sql_file = os.path.join(output_dir, "SQL__SETUP.SQL")
@@ -846,8 +905,8 @@ ExportToDatabase:[module_num:2|svn_version:\'8947\'|variable_revision_number:12|
             module.objects_choice.value = E.O_SELECT
             module.objects_list.choices = [OBJECT_NAME, ALTOBJECT_NAME]
             module.objects_list.value = OBJECT_NAME
-            module.directory_choice.value = E.DIR_CUSTOM
-            module.output_directory.value = output_dir
+            module.directory.dir_choice = E.ABSOLUTE_FOLDER_NAME
+            module.directory.custom_path = output_dir
             module.separate_object_tables.value = E.OT_COMBINE
             module.post_run(workspace)
             sql_file = os.path.join(output_dir, "SQL__SETUP.SQL")
@@ -1037,8 +1096,8 @@ ExportToDatabase:[module_num:2|svn_version:\'8947\'|variable_revision_number:12|
             module.wants_agg_median.value = False
             module.wants_agg_std_dev.value = False
             module.objects_choice.value = E.O_ALL
-            module.directory_choice.value = E.DIR_CUSTOM
-            module.output_directory.value = output_dir
+            module.directory.dir_choice = E.ABSOLUTE_FOLDER_NAME
+            module.directory.custom_path = output_dir
             module.separate_object_tables.value = E.OT_COMBINE
             module.post_run(workspace)
             sql_file = os.path.join(output_dir, "SQL__SETUP.SQL")
@@ -1304,8 +1363,8 @@ ExportToDatabase:[module_num:2|svn_version:\'8947\'|variable_revision_number:12|
             module.wants_agg_median.value = False
             module.wants_agg_std_dev.value = False
             module.objects_choice.value = E.O_ALL
-            module.directory_choice.value = E.DIR_CUSTOM
-            module.output_directory.value = output_dir
+            module.directory.dir_choice = E.ABSOLUTE_FOLDER_NAME
+            module.directory.custom_path = output_dir
             module.separate_object_tables.value = E.OT_COMBINE
             module.prepare_run(workspace.pipeline, workspace.image_set_list,None)
             module.prepare_group(workspace.pipeline, workspace.image_set_list,
@@ -1396,8 +1455,8 @@ ExportToDatabase:[module_num:2|svn_version:\'8947\'|variable_revision_number:12|
             module.wants_agg_median.value = False
             module.wants_agg_std_dev.value = False
             module.objects_choice.value = E.O_ALL
-            module.directory_choice.value = E.DIR_CUSTOM
-            module.output_directory.value = output_dir
+            module.directory.dir_choice = E.ABSOLUTE_FOLDER_NAME
+            module.directory.custom_path = output_dir
             module.separate_object_tables.value = E.OT_PER_OBJECT
             module.post_run(workspace)
             sql_file = os.path.join(output_dir, "SQL__SETUP.SQL")
@@ -1463,8 +1522,8 @@ ExportToDatabase:[module_num:2|svn_version:\'8947\'|variable_revision_number:12|
             module.objects_choice.value = E.O_SELECT
             module.objects_list.choices = [OBJECT_NAME, ALTOBJECT_NAME]
             module.objects_list.value = OBJECT_NAME
-            module.directory_choice.value = E.DIR_CUSTOM
-            module.output_directory.value = output_dir
+            module.directory.dir_choice = E.ABSOLUTE_FOLDER_NAME
+            module.directory.custom_path = output_dir
             module.separate_object_tables.value = E.OT_PER_OBJECT
             module.post_run(workspace)
             sql_file = os.path.join(output_dir, "SQL__SETUP.SQL")
@@ -1650,8 +1709,8 @@ ExportToDatabase:[module_num:2|svn_version:\'8947\'|variable_revision_number:12|
             module.wants_agg_median.value = False
             module.wants_agg_std_dev.value = False
             module.objects_choice.value = E.O_ALL
-            module.directory_choice.value = E.DIR_CUSTOM
-            module.output_directory.value = output_dir
+            module.directory.dir_choice = E.ABSOLUTE_FOLDER_NAME
+            module.directory.custom_path = output_dir
             module.separate_object_tables.value = E.OT_PER_OBJECT
             module.post_run(workspace)
             sql_file = os.path.join(output_dir, "SQL__SETUP.SQL")
@@ -1965,8 +2024,8 @@ ExportToDatabase:[module_num:2|svn_version:\'8947\'|variable_revision_number:12|
             module.wants_agg_median.value = False
             module.wants_agg_std_dev.value = False
             module.objects_choice.value = E.O_ALL
-            module.directory_choice.value = E.DIR_CUSTOM
-            module.output_directory.value = output_dir
+            module.directory.dir_choice = E.ABSOLUTE_FOLDER_NAME
+            module.directory.custom_path = output_dir
             module.separate_object_tables.value = E.OT_PER_OBJECT
             module.prepare_run(workspace.pipeline, workspace.image_set_list,None)
             module.prepare_group(workspace.pipeline, workspace.image_set_list,

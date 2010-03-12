@@ -115,13 +115,13 @@ class ExportToSpreadsheet(cpm.CPModule):
             <li><i>Default Input Folder sub-folder</i> Saves the .csv file
             in a sub-folder of the default input folder.</li>
             <li><i>Default Output Folder sub-folder</i> Saves the .csv file
-            in a sub-folder of the default output folder.</li>
+            in a sub-folder of the default output folder.</li></ul>
             If you have metadata 
             associated with your images, you can  name the folder using metadata
             tags. %s. For instance, if you have a metadata tag named, 
             "Plate", you can create a per-plate folder using the metadata 
             tag "./&lt;Plate&gt;".
-            %s.</li></ul>"""%(USING_METADATA_TAGS_REF,USING_METADATA_HELP_REF))
+            %s."""%(USING_METADATA_TAGS_REF,USING_METADATA_HELP_REF))
         
         self.add_metadata = cps.Binary("Add image metadata columns to your object data file?", False, doc = """"Image_Metadata_" columns are normally exported in the Image data file, but if you check this box they will also be exported with the Object data file(s).""")
         

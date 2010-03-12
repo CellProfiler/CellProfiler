@@ -82,7 +82,10 @@ import cellprofiler.preferences as cpp
 import cellprofiler.measurements as cpmeas
 from identify import M_NUMBER_OBJECT_NUMBER
 from cellprofiler.gui.help import USING_METADATA_TAGS_REF, USING_METADATA_HELP_REF
-from cellprofiler.preferences import standardize_default_folder_names, DEFAULT_INPUT_FOLDER_NAME, DEFAULT_OUTPUT_FOLDER_NAME
+from cellprofiler.preferences import \
+     standardize_default_folder_names, DEFAULT_INPUT_FOLDER_NAME, \
+     DEFAULT_OUTPUT_FOLDER_NAME, DEFAULT_INPUT_SUBFOLDER_NAME, \
+     DEFAULT_OUTPUT_SUBFOLDER_NAME, ABSOLUTE_FOLDER_NAME
 
 ##############################################
 #
@@ -125,7 +128,7 @@ OT_PER_OBJECT = "One table per object type"
 OT_COMBINE = "Single object table"
 
 '''Index of the object table format choice in the settings'''
-OT_IDX = 18
+OT_IDX = 17
 
 '''Use this dictionary to keep track of rewording of above if it happens'''
 OT_DICTIONARY = {
@@ -180,7 +183,7 @@ def connect_sqlite(db_file):
 class ExportToDatabase(cpm.CPModule):
  
     module_name = "ExportToDatabase"
-    variable_revision_number = 14
+    variable_revision_number = 15
     category = "Data Tools"
 
     def create_settings(self):
@@ -227,32 +230,34 @@ class ExportToDatabase(cpm.CPModule):
             <i>(Used if SQL is selected as the database type and if CSV files are to be written)</i><br>
             What prefix do you want to use to name the SQL file?""")
         
-        self.directory_choice = cps.Choice(
+        self.directory = cps.DirectoryPath(
             "Output file location",
-            [DEFAULT_OUTPUT_FOLDER_NAME, DEFAULT_INPUT_FOLDER_NAME, DIR_CUSTOM, 
-             DIR_CUSTOM_WITH_METADATA],
+            dir_choices = [
+                DEFAULT_OUTPUT_FOLDER_NAME, DEFAULT_INPUT_FOLDER_NAME, 
+                ABSOLUTE_FOLDER_NAME, DEFAULT_OUTPUT_SUBFOLDER_NAME,
+                DEFAULT_INPUT_SUBFOLDER_NAME],
             doc="""This setting determines where the .csv files are saved if
             you decide to save measurements to files instead of writing them
             directly to the database.
-            <br><ul><li><i>Default Output Folder:</i> Saves files in the
+            <br><ul><li><i>%(DEFAULT_OUTPUT_FOLDER_NAME)s:</i> Saves files in the
             Default Output Folder.</li>
-            <li><i>Default Input Folder:</i> Saves files in the Default
+            <li><i>%(DEFAULT_INPUT_FOLDER_NAME)s:</i> Saves files in the Default
             Input Folder.</li>
-            <li><i>Custom folder:</i> Lets you specify the folder name. If
-            the folder name starts with ".", the folder will be a subfolder
-            of the Default Output Folder. If the folder name starts with "&amp;",
-            the folder will be a subfolder of the Default Input Folder.</li>
-            <li><i>Custom folder with metadata:</i> If you have metadata 
-            associated with your images, you can use metadata tags here. %s. 
+            <li><i>%(ABSOLUTE_FOLDER_NAME)s:</i> Lets you specify the folder name.</li>
+            <li><i>%(DEFAULT_OUTPUT_SUBFOLDER_NAME)s:</i> Saves files in
+            a sub-folder of the default output folder. Lets you specify the
+            sub-folder name.</li>
+            <li><i>%(DEFAULT_INPUT_SUBFOLDER_NAME)s:</i> Saves files in
+            a sub-folder of the default input folder. Lets you specify the
+            sub-folder name.</li></ul><br>
+            For <i>%(ABSOLUTE_FOLDER_NAME)s</i>, <i>%(DEFAULT_INPUT_SUBFOLDER_NAME)s</i>
+            and <i>%(DEFAULT_OUTPUT_SUBFOLDER_NAME)s</i>, if you have metadata 
+            associated with your images, you can use metadata tags here. 
+            %(USING_METADATA_TAGS_REF)s. 
             The module will substitute the metadata
             values for the last image set processed for any metadata tags
-            in the path name. %s. </li></ul>"""% (USING_METADATA_TAGS_REF, USING_METADATA_HELP_REF))
-        
-        self.output_directory = cps.Text(
-            "Enter the output folder", ".", doc = """
-            <i>(Used if SQL is selected as the database type and if CSV files are to be written)</i><br>
-            What folder should be used to save files? Use a "." to indicate the default
-            output folder.""")
+            in the path name. 
+            %(USING_METADATA_HELP_REF)s."""% globals())
         
         self.save_cpa_properties = cps.Binary(
             "Create a CellProfiler Analyst properties file?", 
@@ -396,9 +401,7 @@ class ExportToDatabase(cpm.CPModule):
             result += [self.table_prefix]
         result += [self.save_cpa_properties]
         if needs_default_output_directory:
-            result += [self.directory_choice]
-            if self.directory_choice in (DIR_CUSTOM, DIR_CUSTOM_WITH_METADATA):
-                result += [self.output_directory]
+            result += [self.directory]
         result += [self.wants_agg_mean, self.wants_agg_median,
                    self.wants_agg_std_dev, self.wants_agg_mean_well, 
                    self.wants_agg_median_well, self.wants_agg_std_dev_well,
@@ -411,7 +414,7 @@ class ExportToDatabase(cpm.CPModule):
     def settings(self):
         return [self.db_type, self.db_name, self.want_table_prefix,
                 self.table_prefix, self.sql_file_prefix, 
-                self.directory_choice, self.output_directory,
+                self.directory,
                 self.save_cpa_properties, self.db_host, 
                 self.db_user, self.db_passwd, self.sqlite_file,
                 self.wants_agg_mean, self.wants_agg_median,
@@ -516,34 +519,8 @@ class ExportToDatabase(cpm.CPModule):
     
     def prepare_to_create_batch(self, pipeline, image_set_list, fn_alter_path):
         '''Alter the output directory path for the remote batch host'''
-        if self.directory_choice == DEFAULT_OUTPUT_FOLDER_NAME:
-            self.directory_choice.value = DIR_CUSTOM
-            path = '.'
-        elif self.directory_choice == DEFAULT_INPUT_FOLDER_NAME:
-            self.directory_choice.value = DIR_CUSTOM
-            path = '&'
-        elif self.directory_choice == DIR_CUSTOM_WITH_METADATA:
-            # The patterns, "\g<...>" and "\(?", need to be protected
-            # from backslashification.
-            path = self.output_directory.value
-            end_new_style = path.find("\\g<")
-            end_old_style = path.find("\(?")
-            end = (end_new_style 
-                   if (end_new_style != -1 and 
-                       (end_old_style == -1 or end_old_style > end_new_style))
-                   else end_old_style)
-            if end != -1:
-                pre_path = path[:end]
-                pre_path = cpp.get_absolute_path(pre_path, 
-                                                 abspath_mode = cpp.ABSPATH_OUTPUT)
-                pre_path = fn_alter_path(pre_path)
-                path = pre_path + path[end:]
-                self.output_directory.value = path
-                return True
-        else:
-            path = self.output_directory.value
-        path = cpp.get_absolute_path(path, abspath_mode = cpp.ABSPATH_OUTPUT)
-        self.output_directory.value = fn_alter_path(path)
+        self.directory.alter_for_create_batch_files(fn_alter_path)
+        return True
             
     def run(self, workspace):
         if workspace.pipeline.test_mode:
@@ -1423,18 +1400,8 @@ check_tables = yes
         return FileNameWidth, PathNameWidth
     
     def get_output_directory(self, workspace=None):
-        if (self.directory_choice == DEFAULT_OUTPUT_FOLDER_NAME):
-            return cpp.get_default_output_directory()
-        elif self.directory_choice == DEFAULT_INPUT_FOLDER_NAME:
-            return cpp.get_default_image_directory()
-        else:
-            path = self.output_directory.value
-            if (self.directory_choice == DIR_CUSTOM_WITH_METADATA and
-                workspace is not None):
-                path = workspace.measurements.apply_metadata(path)
-            path = cpp.get_absolute_path(path, 
-                                         abspath_mode = cpp.ABSPATH_OUTPUT)
-            return path
+        return self.directory.get_absolute_path(None if workspace is None
+                                                else workspace.measurements)
     
     def get_table_prefix(self):
         if self.want_table_prefix.value:
@@ -1659,15 +1626,36 @@ check_tables = yes
             #
             setting_values = setting_values + [OT_COMBINE]
             variable_revision_number = 14
-        
+            
+        if (not from_matlab) and variable_revision_number == 14:
+            #
+            # Combined directory_choice and output_folder into directory
+            #
+            dir_choice, custom_directory = setting_values[5:7]
+            if dir_choice in (DIR_CUSTOM, DIR_CUSTOM_WITH_METADATA):
+                if custom_directory.startswith('.'):
+                    dir_choice = DEFAULT_OUTPUT_SUBFOLDER_NAME
+                elif custom_directory.startswith('&'):
+                    dir_choice = DEFAULT_INPUT_SUBFOLDER_NAME
+                    custom_directory = '.'+custom_directory[1:]
+                else:
+                    dir_choice = ABSOLUTE_FOLDER_NAME
+            directory = cps.DirectoryPath.static_join_string(dir_choice,
+                                                             custom_directory)
+            setting_values = (setting_values[:5] + [directory] +
+                              setting_values[7:])
+            variable_revision_number = 15
+                              
         setting_values = list(setting_values)
         setting_values[OT_IDX] = OT_DICTIONARY.get(setting_values[OT_IDX],
                                                    setting_values[OT_IDX])
         
         # Standardize input/output directory name references
         SLOT_DIRCHOICE = 5
-        setting_values = standardize_default_folder_names(setting_values,SLOT_DIRCHOICE)
-
+        directory = setting_values[SLOT_DIRCHOICE]
+        directory = cps.DirectoryPath.upgrade_setting(directory)
+        setting_values[SLOT_DIRCHOICE] = directory
+        
         return setting_values, variable_revision_number, from_matlab
     
 class ColumnNameMapping:

@@ -340,4 +340,10 @@ class MeasureNeurons(cpm.CPModule):
             setting_values = setting_values + [cps.NO, "Branchpoints"]
             from_matlab = False
             variable_revision_number = 1
+        if not from_matlab and variable_revision_number == 1:
+            #
+            # Added hole size questions
+            #
+            setting_values = setting_values + [cps.YES, "10"]
+            variable_revision_number = 2
         return setting_values, variable_revision_number, from_matlab

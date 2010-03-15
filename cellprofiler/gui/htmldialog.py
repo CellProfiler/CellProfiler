@@ -33,13 +33,25 @@ object."""
 
 import wx
 import wx.html
+import webbrowser
+
+class DumbHtmlWindow(wx.html.HtmlWindow):
+    def __init__(self, parent):
+        super(DumbHtmlWindow, self).__init__(parent)
+    def OnLinkClicked(self, link_info):
+        if link_info.Href.startswith("#"):
+            super(DumbHtmlWindow, self).OnLinkClicked(link_info)
+            return
+        if link_info.Href.startswith("#"):
+            return
+        webbrowser.open(link_info.Href)
 
 class HTMLDialog(wx.Dialog):
     def __init__(self, parent, title, contents):
         super(HTMLDialog, self).__init__(parent, -1, title, 
                                          style=(wx.DEFAULT_DIALOG_STYLE | 
                                                 wx.RESIZE_BORDER))
-        html = wx.html.HtmlWindow(parent=self)
+        html = DumbHtmlWindow(parent=self)
         html.SetPage(contents)
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(html, 1, wx.EXPAND | wx.ALL, 5)

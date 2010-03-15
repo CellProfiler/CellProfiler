@@ -278,7 +278,18 @@ class CPFrame(wx.Frame):
 
         sizer = wx.BoxSizer()
         helpframe.SetSizer(sizer)
-        window = wx.html.HtmlWindow(helpframe)
+        class DumbHtmlWindow(wx.html.HtmlWindow):
+            def __init__(self, parent):
+                super(DumbHtmlWindow, self).__init__(parent)
+            def OnLinkClicked(self, link_info):
+                if link_info.Href.startswith("#"):
+                    super(DumbHtmlWindow, self).OnLinkClicked(link_info)
+                    return
+                import webbrowser
+                if link_info.Href.startswith("#"):
+                    return
+                webbrowser.open(link_info.Href)
+        window = DumbHtmlWindow(helpframe)
         sizer.Add(window,1,wx.EXPAND)
         window.AppendToPage(help_text)
 

@@ -14,7 +14,6 @@ __version__ = "$Revision$"
 import sys
 import os
 
-
 # Mark's machine
 if sys.platform.startswith('win'):
     try:
@@ -184,10 +183,10 @@ try:
         from cellprofiler.modules import output_module_html
         from cellprofiler.gui.help import output_gui_html
         # Write the individual topic files
-        output_module_html()
-        output_gui_html()
+        module_help_text  = output_module_html()
+        nonmodule_help_text = output_gui_html()
         
-        # Produce one html to unit them
+        # Produce one html to unite them
         root = os.path.split(__file__)[0]
         if len(root) == 0:
             root = os.curdir
@@ -199,19 +198,62 @@ try:
                 webpage_path = root
         index_fd = open(os.path.join(webpage_path,'index.html'),'w')
         
-        index_fd.write("""
-        <html style="font-family:arial">
-        <head>
-            <title>CellProfiler: Table of contents</title>
-        </head>
-        <body>
-        <h1>CellProfiler: Table of contents</h1>
-        <ul>
-        <li><a href = "gui_index.html">Using CellProfiler</a></li>
-        <li><a href = "module_index.html">Modules</a></li>
-        </ul>""")
+        #For some reason, Adobe doesn't like using absolute paths to assemble the PDF.
+        #Also, Firefox doesn't like displaying the HTML image links using abs paths either.
+        #So I have use relative ones. Should check this to see if works on the 
+        #compiled version
+        #path = os.path.split(os.path.abspath(sys.argv[0]))[0]
+        #path = os.path.join(path, 'cellprofiler','icons')
+        path = ".."
+        path = os.path.join(path,'icons')
+        LOCATION_COVERPAGE = os.path.join(path,'CPCoverPage.png')
+        LOCATION_WHITEHEADLOGO = os.path.join(path,'WhiteheadInstituteLogo.png')
+        LOCATION_CSAILLOGO = os.path.join(path,'CSAIL_Logo.png')
+        LOCATION_IMAGINGPLATFORMBANNER  = os.path.join(path,'BroadPlusImagingPlusBanner.png')
         
-        index_fd.write("</body>\n")
+        intro_text = """
+<html style="font-family:arial">
+<head>
+<title>CellProfiler: Table of contents</title>
+</head>
+<body>
+<div style="page-break-after:always"> 
+<table width="100%%">
+<tr><td align="center">
+<img src="%(LOCATION_COVERPAGE)s" align="middle"></img>
+</tr></td>
+</table>
+</div>
+<div style="page-break-after:always"> 
+<table width="100%%" cellpadding="10">
+<tr><td align="middle"><b>CellProfiler</b> cell image analysis software</td></tr>
+<tr><td align="middle"><b>Created by</b><br>Anne E. Carpenter and Thouis R. Jones</td></tr>
+<tr><td align="middle"><b>In the laboratories of</b><br>David M. Sabatini and Polina Golland at</td></tr>
+<tr><td align="middle"><img src="%(LOCATION_WHITEHEADLOGO)s"></img><img src="%(LOCATION_CSAILLOGO)s"></img></td></tr>
+<tr><td align="middle">And now based at</td></tr>
+<tr><td align="middle"><img src="%(LOCATION_IMAGINGPLATFORMBANNER)s"></img></td></tr>
+<tr><td align="middle">
+<b>CellProfiler is free and open-source!</b>
+
+<p>If you find it useful, please credit CellProfiler in publications
+<ol>
+<li>Cite the website (www.cellprofiler.org)</li>
+<li>Cite the publication (check the website for the citation).</li>
+<li>Post the reference for your publication on the CellProfiler Forum (accessible 
+from the website) so that we are aware of it.</li>
+</ol></p>
+
+<p>These steps will help us to maintain funding for the project and continue to 
+improve and support it.</p>
+</td></tr>
+</table>
+</div>
+<h1>Table of contents</h1>"""%globals()
+        index_fd.write(intro_text)
+        index_fd.write(nonmodule_help_text)
+        index_fd.write(module_help_text)
+        index_fd.write("""</body></html>\n""")
+        
         index_fd.close()
         
     if options.print_measurements:

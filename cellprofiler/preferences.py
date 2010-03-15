@@ -110,7 +110,31 @@ FOLDER_CHOICE_TRANSLATIONS = {
     'None': NO_FOLDER_NAME,
     'Elsewhere...': ABSOLUTE_FOLDER_NAME
     }
-    
+
+FOLDER_CHOICE_HELP_TEXT = """
+You can choose among the following options:
+<ul>
+<li><i>Default Input Folder</i>: Use the default input folder.</li>
+<li><i>Default Output Folder:</i> Use from the default output folder.</li>
+<li><i>Elsewhere...</i>: Use a particular folder you specify.</li>
+<li><i>Default input directory sub-folder</i>: Enter the name of a subfolder of 
+the default input folder or a path that starts from the default input folder.</li>
+<li><i>Default output directory sub-folder</i>: Enter the name of a subfolder of 
+the default output folder or a path that starts from the default output folder.</li>
+</ul>
+<p><i>Elsewhere</i> and the two sub-folder options all require you to enter an additional 
+path name. You can use an <i>absolute path</i> (such as "C:\imagedir\image.tif" on a PC) or a 
+<i>relative path</i> to specify the file location relative to a directory):
+<ul>
+<li>Use one period to represent the current directory. For example, if you choose 
+<i>Default Input Folder sub-folder</i>, you can enter "./MyFiles" to look in a 
+folder called "MyFiles" that is contained within the Default Input Folder.</li>
+<li>Use two periods ".." to move up one folder level. For example, if you choose 
+<i>Default Input Folder sub-folder</i>, you can enter "../MyFolder" to look in a 
+folder called "MyFolder" at the same level as the Default Input Folder.</li>
+</ul></p>
+"""
+
 DEFAULT_IMAGE_DIRECTORY = 'DefaultImageDirectory'
 DEFAULT_OUTPUT_DIRECTORY = 'DefaultOutputDirectory'
 TITLE_FONT_SIZE = 'TitleFontSize'

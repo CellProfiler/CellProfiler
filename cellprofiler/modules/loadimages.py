@@ -93,7 +93,8 @@ import cellprofiler.settings as cps
 from cellprofiler.preferences import \
      standardize_default_folder_names, DEFAULT_INPUT_FOLDER_NAME, \
      DEFAULT_OUTPUT_FOLDER_NAME, ABSOLUTE_FOLDER_NAME, \
-     DEFAULT_INPUT_SUBFOLDER_NAME, DEFAULT_OUTPUT_SUBFOLDER_NAME
+     DEFAULT_INPUT_SUBFOLDER_NAME, DEFAULT_OUTPUT_SUBFOLDER_NAME, \
+     FOLDER_CHOICE_HELP_TEXT
 
 PILImage.init()
 
@@ -335,35 +336,8 @@ class LoadImages(cpmodule.CPModule):
                 ABSOLUTE_FOLDER_NAME, DEFAULT_INPUT_SUBFOLDER_NAME,
                 DEFAULT_OUTPUT_SUBFOLDER_NAME],
             allow_metadata = False,
-            doc ="""
-            The folder containing the images to be loaded. 
-            You can choose among the following options:
-            <ul><li><i>Default Input Folder</i>: 
-            Load files from the default input folder (and its sub-folders, if requested).</li>
-            <li><i>Default Output
-            Folder:</i> Load files from the default output folder (and its sub-folders, if requested).</li>
-            <li><i>Elsewhere...</i>: Load files from a particular folder you specify (and its sub-folders, if requested).</li>
-            <li><i>Default input directory sub-folder</i>:
-            Enter the name of a subfolder of the default input folder or a path
-            that starts from the default input folder.</li>
-            <li><i>Default output directory sub-folder</i>:
-            Enter the name of a subfolder of the default output folder or a path
-            that starts from the default output folder.</li>
-            </ul>
-            
-            The latter three options all require you to enter an
-            additional path name. Two periods ".." specify to go 
-            up one folder level. For example, if you choose 
-            <i>Default input directory sub-folder</i>, "./CSVfiles" looks for a 
-            folder called "CSVfiles" that is contained within the 
-            Default Input Folder and "../My_folder" looks in a folder called 
-            "My_folder" at the same level as the input folder.<p>
- 
-            In general, it is best to use default input/output folders so that you 
-            can readily run your pipeline on a different set of images or on a different
-            computer simply by adjusting the Default Input and Output Folders in the main
-            CellProfiler window, without further making adjustments within this or 
-            other modules in the pipeline.""")
+            doc ="""Select the folder containing the images to be loaded. 
+            %(FOLDER_CHOICE_HELP_TEXT)s"""%globals())
 
     def add_imagecb(self):
         'Adds another image to the settings'

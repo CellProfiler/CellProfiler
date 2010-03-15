@@ -52,7 +52,8 @@ from cellprofiler.gui.help import USING_METADATA_TAGS_REF, USING_METADATA_HELP_R
 from cellprofiler.preferences import \
      standardize_default_folder_names, DEFAULT_INPUT_FOLDER_NAME, \
      DEFAULT_OUTPUT_FOLDER_NAME, ABSOLUTE_FOLDER_NAME, \
-     DEFAULT_INPUT_SUBFOLDER_NAME, DEFAULT_OUTPUT_SUBFOLDER_NAME
+     DEFAULT_INPUT_SUBFOLDER_NAME, DEFAULT_OUTPUT_SUBFOLDER_NAME, \
+     FOLDER_CHOICE_HELP_TEXT
 
 DELIMITER_TAB = "Tab"
 DELIMITER_COMMA = 'Comma (",")'
@@ -106,22 +107,11 @@ class ExportToSpreadsheet(cpm.CPModule):
                 ABSOLUTE_FOLDER_NAME, DEFAULT_INPUT_SUBFOLDER_NAME,
                 DEFAULT_OUTPUT_SUBFOLDER_NAME],
             doc="""This setting lets you choose the folder for the output
-            files.<br><ul>
-            <li><i>Default Output Folder:</i> Saves the .csv files in the
-            Default Output Folder.</li>
-            <li><i>Default Input Folder:</i> Saves the .csv files in the
-            Default Input Folder.</li>
-            <li><i>Elsewhere...:</i> Lets you specify the folder name. </li>
-            <li><i>Default Input Folder sub-folder</i> Saves the .csv file
-            in a sub-folder of the default input folder.</li>
-            <li><i>Default Output Folder sub-folder</i> Saves the .csv file
-            in a sub-folder of the default output folder.</li></ul>
-            If you have metadata 
-            associated with your images, you can  name the folder using metadata
-            tags. %s. For instance, if you have a metadata tag named, 
+            files. %(FOLDER_CHOICE_HELP_TEXT)s 
+            <p>If you have metadata associated with your images, you can  name the folder using metadata
+            tags. %(USING_METADATA_TAGS_REF)s. For instance, if you have a metadata tag named 
             "Plate", you can create a per-plate folder using the metadata 
-            tag "./&lt;Plate&gt;".
-            %s."""%(USING_METADATA_TAGS_REF,USING_METADATA_HELP_REF))
+            tag "./&lt;Plate&gt;". %(USING_METADATA_HELP_REF)s.</p>"""%globals())
         
         self.add_metadata = cps.Binary("Add image metadata columns to your object data file?", False, doc = """"Image_Metadata_" columns are normally exported in the Image data file, but if you check this box they will also be exported with the Object data file(s).""")
         

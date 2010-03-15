@@ -450,7 +450,7 @@ class LoadImages(cpmodule.CPModule):
                         for all column headers cannot exceed 64K. A warning will be generated later if this limit
                         has been exceeded.</li>
                         </ul>"""),
-               FD_METADATA_CHOICE:cps.Choice('Select from where to extract metadata?',
+               FD_METADATA_CHOICE:cps.Choice('Extract metadata from where?',
                                              [M_NONE, M_FILE_NAME, 
                                               M_PATH, M_BOTH],doc="""
                         <a name='where_to_extract'>Metadata fields can be specified from the image filename, the image path (including subfolders), or both. 
@@ -532,6 +532,29 @@ class LoadImages(cpmodule.CPModule):
         index = [fd[FD_KEY] for fd in self.images].index(id)
         del self.images[index]
 
+        
+    def help_settings(self):
+        result = [self.file_types, 
+                  self.match_method, 
+                  self.order_group_size,
+                  self.exclude,
+                  self.match_exclude,
+                  self.descend_subdirectories, 
+                  self.check_images, 
+                  self.group_by_metadata, 
+                  self.metadata_fields]
+        for image_group in self.images:
+            result += [
+                image_group[FD_COMMON_TEXT], 
+                image_group[FD_ORDER_POSITION], 
+                image_group[FD_IMAGE_NAME],
+                image_group[FD_METADATA_CHOICE],
+                image_group[FD_FILE_METADATA], 
+                image_group[FD_PATH_METADATA]]
+            
+        result += [self.location]
+        return result
+    
     def visible_settings(self):
         varlist = [self.file_types, self.match_method]
         

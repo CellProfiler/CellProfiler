@@ -124,14 +124,14 @@ from cellprofiler.preferences import standardize_default_folder_names, DEFAULT_I
 
 '''# of settings aside from the dose measurements'''
 FIXED_SETTING_COUNT = 1
-VARIABLE_SETTING_COUNT = 6
+VARIABLE_SETTING_COUNT = 5
 
 PC_CUSTOM      = "Custom"
 
 class CalculateStatistics(cpm.CPModule):
     module_name = "CalculateStatistics"
     category = "Data Tools"
-    variable_revision_number = 1
+    variable_revision_number = 2
     def create_settings(self):
         """Create your settings by subclassing this function
         
@@ -212,9 +212,12 @@ class CalculateStatistics(cpm.CPModule):
             CellProfiler will save the figure as <i>Dose_Cells_AreaShape_Area.m</i>.
             Leave this setting blank if you do not want a prefix.'''
         ))
-        group.append('pathname_choice', cps.Choice(
+        group.append('pathname', cps.DirectoryPath(
             "File output location",
-            [DEFAULT_OUTPUT_FOLDER_NAME, PC_CUSTOM],
+            dir_choices = [
+                cps.DEFAULT_OUTPUT_FOLDER_NAME, cps.DEFAULT_INPUT_FOLDER_NAME,
+                cps.ABSOLUTE_FOLDER_NAME, cps.DEFAULT_OUTPUT_SUBFOLDER_NAME,
+                cps.DEFAULT_INPUT_SUBFOLDER_NAME],
             doc="""
             This setting lets you control the folder used to store the file. Choose either:
             <ul>
@@ -225,13 +228,6 @@ class CalculateStatistics(cpm.CPModule):
             folder.</li>
             </ul>"""))
         
-        group.append('pathname', cps.Text(
-            "Folder pathname",
-            ".",doc="""
-                Enter the pathname for saving the images here. The pathname can be referenced with respect 
-                to the Default Output Folder specified in the main CellProfiler window with a period (".") or the default input 
-                folder with an ampersand ("&") as the root folder."""))
-            
         group.append("divider", cps.Divider())
         
         group.append("remover", cps.RemoveSettingButton("", "Remove this dose measurement", 
@@ -251,7 +247,7 @@ class CalculateStatistics(cpm.CPModule):
                 reduce(lambda x,y:x+y,
                        [[value.measurement, value.log_transform,
                          value.wants_save_figure, value.figure_name,
-                         value.pathname_choice, value.pathname]
+                         value.pathname]
                         for value in self.dose_values]))
     
     def visible_settings(self):
@@ -264,9 +260,7 @@ class CalculateStatistics(cpm.CPModule):
             result += [dose_value.measurement, dose_value.log_transform,
                        dose_value.wants_save_figure]
             if dose_value.wants_save_figure:
-                result += [dose_value.figure_name, dose_value.pathname_choice]
-                if dose_value.pathname_choice == PC_CUSTOM:
-                    result += [dose_value.pathname]
+                result += [dose_value.figure_name, dose_value.pathname]
             if index > 0:
                 result += [dose_value.remover]
         result.append(self.add_dose_button)
@@ -362,11 +356,7 @@ class CalculateStatistics(cpm.CPModule):
                 name = "EC50_"+dose_feature
             expt_measurements[name] = ec50_coeffs[:,2]
             if dose_group.wants_save_figure:
-                if dose_group.pathname_choice == DEFAULT_OUTPUT_FOLDER_NAME:
-                    pathname = cpprefs.get_default_output_directory()
-                elif dose_group.pathname_choice == PC_CUSTOM:
-                    pathname = cpprefs.get_absolute_path(dose_group.pathname.value,
-                                                         cpprefs.ABSPATH_OUTPUT)
+                pathname = dose_group.pathname.get_absolute_path(measurements)
                 write_figures(dose_group.figure_name, pathname, dose_feature,
                               dose_data, data, ec50_coeffs, feature_set,
                               dose_group.log_transform.value)
@@ -439,15 +429,30 @@ class CalculateStatistics(cpm.CPModule):
             #
             # Minor change: Default output directory -> folder
             #
-            for choice in (PC_DEFAULT, PC_WITH_IMAGE):
-                if setting_values[5].startswith(choice[:4]):
-                    setting_values = (setting_values[:5] + [choice] +
-                                      setting_values[6:])
-                    
-                    
+            new_setting_values = [setting_values[0]]
+            for offset in range(1, len(setting_values), 6):
+                dir_choice = setting_values[offset+4]
+                custom_path = setting_values[offset+5]
+                if dir_choice == PC_CUSTOM:
+                    if custom_path[0] == '.':
+                        dir_choice = cps.DEFAULT_OUTPUT_SUBFOLDER_NAME
+                    elif custom_path[0] == '&':
+                        dir_choice = cps.DEFAULT_OUTPUT_SUBFOLDER_NAME
+                        custom_path = "."+custom_path[1:]
+                    else:
+                        dir_choice = cps.ABSOLUTE_FOLDER_NAME
+                directory = cps.DirectoryPath.static_join_string(
+                    dir_choice, custom_path)
+                new_setting_values += setting_values[offset:(offset+4)]
+                new_setting_values += [directory]
+            setting_values = new_setting_values
+            variable_revision_number = 2
+                
         # Standardize input/output directory name references
-        SLOT_DIRCHOICE = 5
-        setting_values = standardize_default_folder_names(setting_values,SLOT_DIRCHOICE)
+        setting_values = list(setting_values)
+        for offset in range(5, len(setting_values), VARIABLE_SETTING_COUNT):
+            setting_values[offset] = cps.DirectoryPath.upgrade_setting(
+                setting_values[offset])
         
         return setting_values, variable_revision_number, from_matlab                              
 

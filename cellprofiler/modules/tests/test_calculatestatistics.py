@@ -63,8 +63,8 @@ class TestCalculateStatistics(unittest.TestCase):
         self.assertFalse(module.dose_values[0].log_transform)
         self.assertTrue(module.dose_values[0].wants_save_figure)
         self.assertEqual(module.dose_values[0].figure_name, "DOSE")
-        self.assertEqual(module.dose_values[0].pathname_choice, 
-                         C.DEFAULT_OUTPUT_FOLDER_NAME)
+        self.assertEqual(module.dose_values[0].pathname.dir_choice, 
+                         cps.DEFAULT_OUTPUT_FOLDER_NAME)
     
     def test_01_02_load_v1(self):
         data = ('eJztWNFu2jAUdWhA7SYmtJfx6KdpD12Wom5qUaUN6KohAasW1G5PlZuYNpKD'
@@ -117,8 +117,40 @@ class TestCalculateStatistics(unittest.TestCase):
         self.assertEqual(dose_value.measurement, "Metadata_Well")
         self.assertTrue(dose_value.log_transform)
         self.assertTrue(dose_value.wants_save_figure)
-        self.assertEqual(dose_value.pathname_choice, C.PC_CUSTOM)
-        self.assertEqual(dose_value.pathname, './WELL')
+        self.assertEqual(dose_value.pathname.dir_choice, 
+                         cps.DEFAULT_OUTPUT_SUBFOLDER_NAME)
+        self.assertEqual(dose_value.pathname.custom_path, './WELL')
+        
+    def test_01_03_load_v2(self):
+        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:1
+SVNRevision:9525
+
+CalculateStatistics:[module_num:1|svn_version:\'9495\'|variable_revision_number:2|show_window:True|notes:\x5B\x5D]
+    Where is information about the positive and negative control status of each image?:Metadata_Controls
+    Where is information about the treatment dose for each image?:Metadata_SBS_Doses
+    Log-transform dose values?:No
+    Create dose/response plots?:Yes
+    Figure prefix:DoseResponsePlot
+    File output location:Default Output Folder\x7CTest
+"""
+        pipeline = cpp.Pipeline()
+        def callback(caller,event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO(data))
+        self.assertEqual(len(pipeline.modules()), 1)
+        module = pipeline.modules()[0]
+        self.assertTrue(isinstance(module, C.CalculateStatistics))
+        self.assertEqual(module.grouping_values, "Metadata_Controls")
+        self.assertEqual(len(module.dose_values), 1)
+        dv = module.dose_values[0]
+        self.assertEqual(dv.measurement, "Metadata_SBS_Doses")
+        self.assertFalse(dv.log_transform)
+        self.assertTrue(dv.wants_save_figure)
+        self.assertEqual(dv.figure_name, "DoseResponsePlot")
+        self.assertEqual(dv.pathname.dir_choice, cps.DEFAULT_OUTPUT_FOLDER_NAME)
+        self.assertEqual(dv.pathname.custom_path, "Test")
         
     def test_02_01_compare_to_matlab(self):
         expected = {

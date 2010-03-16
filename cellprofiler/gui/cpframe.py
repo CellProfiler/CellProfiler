@@ -269,6 +269,23 @@ class CPFrame(wx.Frame):
 
     def do_help_modules(self, modules):
         for module in modules:
+            ## An attempt to place images inline with the help. However, the
+            ## images will not scale properly in size (yet)
+            #result = module.get_help()
+            #root = os.path.split(__file__)[0]
+            #if len(root) == 0:
+                #root = os.curdir
+            #root = os.path.split(os.path.abspath(root))[0] # Back up one level
+            #absolute_image_path = os.path.join(root, 'icons','%s.png'%(module.module_name,))
+            ## Check if the file that goes with this module exists on this computer
+            #if os.path.exists(absolute_image_path) and os.path.isfile(absolute_image_path):
+                ## If so, strip out end html tags so I can add more stuff
+                #result = result.replace('</body>','').replace('</html>','')
+                ## Include images specific to the module
+                #result += '\n\n<div><p><img src="%s", width="50%%"></img></p></div>\n'%absolute_image_path
+                ## Now end the help text
+                #result += '</body></html>'
+            #self.do_help_module(module.module_name, result)
             self.do_help_module(module.module_name, module.get_help())
 
     def do_help_module(self, module_name, help_text):

@@ -171,17 +171,13 @@ class ColorToGray(cpm.CPModule):
 
         input_image = workspace.display_data.input_image
         output_image = workspace.display_data.output_image
-        figure=workspace.create_or_find_figure(title="Color to gray",
-                                               subplots=(1,2))
-        input_axes = figure.subplot(0,0)
-        input_axes.clear()
-        input_axes.imshow(input_image)
-        input_axes.set_title("Original image: %s"%(self.image_name))
-        
-        output_axes = figure.subplot(0,1)
-        output_axes.clear()
-        output_axes.imshow(output_image,matplotlib.cm.Greys_r)
-        output_axes.set_title("Grayscale image: %s"%(self.grayscale_name))
+        figure = workspace.create_or_find_figure(title="Color to gray",
+                                                 subplots=(1,2))
+        figure.subplot_imshow(0, 0, input_image, 
+                              title = "Original image: %s"%(self.image_name))
+        figure.subplot_imshow(0, 1, output_image,
+                              title = "Grayscale image: %s"%(self.grayscale_name),
+                              colormap = matplotlib.cm.Greys_r)
         
     def run_split(self, workspace, image):
         """Split image into individual components
@@ -212,23 +208,19 @@ class ColorToGray(cpm.CPModule):
             subplots = (2,2)
         figure=workspace.create_or_find_figure(title="Color to gray",
                                                subplots=subplots)
-
-        input_axes = figure.subplot(0,0)
-        input_axes.clear()
-        input_axes.imshow(input_image)
-        input_axes.set_title("Original image")
-
+        figure.subplot_imshow(0, 0, input_image,
+                              title = "Original image")
+        
         if ndisp == 1:
             layout = [(0,1)]
         elif ndisp == 2:
             layout = [ (1,0),(0,1)]
         else:
             layout = [(1,0),(0,1),(1,1)]
-        for xy, disp in zip(layout,disp_collection):
-            output_axes = figure.subplot(xy[0],xy[1])
-            output_axes.clear()
-            output_axes.imshow(disp[0],matplotlib.cm.Greys_r)
-            output_axes.set_title("%s image"%(disp[1]))
+        for xy, disp in zip(layout, disp_collection):
+            figure.subplot_imshow(xy[0], xy[1], disp[0],
+                                  title = "%s image"%(disp[1]),
+                                  colormap = matplotlib.cm.Greys_r)
         
     def is_interactive(self):
         return False

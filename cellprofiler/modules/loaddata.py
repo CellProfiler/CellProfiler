@@ -645,6 +645,10 @@ class LoadData(cpm.CPModule):
                 col = dictionary['_'.join((cpmeas.C_METADATA, col_tokens[0]))]
                 row = row[index]
                 col = col[index]
+                try:
+                    col = int(col)
+                except ValueError:
+                    pass
                 if isinstance(col, int):
                     col = "%02d" % col
                 well = row + col

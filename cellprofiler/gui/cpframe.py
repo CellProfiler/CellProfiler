@@ -131,7 +131,6 @@ class CPFrame(wx.Frame):
         """Add the menu to the frame
 
         """
-        self.__menu_bar = wx.MenuBar()
         self.__menu_file = wx.Menu()
         self.__menu_file.Append(ID_FILE_LOAD_PIPELINE,'Load Pipeline...\tctrl+O','Load a pipeline from a .MAT or .CP file')
         self.__menu_file.Append(ID_FILE_URL_LOAD_PIPELINE, 'Load Pipeline from URL', 'Load a pipeline from the web')
@@ -147,7 +146,6 @@ class CPFrame(wx.Frame):
         self.__menu_file.AppendSubMenu(self.recent_files, "&Recent")
         # self.__menu_file.Append(ID_FILE_WIDGET_INSPECTOR,'Widget inspector','Run the widget inspector for debugging the UI')
         self.__menu_file.Append(ID_FILE_EXIT,'E&xit\tctrl+Q','Quit the application')
-        self.__menu_bar.Append(self.__menu_file,'&File')
         self.menu_edit = wx.Menu()
         self.menu_edit.Append(ID_EDIT_UNDO, "&Undo\tctrl+Z", "Undo last action")
         self.menu_edit.Append(ID_EDIT_MOVE_UP, "Move &up", "Move module toward the start of the pipeline")
@@ -157,7 +155,6 @@ class CPFrame(wx.Frame):
         self.menu_edit_add_module = wx.Menu()
         self.menu_edit.AppendSubMenu(self.menu_edit_add_module, "&Add module")
 
-        self.__menu_bar.Append(self.menu_edit, '&Edit')
         self.__menu_debug = wx.Menu()
         self.__menu_debug.Append(ID_DEBUG_TOGGLE,'&Start test run\tF5','Start the pipeline debugger')
         self.__menu_debug.Append(ID_DEBUG_STEP,'Ste&p to next module\tF6','Execute the currently selected module')
@@ -172,8 +169,6 @@ class CPFrame(wx.Frame):
         self.__menu_debug.Enable(ID_DEBUG_NEXT_GROUP, False)
         self.__menu_debug.Enable(ID_DEBUG_CHOOSE_GROUP, False)
         self.__menu_debug.Enable(ID_DEBUG_CHOOSE_IMAGE_SET, False)
-        self.__menu_bar.Append(self.__menu_debug,'&Test')
-        self.__menu_bar.Append(self.data_tools_menu(),'&Data tools')
         self.__menu_window = wx.Menu()
         self.__menu_window.Append(ID_WINDOW_CLOSE_ALL, "Close &all windows\tctrl+L", 
                                   "Close all figure windows")
@@ -182,13 +177,23 @@ class CPFrame(wx.Frame):
         self.__menu_window.Append(ID_WINDOW_HIDE_ALL_WINDOWS,"Hide all windows",
                                   "Hide all module display windows for all modules during analysis")
         self.__menu_window.AppendSeparator()
-        self.__menu_bar.Append(self.__menu_window,"&Window")
         self.__menu_help = make_help_menu(MAIN_HELP, self)
         self.__menu_help.Append(ID_HELP_MODULE,'Module help','Display help from the module''s .m file')
         self.__menu_help.Append(ID_HELP_DEVELOPERS_GUIDE,"Developer's guide",
                                 "Launch the developer's guide webpage")
-        self.__menu_bar.Append(self.__menu_help,'&Help')
+
+        self.__menu_bar = wx.MenuBar()
+        self.__menu_bar.Append(self.__menu_file,'&File')
+        self.__menu_bar.Append(self.menu_edit, '&Edit')
+        self.__menu_bar.Append(self.__menu_debug,'&Test')
+        self.__menu_bar.Append(self.__menu_window, "&Window")
+        self.__menu_bar.Append(self.data_tools_menu(), '&Data tools')
+        if wx.VERSION <= (2, 8, 10, 1, '') and wx.Platform == '__WXMAC__':
+            self.__menu_bar.Append(self.__menu_help, 'Documentation')
+        else:
+            self.__menu_bar.Append(self.__menu_help, '&Help')
         self.SetMenuBar(self.__menu_bar)
+
         wx.EVT_MENU(self,ID_FILE_EXIT,lambda event: self.Close())
         wx.EVT_MENU(self,ID_FILE_WIDGET_INSPECTOR,self.__on_widget_inspector)
         wx.EVT_MENU(self,ID_HELP_MODULE,self.__on_help_module)

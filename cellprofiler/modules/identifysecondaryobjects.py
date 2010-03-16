@@ -24,12 +24,12 @@ In order to identify the edges of secondary objects, this module performs two ta
 
 <h3>Technical notes:</h3>
 The <i>Propagation</i> algorithm labels from LABELS_IN to LABELS_OUT, steered by
-IMAGE and limited to MASK. MASK should be a logical array. LAMBDA is a
+IMAGE and limited to MASK. MASK should be a logical array. &lambda; is a
 regularization parameter, larger being closer to Euclidean distance in
 the image plane, and zero being entirely controlled by IMAGE. Propagation
 of labels is by shortest path to a nonzero label in LABELS_IN. Distance
 is the sum of absolute differences in the image in a 3x3 neighborhood, combined 
-with LAMBDA via sqrt(differences<sup>2</sup> + LAMBDA<sup>2</sup>). Note that 
+with &lambda; via sqrt(differences<sup>2</sup> + &lambda;<sup>2</sup>). Note that 
 there is no separation between adjacent areas with different labels (as there
 would be using, e.g., watershed). Such boundaries must be added in a
 postprocess.

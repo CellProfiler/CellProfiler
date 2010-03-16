@@ -15,7 +15,7 @@ image will be used to correct all images in the analysis run.
 See also <b>LoadImages</b>.
 
 """
-__version__="Revision: $1 "
+__version__="$Revision$"
 
 # CellProfiler is distributed under the GNU General Public License.
 # See the accompanying file LICENSE for details.
@@ -48,26 +48,20 @@ class LoadSingleImage(cpm.CPModule):
 
     module_name = "LoadSingleImage"
     category = "File Processing"
-    variable_revision_number = 1
+    variable_revision_number = 2
     def create_settings(self):
         """Create the settings during initialization
         
         """
-        self.dir_choice = cps.Choice(
+        self.directory = cps.DirectoryPath(
             "Folder containing the image file",
-            [DEFAULT_INPUT_FOLDER_NAME,
-             DEFAULT_OUTPUT_FOLDER_NAME,
-             DIR_CUSTOM_FOLDER,
-             DIR_CUSTOM_WITH_METADATA], 
             doc = '''It is best to store the image you want to load 
             in either the input or output folder, so that the correct image is loaded into 
             the pipeline and typos are avoided.  If you must store it in another folder, 
             select <i>Custom folder</i>. You can use metadata from the image set to
-            construct the folder name by selecting <i>Custom with metadata</i>.''')
-        
-        self.custom_directory = cps.Text(
-            "Name of the folder containing the image file",".",
-            doc='''If you chose <i>Custom with metadata</i> above, you can
+            construct the folder name by selecting <i>Custom with metadata</i>.
+            <br>
+            If you chose <i>Custom with metadata</i> above, you can
             specify a path based on metadata associated with the
             image set. %s. For instance, if you have a "Plate" metadata element,
             you can specify a path name of "./\g&lt;Plate&gt;" to get files
@@ -86,13 +80,7 @@ class LoadSingleImage(cpm.CPModule):
         if can_remove:
             group.append("divider", cps.Divider(line=False))
         def get_directory_fn():
-            if self.dir_choice == DEFAULT_INPUT_FOLDER_NAME:
-                return cpprefs.get_default_image_directory()
-            elif self.dir_choice == DEFAULT_OUTPUT_FOLDER_NAME:
-                return cpprefs.get_default_output_directory()
-            elif self.dir_choice == DIR_CUSTOM_FOLDER:
-                return self.custom_directory.value
-            return os.curdir()
+            return self.directory.get_absolute_path()
         
         group.append("file_name", cps.FilenameText(
             "Filename of the image to load (Include the extension, e.g., .tif)",
@@ -125,15 +113,13 @@ class LoadSingleImage(cpm.CPModule):
 
     def settings(self):
         """Return the settings in the order in which they appear in a pipeline file"""
-        result = [self.dir_choice, self.custom_directory]
+        result = [self.directory]
         for file_setting in self.file_settings:
             result += [file_setting.file_name, file_setting.image_name]
         return result
 
     def visible_settings(self):
-        result = [self.dir_choice]
-        if self.dir_choice in (DIR_CUSTOM_FOLDER, DIR_CUSTOM_WITH_METADATA):
-            result += [self.custom_directory]
+        result = [self.directory]
         for file_setting in self.file_settings:
             result += file_setting.visible_settings()
         result.append(self.add_button)
@@ -141,7 +127,7 @@ class LoadSingleImage(cpm.CPModule):
 
     def prepare_settings(self, setting_values):
         """Adjust the file_settings depending on how many files there are"""
-        count = (len(setting_values)-2)/2
+        count = (len(setting_values)-1)/2
         del self.file_settings[count:]
         while len(self.file_settings) < count:
             self.add_file()
@@ -162,52 +148,11 @@ class LoadSingleImage(cpm.CPModule):
                         mapping mountpoints. It should be called for every
                         pathname stored in the settings or legacy fields.
         '''
-        if self.dir_choice == DIR_DEFAULT_IMAGE_FOLDER:
-            self.dir_choice.value = DIR_CUSTOM_FOLDER
-            self.custom_directory.value = cpprefs.get_default_image_directory()
-        elif self.dir_choice == DIR_DEFAULT_OUTPUT_FOLDER:
-            self.dir_choice.value = DIR_CUSTOM_FOLDER
-            self.custom_directory.value = cpprefs.get_default_output_directory()
-        elif self.dir_choice == DIR_CUSTOM_FOLDER:
-            self.custom_directory.value = cpprefs.get_absolute_path(
-                self.custom_directory.value)
-        elif self.dir_choice == DIR_CUSTOM_WITH_METADATA:
-            path = self.custom_directory.value
-            end_new_style = path.find("\\g<")
-            end_old_style = path.find("\(?")
-            end = (end_new_style 
-                   if (end_new_style != -1 and 
-                       (end_old_style == -1 or end_old_style > end_new_style))
-                   else end_old_style)
-            if end != -1:
-                pre_path = path[:end]
-                pre_path = cpprefs.get_absolute_path(pre_path)
-                pre_path = fn_alter_path(pre_path)
-                path = pre_path + path[end:]
-                self.custom_directory.value = path
-                return True
-        self.custom_directory.value = fn_alter_path(self.custom_directory.value)
+        self.directory.alter_for_create_batch_files(fn_alter_path)
         return True
 
     def get_base_directory(self, workspace):
-        if self.dir_choice == DEFAULT_INPUT_FOLDER_NAME:
-            base_directory = cpprefs.get_default_image_directory()
-        elif self.dir_choice == DEFAULT_OUTPUT_FOLDER_NAME:
-            base_directory = cpprefs.get_default_output_directory()
-        elif self.dir_choice in (DIR_CUSTOM_FOLDER, DIR_CUSTOM_WITH_METADATA):
-            base_directory = self.custom_directory.value
-            if self.dir_choice == DIR_CUSTOM_WITH_METADATA:
-                base_directory = workspace.measurements.apply_metadata(base_directory)
-            if (base_directory[:2] == '.'+ os.sep or
-                (os.altsep and base_directory[:2] == '.'+os.altsep)):
-                # './filename' -> default_image_folder/filename
-                base_directory = os.path.join(cpprefs.get_default_image_directory(),
-                                              base_directory[2:])
-            elif (base_directory[:2] == '&'+ os.sep or
-                  (os.altsep and base_directory[:2] == '&'+os.altsep)):
-                base_directory = os.path.join(cpprefs.get_default_output_directory(),
-                                              base_directory[2:])
-        return base_directory
+        return self.directory.get_absolute_path(workspace.measurements)
     
     def get_file_names(self, workspace):
         """Get the files for the current image set
@@ -261,18 +206,14 @@ class LoadSingleImage(cpm.CPModule):
         return columns
     
     def upgrade_settings(self, setting_values, variable_revision_number, module_name, from_matlab):
-                
-        DIR_DEFAULT_IMAGE_FOLDER = "Default input folder"
-        DIR_DEFAULT_OUTPUT_FOLDER = "Default output folder"
-
         if from_matlab and variable_revision_number == 4:
             new_setting_values = list(setting_values)
             # The first setting was blank in Matlab. Now it contains
             # the directory choice
             if setting_values[1] == '.':
-                new_setting_values[0] = DIR_DEFAULT_IMAGE_FOLDER
+                new_setting_values[0] = cps.DEFAULT_INPUT_FOLDER_NAME
             elif setting_values[1] == '&':
-                new_setting_values[0] = DIR_DEFAULT_OUTPUT_FOLDER
+                new_setting_values[0] = cps.DEFAULT_OUTPUT_FOLDER_NAME
             else:
                 new_setting_values[0] = DIR_CUSTOM_FOLDER
             #
@@ -289,11 +230,29 @@ class LoadSingleImage(cpm.CPModule):
         #
         if variable_revision_number == 1 and not from_matlab:
             if setting_values[0].startswith("Default image"):
-                setting_values = [DIR_DEFAULT_IMAGE_FOLDER] + setting_values[1:] 
+                dir_choice = DIR_DEFAULT_IMAGE_FOLDER
+                custom_directory = setting_values[1]
+            elif setting_values[0] in (DIR_CUSTOM_FOLDER, DIR_CUSTOM_WITH_METADATA):
+                custom_directory = setting_values[1]
+                if custom_directory[0] == ".":
+                    dir_choice = cps.DEFAULT_INPUT_SUBFOLDER_NAME
+                elif custom_directory[0] == "&":
+                    dir_choice = cps.DEFAULT_OUTPUT_SUBFOLDER_NAME
+                    custom_directory = "."+custom_directory[1:]
+                else:
+                    dir_choice = cps.ABSOLUTE_FOLDER_NAME
+            else:
+                dir_choice = setting_values[0]
+                custom_directory = setting_values[1]
+            directory = cps.DirectoryPath.static_join_string(
+                dir_choice, custom_directory)
+            setting_values = [directory] + setting_values[2:]
+            variable_revision_number = 2
                 
         # Standardize input/output directory name references
-        SLOT_DIRCHOICE = 0
-        setting_values = standardize_default_folder_names(setting_values,SLOT_DIRCHOICE)
+        SLOT_DIR = 0
+        setting_values[SLOT_DIR] = cps.DirectoryPath.upgrade_setting(
+            setting_values[SLOT_DIR])
         
         return setting_values, variable_revision_number, from_matlab
 

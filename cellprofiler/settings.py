@@ -337,6 +337,7 @@ class DirectoryPath(Text):
     
     def alter_for_create_batch_files(self, fn_alter_path):
         '''Call this to alter the setting appropriately for batch execution'''
+        regexp_substitution = self.custom_path.find(r"\g<") != -1
         if self.dir_choice == DEFAULT_INPUT_FOLDER_NAME:
             self.dir_choice = ABSOLUTE_FOLDER_NAME
             self.custom_path = fn_alter_path(get_default_image_directory())
@@ -344,17 +345,20 @@ class DirectoryPath(Text):
             self.dir_choice = ABSOLUTE_FOLDER_NAME
             self.custom_path = fn_alter_path(get_default_output_directory())
         elif self.dir_choice == ABSOLUTE_FOLDER_NAME:
-            self.custom_path = fn_alter_path(self.custom_path)
+            self.custom_path = fn_alter_path(
+                self.custom_path, regexp_substitution = regexp_substitution)
         elif self.dir_choice == DEFAULT_INPUT_SUBFOLDER_NAME:
             self.dir_choice = ABSOLUTE_FOLDER_NAME
             self.custom_path = fn_alter_path(
                 os.path.join(get_default_image_directory(), 
-                             self.custom_path))
+                             self.custom_path),
+                regexp_substitution=regexp_substitution)
         elif self.dir_choice == DEFAULT_OUTPUT_SUBFOLDER_NAME:
             self.dir_choice = ABSOLUTE_FOLDER_NAME
             self.custom_path = fn_alter_path(
                 os.path.join(get_default_output_directory(), 
-                             self.custom_path))
+                             self.custom_path), 
+                regexp_substitution = regexp_substitution)
         
     def test_valid(self, pipeline):
         if self.dir_choice not in self.DIR_ALL:

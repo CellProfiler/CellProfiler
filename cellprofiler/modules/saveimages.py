@@ -75,6 +75,7 @@ FF_AVI         = "avi"
 FF_MAT         = "mat"
 FF_MOV         = "mov"
 PC_WITH_IMAGE  = "Same folder as image"
+OLD_PC_WITH_IMAGE_VALUES = ["Same folder as image"]
 PC_CUSTOM      = "Custom"
 PC_WITH_METADATA = "Custom with metadata"
 WS_EVERY_CYCLE = "Every cycle"
@@ -85,7 +86,7 @@ CM_GRAY        = "gray"
 class SaveImages(cpm.CPModule):
 
     module_name = "SaveImages"
-    variable_revision_number = 4
+    variable_revision_number = 5
     category = "File Processing"
     
     def create_settings(self):
@@ -175,6 +176,11 @@ class SaveImages(cpm.CPModule):
                 </ul>
                 Do not enter the file extension in this setting; it will be appended automatically."""%(USING_METADATA_TAGS_REF))
         
+        self.wants_file_name_suffix = cps.Binary(
+            "Do you want to add a suffix to the image file name?", False,
+            doc = """Check this setting to add a suffix to the image's file name.
+            Leave the setting unchecked to use the image name as-is.""")
+        
         self.file_name_suffix = cps.Text("Text to append to the image name",cps.DO_NOT_USE,doc="""
                 <i>(Used only when constructing the filename from the image filename)</i><br>
                 Enter the text that should be appended to the filename specified above.""")
@@ -188,10 +194,8 @@ class SaveImages(cpm.CPModule):
                 Select the image or movie format to save the image(s). Most common
                 image formats are available; MAT-files are readable by MATLAB.""")
         
-        self.pathname_choice = cps.Choice("Select location to save file",
-                                          [DEFAULT_OUTPUT_FOLDER_NAME, PC_WITH_IMAGE,
-                                           PC_CUSTOM, PC_WITH_METADATA],
-                                          DEFAULT_OUTPUT_FOLDER_NAME, doc = """ 
+        self.pathname = SaveImagesDirectoryPath(
+            "Select location to save file", doc = """ 
                 <i>(Used only when saving non-movie files)</i><br>
                 Where do you want to store the file? There are four choices available:                
                 <ul>
@@ -203,31 +207,6 @@ class SaveImages(cpm.CPModule):
                 <li><i>Custom with metadata:</i> Same as <i>Custom</i> but also with metadata substitution 
                 (see the <i>Name with metadata</i> setting above for metadata usage).</li>
                 </ul>""")
-        
-        self.movie_pathname_choice = cps.Choice("Select location to save file",
-                                          [DEFAULT_OUTPUT_FOLDER_NAME,PC_CUSTOM],
-                                          DEFAULT_OUTPUT_FOLDER_NAME,doc="""
-                <i>(Used only when saving movies)</i><br>
-                Where do you want to store the file? There are two choices available:                
-                <ul>
-                <li><i>Default Output Folder:</i> The file will be stored in the default output
-                folder.</li>
-                <li><i>Custom:</i> The file will be stored in a customizable folder. This folder 
-                can be referenced relative to the default input or output folder.</li>
-                </ul>""")
-        
-        self.pathname = cps.Text("Pathname for the saved file",".",doc="""
-                <i>(Used only when using Custom or Custom with metadata to construct filenames)</i><br>
-                Enter the pathname for the location where files should be saved. 
-                The pathname can be an absolute path or can be referenced against the default
-                folders. Pathnames that start with "." (a period) are relative to the Default Input Folder. 
-                Names that start with "&" (an ampersand) are relative to the Default Output Folder. 
-                Two periods ".." specify the parent folder above either of these. For example, "./MyFolder" 
-                looks for a folder called <i>MyFolder</i> that is contained within the Default Input Folder,
-                and "&/../MyFolder" looks in a folder called <i>MyFolder</i> at the same level as the output folder.
-		<p>A useful tip: If slashes are needed to separate parts of a path, use '/' for a forward
-		slash and '\\\\' for a backslash (the extra slash is to escape the backslash). Which slash you
-		use will depend on your operating system.</p>""")
         
         self.bit_depth = cps.Choice("Image bit depth",
                 ["8","12","16"],doc="""
@@ -254,24 +233,6 @@ class SaveImages(cpm.CPModule):
                 on the last cycle, e.g., <b>CorrectIlluminationCalculate</b> with the <i>All</i>
                 setting used on intermediate images generated during each cycle.</li>
                 </ul> """)
-        
-        self.when_to_save_movie = cps.Choice("Select how often to save",
-                                             [WS_LAST_CYCLE,"1","2","3","4","5","10","20"],
-                                             WS_LAST_CYCLE,doc="""
-                <i>(When saving movies)</i><br>
-                Specify at what point during pipeline execution to save your movie. 
-                The movie will be always be saved after the last cycle is processed; since 
-                a movie frame is added each cycle, saving at the last cycle will output a 
-                fully completed movie. 
-                <p>You also have the option to save the movie periodically 
-                during image processing, so that the partial movie will be available if you cancel  
-                image processing partway through. Saving movies in some formats is 
-                quite slow, so you can speed processing by selecting a cycle increment. For example, 
-                entering a 2 will save the movie after every other cycle. Since saving movies is 
-                time-consuming, use any value other than <i>Last cycle</i> with caution.
-                <p>The movie will be saved in uncompressed .avi format, which can be quite large. 
-                We recommended converting the movie to a compressed movie format, 
-                such as .mov using third-party software. """)
         
         self.rescale = cps.Binary("Rescale the images? ",False,doc="""
                 <i>(Used only when saving images or movies)</i><br>
@@ -321,10 +282,11 @@ class SaveImages(cpm.CPModule):
         """Return the settings in the order to use when saving"""
         return [self.save_image_or_figure, self.image_name, self.figure_name,
                 self.file_name_method, self.file_image_name,
-                self.single_file_name, self.file_name_suffix, self.file_format,
-                self.pathname_choice, self.pathname, self.bit_depth,
+                self.single_file_name, self.wants_file_name_suffix, 
+                self.file_name_suffix, self.file_format,
+                self.pathname, self.bit_depth,
                 self.overwrite, self.when_to_save,
-                self.when_to_save_movie, self.rescale, self.colormap, 
+                self.rescale, self.colormap, 
                 self.update_file_names, self.create_subdirectories]
     
     def visible_settings(self):
@@ -338,14 +300,14 @@ class SaveImages(cpm.CPModule):
         result.append(self.file_name_method)
         if (self.file_name_method not in 
             (FN_FROM_IMAGE, FN_IMAGE_FILENAME_WITH_METADATA) and
-            self.save_image_or_figure != IF_MOVIE and
-            self.pathname_choice == PC_WITH_IMAGE):
+            self.pathname.dir_choice == PC_WITH_IMAGE):
             # Need just the file image name here to associate
             # the file-name image path
             result.append(self.file_image_name)
         if self.file_name_method == FN_FROM_IMAGE:
-            result.append(self.file_image_name)
-            result.append(self.file_name_suffix)
+            result += [self.file_image_name, self.wants_file_name_suffix]
+            if self.wants_file_name_suffix:
+                result.append(self.file_name_suffix)
         elif self.file_name_method == FN_IMAGE_FILENAME_WITH_METADATA:
             self.single_file_name.text = METADATA_NAME_TEXT
             result += [self.file_image_name, self.single_file_name]
@@ -362,29 +324,21 @@ class SaveImages(cpm.CPModule):
             raise NotImplementedError("Unhandled file name method: %s"%(self.file_name_method))
         if self.save_image_or_figure != IF_MOVIE:
             result.append(self.file_format)
-            result.append(self.pathname_choice)
-            if self.pathname_choice.value in (PC_CUSTOM, PC_WITH_METADATA):
-                result.append(self.pathname)
-            if self.file_format != FF_MAT:
-                result.append(self.bit_depth)
-            result.append(self.overwrite)
+        result.append(self.pathname)
+        if self.file_format != FF_MAT and self.save_image_or_figure != IF_MOVIE:
+            result.append(self.bit_depth)
+        result.append(self.overwrite)
+        if self.save_image_or_figure != IF_MOVIE:
             result.append(self.when_to_save)
-            if (self.save_image_or_figure == IF_IMAGE and
-                self.file_format != FF_MAT):
-                result.append(self.rescale)
-                result.append(self.colormap)
-            if self.file_name_method in (
-                FN_FROM_IMAGE, FN_SEQUENTIAL, FN_WITH_METADATA, 
-                FN_IMAGE_FILENAME_WITH_METADATA):
-                result.append(self.update_file_names)
-                result.append(self.create_subdirectories)
-        else:
-            result.append(self.movie_pathname_choice)
-            if self.movie_pathname_choice == PC_CUSTOM:
-                result.append(self.pathname)
-            result.append(self.overwrite)
+        if (self.save_image_or_figure == IF_IMAGE and
+            self.file_format != FF_MAT):
             result.append(self.rescale)
             result.append(self.colormap)
+        if self.file_name_method in (
+            FN_FROM_IMAGE, FN_SEQUENTIAL, FN_WITH_METADATA, 
+            FN_IMAGE_FILENAME_WITH_METADATA):
+            result.append(self.update_file_names)
+            result.append(self.create_subdirectories)
         return result
     
     @property
@@ -409,9 +363,7 @@ class SaveImages(cpm.CPModule):
         return True
     
     def prepare_to_create_batch(self, pipeline, image_set_list, fn_alter_path):
-        self.pathname.value = fn_alter_path(
-            self.pathname.value,
-            regexp_substitution = (self.pathname_choice == PC_WITH_METADATA))
+        self.pathname.alter_for_create_batch_files(fn_alter_path)
         
     def run(self,workspace):
         """Run the module
@@ -532,7 +484,8 @@ class SaveImages(cpm.CPModule):
         
     
     def post_group(self, workspace, *args):
-        if self.when_to_save == WS_LAST_CYCLE:
+        if (self.when_to_save == WS_LAST_CYCLE and 
+            self.save_image_or_figure != IF_MOVIE):
             self.save_image(workspace)
         
     def save_image(self, workspace):
@@ -654,7 +607,7 @@ class SaveImages(cpm.CPModule):
             filename = workspace.measurements.apply_metadata(filename)
         elif self.file_name_method == FN_SEQUENTIAL:
             filename = self.single_file_name.value
-            filename = '%s%d'%(filename,measurements.image_set_number+1)
+            filename = '%s%d'%(filename, measurements.image_set_number+1)
         else:
             file_name_feature = 'FileName_%s'%(self.file_image_name)
             filename = measurements.get_current_measurement('Image',
@@ -663,40 +616,12 @@ class SaveImages(cpm.CPModule):
             if self.file_name_method == FN_IMAGE_FILENAME_WITH_METADATA:
                 filename += workspace.measurements.apply_metadata(
                     self.single_file_name.value)
-            elif self.file_name_suffix != cps.DO_NOT_USE:
+            elif self.wants_file_name_suffix:
                 filename += str(self.file_name_suffix)
         
         filename = "%s.%s"%(filename,self.get_file_format())
-        
-        if self.pathname_choice.value in (DEFAULT_OUTPUT_FOLDER_NAME, PC_CUSTOM, PC_WITH_METADATA):
-            if self.pathname_choice == DEFAULT_OUTPUT_FOLDER_NAME:
-                pathname = cpp.get_default_output_directory()
-            else:
-                pathname = str(self.pathname)
-                if self.pathname_choice == PC_WITH_METADATA:
-                    pathname = workspace.measurements.apply_metadata(pathname)
-                pathname = cpp.get_absolute_path(pathname, cpp.ABSPATH_IMAGE)
-            if (self.file_name_method in (
-                FN_FROM_IMAGE, FN_SEQUENTIAL, FN_WITH_METADATA,
-                FN_IMAGE_FILENAME_WITH_METADATA) and
-                self.create_subdirectories.value):
-                # Get the subdirectory name
-                path_name_feature = 'PathName_%s'%(self.file_image_name)
-                orig_pathname = measurements.get_current_measurement('Image',
-                                                              path_name_feature)
-                pathname = os.path.join(pathname, orig_pathname)
-                
-        elif self.pathname_choice == PC_WITH_IMAGE:
-            path_name_feature = 'PathName_%s'%(self.file_image_name)
-            pathname = measurements.get_current_measurement('Image',
-                                                            path_name_feature)
-            # Add the root to the pathname to recover the original name
-            key = 'Pathname%s'%(self.file_image_name)
-            root = workspace.image_set.legacy_fields[key]
-            pathname = os.path.join(root,pathname)            
-        else:
-            raise NotImplementedError(("Unknown pathname mechanism: %s"%
-                                       (self.pathname_choice)))
+        pathname = self.pathname.get_absolute_path(measurements,
+                                                   self.file_image_name.value)
         
         return os.path.join(pathname,filename)
     def get_file_format(self):
@@ -766,7 +691,10 @@ class SaveImages(cpm.CPModule):
                 else:
                     new_setting_values.extend([PC_CUSTOM, setting_values[4]])
             new_setting_values.extend(setting_values[5:11])
-            new_setting_values.extend(setting_values[12:])
+            #
+            # Last value is there just to display some text in Matlab
+            #
+            new_setting_values.extend(setting_values[12:-1])
             setting_values = new_setting_values
             from_matlab = False
             variable_revision_number = 1
@@ -793,10 +721,32 @@ class SaveImages(cpm.CPModule):
             # Changed save type from "Figure" to "Module window"
             if setting_values[0] == "Figure":
                 setting_values[0] = IF_FIGURE
+            setting_values = standardize_default_folder_names(setting_values,8)
             variable_revision_number = 4
 
-        # Standardize input/output directory name references
-        setting_values = standardize_default_folder_names(setting_values,8)
+        if (not from_matlab) and variable_revision_number == 4:
+            save_image_or_figure, image_name, figure_name,\
+	    file_name_method, file_image_name, \
+	    single_file_name, file_name_suffix, file_format, \
+	    pathname_choice, pathname, bit_depth, \
+	    overwrite, when_to_save, \
+            when_to_save_movie, rescale, colormap, \
+            update_file_names, create_subdirectories = setting_values
+
+            pathname = SaveImagesDirectoryPath.static_join_string(
+                pathname_choice, pathname)
+            
+            setting_values = [
+                save_image_or_figure, image_name, figure_name,
+                file_name_method, file_image_name, single_file_name, 
+                file_name_suffix != cps.DO_NOT_USE,
+                file_name_suffix, file_format,
+                pathname, bit_depth, overwrite, when_to_save,
+                rescale, colormap, update_file_names, create_subdirectories]
+            variable_revision_number = 5
+        
+        setting_values[9] = \
+            SaveImagesDirectoryPath.upgrade_setting(setting_values[9])
         
         return setting_values, variable_revision_number, from_matlab
     
@@ -817,3 +767,37 @@ class SaveImages(cpm.CPModule):
                                       self.image_name.value,
                                       self.when_to_save)
     
+class SaveImagesDirectoryPath(cps.DirectoryPath):
+    '''A specialized version of DirectoryPath to handle saving in the image dir'''
+    
+    def __init__(self, text, doc):
+        super(SaveImagesDirectoryPath, self).__init__(
+            text, dir_choices = [
+                cps.DEFAULT_OUTPUT_FOLDER_NAME, cps.DEFAULT_INPUT_FOLDER_NAME,
+                PC_WITH_IMAGE, cps.ABSOLUTE_FOLDER_NAME,
+                cps.DEFAULT_OUTPUT_SUBFOLDER_NAME, 
+                cps.DEFAULT_INPUT_SUBFOLDER_NAME], doc=doc)
+        
+    def get_absolute_path(self, measurements, image_name):
+        if self.dir_choice == PC_WITH_IMAGE:
+            path_name_feature = "PathName_%s" % image_name
+            return measurements.get_current_image_measurement(path_name_feature)
+        return super(SaveImagesDirectoryPath, self).get_absolute_path(measurements)
+    
+    def test_valid(self, pipeline):
+        if self.dir_choice not in self.dir_choices:
+            raise cps.ValidationError("%s is not a valid directory option" %
+                                      self.dir_choice, self)
+        
+    @staticmethod
+    def upgrade_setting(value):
+        '''Upgrade setting from previous version'''
+        dir_choice, custom_path = cps.DirectoryPath.split_string(value)
+        if value in OLD_PC_WITH_IMAGE_VALUES:
+            dir_choice = PC_WITH_IMAGE
+        elif value == PC_CUSTOM:
+            dir_choice = cps.ABSOLUTE_FOLDER_NAME
+        else:
+            return cps.DirectoryPath.upgrade_setting(value)
+        return cps.DirectoryPath.static_join_string(dir_choice, custom_path)
+                  

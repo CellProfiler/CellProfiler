@@ -103,7 +103,7 @@ class Test_CellProfilerApp(unittest.TestCase):
         #
         vv = module.visible_settings()
         self.assertTrue(isinstance(vv[0],vvv.Choice))
-        self.assertTrue(isinstance(vv[6],vvv.Text))
+        self.assertTrue(isinstance(vv[7],vvv.Text))
         self.assertTrue(isinstance(vv[3],vvv.Binary))
         for v,i in zip(vv,range(len(vv))):
             text_name = mv.text_control_name(v)
@@ -113,7 +113,9 @@ class Test_CellProfilerApp(unittest.TestCase):
             control_name = mv.edit_control_name(v)
             edit_control = module_panel.FindWindowByName(control_name)
             self.assertTrue(edit_control)
-            if not isinstance(v,cellprofiler.settings.DoSomething):
+            if not isinstance(v,(cellprofiler.settings.DoSomething,
+                                 cellprofiler.settings.Divider,
+                                 cellprofiler.settings.DirectoryPath)):
                 self.assertTrue(v == edit_control.Value,"setting number %d: %s != %s"%(i,v.value,edit_control.Value))
     
     def test_01_02_Subscriber(self):

@@ -389,7 +389,7 @@ class TestDirectoryPath(unittest.TestCase):
             self.assertEqual(s.get_absolute_path(m), expected)
     
     @staticmethod
-    def fn_alter_path(path):
+    def fn_alter_path(path, **kwargs):
         '''Add "altered" to the path'''
         return path + "altered"
     

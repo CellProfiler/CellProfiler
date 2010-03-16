@@ -264,6 +264,7 @@ def grey_reconstruction_loop(np.ndarray[dtype=np.uint32_t, ndim=1,
                             next[link] = neighbor
         current = next[current]
         
+@cython.boundscheck(False)
 def _all_connected_components(np.ndarray[dtype=np.uint32_t, ndim=1,
                                          negative_indices = False,
                                          mode = 'c'] i_a,

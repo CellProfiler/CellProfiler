@@ -634,8 +634,8 @@ class LoadData(cpm.CPModule):
         # Add a metadata well measurement if only row and column exist
         #
         tokens = [feature for category, feature in
-                  [x.split('_',1) for x in dictionary.keys()]
-                  if category == cpmeas.C_METADATA]
+                  [x.split('_',1) for x in dictionary.keys()
+                  if x.startswith(cpmeas.C_METADATA+"_")]]
         if cpmeas.FTR_WELL not in tokens:
             row_tokens = [x for x in tokens if cpmeas.is_well_row_token(x)]
             col_tokens = [x for x in tokens if cpmeas.is_well_column_token(x)]
@@ -742,14 +742,15 @@ class LoadData(cpm.CPModule):
         well_row_column = None
         well_col_column = None
         for column in result:
+            if not column[1].startswith(cpmeas.C_METADATA+"_"):
+                continue
             category, feature = column[1].split('_',1)
-            if category == cpmeas.C_METADATA:
-                if cpmeas.is_well_column_token(feature):
-                    well_col_column = column
-                elif cpmeas.is_well_row_token(feature):
-                    well_row_column = column
-                elif feature.lower() == cpmeas.FTR_WELL.lower():
-                    well_column = column
+            if cpmeas.is_well_column_token(feature):
+                well_col_column = column
+            elif cpmeas.is_well_row_token(feature):
+                well_row_column = column
+            elif feature.lower() == cpmeas.FTR_WELL.lower():
+                well_column = column
         if (well_column is None and well_row_column is not None and
             well_col_column is not None):
             length = cpmeas.get_length_from_varchar(well_row_column[2])

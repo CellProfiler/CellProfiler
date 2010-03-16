@@ -332,6 +332,30 @@ class TestLoadData(unittest.TestCase):
         self.assertTrue(np.all(data == np.arange(4,7)))
         os.remove(filename)
     
+    def test_05_02_img_717(self):
+        '''Regression test of img-717, column without underbar'''
+        csv_text = '''"Image","Test_Measurement"
+"foo",1
+"foo",2
+"foo",3
+"foo",4
+"foo",5
+"foo",6
+"foo",7
+"foo",8
+"foo",9
+"foo",10
+'''
+        pipeline, module, filename = self.make_pipeline(csv_text)
+        module.wants_rows.value = True
+        module.row_range.min = 4
+        module.row_range.max = 6
+        m = pipeline.run()
+        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        data = m.get_all_measurements(cpmeas.IMAGE, "Test_Measurement")
+        self.assertTrue(np.all(data == np.arange(4,7)))
+        os.remove(filename)
+
     def test_06_01_alternate_image_start(self):
         csv_text = '''"Metadata_Measurement"
 1
@@ -417,7 +441,7 @@ class TestLoadData(unittest.TestCase):
                                   column[2] == coltype) for column in columns]),
                             'Failed to find %s'%colname)
         os.remove(filename)
-    
+  
     def test_08_01_get_groupings(self):
         '''Test the get_groupings method'''
         dir = os.path.join(example_images_directory(), "ExampleSBSImages")

@@ -31,8 +31,8 @@ APP = ['CellProfiler.py']
 DATA_FILES = [('cellprofiler/icons', glob.glob(os.path.join('.', 'cellprofiler', 'icons', '*.png'))),
               ('bioformats', ['bioformats/loci_tools.jar'])]
 OPTIONS = {'argv_emulation': True,
-           'packages': ['cellprofiler'],
-           'includes': ['numpy', 'wx', 'matplotlib','email.iterators'],
+           'packages': ['cellprofiler', 'contrib', 'bioformats'],
+           'includes': ['numpy', 'wx', 'matplotlib','email.iterators', 'smtplib'],
            'excludes': ['pylab', 'nose', 'wx.tools', 'Tkinter', 'Cython', 'scipy.weave'],
            'resources': ['CellProfilerIcon.png', 'cellprofiler/icons'],
            'iconfile' : 'CellProfilerIcon.icns',

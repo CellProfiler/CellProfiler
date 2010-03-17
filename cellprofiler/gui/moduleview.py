@@ -23,6 +23,7 @@ import sys
 import cellprofiler.pipeline as cpp
 import cellprofiler.settings as cps
 import cellprofiler.preferences as cpprefs
+from cellprofiler.gui.html import HtmlClickableWindow
 from regexp_editor import edit_regexp
 from htmldialog import HTMLDialog
 from treecheckboxdialog import TreeCheckboxDialog
@@ -216,9 +217,12 @@ class ModuleView:
         self.__sizer = None
         self.__inside_notify = False
         self.__handle_change = True
-        self.__module_panel.SetVirtualSizeWH(0,0)
-        self.__module_panel.SetupScrolling()
-        wx.EVT_IDLE(module_panel,self.on_idle)
+        if cpprefs.get_startup_blurb():
+            self.__startup_blurb = HtmlClickableWindow(self.__module_panel, wx.ID_ANY, style=wx.NO_BORDER)
+        else:
+            self.__startup_blurb = None
+        wx.EVT_SIZE(module_panel, self.on_size)
+        wx.EVT_IDLE(module_panel, self.on_idle)
 
     def get_module_panel(self):
         """The panel that hosts the module controls
@@ -244,6 +248,11 @@ class ModuleView:
     def set_selection(self,module_num):
         """Initialize the controls in the view to the settings of the module"""
         self.module_panel.Freeze()
+        if self.__startup_blurb:
+            self.__startup_blurb.Destroy()
+            self.__startup_blurb = None
+        self.__module_panel.SetVirtualSizeWH(0, 0)
+        self.__module_panel.SetupScrolling()
         self.__handle_change = False
         try:
             new_module          = self.__pipeline.module(module_num)
@@ -1287,6 +1296,11 @@ class ModuleView:
         self.notify(setting_edited_event)
         self.reset_view()
     
+
+    def on_size(self, evt):
+        if self.__startup_blurb:
+            self.__startup_blurb.Size = self.__module_panel.ClientSize
+
     def on_idle(self,event):
         """Check to see if the selected module is valid"""
         last_idle_time = getattr(self, "last_idle_time", 0)

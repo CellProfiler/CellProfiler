@@ -32,6 +32,8 @@ import os
 import wx
 import htmldialog
 import sys
+import cellprofiler.icons
+from cellprofiler.utilities.relpath import relpath
 
 #For some reason, Adobe doesn't like using absolute paths to assemble the PDF.
 #Also, Firefox doesn't like displaying the HTML image links using abs paths either.
@@ -39,8 +41,8 @@ import sys
 #compiled version
 #path = os.path.split(os.path.abspath(sys.argv[0]))[0]
 #path = os.path.join(path, 'cellprofiler','icons')
-path = ".."
-path = os.path.join(path, 'icons')
+path = relpath(cellprofiler.icons.__path__[0])
+print "PATH", path
 
 LOCATION_REFRESH_BUTTON = os.path.join(path,'folder_refresh.png')
 LOCATION_BROWSE_BUTTON = os.path.join(path,'folder_browse.png')
@@ -913,6 +915,8 @@ window background color of the CellProfiler main window."""
 
 CHECK_FOR_UPDATES_HELP = """The <i>Check for Updates</i> preference controls how
 CellProfiler looks for updates on startup."""
+
+SHOW_STARTUP_BLURB_HELP = """The <i>Display welcome text on startup</i> preference controls whether CellProfiler displays an orientation message on startup."""
 
 PREFERENCES_HELP = (
     ( "Default Input Folder", DEFAULT_IMAGE_FOLDER_HELP),

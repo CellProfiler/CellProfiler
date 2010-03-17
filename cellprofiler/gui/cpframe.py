@@ -28,6 +28,7 @@ from cellprofiler.gui.moduleview import ModuleView
 from cellprofiler.gui.preferencesview import PreferencesView
 from cellprofiler.gui.directoryview import DirectoryView
 from cellprofiler.gui.datatoolframe import DataToolFrame
+import cellprofiler.gui.html
 import cellprofiler.gui.preferencesdlg
 import cellprofiler.utilities.get_revision as get_revision
 import traceback
@@ -189,7 +190,7 @@ class CPFrame(wx.Frame):
         self.__menu_bar.Append(self.__menu_window, "&Window")
         self.__menu_bar.Append(self.data_tools_menu(), '&Data tools')
         if wx.VERSION <= (2, 8, 10, 1, '') and wx.Platform == '__WXMAC__':
-            self.__menu_bar.Append(self.__menu_help, 'Documentation')
+            self.__menu_bar.Append(self.__menu_help, 'CellProfiler Help')
         else:
             self.__menu_bar.Append(self.__menu_help, '&Help')
         self.SetMenuBar(self.__menu_bar)
@@ -214,7 +215,7 @@ class CPFrame(wx.Frame):
              (wx.ACCEL_NORMAL,wx.WXK_F8,ID_DEBUG_NEXT_GROUP),
              (wx.ACCEL_CMD,ord('Z'),ID_EDIT_UNDO) ])
         self.SetAcceleratorTable(accelerator_table)
-        
+
     def data_tools_menu(self):
         '''Create a menu of data tools'''
         if not hasattr(self, "__data_tools_menu"):

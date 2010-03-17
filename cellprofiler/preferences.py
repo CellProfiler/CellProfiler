@@ -155,6 +155,7 @@ MODULEDIRECTORY = 'ModuleDirectory'
 CHECKFORNEWVERSIONS = 'CheckForNewVersions'
 SKIPVERSION = 'SkipVersion'
 FF_RECENTFILES = 'RecentFile%d'
+STARTUPBLURB = 'StartupBlurb'
 RECENT_FILE_COUNT = 10
 
 def recent_file(index):
@@ -500,3 +501,10 @@ def update_cpfigure_position():
         __cpfigure_position = (__cpfigure_position[0] + 120,
                                __cpfigure_position[1] + 24)
     
+def get_startup_blurb():
+    if not get_config().Exists(STARTUPBLURB):
+        return True
+    return get_config().ReadBool(STARTUPBLURB)
+
+def set_startup_blurb(val):
+    get_config().WriteBool(STARTUPBLURB, val)

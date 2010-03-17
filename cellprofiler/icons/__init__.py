@@ -21,6 +21,11 @@ if hasattr(sys, 'frozen'):
     path = os.path.join(path, 'cellprofiler','icons')
 else:
     path = __path__[0]
+
+mfsh = wx.MemoryFSHandler()
+wx.FileSystem.AddHandler(mfsh)
 for f in glob.glob(os.path.join(path, "*.png")):
     icon_name = os.path.basename(f)[:-4]
-    globals()[icon_name] = wx.Image(f)
+    icon_image = wx.Image(f)
+    globals()[icon_name] = icon_image
+    mfsh.AddFile(icon_name + '.png', icon_image, wx.BITMAP_TYPE_PNG)

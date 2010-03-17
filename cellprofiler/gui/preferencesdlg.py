@@ -100,7 +100,7 @@ class PreferencesDlg(wx.Dialog):
                 button = wx.Button(self,id,ui_info)
                 self.Bind(wx.EVT_BUTTON, on_press, button,id)
                 sizer.Add(button, (index, 2))
-            button = wx.BitmapButton(self, -1, bitmap=help_bitmap)
+            button = wx.Button(self, -1, '?', (0, 0), (30, -1))
             def on_help(event, help_text = help_text):
                 dlg = HTMLDialog(self, "Preferences help", help_text)
                 dlg.Show()
@@ -168,6 +168,10 @@ class PreferencesDlg(wx.Dialog):
                  cpprefs.get_check_new_versions, 
                  cpprefs.set_check_new_versions, 
                  CHOICE, cphelp.CHECK_FOR_UPDATES_HELP],
+                ["Display welcome text on startup", 
+                 cpprefs.get_startup_blurb, 
+                 cpprefs.set_startup_blurb, 
+                 CHOICE, cphelp.SHOW_STARTUP_BLURB_HELP],
                 ]
     
     def get_title_font(self):

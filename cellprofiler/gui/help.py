@@ -467,7 +467,6 @@ below (former category in parentheses):
 modules will currently produce an error message with the option of skipping
 the module and loading the rest of the pipeline.
 <ul>
-<li><b>CreateWebPage</b></li>
 <li><b>DICTransform</b></li>
 <li><b>DifferentiateStains</b></li>
 <li><b>DisplayGridInfo</b></li>

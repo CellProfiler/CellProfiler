@@ -42,7 +42,6 @@ from cellprofiler.utilities.relpath import relpath
 #path = os.path.split(os.path.abspath(sys.argv[0]))[0]
 #path = os.path.join(path, 'cellprofiler','icons')
 path = relpath(cellprofiler.icons.__path__[0])
-print "PATH", path
 
 LOCATION_REFRESH_BUTTON = os.path.join(path,'folder_refresh.png')
 LOCATION_BROWSE_BUTTON = os.path.join(path,'folder_browse.png')

@@ -12,82 +12,83 @@ Website: http://www.cellprofiler.org
 """
 __version__="$Revision$"
 
-from distutils.core import setup,Extension
 import os
 import sys
 import subprocess
-try:
-    from Cython.Distutils import build_ext
-    from numpy import get_include
-except ImportError:
-    import site
-    site.addsitedir('../../site-packages')
-    from Cython.Distutils import build_ext
-    from numpy import get_include
-
-def configuration():
-    extensions = []
-    if sys.platform.startswith('win'):
-        extensions += [Extension(name="_get_proper_case_filename",
-                                 sources=["get_proper_case_filename.c"],
-                                 libraries=["shlwapi", "shell32", "ole32"],
-                                 extra_compile_args=['-O3'])]
+if not hasattr(sys, 'frozen'):
+    from distutils.core import setup,Extension
     try:
-        #
-        # Find JAVA_HOME, possibly from Windows registry
-        #
-        java_home = find_javahome()
-        jdk_home = find_jdk()
-        print "Using jdk_home = %s"%jdk_home
-        include_dirs = [get_include()]
+        from Cython.Distutils import build_ext
+        from numpy import get_include
+    except ImportError:
+        import site
+        site.addsitedir('../../site-packages')
+        from Cython.Distutils import build_ext
+        from numpy import get_include
+
+    def configuration():
+        extensions = []
         if sys.platform.startswith('win'):
+            extensions += [Extension(name="_get_proper_case_filename",
+                                     sources=["get_proper_case_filename.c"],
+                                     libraries=["shlwapi", "shell32", "ole32"],
+                                     extra_compile_args=['-O3'])]
+        try:
             #
-            # Build libjvm from jvm.dll on Windows
+            # Find JAVA_HOME, possibly from Windows registry
             #
+            java_home = find_javahome()
+            jdk_home = find_jdk()
+            print "Using jdk_home = %s"%jdk_home
+            include_dirs = [get_include()]
             if sys.platform.startswith('win'):
-                cmd = ["dlltool", "--dllname", 
-                       os.path.join(jdk_home,"jre\\bin\\client\\jvm.dll"),
-                       "--output-lib","libjvm.a",
-                       "--input-def","jvm.def",
-                       "--kill-at"]
-                p = subprocess.Popen(cmd)
-                p.communicate()
-        
-            if jdk_home is not None:
-                jdk_include = os.path.join(jdk_home, "include")
-                jdk_include_plat = os.path.join(jdk_include, sys.platform)
-                include_dirs += [jdk_include, jdk_include_plat]
-            library_dirs = [os.path.abspath(".")]
-            libraries = ["jvm"]
-        elif sys.platform == 'darwin':
-            include_dirs += ['/System/Library/Frameworks/JavaVM.framework/Headers']
-            library_dirs = ['/System/Library/Frameworks/JavaVM.framework/Libraries']
-            if os.uname()[2][0] == '9':
-                libraries = ['jvm_compat']
-            else:
-                # snow leopard = darwin version 10
-                libraries = ['verify']
-        elif sys.platform.startswith('linux'):
-            include_dirs += [os.path.join(java_home,'include'),
-                             os.path.join(java_home,'include','linux')]
-            library_dirs = [os.path.join(java_home,'jre','lib','amd64','server')]
-            libraries = ["jvm"]
-        extensions += [Extension(name="javabridge",
-                                 sources=["javabridge.pyx"],
-                                 libraries=libraries,
-                                 library_dirs=library_dirs,
-                                 include_dirs=include_dirs)]
-    except:
-        print "WARNING: Java and JVM is not installed - Images will be loaded using PIL"
-        
-    dict = { "name":"utilities",
-             "description":"utility module for CellProfiler",
-             "maintainer":"Lee Kamentsky",
-             "maintainer_email":"leek@broad.mit.edu",
-             "cmdclass": {'build_ext': build_ext},
-             "ext_modules": extensions
-            }
-    return dict
+                #
+                # Build libjvm from jvm.dll on Windows
+                #
+                if sys.platform.startswith('win'):
+                    cmd = ["dlltool", "--dllname", 
+                           os.path.join(jdk_home,"jre\\bin\\client\\jvm.dll"),
+                           "--output-lib","libjvm.a",
+                           "--input-def","jvm.def",
+                           "--kill-at"]
+                    p = subprocess.Popen(cmd)
+                    p.communicate()
+            
+                if jdk_home is not None:
+                    jdk_include = os.path.join(jdk_home, "include")
+                    jdk_include_plat = os.path.join(jdk_include, sys.platform)
+                    include_dirs += [jdk_include, jdk_include_plat]
+                library_dirs = [os.path.abspath(".")]
+                libraries = ["jvm"]
+            elif sys.platform == 'darwin':
+                include_dirs += ['/System/Library/Frameworks/JavaVM.framework/Headers']
+                library_dirs = ['/System/Library/Frameworks/JavaVM.framework/Libraries']
+                if os.uname()[2][0] == '9':
+                    libraries = ['jvm_compat']
+                else:
+                    # snow leopard = darwin version 10
+                    libraries = ['verify']
+            elif sys.platform.startswith('linux'):
+                include_dirs += [os.path.join(java_home,'include'),
+                                 os.path.join(java_home,'include','linux')]
+                library_dirs = [os.path.join(java_home,'jre','lib','amd64','server')]
+                libraries = ["jvm"]
+            extensions += [Extension(name="javabridge",
+                                     sources=["javabridge.pyx"],
+                                     libraries=libraries,
+                                     library_dirs=library_dirs,
+                                     include_dirs=include_dirs)]
+        except:
+            print "WARNING: Java and JVM is not installed - Images will be loaded using PIL"
+            
+        dict = { "name":"utilities",
+                 "description":"utility module for CellProfiler",
+                 "maintainer":"Lee Kamentsky",
+                 "maintainer_email":"leek@broad.mit.edu",
+                 "cmdclass": {'build_ext': build_ext},
+                 "ext_modules": extensions
+                }
+        return dict
 
 def find_javahome():
     """Find JAVA_HOME if it doesn't exist"""

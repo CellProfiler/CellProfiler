@@ -94,7 +94,7 @@ from cellprofiler.preferences import \
      standardize_default_folder_names, DEFAULT_INPUT_FOLDER_NAME, \
      DEFAULT_OUTPUT_FOLDER_NAME, ABSOLUTE_FOLDER_NAME, \
      DEFAULT_INPUT_SUBFOLDER_NAME, DEFAULT_OUTPUT_SUBFOLDER_NAME, \
-     FOLDER_CHOICE_HELP_TEXT
+     IO_FOLDER_CHOICE_HELP_TEXT
 
 PILImage.init()
 
@@ -332,14 +332,14 @@ class LoadImages(cpmodule.CPModule):
         
         # Location settings
         self.location = cps.DirectoryPath(
-            "Image location", 
+            "Input image file location", 
             dir_choices = [
                 DEFAULT_INPUT_FOLDER_NAME,  DEFAULT_OUTPUT_FOLDER_NAME,
                 ABSOLUTE_FOLDER_NAME, DEFAULT_INPUT_SUBFOLDER_NAME,
                 DEFAULT_OUTPUT_SUBFOLDER_NAME],
             allow_metadata = False,
             doc ="""Select the folder containing the images to be loaded. 
-            %(FOLDER_CHOICE_HELP_TEXT)s"""%globals())
+            %(IO_FOLDER_CHOICE_HELP_TEXT)s"""%globals())
 
     def add_imagecb(self):
         'Adds another image to the settings'

@@ -86,7 +86,7 @@ from cellprofiler.preferences import \
      standardize_default_folder_names, DEFAULT_INPUT_FOLDER_NAME, \
      DEFAULT_OUTPUT_FOLDER_NAME, DEFAULT_INPUT_SUBFOLDER_NAME, \
      DEFAULT_OUTPUT_SUBFOLDER_NAME, ABSOLUTE_FOLDER_NAME, \
-     FOLDER_CHOICE_HELP_TEXT
+     IO_FOLDER_CHOICE_HELP_TEXT, IO_WITH_METADATA_HELP_TEXT
 
 ##############################################
 #
@@ -239,14 +239,14 @@ class ExportToDatabase(cpm.CPModule):
                 DEFAULT_INPUT_SUBFOLDER_NAME],
             doc="""This setting determines where the .csv files are saved if
             you decide to save measurements to files instead of writing them
-            directly to the database. %(FOLDER_CHOICE_HELP_TEXT)s 
-            <p>In addition, for <i>%(ABSOLUTE_FOLDER_NAME)s</i>, <i>%(DEFAULT_INPUT_SUBFOLDER_NAME)s</i>
-            and <i>%(DEFAULT_OUTPUT_SUBFOLDER_NAME)s</i>, if you have metadata 
-            associated with your images, you can use metadata tags here. 
-            %(USING_METADATA_TAGS_REF)s. 
-            The module will substitute the metadata
-            values for the last image set processed for any metadata tags
-            in the path name. %(USING_METADATA_HELP_REF)s.</p>"""% globals())
+            directly to the database. %(IO_FOLDER_CHOICE_HELP_TEXT)s 
+            
+            <p>%(IO_WITH_METADATA_HELP_TEXT)s %(USING_METADATA_TAGS_REF)s. 
+            For instance, if you have a metadata tag named 
+            "Plate", you can create a per-plate folder by selecting one of the subfolder options
+            and then specifying the subfolder name as <i>\g&lt;Plate&gt;</i>. 
+            The module will substitute the metadata values for the last image set 
+            processed for any metadata tags in the folder name. %(USING_METADATA_HELP_REF)s.</p>"""% globals())
         
         self.save_cpa_properties = cps.Binary(
             "Create a CellProfiler Analyst properties file?", 

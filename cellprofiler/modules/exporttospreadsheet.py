@@ -53,7 +53,7 @@ from cellprofiler.preferences import \
      standardize_default_folder_names, DEFAULT_INPUT_FOLDER_NAME, \
      DEFAULT_OUTPUT_FOLDER_NAME, ABSOLUTE_FOLDER_NAME, \
      DEFAULT_INPUT_SUBFOLDER_NAME, DEFAULT_OUTPUT_SUBFOLDER_NAME, \
-     FOLDER_CHOICE_HELP_TEXT
+     IO_FOLDER_CHOICE_HELP_TEXT, IO_WITH_METADATA_HELP_TEXT
 
 DELIMITER_TAB = "Tab"
 DELIMITER_COMMA = 'Comma (",")'
@@ -107,11 +107,14 @@ class ExportToSpreadsheet(cpm.CPModule):
                 ABSOLUTE_FOLDER_NAME, DEFAULT_INPUT_SUBFOLDER_NAME,
                 DEFAULT_OUTPUT_SUBFOLDER_NAME],
             doc="""This setting lets you choose the folder for the output
-            files. %(FOLDER_CHOICE_HELP_TEXT)s 
-            <p>If you have metadata associated with your images, you can  name the folder using metadata
-            tags. %(USING_METADATA_TAGS_REF)s. For instance, if you have a metadata tag named 
-            "Plate", you can create a per-plate folder using the metadata 
-            tag "./&lt;Plate&gt;". %(USING_METADATA_HELP_REF)s.</p>"""%globals())
+            files. %(IO_FOLDER_CHOICE_HELP_TEXT)s
+            
+            <p>%(IO_WITH_METADATA_HELP_TEXT)s %(USING_METADATA_TAGS_REF)s. 
+            For instance, if you have a metadata tag named 
+            "Plate", you can create a per-plate folder by selecting one of the subfolder options
+            and then specifying the subfolder name as <i>\g&lt;Plate&gt;</i>. The module will 
+            substitute the metadata values for the current image set for any metadata tags in the 
+            folder name. %(USING_METADATA_HELP_REF)s.</p>"""%globals())
         
         self.add_metadata = cps.Binary("Add image metadata columns to your object data file?", False, doc = """"Image_Metadata_" columns are normally exported in the Image data file, but if you check this box they will also be exported with the Object data file(s).""")
         
@@ -188,7 +191,8 @@ class ExportToSpreadsheet(cpm.CPModule):
                          prepend the name of the measurements file to this
                          if you asked to do so above. If you have metadata 
                          associated with your images, this setting will also substitute
-                         metadata tags if desired. %s. %s."""% (USING_METADATA_TAGS_REF,USING_METADATA_HELP_REF)))
+                         metadata tags if desired. %(USING_METADATA_TAGS_REF)s. 
+                         %(USING_METADATA_HELP_REF)s."""% globals()))
         
         group.append("remover", cps.RemoveSettingButton("", "Remove this data set", self.object_groups, group))
         group.append("divider", cps.Divider(line=False))

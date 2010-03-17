@@ -111,8 +111,9 @@ FOLDER_CHOICE_TRANSLATIONS = {
     'Elsewhere...': ABSOLUTE_FOLDER_NAME
     }
 
-FOLDER_CHOICE_HELP_TEXT = """
-You can choose among the following options:
+IO_FOLDER_CHOICE_HELP_TEXT = """
+You can choose among the following options which are common to all file input/output 
+modules:
 <ul>
 <li><i>Default Input Folder</i>: Use the default input folder.</li>
 <li><i>Default Output Folder:</i> Use from the default output folder.</li>
@@ -134,6 +135,12 @@ folder called "MyFiles" that is contained within the Default Input Folder.</li>
 folder called "MyFolder" at the same level as the Default Input Folder.</li>
 </ul></p>
 """
+
+IO_WITH_METADATA_HELP_TEXT = """
+For <i>%(ABSOLUTE_FOLDER_NAME)s</i>, <i>%(DEFAULT_INPUT_SUBFOLDER_NAME)s</i> and 
+<i>%(DEFAULT_OUTPUT_SUBFOLDER_NAME)s</i>, if you have metadata associated with your 
+images via <b>LoadImages</b> or <b>LoadData</b>, you can name the folder using metadata
+tags."""%globals()
 
 DEFAULT_IMAGE_DIRECTORY = 'DefaultImageDirectory'
 DEFAULT_OUTPUT_DIRECTORY = 'DefaultOutputDirectory'

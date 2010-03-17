@@ -124,7 +124,7 @@ import cellprofiler.preferences as cpprefs
 from cellprofiler.modules.loadimages import LoadImagesImageProvider
 from cellprofiler.preferences import standardize_default_folder_names, \
      DEFAULT_INPUT_FOLDER_NAME, DEFAULT_OUTPUT_FOLDER_NAME, NO_FOLDER_NAME, \
-     ABSOLUTE_FOLDER_NAME, FOLDER_CHOICE_HELP_TEXT
+     ABSOLUTE_FOLDER_NAME, IO_FOLDER_CHOICE_HELP_TEXT
 
 DIR_NONE = 'None'
 DIR_OTHER = 'Elsewhere...'
@@ -199,34 +199,17 @@ class LoadData(cpm.CPModule):
 
     def create_settings(self):
         self.csv_directory = cps.DirectoryPath(
-            "File location", allow_metadata = False,
+            "Input data file location", allow_metadata = False,
             doc ="""Select the folder containing the CSV file to be loaded.
-            You can choose among the following options:
+            %(IO_FOLDER_CHOICE_HELP_TEXT)s
+            <p>An additional option is the following:
             <ul>
-            <li><i>Default Input Folder</i>: Use the Default Input Folder.</li>
-            <li><i>Default Output Folder:</i> Use the Default Output Folder.</li>
-            <li><i>Elsewhere...</i>: Use a particular folder you specify.</li>
-            <li><i>Default input directory sub-folder</i>: Enter the name of a subfolder of 
-            the default input folder or a path that starts from the default input folder.</li>
-            <li><i>Default output directory sub-folder</i>: Enter the name of a subfolder of 
-            the default output folder or a path that starts from the default output folder.</li>
             <li><i>URL</i>: Use the path part of a URL. For instance, an example .CSV file 
             is hosted at https://svn.broadinstitute.org/CellProfiler/trunk/ExampleImages/ExampleSBSImages/1049_Metadata.csv
             To access this file, you would choose <i>URL</i> and enter
             https://svn.broadinstitute.org/CellProfiler/trunk/ExampleImages/ExampleSBSImages
             as the path location.</li>
-            </ul>
-            <p><i>Elsewhere</i> and the two sub-folder options all require you to enter an additional 
-            path name. You can use an <i>absolute path</i> (such as "C:\imagedir\image.tif" on a PC) or a 
-            <i>relative path</i> to specify the file location relative to a directory):
-            <ul>
-            <li>Use one period to represent the current directory. For example, if you choose 
-            <i>Default Input Folder sub-folder</i>, you can enter "./MyFiles" to look in a 
-            folder called "MyFiles" that is contained within the Default Input Folder.</li>
-            <li>Use two periods ".." to move up one folder level. For example, if you choose 
-            <i>Default Input Folder sub-folder</i>, you can enter "../MyFolder" to look in a 
-            folder called "MyFolder" at the same level as the Default Input Folder.</li>
-            </ul></p>""")
+            </ul></p>"""%globals())
         
         def get_directory_fn():
             '''Get the directory for the CSV file name'''
@@ -258,31 +241,11 @@ class LoadData(cpm.CPModule):
             contain a column with path names relative to the base image folder (see 
             the general help for this module for more details). You can choose among the following options:
             <ul>
-            <li><i>Default Input Folder</i>: Use the Default Input Folder.</li>
+            <li><i>Default Input Folder:</i> Use the Default Input Folder.</li>
             <li><i>Default Output Folder:</i> Use the Default Output Folder.</li>
+            <li><i>None:</i> You have an <i>Image_PathName</i> field that supplies an absolute path.</li>
             <li><i>Elsewhere...</i>: Use a particular folder you specify.</li>
-            <li><i>Default input directory sub-folder</i>: Enter the name of a subfolder of 
-            the default input folder or a path that starts from the default input folder.</li>
-            <li><i>Default output directory sub-folder</i>: Enter the name of a subfolder of 
-            the default output folder or a path that starts from the default output folder.</li>
-            <li><i>None:</i> You have an Image_PathName field that supplies an absolute path.</li>
-            <li><i>URL</i>: Use the path part of a URL. For instance, an example .CSV file 
-            is hosted at https://svn.broadinstitute.org/CellProfiler/trunk/ExampleImages/ExampleSBSImages/1049_Metadata.csv
-            To access this file, you would choose <i>URL</i> and enter
-            https://svn.broadinstitute.org/CellProfiler/trunk/ExampleImages/ExampleSBSImages
-            as the path location.</li>
-            </ul>
-            <p><i>Elsewhere</i> and the two sub-folder options all require you to enter an additional 
-            path name. You can use an <i>absolute path</i> (such as "C:\imagedir\image.tif" on a PC) or a 
-            <i>relative path</i> to specify the file location relative to a directory):
-            <ul>
-            <li>Use one period to represent the current directory. For example, if you choose 
-            <i>Default Input Folder sub-folder</i>, you can enter "./MyFiles" to look in a 
-            folder called "MyFiles" that is contained within the Default Input Folder.</li>
-            <li>Use two periods ".." to move up one folder level. For example, if you choose 
-            <i>Default Input Folder sub-folder</i>, you can enter "../MyFolder" to look in a 
-            folder called "MyFolder" at the same level as the Default Input Folder.</li>
-            </ul></p>""")
+            </ul>""")
         
         self.wants_image_groupings = cps.Binary("Group images by metadata?", False,doc = """
             Use this option to break the image sets in an experiment into groups

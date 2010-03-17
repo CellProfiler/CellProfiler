@@ -39,7 +39,9 @@ import cellprofiler.preferences as cpprefs
 import cellprofiler.settings as cps
 from loadimages import LoadImagesImageProvider
 from cellprofiler.gui.help import USING_METADATA_TAGS_REF, USING_METADATA_HELP_REF
-from cellprofiler.preferences import standardize_default_folder_names, DEFAULT_INPUT_FOLDER_NAME, DEFAULT_OUTPUT_FOLDER_NAME
+from cellprofiler.preferences import standardize_default_folder_names, \
+     DEFAULT_INPUT_FOLDER_NAME, DEFAULT_OUTPUT_FOLDER_NAME, \
+     IO_FOLDER_CHOICE_HELP_TEXT, IO_WITH_METADATA_HELP_TEXT
 
 DIR_CUSTOM_FOLDER = "Custom folder"
 DIR_CUSTOM_WITH_METADATA = "Custom with metadata"
@@ -54,21 +56,19 @@ class LoadSingleImage(cpm.CPModule):
         
         """
         self.directory = cps.DirectoryPath(
-            "Folder containing the image file",
-            doc = '''It is best to store the image you want to load 
-            in either the input or output folder, so that the correct image is loaded into 
-            the pipeline and typos are avoided.  If you must store it in another folder, 
-            select <i>Custom folder</i>. You can use metadata from the image set to
-            construct the folder name by selecting <i>Custom with metadata</i>.
-            <br>
-            If you chose <i>Custom with metadata</i> above, you can
-            specify a path based on metadata associated with the
-            image set. %s. For instance, if you have a "Plate" metadata element,
-            you can specify a path name of "./\g&lt;Plate&gt;" to get files
-            from the folder associated with your image's plate.
-            You can prefix the folder name with "." (a period) to make the 
-            root folder the Default Input Folder or "&" (an ampersand) 
-            to make the root folder the Default Output Folder. %s. '''%(USING_METADATA_TAGS_REF,USING_METADATA_HELP_REF))
+            "Input image file location",
+            doc = '''Select the folder containing the image(s) to be loaded. Generally, 
+            it is best to store the image you want to load in either the Default Input or 
+            Output Folder, so that the correct image is loaded into the pipeline 
+            and typos are avoided. %(IO_FOLDER_CHOICE_HELP_TEXT)s
+            
+            <p>%(IO_WITH_METADATA_HELP_TEXT)s %(USING_METADATA_TAGS_REF)s. 
+            For instance, if you have a "Plate" metadata tag, and your single files are 
+            organized in subfolders named with the "Plate" tag, you can select one of the 
+            subfolder options and then specify a subfolder name of <i>\g&lt;Plate&gt;</i> 
+            to get the files from the subfolder associated with that image's plate. The module will 
+            substitute the metadata values for the current image set for any metadata tags in the 
+            folder name. %(USING_METADATA_HELP_REF)s.</p>'''%globals())
         
         self.file_settings = []
         self.add_file(can_remove = False)
@@ -101,9 +101,10 @@ class LoadSingleImage(cpm.CPModule):
                     if you want your output given a unique label according to the
                     metadata corresponding to an image group. The name of the metadata 
                     to substitute is included in a special tag format embedded 
-                    in your file specification. %s. %s</li>
+                    in your file specification. %(USING_METADATA_TAGS_REF)s. %(USING_METADATA_HELP_REF)s</li>
                     </ul>
-                    In either case, the extension, if any, should be included."""% (USING_METADATA_TAGS_REF,USING_METADATA_HELP_REF) ))
+                    In either case, the extension, if any, should be included."""% globals() ))
+        
         group.append("image_name", cps.FileImageNameProvider("Name the image that will be loaded", 
                     "OrigBlue", doc = '''What do you want to call the image you are loading? 
                     You can use this name to select the image in downstream modules.'''))

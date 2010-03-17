@@ -120,7 +120,10 @@ import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.settings as cps
 import cellprofiler.preferences as cpprefs
-from cellprofiler.preferences import standardize_default_folder_names, DEFAULT_INPUT_FOLDER_NAME, DEFAULT_OUTPUT_FOLDER_NAME
+from cellprofiler.gui.help import USING_METADATA_TAGS_REF, USING_METADATA_HELP_REF
+from cellprofiler.preferences import standardize_default_folder_names, \
+     DEFAULT_INPUT_FOLDER_NAME, DEFAULT_OUTPUT_FOLDER_NAME, \
+     IO_FOLDER_CHOICE_HELP_TEXT, IO_WITH_METADATA_HELP_TEXT
 
 '''# of settings aside from the dose measurements'''
 FIXED_SETTING_COUNT = 1
@@ -213,20 +216,20 @@ class CalculateStatistics(cpm.CPModule):
             Leave this setting blank if you do not want a prefix.'''
         ))
         group.append('pathname', cps.DirectoryPath(
-            "File output location",
+            "Output file location",
             dir_choices = [
                 cps.DEFAULT_OUTPUT_FOLDER_NAME, cps.DEFAULT_INPUT_FOLDER_NAME,
                 cps.ABSOLUTE_FOLDER_NAME, cps.DEFAULT_OUTPUT_SUBFOLDER_NAME,
-                cps.DEFAULT_INPUT_SUBFOLDER_NAME],
-            doc="""
-            This setting lets you control the folder used to store the file. Choose either:
-            <ul>
-            <li><i>Default Output Folder</i></li>
-            <li><i>Custom:</i> The file will be stored in a customizable folder. You can
-            prefix the folder name with "." (a period) to make the root folder the default
-            output folder or "&" (an ampersand) to make the root folder the default input
-            folder.</li>
-            </ul>"""))
+                cps.DEFAULT_INPUT_SUBFOLDER_NAME], doc="""
+            This setting lets you choose the folder for the output
+            files. %(IO_FOLDER_CHOICE_HELP_TEXT)s
+            
+            <p>%(IO_WITH_METADATA_HELP_TEXT)s %(USING_METADATA_TAGS_REF)s. 
+            For instance, if you have a metadata tag named 
+            "Plate", you can create a per-plate folder by selecting one of the subfolder options
+            and then specifying the subfolder name as <i>\g&lt;Plate&gt;</i>. The module will 
+            substitute the metadata values for the current image set for any metadata tags in the 
+            folder name. %(USING_METADATA_HELP_REF)s.</p>"""%globals()))
         
         group.append("divider", cps.Divider())
         

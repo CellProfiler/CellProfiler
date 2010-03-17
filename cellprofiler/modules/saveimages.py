@@ -41,7 +41,11 @@ import cellprofiler.measurements
 import cellprofiler.settings as cps
 import cellprofiler.preferences as cpp
 from cellprofiler.gui.help import USING_METADATA_TAGS_REF, USING_METADATA_HELP_REF
-from cellprofiler.preferences import standardize_default_folder_names, DEFAULT_INPUT_FOLDER_NAME, DEFAULT_OUTPUT_FOLDER_NAME
+from cellprofiler.preferences import \
+     standardize_default_folder_names, DEFAULT_INPUT_FOLDER_NAME, \
+     DEFAULT_OUTPUT_FOLDER_NAME, ABSOLUTE_FOLDER_NAME, \
+     DEFAULT_INPUT_SUBFOLDER_NAME, DEFAULT_OUTPUT_SUBFOLDER_NAME, \
+     IO_FOLDER_CHOICE_HELP_TEXT, IO_WITH_METADATA_HELP_TEXT
 
 IF_IMAGE       = "Image"
 IF_MASK        = "Mask"
@@ -169,12 +173,12 @@ class SaveImages(cpm.CPModule):
                 <ul>
                 <li><i>Single name:</i> Enter the filename text here</li>
                 <li><i>Custom with metadata:</i> If you have metadata 
-                associated with your images, enter the filename text with the metadata tags. %s.   
+                associated with your images, enter the filename text with the metadata tags. %(USING_METADATA_TAGS_REF)s.   
                 For example, if the <i>plate</i>, <i>well_row</i> and <i>well_column</i> tags have the values <i>XG45</i>, <i>A</i>
                 and <i>01</i>, respectively, the string <i>Illum_\g&lt;plate&gt;_\g&lt;well_row&gt;\g&lt;well_column&gt;</i>
                 produces the output filename <i>Illum_XG45_A01</i>.</li>
                 </ul>
-                Do not enter the file extension in this setting; it will be appended automatically."""%(USING_METADATA_TAGS_REF))
+                Do not enter the file extension in this setting; it will be appended automatically."""%globals())
         
         self.wants_file_name_suffix = cps.Binary(
             "Do you want to add a suffix to the image file name?", False,
@@ -194,19 +198,21 @@ class SaveImages(cpm.CPModule):
                 Select the image or movie format to save the image(s). Most common
                 image formats are available; MAT-files are readable by MATLAB.""")
         
-        self.pathname = SaveImagesDirectoryPath(
-            "Select location to save file", doc = """ 
+        self.pathname = SaveImagesDirectoryPath("Output file location", doc = """ 
                 <i>(Used only when saving non-movie files)</i><br>
-                Where do you want to store the file? There are four choices available:                
+                This setting lets you choose the folder for the output
+                files. %(IO_FOLDER_CHOICE_HELP_TEXT)s
+                <p>An additional option is the following:
                 <ul>
-                <li><i>Default Output Folder:</i> The file will be stored in the default output
-                folder.</li>
-                <li><i>Same folder as image:</i> The file will be stored in the same folder as the images loaded during this image cycle.</li>
-                <li><i>Custom:</i> The file will be stored in a folder you specify. This folder 
-                can be specified relative to the default input or output folder.</li>
-                <li><i>Custom with metadata:</i> Same as <i>Custom</i> but also with metadata substitution 
-                (see the <i>Name with metadata</i> setting above for metadata usage).</li>
-                </ul>""")
+                <li><i>Same folder as image</i>: Place the output file in the same folder
+                that the source image is located.</li>
+                </ul></p>
+                <p>%(IO_WITH_METADATA_HELP_TEXT)s %(USING_METADATA_TAGS_REF)s. 
+                For instance, if you have a metadata tag named 
+                "Plate", you can create a per-plate folder by selecting one the subfolder options
+                and then specifying the subfolder name as <i>\g&lt;Plate&gt;</i>. The module will 
+                substitute the metadata values for the current image set for any metadata tags in the 
+                folder name.%(USING_METADATA_HELP_REF)s.</p>"""%globals())
         
         self.bit_depth = cps.Choice("Image bit depth",
                 ["8","12","16"],doc="""

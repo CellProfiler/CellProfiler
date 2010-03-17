@@ -556,6 +556,10 @@ class LoadImages(cpmodule.CPModule):
                     if fd[FD_METADATA_CHOICE].value in (tag, M_BOTH):
                         choices.update(
                             cpm.find_metadata_tokens(setting.value))
+            if (any([cpm.is_well_column_token(x) for x in choices]) and
+                any([cpm.is_well_row_token(x) for x in choices]) and not
+                any([x.lower() == cpm.FTR_WELL.lower() for x in choices])):
+                choices.add(cpm.FTR_WELL)
             if self.file_types == FF_OTHER_MOVIES:
                 choices.update([M_Z,M_T,M_SERIES])
             choices = list(choices)

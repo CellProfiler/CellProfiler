@@ -229,6 +229,9 @@ class LoadData(cpm.CPModule):
             exts = [("Data file (*.csv)","*.csv"),("All files (*.*)","*.*")]
         )
         
+        self.browse_csv_button = cps.DoSomething(
+            "Press to view CSV file contents","View...", self.browse_csv)
+        
         self.wants_images = cps.Binary("Load images based on this data?", True, doc="""
             Check this box to have <b>LoadData</b> load images using the <i>Image_FileName</i> field and the 
             <i>Image_PathName</i> fields (the latter is optional).""")
@@ -295,7 +298,8 @@ class LoadData(cpm.CPModule):
                                           self.csv_path, self.csv_file_name)
 
     def visible_settings(self):
-        result = [self.csv_directory, self.csv_file_name, self.wants_images]
+        result = [self.csv_directory, self.csv_file_name, 
+                  self.browse_csv_button, self.wants_images]
         if self.wants_images.value:
             result += [self.image_directory, self.wants_image_groupings]
             if self.wants_image_groupings.value:
@@ -362,6 +366,30 @@ class LoadData(cpm.CPModule):
             return fd
         else:
             return open(self.csv_path, 'rb')
+    
+    def browse_csv(self):
+        import wx
+        from cellprofiler.gui import get_icon
+        try:
+            fd = self.open_csv()
+        except:
+            wx.MessageBox("Could not read %s" %self.csv_path)
+            return
+        reader = csv.reader(fd)
+        header = reader.next()
+        frame = wx.Frame(wx.GetApp().frame, title=self.csv_path)
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        frame.SetSizer(sizer)
+        list_ctl = wx.ListCtrl(frame, style = wx.LC_REPORT)
+        sizer.Add(list_ctl, 1, wx.EXPAND)
+        for i, field in enumerate(header):
+            list_ctl.InsertColumn(i, field)
+        for line in reader:
+            list_ctl.Append(line)
+        frame.SetMinSize((640,480))
+        frame.SetIcon(get_icon())
+        frame.Fit()
+        frame.Show()
         
     def get_header(self):
         '''Read the header fields from the csv file

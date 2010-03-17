@@ -487,11 +487,12 @@ class LoadData(cpm.CPModule):
                 elif cpmeas.is_well_column_token(key):
                     # Always keep well columns as strings
                     dictionary[feature] = column
-                    well_column_data = column
                 else:
                     dictionary[feature] = best_cast(column)
                 if cpmeas.is_well_row_token(key):
                     well_row_data = column
+                if cpmeas.is_well_column_token(key):
+                    well_column_data = column
                 metadata[key] = dictionary[feature]
             elif (self.wants_images.value and
                   is_file_name_feature(feature)):

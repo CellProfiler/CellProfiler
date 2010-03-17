@@ -308,6 +308,8 @@ class LoadData(cpm.CPModule):
                     fields = [field[len("Metadata_"):] 
                               for field in self.get_header()
                               if field.startswith("Metadata_")]
+                    if self.has_synthetic_well_metadata():
+                        fields += [cpmeas.FTR_WELL]
                     self.metadata_fields.choices = fields
                 except:
                     self.metadata_fields.choices = [ "No CSV file"]
@@ -473,6 +475,8 @@ class LoadData(cpm.CPModule):
         previous_dict = {}
         for object_name, feature, coltype in previous_columns:
             previous_dict[feature] = coltype
+        well_column_data = None
+        well_row_data = None
         for i, feature in enumerate(header):
             column = [row[i] for row in rows]
             if feature.startswith('Metadata_'):
@@ -480,8 +484,14 @@ class LoadData(cpm.CPModule):
                 column = np.array(column)
                 if previous_dict.has_key(feature):
                     dictionary[feature] = best_cast(column, previous_dict[feature])
+                elif cpmeas.is_well_column_token(key):
+                    # Always keep well columns as strings
+                    dictionary[feature] = column
+                    well_column_data = column
                 else:
                     dictionary[feature] = best_cast(column)
+                if cpmeas.is_well_row_token(key):
+                    well_row_data = column
                 metadata[key] = dictionary[feature]
             elif (self.wants_images.value and
                   is_file_name_feature(feature)):
@@ -501,6 +511,10 @@ class LoadData(cpm.CPModule):
                 dictionary[feature] = column
             else:
                 dictionary[feature] = best_cast(column)
+        if self.has_synthetic_well_metadata():
+            dictionary[cpmeas.FTR_WELL] = np.array([r+c for r,c in zip(
+                well_row_data, well_column_data)])
+            metadata[cpmeas.FTR_WELL] = dictionary[cpmeas.FTR_WELL]
         
         for image in images.keys():
             if not images[image].has_key(FILE_NAME):
@@ -511,7 +525,7 @@ class LoadData(cpm.CPModule):
             # Populate the image set list 
             #
             use_key = (image_set_list.associating_by_key != False)
-                
+            add_number = (image_set_list.associating_by_key is None)
             for i in range(len(rows)):
                 if len(metadata) and use_key:
                     key = {}
@@ -525,6 +539,8 @@ class LoadData(cpm.CPModule):
                             elif md.dtype.name.startswith('float'):
                                 md = float(md)
                         key[k] = md
+                    if add_number:
+                        key["number"] = i
                     image_set = image_set_list.get_image_set(key)
                 else:
                     image_set = image_set_list.get_image_set(i)
@@ -687,6 +703,14 @@ class LoadData(cpm.CPModule):
                                if x[0] == cpmeas.IMAGE])
         already_output = [x in previous_fields for x in header]
         coltypes = [cpmeas.COLTYPE_INTEGER]*len(header)
+        #
+        # Make sure the well_column column type is a string
+        #
+        for i in range(len(header)):
+            if (header[i].startswith(cpmeas.C_METADATA+"_") and
+                cpmeas.is_well_column_token(header[i].split("_")[1])):
+                coltypes[i] = cpmeas.COLTYPE_VARCHAR_FORMAT % 1
+                
         collen = [0]*len(header)
         for row in reader:
             for index, field in enumerate(row):
@@ -745,16 +769,32 @@ class LoadData(cpm.CPModule):
         if (well_column is None and well_row_column is not None and
             well_col_column is not None):
             length = cpmeas.get_length_from_varchar(well_row_column[2])
-            if well_col_column[2] == cpmeas.COLTYPE_INTEGER:
-                length += 2
-            else:
-                length += cpmeas.get_length_from_varchar(well_col_column[2])
+            length += cpmeas.get_length_from_varchar(well_col_column[2])
             result += [(cpmeas.IMAGE, 
                         '_'.join((cpmeas.C_METADATA, cpmeas.FTR_WELL)),
                         cpmeas.COLTYPE_VARCHAR_FORMAT % length)]
         entry["measurement_columns"] = result
         return result
 
+    def has_synthetic_well_metadata(self):
+        '''Determine if we should synthesize a well metadata feature
+        
+        '''
+        fields = self.get_header()
+        has_well_col = False
+        has_well_row = False
+        for field in fields:
+            if not field.startswith(cpmeas.C_METADATA+"_"):
+                continue
+            category, feature = field.split('_',1)
+            if cpmeas.is_well_column_token(feature):
+                has_well_col = True
+            elif cpmeas.is_well_row_token(feature):
+                has_well_row = True
+            elif feature.lower() == cpmeas.FTR_WELL.lower():
+                return False
+        return has_well_col and has_well_row
+        
     def get_categories(self, pipeline, object_name):
         if object_name != cpmeas.IMAGE:
             return []

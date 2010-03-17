@@ -208,7 +208,7 @@ class TestLoadData(unittest.TestCase):
                              c[2] == "varchar(1)" for c in columns]))
         self.assertTrue(any([c[0] == cpmeas.IMAGE and
                              c[1] == "Metadata_Column" and
-                             c[2] == cpmeas.COLTYPE_INTEGER for c in columns]))
+                             c[2] == "varchar(2)" for c in columns]))
         self.assertTrue(any([c[0] == cpmeas.IMAGE and
                              c[1] == "Metadata_Well" and
                              c[2] == "varchar(3)" for c in columns]))
@@ -216,7 +216,7 @@ class TestLoadData(unittest.TestCase):
         features = module.get_measurements(pipeline, cpmeas.IMAGE, 
                                            cpmeas.C_METADATA)
         for feature, expected in (("Row", "C"),
-                                  ("Column", 3),
+                                  ("Column", "03"),
                                   ("Well", "C03")):
             self.assertTrue(feature in features)
             value = m.get_current_image_measurement('_'.join((cpmeas.C_METADATA, feature)))
@@ -233,7 +233,7 @@ class TestLoadData(unittest.TestCase):
                              c[2] == "varchar(1)" for c in columns]))
         self.assertTrue(any([c[0] == cpmeas.IMAGE and
                              c[1] == "Metadata_Column" and
-                             c[2] == cpmeas.COLTYPE_INTEGER for c in columns]))
+                             c[2] == "varchar(2)" for c in columns]))
         self.assertTrue(any([c[0] == cpmeas.IMAGE and
                              c[1] == "Metadata_Well" and
                              c[2] == "varchar(3)" for c in columns]))
@@ -241,7 +241,7 @@ class TestLoadData(unittest.TestCase):
         features = module.get_measurements(pipeline, cpmeas.IMAGE, 
                                            cpmeas.C_METADATA)
         for feature, expected in (("Row", "C"),
-                                  ("Column", 3),
+                                  ("Column", "03"),
                                   ("Well", "B14")):
             self.assertTrue(feature in features)
             value = m.get_current_image_measurement('_'.join((cpmeas.C_METADATA, feature)))

@@ -222,9 +222,6 @@ no longer need access to a separate database server. Because CellProfiler
 Analyst also supports SQLite, any user can access CellProfiler Analyst's
 suite of data exploration and machine-leaning tools.</li>
 </ul>
-
-<h3>Speed and Memory Performance</h3>
-[TO BE INSERTED]
 """
 
 WHEN_CAN_I_USE_CELLPROFILER_HELP = """ 
@@ -683,7 +680,109 @@ pipeline. We often process 40,000-130,000 images for one analysis in this
 manner. We do this by breaking the entire set of images into    
 separate batches, then submitting each of these batches as individual 
 jobs to a cluster. Each individual batch can be separately analyzed from  
-the rest.                                                                 
+the rest.
+
+<h3>Setting up CellProfiler on the cluster</h3>
+[INSERT INSTRUCTIONS HERE]
+<code>./python-2.6.sh CellProfiler.py -r -c</code>
+
+<h3>Submitting files for batch processing</h3>
+
+Below is a basic workflow for submitting your image batches to the cluster.
+<ol>
+<li><i>Create a folder for your project on your cluster.</i> For high throughput 
+analysis, it is recommended to create a separate project folder for each run. </li>
+<li>Within this project folder, create the following folders (both of which must be connected to 
+the cluster computing network):
+<ul>
+<li>Create an <i>images</i> folder, then transfer all of our images to this folder
+as the input folder. The input folder must be readable by everyone (or at least your 
+cluster) because each of the separate cluster computers will read input files from 
+this folder.
+<li>Create an <i>output</i> folder where all your output data will be stored. The
+output folder must be writeable by everyone (or at least your cluster) because 
+each of the separate cluster computers will write output files to this folder.
+</ul>
+If you cannot create folders and set read/write permissions to these folders (or don't know 
+how), ask your Information Technology (IT) department for help. </li>
+
+<li>In the CellProfiler folder panel, set the Default Input and Default Output Folders
+to the <i>images</i> and <i>output</i> folders created above, respectively.</li>
+
+<li><i>Create a pipeline for your image set.</i> You should test it on a few example
+images from your image set. The module settings selected for your pipeline will be 
+applied to <i>all</i> your images, but the results may vary 
+depending on the image quality, so it is critical to insure that your settings be
+robust against your "worst-case" images.
+<p>For instance, some images may contain no cells. If this happens, the automatic thresholding
+algorithms will incorrectly choose a very low threshold, and therefore "find" 
+spurious objects. This can be overcome by setting a lower limit on the threshold in 
+the <b>IdentifyPrimaryObjects</b> module.</p>
+<p>The Test mode in CellProfiler may be used for previewing the results of your settings
+on images of your choice. Please refer to <i>Help > General Help > Test Mode</i>
+for more details on how to use this utility.</li>
+
+<li><i>Add the <b>CreateBatchFiles</b> module to the end of your pipeline.</i>
+This module is needed to resolve the pathnames to your files with respect to 
+your local machine and the cluster computers. If you are processing large batches 
+of images, you may also consider adding <b>ExportToDatabase</b> to your pipeline, 
+after your measurement modules but before the CreateBatchFiles module. This module 
+will export your data either directly to a MySQL database or into a set of 
+comma-separated files (CSVs) along with a script to import your data into a 
+MySQL database. Please refer to the help for these modules in order learn more 
+about which settings are appropriate.</li>
+
+<li><i>Analyze your images to create a batch file.</i> Click the <i>Analyze images</i>
+button and the analysis will begin locally processing the first image set only. 
+Do not be surprised if processing the first image set takes much longer than usual
+if using <b>LoadImages</b> since this module creates a list of all images to be 
+processed which can take a while if there are many of them (this process can be sped
+up by creating your list of images as a CSV and using the <b>LoadData</b> module to load it).
+<p>At the end of processing the first cycle locally, the <b>CreateBatchFiles</b>
+module halts execution, creates the proper batch file (a file called 
+<i>Batch_data.mat</i>) and saves it in the Default Output Folder (Step 1). You 
+are now ready to submit this batch file to the cluster to run each of the batches 
+of images on different computers on the cluster.</p></li>
+
+<li><i>Submit your batches to the cluster.</i> Log on to your cluster, and navigate 
+to the directory where you have installed CellProfiler on the cluster. A single
+batch can be submitted with the following command:<br>
+<code>
+./python-2.6.sh CellProfiler.py -p &lt;Default_Output_Folder_path&gt;/Batch_data.mat -c -r -b -f &lt;first_image_set_number&gt; -l &lt;last_image_set_number&gt;
+</code>
+This command runs the batch by using additional options to CellProfiler that 
+specify the following (type "CellProfiler.py -h" to see a list of available options):
+<ul>
+<li><code>-p &lt;Default_Output_Folder_path&gt;/Batch_data.mat</code>: The 
+location of the batch file, where &lt;Default_Output_Folder_path%gt; is the 
+output folder path as seen by the cluster computer.</li>
+<li><code>-c</code>: Run "headless", i.e., without the GUI</li>
+<li><code>-r</code>: Run the pipeline specified on startup, which is contained in 
+the batch file.
+<li><code>-b</code>: Do not build extensions, since by this point, they should 
+already be built.</li>
+<li><code>-f &lt;first_image_set_number&gt;</code>: Start processing with the image 
+set specified, &lt;first_image_set_number&gt;</li>
+<li><code>-l &lt;last_image_set_number&gt; </code>: Finish processing with the image 
+set specified, &lt;last_image_set_number&gt;</li>
+</ul>
+To submit all the batches for a full image set, you will need a script that calls
+CellProfiler with these options with sequential image set numbers, e.g, 1-50, 51-100, 
+etc and submit each as an individual job. We have also provided a set of Python 
+scripts that will also automate the process; see the section on 
+<a href='#using_batchprofiler'>Using BatchProfiler for batch submission</a> for details.
+</li>
+</ol>
+
+<p>Once all the jobs are submitted, the cluster will run each batch individually 
+and output any measurements or images specified in the pipeline. If requested, 
+it will also produce a separate output (i.e., OUT.mat) file containing the data 
+for that batch of images in the output folder. Check the output from the batch 
+processes to make sure all batches complete. Batches that fail for transient reasons
+can be resubmitted.</p>
+
+<h3><a name = "using_batchprofiler">Using BatchProfiler for batch submission</a></h3>
+{INSERT INSTRUCTIONS FOR INSTALLATION HERE]
 """
 
 '''The help menu for CP's main window'''

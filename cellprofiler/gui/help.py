@@ -976,7 +976,7 @@ def output_gui_html():
             webpage_path = root
     
     help_text = """
-<h2><a name = "user_guide">User guide</a></h2>"""
+<h2>Using CellProfiler</a></h2>"""
     
     def write_menu(prefix, h,help_text):
         help_text += "<ul>\n"

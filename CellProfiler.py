@@ -220,7 +220,7 @@ try:
 <div style="page-break-after:always"> 
 <table width="100%%">
 <tr><td align="center">
-<img src="%(LOCATION_COVERPAGE)s" align="middle"></img>
+<img src="%(LOCATION_COVERPAGE)s" align="middle" style="border-style: none"></img>
 </tr></td>
 </table>
 </div>
@@ -229,9 +229,10 @@ try:
 <tr><td align="middle"><b>CellProfiler</b> cell image analysis software</td></tr>
 <tr><td align="middle"><b>Created by</b><br>Anne E. Carpenter and Thouis R. Jones</td></tr>
 <tr><td align="middle"><b>In the laboratories of</b><br>David M. Sabatini and Polina Golland at</td></tr>
-<tr><td align="middle"><img src="%(LOCATION_WHITEHEADLOGO)s"></img><img src="%(LOCATION_CSAILLOGO)s"></img></td></tr>
+<tr><td align="middle"><img src="%(LOCATION_WHITEHEADLOGO)s" style="border-style: none"></img>
+<img src="%(LOCATION_CSAILLOGO)s" style="border-style: none"></img></td></tr>
 <tr><td align="middle">And now based at</td></tr>
-<tr><td align="middle"><img src="%(LOCATION_IMAGINGPLATFORMBANNER)s"></img></td></tr>
+<tr><td align="middle"><img src="%(LOCATION_IMAGINGPLATFORMBANNER)s" style="border-style: none"></img></td></tr>
 <tr><td align="middle">
 <b>CellProfiler is free and open-source!</b>
 
@@ -248,7 +249,7 @@ improve and support it.</p>
 </td></tr>
 </table>
 </div>
-<h1>Table of contents</h1>"""%globals()
+<h1><a name="table_of_contents">Table of contents</a></h1>"""%globals()
         index_fd.write(intro_text)
         index_fd.write(nonmodule_help_text)
         index_fd.write(module_help_text)

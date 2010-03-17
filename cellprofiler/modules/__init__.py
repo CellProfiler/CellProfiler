@@ -363,7 +363,7 @@ def output_module_html():
             webpage_path = root
             
     help_text = """
-<h2><a name = "modules">Modules</a></h2>
+<h2>Help for CellProfiler Modules</a></h2>
 <ul>\n"""
     d = {}
     module_path = webpage_path

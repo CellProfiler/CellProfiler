@@ -975,10 +975,14 @@ def output_gui_html():
         except IOError:
             webpage_path = root
     
+    import cellprofiler.icons
+    from cellprofiler.utilities.relpath import relpath
+    img_relpath = relpath(cellprofiler.icons.__path__[0])
+    
     help_text = """
 <h2>Using CellProfiler</a></h2>"""
     
-    def write_menu(prefix, h,help_text):
+    def write_menu(prefix, h, help_text):
         help_text += "<ul>\n"
         for key, value in h:
             help_text += "<li>"
@@ -990,6 +994,8 @@ def output_gui_html():
                 fd = open(os.path.join(webpage_path, file_name),"w")
                 fd.write("<html style=""font-family:arial""><head><title>%s</title></head>\n" % key)
                 fd.write("<body><h1>%s</h1>\n<div>\n" % key)
+                # Replace the relative paths to the icons with the relative path to the image dir
+                value = value.replace(img_relpath,'images')
                 fd.write(value)
                 fd.write("</div></body>\n")
                 fd.close()

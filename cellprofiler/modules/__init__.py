@@ -379,18 +379,13 @@ def output_module_html():
             d[module.category] = {}
         d[module.category][module_name] = module
         result = module.get_help()
-        absolute_image_path = os.path.join(root, 'icons','%s.png'%(module_name))
-        # Check if the file exists on this computer
-        if os.path.exists(absolute_image_path) and os.path.isfile(absolute_image_path):
-            # If so, strip out end html tags so I can add more stuff
-            result = result.replace('</body>','').replace('</html>','')
-            # Include images specific to the module, relative to html files (currently located in '..\icons' folder)
-            path = ".."
-            path = os.path.join(path,'icons')
-            LOCATION_MODULE_IMAGES = os.path.join(path,'%s.png'%(module_name))
-            result += '\n\n<div><p><img src="%s", width="50%%"></img></p></div>\n'%LOCATION_MODULE_IMAGES
-            # Now end the help text
-            result += '</body></html>'
+        # Strip out end html tags so I can add more stuff
+        result = result.replace('</body>','').replace('</html>','')
+        # Include images specific to the module, relative to html files ('images' dir)
+        LOCATION_MODULE_IMAGES = os.path.join('images','%s.png'%(module_name))
+        result += '\n\n<div><p><img src="%s", width="50%%"></img></p></div>\n'%LOCATION_MODULE_IMAGES
+        # Now end the help text
+        result += '</body></html>'
         fd = open(os.path.join(module_path,"%s.html" % module_name), "w")
         fd.write(result)
         fd.close()

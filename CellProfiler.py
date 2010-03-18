@@ -182,14 +182,21 @@ try:
     if options.output_html:
         from cellprofiler.modules import output_module_html
         from cellprofiler.gui.help import output_gui_html
+        import cellprofiler.icons
+        from glob import glob
+        from shutil import copy
+
         # Write the individual topic files
         module_help_text  = output_module_html()
         nonmodule_help_text = output_gui_html()
         
         # Produce one html to unite them
+        # get root directory
         root = os.path.split(__file__)[0]
         if len(root) == 0:
             root = os.curdir
+            
+        # Place the html files in a new 'help' folder
         webpage_path = os.path.join(root, 'cellprofiler', 'help')
         if not (os.path.exists(webpage_path) and os.path.isdir(webpage_path)):
             try:
@@ -198,18 +205,22 @@ try:
                 webpage_path = root
         index_fd = open(os.path.join(webpage_path,'index.html'),'w')
         
-        #For some reason, Adobe doesn't like using absolute paths to assemble the PDF.
-        #Also, Firefox doesn't like displaying the HTML image links using abs paths either.
-        #So I have use relative ones. Should check this to see if works on the 
-        #compiled version
-        #path = os.path.split(os.path.abspath(sys.argv[0]))[0]
-        #path = os.path.join(path, 'cellprofiler','icons')
-        path = ".."
-        path = os.path.join(path,'icons')
-        LOCATION_COVERPAGE = os.path.join(path,'CPCoverPage.png')
-        LOCATION_WHITEHEADLOGO = os.path.join(path,'WhiteheadInstituteLogo.png')
-        LOCATION_CSAILLOGO = os.path.join(path,'CSAIL_Logo.png')
-        LOCATION_IMAGINGPLATFORMBANNER  = os.path.join(path,'BroadPlusImagingPlusBanner.png')
+        # Copy the png images to a new 'images' directory under the html folder
+        webpage_images_path = os.path.join(webpage_path,'images')
+        if not (os.path.exists(webpage_images_path) and os.path.isdir(webpage_images_path)):
+            try:
+                os.mkdir(webpage_images_path)
+            except IOError:
+                webpage_images_path = os.path.join(root)
+        icons_path = os.path.join(root, 'cellprofiler', 'icons')
+        all_pngs = glob(os.path.join(icons_path, "*.png"))
+        for f in all_pngs:
+            copy(f,webpage_images_path)
+        
+        LOCATION_COVERPAGE = os.path.join('images','CPCoverPage.png')
+        LOCATION_WHITEHEADLOGO = os.path.join('images','WhiteheadInstituteLogo.png')
+        LOCATION_CSAILLOGO = os.path.join('images','CSAIL_Logo.png')
+        LOCATION_IMAGINGPLATFORMBANNER  = os.path.join('images','BroadPlusImagingPlusBanner.png')
         
         intro_text = """
 <html style="font-family:arial">

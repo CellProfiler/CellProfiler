@@ -460,7 +460,7 @@ class LoadImages(cpmodule.CPModule):
                         <tr><td>_</td><td>Discard the underbar separating plate from well</td></tr>
                         <tr><td>(?P&lt;Well&gt;</td><td>Name the captured field <i>Well</i></td></tr>
                         <tr><td>[A-P]</td><td>Capture exactly one letter between A and P</td></tr>
-                        <tr><td>[0-9]{2}</td><td>Capture exactly two digits that follow</td></tr>
+                        <tr><td>[0-9]{1,2}</td><td>Capture one or two digits that follow</td></tr>
                         <tr><td>_s</td><td>Discard the underbar followed by <i>s</s> separating well from site</td></tr>
                         <tr><td>(?P&lt;Site&gt;</td><td>Name the captured field <i>Site</i></td></tr>
                         <tr><td>[0-9]</td><td>Capture one digit following</td></tr>

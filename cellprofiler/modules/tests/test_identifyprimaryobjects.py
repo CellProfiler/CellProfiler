@@ -1238,6 +1238,34 @@ IdentifyPrimaryObjects:[module_num:2|svn_version:\'8981\'|variable_revision_numb
         segmented = objects.segmented
         self.assertTrue(np.all(segmented[img>0] == 1))
         self.assertTrue(np.all(img[segmented==1] > 0))
+        
+    def test_06_02_regression_adaptive_mask(self):
+        """Regression test - mask all but one pixel / adaptive"""
+        for o_alg in (I.O_WEIGHTED_VARIANCE, I.O_ENTROPY):
+            x = ID.IdentifyPrimAutomatic()
+            x.use_weighted_variance.value = o_alg
+            x.object_name.value = "my_object"
+            x.image_name.value = "my_image"
+            x.exclude_size.value = False
+            x.threshold_method.value = T.TM_OTSU_ADAPTIVE
+            np.random.seed(62)
+            img = np.random.uniform(size=(100,100))
+            mask = np.zeros(img.shape, bool)
+            mask[-1,-1] = True
+            image = cellprofiler.cpimage.Image(img, mask)
+            image_set_list = cellprofiler.cpimage.ImageSetList()
+            image_set = image_set_list.get_image_set(0)
+            image_set.providers.append(cellprofiler.cpimage.VanillaImageProvider("my_image",image))
+            object_set = cellprofiler.objects.ObjectSet()
+            measurements = cpmeas.Measurements()
+            pipeline = cellprofiler.pipeline.Pipeline()
+            x.run(Workspace(pipeline,x,image_set,object_set,measurements,None))
+            self.assertEqual(len(object_set.object_names),1)
+            self.assertTrue("my_object" in object_set.object_names)
+            objects = object_set.get_objects("my_object")
+            segmented = objects.segmented
+            self.assertTrue(np.all(segmented == 0))
+        
     
     def test_07_01_adaptive_otsu_small(self):
         """Test the function, get_threshold, using Otsu adaptive / small

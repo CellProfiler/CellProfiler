@@ -183,6 +183,9 @@ def get_global_threshold(threshold_method, image, mask = None,
                          use_weighted_variance = True,
                          assign_middle_to_foreground = True):
     """Compute a single threshold over the whole image"""
+    if mask is not None and not np.any(mask):
+        return 1
+    
     if threshold_method == TM_OTSU:
         return get_otsu_threshold(image, mask,
                                   two_class_otsu,

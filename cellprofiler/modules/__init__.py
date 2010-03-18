@@ -351,6 +351,9 @@ def reload_modules():
     
 def output_module_html():
     '''Output an HTML page for each module'''
+    import cellprofiler.icons
+    from glob import glob
+        
     root = os.path.split(__file__)[0]
     if len(root) == 0:
         root = os.curdir
@@ -362,6 +365,10 @@ def output_module_html():
         except IOError:
             webpage_path = root
             
+    icons_path = os.path.join(root, 'icons')
+    all_png_icons = glob(os.path.join(icons_path, "*.png"))
+    icon_names = [os.path.basename(f)[:-4] for f in all_png_icons]
+    
     help_text = """
 <h2>Help for CellProfiler Modules</a></h2>
 <ul>\n"""
@@ -379,13 +386,16 @@ def output_module_html():
             d[module.category] = {}
         d[module.category][module_name] = module
         result = module.get_help()
-        # Strip out end html tags so I can add more stuff
-        result = result.replace('</body>','').replace('</html>','')
-        # Include images specific to the module, relative to html files ('images' dir)
-        LOCATION_MODULE_IMAGES = os.path.join('images','%s.png'%(module_name))
-        result += '\n\n<div><p><img src="%s", width="50%%"></img></p></div>\n'%LOCATION_MODULE_IMAGES
-        # Now end the help text
-        result += '</body></html>'
+        
+        # Check if a corresponding image exists for the module
+        if module_name in icon_names:
+            # Strip out end html tags so I can add more stuff
+            result = result.replace('</body>','').replace('</html>','')
+            # Include images specific to the module, relative to html files ('images' dir)
+            LOCATION_MODULE_IMAGES = os.path.join('images','%s.png'%(module_name))
+            result += '\n\n<div><p><img src="%s", width="50%%"></img></p></div>\n'%LOCATION_MODULE_IMAGES
+            # Now end the help text
+            result += '</body></html>'
         fd = open(os.path.join(module_path,"%s.html" % module_name), "w")
         fd.write(result)
         fd.close()

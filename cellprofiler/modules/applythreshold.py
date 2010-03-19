@@ -59,7 +59,7 @@ class ApplyThreshold(Identify):
         self.low_or_high = cpsetting.Choice(
                                 "Set pixels below or above the threshold to zero?",
                                 [TH_BELOW_THRESHOLD, TH_ABOVE_THRESHOLD],
-                                doc="""For grayscale output, the dim pixels below 
+                                doc="""<i>(Used only when thresholding a grayscale image)</i> For grayscale output, the dim pixels below 
                                 the threshold can be set to zero or the bright pixels above 
                                 the threshold can be set to zero.
                                 Choose <i>Below threshold</i> to threshold dim pixels and
@@ -82,7 +82,8 @@ class ApplyThreshold(Identify):
 
         self.create_threshold_settings(threshold_methods)
         
-        self.enclosing_objects_name = cpsetting.ObjectNameSubscriber("Select the input objects","None")
+        self.enclosing_objects_name = cpsetting.ObjectNameSubscriber("Select the input objects","None", doc = '''<i>(Used only if a per-object thresholding method is selected)</i><br> Select the objects
+                               you identified previously and would like to now further identify sub-objects within.''')
         
     def visible_settings(self):
         vv = [self.image_name, self.thresholded_image_name, self.binary]

@@ -134,7 +134,7 @@ class Image(object):
             scale -= 1
             fix_range = True
         
-        img = (img.astype(np.float64) - mval)/scale
+        img = (img.astype(np.float32) - mval)/scale
         if fix_range:
             # These types will always have ranges between 0 and 1. Make it so.
             img[img<0]=0

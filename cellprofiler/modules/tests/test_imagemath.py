@@ -314,7 +314,7 @@ Multiply:[module_num:1|svn_version:\'8913\'|variable_revision_number:1|show_wind
             module.operation.value = I.O_NONE
         
         np.random.seed(0)
-        image = np.random.uniform(size=(10,10))
+        image = np.random.uniform(size=(10,10)).astype(np.float32)
         expected = image**2
         output = self.run_imagemath([{ 'pixel_data': image}], fn)
         self.check_expected(output, expected)
@@ -339,6 +339,7 @@ Multiply:[module_num:1|svn_version:\'8913\'|variable_revision_number:1|show_wind
         
         np.random.seed(0)
         image = np.random.uniform(size=(10,10))*.5
+        image = image.astype(np.float32)
         expected = image + .5
         output = self.run_imagemath([{ 'pixel_data': image}], fn)
         self.check_expected(output, expected)
@@ -348,7 +349,7 @@ Multiply:[module_num:1|svn_version:\'8913\'|variable_revision_number:1|show_wind
         def fn(module):
             module.operation.value = I.O_NONE
         np.random.seed(0)
-        image = np.random.uniform(size=(10,10))
+        image = np.random.uniform(size=(10,10)).astype(np.float32)
         mask = np.random.uniform(size=(10,10)) > .3
         output = self.run_imagemath([{'pixel_data': image,
                                       'mask': mask
@@ -362,7 +363,7 @@ Multiply:[module_num:1|svn_version:\'8913\'|variable_revision_number:1|show_wind
             module.truncate_high.value = False
         np.random.seed(0)
         for n in range(2,5):
-            images = [{ 'pixel_data':np.random.uniform(size=(10,10)) }
+            images = [{ 'pixel_data':np.random.uniform(size=(10,10)).astype(np.float32) }
                       for i in range(n)]
             expected = reduce(np.add,[x['pixel_data'] for x in images])
             output = self.run_imagemath(images, fn)
@@ -376,7 +377,7 @@ Multiply:[module_num:1|svn_version:\'8913\'|variable_revision_number:1|show_wind
             module.truncate_high.value = False
         np.random.seed(0)
         for n in range(2,5):
-            images = [{ 'pixel_data':np.random.uniform(size=(50,50)),
+            images = [{ 'pixel_data':np.random.uniform(size=(50,50)).astype(np.float32),
                         'mask': (np.random.uniform(size=(50,50))>.1) }
                       for i in range(n)]
             expected = reduce(np.add,[x['pixel_data'] for x in images])
@@ -390,7 +391,7 @@ Multiply:[module_num:1|svn_version:\'8913\'|variable_revision_number:1|show_wind
             module.truncate_high.value = True
         np.random.seed(0)
         for n in range(2,5):
-            images = [{ 'pixel_data':np.random.uniform(size=(50,50)),
+            images = [{ 'pixel_data':np.random.uniform(size=(50,50)).astype(np.float32),
                         'mask': (np.random.uniform(size=(50,50))>.1) }
                       for i in range(n)]
             expected = reduce(np.add,[x['pixel_data'] for x in images])
@@ -409,7 +410,7 @@ Multiply:[module_num:1|svn_version:\'8913\'|variable_revision_number:1|show_wind
         crop_mask[5:15,5:15] = True
         for n in range(2,3):
             for m in range(n):
-                images = [{ 'pixel_data':np.random.uniform(size=(20,20)) }
+                images = [{ 'pixel_data':np.random.uniform(size=(20,20)).astype(np.float32) }
                           for i in range(n)]
                 for i,img in enumerate(images):
                     img['cropped_data'] = img['pixel_data'][5:15,5:15]
@@ -424,7 +425,7 @@ Multiply:[module_num:1|svn_version:\'8913\'|variable_revision_number:1|show_wind
         '''Test adding with factors'''
         np.random.seed(0)
         for n in range(2,5):
-            images = [{ 'pixel_data':np.random.uniform(size=(10,10)) }
+            images = [{ 'pixel_data':np.random.uniform(size=(10,10)).astype(np.float32) }
                       for i in range(n)]
             factors = np.random.uniform(size=n)
             expected = reduce(np.add,[x['pixel_data'] * factor 
@@ -444,7 +445,7 @@ Multiply:[module_num:1|svn_version:\'8913\'|variable_revision_number:1|show_wind
             module.truncate_low.value = False
         np.random.seed(0)
         for n in range(2,5):
-            images = [{ 'pixel_data':np.random.uniform(size=(10,10)) }
+            images = [{ 'pixel_data':np.random.uniform(size=(10,10)).astype(np.float32) }
                       for i in range(n)]
             expected = reduce(np.subtract,[x['pixel_data'] for x in images])
             output = self.run_imagemath(images, fn)
@@ -457,7 +458,7 @@ Multiply:[module_num:1|svn_version:\'8913\'|variable_revision_number:1|show_wind
             module.truncate_low.value = True
         np.random.seed(0)
         for n in range(2,5):
-            images = [{ 'pixel_data':np.random.uniform(size=(10,10)) }
+            images = [{ 'pixel_data':np.random.uniform(size=(10,10)).astype(np.float32) }
                       for i in range(n)]
             expected = reduce(np.subtract,[x['pixel_data'] for x in images])
             expected[expected<0] = 0
@@ -470,7 +471,7 @@ Multiply:[module_num:1|svn_version:\'8913\'|variable_revision_number:1|show_wind
             module.truncate_low.value = False
         np.random.seed(0)
         for n in range(2,5):
-            images = [{ 'pixel_data':np.random.uniform(size=(10,10)) }
+            images = [{ 'pixel_data':np.random.uniform(size=(10,10)).astype(np.float32) }
                       for i in range(n)]
             expected = reduce(np.multiply,[x['pixel_data'] for x in images])
             output = self.run_imagemath(images, fn)
@@ -482,7 +483,7 @@ Multiply:[module_num:1|svn_version:\'8913\'|variable_revision_number:1|show_wind
             module.truncate_low.value = False
         np.random.seed(0)
         for n in range(2,5):
-            images = [{ 'pixel_data':np.random.uniform(size=(10,10)) }
+            images = [{ 'pixel_data':np.random.uniform(size=(10,10)).astype(np.float32) }
                       for i in range(n)]
             expected = reduce(np.divide,[x['pixel_data'] for x in images])
             output = self.run_imagemath(images, fn)
@@ -494,7 +495,7 @@ Multiply:[module_num:1|svn_version:\'8913\'|variable_revision_number:1|show_wind
             module.truncate_low.value = False
         np.random.seed(0)
         for n in range(2,5):
-            images = [{ 'pixel_data':np.random.uniform(size=(10,10)) }
+            images = [{ 'pixel_data':np.random.uniform(size=(10,10)).astype(np.float32) }
                       for i in range(n)]
             expected = reduce(np.add,[x['pixel_data'] for x in images]) / n
             output = self.run_imagemath(images, fn)
@@ -504,7 +505,7 @@ Multiply:[module_num:1|svn_version:\'8913\'|variable_revision_number:1|show_wind
         '''Test averaging with factors'''
         np.random.seed(0)
         for n in range(2,5):
-            images = [{ 'pixel_data':np.random.uniform(size=(10,10)) }
+            images = [{ 'pixel_data':np.random.uniform(size=(10,10)).astype(np.float32) }
                       for i in range(n)]
             factors = np.random.uniform(size=n)
             expected = reduce(np.add,[x['pixel_data'] * factor 
@@ -524,7 +525,7 @@ Multiply:[module_num:1|svn_version:\'8913\'|variable_revision_number:1|show_wind
             module.operation.value = I.O_INVERT
         
         np.random.seed(0)
-        image = np.random.uniform(size=(10,10))
+        image = np.random.uniform(size=(10,10)).astype(np.float32)
         expected = 1-image
         output = self.run_imagemath([{ 'pixel_data': image}], fn)
         self.check_expected(output, expected)
@@ -536,7 +537,7 @@ Multiply:[module_num:1|svn_version:\'8913\'|variable_revision_number:1|show_wind
             module.truncate_low.value = False
         
         np.random.seed(0)
-        image = np.random.uniform(size=(10,10))
+        image = np.random.uniform(size=(10,10)).astype(np.float32)
         expected = np.log2(image)
         output = self.run_imagemath([{ 'pixel_data': image}], fn)
         self.check_expected(output, expected)

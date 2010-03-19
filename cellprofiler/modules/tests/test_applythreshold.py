@@ -187,7 +187,7 @@ class TestApplyThreshold(unittest.TestCase):
     def test_02_01_grayscale_low_threshold(self):
         '''Apply a low threshold, no shift'''
         np.random.seed(0)
-        image = np.random.uniform(size=(20,20))
+        image = np.random.uniform(size=(20,20)).astype(np.float32)
         expected = image.copy()
         expected[expected < .5] = 0
         workspace, module = self.make_workspace(image)
@@ -247,7 +247,7 @@ class TestApplyThreshold(unittest.TestCase):
     def test_02_02_grayscale_low_threshold_shift(self):
         '''Apply a low threshold, with shift'''
         np.random.seed(0)
-        image = np.random.uniform(size=(20,20))
+        image = np.random.uniform(size=(20,20)).astype(np.float32)
         expected = image.copy()
         thresholded_pixels = expected < .5
         expected[thresholded_pixels] = 0
@@ -265,7 +265,7 @@ class TestApplyThreshold(unittest.TestCase):
     def test_03_01_grayscale_high_threshold(self):
         '''Apply a high threshold, no dilation'''
         np.random.seed(0)
-        image = np.random.uniform(size=(20,20))
+        image = np.random.uniform(size=(20,20)).astype(np.float32)
         expected = image.copy()
         thresholded_pixels = expected > .5
         expected[thresholded_pixels] = 0
@@ -282,8 +282,8 @@ class TestApplyThreshold(unittest.TestCase):
         '''Apply a high threshold with dilation'''
         image = np.ones((11,11))*.3
         image[5,5] = .7
-        expected = np.ones((11,11))*.3
-        i,j = np.mgrid[-5:6,-5:6].astype(float)
+        expected = np.ones((11,11),np.float32)*.3
+        i,j = np.mgrid[-5:6,-5:6].astype(np.float32)
         thresholded_pixels = i*i+j*j <= 4
         expected[thresholded_pixels] = 0
         workspace, module = self.make_workspace(image)
@@ -429,7 +429,7 @@ class TestApplyThreshold(unittest.TestCase):
         np.random.seed(0)
         image = np.hstack((np.random.exponential(1.5,size=300),
                            np.random.poisson(15,size=300),
-                           np.random.poisson(30,size=300)))
+                           np.random.poisson(30,size=300))).astype(np.float32)
         image.shape=(30,30)
         image = stretch(image)
         limage, d = T.log_transform(image)

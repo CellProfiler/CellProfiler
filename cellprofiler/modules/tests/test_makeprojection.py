@@ -141,9 +141,9 @@ class TestMakeProjection(unittest.TestCase):
     
     def test_02_01_average(self):
         np.random.seed(0)
-        images_and_masks = [(np.random.uniform(size=(10,10)), None)
+        images_and_masks = [(np.random.uniform(size=(10,10)).astype(np.float32), None)
                              for i in range(3)]
-        expected = np.zeros((10,10))
+        expected = np.zeros((10,10), np.float32)
         for image, mask in images_and_masks:
             expected += image
         expected = expected / len(images_and_masks)
@@ -154,11 +154,11 @@ class TestMakeProjection(unittest.TestCase):
     
     def test_02_02_average_mask(self):
         np.random.seed(0)
-        images_and_masks = [(np.random.uniform(size=(100,100)), 
+        images_and_masks = [(np.random.uniform(size=(100,100)).astype(np.float32), 
                              np.random.uniform(size=(100,100)) > .3)
                              for i in range(3)]
-        expected = np.zeros((100,100))
-        expected_count = np.zeros((100,100))
+        expected = np.zeros((100,100), np.float32)
+        expected_count = np.zeros((100,100), np.float32)
         expected_mask = np.zeros((100,100), bool)
         for image, mask in images_and_masks:
             expected[mask] += image[mask]
@@ -168,15 +168,14 @@ class TestMakeProjection(unittest.TestCase):
         image = self.run_image_set(M.P_AVERAGE, images_and_masks)
         self.assertTrue(image.has_mask)
         self.assertTrue(np.all(expected_mask == image.mask))
-        self.assertTrue(np.all(np.abs(image.pixel_data[image.mask] -
-                                      expected[expected_mask]) < 
-                               np.finfo(float).eps))
+        np.testing.assert_almost_equal(image.pixel_data[image.mask],
+                                       expected[expected_mask])
     
     def test_02_03_average_color(self):
         np.random.seed(0)
-        images_and_masks = [(np.random.uniform(size=(10,10,3)), None)
+        images_and_masks = [(np.random.uniform(size=(10,10,3)).astype(np.float32), None)
                              for i in range(3)]
-        expected = np.zeros((10,10,3))
+        expected = np.zeros((10,10,3), np.float32)
         for image, mask in images_and_masks:
             expected += image
         expected = expected / len(images_and_masks)
@@ -187,9 +186,9 @@ class TestMakeProjection(unittest.TestCase):
     
     def test_03_01_maximum(self):
         np.random.seed(0)
-        images_and_masks = [(np.random.uniform(size=(10,10)), None)
+        images_and_masks = [(np.random.uniform(size=(10,10)).astype(np.float32), None)
                              for i in range(3)]
-        expected = np.zeros((10,10))
+        expected = np.zeros((10,10), np.float32)
         for image, mask in images_and_masks:
             expected = np.maximum(expected,image)
         image = self.run_image_set(M.P_MAXIMUM, images_and_masks)
@@ -199,10 +198,10 @@ class TestMakeProjection(unittest.TestCase):
     
     def test_03_02_maximum_mask(self):
         np.random.seed(0)
-        images_and_masks = [(np.random.uniform(size=(100,100)), 
+        images_and_masks = [(np.random.uniform(size=(100,100)).astype(np.float32), 
                              np.random.uniform(size=(100,100)) > .3)
                              for i in range(3)]
-        expected = np.zeros((100,100))
+        expected = np.zeros((100,100), np.float32)
         expected_mask = np.zeros((100,100), bool)
         for image, mask in images_and_masks:
             expected[mask] = np.maximum(expected[mask],image[mask])
@@ -216,9 +215,9 @@ class TestMakeProjection(unittest.TestCase):
     
     def test_03_03_maximum_color(self):
         np.random.seed(0)
-        images_and_masks = [(np.random.uniform(size=(10,10,3)), None)
+        images_and_masks = [(np.random.uniform(size=(10,10,3)).astype(np.float32), None)
                              for i in range(3)]
-        expected = np.zeros((10,10,3))
+        expected = np.zeros((10,10,3), np.float32)
         for image, mask in images_and_masks:
             expected = np.maximum(expected, image)
         image = self.run_image_set(M.P_MAXIMUM, images_and_masks)

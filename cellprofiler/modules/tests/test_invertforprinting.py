@@ -164,7 +164,7 @@ class TestInvertForPrinting(unittest.TestCase):
     
     def test_02_01_color_to_color(self):
         np.random.seed(0)
-        color_image = np.random.uniform(size=(10,20,3))
+        color_image = np.random.uniform(size=(10,20,3)).astype(np.float32)
         def fn(module):
             self.assertTrue(isinstance(module,I.InvertForPrinting))
             module.input_color_choice.value = I.CC_COLOR
@@ -180,7 +180,7 @@ class TestInvertForPrinting(unittest.TestCase):
     
     def test_02_02_color_to_bw(self):
         np.random.seed(0)
-        color_image = np.random.uniform(size=(10,20,3))
+        color_image = np.random.uniform(size=(10,20,3)).astype(np.float32)
         def fn(module):
             self.assertTrue(isinstance(module,I.InvertForPrinting))
             module.input_color_choice.value = I.CC_COLOR
@@ -197,7 +197,7 @@ class TestInvertForPrinting(unittest.TestCase):
     
     def test_02_03_bw_to_color(self):
         np.random.seed(0)
-        color_image = np.random.uniform(size=(10,20,3))
+        color_image = np.random.uniform(size=(10,20,3)).astype(np.float32)
         def fn(module):
             self.assertTrue(isinstance(module,I.InvertForPrinting))
             module.input_color_choice.value = I.CC_GRAYSCALE
@@ -210,13 +210,13 @@ class TestInvertForPrinting(unittest.TestCase):
         self.assertTrue(I_COLOR_OUT in d.keys())
         result = d[I_COLOR_OUT]
         for o, i1, i2 in ((0,1,2),(1,2,0),(2,0,1)):
-            diff = (result[:,:,o] - ((1 - color_image[:,:,i1]) *
-                                     (1-color_image[:,:,i2])))
-            self.assertTrue(np.all(np.abs(diff) <= np.finfo(float).eps))
+            np.testing.assert_almost_equal(
+                result[:,:,o],
+                ((1 - color_image[:,:,i1]) * (1-color_image[:,:,i2])))
 
     def test_02_04_bw_to_bw(self):
         np.random.seed(0)
-        color_image = np.random.uniform(size=(10,20,3))
+        color_image = np.random.uniform(size=(10,20,3)).astype(np.float32)
         def fn(module):
             self.assertTrue(isinstance(module,I.InvertForPrinting))
             module.input_color_choice.value = I.CC_GRAYSCALE
@@ -230,13 +230,14 @@ class TestInvertForPrinting(unittest.TestCase):
                              for color in (I_RED_OUT, I_GREEN_OUT, I_BLUE_OUT)]))
         result = [d[I_RED_OUT], d[I_GREEN_OUT], d[I_BLUE_OUT]]
         for o, i1, i2 in ((0,1,2),(1,2,0),(2,0,1)):
-            diff = (result[o] - ((1 - color_image[:,:,i1]) *
-                                 (1-color_image[:,:,i2])))
-            self.assertTrue(np.all(np.abs(diff) <= np.finfo(float).eps))
+            np.testing.assert_almost_equal(
+                result[o],
+                ((1 - color_image[:,:,i1]) *
+                 (1-color_image[:,:,i2])))
     
     def test_03_01_missing_image(self):
         np.random.seed(0)
-        color_image = np.random.uniform(size=(10,20,3))
+        color_image = np.random.uniform(size=(10,20,3)).astype(np.float32)
         for present in ((True,True,False),
                         (True,False,True),
                         (True,False,False),
@@ -256,7 +257,8 @@ class TestInvertForPrinting(unittest.TestCase):
                                  for color in (I_RED_OUT, I_GREEN_OUT, I_BLUE_OUT)]))
             result = [d[I_RED_OUT], d[I_GREEN_OUT], d[I_BLUE_OUT]]
             for o, i1, i2 in ((0,1,2),(1,2,0),(2,0,1)):
-                diff = (result[o] - ((1 - color_image[:,:,i1] if present[i1] else 1) *
-                                     (1-color_image[:,:,i2] if present[i2] else 1)))
-                self.assertTrue(np.all(np.abs(diff) <= np.finfo(float).eps))
+                np.testing.assert_almost_equal(
+                    result[o],
+                    ((1 - color_image[:,:,i1] if present[i1] else 1) *
+                     (1-color_image[:,:,i2] if present[i2] else 1)))
         

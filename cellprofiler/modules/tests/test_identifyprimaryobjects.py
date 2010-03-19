@@ -1528,10 +1528,10 @@ IdentifyPrimaryObjects:[module_num:2|svn_version:\'8981\'|variable_revision_numb
         x.watershed_method.value = ID.WA_NONE
         x.threshold_method.value = T.TM_BINARY_IMAGE
         x.binary_image.value = "my_threshold"
-        img = np.zeros((200,200))
+        img = np.zeros((200,200),np.float32)
         thresh = np.zeros((200,200),bool)
-        draw_circle(img,(100,100),50,True)
-        draw_circle(img,(25,25),20,True)
+        draw_circle(thresh,(100,100),50,True)
+        draw_circle(thresh,(25,25),20,True)
         image = cellprofiler.cpimage.Image(img)
         image_set_list = cellprofiler.cpimage.ImageSetList()
         image_set = image_set_list.get_image_set(0)

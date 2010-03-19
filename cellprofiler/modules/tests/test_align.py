@@ -192,7 +192,7 @@ Name the second output image:AlignedImage2
         '''Align two images using cross correlation'''
         np.random.seed(0)
         for offset in ((3,5),(-3,5),(3,-5),(-3,-5)):
-            image1 = np.random.uniform(size=(50,50))
+            image1 = np.random.uniform(size=(50,50)).astype(np.float32)
             i,j = np.mgrid[0:50,0:50]
             image2 = image1[(i+50-offset[0])%50,(j+50-offset[1])%50]
             mask = (((i+50+offset[0])%50 == i+offset[0]) &
@@ -218,7 +218,7 @@ Name the second output image:AlignedImage2
             # the distance, 5,5
             #
             image1 = np.random.uniform(size=(5,5))[i/10,j/10]
-            image1 = scipy.ndimage.gaussian_filter(image1,5)
+            image1 = scipy.ndimage.gaussian_filter(image1,5).astype(np.float32)
             image2 = 1-image1[(i+50-offset[0])%50,(j+50-offset[1])%50]
             mask = (((i+50+offset[0])%50 == i+offset[0]) &
                     (((j+50+offset[1])%50 == j+offset[1])))
@@ -238,19 +238,20 @@ Name the second output image:AlignedImage2
         np.random.seed(0)
         i,j = np.mgrid[0:50,0:50]
         for offset in ((3,5),(-3,5),(3,-5),(-3,-5)):
-            image1 = np.random.uniform(size=(50,50))
+            image1 = np.random.uniform(size=(50,50)).astype(np.float32)
             mask = (((i+50+offset[0])%50 == i+offset[0]) &
                     (((j+50+offset[1])%50 == j+offset[1])))
             image2 = image1[(i+50-offset[0])%50,(j+50-offset[1])%50]
-            image3 = (i * 100 + j).astype(float)/10000
-            expected = image3+float(offset[0]*100+offset[1])/10000
+            image3 = (i * 100 + j).astype(np.float32)/10000
+            expected = (image3+float(offset[0]*100+offset[1])/10000).astype(np.float32)
             workspace, module = self.make_workspace((image1, image2, image3),
                                                     (None, None, None))
             module.alignment_method.value = A.M_CROSS_CORRELATION
             module.additional_images[0].align_choice.value = A.A_SIMILARLY
             module.run(workspace)
             output = workspace.image_set.get_image('Aligned2')
-            self.assertTrue(np.all(np.abs(output.pixel_data[mask] - expected[mask]<=np.finfo(float).eps)))
+            np.testing.assert_almost_equal(output.pixel_data[mask],
+                                           expected[mask])
             m = workspace.measurements
             columns = module.get_measurement_columns(workspace.pipeline)
             self.assertEqual(len(columns), 4)
@@ -274,7 +275,7 @@ Name the second output image:AlignedImage2
         np.random.seed(0)
         i,j = np.mgrid[0:50,0:50]
         for offset in ((3,5),(-3,5),(3,-5),(-3,-5)):
-            image1 = np.random.uniform(size=(50,50))
+            image1 = np.random.uniform(size=(50,50)).astype(np.float32)
             mask = (((i+50+offset[0])%50 == i+offset[0]) &
                     (((j+50+offset[1])%50 == j+offset[1])))
             image2 = image1[(i+50-offset[0]-5)%50,(j+50-offset[1]-5)%50]

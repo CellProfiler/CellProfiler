@@ -276,8 +276,7 @@ class TestLoadData(unittest.TestCase):
             # This appears to be bistable, depending on whether PIL or
             # Bioformats loads it (???)
             #
-            self.assertTrue(hexdigest == 'c55554be83a1c928c1ae9268486a94b3' or
-                            hexdigest == '489b769a9d6e54114b5f8c382c603eb2')
+            self.assertTrue(hexdigest == '1a37c43914c7ceb7d9cac503a5c1c767')
             self.assertTrue('PathName_DNA' in m.get_feature_names(cpmeas.IMAGE))
             self.assertEqual(m.get_current_image_measurement('PathName_DNA'),
                              dir)

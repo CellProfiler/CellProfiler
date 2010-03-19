@@ -231,7 +231,7 @@ class LoadSingleImage(cpm.CPModule):
         #
         if variable_revision_number == 1 and not from_matlab:
             if setting_values[0].startswith("Default image"):
-                dir_choice = DIR_DEFAULT_IMAGE_FOLDER
+                dir_choice = cps.DEFAULT_INPUT_FOLDER_NAME
                 custom_directory = setting_values[1]
             elif setting_values[0] in (DIR_CUSTOM_FOLDER, DIR_CUSTOM_WITH_METADATA):
                 custom_directory = setting_values[1]

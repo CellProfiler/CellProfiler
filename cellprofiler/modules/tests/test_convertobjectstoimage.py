@@ -137,7 +137,7 @@ class TestConvertObjectsToImage(unittest.TestCase):
         module.image_mode.value = C.IM_GRAYSCALE
         module.run(workspace)
         pixel_data = workspace.image_set.get_image(IMAGE_NAME).pixel_data
-        expected = np.reshape(np.arange(256).astype(float)/255,(16,16))
+        expected = np.reshape(np.arange(256).astype(np.float32)/255,(16,16))
         self.assertTrue(np.all(pixel_data == expected))
     
     def test_02_03_color(self):

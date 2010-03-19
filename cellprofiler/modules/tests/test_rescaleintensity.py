@@ -431,18 +431,18 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
         
     def test_03_01_stretch(self):
         np.random.seed(0)
-        expected = np.random.uniform(size=(10,10))
+        expected = np.random.uniform(size=(10,10)).astype(np.float32)
         expected[0,0] = 1
         expected[9,9] = 0
         workspace, module = self.make_workspace(expected / 2 + .1)
         module.rescale_method.value = R.M_STRETCH
         module.run(workspace)
         pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
-        self.assertTrue(np.all(np.abs(pixels - expected) <= np.finfo(float).eps))
+        np.testing.assert_almost_equal(pixels, expected)
     
     def test_03_02_stretch_mask(self):
         np.random.seed(0)
-        expected = np.random.uniform(size=(10,10))
+        expected = np.random.uniform(size=(10,10)).astype(np.float32)
         expected[0,0] = 1
         expected[9,9] = 0
         mask = np.ones(expected.shape, bool)
@@ -452,8 +452,7 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
         module.rescale_method.value = R.M_STRETCH
         module.run(workspace)
         pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
-        self.assertTrue(np.all(np.abs(pixels[mask] - expected[mask]) <=
-                               np.finfo(float).eps))
+        np.testing.assert_almost_equal(pixels[mask], expected[mask])
     
     def test_04_01_manual_input_range(self):
         np.random.seed(0)
@@ -466,11 +465,11 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
         module.source_scale.max = .6
         module.run(workspace)
         pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
-        self.assertTrue(np.all(np.abs(pixels - expected) <= np.finfo(float).eps))
+        np.testing.assert_almost_equal(pixels, expected)
     
     def test_04_02_manual_input_range_auto_low(self):
         np.random.seed(0)
-        expected = np.random.uniform(size=(10,10))
+        expected = np.random.uniform(size=(10,10)).astype(np.float32)
         expected[0,0] = 0
         workspace, module = self.make_workspace(expected / 2 + .1)
         module.rescale_method.value = R.M_MANUAL_INPUT_RANGE
@@ -479,11 +478,11 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
         module.source_high.value = .6
         module.run(workspace)
         pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
-        self.assertTrue(np.all(np.abs(pixels - expected) <= np.finfo(float).eps))
+        np.testing.assert_almost_equal(pixels, expected)
 
     def test_04_03_manual_input_range_auto_high(self):
         np.random.seed(0)
-        expected = np.random.uniform(size=(10,10))
+        expected = np.random.uniform(size=(10,10)).astype(np.float32)
         expected[0,0] = 1
         workspace, module = self.make_workspace(expected / 2 + .1)
         module.rescale_method.value = R.M_MANUAL_INPUT_RANGE
@@ -492,11 +491,11 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
         module.source_low.value = .1
         module.run(workspace)
         pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
-        self.assertTrue(np.all(np.abs(pixels - expected) <= np.finfo(float).eps))
+        np.testing.assert_almost_equal(pixels, expected)
         
     def test_04_04_manual_input_range_mask(self):
         np.random.seed(0)
-        expected = np.random.uniform(size=(10,10))
+        expected = np.random.uniform(size=(10,10)).astype(np.float32)
         expected[0,0] = 1
         mask = np.ones(expected.shape, bool)
         mask[3:5,4:7] = False
@@ -508,12 +507,11 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
         module.source_low.value = .1
         module.run(workspace)
         pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
-        self.assertTrue(np.all(np.abs(pixels[mask] - expected[mask]) <=
-                               np.finfo(float).eps))
+        np.testing.assert_almost_equal(pixels[mask], expected[mask])
     
     def test_04_05_manual_input_range_truncate(self):
         np.random.seed(0)
-        expected = np.random.uniform(size=(10,10))
+        expected = np.random.uniform(size=(10,10)).astype(np.float32)
         expected_low_mask = np.zeros(expected.shape, bool)
         expected_low_mask[2:4,1:3] = True
         expected[expected_low_mask] = -.05
@@ -538,10 +536,7 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
                 module.run(workspace)
                 image = workspace.image_set.get_image(OUTPUT_NAME)
                 pixels = image.pixel_data
-                self.assertTrue(np.all(np.abs(pixels[mask] - expected[mask]) <=
-                                       np.finfo(float).eps),
-                                "Failed with low method=%s, high method=%s"%
-                                (low_truncate_method, high_truncate_method))
+                np.testing.assert_almost_equal(pixels[mask], expected[mask])
                 if low_truncate_method == R.R_MASK:
                     self.assertTrue(image.has_mask)
                     self.assertTrue(np.all(image.mask[expected_low_mask] == False))
@@ -554,8 +549,7 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
                         low_value = -1
                     elif low_truncate_method == R.R_SET_TO_ZERO:
                         low_value = 0
-                    self.assertTrue(np.all(np.abs(pixels[expected_low_mask] - low_value) <= np.finfo(float).eps),
-                                    "Low method (%s) failed"%low_truncate_method)
+                    np.testing.assert_almost_equal(pixels[expected_low_mask], low_value)
                 if high_truncate_method == R.R_MASK:
                     self.assertTrue(image.has_mask)
                     self.assertTrue(np.all(image.mask[expected_high_mask] == False))
@@ -566,8 +560,8 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
                         high_value = 2
                     elif high_truncate_method == R.R_SET_TO_ONE:
                         high_value = 1
-                    self.assertTrue(np.all(np.abs(pixels[expected_high_mask] - high_value) <= np.finfo(float).eps),
-                                    "High truncate method (%s) failed"%high_truncate_method)
+                    np.testing.assert_almost_equal(
+                        pixels[expected_high_mask], high_value)
     
     def test_04_06_color_mask(self):
         '''Regression test - color image + truncate with mask
@@ -575,7 +569,7 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
         The bug: color image yielded a 3-d mask
         '''
         np.random.seed(0)
-        expected = np.random.uniform(size=(10,10,3))
+        expected = np.random.uniform(size=(10,10,3)).astype(np.float32)
         expected_mask = (expected >= .2) & (expected <= .8)
         expected_mask = expected_mask[:,:,0] & expected_mask[:,:,1] & expected_mask[:,:,2]
         workspace, module = self.make_workspace(expected / 2 + .1)
@@ -593,7 +587,7 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
                 
     def test_05_01_manual_io_range(self):
         np.random.seed(0)
-        expected = np.random.uniform(size=(10,10))
+        expected = np.random.uniform(size=(10,10)).astype(np.float32)
         workspace, module = self.make_workspace(expected / 2 + .1)
         expected = expected * .75 + .05
         module.rescale_method.value = R.M_MANUAL_IO_RANGE
@@ -605,38 +599,38 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
         module.dest_scale.max = .80
         module.run(workspace)
         pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
-        self.assertTrue(np.all(np.abs(pixels - expected) <= np.finfo(float).eps))
+        np.testing.assert_almost_equal(pixels, expected)
     
     def test_06_01_divide_by_image_minimum(self):
         np.random.seed(0)
-        image = np.random.uniform(size=(10,10))
+        image = np.random.uniform(size=(10,10)).astype(np.float32)
         image[0,0] = 0
-        image = image / 2 + .1
-        expected = image * 10
+        image = image / 2 + .25
+        expected = image * 4
         workspace, module = self.make_workspace(image)
         module.rescale_method.value = R.M_DIVIDE_BY_IMAGE_MINIMUM
         module.run(workspace)
         pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
-        self.assertTrue(np.all(np.abs(pixels - expected) <= np.finfo(float).eps * 10))
+        np.testing.assert_almost_equal(pixels, expected)
 
     def test_06_02_divide_by_image_minimum_masked(self):
         np.random.seed(0)
         image = np.random.uniform(size=(10,10))
         image[0,0] = 0
-        image = image / 2 + .1
+        image = image / 2 + .25
         mask = np.ones(image.shape,bool)
         mask[3:6,7:9] = False
         image[~mask] = .05
-        expected = image * 10
+        expected = image * 4
         workspace, module = self.make_workspace(image, mask)
         module.rescale_method.value = R.M_DIVIDE_BY_IMAGE_MINIMUM
         module.run(workspace)
         pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
-        self.assertTrue(np.all(np.abs(pixels[mask] - expected[mask]) <= np.finfo(float).eps * 10))
+        np.testing.assert_almost_equal(pixels[mask], expected[mask])
 
     def test_07_01_divide_by_image_maximum(self):
         np.random.seed(0)
-        image = np.random.uniform(size=(10,10))
+        image = np.random.uniform(size=(10,10)).astype(np.float32)
         image = image / 2 + .1
         image[0,0] = .8
         expected = image / .8
@@ -644,11 +638,11 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
         module.rescale_method.value = R.M_DIVIDE_BY_IMAGE_MAXIMUM
         module.run(workspace)
         pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
-        self.assertTrue(np.all(np.abs(pixels - expected) <= np.finfo(float).eps))
+        np.testing.assert_almost_equal(pixels, expected)
 
     def test_07_02_divide_by_image_minimum_masked(self):
         np.random.seed(0)
-        image = np.random.uniform(size=(10,10))
+        image = np.random.uniform(size=(10,10)).astype(np.float32)
         image = image / 2 + .1
         image[0,0] = .8
         mask = np.ones(image.shape,bool)
@@ -659,11 +653,11 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
         module.rescale_method.value = R.M_DIVIDE_BY_IMAGE_MAXIMUM
         module.run(workspace)
         pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
-        self.assertTrue(np.all(np.abs(pixels[mask] - expected[mask]) <= np.finfo(float).eps ))
+        np.testing.assert_almost_equal(pixels[mask], expected[mask])
 
     def test_08_01_divide_by_value(self):
         np.random.seed(0)
-        image = np.random.uniform(size=(10,10))
+        image = np.random.uniform(size=(10,10)).astype(np.float32)
         image = image / 2 + .1
         value = .9
         expected = image / value
@@ -672,11 +666,11 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
         module.divisor_value.value = value
         module.run(workspace)
         pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
-        self.assertTrue(np.all(np.abs(pixels - expected) <= np.finfo(float).eps))
+        np.testing.assert_almost_equal(pixels, expected)
     
     def test_09_01_divide_by_measurement(self):
         np.random.seed(0)
-        image = np.random.uniform(size=(10,10))
+        image = np.random.uniform(size=(10,10)).astype(np.float32)
         image = image / 2 + .1
         value = .75
         expected = image / value
@@ -684,14 +678,14 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
         module.rescale_method.value = R.M_DIVIDE_BY_MEASUREMENT
         module.run(workspace)
         pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
-        self.assertTrue(np.all(np.abs(pixels - expected) <= np.finfo(float).eps))
+        np.testing.assert_almost_equal(pixels, expected)
     
     def test_10_01_scale_by_image_maximum(self):
         np.random.seed(0)
-        image = np.random.uniform(size=(10,10))
+        image = np.random.uniform(size=(10,10)).astype(np.float32)
         image[0,0] = 1
         image = image / 2 + .1
-        reference = np.random.uniform(size=(10,10)) * .75
+        reference = np.random.uniform(size=(10,10)).astype(np.float32) * .75
         reference[0,0] = .75
         expected = image * .75 / .60
         workspace, module = self.make_workspace(image, 
@@ -699,11 +693,11 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
         module.rescale_method.value = R.M_SCALE_BY_IMAGE_MAXIMUM
         module.run(workspace)
         pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
-        self.assertTrue(np.all(np.abs(pixels - expected) <= np.finfo(float).eps))
+        np.testing.assert_almost_equal(pixels, expected)
 
     def test_10_02_scale_by_image_maximum_mask(self):
         np.random.seed(0)
-        image = np.random.uniform(size=(10,10))
+        image = np.random.uniform(size=(10,10)).astype(np.float32)
         image[0,0] = 1
         image = image / 2 + .1
         mask = np.ones(image.shape, bool)
@@ -722,7 +716,7 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
         module.rescale_method.value = R.M_SCALE_BY_IMAGE_MAXIMUM
         module.run(workspace)
         pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
-        self.assertTrue(np.all(np.abs(pixels[mask] - expected[mask]) <= np.finfo(float).eps))
+        np.testing.assert_almost_equal(pixels[mask], expected[mask])
         
     
     def test_11_01_convert_to_8_bit(self):
@@ -733,4 +727,4 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
         module.rescale_method.value = R.M_CONVERT_TO_8_BIT
         module.run(workspace)
         pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
-        self.assertTrue(np.all(np.abs(pixels - expected) <= np.finfo(float).eps))
+        np.testing.assert_almost_equal(pixels, expected)

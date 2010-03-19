@@ -251,7 +251,7 @@ class TestMorph(unittest.TestCase):
         
     def test_02_23_gray_invert(self):
         np.random.seed(0)
-        image = np.random.uniform(size=(20,15))
+        image = np.random.uniform(size=(20,15)).astype(np.float32)
         result = self.execute(image, 'invert')
         self.assertTrue(np.all(result == (1-image)))
         

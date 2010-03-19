@@ -296,11 +296,11 @@ Rotate:[module_num:1|svn_version:\'8913\'|variable_revision_number:2|show_window
         self.assertEqual(angle, 0)
         self.assertTrue(np.all(output_image.mask == expected_mask))
         self.assertTrue(np.all(np.abs(output_image.pixel_data-expected) <= 
-                               np.finfo(float).eps))
+                               np.finfo(np.float32).eps))
 
     def test_02_02_flip_top_to_bottom(self):
         np.random.seed(0)
-        image = np.random.uniform(size=(3,3))
+        image = np.random.uniform(size=(3,3)).astype(np.float32)
         mask = np.array([[True, True, True],
                          [False, True, True],
                          [True, False, True]])
@@ -322,7 +322,7 @@ Rotate:[module_num:1|svn_version:\'8913\'|variable_revision_number:2|show_window
 
     def test_02_03_flip_both(self):
         np.random.seed(0)
-        image = np.random.uniform(size=(3,3))
+        image = np.random.uniform(size=(3,3)).astype(np.float32)
         mask = np.array([[True, True, True],
                          [False, True, True],
                          [True, False, True]])

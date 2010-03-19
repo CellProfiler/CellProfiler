@@ -73,7 +73,7 @@ class TestMeasureImageIntensity(unittest.TestCase):
     def test_01_01_image(self):
         '''Test operation on a single unmasked image'''
         np.random.seed(0)
-        pixels = np.random.uniform(size=(10,10))
+        pixels = np.random.uniform(size=(10,10)).astype(np.float32)
         workspace, module = self.make_workspace({},
                                                 {"my_image": pixels})
         image = workspace.image_set.get_image("my_image")
@@ -93,7 +93,7 @@ class TestMeasureImageIntensity(unittest.TestCase):
     def test_01_02_image_and_mask(self):
         '''Test operation on a masked image'''
         np.random.seed(0)
-        pixels = np.random.uniform(size=(10,10))
+        pixels = np.random.uniform(size=(10,10)).astype(np.float32)
         mask = np.zeros((10,10),bool)
         mask[1:9,1:9] = True
         workspace, module = self.make_workspace({},
@@ -112,7 +112,7 @@ class TestMeasureImageIntensity(unittest.TestCase):
     def test_01_03_image_and_objects(self):
         '''Test operation on an image masked by objects'''
         np.random.seed(0)
-        pixels = np.random.uniform(size=(10,10))
+        pixels = np.random.uniform(size=(10,10)).astype(np.float32)
         objects = np.zeros((10,10),int)
         objects[1:9,1:5] = 1
         objects[1:9,5:9] = 2
@@ -140,7 +140,7 @@ class TestMeasureImageIntensity(unittest.TestCase):
     def test_01_04_image_and_objects_and_mask(self):
         '''Test operation on an image masked by objects and a mask'''
         np.random.seed(0)
-        pixels = np.random.uniform(size=(10,10))
+        pixels = np.random.uniform(size=(10,10)).astype(np.float32)
         objects = np.zeros((10,10),int)
         objects[1:9,1:5] = 1
         objects[1:9,5:] = 2

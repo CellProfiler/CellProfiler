@@ -168,7 +168,7 @@ class TestEnhanceEdges(unittest.TestCase):
     def test_02_01_sobel_horizontal(self):
         '''Test the Sobel horizontal transform'''
         np.random.seed(0)
-        image = np.random.uniform(size=(20,20))
+        image = np.random.uniform(size=(20,20)).astype(np.float32)
         workspace, module = self.make_workspace(image)
         module.method.value = F.M_SOBEL
         module.direction.value = F.E_HORIZONTAL
@@ -179,7 +179,7 @@ class TestEnhanceEdges(unittest.TestCase):
     def test_02_02_sobel_vertical(self):
         '''Test the Sobel vertical transform'''
         np.random.seed(0)
-        image = np.random.uniform(size=(20,20))
+        image = np.random.uniform(size=(20,20)).astype(np.float32)
         workspace, module = self.make_workspace(image)
         module.method.value = F.M_SOBEL
         module.direction.value = F.E_VERTICAL
@@ -190,7 +190,7 @@ class TestEnhanceEdges(unittest.TestCase):
     def test_02_03_sobel_all(self):
         '''Test the Sobel vertical transform'''
         np.random.seed(0)
-        image = np.random.uniform(size=(20,20))
+        image = np.random.uniform(size=(20,20)).astype(np.float32)
         workspace, module = self.make_workspace(image)
         module.method.value = F.M_SOBEL
         module.direction.value = F.E_ALL
@@ -201,7 +201,7 @@ class TestEnhanceEdges(unittest.TestCase):
     def test_03_01_prewitt_horizontal(self):
         '''Test the prewitt horizontal transform'''
         np.random.seed(0)
-        image = np.random.uniform(size=(20,20))
+        image = np.random.uniform(size=(20,20)).astype(np.float32)
         workspace, module = self.make_workspace(image)
         module.method.value = F.M_PREWITT
         module.direction.value = F.E_HORIZONTAL
@@ -212,7 +212,7 @@ class TestEnhanceEdges(unittest.TestCase):
     def test_03_02_prewitt_vertical(self):
         '''Test the prewitt vertical transform'''
         np.random.seed(0)
-        image = np.random.uniform(size=(20,20))
+        image = np.random.uniform(size=(20,20)).astype(np.float32)
         workspace, module = self.make_workspace(image)
         module.method.value = F.M_PREWITT
         module.direction.value = F.E_VERTICAL
@@ -223,7 +223,7 @@ class TestEnhanceEdges(unittest.TestCase):
     def test_03_03_prewitt_all(self):
         '''Test the prewitt vertical transform'''
         np.random.seed(0)
-        image = np.random.uniform(size=(20,20))
+        image = np.random.uniform(size=(20,20)).astype(np.float32)
         workspace, module = self.make_workspace(image)
         module.method.value = F.M_PREWITT
         module.direction.value = F.E_ALL
@@ -234,7 +234,7 @@ class TestEnhanceEdges(unittest.TestCase):
     def test_04_01_roberts(self):
         '''Test the roberts transform'''
         np.random.seed(0)
-        image = np.random.uniform(size=(20,20))
+        image = np.random.uniform(size=(20,20)).astype(np.float32)
         workspace, module = self.make_workspace(image)
         module.method.value = F.M_ROBERTS
         module.run(workspace)
@@ -244,7 +244,7 @@ class TestEnhanceEdges(unittest.TestCase):
     def test_05_01_log_automatic(self):
         '''Test the laplacian of gaussian with automatic sigma'''
         np.random.seed(0)
-        image = np.random.uniform(size=(20,20))
+        image = np.random.uniform(size=(20,20)).astype(np.float32)
         workspace, module = self.make_workspace(image)
         module.method.value = F.M_LOG
         module.sigma.value = 20
@@ -252,16 +252,17 @@ class TestEnhanceEdges(unittest.TestCase):
         module.run(workspace)
         output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         sigma = 2.0
-        self.assertTrue(np.all(output.pixel_data == 
-                               FIL.laplacian_of_gaussian(image, 
-                                                         np.ones(image.shape,bool),
-                                                         int(sigma * 4)+1,
-                                                         sigma)))
+        expected = FIL.laplacian_of_gaussian(image, 
+                                             np.ones(image.shape,bool),
+                                             int(sigma * 4)+1,
+                                             sigma).astype(np.float32)
+
+        self.assertTrue(np.all(output.pixel_data == expected))
         
     def test_05_02_log_manual(self):
         '''Test the laplacian of gaussian with automatic sigma'''
         np.random.seed(0)
-        image = np.random.uniform(size=(20,20))
+        image = np.random.uniform(size=(20,20)).astype(np.float32)
         workspace, module = self.make_workspace(image)
         module.method.value = F.M_LOG
         module.sigma.value = 4
@@ -269,19 +270,20 @@ class TestEnhanceEdges(unittest.TestCase):
         module.run(workspace)
         output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         sigma = 4.0
-        self.assertTrue(np.all(output.pixel_data == 
-                               FIL.laplacian_of_gaussian(image, 
-                                                         np.ones(image.shape,bool),
-                                                         int(sigma * 4)+1,
-                                                         sigma)))
+        expected = FIL.laplacian_of_gaussian(image, 
+                                             np.ones(image.shape,bool),
+                                             int(sigma * 4)+1,
+                                             sigma).astype(np.float32)
+
+        self.assertTrue(np.all(output.pixel_data == expected))
     
     def test_06_01_canny(self):
         '''Test the canny method'''
         i,j = np.mgrid[-20:20,-20:20]
-        image = np.logical_and(i > j, i**2+j**2 < 300).astype(float)
+        image = np.logical_and(i > j, i**2+j**2 < 300).astype(np.float32)
         np.random.seed(0)
         image = image *.5 + np.random.uniform(size=image.shape)*.3
-        image = np.ascontiguousarray(image)
+        image = np.ascontiguousarray(image, np.float32)
         workspace, module = self.make_workspace(image)
         module.method.value = F.M_CANNY
         module.wants_automatic_threshold.value = True

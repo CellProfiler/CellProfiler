@@ -450,7 +450,7 @@ class TestEnhanceOrSuppressSpeckles(unittest.TestCase):
         #
         np.random.seed(0)
         for i,j in ((2,5),(3,7),(4,4)):
-            data = np.random.uniform(size=(40,40))
+            data = np.random.uniform(size=(40,40)).astype(np.float32)
             expected = enhance_dark_holes(data,i,j)
             workspace, module = self.make_workspace(data, None)
             self.assertTrue(isinstance(module, E.EnhanceOrSuppressSpeckles))

@@ -418,7 +418,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
     def test_03_04_smooth_to_average(self):
         """Test smoothing to an average value"""
         np.random.seed(0)
-        input_image = np.random.uniform(size=(10,10))
+        input_image = np.random.uniform(size=(10,10)).astype(np.float32)
         image_name = "InputImage"
         expected_image = np.ones((10,10))*input_image.mean()
         pipeline = cpp.Pipeline()
@@ -453,7 +453,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
         inj_module.run(workspace)
         module.run(workspace)
         image = image_set.get_image("OutputImage")
-        self.assertTrue(np.all(image.pixel_data == expected_image))
+        np.testing.assert_almost_equal(image.pixel_data, expected_image)
     
     def test_04_01_intermediate_images(self):
         """Make sure the average and dilated image flags work"""

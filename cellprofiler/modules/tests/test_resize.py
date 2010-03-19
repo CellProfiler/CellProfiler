@@ -178,8 +178,8 @@ class TestResize(unittest.TestCase):
     
     def test_03_01_bilinear(self):
         i,j = np.mgrid[0:10,0:10]
-        image = i.astype(float)
-        expected = np.mgrid[0:30,0:30][0].astype(float) * 9.0/29.0
+        image = i.astype(np.float32)
+        expected = np.mgrid[0:30,0:30][0].astype(np.float32) * 9.0/29.0
         workspace, module = self.make_workspace(image, R.R_BY_FACTOR, 
                                                 R.I_BILINEAR)
         module.resizing_factor.value = 3.0

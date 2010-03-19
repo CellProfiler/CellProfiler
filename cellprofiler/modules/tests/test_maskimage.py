@@ -169,7 +169,7 @@ class TestMaskImage(unittest.TestCase):
         image_set_list = cpi.ImageSetList()
         image_set=image_set_list.get_image_set(0)
         np.random.seed(0)
-        pixel_data = np.random.uniform(size=(10,15))
+        pixel_data = np.random.uniform(size=(10,15)).astype(np.float32)
         image_set.add(IMAGE_NAME, cpi.Image(pixel_data))
 
         pipeline = cpp.Pipeline()
@@ -204,7 +204,7 @@ class TestMaskImage(unittest.TestCase):
         image_set_list = cpi.ImageSetList()
         image_set=image_set_list.get_image_set(0)
         np.random.seed(0)
-        pixel_data = np.random.uniform(size=(10,15))
+        pixel_data = np.random.uniform(size=(10,15)).astype(np.float32)
         image_set.add(IMAGE_NAME, cpi.Image(pixel_data))
 
         pipeline = cpp.Pipeline()
@@ -239,7 +239,7 @@ class TestMaskImage(unittest.TestCase):
         image_set_list = cpi.ImageSetList()
         image_set=image_set_list.get_image_set(0)
         np.random.seed(0)
-        pixel_data = np.random.uniform(size=(10,15))
+        pixel_data = np.random.uniform(size=(10,15)).astype(np.float32)
         mask = np.random.uniform(size=(10,15)) > .5
         image_set.add(IMAGE_NAME, cpi.Image(pixel_data, mask))
         
@@ -269,7 +269,7 @@ class TestMaskImage(unittest.TestCase):
         image_set_list = cpi.ImageSetList()
         image_set=image_set_list.get_image_set(0)
         np.random.seed(0)
-        pixel_data = np.random.uniform(size=(10,15))
+        pixel_data = np.random.uniform(size=(10,15)).astype(np.float32)
         image_set.add(IMAGE_NAME, cpi.Image(pixel_data))
         
         masking_image = np.random.uniform(size=(10,15)) > .5
@@ -300,7 +300,7 @@ class TestMaskImage(unittest.TestCase):
         image_set_list = cpi.ImageSetList()
         image_set=image_set_list.get_image_set(0)
         np.random.seed(0)
-        pixel_data = np.random.uniform(size=(10,15))
+        pixel_data = np.random.uniform(size=(10,15)).astype(np.float32)
         image_set.add(IMAGE_NAME, cpi.Image(pixel_data))
         
         masking_image = np.random.uniform(size=(10,15))
@@ -332,7 +332,7 @@ class TestMaskImage(unittest.TestCase):
         image_set_list = cpi.ImageSetList()
         image_set=image_set_list.get_image_set(0)
         np.random.seed(0)
-        pixel_data = np.random.uniform(size=(10,15))
+        pixel_data = np.random.uniform(size=(10,15)).astype(np.float32)
         image_set.add(IMAGE_NAME, cpi.Image(pixel_data))
         
         masking_image = np.random.uniform(size=(10,15))

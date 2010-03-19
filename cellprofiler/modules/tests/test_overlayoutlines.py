@@ -171,7 +171,7 @@ OverlayOutlines:[module_num:5|svn_version:\'9000\'|variable_revision_number:2|sh
 
     def test_02_01_gray_to_color_outlines(self):
         np.random.seed(0)
-        image = np.random.uniform(size=(50,50))
+        image = np.random.uniform(size=(50,50)).astype(np.float32)
         outline = np.zeros((50,50),bool)
         outline[20:31,20:31] = 1
         outline[21:30,21:30] = 0
@@ -189,7 +189,7 @@ OverlayOutlines:[module_num:5|svn_version:\'9000\'|variable_revision_number:2|sh
 
     def test_02_02_color_to_color_outlines(self):
         np.random.seed(0)
-        image = np.random.uniform(size=(50,50,3))
+        image = np.random.uniform(size=(50,50,3)).astype(np.float32)
         outline = np.zeros((50,50),bool)
         outline[20:31,20:31] = 1
         outline[21:30,21:30] = 0
@@ -242,7 +242,7 @@ OverlayOutlines:[module_num:5|svn_version:\'9000\'|variable_revision_number:2|sh
     
     def test_03_02_gray_max_image(self):
         np.random.seed(0)
-        image = np.random.uniform(size=(50,50)) * .5
+        image = np.random.uniform(size=(50,50)).astype(np.float32) * .5
         outline = np.zeros((50,50),bool)
         outline[20:31,20:31] = 1
         outline[21:30,21:30] = 0
@@ -259,7 +259,7 @@ OverlayOutlines:[module_num:5|svn_version:\'9000\'|variable_revision_number:2|sh
 
     def test_03_02_gray_max_possible(self):
         np.random.seed(0)
-        image = np.random.uniform(size=(50,50)) * .5
+        image = np.random.uniform(size=(50,50)).astype(np.float32) * .5
         outline = np.zeros((50,50),bool)
         outline[20:31,20:31] = 1
         outline[21:30,21:30] = 0

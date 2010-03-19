@@ -436,7 +436,7 @@ MeasureCorrelation:[module_num:4|svn_version:\'Unknown\'|variable_revision_numbe
     def test_04_01_slope(self):
         '''Test the slope measurement'''
         np.random.seed(0)
-        image1 = np.random.uniform(size = (10,10))
+        image1 = np.random.uniform(size = (10,10)).astype(np.float32)
         image2 = image1 * .5
         i1 = cpi.Image(image1)
         i2 = cpi.Image(image2)
@@ -446,7 +446,7 @@ MeasureCorrelation:[module_num:4|svn_version:\'Unknown\'|variable_revision_numbe
         mi = module.get_measurement_images(None,cpmeas.IMAGE, "Correlation","Slope")
         slope = m.get_current_measurement(cpmeas.IMAGE, "Correlation_Slope_%s"%mi[0])
         if mi[0] == "%s_%s"%(IMAGE1_NAME,IMAGE2_NAME):
-            self.assertAlmostEqual(slope, .5)
+            self.assertAlmostEqual(slope, .5, 5)
         else:
             self.assertAlmostEqual(slope, 2)
             

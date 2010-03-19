@@ -149,8 +149,8 @@ class TestCorrectIlluminationApply(unittest.TestCase):
     def test_01_01_divide(self):
         """Test correction by division"""
         np.random.seed(0)
-        image = np.random.uniform(size=(10,10))
-        illum = np.random.uniform(size=(10,10))
+        image = np.random.uniform(size=(10,10)).astype(np.float32)
+        illum = np.random.uniform(size=(10,10)).astype(np.float32)
         expected = image / illum
         pipeline = cpp.Pipeline()
         pipeline.add_listener(self.error_callback)
@@ -191,8 +191,8 @@ class TestCorrectIlluminationApply(unittest.TestCase):
     def test_01_01_subtract(self):
         """Test correction by subtraction"""
         np.random.seed(0)
-        image = np.random.uniform(size=(10,10))
-        illum = np.random.uniform(size=(10,10))
+        image = np.random.uniform(size=(10,10)).astype(np.float32)
+        illum = np.random.uniform(size=(10,10)).astype(np.float32)
         expected = image - illum
         expected[expected < 0] = 0
         pipeline = cpp.Pipeline()
@@ -234,10 +234,10 @@ class TestCorrectIlluminationApply(unittest.TestCase):
     def test_02_01_stretch(self):
         """Test rescaling by stretching"""
         np.random.seed(0)
-        image = np.random.uniform(low = 0.1, high = 0.9, size=(10,10))
+        image = np.random.uniform(low = 0.1, high = 0.9, size=(10,10)).astype(np.float32)
         image[0,0] = .1
         image[9,9] = .9
-        illum = np.ones((10,10))
+        illum = np.ones((10,10),np.float32)
         expected = (image - .1) / .8
         pipeline = cpp.Pipeline()
         pipeline.add_listener(self.error_callback)
@@ -273,16 +273,16 @@ class TestCorrectIlluminationApply(unittest.TestCase):
         illum_module.run(workspace)
         module.run(workspace)
         output_image = workspace.image_set.get_image("OutputImage")
-        self.assertTrue(np.all(output_image.pixel_data == expected))
+        np.testing.assert_almost_equal(output_image.pixel_data, expected)
         self.assertAlmostEqual(output_image.pixel_data.max(), 1)
         self.assertAlmostEqual(output_image.pixel_data.min(),0)
         
     def test_02_01_match(self):
         """Test rescaling by matching maxima"""
         np.random.seed(0)
-        image = np.random.uniform(low = 0.1, high = 0.9, size=(10,10))
+        image = np.random.uniform(low = 0.1, high = 0.9, size=(10,10)).astype(np.float32)
         image[9,9] = .9
-        illum = np.random.uniform(size=(10,10))
+        illum = np.random.uniform(size=(10,10)).astype(np.float32)
         expected = image / illum
         expected = .9 * expected / expected.max()
         pipeline = cpp.Pipeline()

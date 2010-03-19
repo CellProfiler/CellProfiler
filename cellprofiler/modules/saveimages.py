@@ -392,7 +392,7 @@ class SaveImages(cpm.CPModule):
         
     def is_interactive(self):
         # if we overwrite files, it's safe to run in the background
-        return self.overwrite.value
+        return not self.overwrite.value
 
     def display(self, workspace):
         if workspace.frame != None:

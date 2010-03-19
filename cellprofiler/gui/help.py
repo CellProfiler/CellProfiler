@@ -696,6 +696,9 @@ it will also produce a separate output (i.e., OUT.mat) file containing the data
 for that batch of images in the output folder. Check the output from the batch 
 processes to make sure all batches complete. Batches that fail for transient reasons
 can be resubmitted.</p>
+
+<p>For additional help on batch processing, please post your questions on 
+the CellProfiler <a href = "http://cellprofiler.org/forum/viewforum.php?f=14">forum</a>.</p>
 """
 
 '''The help menu for CP's main window'''

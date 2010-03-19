@@ -410,15 +410,10 @@ class LoadImages(cpmodule.CPModule):
                         Give your images a meaningful name that you can use to refer to
                         these images in later modules.  Keep the following points in mind:
                         <ul>
-                        <li>Image names must begin with a letter, which may be followed by any 
-                        combination of letters, digits, and underscores. The following names are all invalid:
-                        <ul>
-                        <li>My.DNA</li>
-                        <li>1stDNA</li>
-                        <li>DNA+</li>
-                        <li>@DNA</li>
-                        </ul>
-                        </li>
+                        <li>Image names can consist of any combination of characters (e.g., letters, digits, 
+                        and other non-alphanumeric characters). However, if you are using <b>ExportToDatabase</b>,
+                        these names will become part of the measurement column name, and some characters
+                        are not permitted in MySQL (e.g., slashes).</li>
                         <li>Names are not case sensitive. Therefore, <i>OrigBlue</i>, <i>origblue</i>, and <i>ORIGBLUE</i>
                         will all correspond to the same name, and unexpected results may ensue.</li>
                         <li>Although CellProfiler can accept names of any length, you may want to avoid 

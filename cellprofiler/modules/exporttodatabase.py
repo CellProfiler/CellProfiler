@@ -373,7 +373,7 @@ class ExportToDatabase(cpm.CPModule):
         result = [self.db_type]
         if not HAS_MYSQL_DB:
             result += [self.mysql_not_available]
-        if self.db_type==DB_MYSQL:
+        if self.db_type == DB_MYSQL:
                 result += [self.db_name]
                 result += [self.db_host]
                 result += [self.db_user]
@@ -392,9 +392,12 @@ class ExportToDatabase(cpm.CPModule):
         if needs_default_output_directory:
             result += [self.directory]
         result += [self.wants_agg_mean, self.wants_agg_median,
-                   self.wants_agg_std_dev, self.wants_agg_mean_well, 
-                   self.wants_agg_median_well, self.wants_agg_std_dev_well,
-                   self.objects_choice]
+                   self.wants_agg_std_dev]
+        if self.db_type != DB_SQLITE:
+            # We don't write per-well tables to SQLite yet.
+            result += [self.wants_agg_mean_well, self.wants_agg_median_well, 
+                       self.wants_agg_std_dev_well]
+        result += [self.objects_choice]
         if self.objects_choice == O_SELECT:
             result += [self.objects_list]
         result += [self.separate_object_tables, self.max_column_size]
@@ -531,7 +534,8 @@ class ExportToDatabase(cpm.CPModule):
             self.write_mysql_table_defs(workspace)
             self.write_data(workspace)
         elif self.wants_well_tables:
-            per_well = self.write_mysql_table_per_well(workspace)
+            if self.db_type != DB_SQLITE:
+                per_well = self.write_mysql_table_per_well(workspace)
         if self.db_type in (DB_MYSQL, DB_SQLITE):
             # commit changes to db here or in run?
             print 'Commit'

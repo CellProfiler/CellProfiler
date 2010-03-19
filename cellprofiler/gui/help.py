@@ -209,19 +209,19 @@ Branching points of line segments can be found as an image morphological operati
 Also, "dark holes" (dark spots surrounded bright rings) can be detected. </li>
 <li><i>Improvements to object tracking:</i> A new tracking algorithm has been added
 to the TrackObjects module which is capable of bridging temporal gaps in trajectories
-and accouting for splitting/merging events.</li>
-<li>Object data can be exported to a database as a single table containing
+and accounting for splitting/merging events.</li>
+<li><i>Per-object data exporting:<i> Object data can be exported to a database as a single table containing
 all user-defined object measurements, or as separate tables, one for each object.
 <li><i>SQLite support:</i> Data can be exported in SQLite, a 
 self-contained database format. Users can create their own local databases and 
 no longer need access to a separate database server. Because CellProfiler 
 Analyst also supports SQLite, any user can access CellProfiler Analyst's
-suite of data exploration and machine-leaning tools.</li>
+suite of data exploration and machine-leaning tools without installing a complicated database server.</li>
 </ul>
 """
 
 WHEN_CAN_I_USE_CELLPROFILER_HELP = """ 
-<h2>When can I use CellProfiler?</h2>
+<h2>When should I use CellProfiler?</h2>
 
 <p>Most laboratories studying biological processes and human disease use 
 light/fluorescence microscopes to image cells and other biological samples. There 
@@ -234,12 +234,12 @@ from biological images, particularly in high-throughput experiments. CellProfile
 is designed for modular, flexible, high-throughput analysis of images, measuring 
 size, shape, intensity, and texture of every cell (or other object) in every image. 
 Using the point-and-click graphical user interface (GUI), users construct an image 
-analysis "pipeline", a sequential series of individual modules that each perform 
+analysis "pipeline", a sequential series of modules that each perform 
 an image processing function such as illumination correction, object identification 
 (segmentation), and object measurement. Users mix and match modules and adjust 
 their settings to measure the phenotype of interest. While originally designed for 
 high-throughput images, it is equally appropriate for low-throughput assays as 
-well(i.e., assays of < 100 images).</p>
+well (i.e., assays of < 100 images).</p>
 
 <p>CellProfiler can extract valuable biological information from images quickly 
 while increasing the objectivity and statistical power of assays. It helps researchers 
@@ -247,6 +247,8 @@ approach a variety of biological questions quantitatively, including standard
 assays (e.g., cell count, size, per-cell protein levels) as well as complex 
 morphological assays (e.g., cell/organelle shape or subcellular patterns of DNA 
 or protein staining).</p>
+
+<p>The wide variety of measurements produced by CellProfiler serves as useful "raw material" for machine learning algorithms. CellProfiler's companion software, CellProfiler Analyst, has an interactive machine learning tool called Classifier which can learn to recognize a phenotype of interest based on your guidance. Once you complete the training phase, CellProfiler Analyst will score every object in your images based on CellProfiler's measurements.  CellProfiler Analyst also contains tools for the interactive visualization of the data produced by CellProfiler.</p>
 
 <p>In summary, CellProfiler contains:
 <ul>
@@ -274,14 +276,16 @@ phenotypes. <i>Genome Biology</i> 7:R100. PMID: 17076895</li>
 <li>Lamprecht MR, Sabatini DM, Carpenter AE (2007) CellProfiler: free, versatile 
 software for automated biological image analysis. <i>Biotechniques</i> 
 42(1):71-75. PMID: 17269487</li>
+<li>Jones TR, Carpenter AE, Lamprecht MR, Moffat J, Silver S, Grenier J, Root D, Golland P, Sabatini DM (2009) Scoring diverse cellular morphologies in image-based screens with iterative feedback and machine learning. PNAS 106(6):1826-1831/doi: 10.1073/pnas.0808843106. PMID: 19188593 PMCID: PMC2634799</li>
+<li>Jones TR, Kang IH, Wheeler DB, Lindquist RA, Papallo A, Sabatini DM, Golland P, Carpenter AE (2008) CellProfiler Analyst: data exploration and analysis software for complex image-based screens. BMC Bioinformatics 9(1):482/doi: 10.1186/1471-2105-9-482. PMID: 19014601 PMCID: PMC2614436</li>
 </ul>
 """
 
 BUILDING_A_PIPELINE_HELP = """
 <h2>Making a pipeline</h2>
-<p>A <i>pipeline</i> is a sequential set of individual image analysis modules. The 
+<p>A <i>pipeline</i> is a sequential set of image analysis modules. The 
 best way to learn how to use CellProfiler is to load an example pipeline 
-from the CellProfiler website Examples page and try it out, then adapt it for your own images. You can also build a 
+from the CellProfiler website's Examples page and try it out, then adapt it for your own images. You can also build a 
 pipeline from scratch. Click the <i>Help</i> <img src="%(LOCATION_MODULE_HELP_BUTTON)s"></img> button in the main window to get
 help for a specific module.</p>
 
@@ -308,7 +312,7 @@ large batches of images, see <i>Help > General Help > Batch Processing</i>.</li>
 <h3>Building a pipeline from scratch</h3>
 <p>Constructing a pipeline involves placing individual modules into a pipeline. The list
 of modules in the pipeline is shown in the <i>pipeline panel</i> (located on the 
-right-hand side of the CellProfiler window).</p>
+left-hand side of the CellProfiler window).</p>
 <ol>
 <li><p><i>Place modules in a new pipeline.</i><br>
 Choose image analysis modules to add to your pipeline by clicking the <i>Add</i> 
@@ -316,7 +320,7 @@ Choose image analysis modules to add to your pipeline by clicking the <i>Add</i>
 (located underneath the pipeline panel) or right-clicking in the pipeline panel
 itself and selecting a module from the 
 pop-up box that appears. You can learn more about each module by clicking
-<i>Module Help</i> in the "Add modules" window or the <i>Help</i> button after you place the module
+<i>Module Help</i> in the "Add modules" window or the <i>?</i> button after the module has been placed and selected
 in the pipeline. Modules are added to the end of the pipeline, but you can
 adjust their order in the main window by dragging and dropping them, or by selecting a module (or
 modules, using the <i>Shift</i> key) and using the <i>Move up</i> 
@@ -347,7 +351,7 @@ of intermediate images produced during processing, images produced during
 processing are not saved to the hard drive unless you specifically request it, 
 using a <b>SaveImages</b> module.</p>
 <p><i>Saving data in your pipeline:</i> All measurements will be stored in the CellProfiler-formatted
-output vile, but you can include an <b>Export</b> module to automatically export
+output file, but you can include an <b>Export</b> module to automatically export
 data in a format you prefer.</p></li> 
 
 <li><p><i>Adjust the settings in each module.</i><br>
@@ -387,7 +391,7 @@ At the end of each cycle, CellProfiler saves the measurements in the output file
 You can optimize your pipeline by selecting the <i>Test</i> option from 
 the main menu. Test mode allows you to run the pipeline on a selected
 image, preview the results, and adjust the module settings on the fly. See 
-<i>Help > General Help > Test </i> for more details.</p>
+<i>Help > General Help > Test Mode </i> for more details.</p>
 </li>
 <li><p>Save your pipeline via <i>File > Save Pipeline</i>.</p>
 </li>
@@ -658,7 +662,7 @@ first module in the pipeline.</li>
 <li><i>Stop test run:</i> Exit <i>Test</i> mode. Loading a new pipeline or adding/subtracting
 modules will also automatically exit test mode.</li>
 <li><i>Step to next module:</i> Execute the next module (as indicated by the slider location)</li>
-<li><i>Choose image / group:</i>Choose the image or group to jump to.
+<li><i>Choose image / group:</i> Choose the image or group to jump to.
 The slider will then automatically return to the first module in the pipeline.</li>
 <li><i>Reload modules source:</i> For developers only. This option will reload the module source 
 code, so any changes to the code will be reflected immediately.</li>
@@ -672,7 +676,7 @@ BATCHPROCESSING_HELP = """
 CellProfiler is designed to analyze images in a high-throughput manner.   
 Once a pipeline has been established for a set of images, CellProfiler    
 can export batches of images to be analyzed on a computing cluster with the         
-pipeline. We often process 40,000-130,000 images for one analysis in this 
+pipeline. We often process tens or even hundreds of thousands of images for one analysis in this 
 manner. We do this by breaking the entire set of images into    
 separate batches, then submitting each of these batches as individual 
 jobs to a cluster. Each individual batch can be separately analyzed from  

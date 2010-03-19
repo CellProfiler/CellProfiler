@@ -9,6 +9,21 @@ import cellprofiler.utilities.javabridge as javabridge
 from cellprofiler.preferences import get_headless
 import sys
 
+# See http://www.loci.wisc.edu/software/bio-formats
+READABLE_FORMATS = ('al3d', 'am', 'amiramesh', 'apl', 'arf', 'avi', 'bmp', 
+                    'c01', 'cfg', 'cxd', 'dat', 'dcm', 'dicom', 'dm3', 'dv', 
+                    'eps', 'epsi', 'fits', 'flex', 'fli', 'gel', 'gif', 'grey', 
+                    'hdr', 'html', 'hx', 'ics', 'ids', 'img', 'ims', 'ipl', 
+                    'ipm', 'ipw', 'jp2', 'jpeg', 'jpg', 'l2d', 'labels', 'lei', 
+                    'lif', 'liff', 'lim', 'lsm', 'mdb', 'mnc', 'mng', 'mov', 
+                    'mrc', 'mrw', 'mtb', 'naf', 'nd', 'nd2', 'nef', 'nhdr', 
+                    'nrrd', 'obsep', 'oib', 'oif', 'ome', 'ome.tiff', 'pcx', 
+                    'pgm', 'pic', 'pict', 'png', 'ps', 'psd', 'r3d', 'raw', 
+                    'scn', 'sdt', 'seq', 'sld', 'stk', 'svs', 'tif', 'tiff', 
+                    'tnb', 'txt', 'vws', 'xdce', 'xml', 'xv', 'xys', 'zvi')
+WRITABLE_FORMATS = ('avi', 'eps', 'epsi', 'ics', 'ids', 'jp2', 'jpeg', 'jpg', 
+                    'mov', 'ome', 'ome.tiff', 'png', 'ps', 'tif', 'tiff')
+
 if hasattr(sys, 'frozen'):
     __path = os.path.split(os.path.abspath(sys.argv[0]))[0]
     __path = os.path.join(__path, 'bioformats')

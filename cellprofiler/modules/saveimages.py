@@ -31,6 +31,7 @@ __version__="$Revision$"
 import matplotlib
 import numpy as np
 import os
+import sys
 import Image as PILImage
 import scipy.io.matlab.mio
 from bioformats.formatreader import *
@@ -78,6 +79,7 @@ FF_XWD         = "xwd"
 FF_AVI         = "avi"
 FF_MAT         = "mat"
 FF_MOV         = "mov"
+FF_SUPPORTING_16_BIT = [FF_TIF, FF_TIFF]
 PC_WITH_IMAGE  = "Same folder as image"
 OLD_PC_WITH_IMAGE_VALUES = ["Same folder as image"]
 PC_CUSTOM      = "Custom"
@@ -214,11 +216,13 @@ class SaveImages(cpm.CPModule):
                 substitute the metadata values for the current image set for any metadata tags in the 
                 folder name.%(USING_METADATA_HELP_REF)s.</p>"""%globals())
         
+        # TODO: 
         self.bit_depth = cps.Choice("Image bit depth",
-                ["8","12","16"],doc="""
+                ["8","16"],doc="""
                 <i>(Used only when saving files in a non-MAT format)</i><br>
                 What is the bit-depth at which you want to save the images?
-                <b>Currently, saving images in 12- or 16-bit is not supported.</b>""")
+                <b>16-bit images are supported only for TIF formats.
+                Currently, saving images in 12-bit is not supported.</b>""")
         
         self.overwrite = cps.Binary("Overwrite existing files without warning?",False,doc="""
                 Check this box to automatically overwrite a file if it already exists. Otherwise, you
@@ -330,9 +334,11 @@ class SaveImages(cpm.CPModule):
             raise NotImplementedError("Unhandled file name method: %s"%(self.file_name_method))
         if self.save_image_or_figure != IF_MOVIE:
             result.append(self.file_format)
-        result.append(self.pathname)
-        if self.file_format != FF_MAT and self.save_image_or_figure != IF_MOVIE:
+        if (self.file_format in FF_SUPPORTING_16_BIT and 
+            self.save_image_or_figure == IF_IMAGE):
+            # TIFF supports 8 & 16-bit, all others are written 8-bit
             result.append(self.bit_depth)
+        result.append(self.pathname)
         result.append(self.overwrite)
         if self.save_image_or_figure != IF_MOVIE:
             result.append(self.when_to_save)
@@ -494,43 +500,150 @@ class SaveImages(cpm.CPModule):
             self.save_image_or_figure != IF_MOVIE):
             self.save_image(workspace)
         
+
+    def save_image_with_bioformats(self, workspace):
+        ''' Saves using bioformats library. Currently used for saving 16-bit
+        tiffs. Some code is redundant from save_image, but it's easier to 
+        separate the logic completely.
+        '''
+        assert self.file_format in (FF_TIF, FF_TIFF)
+        assert self.save_image_or_figure == IF_IMAGE
+        
+        workspace.display_data.wrote_image = False
+
+        # get the filename and check overwrite before attaching to java bridge
+        filename = self.get_filename(workspace)
+        path=os.path.split(filename)[0]
+        if len(path) and not os.path.isdir(path):
+            os.makedirs(path)
+        if not self.check_overwrite(filename):
+            return
+        if os.path.isfile(filename):
+            # Important: bioformats will append to files by default, so we must
+            # delete it explicitly if it exists.
+            os.remove(filename)
+        
+        # Get the image data to be written
+        image = workspace.image_set.get_image(self.image_name.value)
+        pixels = image.pixel_data
+        
+        if self.rescale.value:
+            # Normalize intensities for each channel
+            pixels = pixels.astype(np.float32)
+            if pixels.ndim == 3:
+                # RGB
+                for i in range(3):
+                    img_min = np.min(pixels[:,:,i])
+                    img_max = np.max(pixels[:,:,i])
+                    pixels[:,:,i] = (pixels[:,:,i] - img_min) / (img_max - img_min)
+            else:
+                # Grayscale
+                img_min = np.min(pixels)
+                img_max = np.max(pixels)
+                pixels = (pixels - img_min) / (img_max - img_min)
+        
+        env = jutil.attach()
+        try:
+            width = pixels.shape[1]
+            height = pixels.shape[0]
+            if pixels.ndim == 2:
+                channels = 1
+            elif pixels.ndim == 3 and pixels.shape[2] == 3:
+                channels = 3
+            else:
+                raise 'Image shape is not supported'
+            stacks = 1
+            frames = 1
+            is_big_endian = (sys.byteorder.lower() == 'big')
+            FormatTools = make_format_tools_class()
+            pixel_type = FormatTools.getPixelTypeString(FormatTools.UINT16)
+            
+            # Build bioformats metadata object
+            imeta = createOMEXMLMetadata()
+            meta = wrap_imetadata_object(imeta)
+            meta.createRoot()
+            meta.setPixelsBigEndian(is_big_endian, 0, 0)
+            meta.setPixelsDimensionOrder('XYCZT', 0, 0)
+            meta.setPixelsPixelType(pixel_type, 0, 0)
+            meta.setPixelsSizeX(width, 0, 0)
+            meta.setPixelsSizeY(height, 0, 0)
+            meta.setPixelsSizeC(channels, 0, 0)
+            meta.setPixelsSizeZ(stacks, 0, 0)
+            meta.setPixelsSizeT(frames, 0, 0)
+            meta.setLogicalChannelSamplesPerPixel(channels, 0, 0)
+            ImageWriter = make_image_writer_class()
+            writer = ImageWriter()    
+            writer.setMetadataRetrieve(meta)
+            writer.setId(filename)
+
+            # Scale pixel vals to 16 bit
+            if pixels.dtype == np.uint8:
+                pixels = pixels.astype(np.uint16) * 255
+            elif issubclass(pixels.dtype.type, np.floating):
+                pixels = (pixels * 65535).astype(np.uint16)
+
+            if len(pixels.shape) == 3 and pixels.shape[2] == 3:  
+                pixels = np.array([pixels[:,:,0], pixels[:,:,1], pixels[:,:,2]])
+
+            pixels = pixels.flatten()
+            # split the 16-bit image into byte-sized chunks for saveBytes
+            pixels = np.fromstring(pixels.tostring(), dtype=np.uint8)
+                
+            writer.saveBytes(env.make_byte_array(pixels), True)
+            writer.close()
+        
+            workspace.display_data.wrote_image = True
+            
+            if self.when_to_save != WS_LAST_CYCLE:
+                self.save_filename_measurements(workspace)
+        finally:
+            jutil.detach()
+                        
     def save_image(self, workspace):
+        if self.get_bit_depth()== '16':
+            return self.save_image_with_bioformats(workspace)
+        
         workspace.display_data.wrote_image = False
         image = workspace.image_set.get_image(self.image_name.value)
         if self.save_image_or_figure == IF_IMAGE:
             pixels = image.pixel_data
             if self.file_format != FF_MAT:
                 if self.rescale.value:
-                    # Rescale the image intensity
+                    # Normalize intensities for each channel
                     if pixels.ndim == 3:
-                        # get minima along each of the color axes (but not RGB)
+                        # RGB
                         for i in range(3):
                             img_min = np.min(pixels[:,:,i])
                             img_max = np.max(pixels[:,:,i])
-                            pixels[:,:,i]=(pixels[:,:,i]-img_min) / (img_max-img_min)
+                            pixels[:,:,i] = (pixels[:,:,i] - img_min) / (img_max - img_min)
                     else:
+                        # Grayscale
                         img_min = np.min(pixels)
                         img_max = np.max(pixels)
-                        pixels=(pixels-img_min) / (img_max-img_min)
+                        pixels = (pixels - img_min) / (img_max - img_min)
+                        
                 if pixels.ndim == 2 and self.colormap != CM_GRAY:
+                    # Convert grayscale image to rgb for writing
                     if self.colormap == cps.DEFAULT:
                         colormap = cpp.get_default_colormap()
                     else:
                         colormap = self.colormap.value
                     cm = matplotlib.cm.get_cmap(colormap)
-                    mapper = matplotlib.cm.ScalarMappable(cmap=cm)
-                    if self.bit_depth == '8':
-                        pixels = mapper.to_rgba(pixels,bytes=True)
+                    
+                    if self.get_bit_depth() == '8':
+                        pixels = mapper.to_rgba(pixels, bytes=True)
                     else:
                         raise NotImplementedError("12 and 16-bit images not yet supported")
-                elif self.bit_depth == '8':
+                elif self.get_bit_depth() == '8':
                     pixels = (pixels*255).astype(np.uint8)
                 else:
                     raise NotImplementedError("12 and 16-bit images not yet supported")
+                
         elif self.save_image_or_figure == IF_MASK:
-            pixels = image.mask.astype(np.uint8)*255
+            pixels = image.mask.astype(np.uint8) * 255
+            
         elif self.save_image_or_figure == IF_CROPPING:
-            pixels = image.crop_mask.astype(np.uint8)*255
+            pixels = image.crop_mask.astype(np.uint8) * 255
             
         filename = self.get_filename(workspace)
         path=os.path.split(filename)[0]
@@ -630,6 +743,7 @@ class SaveImages(cpm.CPModule):
                                                    self.file_image_name.value)
         
         return os.path.join(pathname,filename)
+    
     def get_file_format(self):
         """Return the file format associated with the extension in self.file_format
         """
@@ -640,6 +754,13 @@ class SaveImages(cpm.CPModule):
         if self.file_format == FF_TIF:
             return FF_TIFF
         return self.file_format.value
+    
+    def get_bit_depth(self):
+        if (self.save_image_or_figure == IF_IMAGE and 
+            self.get_file_format() in FF_SUPPORTING_16_BIT):
+            return self.bit_depth.value
+        else:
+            return '8'
     
     def upgrade_settings(self, setting_values, variable_revision_number, 
                          module_name, from_matlab):

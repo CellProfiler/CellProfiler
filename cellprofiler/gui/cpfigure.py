@@ -264,6 +264,7 @@ class CPFigureFrame(wx.Frame):
     def on_close(self, event):
         if self.close_fn is not None:
             self.close_fn(event)
+        self.clf() # Free memory allocated by imshow
         for menu, menu_id in self.remove_menu:
             print "Removing menu ID %d"%menu_id
             self.Parent.Unbind(wx.EVT_MENU, id=menu_id)

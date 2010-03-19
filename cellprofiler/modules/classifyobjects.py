@@ -248,7 +248,7 @@ class ClassifyObjects(cpm.CPModule):
         
         group.append("low_threshold", cps.Float(
             "Lower threshold", 0,
-            doc="""This is the threshold that separates the lowest bin from the
+            doc="""<i>(Used only if Evenly spaced bins selected)</i><br>This is the threshold that separates the lowest bin from the
             others. The lower threshold, upper threshold, and number of bins
             define the thresholds of bins between the lowest and highest."""))
         
@@ -264,7 +264,7 @@ class ClassifyObjects(cpm.CPModule):
         group.append("high_threshold", cps.Float(
             "Upper threshold", 1,
             minval = cps.NumberConnector(min_upper_threshold),
-            doc="""This is the threshold that separates the last bin from
+            doc="""<i>(Used only if Evenly spaced bins selected)</i><br> This is the threshold that separates the last bin from
             the others.
             <i>Note:</i> If you would like two bins, choose <i>Custom-defined bins</i>."""))
         
@@ -278,7 +278,7 @@ class ClassifyObjects(cpm.CPModule):
             "Enter the custom thresholds separating the values between bins",
             "0,1",
             doc="""
-            <i>(Used if you select Custom thresholds)</i><br>
+            <i>(Used only if Custom thresholds selected)</i><br>
             This setting establishes the threshold values for the
             bins. You should enter one threshold between each bin, separating
             thresholds with commas (for example, <i>0.3, 1.5, 2.1</i> for four bins).
@@ -293,7 +293,7 @@ class ClassifyObjects(cpm.CPModule):
         group.append("bin_names", cps.Text(
             "Enter the bin names separated by commas","None",
             doc="""
-            <i>(Used if user wants to name the bins)</i><br>
+            <i>(Used only if Give each bin a name? is checked)</i><br>
             Enter names for each of the bins, separated by commas.
             An example including three bins might be <i>First,Second,Third</i>."""))
         

@@ -173,15 +173,15 @@ class CPFrame(wx.Frame):
         self.__menu_debug.Enable(ID_DEBUG_CHOOSE_GROUP, False)
         self.__menu_debug.Enable(ID_DEBUG_CHOOSE_IMAGE_SET, False)
         self.__menu_window = wx.Menu()
-        self.__menu_window.Append(ID_WINDOW_CLOSE_ALL, "Close &all windows\tctrl+L", 
-                                  "Close all figure windows")
-        self.__menu_window.Append(ID_WINDOW_SHOW_ALL_WINDOWS,"Show all windows",
+        self.__menu_window.Append(ID_WINDOW_CLOSE_ALL, "Close &all open windows\tctrl+L", 
+                                  "Close all open module display windows")
+        self.__menu_window.Append(ID_WINDOW_SHOW_ALL_WINDOWS,"Show all windows on run",
                                   "Show all module display windows for all modules during analysis")
-        self.__menu_window.Append(ID_WINDOW_HIDE_ALL_WINDOWS,"Hide all windows",
+        self.__menu_window.Append(ID_WINDOW_HIDE_ALL_WINDOWS,"Hide all windows on run",
                                   "Hide all module display windows for all modules during analysis")
         self.__menu_window.AppendSeparator()
         self.__menu_help = make_help_menu(MAIN_HELP, self)
-        self.__menu_help.Append(ID_HELP_MODULE,'Module help','Display help from the module''s .m file')
+        self.__menu_help.Append(ID_HELP_MODULE,'Module help','Display documentation for the current module')
         self.__menu_help.Append(ID_HELP_DEVELOPERS_GUIDE,"Developer's guide",
                                 "Launch the developer's guide webpage")
 

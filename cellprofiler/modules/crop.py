@@ -140,7 +140,7 @@ class Crop(cpm.CPModule):
         
         self.horizontal_limits = cps.IntegerOrUnboundedRange("Left and right rectangle positions",
                             minval=0, doc = """
-                            <i>(Used if Rectangle selected as cropping shape, or if using Plate Fix)</i><br>
+                            <i>(Used only if Rectangle selected as cropping shape, or if using Plate Fix)</i><br>
                             Specify the left and right positions for the bounding rectangle by selecting one of the following:<br>
                             <ul><li><i>Absolute</i> to specify these values as absolute pixel
                             coordinates in the original image. For instance, you might enter
@@ -153,7 +153,7 @@ class Crop(cpm.CPModule):
         
         self.vertical_limits = cps.IntegerOrUnboundedRange("Top and bottom rectangle positions",
                             minval=0, doc = """
-                            <i>(Used if Rectangle selected as cropping shape, or if using Plate Fix)</i><br>
+                            <i>(Used only if Rectangle selected as cropping shape, or if using Plate Fix)</i><br>
                             Specify the top and bottom positions for the bounding rectangle by selecting one of the following:<br>
                             <ul><li><i>Absolute</i> to specify these values as absolute pixel coordinates.
                             For instance, you might enter "25", "225", and "Absolute" 
@@ -165,31 +165,31 @@ class Crop(cpm.CPModule):
                             of their size.</li></ul>""")
         
         self.ellipse_center = cps.Coordinates("Coordinates of ellipse center",(500,500),doc = """
-                            <i>(Used if Ellipse selected as cropping shape)</i><br>
+                            <i>(Used only if Ellipse selected as cropping shape)</i><br>
                             What is the center pixel position of the ellipse?""")
         
         self.ellipse_x_radius = cps.Integer("Ellipse radius, X direction",400, doc = """
-                            <i>(Used if Ellipse selected as cropping shape)</i><br>
+                            <i>(Used only if Ellipse selected as cropping shape)</i><br>
                             What is the radius of the ellipse in the X direction?""")
         
         self.ellipse_y_radius = cps.Integer("Ellipse radius, Y direction",200, doc = """
-                            <i>(Used if Ellipse selected as cropping shape)</i><br>
+                            <i>(Used only if Ellipse selected as cropping shape)</i><br>
                             What is the radius of the ellipse in the Y direction?""")
         
         self.image_mask_source = cps.ImageNameSubscriber("Select the masking image","None",doc = """
-                            <i>(Used if Image selected as cropping shape)</i><br>
+                            <i>(Used only if Image selected as cropping shape)</i><br>
                             What is the name of the image to use as a cropping mask?""")
         
         self.cropping_mask_source = cps.CroppingNameSubscriber("Select the image with a cropping mask","None", doc = """
-                            <i>(Used if Cropping selected as cropping shape)</i><br>
+                            <i>(Used only if Previous Cropping selected as cropping shape)</i><br>
                             What is the name of the image with the associated cropping mask?""")
         
         self.objects_source = cps.ObjectNameSubscriber("Select the objects","None", doc="""
-                            <i>(Used if Objects selected as cropping shape)</i><br>
+                            <i>(Used only if Objects selected as cropping shape)</i><br>
                             What are the objects to be used as a cropping mask?""")
         
         self.use_plate_fix = cps.Binary("Use Plate Fix?",False,doc = """
-                            <i>(Used if Image selected as cropping shape)</i><br>
+                            <i>(Used only if Image selected as cropping shape)</i><br>
                             Do you want to use Plate Fix? When attempting to crop based on a previously identified object
                             such as a rectangular plate, the plate may not have
                             precisely straight edges: there might be a tiny, almost unnoticeable
@@ -215,7 +215,7 @@ class Crop(cpm.CPModule):
                             RM_NO, doc = """
                             Do you want to remove rows and columns that lack objects? Options are:
                             <ul>
-                            <li><i>No:</i> Leave the image the same size. The cropped areas will be trned to black (zeroes)</li>
+                            <li><i>No:</i> Leave the image the same size. The cropped areas will be turned to black (zeroes)</li>
                             <li><i>Edges:</i> Crop the image so that its top, bottom, left and right are at
                             the first nonblank pixel for that edge</li>
                             <li><i>All:</i> Remove any row or column of all-blank pixels, even from the

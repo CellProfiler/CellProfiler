@@ -60,16 +60,16 @@ class EnhanceEdges(cpm.CPModule):
             doc = '''What do you want to call the image with edges enhanced?''')
         self.wants_automatic_threshold = cps.Binary(
             "Automatically calculate the threshold?", True,
-            doc = '''<i>(Used only with the Canny option)</i> <br> 
+            doc = '''<i>(Used only with the Canny option and automatic thresholding)</i> <br> 
             If you select automatic thresholding, it is done using a three-category
             Otsu algorithm performed on the Sobel transform of the image.''')
         self.manual_threshold = cps.Float(
-            "Absolute threshold",.2,0,1, doc = '''
+            "Absolute threshold",.2,0,1, doc = '''<i>(Used only with the Canny option and manual thresholding)</i><br>
             The upper cutoff for Canny edges. All Sobel-transformed 
             pixels with this value or higher will be marked as an edge.
             You can enter a threshold between 0 and 1.''')
         self.threshold_adjustment_factor = cps.Float(
-            "Threshold adjustment factor",1, doc = '''
+            "Threshold adjustment factor",1, doc = '''<i>(Used only with the Canny option and automatic thresholding)</i><br>
             This threshold adjustment factor is a multiplier that is applied to
             both the lower and upper Canny thresholds if they are calculated
             automatically. An adjustment factor of 1 indicates no adjustment.
@@ -96,7 +96,7 @@ class EnhanceEdges(cpm.CPModule):
              strong edges. This method is therefore less likely than the others to be fooled 
              by noise, and more likely to detect true weak edges.</li></ul>''')
         self.direction = cps.Choice("Select edge direction to enhance",
-                                    [ E_ALL, E_HORIZONTAL, E_VERTICAL], doc = '''<i>(Used only for Prewitt and Sobel methods)</i> <br> 
+                                    [ E_ALL, E_HORIZONTAL, E_VERTICAL], doc = '''<i>(Used only with Prewitt and Sobel methods)</i> <br> 
                                     The direction of the edges
                                     are you are identifying in the image (predominantly horizontal, predominantly vertical,
                                     or both).''')
@@ -104,11 +104,11 @@ class EnhanceEdges(cpm.CPModule):
         self.sigma = cps.Float("Gaussian's sigma value", 10)
         self.wants_automatic_low_threshold = cps.Binary(
             "Calculate value for low threshold automatically?", True, 
-            doc="""Automatically calculate the low / soft threshold cutoff for
+            doc="""<i>(Used only with the Canny option and automatic thresholding)</i> <br>Automatically calculate the low / soft threshold cutoff for
             the Canny method""")
         self.low_threshold = cps.Float(
             "Low threshold value",.1,0,1,
-            doc="""The soft threshold cutoff for the Canny method.
+            doc="""<i>(Used only with the Canny option and manual thresholding)</i><br> The soft threshold cutoff for the Canny method.
             The Canny method will mark all Sobel-transformed pixels with values
             below this threshold as not being edges.""")
 

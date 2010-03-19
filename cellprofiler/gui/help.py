@@ -90,9 +90,7 @@ type the full folder path in the edit box. If you type a folder path that
 cannot be found, the message box below will indicate this fact until you correct the problem. 
 If you want to specify a folder that does not yet exist, type the desired name and 
 click on the <i>New folder</i> button <img src="%(LOCATION_CREATE_BUTTON)s"></img>.
-The folder will be created according to the pathname you have typed.
-You can change which folder will appear as the Default Input Folder upon CellProfiler startup
-within the <i>File > Preferences...</i> option in the main window.</p>
+The folder will be created according to the pathname you have typed.</p>
 
 <p>The contents of the Default Input Folder are shown in the file panel to the left.
 Double-clicking image file names in this panel opens them in a figure window.             
@@ -103,7 +101,7 @@ button <img src="%(LOCATION_REFRESH_BUTTON)s"></img>.</p>"""%globals()
 
 DEFAULT_OUTPUT_FOLDER_HELP = """
 <p>The <i>Default Output Folder</i> is the folder that CellProfiler uses to
-store its output. Several File Processing modules (e.g., <b>SaveImages</b> or 
+store the output file it creates. Also, several File Processing modules (e.g., <b>SaveImages</b> or 
 <b>SaveToSpreadsheet</b>) provide the option of saving analysis results to 
 this folder on a default basis unless you specify, within the module, an alternate, 
 specific folder on your computer. Within modules, we recommend selecting the 
@@ -119,9 +117,7 @@ type the full folder path in the edit box. If you type a folder path that
 cannot be found, the message box below will indicate this fact until you correct the
 problem. If you want to specify a folder that does not yet exist, type the desired name and 
 click on the <i>New folder</i> icon to the right of the <i>Browse folder</i> icon.
-The folder will be created according to the pathname you have typed.
-You can change which folder will appear as the Default Output Folder upon CellProfiler startup
-within the <i>File > Preferences...</i> option in the main window.</p>"""
+The folder will be created according to the pathname you have typed.</p>"""
 
 OUTPUT_FILENAME_HELP = """
 <p>Specify the name of the output file where all information 
@@ -149,7 +145,7 @@ A number of new features have been incorporated into this re-engineered Python
 version of CellProfiler:
 <h3>Interface</h3>
 <ul>
-<li><i>Resizable user interface:</i>The main CellProfiler interface can now be resized
+<li><i>Resizable user interface: </i>The main CellProfiler interface can now be resized
 by dragging the window corner.</li>
 <li><i>Help for individual module settings:</i> Every setting in every module now has 
 a help button that you can click to display information and advice for that setting.</li>
@@ -158,16 +154,15 @@ that are not allowed, and immediately flags them for you.</li>
 <li><i>Context-dependent module settings</i>: Prior versions of CellProfiler 
 displayed all settings for each module, whether or not the values were necessary, 
 given existing choices for other settings. Now, only those settings 
-you require are displayed, simplifying the interface</li>
+you require are displayed, simplifying the interface.</li>
 <li><i>Test mode for assay development:</i> This feature allows you to 
 preview the effect of a module setting on your data. You can step backward or forward 
 in the pipeline as you modify settings, optimizing your results prior to running an
 actual analysis.</li>
-<li><i>Unlimited number of images/objects as module input</i> Some modules can accept an arbitrary number 
+<li><i>Unlimited number of images/objects as module input:</i> Some modules can accept an arbitrary number 
 of images or objects as input, and you can dynamically add or remove any of these inputs as needed.
 For example, you can specify any number of single images in LoadSingleImage; previously,
-the module could accept only three input images at a time.<br>
-For example, in OverlayOutlines, you can specify that any number of outlines be  
+the module could accept only three input images at a time. For example, in OverlayOutlines, you can specify that any number of outlines be  
 overlaid on an image; previously, you would have had to string multiple OverlayOutline modules
 together.</li>
 <li><i>Image grouping:</i> Images which share common metadata tags, whether 

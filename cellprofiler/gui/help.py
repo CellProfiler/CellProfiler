@@ -102,7 +102,7 @@ button <img src="%(LOCATION_REFRESH_BUTTON)s"></img>.</p>"""%globals()
 DEFAULT_OUTPUT_FOLDER_HELP = """
 <p>The <i>Default Output Folder</i> is the folder that CellProfiler uses to
 store the output file it creates. Also, several File Processing modules (e.g., <b>SaveImages</b> or 
-<b>SaveToSpreadsheet</b>) provide the option of saving analysis results to 
+<b>ExportToSpreadsheet</b>) provide the option of saving analysis results to 
 this folder on a default basis unless you specify, within the module, an alternate, 
 specific folder on your computer. Within modules, we recommend selecting the 
 Default Output Folder as much as possible, so that your pipeline will 
@@ -793,10 +793,10 @@ green, and blue color channels.</li>
 """
 
 FIGURE_HELP = (
-    ("File > Save", SAVE_HELP),
-    ("Zoom",ZOOM_HELP ),
-    ("Tools > Measure length", SHOW_MEASURE_LENGTH_HELP),
-    ("Image tools",IMAGE_TOOLS_HELP))
+    ("File Save", SAVE_HELP),
+    ("Zoom", ZOOM_HELP ),
+    ("Measure Length Tool", SHOW_MEASURE_LENGTH_HELP),
+    ("Image Tools",IMAGE_TOOLS_HELP))
 
 ###################################################
 #

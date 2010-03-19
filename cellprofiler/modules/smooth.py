@@ -87,7 +87,7 @@ class Smooth(cpm.CPModule):
             </ul>""")
         
         self.wants_automatic_object_size = cps.Binary('Calculate artifact diameter automatically?',True,doc="""
-            <i>(Used only if Gaussian, Median or Smooth Keeping Edges is selected)</i><br>
+            <i>(Used only if Gaussian, Median, Smooth Keeping Edges or Circular Average Filter is selected)</i><br>
             If this box is checked, the module will choose an artifact diameter based on
             the size of the image. The minimum size it will choose is 30 pixels,
             otherwise the size is 1/40 of the size of the image.""")

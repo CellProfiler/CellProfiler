@@ -87,7 +87,7 @@ class CorrectIlluminationApply(cpm.CPModule):
                                         then you will want to choose <i>Divide</i> here.</ul>''')
         
         rescale_option = cps.Choice("Select the rescaling method",
-                                    [RE_NONE, RE_STRETCH, RE_MATCH], doc = '''
+                                    [RE_NONE, RE_STRETCH, RE_MATCH], doc = '''<i>(Used only when applying the illumination correction via divide)</i><br>
                                    Applying an illumination function can produce an image in a very different range of intensity values relative to the original image.
                                     If the illumination correction function is in the range 1 to infinity, <i>Divide</i> will usually yield an image in a reasonable
                                     range (0 to 1).  However, if the image is not in this range, or the intensity gradient within the image is still very great,

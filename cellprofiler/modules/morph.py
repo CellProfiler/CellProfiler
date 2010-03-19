@@ -444,7 +444,7 @@ class Morph(cpm.CPModule):
         self.add_function(can_remove = False)
     
     CUSTOM_REPEATS_TEXT = "Custom # of repeats"
-    CUSTOM_REPEATS_DOC = "Enter the number of times to repeat the operation"
+    CUSTOM_REPEATS_DOC = "<i>(Used only if Custom selected)</i><br>Enter the number of times to repeat the operation"
     def add_function(self, can_remove = True):
         group = MorphSettingsGroup()
         if can_remove:

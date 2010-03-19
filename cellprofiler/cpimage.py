@@ -684,7 +684,7 @@ class ImageSetList(object):
                 d[key_values] = []
                 sort_order.append(key_values)
             d[key_values].append(i+1)
-        return (keys, [(dict(zip(keys,k)),d[k]) for k in sort_order])
+        return (keys, [(dict(zip(keys,k)),str(d[k])) for k in sort_order])
     
     def save_state(self):
         '''Return a string that can be used to load the image_set_list's state

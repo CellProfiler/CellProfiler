@@ -352,7 +352,8 @@ class TrackObjects(cpm.CPModule):
 
         self.image_name = cps.ImageNameProvider(
             "Name the output image", "TrackedCells", doc = '''
-            What do you want to call the images?''')
+            <i>(Used only if saving the color-coded image)</i><br>
+            What do you want to call the images, which will be available for downstream modules, such as <b>SaveImages</b>?''')
 
     def settings(self):
         return [self.tracking_method, self.object_name, self.measurement,

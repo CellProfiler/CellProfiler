@@ -708,7 +708,6 @@ MAIN_HELP = (
         ("New Features",NEW_FEATURES_HELP),
         ("How To Build A Pipeline", BUILDING_A_PIPELINE_HELP) ) ),
     ( "General help", (
-        ("Where's my Module/Data Tool?",""" """),
         ("Using Metadata In CellProfiler",USING_METADATA_HELP),
         ("Memory And Speed", MEMORY_AND_SPEED_HELP),
         ("Test Mode",TEST_MODE_HELP),
@@ -866,17 +865,8 @@ def make_help_menu(h, window):
                 dlg = htmldialog.HTMLDialog(window, key, value)
                 dlg.Show()
                                 
-            def on_help_wheres_my_module(self):
-                import webbrowser
-                webbrowser.open("http://cellprofiler.org/forum/viewtopic.php?f=14&t=806&p=3221")
-        
-            if key != "Where's my Module/Data Tool?":
-                menu.Append(my_id, key)
-                window.Bind(wx.EVT_MENU, show_dialog, id=my_id)
-            else:
-                menu.Append(my_id,key,
-                            "Launch the module update FAQ webpage")
-                window.Bind(wx.EVT_MENU, on_help_wheres_my_module, id=my_id)
+            menu.Append(my_id, key)
+            window.Bind(wx.EVT_MENU, show_dialog, id=my_id)
                 
     return menu
 

@@ -148,21 +148,28 @@ def display_error_dialog(frame, exc, pipeline, message=None, tb = None):
     button_sizer.AddButton(report_button)
     button_sizer.Realize()
     sizer.Add(button_sizer, 0, wx.EXPAND | wx.ALL, 3)
+    result = [None]
     #
     # Handle the "No" button being pressed
     #
     no_button = button_sizer.GetNegativeButton()
     def on_no(event):
+        result[0] = ED_CONTINUE
         dialog.SetReturnCode(wx.NO)
         dialog.Close()
         event.Skip()
     dialog.Bind(wx.EVT_BUTTON, on_no, no_button)
     
+    def on_yes(event):
+        dialog.SetReturnCode(wx.YES)
+        result[0] = ED_STOP
+        dialog.Close()
+        event.Skip()
+    dialog.Bind(wx.EVT_BUTTON, on_yes, yes_button)
+    
     dialog.Fit()
-    result = dialog.ShowModal()
-    if result == wx.ID_YES:
-        return ED_STOP
-    return ED_CONTINUE
+    dialog.ShowModal()
+    return result[0]
 
 def on_report(event, dialog, traceback_text, pipeline):
     '''Report an error to us'''

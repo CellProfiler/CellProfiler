@@ -699,8 +699,8 @@ ExportToSpreadsheet:[module_num:5|svn_version:\'9434\'|variable_revision_number:
                                   m,
                                   image_set_list)
         module.post_run(workspace)
+        fd = open(path,"r")
         try:
-            fd = open(path,"r")
             reader = csv.reader(fd, delimiter=module.delimiter_char)
             header = reader.next()
             self.assertEqual(len(header),2)
@@ -740,8 +740,8 @@ ExportToSpreadsheet:[module_num:5|svn_version:\'9434\'|variable_revision_number:
                                   m,
                                   image_set_list)
         module.post_run(workspace)
+        fd = open(path,"r")
         try:
-            fd = open(path,"r")
             reader = csv.reader(fd, delimiter=module.delimiter_char)
             header = reader.next()
             self.assertEqual(len(header),4)

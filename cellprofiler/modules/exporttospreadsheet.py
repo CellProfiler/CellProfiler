@@ -55,6 +55,9 @@ from cellprofiler.preferences import \
      DEFAULT_INPUT_SUBFOLDER_NAME, DEFAULT_OUTPUT_SUBFOLDER_NAME, \
      IO_FOLDER_CHOICE_HELP_TEXT, IO_WITH_METADATA_HELP_TEXT
 
+MAX_EXCEL_COLUMNS = 256
+MAX_EXCEL_ROWS = 65536
+
 DELIMITER_TAB = "Tab"
 DELIMITER_COMMA = 'Comma (",")'
 DELIMITERS = (DELIMITER_COMMA,DELIMITER_TAB)
@@ -411,14 +414,18 @@ class ExportToSpreadsheet(cpm.CPModule):
                             extracted
         workspace - workspace containing the measurements
         """
+        m = workspace.measurements
+        image_features = m.get_feature_names(IMAGE)
+        image_features.insert(0, IMAGE_NUMBER)
+        if not self.check_excel_limits(workspace, file_name,
+                                       len(image_set_indexes),
+                                       len(image_features)):
+            return
         file_name = self.make_full_filename(file_name, workspace,
                                             image_set_indexes[0])
         fd = open(file_name,"wb")
         try:
             writer = csv.writer(fd,delimiter=self.delimiter_char)
-            m = workspace.measurements
-            image_features = m.get_feature_names(IMAGE)
-            image_features.insert(0, IMAGE_NUMBER)
             for index in image_set_indexes:
                 aggs = []
                 if self.wants_aggregate_means:
@@ -451,7 +458,25 @@ class ExportToSpreadsheet(cpm.CPModule):
                 writer.writerow(row)
         finally:
             fd.close()
-    
+
+    def check_excel_limits(self, workspace, file_name, row_count, col_count):
+        '''Return False if we shouldn't write because of Excel'''
+        if self.excel_limits and workspace.frame is not None:
+            message = None
+            if col_count > MAX_EXCEL_COLUMNS:
+                message = ("""The image file, "%s", will have %d columns, but Excel only supports %d.
+Do you want to save it anyway?""" %
+                            (file_name, col_count, MAX_EXCEL_COLUMNS))
+            elif row_count > MAX_EXCEL_ROWS:
+                message = ("""The image file, "%s", will have %d rows, but Excel only supports %d.
+Do you want to save it anyway?""" %
+                            (file_name, row_count, MAX_EXCEL_COLUMNS))
+            if message is not None:
+                import wx
+                if wx.MessageBox(message, "Excel limits exceeded", wx.YES_NO) == wx.ID_NO:
+                    return False
+        return True
+        
     def filter_columns(self, features, object_name):
         if self.pick_columns:
             columns = [
@@ -473,28 +498,39 @@ class ExportToSpreadsheet(cpm.CPModule):
                             extracted
         workspace - workspace containing the measurements
         """
+        m = workspace.measurements
+        features = []
+        features += [(IMAGE, IMAGE_NUMBER),
+                     (object_names[0], OBJECT_NUMBER)]
+        if self.add_metadata.value:
+            mdfeatures = [(IMAGE, name) 
+                          for name in m.get_feature_names(IMAGE)
+                          if name.startswith("Metadata_")]
+            mdfeatures.sort()
+            features += mdfeatures
+        for object_name in object_names:
+            ofeatures = m.get_feature_names(object_name)
+            ofeatures = self.filter_columns(ofeatures, object_name)
+            ofeatures = [(object_name, feature_name)
+                         for feature_name in ofeatures]
+            ofeatures.sort()
+            features += ofeatures
         file_name = self.make_full_filename(file_name, workspace,
                                             image_set_indexes[0])
         fd = open(file_name,"wb")
+        if self.excel_limits:
+            row_count = 1
+            for img_index in image_set_indexes:
+                object_count =\
+                     np.max([m.get_measurement(IMAGE, "Count_%s"%name, img_index)
+                             for name in object_names])
+                row_count += int(object_count)
+            if not self.check_excel_limits(workspace, file_name,
+                                           row_count, len(features)):
+                return
+
         try:
             writer = csv.writer(fd,delimiter=self.delimiter_char)
-            m = workspace.measurements
-            features = []
-            features += [(IMAGE, IMAGE_NUMBER),
-                         (object_names[0], OBJECT_NUMBER)]
-            if self.add_metadata.value:
-                mdfeatures = [(IMAGE, name) 
-                              for name in m.get_feature_names(IMAGE)
-                              if name.startswith("Metadata_")]
-                mdfeatures.sort()
-                features += mdfeatures
-            for object_name in object_names:
-                ofeatures = m.get_feature_names(object_name)
-                ofeatures = self.filter_columns(ofeatures, object_name)
-                ofeatures = [(object_name, feature_name)
-                             for feature_name in ofeatures]
-                ofeatures.sort()
-                features += ofeatures
             #
             # We write the object names in the first row of headers if there are
             # multiple objects. Otherwise, we just write the feature names

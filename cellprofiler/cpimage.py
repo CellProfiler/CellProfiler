@@ -679,12 +679,12 @@ class ImageSetList(object):
         for i in range(self.count()):
             image_set = self.get_image_set(i)
             assert isinstance(image_set, ImageSet)
-            key_values = tuple([image_set.keys[key] for key in keys])
+            key_values = tuple([str(image_set.keys[key]) for key in keys])
             if not d.has_key(key_values):
                 d[key_values] = []
                 sort_order.append(key_values)
             d[key_values].append(i+1)
-        return (keys, [(dict(zip(keys,str(k))),d[k]) for k in sort_order])
+        return (keys, [(dict(zip(keys,k)),d[k]) for k in sort_order])
     
     def save_state(self):
         '''Return a string that can be used to load the image_set_list's state

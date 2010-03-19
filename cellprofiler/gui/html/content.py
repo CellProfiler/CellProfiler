@@ -12,15 +12,11 @@ From here, you can...
 </tr>
 <tr>
     <td width="200"><i>Read the documentation</i></td>
-    <td>There is an <a href="http://cellprofiler.org/manual">online manual</a>. Also, detailed help is available for any module by clicking the "<b>?</b>" button, or using the <i>Help</i> menu in the toolbar.</td>
+    <td>There is an <a href="http://cellprofiler.org/CPmanual#table_of_contents">online manual</a>. Also, detailed help is available for any module by clicking the "<b>?</b>" button, or using the <i>Help</i> menu in the toolbar.</td>
  </tr>
 <tr>
-    <td><i>Try example pipelines</i></td>
-    <td>The <a href="http://www.cellprofiler.org/examples.htm">Examples</a> page on our website has pipelines and images of various biological assays. You can pick one that most resemble your phenotypes of interest and begin adjusting its settings.</td>
-</tr>
-<tr>
-    <td><i>Watch our tutorials</i></td>
-    <td>Videos of CellProfiler demos are available on the <a href="http://www.cellprofiler.org/tutorials.htm">Tutorials</a> page.</td>
+    <td><i>Try example pipelines, read tutorials</i></td>
+    <td>We have <a href="http://www.cellprofiler.org/examples.htm">Examples</a> of pipelines and images for various biological assays. You can pick one that most resembles your phenotypes of interest and begin adjusting its settings.  There are also text and video tutorials.</td>
 </tr>
 <tr>
     <td><i>Get user support</i></td>

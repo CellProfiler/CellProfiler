@@ -56,7 +56,7 @@ class EnhanceOrSuppressFeatures(cpm.CPModule):
         
         self.enhance_method = cps.Choice('Feature type',
                                         [E_SPECKLES, E_NEURITES, E_DARK_HOLES],
-                                        doc="""
+                                        doc="""<i>(Used only if Enhance is selected)</i><br>
                                         This module can enhance three kinds of image intensity features:
                                         <ul><li><i>Speckles</i>: A speckle is an area of enhanced intensity
                                         relative to its immediate neighborhood. The module enhances
@@ -87,7 +87,7 @@ class EnhanceOrSuppressFeatures(cpm.CPModule):
         
         self.object_size = cps.Integer('Feature size',
                                         10,2,doc="""
-                                        <i>(Used if speckles or neurites are selected)</i><br>
+                                        <i>(Used only if speckles or neurites are selected, or if supressing features)</i><br>
                                         What is the feature size? 
                                         The diameter of the largest speckle (or the width of the neurites) to be enhanced or suppressed, which
                                         will be used to calculate an adequate filter size. If you don't know the width 
@@ -96,7 +96,7 @@ class EnhanceOrSuppressFeatures(cpm.CPModule):
         
         self.hole_size = cps.IntegerRange('Range of hole sizes',
                                         value=(1,10),minval=1, doc="""
-                                        <i>(Used if dark hole detection is selected)</i><br>
+                                        <i>(Used only if dark hole detection is selected)</i><br>
                                         The range of hole sizes to be enhanced. The algorithm will
                                         identify only holes whose diameters fall between these two 
                                         values""")

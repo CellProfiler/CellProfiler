@@ -108,7 +108,7 @@ class CorrectIlluminationCalculate(cpm.CPModule):
                                             </ul> ''')
         
         self.dilate_objects = cps.Binary("Dilate objects in the final averaged image?",False, doc = '''
-                                            <i>(Used if the Regular method is selected)</i><br>
+                                            <i>(Used only if the Regular method is selected)</i><br>
                                             Do you want to dilate objects in the final averaged image?
                                             For some applications, the incoming images are binary and each object
                                             should be dilated with a Gaussian filter in the final averaged
@@ -116,11 +116,11 @@ class CorrectIlluminationCalculate(cpm.CPModule):
                                             correction where model objects are produced.''')
         
         self.object_dilation_radius = cps.Integer("Dilation radius",1,0,doc='''
-                                            <i>(Used if the Background method is selected)</i><br>
+                                            <i>(Used only if the Regular method and dilation is selected)</i><br>
                                             This value should be roughly equal to the original radius of the objects''')
         
         self.block_size = cps.Integer("Block size",60,1,doc = '''
-                                            <i>(Used if the Regular method and dilation is selected)</i><br>
+                                            <i>(Used only if Background is selected)</i><br>
                                             The block size should be large enough that every square block of pixels is likely 
                                             to contain some background pixels, where no objects are located.''')
         
@@ -172,16 +172,16 @@ class CorrectIlluminationCalculate(cpm.CPModule):
         
         self.automatic_object_width = cps.Choice("Method to calculate smoothing filter size",
                                             [FI_AUTOMATIC, FI_OBJECT_SIZE, FI_MANUALLY], doc = '''
-                                            <i>(Used if a smoothing method other than Fit Polynomial is selected)</i><br>
+                                            <i>(Used only if a smoothing method other than Fit Polynomial is selected)</i><br>
                                             Calculate the smoothing filter size automatically, relative to the width 
                                             of artifacts to be smoothed or use a manually entered value?''')
         
         self.object_width = cps.Integer("Approximate object size",10,doc = '''
-                                            <i>(Used if Automatic is selected for smoothing filter size calculation)</i><br>
+                                            <i>(Used only if Automatic is selected for smoothing filter size calculation)</i><br>
                                             What is the approximate width of the artifacts to be smoothed, in pixels?''')
         
         self.size_of_smoothing_filter = cps.Integer("Smoothing filter size",10,doc = '''
-                                            <i>(Used if Manual is selected for smoothing filter size calculation)</i><br>
+                                            <i>(Used only if Manual is selected for smoothing filter size calculation)</i><br>
                                             What is the size of the desired smoothing filter, in pixels?''')
         
         self.save_average_image = cps.Binary("Retain the averaged image for use later in the pipeline (for example, in SaveImages)?", False, doc = '''

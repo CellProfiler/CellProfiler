@@ -227,7 +227,7 @@ class SaveImages(cpm.CPModule):
         self.when_to_save = cps.Choice("Select how often to save",
                 [WS_EVERY_CYCLE,WS_FIRST_CYCLE,WS_LAST_CYCLE],
                 WS_EVERY_CYCLE,doc="""<a name='when_to_save'>
-                <i>(When saving non-movie files)</i><br>
+                <i>(Used only when saving non-movie files)</i><br>
                 Specify at what point during pipeline execution to save file(s). </a>
                 <ul>
                 <li><i>Every cycle:</i> Useful for when the image of interest is created every cycle and is

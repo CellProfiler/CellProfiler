@@ -12,18 +12,18 @@ Website: http://www.cellprofiler.org
 '''
 __version__ = "$Revision$"
 
-import httplib
 from StringIO import StringIO
 import urllib
+import urllib2
 import wx
 import traceback
 import sys
+import platform
 
 ED_STOP = "Stop"
 ED_CONTINUE = "Continue"
 
-ERROR_HOST = 'imageweb'
-ERROR_URL = '/batchprofiler/cgi-bin/development/CellProfiler_2.0/reporterror.py'
+ERROR_URL = 'http://www.cellprofiler.org/cgi-bin/reporterror.cgi'
 
 def display_error_dialog(frame, exc, pipeline, message=None, tb = None):
     '''Display an error dialog, returning an indication of whether to continue
@@ -97,7 +97,7 @@ def display_error_dialog(frame, exc, pipeline, message=None, tb = None):
     #
     #######################################################
     
-    copy_button = wx.Button(dialog, -1, "Copy...")
+    copy_button = wx.Button(dialog, -1, "Copy to clipboard")
     copy_button.SetToolTipString("Copy error to clipboard")
     aux_button_box.Add(copy_button, 0,
                        wx.EXPAND | wx.BOTTOM, 5)
@@ -117,11 +117,11 @@ def display_error_dialog(frame, exc, pipeline, message=None, tb = None):
     #
     ############################################################
     
-    report_button = wx.Button(dialog, -1, "Report...")
-    report_button.SetToolTipString("Upload error report to imaging group at the Broad Institute")
-    aux_button_box.Add(report_button, 0, wx.EXPAND | wx.BOTTOM, 5)
     def handle_report(event):
         on_report(event, dialog, traceback_text, pipeline)
+
+    report_button = wx.Button(dialog, wx.ID_APPLY, "Send report...")
+    report_button.SetToolTipString("Upload error report to the CellProfiler Project")
     dialog.Bind(wx.EVT_BUTTON, handle_report, report_button)
 
     ############################################################
@@ -140,8 +140,14 @@ def display_error_dialog(frame, exc, pipeline, message=None, tb = None):
             pdb.post_mortem(tb)
         dialog.Bind(wx.EVT_BUTTON, handle_pdb, pdb_button)
 
-    button_sizer = dialog.CreateStdDialogButtonSizer(wx.YES | wx.NO)
-    sizer.Add(button_sizer,0,wx.EXPAND)
+    button_sizer = wx.StdDialogButtonSizer()
+    yes_button = wx.Button(dialog, wx.ID_YES, "Stop processing...")
+    no_button = wx.Button(dialog, wx.ID_NO, "Continue processing...")
+    button_sizer.AddButton(yes_button)
+    button_sizer.AddButton(no_button)
+    button_sizer.AddButton(report_button)
+    button_sizer.Realize()
+    sizer.Add(button_sizer, 0, wx.EXPAND | wx.ALL, 3)
     #
     # Handle the "No" button being pressed
     #
@@ -162,7 +168,8 @@ def on_report(event, dialog, traceback_text, pipeline):
     '''Report an error to us'''
     from cellprofiler.utilities.get_revision import get_revision
     params = { "traceback":traceback_text,
-               "revision":str(get_revision())
+               "revision":str(get_revision()),
+               "platform":str(platform.platform())
                }
     try:
         fd = StringIO()
@@ -172,18 +179,18 @@ def on_report(event, dialog, traceback_text, pipeline):
         params["pipeline"] = pipeline_text
     except:
         pass
-    headers = {"Content-type": "application/x-www-form-urlencoded",
-               "Accept": "text/plain"}
-    conn = httplib.HTTPConnection(ERROR_HOST)
-    conn.request("POST", ERROR_URL, 
-                 urllib.urlencode(params), headers)
-    response = conn.getresponse()
-    if response.status == 200:
-        wx.MessageBox("Error successfully uploaded. Thank you for reporting.",
+    headers = {"Accept": "text/plain"}
+    data =  urllib.urlencode(params)
+    req = urllib2.Request(ERROR_URL, data, headers)
+    try:
+        conn = urllib2.urlopen(req)
+        response = conn.read()
+        wx.MessageBox("Report successfully sent to CellProfiler.org. Thank you.",
                       parent = dialog)
-    else:
-        wx.MessageBox("Failed to upload. Server reported %d, %s" %
-                      (response.status, response.reason))
+    except urllib2.HTTPError, e:
+        wx.MessageBox("Failed to upload, server reported code %d"%(e.code))
+    except urllib2.URLError, e:
+        wx.MessageBox("Failed to upload: %s"%(e.reason))
     
 if __name__ == "__main__":
     import cellprofiler.pipeline

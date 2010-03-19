@@ -52,19 +52,19 @@ class ColorToGray(cpm.CPModule):
         self.grayscale_name = cps.ImageNameProvider("Name the output image",
                                                "OrigGray")
         self.red_contribution = cps.Float("Relative weight of the red channel",
-                                          1,0,doc='''
+                                          1,0,doc='''<i>(Used only when combining channels)</i><br>
                                           Relative weights: If all relative weights are equal, all three 
                                           colors contribute equally in the final image. To weight colors relative 
                                           to each other, increase or decrease the relative weights.''')
         
         self.green_contribution = cps.Float("Relative weight of the green channel",
-                                            1,0,doc='''
+                                            1,0,doc='''<i>(Used only when combining channels)</i><br>
                                             Relative weights: If all relative weights are equal, all three 
                                             colors contribute equally in the final image. To weight colors relative 
                                             to each other, increase or decrease the relative weights.''')
         
         self.blue_contribution = cps.Float("Relative weight of the blue channel",
-                                           1,0,doc='''
+                                           1,0,doc='''<i>(Used only when combining channels)</i><br>
                                            Relative weights: If all relative weights are equal, all three 
                                            colors contribute equally in the final image. To weight colors relative 
                                            to each other, increase or decrease the relative weights.''')

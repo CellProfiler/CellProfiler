@@ -74,18 +74,18 @@ class InvertForPrinting(cpm.CPModule):
             True, doc = """Do you want to produce an image for the red channel?""")
         self.red_output_image = cps.ImageNameProvider(
             "Name the red image",
-            "InvertedRed", doc = '''What do you want to call the red image?''')
+            "InvertedRed", doc = '''<i>(Used only when producing a red image)</i><br>What do you want to call the red image?''')
         self.wants_green_output = cps.Binary(
             "Produce a green image?",
             True, doc = """Do you want to produce an image for the green channel?""")
         self.green_output_image = cps.ImageNameProvider(
             "Name the green image", "InvertedGreen",
-            doc = '''What do you want to call the green image?''')
+            doc = '''<i>(Used only when producing a green image)</i><br>What do you want to call the green image?''')
         self.wants_blue_output = cps.Binary(
             "Produce a blue image?", True, doc = """Do you want to produce an image for the blue channel?""")
         self.blue_output_image = cps.ImageNameProvider(
             "Name the blue image", "InvertedBlue",
-            doc = '''What do you want to call the blue image?''')
+            doc = '''<i>(Used only when producing a blue image)</i><br>What do you want to call the blue image?''')
         self.color_output_image = cps.ImageNameProvider(
             "Name the inverted color image",
             "InvertedColor", doc = '''What do you want to call the inverted color image?''')

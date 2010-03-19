@@ -683,10 +683,6 @@ separate batches, then submitting each of these batches as individual
 jobs to a cluster. Each individual batch can be separately analyzed from  
 the rest.
 
-<h3>Setting up CellProfiler on the cluster</h3>
-[INSERT INSTRUCTIONS HERE]
-<code>./python-2.6.sh CellProfiler.py -r -c</code>
-
 <h3>Submitting files for batch processing</h3>
 
 Below is a basic workflow for submitting your image batches to the cluster.
@@ -769,10 +765,7 @@ set specified, &lt;last_image_set_number&gt;</li>
 </ul>
 To submit all the batches for a full image set, you will need a script that calls
 CellProfiler with these options with sequential image set numbers, e.g, 1-50, 51-100, 
-etc and submit each as an individual job. We have also provided a set of Python 
-scripts that will also automate the process; see the section on 
-<a href='#using_batchprofiler'>Using BatchProfiler for batch submission</a> for details.
-</li>
+etc and submit each as an individual job.</li>
 </ol>
 
 <p>Once all the jobs are submitted, the cluster will run each batch individually 
@@ -781,9 +774,6 @@ it will also produce a separate output (i.e., OUT.mat) file containing the data
 for that batch of images in the output folder. Check the output from the batch 
 processes to make sure all batches complete. Batches that fail for transient reasons
 can be resubmitted.</p>
-
-<h3><a name = "using_batchprofiler">Using BatchProfiler for batch submission</a></h3>
-{INSERT INSTRUCTIONS FOR INSTALLATION HERE]
 """
 
 '''The help menu for CP's main window'''

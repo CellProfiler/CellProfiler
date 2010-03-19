@@ -809,50 +809,42 @@ Tags have the form <i>\g&lt;metadata-tag&gt;</i> where <i>&lt;metadata-tag&gt</i
 ####################################################
 '''The help menu for the figure window'''
 
-FILE_HELP = """
+SAVE_HELP = """
 You can save the figure window to a file (currently,
-Postscript (.ps), PNGs and PDFs are supported). Note that this will save the entire
+Postscript (.PS), PNGs and PDFs are supported). Note that this will save the entire
 contents of the window, not just the individual subplot(s) or images.
 """
 
 ZOOM_HELP = """ 
-From any image or plot axes, you can zoom in or out of the field of view. 
 <ul>
-<li>To zoom in, click the area of the axes where you want to zoom in, or drag 
-the cursor to draw a box around the area you want to zoom in on. The axes are 
-redrawn, changing the limits to display the specified area.</li>
+<li>To zoom in, click and drag in the image window to draw a box around the area 
+you want to zoom in on. When you release the
+mouse button, the image is re-drawn to display the specified area.</li>
 <li>Zoom out is active only when you have zoomed into the field of view. Click any
-point within the current axes to zoom out to the previous zoom level; that is, each
+point within the current image window to zoom out to the previous zoom level; that is, each
 zoom out undoes the previous zoom in.
 </ul>
 """
 
-SHOW_PIXEL_DATA_HELP = """
-Select <i>Show pixel data</i> to view pixel intensity and position. 
-The tool can display pixel information for all the images in a figure window.
-<ul>
-<li>The (x,y) coordinates are shown for the current cursor position in the figure,
-at the bottom left panel of the window</li>
-<li>The pixel intensity is shown in the bottom right panel of the window. For 
-intensity images, the information is shown as a single intensity value. For a color
-image, the red/green/blue (RGB) values are shown.</li>
-<li>If you click on an image and drag, a line will appear 
+SHOW_MEASURE_LENGTH_HELP = """
+Select this option to measure distances within an image window. 
+If you click on an image and drag, a line will appear 
 between the two endpoints, and the distance between them shown at the right-most
 portion of the bottom panel. This is useful for measuring distances in order to obtain
-estimates of typical object diameters for use in <b>IdentifyPrimaryObjects</b>.</li>
-</ul>
+estimates of typical object diameters for use in <b>IdentifyPrimaryObjects</b>.
 """
 
 IMAGE_TOOLS_HELP = """
 Right-clicking in an image displayed in a window will bring up a pop-up menu with
 the following options:
 <ul>
-<li><i>Open image in new window:</i> Displays the image in a new window. This is useful 
+<li><i>Open image in new window:</i> Displays the image in a new display window. This is useful 
 for getting a closer look at a window subplot that has a small image.</li>
 <li><i>Show image histogram:</i> Produces a new window containing a histogram 
 of the pixel intensities in the image. This is useful for qualitatively examining
 whether a threshold value determined by <b>IdentifyPrimaryObjects</b> seems 
-reasonable, for example.</li>
+reasonable, for example. Image intensities in CellProfiler typically range from
+zero (dark) to one (bright).</li>
 <li><i>Image contrast:</i> Presents three options for displaying the color/intensity values in 
 the images:
 <ul>
@@ -877,9 +869,9 @@ green, and blue color channels.</li>
 """
 
 FIGURE_HELP = (
-    ("File", FILE_HELP),
+    ("File > Save", SAVE_HELP),
     ("Zoom",ZOOM_HELP ),
-    ("Show pixel data", SHOW_PIXEL_DATA_HELP),
+    ("Tools > Measure length", SHOW_MEASURE_LENGTH_HELP),
     ("Image tools",IMAGE_TOOLS_HELP))
 
 ###################################################

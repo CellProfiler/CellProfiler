@@ -574,7 +574,7 @@ class CPFigureFrame(wx.Frame):
             MENU_CONTRAST_NORMALIZED = wx.NewId()
             MENU_CONTRAST_LOG = wx.NewId()
             self.popup_menus[subplot] = popup = wx.Menu()
-            open_in_new_figure_item = wx.MenuItem(popup, -1, 'Open image in new figure')
+            open_in_new_figure_item = wx.MenuItem(popup, -1, 'Open image in new window')
             popup.AppendItem(open_in_new_figure_item)
             show_hist_item = wx.MenuItem(popup, -1, 'Show image histogram')
             popup.AppendItem(show_hist_item)
@@ -593,7 +593,7 @@ class CPFigureFrame(wx.Frame):
             popup.AppendMenu(-1, 'Image contrast', submenu)
             
             def open_image_in_new_figure(evt):
-                '''Callback for "Open image in new figure" popup menu item '''
+                '''Callback for "Open image in new window" popup menu item '''
                 new_title = self.subplot(subplot[0], subplot[1]).get_title()
                 fig = create_or_find(self, -1, new_title, subplots=(1,1), name=new_title)
                 fig.subplot_imshow(0, 0, self.images[subplot], **imshow_kwargs)

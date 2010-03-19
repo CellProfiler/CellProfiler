@@ -62,11 +62,11 @@ class Resize(cpm.CPModule):
                                          numbers greater than one (that is, multiples) will enlarge the image.''')
 
         self.specific_width = cps.Integer("Width of the final image, in pixels", 100, minval=1, doc = '''
-                                         <i>(Used only if resizing by a fraction or multiple of the original size)</i><br>
+                                         <i>(Used only if resizing by specifying desired final dimensions)</i><br>
                                          Enter the desired width of the final image.''')
 
         self.specific_height = cps.Integer("Height of the final image, in pixels", 100, minval=1, doc = '''
-                                         <i>(Used only if resizing by a fraction or multiple of the original size)</i><br>
+                                         <i>(Used only if resizing by specifying desired final dimensions)</i><br>
                                          Enter the desired height of the final image.''')
 
         self.interpolation = cps.Choice("Interpolation method",

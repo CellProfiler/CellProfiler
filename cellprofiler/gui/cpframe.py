@@ -43,6 +43,7 @@ ID_FILE_CLEAR_PIPELINE=wx.NewId()
 ID_FILE_ANALYZE_IMAGES=wx.NewId()
 ID_FILE_STOP_ANALYSIS=wx.NewId()
 ID_FILE_PRINT=wx.NewId()
+ID_FILE_OPEN_IMAGE=wx.NewId()
 
 ID_EDIT_SELECT_ALL = wx.NewId()
 ID_EDIT_COPY = wx.NewId()
@@ -137,6 +138,7 @@ class CPFrame(wx.Frame):
         self.__menu_file.Append(ID_FILE_URL_LOAD_PIPELINE, 'Load Pipeline from URL', 'Load a pipeline from the web')
         self.__menu_file.Append(ID_FILE_SAVE_PIPELINE,'Save Pipeline as...\tctrl+shift+S','Save a pipeline as a .CP file')
         self.__menu_file.Append(ID_FILE_CLEAR_PIPELINE,'Clear pipeline','Remove all modules from the current pipeline')
+        self.__menu_file.Append(ID_FILE_OPEN_IMAGE, 'Open image', 'Open an image file for viewing')
         self.__menu_file.AppendSeparator()
         self.__menu_file.Append(ID_FILE_ANALYZE_IMAGES,'Analyze images\tctrl+N','Run the pipeline on the images in the image directory')
         self.__menu_file.Append(ID_FILE_STOP_ANALYSIS,'Stop analysis','Stop running the pipeline')
@@ -196,6 +198,7 @@ class CPFrame(wx.Frame):
         self.SetMenuBar(self.__menu_bar)
 
         wx.EVT_MENU(self,ID_FILE_EXIT,lambda event: self.Close())
+        wx.EVT_MENU(self, ID_FILE_OPEN_IMAGE, self.on_open_image)
         wx.EVT_MENU(self,ID_FILE_WIDGET_INSPECTOR,self.__on_widget_inspector)
         wx.EVT_MENU(self,ID_HELP_MODULE,self.__on_help_module)
         wx.EVT_MENU(self,ID_HELP_DEVELOPERS_GUIDE, self.__on_help_developers_guide)
@@ -406,6 +409,26 @@ class CPFrame(wx.Frame):
             fd.write(help_text)
             fd.close()
 
+    def on_open_image(self, event):
+        dlg = wx.FileDialog(self,
+                            message = "Open an image file",
+                            wildcard = "*.tif|*.tif|*.tiff|*.tiff|*.jpg|*.jpg|*.jpeg|*.jpeg|*.png|*.png|*.gif|*.gif|*.* (all files)|*.*",
+                            style = wx.FD_OPEN)
+        dlg.Directory = cellprofiler.preferences.get_default_image_directory()
+        if dlg.ShowModal() == wx.ID_OK:
+            from cellprofiler.modules.loadimages import LoadImagesImageProvider
+            from cellprofiler.gui.cpfigure import CPFigureFrame
+            lip = LoadImagesImageProvider("dummy", "", dlg.Path)
+            image = lip.provide_image(None).pixel_data
+            frame = CPFigureFrame(self, title=dlg.Path, subplots=(1,1))
+            if image.ndim == 3:
+                frame.subplot_imshow(0,0,image, title = dlg.Path)
+            else:
+                frame.subplot_imshow_grayscale(0,0,image, title=dlg.Path)
+            frame.Refresh()
+            
+                                  
+            
     def __attach_views(self):
         self.__pipeline_list_view = PipelineListView(self.__module_list_panel, self)
         self.__pipeline_controller = PipelineController(self.__pipeline,self)

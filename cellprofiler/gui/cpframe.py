@@ -261,7 +261,6 @@ class CPFrame(wx.Frame):
 
     def __on_help_developers_guide(self, event):
         import webbrowser
-        #filename = os.path.abspath("developers-guide/developer.html")
         webbrowser.open("http://www.cellprofiler.org/wiki/index.php/Main_Page")
 
     def __on_help_module(self,event):

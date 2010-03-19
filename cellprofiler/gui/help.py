@@ -398,83 +398,6 @@ image, preview the results, and adjust the module settings on the fly. See
 </ol>
 """% globals()
 
-NEW_MODULE_NAMES_HELP = """
-<h2>Changes to module names in CellProfiler</h2>
-
-<p>Some of the modules have changed their names between CellProfiler 1.0 and 2.0. 
-In some cases, the change was made to make the nomenclature more consistent;  
-in others, to reflect new, broader functionality. </p>
-
-<p>A pipeline created in CellProfiler 1.0 and loaded into CellProfiler 2.0 will have the appropriate modules 
-converted to their new names automatically. However, if you are looking for a 
-module in CellProfiler 2.0 and can't find it using the familiar CellProfiler 1.0 name, consult this  
-list of modules that have changed names (former name in parentheses):
-<ul>
-<li><b>ConserveMemory</b> (from SpeedUpCellProfiler)
-<li><b>ConvertObjectsToImage</b> (from ConvertToImage)</li>
-<li><b>FilterObjects</b> (from FilterByObjectMeasurement)</li>
-<li><b>EnhanceEdges</b> (from FindEdges)</li>
-<li><b>EnhanceOrSuppressFeatures</b> (from EnhanceOrSuppressSpeckles)</li>
-<li><b>ExpandOrShrinkObjects</b> (from ExpandOrShrink)</li>
-<li><b>ExportToSpreadsheet</b> (from ExportToExcel)</li>
-<li><b>FlagImage</b> (from FlagImageForQC)</li>
-<li><b>IdentifyObjectsManually</b> (from IdentifyPrimManual)</li>
-<li><b>IdentifyPrimaryObjects</b> (from IdentifyPrimAutomatic)</li>
-<li><b>IdentifySecondaryObjects</b> (from IdentifySecondary)</li>
-<li><b>IdentifyTertiaryObjects</b> (from IdentifyTertiarySubregion)</li>
-<li><b>LoadData</b> (from LoadText)
-<li><b>MaskObjects</b> (from Exclude)
-<li><b>MeasureObjectSizeShape</b> (from MeasureObjectAreaShape)</li>
-<li><b>ReassignObjectNumbers</b> (from RelabelObjects)</li>
-<li><b>RelateObjects</b> (from Relate)</li>
-<li><b>Smooth</b> (from SmoothOrEnhance)</li>
-</ul>
-</p>
-
-<p>The functionality of some modules has been superseded by others. The modules listed
-below have been deprecated and are no longer present (names of the modules to be used in their place appear in 
-parentheses). Where possible, deprecated modules will automatically be imported as equivalent
-modules with the appropriate settings:
-<ul>
-<li><b>LoadImageDirectory</b> (use MakeProjection, in conjunction with LoadImages 
-with metadata extracted from the path)</li>
-<li><b>KeepLargestObject</b> (imported as FilterObjects with filtering method as 'Maximal per object';
-use in conjunction with MeasureObjectSizeShape)</li>
-<li><b>Combine</b> (imported as ImageMath with weighted 'Add' operation)</li>
-<li><b>PlaceAdjacent</b> (imported as Tile with tiling enabled 'Within cycles')</li>
-<li><b>FilenameMetadata</b> (use LoadImages with metadata)</li>
-<li><b>SubtractBackground</b> (use ApplyThreshold with grayscale setting)</li>
-<li><b>CalculateRatios</b> (use CalculateMath with 'Divide' operation)</li>
-</ul>
-</p>
-
-<p>A new module category called <i>Data tools</i> has been created, and some 
-modules that have been moved from their original categories can be found this menu option. These modules are listed 
-below (former category in parentheses):
-<ul>
-<li><b>CalculateMath</b> (from Measurement)</li>
-<li><b>CalculateStatistics</b> (from Measurement)</li>
-<li><b>ExportToDatabase</b> (from File Processing)</li>
-<li><b>ExportToSpreadsheet</b> (from File Processing)</li>
-<li><b>FlagImage</b>(from Image Processing)</li>
-</ul>
-</p>
-
-<p>Some modules have yet to be implemented in CellProfiler 2.0. Loading these
-modules will currently produce an error message with the option of skipping
-the module and loading the rest of the pipeline.
-<ul>
-<li><b>DICTransform</b></li>
-<li><b>DifferentiateStains</b></li>
-<li><b>DisplayGridInfo</b></li>
-<li><b>DisplayMeasurement</b></li>
-<li><b>GroupMovieFrames</b></li>
-<li><b>LabelImages</b></li>
-<li><b>Restart</b></li>
-<li><b>SplitOrSpliceMovie</b></li>
-</ul>
-</p>
-"""
 
 USING_METADATA_HELP = """
 <h2>Using Metadata in CellProfiler</h2>
@@ -782,7 +705,7 @@ MAIN_HELP = (
         ("New Features",NEW_FEATURES_HELP),
         ("How To Build A Pipeline", BUILDING_A_PIPELINE_HELP) ) ),
     ( "General help", (
-        ("Updates To Module Names",NEW_MODULE_NAMES_HELP),
+        ("Where's my Module/Data Tool?",""" """),
         ("Using Metadata In CellProfiler",USING_METADATA_HELP),
         ("Memory And Speed", MEMORY_AND_SPEED_HELP),
         ("Test Mode",TEST_MODE_HELP),
@@ -939,9 +862,19 @@ def make_help_menu(h, window):
             def show_dialog(event, key=key, value=value):
                 dlg = htmldialog.HTMLDialog(window, key, value)
                 dlg.Show()
+                                
+            def on_help_wheres_my_module(self):
+                import webbrowser
+                webbrowser.open("http://cellprofiler.org/forum/viewtopic.php?f=14&t=806&p=3221")
+        
+            if key != "Where's my Module/Data Tool?":
+                menu.Append(my_id, key)
+                window.Bind(wx.EVT_MENU, show_dialog, id=my_id)
+            else:
+                menu.Append(my_id,key,
+                            "Launch the module update FAQ webpage")
+                window.Bind(wx.EVT_MENU, on_help_wheres_my_module, id=my_id)
                 
-            menu.Append(my_id, key)
-            window.Bind(wx.EVT_MENU, show_dialog, id=my_id)
     return menu
 
 def output_gui_html():

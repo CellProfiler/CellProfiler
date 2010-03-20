@@ -17,7 +17,7 @@ import wx
 import wx.html
 import wx.lib.scrolledpanel
 import cellprofiler.preferences
-from cellprofiler.modules import get_data_tool_names
+from cellprofiler.modules import get_data_tool_names, instantiate_module
 from cellprofiler.gui import get_icon, get_cp_bitmap
 from cellprofiler.gui.pipelinelistview import PipelineListView
 from cellprofiler.gui.cpfigure import close_all
@@ -73,7 +73,8 @@ ID_WINDOW_ALL = (ID_WINDOW_CLOSE_ALL, ID_WINDOW_SHOW_ALL_WINDOWS,
 
 window_ids = []
 
-ID_HELP_MODULE=wx.NewId()
+ID_HELP_MODULE = wx.NewId()
+ID_HELP_DATATOOLS = wx.NewId()
 ID_HELP_DEVELOPERS_GUIDE = wx.NewId()
 
 class CPFrame(wx.Frame):
@@ -181,6 +182,7 @@ class CPFrame(wx.Frame):
                                   "Hide all module display windows for all modules during analysis")
         self.__menu_window.AppendSeparator()
         self.__menu_help = make_help_menu(MAIN_HELP, self)
+        self.__menu_help.AppendSubMenu(self.data_tools_help(), 'Data tool help','Display documentation for available data tools')
         self.__menu_help.Append(ID_HELP_MODULE,'Module help','Display documentation for the current module')
         self.__menu_help.Append(ID_HELP_DEVELOPERS_GUIDE,"Developer's guide",
                                 "Launch the developer's guide webpage")
@@ -219,8 +221,22 @@ class CPFrame(wx.Frame):
              (wx.ACCEL_CMD,ord('Z'),ID_EDIT_UNDO) ])
         self.SetAcceleratorTable(accelerator_table)
 
+    def data_tools_help(self):
+        '''Create a help menu for the data tools'''
+        if not hasattr(self, "__data_tools_help_menu"):
+            self.__menu_data_tools_help_menu = wx.Menu()
+            for data_tool_name in get_data_tool_names():
+                new_id = wx.NewId()
+                self.__menu_data_tools_help_menu.Append(new_id, data_tool_name)
+                
+                def on_data_tool_help(event, data_tool_name=data_tool_name):
+                    self.__on_data_tool_help(event, data_tool_name)
+                wx.EVT_MENU(self, new_id, on_data_tool_help)
+        return self.__menu_data_tools_help_menu
+                    
     def data_tools_menu(self):
         '''Create a menu of data tools'''
+        
         if not hasattr(self, "__data_tools_menu"):
             self.__data_tools_menu = wx.Menu()
             for data_tool_name in get_data_tool_names():
@@ -229,6 +245,9 @@ class CPFrame(wx.Frame):
                 def on_data_tool(event, data_tool_name=data_tool_name):
                     self.__on_data_tool(event, data_tool_name)
                 wx.EVT_MENU(self, new_id, on_data_tool)
+                
+            self.__data_tools_menu.AppendSubMenu(self.data_tools_help(), '&Help')
+        
         return self.__data_tools_menu
 
     def enable_debug_commands(self, enable=True):
@@ -499,6 +518,10 @@ class CPFrame(wx.Frame):
                           module_name=tool_name,
                           measurements_file_name = dlg.Path)
     
+    def __on_data_tool_help(self, event, tool_name):
+        module = instantiate_module(tool_name)
+        self.do_help_module(tool_name, module.get_help())
+        
     def display_error(self,message,error):
         """Displays an exception in a standardized way
 

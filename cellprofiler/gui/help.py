@@ -523,7 +523,7 @@ To the left of each module listed in your pipeline an icon
 <img src="%(LOCATION_DISPLAYMODE_SHOW_ICON)s"></img> indicates whether
 the module window will be displayed during the analysis run. You can turn off individual module windows by
 clicking on the icon; this icon <img src="%(LOCATION_DISPLAYMODE_HIDE_ICON)s"></img> indicates that the window 
-will not be shown. Select <i>Window > Hide all windows</i> to prevent display
+will not be shown. Select <i>Window > Hide all windows on run</i> to prevent display
 of all module windows.</p></li>           
                                                                             
 <li><p><i>Use care in object identification </i><br>                                   

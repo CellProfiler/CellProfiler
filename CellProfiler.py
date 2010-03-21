@@ -80,7 +80,9 @@ parser.add_option("--html",
                   action="store_true",
                   dest="output_html",
                   default = False,
-                  help = "Output HTML help for all modules")
+                  help = ('Output HTML help for all modules. Use with the -o '
+                          'option to specify the output directory for the '
+                          'files.'))
 
 if not hasattr(sys, 'frozen'):
     parser.add_option("-b", "--do-not_build",
@@ -181,7 +183,8 @@ try:
     
     if options.output_html:
         from cellprofiler.gui.html import generate_html
-        generate_html()
+        webpage_path = options.output_directory if options.output_directory else None
+        generate_html(webpage_path)
         
     if options.print_measurements:
         if options.pipeline_filename is None:

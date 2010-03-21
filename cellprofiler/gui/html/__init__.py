@@ -102,13 +102,15 @@ def output_module_html(webpage_path):
     help_text += "</ul>\n"
     return help_text
         
-def generate_html():
+def generate_html(webpage_path = None):
     if hasattr(sys, 'frozen'):
         root = os.path.split(os.path.abspath(sys.argv[0]))[0]
     else:
         root = os.path.split(str(cellprofiler.__path__[0]))[0]
         
-    webpage_path = os.path.join(root,'cellprofiler','gui','help')
+    if webpage_path is None:
+        webpage_path = os.path.join(root,'cellprofiler','gui','help')
+        
     if not (os.path.exists(webpage_path) and os.path.isdir(webpage_path)):
         try:
             os.mkdir(webpage_path)

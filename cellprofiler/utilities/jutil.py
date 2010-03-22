@@ -33,7 +33,13 @@ if sys.platform.startswith('win'):
     from setup import find_javahome
     import os
     java_home = find_javahome()
-    jvm_dir = os.path.join(java_home,'bin','client')
+    for place_to_look in ('client','server'):
+        jvm_dir = os.path.join(java_home,'bin',place_to_look)
+        if not os.path.isfile(os.path.join(jvm_dir, "jvm.dll")):
+            jvm_dir = None
+    if jvm_dir is None:
+        raise IOError("Can't find jvm.dll using %s for JAVA_HOME" %
+                      java_home)
     os.environ['PATH'] = os.environ['PATH'] +';'+jvm_dir
 elif sys.platform == 'darwin':
     #

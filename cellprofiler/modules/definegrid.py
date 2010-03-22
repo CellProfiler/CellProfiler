@@ -175,14 +175,14 @@ class DefineGrid(cpm.CPModule):
         
         self.object_name = cps.ObjectNameSubscriber(
                         "Select the previously identified objects", "None",doc="""
-                        <i>(Used if you selected Automatic to define the grid)</i><br>
+                        <i>(Used only if you selected Automatic to define the grid)</i><br>
                         What are the previously identified objects you want to use to 
                         define the grid? Use this setting to specify the name of the objects that will
                         be used to define the grid.""")
         
         self.manual_choice = cps.Choice(
                         "Select the method to define the grid manually",[MAN_MOUSE, MAN_COORDINATES], doc="""
-                        <i>(Used if you selected Manual to define the grid)</i><br>
+                        <i>(Used only if you selected Manual to define the grid)</i><br>
                         Do you want to define the grid using the mouse or by entering
                         the coordinates of the cells?
                         <ul>
@@ -198,14 +198,14 @@ class DefineGrid(cpm.CPModule):
         
         self.manual_image = cps.ImageNameSubscriber(
                         "Select the image to display",
-                        "None", doc="""
+                        "None", doc="""<i>(Used only if you selected Manual + Mouse to define the grid)</i><br>
                         What image do you want to display when defining the grid?
                         This setting lets you choose the image to display 
                         in the grid definition user interface.""")
         
         self.first_spot_coordinates = cps.Coordinates(
                         "Coordinates of the first cell",
-                        (0,0),doc="""
+                        (0,0),doc="""<i>(Used only if you selected Manual + Coordinates to define the grid)</i><br>
                         Enter the coordinates of the first cell on your grid.
                         This setting defines the location of the first of
                         two cells in your grid. You should enter the coordinates of
@@ -214,7 +214,7 @@ class DefineGrid(cpm.CPModule):
                         coordinates of the center of your cell.""")
         
         self.first_spot_row = cps.Integer(
-                        "Row number of the first cell", 1, minval=1, doc="""
+                        "Row number of the first cell", 1, minval=1, doc="""<i>(Used only if you selected Manual + Coordinates to define the grid)</i><br>
                         What is this cell's row number? Enter the row index for the first cell here. Rows are
                         numbered starting at the origin. For instance, if you chose
                         <i>Top left</i> as your origin, well A01 will be row number 1
@@ -222,7 +222,7 @@ class DefineGrid(cpm.CPModule):
                         A01 will be row number 8 and H01 will be row number 12.""")
         
         self.first_spot_col = cps.Integer(
-                        "Column number of the first cell",1, minval=1,doc="""
+                        "Column number of the first cell",1, minval=1,doc="""<i>(Used only if you selected Manual + Coordinates to define the grid)</i><br>
                         Enter the column index for the first cell here. Columns
                         are numbered starting at the origin. For instance, if you chose
                         <i>Top left</i> as your origin, well A01 will be column number <i>1</i>
@@ -231,7 +231,7 @@ class DefineGrid(cpm.CPModule):
         
         self.second_spot_coordinates = cps.Coordinates(
                         "Coordinates of the second cell",
-                        (0,0),doc="""
+                        (0,0),doc="""<i>(Used only if you selected Manual + Coordinates to define the grid)</i><br>
                         This setting defines the location of the second of
                         two cells in your grid. You should enter the coordinates of
                         the center of the cell. You can display an image of your grid
@@ -239,7 +239,7 @@ class DefineGrid(cpm.CPModule):
                         coordinates of the center of your cell.""")
         
         self.second_spot_row = cps.Integer(
-                        "Row number of the second cell", 1, minval=1, doc="""
+                        "Row number of the second cell", 1, minval=1, doc="""<i>(Used only if you selected Manual + Coordinates to define the grid)</i><br>
                         What is this cell's row number? Enter the row index for the second cell here. Rows are
                         numbered starting at the origin. For instance, if you chose
                         <i>Top left</i> as your origin, well A01 will be row number 1
@@ -247,7 +247,7 @@ class DefineGrid(cpm.CPModule):
                         A01 will be row number 8 and H01 will be row number 12.""")
         
         self.second_spot_col = cps.Integer(
-                        "Column number of the second cell",1, minval=1, doc="""
+                        "Column number of the second cell",1, minval=1, doc="""<i>(Used only if you selected Manual + Coordinates to define the grid)</i><br>
                         What is this cell's column number? Enter the column index for the second cell here. Columns
                         are numbered starting at the origin. For instance, if you chose
                         <i>Top left</i> as your origin, well A01 will be column number 1
@@ -263,14 +263,14 @@ class DefineGrid(cpm.CPModule):
         
         self.display_image_name = cps.ImageNameSubscriber(
                         "Select the image on which to display the grid", cps.LEAVE_BLANK, can_be_blank = True, doc = """
-                        <i>(Used if saving an image of the grid)</i><br>
+                        <i>(Used only if saving an image of the grid)</i><br>
                         Enter the name of the image that should be used as
                         the background for annotations (grid lines and grid indexes).
                         This image will be used for the figure and for the saved image.""")
         
         self.save_image_name = cps.ImageNameProvider(
                         "Name the output image", "Grid", doc = """
-                        <i>(Used if retaining an image of the grid for use later in the pipeline)</i><br>
+                        <i>(Used only if retaining an image of the grid for use later in the pipeline)</i><br>
                         Enter the name you want to use for the output image. You can
                         save this image using the <b>SaveImages</b> module.""")
         

@@ -56,7 +56,7 @@ class IdentifyObjectsManually(I.Identify):
         
         self.outlines_name = cps.ImageNameProvider(
             "Name the outlines", "CellOutlines",
-            doc = """What do you want to call the outlines image? You can refer to
+            doc = """<i>(Used only if outlines are to be saved)</i><br>What do you want to call the outlines image? You can refer to
             this image in subsequent modules, such as <b>SaveImages</b>.""")
         
     def settings(self):

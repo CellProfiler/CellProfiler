@@ -750,6 +750,7 @@ class FilterObjects(cpm.CPModule):
             measurement = "_".join(parts)
             if rules_file_name == cps.DO_NOT_USE:
                 rules_or_measurements = ROM_MEASUREMENTS
+                rules_directory_choice = DIR_DEFAULT_INPUT
             else:
                 rules_or_measurements = ROM_RULES
                 if rules_path_name == '.':

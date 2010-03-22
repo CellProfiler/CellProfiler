@@ -476,7 +476,7 @@ class IdentifyObjectsInGrid(cpm.CPModule):
             # Change shape_choice names: Rectangle > Rectangle Forced Location, Natural Shape > Natural Shape and Location
             if setting_values[2] == "Rectangle":
                 setting_values[2] = SHAPE_RECTANGLE
-            elif setting_values[2] == "Natural shape":
+            elif setting_values[2] == "Natural Shape":
                 setting_values[2] = SHAPE_NATURAL
             variable_revision_number = 2
             

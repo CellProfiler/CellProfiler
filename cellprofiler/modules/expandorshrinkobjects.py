@@ -68,7 +68,7 @@ O_SPUR = 'Remove spurs'
 O_ALL = [O_SHRINK_INF, O_EXPAND_INF, O_DIVIDE, O_SHRINK, O_EXPAND,
          O_SKELETONIZE, O_SPUR]
 
-DOC_FILL_HOLES = '''The shrink algorithm preserves each object's Euler number,
+DOC_FILL_HOLES = '''<i>(Used only if one of the "shrink" options selected)</i><br>The shrink algorithm preserves each object's Euler number,
 which means that it will erode an object with a hole to a ring in order to
 keep the hole and it will erode an object with two holes to two rings
 connected by a line in order to keep from breaking up the object or breaking

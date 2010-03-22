@@ -137,7 +137,7 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
                 objects</i>) or you can use previously identified Nuclei objects as 
                 the centers (<i>Other objects</i>)."""))
         group.append("center_object_name", cps.ObjectNameSubscriber(
-                "Select objects to use as centers", "None",doc="""
+                "Select objects to use as centers", "None",doc="""<i>(Used only if "other objects" are selected for centers)</i><br>
                 Select the object to use as the center, or select <i>None</i> to
                 use the input object centers (which is the same as selecting
                 <i>These objects</i> for the object centers)."""))

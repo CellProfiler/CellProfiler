@@ -149,7 +149,7 @@ class FilterObjects(cpm.CPModule):
         
         self.rules_file_name = cps.Text(
             "Rules file name","rules.txt",
-            doc="""The name of the file holding the rules. Each line of
+            doc="""<i>(Used only when filtering by rules)</i><br>The name of the file holding the rules. Each line of
             this file should be a rule naming a measurement to be made
             on the object you selected, for instance:
             <br><tt>
@@ -163,7 +163,7 @@ class FilterObjects(cpm.CPModule):
         self.rules_directory_choice = cps.Choice(
             "Rules file location",
             [DEFAULT_INPUT_FOLDER_NAME, DEFAULT_OUTPUT_FOLDER_NAME, DIR_CUSTOM],
-            doc = """Select the location of the rules file that will be used for filtering:
+            doc = """<i>(Used only when filtering by rules)</i><br>Select the location of the rules file that will be used for filtering:
             <ul><li><i>Default Input
             Folder</i> if the rules file is in the Default Input Folder.</li> 
             <li><i>Default Output Folder</i> if the rules file is in the Default Output
@@ -171,12 +171,12 @@ class FilterObjects(cpm.CPModule):
             than the default input or output folder.</li></ul>""")
         self.rules_directory = cps.Text(
             "Rules folder name",".",
-            doc="""Enter the path to the folder containing the rules file. You
+            doc="""<i>(Used only when filtering by rules)</i><br>Enter the path to the folder containing the rules file. You
             can use "." for a path name that's relative to the Default Input
             folder and "&amp;" for a path that's relative to the Default 
             Output Folder.""")
         
-        self.wants_outlines = cps.Binary('Retain the outlines of filtered objects for use later in the pipeline (for example, in SaveImages)?', False, doc = '''''')
+        self.wants_outlines = cps.Binary('Retain outlines of the identified objects?', False)
         
         self.outlines_name = cps.ImageNameProvider('Name the outline image','FilteredObjects', doc = '''
                                  <i>(Used only if the outline image is to be retained for later use in the  

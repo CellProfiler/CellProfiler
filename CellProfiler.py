@@ -82,7 +82,7 @@ parser.add_option("--html",
                   default = False,
                   help = ('Output HTML help for all modules. Use with the -o '
                           'option to specify the output directory for the '
-                          'files.'))
+                          'files. Assumes -b.'))
 
 if not hasattr(sys, 'frozen'):
     parser.add_option("-b", "--do-not_build",
@@ -113,7 +113,7 @@ options, args = parser.parse_args()
 from matplotlib import use as mpluse
 mpluse('WXAgg')
 
-if (not hasattr(sys, 'frozen')) and options.build_extensions:
+if (not hasattr(sys, 'frozen')) and (options.build_extensions and not options.output_html):
     import subprocess
     import cellprofiler.cpmath.setup
     import cellprofiler.utilities.setup
@@ -165,7 +165,7 @@ if (not hasattr(sys, 'frozen')) and options.build_extensions:
     else:
         del os.environ['PYTHONPATH']
 
-if options.show_gui:
+if options.show_gui and not options.output_html:
     from cellprofiler.cellprofilerapp import CellProfilerApp
     App = CellProfilerApp(0)
 
@@ -174,7 +174,7 @@ try:
     # Important to go headless ASAP
     #
     import cellprofiler.preferences as cpprefs
-    if not options.show_gui:
+    if (not options.show_gui) or options.output_html:
         cpprefs.set_headless()
         # What's there to do but run if you're running headless?
         # Might want to change later if there's some headless setup 
@@ -208,6 +208,9 @@ try:
         
     from cellprofiler.utilities.get_revision import version
     print "Subversion revision: %d"%version
+    if options.output_html:
+        sys.exit(0) 
+    
     if options.run_pipeline and not options.pipeline_filename:
         raise ValueError("You must specify a pipeline filename to run")
     

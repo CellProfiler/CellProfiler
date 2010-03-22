@@ -299,11 +299,13 @@ class TestPipeline(unittest.TestCase):
         my_measurement = [np.random.uniform(size=np.random.randint(3,25))
                           for i in range(20)]
         measurements.add_all_measurements("Foo","Bar", my_measurement)
+        measurements.set_image_set_number(20)
         fd = cStringIO.StringIO()
         pipeline.save_measurements(fd, measurements)
         fd.seek(0)
         measurements = cellprofiler.measurements.load_measurements(fd)
         my_measurement_out = measurements.get_all_measurements("Foo","Bar")
+        self.assertEqual(len(my_measurement), len(my_measurement_out))
         for m_in, m_out in zip(my_measurement, my_measurement_out):
             self.assertEqual(len(m_in), len(m_out))
             self.assertTrue(np.all(m_in == m_out))

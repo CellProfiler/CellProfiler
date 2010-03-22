@@ -131,7 +131,7 @@ class ExportToSpreadsheet(cpm.CPModule):
         
         self.columns = cps.MeasurementMultiChoice(
             "Press button to select measurements to export",
-            doc = """This setting controls the columns to be exported. Press
+            doc = """<i>(Used only when selecting the columns of measurements to export)</i><br>This setting controls the columns to be exported. Press
             the button and check the measurements or categories to export""")
         
         self.wants_aggregate_means = cps.Binary("Calculate the per-image mean values for object measurements?", False, doc = """
@@ -166,21 +166,21 @@ class ExportToSpreadsheet(cpm.CPModule):
         group = cps.SettingsGroup()
         group.append(
             "name", EEObjectNameSubscriber("Data to export",
-            doc="""Choose <i>Image</i>, <i>Experiment</i>, or an object name
+            doc="""<i>(Used only when Export all measurements? is left unchecked)</i><br>Choose <i>Image</i>, <i>Experiment</i>, or an object name
             from the list. <b>ExportToSpreadsheet</b> will write out a
             file of measurements for the given category."""))
     
         group.append(
             "previous_file", cps.Binary(
                 "Combine these object measurements with those of the previous object?",
-                False,doc="""Check this setting to create a file composed
+                False,doc="""<i>(Used only when Export all measurements? is left unchecked)</i><br>Check this setting to create a file composed
                 of measurements made on this object and the one directly
                 above it. Leave the box unchecked to create separate
                 files for this and the previous object."""))
         
         group.append("wants_automatic_file_name", cps.Binary(
             "Use the object name for the file name?", True,
-            doc="""Use the object name as selected above to generate a file
+            doc="""<i>(Used only when Export all measurements? is left unchecked)</i><br>Use the object name as selected above to generate a file
             name for the spreadsheet. For example, if you selected <i>Image</i>,
             above and have not checked the <i>Prepend output file name</i> option,
             your output file will be named "Image.csv". You can name
@@ -189,7 +189,7 @@ class ExportToSpreadsheet(cpm.CPModule):
         group.append("file_name", 
                      cps.Text(
                          "File name", "DATA.csv",
-                         doc="""Enter a file name for the named objects' 
+                         doc="""<i>(Used only when Export all measurements? is left unchecked)</i><br>Enter a file name for the named objects' 
                          measurements. <b>ExportToSpreadsheet</b> will
                          prepend the name of the measurements file to this
                          if you asked to do so above. If you have metadata 

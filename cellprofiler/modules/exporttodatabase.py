@@ -240,7 +240,7 @@ class ExportToDatabase(cpm.CPModule):
                 DEFAULT_OUTPUT_FOLDER_NAME, DEFAULT_INPUT_FOLDER_NAME, 
                 ABSOLUTE_FOLDER_NAME, DEFAULT_OUTPUT_SUBFOLDER_NAME,
                 DEFAULT_INPUT_SUBFOLDER_NAME],
-            doc="""This setting determines where the .csv files are saved if
+            doc="""<i>(Used only when saving csvs, or creating a properties file)</i><br>This setting determines where the .csv files are saved if
             you decide to save measurements to files instead of writing them
             directly to the database. %(IO_FOLDER_CHOICE_HELP_TEXT)s 
             

@@ -63,7 +63,7 @@ class DisplayDataOnImage(cpm.CPModule):
         
         self.objects_name = cps.ObjectNameSubscriber(
             "Select the input objects", "None",
-            doc = """Choose the name of objects identified by some previous
+            doc = """<i>(Used only when displaying object measurements)</i><br>Choose the name of objects identified by some previous
             module (such as <b>IdentifyPrimaryObjects</b> or
             <b>IdentifySecondaryObjects</b>).""")
         
@@ -114,7 +114,7 @@ class DisplayDataOnImage(cpm.CPModule):
             "Number of decimals", 2, minval=0)
         
         self.saved_image_contents = cps.Choice(
-            "image elements to save",
+            "Image elements to save",
             [E_IMAGE, E_FIGURE, E_AXES],
             doc="""This setting controls the level of annotation on the image:
             <ul><li>

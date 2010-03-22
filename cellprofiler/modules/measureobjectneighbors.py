@@ -131,7 +131,8 @@ class MeasureObjectNeighbors(cpm.CPModule):
             that will allow the the image of objects colored by numbers of neighbors 
             to be selected later in the pipeline.""")
         
-        self.count_colormap = cps.Colormap('Select colormap', doc = """
+        self.count_colormap = cps.Colormap('Select colormap', doc = """<i>(Used only if the image of objects colored by numbers of neighbors 
+            is to be retained for later use in the pipeline)</i> <br>
             What colormap do you want to use to color the above image? All available colormaps can be seen 
             <a href="http://www.scipy.org/Cookbook/Matplotlib/Show_colormaps">here</a>.""")
         
@@ -145,13 +146,15 @@ class MeasureObjectNeighbors(cpm.CPModule):
         self.touching_image_name = cps.ImageNameProvider('Name the output image',
                                                          'PercentTouching', 
                                                          doc = """
-            <i>(Used only if the image of objects colored by numbers of neighbors 
+            <i>(Used only if the image of objects colored by percent touching 
             is to be retained for later use in the pipeline)</i> <br> Specify a name  
             that will allow the the image of objects colored by percent of touching 
             pixels to be selected later in the pipeline.""")
         
-        self.touching_colormap = cps.Colormap('Select a colormap', doc = """
-            What colormap do you want to use to color the above image?""")
+        self.touching_colormap = cps.Colormap('Select a colormap', doc ="""<i>(Used only if the image of objects colored by percent touching 
+            is to be retained for later use in the pipeline)</i> <br>
+            What colormap do you want to use to color the above image? All available colormaps can be seen 
+            <a href="http://www.scipy.org/Cookbook/Matplotlib/Show_colormaps">here</a>.""")
 
     def settings(self):
         return [self.object_name, self.distance_method, self.distance,

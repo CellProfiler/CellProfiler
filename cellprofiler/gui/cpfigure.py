@@ -183,7 +183,7 @@ class CPFigureFrame(wx.Frame):
         if subplots:
             self.subplots = np.zeros(subplots,dtype=object)
             self.zoom_rects = np.zeros(subplots,dtype=object)
-        self.add_menu()
+        self.create_menu()
         self.figure.canvas.mpl_connect('button_press_event', self.on_button_press)
         self.figure.canvas.mpl_connect('motion_notify_event', self.on_mouse_move)
         self.figure.canvas.mpl_connect('button_release_event', self.on_button_release)
@@ -218,7 +218,7 @@ class CPFigureFrame(wx.Frame):
                         wx.EVT_MENU(parent, window_id, on_menu_command)
                         self.remove_menu.append([menu, window_id])
     
-    def add_menu(self):
+    def create_menu(self):
         self.MenuBar = wx.MenuBar()
         self.__menu_file = wx.Menu()
         self.__menu_file.Append(MENU_FILE_SAVE,"&Save")
@@ -240,6 +240,10 @@ class CPFigureFrame(wx.Frame):
             self.__menu_tools.AppendCheckItem(MENU_TOOLS_MEASURE_LENGTH,
                                               "Measure &length")
         self.MenuBar.Append(self.__menu_tools, "&Tools")
+        
+        self.__menu_subplots = wx.Menu()
+        self.MenuBar.Append(self.__menu_subplots, 'Subplots')
+            
         wx.EVT_MENU(self, MENU_TOOLS_MEASURE_LENGTH, self.on_measure_length)
         accelerators = wx.AcceleratorTable(
             [(wx.ACCEL_CMD, ord('W'), MENU_CLOSE_WINDOW)])
@@ -434,7 +438,7 @@ class CPFigureFrame(wx.Frame):
         for i, sl in enumerate(self.subplots):
             for j, slax in enumerate(sl):
                 if axes == slax and 'images' in self.__dict__:
-                        return self.images.get((i, j), None)
+                    return self.images.get((i, j), None)
         return None
 
 
@@ -557,10 +561,16 @@ class CPFigureFrame(wx.Frame):
         
         
     def show_imshow_popup_menu(self, (x, y), image, subplot, imshow_kwargs):
-        '''
-        shows a popup menu at pos x,y with items to:
+        popup = self.get_imshow_menu(image, subplot, imshow_kwargs)
+        self.PopupMenu(popup, (x,y))
+        
+    def get_imshow_menu(self, image, subplot, imshow_kwargs):
+        '''returns a popup menu with items to:
+        - launch the image in a new cpfigure window
         - Show image histogram
         - Change contrast stretching
+        - Toggle channels on/off
+        Note: Each item is bound to a handler.
         '''
         # Manage a dict of popup menus keyed by each subplot (x,y) location
         if 'popup_menus' not in self.__dict__:
@@ -646,7 +656,7 @@ class CPFigureFrame(wx.Frame):
             self.Bind(wx.EVT_MENU, change_contrast, id=MENU_CONTRAST_RAW)
             self.Bind(wx.EVT_MENU, change_contrast, id=MENU_CONTRAST_NORMALIZED)
             self.Bind(wx.EVT_MENU, change_contrast, id=MENU_CONTRAST_LOG)
-        self.PopupMenu(popup, (x,y))
+        return popup
     
     
     def subplot_imshow(self, x, y, image, title=None, clear=True, colormap=None,
@@ -763,6 +773,10 @@ class CPFigureFrame(wx.Frame):
                 if evt.button != 1:
                     self.show_imshow_popup_menu((evt.x, self.figure.canvas.GetSize()[1]-evt.y), image, (x,y), kwargs)
         self.event_bindings[(x,y)] = self.figure.canvas.mpl_connect('button_release_event', on_release)
+        # Also add this menu to the main menu
+        self.__menu_subplots.AppendMenu(-1, (title or 'subplot (%s,%s)'%(x,y)),
+                                     self.get_imshow_menu(image, (x,y), kwargs))
+        
         
         # Attempt to update histogram plot if one was created
         hist_fig = find_fig(self, name='%s %s image histogram'%(self.Title, (x,y)))

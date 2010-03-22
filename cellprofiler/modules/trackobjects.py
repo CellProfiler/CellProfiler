@@ -14,33 +14,11 @@ sequentially by frame (whether loaded as a series of images or a movie file).
 To process a collection of images/movies, you will need to 
 group the input using grouping options in <b>LoadImages</b> to make sure 
 that each image sequence is
-handled individually. If you are only processing a single movie in each analysis 
+handled individually. See the help in that module, and CellProfiler Help > General Help > Using MetaData in CellProfiler for more information. If you are only processing a single movie in each analysis 
 run, you do not need to set up image grouping.
 
-<h3>Overview of the LAP tracking method</h3>
 
-The linear assignment problem (LAP) algorithm (<i>Jaqaman et al., 2008</i>) 
-addresses the challenges of high object density, motion heterogeneity, 
-temporary disappearances, and object merging and splitting. 
-The algorithm first links objects between consecutive frames and then links 
-the resulting partial trajectories into complete trajectories. Both steps are formulated 
-as global combinatorial optimization problems whose solution identifies the overall 
-most likely set of object trajectories throughout a movie.
-
-Tracks are constructed from an image sequence by detecting objects in each 
-frame and linking objects between consecutive frames as a first step. This step alone
-may result in incompletely tracked objects due to the appearance and disappearance
-of objects, either in reality or apparently because of noise and imaging limitations.
-To correct this, you may apply an optional second step which closes temporal gaps 
-between tracked objects and captures merging and splitting events. This step takes
-place at the end of the analysis run.
-
-References
-<ul>
-<li>Jaqaman K, Loerke D, Mettlen M, Kuwata H, Grinstein S, Schmid SL, Danuser G. (2008)
-"Robust single-particle tracking in live-cell time-lapse sequences."
-<i>Nature Methods</i> 5(8),695-702.</li>
-</ul>
+For an example pipeline using TrackObjects, see the CellProfiler <a href="http://www.cellprofiler.org/examples.htm">Examples</a> webpage.
 
 <h4>Available measurements</h4>
 <ul>
@@ -53,9 +31,9 @@ label.</li>
 child object will have the label of the object it split from. For a merge,
 the child will have the label of the closest parent.</li>
 <li>TrajectoryX, TrajectoryY: The direction of motion (in x and y coordinates) of the 
-object from the previous frame to the curent frame.</li>
+object from the previous frame to the current frame.</li>
 <li>DistanceTraveled: The distance traveled by the object from the 
-previous frame to the curent frame (calculated as the magnititude of 
+previous frame to the current frame (calculated as the magnitude of 
 the distance traveled vector).</li>
 <li>IntegratedDistance: The total distance traveled by the object during
 the lifetime of the object.</li>
@@ -63,9 +41,9 @@ the lifetime of the object.</li>
 object lifetime. Calculated as (distance from initial to final 
 location)/(integrated object distance). Value is in range of [0,1].</li>
 <li>Lifetime: The duration (in frames) of the object. The lifetime begins 
-at the frame when an object appears and is ouput as a measurement when
+at the frame when an object appears and is output as a measurement when
 the object disappears. At the final frame of the image set/movie, the 
-lifetimes of all remaining objects are ouput.</li>
+lifetimes of all remaining objects are output.</li>
 </ul>
 </li>
 <li><i>Image features</i>
@@ -74,9 +52,9 @@ lifetimes of all remaining objects are ouput.</li>
 but have no identifiable child in the current frame.</li>
 <li>NewObjectCount: Number of objects that appear in the current frame but
 have no identifiable parent in the previous frame. </li>
-<li>DaughterObjectCount: Number of objects in the current frame which 
+<li>DaughterObjectCount: Number of objects in the current frame that 
 resulted from a split from a parent object in the previous frame.</li>
-<li>MergedObjectCount: Number of objects in the current frame which 
+<li>MergedObjectCount: Number of objects in the current frame that 
 resulted from the merging of child objects in the previous frame.</li>
 </ul>
 </li>
@@ -197,13 +175,33 @@ class TrackObjects(cpm.CPModule):
 
             <li><i>Measurement:</i> Compares each object in the 
             current frame with objects in the previous frame based on a particular 
-            feature you have measured for the objects. The object 
+            feature you have measured for the objects (for example, a particular intensity or shape measurement that can distinguish nearby objects). The object 
             with the closest-matching measurement will be selected as a match and will be 
             assigned the same number (label). This selection requires that you run the 
             specified <b>Measure</b> module previous to this module in the pipeline so
             that the measurement values can be used to track the objects.</li>
             
-            <li><i>LAP:</i> Uses the linear assignment problem (LAP) framework 
+            <li><i>LAP:</i> Uses the linear assignment problem (LAP) framework. The
+            linear assignment problem (LAP) algorithm (<i>Jaqaman et al., 2008</i>) 
+            addresses the challenges of high object density, motion heterogeneity, 
+            temporary disappearances, and object merging and splitting. 
+            The algorithm first links objects between consecutive frames and then links 
+            the resulting partial trajectories into complete trajectories. Both steps are formulated 
+            as global combinatorial optimization problems whose solution identifies the overall 
+            most likely set of object trajectories throughout a movie.
+
+            Tracks are constructed from an image sequence by detecting objects in each 
+            frame and linking objects between consecutive frames as a first step. This step alone
+            may result in incompletely tracked objects due to the appearance and disappearance
+            of objects, either in reality or apparently because of noise and imaging limitations.
+            To correct this, you may apply an optional second step which closes temporal gaps 
+            between tracked objects and captures merging and splitting events. This step takes
+            place at the end of the analysis run.  Reference:
+            <ul>
+            <li>Jaqaman K, Loerke D, Mettlen M, Kuwata H, Grinstein S, Schmid SL, Danuser G. (2008)
+            "Robust single-particle tracking in live-cell time-lapse sequences."
+            <i>Nature Methods</i> 5(8),695-702.</li>
+            </ul>
             </li>
             </ul>""")
 
@@ -223,11 +221,11 @@ class TrackObjects(cpm.CPModule):
             image from which the measurements originated or the measurement scale.""")
 
         self.pixel_radius = cps.Integer(
-            'Maxmimum pixel distance to consider matches',50,minval=1,doc="""
+            'Maximum pixel distance to consider matches',50,minval=1,doc="""
             Objects in the subsequent frame will be considered potential matches if 
-            they are within this distance. To determine pixel distances, you can look
+            they are within this distance. To determine a suitable pixel distance, you can look
             at the axis increments on each image (shown in pixel units) or
-            using the <i>Tools > Show pixel data</i> of any CellProfiler figure window""")
+            using <i>Tools > Show pixel data</i> of any CellProfiler figure window.""")
 
         self.born_cost = cps.Integer(
             'Cost of being born', 100, minval=1, doc = '''
@@ -245,7 +243,7 @@ class TrackObjects(cpm.CPModule):
             Check this box to run the second phase of the LAP algorithm
             after processing all images. Leave the box unchecked to omit the
             second phase or to perform the second phase when running as a data
-            tool""")
+            tool.""")
         
         self.gap_cost = cps.Integer(
             'Gap cost', 40, minval=1, doc = '''
@@ -353,7 +351,7 @@ class TrackObjects(cpm.CPModule):
         self.image_name = cps.ImageNameProvider(
             "Name the output image", "TrackedCells", doc = '''
             <i>(Used only if saving the color-coded image)</i><br>
-            What do you want to call the images, which will be available for downstream modules, such as <b>SaveImages</b>?''')
+            What do you want to call the color-coded image, which will be available for downstream modules, such as <b>SaveImages</b>?''')
 
     def settings(self):
         return [self.tracking_method, self.object_name, self.measurement,

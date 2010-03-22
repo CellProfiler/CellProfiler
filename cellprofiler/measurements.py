@@ -159,7 +159,7 @@ class Measurements(object):
                 if object_name == IMAGE:
                     values = [x.flatten()[0] for x in omeas[feature_name][0]]
                 elif object_name == EXPERIMENT:
-                    value = omeas[feature_name][0,0][0]
+                    value = omeas[feature_name][0,0].flatten()[0]
                     self.add_experiment_measurement(feature_name, value)
                     continue
                 else:

@@ -37,6 +37,8 @@ if sys.platform.startswith('win'):
         jvm_dir = os.path.join(java_home,'bin',place_to_look)
         if not os.path.isfile(os.path.join(jvm_dir, "jvm.dll")):
             jvm_dir = None
+        else:
+            break
     if jvm_dir is None:
         raise IOError("Can't find jvm.dll using %s for JAVA_HOME" %
                       java_home)

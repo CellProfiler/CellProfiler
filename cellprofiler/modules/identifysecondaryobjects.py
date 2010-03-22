@@ -161,7 +161,7 @@ class IdentifySecondaryObjects(cpmi.Identify):
         
         self.regularization_factor = cps.Float("Regularization factor",0.05,minval=0,
                                                doc="""\
-            <i>(For Propagation method only)</i> <br>
+            <i>(Used only if Propagation method selected)</i> <br>
             In the range 0 to infinity.
             This method takes two factors into account when deciding where to draw
             the dividing line between two touching secondary objects: the distance to

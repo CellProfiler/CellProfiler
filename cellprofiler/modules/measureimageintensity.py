@@ -86,7 +86,7 @@ class MeasureImageIntensity(cpm.CPModule):
                                                   False, doc = "Check this option to restrict the pixels being measured to those within the boundaries of an object."))
         
         group.append("object_name",cps.ObjectNameSubscriber("Select the input objects","None", 
-                                                           doc = '''What is the name of the objects to use? The intensity measurement will be restricted to within these objects.'''))
+                                                           doc = '''<i>(Used only when measuring intensity from area enclosed by objects)</i><br>What is the name of the objects to use? The intensity measurement will be restricted to within these objects.'''))
         if can_remove:
             group.append("remover", cps.RemoveSettingButton("", 
                                                             "Remove this image", self.images, group))

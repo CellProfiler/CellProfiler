@@ -101,7 +101,7 @@ class ReassignObjectNumbers(cpm.CPModule):
         self.wants_image = cps.Binary(
             "Unify using a grayscale image?", False,
             doc="""
-            <i>(Used only if unification is selected)</i><br>
+            <i>(Used only with the unify option)</i><br>
             <i>Unify</i> can use the objects' intensity features to determine whether two
             objects should be unified. If you choose to use a grayscale image,
             <i>Unify</i> will unify two objects only if they

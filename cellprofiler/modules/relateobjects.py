@@ -123,7 +123,7 @@ class RelateObjects(cpm.CPModule):
             </li></ul>""")
         self.wants_step_parent_distances = cps.Binary(
             "Calculate distances to other parents?", False,
-            doc = """You can calculate the distances of the child objects to 
+            doc = """<i>(Used only if calculating distances)</i><br>You can calculate the distances of the child objects to 
             some other objects. These objects must be either parents or
             children of your parent object in order for this module to
             determine the distances. For instance, you might find "Nuclei" using

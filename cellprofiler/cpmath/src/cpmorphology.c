@@ -106,11 +106,11 @@ cpmaximum(PyObject *self, PyObject *args)
      }
      for (i=0;i<4;i++) {
           PyObject *obDim = PyTuple_GetItem(*shapes[i],indices[i]);
-          if (! PyInt_Check(obDim)) {
+          *(slots[i]) = PyInt_AsLong(obDim);
+          if (PyErr_Occurred()) {
                error = "Array shape is not a tuple of integers";
                goto exit;
           }
-          *(slots[i]) = PyInt_AsLong(obDim);
      }
      imdata = (double *)PyArray_DATA(cimage);
      if (! imdata) {
@@ -136,21 +136,21 @@ cpmaximum(PyObject *self, PyObject *args)
                error = "Failed to get x offset from tuple";
                goto exit;
           }
-          if (! PyInt_Check(temp)) {
+          xoff = PyInt_AsLong(temp);
+          if (PyErr_Occurred()) {
                error = "Offset X is not an integer";
                goto exit;
           }
-          xoff = PyInt_AsLong(temp);
           temp = PyTuple_GetItem(offset,1);
           if (! temp) {
                error = "Failed to get y offset from tuple";
                goto exit;
           }
-          if (! PyInt_Check(temp)) {
+          yoff = PyInt_AsLong(temp);
+          if (PyErr_Occurred()) {
                error = "Offset Y is not an integer";
                goto exit;
           }
-          yoff = PyInt_AsLong(temp);
      }
      
      dims[0] = width;

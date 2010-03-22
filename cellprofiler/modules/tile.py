@@ -28,12 +28,12 @@ set it to retain only those images that are needed for downstream modules. </li>
 (i.e., intelligent adjustment of the alignment between adjacent images). For 
 image stitching, you may find the following list of software packages useful:
 <ul>
-<li>Photomerge Feature in Photoshop CS: http://graphicssoft.about.com/cs/photoshop/qt/csphotomerge.htm</li>
-<li>PTGui: http://www.ptgui.com/</li>
-<li>Autostitch: http://cvlab.epfl.ch/~brown/autostitch/autostitch.html</li>
-<li>ImageJ with the MosaicJ plugin: http://bigwww.epfl.ch/thevenaz/mosaicj/</li>
+<li><a href="http://graphicssoft.about.com/cs/photoshop/qt/csphotomerge.htm">Photomerge Feature in Photoshop CS</a></li>
+<li><a href="http://www.ptgui.com/">PTGui</a></li>
+<li><a href="http://cvlab.epfl.ch/~brown/autostitch/autostitch.html">Autostitch</a></li>
+<li><a href="http://bigwww.epfl.ch/thevenaz/mosaicj/">ImageJ with the MosaicJ plugin</a></li>
 </ul>
-Other packages are referenced here: http://graphicssoft.about.com/od/panorama/Panorama_Creation_and_Stitching_Tools.htm</p>
+Other packages are referenced <a href="http://graphicssoft.about.com/od/panorama/Panorama_Creation_and_Stitching_Tools.htm">here</a></p>
 
 This module replaces the functionality of the obsolete module <b>PlaceAdjacent</b>.
 '''

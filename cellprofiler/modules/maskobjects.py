@@ -143,7 +143,7 @@ class MaskObjects(I.Identify):
         self.overlap_fraction = cps.Float(
             "Fraction of object that must overlap", .5, 
             minval = 0, maxval = 1,
-            doc = """Specify the minimum fraction of an object
+            doc = """<i>(Used only if removing based on a overlap)</i><br>Specify the minimum fraction of an object
             that must overlap the masking region for that object to be retained.
             For instance, if the fraction is 0.75, then 3/4 of an object
             must be within the masking region for that object to be retained.""")
@@ -175,7 +175,7 @@ class MaskObjects(I.Identify):
         
         self.outlines_name = cps.OutlineNameProvider(
             "Name the outline image", "MaskedOutlines",
-            doc = """What do you want to call the outline image? Subsequent modules
+            doc = """<i>(Used only if retaining outline image for later in the pipeline)</i><br>What do you want to call the outline image? Subsequent modules
             can refer to the binary outline image using this name.""")
         
     def settings(self):

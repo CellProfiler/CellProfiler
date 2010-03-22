@@ -99,7 +99,7 @@ class MeasureNeurons(cpm.CPModule):
             setting to fill in these small holes prior to skeletonizing.""")
         self.maximum_hole_size = cps.Integer(
             "Maximum hole size:", 10, minval = 1,
-            doc = """This is the area of the largest hole to fill, measured
+            doc = """<i>(Used only when filling small holes)</i><br>This is the area of the largest hole to fill, measured
             in pixels. The algorithm will fill in any hole whose area is
             this size or smaller""")
     

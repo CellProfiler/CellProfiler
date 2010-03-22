@@ -266,6 +266,9 @@ class CreateWebPage(cpm.CPModule):
             # the .html file
             #
             thumbnail_path_name = relpath(thumbnail_path_name, path_name)
+            if os.path.sep != '/':
+                thumbnail_path_name = thumbnail_path_name.replace(
+                    os.path.sep, '/')
             thumbnail_path_name = '/'.join((thumbnail_path_name, 
                                            thumbnail_file_name))
             

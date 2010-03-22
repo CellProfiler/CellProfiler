@@ -307,7 +307,9 @@ class PipelineListView(object):
                 self.select_one_module(item+1)
         if self.list_ctrl.SelectedItemCount > 0:
             menu = wx.Menu()
-            menu.AppendSubMenu(self.__frame.menu_edit_add_module, "&Add")
+            sub_menu = wx.Menu()
+            self.__controller.populate_edit_menu(sub_menu)
+            menu.AppendSubMenu(sub_menu, "&Add")
             menu.Append(ID_EDIT_DELETE, "&Delete")
             menu.Append(ID_EDIT_DUPLICATE, "Duplicate")
             menu.Append(ID_HELP_MODULE, "&Help")

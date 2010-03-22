@@ -60,7 +60,7 @@ class PipelineController:
         self.__groupings = None
         self.__grouping_index = None
         self.populate_recent_files()
-        self.populate_edit_menu()
+        self.populate_edit_menu(self.__frame.menu_edit_add_module)
         wx.EVT_MENU(frame,cpframe.ID_FILE_LOAD_PIPELINE,self.__on_load_pipeline)
         wx.EVT_MENU(frame, cpframe.ID_FILE_URL_LOAD_PIPELINE, self.__on_url_load_pipeline)
         wx.EVT_MENU(frame,cpframe.ID_FILE_SAVE_PIPELINE,self.__on_save_pipeline)
@@ -456,7 +456,7 @@ class PipelineController:
         self.__add_module_frame.Show()
         self.__add_module_frame.Raise()
     
-    def populate_edit_menu(self):
+    def populate_edit_menu(self, menu):
         '''Display a menu of modules to add'''
         from cellprofiler.modules import get_module_names, instantiate_module
         #
@@ -471,7 +471,6 @@ class PipelineController:
             d[category].append(module_name)
             d["All"].append(module_name)
          
-        menu = self.__frame.menu_edit_add_module
         for category in sorted(d.keys()):
             sub_menu = wx.Menu()
             for module_name in sorted(d[category]):

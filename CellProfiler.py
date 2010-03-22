@@ -182,7 +182,7 @@ try:
             options.run_pipeline = True
     
     if options.output_html:
-        from cellprofiler.gui.html import generate_html
+        from cellprofiler.gui.html.manual import generate_html
         webpage_path = options.output_directory if options.output_directory else None
         generate_html(webpage_path)
         

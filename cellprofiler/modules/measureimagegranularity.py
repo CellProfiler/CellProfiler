@@ -94,9 +94,8 @@ class MeasureImageGranularity(cpm.CPModule):
             granular spectrum components. The recommendation on the numerical value
             cannot be determined in advance; an analysis as in this reference may be
             required before running the whole set.
-            See <a href="http://www.ravkin.net/presentations/">
-            http://www.ravkin.net/presentations/Statistical_properties_of_algorithms_for_analysis_of_cell_images.pdf</a> 
-            slides 27-31, 49-50.'''))
+            See this <a href="http://www.ravkin.net/presentations/Statistical%20properties%20of%20algorithms%20for%20analysis%20of%20cell%20images.pdf">
+            pdf</a>, slides 27-31, 49-50.'''))
         
         group.append("image_sample_size",cps.Float(
             "Subsampling factor for background reduction",

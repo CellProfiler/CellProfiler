@@ -212,7 +212,7 @@ class ExportToDatabase(cpm.CPModule):
             SQLite files directly. SQLite is simpler to set up than MySQL and 
             can more readily be run on your local computer rather than requiring a 
             database server. More information about SQLite can be found at 
-            <a href="http://www.sqlite.org/"> http://www.sqlite.org/</a> </li></ul>""")
+            <a href="http://www.sqlite.org/">here</a>. </li></ul>""")
         
         self.db_name = cps.Text(
             "Database name", "DefaultDB",doc = """

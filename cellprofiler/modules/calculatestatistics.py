@@ -73,8 +73,8 @@ throughput screening assays." <i>J Biomolecular Screening</i> 4(2): 67-73.</li>
 <li><i>V factor:</i> Ravkin I. (2004): Poster #P12024 - Quality
 Measures for Imaging-based Cellular Assays. <i>Society for Biomolecular
 Screening Annual Meeting Abstracts</i>. </li>
-<li>Code for the calculation of Z' and V factors was kindly donated by Ilya
-Ravkin: <a href="http://www.ravkin.net">http://www.ravkin.net</a>. Carlos 
+<li>Code for the calculation of Z' and V factors was kindly donated by 
+<a href="http://www.ravkin.net">Ilya Ravkin</a>. Carlos 
 Evangelista donated his copyrighted dose-response-related code.</li>
 </ul>
 

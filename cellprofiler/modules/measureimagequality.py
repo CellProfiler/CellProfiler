@@ -440,7 +440,7 @@ class MeasureImageQuality(cpm.CPModule):
         grid = i * m + j + 1
         if image.has_mask:
             grid[np.logical_not(image.mask)] = 0
-        grid_range = np.arange(0, m*n+1)
+        grid_range = np.arange(0, m*n+1,dtype=int)
         #
         # Do the math per label
         #

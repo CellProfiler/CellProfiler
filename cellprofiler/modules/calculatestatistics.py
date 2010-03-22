@@ -209,7 +209,7 @@ class CalculateStatistics(cpm.CPModule):
             You will be asked for information on how to save the plots.</a>'''))
         group.append('figure_name', cps.Text(
             "Figure prefix","",
-            doc = '''CellProfiler will create a file name by appending the measurement name
+            doc = '''<i>(Used only when creating dose/response plots)</i><br>CellProfiler will create a file name by appending the measurement name
             to the prefix you enter here. For instance, if you have objects
             named, "Cells", the "AreaShape_Area measurement", and a prefix of "Dose_",
             CellProfiler will save the figure as <i>Dose_Cells_AreaShape_Area.m</i>.
@@ -220,7 +220,7 @@ class CalculateStatistics(cpm.CPModule):
             dir_choices = [
                 cps.DEFAULT_OUTPUT_FOLDER_NAME, cps.DEFAULT_INPUT_FOLDER_NAME,
                 cps.ABSOLUTE_FOLDER_NAME, cps.DEFAULT_OUTPUT_SUBFOLDER_NAME,
-                cps.DEFAULT_INPUT_SUBFOLDER_NAME], doc="""
+                cps.DEFAULT_INPUT_SUBFOLDER_NAME], doc="""<i>(Used only when creating dose/response plots)</i><br>
             This setting lets you choose the folder for the output
             files. %(IO_FOLDER_CHOICE_HELP_TEXT)s
             

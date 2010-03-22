@@ -298,8 +298,15 @@ class TestPipeline(unittest.TestCase):
         measurements = cellprofiler.measurements.Measurements()
         my_measurement = [np.random.uniform(size=np.random.randint(3,25))
                           for i in range(20)]
-        measurements.add_all_measurements("Foo","Bar", my_measurement)
-        measurements.set_image_set_number(20)
+        my_image_measurement = [np.random.uniform() for i in range(20)]
+        my_experiment_measurement = np.random.uniform()
+        measurements.add_experiment_measurement("expt", my_experiment_measurement)
+        for i in range(20):
+            if i > 0:
+                measurements.next_image_set()
+            measurements.add_measurement("Foo","Bar", my_measurement[i])
+            measurements.add_image_measurement(
+                "img", my_image_measurement[i])
         fd = cStringIO.StringIO()
         pipeline.save_measurements(fd, measurements)
         fd.seek(0)
@@ -309,6 +316,14 @@ class TestPipeline(unittest.TestCase):
         for m_in, m_out in zip(my_measurement, my_measurement_out):
             self.assertEqual(len(m_in), len(m_out))
             self.assertTrue(np.all(m_in == m_out))
+        my_image_measurement_out = measurements.get_all_measurements(
+            "Image", "img")
+        self.assertEqual(len(my_image_measurement),len(my_image_measurement_out))
+        for m_in, m_out in zip(my_image_measurement, my_image_measurement_out):
+            self.assertTrue(m_in == m_out)
+        my_experiment_measurement_out = \
+            measurements.get_experiment_measurement("expt")
+        self.assertEqual(my_experiment_measurement, my_experiment_measurement_out)
             
         fd.seek(0)
         pipeline = cellprofiler.pipeline.Pipeline()

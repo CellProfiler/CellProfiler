@@ -157,13 +157,14 @@ class Measurements(object):
             omeas = m[object_name][0,0]
             for feature_name in omeas.dtype.fields.keys():
                 if object_name == IMAGE:
-                    values = [x[0] for x in omeas[feature_name][0]]
+                    values = [x.flatten()[0] for x in omeas[feature_name][0]]
                 elif object_name == EXPERIMENT:
                     value = omeas[feature_name][0,0][0]
                     self.add_experiment_measurement(feature_name, value)
                     continue
                 else:
-                    values = omeas[feature_name][0].tolist()
+                    values = [x.flatten() 
+                              for x in omeas[feature_name][0].tolist()]
                 self.add_all_measurements(object_name,
                                           feature_name,
                                           values)

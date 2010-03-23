@@ -259,6 +259,64 @@ class TestMeasureObjects(unittest.TestCase):
         self.assertAlmostEqual(mass_displacement[1],2.0)
         self.assertAlmostEqual(mass_displacement[2],2.0)
         
+    def test_03_03_00_mass_displacement_masked(self):
+        """Regression test IMG-766 - mass displacement of a masked image"""
+        
+        labels = numpy.array([[0,0,0,0,0,0,0],
+                              [0,1,1,1,1,1,0],
+                              [0,1,1,1,1,1,0],
+                              [0,1,1,1,1,1,0],
+                              [0,1,1,1,1,1,0],
+                              [0,1,1,1,1,1,0],
+                              [0,0,0,0,0,0,0],
+                              [0,2,2,2,2,2,0],
+                              [0,2,2,2,2,2,0],
+                              [0,2,2,2,2,2,0],
+                              [0,2,2,2,2,2,0],
+                              [0,2,2,2,2,2,0],
+                              [0,0,0,0,0,0,0],
+                              [0,3,3,3,3,3,0],
+                              [0,3,3,3,3,3,0],
+                              [0,3,3,3,3,3,0],
+                              [0,3,3,3,3,3,0],
+                              [0,3,3,3,3,3,0],
+                              [0,0,0,0,0,0,0]])
+        image = numpy.zeros(labels.shape,dtype=float)
+        #
+        # image # 1 has a single value in one of the corners
+        # whose distance is sqrt(8) from the center
+        #
+        image[1,1] = 1
+        # image # 2 has a single value on the top edge
+        # and should have distance 2
+        #
+        image[7,3] = 1
+        # image # 3 has a single value on the left edge
+        # and should have distance 2
+        image[15,1] = 1
+        mask = numpy.zeros(image.shape, bool)
+        mask[labels > 0] = True
+        ii = II.InjectImage('MyImage',image, mask)
+        ii.module_num = 1
+        io = II.InjectObjects('MyObjects',labels)
+        io.module_num = 2
+        moi = MOI.MeasureObjectIntensity()
+        moi.images[0].name.value = 'MyImage'
+        moi.objects[0].name.value = 'MyObjects'
+        moi.module_num = 3
+        pipeline = P.Pipeline()
+        pipeline.add_listener(self.error_callback)
+        pipeline.add_module(ii)
+        pipeline.add_module(io)
+        pipeline.add_module(moi)
+        m = pipeline.run()
+        feature_name = '%s_%s_%s'%(MOI.INTENSITY,MOI.MASS_DISPLACEMENT,'MyImage')
+        mass_displacement = m.get_current_measurement('MyObjects', feature_name)
+        self.assertEqual(numpy.product(mass_displacement.shape),3)
+        self.assertAlmostEqual(mass_displacement[0],math.sqrt(8.0))
+        self.assertAlmostEqual(mass_displacement[1],2.0)
+        self.assertAlmostEqual(mass_displacement[2],2.0)
+
     def test_03_04_quartiles(self):
         """test quartile values on a 250x250 square filled with uniform values"""
         labels = numpy.ones((250,250),int)

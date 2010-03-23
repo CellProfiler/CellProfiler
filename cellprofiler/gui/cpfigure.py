@@ -462,28 +462,28 @@ class CPFigureFrame(wx.Frame):
         self.mouse_down = None
     
     def on_zoom_done(self, event, x0, y0, x1, y1):
-            old_limits = None
-            for x in range(self.subplots.shape[0]):
-                for y in range(self.subplots.shape[1]):
-                    if self.zoom_rects[x,y]:
-                        self.zoom_rects[x,y].remove()
-                        self.zoom_rects[x,y] = 0
-                    if self.subplots[x,y]:
-                        axes = self.subplots[x,y]
-                        if len(axes.images) == 0:
-                            continue
-                        if abs(x1 - x0) >= 5 and abs(y1-y0) >= 5:
-                            if not old_limits:
-                                old_x0,old_x1 = axes.get_xlim()
-                                old_y0,old_y1 = axes.get_ylim()  
-                                old_limits = ((old_x0, old_x1),
-                                              (old_y0, old_y1))
-                            axes.set_xlim(x0,x1)
-                            axes.set_ylim(y1,y0)
-                            self.zoom_stack.append(old_limits)
-                            self.__menu_item_zoom_out.Enable(True)
-            self.figure.canvas.draw()
-            self.Refresh()
+        old_limits = None
+        for x in range(self.subplots.shape[0]):
+            for y in range(self.subplots.shape[1]):
+                if self.zoom_rects[x,y]:
+                    self.zoom_rects[x,y].remove()
+                    self.zoom_rects[x,y] = 0
+                if self.subplots[x,y]:
+                    axes = self.subplots[x,y]
+                    if len(axes.images) == 0:
+                        continue
+                    if abs(x1 - x0) >= 5 and abs(y1-y0) >= 5:
+                        if not old_limits:
+                            old_x0,old_x1 = axes.get_xlim()
+                            old_y0,old_y1 = axes.get_ylim()  
+                            old_limits = ((old_x0, old_x1),
+                                          (old_y0, old_y1))
+                        axes.set_xlim(x0,x1)
+                        axes.set_ylim(y1,y0)
+                        self.zoom_stack.append(old_limits)
+                        self.__menu_item_zoom_out.Enable(True)
+        self.figure.canvas.draw()
+        self.Refresh()
     
     def on_zoom_canceled(self, event):
         # cancel if released outside of axes
@@ -603,11 +603,22 @@ class CPFigureFrame(wx.Frame):
                 item_raw.Check()
             popup.AppendMenu(-1, 'Image contrast', submenu)
             
+            px, py = subplot
+            
             def open_image_in_new_figure(evt):
                 '''Callback for "Open image in new window" popup menu item '''
+                # Store current zoom limits
+                xlims = self.subplot(px,py).get_xlim()
+                ylims = self.subplot(px,py).get_ylim()
                 new_title = self.subplot(subplot[0], subplot[1]).get_title()
                 fig = create_or_find(self, -1, new_title, subplots=(1,1), name=new_title)
                 fig.subplot_imshow(0, 0, self.images[subplot], **imshow_kwargs)
+                # Copy over plot zoom stack
+                fig.zoom_stack = list(self.zoom_stack)
+                fig.__menu_item_zoom_out.Enable(len(self.zoom_stack) > 0)
+                # Set current zoom
+                fig.subplot(0,0).set_xlim(xlims[0], xlims[1])
+                fig.subplot(0,0).set_ylim(ylims[0], ylims[1])      
                 fig.figure.canvas.draw()
             
             def show_hist(evt):
@@ -619,6 +630,9 @@ class CPFigureFrame(wx.Frame):
                 
             def change_contrast(evt):
                 '''Callback for Image contrast menu items'''
+                # Store zoom limits
+                xlims = self.subplot(px,py).get_xlim()
+                ylims = self.subplot(px,py).get_ylim()
                 if evt.Id == MENU_CONTRAST_RAW:
                     params['normalize'] = False
                 elif evt.Id == MENU_CONTRAST_NORMALIZED:
@@ -626,6 +640,9 @@ class CPFigureFrame(wx.Frame):
                 elif evt.Id == MENU_CONTRAST_LOG:
                     params['normalize'] = 'log'
                 self.subplot_imshow(subplot[0], subplot[1], self.images[subplot], **imshow_kwargs)
+                # Restore plot zoom
+                self.subplot(px,py).set_xlim(xlims[0], xlims[1])
+                self.subplot(px,py).set_ylim(ylims[0], ylims[1])                
                 self.figure.canvas.draw()
                 
             if is_color_image(image):
@@ -640,12 +657,18 @@ class CPFigureFrame(wx.Frame):
                 
                 def toggle_channels(evt):
                     '''Callback for channel menu items.'''
+                    # Store zoom limits
+                    xlims = self.subplot(px,py).get_xlim()
+                    ylims = self.subplot(px,py).get_ylim()
                     if 'rgb_mask' not in params:
                         params['rgb_mask'] = list(rgb_mask)
                     for idx, id in enumerate(ids):
                         if id == evt.Id:
                             params['rgb_mask'][idx] = not params['rgb_mask'][idx]
                     self.subplot_imshow(subplot[0], subplot[1], self.images[subplot], **imshow_kwargs)
+                    # Restore plot zoom
+                    self.subplot(px,py).set_xlim(xlims[0], xlims[1])
+                    self.subplot(px,py).set_ylim(ylims[0], ylims[1])   
                     self.figure.canvas.draw()
 
                 for id in ids:
@@ -1054,7 +1077,7 @@ if __name__ == "__main__":
     f = CPFigureFrame(subplots=(4, 2))
     f.Show()
 
-    img = np.random.uniform(.5, .6, size=(5, 5, 3))
+    img = np.random.uniform(.5, .6, size=(50, 50, 3))
     f.subplot_imshow(0, 0, img[:,:,0], "1-channel colormapped", colorbar=True)
     f.subplot_imshow_grayscale(1, 0, img[:,:,0], "1-channel grayscale")
     f.subplot_imshow_grayscale(2, 0, img[:,:,0], "1-channel raw", normalize=False)

@@ -41,7 +41,19 @@ from cellprofiler.utilities.relpath import relpath
 #compiled version
 #path = os.path.split(os.path.abspath(sys.argv[0]))[0]
 #path = os.path.join(path, 'cellprofiler','icons')
-path = relpath(cellprofiler.icons.__path__[0])
+
+if not hasattr(sys, 'frozen'):
+    path = relpath(cellprofiler.icons.__path__[0])
+else:
+    #
+    # The following recipe was lifted from
+    # http://www.py2exe.org/index.cgi/WhereAmI
+    #
+    # Thank you Ryan Ginstorm
+    #
+    path = os.path.dirname(unicode(sys.executable, 
+                                   sys.getfilesystemencoding()))
+    path = os.path.join(path, 'cellprofiler','icons')
 
 LOCATION_REFRESH_BUTTON = os.path.join(path,'folder_refresh.png')
 LOCATION_BROWSE_BUTTON = os.path.join(path,'folder_browse.png')

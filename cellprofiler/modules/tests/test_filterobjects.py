@@ -117,6 +117,11 @@ class TestFilterObjects(unittest.TestCase):
         self.assertEqual(len(parents),1)
         self.assertEqual(parents[0],2)
         self.assertEqual(m.get_current_image_measurement("Count_my_result"),1)
+        feature = F.FF_CHILDREN_COUNT % "my_result"
+        child_count = m.get_current_measurement("my_objects", feature)
+        self.assertEqual(len(child_count), 2)
+        self.assertEqual(child_count[0], 0)
+        self.assertEqual(child_count[1], 1)
 
     def test_01_02_keep_single_max(self):
         '''Keep a single object (max) from among two'''
@@ -1155,6 +1160,7 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:4|show
         module.run(workspace)
         image_features = m.get_feature_names(cpm.IMAGE)
         result_features = m.get_feature_names("my_result")
+        object_features = m.get_feature_names("my_object")
         columns = module.get_measurement_columns(workspace.pipeline)
         self.assertEqual(len(columns), 6)
         for feature in image_features:
@@ -1163,6 +1169,10 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:4|show
                                  for column in columns]))
         for feature in result_features:
             self.assertTrue(any([(column[0] == "my_result" and
+                                  column[1] == feature)
+                                 for column in columns]))
+        for feature in object_features:
+            self.assertTrue(any([(column[0] == "my_object" and
                                   column[1] == feature)
                                  for column in columns]))
         

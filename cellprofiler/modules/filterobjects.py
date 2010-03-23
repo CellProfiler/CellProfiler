@@ -400,6 +400,13 @@ class FilterObjects(cpm.CPModule):
                               FF_PARENT%(src_name),
                               np.array(indexes))
             #
+            # Count the children (0 / 1)
+            #
+            child_count = (label_indexes[1:] > 0).astype(int)
+            m.add_measurement(src_name,
+                              FF_CHILDREN_COUNT % target_name,
+                              child_count)
+            #
             # Add an outline if asked to do so
             #
             if wants_outlines:

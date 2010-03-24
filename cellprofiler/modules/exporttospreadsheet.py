@@ -681,6 +681,7 @@ Do you want to save it anyway?""" %
                               setting_values[4:9] +
                               [directory] +
                               setting_values[11:])
+            variable_revision_number = 6
             
         # Standardize input/output directory name references
         SLOT_DIRCHOICE = 8

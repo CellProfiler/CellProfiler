@@ -171,6 +171,7 @@ class CPFigureFrame(wx.Frame):
         self.subplot_params = {}
         self.event_bindings = {}
         self.popup_menus = {}
+        self.subplot_menus = {}
         self.mouse_down = None
         self.remove_menu = []
         sizer = wx.BoxSizer()
@@ -556,7 +557,7 @@ class CPFigureFrame(wx.Frame):
         axes = self.subplot(x,y)
         try:
             del self.images[(x,y)]
-            self.__menu_subplots.RemoveItem(self.popup_menus[(x,y)])
+            self.__menu_subplots.RemoveItem(self.subplot_menus[(x,y)])
             del self.popup_menus[(x,y)]
         except: pass
         axes.clear()
@@ -815,7 +816,8 @@ class CPFigureFrame(wx.Frame):
                                          'button_release_event', on_release)
         # Also add this menu to the main menu
         if (x,y) not in self.popup_menus.keys():
-            self.__menu_subplots.AppendMenu(-1, 
+            menu_pos = x + (y * self.subplots.shape[0])
+            self.subplot_menus[(x,y)] = self.__menu_subplots.InsertMenu(menu_pos, -1, 
                                             (title or 'subplot (%s,%s)'%(x,y)),
                                             self.get_imshow_menu(image, (x,y), 
                                                                  kwargs, copy=True))

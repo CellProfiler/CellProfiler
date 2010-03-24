@@ -1811,11 +1811,11 @@ def load_using_PIL(path, index=0, seekfn=None):
         new_img = imgdata.reshape(img_size)
         # The magic # for maximum sample value is 281
         if img.tag.has_key(281):
-            img = new_img.astype(float) / img.tag[281][0]
+            img = new_img.astype(np.float32) / img.tag[281][0]
         elif np.max(new_img) < 4096:
-            img = new_img.astype(float) / 4095.
+            img = new_img.astype(np.float32) / 4095.
         else:
-            img = new_img.astype(float) / 65535.
+            img = new_img.astype(np.float32) / 65535.
     else:
         # There's an apparent bug in the PIL library that causes
         # images to be loaded upside-down. At best, load and save have opposite
@@ -1908,7 +1908,7 @@ def load_using_bioformats(path, c=None, z=0, t=0, series=None):
         #
         formatreader.jutil.static_call("java/lang/System",
                                        "gc","()V")
-        image = image.astype(float) / float(scale)
+        image = image.astype(np.float32) / float(scale)
     finally:
         formatreader.jutil.detach()
     return image

@@ -129,7 +129,7 @@ class TestSaveImages(unittest.TestCase):
         self.assertEqual(module.colormap.value, cpm_si.CM_GRAY)
         self.assertFalse(module.overwrite)
         
-    def test_00_04_load_v3(self):
+    def test_00_04_00_load_v3(self):
         data = ('eJztVsFu0zAYdrJ0MCohNC47+ogQVNlQ0eiFdZSKSms70WriiJc6wZITR45T'
                 'Vk48Ao/HY+wRiCNnSaywJK3EhVmy4t/+Pn+/v9iWp8PlxfAc9ns2nA6Xr11C'
                 'MbykSLiM+wMYiFfwA8dI4BVkwQCOOYFzR0D7BB6/HRz3B2/68MS234HtijGZ'
@@ -158,6 +158,62 @@ class TestSaveImages(unittest.TestCase):
         self.assertEqual(module.when_to_save.value, cpm_si.WS_EVERY_CYCLE)
         self.assertEqual(module.colormap.value, cpm_si.CM_GRAY)
         self.assertFalse(module.overwrite)
+        
+    def test_00_04_01_load_v4(self):
+        '''Regression test of IMG-759 - load v4 SaveImages'''
+        data = r'''CellProfiler Pipeline: http://www.cellprofiler.org
+Version:1
+SVNRevision:9438
+
+SaveImages:[module_num:60|svn_version:\'9438\'|variable_revision_number:4|show_window:False|notes:\x5B\x5D]
+    Select the type of image to save:Image
+    Select the image to save:ColorOutlineImage
+    Select the module display window to save:Fig
+    Select method for constructing file names:From image filename
+    Select image name for file prefix:OrigRGB
+    Enter single file name:OrigBlue
+    Text to append to the image name:_outlines
+    Select file format to use:png
+    Select location to save file:Custom with metadata
+    Pathname for the saved file:&/\\g<Directory>/\\g<Subdirectory>
+    Image bit depth:8
+    Overwrite existing files without warning?:Yes
+    Select how often to save:Every cycle
+    Select how often to save:Last cycle
+    Rescale the images? :No
+    Select colormap:gray
+    Update file names within CellProfiler?:No
+    Create subfolders in the output folder?:No
+'''
+        pipeline = cpp.Pipeline()
+        def callback(caller,event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO(data))        
+        self.assertEqual(len(pipeline.modules()), 1)
+        module = pipeline.modules()[0]
+        self.assertTrue(isinstance(module, cpm_si.SaveImages))
+        self.assertEqual(module.save_image_or_figure,
+                         cpm_si.IF_IMAGE)
+        self.assertEqual(module.image_name, "ColorOutlineImage")
+        self.assertEqual(module.figure_name, "Fig")
+        self.assertEqual(module.file_name_method, cpm_si.FN_FROM_IMAGE)
+        self.assertEqual(module.file_image_name, "OrigRGB")
+        self.assertEqual(module.single_file_name, "OrigBlue")
+        self.assertEqual(module.wants_file_name_suffix, True)
+        self.assertEqual(module.file_name_suffix, "_outlines")
+        self.assertEqual(module.file_format, cpm_si.FF_PNG)
+        self.assertEqual(module.pathname.dir_choice, 
+                         cps.DEFAULT_INPUT_SUBFOLDER_NAME)
+        self.assertEqual(module.pathname.custom_path, 
+                         "./\\g<Directory>/\\g<Subdirectory>")
+        self.assertEqual(module.bit_depth, "8")
+        self.assertTrue(module.overwrite)
+        self.assertEqual(module.when_to_save, cpm_si.WS_EVERY_CYCLE)
+        self.assertEqual(module.rescale, False)
+        self.assertEqual(module.colormap, "gray")
+        self.assertEqual(module.update_file_names, False)
+        self.assertEqual(module.create_subdirectories, False)
         
     def test_00_05_load_v5(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org

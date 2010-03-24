@@ -920,10 +920,16 @@ class SaveImagesDirectoryPath(cps.DirectoryPath):
     def upgrade_setting(value):
         '''Upgrade setting from previous version'''
         dir_choice, custom_path = cps.DirectoryPath.split_string(value)
-        if value in OLD_PC_WITH_IMAGE_VALUES:
+        if dir_choice in OLD_PC_WITH_IMAGE_VALUES:
             dir_choice = PC_WITH_IMAGE
-        elif value == PC_CUSTOM:
-            dir_choice = cps.ABSOLUTE_FOLDER_NAME
+        elif dir_choice in (PC_CUSTOM, PC_WITH_METADATA):
+            if custom_path.startswith('.'):
+                dir_choice = cps.DEFAULT_OUTPUT_SUBFOLDER_NAME
+            elif custom_path.startswith('&'):
+                dir_choice = cps.DEFAULT_INPUT_SUBFOLDER_NAME
+                custom_path = '.' + custom_path[1:]
+            else:
+                dir_choice = cps.ABSOLUTE_FOLDER_NAME
         else:
             return cps.DirectoryPath.upgrade_setting(value)
         return cps.DirectoryPath.static_join_string(dir_choice, custom_path)

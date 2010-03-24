@@ -154,7 +154,8 @@ def zernike(zernike_indexes,labels,indexes):
     score = np.zeros((nindexes, len(zernike_indexes)))
     for i in range(len(zernike_indexes)):
         zf = construct_zernike_polynomials(x, y, zernike_indexes[i:i+1], mask)
-        score[:,i] = score_zernike(zf, radii, labels, indexes)[0]
+        one_score = score_zernike(zf, radii, labels, indexes)
+        score[:,i] = one_score[:,0]
     return score
 
 def get_zernike_indexes(limit=10):

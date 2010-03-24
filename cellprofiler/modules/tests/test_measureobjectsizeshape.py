@@ -217,6 +217,44 @@ MeasureObjectSizeShape:[module_num:1|svn_version:\'1\'|variable_revision_number:
         self.assertEqual(len(values), 1)
         self.assertEqual(values[0], 54)
         
+    def test_03_02_zernikes_are_different(self):
+        '''Regression test of IMG-773'''
+        
+        np.random.seed(32)
+        labels = np.zeros((40,20), int)
+        #
+        # Make two "objects" composed of random foreground/background
+        #
+        labels[1:19,1:19] = (np.random.uniform(size=(18,18)) > .5).astype(int)
+        labels[21:39,1:19] = (np.random.uniform(size=(18,18)) > .5).astype(int) * 2
+        objects = cpo.Objects()
+        objects.segmented = labels
+        object_set = cpo.ObjectSet()
+        object_set.add_objects(objects, "SomeObjects")
+        module = cpmoas.MeasureObjectAreaShape()
+        module.object_groups[0].name.value = "SomeObjects"
+        module.calculate_zernikes.value = True
+        module.module_num = 1
+        image_set_list = cpi.ImageSetList()
+        measurements = cpmeas.Measurements()
+        pipeline = cpp.Pipeline()
+        pipeline.add_module(module)
+        def callback(caller, event):
+            self.assertFalse(isinstance(event, cpp.RunExceptionEvent))
+        pipeline.add_listener(callback)
+        workspace = cpw.Workspace(pipeline, module, 
+                                  image_set_list.get_image_set(0),
+                                  object_set, measurements, image_set_list)
+        module.run(workspace)
+        features = [x[1] for x in module.get_measurement_columns(pipeline)
+                    if x[0] == "SomeObjects" and 
+                    x[1].startswith("AreaShape_Zernike")]
+        for feature in features:
+            values = measurements.get_current_measurement(
+                "SomeObjects", feature)
+            self.assertEqual(len(values), 2)
+            self.assertNotEqual(values[0], values[1])
+        
     def test_04_01_extent(self):
         module = cpmoas.MeasureObjectAreaShape()
         module.object_groups[0].name.value = "SomeObjects"

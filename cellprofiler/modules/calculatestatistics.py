@@ -328,7 +328,7 @@ class CalculateStatistics(cpm.CPModule):
         data = np.zeros((len(grouping_data), len(feature_set)))
         for i, (object_name, feature_name) in enumerate(feature_set):
             fdata = measurements.get_all_measurements(object_name, feature_name)
-            fdata = np.array([np.mean(e) for e in fdata])
+            fdata = np.array([np.mean(e[~np.isnan(e)]) for e in fdata])
             data[:,i] = fdata
     
         z, z_one_tailed, OrderedUniqueDoses, OrderedAverageValues = \

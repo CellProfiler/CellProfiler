@@ -469,5 +469,67 @@ CalculateStatistics:[module_num:1|svn_version:\'9495\'|variable_revision_number:
                 os.remove(path)
             os.rmdir(temp_dir)
         
+    def make_workspace(self, mdict, controls_measurement, dose_measurements = []):
+        '''Make a workspace and module for running CalculateStatistics
         
+        mdict - a two-level dictionary that mimics the measurements structure
+                for instance:
+                mdict = { cpmeas.Image: { "M1": [ 1,2,3] }}
+                for the measurement M1 with values for 3 image sets
+        controls_measurement - the name of the controls measurement
+        '''
+        module = C.CalculateStatistics()
+        module.module_num = 1
+        module.grouping_values.value = controls_measurement
         
+        pipeline = cpp.Pipeline()
+        pipeline.add_module(module)
+        
+        m = cpmeas.Measurements()
+        nimages = None
+        for object_name in mdict.keys():
+            odict = mdict[object_name]
+            for feature in odict.keys():
+                m.add_all_measurements(object_name, feature, odict[feature])
+                if nimages is None:
+                    nimages = len(odict[feature])
+                else:
+                    self.assertEqual(nimages, len(odict[feature]))
+                if object_name == cpmeas.IMAGE and feature in dose_measurements:
+                    if len(module.dose_values) > 1:
+                        module.add_dose_value()
+                    dv = module.dose_values[-1]
+                    dv.measurement.value = feature
+        m.image_set_number = nimages        
+        image_set_list = cpi.ImageSetList()
+        for i in range(nimages):
+            image_set = image_set_list.get_image_set(i)
+        workspace = cpw.Workspace(pipeline, module, image_set,
+                                  cpo.ObjectSet(), m, image_set_list)
+        return workspace, module
+    
+    def test_02_02_NAN(self):
+        '''Regression test of IMG-762
+        
+        If objects have NAN values, the means are NAN and the
+        z-factors are NAN too.
+        '''
+        mdict = { 
+            cpmeas.IMAGE: {
+                "Metadata_Controls": [ 1,0,-1],
+                "Metadata_Doses": [ 0, .5, 1 ] },
+            "my_object": {
+                "my_measurement": [ np.array([1.0, np.NaN, 2.3, 3.4, 2.9]),
+                                    np.array([5.3, 2.4, np.NaN, 3.2]),
+                                    np.array([np.NaN, 3.1, 4.3, 2.2, 1.1, 0.1])]
+                }}
+        workspace, module = self.make_workspace(mdict,
+                                                "Metadata_Controls",
+                                                [ "Metadata_Doses"])
+        module.post_run(workspace)
+        m = workspace.measurements
+        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        for category in ("Zfactor", "OneTailedZfactor", "Vfactor"):
+            feature = '_'.join((category, "my_object", "my_measurement"))
+            value = m.get_experiment_measurement(feature)
+            self.assertFalse(np.isnan(value))

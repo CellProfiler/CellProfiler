@@ -189,8 +189,13 @@ class DisplayDataOnImage(cpm.CPModule):
         fig = matplotlib.figure.Figure()
         axes = fig.add_subplot(1,1,1)
         def imshow_fn(pixel_data):
-            axes.imshow(pixel_data,
-                        cmap = matplotlib.cm.Greys_r)
+            # Note: requires typecast to avoid failure during
+            #       figure_to_image (IMG-764)
+            img = pixel_data * 255
+            img[img < 0] = 0
+            img[img > 255] = 255
+            img = img.astype(np.uint8)
+            axes.imshow(img, cmap = matplotlib.cm.Greys_r)
             
         self.display_on_figure(workspace, axes, imshow_fn)
         canvas = matplotlib.backends.backend_wxagg.FigureCanvasAgg(fig)

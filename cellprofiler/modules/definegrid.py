@@ -551,7 +551,7 @@ class DefineGrid(cpm.CPModule):
                                                int(second_y.Value),
                                                int(second_row.Value),
                                                int(second_column.Value))
-            self.display(workspace, gridding[0], axes)
+            self.display_grid(workspace, gridding[0], axes)
             canvas.draw()
         def cancel(event):
             status[0] = wx.CANCEL
@@ -720,10 +720,12 @@ class DefineGrid(cpm.CPModule):
         import matplotlib
         
         if axes is None:
+            has_figure = True
             figure = workspace.create_or_find_figure(subplots=(1,1))
             figure.clf()
             axes = figure.subplot(0,0)
         else:
+            has_figure = False
             axes.cla()
         assert isinstance(axes, matplotlib.axes.Axes)
         assert isinstance(gridding, cpg.CPGridInfo)
@@ -746,7 +748,13 @@ class DefineGrid(cpm.CPModule):
         #
         # draw the image on the figure
         #
-        axes.imshow(image)
+        if has_figure:
+            figure.subplot_imshow(0,0, image)
+        else:
+            display_image = image *255
+            display_image[display_image < 0] = 0
+            display_image[display_image > 255] = 255
+            axes.imshow(display_image.astype(np.uint8))
         #
         # Draw lines
         #

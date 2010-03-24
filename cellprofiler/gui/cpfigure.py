@@ -170,6 +170,7 @@ class CPFigureFrame(wx.Frame):
         self.colorbar = {}
         self.subplot_params = {}
         self.event_bindings = {}
+        self.popup_menus = {}
         self.mouse_down = None
         self.remove_menu = []
         sizer = wx.BoxSizer()
@@ -555,16 +556,16 @@ class CPFigureFrame(wx.Frame):
         axes = self.subplot(x,y)
         try:
             del self.images[(x,y)]
+            self.__menu_subplots.RemoveItem(self.popup_menus[(x,y)])
             del self.popup_menus[(x,y)]
         except: pass
         axes.clear()
-        
         
     def show_imshow_popup_menu(self, (x, y), image, subplot, imshow_kwargs):
         popup = self.get_imshow_menu(image, subplot, imshow_kwargs)
         self.PopupMenu(popup, (x,y))
         
-    def get_imshow_menu(self, image, subplot, imshow_kwargs):
+    def get_imshow_menu(self, image, subplot, imshow_kwargs, copy=False):
         '''returns a popup menu with items to:
         - launch the image in a new cpfigure window
         - Show image histogram
@@ -572,28 +573,36 @@ class CPFigureFrame(wx.Frame):
         - Toggle channels on/off
         Note: Each item is bound to a handler.
         '''
-        # Manage a dict of popup menus keyed by each subplot (x,y) location
-        if 'popup_menus' not in self.__dict__:
-            self.popup_menus = {}
-            
         params = self.subplot_params[subplot]
             
         popup = self.popup_menus.get(subplot, None)
-        if popup == None:
+        if popup == None or copy == True:
             # If no popup has been built for this subplot yet, then create one 
             MENU_CONTRAST_RAW = wx.NewId()
             MENU_CONTRAST_NORMALIZED = wx.NewId()
             MENU_CONTRAST_LOG = wx.NewId()
-            self.popup_menus[subplot] = popup = wx.Menu()
-            open_in_new_figure_item = wx.MenuItem(popup, -1, 'Open image in new window')
+            popup = wx.Menu()
+            if not copy:
+                self.popup_menus[subplot] = popup
+            open_in_new_figure_item = wx.MenuItem(popup, -1, 
+                                                  'Open image in new window')
             popup.AppendItem(open_in_new_figure_item)
             show_hist_item = wx.MenuItem(popup, -1, 'Show image histogram')
             popup.AppendItem(show_hist_item)
             
             submenu = wx.Menu()
-            item_raw = submenu.Append(MENU_CONTRAST_RAW, 'Raw', 'Do not transform pixel intensities', wx.ITEM_RADIO)
-            item_normalized = submenu.Append(MENU_CONTRAST_NORMALIZED, 'Normalized', 'Stretch pixel intensities to fit the interval [0,1]', wx.ITEM_RADIO)
-            item_log = submenu.Append(MENU_CONTRAST_LOG, 'Log normalized', 'Log transform pixel intensities, then stretch them to fit the interval [0,1]', wx.ITEM_RADIO)
+            item_raw = submenu.Append(MENU_CONTRAST_RAW, 'Raw', 
+                                      'Do not transform pixel intensities', 
+                                      wx.ITEM_RADIO)
+            item_normalized = submenu.Append(MENU_CONTRAST_NORMALIZED, 
+                                             'Normalized', 
+                                             'Stretch pixel intensities to fit '
+                                             'the interval [0,1]', 
+                                             wx.ITEM_RADIO)
+            item_log = submenu.Append(MENU_CONTRAST_LOG, 'Log normalized', 
+                                      'Log transform pixel intensities, then '
+                                      'stretch them to fit the interval [0,1]', 
+                                      wx.ITEM_RADIO)
 
             if imshow_kwargs['normalize'] == 'log':
                 item_log.Check()
@@ -611,7 +620,8 @@ class CPFigureFrame(wx.Frame):
                 xlims = self.subplot(px,py).get_xlim()
                 ylims = self.subplot(px,py).get_ylim()
                 new_title = self.subplot(subplot[0], subplot[1]).get_title()
-                fig = create_or_find(self, -1, new_title, subplots=(1,1), name=new_title)
+                fig = create_or_find(self, -1, new_title, subplots=(1,1), 
+                                     name=new_title)
                 fig.subplot_imshow(0, 0, self.images[subplot], **imshow_kwargs)
                 # Copy over plot zoom stack
                 fig.zoom_stack = list(self.zoom_stack)
@@ -665,7 +675,8 @@ class CPFigureFrame(wx.Frame):
                     for idx, id in enumerate(ids):
                         if id == evt.Id:
                             params['rgb_mask'][idx] = not params['rgb_mask'][idx]
-                    self.subplot_imshow(subplot[0], subplot[1], self.images[subplot], **imshow_kwargs)
+                    self.subplot_imshow(subplot[0], subplot[1], 
+                                        self.images[subplot], **imshow_kwargs)
                     # Restore plot zoom
                     self.subplot(px,py).set_xlim(xlims[0], xlims[1])
                     self.subplot(px,py).set_ylim(ylims[0], ylims[1])   
@@ -751,12 +762,14 @@ class CPFigureFrame(wx.Frame):
         # Perform normalization
         if normalize == True:
             if is_color_image(image):
-                image = np.dstack([auto_contrast(image[:,:,ch]) for ch in range(image.shape[2])])
+                image = np.dstack([auto_contrast(image[:,:,ch]) 
+                                   for ch in range(image.shape[2])])
             else:
                 image = auto_contrast(image)
         elif normalize == 'log':
             if is_color_image(image):
-                image = np.dstack([log_transform(image[:,:,ch]) for ch in range(image.shape[2])])
+                image = np.dstack([log_transform(image[:,:,ch]) 
+                                   for ch in range(image.shape[2])])
             else:
                 image = log_transform(image)
                 
@@ -767,7 +780,8 @@ class CPFigureFrame(wx.Frame):
 
         # Draw
         subplot = self.subplot(x,y)
-        result = subplot.imshow(make_1_or_3_channels(image), colormap, vmin=vmin, vmax=vmax, interpolation='nearest')
+        result = subplot.imshow(make_1_or_3_channels(image), colormap, 
+                                vmin=vmin, vmax=vmax, interpolation='nearest')
 
         # Set title
         if title != None:
@@ -794,17 +808,25 @@ class CPFigureFrame(wx.Frame):
         def on_release(evt):
             if evt.inaxes == subplot:
                 if evt.button != 1:
-                    self.show_imshow_popup_menu((evt.x, self.figure.canvas.GetSize()[1]-evt.y), image, (x,y), kwargs)
-        self.event_bindings[(x,y)] = self.figure.canvas.mpl_connect('button_release_event', on_release)
+                    self.show_imshow_popup_menu(
+                        (evt.x, self.figure.canvas.GetSize()[1] - evt.y),
+                        image, (x,y), kwargs)
+        self.event_bindings[(x,y)] = self.figure.canvas.mpl_connect(
+                                         'button_release_event', on_release)
         # Also add this menu to the main menu
-        self.__menu_subplots.AppendMenu(-1, (title or 'subplot (%s,%s)'%(x,y)),
-                                     self.get_imshow_menu(image, (x,y), kwargs))
+        if (x,y) not in self.popup_menus.keys():
+            self.__menu_subplots.AppendMenu(-1, 
+                                            (title or 'subplot (%s,%s)'%(x,y)),
+                                            self.get_imshow_menu(image, (x,y), 
+                                                                 kwargs, copy=True))
         
         
         # Attempt to update histogram plot if one was created
-        hist_fig = find_fig(self, name='%s %s image histogram'%(self.Title, (x,y)))
+        hist_fig = find_fig(self, name='%s %s image histogram'%(self.Title, 
+                                                                (x,y)))
         if hist_fig:
-            hist_fig.subplot_histogram(0, 0, self.images[(x,y)].flatten(), bins=200, xlabel='pixel intensity')
+            hist_fig.subplot_histogram(0, 0, self.images[(x,y)].flatten(), 
+                                       bins=200, xlabel='pixel intensity')
             hist_fig.figure.canvas.draw()
         return result
     
@@ -1080,8 +1102,10 @@ if __name__ == "__main__":
     img = np.random.uniform(.5, .6, size=(50, 50, 3))
     f.subplot_imshow(0, 0, img[:,:,0], "1-channel colormapped", colorbar=True)
     f.subplot_imshow_grayscale(1, 0, img[:,:,0], "1-channel grayscale")
-    f.subplot_imshow_grayscale(2, 0, img[:,:,0], "1-channel raw", normalize=False)
-    f.subplot_imshow_grayscale(3, 0, img[:,:,0], "1-channel minmax=(.5,.6)", vmin=.5, vmax=.6, normalize=False)
+    f.subplot_imshow_grayscale(2, 0, img[:,:,0], "1-channel raw", 
+                               normalize=False)
+    f.subplot_imshow_grayscale(3, 0, img[:,:,0], "1-channel minmax=(.5,.6)", 
+                               vmin=.5, vmax=.6, normalize=False)
     f.subplot_imshow(0, 1, img, "rgb")
     f.subplot_imshow(1, 1, img, "rgb raw", normalize=False)
     f.subplot_imshow(2, 1, img, "rgb, log normalized", normalize='log')

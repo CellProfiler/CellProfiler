@@ -169,6 +169,7 @@ class CPFigureFrame(wx.Frame):
         self.length_arrow = None
         self.colorbar = {}
         self.subplot_params = {}
+        self.subplot_user_params = {}
         self.event_bindings = {}
         self.popup_menus = {}
         self.subplot_menus = {}
@@ -443,7 +444,6 @@ class CPFigureFrame(wx.Frame):
                     return self.images.get((i, j), None)
         return None
 
-
     def on_button_release(self,event):
         if not hasattr(self, "subplots"):
             return
@@ -562,135 +562,129 @@ class CPFigureFrame(wx.Frame):
         except: pass
         axes.clear()
         
-    def show_imshow_popup_menu(self, (x, y), image, subplot, imshow_kwargs):
-        popup = self.get_imshow_menu(image, subplot, imshow_kwargs)
-        self.PopupMenu(popup, (x,y))
+    def show_imshow_popup_menu(self, pos, subplot_xy):
+        popup = self.get_imshow_menu(subplot_xy)
+        self.PopupMenu(popup, pos)
         
-    def get_imshow_menu(self, image, subplot, imshow_kwargs, copy=False):
-        '''returns a popup menu with items to:
+    def get_imshow_menu(self, (x,y)):
+        '''returns a menu corresponding to the specified subplot with items to:
         - launch the image in a new cpfigure window
         - Show image histogram
         - Change contrast stretching
         - Toggle channels on/off
         Note: Each item is bound to a handler.
         '''
-        params = self.subplot_params[subplot]
+        params = self.subplot_params[(x,y)]
             
-        popup = self.popup_menus.get(subplot, None)
-        if popup == None or copy == True:
-            # If no popup has been built for this subplot yet, then create one 
-            MENU_CONTRAST_RAW = wx.NewId()
-            MENU_CONTRAST_NORMALIZED = wx.NewId()
-            MENU_CONTRAST_LOG = wx.NewId()
-            popup = wx.Menu()
-            if not copy:
-                self.popup_menus[subplot] = popup
-            open_in_new_figure_item = wx.MenuItem(popup, -1, 
-                                                  'Open image in new window')
-            popup.AppendItem(open_in_new_figure_item)
-            show_hist_item = wx.MenuItem(popup, -1, 'Show image histogram')
-            popup.AppendItem(show_hist_item)
+        # If no popup has been built for this subplot yet, then create one 
+        MENU_CONTRAST_RAW = wx.NewId()
+        MENU_CONTRAST_NORMALIZED = wx.NewId()
+        MENU_CONTRAST_LOG = wx.NewId()
+        popup = wx.Menu()
+        self.popup_menus[(x,y)] = popup
+        open_in_new_figure_item = wx.MenuItem(popup, -1, 
+                                              'Open image in new window')
+        popup.AppendItem(open_in_new_figure_item)
+        show_hist_item = wx.MenuItem(popup, -1, 'Show image histogram')
+        popup.AppendItem(show_hist_item)
+        
+        submenu = wx.Menu()
+        item_raw = submenu.Append(MENU_CONTRAST_RAW, 'Raw', 
+                                  'Do not transform pixel intensities', 
+                                  wx.ITEM_RADIO)
+        item_normalized = submenu.Append(MENU_CONTRAST_NORMALIZED, 
+                                         'Normalized', 
+                                         'Stretch pixel intensities to fit '
+                                         'the interval [0,1]', 
+                                         wx.ITEM_RADIO)
+        item_log = submenu.Append(MENU_CONTRAST_LOG, 'Log normalized', 
+                                  'Log transform pixel intensities, then '
+                                  'stretch them to fit the interval [0,1]', 
+                                  wx.ITEM_RADIO)
+
+        if params['normalize'] == 'log':
+            item_log.Check()
+        elif params['normalize'] == True:
+            item_normalized.Check()
+        else:
+            item_raw.Check()
+        popup.AppendMenu(-1, 'Image contrast', submenu)
+        
+        def open_image_in_new_figure(evt):
+            '''Callback for "Open image in new window" popup menu item '''
+            # Store current zoom limits
+            xlims = self.subplot(x,y).get_xlim()
+            ylims = self.subplot(x,y).get_ylim()
+            new_title = self.subplot(x,y).get_title()
+            fig = create_or_find(self, -1, new_title, subplots=(1,1), 
+                                 name=new_title)
+            fig.subplot_imshow(0, 0, self.images[(x,y)], **params)
+            # Copy over plot zoom stack
+            fig.zoom_stack = list(self.zoom_stack)
+            fig.__menu_item_zoom_out.Enable(len(self.zoom_stack) > 0)
+            # Set current zoom
+            fig.subplot(0,0).set_xlim(xlims[0], xlims[1])
+            fig.subplot(0,0).set_ylim(ylims[0], ylims[1])      
+            fig.figure.canvas.draw()
+        
+        def show_hist(evt):
+            '''Callback for "Show image histogram" popup menu item'''
+            new_title = '%s %s image histogram'%(self.Title, (x,y))
+            fig = create_or_find(self, -1, new_title, subplots=(1,1), name=new_title)
+            fig.subplot_histogram(0, 0, self.images[(x,y)].flatten(), bins=200, xlabel='pixel intensity')
+            fig.figure.canvas.draw()
             
+        def change_contrast(evt):
+            '''Callback for Image contrast menu items'''
+            # Store zoom limits
+            xlims = self.subplot(x,y).get_xlim()
+            ylims = self.subplot(x,y).get_ylim()
+            if evt.Id == MENU_CONTRAST_RAW:
+                params['normalize'] = False
+            elif evt.Id == MENU_CONTRAST_NORMALIZED:
+                params['normalize'] = True
+            elif evt.Id == MENU_CONTRAST_LOG:
+                params['normalize'] = 'log'
+            self.subplot_imshow(x, y, self.images[(x,y)], **params)
+            # Restore plot zoom
+            self.subplot(x,y).set_xlim(xlims[0], xlims[1])
+            self.subplot(x,y).set_ylim(ylims[0], ylims[1])                
+            self.figure.canvas.draw()
+            
+        if is_color_image(self.images[x,y]):
             submenu = wx.Menu()
-            item_raw = submenu.Append(MENU_CONTRAST_RAW, 'Raw', 
-                                      'Do not transform pixel intensities', 
-                                      wx.ITEM_RADIO)
-            item_normalized = submenu.Append(MENU_CONTRAST_NORMALIZED, 
-                                             'Normalized', 
-                                             'Stretch pixel intensities to fit '
-                                             'the interval [0,1]', 
-                                             wx.ITEM_RADIO)
-            item_log = submenu.Append(MENU_CONTRAST_LOG, 'Log normalized', 
-                                      'Log transform pixel intensities, then '
-                                      'stretch them to fit the interval [0,1]', 
-                                      wx.ITEM_RADIO)
-
-            if imshow_kwargs['normalize'] == 'log':
-                item_log.Check()
-            elif imshow_kwargs['normalize'] == True:
-                item_normalized.Check()
-            else:
-                item_raw.Check()
-            popup.AppendMenu(-1, 'Image contrast', submenu)
+            rgb_mask = match_rgbmask_to_image(params['rgb_mask'], self.images[x,y])
+            ids = [wx.NewId() for _ in rgb_mask]
+            for name, value, id in zip(wraparound(COLOR_NAMES), rgb_mask, ids):
+                item = submenu.Append(id, name, 'Show/Hide the %s channel'%(name), wx.ITEM_CHECK)
+                if value != 0:
+                    item.Check()
+            popup.AppendMenu(-1, 'Channels', submenu)
             
-            px, py = subplot
-            
-            def open_image_in_new_figure(evt):
-                '''Callback for "Open image in new window" popup menu item '''
-                # Store current zoom limits
-                xlims = self.subplot(px,py).get_xlim()
-                ylims = self.subplot(px,py).get_ylim()
-                new_title = self.subplot(subplot[0], subplot[1]).get_title()
-                fig = create_or_find(self, -1, new_title, subplots=(1,1), 
-                                     name=new_title)
-                fig.subplot_imshow(0, 0, self.images[subplot], **imshow_kwargs)
-                # Copy over plot zoom stack
-                fig.zoom_stack = list(self.zoom_stack)
-                fig.__menu_item_zoom_out.Enable(len(self.zoom_stack) > 0)
-                # Set current zoom
-                fig.subplot(0,0).set_xlim(xlims[0], xlims[1])
-                fig.subplot(0,0).set_ylim(ylims[0], ylims[1])      
-                fig.figure.canvas.draw()
-            
-            def show_hist(evt):
-                '''Callback for "Show image histogram" popup menu item'''
-                new_title = '%s %s image histogram'%(self.Title, subplot)
-                fig = create_or_find(self, -1, new_title, subplots=(1,1), name=new_title)
-                fig.subplot_histogram(0, 0, self.images[subplot].flatten(), bins=200, xlabel='pixel intensity')
-                fig.figure.canvas.draw()
-                
-            def change_contrast(evt):
-                '''Callback for Image contrast menu items'''
+            def toggle_channels(evt):
+                '''Callback for channel menu items.'''
                 # Store zoom limits
-                xlims = self.subplot(px,py).get_xlim()
-                ylims = self.subplot(px,py).get_ylim()
-                if evt.Id == MENU_CONTRAST_RAW:
-                    params['normalize'] = False
-                elif evt.Id == MENU_CONTRAST_NORMALIZED:
-                    params['normalize'] = True
-                elif evt.Id == MENU_CONTRAST_LOG:
-                    params['normalize'] = 'log'
-                self.subplot_imshow(subplot[0], subplot[1], self.images[subplot], **imshow_kwargs)
+                xlims = self.subplot(x,y).get_xlim()
+                ylims = self.subplot(x,y).get_ylim()
+                if 'rgb_mask' not in params:
+                    params['rgb_mask'] = list(rgb_mask)
+                for idx, id in enumerate(ids):
+                    if id == evt.Id:
+                        params['rgb_mask'][idx] = not params['rgb_mask'][idx]
+                self.subplot_imshow(x, y, self.images[(x,y)], **params)
                 # Restore plot zoom
-                self.subplot(px,py).set_xlim(xlims[0], xlims[1])
-                self.subplot(px,py).set_ylim(ylims[0], ylims[1])                
+                self.subplot(x,y).set_xlim(xlims[0], xlims[1])
+                self.subplot(x,y).set_ylim(ylims[0], ylims[1])   
                 self.figure.canvas.draw()
-                
-            if is_color_image(image):
-                submenu = wx.Menu()
-                rgb_mask = match_rgbmask_to_image(imshow_kwargs['rgb_mask'], image)
-                ids = [wx.NewId() for _ in rgb_mask]
-                for name, value, id in zip(wraparound(COLOR_NAMES), rgb_mask, ids):
-                    item = submenu.Append(id, name, 'Show/Hide the %s channel'%(name), wx.ITEM_CHECK)
-                    if value != 0:
-                        item.Check()
-                popup.AppendMenu(-1, 'Channels', submenu)
-                
-                def toggle_channels(evt):
-                    '''Callback for channel menu items.'''
-                    # Store zoom limits
-                    xlims = self.subplot(px,py).get_xlim()
-                    ylims = self.subplot(px,py).get_ylim()
-                    if 'rgb_mask' not in params:
-                        params['rgb_mask'] = list(rgb_mask)
-                    for idx, id in enumerate(ids):
-                        if id == evt.Id:
-                            params['rgb_mask'][idx] = not params['rgb_mask'][idx]
-                    self.subplot_imshow(subplot[0], subplot[1], 
-                                        self.images[subplot], **imshow_kwargs)
-                    # Restore plot zoom
-                    self.subplot(px,py).set_xlim(xlims[0], xlims[1])
-                    self.subplot(px,py).set_ylim(ylims[0], ylims[1])   
-                    self.figure.canvas.draw()
 
-                for id in ids:
-                    self.Bind(wx.EVT_MENU, toggle_channels, id=id)
-            
-            self.Bind(wx.EVT_MENU, open_image_in_new_figure, open_in_new_figure_item)
-            self.Bind(wx.EVT_MENU, show_hist, show_hist_item)
-            self.Bind(wx.EVT_MENU, change_contrast, id=MENU_CONTRAST_RAW)
-            self.Bind(wx.EVT_MENU, change_contrast, id=MENU_CONTRAST_NORMALIZED)
-            self.Bind(wx.EVT_MENU, change_contrast, id=MENU_CONTRAST_LOG)
+            for id in ids:
+                self.Bind(wx.EVT_MENU, toggle_channels, id=id)
+        
+        self.Bind(wx.EVT_MENU, open_image_in_new_figure, open_in_new_figure_item)
+        self.Bind(wx.EVT_MENU, show_hist, show_hist_item)
+        self.Bind(wx.EVT_MENU, change_contrast, id=MENU_CONTRAST_RAW)
+        self.Bind(wx.EVT_MENU, change_contrast, id=MENU_CONTRAST_NORMALIZED)
+        self.Bind(wx.EVT_MENU, change_contrast, id=MENU_CONTRAST_LOG)
         return popup
     
     
@@ -715,10 +709,10 @@ class CPFigureFrame(wx.Frame):
                    image. Used to show/hide individual channels in color images.
         '''
 
-        # NOTE: self.subplot_params is used to store changes that are made to 
+        # NOTE: self.subplot_user_params is used to store changes that are made to 
         #       the display through GUI interactions (eg: hiding a channel).
         #       Once a subplot that uses this mechanism has been drawn, it will
-        #       continually load defaults from self.subplot_params instead of
+        #       continually load defaults from self.subplot_user_params instead of
         #       the default values specified in the function definition.
         kwargs = {'title' : title,
                   'clear' : clear,
@@ -728,10 +722,19 @@ class CPFigureFrame(wx.Frame):
                   'vmin' : vmin,
                   'vmax' : vmax,
                   'rgb_mask' : rgb_mask}
+        if (x,y) not in self.subplot_user_params:
+            self.subplot_user_params[(x,y)] = {}
         if (x,y) not in self.subplot_params:
             self.subplot_params[(x,y)] = {}
         # overwrite keyword arguments with user-set values
-        kwargs.update(self.subplot_params[(x,y)])
+        kwargs.update(self.subplot_user_params[(x,y)])
+        self.subplot_params[(x,y)].update(kwargs)
+        
+#        if x == 0 == y:
+#            for k,v in self.subplot_params[(x,y)].items():
+#                print k,':',v
+#            print '\n'
+
 
         # and fetch back out
         title = kwargs['title']
@@ -809,18 +812,24 @@ class CPFigureFrame(wx.Frame):
         def on_release(evt):
             if evt.inaxes == subplot:
                 if evt.button != 1:
-                    self.show_imshow_popup_menu(
-                        (evt.x, self.figure.canvas.GetSize()[1] - evt.y),
-                        image, (x,y), kwargs)
+                    self.show_imshow_popup_menu((evt.x, self.figure.canvas.GetSize()[1] - evt.y), (x,y))
         self.event_bindings[(x,y)] = self.figure.canvas.mpl_connect(
                                          'button_release_event', on_release)
+        
         # Also add this menu to the main menu
         if (x,y) not in self.popup_menus.keys():
-            menu_pos = x + (y * self.subplots.shape[0])
-            self.subplot_menus[(x,y)] = self.__menu_subplots.InsertMenu(menu_pos, -1, 
-                                            (title or 'subplot (%s,%s)'%(x,y)),
-                                            self.get_imshow_menu(image, (x,y), 
-                                                                 kwargs, copy=True))
+            menu_pos = 0
+            for yy in range(y + 1):
+                if yy == y:
+                    cols = x
+                else:
+                    cols = self.subplots.shape[0] 
+                for xx in range(cols):
+                    if (xx,yy) in self.images:
+                        menu_pos += 1
+            self.__menu_subplots.InsertMenu(menu_pos, -1, 
+                                            (title or 'Subplot (%s,%s)'%(x,y)), 
+                                            self.get_imshow_menu((x,y)))
         
         
         # Attempt to update histogram plot if one was created
@@ -979,7 +988,6 @@ class CPFigureFrame(wx.Frame):
         
         return plot
 
-
     def subplot_density(self, x, y, points,
                         gridsize=100,
                         xlabel='',
@@ -1101,17 +1109,20 @@ if __name__ == "__main__":
     f = CPFigureFrame(subplots=(4, 2))
     f.Show()
 
+#    f.subplot_histogram(0, 0, [1,1,1,2], 2, 'x', title="hist")
+    
     img = np.random.uniform(.5, .6, size=(50, 50, 3))
+    f.subplot_imshow(0, 1, img, "rgb")
+    f.subplot_imshow(1, 1, img, "rgb raw", normalize=False)
+    f.subplot_imshow(2, 1, img, "rgb, log normalized", normalize='log')
+    f.subplot_imshow_bw(3, 1, img[:,:,0], "B&W")
+
     f.subplot_imshow(0, 0, img[:,:,0], "1-channel colormapped", colorbar=True)
     f.subplot_imshow_grayscale(1, 0, img[:,:,0], "1-channel grayscale")
     f.subplot_imshow_grayscale(2, 0, img[:,:,0], "1-channel raw", 
                                normalize=False)
     f.subplot_imshow_grayscale(3, 0, img[:,:,0], "1-channel minmax=(.5,.6)", 
                                vmin=.5, vmax=.6, normalize=False)
-    f.subplot_imshow(0, 1, img, "rgb")
-    f.subplot_imshow(1, 1, img, "rgb raw", normalize=False)
-    f.subplot_imshow(2, 1, img, "rgb, log normalized", normalize='log')
-    f.subplot_imshow_bw(3, 1, img[:,:,0], "B&W")
     f.figure.canvas.draw()
 
     app.MainLoop()

@@ -557,7 +557,6 @@ class CPFigureFrame(wx.Frame):
         axes = self.subplot(x,y)
         try:
             del self.images[(x,y)]
-            self.__menu_subplots.RemoveItem(self.subplot_menus[(x,y)])
             del self.popup_menus[(x,y)]
         except: pass
         axes.clear()
@@ -729,12 +728,6 @@ class CPFigureFrame(wx.Frame):
         # overwrite keyword arguments with user-set values
         kwargs.update(self.subplot_user_params[(x,y)])
         self.subplot_params[(x,y)].update(kwargs)
-        
-#        if x == 0 == y:
-#            for k,v in self.subplot_params[(x,y)].items():
-#                print k,':',v
-#            print '\n'
-
 
         # and fetch back out
         title = kwargs['title']
@@ -817,19 +810,20 @@ class CPFigureFrame(wx.Frame):
                                          'button_release_event', on_release)
         
         # Also add this menu to the main menu
-        if (x,y) not in self.popup_menus.keys():
-            menu_pos = 0
-            for yy in range(y + 1):
-                if yy == y:
-                    cols = x
-                else:
-                    cols = self.subplots.shape[0] 
-                for xx in range(cols):
-                    if (xx,yy) in self.images:
-                        menu_pos += 1
-            self.__menu_subplots.InsertMenu(menu_pos, -1, 
-                                            (title or 'Subplot (%s,%s)'%(x,y)), 
-                                            self.get_imshow_menu((x,y)))
+        if (x,y) in self.subplot_menus:
+            self.__menu_subplots.RemoveItem(self.subplot_menus[(x,y)])
+        menu_pos = 0
+        for yy in range(y + 1):
+            if yy == y:
+                cols = x
+            else:
+                cols = self.subplots.shape[0] 
+            for xx in range(cols):
+                if (xx,yy) in self.images:
+                    menu_pos += 1
+        self.subplot_menus[(x,y)] = self.__menu_subplots.InsertMenu(menu_pos, -1, 
+                                        (title or 'Subplot (%s,%s)'%(x,y)), 
+                                        self.get_imshow_menu((x,y)))
         
         
         # Attempt to update histogram plot if one was created

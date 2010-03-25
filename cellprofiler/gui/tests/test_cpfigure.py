@@ -134,6 +134,96 @@ class TestCPFigure(unittest.TestCase):
         for field in expected:
             assert field in [str(f) for f in my_frame.status_bar.GetFields()], 'Did not find "%s" in StatusBar fields'%(field)
              
+    def test_03_01_menu_order(self):
+        '''Make sure that the subplots submenus are presented in the right order
+        no matter what order they are drawn in.
+        Also tests that the order is not affected after calling clf()'''
+        f = cpfig.create_or_find(None, -1, subplots=(4,2))
+
+        img = np.random.uniform(.5, .6, size=(5, 5, 3))
         
+        f.subplot_histogram(0, 0, [1,1,1,2], 2, title="hist")
+        f.subplot_imshow(1, 0, img, "rgb1")
+        f.subplot_histogram(2, 0, [1,1,1,2], 2, title="hist")
+        f.subplot_imshow(3, 0, img, "rgb2")
+
+        f.subplot_imshow(0, 1, img, "rgb3")
+        f.subplot_imshow(1, 1, img, "rgb4")
+        f.subplot_imshow(2, 1, img, "rgb5")
+        f.subplot_histogram(3, 1, [1,1,1,2], 2, title="hist")
+    
+        for i, item in enumerate(f.menu_subplots.MenuItems):
+            assert item.Label == 'rgb%s'%(i+1)
+            
+        f.clf()
+
+        assert len(f.menu_subplots.MenuItems) == 0, 'Subplot menus should be empty after clf().'
+        
+        f.subplot_histogram(3, 1, [1,1,1,2], 2, title="hist")
+        f.subplot_imshow(2, 1, img, "rgb5")
+        f.subplot_imshow(0, 1, img, "rgb3")
+        f.subplot_imshow(1, 1, img, "rgb4")
+        f.subplot_histogram(2, 0, [1,1,1,2], 2, title="hist")
+        f.subplot_imshow(1, 0, img, "rgb1")
+        f.subplot_imshow(3, 0, img, "rgb2")
+        f.subplot_histogram(0, 0, [1,1,1,2], 2, title="hist")
+    
+        for i, item in enumerate(f.menu_subplots.MenuItems):
+            assert item.Label == 'rgb%s'%(i+1)
+                        
+        f.Destroy()
+
+    def test_03_02_menu_order2(self):
+        '''Make sure that the subplots submenus are presented in the right order
+        after they are redrawn as a result of menu handlers 
+        (e.g. change_contrast)'''
+        f = cpfig.create_or_find(None, -1, subplots=(2,2))
+
+        img = np.random.uniform(.5, .6, size=(5, 5, 3))
+        
+        f.subplot_histogram(0, 0, [1,1,1,2], 2, title="hist")
+        f.subplot_imshow(1, 0, img, "rgb1")
+        f.subplot_imshow(0, 1, img, "rgb2")
+        f.subplot_imshow(1, 1, img, "rgb3")
+    
+        for i, item in enumerate(f.menu_subplots.MenuItems):
+            assert item.Label == 'rgb%s'%(i+1)
+            
+        menu = f.get_imshow_menu((1,0))
+        for item in menu.MenuItems:
+            if item.Label == 'Image contrast':
+                for item in item.SubMenu.MenuItems:
+                    if item.Label == 'Raw':
+                        event = wx.PyCommandEvent(wx.EVT_MENU.typeId, item.Id)
+                        f.GetEventHandler().ProcessEvent(event)
+                        app.ProcessPendingEvents()
+    
+        for i, item in enumerate(f.menu_subplots.MenuItems):
+            assert item.Label == 'rgb%s'%(i+1)
+            
+        menu = f.get_imshow_menu((1,1))
+        for item in menu.MenuItems:
+            if item.Label == 'Image contrast':
+                for item in item.SubMenu.MenuItems:
+                    if item.Label == 'Log normalized':
+                        event = wx.PyCommandEvent(wx.EVT_MENU.typeId, item.Id)
+                        f.GetEventHandler().ProcessEvent(event)
+                        app.ProcessPendingEvents()
+    
+        for i, item in enumerate(f.menu_subplots.MenuItems):
+            assert item.Label == 'rgb%s'%(i+1)
+            
+        menu = f.get_imshow_menu((0,1))
+        for item in menu.MenuItems:
+            if item.Label == 'Channels':
+                for item in item.SubMenu.MenuItems:
+                    if item.Label == cpfig.COLOR_NAMES[0]:
+                        event = wx.PyCommandEvent(wx.EVT_MENU.typeId, item.Id)
+                        f.GetEventHandler().ProcessEvent(event)
+                        app.ProcessPendingEvents()
+
+        for i, item in enumerate(f.menu_subplots.MenuItems):
+            assert item.Label == 'rgb%s'%(i+1)
+            
         
 app.MainLoop()

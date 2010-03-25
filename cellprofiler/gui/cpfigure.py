@@ -244,8 +244,8 @@ class CPFigureFrame(wx.Frame):
                                               "Measure &length")
         self.MenuBar.Append(self.__menu_tools, "&Tools")
         
-        self.__menu_subplots = wx.Menu()
-        self.MenuBar.Append(self.__menu_subplots, 'Subplots')
+        self.menu_subplots = wx.Menu()
+        self.MenuBar.Append(self.menu_subplots, 'Subplots')
             
         wx.EVT_MENU(self, MENU_TOOLS_MEASURE_LENGTH, self.on_measure_length)
         accelerators = wx.AcceleratorTable(
@@ -261,6 +261,16 @@ class CPFigureFrame(wx.Frame):
             self.subplots[:,:] = None
         if hasattr(self,"zoom_rects"):
             self.zoom_rects[:,:] = None
+        # Remove the subplot menus
+        for (x,y) in self.subplot_menus:
+            self.menu_subplots.RemoveItem(self.subplot_menus[(x,y)])
+        for (x,y) in self.event_bindings:
+            self.figure.canvas.mpl_disconnect(self.event_bindings[(x,y)])
+        self.subplot_menus = {}
+        self.subplot_params = {}
+        self.subplot_user_params = {}
+        self.colorbar = {}
+        self.images = {}
         
     def on_paint(self, event):
         dc = wx.PaintDC(self)
@@ -708,11 +718,11 @@ class CPFigureFrame(wx.Frame):
                    image. Used to show/hide individual channels in color images.
         '''
 
-        # NOTE: self.subplot_user_params is used to store changes that are made to 
-        #       the display through GUI interactions (eg: hiding a channel).
-        #       Once a subplot that uses this mechanism has been drawn, it will
-        #       continually load defaults from self.subplot_user_params instead of
-        #       the default values specified in the function definition.
+        # NOTE: self.subplot_user_params is used to store changes that are made 
+        #    to the display through GUI interactions (eg: hiding a channel).
+        #    Once a subplot that uses this mechanism has been drawn, it will
+        #    continually load defaults from self.subplot_user_params instead of
+        #    the default values specified in the function definition.
         kwargs = {'title' : title,
                   'clear' : clear,
                   'colormap' : colormap,
@@ -811,7 +821,8 @@ class CPFigureFrame(wx.Frame):
         
         # Also add this menu to the main menu
         if (x,y) in self.subplot_menus:
-            self.__menu_subplots.RemoveItem(self.subplot_menus[(x,y)])
+            # First trash the existing menu if there is one
+            self.menu_subplots.RemoveItem(self.subplot_menus[(x,y)])
         menu_pos = 0
         for yy in range(y + 1):
             if yy == y:
@@ -821,10 +832,9 @@ class CPFigureFrame(wx.Frame):
             for xx in range(cols):
                 if (xx,yy) in self.images:
                     menu_pos += 1
-        self.subplot_menus[(x,y)] = self.__menu_subplots.InsertMenu(menu_pos, -1, 
-                                        (title or 'Subplot (%s,%s)'%(x,y)), 
+        self.subplot_menus[(x,y)] = self.menu_subplots.InsertMenu(menu_pos, 
+                                        -1, (title or 'Subplot (%s,%s)'%(x,y)), 
                                         self.get_imshow_menu((x,y)))
-        
         
         # Attempt to update histogram plot if one was created
         hist_fig = find_fig(self, name='%s %s image histogram'%(self.Title, 
@@ -864,6 +874,9 @@ class CPFigureFrame(wx.Frame):
                                    vmin=vmin, vmax=vmax)
     
     def subplot_imshow_bw(self, x, y, image, title=None, clear=True):
+#        a = 0.3
+#        b = 0.59
+#        c = 0.11
 #        if is_color_image(image):
 #            # Convert to luminance
 #            image = np.sum(image * (a,b,c), axis=2)
@@ -1095,28 +1108,23 @@ def figure_to_image(figure, *args, **kwargs):
 
 if __name__ == "__main__":
     import numpy as np
-    import gc
-
-    ID_TEST_ADD_IMAGE = wx.NewId()
 
     app = wx.PySimpleApp()
     f = CPFigureFrame(subplots=(4, 2))
     f.Show()
 
-#    f.subplot_histogram(0, 0, [1,1,1,2], 2, 'x', title="hist")
+    #f.subplot_histogram(0, 0, [1,1,1,2], 2, 'x', title="hist")
     
-    img = np.random.uniform(.5, .6, size=(50, 50, 3))
+    img = np.random.uniform(.5, .6, size=(5, 5, 3))
+    f.subplot_imshow(0, 0, img[:,:,0], "1-channel colormapped", colorbar=True)
+    f.subplot_imshow_grayscale(1, 0, img[:,:,0], "1-channel grayscale")
+    f.subplot_imshow_grayscale(2, 0, img[:,:,0], "1-channel raw", normalize=False)
+    f.subplot_imshow_grayscale(3, 0, img[:,:,0], "1-channel minmax=(.5,.6)", vmin=.5, vmax=.6, normalize=False)
     f.subplot_imshow(0, 1, img, "rgb")
     f.subplot_imshow(1, 1, img, "rgb raw", normalize=False)
     f.subplot_imshow(2, 1, img, "rgb, log normalized", normalize='log')
     f.subplot_imshow_bw(3, 1, img[:,:,0], "B&W")
 
-    f.subplot_imshow(0, 0, img[:,:,0], "1-channel colormapped", colorbar=True)
-    f.subplot_imshow_grayscale(1, 0, img[:,:,0], "1-channel grayscale")
-    f.subplot_imshow_grayscale(2, 0, img[:,:,0], "1-channel raw", 
-                               normalize=False)
-    f.subplot_imshow_grayscale(3, 0, img[:,:,0], "1-channel minmax=(.5,.6)", 
-                               vmin=.5, vmax=.6, normalize=False)
     f.figure.canvas.draw()
-
+    
     app.MainLoop()

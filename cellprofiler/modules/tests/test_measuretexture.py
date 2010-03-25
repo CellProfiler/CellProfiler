@@ -148,7 +148,7 @@ class TestMeasureTexture(unittest.TestCase):
                                     for x in module.scale_groups],[3,4,5]):
             self.assertEqual(scale, expected)
         self.assertEqual(module.gabor_angles.value, 3)
-    
+        
     def test_02_01_compare_to_matlab(self):
         path = os.path.split(__file__)[0]
         mask_file = os.path.join(path, 'Channel2-01-A-01Mask.png')
@@ -206,7 +206,23 @@ class TestMeasureTexture(unittest.TestCase):
             self.assertAlmostEqual(pytm, value,3,
                                    "%s failed. Python=%f, Matlab=%f" %
                                    (feature_name, pytm, value))
-            
+
+    def test_02_02_many_objects(self):
+        '''Regression test for IMG-775'''
+        np.random.seed(22)
+        image=np.random.uniform(size=(100,100))
+        i,j = np.mgrid[0:100,0:100]
+        labels = (i/10).astype(int) + (j/10).astype(int) * 10 + 1
+        workspace, module = self.make_workspace(image, labels)
+        module.scale_groups[0].scale.value = 2
+        module.run(workspace)
+        m = workspace.measurements
+        for measurement in M.F_HARALICK:
+            mname = '%s_%s_%s_%d'%(M.TEXTURE, measurement, INPUT_IMAGE_NAME, 2)
+            values = m.get_current_measurement(INPUT_OBJECTS_NAME, mname)
+            self.assertTrue(np.all(values != 0))
+        
+        
     def test_03_01_gabor_null(self):
         '''Test for no score on a uniform image'''
         image = np.ones((10,10))*.5

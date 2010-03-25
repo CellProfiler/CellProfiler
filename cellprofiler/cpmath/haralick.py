@@ -66,6 +66,7 @@ def cooccurrence(quantized_image, labels, scale=3):
     pixels to the right of a pixel in A.  Row I of the cooccurence
     matrix is the gray-level histogram of the pixels in B.
     """
+    labels = labels.astype(int)
     nlevels = quantized_image.max() + 1
     nobjects = labels.max()
     image_a = quantized_image[:, :-scale]

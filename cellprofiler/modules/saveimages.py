@@ -576,10 +576,14 @@ class SaveImages(cpm.CPModule):
             writer.setMetadataRetrieve(meta)
             writer.setId(filename)
 
-            # Scale pixel vals to 16 bit
-            if pixels.dtype == np.uint8:
-                pixels = pixels.astype(np.uint16) * 255
+            if pixels.dtype in (np.uint8, np.int16):
+                # Leave the values alone, but cast to unsigned int 16
+                pixels = pixels.astype(np.uint16)
+            elif pixels.dtype in (np.uint32, np.uint64, np.int32, np.int64):
+                sys.stderr.write("Warning: converting %s image to 16-bit could result in incorrect values.\n" % repr(pixels.dtype))
+                pixels = pixels.astype(np.uint16)
             elif issubclass(pixels.dtype.type, np.floating):
+                # Scale pixel vals to 16 bit
                 pixels = (pixels * 65535).astype(np.uint16)
 
             if len(pixels.shape) == 3 and pixels.shape[2] == 3:  

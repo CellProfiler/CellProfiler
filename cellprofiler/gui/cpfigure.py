@@ -441,11 +441,14 @@ class CPFigureFrame(wx.Frame):
         xi = int(event.xdata+.5)
         yi = int(event.ydata+.5)
         if event.inaxes:
-            fields = ["X: %d"%xi, "Y: %d"%yi]
             im = self.find_image_for_axes(event.inaxes)
             if im is not None:
+                fields = ["X: %d"%xi, "Y: %d"%yi]
                 fields += self.get_pixel_data_fields_for_status_bar(im, xi, yi)
-        self.status_bar.SetFields(fields)
+                self.status_bar.SetFields(fields)
+                return
+            else:
+                self.status_bar.SetFields([event.inaxes.format_coord(event.xdata, event.ydata)])
         
     def find_image_for_axes(self, axes):
         for i, sl in enumerate(self.subplots):
@@ -911,7 +914,7 @@ class CPFigureFrame(wx.Frame):
         table.set_fontsize(cpprefs.get_table_font_size())
         # table.set_fontfamily(cpprefs.get_table_font_name())
         
-    def subplot_scatter(self, row, col,
+    def subplot_scatter(self, x , y,
                         xvals, yvals, 
                         xlabel='', ylabel='',
                         xscale='linear', yscale='linear',
@@ -919,7 +922,7 @@ class CPFigureFrame(wx.Frame):
                         clear=True):
         """Put a scatterplot into a subplot
         
-        row, col - subplot's column and row
+        x, y - subplot's column and row
         xvals, yvals - values to scatter
         xlabel - string label for x axis
         ylabel - string label for y axis
@@ -930,12 +933,12 @@ class CPFigureFrame(wx.Frame):
         xvals = np.array(xvals).flatten()
         yvals = np.array(yvals).flatten()
         if clear:
-            self.clear_subplot(col, row)
+            self.clear_subplot(x, y)
 
         self.figure.set_facecolor((1,1,1))
         self.figure.set_edgecolor((1,1,1))
 
-        axes = self.subplot(col, row)
+        axes = self.subplot(x, y)
         plot = axes.scatter(xvals, yvals,
                             facecolor=(0.0, 0.62, 1.0),
                             edgecolor='none',
@@ -1034,7 +1037,6 @@ class CPFigureFrame(wx.Frame):
         # nothing to plot?
         if len(points)==0 or points==[[]]: return
             
-        axes = self.subplot(x, y)
         plot = axes.hexbin(points[:, 0], points[:, 1], 
                            gridsize=gridsize,
                            xscale=xscale,
@@ -1070,6 +1072,42 @@ class CPFigureFrame(wx.Frame):
             ymax = ymax+(ymax-ymin)/20.
 
         axes.axis([xmin, xmax, ymin, ymax])
+        
+        return plot
+    
+    def subplot_platemap(self, x, y, data, cmap=matplotlib.cm.jet, title='',
+                         clear=True):
+        '''Draws a basic plate map (as an image).
+        data  -  an 8x12 or 16x24 shaped array of data to plot
+        '''
+        assert data.shape in [(8,12), (16,24)], 'Unsupported plate format'
+        alphabet = 'ABCDEFGHIJKLMNOP'  #enough letters for a 384 well plate
+        
+        nrows, ncols = data.shape
+        
+        if clear:
+            self.clear_subplot(x, y)
+        axes = self.subplot(x, y)
+        
+        plot = axes.imshow(data, cmap=cmap, interpolation='nearest',
+                           shape=data.shape)
+        axes.set_title(title)
+        axes.set_xticks(range(ncols))
+        axes.set_yticks(range(nrows))
+        axes.set_xticklabels(range(1, ncols+1), minor=True)
+        axes.set_yticklabels(alphabet[:nrows], minor=True)
+        axes.axis('image')
+        
+        def format_coord(x, y):
+            col = int(x + 0.5)
+            row = int(y + 0.5)
+            if (0 <= col < ncols) and (0 <= row < nrows):
+                val = data[row, col]
+                return '%s%02d - %1.4f'%(alphabet[row], int(col+1), val)
+            else:
+                return '%s%02d'%(alphabet[row], int(col+1))
+        
+        axes.format_coord = format_coord
         
         return plot
         
@@ -1110,16 +1148,20 @@ if __name__ == "__main__":
     import numpy as np
 
     app = wx.PySimpleApp()
+    
     f = CPFigureFrame(subplots=(4, 2))
     f.Show()
-
-    #f.subplot_histogram(0, 0, [1,1,1,2], 2, 'x', title="hist")
     
     img = np.random.uniform(.5, .6, size=(5, 5, 3))
-    f.subplot_imshow(0, 0, img[:,:,0], "1-channel colormapped", colorbar=True)
-    f.subplot_imshow_grayscale(1, 0, img[:,:,0], "1-channel grayscale")
-    f.subplot_imshow_grayscale(2, 0, img[:,:,0], "1-channel raw", normalize=False)
-    f.subplot_imshow_grayscale(3, 0, img[:,:,0], "1-channel minmax=(.5,.6)", vmin=.5, vmax=.6, normalize=False)
+    
+    f.subplot_platemap(0, 0, np.random.rand(16, 24), title='platemap')
+    f.subplot_histogram(1, 0, [1,1,1,2], 2, 'x', title="hist")
+    f.subplot_scatter(2, 0, [1,1,1,2], [1,2,3,4], title="scatter")
+    f.subplot_density(3, 0, np.random.randn(100).reshape((50,2)), title="density")
+#    f.subplot_imshow(0, 0, img[:,:,0], "1-channel colormapped", colorbar=True)
+#    f.subplot_imshow_grayscale(1, 0, img[:,:,0], "1-channel grayscale")
+#    f.subplot_imshow_grayscale(2, 0, img[:,:,0], "1-channel raw", normalize=False)
+#    f.subplot_imshow_grayscale(3, 0, img[:,:,0], "1-channel minmax=(.5,.6)", vmin=.5, vmax=.6, normalize=False)
     f.subplot_imshow(0, 1, img, "rgb")
     f.subplot_imshow(1, 1, img, "rgb raw", normalize=False)
     f.subplot_imshow(2, 1, img, "rgb, log normalized", normalize='log')

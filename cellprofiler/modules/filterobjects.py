@@ -436,7 +436,7 @@ class FilterObjects(cpm.CPModule):
             image = workspace.image_set.get_image(image_names[0])
         if image is None:
             # Oh so sad - no image, just display the old and new labels
-            figure = workspace.create_or_find_figure(subplots=(2,1))
+            figure = workspace.create_or_find_figure(subplots=(1,2))
             figure.subplot_imshow_labels(0,0,src_objects.segmented,
                                          title="Original: %s"%src_name)
             figure.subplot_imshow_labels(0,1,target_objects.segmented,

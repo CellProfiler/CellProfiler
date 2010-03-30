@@ -41,7 +41,7 @@ __args = [r"-Djava.class.path="+__class_path,
           #r"-verbose:jni",
           r"-Xmx512m"]
 
-if get_headless():
+if get_headless() or sys.platform=="darwin":
     __args += [ r"-Djava.awt.headless=true" ]
 
 jutil.start_vm(__args)

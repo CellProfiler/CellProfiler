@@ -353,12 +353,16 @@ class MeasureObjectNeighbors(cpm.CPModule):
                                       "%s colored by # of neighbors" %
                                       self.object_name.value,
                                       colormap = neighbor_cm,
-                                      colorbar=True, vmin=-1)
+                                      colorbar=True, vmin=-1,
+                                      vmax=neighbor_count_image.max(),
+                                      normalize=False)
                 figure.subplot_imshow(1,1, percent_touching_image,
                                       "%s colored by pct touching"%
                                       self.object_name.value,
                                       colormap = percent_touching_cm,
-                                      colorbar=True, vmin=0)
+                                      colorbar=True, vmin=0, 
+                                      vmax=percent_touching_image.max(),
+                                      normalize=False)
             else:
                 # No objects - colorbar blows up.
                 figure.subplot_imshow(0,1, neighbor_count_image,

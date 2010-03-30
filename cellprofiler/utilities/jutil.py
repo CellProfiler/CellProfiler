@@ -92,7 +92,7 @@ class JavaException(Exception):
                 message = env.call_method(self.throwable, method_id)
                 if message is not None:
                     message = env.get_string_utf(message)
-                    super(BaseException, self).__init__(message)
+                    super(JavaException, self).__init__(message)
         finally:
             env.exception_clear()
 
@@ -119,8 +119,10 @@ def start_vm(args):
         global __thread_local_env
         global __kill
         global __dead_objects
-        
+
+        print "Starting VM"        
         __vm = javabridge.JB_VM()
+        print "VM started"
         #
         # We get local copies here and bind them in a closure to guarantee
         # that they exist past atexit.
@@ -170,6 +172,16 @@ def start_vm(args):
     t.start()
     start_event.wait()
 
+def print_all_stack_traces():
+    thread_map = static_call("java/lang/Thread","getAllStackTraces",
+                             "()Ljava/util/Map;")
+    stack_traces = call(thread_map, "values","()Ljava/util/Collection;")
+    sta = call(stack_traces, "toArray","()[Ljava/lang/Object;")
+    stal = get_env().get_object_array_elements(sta)
+    for stak in stal:
+        stakes = get_env().get_object_array_elements(stak)
+        for stake in stakes:
+            print to_string(stake)
 #
 # We make kill_vm as a closure here to bind local copies of the global objects
 #
@@ -187,8 +199,11 @@ def make_kill_vm():
         global __vm
         if __vm is None:
             return
-        if getattr(thread_local_env,"env",None) is not None:
-            detach()
+        attach()
+        runtime = static_call("java/lang/Runtime","getRuntime",
+                              "()Ljava/lang/Runtime;")
+        call(runtime, "exit", "(I)V", 0)
+        detach()
         kill[0] = True
         wake_event.set()
         dead_event.wait()
@@ -271,7 +286,7 @@ def static_call(class_name, method_name, sig, *args):
     env = get_env()
     klass = env.find_class(class_name)
     if klass is None:
-        raise JavaException(env, env.exception_occurred())
+        raise JavaException(env)
     
     method_id = env.get_static_method_id(klass, method_name, sig)
     if method_id is None:

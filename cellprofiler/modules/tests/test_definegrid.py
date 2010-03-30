@@ -237,7 +237,7 @@ class TestDefineGrid(unittest.TestCase):
         module.wants_image.value = True
         self.assertRaises(RuntimeError, module.run, workspace)
 
-    def test_03_01_coordinates(self):
+    def test_03_01_coordinates_plus_savedimagesize(self):
         image = np.zeros((50,100))
         labels = np.zeros((50,100), int)
         first_x, first_y = (11, 10)
@@ -292,3 +292,7 @@ class TestDefineGrid(unittest.TestCase):
         
         image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         self.assertTrue(image is not None)
+        shape = image.pixel_data.shape
+        self.assertEqual(shape[0], 50)
+        self.assertEqual(shape[1], 100)
+        

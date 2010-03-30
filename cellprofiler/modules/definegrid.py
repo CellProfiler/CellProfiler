@@ -368,19 +368,36 @@ class DefineGrid(cpm.CPModule):
         self.add_measurement(workspace, F_X_SPACING, gridding.x_spacing)
         self.add_measurement(workspace, F_Y_SPACING, gridding.y_spacing)
         if self.wants_image:
+            import matplotlib.transforms
             from cellprofiler.gui.cpfigure import figure_to_image
-            import matplotlib
-            import matplotlib.backends.backend_wxagg
+            
             figure = matplotlib.figure.Figure()
-            axes = figure.add_axes((0,0,1,1),frameon=False)
-            self.display_grid(workspace, gridding, axes)
-            axes.axison=False
-            ai = axes.images[0]
-            size = 2*np.array(ai.get_size(),float) / float(figure.get_dpi())
-            figure.set_size_inches(size[1],size[0])
-            canvas = matplotlib.backends.backend_wxagg.FigureCanvasAgg(figure)
-            pixel_data = figure_to_image(figure)
-            image = cpi.Image(pixel_data)
+            canvas = matplotlib.backends.backend_agg.FigureCanvasAgg(figure)
+            ax = figure.add_subplot(1,1,1)
+            self.display_grid(workspace, gridding, ax)
+            #
+            # This is the recipe for just showing the axis
+            #
+            figure.set_frameon(False)
+            ax.set_axis_off()
+            figure.subplots_adjust(0, 0, 1, 1, 0, 0)
+            ai = ax.images[0]
+            shape = ai.get_size()
+            dpi = figure.dpi
+            width = float(shape[1]) / dpi
+            height = float(shape[0]) / dpi
+            figure.set_figheight(height)
+            figure.set_figwidth(width)
+            bbox = matplotlib.transforms.Bbox(
+                np.array([[0.0, 0.0], [width, height]]))
+            transform = matplotlib.transforms.Affine2D(
+                np.array([[dpi, 0, 0],
+                          [0, dpi, 0],
+                          [0,   0, 1]]))
+            figure.bbox = matplotlib.transforms.TransformedBbox(bbox, transform)
+            image_pixels = figure_to_image(figure, dpi=dpi)
+            image = cpi.Image(image_pixels)
+            
             workspace.image_set.add(self.save_image_name.value, image)
 
         workspace.display_data.gridding = gridding

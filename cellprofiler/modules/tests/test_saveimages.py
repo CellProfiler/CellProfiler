@@ -996,6 +996,30 @@ SaveImages:[module_num:6|svn_version:\'9507\'|variable_revision_number:5|show_wi
         pixel_data = pixel_data.astype(float) / 255.0
         self.assertEqual(pixel_data.shape, image.shape)
         self.assertTrue(np.all(np.abs(image - pixel_data) < .02))
+        
+    def test_04_03_clip(self):
+        """Regression test of IMG-720: clip images with values outside of 0-1"""
+        np.random.seed(43)
+        image = np.random.uniform(size=(40,30)) * 1.2 - .1
+        expected = image.copy()
+        expected[expected < 0] = 0
+        expected[expected > 1] = 1
+        workspace, module = self.make_workspace(image, FILE_NAME)
+        self.assertTrue(isinstance(module, cpm_si.SaveImages))
+        module.save_image_or_figure.value = cpm_si.IF_IMAGE
+        module.file_name_method.value = cpm_si.FN_SINGLE_NAME
+        module.single_file_name.value = "foo"
+        module.file_format.value = cpm_si.FF_PNG
+        module.rescale.value = False
+        module.run(workspace)
+        filename = os.path.join(cpprefs.get_default_output_directory(),
+                                "foo.%s"%(cpm_si.FF_PNG))
+        self.assertTrue(os.path.isfile(filename))
+        pixel_data = cpm_li.load_using_PIL(filename)
+        pixel_data = pixel_data.astype(float) / 255.0
+        self.assertEqual(pixel_data.shape, image.shape)
+        self.assertTrue(np.all(np.abs(expected - pixel_data) < .02))
+        
 
     def run_movie(self, groupings=None, fn = None):
         '''Run a pipeline that produces a movie

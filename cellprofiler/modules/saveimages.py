@@ -613,6 +613,7 @@ class SaveImages(cpm.CPModule):
             pixels = image.pixel_data
             if self.file_format != FF_MAT:
                 if self.rescale.value:
+                    pixels = pixels.copy()
                     # Normalize intensities for each channel
                     if pixels.ndim == 3:
                         # RGB
@@ -625,6 +626,15 @@ class SaveImages(cpm.CPModule):
                         img_min = np.min(pixels)
                         img_max = np.max(pixels)
                         pixels = (pixels - img_min) / (img_max - img_min)
+                else:
+                    # Clip at 0 and 1
+                    if np.max(pixels) > 1 or np.min(pixels) < 0:
+                        sys.stderr.write(
+                            "Warning, clipping image %s before output. Some intensities are outside of range 0-1" %
+                            self.image_name.value)
+                        pixels = pixels.copy()
+                        pixels[pixels < 0] = 0
+                        pixels[pixels > 1] = 1
                         
                 if pixels.ndim == 2 and self.colormap != CM_GRAY:
                     # Convert grayscale image to rgb for writing

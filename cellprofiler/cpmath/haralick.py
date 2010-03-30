@@ -75,14 +75,14 @@ def cooccurrence(quantized_image, labels, scale=3):
     equilabel = ((labels[:, :-scale] == labels[:, scale:]) & 
                  (labels[:,:-scale] > 0))
     if np.any(equilabel):
-            
-	Q = (nlevels*nlevels*(labels_ab[equilabel]-1)+
-	     nlevels*image_a[equilabel]+image_b[equilabel])
-	R = np.bincount(Q)
-	if R.size != nobjects*nlevels*nlevels:
-	    S = np.zeros(nobjects*nlevels*nlevels-R.size)
-	    R = np.hstack((R, S))
-	P = R.reshape(nobjects, nlevels, nlevels)
+
+        Q = (nlevels*nlevels*(labels_ab[equilabel]-1)+
+             nlevels*image_a[equilabel]+image_b[equilabel])
+        R = np.bincount(Q)
+        if R.size != nobjects*nlevels*nlevels:
+            S = np.zeros(nobjects*nlevels*nlevels-R.size)
+            R = np.hstack((R, S))
+        P = R.reshape(nobjects, nlevels, nlevels)
         pixel_count = fix(scind.sum(equilabel, labels[:,:-scale],
                                     np.arange(nobjects)+1))
         pixel_count = np.tile(pixel_count[:,np.newaxis,np.newaxis],
@@ -245,4 +245,4 @@ if __name__ == '__main__':
     labels = np.array([[0,0,0,0],[0,0,0,1],[0,0,1,1],[0,1,1,1]])
     P = cooccurrence(gray, labels, 1)
 
-    
+

@@ -163,7 +163,7 @@ class TestMeasureObjects(unittest.TestCase):
             self.assertEqual(numpy.product(data.shape),0,"Got data for feature %s"%(feature_name))
         self.features_and_columns_match(m, moi)
         
-    def test_03_02_one(self):
+    def test_03_02_00_one(self):
         """Check measurements on a 3x3 square of 1's"""
         img = numpy.array([[0,0,0,0,0,0,0],
                            [0,0,1,1,1,0,0],
@@ -203,7 +203,47 @@ class TestMeasureObjects(unittest.TestCase):
             self.assertEqual(numpy.product(data.shape),1)
             self.assertEqual(data[0],value,"%s expected %f != actual %f"%(meas_name, value, data[0]))
         
-    def test_03_03_mass_displacement(self):
+    def test_03_02_01_one_masked(self):
+        """Check measurements on a 3x3 square of 1's"""
+        img = numpy.array([[0,0,0,0,0,0,0],
+                           [0,0,1,1,1,0,0],
+                           [0,0,1,1,1,0,0],
+                           [0,0,1,1,1,0,0],
+                           [0,0,0,0,0,0,0]])
+        ii = II.InjectImage('MyImage',img.astype(float), img > 0)
+        ii.module_num = 1
+        io = II.InjectObjects('MyObjects',img.astype(int))
+        io.module_num = 2
+        moi = MOI.MeasureObjectIntensity()
+        moi.images[0].name.value = 'MyImage'
+        moi.objects[0].name.value = 'MyObjects'
+        moi.module_num = 3
+        pipeline = P.Pipeline()
+        pipeline.add_listener(self.error_callback)
+        pipeline.add_module(ii)
+        pipeline.add_module(io)
+        pipeline.add_module(moi)
+        m = pipeline.run()
+        for meas_name,value in ((MOI.INTEGRATED_INTENSITY,9),
+                                (MOI.MEAN_INTENSITY,1),
+                                (MOI.STD_INTENSITY,0),
+                                (MOI.MIN_INTENSITY,1),
+                                (MOI.MAX_INTENSITY,1),
+                                (MOI.INTEGRATED_INTENSITY_EDGE,8),
+                                (MOI.MEAN_INTENSITY_EDGE,1),
+                                (MOI.STD_INTENSITY_EDGE,0),
+                                (MOI.MIN_INTENSITY_EDGE,1),
+                                (MOI.MAX_INTENSITY_EDGE,1),
+                                (MOI.MASS_DISPLACEMENT,0),
+                                (MOI.LOWER_QUARTILE_INTENSITY,1),
+                                (MOI.MEDIAN_INTENSITY,1),
+                                (MOI.UPPER_QUARTILE_INTENSITY,1)):
+            feature_name = "%s_%s_%s"%(MOI.INTENSITY, meas_name, 'MyImage')
+            data = m.get_current_measurement('MyObjects',feature_name)
+            self.assertEqual(numpy.product(data.shape),1)
+            self.assertEqual(data[0],value,"%s expected %f != actual %f"%(meas_name, value, data[0]))
+
+    def test_03_03_00_mass_displacement(self):
         """Check the mass displacement of three squares"""
         
         labels = numpy.array([[0,0,0,0,0,0,0],
@@ -259,7 +299,7 @@ class TestMeasureObjects(unittest.TestCase):
         self.assertAlmostEqual(mass_displacement[1],2.0)
         self.assertAlmostEqual(mass_displacement[2],2.0)
         
-    def test_03_03_00_mass_displacement_masked(self):
+    def test_03_03_01_mass_displacement_masked(self):
         """Regression test IMG-766 - mass displacement of a masked image"""
         
         labels = numpy.array([[0,0,0,0,0,0,0],

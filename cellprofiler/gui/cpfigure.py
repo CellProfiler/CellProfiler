@@ -363,8 +363,8 @@ class CPFigureFrame(wx.Frame):
     
     def get_pixel_data_fields_for_status_bar(self, im, xi, yi):
         fields = []
-        if im is None:
-            return
+        if not self.in_bounds(im, xi, yi):
+            return fields
         if im.dtype.type == np.uint8:
             im = im.astype(float) / 255.0
         if im.ndim == 2:
@@ -376,7 +376,13 @@ class CPFigureFrame(wx.Frame):
         elif im.ndim == 3: 
             fields += ["Channel %d: %.4f"%(idx + 1, im[yi, xi, idx]) for idx in im.shape[2]]
         return fields
-                
+    
+    @staticmethod
+    def in_bounds(im, xi, yi):
+        '''Return false if xi or yi are outside of the bounds of the image'''
+        return not (im is None or xi >= im.shape[1] or yi >= im.shape[0]
+                    or xi < 0 or yi < 0)
+
     def on_mouse_move_measure_length(self, event, x0, y0, x1, y1):
         if event.xdata is None or event.ydata is None:
             return

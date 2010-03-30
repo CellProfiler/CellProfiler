@@ -258,7 +258,7 @@ class ImageMath(cpm.CPModule):
         # Display results
         #
         if workspace.frame is not None:
-            display_pixel_data = pixel_data + [output_pixel_data]
+            display_pixel_data = [image.pixel_data for image in images] + [output_pixel_data]
             display_names = image_names + [self.output_image_name.value]
             columns = (len(display_pixel_data) + 1 ) / 2
             figure = workspace.create_or_find_figure(subplots=(columns, 2))

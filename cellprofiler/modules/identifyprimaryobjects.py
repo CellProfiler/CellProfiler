@@ -155,6 +155,7 @@ from cellprofiler.settings import AUTOMATIC
 import cellprofiler.cpmath.threshold as cpthresh
 from identify import FF_FINAL_THRESHOLD, FF_ORIG_THRESHOLD
 from identify import FF_SUM_OF_ENTROPIES, FF_WEIGHTED_VARIANCE
+from identify import draw_outline
 
 IMAGE_NAME_VAR                  = 0
 OBJECT_NAME_VAR                 = 1
@@ -1132,20 +1133,19 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             else:
                 outline_img = workspace.display_data.image.pixel_data.copy()
             
-            # Outline the accepted objects pixels in green
-            outline_img[workspace.display_data.outline_image != 0,0] = 0
-            outline_img[workspace.display_data.outline_image != 0,1] = 1 
-            outline_img[workspace.display_data.outline_image != 0,2] = 0
+            # Outline the accepted objects pixels
+            draw_outline(outline_img, workspace.display_data.outline_image,
+                         cpp.get_primary_outline_color())
             
-            # Outline the size-excluded pixels in red
-            outline_img[workspace.display_data.outline_size_excluded_image != 0,0] = 1
-            outline_img[workspace.display_data.outline_size_excluded_image != 0,1] = 0 
-            outline_img[workspace.display_data.outline_size_excluded_image != 0,2] = 0
+            # Outline the size-excluded pixels
+            draw_outline(outline_img,
+                         workspace.display_data.outline_size_excluded_image,
+                         cpp.get_secondary_outline_color())
             
             # Outline the border-excluded pixels in yellow
-            outline_img[workspace.display_data.outline_border_excluded_image != 0,0] = 1
-            outline_img[workspace.display_data.outline_border_excluded_image != 0,1] = 1 
-            outline_img[workspace.display_data.outline_border_excluded_image != 0,2] = 0
+            draw_outline(outline_img,
+                         workspace.display_data.outline_border_excluded_image,
+                         cpp.get_tertiary_outline_color())
             
             title = "%s outlines"%(self.object_name.value) 
             my_frame.subplot_imshow(0, 1, outline_img, title, normalize=False)

@@ -567,4 +567,13 @@ def get_threshold_measurement_columns(image_name):
             (cpmeas.IMAGE, FF_WEIGHTED_VARIANCE%image_name, cpmeas.COLTYPE_FLOAT),
             (cpmeas.IMAGE, FF_SUM_OF_ENTROPIES%image_name, cpmeas.COLTYPE_FLOAT)]
 
+def draw_outline(img, outline, color):
+    '''Draw the given outline on the given image in the given color'''
+    red = float(color.Red()) / 255.0
+    green = float(color.Green()) / 255.0
+    blue = float(color.Blue()) / 255.0
+    img[outline != 0, 0] = red
+    img[outline != 0, 1] = green
+    img[outline != 0, 2] = blue
+                
     

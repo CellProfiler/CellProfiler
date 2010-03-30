@@ -75,6 +75,7 @@ import cellprofiler.cpmodule as cpm
 import cellprofiler.cpimage as cpi
 import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo
+import cellprofiler.preferences as cpprefs
 import cellprofiler.workspace as cpw
 import cellprofiler.settings as cps
 import identify as cpmi
@@ -475,19 +476,17 @@ class IdentifySecondaryObjects(cpmi.Identify):
             my_frame.subplot_imshow_labels(1,0,segmented_out,
                                            "Labeled image")
 
-            secondary_outline_img = img.copy()
-            secondary_outline_img[secondary_outline>0] = 1
-            outline_img = np.dstack((secondary_outline_img,img,img))
-            outline_img.shape=(img.shape[0],img.shape[1],3)
+            outline_img = np.dstack((img, img, img))
+            cpmi.draw_outline(outline_img, secondary_outline > 0,
+                              cpprefs.get_secondary_outline_color())
             my_frame.subplot_imshow(0, 1, outline_img, "Outlined image",
                                     normalize=False)
             
-            primary_outline_img = img.copy()
-            primary_outline_img[primary_outline>0] = 1
-            primary_img = np.dstack((secondary_outline_img,
-                                     primary_outline_img,
-                                     img))
-            primary_img.shape=(img.shape[0],img.shape[1],3)
+            primary_img = np.dstack((img, img, img))
+            cpmi.draw_outline(primary_img, primary_outline > 0,
+                              cpprefs.get_primary_outline_color())
+            cpmi.draw_outline(primary_img, secondary_outline > 0,
+                              cpprefs.get_secondary_outline_color())
             my_frame.subplot_imshow(1, 1, primary_img,
                                     "Primary and output outlines",
                                     normalize=False)

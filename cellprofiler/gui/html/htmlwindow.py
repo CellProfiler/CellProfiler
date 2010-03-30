@@ -3,6 +3,7 @@ import wx.html
 import content
 import webbrowser
 import cellprofiler.preferences as cpprefs
+from cellprofiler.icons import get_icon_path
 
 class HtmlClickableWindow(wx.html.HtmlWindow):
     def __init__(self, *args, **kwargs):
@@ -26,6 +27,12 @@ class HtmlClickableWindow(wx.html.HtmlWindow):
                 self.BackgroundColour = cpprefs.get_background_color()
             else:
                 wx.html.HtmlWindow.OnLinkClicked(self, linkinfo)
+
+    def OnOpeningURL(self, type, url):
+        if type == wx.html.HTML_URL_IMAGE:
+            if url.startswith('memory:'):
+                return url.replace('memory:', 'file://' + get_icon_path())
+        return wx.html.HTML_OPEN
 
 if __name__ == '__main__':
     app = wx.App(0)

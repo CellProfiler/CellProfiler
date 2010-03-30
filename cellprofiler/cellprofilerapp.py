@@ -2,10 +2,11 @@
 # -*- coding: iso-8859-15 -*-
 
 import wx
-from cellprofiler.icons import CellProfilerSplash
+from cellprofiler.icons import get_icon
 import cStringIO
 import cellprofiler.preferences as cpp
 
+CellProfilerSplash = get_icon('CellProfilerSplash')
 
 class CellProfilerApp(wx.App):
     def __init__(self, *args, **kwargs):

@@ -14,6 +14,7 @@ __version__ = "$Revision: 8876 $"
 import wx
 import os.path
 import glob
+import weakref
 import sys
 
 if hasattr(sys, 'frozen'):
@@ -22,10 +23,14 @@ if hasattr(sys, 'frozen'):
 else:
     path = __path__[0]
 
-mfsh = wx.MemoryFSHandler()
-wx.FileSystem.AddHandler(mfsh)
-for f in glob.glob(os.path.join(path, "*.png")):
-    icon_name = os.path.basename(f)[:-4]
-    icon_image = wx.Image(f)
-    globals()[icon_name] = icon_image
-    mfsh.AddFile(icon_name + '.png', icon_image, wx.BITMAP_TYPE_PNG)
+image_cache = weakref.WeakValueDictionary()
+
+def get_icon(name):
+    try:
+        return image_cache[name]
+    except KeyError:
+        image_cache[name] = im =  wx.Image(os.path.join(path, name + '.png'))
+        return im
+
+def get_icon_path():
+    return os.path.join(path, '')

@@ -20,11 +20,13 @@ import wx
 import os
 import sys
 import cellprofiler.preferences
+from cellprofiler.icons import get_icon
+
+cp_image = get_icon('CellProfilerIcon')
 
 def get_cp_image():
     """The CellProfiler icon as a wx.Image"""
-    from cellprofiler.icons import CellProfilerIcon
-    return CellProfilerIcon
+    return cp_image
 
 def get_cp_bitmap(size=None):
     """The CellProfiler icon as a wx.Bitmap"""

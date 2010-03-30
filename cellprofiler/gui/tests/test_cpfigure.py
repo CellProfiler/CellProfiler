@@ -21,10 +21,14 @@ import matplotlib
 import cellprofiler.gui.cpfigure as cpfig
 
 
-app = wx.PySimpleApp()
 
 class TestCPFigure(unittest.TestCase):
-    
+    def setUp(self):
+        self.app = wx.PySimpleApp()
+        
+    def tearDown(self):
+        self.app.Exit()
+
     def test_01_01_imshow_raw(self):
         '''Make sure the image drawn by imshow matches the input image.'''
         image = np.zeros((100, 100))
@@ -196,7 +200,7 @@ class TestCPFigure(unittest.TestCase):
                     if item.Label == 'Raw':
                         event = wx.PyCommandEvent(wx.EVT_MENU.typeId, item.Id)
                         f.GetEventHandler().ProcessEvent(event)
-                        app.ProcessPendingEvents()
+                        self.app.ProcessPendingEvents()
     
         for i, item in enumerate(f.menu_subplots.MenuItems):
             assert item.Label == 'rgb%s'%(i+1)
@@ -208,7 +212,7 @@ class TestCPFigure(unittest.TestCase):
                     if item.Label == 'Log normalized':
                         event = wx.PyCommandEvent(wx.EVT_MENU.typeId, item.Id)
                         f.GetEventHandler().ProcessEvent(event)
-                        app.ProcessPendingEvents()
+                        self.app.ProcessPendingEvents()
     
         for i, item in enumerate(f.menu_subplots.MenuItems):
             assert item.Label == 'rgb%s'%(i+1)
@@ -220,10 +224,9 @@ class TestCPFigure(unittest.TestCase):
                     if item.Label == cpfig.COLOR_NAMES[0]:
                         event = wx.PyCommandEvent(wx.EVT_MENU.typeId, item.Id)
                         f.GetEventHandler().ProcessEvent(event)
-                        app.ProcessPendingEvents()
+                        self.app.ProcessPendingEvents()
 
         for i, item in enumerate(f.menu_subplots.MenuItems):
             assert item.Label == 'rgb%s'%(i+1)
             
-        
-app.MainLoop()
+

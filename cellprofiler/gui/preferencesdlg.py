@@ -172,6 +172,18 @@ class PreferencesDlg(wx.Dialog):
                  cpprefs.get_startup_blurb, 
                  cpprefs.set_startup_blurb, 
                  CHOICE, cphelp.SHOW_STARTUP_BLURB_HELP],
+                ["Primary outline color",
+                 cpprefs.get_primary_outline_color,
+                 cpprefs.set_primary_outline_color,
+                 COLOR, cphelp.PRIMARY_OUTLINE_COLOR_HELP],
+                ["Secondary outline color",
+                 cpprefs.get_secondary_outline_color,
+                 cpprefs.set_secondary_outline_color,
+                 COLOR, cphelp.SECONDARY_OUTLINE_COLOR_HELP],
+                ["Tertiary outline color",
+                 cpprefs.get_tertiary_outline_color,
+                 cpprefs.set_tertiary_outline_color,
+                 COLOR, cphelp.TERTIARY_OUTLINE_COLOR_HELP]
                 ]
     
     def get_title_font(self):

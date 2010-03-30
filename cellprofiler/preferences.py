@@ -157,6 +157,9 @@ SKIPVERSION = 'SkipVersion'
 FF_RECENTFILES = 'RecentFile%d'
 STARTUPBLURB = 'StartupBlurb'
 RECENT_FILE_COUNT = 10
+PRIMARY_OUTLINE_COLOR = 'PrimaryOutlineColor'
+SECONDARY_OUTLINE_COLOR = 'SecondaryOutlineColor'
+TERTIARY_OUTLINE_COLOR = 'TertiaryOutlineColor'
 
 def recent_file(index):
     return FF_RECENTFILES % (index + 1)
@@ -289,22 +292,25 @@ def get_table_font_size():
 def set_table_font_size(table_font_size):
     get_config().Write(TABLE_FONT_SIZE,str(table_font_size))
 
+def tuple_to_color(t, default = (0,0,0)):
+    import wx
+    try:
+        return wx.Colour(red=int(t[0]), green = int(t[1]), blue = int(t[2]))
+    except IndexError, ValueError:
+        return tuple_to_color(default)
+    
 def get_background_color():
     '''Get the color to be used for window backgrounds
     
     Return wx.Colour that will be applied as
     the background for all frames and dialogs
     '''
-    import wx
+    default_color = (143, 188, 143) # darkseagreen
     if not get_config().Exists(BACKGROUND_COLOR):
-        return wx.Colour(red=143,green=188,blue=143) # darkseagreen
+        return tuple_to_color(default_color)
     else:
-        try:
-            color = [int(x) 
-                     for x in get_config().Read(BACKGROUND_COLOR).split(',')]
-            return wx.Colour(*tuple(color))
-        except:
-            return wx.Colour(red=143,green=188,blue=143) # darkseagreen
+        color = get_config().Read(BACKGROUND_COLOR).split(',')
+        return tuple_to_color(tuple(color), default_color)
 
 def set_background_color(color):
     '''Set the color to be used for window backgrounds
@@ -508,3 +514,33 @@ def get_startup_blurb():
 
 def set_startup_blurb(val):
     get_config().WriteBool(STARTUPBLURB, val)
+
+def get_primary_outline_color():
+    default = (0,255,0)
+    if not get_config().Exists(PRIMARY_OUTLINE_COLOR):
+        return tuple_to_color(default)
+    return tuple_to_color(get_config().Read(PRIMARY_OUTLINE_COLOR).split(","))
+
+def set_primary_outline_color(color):
+    get_config().Write(PRIMARY_OUTLINE_COLOR,
+                       ','.join([str(x) for x in color.Get()]))
+
+def get_secondary_outline_color():
+    default = (255,0,0)
+    if not get_config().Exists(SECONDARY_OUTLINE_COLOR):
+        return tuple_to_color(default)
+    return tuple_to_color(get_config().Read(SECONDARY_OUTLINE_COLOR).split(","))
+
+def set_secondary_outline_color(color):
+    get_config().Write(SECONDARY_OUTLINE_COLOR,
+                       ','.join([str(x) for x in color.Get()]))
+
+def get_tertiary_outline_color():
+    default = (255,255,0)
+    if not get_config().Exists(TERTIARY_OUTLINE_COLOR):
+        return tuple_to_color(default)
+    return tuple_to_color(get_config().Read(TERTIARY_OUTLINE_COLOR).split(","))
+
+def set_tertiary_outline_color(color):
+    get_config().Write(TERTIARY_OUTLINE_COLOR,
+                       ','.join([str(x) for x in color.Get()]))

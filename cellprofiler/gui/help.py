@@ -835,6 +835,21 @@ CellProfiler looks for updates on startup."""
 
 SHOW_STARTUP_BLURB_HELP = """The <i>Display welcome text on startup</i> preference controls whether CellProfiler displays an orientation message on startup."""
 
+PRIMARY_OUTLINE_COLOR_HELP = """The <i>Primary Outline Color</i> preference
+sets the color used for the outline of the object of interest in the
+<i>IdentifyPrimaryObjects</i>, <i>IdentifySecondaryObjects</i> and
+<i>IdentifyTertiaryObjects</i> displays."""
+
+SECONDARY_OUTLINE_COLOR_HELP = """The <i>Secondary Outline Color</i> preference
+sets the color used for objects other than the ones of interest. In
+<i>IdentifyPrimaryObjects</i>, these are the objects that are too small or
+too large. In <i>IdentifySecondaryObjects</i> and <i>IdentifyTertiaryObjects</i>,
+this is the color of the secondary objects' outline."""
+
+TERTIARY_OUTLINE_COLOR_HELP = """The <i>Tertiary Outline Color</i> preference
+sets the color used for the objects touching the image border or image mask
+in <i>IdentifyPrimaryObjects</i>."""
+
 PREFERENCES_HELP = (
     ( "Default Input Folder", DEFAULT_IMAGE_FOLDER_HELP),
     ( "Default Output Folder", DEFAULT_OUTPUT_FOLDER_HELP),
@@ -842,7 +857,11 @@ PREFERENCES_HELP = (
     ( "Table font", TABLE_FONT_HELP ),
     ( "Default colormap", DEFAULT_COLORMAP_HELP ),
     ( "Window background", WINDOW_BACKGROUND_HELP ),
-    ( "Check for updates", CHECK_FOR_UPDATES_HELP ))
+    ( "Check for updates", CHECK_FOR_UPDATES_HELP ),
+    ( "Primary outline color", PRIMARY_OUTLINE_COLOR_HELP),
+    ( "Secondary outline color", SECONDARY_OUTLINE_COLOR_HELP),
+    ( "Tertiary outline color", TERTIARY_OUTLINE_COLOR_HELP)
+    )
 
 #########################################################
 #

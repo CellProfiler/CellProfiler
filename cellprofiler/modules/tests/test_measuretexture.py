@@ -39,7 +39,7 @@ import cellprofiler.preferences as cpprefs
 INPUT_IMAGE_NAME = 'Cytoplasm'
 INPUT_OBJECTS_NAME = 'inputobjects'
 class TestMeasureTexture(unittest.TestCase):
-    def make_workspace(self, image, labels):
+    def make_workspace(self, image, labels, convert = True):
         '''Make a workspace for testing MeasureTexture'''
         module = M.MeasureTexture()
         module.image_groups[0].image_name.value = INPUT_IMAGE_NAME
@@ -54,7 +54,7 @@ class TestMeasureTexture(unittest.TestCase):
                                   object_set,
                                   cpmeas.Measurements(),
                                   image_set_list)
-        image_set.add(INPUT_IMAGE_NAME, cpi.Image(image))
+        image_set.add(INPUT_IMAGE_NAME, cpi.Image(image, convert=convert))
         objects = cpo.Objects()
         objects.segmented = labels
         object_set.add_objects(objects, INPUT_OBJECTS_NAME)
@@ -160,6 +160,7 @@ class TestMeasureTexture(unittest.TestCase):
                                   'ExampleSBSImages', 'Channel1-01-A-01.tif')
         image = pil_to_array(PILImage.open(image_file))
         image = np.flipud(image[:,:,0])
+        image = image.astype(float) / 255.0
         labels,count = scind.label(mask.astype(bool),np.ones((3,3),bool))
         centers = scind.center_of_mass(np.ones(labels.shape), labels, 
                                        np.arange(count)+1)
@@ -167,8 +168,9 @@ class TestMeasureTexture(unittest.TestCase):
         X = 1 # the index of the X coordinate
         Y = 0 # the index of the Y coordinate
         order_python = np.lexsort((centers[:,X],centers[:,Y]))
-        workspace, module = self.make_workspace(image, labels)
+        workspace, module = self.make_workspace(image, labels, convert = False)
         module.scale_groups[0].scale.value = 3
+
         module.run(workspace)
         m = workspace.measurements
         tm_center_x = texture_measurements['Location_Center_X'][0,0][:,0]
@@ -179,7 +181,10 @@ class TestMeasureTexture(unittest.TestCase):
             mname = '%s_%s_%s_%d'%(M.TEXTURE, measurement, INPUT_IMAGE_NAME, 3)
             pytm = m.get_current_measurement(INPUT_OBJECTS_NAME, mname)
             tm = texture_measurements[mname][0,0][:,]
+            error_count = 0
             for i in range(count):
+                matlab_val = tm[order_matlab[i]]
+                python_val = pytm[order_python[i]]
                 self.assertAlmostEqual(tm[order_matlab[i]],
                                        pytm[order_python[i]],7,
                                        "Measurement = %s, Loc=(%.2f,%.2f), Matlab=%f, Python=%f"%

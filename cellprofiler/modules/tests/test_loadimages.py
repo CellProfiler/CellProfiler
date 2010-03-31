@@ -955,7 +955,10 @@ LoadImages:[module_num:5|svn_version:\'9497\'|variable_revision_number:5|show_wi
                 fd.write(data)
                 fd.close()
                 # make sure times are different
-                if os.stat_float_times():
+                # The Mac claims to save float times, but stat returns
+                # a float whose fractional part is always 0
+                #
+                if os.stat_float_times() and not sys.platform=="darwin":
                     time.sleep(.01)
                 else:
                     time.sleep(1)

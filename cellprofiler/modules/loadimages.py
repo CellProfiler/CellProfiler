@@ -87,7 +87,7 @@ import uuid
 
 import cellprofiler.cpmodule as cpmodule
 import cellprofiler.cpimage as cpimage
-import cellprofiler.measurements as cpm
+import cellprofiler.measurements as cpmeas
 import cellprofiler.preferences as preferences
 import cellprofiler.settings as cps
 from cellprofiler.preferences import \
@@ -550,11 +550,11 @@ class LoadImages(cpmodule.CPModule):
                                      (fd[FD_PATH_METADATA], M_PATH)):
                     if fd[FD_METADATA_CHOICE].value in (tag, M_BOTH):
                         choices.update(
-                            cpm.find_metadata_tokens(setting.value))
-            if (any([cpm.is_well_column_token(x) for x in choices]) and
-                any([cpm.is_well_row_token(x) for x in choices]) and not
-                any([x.lower() == cpm.FTR_WELL.lower() for x in choices])):
-                choices.add(cpm.FTR_WELL)
+                            cpmeas.find_metadata_tokens(setting.value))
+            if (any([cpmeas.is_well_column_token(x) for x in choices]) and
+                any([cpmeas.is_well_row_token(x) for x in choices]) and not
+                any([x.lower() == cpmeas.FTR_WELL.lower() for x in choices])):
+                choices.add(cpmeas.FTR_WELL)
             if self.file_types == FF_OTHER_MOVIES:
                 choices.update([M_Z,M_T,M_SERIES])
             choices = list(choices)
@@ -1350,7 +1350,7 @@ class LoadImages(cpmodule.CPModule):
             digest.update(np.ascontiguousarray(pixel_data).data)
             m.add_measurement('Image',"_".join((C_MD5_DIGEST, name)), digest.hexdigest())
             for key in metadata:
-                measurement = '_'.join((cpm.C_METADATA, key))
+                measurement = '_'.join((cpmeas.C_METADATA, key))
                 if not m.has_current_measurements('Image',measurement):
                     m.add_measurement('Image',measurement,metadata[key])
                 elif metadata[key] != m.get_current_measurement('Image',measurement):
@@ -1385,15 +1385,15 @@ class LoadImages(cpmodule.CPModule):
         """
         metadata = {}
         if fd[FD_METADATA_CHOICE].value in (M_BOTH, M_FILE_NAME):
-            metadata.update(cpm.extract_metadata(fd[FD_FILE_METADATA].value,
+            metadata.update(cpmeas.extract_metadata(fd[FD_FILE_METADATA].value,
                                                  filename))
         if fd[FD_METADATA_CHOICE].value in (M_BOTH, M_PATH):
             path = os.path.abspath(os.path.join(self.image_directory(), path))
-            metadata.update(cpm.extract_metadata(fd[FD_PATH_METADATA].value,
+            metadata.update(cpmeas.extract_metadata(fd[FD_PATH_METADATA].value,
                                                  path))
         if needs_well_metadata(metadata.keys()):
             well_row_token, well_column_token = well_metadata_tokens(metadata.keys())
-            metadata[cpm.FTR_WELL] = (metadata[well_row_token] + 
+            metadata[cpmeas.FTR_WELL] = (metadata[well_row_token] + 
                                       metadata[well_column_token])
         return metadata
         
@@ -1434,13 +1434,13 @@ class LoadImages(cpmodule.CPModule):
         
         tags = []
         if fd[FD_METADATA_CHOICE] in (M_FILE_NAME, M_BOTH):
-            tags += cpm.find_metadata_tokens(fd[FD_FILE_METADATA].value)
+            tags += cpmeas.find_metadata_tokens(fd[FD_FILE_METADATA].value)
         if fd[FD_METADATA_CHOICE] in (M_PATH, M_BOTH):
-            tags += cpm.find_metadata_tokens(fd[FD_PATH_METADATA].value)
+            tags += cpmeas.find_metadata_tokens(fd[FD_PATH_METADATA].value)
         if self.file_types == FF_OTHER_MOVIES:
             tags += [M_Z, M_T, M_SERIES]
         if needs_well_metadata(tags):
-            tags += [cpm.FTR_WELL]
+            tags += [cpmeas.FTR_WELL]
         return tags
     
     def get_groupings(self, image_set_list):
@@ -1489,7 +1489,7 @@ class LoadImages(cpmodule.CPModule):
             return (keys, groupings)
         else:
             return None
-    
+        
     def load_images(self):
         """Return true if we're loading images
         """
@@ -1586,39 +1586,63 @@ class LoadImages(cpmodule.CPModule):
             raise NotImplementedError("Load by order not implemented")
         return None
 
+    def get_categories(self, pipeline, object_name):
+        '''Return the categories of measurements that this module produces
+        
+        object_name - return measurements made on this object (or 'Image' for image measurements)
+        '''
+        if object_name == cpmeas.IMAGE:
+            res = [C_FILE_NAME, C_PATH_NAME, C_MD5_DIGEST]
+            fd = self.images[0]
+            if fd[FD_METADATA_CHOICE] != M_NONE:
+                res += [cpmeas.C_METADATA]
+            return res
+        return []
+    
+    def get_measurements(self, pipeline, object_name, category):
+        '''Return the measurements that this module produces
+        
+        object_name - return measurements made on this object (or 'Image' for image measurements)
+        category - return measurements made in this category
+        '''
+        if object_name == cpmeas.IMAGE:
+            return [meas for ob, meas, dtype in self.get_measurement_columns(pipeline)
+                    if meas.split('_',1)[0]==category]
+        return []
+    
     def get_measurement_columns(self, pipeline):
         '''Return a sequence describing the measurement columns needed by this module 
         '''
         cols = []
         for fd in self.images:
             name = fd[FD_IMAGE_NAME].value
-            cols += [(cpm.IMAGE, "_".join((C_FILE_NAME, name)), cpm.COLTYPE_VARCHAR_FILE_NAME)]
-            cols += [(cpm.IMAGE, "_".join((C_PATH_NAME, name)), cpm.COLTYPE_VARCHAR_PATH_NAME)]
-            cols += [(cpm.IMAGE, "_".join((C_MD5_DIGEST, name)), cpm.COLTYPE_VARCHAR_FORMAT%32)]
+            cols += [(cpmeas.IMAGE, "_".join((C_FILE_NAME, name)), cpmeas.COLTYPE_VARCHAR_FILE_NAME)]
+            cols += [(cpmeas.IMAGE, "_".join((C_PATH_NAME, name)), cpmeas.COLTYPE_VARCHAR_PATH_NAME)]
+            cols += [(cpmeas.IMAGE, "_".join((C_MD5_DIGEST, name)), cpmeas.COLTYPE_VARCHAR_FORMAT%32)]
         
         fd = self.images[0]
         all_tokens = []
         if fd[FD_METADATA_CHOICE]==M_FILE_NAME or fd[FD_METADATA_CHOICE]==M_BOTH:
-            tokens = cpm.find_metadata_tokens(fd[FD_FILE_METADATA].value)
-            cols += [(cpm.IMAGE, '_'.join((cpm.C_METADATA, token)), 
-                      cpm.COLTYPE_VARCHAR_FILE_NAME) for token in tokens]
+            tokens = cpmeas.find_metadata_tokens(fd[FD_FILE_METADATA].value)
+            cols += [(cpmeas.IMAGE, '_'.join((cpmeas.C_METADATA, token)), 
+                      cpmeas.COLTYPE_VARCHAR_FILE_NAME) for token in tokens]
             all_tokens += tokens
         
         if fd[FD_METADATA_CHOICE]==M_PATH or fd[FD_METADATA_CHOICE]==M_BOTH:
-            tokens = cpm.find_metadata_tokens(fd[FD_PATH_METADATA].value)
+            tokens = cpmeas.find_metadata_tokens(fd[FD_PATH_METADATA].value)
             all_tokens += tokens
-            cols += [(cpm.IMAGE, '_'.join((cpm.C_METADATA,token)), 
-                      cpm.COLTYPE_VARCHAR_PATH_NAME) for token in tokens]
+            cols += [(cpmeas.IMAGE, '_'.join((cpmeas.C_METADATA,token)), 
+                      cpmeas.COLTYPE_VARCHAR_PATH_NAME) for token in tokens]
         #
         # Add a well feature if we have well row and well column
         #
         if needs_well_metadata(all_tokens):
-            cols += [(cpm.IMAGE, '_'.join((cpm.C_METADATA, cpm.FTR_WELL)),
-                      cpm.COLTYPE_VARCHAR_FILE_NAME)]
+            cols += [(cpmeas.IMAGE, '_'.join((cpmeas.C_METADATA, cpmeas.FTR_WELL)),
+                      cpmeas.COLTYPE_VARCHAR_FILE_NAME)]
         if self.file_types == FF_OTHER_MOVIES:
-            cols += [(cpm.IMAGE, M_Z, cpm.COLTYPE_INTEGER),
-                     (cpm.IMAGE, M_T, cpm.COLTYPE_INTEGER),
-                     (cpm.IMAGE, M_SERIES, cpm.COLTYPE_INTEGER)]
+            cols += [(cpmeas.IMAGE, M_Z, cpmeas.COLTYPE_INTEGER),
+                     (cpmeas.IMAGE, M_T, cpmeas.COLTYPE_INTEGER),
+                     (cpmeas.IMAGE, M_SERIES, cpmeas.COLTYPE_INTEGER)]
         return cols
     
     def change_causes_prepare_run(self, setting):
@@ -1641,9 +1665,9 @@ def well_metadata_tokens(tokens):
     well_row_token = None
     well_column_token = None
     for token in tokens:
-        if cpm.is_well_row_token(token):
+        if cpmeas.is_well_row_token(token):
             well_row_token = token
-        if cpm.is_well_column_token(token):
+        if cpmeas.is_well_column_token(token):
             well_column_token = token
     return well_row_token, well_column_token
 
@@ -1652,7 +1676,7 @@ def needs_well_metadata(tokens):
     
     Check for a row and column token and the absence of the well token.
     '''
-    if cpm.FTR_WELL.lower() in [x.lower() for x in tokens]:
+    if cpmeas.FTR_WELL.lower() in [x.lower() for x in tokens]:
         return False
     well_row_token, well_column_token = well_metadata_tokens(tokens)
     return (well_row_token is not None) and (well_column_token is not None)

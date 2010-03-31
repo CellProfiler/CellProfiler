@@ -1008,36 +1008,40 @@ LoadImages:[module_num:5|svn_version:\'9497\'|variable_revision_number:5|show_wi
                     os.remove(os.path.join(directory,filename))
                 os.rmdir(directory)
             
-    def test_07_01_get_measurement_columns(self):
+    def get_example_pipeline_data(self):
         data = r'''CellProfiler Pipeline: http://www.cellprofiler.org
-Version:1
-SVNRevision:9157
-
-LoadImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_window:True|notes:\x5B\x5D]
-    What type of files are you loading?:individual images
-    How do you want to load these files?:Text-Exact match
-    How many images are there in each group?:3
-    Type the text that the excluded images have in common:ILLUM
-    Analyze all subfolders within the selected folder?:No
-    Image location:Default Image Folder
-    Enter the full path to the images:
-    Do you want to check image sets for missing or duplicate files?:Yes
-    Do you want to group image sets by metadata?:Yes
-    Do you want to exclude certain files?:Yes
-    What metadata fields do you want to group by?:
-    Type the text that these images have in common (case-sensitive):Channel2
-    What do you want to call this image in CellProfiler?:DNA
-    What is the position of this image in each group?:1
-    Do you want to extract metadata from the file name, the subfolder path or both?:File name
-    Type the regular expression that finds metadata in the file name\x3A:^.*-(?P<WellRow>.+)-(?P<WellCol>\x5B0-9\x5D{2})
-    Type the regular expression that finds metadata in the subfolder path\x3A:(?P<Year>\x5B0-9\x5D{4})-(?P<Month>\x5B0-9\x5D{2})-(?P<Day>\x5B0-9\x5D{2})
-    Type the text that these images have in common (case-sensitive):Channel1
-    What do you want to call this image in CellProfiler?:Cytoplasm
-    What is the position of this image in each group?:2
-    Do you want to extract metadata from the file name, the subfolder path or both?:File name
-    Type the regular expression that finds metadata in the file name\x3A:^.*-(?P<Row>.+)-(?P<Col>\x5B0-9\x5D{2})
-    Type the regular expression that finds metadata in the subfolder path\x3A:(?P<Year>\x5B0-9\x5D{4})-(?P<Month>\x5B0-9\x5D{2})-(?P<Day>\x5B0-9\x5D{2})
-'''
+        Version:1
+        SVNRevision:9157
+        
+        LoadImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_window:True|notes:\x5B\x5D]
+            What type of files are you loading?:individual images
+            How do you want to load these files?:Text-Exact match
+            How many images are there in each group?:3
+            Type the text that the excluded images have in common:ILLUM
+            Analyze all subfolders within the selected folder?:No
+            Image location:Default Image Folder
+            Enter the full path to the images:
+            Do you want to check image sets for missing or duplicate files?:Yes
+            Do you want to group image sets by metadata?:Yes
+            Do you want to exclude certain files?:Yes
+            What metadata fields do you want to group by?:
+            Type the text that these images have in common (case-sensitive):Channel2
+            What do you want to call this image in CellProfiler?:DNA
+            What is the position of this image in each group?:1
+            Do you want to extract metadata from the file name, the subfolder path or both?:File name
+            Type the regular expression that finds metadata in the file name\x3A:^.*-(?P<WellRow>.+)-(?P<WellCol>\x5B0-9\x5D{2})
+            Type the regular expression that finds metadata in the subfolder path\x3A:(?P<Year>\x5B0-9\x5D{4})-(?P<Month>\x5B0-9\x5D{2})-(?P<Day>\x5B0-9\x5D{2})
+            Type the text that these images have in common (case-sensitive):Channel1
+            What do you want to call this image in CellProfiler?:Cytoplasm
+            What is the position of this image in each group?:2
+            Do you want to extract metadata from the file name, the subfolder path or both?:File name
+            Type the regular expression that finds metadata in the file name\x3A:^.*-(?P<Row>.+)-(?P<Col>\x5B0-9\x5D{2})
+            Type the regular expression that finds metadata in the subfolder path\x3A:(?P<Year>\x5B0-9\x5D{4})-(?P<Month>\x5B0-9\x5D{2})-(?P<Day>\x5B0-9\x5D{2})
+        '''
+        return data
+    
+    def test_07_01_get_measurement_columns(self):
+        data = self.get_example_pipeline_data()
         fd = StringIO(data)
         pipeline = cpp.Pipeline()
         pipeline.load(fd)
@@ -1059,7 +1063,32 @@ LoadImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show
             assert c in returned_cols
         for c in returned_cols: 
             assert c in expected_cols
-    
+            
+    def test_07_02_get_measurements(self):
+        data = self.get_example_pipeline_data()
+        fd = StringIO(data)
+        pipeline = cpp.Pipeline()
+        pipeline.load(fd)
+        module = pipeline.module(1)
+        categories = {'FileName' : ['FileName_DNA', 'FileName_Cytoplasm'], 
+                      'PathName' : ['PathName_DNA', 'PathName_Cytoplasm'], 
+                      'MD5Digest': ['MD5Digest_DNA','MD5Digest_Cytoplasm'], 
+                      'Metadata' : ['Metadata_WellRow', 'Metadata_WellCol',
+                                    'Metadata_Well']}
+        for cat, expected in categories.items():
+            assert set(expected) == set(module.get_measurements(pipeline, 
+                                                    measurements.IMAGE, cat))
+        
+    def test_07_03_get_categories(self):
+        data = self.get_example_pipeline_data()
+        fd = StringIO(data)
+        pipeline = cpp.Pipeline()
+        pipeline.load(fd)
+        module = pipeline.module(1)
+        results = module.get_categories(pipeline, measurements.IMAGE)
+        expected = ['FileName', 'PathName', 'MD5Digest', 'Metadata']
+        assert set(results) == set(expected)
+        
     def test_08_01_get_groupings(self):
         '''Get groupings for the SBS image set'''
         sbs_path = os.path.join(T.example_images_directory(),'ExampleSBSImages')

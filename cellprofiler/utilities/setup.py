@@ -18,8 +18,6 @@ import subprocess
 if not hasattr(sys, 'frozen'):
     from distutils.core import setup,Extension
     from distutils.sysconfig import get_config_var
-    if sys.platform == 'darwin':
-        os.environ['LDSHARED'] = get_config_var("LDSHARED").replace("-bundle", "-dynamiclib")
 
     try:
         from Cython.Distutils import build_ext

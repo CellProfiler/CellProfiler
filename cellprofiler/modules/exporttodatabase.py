@@ -403,7 +403,9 @@ class ExportToDatabase(cpm.CPModule):
         result += [self.objects_choice]
         if self.objects_choice == O_SELECT:
             result += [self.objects_list]
-        result += [self.separate_object_tables, self.max_column_size]
+        if self.objects_choice != O_NONE:
+            result += [self.separate_object_tables]
+        result += [self.max_column_size]
         return result
     
     def settings(self):

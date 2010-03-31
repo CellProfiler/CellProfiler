@@ -257,7 +257,7 @@ class FlagImage(cpm.CPModule):
         if workspace.frame is not None and image_set_count > 0:
             import wx
             from wx.grid import Grid, PyGridTableBase, EVT_GRID_LABEL_LEFT_CLICK
-            from cellprofiler.gui import get_icon
+            from cellprofiler.gui import get_cp_icon
             
             frame = wx.Frame(workspace.frame, -1, "Flag image results")
             sizer = wx.BoxSizer(wx.VERTICAL)
@@ -313,7 +313,7 @@ class FlagImage(cpm.CPModule):
             max_size = int(wx.SystemSettings.GetMetric(wx.SYS_SCREEN_Y) * 3 / 4)
             if frame.Size[1] > max_size:
                 frame.SetSize((frame.Size[0], max_size))
-            frame.SetIcon(get_icon())
+            frame.SetIcon(get_cp_icon())
             frame.Show()
             
         

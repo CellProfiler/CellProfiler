@@ -371,7 +371,7 @@ class LoadData(cpm.CPModule):
     
     def browse_csv(self):
         import wx
-        from cellprofiler.gui import get_icon
+        from cellprofiler.gui import get_cp_icon
         try:
             fd = self.open_csv()
         except:
@@ -389,7 +389,7 @@ class LoadData(cpm.CPModule):
         for line in reader:
             list_ctl.Append(line)
         frame.SetMinSize((640,480))
-        frame.SetIcon(get_icon())
+        frame.SetIcon(get_cp_icon())
         frame.Fit()
         frame.Show()
         

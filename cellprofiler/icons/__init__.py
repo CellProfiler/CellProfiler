@@ -25,12 +25,12 @@ else:
 
 image_cache = weakref.WeakValueDictionary()
 
-def get_icon(name):
+def get_builtin_image(name):
     try:
         return image_cache[name]
     except KeyError:
         image_cache[name] = im =  wx.Image(os.path.join(path, name + '.png'))
         return im
 
-def get_icon_path():
+def get_builtin_images_path():
     return os.path.join(path, '')

@@ -18,7 +18,7 @@ import wx
 import cellprofiler.preferences
 import cellprofiler.modules
 import cellprofiler.cpmodule
-from cellprofiler.gui import get_icon
+from cellprofiler.gui import get_cp_icon
 from cellprofiler.gui.help import BUILDING_A_PIPELINE_HELP
 import cpframe
 
@@ -110,7 +110,7 @@ class AddModuleFrame(wx.Frame):
         self.Hide()
         
     def __set_icon(self):
-        icon = get_icon()
+        icon = get_cp_icon()
         self.SetIcon(icon)
         
     def __get_module_files(self):
@@ -176,7 +176,7 @@ class AddModuleFrame(wx.Frame):
         window = wx.html.HtmlWindow(helpframe)
         sizer.Add(window,1,wx.EXPAND)
         window.AppendToPage(BUILDING_A_PIPELINE_HELP)
-        helpframe.SetIcon(get_icon())
+        helpframe.SetIcon(get_cp_icon())
         helpframe.Layout()
         helpframe.Show()
                

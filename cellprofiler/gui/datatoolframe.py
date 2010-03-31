@@ -26,7 +26,7 @@ import cellprofiler.cpimage as cpi
 import cellprofiler.objects as cpo
 from cellprofiler.gui.moduleview import ModuleView
 from cellprofiler.modules import instantiate_module
-from cellprofiler.gui import get_icon
+from cellprofiler.gui import get_cp_icon
 
 ID_FILE_LOAD_MEASUREMENTS = wx.NewId()
 ID_FILE_SAVE_MEASUREMENTS = wx.NewId()
@@ -119,8 +119,8 @@ class DataToolFrame(wx.Frame):
         module_panel.Layout()
         self.Show()
         self.tbicon = wx.TaskBarIcon()
-        self.tbicon.SetIcon(get_icon(), "CellProfiler2.0")
-        self.SetIcon(get_icon())
+        self.tbicon.SetIcon(get_cp_icon(), "CellProfiler2.0")
+        self.SetIcon(get_cp_icon())
     
     def on_load_measurements(self, event):
         dlg = wx.FileDialog(self, "Load a measurements file",

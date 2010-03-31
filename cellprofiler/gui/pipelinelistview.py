@@ -23,14 +23,14 @@ import sys
 import cellprofiler.pipeline as cpp
 import cellprofiler.gui.movieslider as cpgmov
 from cellprofiler.gui.cpfigure import window_name, find_fig
-from cellprofiler.icons import get_icon
+from cellprofiler.icons import get_builtin_image
 
-IMG_OK = get_icon('IMG_OK')
-IMG_ERROR = get_icon('IMG_ERROR')
-IMG_EYE = get_icon('IMG_EYE')
-IMG_CLOSED_EYE = get_icon('IMG_CLOSED_EYE')
-IMG_PAUSE = get_icon('IMG_PAUSE')
-IMG_GO = get_icon('IMG_GO')
+IMG_OK = get_builtin_image('IMG_OK')
+IMG_ERROR = get_builtin_image('IMG_ERROR')
+IMG_EYE = get_builtin_image('IMG_EYE')
+IMG_CLOSED_EYE = get_builtin_image('IMG_CLOSED_EYE')
+IMG_PAUSE = get_builtin_image('IMG_PAUSE')
+IMG_GO = get_builtin_image('IMG_GO')
 
 NO_PIPELINE_LOADED = 'No pipeline loaded'
 PADDING = 1

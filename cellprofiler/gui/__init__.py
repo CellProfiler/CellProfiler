@@ -20,9 +20,9 @@ import wx
 import os
 import sys
 import cellprofiler.preferences
-from cellprofiler.icons import get_icon
+from cellprofiler.icons import get_builtin_image
 
-cp_image = get_icon('CellProfilerIcon')
+cp_image = get_builtin_image('CellProfilerIcon')
 
 def get_cp_image():
     """The CellProfiler icon as a wx.Image"""
@@ -35,7 +35,7 @@ def get_cp_bitmap(size=None):
         img.Rescale(size, size, wx.IMAGE_QUALITY_HIGH)
     return wx.BitmapFromImage(img)
     
-def get_icon(size=None):
+def get_cp_icon(size=None):
     """The CellProfiler icon as a wx.Icon"""
     icon = wx.EmptyIcon()
     if size == None and sys.platform.startswith('win'):

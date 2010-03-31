@@ -26,7 +26,7 @@ import scipy.misc
 from cStringIO import StringIO
 import sys
 
-from cellprofiler.gui import get_icon
+from cellprofiler.gui import get_cp_icon
 from cellprofiler.gui.help import make_help_menu, FIGURE_HELP
 import cellprofiler.preferences as cpprefs
 
@@ -191,7 +191,7 @@ class CPFigureFrame(wx.Frame):
         self.figure.canvas.mpl_connect('motion_notify_event', self.on_mouse_move)
         self.figure.canvas.mpl_connect('button_release_event', self.on_button_release)
         try:
-            self.SetIcon(get_icon())
+            self.SetIcon(get_cp_icon())
         except:
             pass
         self.Fit()

@@ -18,7 +18,7 @@ import wx.html
 import wx.lib.scrolledpanel
 import cellprofiler.preferences
 from cellprofiler.modules import get_data_tool_names, instantiate_module
-from cellprofiler.gui import get_icon, get_cp_bitmap
+from cellprofiler.gui import get_cp_icon, get_cp_bitmap
 from cellprofiler.gui.pipelinelistview import PipelineListView
 from cellprofiler.gui.cpfigure import close_all
 from cellprofiler.gui.help import MAIN_HELP, make_help_menu
@@ -120,7 +120,7 @@ class CPFrame(wx.Frame):
         self.__error_listeners = []
         self.Bind(wx.EVT_SIZE,self.__on_size,self)
         self.tbicon = wx.TaskBarIcon()
-        self.tbicon.SetIcon(get_icon(), "CellProfiler2.0")
+        self.tbicon.SetIcon(get_cp_icon(), "CellProfiler2.0")
 
     def OnClose(self, event):
         self.tbicon.Destroy()
@@ -402,7 +402,7 @@ class CPFrame(wx.Frame):
              (wx.ACCEL_CMD,ord('P'), ID_FILE_PRINT),
              (wx.ACCEL_CMD,ord('C'), ID_EDIT_COPY)])
         helpframe.SetAcceleratorTable(accelerator_table)
-        helpframe.SetIcon(get_icon())
+        helpframe.SetIcon(get_cp_icon())
         helpframe.Layout()
         helpframe.Show()
 
@@ -497,14 +497,14 @@ class CPFrame(wx.Frame):
         import cStringIO
         sizer = wx.BoxSizer(wx.HORIZONTAL)
 
-        from cellprofiler.icons import get_icon
-        bitmap = wx.BitmapFromImage(get_icon('CP_logo'))
+        from cellprofiler.icons import get_builtin_image
+        bitmap = wx.BitmapFromImage(get_builtin_image('CP_logo'))
         self.__logopic = wx.StaticBitmap(self.__logo_panel,-1,bitmap)
         sizer.Add(self.__logopic)
         self.__logo_panel.SetSizer(sizer)
 
     def __set_icon(self):
-        self.SetIcon(get_icon())
+        self.SetIcon(get_cp_icon())
 
     def __on_size(self, event):
         self.Layout()

@@ -17,6 +17,10 @@ import sys
 import subprocess
 if not hasattr(sys, 'frozen'):
     from distutils.core import setup,Extension
+    from distutils.sysconfig import get_config_var
+    if sys.platform == 'darwin':
+        os.environ['LDSHARED'] = get_config_var("LDSHARED").replace("-bundle", "-dynamiclib")
+
     try:
         from Cython.Distutils import build_ext
         from numpy import get_include
@@ -41,6 +45,9 @@ if not hasattr(sys, 'frozen'):
             jdk_home = find_jdk()
             print "Using jdk_home = %s"%jdk_home
             include_dirs = [get_include()]
+            extra_link_args = None
+            libraries = None
+            library_dirs = None
             if sys.platform.startswith('win'):
                 #
                 # Build libjvm from jvm.dll on Windows
@@ -62,12 +69,7 @@ if not hasattr(sys, 'frozen'):
                 libraries = ["jvm"]
             elif sys.platform == 'darwin':
                 include_dirs += ['/System/Library/Frameworks/JavaVM.framework/Headers']
-                library_dirs = ['/System/Library/Frameworks/JavaVM.framework/Libraries']
-                if os.uname()[2][0] == '9':
-                    libraries = ['jvm_compat']
-                else:
-                    # snow leopard = darwin version 10
-                    libraries = ['verify']
+                extra_link_args = ['-framework', 'JavaVM']
             elif sys.platform.startswith('linux'):
                 include_dirs += [os.path.join(java_home,'include'),
                                  os.path.join(java_home,'include','linux')]
@@ -77,9 +79,10 @@ if not hasattr(sys, 'frozen'):
                                      sources=["javabridge.pyx"],
                                      libraries=libraries,
                                      library_dirs=library_dirs,
-                                     include_dirs=include_dirs)]
-        except:
-            print "WARNING: Java and JVM is not installed - Images will be loaded using PIL"
+                                     include_dirs=include_dirs,
+                                     extra_link_args=extra_link_args)]
+        except Exception, e:
+            print "WARNING: Java and JVM is not installed - Images will be loaded using PIL (%s)"%(str(e))
             
         dict = { "name":"utilities",
                  "description":"utility module for CellProfiler",
@@ -94,6 +97,8 @@ def find_javahome():
     """Find JAVA_HOME if it doesn't exist"""
     if os.environ.has_key('JAVA_HOME'):
         return os.environ['JAVA_HOME']
+    if sys.platform == 'darwin':
+        return "Doesn't matter"
     if sys.platform.startswith('win'):
         import _winreg
         java_key_path = 'SOFTWARE\\JavaSoft\\Java Runtime Environment'
@@ -109,6 +114,8 @@ def find_javahome():
 
 def find_jdk():
     """Find the JDK under Windows"""
+    if sys.platform == 'darwin':
+        return "Doesn't matter"
     if sys.platform.startswith('win'):
         import _winreg
         jdk_key_path = 'SOFTWARE\\JavaSoft\\Java Development Kit'

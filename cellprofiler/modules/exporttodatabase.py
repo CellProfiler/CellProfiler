@@ -978,6 +978,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
         for file_object_name, object_list in data:
             file_name = "%s_%s.CSV" % (self.base_name(workspace), 
                                        file_object_name)
+            file_name = os.path.join(self.get_output_directory(), file_name)
             fid = open(file_name, "wb")
             csv_writer = csv.writer(fid, lineterminator='\n')
             for i in range(measurements.image_set_index+1):

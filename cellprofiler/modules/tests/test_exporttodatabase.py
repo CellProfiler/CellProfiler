@@ -833,7 +833,6 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
         
     def test_02_01_write_mysql_db(self):
         workspace, module, output_dir, finally_fn = self.make_workspace(True)
-        os.chdir(output_dir)
         try:
             self.assertTrue(isinstance(module, E.ExportToDatabase))
             module.db_type = E.DB_MYSQL_CSV
@@ -854,6 +853,7 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
             fd = open(sql_file,'rt')
             sql_text = fd.read()
             fd.close()
+            os.chdir(output_dir)
             for statement in sql_text.split(';'):
                 if len(statement.strip()) == 0:
                     continue
@@ -899,7 +899,6 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
     
     def test_02_015_write_mysql_db_filter_objs(self):
         workspace, module, output_dir, finally_fn = self.make_workspace(True, True)
-        os.chdir(output_dir)
         try:
             self.assertTrue(isinstance(module, E.ExportToDatabase))
             module.db_type = E.DB_MYSQL_CSV
@@ -922,6 +921,7 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
             fd = open(sql_file,'rt')
             sql_text = fd.read()
             fd.close()
+            os.chdir(output_dir)
             for statement in sql_text.split(';'):
                 if len(statement.strip()) == 0:
                     continue
@@ -1092,7 +1092,6 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
         fim[0] = np.NaN
         om = m.get_all_measurements(OBJECT_NAME, OBJ_MEASUREMENT)
         om[0][0] = np.NaN
-        os.chdir(output_dir)
         try:
             self.assertTrue(isinstance(module, E.ExportToDatabase))
             module.db_type = E.DB_MYSQL_CSV
@@ -1113,6 +1112,7 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
             fd = open(sql_file,'rt')
             sql_text = fd.read()
             fd.close()
+            os.chdir(output_dir)
             for statement in sql_text.split(';'):
                 if len(statement.strip()) == 0:
                     continue
@@ -1516,7 +1516,6 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
     
     def test_05_02_write_mysql_db_filter_objs(self):
         workspace, module, output_dir, finally_fn = self.make_workspace(True, True)
-        os.chdir(output_dir)
         try:
             self.assertTrue(isinstance(module, E.ExportToDatabase))
             module.db_type = E.DB_MYSQL_CSV
@@ -1539,6 +1538,7 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
             fd = open(sql_file,'rt')
             sql_text = fd.read()
             fd.close()
+            os.chdir(output_dir)
             for statement in sql_text.split(';'):
                 if len(statement.strip()) == 0:
                     continue
@@ -1705,7 +1705,6 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
         fim[0] = np.NaN
         om = m.get_all_measurements(OBJECT_NAME, OBJ_MEASUREMENT)
         om[0][0] = np.NaN
-        os.chdir(output_dir)
         try:
             self.assertTrue(isinstance(module, E.ExportToDatabase))
             module.db_type = E.DB_MYSQL_CSV
@@ -1727,6 +1726,7 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
             fd = open(sql_file,'rt')
             sql_text = fd.read()
             fd.close()
+            os.chdir(output_dir)
             for statement in sql_text.split(';'):
                 if len(statement.strip()) == 0:
                     continue

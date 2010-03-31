@@ -32,6 +32,7 @@ import cellprofiler.preferences as cpprefs
 import cellprofiler.pipeline as cpp
 import cellprofiler.workspace as cpw
 import cellprofiler.modules.exporttospreadsheet as E 
+from cellprofiler.modules.tests import example_images_directory
 
 class TestExportToSpreadsheet(unittest.TestCase):
 
@@ -1422,3 +1423,158 @@ ExportToSpreadsheet:[module_num:5|svn_version:\'9434\'|variable_revision_number:
         finally:
             fd.close()
         
+    def make_pipeline(self, csv_text):
+        import cellprofiler.modules.loaddata as L
+        
+        handle, name = tempfile.mkstemp("csv")
+        fd = os.fdopen(handle, 'w')
+        fd.write(csv_text)
+        fd.close()
+        csv_path, csv_file = os.path.split(name) 
+        module = L.LoadText()
+        module.csv_directory.dir_choice = L.ABSOLUTE_FOLDER_NAME
+        module.csv_directory.custom_path = csv_path
+        module.csv_file_name.value = csv_file
+        module.module_num = 1
+        pipeline = cpp.Pipeline()
+        pipeline.add_module(module)
+        def error_callback(caller, event):
+            self.assertFalse(isinstance(event, cpp.RunExceptionEvent))
+        pipeline.add_listener(error_callback)
+        return pipeline, module, name
+    
+    def add_gct_settings(self,output_csv_filename):
+        module = E.ExportToSpreadsheet()
+        module.module_num = 2
+        module.prepend_output_filename.value = False
+        module.wants_everything.value = False
+        module.object_groups[0].name.value = cpmeas.IMAGE
+        module.object_groups[0].file_name.value = output_csv_filename
+        module.object_groups[0].wants_automatic_file_name.value = False
+        module.wants_aggregate_means.value = False
+        module.wants_aggregate_medians.value = False
+        module.wants_aggregate_std.value = False
+        module.wants_genepattern_file.value = True
+        return module
+    
+    def test_08_01_basic_gct_check(self):
+    # LoadData with data
+        input_dir = os.path.join(example_images_directory(), "ExampleSBSImages")
+        metadata_name = "Metadata_Bar"
+        info = ('Image_FileName_Foo','Image_PathName_Foo',metadata_name,input_dir,input_dir)
+        csv_text = '''"%s","%s","%s"
+"Channel1-01-A-01.tif","%s","Hi"
+"Channel1-02-A-02.tif","%s","Hello"
+'''%info
+        pipeline, module, input_filename = self.make_pipeline(csv_text)
+        
+        output_csv_filename = os.path.join(tempfile.mkdtemp(), "my_file.csv")
+            
+        # ExportToSpreadsheet
+        module = self.add_gct_settings(output_csv_filename)
+        module.how_to_specify_gene_name.value = "Image filename"
+        module.use_which_image_for_gene_name.value = "Foo"
+        pipeline.add_module(module)
+        
+        try:
+            m = pipeline.run()
+            self.assertTrue(isinstance(m, cpmeas.Measurements))
+            p,n = os.path.splitext(output_csv_filename)
+            output_gct_filename = p + '.gct'
+            fd = open(output_gct_filename,"r")
+            reader = csv.reader(fd, delimiter="\t")
+            row = reader.next()
+            self.assertEqual(len(row),1)
+            self.assertEqual(row[0],"#1.2")
+            row = reader.next()
+            self.assertEqual(len(row),2)
+            self.assertEqual(row[0],"2")
+            self.assertEqual(row[1],"1")
+            row = reader.next()
+            self.assertEqual(len(row),3)
+            self.assertEqual(row[0].lower(),"name")
+            self.assertEqual(row[1].lower(),"description")
+            self.assertEqual(row[2],metadata_name)
+            row = reader.next()
+            self.assertEqual(row[1],input_dir)
+        finally:
+            os.remove(input_filename)
+            os.remove(output_csv_filename)
+            
+    def test_08_02_make_gct_file_with_filename(self):
+            
+        # LoadData with data
+        input_dir = os.path.join(example_images_directory(), "ExampleSBSImages")
+        metadata_name = "Metadata_Bar"
+        info = ('Image_FileName_Foo','Image_PathName_Foo',metadata_name,input_dir,input_dir)
+        csv_text = '''"%s","%s","%s"
+"Channel1-01-A-01.tif","%s","Hi"
+"Channel1-02-A-02.tif","%s","Hello"
+'''%info
+        pipeline, module, input_filename = self.make_pipeline(csv_text)
+        
+        output_csv_filename = os.path.join(tempfile.mkdtemp(), "my_file.csv")
+            
+        # ExportToSpreadsheet
+        module = self.add_gct_settings(output_csv_filename)
+        module.how_to_specify_gene_name.value = "Image filename"
+        module.use_which_image_for_gene_name.value = "Foo"
+        pipeline.add_module(module)
+        
+        try:
+            m = pipeline.run()
+            self.assertTrue(isinstance(m, cpmeas.Measurements))
+            p,n = os.path.splitext(output_csv_filename)
+            output_gct_filename = p + '.gct'
+            fd = open(output_gct_filename,"r")
+            reader = csv.reader(fd, delimiter="\t")
+            row = reader.next()
+            row = reader.next()
+            row = reader.next()
+            row = reader.next()
+            self.assertEqual(row[0],"Channel1-01-A-01.tif")
+            row = reader.next()
+            self.assertEqual(row[0],"Channel1-02-A-02.tif")
+            fd.close()
+        finally:
+            os.remove(input_filename)
+            os.remove(output_csv_filename)
+              
+    def test_08_03_make_gct_file_with_metadata(self):
+            
+        # LoadData with data
+        input_dir = os.path.join(example_images_directory(), "ExampleSBSImages")
+        metadata_name = "Metadata_Bar"
+        info = ('Image_FileName_Foo','Image_PathName_Foo',metadata_name,input_dir,input_dir)
+        csv_text = '''"%s","%s","%s"
+"Channel1-01-A-01.tif","%s","Hi"
+"Channel1-02-A-02.tif","%s","Hello"
+'''%info
+        pipeline, module, input_filename = self.make_pipeline(csv_text)
+        
+        output_csv_filename = os.path.join(tempfile.mkdtemp(), "my_file.csv")
+            
+        # ExportToSpreadsheet
+        module = self.add_gct_settings(output_csv_filename)
+        module.how_to_specify_gene_name.value = "Metadata"
+        module.gene_name_column.value = "Metadata_Bar"
+        pipeline.add_module(module)
+        
+        try:
+            m = pipeline.run()
+            self.assertTrue(isinstance(m, cpmeas.Measurements))
+            p,n = os.path.splitext(output_csv_filename)
+            output_gct_filename = p + '.gct'
+            fd = open(output_gct_filename,"r")
+            reader = csv.reader(fd, delimiter="\t")
+            row = reader.next()
+            row = reader.next()
+            row = reader.next()
+            row = reader.next()
+            self.assertEqual(row[0],"Hi")
+            row = reader.next()
+            self.assertEqual(row[0],"Hello")
+            fd.close()
+        finally:
+            os.remove(input_filename)
+            os.remove(output_csv_filename)

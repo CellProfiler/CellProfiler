@@ -63,7 +63,7 @@ DELIMITER_COMMA = 'Comma (",")'
 DELIMITERS = (DELIMITER_COMMA,DELIMITER_TAB)
 
 """Offset of the first object group in the settings"""
-SETTING_OG_OFFSET = 11
+SETTING_OG_OFFSET = 15
 
 """Offset of the object name setting within an object group"""
 SETTING_OBJECT_NAME_IDX = 0
@@ -88,11 +88,16 @@ OBJECT_NUMBER = "ObjectNumber"
 DIR_CUSTOM = "Custom folder"
 DIR_CUSTOM_WITH_METADATA = "Custom folder with metadata"
 
+"""Options for GenePattern GCT file export"""
+GP_NAME_FILENAME = "Image filename"
+GP_NAME_METADATA = "Metadata"
+GP_NAME_OPTIONS = [GP_NAME_METADATA, GP_NAME_FILENAME]
+
 class ExportToSpreadsheet(cpm.CPModule):
 
     module_name = 'ExportToSpreadsheet'
     category = "Data Tools"
-    variable_revision_number = 6
+    variable_revision_number = 7
     
     def create_settings(self):
         self.delimiter = cps.CustomChoice('Select or enter the column delimiter',DELIMITERS, doc = """
@@ -147,6 +152,38 @@ class ExportToSpreadsheet(cpm.CPModule):
         self.wants_aggregate_medians = cps.Binary("Calculate the per-image median values for object measurements?", False)
         
         self.wants_aggregate_std = cps.Binary("Calculate the per-image standard deviation values for object measurements?", False)
+        
+        self.wants_genepattern_file = cps.Binary("Create a GenePattern GCT file?", False, doc="""
+            Create a GCT file compatible with <a href="http://www.broadinstitute.org/cancer/software/genepattern/">GenePattern</a>.
+            The GCT file format is a tab-delimited text file format that describes a gene expression dataset; the specifics of the
+            format are described <a href="http://www.broadinstitute.org/cancer/software/genepattern/tutorial/gp_fileformats.html#gct">here</a>.
+            By converting your measurements into a GCT file, you can make use of GenePattern's data visualization and clustering methods.
+            
+            <p>Each row in the GCT file represents (ordinarily) a gene and each column represents a sample (in this case, a per-image set
+            of measurements). In addition to any other spreadsheets desired, checking this box will produce a GCT file with the 
+            extension .gct, prepended with the text selection above. If per-image aggregate measurements are requested above, those 
+            measurements are included in the GCT file as well.</p>""")
+        
+        self.how_to_specify_gene_name = cps.Choice("Select source of sample row name", 
+            GP_NAME_OPTIONS, GP_NAME_METADATA, doc = """
+            <i>(Used only if a GenePattern file is requested)</i><br>
+            The first column of the GCT file is the unique identifier for each sample, which is ordinarily the gene name. 
+            This information may be specified in one of two ways:
+            <ul>
+            <li><i>Metadata:</i> If you used <b>LoadData</b> or <b>LoadImages</b> to input your images, you may use a per-image data measurement 
+            (such as metadata) that corresponds to the identifier for this column. %(USING_METADATA_HELP_REF)s.</li>
+            <li><i>Image filename:</i> If the gene name is not available, the image filename can be used as a surrogate identifier.</li>
+            </ul>"""%globals())
+        
+        self.gene_name_column = cps.Measurement("Select the metadata to use as the identifier",
+            lambda : cpmeas.IMAGE, doc = """
+            <i>(Used only if a GenePattern file is requested and metadata is used to name each row)</i><br>
+            Choose the measurement that corresponds to the identifier, such as metadata from <b>LoadData</b>'s input file. 
+            %(USING_METADATA_HELP_REF)s."""%globals())
+        
+        self.use_which_image_for_gene_name = cps.ImageNameSubscriber("Select the image to use as the identifier","None", doc = """
+            <i>(Used only if a GenePattern file is requested and image filename is used to name each row)</i><br>
+            Select which image whose filename will be used to identify each sample row.""")
         
         self.wants_everything = cps.Binary(
             "Export all measurements?", True,
@@ -221,6 +258,8 @@ class ExportToSpreadsheet(cpm.CPModule):
                   self.add_metadata, self.excel_limits, self.pick_columns,
                   self.wants_aggregate_means, self.wants_aggregate_medians,
                   self.wants_aggregate_std, self.directory,
+                  self.wants_genepattern_file, self.how_to_specify_gene_name, 
+                  self.use_which_image_for_gene_name,self.gene_name_column,
                   self.wants_everything, self.columns]
         for group in self.object_groups:
             result += [group.name, group.previous_file, group.file_name,
@@ -235,7 +274,14 @@ class ExportToSpreadsheet(cpm.CPModule):
         if self.pick_columns:
             result += [ self.columns]
         result += [ self.wants_aggregate_means, self.wants_aggregate_medians,
-                    self.wants_aggregate_std, self.wants_everything]
+                    self.wants_aggregate_std, self.wants_genepattern_file]
+        if self.wants_genepattern_file:
+            result += [self.how_to_specify_gene_name]
+            if self.how_to_specify_gene_name == GP_NAME_METADATA:
+                result += [self.gene_name_column]
+            elif self.how_to_specify_gene_name == GP_NAME_FILENAME:
+                result += [self.use_which_image_for_gene_name]
+        result += [self.wants_everything]
         if not self.wants_everything:
             previous_group = None
             for index, group in enumerate(self.object_groups):
@@ -359,6 +405,9 @@ class ExportToSpreadsheet(cpm.CPModule):
             if len(object_names) == 1 and object_names[0] == IMAGE:
                 self.make_image_file(file_name, metadata_group.indexes, 
                                      workspace)
+                if self.wants_genepattern_file.value:
+                    self.make_gct_file(file_name, metadata_group.indexes, 
+                                         workspace)
             else:
                 self.make_object_file(object_names, file_name, 
                                       metadata_group.indexes, workspace)
@@ -459,6 +508,104 @@ class ExportToSpreadsheet(cpm.CPModule):
         finally:
             fd.close()
 
+    def make_gct_file(self, file_name, image_set_indexes, workspace):
+        """Make a GenePattern file containing image measurements
+        Format specifications located at http://www.broadinstitute.org/cancer/software/genepattern/tutorial/gp_fileformats.html?gct
+        
+        file_name - create a file with this name
+        image_set_indexes - indexes of the image sets whose data gets
+                            extracted
+        workspace - workspace containing the measurements
+        """
+        from loaddata import PATH_NAME, FILE_NAME, is_path_name_feature, is_file_name_feature
+
+        def ignore_feature(feature_name):
+            """Return true if we should ignore a feature"""
+            if (is_file_name_feature(feature_name) or 
+                is_path_name_feature(feature_name) or
+                feature_name.startswith('ImageNumber') or
+                feature_name.startswith('Description_') or 
+                feature_name.startswith('ModuleError_') or 
+                feature_name.startswith('TimeElapsed_') or 
+                feature_name.startswith('ExecutionTime_') or 
+                feature_name.startswith('MD5Digest_') 
+                ):
+                return True
+            return False
+    
+        m = workspace.measurements
+        image_features = m.get_feature_names(IMAGE)
+        image_features.insert(0, IMAGE_NUMBER)
+        if not self.check_excel_limits(workspace, file_name,
+                                       len(image_set_indexes),
+                                       len(image_features)):
+            return
+        file_name = self.make_full_filename(file_name, workspace,
+                                            image_set_indexes[0])
+        
+        # Use image name and append .gct extension
+        path, name = os.path.splitext(file_name)
+        file_name = os.path.join(path+'.gct')
+        
+        fd = open(file_name,"wb")
+        try:
+            writer = csv.writer(fd,delimiter="\t")
+            for index in image_set_indexes:
+                aggs = []
+                if self.wants_aggregate_means:
+                    aggs.append(cpmeas.AGG_MEAN)
+                if self.wants_aggregate_medians:
+                    aggs.append(cpmeas.AGG_MEDIAN)
+                if self.wants_aggregate_std:
+                    aggs.append(cpmeas.AGG_STD_DEV)
+                agg_measurements = m.compute_aggregate_measurements(index, aggs)
+                
+                if index == image_set_indexes[0]:
+                    ordered_agg_names = list(agg_measurements.keys())
+                    ordered_agg_names.sort()
+                    image_features += ordered_agg_names
+                    image_features.sort()
+                    image_features = self.filter_columns(image_features,
+                                                         cpmeas.IMAGE)
+                    if image_features is None:
+                        return
+                    
+                    # Count # of actual measurements
+                    num_measures = 0
+                    for feature_name in image_features:
+                        if not ignore_feature(feature_name) or agg_measurements.has_key(feature_name): 
+                            num_measures +=1
+                    
+                    writer.writerow(['#1.2'])
+                    writer.writerow([len(image_set_indexes),num_measures])
+                    
+                    # Keep measurements only
+                    measurement_feature_names = [x for x in image_features if not ignore_feature(x)]
+                    
+                    # The first headers need to be 'NAME' and 'Description'
+                    written_image_names = ['NAME','Description'] + measurement_feature_names
+                    writer.writerow(written_image_names)
+                    
+                    # Place the one of the paths and desired info column up front in image feature list
+                    description_feature = [x for x in image_features if x.startswith(PATH_NAME+"_")]
+                    if self.how_to_specify_gene_name == GP_NAME_METADATA:
+                        name_feature = [self.gene_name_column.value]
+                    elif self.how_to_specify_gene_name == GP_NAME_FILENAME:
+                        name_feature = [x for x in image_features if x.startswith("_".join((FILE_NAME, self.use_which_image_for_gene_name.value)))]
+                    image_features = [name_feature[0],description_feature[0]] + measurement_feature_names
+                    
+                # Output all measurements
+                row = [ agg_measurements[feature_name]
+                       if agg_measurements.has_key(feature_name)
+                       else m.get_measurement(IMAGE, feature_name, index)
+                       for feature_name in image_features]
+                row = ['' if x is None
+                       else x if np.isscalar(x) 
+                       else x[0] for x in row]
+                writer.writerow(row)
+        finally:
+            fd.close()
+            
     def check_excel_limits(self, workspace, file_name, row_count, col_count):
         '''Return False if we shouldn't write because of Excel'''
         if self.excel_limits and workspace.frame is not None:
@@ -691,6 +838,16 @@ Do you want to save it anyway?""" %
                           [directory] + 
                           setting_values[SLOT_DIRCHOICE+1:])
         
+        if variable_revision_number == 6 and not from_matlab:
+            ''' Add GenePattern export options
+            self.wants_genepattern_file, self.how_to_specify_gene_name, 
+            self.use_which_image_for_gene_name,self.gene_name_column 
+            '''
+            setting_values = (setting_values[:9] +
+                              [cps.NO,GP_NAME_METADATA,"None","None"] + 
+                              setting_values[9:])
+            variable_revision_number == 7
+            
         return setting_values, variable_revision_number, from_matlab
 
 def is_object_group(group):

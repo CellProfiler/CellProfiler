@@ -59,8 +59,7 @@ class TestMeasureImageQuality(unittest.TestCase):
         q.image_groups[0].window_size.value = 20
         q.run(workspace)
         m = workspace.measurements
-        for feature_name,value in (("ImageQuality_ThresholdOtsu_my_image", None), 
-                                   ("ImageQuality_FocusScore_my_image_20",0),
+        for feature_name,value in (("ImageQuality_FocusScore_my_image_20",0),
                                    ("ImageQuality_LocalFocusScore_my_image_20",0),
                                    ("ImageQuality_PercentMaximal_my_image",100),
                                    ("ImageQuality_PercentMinimal_my_image",100),
@@ -97,8 +96,7 @@ class TestMeasureImageQuality(unittest.TestCase):
         q.image_groups[0].window_size.value = 20
         q.run(workspace)
         m = workspace.measurements
-        for feature_name, value in (("ImageQuality_ThresholdOtsu_my_image", 1),
-                                    ("ImageQuality_FocusScore_my_image_20", 0),
+        for feature_name, value in (("ImageQuality_FocusScore_my_image_20", 0),
                                     ("ImageQuality_LocalFocusScore_my_image_20", 0),
                                     ("ImageQuality_PercentMaximal_my_image", 0),
                                     ("ImageQuality_PercentMinimal_my_image", 0),
@@ -128,8 +126,7 @@ class TestMeasureImageQuality(unittest.TestCase):
         q.image_groups[0].window_size.value = 20
         q.run(workspace)
         m = workspace.measurements
-        for feature_name, value in (("ImageQuality_ThresholdOtsu_my_image", None),
-                                    ("ImageQuality_FocusScore_my_image_20", 1.0/6.0),
+        for feature_name, value in (("ImageQuality_FocusScore_my_image_20", 1.0/6.0),
                                     ("ImageQuality_LocalFocusScore_my_image_20", 0),
                                     ("ImageQuality_PercentSaturation_my_image", None),
                                     ("ImageQuality_PercentMaximal_my_image", None)):

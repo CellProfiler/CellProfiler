@@ -47,6 +47,10 @@ class DirectoryView(object):
         panel.Bind(wx.EVT_LISTBOX_DCLICK,self.__on_list_box_d_click,self.__list_box)
         self.__pipeline_listeners = []
     
+    def close(self):
+        '''Disconnect from the preferences when the window closes'''
+        cellprofiler.preferences.remove_image_directory_listener(self.__on_image_directory_changed)
+        
     def add_pipeline_listener(self,listener):
         """Add a listener that will be informed when the user wants to open a pipeline
         

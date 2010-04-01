@@ -124,7 +124,9 @@ class CPFrame(wx.Frame):
 
     def OnClose(self, event):
         self.tbicon.Destroy()
-        self.Destroy()
+        self.__directory_view.close()
+        self.__preferences_view.close()
+        wx.GetApp().ExitMainLoop()
 
     def __set_properties(self):
         self.SetTitle("CellProfiler (v.%d)"%(get_revision.version))

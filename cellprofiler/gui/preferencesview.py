@@ -57,6 +57,11 @@ class PreferencesView:
         self.__errors = set()
         self.__pipeline_list_view = None
         
+    def close(self):
+        cpprefs.remove_output_file_name_listener(self.__on_preferences_output_filename_event)
+        cpprefs.remove_image_directory_listener(self.__on_preferences_image_directory_event)
+        cpprefs.remove_output_directory_listener(self.__on_preferences_output_directory_event)
+        
     def __make_folder_panel(self, panel, value, text, help_text, actions,
                             refresh_action = None):
         sizer = wx.BoxSizer(wx.HORIZONTAL)

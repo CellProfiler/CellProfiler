@@ -1070,11 +1070,10 @@ LoadImages:[module_num:5|svn_version:\'9497\'|variable_revision_number:5|show_wi
         pipeline = cpp.Pipeline()
         pipeline.load(fd)
         module = pipeline.module(1)
-        categories = {'FileName' : ['FileName_DNA', 'FileName_Cytoplasm'], 
-                      'PathName' : ['PathName_DNA', 'PathName_Cytoplasm'], 
-                      'MD5Digest': ['MD5Digest_DNA','MD5Digest_Cytoplasm'], 
-                      'Metadata' : ['Metadata_WellRow', 'Metadata_WellCol',
-                                    'Metadata_Well']}
+        categories = {'FileName' : ['DNA', 'Cytoplasm'], 
+                      'PathName' : ['DNA', 'Cytoplasm'], 
+                      'MD5Digest': ['DNA', 'Cytoplasm'], 
+                      'Metadata' : ['WellRow', 'WellCol','Well']}
         for cat, expected in categories.items():
             assert set(expected) == set(module.get_measurements(pipeline, 
                                                     measurements.IMAGE, cat))

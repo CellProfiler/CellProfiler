@@ -831,6 +831,32 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
         else:
             return workspace, module
         
+    def load_database(self, output_dir, module):
+        '''Load a database written by DB_MYSQL_CSV'''
+        self.assertTrue(isinstance(module, E.ExportToDatabase))
+        curdir = os.path.abspath(os.curdir)
+        os.chdir(output_dir)
+        try:
+            sql_file = os.path.join(output_dir, "SQL__SETUP.SQL")
+            base_name = "SQL_1_1"
+            image_file = os.path.join(output_dir, base_name+"_image.CSV")
+            if module.separate_object_tables == E.OT_PER_OBJECT:
+                object_file = os.path.join(output_dir, base_name+"_" + OBJECT_NAME + ".CSV")
+            else:
+                object_file = os.path.join(output_dir, base_name+"_object.csv")
+            for filename in (sql_file, image_file, object_file):
+                self.assertTrue(os.path.isfile(filename))
+            fd = open(sql_file,'rt')
+            sql_text = fd.read()
+            fd.close()
+            for statement in sql_text.split(';'):
+                if len(statement.strip()) == 0:
+                    continue
+                self.cursor.execute(statement)
+        finally:
+            os.chdir(curdir)
+            
+        
     def test_02_01_write_mysql_db(self):
         workspace, module, output_dir, finally_fn = self.make_workspace(True)
         try:
@@ -844,20 +870,7 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
             module.directory.custom_path = output_dir
             module.separate_object_tables.value = E.OT_COMBINE
             module.post_run(workspace)
-            sql_file = os.path.join(output_dir, "SQL__SETUP.SQL")
-            base_name = "SQL_1_1"
-            image_file = os.path.join(output_dir, base_name+"_image.CSV")
-            object_file = os.path.join(output_dir, base_name+"_object.CSV")
-            for filename in (sql_file, image_file, object_file):
-                self.assertTrue(os.path.isfile(filename))
-            fd = open(sql_file,'rt')
-            sql_text = fd.read()
-            fd.close()
-            os.chdir(output_dir)
-            for statement in sql_text.split(';'):
-                if len(statement.strip()) == 0:
-                    continue
-                self.cursor.execute(statement)
+            self.load_database(output_dir, module)
             #
             # Now read the image file from the database
             #
@@ -1018,13 +1031,13 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
                 except:
                     print "Failed to drop table %s"%table_name
     
-    def test_02_03_write_direct_long_colname(self):
+    def test_02_03_00_write_direct_long_colname(self):
         '''Write to MySQL, ensuring some columns have long names'''
         workspace, module = self.make_workspace(False, long_measurement=True)
         try:
             self.assertTrue(isinstance(module, E.ExportToDatabase))
             module.db_type = E.DB_MYSQL
-            module.wants_agg_mean.value = False
+            module.wants_agg_mean.value = True
             module.wants_agg_median.value = False
             module.wants_agg_std_dev.value = False
             module.objects_choice.value = E.O_ALL
@@ -1035,8 +1048,11 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
             module.run(workspace)
             mappings = module.get_column_name_mappings(workspace.pipeline,
                                                        workspace.image_set_list)
-            long_img_column = mappings["Image_%s"%LONG_IMG_MEASUREMENT]
-            long_obj_column = mappings["%s_%s"%(OBJECT_NAME, LONG_OBJ_MEASUREMENT)]
+            long_img_column = mappings["Image_%s" % LONG_IMG_MEASUREMENT]
+            long_obj_column = mappings[
+                "%s_%s" % (OBJECT_NAME, LONG_OBJ_MEASUREMENT)]
+            long_aggregate_obj_column = mappings[
+                "Mean_%s_%s" % (OBJECT_NAME, LONG_OBJ_MEASUREMENT)]
             
             self.cursor.execute("use CPUnitTest")
             #
@@ -1044,20 +1060,21 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
             #
             image_table = module.table_prefix.value + "Per_Image"
             statement = ("select ImageNumber, Image_%s, Image_%s, Image_%s,"
-                         "Image_Count_%s, %s "
+                         "Image_Count_%s, %s, %s "
                          "from %s" %
                          (INT_IMG_MEASUREMENT, FLOAT_IMG_MEASUREMENT,
                           STRING_IMG_MEASUREMENT, OBJECT_NAME,
-                          long_img_column, image_table))
+                          long_img_column, long_aggregate_obj_column, image_table))
             self.cursor.execute(statement)
             row = self.cursor.fetchone()
-            self.assertEqual(len(row), 6)
+            self.assertEqual(len(row), 7)
             self.assertEqual(row[0],1)
             self.assertAlmostEqual(row[1], INT_VALUE)
             self.assertAlmostEqual(row[2], FLOAT_VALUE)
             self.assertEqual(row[3], STRING_VALUE)
             self.assertEqual(row[4], len(OBJ_VALUE))
             self.assertEqual(row[5], 100)
+            self.assertAlmostEqual(row[6], np.mean(OBJ_VALUE),4)
             self.assertRaises(StopIteration, self.cursor.next)
             statement = ("select ImageNumber, ObjectNumber, %s_%s,%s "
                          "from %sPer_Object order by ObjectNumber"%
@@ -1073,6 +1090,82 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
                 self.assertAlmostEqual(row[3], value)
             self.assertRaises(StopIteration, self.cursor.next)
         finally:
+            for table_suffix in ("Per_Image","Per_Object"):
+                table_name = module.table_prefix.value + table_suffix
+                try:
+                    self.cursor.execute("drop table %s.%s" %
+                                        (module.db_name.value, table_name))
+                except:
+                    print "Failed to drop table %s"%table_name
+        
+    def test_02_03_01_write_csv_long_colname(self):
+        '''Write to MySQL, ensuring some columns have long names
+
+        This is a regression test of IMG-786
+        '''
+        workspace, module, output_dir, finally_fn =\
+                 self.make_workspace(True, long_measurement=True)
+        try:
+            self.assertTrue(isinstance(module, E.ExportToDatabase))
+            module.db_type = E.DB_MYSQL_CSV
+            module.wants_agg_mean.value = True
+            module.wants_agg_median.value = False
+            module.wants_agg_std_dev.value = False
+            module.objects_choice.value = E.O_ALL
+            module.directory.dir_choice = E.ABSOLUTE_FOLDER_NAME
+            module.directory.custom_path = output_dir
+            module.separate_object_tables.value = E.OT_COMBINE
+            module.prepare_run(workspace.pipeline, workspace.image_set_list,None)
+            module.prepare_group(workspace.pipeline, workspace.image_set_list,
+                                 {}, [1])
+            module.post_run(workspace)
+            self.load_database(output_dir, module)
+            mappings = module.get_column_name_mappings(workspace.pipeline,
+                                                       workspace.image_set_list)
+            long_img_column = mappings["Image_%s"%LONG_IMG_MEASUREMENT]
+            long_obj_column = mappings["%s_%s"%(OBJECT_NAME, LONG_OBJ_MEASUREMENT)]
+            long_aggregate_obj_column = mappings[
+                "Mean_%s_%s" % (OBJECT_NAME, LONG_OBJ_MEASUREMENT)]
+            
+            self.cursor.execute("use CPUnitTest")
+            #
+            # Now read the image file from the database
+            #
+            image_table = module.table_prefix.value + "Per_Image"
+            statement = ("select ImageNumber, Image_%s, Image_%s, Image_%s,"
+                         "Image_Count_%s, %s, %s "
+                         "from %s" %
+                         (INT_IMG_MEASUREMENT, FLOAT_IMG_MEASUREMENT,
+                          STRING_IMG_MEASUREMENT, OBJECT_NAME,
+                          long_img_column, long_aggregate_obj_column, 
+                          image_table))
+            self.cursor.execute(statement)
+            row = self.cursor.fetchone()
+            self.assertEqual(len(row), 7)
+            self.assertEqual(row[0],1)
+            self.assertAlmostEqual(row[1], INT_VALUE)
+            self.assertAlmostEqual(row[2], FLOAT_VALUE,4)
+            self.assertEqual(row[3], STRING_VALUE)
+            self.assertEqual(row[4], len(OBJ_VALUE))
+            self.assertEqual(row[5], 100)
+            self.assertAlmostEqual(row[6], np.mean(OBJ_VALUE),4)
+            self.assertRaises(StopIteration, self.cursor.next)
+            statement = ("select ImageNumber, ObjectNumber, %s_%s,%s "
+                         "from %sPer_Object order by ObjectNumber"%
+                         (OBJECT_NAME, OBJ_MEASUREMENT, long_obj_column,
+                          module.table_prefix.value))
+            self.cursor.execute(statement)
+            for i, value in enumerate(OBJ_VALUE):
+                row = self.cursor.fetchone()
+                self.assertEqual(len(row), 4)
+                self.assertEqual(row[0], 1)
+                self.assertEqual(row[1], i+1)
+                self.assertAlmostEqual(row[2], value)
+                self.assertAlmostEqual(row[3], value)
+            self.assertRaises(StopIteration, self.cursor.next)
+        finally:
+            os.chdir(output_dir)
+            finally_fn()
             for table_suffix in ("Per_Image","Per_Object"):
                 table_name = module.table_prefix.value + table_suffix
                 try:
@@ -1451,7 +1544,6 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
     def test_05_01_write_mysql_db(self):
         '''Multiple objects / write - per-object tables'''
         workspace, module, output_dir, finally_fn = self.make_workspace(True)
-        os.chdir(output_dir)
         try:
             self.assertTrue(isinstance(module, E.ExportToDatabase))
             module.db_type = E.DB_MYSQL_CSV
@@ -1463,19 +1555,7 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
             module.directory.custom_path = output_dir
             module.separate_object_tables.value = E.OT_PER_OBJECT
             module.post_run(workspace)
-            sql_file = os.path.join(output_dir, "SQL__SETUP.SQL")
-            base_name = "SQL_1_1"
-            image_file = os.path.join(output_dir, base_name+"_image.CSV")
-            object_file = os.path.join(output_dir, base_name+"_" + OBJECT_NAME + ".CSV")
-            for filename in (sql_file, image_file, object_file):
-                self.assertTrue(os.path.isfile(filename))
-            fd = open(sql_file,'rt')
-            sql_text = fd.read()
-            fd.close()
-            for statement in sql_text.split(';'):
-                if len(statement.strip()) == 0:
-                    continue
-                self.cursor.execute(statement)
+            self.load_database(output_dir, module)
             #
             # Now read the image file from the database
             #

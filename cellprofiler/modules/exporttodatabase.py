@@ -711,7 +711,8 @@ class ExportToDatabase(cpm.CPModule):
                 feature_name = '%s_%s' % (obname, feature)
                 statement += ',\n%s %s'%(mappings[feature_name], ftype)
         for column in self.get_aggregate_columns(pipeline, image_set_list):
-            statement += ',\n%s %s' % (column[3], cpmeas.COLTYPE_FLOAT)
+            statement += ',\n%s %s' % (mappings[column[3]], 
+                                       cpmeas.COLTYPE_FLOAT)
         statement += ',\nPRIMARY KEY (ImageNumber) )'
         return statement
         

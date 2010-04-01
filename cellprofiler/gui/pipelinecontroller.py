@@ -87,8 +87,6 @@ class PipelineController:
         
         wx.EVT_MENU_OPEN(frame, self.on_frame_menu_open)
         
-        wx.EVT_CLOSE(frame, self.__on_close)
-        
         cellprofiler.pipeline.evt_modulerunner_done(frame,
                                                     self.on_module_runner_done)
     
@@ -300,8 +298,12 @@ class PipelineController:
             self.set_title()
             self.enable_module_controls_panel_buttons()
     
-    def __on_close(self, event):
-        if self.__dirty_pipeline and event.CanVeto():
+    def check_close(self):
+        '''Return True if we are allowed to close
+        
+        Check for pipeline dirty, return false if user doesn't want to close
+        '''
+        if self.__dirty_pipeline:
             #
             # Create a dialog box asking the user what to do.
             #
@@ -349,10 +351,10 @@ class PipelineController:
             if answer[0] == SAVE_ID:
                 if not self.do_save_pipeline():
                     '''Cancel the closing if the user fails to save'''
-                    return
+                    return False
             elif answer[0] == RETURN_TO_CP_ID:
-                return
-        self.__frame.Destroy()
+                return False
+        return True
     
     def __on_pipeline_event(self,caller,event):
         if isinstance(event,cellprofiler.pipeline.RunExceptionEvent):

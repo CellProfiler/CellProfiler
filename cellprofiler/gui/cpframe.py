@@ -119,10 +119,14 @@ class CPFrame(wx.Frame):
         self.__do_layout()
         self.__error_listeners = []
         self.Bind(wx.EVT_SIZE,self.__on_size,self)
+        self.Bind(wx.EVT_CLOSE, self.OnClose)
         self.tbicon = wx.TaskBarIcon()
         self.tbicon.SetIcon(get_cp_icon(), "CellProfiler2.0")
 
     def OnClose(self, event):
+        if event.CanVeto() and not self.pipeline_controller.check_close():
+            event.Veto()
+            return
         self.tbicon.Destroy()
         self.__directory_view.close()
         self.__preferences_view.close()

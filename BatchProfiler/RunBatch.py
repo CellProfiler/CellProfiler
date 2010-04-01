@@ -298,7 +298,7 @@ def RunOne_2_0(x, run):
     if x["write_data"]:
         cmd += ["%(data_dir)s/%(start)s_to_%(end)s.mat"%(x)]
     cmd = ' '.join(cmd)
-    p=os.popen("unuse -q Python-2.6;. /broad/lsf/conf/profile.lsf;umask 2;"+cmd,'r')
+    p=os.popen(". /broad/lsf/conf/profile.lsf;umask 2;"+cmd,'r')
     output=p.read()
     exit_code=p.close()
     job=None

@@ -160,7 +160,6 @@ class CPFigureFrame(wx.Frame):
         global window_ids
         if pos == wx.DefaultPosition:
             pos = get_next_cpfigure_position()
-        update_cpfigure_position()
         super(CPFigureFrame,self).__init__(parent, id, title, pos, size, style, name)
         self.close_fn = on_close
         self.BackgroundColour = cpprefs.get_background_color()
@@ -803,14 +802,12 @@ class CPFigureFrame(wx.Frame):
         if title != None:
             self.set_subplot_title(title, x, y)
         # Update colorbar
-        if colorbar:
+        if colorbar and not is_color_image(image):
             if self.colorbar.has_key(subplot):
                 axc = self.colorbar[subplot]
             else:
-                axc, kw = matplotlib.colorbar.make_axes(subplot)
-                self.colorbar[subplot] = axc
-            cb = matplotlib.colorbar.Colorbar(axc, result)
-            result.colorbar = cb
+                self.colorbar[subplot] = self.figure.colorbar(result)
+#                self.colorbar[subplot].ax.set_yticklabels(tick_labels)
             
         # NOTE: We bind this event each time imshow is called to a new closure
         #    of on_release so that each function will be called when a
@@ -855,11 +852,9 @@ class CPFigureFrame(wx.Frame):
         return result
     
     def subplot_imshow_color(self, x, y, image, title=None, clear=True, 
-                             normalize=True, vmin=0, vmax=1, 
-                             rgb_mask=[1,1,1]):
-        ''' DEPRECATED. Use subplot_imshow. '''
+                             normalize=True, rgb_mask=[1,1,1]):
         return self.subplot_imshow(x, y, image, title=None, clear=True, 
-                   normalize=True, vmin=None, vmax=None, rgb_mask=[1,1,1])
+                   normalize=True, rgb_mask=[1,1,1])
     
     def subplot_imshow_labels(self, x, y, labels, title=None, clear=True, 
                               renumber=True):
@@ -872,15 +867,15 @@ class CPFigureFrame(wx.Frame):
             cm.set_bad((0,0,0))
             labels = numpy.ma.array(labels, mask=labels==0)
         return self.subplot_imshow(x, y, labels, title, clear, cm, 
-                                   normalize=False, vmin = None, vmax = None)
+                                   normalize=False, vmin=None, vmax=None)
     
     def subplot_imshow_grayscale(self, x, y, image, title=None, clear=True,
-                                 normalize=True, vmin=0, vmax=1):
+                                 colorbar=False, normalize=True, vmin=0, vmax=1):
         if image.dtype.type == np.float64:
             image = image.astype(np.float32)
         return self.subplot_imshow(x, y, image, title, clear, 
                                    matplotlib.cm.Greys_r, normalize=normalize,
-                                   vmin=vmin, vmax=vmax)
+                                   colorbar=colorbar, vmin=vmin, vmax=vmax)
     
     def subplot_imshow_bw(self, x, y, image, title=None, clear=True):
 #        a = 0.3
@@ -1109,9 +1104,13 @@ class CPFigureFrame(wx.Frame):
             row = int(y + 0.5)
             if (0 <= col < ncols) and (0 <= row < nrows):
                 val = data[row, col]
-                return '%s%02d - %1.4f'%(alphabet[row], int(col+1), val)
+                res = '%s%02d - %1.4f'%(alphabet[row], int(col+1), val)
             else:
-                return '%s%02d'%(alphabet[row], int(col+1))
+                res = '%s%02d'%(alphabet[row], int(col+1))
+            # TODO:
+##            hint = wx.TipWindow(self, res)
+##            wx.FutureCall(500, hint.Close)
+            return res
         
         axes.format_coord = format_coord
         
@@ -1155,23 +1154,24 @@ if __name__ == "__main__":
 
     app = wx.PySimpleApp()
     
-    f = CPFigureFrame(subplots=(4, 2))
+##    f = CPFigureFrame(subplots=(4, 2))
+    f = CPFigureFrame(subplots=(1, 1))
     f.Show()
     
     img = np.random.uniform(.5, .6, size=(5, 5, 3))
     
-    f.subplot_platemap(0, 0, np.random.rand(16, 24), title='platemap')
-    f.subplot_histogram(1, 0, [1,1,1,2], 2, 'x', title="hist")
-    f.subplot_scatter(2, 0, [1,1,1,2], [1,2,3,4], title="scatter")
-    f.subplot_density(3, 0, np.random.randn(100).reshape((50,2)), title="density")
-#    f.subplot_imshow(0, 0, img[:,:,0], "1-channel colormapped", colorbar=True)
-#    f.subplot_imshow_grayscale(1, 0, img[:,:,0], "1-channel grayscale")
-#    f.subplot_imshow_grayscale(2, 0, img[:,:,0], "1-channel raw", normalize=False)
-#    f.subplot_imshow_grayscale(3, 0, img[:,:,0], "1-channel minmax=(.5,.6)", vmin=.5, vmax=.6, normalize=False)
-    f.subplot_imshow(0, 1, img, "rgb")
-    f.subplot_imshow(1, 1, img, "rgb raw", normalize=False)
-    f.subplot_imshow(2, 1, img, "rgb, log normalized", normalize='log')
-    f.subplot_imshow_bw(3, 1, img[:,:,0], "B&W")
+    f.subplot_platemap(0, 0, np.random.rand(16, 24), title='platemap test')
+#    f.subplot_histogram(1, 0, [1,1,1,2], 2, 'x', title="hist")
+#    f.subplot_scatter(2, 0, [1,1,1,2], [1,2,3,4], title="scatter")
+#    f.subplot_density(3, 0, np.random.randn(100).reshape((50,2)), title="density")
+##    f.subplot_imshow(0, 0, img[:,:,0], "1-channel colormapped", colorbar=True)
+##    f.subplot_imshow_grayscale(1, 0, img[:,:,0], "1-channel grayscale", colorbar=True)
+##    f.subplot_imshow_grayscale(2, 0, img[:,:,0], "1-channel raw", normalize=False, colorbar=True)
+##    f.subplot_imshow_grayscale(3, 0, img[:,:,0], "1-channel minmax=(.5,.6)", vmin=.5, vmax=.6, normalize=False, colorbar=True)
+##    f.subplot_imshow(0, 1, img, "rgb")
+##    f.subplot_imshow(1, 1, img, "rgb raw", normalize=False)
+##    f.subplot_imshow(2, 1, img, "rgb, log normalized", normalize='log')
+##    f.subplot_imshow_bw(3, 1, img[:,:,0], "B&W")
 
     f.figure.canvas.draw()
     

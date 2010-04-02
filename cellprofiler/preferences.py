@@ -488,20 +488,28 @@ def standardize_default_folder_names(setting_values,slot):
     return setting_values
 
 __cpfigure_position = (-1,-1)
-def get_next_cpfigure_position():
+def get_next_cpfigure_position(update_next_position=True):
     global __cpfigure_position
-    return __cpfigure_position
+    pos = __cpfigure_position
+    if update_next_position:
+        update_cpfigure_position()
+    return pos
 
 def update_cpfigure_position():
+    '''Called by get_next_cpfigure_position to update the screen position at 
+    which the next figure frame will be drawn.
+    '''
     global __cpfigure_position
     import wx
+    win_size = (600,400)
     try:
         disp = wx.GetDisplaySize()
     except:
         disp = (800,600)
-    if (__cpfigure_position[0] + wx.DefaultSize[0] > disp[0] or
-        __cpfigure_position[1] + wx.DefaultSize[1] > disp[1]):
-        __cpfigure_position = (0, 0)
+    if (__cpfigure_position[0] + win_size[0] > disp[0]):
+        __cpfigure_position = (-1, __cpfigure_position[1])
+    if (__cpfigure_position[1] + win_size[1] > disp[1]):
+        __cpfigure_position = (-1, -1)
     else:
         # These offsets could be set in the preferences UI
         __cpfigure_position = (__cpfigure_position[0] + 120,

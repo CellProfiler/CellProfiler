@@ -337,7 +337,7 @@ label2:
 */
    return tmp;
 }
-
+#ifdef NEVER
 int main()
 {
    double cc[100000];
@@ -373,3 +373,4 @@ int main()
    return 0;
 }
 
+#endif

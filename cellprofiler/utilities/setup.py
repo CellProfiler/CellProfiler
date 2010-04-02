@@ -47,10 +47,15 @@ if not hasattr(sys, 'frozen'):
             libraries = None
             library_dirs = None
             if sys.platform.startswith('win'):
-                #
-                # Build libjvm from jvm.dll on Windows
-                #
-                if sys.platform.startswith('win'):
+                if jdk_home is not None:
+                    jdk_include = os.path.join(jdk_home, "include")
+                    jdk_include_plat = os.path.join(jdk_include, sys.platform)
+                    include_dirs += [jdk_include, jdk_include_plat]
+                if os.environ["PROCESSOR_ARCHITECTURE"] != "AMD64":
+                    #
+                    # Build libjvm from jvm.dll on Windows.
+                    # This assumes that we're using mingw32 for build
+                    #
                     cmd = ["dlltool", "--dllname", 
                            os.path.join(jdk_home,"jre\\bin\\client\\jvm.dll"),
                            "--output-lib","libjvm.a",
@@ -58,12 +63,14 @@ if not hasattr(sys, 'frozen'):
                            "--kill-at"]
                     p = subprocess.Popen(cmd)
                     p.communicate()
+                    library_dirs = [os.path.abspath(".")]
+                else:
+                    #
+                    # Use the MSVC lib in the JDK
+                    #
+                    jdk_lib = os.path.join(jdk_home, "lib")
+                    library_dirs = [jdk_lib]
             
-                if jdk_home is not None:
-                    jdk_include = os.path.join(jdk_home, "include")
-                    jdk_include_plat = os.path.join(jdk_include, sys.platform)
-                    include_dirs += [jdk_include, jdk_include_plat]
-                library_dirs = [os.path.abspath(".")]
                 libraries = ["jvm"]
             elif sys.platform == 'darwin':
                 include_dirs += ['/System/Library/Frameworks/JavaVM.framework/Headers']

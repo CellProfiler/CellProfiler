@@ -167,7 +167,9 @@ if (not hasattr(sys, 'frozen')) and (options.build_extensions and not options.ou
 
 if options.show_gui and not options.output_html:
     from cellprofiler.cellprofilerapp import CellProfilerApp
-    App = CellProfilerApp(0)
+    App = CellProfilerApp(0, 
+                          check_for_new_version = True,
+                          show_splashbox = True)
 
 try:
     #

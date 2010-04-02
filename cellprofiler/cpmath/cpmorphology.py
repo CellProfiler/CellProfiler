@@ -424,7 +424,8 @@ def convex_hull(labels, indexes=None):
         #
         # Figure out which points are still available
         #
-        rows_to_keep=np.argwhere(keep_me[a[:,0].astype(int)]).flatten()
+        rows_to_keep = np.argwhere(keep_me[a[:,0].astype(int)])
+        rows_to_keep = rows_to_keep.flatten().astype(int)
         a = a[rows_to_keep]
         centers_per_point = centers_per_point[rows_to_keep]
         counts = new_counts
@@ -909,7 +910,7 @@ def minimum_enclosing_circle(labels, indexes = None,
         # v_indexes is the index into "hull" for each vertex (and similarly
         # shaped vectors such as within_label_indexes
         #
-        v_indexes=np.argwhere(keep_me_vertices).flatten()
+        v_indexes=np.argwhere(keep_me_vertices).flatten().astype(int)
         #
         # anti_indexes_per_vertex gives the index into "indexes" and
         # any similarly shaped array of per-label values

@@ -60,6 +60,9 @@ opts = {
     'msi': {}
        }
 
+if sys.platform.startswith('win') and os.environ["PROCESSOR_ARCHITECTURE"] == "AMD64":
+    opts['py2exe']['includes'] += [ "scipy.io.matlab.streams"]
+    
 data_files = [('cellprofiler\\icons',
                ['cellprofiler\\icons\\%s'%(x) 
                 for x in os.listdir('cellprofiler\\icons')

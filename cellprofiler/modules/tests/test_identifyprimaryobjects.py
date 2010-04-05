@@ -1288,7 +1288,7 @@ IdentifyPrimaryObjects:[module_num:2|svn_version:\'8981\'|variable_revision_numb
         x.threshold_method.value = T.TM_OTSU_ADAPTIVE
         threshold,global_threshold = x.get_threshold(image, 
                                                      np.ones((120,110),bool),
-                                                     None)
+                                                     None,None)
         for i0,i1 in ((0,60),(60,120)):
             for j0,j1 in ((0,55),(55,110)):
                 self.assertTrue(np.all(threshold[i0:i1,j0:j1] == threshold[i0,j0]))
@@ -1326,7 +1326,7 @@ IdentifyPrimaryObjects:[module_num:2|svn_version:\'8981\'|variable_revision_numb
         x.threshold_method.value = T.TM_OTSU_ADAPTIVE
         threshold,global_threshold = x.get_threshold(image, 
                                                      np.ones((525,525),bool),
-                                                     None)
+                                                     None,None)
         for ((i0,i1),(j0,j1)) in blocks:
                 self.assertTrue(np.all(threshold[i0:i1,j0:j1] == threshold[i0,j0]))
     
@@ -1344,7 +1344,7 @@ IdentifyPrimaryObjects:[module_num:2|svn_version:\'8981\'|variable_revision_numb
         x.threshold_method.value = T.TM_OTSU_PER_OBJECT
         threshold, global_threshold = x.get_threshold(image, 
                                                       np.ones((20,20), bool),
-                                                      labels)
+                                                      labels,None)
         t1 = threshold[5,5]
         t2 = threshold[15,15]
         self.assertTrue(t1 < .1)
@@ -1412,7 +1412,7 @@ IdentifyPrimaryObjects:[module_num:2|svn_version:\'8981\'|variable_revision_numb
                 image = np.array(range(i),float) / float(i)
             else:
                 image = np.array((0,))
-            x.get_threshold(image, np.ones((i,),bool),None)
+            x.get_threshold(image, np.ones((i,),bool),None,None)
 
     def test_09_02_mog_fly(self):
         """Test mixture of gaussians thresholding on the fly image"""
@@ -1420,15 +1420,15 @@ IdentifyPrimaryObjects:[module_num:2|svn_version:\'8981\'|variable_revision_numb
         x = ID.IdentifyPrimAutomatic()
         x.threshold_method.value = T.TM_MOG_GLOBAL
         x.object_fraction.value = '0.10'
-        local_threshold,threshold = x.get_threshold(image, np.ones(image.shape,bool),None)
+        local_threshold,threshold = x.get_threshold(image, np.ones(image.shape,bool),None,None)
         self.assertTrue(threshold > 0.038)
         self.assertTrue(threshold < 0.041)
         x.object_fraction.value = '0.20'
-        local_threshold,threshold = x.get_threshold(image, np.ones(image.shape,bool),None)
+        local_threshold,threshold = x.get_threshold(image, np.ones(image.shape,bool),None,None)
         self.assertTrue(threshold > 0.0084)
         self.assertTrue(threshold < 0.0088)
         x.object_fraction.value = '0.50'
-        local_threshold,threshold = x.get_threshold(image, np.ones(image.shape,bool),None)
+        local_threshold,threshold = x.get_threshold(image, np.ones(image.shape,bool),None,None)
         self.assertTrue(threshold > 0.0082)
         self.assertTrue(threshold < 0.0086)
     
@@ -1441,13 +1441,13 @@ IdentifyPrimaryObjects:[module_num:2|svn_version:\'8981\'|variable_revision_numb
                 image = np.array(range(i),float) / float(i)
             else:
                 image = np.array((0,))
-            x.get_threshold(image, np.ones((i,),bool),None)
+            x.get_threshold(image, np.ones((i,),bool),None,None)
     
     def test_10_02_test_background_fly(self):
         image = fly_image()
         x = ID.IdentifyPrimAutomatic()
         x.threshold_method.value = T.TM_BACKGROUND_GLOBAL
-        local_threshold,threshold = x.get_threshold(image, np.ones(image.shape,bool),None)
+        local_threshold,threshold = x.get_threshold(image, np.ones(image.shape,bool),None,None)
         self.assertTrue(threshold > 0.046)
         self.assertTrue(threshold < 0.048)
         
@@ -1460,13 +1460,13 @@ IdentifyPrimaryObjects:[module_num:2|svn_version:\'8981\'|variable_revision_numb
                 image = np.array(range(i),float) / float(i)
             else:
                 image = np.array((0,))
-            x.get_threshold(image, np.ones((i,),bool),None)
+            x.get_threshold(image, np.ones((i,),bool),None,None)
     
     def test_11_02_test_robust_background_fly(self):
         image = fly_image()
         x = ID.IdentifyPrimAutomatic()
         x.threshold_method.value = T.TM_ROBUST_BACKGROUND_GLOBAL
-        local_threshold,threshold = x.get_threshold(image, np.ones(image.shape,bool),None)
+        local_threshold,threshold = x.get_threshold(image, np.ones(image.shape,bool),None,None)
         self.assertTrue(threshold > 0.054)
         self.assertTrue(threshold < 0.056)
         
@@ -1479,13 +1479,13 @@ IdentifyPrimaryObjects:[module_num:2|svn_version:\'8981\'|variable_revision_numb
                 image = np.array(range(i),float) / float(i)
             else:
                 image = np.array((0,))
-            x.get_threshold(image, np.ones((i,),bool),None)
+            x.get_threshold(image, np.ones((i,),bool),None,None)
 
     def test_12_02_test_ridler_calvard_background_fly(self):
         image = fly_image()
         x = ID.IdentifyPrimAutomatic()
         x.threshold_method.value = T.TM_RIDLER_CALVARD_GLOBAL
-        local_threshold,threshold = x.get_threshold(image, np.ones(image.shape,bool),None)
+        local_threshold,threshold = x.get_threshold(image, np.ones(image.shape,bool),None,None)
         self.assertTrue(threshold > 0.017)
         self.assertTrue(threshold < 0.019)
         
@@ -1499,13 +1499,13 @@ IdentifyPrimaryObjects:[module_num:2|svn_version:\'8981\'|variable_revision_numb
                 image = np.array(range(i),float) / float(i)
             else:
                 image = np.array((0,))
-            x.get_threshold(image, np.ones((i,),bool),None)
+            x.get_threshold(image, np.ones((i,),bool),None,None)
     
     def test_13_02_test_kapur_background_fly(self):
         image = fly_image()
         x = ID.IdentifyPrimAutomatic()
         x.threshold_method.value = T.TM_KAPUR_GLOBAL
-        local_threshold,threshold = x.get_threshold(image, np.ones(image.shape,bool),None)
+        local_threshold,threshold = x.get_threshold(image, np.ones(image.shape,bool),None,None)
         self.assertTrue(threshold > 0.015)
         self.assertTrue(threshold < 0.017)
     
@@ -1516,7 +1516,7 @@ IdentifyPrimaryObjects:[module_num:2|svn_version:\'8981\'|variable_revision_numb
         x.manual_threshold.value = .5
         local_threshold,threshold = x.get_threshold(np.zeros((10,10)), 
                                                     np.ones((10,10),bool),
-                                                    None)
+                                                    None,None)
         self.assertTrue(threshold == .5)
         self.assertTrue(threshold == .5)
     
@@ -1877,7 +1877,40 @@ IdentifyPrimaryObjects:[module_num:2|svn_version:\'8981\'|variable_revision_numb
             "Count_my_object"), 4)
         my_objects = object_set.get_objects("my_object")
         self.assertEqual(np.max(my_objects.segmented), 4)
+        
+    def test_19_01_threshold_by_measurement(self):
+        '''Set threshold based on mean image intensity'''
+        pixels = np.zeros((10,10))
+        pixels[2:6,2:6] = .5
+        
+        image = cellprofiler.cpimage.Image(pixels)
+        image_set_list = cellprofiler.cpimage.ImageSetList()
+        image_set = image_set_list.get_image_set(0)
+        image_set.add("MyImage", image)
+        object_set = cellprofiler.objects.ObjectSet()
 
+        pipeline = cellprofiler.pipeline.Pipeline()
+        measurements = cpmeas.Measurements()
+        measurements.add_image_measurement("MeanIntensity_MyImage", np.mean(pixels))
+        
+        x = ID.IdentifyPrimAutomatic()
+        x.object_name.value = "MyObject"
+        x.image_name.value = "MyImage"
+        x.exclude_size.value = False
+        x.unclump_method.value = ID.UN_NONE
+        x.watershed_method.value = ID.WA_NONE
+        x.threshold_method.value = T.TM_MEASUREMENT
+        x.thresholding_measurement.value = "MeanIntensity_MyImage"
+        x.threshold_correction_factor.value = 1
+        x.module_num = 1
+        pipeline.add_module(x)
+        
+        workspace = Workspace(pipeline, x, image_set, object_set, measurements, 
+                              image_set_list)
+        x.run(workspace)
+        self.assertEqual(measurements.get_current_image_measurement("Count_MyObject"),1)
+        self.assertEqual(measurements.get_current_image_measurement("Threshold_FinalThreshold_MyObject"),np.mean(pixels))
+        
 def add_noise(img, fraction):
     '''Add a fractional amount of noise to an image to make it look real'''
     np.random.seed(0)

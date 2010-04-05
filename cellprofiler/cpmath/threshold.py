@@ -49,6 +49,7 @@ TM_KAPUR_GLOBAL                 = "Kapur Global"
 TM_KAPUR_ADAPTIVE               = "Kapur Adaptive"
 TM_KAPUR_PER_OBJECT             = "Kapur PerObject"
 TM_MANUAL                       = "Manual"
+TM_MEASUREMENT                  = "Measurement"
 TM_BINARY_IMAGE                 = "Binary image"
 '''Compute a single threshold for the entire image'''
 TM_GLOBAL                       = "Global"
@@ -65,7 +66,7 @@ TM_METHODS =  [TM_OTSU_GLOBAL, TM_OTSU_ADAPTIVE, TM_OTSU_PER_OBJECT,
                TM_ROBUST_BACKGROUND_GLOBAL, TM_ROBUST_BACKGROUND_ADAPTIVE, TM_ROBUST_BACKGROUND_PER_OBJECT,
                TM_RIDLER_CALVARD_GLOBAL, TM_RIDLER_CALVARD_ADAPTIVE, TM_RIDLER_CALVARD_PER_OBJECT,
                TM_KAPUR_GLOBAL, TM_KAPUR_ADAPTIVE, TM_KAPUR_PER_OBJECT,
-               TM_MANUAL, TM_BINARY_IMAGE]
+               TM_MANUAL, TM_BINARY_IMAGE, TM_MEASUREMENT]
 
 TM_GLOBAL_METHODS = [TM_OTSU_GLOBAL, TM_MOG_GLOBAL, TM_BACKGROUND_GLOBAL,
                      TM_ROBUST_BACKGROUND_GLOBAL, TM_RIDLER_CALVARD_GLOBAL, 

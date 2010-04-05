@@ -25,7 +25,7 @@ import cellprofiler.measurements as cpmeas
 import cellprofiler.cpmath.outline
 import cellprofiler.objects
 from cellprofiler.cpmath.smooth import smooth_with_noise
-from cellprofiler.cpmath.threshold import TM_MANUAL, TM_METHODS, get_threshold
+from cellprofiler.cpmath.threshold import TM_MANUAL, TM_MEASUREMENT, TM_METHODS, get_threshold
 from cellprofiler.cpmath.threshold import TM_GLOBAL, TM_BINARY_IMAGE, TM_MOG
 from cellprofiler.cpmath.threshold import TM_OTSU
 from cellprofiler.cpmath.threshold import weighted_variance, sum_of_entropies
@@ -216,7 +216,13 @@ class Identify(cellprofiler.cpmodule.CPModule):
             <p>Selecting thresholding via a <i>binary image</i> will use the binary image as a mask for the
             input image. Note that unlike <b>MaskImage</b>, the binary image will not be stored permanently
             as a mask. Also, even though no algorithm is actually used to find the threshold in this case, the 
-            final threshold value is reported as the Otsu threshold calculated for the foreground region.''')
+            final threshold value is reported as the Otsu threshold calculated for the foreground region.
+            
+            <p>Selecting thresholding via <i>measurement</i> will use an image measurement previously calculated
+            in order to threshold the image. Like manual thresholding, this setting can be useful when you are 
+            certain what the cutoff should be. The difference in this case is that the desired threshold does 
+            vary from image to image in the experiment but can be measured using a Measurement module. 
+            ''')
 
         self.threshold_correction_factor = cps.Float('Threshold correction factor', 1,
                                                 doc="""\
@@ -250,6 +256,11 @@ class Identify(cellprofiler.cpmodule.CPModule):
                                           value=0.0, minval=0.0, maxval=1.0,doc="""\
             <i>(Used only if Manual selected for thresholding method)</i><br>
             Enter the value that will act as an absolute threshold for the images, in the range of [0,1].""")
+        
+        self.thresholding_measurement = cps.Measurement("Select the measurement to threshold with",
+            lambda : cpmeas.IMAGE, doc = """
+            <i>(Used only if Measurement is selected for thresholding method)</i><br>
+            Choose the image measurement that will act as an absolute threshold for the images.""")
         
         self.binary_image = cps.ImageNameSubscriber(
             "Select binary image", "None", doc = """
@@ -293,6 +304,8 @@ class Identify(cellprofiler.cpmodule.CPModule):
         vv = [self.threshold_method]
         if self.threshold_method == TM_MANUAL:
             vv += [self.manual_threshold]
+        elif self.threshold_method == TM_MEASUREMENT:
+            vv += [self.thresholding_measurement]
         elif self.threshold_method == TM_BINARY_IMAGE:
             vv += [self.binary_image]
         if self.threshold_algorithm == TM_OTSU:
@@ -305,15 +318,20 @@ class Identify(cellprofiler.cpmodule.CPModule):
             vv += [ self.threshold_correction_factor, self.threshold_range]
         return vv
         
-    def get_threshold(self, image, mask, labels):
+    def get_threshold(self, image, mask, labels, workspace=None):
         """Compute the threshold using whichever algorithm was selected by the user
         image - image to threshold
         mask  - ignore pixels whose mask value is false
         labels - labels matrix that restricts thresholding to within the object boundary
+        workspace - contains measurements (measurements for this run)
         returns: threshold to use (possibly an array) and global threshold
         """
         if self.threshold_method == TM_MANUAL:
             return self.manual_threshold.value, self.manual_threshold.value
+        if self.threshold_method == TM_MEASUREMENT:
+            m = workspace.measurements
+            value = m.get_current_image_measurement(self.thresholding_measurement.value)
+            return value, value
         object_fraction = self.object_fraction.value
         if object_fraction.endswith("%"):
             object_fraction = float(object_fraction[:-1])/100.0
@@ -390,7 +408,7 @@ class Identify(cellprofiler.cpmodule.CPModule):
         TM_ADAPTIVE                     = "Adaptive"
         TM_PER_OBJECT                   = "PerObject"
         """
-        if self.threshold_method.value == TM_MANUAL:
+        if self.threshold_method.value == TM_MANUAL or self.threshold_method.value == TM_MEASUREMENT:
             return TM_GLOBAL 
         parts = self.threshold_method.value.split(' ')
         return parts[1]

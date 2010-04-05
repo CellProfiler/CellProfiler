@@ -95,7 +95,7 @@ M_DISTANCE_B = "Distance - B"
 class IdentifySecondaryObjects(cpmi.Identify):
 
     module_name = "IdentifySecondaryObjects"
-    variable_revision_number = 4
+    variable_revision_number = 5
     category = "Object Processing"
     
     def create_settings(self):
@@ -236,13 +236,13 @@ class IdentifySecondaryObjects(cpmi.Identify):
                  self.threshold_correction_factor, self.threshold_range,
                  self.object_fraction, self.distance_to_dilate, 
                  self.regularization_factor, self.outlines_name,
-                 self.manual_threshold,
+                 self.manual_threshold,  
                  self.binary_image, self.use_outlines,
                  self.two_class_otsu, self.use_weighted_variance,
                  self.assign_middle_to_foreground,
                  self.wants_discard_edge, self.wants_discard_primary,
                  self.new_primary_objects_name, self.wants_primary_outlines,
-                 self.new_primary_outlines_name]
+                 self.new_primary_outlines_name,self.thresholding_measurement]
     
     def visible_settings(self):
         result = [self.image_name, self.primary_objects, self.objects_name,  
@@ -322,14 +322,22 @@ class IdentifySecondaryObjects(cpmi.Identify):
             setting_values += [cpmi.O_TWO_CLASS, cpmi.O_WEIGHTED_VARIANCE,
                                cpmi.O_FOREGROUND]
             variable_revision_number = 2
+            
         if (not from_matlab) and variable_revision_number == 2:
             # Added discarding touching
             setting_values = setting_values + [cps.NO, cps.NO, "FilteredNuclei"]
             variable_revision_number = 3
+            
         if (not from_matlab) and variable_revision_number == 3:
             # Added new primary outlines
             setting_values = setting_values + [cps.NO, "FilteredNucleiOutlines"]
             variable_revision_number = 4
+            
+        if (not from_matlab) and variable_revision_number == 4:
+            # Added measurements to threshold methods
+            setting_values = setting_values + ["None"]
+            variable_revision_number = 5
+            
         return setting_values, variable_revision_number, from_matlab
 
     def run(self, workspace):
@@ -352,7 +360,7 @@ class IdentifySecondaryObjects(cpmi.Identify):
                         self.threshold_range.max)
             has_threshold = True
         else:
-            local_threshold,global_threshold = self.get_threshold(img, mask, None)
+            local_threshold,global_threshold = self.get_threshold(img, mask, None, workspace)
             has_threshold = True
         
         if has_threshold:

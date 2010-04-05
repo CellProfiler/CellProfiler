@@ -186,6 +186,7 @@ AUTOMATIC_SMOOTHING_VAR         = 18
 AUTOMATIC_MAXIMA_SUPPRESSION    = 19
 MANUAL_THRESHOLD_VAR            = 20
 BINARY_IMAGE_VAR                = 21
+MEASUREMENT_THRESHOLD_VAR       = 22
 
 LIMIT_NONE = "Continue"
 LIMIT_TRUNCATE = "Truncate"
@@ -193,7 +194,7 @@ LIMIT_ERASE = "Erase"
 
 class IdentifyPrimaryObjects(cpmi.Identify):
             
-    variable_revision_number = 6
+    variable_revision_number = 7
     category =  "Object Processing"
     module_name = "IdentifyPrimaryObjects"
     
@@ -481,7 +482,8 @@ class IdentifyPrimaryObjects(cpmi.Identify):
                 self.two_class_otsu, self.use_weighted_variance,
                 self.assign_middle_to_foreground,
                 self.wants_automatic_log_diameter, self.log_diameter,
-                self.limit_choice, self.maximum_object_count]
+                self.limit_choice, self.maximum_object_count,
+                self.thresholding_measurement]
     
     def upgrade_settings(self, setting_values, variable_revision_number, 
                          module_name, from_matlab):
@@ -589,6 +591,11 @@ class IdentifyPrimaryObjects(cpmi.Identify):
                 setting_values[-2] = LIMIT_NONE
             variable_revision_number = 6
             
+        if (not from_matlab) and variable_revision_number == 6:
+            # Added measurements to threshold method
+            setting_values = setting_values + ["None"]
+            variable_revision_number = 7
+            
         return setting_values, variable_revision_number, from_matlab
             
     def help_settings(self):
@@ -600,7 +607,8 @@ class IdentifyPrimaryObjects(cpmi.Identify):
                 self.exclude_border_objects, 
                 self.threshold_method,
                 self.binary_image,
-                self.manual_threshold, 
+                self.manual_threshold,
+                self.thresholding_measurement, 
                 self.two_class_otsu, 
                 self.use_weighted_variance,
                 self.assign_middle_to_foreground,
@@ -688,7 +696,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
                         self.threshold_range.max)
         else:
             local_threshold,global_threshold = self.get_threshold(img, mask,
-                                                              masking_objects)
+                                                              masking_objects, workspace)
         blurred_image = self.smooth_image(img,mask,1)
         binary_image = np.logical_and((blurred_image >= local_threshold),mask)
         labeled_image,object_count = scipy.ndimage.label(binary_image,

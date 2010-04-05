@@ -34,7 +34,7 @@ TH_ABOVE_THRESHOLD = "Above threshold"
 class ApplyThreshold(Identify):
 
     module_name = "ApplyThreshold"
-    variable_revision_number = 4
+    variable_revision_number = 5
     category = "Image Processing"
 
     def create_settings(self):
@@ -107,7 +107,8 @@ class ApplyThreshold(Identify):
                 self.threshold_range, self.threshold_correction_factor,
                 self.object_fraction, self.enclosing_objects_name,
                 self.two_class_otsu, self.use_weighted_variance,
-                self.assign_middle_to_foreground]
+                self.assign_middle_to_foreground,
+                self.thresholding_measurement]
     
     def is_interactive(self):
         return False
@@ -130,7 +131,7 @@ class ApplyThreshold(Identify):
             labels = objects.segmented
         else:
             labels = None
-        local_thresh,global_thresh = self.get_threshold(pixels,input.mask,labels)
+        local_thresh,global_thresh = self.get_threshold(pixels,input.mask,labels, workspace)
         if self.binary != 'Grayscale':
             pixels = (pixels > local_thresh) & input.mask
         else:
@@ -258,6 +259,11 @@ class ApplyThreshold(Identify):
                               setting_values[6],  # shift
                               ] +setting_values[8:]
             variable_revision_number = 4
+            
+        if (not from_matlab) and variable_revision_number == 4:
+            # Added measurements to threshold methods
+            setting_values = setting_values + ["None"]
+            variable_revision_number = 5
                               
         return setting_values, variable_revision_number, from_matlab
         

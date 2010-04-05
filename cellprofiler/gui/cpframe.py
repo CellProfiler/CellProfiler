@@ -34,6 +34,7 @@ import cellprofiler.utilities.get_revision as get_revision
 import traceback
 import sys
 
+
 ID_FILE_LOAD_PIPELINE=wx.NewId()
 ID_FILE_URL_LOAD_PIPELINE = wx.NewId()
 ID_FILE_EXIT=wx.NewId()
@@ -63,6 +64,7 @@ ID_DEBUG_NEXT_GROUP = wx.NewId()
 ID_DEBUG_CHOOSE_GROUP = wx.NewId()
 ID_DEBUG_CHOOSE_IMAGE_SET = wx.NewId()
 ID_DEBUG_RELOAD = wx.NewId()
+ID_DEBUG_NUMPY = wx.NewId()
 
 ID_WINDOW = wx.NewId()
 ID_WINDOW_CLOSE_ALL = wx.NewId()
@@ -174,6 +176,7 @@ class CPFrame(wx.Frame):
         self.__menu_debug.Append(ID_DEBUG_CHOOSE_IMAGE_SET, 'Choose image cycle','Choose any of the available image cycles in the current image set list')
         if not hasattr(sys, 'frozen'):
             self.__menu_debug.Append(ID_DEBUG_RELOAD, "Reload modules' source")
+            self.__menu_debug.Append(ID_DEBUG_NUMPY, "Numpy Memory Usage...")
         self.__menu_debug.Enable(ID_DEBUG_STEP,False)
         self.__menu_debug.Enable(ID_DEBUG_NEXT_IMAGE_SET,False)
         self.__menu_debug.Enable(ID_DEBUG_NEXT_GROUP, False)
@@ -213,6 +216,7 @@ class CPFrame(wx.Frame):
         wx.EVT_MENU(self,ID_OPTIONS_PREFERENCES, self.__on_preferences)
         wx.EVT_MENU(self,ID_CHECK_NEW_VERSION, self.__on_check_new_version)
         wx.EVT_MENU(self,ID_WINDOW_CLOSE_ALL, self.__on_close_all)
+        wx.EVT_MENU(self, ID_DEBUG_NUMPY, self.__debug_numpy_references)
         accelerator_table = wx.AcceleratorTable(
             [(wx.ACCEL_CMD,ord('N'),ID_FILE_ANALYZE_IMAGES),
              (wx.ACCEL_CMD,ord('O'),ID_FILE_LOAD_PIPELINE),
@@ -294,6 +298,19 @@ class CPFrame(wx.Frame):
     def __on_help_module(self,event):
         modules = self.__pipeline_list_view.get_selected_modules()
         self.do_help_modules(modules)
+
+    def __debug_numpy_references(self, event):
+        try:
+            import contrib.objgraph as objgraph
+            numpyobj = [(o, objgraph.numpy_size(o)) for o in objgraph.by_instanceof(objgraph.numpyarray)]
+            numpyobj = [o for o, sz in numpyobj if (sz is None) or (sz > 1024)]
+            objgraph.show_backrefs(numpyobj,
+                                   filename=os.path.join(cellprofiler.preferences.get_default_output_directory(),
+                                                         'cellprofiler_numpy.dot'))
+        except Exception, e:
+            print "Couldn't generate objgraph: %s"%(e)
+            import pdb
+            pdb.post_mortem(sys.exc_traceback)
 
     def do_help_modules(self, modules):
         for module in modules:

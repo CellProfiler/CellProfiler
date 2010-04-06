@@ -64,6 +64,7 @@ COLOR_VALS = [[1, 0, 0],
               [0, 1, 1],
               [1, 0, 1],
               [1, 1, 1]]
+
 def wraparound(list):
     while True:
         for l in list:
@@ -74,7 +75,7 @@ def make_1_or_3_channels(im):
         return im.astype(np.float32)
     if im.shape[2] == 3:
         return (im * 255).clip(0, 255).astype(np.uint8)
-    out = np.zeros((im.shape[0], im.shape[1], 3), np.float)
+    out = np.zeros((im.shape[0], im.shape[1], 3), np.float32)
     for chanidx, weights in zip(range(im.shape[2]), wraparound(COLOR_VALS)):
         for idx, v in enumerate(weights):
             out[:, :, idx] += v * im[:, :, chanidx]
@@ -176,7 +177,7 @@ class CPFigureFrame(wx.Frame):
         self.subplot_menus = {}
         self.mouse_down = None
         self.remove_menu = []
-        sizer = wx.BoxSizer()
+        sizer = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(sizer)
         self.figure = figure= matplotlib.figure.Figure()
         self.panel  = matplotlib.backends.backend_wxagg.FigureCanvasWxAgg(self,-1,self.figure)
@@ -367,7 +368,7 @@ class CPFigureFrame(wx.Frame):
         if not self.in_bounds(im, xi, yi):
             return fields
         if im.dtype.type == np.uint8:
-            im = im.astype(float) / 255.0
+            im = im.astype(np.float32) / 255.0
         if im.ndim == 2:
             fields += ["Intensity: %.4f"%(im[yi,xi])]
         elif im.ndim == 3 and im.shape[2] == 3:
@@ -1078,21 +1079,61 @@ class CPFigureFrame(wx.Frame):
         
         return plot
     
-    def subplot_platemap(self, x, y, data, cmap=matplotlib.cm.jet, title='',
+    def subplot_platemap(self, x, y, plates_dict, plate_type,
+                         cmap=matplotlib.cm.jet, colorbar=True, title='',
                          clear=True):
         '''Draws a basic plate map (as an image).
-        data  -  an 8x12 or 16x24 shaped array of data to plot
+        x, y       - subplot's column and row (should be 0,0)
+        plates_dict - dict of the form: d[plate][well] --> numeric value
+                     well must be in the form "A01"
+        plate_type - '96' or '384'
+        cmap       - a colormap from matplotlib.cm 
+                     Warning: gray is currently used for NaN values)
+        title      - name for this subplot
+        clear      - clear the subplot axes before display if True
         '''
-        assert data.shape in [(8,12), (16,24)], 'Unsupported plate format'
-        alphabet = 'ABCDEFGHIJKLMNOP'  #enough letters for a 384 well plate
-        
-        nrows, ncols = data.shape
-        
         if clear:
             self.clear_subplot(x, y)
         axes = self.subplot(x, y)
         
-        plot = axes.imshow(data, cmap=cmap, interpolation='nearest',
+        alphabet = 'ABCDEFGHIJKLMNOP'  #enough letters for a 384 well plate
+        plate_names = sorted(plates_dict.keys())
+        
+        if 'plate_choice' not in self.__dict__:
+            platemap_plate = plate_names[0]
+            # Add plate selection choice
+            sz = wx.BoxSizer(wx.HORIZONTAL)
+            sz.AddStretchSpacer()
+            plate_static_text = wx.StaticText(self, -1, 'Plate: ')
+            self.plate_choice = wx.Choice(self, -1, choices=plate_names)
+            self.plate_choice.SetSelection(0)
+            sz.Add(plate_static_text, 0, wx.EXPAND)
+            sz.Add(self.plate_choice, 0, wx.EXPAND)
+            sz.AddStretchSpacer()
+            self.Sizer.Insert(0, sz, 0, wx.EXPAND)
+            self.Layout()
+        else:
+            selection = self.plate_choice.GetStringSelection()
+            self.plate_choice.SetItems(plate_names)
+            if selection in plate_names:
+                self.plate_choice.SetStringSelection(selection)
+            else:
+                self.plate_choice.SetSelection(0)
+        def on_plate_selected(evt):
+            self.subplot_platemap(x,y, plates_dict, plate_type, cmap, title, clear)
+        self.plate_choice.Bind(wx.EVT_CHOICE, on_plate_selected)
+        
+        platemap_plate = self.plate_choice.GetStringSelection()
+        data = format_plate_data_as_array(plates_dict[platemap_plate], plate_type)
+        
+        nrows, ncols = data.shape
+
+        # Draw NaNs as gray
+        # XXX: What if colormap with gray in it?
+        cmap.set_bad('gray', 1.)
+        clean_data = np.ma.array(data, mask=np.isnan(data))
+        
+        plot = axes.imshow(clean_data, cmap=cmap, interpolation='nearest',
                            shape=data.shape)
         axes.set_title(title)
         axes.set_xticks(range(ncols))
@@ -1100,7 +1141,15 @@ class CPFigureFrame(wx.Frame):
         axes.set_xticklabels(range(1, ncols+1), minor=True)
         axes.set_yticklabels(alphabet[:nrows], minor=True)
         axes.axis('image')
-        
+
+        if colorbar:
+            subplot = self.subplot(x,y)
+            if self.colorbar.has_key(subplot):
+                cb = self.colorbar[subplot]
+                self.colorbar[subplot] = self.figure.colorbar(plot, cax=cb.ax)
+            else:
+                self.colorbar[subplot] = self.figure.colorbar(plot)
+                
         def format_coord(x, y):
             col = int(x + 0.5)
             row = int(y + 0.5)
@@ -1117,6 +1166,28 @@ class CPFigureFrame(wx.Frame):
         axes.format_coord = format_coord
         
         return plot
+
+def format_plate_data_as_array(plate_dict, plate_type):
+    ''' Returns an array shaped like the given plate type with the values from
+    plate_dict stored in it.  Wells without data will be set to np.NaN
+    plate_dict  -  dict mapping well names to data. eg: d["A01"] --> data
+                   data values must be of numerical or string types
+    plate_type  - '96' (return 8x12 array) or '384' (return 16x24 array)
+    '''
+    if plate_type == '96':
+        plate_shape = (8, 12)
+    elif plate_type == '384':
+        plate_shape = (16, 24)
+    alphabet = 'ABCDEFGHIJKLMNOP'
+    data = np.zeros(plate_shape)
+    data[:] = np.nan
+    for well, val in plate_dict.items():
+        r = alphabet.index(well[0].upper())
+        c = int(well[1:]) - 1
+        assert (0 <= r <= data.shape[0]) and (0 <= c <= data.shape[1]), \
+               'A well value (%s) in plate_dict does not fit in the given plate type.'%(well)
+        data[r,c] = val
+    return data
         
 def renumber_labels_for_display(labels):
     """Scramble the label numbers randomly to make the display more discernable
@@ -1162,7 +1233,11 @@ if __name__ == "__main__":
     
     img = np.random.uniform(.5, .6, size=(5, 5, 3))
     
-    f.subplot_platemap(0, 0, np.random.rand(16, 24), title='platemap test')
+    pdict = {'plate 1': {'A01':1, 'A02':3, 'A03':2},
+             'plate 2': {'C01':1, 'C02':3, 'C03':2},
+             }
+    
+    f.subplot_platemap(0, 0, pdict, '96', title='platemap test')
 #    f.subplot_histogram(1, 0, [1,1,1,2], 2, 'x', title="hist")
 #    f.subplot_scatter(2, 0, [1,1,1,2], [1,2,3,4], title="scatter")
 #    f.subplot_density(3, 0, np.random.randn(100).reshape((50,2)), title="density")

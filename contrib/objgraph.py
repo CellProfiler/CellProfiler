@@ -356,7 +356,12 @@ def show_graph(objs, edge_func, swap_source_target,
         nodes += 1
         target = queue.pop(0)
         tdepth = depth[id(target)]
-        print >> f, '  %s[label="%s"];' % (obj_node_id(target), obj_label(target, tdepth))
+        objlabel, numpy_child = obj_label(target, tdepth)
+        print >> f, '  %s[label="%s"];' % (obj_node_id(target), objlabel)
+        if numpy_child is not None:
+            queue.append(numpy_child)
+            print >> f, ' %s -> %s;'%(obj_node_id(target), obj_node_id(numpy_child))
+            depth[id(numpy_child)] = 0
         h, s, v = gradient((0, 0, 1), (0, 0, .3), tdepth, max_depth)
         if inspect.ismodule(target):
             h = .3
@@ -401,28 +406,24 @@ def obj_node_id(obj):
         return 'all_weakrefs_are_one'
     return ('o%d' % id(obj)).replace('-', '_')
 
-
 def obj_label(obj, depth):
+    numpylabel, numpy_child = numpy_label(obj)
     return quote(type(obj).__name__ + ':\n' +
-                 safe_repr(obj) + numpy_label(obj))
+                 safe_repr(obj) + numpylabel), numpy_child
 
 def numpy_label(obj):
     if not isinstance(obj, numpyarray):
-        return ""
-    indirect = "" if obj.flags.owndata else " (indirect)"
-    sz = numpy_size(obj)
-    if sz == None:
-        return "unknown" + indirect
-    return " %d%s"%(sz, indirect)
+        return "", None
+    if obj.flags.owndata:
+        return "\n%d bytes, %s %s"%(obj.nbytes, "x".join('%s'%(d) for d in  obj.shape), obj.dtype), None
+    return " (indirect)", obj.base
 
 def numpy_size(obj):
-    if isinstance(obj, numpyarray):
-        while not obj.flags.owndata:
-            obj = obj.base
-            if not isinstance(obj, numpyarray):
-                return None
-        return obj.nbytes
-    return 0
+    while not obj.flags.owndata:
+        obj = obj.base
+        if not isinstance(obj, numpyarray):
+            return 0
+    return obj.nbytes
 
 def quote(s):
     return s.replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", "\\n")

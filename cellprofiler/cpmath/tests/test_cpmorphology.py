@@ -2984,3 +2984,130 @@ class TestBranchings(unittest.TestCase):
         image[abs(i) == abs(j)] = True
         self.assertTrue(morph.branchings(image)[5,5] == 4)
         
+class TestLabelSkeleton(unittest.TestCase):
+    def test_00_00_zeros(self):
+        '''Label a skeleton containing nothing'''
+        skeleton = np.zeros((20,10), bool)
+        result, count = morph.label_skeleton(skeleton)
+        self.assertEqual(count, 0)
+        self.assertTrue(np.all(result == 0))
+        
+    def test_01_01_point(self):
+        '''Label a skeleton consisting of a single point'''
+        skeleton = np.zeros((20,10), bool)
+        skeleton[5,5] = True
+        expected = np.zeros((20,10), int)
+        expected[5,5] = 1
+        result, count = morph.label_skeleton(skeleton)
+        self.assertEqual(count, 1)
+        self.assertTrue(np.all(result == expected))
+        
+    def test_01_02_line(self):
+        '''Label a skeleton that's a line'''
+        skeleton = np.zeros((20,10), bool)
+        skeleton[5:15, 5] = True
+        result, count = morph.label_skeleton(skeleton)
+        self.assertEqual(count, 1)
+        self.assertTrue(np.all(result[skeleton] == 1))
+        self.assertTrue(np.all(result[~skeleton] == 0))
+        
+    def test_01_03_branch(self):
+        '''Label a skeleton that has a branchpoint'''
+        skeleton = np.zeros((21,11), bool)
+        i,j = np.mgrid[-10:11,-5:6]
+        #
+        # Looks like this:
+        #  .   .
+        #   . .
+        #    .
+        #    .
+        skeleton[(i < 0) & (np.abs(i) == np.abs(j))] = True
+        skeleton[(i >= 0) & (j == 0)] = True
+        result, count = morph.label_skeleton(skeleton)
+        self.assertEqual(count, 4)
+        self.assertTrue(np.all(result[~skeleton] == 0))
+        self.assertTrue(np.all(result[skeleton] > 0))
+        self.assertEqual(result[10,5], 1)
+        v1 = result[5,0]
+        v2 = result[5,-1]
+        v3 = result[-1, 5]
+        self.assertEqual(len(np.unique((v1, v2, v3))), 3)
+        self.assertTrue(np.all(result[(i < 0) & (i==j)] == v1))
+        self.assertTrue(np.all(result[(i < 0) & (i==-j)] == v2))
+        self.assertTrue(np.all(result[(i > 0) & (j == 0)] == v3))
+        
+    def test_02_01_branch_and_edge(self):
+        '''A branchpoint meeting an edge at two points'''
+        
+        expected = np.array(((2,0,0,0,0,1),
+                             (0,2,0,0,1,0),
+                             (0,0,3,1,0,0),
+                             (0,0,4,0,0,0),
+                             (0,4,0,0,0,0),
+                             (4,0,0,0,0,0)))
+        skeleton = expected > 0
+        result, count = morph.label_skeleton(skeleton)
+        self.assertEqual(count, 4)
+        self.assertTrue(np.all(result[~skeleton] == 0))
+        self.assertEqual(len(np.unique(result)), 5)
+        self.assertEqual(np.max(result), 4)
+        self.assertEqual(np.min(result), 0)
+        for i in range(1,5):
+            self.assertEqual(len(np.unique(result[expected == i])), 1)
+
+    def test_02_02_four_edges_meet(self):
+        '''Check the odd case of four edges meeting at a square
+        
+        The shape is something like this:
+        
+        .    .
+         .  .
+          ..
+          ..
+         .  .
+        .    .
+        None of the points above are branchpoints - they're sort of
+        half-branchpoints.
+        '''
+        i,j = np.mgrid[-10:10,-10:10]
+        i[i<0] += 1
+        j[j<0] += 1
+        skeleton=np.abs(i) == np.abs(j)
+        result, count = morph.label_skeleton(skeleton)
+        self.assertEqual(count, 4)
+        self.assertTrue(np.all(result[~skeleton]==0))
+        self.assertEqual(np.max(result), 4)
+        self.assertEqual(np.min(result), 0)
+        self.assertEqual(len(np.unique(result)), 5)
+        for im in (-1, 1):
+            for jm in (-1, 1):
+                self.assertEqual(len(np.unique(result[(i*im == j*jm) & 
+                                                      (i*im > 0) &
+                                                      (j*jm > 0)])), 1)
+                
+class TestPairwisePermutations(unittest.TestCase):
+    def test_00_00_empty(self):
+        i,j1,j2 = morph.pairwise_permutations(np.array([]), np.array([]))
+        for x in (i, j1, j2):
+            self.assertEqual(len(x), 0)
+            
+    def test_00_01_no_permutations_of_one(self):
+        i,j1,j2 = morph.pairwise_permutations(np.array([4]), np.array([3]))
+        for x in (i, j1, j2):
+            self.assertEqual(len(x), 0)
+
+    def test_01_01_two(self):
+        i,j1,j2 = morph.pairwise_permutations(np.array([4,4]), np.array([9,3]))
+        for x, v in ((i, 4), (j1, 3), (j2, 9)):
+            self.assertEqual(len(x), 1)
+            self.assertEqual(x[0], v)
+    
+    def test_01_02_many(self):
+        i,j1,j2 = morph.pairwise_permutations(np.array([7,7,7,5,5,5,5,9,9,9,9,9,9]),
+                                              np.array([1,3,2,4,5,8,6,1,2,3,4,5,6]))
+        for x, v in (
+            (i,  np.array([5,5,5,5,5,5,7,7,7,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9])),
+            (j1, np.array([4,4,4,5,5,6,1,1,2,1,1,1,1,1,2,2,2,2,3,3,3,4,4,5])),
+            (j2, np.array([5,6,8,6,8,8,2,3,3,2,3,4,5,6,3,4,5,6,4,5,6,5,6,6]))):
+            self.assertEqual(len(x), len(v))
+            self.assertTrue(np.all(x == v))

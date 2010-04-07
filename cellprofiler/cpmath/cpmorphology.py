@@ -3012,6 +3012,86 @@ def skeletonize_labels(labels):
         result[mask] = labels[mask]
     return result
 
+def label_skeleton(skeleton):
+    '''Label a skeleton so that each edge has a unique label
+    
+    This operation produces a labels matrix where each edge between
+    two branchpoints has a different label. If the skeleton has been
+    properly eroded, there are three kinds of points:
+    1) point adjacent to 0 or 1 other points = end of edge
+    2) point adjacent to two other points = in middle of edge
+    3) point adjacent to more than two other points = at end of edge
+            connecting to another edge
+    4) a branchpoint
+    
+    We do all connected components here where components are 8-connected
+    but a point in category 3 can't connect to another point in category 3.
+    
+    Returns the labels matrix and the count as a tuple
+    '''
+    bpts = branchpoints(skeleton)
+    #
+    # Count the # of neighbors per point
+    #
+    neighbors = scind.convolve(skeleton.astype(int), np.ones((3,3),int),
+                               mode='constant').astype(int)
+    neighbors[~skeleton] = 0
+    neighbors[skeleton] -= 1
+    #
+    # Find the i/j coordinates of the relevant points
+    #
+    i,j = np.mgrid[0:skeleton.shape[0], 0:skeleton.shape[1]]
+    skeleton_minus_bpts = skeleton & ~ bpts
+    si = i[skeleton_minus_bpts]
+    sj = j[skeleton_minus_bpts]
+    bi = i[bpts]
+    bj = j[bpts]
+    i = np.hstack((bi, si))
+    j = np.hstack((bj, sj))
+    b_vnum = np.arange(len(bi))
+    s_vnum = np.arange(len(si)) + len(bi)
+    all_vnum = np.hstack((b_vnum, s_vnum))
+    vertex_numbers=np.zeros(skeleton.shape, int)
+    vertex_numbers[i,j] = all_vnum
+    #
+    # src and dest are the vertices linked by edges. Their values are the
+    # vertex numbers. First, link every vertex to itself
+    #
+    src = all_vnum
+    dest = all_vnum
+    #
+    # Now, for the non-branchpoints, link to all 8-connected neighbors
+    # while obeying the rules
+    #
+    for ioff, joff in ((-1,-1), (-1,0), (-1,1),
+                       ( 0,-1),         ( 0,1),
+                       ( 1,-1), ( 1,0), ( 1,1)):
+        consider = np.ones(len(si), bool)
+        if ioff == -1:
+            consider = si > 0
+        elif ioff == 1:
+            consider = si < skeleton.shape[0] - 1
+        if joff == -1:
+            consider = consider & (sj > 0)
+        elif joff == 1:
+            consider = consider & (sj < skeleton.shape[1] - 1)
+        #
+        # Forge a link if the offset point is in the skeleton
+        #
+        ci = si[consider]
+        cj = sj[consider]
+        link = (skeleton_minus_bpts[ci+ioff, cj+joff] &
+                ((neighbors[ci,cj] < 3) | (neighbors[ci+ioff, cj+joff] < 3)))
+        ci = ci[link]
+        cj = cj[link]
+        src = np.hstack((src, vertex_numbers[ci, cj]))
+        dest = np.hstack((dest, vertex_numbers[ci+ioff, cj+joff]))
+        
+    labeling = all_connected_components(src, dest)
+    vertex_numbers[i,j] = labeling + 1
+    return (vertex_numbers, 
+            0 if len(labeling) == 0 else int(np.max(labeling)) + 1)
+    
 def distance_to_edge(labels):
     '''Compute the distance of a pixel to the edge of its object
     
@@ -3150,16 +3230,144 @@ def all_connected_components(i,j):
     _all_connected_components(i,j,indexes,counts,labels)
     return labels
 
-if __name__=='__main__':
-    import Image as PILImage
-    from matplotlib.image import pil_to_array
-    image1 = pil_to_array(PILImage.open('c:/cellprofiler/trunk/exampleimages/examplesbsimages/Channel2-01-A-01.tif'))
-    image1 = image1[:,:,0] > 80
-    labels1 = scind.label(image1)[0]
-    image2 = pil_to_array(PILImage.open('c:/cellprofiler/trunk/exampleimages/examplesbsimages/Channel2-02-A-02.tif'))
-    image2 = image2[:,:,0] > 80
-    labels2 = scind.label(image2)[0]
-    match = associate_by_distance(labels1, labels2, 50)
-    for i,j in match:
-        print "i=%d, j=%d"%(i,j)
+def pairwise_permutations(i, j):
+    '''Return all permutations of a set of groups
     
+    This routine takes two vectors:
+    i - the label of each group
+    j - the members of the group.
+    
+    For instance, take a set of two groups with several members each:
+    
+    i | j
+    ------
+    1 | 1
+    1 | 2
+    1 | 3
+    2 | 1
+    2 | 4
+    2 | 5
+    2 | 6
+    
+    The output will be
+    i | j1 | j2
+    -----------
+    1 | 1  | 2
+    1 | 1  | 3
+    1 | 2  | 3
+    2 | 1  | 4
+    2 | 1  | 5
+    2 | 1  | 6
+    2 | 4  | 5
+    2 | 4  | 6
+    2 | 5  | 6
+    etc
+    '''
+    if len(i) == 0:
+        return (np.array([], int), np.array([], j.dtype), np.array([], j.dtype))
+    #
+    # Sort by i then j
+    #
+    index = np.lexsort((j,i))
+    i=i[index]
+    j=j[index]
+    #
+    # map the values of i to a range r
+    #
+    r_to_i = np.sort(np.unique(i))
+    i_to_r_off = np.min(i)
+    i_to_r = np.zeros(np.max(i)+1-i_to_r_off, int)
+    i_to_r[r_to_i - i_to_r_off] = np.arange(len(r_to_i))
+    #
+    # Advance the value of r by one each time i changes
+    #
+    r = np.cumsum(np.hstack(([False], i[:-1] != i[1:])))
+    #
+    # find the counts per item
+    #
+    src_count = np.bincount(r)
+    #
+    # The addresses of the starts of each item
+    #
+    src_idx = np.hstack(([0], np.cumsum(src_count[:-1])))
+    #
+    # The sizes of each destination item: n * (n - 1) / 2
+    # This is the number of permutations of n items against themselves.
+    #
+    dest_count = src_count * (src_count - 1) / 2
+    #
+    # The indexes of the starts of each destination item (+ total sum at end)
+    #
+    dest_idx = np.hstack(([0], np.cumsum(dest_count)))
+    dest_size = dest_idx[-1]
+    #
+    # Allocate the destination arrays
+    #
+    d_r = np.zeros(dest_size, i.dtype)
+    d_j1, d_j2 = np.zeros((2, dest_size), j.dtype)
+    #
+    # Mark the first item in the destination and then do a cumulative
+    # sum trick ( (1 + 0 + 0 + 0 + 1 + 0 + 0) - 1 = 
+    #              0 , 0 , 0 , 0,  1,  1 , 1)
+    # to label each member of d_i
+    #
+    d_r[dest_idx[1:][dest_idx[1:] < dest_size]] += 1
+    d_r = np.cumsum(d_r)
+    d_i = r_to_i[d_r]
+    #
+    # Index each member of the destination array relative to its start. The
+    # above array would look like this: [0, 1, 2, 3, 0, 1, 2]
+    #
+    d_r_idx = np.arange(len(d_r)) - dest_idx[d_r]
+    #
+    # We can use a 2x2 matrix to look up which j1 and j2 for each of
+    # the d_r_idx. The first slot in the matrix is the number of values
+    # to permute (from src_count[d_r]) and the second slot is d_r_idx
+    # So here, we make a sparse array for the unique values of src_count
+    #
+    unique_src_count = np.unique(src_count)
+    unique_dest_len = (unique_src_count * (unique_src_count - 1) / 2).astype(int)
+    #
+    # src_count repeated once per permutation
+    #
+    i_sparse = np.hstack([np.ones(dlen, int) * c 
+                          for c, dlen in zip(unique_src_count,
+                                             unique_dest_len)])
+    #
+    # The indexes from zero to the # of permutations
+    #
+    j_sparse = np.hstack([np.arange(dlen) for dlen in unique_dest_len])
+    #
+    # Repeat 0 n-1 times, 1 n-2 times, etc to get the first indexes in
+    # the permutation.
+    #
+    v_j1_sparse = np.hstack(
+        [ np.hstack(
+            [np.ones(n-x-1, int) * x for x in range(n)]) 
+          for n in unique_src_count])
+    #
+    # Spit out a range from 1 to n-1, 2 to n-1, etc
+    #
+    v_j2_sparse = np.hstack(
+        [ np.hstack(
+            [np.arange(x+1, n) for x in range(n)])
+          for n in unique_src_count])
+    
+    if len(i_sparse) > 0:
+        j1_sparse = scipy.sparse.coo_matrix((v_j1_sparse, 
+                                             (i_sparse, j_sparse))).tocsc()
+        j2_sparse = scipy.sparse.coo_matrix((v_j2_sparse, 
+                                             (i_sparse, j_sparse))).tocsc()
+    else:
+        j1_sparse = j2_sparse = np.array([[]], j.dtype)
+    #
+    # And now we can spit out the j1 and j2 dest. This is whatever element
+    # from the group in j indexed by either j1 or j2 sparse. We find the
+    # group's start by using d_r to look up the group's start.
+    #
+    d_j1_idx = np.array(j1_sparse[src_count[d_r], d_r_idx]).flatten()
+    d_j1 = j[src_idx[d_r] + d_j1_idx]
+    d_j2_idx = np.array(j2_sparse[src_count[d_r], d_r_idx]).flatten()
+    d_j2 = j[src_idx[d_r] + d_j2_idx]
+    
+    return (d_i, d_j1, d_j2)

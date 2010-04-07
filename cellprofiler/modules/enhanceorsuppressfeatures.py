@@ -163,11 +163,11 @@ class EnhanceOrSuppressFeatures(cpm.CPModule):
         workspace.image_set.add(self.filtered_image_name.value, result_image)
         
         if not workspace.frame is None:
-            figure = workspace.create_or_find_figure(subplots=(1,2))
+            figure = workspace.create_or_find_figure(subplots=(2,1))
             figure.subplot_imshow_grayscale(0, 0, image.pixel_data,
                                             "Original: %s" % 
                                             self.image_name.value)
-            figure.subplot_imshow_grayscale(0, 1, result,
+            figure.subplot_imshow_grayscale(1, 0, result,
                                             "Filtered: %s" %
                                             self.filtered_image_name.value)
         

@@ -80,7 +80,9 @@ def median_filter(data, mask, radius, percent=50):
     percent - conceptually, order the significant pixels in the octagon,
               count them and choose the pixel indexed by the percent
               times the count divided by 100. More simply, 50 = median
-    returns a filtered array
+    returns a filtered array.  In areas where the median filter does
+      not overlap the mask, the filtered result is undefined, but in
+      practice, it will be the lowest value in the valid area.
     '''
     #
     # Normalize the ranked data to 0-255
@@ -117,8 +119,6 @@ def median_filter(data, mask, radius, percent=50):
             result = translation[output]
     else:
         result = output
-    not_mask = np.logical_not(mask)
-    result[not_mask] = data[not_mask] 
     return result
 
 def bilateral_filter(image, mask, sigma_spatial, sigma_range,

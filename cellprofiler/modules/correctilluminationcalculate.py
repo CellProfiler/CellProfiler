@@ -308,6 +308,9 @@ class CorrectIlluminationCalculate(cpm.CPModule):
             dilated_image   = self.apply_dilation(avg_image, orig_image)
             smoothed_image  = self.apply_smoothing(dilated_image, orig_image)
             output_image    = self.apply_scaling(smoothed_image, orig_image)
+            # for illumination correction, we want the smoothed function to extend beyond the mask.
+            output_image.mask = np.ones(output_image.pixel_data.shape, bool)
+
             if self.save_average_image.value:
                 workspace.image_set.add(self.average_image_name.value,
                                          avg_image)
@@ -345,7 +348,7 @@ class CorrectIlluminationCalculate(cpm.CPModule):
                       ["Max value", round(np.max(output_image.pixel_data),2)],
                       ["Calculation type", self.intensity_choice.value]
                       ]
-        if self.rescale_option == IC_REGULAR:
+        if self.intensity_choice == IC_REGULAR:
             statistics.append(["Radius",self.object_dilation_radius.value])
         else:
             statistics.append(["Block size",self.block_size.value])

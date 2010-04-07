@@ -625,7 +625,9 @@ cdef inline np.uint8_t find_median(Histograms *ph):
         int k
         np.uint32_t accumulator
 
-    pixels_below = (ph.accumulator_count * ph.percent+50) / 100
+    if ph.accumulator_count == 0:
+        return 0
+    pixels_below = (ph.accumulator_count * ph.percent + 50) / 100 # +50 for roundoff
     if pixels_below > 0:
         pixels_below -= 1
     accumulator = 0
@@ -731,10 +733,7 @@ cdef int c_median_filter(np.int32_t   rows,
                 ph.current_stride = row * row_stride + col * col_stride
                 update_current_location(ph)
                 accumulate(ph)
-                if ph.mask[ph.current_stride] != 0:
-                    ph.output[ph.current_stride] = find_median(ph)
-                else:
-                    ph.output[ph.current_stride] = ph.data[ph.current_stride]
+                ph.output[ph.current_stride] = find_median(ph)
             for col in range(columns, columns+radius):
                 ph.current_column = col
                 ph.current_stride = row * row_stride + col * col_stride

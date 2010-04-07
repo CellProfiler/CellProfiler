@@ -140,6 +140,20 @@ class TestMedianFilter(unittest.TestCase):
         self.assertTrue(result[10,10] >= min_acceptable)
         self.assertTrue(result[10,10] <= max_acceptable)
         
+    def test_04_01_half_masked(self):
+        '''Make sure that the median filter can handle large masked areas.'''
+        img = np.ones((20, 20))
+        mask = np.ones((20, 20),bool)
+        mask[10:, :] = False
+        img[~ mask] = 2
+        img[1, 1] = 0 # to prevent short circuit for uniform data.
+        result = F.median_filter(img, mask, 5)
+        # in partial coverage areas, the result should be only from the masked pixels
+        self.assertTrue(np.all(result[:14, :] == 1))
+        # in zero coverage areas, the result should be the lowest valud in the valid area
+        self.assertTrue(np.all(result[15:, :] == np.min(img[mask])))
+
+
 class TestBilateralFilter(unittest.TestCase):
     def test_00_00_zeros(self):
         '''Test the bilateral filter of an array of all zeros'''

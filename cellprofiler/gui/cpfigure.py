@@ -21,7 +21,7 @@ import numpy.ma
 import matplotlib.patches
 import matplotlib.colorbar
 import matplotlib.backends.backend_wxagg
-from cellprofiler.preferences import update_cpfigure_position, get_next_cpfigure_position
+from cellprofiler.preferences import update_cpfigure_position, get_next_cpfigure_position, reset_cpfigure_position
 import scipy.misc
 from cStringIO import StringIO
 import sys
@@ -125,6 +125,7 @@ def close_all(parent):
                if isinstance(x, CPFigureFrame)]
     for window in windows:
         window.Close()
+    reset_cpfigure_position()
         
 MENU_FILE_SAVE = wx.NewId()
 MENU_CLOSE_WINDOW = wx.NewId()

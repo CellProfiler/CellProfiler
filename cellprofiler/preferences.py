@@ -495,6 +495,10 @@ def get_next_cpfigure_position(update_next_position=True):
         update_cpfigure_position()
     return pos
 
+def reset_cpfigure_position():
+    global __cpfigure_position
+    __cpfigure_position = (-1,-1)
+    
 def update_cpfigure_position():
     '''Called by get_next_cpfigure_position to update the screen position at 
     which the next figure frame will be drawn.

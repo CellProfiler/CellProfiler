@@ -372,8 +372,14 @@ class IdentifySecondaryObjects(cpmi.Identify):
         # * labels touching the edge, including small removed
         #
         labels_in = objects.unedited_segmented.copy()
-        labels_in[(objects.small_removed_segmented > 0) &
-                  (objects.segmented == 0)] = 0
+        labels_touching_edge = np.hstack(
+            (labels_in[0,:], labels_in[-1,:], labels_in[:,0], labels_in[:,-1]))
+        labels_touching_edge = np.unique(labels_touching_edge)
+        is_touching = np.zeros(np.max(labels_in)+1, bool)
+        is_touching[labels_touching_edge] = True
+        is_touching = is_touching[labels_in]
+        
+        labels_in[(~ is_touching) & (objects.segmented == 0)] = 0
         
         if self.method in (M_DISTANCE_B, M_DISTANCE_N):
             if self.method == M_DISTANCE_N:

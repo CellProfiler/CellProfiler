@@ -1026,3 +1026,111 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'9194\'|variable_revision_nu
         self.assertTrue(np.all(object_out.segmented == labels))
         self.assertTrue(np.all(object_out.unedited_segmented == labels_unedited))
         
+    def test_08_03_small(self):
+        '''Regression test of IMG-791
+        
+        A small object in the seed mask should not attract any of the
+        secondary object.
+        '''
+        labels = np.array([[ 0,0,0,0,0,0 ],
+                           [ 0,0,1,0,0,0 ],
+                           [ 0,0,0,0,0,0 ],
+                           [ 0,0,0,0,0,0 ],
+                           [ 0,0,0,0,0,0 ],
+                           [ 0,0,0,0,0,0 ]])
+        
+        labels_unedited = np.array([[ 0,0,0,0,0,0 ],
+                                    [ 0,0,1,0,0,0 ],
+                                    [ 0,0,0,0,0,0 ],
+                                    [ 0,0,0,0,0,0 ],
+                                    [ 0,0,2,0,0,0 ],
+                                    [ 0,0,0,0,0,0 ]])
+        
+        image = np.array([[ 0,0,0,0,0,0 ],
+                          [ 0,1,1,1,1,0 ],
+                          [ 0,1,1,1,1,0 ],
+                          [ 0,1,1,1,1,0 ],
+                          [ 0,1,1,1,1,0 ],
+                          [ 0,0,0,0,0,0 ]], float)
+        expected = image.astype(int)
+        
+        p = cpp.Pipeline()
+        o_s = cpo.ObjectSet()
+        i_l = cpi.ImageSetList()
+        image = cpi.Image(image)
+        objects = cpo.Objects()
+        objects.unedited_segmented = labels 
+        objects.small_removed_segmented = labels
+        objects.unedited_segmented = labels_unedited
+        objects.segmented = labels
+        o_s.add_objects(objects, "primary")
+        i_s = i_l.get_image_set(0)
+        i_s.add("my_image",image)
+        m = cpm.Measurements()
+        module = cpmi2.IdentifySecondary()
+        module.primary_objects.value = "primary"
+        module.objects_name.value="my_objects"
+        module.image_name.value = "my_image"
+        module.method.value = cpmi2.M_PROPAGATION
+        module.threshold_method.value = cpmi.TM_MANUAL
+        module.manual_threshold.value = .5
+        workspace = cpw.Workspace(p,module,i_s,o_s,m,i_l)
+        module.run(workspace)
+        object_out = workspace.object_set.get_objects("my_objects")
+        self.assertTrue(np.all(object_out.segmented == expected))
+        
+    def test_08_04_small_touching(self):
+        '''Test of logic added for IMG-791
+        
+        A small object in the seed mask touching the edge should attract
+        some of the secondary object
+        '''
+        labels = np.array([[ 0,0,0,0,0,0 ],
+                           [ 0,0,1,0,0,0 ],
+                           [ 0,0,0,0,0,0 ],
+                           [ 0,0,0,0,0,0 ],
+                           [ 0,0,0,0,0,0 ],
+                           [ 0,0,0,0,0,0 ]])
+        
+        labels_unedited = np.array([[ 0,0,0,0,0,0 ],
+                                    [ 0,0,1,0,0,0 ],
+                                    [ 0,0,0,0,0,0 ],
+                                    [ 0,0,0,0,0,0 ],
+                                    [ 0,0,0,0,0,0 ],
+                                    [ 0,0,2,0,0,0 ]])
+        
+        image = np.array([[ 0,0,0,0,0,0 ],
+                          [ 0,1,1,1,1,0 ],
+                          [ 0,1,1,1,1,0 ],
+                          [ 0,1,1,1,1,0 ],
+                          [ 0,1,1,1,1,0 ],
+                          [ 0,1,1,1,1,0 ]], float)
+        
+        p = cpp.Pipeline()
+        o_s = cpo.ObjectSet()
+        i_l = cpi.ImageSetList()
+        image = cpi.Image(image)
+        objects = cpo.Objects()
+        objects.unedited_segmented = labels 
+        objects.small_removed_segmented = labels
+        objects.unedited_segmented = labels_unedited
+        objects.segmented = labels
+        o_s.add_objects(objects, "primary")
+        i_s = i_l.get_image_set(0)
+        i_s.add("my_image",image)
+        m = cpm.Measurements()
+        module = cpmi2.IdentifySecondary()
+        module.primary_objects.value = "primary"
+        module.objects_name.value="my_objects"
+        module.image_name.value = "my_image"
+        module.method.value = cpmi2.M_PROPAGATION
+        module.threshold_method.value = cpmi.TM_MANUAL
+        module.manual_threshold.value = .5
+        workspace = cpw.Workspace(p,module,i_s,o_s,m,i_l)
+        module.run(workspace)
+        object_out = workspace.object_set.get_objects("my_objects")
+        i,j = np.argwhere(labels_unedited == 2)[0]
+        self.assertTrue(np.all(object_out.segmented[i-1:,j-1:j+2] == 0))
+        self.assertEqual(len(np.unique(object_out.unedited_segmented)), 3)
+        self.assertEqual(len(np.unique(object_out.unedited_segmented[i-1:,j-1:j+2])), 1)
+        

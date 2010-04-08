@@ -27,6 +27,7 @@ import numpy as np
 import cellprofiler.cpmodule as cpm
 import cellprofiler.cpimage as cpi
 import cellprofiler.measurements as cpmeas
+import cellprofiler.preferences as cpprefs
 import cellprofiler.settings as cps
 
 from cellprofiler.cpmath.filter import stretch
@@ -53,11 +54,21 @@ R_SET_TO_ZERO = 'Set to zero'
 R_SET_TO_CUSTOM = 'Set to custom value'
 R_SET_TO_ONE = 'Set to one'
 
+LOW_ALL_IMAGES = 'Minimum of all images'
+LOW_EACH_IMAGE = 'Minimum for each image'
+CUSTOM_VALUE = 'Custom'
+LOW_ALL = [CUSTOM_VALUE, LOW_EACH_IMAGE, LOW_ALL_IMAGES ]
+
+HIGH_ALL_IMAGES = 'Maximum of all images'
+HIGH_EACH_IMAGE = 'Maximum for each image'
+
+HIGH_ALL = [CUSTOM_VALUE, HIGH_EACH_IMAGE, HIGH_ALL_IMAGES]
+
 class RescaleIntensity(cpm.CPModule):
 
     module_name = "RescaleIntensity"
     category="Image Processing"
-    variable_revision_number = 1
+    variable_revision_number = 2
     
     def create_settings(self):
         self.image_name = cps.ImageNameSubscriber("Select the input image","None", doc = '''What did you call the image to be rescaled?''')
@@ -99,17 +110,40 @@ class RescaleIntensity(cpm.CPModule):
                                                 to 1 range, so this conversion may cause downstream modules to behave 
                                                 in unexpected ways.</li></ul>''')
         
-        self.wants_automatic_low = cps.Binary('Use the minimum intensity value as the lower limit?',
-                                              False, doc = """
+        self.wants_automatic_low = cps.Choice('How do you want to calculate the minimum intensity?',
+                                              LOW_ALL, doc = """
                                               <i>(Used only if specific values are to be chosen for a custom range)</i><br>
-                                              This setting specifies the minimum intensity in the input image
-                                              as the lower limit of the intensity range in the rescaled image.""")
+                                              This setting controls how the minimum intensity is determined.
+                                              <p><br><ul><li><i>%(CUSTOM_VALUE)s</i>: 
+                                            
+                                              Enter the minimum intensity manually below.</li>
+                                              <li><i>%(LOW_EACH_IMAGE)s</i>: use the lowest intensity in this image
+                                              as the minimum intensity for rescaling</li>
+                                              <li><i>%(LOW_ALL_IMAGES)s</i>: use the lowest intensity from all images
+                                              in the image group or the experiment if grouping is not being used.
+                                              <b>Note:</b> Choosing this option may have undesirable results for
+                                              a large ungrouped experiment split into a number of batches. Each batch
+                                              will open all images from the chosen channel at the start of the run.
+                                              This sort of synchronized action may have a severe impact on your
+                                              network file system.</li></ul>
+                                              """ % globals())
         
-        self.wants_automatic_high = cps.Binary('Use the maximum intensity value as the upper limit?',
-                                               False, doc = """
-                                               <i>(Used only if specific values are to be chosen for a custom range)</i><br>
-                                               This setting specifies the maximum intensity in the input image
-                                               as the upper limit of the intensity range in the rescaled image.""")
+        self.wants_automatic_high = cps.Choice('How do you want to calculate the maximum intensity?',
+                                              HIGH_ALL, doc = """
+                                              <i>(Used only if specific values are to be chosen for a custom range)</i><br>
+                                              This setting controls how the maximum intensity is determined.
+                                              <p><br><ul><li><i>%(CUSTOM_VALUE)s</i>: 
+                                              Enter the maximum intensity manually below.</li>
+                                              <li><i>%(LOW_EACH_IMAGE)s</i>: use the highest intensity in this image
+                                              as the maximum intensity for rescaling</li>
+                                              <li><i>%(LOW_ALL_IMAGES)s</i>: use the highest intensity from all images
+                                              in the image group or the experiment if grouping is not being used.
+                                              <b>Note:</b> Choosing this option may have undesirable results for
+                                              a large ungrouped experiment split into a number of batches. Each batch
+                                              will open all images from the chosen channel at the start of the run.
+                                              This sort of synchronized action may have a severe impact on your
+                                              network file system.</li></ul>
+                                              """ % globals())
         
         self.source_low = cps.Float('Enter the lower limit for the intensity range for the input image',0)
         
@@ -178,15 +212,15 @@ class RescaleIntensity(cpm.CPModule):
                    self.rescale_method]
         if self.rescale_method in (M_MANUAL_INPUT_RANGE, M_MANUAL_IO_RANGE):
             result += [self.wants_automatic_low]
-            if not self.wants_automatic_low.value:
-                if self.wants_automatic_high.value:
+            if self.wants_automatic_low.value == CUSTOM_VALUE:
+                if self.wants_automatic_high != CUSTOM_VALUE:
                     result += [self.source_low, self.wants_automatic_high]
                 else:
                     result += [self.wants_automatic_high, self.source_scale]
-            elif not self.wants_automatic_high.value:
-                result += [self.wants_automatic_high, self.source_high]
             else:
                 result += [self.wants_automatic_high]
+                if self.wants_automatic_high == CUSTOM_VALUE:
+                    result += [self.source_high]
         if self.rescale_method == M_MANUAL_IO_RANGE:
             result += [self.dest_scale]
         if self.rescale_method in (M_MANUAL_INPUT_RANGE, M_MANUAL_IO_RANGE):
@@ -205,15 +239,95 @@ class RescaleIntensity(cpm.CPModule):
             result += [self.divisor_value]
         return result
 
+    def set_automatic_minimum(self, image_set_list, value):
+        d = self.get_dictionary(image_set_list)
+        d[LOW_ALL_IMAGES] = value
+        
+    def get_automatic_minimum(self, image_set_list):
+        d = self.get_dictionary(image_set_list)
+        return d[LOW_ALL_IMAGES]
+        
+    def set_automatic_maximum(self, image_set_list, value):
+        d = self.get_dictionary(image_set_list)
+        d[HIGH_ALL_IMAGES] = value
+        
+    def get_automatic_maximum(self, image_set_list):
+        d = self.get_dictionary(image_set_list)
+        return d[HIGH_ALL_IMAGES]
+        
+    def prepare_group(self, pipeline, image_set_list, grouping, image_numbers):
+        '''Handle initialization per-group
+        
+        pipeline - the pipeline being run
+        image_set_list - the list of image sets for the whole experiment
+        grouping - a dictionary that describes the key for the grouping.
+                   For instance, { 'Metadata_Row':'A','Metadata_Column':'01'}
+        image_numbers - a sequence of the image numbers within the
+                   group (image sets can be retreved as
+                   image_set_list.get_image_set(image_numbers[i]-1)
+                   
+        We use prepare_group to compute the minimum or maximum values
+        among all images in the group for certain values of
+        "wants_automatic_[low,high]".
+        '''
+        if (self.wants_automatic_high != HIGH_ALL_IMAGES and
+            self.wants_automatic_low != LOW_ALL_IMAGES):
+            return True
+        
+        if not pipeline.in_batch_mode() and not cpprefs.get_headless():
+            import wx
+            progress_dialog = wx.ProgressDialog(
+                "#%d: RescaleIntensity for %s"%(self.module_num, self.image_name.value),
+                "RescaleIntensity will process %d images while preparing for run" % 
+                (len(image_numbers)),
+                len(image_numbers),
+                None,
+                wx.PD_APP_MODAL |
+                wx.PD_AUTO_HIDE |
+                wx.PD_CAN_ABORT)
+        else:
+            progress_dialog = None
+        
+        min_value = None
+        max_value = None
+        for i,image_number in enumerate(image_numbers):
+            image_set = image_set_list.get_image_set(image_number-1)
+            image     = image_set.get_image(self.image_name.value,
+                                            must_be_grayscale=True,
+                                            cache = False)
+            if self.wants_automatic_high == HIGH_ALL_IMAGES:
+                if image.has_mask:
+                    vmax = np.max(image.pixel_data[image.mask])
+                else:
+                    vmax = np.max(image.pixel_data)
+                max_value = vmax if max_value is None else max(max_value, vmax)
+                
+            if self.wants_automatic_low == LOW_ALL_IMAGES:
+                if image.has_mask:
+                    vmin = np.min(image.pixel_data[image.mask])
+                else:
+                    vmin = np.min(image.pixel_data)
+                min_value = vmin if min_value is None else min(min_value, vmin)
+                
+            if progress_dialog is not None:
+                should_continue, skip = progress_dialog.Update(i+1)
+                if not should_continue:
+                    progress_dialog.EndModal(0)
+                    return False
+        if self.wants_automatic_high == HIGH_ALL_IMAGES:
+            self.set_automatic_maximum(image_set_list, max_value)
+        if self.wants_automatic_low == LOW_ALL_IMAGES:
+            self.set_automatic_minimum(image_set_list, min_value)
+
     def run(self, workspace):
         input_image = workspace.image_set.get_image(self.image_name.value)
         output_mask = None
         if self.rescale_method == M_STRETCH:
             output_image = self.stretch(input_image)
         elif self.rescale_method == M_MANUAL_INPUT_RANGE:
-            output_image, output_mask = self.manual_input_range(input_image)
+            output_image, output_mask = self.manual_input_range(input_image, workspace)
         elif self.rescale_method == M_MANUAL_IO_RANGE:
-            output_image, output_mask = self.manual_io_range(input_image)
+            output_image, output_mask = self.manual_io_range(input_image, workspace)
         elif self.rescale_method == M_DIVIDE_BY_IMAGE_MINIMUM:
             output_image = self.divide_by_image_minimum(input_image)
         elif self.rescale_method == M_DIVIDE_BY_IMAGE_MAXIMUM:
@@ -263,20 +377,18 @@ class RescaleIntensity(cpm.CPModule):
         else:
             return stretch(input_image.pixel_data)
     
-    def manual_input_range(self, input_image):
+    def manual_input_range(self, input_image, workspace):
         '''Stretch the input image from the requested range to 0:1'''
-        if self.wants_automatic_low.value and self.wants_automatic_high.value:
-            return self.stretch(input_image)
-        
-        src_min, src_max = self.get_source_range(input_image)
+
+        src_min, src_max = self.get_source_range(input_image, workspace)
         rescaled_image = ((input_image.pixel_data - src_min) / 
                           (src_max - src_min))
         return self.truncate_values(input_image, rescaled_image, 0, 1)
     
-    def manual_io_range(self, input_image):
+    def manual_io_range(self, input_image, workspace):
         '''Stretch the input image using manual input and output values'''
 
-        src_min, src_max = self.get_source_range(input_image)
+        src_min, src_max = self.get_source_range(input_image, workspace)
         rescaled_image = ((input_image.pixel_data - src_min) / 
                           (src_max - src_min))
         dest_min = self.dest_scale.min
@@ -343,23 +455,30 @@ class RescaleIntensity(cpm.CPModule):
         '''Convert the image data to uint8'''
         return (input_image.pixel_data * 255).astype(np.uint8)
     
-    def get_source_range(self, input_image):
+    def get_source_range(self, input_image, workspace):
         '''Get the source range, accounting for automatically computed values'''
-        if self.wants_automatic_low.value or self.wants_automatic_high.value:
+        if (self.wants_automatic_high == CUSTOM_VALUE and
+            self.wants_automatic_low == CUSTOM_VALUE):
+            return self.source_scale.min, self.source_scale.max
+        
+        if (self.wants_automatic_low == LOW_EACH_IMAGE or
+            self.wants_automatic_high == HIGH_EACH_IMAGE):
             input_pixels = input_image.pixel_data
             if input_image.has_mask:
                 input_pixels = input_pixels[input_image.mask]
-            if self.wants_automatic_low.value:
-                src_min = np.min(input_pixels)
-            else:
-                src_min = self.source_low.value
-            if self.wants_automatic_high.value:
-                src_max = np.max(input_pixels)
-            else:
-                src_max = self.source_high.value
+
+        if self.wants_automatic_low == LOW_ALL_IMAGES:
+            src_min = self.get_automatic_minimum(workspace.image_set_list)
+        elif self.wants_automatic_low == LOW_EACH_IMAGE:
+            src_min = np.min(input_pixels)
         else:
-            src_min = self.source_scale.min
-            src_max = self.source_scale.max
+            src_min = self.source_low.value
+        if self.wants_automatic_high.value == HIGH_ALL_IMAGES:
+            src_max = self.get_automatic_maximum(workspace.image_set_list)
+        elif self.wants_automatic_high == HIGH_EACH_IMAGE:
+            src_max = np.max(input_pixels)
+        else:
+            src_max = self.source_high.value
         return src_min, src_max
     
     def truncate_values(self, input_image, rescaled_image, target_min, target_max):
@@ -444,17 +563,22 @@ class RescaleIntensity(cpm.CPModule):
                 else:
                     new_setting_values[2] = M_MANUAL_IO_RANGE
                 if setting_values[3].upper() == "AA":
-                    new_setting_values[3] = cps.YES
-                    if setting_values[4].upper() == "AA":
-                        new_setting_values[4] = cps.YES
-                    else:
-                        new_setting_values[6] = setting_values[4]
-                elif setting_values[4].upper() == "AA":
-                    new_setting_values[4] = cps.YES
-                    new_setting_values[5] = setting_values[3]
+                    new_setting_values[3] = LOW_ALL_IMAGES
+                elif setting_values[3].upper() == "AE":
+                    new_setting_values[3] = LOW_EACH_IMAGE
                 else:
+                    new_setting_values[3] = CUSTOM_VALUE
                     new_setting_values[5] = setting_values[3]
+                if setting_values[4].upper() == "AA":
+                    new_setting_values[4] = HIGH_ALL_IMAGES
+                elif setting_values[4].upper() == "AE":
+                    new_setting_values[4] = HIGH_EACH_IMAGE
+                else:
+                    new_setting_values[4] = CUSTOM_VALUE
                     new_setting_values[6] = setting_values[4]
+                if all([x.upper() not in ("AA","AE") 
+                        for x in setting_values[3:4]]):
+                    # Both are manual, put them in the range variable
                     new_setting_values[7] = ",".join(setting_values[3:5])
                 new_setting_values[8] = ",".join(setting_values[5:7])
                 new_setting_values[9] = R_SET_TO_CUSTOM
@@ -472,7 +596,19 @@ class RescaleIntensity(cpm.CPModule):
                 new_setting_values[2] = M_DIVIDE_BY_MEASUREMENT
                 new_setting_values[15] = setting_values[10]
             setting_values = new_setting_values
-            variable_revision_number = 1
+            variable_revision_number = 2
             from_matlab = False
+        if (not from_matlab) and (variable_revision_number == 1):
+            #
+            # wants_automatic_low (# 3) and wants_automatic_high (# 4)
+            # changed to a choice: yes = each, no = custom
+            #
+            setting_values = list(setting_values)
+            for i, automatic in ((3, LOW_EACH_IMAGE), (4, HIGH_EACH_IMAGE)):
+                if setting_values[i] == cps.YES:
+                    setting_values[i] = automatic
+                else:
+                    setting_values[i] = CUSTOM_VALUE
+            variable_revision_number = 2
         return setting_values, variable_revision_number, from_matlab
 

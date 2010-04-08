@@ -79,8 +79,8 @@ RescaleIntensity:[module_num:2|svn_version:\'8913\'|variable_revision_number:2|s
         self.assertEqual(module.image_name, "MyImage")
         self.assertEqual(module.rescaled_image_name, "MyRescaledImage")
         self.assertEqual(module.rescale_method, R.M_MANUAL_IO_RANGE)
-        self.assertFalse(module.wants_automatic_low)
-        self.assertTrue(module.wants_automatic_high)
+        self.assertEqual(module.wants_automatic_low, R.CUSTOM_VALUE)
+        self.assertEqual(module.wants_automatic_high, R.HIGH_ALL_IMAGES)
         self.assertAlmostEqual(module.dest_scale.min, 0.2)
         self.assertAlmostEqual(module.dest_scale.max, 0.9)
         
@@ -113,8 +113,8 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
         self.assertEqual(module.image_name, "MyImage")
         self.assertEqual(module.rescaled_image_name, "MyRescaledImage")
         self.assertEqual(module.rescale_method, R.M_MANUAL_IO_RANGE)
-        self.assertFalse(module.wants_automatic_low)
-        self.assertTrue(module.wants_automatic_high)
+        self.assertEqual(module.wants_automatic_low, R.CUSTOM_VALUE)
+        self.assertEqual(module.wants_automatic_high, R.HIGH_ALL_IMAGES)
         self.assertAlmostEqual(module.dest_scale.min, 0.2)
         self.assertAlmostEqual(module.dest_scale.max, 0.9)
         self.assertAlmostEqual(module.custom_low_truncation.value, 0.01)
@@ -168,8 +168,8 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
         module = pipeline.modules()[0]
         self.assertTrue(isinstance(module, R.RescaleIntensity))
         self.assertEqual(module.rescale_method, R.M_MANUAL_IO_RANGE)
-        self.assertTrue(module.wants_automatic_low.value)
-        self.assertFalse(module.wants_automatic_high.value)
+        self.assertEqual(module.wants_automatic_low.value, R.LOW_ALL_IMAGES)
+        self.assertEqual(module.wants_automatic_high.value, R.CUSTOM_VALUE)
         self.assertAlmostEqual(module.source_high.value, .5)
         self.assertAlmostEqual(module.dest_scale.min, .25)
         self.assertAlmostEqual(module.dest_scale.max, .75)
@@ -200,8 +200,8 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
         self.assertTrue(isinstance(module, R.RescaleIntensity))
-        self.assertFalse(module.wants_automatic_low.value)
-        self.assertTrue(module.wants_automatic_high.value)
+        self.assertEqual(module.wants_automatic_low.value, R.CUSTOM_VALUE)
+        self.assertEqual(module.wants_automatic_high.value, R.HIGH_ALL_IMAGES)
         self.assertAlmostEqual(module.source_low.value, .5)
     
     def test_01_04_load_matlab_enter_manual(self):
@@ -226,8 +226,8 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
         self.assertTrue(isinstance(module, R.RescaleIntensity))
-        self.assertFalse(module.wants_automatic_low.value)
-        self.assertFalse(module.wants_automatic_high.value)
+        self.assertEqual(module.wants_automatic_low.value, R.CUSTOM_VALUE)
+        self.assertEqual(module.wants_automatic_high.value, R.CUSTOM_VALUE)
         self.assertAlmostEqual(module.source_scale.min, .1)
         self.assertAlmostEqual(module.source_scale.max, .9)
 
@@ -381,8 +381,8 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
         self.assertEqual(module.image_name.value, "DNA")
         self.assertEqual(module.rescaled_image_name.value, "RescaledDNA")
         self.assertEqual(module.rescale_method.value, R.M_MANUAL_IO_RANGE)
-        self.assertFalse(module.wants_automatic_high.value)
-        self.assertFalse(module.wants_automatic_low.value)
+        self.assertEqual(module.wants_automatic_high.value, R.CUSTOM_VALUE)
+        self.assertEqual(module.wants_automatic_low.value, R.CUSTOM_VALUE)
         self.assertAlmostEqual(module.source_low.value, .01)
         self.assertAlmostEqual(module.source_high.value, .99)
         self.assertAlmostEqual(module.source_scale.min, .1)
@@ -394,16 +394,84 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
         self.assertEqual(module.matching_image_name.value, "Cytoplasm")
         self.assertAlmostEqual(module.divisor_value.value, 2)
         self.assertEqual(module.divisor_measurement.value, "Intensity_MeanIntensity_DNA")
+        
+    def test_01_10_img_787(self):
+        data = ('eJyVk/s7E4oDxkeJU5xJhJPLcr91rEMuyxR6ODqZ+yS5Lmm5bC5z35Rrclml'
+                'EqYdB5PIDuUyxhzRYpg7oWJhmNvcRmM7Pef7F3zfH97f3ud5n8/zvg5Wbtes'
+                'rEEXfgWDHKzczt1GhgQagJxC/KNuoyJCISAnGw97mAHIJiLQPyrwFggVBgG5'
+                'YQJBDv4RILA5CHwech4MAZuAfgOfB4P+bwFE7B2AAABgWRwAiCXMeXo5ToFl'
+                'o0vAE2K13N+44Hnxd6WjxiaryGxMNfDdA1AZtLm7pB69+jH8eotvI7Ge3mW8'
+                '1HU8QqLEvvF3OMaFuL6XyA7Q/mQlcbh09p2iICwNIeVQk/N7Ta+U5hRI0x+b'
+                'dMR9kLMoWEffDLBC4zs0SSJ7d+K7eFMrD32zW5d8K6aldKI20LiIWEyyPzD1'
+                'a+tDuVIa86PEKwecyA0qC8lG2yR2eJapznJiKqIpIytrOmeIty3cjFV80hGo'
+                'tbZCoWLfgsep2KniItqZnBMK3fHBqcpIqdqoY8fZpSLszPTSuRoQFnXP9Q3C'
+                'a/hr7rbjUUBLxiVDYyVNYsq63/GwSx09efnVOGypiDxwO7gHL+rlTNDA5Yrx'
+                'tpuSTGeoQ+inSnRssxZXyLogGTsqRtWDHLuaNXDRaLF18AC+iZyI+RwGar08'
+                'hl005TSm+YibtPfezxSSBPUls3qfdnUe63xtQ9ygk360gM04gZyFpovrwd/5'
+                'MZtb8CdV3dTAjS23YY+IoiE/M4/FAr6YPKuNf8UZqx3sfetTUiiQEHw8bYSW'
+                'KSxL3Os596Fcbg/8jZGaJ0s3yWtPVKPrQGGTOxbbSrdYkVirJOXaIwQ9IG/g'
+                'L2/NRmuV1AsaK34P7OBAHWHBJL4sHtVGxt4pmzNapWjrq2rx7bkHycWcthmR'
+                'yKDdtzMaO28ydjHDkGhjrOaUy+VYyfpfns/BjYhNX0xV+iZbbnKqQsy0LPVO'
+                'mMmNGFSqkqgTP6BYmDO/hf+iMnZ6e3zAWd/L8lCCGOfRjYIKwpUDa4PFobod'
+                'FQxjwaXh7WeJvRT0T++5CSlqLHgUlZGex9uvDREEruLxz/KbfTLIJFpGThQH'
+                'V/PGq1s5LHNKVq1alXzxBKyIMpfeJEKKIowJqd/+C26RCXYqVblrk/isL/nP'
+                'R01ZB/jV2/Eqry6cQcYxitb/+uZmQqijJelChG93WzrX5YeA1eryCU+m2x/u'
+                'kem0NO2v5QEtjBph4BZxWykqK9I6DjisC9QiuK/+sDIe2k70b2i7z1HXq7SF'
+                'rTXDH/cQCleufwpjgWWllJsN7/ItZVTvDZVldaobWYeyxWypfYjj8GW9Tp0/'
+                'ygWhl8qj25Ovcye4opVXNDgRzv1cyvj4H9PRp5mWYXZN9Wh+7bs5SqdP4ikz'
+                '+b3GjKl/Nlv1blalBsutM2YmBIm8hvYdsaY8mbBZoJO2rae24z+spGcCJBUq'
+                'svZRl+d4QEP/rKaQciJolPaA/Wj2rCCFjQl/Wxhzmo1SiGnsNH+y1yqDYyqq'
+                'QVuxIrCGtmvckRzEqwel3KzlzXuDDonMnQTvryHTeluIp+1oSZILpF/Bgpvx'
+                'Kq9fusfHX8lFeWTM23BNjl0Zoqxi9D1znfKSHQNtbCR5hVusL8bWxf2569me'
+                '0LchkyQ5ZC99f8lV9PKBwrzOYya5Mg42Lv/s4Ml3vXfjHw3JMDY5gh/UkorK'
+                'O78b+gHbvwj1xRdlF9gKcPOKhWKKhOp5/GTzFifanFZYmKSSm+NlgvsCseJi'
+                'RXBFfCnsGD9/1NvdLokl2anba2nQSY5oU9/Zvthz3155ZPK6/NLbPu6j+VnP'
+                'UaoT9Y6wOWD7pOoH172fK+KkMTMGElbfVbEkVmO5axnKFXMX4kuKjYXHFI/1'
+                '5cEI7nzyaniVl10Dy7jr/dsGTnJXy/OtwKtAZuEQ8mFGUCiR8Xo7zX7DOVEX'
+                'uRjAZAg3fvVzxSOLX5u5KzdvucIdfdsRHIHLU1UviAN3o7rn8MM9Qm579O68'
+                'qy2QaxdnW5OhDXqYzZn1fNy/btGGoDao+6IEQ3wcnEkaM/IRWkw9xYw99fn8'
+                'fWyV3tDGJOrjemz2yYTNmOI16jlL0fdH57cWNo3dx3OD6Oot+NJ8U3A3/IrD'
+                'nH+o3Lr8/wb4wtkxBSxNZxyL7LkZlaVl+WJvsRR3JL9rUSbHljdTVFmtRyot'
+                '0+/eXS1PNx+7PHlWFqyODBNfGRd644cCRACT/kYd0dKe0ocLfcUdwG0r+xki'
+                '5cvR/c8b06ETNwaFvYsCM7bTDJpIxZ7N6Lo8uBOW3Ppkwx0j8IB92WcWaWcN'
+                'n47dhZDrlD43u3GsRjyMfT98PtWUEDwd1fr6oHnM0YdQF+v+hl59OIo5wIS7'
+                'ERHe8cvwpB/gPGDOVGqoz/cGwl10w1a3cE62S5+xIJeRXZqg2oIkBHIYdwPj'
+                '69byo+arQrDNW82VffowxSCPGXSSqGJ2mmt3+MfXLTpeUZYN4SGhxdUrfBSw'
+                'evwkz779b06XfiXkMF+OSalfjul25Oe+3DnE2M3c6iTOFkC0kVgzjRcD5ykl'
+                '6JJe+0LHlwO99xVyLNKpBYzTevuXZMymVR0e0ad5XeqYipR7j3Vv1bgOWkCv'
+                'mlWIsrczbJBNIFV/pWvehpK5sWSbB8UAm3RZirYoTyPt4gaWCqhqMtS4GZkT'
+                'nHxWs2B8ELJsFYPFiKnw1k8SxGRzBglptg7jte3mPuEquIZgmicj0/RPCcsk'
+                'a9XKLorhRpPQq5T3CKu3oJ8ZCeX9FIiIgMZIwxTocFFtS18TNVrQ1OHLVhRm'
+                'BUdrHbaczqmpGqGIsJol0fviys/9ow0QFciCYljpYMiFAEjdxtDP/QnIsF0f'
+                'c/ElniF+fh/131K+Ifz8BgABJqAFQIDtMQm/tE1/gJbla5zbIdoFCLCjWXv/'
+                'Cz7DUEw=')
+        pipeline = cpp.Pipeline()
+        def callback(caller,event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO.StringIO(zlib.decompress(base64.b64decode(data))))
+        module = pipeline.modules()[2]
+        self.assertTrue(isinstance(module, R.RescaleIntensity))
+        self.assertEqual(module.image_name, "OrigGreen")
+        self.assertEqual(module.rescaled_image_name, "Rescaledgreen")
+        self.assertEqual(module.rescale_method, R.M_MANUAL_INPUT_RANGE)
+        self.assertEqual(module.wants_automatic_low, R.LOW_EACH_IMAGE)
+        self.assertEqual(module.wants_automatic_high, R.HIGH_EACH_IMAGE)
     
     def make_workspace(self, input_image, input_mask = None,
                        reference_image=None, reference_mask = None,
                        measurement=None):
         pipeline = cpp.Pipeline()
+        def callback(caller, event):
+            self.assertFalse(isinstance(event, cpp.RunExceptionEvent))
+        pipeline.add_listener(callback)
         object_set = cpo.ObjectSet()
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
         measurements = cpmeas.Measurements() 
         module = R.RescaleIntensity()
+        module.module_num = 1
+        pipeline.add_module(module)
         module.image_name.value = INPUT_NAME
         if input_mask is None:
             image = cpi.Image(input_image)
@@ -459,40 +527,80 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
         expected = np.random.uniform(size=(10,10))
         workspace, module = self.make_workspace(expected / 2 + .1)
         module.rescale_method.value = R.M_MANUAL_INPUT_RANGE
-        module.wants_automatic_low.value = False
-        module.wants_automatic_high.value = False
+        module.wants_automatic_low.value = R.CUSTOM_VALUE
+        module.wants_automatic_high.value = R.CUSTOM_VALUE
         module.source_scale.min = .1
         module.source_scale.max = .6
         module.run(workspace)
         pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
         np.testing.assert_almost_equal(pixels, expected)
     
-    def test_04_02_manual_input_range_auto_low(self):
+    def test_04_02_00_manual_input_range_auto_low(self):
         np.random.seed(0)
         expected = np.random.uniform(size=(10,10)).astype(np.float32)
         expected[0,0] = 0
         workspace, module = self.make_workspace(expected / 2 + .1)
         module.rescale_method.value = R.M_MANUAL_INPUT_RANGE
-        module.wants_automatic_low.value = True
-        module.wants_automatic_high.value = False
+        module.wants_automatic_low.value = R.LOW_EACH_IMAGE
+        module.wants_automatic_high.value = R.CUSTOM_VALUE
         module.source_high.value = .6
         module.run(workspace)
         pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
         np.testing.assert_almost_equal(pixels, expected)
+        
+    def test_04_02_01_manual_input_range_auto_low_all(self):
+        np.random.seed(421)
+        image1 = np.random.uniform(size=(10,20)).astype(np.float32) * .5 + .5
+        image2 = np.random.uniform(size=(10,20)).astype(np.float32)
+        expected = (image1 - np.min(image2))/ (1 - np.min(image2))
+        workspace, module = self.make_workspace(image1)
+        self.assertTrue(isinstance(module, R.RescaleIntensity))
+        image_set_2 = workspace.image_set_list.get_image_set(1)
+        image_set_2.add(INPUT_NAME, cpi.Image(image2))
+        module.rescale_method.value = R.M_MANUAL_INPUT_RANGE
+        module.wants_automatic_low.value = R.LOW_ALL_IMAGES
+        module.wants_automatic_high.value = R.CUSTOM_VALUE
+        module.source_high.value = 1
+        module.prepare_group(workspace.pipeline,
+                             workspace.image_set_list,
+                             {}, [1, 2])
+        module.run(workspace)
+        pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
+        np.testing.assert_almost_equal(pixels, expected)
 
-    def test_04_03_manual_input_range_auto_high(self):
+    def test_04_03_00_manual_input_range_auto_high(self):
         np.random.seed(0)
         expected = np.random.uniform(size=(10,10)).astype(np.float32)
         expected[0,0] = 1
         workspace, module = self.make_workspace(expected / 2 + .1)
         module.rescale_method.value = R.M_MANUAL_INPUT_RANGE
-        module.wants_automatic_low.value = False
-        module.wants_automatic_high.value = True
+        module.wants_automatic_low.value = R.CUSTOM_VALUE
+        module.wants_automatic_high.value = R.HIGH_EACH_IMAGE
         module.source_low.value = .1
         module.run(workspace)
         pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
         np.testing.assert_almost_equal(pixels, expected)
         
+    def test_04_03_01_manual_input_range_auto_high_all(self):
+        np.random.seed(421)
+        image1 = np.random.uniform(size=(10,20)).astype(np.float32) * .5
+        image2 = np.random.uniform(size=(10,20)).astype(np.float32)
+        expected = image1 / np.max(image2)
+        workspace, module = self.make_workspace(image1)
+        self.assertTrue(isinstance(module, R.RescaleIntensity))
+        image_set_2 = workspace.image_set_list.get_image_set(1)
+        image_set_2.add(INPUT_NAME, cpi.Image(image2))
+        module.rescale_method.value = R.M_MANUAL_INPUT_RANGE
+        module.wants_automatic_low.value = R.CUSTOM_VALUE
+        module.wants_automatic_high.value = R.HIGH_ALL_IMAGES
+        module.source_low.value = 0
+        module.prepare_group(workspace.pipeline,
+                             workspace.image_set_list,
+                             {}, [1, 2])
+        module.run(workspace)
+        pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
+        np.testing.assert_almost_equal(pixels, expected)
+    
     def test_04_04_manual_input_range_mask(self):
         np.random.seed(0)
         expected = np.random.uniform(size=(10,10)).astype(np.float32)
@@ -502,8 +610,8 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
         expected[~ mask] = 1.5
         workspace, module = self.make_workspace(expected / 2 + .1,mask)
         module.rescale_method.value = R.M_MANUAL_INPUT_RANGE
-        module.wants_automatic_low.value = False
-        module.wants_automatic_high.value = True
+        module.wants_automatic_low.value = R.CUSTOM_VALUE
+        module.wants_automatic_high.value = R.HIGH_EACH_IMAGE
         module.source_low.value = .1
         module.run(workspace)
         pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
@@ -525,8 +633,8 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
                                          R.R_SET_TO_ONE):
                 workspace, module = self.make_workspace(expected / 2 + .1)
                 module.rescale_method.value = R.M_MANUAL_INPUT_RANGE
-                module.wants_automatic_low.value = False
-                module.wants_automatic_high.value = False
+                module.wants_automatic_low.value = R.CUSTOM_VALUE
+                module.wants_automatic_high.value = R.CUSTOM_VALUE
                 module.source_scale.min = .1
                 module.source_scale.max = .6
                 module.low_truncation_choice.value = low_truncate_method
@@ -574,8 +682,8 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
         expected_mask = expected_mask[:,:,0] & expected_mask[:,:,1] & expected_mask[:,:,2]
         workspace, module = self.make_workspace(expected / 2 + .1)
         module.rescale_method.value = R.M_MANUAL_INPUT_RANGE
-        module.wants_automatic_low.value = False
-        module.wants_automatic_high.value = False
+        module.wants_automatic_low.value = R.CUSTOM_VALUE
+        module.wants_automatic_high.value = R.CUSTOM_VALUE
         module.source_scale.min = .2
         module.source_scale.max = .5
         module.low_truncation_choice.value = R.R_MASK
@@ -591,8 +699,8 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
         workspace, module = self.make_workspace(expected / 2 + .1)
         expected = expected * .75 + .05
         module.rescale_method.value = R.M_MANUAL_IO_RANGE
-        module.wants_automatic_low.value = False
-        module.wants_automatic_high.value = False
+        module.wants_automatic_low.value = R.CUSTOM_VALUE
+        module.wants_automatic_high.value = R.CUSTOM_VALUE
         module.source_scale.min = .1
         module.source_scale.max = .6
         module.dest_scale.min = .05

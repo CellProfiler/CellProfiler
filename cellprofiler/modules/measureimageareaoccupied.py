@@ -120,15 +120,20 @@ class MeasureImageAreaOccupied(cpm.CPModule):
         return dict.values()
 
     def run(self, workspace):
-        statistics = [["Area occupied","Total area"]]
+        statistics = [("Object","Image","Area occupied","Total area")]
         for object in self.get_non_redundant_object_measurements():
             statistics += self.measure(object,workspace)
-#        if workspace.frame != None:
-#            figure = workspace.create_or_find_figure(subplots=(2,1))
-#            figure.subplot_imshow_labels(0,0,objects.segmented,
-#                                         title="Object labels: %s"%(object))
-#            figure.subplot_table(1,0,statistics)
-            
+        if workspace.frame is not None:
+            workspace.display_data.statistics = statistics
+    
+    def is_interactive(self):
+        return False
+    
+    def display(self, workspace):
+        figure = workspace.create_or_find_figure(subplots=(1,1))
+        figure.subplot_table(0, 0, workspace.display_data.statistics,
+                             ratio=(.25,.25,.25,.25))
+        
     def measure(self, object, workspace):
         '''Performs the measurements on the requested objects'''
         objects = workspace.get_objects(object.object_name.value)
@@ -152,9 +157,7 @@ class MeasureImageAreaOccupied(cpm.CPModule):
             workspace.image_set.add(object.image_name.value,
                                     output_image)
         return[[object.object_name.value, object.image_name.value if object.should_save_image.value else "",
-                feature_name, str(value)]
-                for feature_name, value in (('Area Occupied', area_occupied),
-                                            ('Total Area', total_area))]
+                str(area_occupied),str(total_area)]] 
     
     def get_measurement_columns(self, pipeline):
         '''Return column definitions for measurements made by this module'''

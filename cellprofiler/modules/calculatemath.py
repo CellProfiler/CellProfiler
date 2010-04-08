@@ -293,7 +293,13 @@ class CalculateMath(cpm.CPModule):
         else:
             for object_name in all_object_names:
                 m.add_measurement(object_name, feature, result)
-
+                
+        if workspace.frame is not None:
+            workspace.display_data.statistics = [("Measurement name","Measurement type","Result")]
+            workspace.display_data.statistics += [(self.output_feature_name.value, 
+                                                   "Image" if all_image_measurements else "Object", 
+                                                   "%.2f"%result)]
+            
     def run_as_data_tool(self, workspace):
         workspace.measurements.is_first_image = True
         image_set_count = workspace.measurements.image_set_count
@@ -305,6 +311,14 @@ class CalculateMath(cpm.CPModule):
     def measurement_name(self):
         return "%s_%s" %(C_MATH,self.output_feature_name.value)
             
+    def is_interactive(self):
+        return False
+    
+    def display(self, workspace):
+        figure = workspace.create_or_find_figure(subplots=(1,1))
+        figure.subplot_table(0, 0, workspace.display_data.statistics,
+                             ratio=(.25,.5,.25))
+        
     def get_measurement_columns(self, pipeline):
         all_object_names = [operand.operand_objects.value
                             for operand in self.operands

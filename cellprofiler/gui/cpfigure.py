@@ -1121,7 +1121,8 @@ class CPFigureFrame(wx.Frame):
             else:
                 self.plate_choice.SetSelection(0)
         def on_plate_selected(evt):
-            self.subplot_platemap(x,y, plates_dict, plate_type, cmap, title, clear)
+            self.subplot_platemap(x,y, plates_dict, plate_type, cmap=cmap, 
+                                  colorbar=colorbar, title=title, clear=True)
         self.plate_choice.Bind(wx.EVT_CHOICE, on_plate_selected)
         
         platemap_plate = self.plate_choice.GetStringSelection()

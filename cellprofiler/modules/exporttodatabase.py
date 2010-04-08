@@ -78,7 +78,7 @@ except:
 
 import cellprofiler.cpmodule as cpm
 import cellprofiler.settings as cps
-import cellprofiler.preferences as cpp
+import cellprofiler.preferences as cpprefs
 import cellprofiler.measurements as cpmeas
 from identify import M_NUMBER_OBJECT_NUMBER
 from cellprofiler.gui.help import USING_METADATA_TAGS_REF, USING_METADATA_HELP_REF
@@ -487,13 +487,16 @@ class ExportToDatabase(cpm.CPModule):
                 except:
                     pass
             if len(tables_that_exist) > 0:
-                import wx
                 if len(tables_that_exist) == 1:
                     table_msg = "%s table" % tables_that_exist[0]
                 else:
                     table_msg = "%s and %s tables" % (
                         ", ".join(tables_that_exist[:-1]), 
                         tables_that_exist[-1])
+                if cpprefs.get_headless():
+                    sys.stderr.write("Warning: %s already in database, not creating" %table_msg)
+                    return True
+                import wx
                 dlg = wx.MessageDialog(
                     frame, 
                     'ExportToDatabase will overwrite the %s. OK?' % table_msg,
@@ -1032,7 +1035,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
             # The image table
             #
             ###########################################
-            image_number = index + measurements.image_set_start_number
+            image_number = measurements.image_set_number
             image_row = [(image_number, cpmeas.COLTYPE_INTEGER, "ImageNumber")]
             for m_col in measurement_cols:
                 if m_col[0] != cpmeas.IMAGE:

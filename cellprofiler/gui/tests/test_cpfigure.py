@@ -46,8 +46,8 @@ class TestCPFigure(unittest.TestCase):
             image[y,:,:] = y / 200.0
         my_frame = cpfig.create_or_find(None, -1, subplots=(1,1))
         ax = my_frame.subplot_imshow(0, 0, image, normalize=False)
-        
-        assert (((ax.get_array()-image) < 0.000001).all()), 'RGB input image did not match subplot image.'
+        shown_im = ax.get_array().astype(float) / 255.0
+        np.testing.assert_almost_equal(shown_im, image, decimal=2)
         
     def test_01_03_imshow_normalized(self):
         '''Make sure the image drawn by imshow is normalized.'''
@@ -58,7 +58,7 @@ class TestCPFigure(unittest.TestCase):
         ax = my_frame.subplot_imshow(0, 0, image, normalize=True)
         
         normed = ((image - np.min(image)) / np.max(image))
-        assert ((ax.get_array() - normed) < 0.000001).all(), 'Monochrome subplot image was not normalized.'
+        np.testing.assert_almost_equal(ax.get_array(), normed, decimal=2)
 
     def test_01_04_imshow_normalized_rgb(self):
         '''Make sure the RGB image drawn by imshow is normalized.'''
@@ -69,7 +69,8 @@ class TestCPFigure(unittest.TestCase):
         ax = my_frame.subplot_imshow(0, 0, image, normalize=True)
         
         normed = ((image - np.min(image)) / np.max(image))
-        assert ((ax.get_array() - normed) < 0.000001).all(), 'RGB subplot image was not normalized.'
+        shown_im = ax.get_array().astype(float) / 255.0
+        np.testing.assert_almost_equal(normed, shown_im, decimal=2)
 
     def test_01_05_imshow_log_normalized(self):
         '''Make sure the image drawn by imshow is log normalized.'''
@@ -81,7 +82,7 @@ class TestCPFigure(unittest.TestCase):
         
         (min, max) = (image[image > 0].min(), image.max())
         normed = (np.log(image.clip(min, max)) - np.log(min)) / (np.log(max) - np.log(min))
-        assert ((ax.get_array() - normed) < 0.000001).all(), 'Monochrome subplot image was not log normalized.'
+        np.testing.assert_almost_equal(normed, ax.get_array(), decimal=2)        
 
     def test_01_06_imshow_log_normalized_rgb(self):
         '''Make sure the RGB image drawn by imshow is log normalized.'''
@@ -93,7 +94,8 @@ class TestCPFigure(unittest.TestCase):
         
         (min, max) = (image[image > 0].min(), image.max())
         normed = (np.log(image.clip(min, max)) - np.log(min)) / (np.log(max) - np.log(min))
-        assert ((ax.get_array() - normed) < 0.000001).all(), 'RGB subplot image was not log normalized.'
+        shown_im = ax.get_array().astype(float) / 255.0
+        np.testing.assert_almost_equal(normed, shown_im, decimal=2)
 
     def test_02_01_show_pixel_data(self):
         '''Make sure the values reported by show_pixel_data are the raw image

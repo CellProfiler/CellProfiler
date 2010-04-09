@@ -767,10 +767,11 @@ class IdentifyPrimaryObjects(cpmi.Identify):
                 statistics.append(["Area covered by objects",
                                    "%.1f %%"%(100.0*float(object_area)/
                                               float(total_area))])
-            statistics.append(["Smoothing filter size",
-                               "%.1f"%(self.calc_smoothing_filter_size())])
-            statistics.append(["Maxima suppression size",
-                               "%.1f"%(maxima_suppression_size)])
+                if self.unclump_method != UN_NONE:
+                    statistics.append(["Smoothing filter size",
+                                   "%.1f"%(self.calc_smoothing_filter_size())])
+                    statistics.append(["Maxima suppression size",
+                                   "%.1f"%(maxima_suppression_size)])
             workspace.display_data.image = image
             workspace.display_data.labeled_image = labeled_image
             workspace.display_data.outline_image = outline_image

@@ -200,10 +200,9 @@ class LoadImages(cpmodule.CPModule):
                 if at all possible (e.g., .jpg). Other file compression formats retain exactly the original image information but in 
                 a smaller file ("lossless") so they are perfectly acceptable for image analysis (e.g., .png, .tif, .gif). 
                 Uncompressed file formats are also fine for image analysis (e.g., .bmp).</li>
-                <li><i>AVI movies:</i> An AVI (Audio Video Interleave) file is a type of movie file. Only uncompressed AVIs are supported.
-                <b>Currently, this option is not yet available.</b></li>
+                <li><i>AVI movies:</i> An AVI (Audio Video Interleave) file is a type of movie file. Only uncompressed AVIs are supported.</li>
                 <li><i>TIF, TIFF, FLEX movies:</i> A TIF/TIFF movie is a file that contains a series of images as individual frames. 
-                The same is true for the FLEX file format (used by Evotec Opera automated microscopes).<b>Currently, this option is not yet available.</b></li>
+                The same is true for the FLEX file format (used by Evotec Opera automated microscopes).</li>
                 <li><i>STK movies:</i> STKs are a proprietary image format used by MetaMorph (Molecular Devices). It is typically
                 used to encode 3D image data, e.g. from confocal microscopy, and is a special version of the TIF format. </li>
                 </ul>""")

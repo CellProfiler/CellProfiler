@@ -382,11 +382,11 @@ class CPModule(object):
         """
         return self.__notes
     
-    def set_notes(self,Notes):
+    def set_notes(self, notes):
         """Give the module new user-entered notes
         
         """
-        return self.__notes
+        self.__notes = notes
     
     notes = property(get_notes, set_notes)
     

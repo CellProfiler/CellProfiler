@@ -208,21 +208,39 @@ class ModuleView:
     """
     
     def __init__(self,module_panel,pipeline):
-        self.__module_panel = module_panel
+        #############################################
+        #
+        # Build the top-leve GUI windows
+        #
+        #############################################
+        self.top_panel = module_panel
+        self.notes_panel = wx.Panel(self.top_panel)
+        self.__module_panel = wx.Panel(self.top_panel)
+        self.__sizer = ModuleSizer(0, 3)
+        self.module_panel.SetSizer(self.__sizer)
+        self.top_level_sizer = wx.BoxSizer(wx.VERTICAL)
+        self.top_panel.SetSizer(self.top_level_sizer)
+        self.make_notes_gui()
+        self.module_panel.Hide()
+        self.notes_panel.Hide()
+        self.top_level_sizer.Add(self.notes_panel, 0, wx.EXPAND | wx.ALL, 4)
+        self.top_level_sizer.Add(self.module_panel, 1, wx.EXPAND | wx.ALL, 4)
+
         self.__pipeline = pipeline
         pipeline.add_listener(self.__on_pipeline_event)
         self.__listeners = []
         self.__value_listeners = []
         self.__module = None
-        self.__sizer = None
         self.__inside_notify = False
         self.__handle_change = True
+        self.__notes_text = None
         if cpprefs.get_startup_blurb():
-            self.__startup_blurb = HtmlClickableWindow(self.__module_panel, wx.ID_ANY, style=wx.NO_BORDER)
+            self.__startup_blurb = HtmlClickableWindow(self.top_panel, wx.ID_ANY, style=wx.NO_BORDER)
+            self.top_level_sizer.Add(self.__startup_blurb, 1, wx.EXPAND)
         else:
             self.__startup_blurb = None
-        wx.EVT_SIZE(module_panel, self.on_size)
-        wx.EVT_IDLE(module_panel, self.on_idle)
+        wx.EVT_SIZE(self.top_panel, self.on_size)
+        wx.EVT_IDLE(self.top_panel, self.on_idle)
 
     def get_module_panel(self):
         """The panel that hosts the module controls
@@ -239,7 +257,8 @@ class ModuleView:
                 listener['notifier'].remove_listener(listener['listener'])
             self.__value_listeners = []
             self.__module = None
-            self.__sizer.Reset(0,2)
+        self.__sizer.Reset(0,3)
+        self.notes_panel.Hide()
     
     def hide_settings(self):
         for child in self.__module_panel.Children:
@@ -247,12 +266,13 @@ class ModuleView:
         
     def set_selection(self,module_num):
         """Initialize the controls in the view to the settings of the module"""
-        self.module_panel.Freeze()
+        self.top_panel.Freeze()
         if self.__startup_blurb:
             self.__startup_blurb.Destroy()
             self.__startup_blurb = None
+        self.module_panel.Show()
         self.__module_panel.SetVirtualSizeWH(0, 0)
-        self.__module_panel.SetupScrolling()
+        self.top_panel.SetupScrolling()
         self.__handle_change = False
         try:
             new_module          = self.__pipeline.module(module_num)
@@ -260,6 +280,7 @@ class ModuleView:
                                    self.__module.id == new_module.id)
             if not reselecting:
                 self.clear_selection()
+            self.notes_panel.Show()
             self.__module       = new_module
             self.__controls     = []
             self.__static_texts = []
@@ -271,16 +292,24 @@ class ModuleView:
                 wx.MessageBox("Module %s.visible_settings() did not return a list!\n  value: %s"%(self.__module.module_name, settings),
                               "Pipeline Error", wx.ICON_ERROR, self.__module_panel)
                 settings = []
-                
-            if self.__sizer is None:
-                self.__sizer = ModuleSizer(len(settings), 3)
-                self.module_panel.SetSizer(self.__sizer)
-            else:
-                self.__sizer.Reset(len(settings), 3, False)
+            
+            self.__sizer.Reset(len(settings), 3, False)
             sizer    = self.__sizer
             if reselecting:
                 self.hide_settings()
+                
+            #################################
+            #
+            # Set the module's notes
+            #
+            #################################
+            self.module_notes_control.Value = "\n".join(self.__module.notes)
             
+            #################################
+            #
+            # Populate the GUI elements for each of the settings
+            #
+            #################################
             for i, v in enumerate(settings):
                 flag = 0
                 border = 0
@@ -384,13 +413,36 @@ class ModuleView:
                 else:
                     help_control.Show()
                 sizer.Add(help_control, 0, wx.LEFT, 2)
-            self.module_panel.FitInside()
+            self.module_panel.Fit()
+            self.top_panel.FitInside()
         finally:
-            self.module_panel.Thaw()
+            self.top_panel.Thaw()
             self.validate_module()
-            self.module_panel.Refresh()
+            self.top_panel.Refresh()
             self.__handle_change = True
-    
+
+    def make_notes_gui(self):
+        '''Make the GUI elements that contain the module notes'''
+        #
+        # The notes sizer contains a static box that surrounds the notes
+        # plus the notes text control.
+        #
+        notes_sizer = wx.StaticBoxSizer(
+            wx.StaticBox(self.notes_panel, -1, "Module notes"),
+            wx.VERTICAL)
+        self.notes_panel.SetSizer(notes_sizer)
+        self.module_notes_control = wx.TextCtrl(
+            self.notes_panel, -1, style = wx.TE_MULTILINE|wx.TE_PROCESS_ENTER)
+        notes_sizer.Add(self.module_notes_control, 1, wx.EXPAND)
+        def on_notes_changed(event):
+            if not self.__handle_change:
+                return
+            if self.__module is not None:
+                notes = str(self.module_notes_control.Value)
+                self.__module.notes = notes.split('\n')
+        self.notes_panel.Bind(wx.EVT_TEXT, on_notes_changed,
+                               self.module_notes_control)
+        
     def make_binary_control(self,v,control_name, control):
         """Make a checkbox control for a Binary setting"""
         if not control:
@@ -1541,7 +1593,7 @@ class ModuleSizer(wx.PySizer):
                     item_location = wx.Point(text_width - third_width / 2, 
                                              height + border + item_height / 2)
                     item_size = wx.Size(third_width, edit_item.Size[1])
-                    item_location = panel.CalcScrolledPosition(item_location)
+                    #item_location = panel.CalcScrolledPosition(item_location)
                     edit_item.SetDimension(item_location, item_size)
                 else:
                     text_item.Show(True)
@@ -1558,7 +1610,7 @@ class ModuleSizer(wx.PySizer):
                         else:
                             item_size = wx.Size(widths[j], item.CalcMin()[1])
                         item_location = wx.Point(sum(widths[0:j]), height)
-                        item_location = panel.CalcScrolledPosition(item_location)
+                        #item_location = panel.CalcScrolledPosition(item_location)
                         item.SetDimension(item_location, item_size)
                 height += self.get_row_height(i) + 2*height_border
             panel.SetVirtualSizeWH(width, height+20)

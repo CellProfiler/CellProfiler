@@ -322,7 +322,7 @@ def convex_hull(labels, indexes=None):
     # i coordinate of the point
     # j coordinate of the point
     #
-    coords = np.argwhere(outlines > 0)
+    coords = np.argwhere(outlines > 0).astype(np.int32)
     if len(coords)==0:
         # Every outline of every image is blank
         return (np.zeros((0,3),int),
@@ -334,7 +334,7 @@ def convex_hull(labels, indexes=None):
     anti_indexes_per_point = anti_indexes[labels_per_point]
     centers_per_point = centers[anti_indexes_per_point]
     angle = np.arctan2(i-centers_per_point[:,0],j-centers_per_point[:,1])
-    a = np.zeros((len(i),3),int)
+    a = np.zeros((len(i),3), np.int32)
     a[:,0] = anti_indexes_per_point
     a[:,1:] = coords
     #
@@ -349,12 +349,12 @@ def convex_hull(labels, indexes=None):
     # Make the result matrix, leaving enough space so that all points might
     # be on the convex hull.
     #
-    result = np.zeros((len(i),3),int)
+    result = np.zeros((len(i),3), np.int32)
     result[:,0] = labels_per_point[order]
     #
     # Create an initial count vector
     #
-    v = np.ones((a.shape[0],),dtype=int)
+    v = np.ones((a.shape[0],),dtype = np.int32)
     result_counts = scipy.sparse.coo_matrix((v,(a[:,0],v*0)),
                                             shape=(len(indexes),1))
     result_counts = result_counts.toarray().flatten()
@@ -362,12 +362,12 @@ def convex_hull(labels, indexes=None):
     #
     # Create a vector that indexes into the results for each label
     #
-    result_index = np.zeros(result_counts.shape,int)
+    result_index = np.zeros(result_counts.shape, np.int32)
     result_index[1:]=np.cumsum(result_counts[:-1])
     #
     # Initialize the counts of convex hull points to a ridiculous number
     #
-    counts = np.ones((len(indexes),),int) * (np.product(labels.shape)+1)
+    counts = np.ones((len(indexes),), np.int32) * (np.product(labels.shape)+1)
     while True:
         #
         # Figure out how many putative convex hull points there are for
@@ -379,17 +379,17 @@ def convex_hull(labels, indexes=None):
         # If the count hasn't changed in an iteration, then we've done
         # as well as we can hope to do.
         #
-        v = np.ones((a.shape[0],),dtype=int)
+        v = np.ones((a.shape[0],),dtype = np.int32)
         new_counts = scipy.sparse.coo_matrix((v,(a[:,0],v*0)),
                                              shape=(len(indexes),1))
         new_counts = new_counts.toarray().flatten()
         finish_me = np.logical_and(new_counts > 0,
                                       np.logical_or(new_counts <= 3,
                                                        new_counts == counts))
-        indexes_to_finish = np.argwhere(finish_me)
+        indexes_to_finish = np.argwhere(finish_me).astype(np.int32)
         keep_me = np.logical_and(new_counts > 3,
                                     new_counts < counts)
-        indexes_to_keep = np.argwhere(keep_me)
+        indexes_to_keep = np.argwhere(keep_me).astype(np.int32)
         if len(indexes_to_finish):
             result_counts[finish_me] = new_counts[finish_me]
             #
@@ -402,7 +402,7 @@ def convex_hull(labels, indexes=None):
             #
             # Map label #s to the index into indexes_to_finish of that label #
             #
-            anti_indexes_to_finish = np.zeros((len(indexes),),int)
+            anti_indexes_to_finish = np.zeros((len(indexes),), np.int32)
             anti_indexes_to_finish[indexes_to_finish] = range(len(indexes_to_finish))
             #
             # Figure out the indices of each point in a label to be finished.
@@ -412,7 +412,7 @@ def convex_hull(labels, indexes=None):
             # Then we add the result_index to figure out where to store it
             # in the result table.
             #
-            finish_idx_base = np.zeros((len(indexes_to_finish),),int)
+            finish_idx_base = np.zeros((len(indexes_to_finish),), np.int32)
             finish_idx_base[1:]=np.cumsum(new_counts[indexes_to_finish])[:-1]
             finish_idx_bases = finish_idx_base[anti_indexes_to_finish[atf_indexes]]
             finish_idx = (np.array(range(a_to_finish.shape[0]))-
@@ -424,8 +424,8 @@ def convex_hull(labels, indexes=None):
         #
         # Figure out which points are still available
         #
-        rows_to_keep = np.argwhere(keep_me[a[:,0].astype(int)])
-        rows_to_keep = rows_to_keep.flatten().astype(int)
+        rows_to_keep = np.argwhere(keep_me[a[:,0].astype(np.int32)]).flatten()
+        rows_to_keep = rows_to_keep.astype(np.int32)
         a = a[rows_to_keep]
         centers_per_point = centers_per_point[rows_to_keep]
         counts = new_counts
@@ -438,13 +438,13 @@ def convex_hull(labels, indexes=None):
         # N-1 and N+1 have to be modulo "counts", so we make special arrays
         # to address those situations.
         #
-        anti_indexes_to_keep = np.zeros((len(indexes),),int)
+        anti_indexes_to_keep = np.zeros((len(indexes),), np.int32)
         anti_indexes_to_keep[indexes_to_keep] = range(len(indexes_to_keep))
-        idx_base = np.zeros((len(indexes_to_keep),),int)
+        idx_base = np.zeros((len(indexes_to_keep),), np.int32)
         idx_base[1:]=np.cumsum(counts[keep_me])[0:-1]
         idx_bases = idx_base[anti_indexes_to_keep[a[:,0]]]
         counts_per_pt = counts[a[:,0]]
-        idx = np.array(range(a.shape[0]),int)-idx_bases
+        idx = np.array(range(a.shape[0]), np.int32)-idx_bases
         n_minus_one = np.mod(idx+counts_per_pt-1,counts_per_pt)+idx_bases
         n_plus_one  = np.mod(idx+1,counts_per_pt)+idx_bases
         #
@@ -506,7 +506,7 @@ def convex_hull(labels, indexes=None):
     # points for a label, then only keep those whose indexes are
     # less than the count for their label.
     #
-    within_label_index = np.array(range(result.shape[0]),int)
+    within_label_index = np.array(range(result.shape[0]), np.int32)
     counts_per_point = result_counts[r_anti_indexes_per_point]
     result_indexes_per_point = result_index[r_anti_indexes_per_point] 
     within_label_index = (within_label_index - result_indexes_per_point)
@@ -910,7 +910,7 @@ def minimum_enclosing_circle(labels, indexes = None,
         # v_indexes is the index into "hull" for each vertex (and similarly
         # shaped vectors such as within_label_indexes
         #
-        v_indexes=np.argwhere(keep_me_vertices).flatten().astype(int)
+        v_indexes=np.argwhere(keep_me_vertices).flatten().astype(np.int32)
         #
         # anti_indexes_per_vertex gives the index into "indexes" and
         # any similarly shaped array of per-label values

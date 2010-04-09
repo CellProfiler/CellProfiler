@@ -144,6 +144,7 @@ FD_METADATA_CHOICE = "MetadataChoice"
 FD_FILE_METADATA = "FileMetadata"
 FD_PATH_METADATA = "PathMetadata"
 FD_DIVIDER = "Divider"
+FD_DIVIDER2 = "Divider2"
 
 # The metadata choices:
 # M_NONE - don't extract metadata
@@ -393,6 +394,7 @@ class LoadImages(cpmodule.CPModule):
         
         fd = { FD_KEY:new_uuid,
                FD_DIVIDER:cps.Divider(line=True),
+               FD_DIVIDER2:cps.Divider(line=True),
                FD_COMMON_TEXT:cps.Text('Text that these images have in common (case-sensitive)', '',doc="""
                         <i>(Used only for the image-loading Text options)</i><br>
                         For <i>Text-Exact match</i>, type the text string that all the images have in common. For example,
@@ -571,7 +573,7 @@ class LoadImages(cpmodule.CPModule):
             if do_flex:
                 varlist += [fd[FD_DIVIDER],fd[FD_IMAGE_NAME]]
                 if i == 0:
-                    varlist += [fd[FD_DIVIDER],fd[file_kwd]]
+                    varlist += [fd[FD_DIVIDER2],fd[file_kwd]]
             else:
                 varlist += [fd[FD_DIVIDER],fd[file_kwd], 
                             fd[FD_IMAGE_NAME]]

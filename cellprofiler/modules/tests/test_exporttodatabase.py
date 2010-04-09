@@ -2282,4 +2282,5 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
                                         (module.db_name.value, table_name))
                 except:
                     print "Failed to drop table %s"%table_name
-            finally_fn()            
+            finally_fn()
+            

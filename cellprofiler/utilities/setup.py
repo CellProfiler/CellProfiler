@@ -15,6 +15,7 @@ __version__="$Revision$"
 import os
 import sys
 import subprocess
+import traceback
 if not hasattr(sys, 'frozen'):
     from distutils.core import setup,Extension
     from distutils.sysconfig import get_config_var
@@ -100,6 +101,17 @@ if not hasattr(sys, 'frozen'):
 
 def find_javahome():
     """Find JAVA_HOME if it doesn't exist"""
+    if hasattr(sys, 'frozen') and sys.platform.startswith('win'):
+        #
+        # The standard installation of CellProfiler for Windows comes with a JRE
+        #
+        path = os.path.split(os.path.abspath(sys.argv[0]))[0]
+        path = os.path.join(path, "jre")
+        for jvm_folder in ("client", "server"):
+            jvm_path = os.path.join(path, "bin", jvm_folder, "jvm.dll")
+            if os.path.exists(jvm_path):
+                return path
+    
     if os.environ.has_key('JAVA_HOME'):
         return os.environ['JAVA_HOME']
     if sys.platform == 'darwin':
@@ -107,15 +119,23 @@ def find_javahome():
     if sys.platform.startswith('win'):
         import _winreg
         java_key_path = 'SOFTWARE\\JavaSoft\\Java Runtime Environment'
-        kjava = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, java_key_path)
-        kjava_values = dict([_winreg.EnumValue(kjava, i)[:2]
-                             for i in range(_winreg.QueryInfoKey(kjava)[1])])
-        current_version = kjava_values['CurrentVersion']
-        kjava_current = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE,
-                                        java_key_path + '\\' + current_version)
-        kjava_current_values = dict([_winreg.EnumValue(kjava_current, i)[:2]
-                                     for i in range(_winreg.QueryInfoKey(kjava_current)[1])])
-        return kjava_current_values['JavaHome']
+        looking_for = java_key_path
+        try:
+            kjava = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, java_key_path)
+            looking_for = java_key_path + "\\CurrentVersion"
+            kjava_values = dict([_winreg.EnumValue(kjava, i)[:2]
+                                 for i in range(_winreg.QueryInfoKey(kjava)[1])])
+            current_version = kjava_values['CurrentVersion']
+            looking_for = java_key_path + '\\' + current_version
+            kjava_current = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE,
+                                            looking_for)
+            kjava_current_values = dict([_winreg.EnumValue(kjava_current, i)[:2]
+                                         for i in range(_winreg.QueryInfoKey(kjava_current)[1])])
+            return kjava_current_values['JavaHome']
+        except:
+            traceback.print_exc()
+            sys.stderr.write("Failed to find registry entry: %s\n" %looking_for)
+            return None
 
 def find_jdk():
     """Find the JDK under Windows"""

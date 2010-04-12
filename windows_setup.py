@@ -51,7 +51,8 @@ class CellProfilerMSI(distutils.core.Command):
             raise DistutilsFileError, "Inno Setup does not seem to be installed properly. Specifically, there is no entry in the HKEY_CLASSES_ROOT for InnoSetupScriptFile\\shell\\Compile\\command"
 
 opts = {
-    'py2exe': { "includes" : ["numpy", "scipy","PIL","wx","matplotlib",
+    'py2exe': { "includes" : ["numpy", "scipy","PIL","wx",
+                              "matplotlib", "matplotlib.numerix.random_array",
                               "email.iterators",
                               "cellprofiler.modules.*"],
                 'excludes': ['pylab','Tkinter','Cython'],
@@ -60,7 +61,7 @@ opts = {
     'msi': {}
        }
 
-if sys.platform.startswith('win') and os.environ["PROCESSOR_ARCHITECTURE"] == "AMD64":
+if os.environ["PROCESSOR_ARCHITECTURE"] == "AMD64":
     opts['py2exe']['includes'] += [ "scipy.io.matlab.streams"]
     
 data_files = [('cellprofiler\\icons',
@@ -69,6 +70,29 @@ data_files = [('cellprofiler\\icons',
                 if x.endswith(".png") or x.endswith(".psd")]),
               ('bioformats', ['bioformats\\loci_tools.jar'])]
 data_files += matplotlib.get_py2exe_datafiles()
+# Collect the JVM
+#
+from cellprofiler.utilities.setup import find_jdk
+jdk_dir = find_jdk()
+def add_jre_files(path):
+    files = []
+    directories = []
+    local_path = os.path.join(jdk_dir, path)
+    for filename in os.listdir(local_path):
+        if filename.startswith("."):
+            continue
+        local_file = os.path.join(jdk_dir, path, filename)
+        relative_path = os.path.join(path, filename) 
+        if os.path.isfile(local_file):
+            files.append(local_file)
+        elif os.path.isdir(local_file):
+            directories.append(relative_path)
+    if len(files):
+        data_files.append([path, files])
+    for subdirectory in directories:
+        add_jre_files(subdirectory)
+    
+add_jre_files("jre")
 #
 # Call setup
 #

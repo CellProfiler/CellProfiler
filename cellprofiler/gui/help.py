@@ -850,6 +850,11 @@ TERTIARY_OUTLINE_COLOR_HELP = """The <i>Tertiary Outline Color</i> preference
 sets the color used for the objects touching the image border or image mask
 in <i>IdentifyPrimaryObjects</i>."""
 
+REPORT_JVM_ERROR_HELP = """The <i>Warn if Java runtime environment not present</i>
+preference determines whether CellProfiler will display a warning on startup
+if CellProfiler can't locate the Java installation on your computer. Check
+this box if you want to be warned. Uncheck this box to hide warnings."""
+
 PREFERENCES_HELP = (
     ( "Default Input Folder", DEFAULT_IMAGE_FOLDER_HELP),
     ( "Default Output Folder", DEFAULT_OUTPUT_FOLDER_HELP),

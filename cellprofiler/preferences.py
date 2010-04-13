@@ -160,6 +160,7 @@ RECENT_FILE_COUNT = 10
 PRIMARY_OUTLINE_COLOR = 'PrimaryOutlineColor'
 SECONDARY_OUTLINE_COLOR = 'SecondaryOutlineColor'
 TERTIARY_OUTLINE_COLOR = 'TertiaryOutlineColor'
+JVM_ERROR = 'JVMError'
 
 def recent_file(index):
     return FF_RECENTFILES % (index + 1)
@@ -556,3 +557,22 @@ def get_tertiary_outline_color():
 def set_tertiary_outline_color(color):
     get_config().Write(TERTIARY_OUTLINE_COLOR,
                        ','.join([str(x) for x in color.Get()]))
+
+__has_reported_jvm_error = False
+
+def get_report_jvm_error():
+    '''Return true if user still wants to report a JVM error'''
+    if __has_reported_jvm_error:
+        return False
+    if not get_config().Exists(JVM_ERROR):
+        return True
+    return get_config().Read(JVM_ERROR) == "True"
+
+def set_report_jvm_error(should_report):
+    get_config().Write(JVM_ERROR, "True" if should_report else "False")
+
+def set_has_reported_jvm_error():
+    '''Call this to remember that we showed the user the JVM error'''
+    global __has_reported_jvm_error
+    __has_reported_jvm_error = True
+    

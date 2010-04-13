@@ -34,9 +34,18 @@ import os
 import sys
 import Image as PILImage
 import scipy.io.matlab.mio
-from bioformats.formatreader import *
-from bioformats.formatwriter import *
-from bioformats.metadatatools import *
+import traceback
+try:
+    from bioformats.formatreader import *
+    from bioformats.formatwriter import *
+    from bioformats.metadatatools import *
+    has_bioformats = True
+except:
+    traceback.print_exc()
+    sys.stderr.write(
+        "Failed to load bioformats. SaveImages will not be able to save 16-bit TIFFS or movies.\n")
+    has_bioformats = False
+    
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements
 import cellprofiler.settings as cps
@@ -53,6 +62,12 @@ IF_MASK        = "Mask"
 IF_CROPPING    = "Cropping"
 IF_FIGURE      = "Module window"
 IF_MOVIE       = "Movie"
+if has_bioformats:
+    IF_ALL = [IF_IMAGE, IF_MASK, IF_CROPPING, IF_MOVIE, IF_FIGURE]
+else:
+    IF_ALL = [IF_IMAGE, IF_MASK, IF_CROPPING, IF_FIGURE]
+    
+
 FN_FROM_IMAGE  = "From image filename"
 FN_SEQUENTIAL  = "Sequential numbers"
 FN_SINGLE_NAME = "Single name"
@@ -97,8 +112,7 @@ class SaveImages(cpm.CPModule):
     
     def create_settings(self):
         self.save_image_or_figure = cps.Choice("Select the type of image to save",
-                                               [IF_IMAGE, IF_MASK, IF_CROPPING, 
-                                                IF_MOVIE, IF_FIGURE],
+                                               IF_ALL,
                                                IF_IMAGE,doc="""
                 The following types of images can be saved as a file on the hard drive:
                 <ul>
@@ -335,7 +349,8 @@ class SaveImages(cpm.CPModule):
         if self.save_image_or_figure != IF_MOVIE:
             result.append(self.file_format)
         if (self.file_format in FF_SUPPORTING_16_BIT and 
-            self.save_image_or_figure == IF_IMAGE):
+            self.save_image_or_figure == IF_IMAGE and
+            has_bioformats):
             # TIFF supports 8 & 16-bit, all others are written 8-bit
             result.append(self.bit_depth)
         result.append(self.pathname)
@@ -433,6 +448,7 @@ class SaveImages(cpm.CPModule):
     
     
     def run_movie(self, workspace):
+        assert has_bioformats
         d = self.get_dictionary(workspace.image_set_list)
         out_file = self.get_filename(workspace)
         if d["CURRENT_FRAME"] == 0 and os.path.exists(out_file):
@@ -508,6 +524,7 @@ class SaveImages(cpm.CPModule):
         '''
         assert self.file_format in (FF_TIF, FF_TIFF)
         assert self.save_image_or_figure == IF_IMAGE
+        assert has_bioformats
         
         workspace.display_data.wrote_image = False
 

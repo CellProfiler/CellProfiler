@@ -26,6 +26,8 @@ import atexit
 import gc
 import threading
 import sys
+
+jvm_dir = None
 if sys.platform.startswith('win'):
     #
     # Try harder by looking for JAVA_HOME and in the registry
@@ -33,16 +35,14 @@ if sys.platform.startswith('win'):
     from setup import find_javahome
     import os
     java_home = find_javahome()
-    for place_to_look in ('client','server'):
-        jvm_dir = os.path.join(java_home,'bin',place_to_look)
-        if not os.path.isfile(os.path.join(jvm_dir, "jvm.dll")):
-            jvm_dir = None
-        else:
-            break
-    if jvm_dir is None:
-        raise IOError("Can't find jvm.dll using %s for JAVA_HOME" %
-                      java_home)
-    os.environ['PATH'] = os.environ['PATH'] +';'+jvm_dir
+    if java_home is not None:
+        for place_to_look in ('client','server'):
+            jvm_dir = os.path.join(java_home,'bin',place_to_look)
+            if not os.path.isfile(os.path.join(jvm_dir, "jvm.dll")):
+                jvm_dir = None
+            else:
+                break
+        os.environ['PATH'] = os.environ['PATH'] +';'+jvm_dir
 elif sys.platform == 'darwin':
     #
     # Put the jvm library on the path, hoping it is always in the same place
@@ -58,13 +58,77 @@ elif sys.platform.startswith('linux'):
     from setup import find_javahome
     import os
     java_home = find_javahome()
-    if java_home is None:
-        raise RuntimeError("Could not find JAVA_HOME environment variable.")
-    jvm_dir = os.path.join(java_home, 'jre','lib','amd64','server')
-    os.environ['LD_LIBRARY_PATH'] = os.environ['LD_LIBRARY_PATH'] + ':' + jvm_dir
+    if java_home is not None:
+        jvm_dir = os.path.join(java_home, 'jre','lib','amd64','server')
+        os.environ['LD_LIBRARY_PATH'] = os.environ['LD_LIBRARY_PATH'] + ':' + jvm_dir
 
+if jvm_dir is None:
+    from cellprofiler.preferences \
+         import get_report_jvm_error, set_report_jvm_error, get_headless
+    from cellprofiler.preferences import set_has_reported_jvm_error
+    
+    if not get_headless():
+        import wx
+
+        app = wx.GetApp()
+        if app is not None and get_report_jvm_error():
+            dlg = wx.Dialog(wx.GetApp().GetTopWindow(),
+                            title="Java not installed properly")
+            sizer = wx.BoxSizer(wx.VERTICAL)
+            dlg.SetSizer(sizer)
+            text = wx.StaticText(dlg,-1, 
+                                 "CellProfiler can't find Java on your computer.")
+            text.Font = wx.Font(int(dlg.Font.GetPointSize()*5/4),
+                                dlg.Font.GetFamily(),
+                                dlg.Font.GetStyle(),
+                                wx.FONTWEIGHT_BOLD)
+            sizer.Add(text, 0, wx.ALIGN_LEFT | wx.ALL, 5)
+            if java_home is None or sys.platform == "darwin":
+                label = \
+"""CellProfiler cannot find the location of Java on your computer.
+CellProfiler can process images without Java, but uses the Bioformats Java
+library to process images if Java is available.
+
+You can download the Java runtime for your operating system at:
+http://www.java.com/en/download/index.jsp
+"""
+            else:
+                label = \
+"""CellProfiler cannot find the location of Java on your computer.
+CellProfiler can process images without Java, but uses the Bioformats Java
+library to process images if Java is available.
+
+Your computer may not be configured correctly. Your computer is configured
+as if Java is installed in the directory, "%s", but the files that CellProfiler
+needs do not seem to be installed there. Please see:
+
+http://cellprofiler.org/wiki/index.php/Installing_Java
+
+for more help.""" % java_home
+                    
+            sizer.Add(wx.StaticText(dlg, label = label), 
+                      0, wx.EXPAND | wx.ALL, 5)
+            report_ctrl = wx.CheckBox(
+                dlg, label = "Don't show this message again.")
+            report_ctrl.Value = False
+            sizer.Add(report_ctrl, 0, wx.ALIGN_LEFT | wx.ALL, 5)
+            buttons_sizer = wx.StdDialogButtonSizer()
+            buttons_sizer.AddButton(wx.Button(dlg, wx.ID_OK))
+            buttons_sizer.Realize()
+            sizer.Add(buttons_sizer, 0, wx.ALIGN_CENTER_HORIZONTAL | wx.ALL, 5)
+            dlg.Fit()
+            dlg.ShowModal()
+            show_jvm_error_dlg = False
+            if report_ctrl.Value:
+                set_report_jvm_error(False)
+            else:
+                # Just for this run, turn off reporting
+                set_has_reported_jvm_error()
+            
+    raise IOError("Can't find jvm directory")
+    
 import javabridge
-import re
+import re    
 
 class JavaError(ValueError):
     '''A procedural error caused by misuse of jutil'''
@@ -120,9 +184,7 @@ def start_vm(args):
         global __kill
         global __dead_objects
 
-        print "Starting VM"        
         __vm = javabridge.JB_VM()
-        print "VM started"
         #
         # We get local copies here and bind them in a closure to guarantee
         # that they exist past atexit.

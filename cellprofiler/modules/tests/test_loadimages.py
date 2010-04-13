@@ -1126,11 +1126,10 @@ LoadImages:[module_num:5|svn_version:\'9497\'|variable_revision_number:5|show_wi
                 self.assertEqual(row, match.group("ROW"))
     
     def test_09_01_load_avi(self):
-        if True or LI.FF_AVI_MOVIES not in LI.FF:
+        if LI.FF_AVI_MOVIES not in LI.FF:
             sys.stderr.write("WARNING: AVI movies not supported\n")
             return
-        avi_path = os.path.join(T.example_images_directory(), 
-                                'ExampleTrackObjects')
+        avi_path = T.testimages_directory()
         module = LI.LoadImages()
         module.file_types.value = LI.FF_AVI_MOVIES
         module.images[0][LI.FD_COMMON_TEXT].value = 'avi'
@@ -1207,7 +1206,7 @@ LoadImages:[module_num:5|svn_version:\'9497\'|variable_revision_number:5|show_wi
         img2 = image.pixel_data
         self.assertEqual(tuple(img2.shape), (1040,1388))
         self.assertTrue(np.any(img1!=img2))
-    
+        
     def test_10_1_load_many(self):
         '''Load an image many times to ensure that memory is freed each time'''
         path = os.path.join(example_images_directory(), "ExampleSBSImages")

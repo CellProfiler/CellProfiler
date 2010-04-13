@@ -1468,6 +1468,31 @@ class LoadImages(cpmodule.CPModule):
             if len(keys) == 0:
                 return None
             return image_set_list.get_groupings(keys)
+        elif self.load_movies() and self.file_types == FF_OTHER_MOVIES:
+            # Default for Flex is to group by file name and series
+            keys = (C_FILE_NAME, M_SERIES)
+            groupings = {}
+            key_values = []
+            for i in range(image_set_list.count()):
+                image_set = image_set_list.get_image_set(i)
+                d = self.get_dictionary(image_set)
+                protocol, version, pathname, channel, z, t, series = \
+                        d[self.image_name_vars()[0].value]
+                if protocol != P_FLEX:
+                    raise ValueError("Wrong protocol used for flex file when saving to batch: %s" %protocol)
+                if version != V_FLEX:
+                    raise ValueError("Unsupported protocol version (%d) when saving flex file to batch: " %
+                                     version)
+                k = (pathname, series)
+                if not groupings.has_key(k):
+                    groupings[k] = []
+                    key_values.append({ C_FILE_NAME: pathname, M_SERIES: series})
+                assert isinstance(image_set, cpimage.ImageSet)
+                groupings[k].append(i+1)
+            groupings = [(kv, groupings[(kv[C_FILE_NAME], kv[M_SERIES])])
+                         for kv in key_values]
+            return (keys, groupings)
+            
         elif self.load_movies():
             keys = (C_FILE_NAME,)
             #

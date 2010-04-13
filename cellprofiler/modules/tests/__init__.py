@@ -36,6 +36,20 @@ def example_images_directory():
             return path
     return None
 
+def testimages_directory():
+    if os.environ.has_key('CP_TESTIMAGES'):
+        return os.environ['CP_TESTIMAGES']
+    fyle = os.path.abspath(__file__)
+    d = os.path.split(fyle)[0]   # trunk.CellProfiler.cellprofiler.modules.tests
+    d = os.path.split(d)[0]      # trunk.CellProfiler.cellprofiler.modules
+    d = os.path.split(d)[0]      # trunk.CellProfiler.cellprofiler
+    d = os.path.split(d)[0]      # trunk.CellProfiler
+    d = os.path.split(d)[0]      # trunk
+    path = os.path.join(d, "TestImages")
+    if os.path.exists(path):
+        return path
+    return None
+    
 class testExampleImagesDirectory(unittest.TestCase):
     def test_00_00_got_something(self):
         self.assertTrue(example_images_directory(), "You need to have the example images checked out to run these tests")

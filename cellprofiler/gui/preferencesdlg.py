@@ -164,14 +164,6 @@ class PreferencesDlg(wx.Dialog):
                  cpprefs.get_background_color, 
                  cpprefs.set_background_color, 
                  COLOR, cphelp.WINDOW_BACKGROUND_HELP],
-                ["Check for updates", 
-                 cpprefs.get_check_new_versions, 
-                 cpprefs.set_check_new_versions, 
-                 CHOICE, cphelp.CHECK_FOR_UPDATES_HELP],
-                ["Display welcome text on startup", 
-                 cpprefs.get_startup_blurb, 
-                 cpprefs.set_startup_blurb, 
-                 CHOICE, cphelp.SHOW_STARTUP_BLURB_HELP],
                 ["Primary outline color",
                  cpprefs.get_primary_outline_color,
                  cpprefs.set_primary_outline_color,
@@ -183,7 +175,19 @@ class PreferencesDlg(wx.Dialog):
                 ["Tertiary outline color",
                  cpprefs.get_tertiary_outline_color,
                  cpprefs.set_tertiary_outline_color,
-                 COLOR, cphelp.TERTIARY_OUTLINE_COLOR_HELP]
+                 COLOR, cphelp.TERTIARY_OUTLINE_COLOR_HELP],
+                ["Check for updates", 
+                 cpprefs.get_check_new_versions, 
+                 cpprefs.set_check_new_versions, 
+                 CHOICE, cphelp.CHECK_FOR_UPDATES_HELP],
+                ["Display welcome text on startup", 
+                 cpprefs.get_startup_blurb, 
+                 cpprefs.set_startup_blurb, 
+                 CHOICE, cphelp.SHOW_STARTUP_BLURB_HELP],
+                ["Warn if Java runtime environment not present",
+                 cpprefs.get_report_jvm_error,
+                 cpprefs.set_report_jvm_error,
+                 CHOICE, cphelp.REPORT_JVM_ERROR_HELP]
                 ]
     
     def get_title_font(self):

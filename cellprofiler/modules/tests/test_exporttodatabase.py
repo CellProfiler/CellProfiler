@@ -84,15 +84,12 @@ class TestExportToDatabase(unittest.TestCase):
         return self.__cursor
     
     def get_sqlite_cursor(self, module):
-        try:
-            from pysqlite2 import dbapi2 as sqlite
-        except:
-            import sqlite3 as sqlite
+        import sqlite3
 
         self.assertTrue(isinstance( module, E.ExportToDatabase))
         file_name = os.path.join(module.directory.get_absolute_path(),
                                  module.sqlite_file.value)
-        connection = sqlite.connect(file_name)
+        connection = sqlite3.connect(file_name)
         cursor = connection.cursor()
         return cursor, connection
     

@@ -174,11 +174,8 @@ def connect_mysql(host, user, pw, db):
 
 def connect_sqlite(db_file):
     '''Creates and returns a db connection and cursor.'''
-    try:
-        from pysqlite2 import dbapi2 as sqlite
-    except:
-        import sqlite3 as sqlite
-    connection = sqlite.connect(db_file)
+    import sqlite3 
+    connection = sqlite3.connect(db_file)
     cursor = connection.cursor()
     return connection, cursor
 

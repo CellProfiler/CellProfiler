@@ -448,7 +448,8 @@ class ExportToDatabase(cpm.CPModule):
                                           self.objects_choice)
             
     def prepare_run(self, pipeline, image_set_list, frame):
-        '''Prepare to run the pipeline'''
+        '''Prepare to run the pipeline
+        Establish a connection to the database.'''
         if self.db_type==DB_MYSQL:
             self.connection, self.cursor = connect_mysql(self.db_host.value, 
                                                          self.db_user.value, 
@@ -529,8 +530,12 @@ class ExportToDatabase(cpm.CPModule):
             if not workspace.pipeline.test_mode:
                 self.write_data_to_db(workspace)
             
-    def run_as_data_tool(self, workspace):
-        self.post_run(workspace)
+#    def run_as_data_tool(self, workspace):
+#        self.prepare_run(workspace.pipeline,
+#                         workspace.image_set_list,
+#                         workspace.frame)
+#        self.run(workspace)
+#        self.post_run(workspace)
         
     def post_run(self, workspace):
         if self.save_cpa_properties.value:
@@ -552,8 +557,11 @@ class ExportToDatabase(cpm.CPModule):
     @property
     def wants_well_tables(self):
         '''Return true if user wants any well tables'''
-        return (self.wants_agg_mean_well or self.wants_agg_median_well or
-                self.wants_agg_std_dev_well)
+        if self.db_type == DB_SQLITE:
+            return False
+        else:
+            return (self.wants_agg_mean_well or self.wants_agg_median_well or
+                    self.wants_agg_std_dev_well)
     
     def should_stop_writing_measurements(self):
         '''All subsequent modules should not write measurements'''

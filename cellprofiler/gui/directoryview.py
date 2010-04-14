@@ -36,7 +36,7 @@ class DirectoryView(object):
         """Build a listbox into the panel to display the directory
         
         """
-        self.__image_extensions = ['bmp','cur','fts','fits','gif','hdf','ico','jpg','jpeg','pbm','pcx','pgm','png','pnm','ppm','ras','tif','tiff','xwd','dib','mat','fig','zvi']
+        self.__image_extensions = ['bmp','cur','fts','fits','gif','hdf','ico','jpg','jpeg','pbm','pcx','pgm','png','pnm','ppm','ras','tif','tiff','xwd','dib','c01','mat','fig','zvi']
         self.__list_box = wx.ListBox(panel,-1)
         sizer = wx.BoxSizer()
         sizer.Add(self.__list_box,1,wx.EXPAND)

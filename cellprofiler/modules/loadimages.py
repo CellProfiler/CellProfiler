@@ -130,7 +130,7 @@ if has_bioformats:
 else:
     FF = [FF_INDIVIDUAL_IMAGES, FF_STK_MOVIES]
 
-USE_BIOFORMATS_FIRST = [".tiff", ".tif", ".flex",".stk",".dib"]
+USE_BIOFORMATS_FIRST = [".tiff", ".tif", ".flex",".stk",".dib",".c01"]
 
 SB_GRAYSCALE = 'grayscale'
 SB_BINARY = 'binary'
@@ -1713,7 +1713,7 @@ def is_image(filename):
     ext = os.path.splitext(filename)[1].lower()
     if PILImage.EXTENSION.has_key(ext):
         return True
-    return ext in ('.avi', '.mpeg', '.mat', '.stk','.flex', '.mov')
+    return ext in ('.avi', '.mpeg', '.mat', '.stk','.flex', '.mov', '.c01')
 
 def is_movie(filename):
     ext = os.path.splitext(filename)[1].lower()

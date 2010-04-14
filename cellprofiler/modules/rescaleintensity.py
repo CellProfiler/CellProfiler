@@ -134,9 +134,9 @@ class RescaleIntensity(cpm.CPModule):
                                               This setting controls how the maximum intensity is determined.
                                               <p><br><ul><li><i>%(CUSTOM_VALUE)s</i>: 
                                               Enter the maximum intensity manually below.</li>
-                                              <li><i>%(LOW_EACH_IMAGE)s</i>: use the highest intensity in this image
+                                              <li><i>%(HIGH_EACH_IMAGE)s</i>: use the highest intensity in this image
                                               as the maximum intensity for rescaling</li>
-                                              <li><i>%(LOW_ALL_IMAGES)s</i>: use the highest intensity from all images
+                                              <li><i>%(HIGH_ALL_IMAGES)s</i>: use the highest intensity from all images
                                               in the image group or the experiment if grouping is not being used.
                                               <b>Note:</b> Choosing this option may have undesirable results for
                                               a large ungrouped experiment split into a number of batches. Each batch

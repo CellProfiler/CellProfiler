@@ -601,6 +601,19 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
         pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
         np.testing.assert_almost_equal(pixels, expected)
     
+    def test_04_03_02_manual_input_range_auto_low_and_high(self):
+        np.random.seed(0)
+        expected = np.random.uniform(size=(10,10)).astype(np.float32)
+        expected = expected - expected.min()
+        expected = expected / expected.max()
+        workspace, module = self.make_workspace(expected / 2 + .1)
+        module.rescale_method.value = R.M_MANUAL_INPUT_RANGE
+        module.wants_automatic_low.value = R.LOW_EACH_IMAGE
+        module.wants_automatic_high.value = R.HIGH_EACH_IMAGE
+        module.run(workspace)
+        pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
+        np.testing.assert_almost_equal(pixels, expected)
+
     def test_04_04_manual_input_range_mask(self):
         np.random.seed(0)
         expected = np.random.uniform(size=(10,10)).astype(np.float32)

@@ -62,7 +62,7 @@ from cellprofiler.modules.identify import add_object_count_measurements
 from cellprofiler.modules.identify import add_object_location_measurements
 from cellprofiler.modules.identify import get_object_measurement_columns
 from cellprofiler.cpmath.outline import outline
-from cellprofiler.cpmath.cpmorphology import centers_of_labels
+from cellprofiler.cpmath.cpmorphology import centers_of_labels, relabel
 
 SHAPE_RECTANGLE = "Rectangle Forced Location"
 SHAPE_CIRCLE_FORCED = "Circle Forced Location"
@@ -293,6 +293,11 @@ class IdentifyObjectsInGrid(cpm.CPModule):
         #
         mask = (i-centers_i)**2 + (j-centers_j)**2 <= (radius+.5)**2
         labels[~mask] = 0
+        #
+        # Remove any label with a bogus center (no guiding object)
+        #
+        labels[np.isnan(centers_i) | np.isnan(centers_j)] = 0
+        labels, count = relabel(labels)
         return labels
     
     def run_natural_circle(self, workspace, gridding):

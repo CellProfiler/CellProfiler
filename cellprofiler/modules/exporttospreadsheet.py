@@ -329,6 +329,17 @@ class ExportToSpreadsheet(cpm.CPModule):
     
     
     def run_as_data_tool(self, workspace):
+        '''Run the module as a data tool
+        
+        For ExportToSpreadsheet, we do the "post_run" method in order to write
+        out the .csv files as if the experiment had just finished.
+        '''
+        #
+        # Set the measurements to the end of the list to mimic the state
+        # at the end of the run.
+        #
+        m = workspace.measurements
+        m.image_set_number = m.image_set_count
         self.post_run(workspace)
         
     def post_run(self, workspace):

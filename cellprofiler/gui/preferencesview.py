@@ -253,14 +253,15 @@ class PreferencesView:
         self.__progress_panel.Layout()
     
     def on_stop_analysis(self):
+        self.__progress_watcher.stop()
+        self.__progress_watcher = None
         self.__odds_and_ends_panel.Sizer.Show(self.__analyze_images_button)
         self.__odds_and_ends_panel.Sizer.Hide(self.__stop_analysis_button)
         self.__odds_and_ends_panel.Layout()
         self.__panel.Sizer.Hide(self.__progress_panel)
         self.__panel.Sizer.Show(self.__status_text)
+        self.__panel.Parent.Layout()
         self.__panel.Layout()
-        self.__progress_watcher.stop()
-        self.__progress_watcher = None
 
     def set_message_text(self,text):
         saved_size = self.__status_text.GetSize()

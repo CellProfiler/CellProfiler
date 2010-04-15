@@ -102,7 +102,7 @@ class ProgressFrame(wx.Frame):
         # Timer that updates elapsed
         timer_id = wx.NewId()
         self.timer = wx.Timer(self.panel, timer_id)
-        self.timer.Start(100)
+        self.timer.Start(500)
         wx.EVT_TIMER(self.panel, timer_id, self.on_timer)
 
     def elapsed_label(self):
@@ -143,7 +143,6 @@ class ProgressFrame(wx.Frame):
         remaining = self.remaining_time()
         if remaining:
             self.gauge.SetValue(100 * self.elapsed_time() / (self.elapsed_time() + remaining))
-        self.timer.Start(100)
 
     def OnClose(self, event):
         self.timer.Stop()

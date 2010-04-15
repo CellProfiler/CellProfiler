@@ -31,7 +31,6 @@ import cellprofiler.gui.moduleview
 from cellprofiler.gui.movieslider import EVT_TAKE_STEP
 from cellprofiler.gui.help import HELP_ON_MODULE_BUT_NONE_SELECTED
 import cellprofiler.utilities.get_revision as get_revision
-from progress import ProgressFrame
 from errordialog import display_error_dialog, ED_CONTINUE, ED_STOP
 
 RECENT_FILE_MENU_ID = [wx.NewId() for i in range(cpprefs.RECENT_FILE_COUNT)]
@@ -47,7 +46,6 @@ class PipelineController:
         self.__add_module_frame = AddModuleFrame(frame,-1,"Add modules")
         self.__add_module_frame.add_listener(self.on_add_to_pipeline)
         self.__setting_errors = {}
-        self.__progress_frame = None
         self.__running_pipeline = None
         self.__dirty_pipeline = False
         self.__inside_running_pipeline = False 
@@ -596,7 +594,7 @@ class PipelineController:
                         self.stop_debugging()
 
     def status_callback(self, *args):
-        self.__progress_frame.start_module(*args)
+        self.__frame.preferences_view.on_start_module(*args)
             
     def on_analyze_images(self,event):
         '''Handle a user request to start running the pipeline'''
@@ -627,17 +625,8 @@ class PipelineController:
         self.__module_view.disable()
         output_path = self.get_output_file_path()
         if output_path:
-            self.__progress_frame = ProgressFrame(self.__frame)
-            self.__progress_frame.Bind(wx.EVT_BUTTON, 
-                                       self.on_progress_play_pause,
-                                       self.__progress_frame.play_pause_button)
-            self.__progress_frame.Bind(wx.EVT_BUTTON,
-                                       self.on_stop_running,
-                                       self.__progress_frame.stop_button)
-            self.__progress_frame.Bind(wx.EVT_BUTTON,
-                                       self.on_save_measurements,
-                                       self.__progress_frame.save_button)
-            # XXX: Uncomment to show half-baked progress dialog
+            self.__frame.preferences_view.pause_button.Bind(wx.EVT_BUTTON,
+                                                            self.on_pause)
             if self.__running_pipeline:
                 self.__running_pipeline.close()
             self.__output_path = output_path
@@ -661,22 +650,30 @@ class PipelineController:
                 else:
                     wx.MessageBox("Pipeline processing finished, no measurements taken", "Analysis complete")
     
-    def on_progress_play_pause(self, event):
+    def on_pause(self, event):
         if not self.__pause_pipeline:
-            self.__progress_frame.pause()
+            self.__frame.preferences_view.pause(True)
             self.__pause_pipeline = True
+            # This is necessary for the case where the user hits pause
+            # then resume during the time a module is executing, which
+            # results in two calls to __running_pipeline.next() trying
+            # to execute simultaneously if the resume causes a
+            # ModuleRunnerDoneEvent.
+            self.__need_unpause_event = False 
         else:
-            self.__progress_frame.play()
+            self.__frame.preferences_view.pause(False)
             self.__pause_pipeline = False
-            cellprofiler.pipeline.post_module_runner_done_event(self.__frame)
+            if self.__need_unpause_event:
+                # see note above
+                cellprofiler.pipeline.post_module_runner_done_event(self.__frame)
         
     def on_frame_menu_open(self, event):
         pass
     
     def on_stop_running(self,event):
+        self.stop_running()
         if self.__pipeline_measurements is not None:
             self.save_measurements()
-        self.stop_running()
         self.__pipeline_measurements = None
     
     def on_save_measurements(self, event):
@@ -698,7 +695,6 @@ class PipelineController:
         self.__pause_pipeline = False
         self.__frame.preferences_view.on_stop_analysis()
         self.__module_view.enable()
-        self.__progress_frame.Destroy()
     
     def is_in_debug_mode(self):
         """True if there's some sort of debugging in progress"""
@@ -974,7 +970,10 @@ class PipelineController:
         cellprofiler.pipeline.ModuleRunnerDoneEvent whenever a module
         is done running.
         '''
-        if self.__running_pipeline and not self.__pause_pipeline:       
+        if self.__pause_pipeline:
+            # see note in self.on_pause()
+            self.__need_unpause_event = True
+        elif self.__running_pipeline:
             try:
                 self.__pipeline_measurements = self.__running_pipeline.next()
                 event.RequestMore()

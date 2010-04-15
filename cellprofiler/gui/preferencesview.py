@@ -14,6 +14,8 @@ __version__="$Revision$"
 
 import os
 import string
+import time
+import numpy as np
 import wx
 import cellprofiler.preferences as cpprefs
 from cellprofiler.gui.htmldialog import HTMLDialog
@@ -49,11 +51,15 @@ class PreferencesView:
         self.__odds_and_ends_panel = wx.Panel(panel,-1)
         self.__make_odds_and_ends_panel()
         self.__status_text = wx.StaticText(panel,-1,style=wx.SUNKEN_BORDER,label=WELCOME_MESSAGE)
+        self.__progress_panel = wx.Panel(panel, -1)
+        self.__make_progress_panel()
         self.__sizer.AddMany([(self.__image_folder_panel,0,wx.EXPAND|wx.ALL,1),
                               (self.__output_folder_panel,0,wx.EXPAND|wx.ALL,1),
                               (self.__odds_and_ends_panel,0,wx.EXPAND|wx.ALL,1),
-                              (self.__status_text,0,wx.EXPAND|wx.ALL,2)])
+                              (self.__status_text,0,wx.EXPAND|wx.ALL, 4),
+                              (self.__progress_panel, 0, wx.EXPAND | wx.BOTTOM, 2)])
         panel.SetSizer(self.__sizer)
+        self.__sizer.Hide(self.__status_text)
         self.__errors = set()
         self.__pipeline_list_view = None
         
@@ -148,6 +154,25 @@ class PreferencesView:
         cpprefs.add_output_directory_listener(self.__on_preferences_output_directory_event)
         panel.Bind(wx.EVT_WINDOW_DESTROY, self.__on_destroy, panel)
     
+    def __make_progress_panel(self):
+        panel = self.__progress_panel
+        self.__current_status= wx.StaticText(panel, -1, label="LoadImages, Image Set 1/19")
+        self.__progress_bar = wx.Gauge(panel, -1, size=(100, -1))
+        self.__progress_bar.Value = 25
+        self.__timer = wx.StaticText(panel, -1, label="1:45/3:50")
+        self.pause_button = wx.Button(panel, -1, 'Pause')
+        sizer = wx.BoxSizer(wx.HORIZONTAL)
+        sizer.AddMany([((1,1), 1),
+                       (self.__current_status, 0, wx.ALIGN_BOTTOM),
+                       ((10, 0), 0),
+                       (self.__progress_bar, 0, wx.ALIGN_BOTTOM),
+                       ((10, 0), 0),
+                       (self.__timer, 0, wx.ALIGN_BOTTOM),
+                       ((5, 0), 0),
+                       (self.pause_button, 0, wx.BOTTOM|wx.ALIGN_CENTER, 2)])
+        panel.SetSizer(sizer)
+        panel.Layout()
+
     def check_preferences(self):
         '''Return True if preferences are OK (e.g. directories exist)'''
         path = self.__image_edit_box.Value
@@ -200,12 +225,43 @@ class PreferencesView:
         self.__odds_and_ends_panel.Sizer.Hide(self.__analyze_images_button)
         self.__odds_and_ends_panel.Sizer.Show(self.__stop_analysis_button)
         self.__odds_and_ends_panel.Layout()
+        self.pause_button.SetLabel('Pause')
+        self.__panel.Sizer.Hide(self.__status_text)
+        self.__panel.Sizer.Show(self.__progress_panel)
+        self.__panel.Parent.Layout()
+        self.__panel.Layout()
+        # begin tracking progress
+        self.__progress_watcher = ProgressWatcher(self.__progress_panel, self.update_progress)
+        
+    def on_start_module(self, *args):
+        self.__progress_watcher.on_start_module(*args)
+
+    def pause(self, do_pause):
+        self.__progress_watcher.pause(do_pause)
+        if do_pause:
+            self.pause_button.SetLabel('Resume')
+        else:
+            self.pause_button.SetLabel('Pause')
+        self.pause_button.Update()
+        self.__progress_panel.Layout()
+
+    def update_progress(self, image_set_index, num_image_sets, current_module_name, 
+                        elapsed_time, remaining_time):
+        self.__current_status.SetLabel('%s, Image Set %d/%d'%(current_module_name, image_set_index + 1, num_image_sets))
+        self.__progress_bar.Value = (100 * elapsed_time) / (elapsed_time + remaining_time)
+        self.__timer.SetLabel('Time %s/%s'%(secs_to_timestr(elapsed_time), secs_to_timestr(elapsed_time + remaining_time)))
+        self.__progress_panel.Layout()
     
     def on_stop_analysis(self):
         self.__odds_and_ends_panel.Sizer.Show(self.__analyze_images_button)
         self.__odds_and_ends_panel.Sizer.Hide(self.__stop_analysis_button)
         self.__odds_and_ends_panel.Layout()
-        
+        self.__panel.Sizer.Hide(self.__progress_panel)
+        self.__panel.Sizer.Show(self.__status_text)
+        self.__panel.Layout()
+        self.__progress_watcher.stop()
+        self.__progress_watcher = None
+
     def set_message_text(self,text):
         saved_size = self.__status_text.GetSize()
         self.__status_text.SetLabel(text)
@@ -284,3 +340,115 @@ class PreferencesView:
 
     def refresh_input_directory(self):
         cpprefs.fire_image_directory_changed_event()
+
+class ProgressWatcher:
+    """ Tracks pipeline progress and estimates time to completion """
+    def __init__(self, parent, update_callback):
+        self.update_callback = update_callback
+
+        # start tracking progress
+        self.start_time = time.time()
+        self.end_times = None
+        self.current_module_name = ''
+        self.pause_start_time = None
+        self.previous_pauses_duration = 0.0
+        self.image_set_index = 0
+        self.num_image_sets = 1
+
+        timer_id = wx.NewId()
+        self.timer = wx.Timer(parent, timer_id)
+        self.timer.Start(500)
+        wx.EVT_TIMER(parent, timer_id, self.update)
+        self.update()
+
+    def stop(self):
+        self.timer.Stop()
+
+    def update(self, event=None):
+        self.update_callback(self.image_set_index,
+                             self.num_image_sets,
+                             self.current_module_name,
+                             self.elapsed_time(),
+                             self.remaining_time())
+
+    def on_start_module(self, module, num_modules, image_set_index, 
+                        num_image_sets):
+        """
+        Update the historical execution times, which are used as the
+        bases for projecting the time that remains.  Also update the
+        labels that show the current module and image set.  This
+        method is called by the pipelinecontroller at the beginning of
+        every module execution to update the progress bar.
+        """
+        self.current_module = module
+        self.current_module_name = module.module_name
+        self.num_modules = num_modules
+        self.image_set_index = image_set_index
+        self.num_image_sets = num_image_sets
+
+        if self.end_times is None:
+            # One extra element at the beginning for the start time
+            self.end_times = np.zeros(1 + num_modules * num_image_sets)
+        module_index = module.module_num - 1  # make it zero-based
+        index = image_set_index * num_modules + (module_index - 1)
+        self.end_times[1 + index] = self.adjusted_time()
+
+        self.update()
+
+    def pause(self, do_pause):
+        if do_pause:
+            self.pause_start_time = time.time()
+        else:
+            self.previous_pauses_duration += time.time() - self.pause_start_time
+            self.pause_start_time = None
+        
+    def adjusted_time(self):
+        """Current time minus the duration spent in pauses."""
+        pauses_duration = self.previous_pauses_duration
+        if self.pause_start_time:
+            pauses_duration += time.time() - self.pause_start_time
+        return time.time() - pauses_duration
+
+    def elapsed_time(self):
+        '''Return the number of seconds that have elapsed since start
+           as a float.  Pauses are taken into account.
+        '''
+        return self.adjusted_time() - self.start_time
+
+    def remaining_time(self):
+        """Return our best estimate of the remaining duration, or None
+        if we have no bases for guessing."""
+        if self.end_times is None:
+            return 2 * self.elapsed_time() # We have not started the first module yet
+        else:
+            module_index = self.current_module.module_num - 1
+            index = self.image_set_index * self.num_modules + module_index
+            durations = (self.end_times[1:] - self.end_times[:-1]).reshape(self.num_image_sets, self.num_modules)
+            per_module_estimates = np.zeros(self.num_modules)
+            per_module_estimates[:module_index] = np.median(durations[:self.image_set_index+1,:module_index], 0)
+            current_module_so_far = self.adjusted_time() - self.end_times[1 + index - 1]
+            if self.image_set_index > 0:
+                per_module_estimates[module_index:] = np.median(durations[:self.image_set_index,module_index:], 0)
+                per_module_estimates[module_index] = max(per_module_estimates[module_index], current_module_so_far)
+            else:
+                # Guess that the modules that haven't finished yet are
+                # as slow as the slowest one we've seen so far.
+                per_module_estimates[module_index] = current_module_so_far
+                per_module_estimates[module_index:] = per_module_estimates[:module_index+1].max()
+            per_module_estimates[:module_index] *= self.num_image_sets - self.image_set_index - 1
+            per_module_estimates[module_index:] *= self.num_image_sets - self.image_set_index
+            per_module_estimates[module_index] -= current_module_so_far
+            return per_module_estimates.sum()
+
+def secs_to_timestr(duration):
+    dur = int(round(duration))
+    hours = dur // (60 * 60)
+    rest = dur % (60 * 60)
+    minutes = rest // 60
+    rest = rest % 60
+    seconds = rest
+    minutes = ("%02d:" if hours > 0 else "%d:")%(minutes)
+    hours = "%d:"%(hours,) if hours > 0 else ""
+    seconds = "%02d"%(seconds)
+    return hours + minutes + seconds
+            

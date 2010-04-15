@@ -59,7 +59,7 @@ class PreferencesView:
                               (self.__status_text,0,wx.EXPAND|wx.ALL, 4),
                               (self.__progress_panel, 0, wx.EXPAND | wx.BOTTOM, 2)])
         panel.SetSizer(self.__sizer)
-        self.__sizer.Hide(self.__status_text)
+        self.__sizer.Hide(self.__progress_panel)
         self.__errors = set()
         self.__pipeline_list_view = None
         

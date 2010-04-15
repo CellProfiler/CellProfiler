@@ -280,7 +280,7 @@ def RunOne_2_0(x, run):
          "-q","%(queue)s"%(x),
          "-M","%(memory_limit_gb2)d"%(x),
          "-R",'"rusage[mem=%(memory_limit_gb)d]"'%(x),
-         "-R","model=PC6000",
+         "-R",'"select[model=PC6000]"',
          "-P","%(project)s"%(x),
          "-cwd",PythonDir(x),
          "-g","/imaging/batch/%(batch_id)d"%(x),

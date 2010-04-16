@@ -622,9 +622,9 @@ class PipelineController:
         # Start the pipeline
         #
         ##################################
-        self.__module_view.disable()
         output_path = self.get_output_file_path()
         if output_path:
+            self.__module_view.disable()
             self.__frame.preferences_view.pause_button.Bind(wx.EVT_BUTTON,
                                                             self.on_pause)
             if self.__running_pipeline:

@@ -332,6 +332,7 @@ class LoadImages(cpmodule.CPModule):
 
     def add_imagecb(self, can_remove = True):
         'Adds another image to the settings'
+        group = cps.SettingsGroup()
         def example_file_fn(path=None):
             '''Get an example file for use in the file metadata regexp editor'''
             if path == None:
@@ -342,8 +343,8 @@ class LoadImages(cpmodule.CPModule):
             #
             # Find out the index we expect from filter_filename
             #
-            for i, group in enumerate(self.images):
-                if group[FD_KEY] == new_uuid:
+            for i, test_group in enumerate(self.images):
+                if id(test_group) == id(group):
                     break
                 
             filenames = [x for x in os.listdir(path)
@@ -378,7 +379,6 @@ class LoadImages(cpmodule.CPModule):
                 return d[0]
             return root
         
-        group = cps.SettingsGroup()
         img_index = len(self.images)
         self.images.append(group)
         group.append("divider", cps.Divider(line=True))
@@ -931,29 +931,35 @@ class LoadImages(cpmodule.CPModule):
             # from batch mode
             return True
         if self.file_types == FF_OTHER_MOVIES:
-            self.prepare_run_of_flex(pipeline, image_set_list)
+            return self.prepare_run_of_flex(pipeline, image_set_list, frame)
         elif self.load_movies():
-            self.prepare_run_of_movies(pipeline,image_set_list)
+            return self.prepare_run_of_movies(pipeline,image_set_list, frame)
         else:
-            self.prepare_run_of_images(pipeline, image_set_list, frame)
-        return True
+            return self.prepare_run_of_images(pipeline, image_set_list, frame)
     
     def prepare_run_of_images(self, pipeline, image_set_list, frame):
         """Set up image providers for image files"""
         files = self.collect_files()
         if len(files) == 0:
-            raise ValueError("CellProfiler did not find any image files that "
-                             'matched your matching pattern: "%s"' %
-                             self.images[0].common_text.value)
+            message = ("CellProfiler did not find any image files that "
+                       'matched your matching pattern: "%s"' %
+                       self.images[0].common_text.value)
+            self.report_no_matching_files(frame, message)
+            return False
         
         if (self.group_by_metadata.value and len(self.get_metadata_tags())):
-            self.organize_by_metadata(pipeline, image_set_list, files, frame)
+            result = self.organize_by_metadata(
+                pipeline, image_set_list, files, frame)
         else:
-            self.organize_by_order(pipeline, image_set_list, files)
+            result = self.organize_by_order(
+                pipeline, image_set_list, files, frame)
+        if not result:
+            return result
         for name in self.image_name_vars():
             image_set_list.legacy_fields['Pathname%s'%(name.value)]=self.image_directory()
+        return True
 
-    def organize_by_order(self, pipeline, image_set_list, files):
+    def organize_by_order(self, pipeline, image_set_list, files, frame):
         """Organize each kind of file by their lexical order
         
         """
@@ -963,8 +969,17 @@ class LoadImages(cpmodule.CPModule):
             list_of_lists[image_index].append(pathname)
         
         image_set_count = len(list_of_lists[0])
+        
         for x,name in zip(list_of_lists[1:],image_names[1:]):
             if len(x) != image_set_count:
+                if frame is not None:
+                    images = [ (tuple(),
+                                [os.path.split(list_of_lists[i][j])
+                                 if len(list_of_lists[i]) > j else None
+                                 for i in range(len(list_of_lists))])
+                               for j in range(image_set_count)]
+                    self.report_errors([], images, frame)
+                    return False
                 raise RuntimeError("Image %s has %d files, but image %s has %d files" %
                                    (image_names[0], image_set_count,
                                     name.value, len(x)))
@@ -976,6 +991,7 @@ class LoadImages(cpmodule.CPModule):
                 self.save_image_set_info(image_set, image_names[j].value,
                                          P_IMAGES, V_IMAGES, 
                                          root, list_of_lists[j,i])
+        return True
     
     def organize_by_metadata(self, pipeline, image_set_list, files, frame):
         """Organize each kind of file by metadata
@@ -1048,6 +1064,8 @@ class LoadImages(cpmodule.CPModule):
         if len(conflicts) or len(missing_images):
             if frame:
                 self.report_errors(conflicts, missing_images, frame)
+                if self.check_images:
+                    return False
             if self.check_images.value:
                 message=""
                 if len(conflicts):
@@ -1084,6 +1102,7 @@ class LoadImages(cpmodule.CPModule):
                 self.save_image_set_info(cpimageset,
                                          self.images[i].channels[0].image_name.value,
                                           P_IMAGES, V_IMAGES, root,path)
+        return True
     
     def get_dictionary(self, image_set):
         '''Get the module's legacy fields dictionary for this image set'''
@@ -1260,13 +1279,14 @@ class LoadImages(cpmodule.CPModule):
             table = wx.ListCtrl(panel,style=wx.LC_REPORT)
             tables.append(table)
             sizer.Add(table, 1, wx.EXPAND|wx.ALL,3)
-            for tag, index in zip(tags,range(tag_ct)):
-                table.InsertColumn(index,tag)
+            if self.group_by_metadata:
+                for tag, index in zip(tags,range(tag_ct)):
+                    table.InsertColumn(index,tag)
             for fd,index in zip(self.images,range(len(self.images))):
                 table.InsertColumn(index*2+tag_ct,
                                    "%s path"%(fd.channels[0].image_name.value))
                 table.InsertColumn(index*2+1+tag_ct,
-                                   "%s filename"%(fd[0].image_name.value))
+                                   "%s filename"%(fd.channels[0].image_name.value))
             for metadata,files_and_paths in missing_images:
                 row = list(metadata)
                 for file_and_path in files_and_paths:
@@ -1297,11 +1317,13 @@ class LoadImages(cpmodule.CPModule):
         my_frame.Fit()
         my_frame.Show()
     
-    def prepare_run_of_flex(self, pipeline, image_set_list):
+    def prepare_run_of_flex(self, pipeline, image_set_list, frame):
         '''Set up image providers for flex files'''
         files = self.collect_files()
         if len(files) == 0:
-            raise ValueError("there are no image files in the chosen folder (or subfolders, if you requested them to be analyzed as well)")
+            self.report_no_matching_files(frame)
+            return False
+        
         root = self.image_directory()
         #
         # The list of lists has one list per image type. Each per-image type
@@ -1337,21 +1359,43 @@ class LoadImages(cpmodule.CPModule):
                                 c = int(channel_settings.channel_number.value) - 1
                                 image_name = channel_settings.image_name.value
                                 if c >= channel_count:
-                                    raise ValueError(
+                                    message = \
      ("The flex file, ""%s"", series # %d, has only %d channels. "
       "%s is assigned to channel % d") % (file_pathname, i, channel_count, 
-                                          image_name, c))
+                                          image_name, c+1)
+                                    self.report_no_matching_files(frame, message)
+                                    return False
                                 d[image_name] = (P_FLEX, V_FLEX, pathname, c, z, t, i)
                             image_set_count += 1
             finally:
                 formatreader.jutil.detach()
+        return True
+
+    def report_no_matching_files(self, frame, message = None):
+        '''Handle a case of prepare_run when no files were found.
         
-    def prepare_run_of_movies(self, pipeline, image_set_list):
+        Call this to report that no files matched the module's criteria.
+        frame - the app's frame or None if headless
+        message - a descriptive message if the condition is not quite
+                  "no matching files" and can be reported succinctly
+        
+        Throws an exception if headless, shows a message box if not.
+        '''
+        if message is None:
+            message = "there are no image files in the chosen folder (or subfolders, if you requested them to be analyzed as well)"
+        if frame is not None:
+            import wx
+            wx.MessageBox(message, caption = "No matching files", 
+                          style = wx.OK | wx.ICON_ERROR, parent = frame)
+            return False
+        raise ValueError(message)
+        
+    def prepare_run_of_movies(self, pipeline, image_set_list, frame):
         """Set up image providers for movie files"""
         files = self.collect_files()
         if len(files) == 0:
-            raise ValueError("there are no image files in the chosen folder (or subfolders, if you requested them to be analyzed as well)")
-        
+            self.report_no_matching_files(frame)
+            return False
         root = self.image_directory()
         image_names = self.image_name_vars()
         #
@@ -1380,6 +1424,7 @@ class LoadImages(cpmodule.CPModule):
                 d[name.value] = (P_MOVIES, V_MOVIES, file, frame)
         for name in image_names:
             image_set_list.legacy_fields['Pathname%s'%(name.value)]=root
+        return True
     
     def prepare_to_create_batch(self, pipeline, image_set_list, fn_alter_path):
         '''Prepare to create a batch file

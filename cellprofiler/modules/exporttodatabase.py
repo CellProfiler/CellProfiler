@@ -638,6 +638,10 @@ class ExportToDatabase(cpm.CPModule):
         column_defs = self.get_pipeline_measurement_columns(pipeline,
                                                             image_set_list)
         obnames = set([c[0] for c in column_defs])
+        #
+        # In alphabetical order
+        #
+        obnames = sorted(obnames)
         return [ obname for obname in obnames
                  if not self.ignore_object(obname, True) and
                  obname not in (cpmeas.IMAGE, cpmeas.EXPERIMENT, 
@@ -1006,17 +1010,20 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                     if file_object_name == cpmeas.OBJECT:
                         # the object number
                         object_row.append(j+1)
-                    for object_name, feature, coltype in columns:
-                        if object_name not in object_list:
-                            continue
-                        values = measurements.get_measurement(object_name,
-                                                              feature, i)
-                        if (values is None or len(values) <= j or
-                            np.isnan(values[j])):
-                            value = "NULL"
-                        else:
-                            value = values[j]
-                        object_row.append(value)
+                    #
+                    # Write out in same order as in the column definition
+                    for object_name in object_names:
+                        for object_name_to_check, feature, coltype in columns:
+                            if object_name_to_check != object_name:
+                                continue
+                            values = measurements.get_measurement(object_name,
+                                                                  feature, i)
+                            if (values is None or len(values) <= j or
+                                np.isnan(values[j])):
+                                value = "NULL"
+                            else:
+                                value = values[j]
+                            object_row.append(value)
                     csv_writer.writerow(object_row)
             fid.close()
             

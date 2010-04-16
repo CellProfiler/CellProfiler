@@ -15,11 +15,13 @@ __version__="$Revision$"
 
 import base64
 import numpy as np
+np.random.seed(9804)
 import os
 import Image as PILImage
 import scipy.ndimage
 from StringIO import StringIO
 import tempfile
+import traceback
 import unittest
 import uuid
 import zlib
@@ -65,22 +67,31 @@ INT_VALUE = 10
 FLOAT_VALUE = 15.5
 STRING_VALUE = "Hello, world"
 OBJ_VALUE = np.array([1.5, 3.67, 2.8])
+ALTOBJ_VALUE = np.random.uniform(size=100)
 PLATE = "P-12345"
 WELL = "A01"
 
 class TestExportToDatabase(unittest.TestCase):
     def setUp(self):
         self.__cursor = None
+        self.__connection = None
+    
+    @property
+    def connection(self):
+        if self.__connection is None:
+            import MySQLdb
+            from MySQLdb.cursors import SSCursor
+            self.__connection = MySQLdb.connect(host='imgdb01',
+                                                user='cpuser',
+                                                passwd='cPus3r')
+        return self.__connection
     
     @property
     def cursor(self):
         if self.__cursor is None:
             import MySQLdb
             from MySQLdb.cursors import SSCursor
-            connection = MySQLdb.connect(host='imgdb01',
-                                         user='cpuser',
-                                         passwd='cPus3r')
-            self.__cursor = SSCursor(connection)
+            self.__cursor = SSCursor(self.connection)
         return self.__cursor
     
     def get_sqlite_cursor(self, module):
@@ -772,8 +783,7 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
             m.add_measurement(ALTOBJECT_NAME, I.M_NUMBER_OBJECT_NUMBER, 
                               np.arange(100) + 1)
             m.add_image_measurement(ALTOBJECT_COUNT_MEASUREMENT, 100)
-            m.add_measurement(ALTOBJECT_NAME, OBJ_MEASUREMENT,
-                              np.arange(100))
+            m.add_measurement(ALTOBJECT_NAME, OBJ_MEASUREMENT, ALTOBJ_VALUE)
         if long_measurement:
             m.add_image_measurement(LONG_IMG_MEASUREMENT, 100)
             m.add_measurement(OBJECT_NAME, LONG_OBJ_MEASUREMENT, OBJ_VALUE.copy())
@@ -851,7 +861,18 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
                     continue
                 self.cursor.execute(statement)
         finally:
+            self.connection.commit()
             os.chdir(curdir)
+            
+    def drop_tables(self, module, table_suffixes):
+        for table_suffix in table_suffixes:
+            table_name = module.table_prefix.value + table_suffix
+            try:
+                self.cursor.execute("drop table %s.%s" %
+                                    (module.db_name.value, table_name))
+            except:
+                traceback.print_exc()
+                print "Failed to drop table %s"%table_name
             
         
     def test_02_01_write_mysql_db(self):
@@ -899,13 +920,7 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
         finally:
             os.chdir(output_dir)
             finally_fn()
-            for table_suffix in ("Per_Image","Per_Object"):
-                table_name = module.table_prefix.value + table_suffix
-                try:
-                    self.cursor.execute("drop table %s.%s" %
-                                        (module.db_name.value, table_name))
-                except:
-                    print "Failed to drop table %s"%table_name
+            self.drop_tables(module, ("Per_Image","Per_Object"))
     
     def test_02_015_write_mysql_db_filter_objs(self):
         workspace, module, output_dir, finally_fn = self.make_workspace(True, True)
@@ -953,27 +968,102 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
             self.assertEqual(row[3], STRING_VALUE)
             self.assertEqual(row[4], len(OBJ_VALUE))
             self.assertRaises(StopIteration, self.cursor.next)
-            statement = ("select ImageNumber, ObjectNumber, %s_%s "
+            statement = ("select ImageNumber, ObjectNumber, %s_%s, %s_%s "
                          "from %sPer_Object order by ObjectNumber"%
-                         (OBJECT_NAME, OBJ_MEASUREMENT, module.table_prefix.value))
+                         (OBJECT_NAME, OBJ_MEASUREMENT, 
+                          OBJECT_NAME, I.M_NUMBER_OBJECT_NUMBER,
+                          module.table_prefix.value))
             self.cursor.execute(statement)
             for i, value in enumerate(OBJ_VALUE):
                 row = self.cursor.fetchone()
-                self.assertEqual(len(row), 3)
+                self.assertEqual(len(row), 4)
                 self.assertEqual(row[0], 1)
                 self.assertEqual(row[1], i+1)
                 self.assertAlmostEqual(row[2], value)
+                self.assertEqual(row[3], i+1)
             self.assertRaises(StopIteration, self.cursor.next)
         finally:
             os.chdir(output_dir)
             finally_fn()
-            for table_suffix in ("Per_Image","Per_Object"):
-                table_name = module.table_prefix.value + table_suffix
-                try:
-                    self.cursor.execute("drop table %s.%s" %
-                                        (module.db_name.value, table_name))
-                except:
-                    print "Failed to drop table %s"%table_name
+            self.drop_tables(module, ("Per_Image","Per_Object"))
+
+    def test_02_016_write_mysql_db_dont_filter_objs(self):
+        workspace, module, output_dir, finally_fn = self.make_workspace(True, True)
+        try:
+            self.assertTrue(isinstance(module, E.ExportToDatabase))
+            module.db_type = E.DB_MYSQL_CSV
+            module.wants_agg_mean.value = False
+            module.wants_agg_median.value = False
+            module.wants_agg_std_dev.value = False
+            module.objects_choice.value = E.O_ALL
+            module.directory.dir_choice = E.ABSOLUTE_FOLDER_NAME
+            module.directory.custom_path = output_dir
+            module.separate_object_tables.value = E.OT_COMBINE
+            module.post_run(workspace)
+            sql_file = os.path.join(output_dir, "SQL__SETUP.SQL")
+            base_name = "SQL_1_1"
+            image_file = os.path.join(output_dir, base_name+"_image.CSV")
+            object_file = os.path.join(output_dir, base_name+"_object.CSV")
+            for filename in (sql_file, image_file, object_file):
+                self.assertTrue(os.path.isfile(filename))
+            fd = open(sql_file,'rt')
+            sql_text = fd.read()
+            fd.close()
+            os.chdir(output_dir)
+            for statement in sql_text.split(';'):
+                if len(statement.strip()) == 0:
+                    continue
+                self.cursor.execute(statement)
+            #
+            # Now read the image file from the database
+            #
+            image_table = module.table_prefix.value + "Per_Image"
+            statement = ("select ImageNumber, Image_%s, Image_%s, Image_%s, "
+                         "Image_Count_%s, Image_Count_%s "
+                         "from %s" %
+                         (INT_IMG_MEASUREMENT, FLOAT_IMG_MEASUREMENT,
+                          STRING_IMG_MEASUREMENT, OBJECT_NAME, 
+                          ALTOBJECT_NAME, image_table))
+            self.cursor.execute(statement)
+            row = self.cursor.fetchone()
+            self.assertEqual(len(row), 6)
+            self.assertEqual(row[0],1)
+            self.assertAlmostEqual(row[1], INT_VALUE)
+            self.assertAlmostEqual(row[2], FLOAT_VALUE)
+            self.assertEqual(row[3], STRING_VALUE)
+            self.assertEqual(row[4], len(OBJ_VALUE))
+            self.assertEqual(row[5], len(ALTOBJ_VALUE))
+            self.assertRaises(StopIteration, self.cursor.next)
+            statement = ("select ImageNumber, ObjectNumber, %s_%s, %s_%s, "
+                         "%s_%s, %s_%s "
+                         "from %sPer_Object order by ObjectNumber"%
+                         (OBJECT_NAME, OBJ_MEASUREMENT, 
+                          OBJECT_NAME, I.M_NUMBER_OBJECT_NUMBER,
+                          ALTOBJECT_NAME, OBJ_MEASUREMENT,
+                          ALTOBJECT_NAME, I.M_NUMBER_OBJECT_NUMBER,
+                          module.table_prefix.value))
+            self.cursor.execute(statement)
+            for i, value in enumerate(OBJ_VALUE):
+                row = self.cursor.fetchone()
+                self.assertEqual(len(row), 6)
+                self.assertEqual(row[0], 1)
+                self.assertEqual(row[1], i+1)
+                self.assertAlmostEqual(row[2], value, 4)
+                self.assertEqual(row[3], i+1)
+                self.assertAlmostEqual(row[4], ALTOBJ_VALUE[i], 4)
+                self.assertEqual(row[5], i+1)
+            for i in range(len(OBJ_VALUE), len(ALTOBJ_VALUE)):
+                row = self.cursor.fetchone()
+                self.assertEqual(len(row), 6)
+                self.assertEqual(row[0], 1)
+                self.assertEqual(row[1], i+1)
+                self.assertAlmostEqual(row[4], ALTOBJ_VALUE[i], 4)
+                self.assertEqual(row[5], i+1)
+            self.assertRaises(StopIteration, self.cursor.next)
+        finally:
+            os.chdir(output_dir)
+            finally_fn()
+            self.drop_tables(module, ("Per_Image","Per_Object"))
 
     def test_02_02_mysql_direct(self):
         '''Write directly to the mysql DB, not to a file'''
@@ -1020,13 +1110,7 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
                 self.assertAlmostEqual(row[2], value)
             self.assertRaises(StopIteration, self.cursor.next)
         finally:
-            for table_suffix in ("Per_Image","Per_Object"):
-                table_name = module.table_prefix.value + table_suffix
-                try:
-                    self.cursor.execute("drop table %s.%s" %
-                                        (module.db_name.value, table_name))
-                except:
-                    print "Failed to drop table %s"%table_name
+            self.drop_tables(module, ("Per_Image","Per_Object"))
     
     def test_02_03_00_write_direct_long_colname(self):
         '''Write to MySQL, ensuring some columns have long names'''
@@ -1087,13 +1171,7 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
                 self.assertAlmostEqual(row[3], value)
             self.assertRaises(StopIteration, self.cursor.next)
         finally:
-            for table_suffix in ("Per_Image","Per_Object"):
-                table_name = module.table_prefix.value + table_suffix
-                try:
-                    self.cursor.execute("drop table %s.%s" %
-                                        (module.db_name.value, table_name))
-                except:
-                    print "Failed to drop table %s"%table_name
+            self.drop_tables(module, ("Per_Image","Per_Object"))
         
     def test_02_03_01_write_csv_long_colname(self):
         '''Write to MySQL, ensuring some columns have long names
@@ -1163,13 +1241,7 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
         finally:
             os.chdir(output_dir)
             finally_fn()
-            for table_suffix in ("Per_Image","Per_Object"):
-                table_name = module.table_prefix.value + table_suffix
-                try:
-                    self.cursor.execute("drop table %s.%s" %
-                                        (module.db_name.value, table_name))
-                except:
-                    print "Failed to drop table %s"%table_name
+            self.drop_tables(module, ("Per_Image","Per_Object"))
         
     def test_02_04_write_nulls(self):
         workspace, module, output_dir, finally_fn = self.make_workspace(True)
@@ -1244,13 +1316,7 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
         finally:
             os.chdir(output_dir)
             finally_fn()
-            for table_suffix in ("Per_Image","Per_Object"):
-                table_name = module.table_prefix.value + table_suffix
-                try:
-                    self.cursor.execute("drop table %s.%s" %
-                                        (module.db_name.value, table_name))
-                except:
-                    print "Failed to drop table %s"%table_name
+            self.drop_tables(module, ("Per_Image","Per_Object"))
     
     def test_02_05_mysql_direct_null(self):
         '''Write directly to the mysql DB, not to a file and write nulls'''
@@ -1309,13 +1375,7 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
                 self.assertTrue(row[2] is None)
             self.assertRaises(StopIteration, self.cursor.next)
         finally:
-            for table_suffix in ("Per_Image","Per_Object"):
-                table_name = module.table_prefix.value + table_suffix
-                try:
-                    self.cursor.execute("drop table %s.%s" %
-                                        (module.db_name.value, table_name))
-                except:
-                    print "Failed to drop table %s"%table_name
+            self.drop_tables(module, ("Per_Image","Per_Object"))
                     
     def test_02_06_write_direct_wierd_colname(self):
         '''Write to MySQL, even if illegal characters are in the column name'''
@@ -1372,13 +1432,7 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
                 self.assertAlmostEqual(row[3], value)
             self.assertRaises(StopIteration, self.cursor.next)
         finally:
-            for table_suffix in ("Per_Image","Per_Object"):
-                table_name = module.table_prefix.value + table_suffix
-                try:
-                    self.cursor.execute("drop table %s.%s" %
-                                        (module.db_name.value, table_name))
-                except:
-                    print "Failed to drop table %s"%table_name
+            self.drop_tables(module, ("Per_Image","Per_Object"))
                     
     def test_02_06_write_direct_50_char_colname(self):
         '''Write to MySQL, ensuring some columns have long names'''
@@ -1437,13 +1491,7 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
                 self.assertAlmostEqual(row[3], value)
             self.assertRaises(StopIteration, self.cursor.next)
         finally:
-            for table_suffix in ("Per_Image","Per_Object"):
-                table_name = module.table_prefix.value + table_suffix
-                try:
-                    self.cursor.execute("drop table %s.%s" %
-                                        (module.db_name.value, table_name))
-                except:
-                    print "Failed to drop table %s"%table_name
+            self.drop_tables(module, ("Per_Image","Per_Object"))
                     
     def test_03_01_write_sqlite_direct(self):
         '''Write directly to a SQLite database'''
@@ -1583,13 +1631,7 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
         finally:
             os.chdir(output_dir)
             finally_fn()
-            for table_suffix in ("Per_Image","Per_%s" % OBJECT_NAME):
-                table_name = module.table_prefix.value + table_suffix
-                try:
-                    self.cursor.execute("drop table %s.%s" %
-                                        (module.db_name.value, table_name))
-                except:
-                    print "Failed to drop table %s"%table_name
+            self.drop_tables(module, ("Per_Image","Per_%s" % OBJECT_NAME))
     
     def test_05_02_write_mysql_db_filter_objs(self):
         workspace, module, output_dir, finally_fn = self.make_workspace(True, True)
@@ -1650,13 +1692,7 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
         finally:
             os.chdir(output_dir)
             finally_fn()
-            for table_suffix in ("Per_Image","Per_%s" % OBJECT_NAME):
-                table_name = module.table_prefix.value + table_suffix
-                try:
-                    self.cursor.execute("drop table %s.%s" %
-                                        (module.db_name.value, table_name))
-                except:
-                    print "Failed to drop table %s"%table_name
+            self.drop_tables(module, ("Per_Image","Per_%s" % OBJECT_NAME))
 
     def test_05_03_mysql_direct(self):
         '''Write directly to the mysql DB, not to a file'''
@@ -1702,13 +1738,7 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
                 self.assertAlmostEqual(row[2], value)
             self.assertRaises(StopIteration, self.cursor.next)
         finally:
-            for table_suffix in ("Per_Image","Per_%s" % OBJECT_NAME):
-                table_name = module.table_prefix.value + table_suffix
-                try:
-                    self.cursor.execute("drop table %s.%s" %
-                                        (module.db_name.value, table_name))
-                except:
-                    print "Failed to drop table %s"%table_name
+            self.drop_tables(module, ("Per_Image","Per_%s" % OBJECT_NAME))
     
     def test_05_04_write_direct_long_colname(self):
         '''Write to MySQL, ensuring some columns have long names'''
@@ -1763,13 +1793,7 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
                 self.assertAlmostEqual(row[3], value)
             self.assertRaises(StopIteration, self.cursor.next)
         finally:
-            for table_suffix in ("Per_Image","Per_%s" % OBJECT_NAME):
-                table_name = module.table_prefix.value + table_suffix
-                try:
-                    self.cursor.execute("drop table %s.%s" %
-                                        (module.db_name.value, table_name))
-                except:
-                    print "Failed to drop table %s"%table_name
+            self.drop_tables(module, ("Per_Image","Per_%s" % OBJECT_NAME))
         
     def test_05_05_write_nulls(self):
         workspace, module, output_dir, finally_fn = self.make_workspace(True)
@@ -1844,13 +1868,7 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
         finally:
             os.chdir(output_dir)
             finally_fn()
-            for table_suffix in ("Per_Image","Per_%s" % OBJECT_NAME):
-                table_name = module.table_prefix.value + table_suffix
-                try:
-                    self.cursor.execute("drop table %s.%s" %
-                                        (module.db_name.value, table_name))
-                except:
-                    print "Failed to drop table %s"%table_name
+            self.drop_tables(module, ("Per_Image","Per_%s" % OBJECT_NAME))
     
     def test_05_06_mysql_direct_null(self):
         '''Write directly to the mysql DB, not to a file and write nulls'''
@@ -1908,13 +1926,7 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
                 self.assertTrue(row[2] is None)
             self.assertRaises(StopIteration, self.cursor.next)
         finally:
-            for table_suffix in ("Per_Image","Per_%s" % OBJECT_NAME):
-                table_name = module.table_prefix.value + table_suffix
-                try:
-                    self.cursor.execute("drop table %s.%s" %
-                                        (module.db_name.value, table_name))
-                except:
-                    print "Failed to drop table %s"%table_name
+            self.drop_tables(module, ("Per_Image","Per_%s" % OBJECT_NAME))
                     
     def test_05_07_write_direct_wierd_colname(self):
         '''Write to MySQL, even if illegal characters are in the column name'''
@@ -1969,13 +1981,7 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
                 self.assertAlmostEqual(row[3], value)
             self.assertRaises(StopIteration, self.cursor.next)
         finally:
-            for table_suffix in ("Per_Image","Per_%s" % OBJECT_NAME):
-                table_name = module.table_prefix.value + table_suffix
-                try:
-                    self.cursor.execute("drop table %s.%s" %
-                                        (module.db_name.value, table_name))
-                except:
-                    print "Failed to drop table %s"%table_name
+            self.drop_tables(module, ("Per_Image","Per_%s" % OBJECT_NAME))
                     
     def test_05_07_write_direct_50_char_colname(self):
         '''Write to MySQL, ensuring some columns have long names'''
@@ -2032,13 +2038,7 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
                 self.assertAlmostEqual(row[3], value)
             self.assertRaises(StopIteration, self.cursor.next)
         finally:
-            for table_suffix in ("Per_Image","Per_%s" % OBJECT_NAME):
-                table_name = module.table_prefix.value + table_suffix
-                try:
-                    self.cursor.execute("drop table %s.%s" %
-                                        (module.db_name.value, table_name))
-                except:
-                    print "Failed to drop table %s"%table_name
+            self.drop_tables(module, ("Per_Image","Per_%s" % OBJECT_NAME))
                     
     def test_05_08_write_two_object_tables_direct(self):
         '''Write two object tables using OT_PER_OBJECT'''
@@ -2077,21 +2077,16 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
             statement = self.per_object_statement(module, ALTOBJECT_NAME, 
                                                   [OBJ_MEASUREMENT])
             self.cursor.execute(statement)
-            for i in range(100):
+            for i in range(len(ALTOBJ_VALUE)):
                 row = self.cursor.fetchone()
                 self.assertEqual(len(row), 3)
                 self.assertEqual(row[0], 1)
                 self.assertEqual(row[1], i+1)
-                self.assertAlmostEqual(row[2], i)
+                self.assertAlmostEqual(row[2], ALTOBJ_VALUE[i], 4)
             self.assertRaises(StopIteration, self.cursor.next)
         finally:
-            for table_suffix in ("Per_Image","Per_%s" % OBJECT_NAME):
-                table_name = module.table_prefix.value + table_suffix
-                try:
-                    self.cursor.execute("drop table %s.%s" %
-                                        (module.db_name.value, table_name))
-                except:
-                    print "Failed to drop table %s"%table_name
+            self.drop_tables(module, ("Per_Image","Per_%s" % OBJECT_NAME,
+                                      "Per_%s" % ALTOBJECT_NAME))
                     
     def test_06_01_write_sqlite_direct(self):
         '''Write directly to a SQLite database'''
@@ -2182,7 +2177,7 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
             module.wants_agg_std_dev.value = False
             module.objects_choice.value = E.O_ALL
             module.max_column_size.value = 50
-            module.separate_object_tables.value = E.OT_PER_OBJECT
+            module.separate_object_tables.value = E.OT_COMBINE
             module.wants_agg_mean_well.value = True
             module.wants_agg_median_well.value = True
             module.wants_agg_std_dev_well.value = True
@@ -2216,13 +2211,10 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
                     else:
                         self.assertAlmostEqual(float(value), expected)
         finally:
-            for table_suffix in ("Per_Image","Per_%s" % OBJECT_NAME, "Per_Well"):
-                table_name = module.table_prefix.value + table_suffix
-                try:
-                    self.cursor.execute("drop table %s.%s" %
-                                        (module.db_name.value, table_name))
-                except:
-                    print "Failed to drop table %s"%table_name
+            self.drop_tables(
+                module, 
+                ["Per_Image", "Per_Object"] +
+                ["Per_Well_" + x for x in ("avg", "median", "std")])
             finally_fn()
             
     def test_07_02_well_two_objtables(self):
@@ -2271,13 +2263,9 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
                     else:
                         self.assertAlmostEqual(float(value), expected)
         finally:
-            for table_suffix in ("Per_Image", "Per_%s" % OBJECT_NAME, 
-                                 "Per_%s" % ALTOBJECT_NAME, "Per_Well"):
-                table_name = module.table_prefix.value + table_suffix
-                try:
-                    self.cursor.execute("drop table %s.%s" %
-                                        (module.db_name.value, table_name))
-                except:
-                    print "Failed to drop table %s"%table_name
+            self.drop_tables(
+                module,
+                ["Per_Image", "Per_%s" % OBJECT_NAME, "Per_%s" % ALTOBJECT_NAME] +
+                ["Per_Well_" + x for x in ("avg", "median", "std")])
             finally_fn()
             

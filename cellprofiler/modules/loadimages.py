@@ -629,7 +629,7 @@ class LoadImages(cpmodule.CPModule):
                 varlist += [ fd.channels[0].image_name ]
             varlist += [fd.metadata_choice]
             if self.has_file_metadata(fd):
-                varlist += fd.file_metadata
+                varlist += [fd.file_metadata]
             if self.has_path_metadata(fd):
                 varlist += [fd.path_metadata]
             if self.is_multichannel:

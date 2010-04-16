@@ -210,7 +210,7 @@ class ModuleView:
     def __init__(self,module_panel,pipeline):
         #############################################
         #
-        # Build the top-leve GUI windows
+        # Build the top-level GUI windows
         #
         #############################################
         self.top_panel = module_panel

@@ -248,7 +248,7 @@ class PreferencesView:
     def update_progress(self, image_set_index, num_image_sets, current_module_name, 
                         elapsed_time, remaining_time):
         self.__current_status.SetLabel('%s, Image Set %d/%d'%(current_module_name, image_set_index + 1, num_image_sets))
-        self.__progress_bar.Value = (100 * elapsed_time) / (elapsed_time + remaining_time)
+        self.__progress_bar.Value = (100 * elapsed_time) / (elapsed_time + remaining_time + .00001)
         self.__timer.SetLabel('Time %s/%s'%(secs_to_timestr(elapsed_time), secs_to_timestr(elapsed_time + remaining_time)))
         self.__progress_panel.Layout()
     

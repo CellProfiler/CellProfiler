@@ -132,20 +132,6 @@ else:
 
 USE_BIOFORMATS_FIRST = [".tiff", ".tif", ".flex",".stk",".dib",".c01"]
 
-SB_GRAYSCALE = 'grayscale'
-SB_BINARY = 'binary'
-
-FD_KEY = "Key"
-FD_COMMON_TEXT = "CommonText"
-FD_ORDER_POSITION = "OrderPosition"
-FD_IMAGE_NAME = "ImageName"
-FD_REMOVE_IMAGE = "RemoveImage"
-FD_METADATA_CHOICE = "MetadataChoice"
-FD_FILE_METADATA = "FileMetadata"
-FD_PATH_METADATA = "PathMetadata"
-FD_DIVIDER = "Divider"
-FD_DIVIDER2 = "Divider2"
-
 # The metadata choices:
 # M_NONE - don't extract metadata
 # M_FILE_NAME - extract metadata from the file name
@@ -188,7 +174,7 @@ def default_cpimage_name(index):
 class LoadImages(cpmodule.CPModule):
 
     module_name = "LoadImages"
-    variable_revision_number = 5
+    variable_revision_number = 6
     category = "File Processing"
 
     def create_settings(self):
@@ -326,7 +312,9 @@ class LoadImages(cpmodule.CPModule):
         
         # Add the first image to the images list
         self.images = []
-        self.add_imagecb()
+        self.add_imagecb(False)
+        self.image_count = cps.HiddenCount(self.images, 
+                                           text = "Image count")
         
         # Add another image
         self.add_image = cps.DoSomething("", "Add another image", self.add_imagecb)
@@ -342,10 +330,8 @@ class LoadImages(cpmodule.CPModule):
             doc ="""Select the folder containing the images to be loaded. 
             %(IO_FOLDER_CHOICE_HELP_TEXT)s"""%globals())
 
-    def add_imagecb(self):
+    def add_imagecb(self, can_remove = True):
         'Adds another image to the settings'
-        img_index = len(self.images)
-        new_uuid = uuid.uuid1()
         def example_file_fn(path=None):
             '''Get an example file for use in the file metadata regexp editor'''
             if path == None:
@@ -392,121 +378,190 @@ class LoadImages(cpmodule.CPModule):
                 return d[0]
             return root
         
-        fd = { FD_KEY:new_uuid,
-               FD_DIVIDER:cps.Divider(line=True),
-               FD_DIVIDER2:cps.Divider(line=True),
-               FD_COMMON_TEXT:cps.Text('Text that these images have in common (case-sensitive)', '',doc="""
-                        <i>(Used only for the image-loading Text options)</i><br>
-                        For <i>Text-Exact match</i>, type the text string that all the images have in common. For example,
-                        if all the images for the given channel end with the text "D.TIF", type <tt>D.TIF</tt> here.
-                        <p>For <i>Text-Regular expression</i>, type the regular expression that would capture all
-                        the images for this channel. See the module help for more information on regular expressions."""),
-               FD_ORDER_POSITION:cps.Integer('Position of this image in each group', img_index+1,doc="""
-                        <i>(Used only for the image-loading Order option)</i><br>
-                        Enter the number in the image order that this image channel occupies. For example, if 
-                        the order is "DAPI, FITC, Red; DAPI, FITC, Red;" and so on, the DAPI channel
-                        would occupy position 1."""),
-               FD_IMAGE_NAME:cps.FileImageNameProvider('Name this loaded image', 
-                                                       default_cpimage_name(img_index),doc="""
-                        What do you want to call the images you are loading for use downstream in the pipeline?  
-                        Give your images a meaningful name that you can use to refer to
-                        these images in later modules.  Keep the following points in mind:
-                        <ul>
-                        <li>Image names can consist of any combination of characters (e.g., letters, digits, 
-                        and other non-alphanumeric characters). However, if you are using <b>ExportToDatabase</b>,
-                        these names will become part of the measurement column name, and some characters
-                        are not permitted in MySQL (e.g., slashes).</li>
-                        <li>Names are not case sensitive. Therefore, <i>OrigBlue</i>, <i>origblue</i>, and <i>ORIGBLUE</i>
-                        will all correspond to the same name, and unexpected results may ensue.</li>
-                        <li>Although CellProfiler can accept names of any length, you may want to avoid 
-                        making the name too long, especially if you are uploading to a database. The name is used
-                        to generate the column header for a given measurement, and in MySQL the total bytes used
-                        for all column headers cannot exceed 64K. A warning will be generated later if this limit
-                        has been exceeded.</li>
-                        </ul>"""),
-               FD_METADATA_CHOICE:cps.Choice('Extract metadata from where?',
-                                             [M_NONE, M_FILE_NAME, 
-                                              M_PATH, M_BOTH],doc="""
-                        <a name='where_to_extract'>Metadata fields can be specified from the image filename, the image path (including subfolders), or both. 
-                        The metadata entered here can be used for image grouping (see the  
-                        <a href='#group_by_metadata'><i>Group images by metadata?</i></a> setting) or simply used as 
-                        additional columns in the exported measurements (see the <b>ExportToSpreadsheet</b> module).</a>"""),
-               FD_FILE_METADATA: cps.RegexpText('Regular expression that finds metadata in the file name',
-                                                '^(?P<Plate>.*)_(?P<Well>[A-P][0-9]{2})_s(?P<Site>[0-9])',
-                                                get_example_fn = example_file_fn,
-                        doc="""
-                        <a name='regular_expression'><i>(Used only if you want to extract metadata from the file name)</i><br>
-                        The regular expression to extract the metadata from the file name is entered here. Note that
-                        this field is available whether you have selected <i>Text-Regular expressions</i> to load
-                        the files or not. Please see the general module help for more information on construction of
-                        a regular expression.</a>
-                        <p>Clicking the magnifying glass icon to the right will bring up a tool for
-                        checking the accuracy of your regular expression. The regular expression syntax can be used to 
-                        name different parts of your expression. The syntax <i>(?P&lt;fieldname&gt;expr)</i> will 
-                        extract whatever matches <i>expr</i> and assign it to the measurement,<i>fieldname</i> for the image.
-                        <p>For instance, a researcher uses plate names composed of a string of letters and numbers,
-                        followed by an underscore, then the well, followed by another underscore, followed by an "s" and a digit
-                        representing the site taken within the well (e.g., <i>TE12345_A05_s1.tif</i>).
-                        The following regular expression will capture the plate, well, and site in the fields "Plate", 
-                        "Well", and "Site":<br><br>
-                        <table border = "1">
-                        <tr><td colspan = "2">^(?P&lt;Plate&gt;.*)_(?P&lt;Well&gt;[A-P][0-9]{1,2})_s(?P&lt;Site&gt;[0-9])</td></tr>
-                        <tr><td>^</td><td>Start only at beginning of the file name</td></tr>
-                        <tr><td>(?P&lt;Plate&gt;</td><td>Name the captured field <i>Plate</i></td></tr>
-                        <tr><td>.*</td><td>Capture as many characters as follow</td></tr>
-                        <tr><td>_</td><td>Discard the underbar separating plate from well</td></tr>
-                        <tr><td>(?P&lt;Well&gt;</td><td>Name the captured field <i>Well</i></td></tr>
-                        <tr><td>[A-P]</td><td>Capture exactly one letter between A and P</td></tr>
-                        <tr><td>[0-9]{1,2}</td><td>Capture one or two digits that follow</td></tr>
-                        <tr><td>_s</td><td>Discard the underbar followed by <i>s</s> separating well from site</td></tr>
-                        <tr><td>(?P&lt;Site&gt;</td><td>Name the captured field <i>Site</i></td></tr>
-                        <tr><td>[0-9]</td><td>Capture one digit following</td></tr>
-                        </table>
-                        <p>The regular expression can be typed in the upper text box, with a sample file name given in the lower
-                        text box. Provided the syntax is correct, the corresponding fields will be highlighted in the same
-                        color in the two boxes. Press <i>Submit</i> to enter the typed regular expression."""),
-               FD_PATH_METADATA: cps.RegexpText(
-                        'Type the regular expression that finds metadata in the subfolder path',
-                        '.*[\\\\/](?P<Date>.*)[\\\\/](?P<Run>.*)$',
-                        get_example_fn = example_path_fn,
-                        doc="""
-                        <i>(Used only if you want to extract metadata from the path)</i><br>
-                        Enter the regular expression for extracting the metadata from the path. Note that
-                        this field is available whether you have selected <i>Text-Regular expressions</i> to load
-                        the files or not.
-                        
-                        <p>Clicking the magnifying glass icon to the right will bring up a tool that will allow you to
-                        check the accuracy of your regular expression. The regular expression syntax can be used to 
-                        name different parts of your expression. The syntax <i>(?&lt;fieldname&gt;expr)</i> will
-                        extract whatever matches <i>expr</i> and assign it to the image's <i>fieldname</i> measurement.
-                        
-                        <p>For instance, a researcher uses folder names with the date and subfolders containing the
-                        images with the run ID (e.g., <i>./2009_10_02/1234/</i>)
-                        The following regular expression will capture the plate, well, and site in the fields 
-                        <i>Date</i> and <i>Run</i>:<br>
-                        <table border = "1">
-                        <tr><td colspan = "2">.*[\\\/](?P&lt;Date&gt;.*)[\\\\/](?P&lt;Run&gt;.*)$</td></tr>
-                        <tr><td>.*[\\\\/]</td><td>Skip characters at the beginning of the pathname until either a slash (/) or
-                        backslash (\\) is encountered (depending on the operating system)</td></tr>
-                        <tr><td>(?P&lt;Date&gt;</td><td>Name the captured field <i>Date</i></td></tr>
-                        <tr><td>.*</td><td>Capture as many characters that follow</td></tr>
-                        <tr><td>[\\\\/]</td><td>Discard the slash/backslash character</td></tr>
-                        <tr><td>(?P&lt;Run&gt;</td><td>Name the captured field <i>Run</i></td></tr>
-                        <tr><td>.*</td><td>Capture as many characters as follow</td></tr>
-                        <tr><td>$</td><td>The <i>Run</i> field must be at the end of the path string, i.e., the
-                        last folder on the path. This also means that the Date field contains the parent
-                        folder of the Date folder.</td></tr>
-                        </table></p>"""),
-               FD_REMOVE_IMAGE:cps.DoSomething('', 'Remove this image',self.remove_imagecb, new_uuid)
-               }
-        self.images.append(fd)
-
-    def remove_imagecb(self, id):
-        'Remove an image from the settings'
-        index = [fd[FD_KEY] for fd in self.images].index(id)
-        del self.images[index]
-
+        group = cps.SettingsGroup()
+        img_index = len(self.images)
+        self.images.append(group)
+        group.append("divider", cps.Divider(line=True))
+        group.append("common_text", cps.Text(
+            'Text that these images have in common (case-sensitive)', '',doc="""
+            <i>(Used only for the image-loading Text options)</i><br>
+            For <i>Text-Exact match</i>, type the text string that all the 
+            images have in common. For example, if all the images for the given 
+            channel end with the text "D.TIF", type <tt>D.TIF</tt> here.
+            <p>For <i>Text-Regular expression</i>, type the regular expression 
+            that would capture all the images for this channel. See the module 
+            help for more information on regular expressions."""))
         
+        group.append("order_position", cps.Integer(
+            'Position of this image in each group', img_index+1,doc="""
+            <i>(Used only for the image-loading Order option)</i><br>
+            Enter the number in the image order that this image channel 
+            occupies. For example, if the order is "DAPI, FITC, Red; 
+            DAPI, FITC, Red;" and so on, the DAPI channel would occupy 
+            position 1."""))
+        
+        group.append("metadata_choice", cps.Choice(
+            'Extract metadata from where?',
+            [M_NONE, M_FILE_NAME, M_PATH, M_BOTH],doc="""
+            <a name='where_to_extract'>Metadata fields can be specified from 
+            the image filename, the image path (including subfolders), or both. 
+            The metadata entered here can be used for image grouping (see the  
+            <a href='#group_by_metadata'><i>Group images by metadata?</i></a> 
+            setting) or simply used as additional columns in the exported 
+            measurements (see the <b>ExportToSpreadsheet</b> module).</a>"""))
+        
+        group.append("file_metadata", cps.RegexpText(
+            'Regular expression that finds metadata in the file name',
+            '^(?P<Plate>.*)_(?P<Well>[A-P][0-9]{2})_s(?P<Site>[0-9])',
+            get_example_fn = example_file_fn,doc="""
+            <a name='regular_expression'><i>(Used only if you want to extract 
+            metadata from the file name)</i><br>
+            The regular expression to extract the metadata from the file name 
+            is entered here. Note that this field is available whether you have 
+            selected <i>Text-Regular expressions</i> to load the files or not.
+            Please see the general module help for more information on 
+            construction of a regular expression.</a>
+            <p>Clicking the magnifying glass icon to the right will bring up a
+            tool for checking the accuracy of your regular expression. The 
+            regular expression syntax can be used to name different parts of 
+            your expression. The syntax <i>(?P&lt;fieldname&gt;expr)</i> will 
+            extract whatever matches <i>expr</i> and assign it to the 
+            measurement,<i>fieldname</i> for the image.
+            <p>For instance, a researcher uses plate names composed of a string 
+            of letters and numbers, followed by an underscore, then the well, 
+            followed by another underscore, followed by an "s" and a digit
+            representing the site taken within the well (e.g., <i>TE12345_A05_s1.tif</i>).
+            The following regular expression will capture the plate, well, and 
+            site in the fields "Plate", "Well", and "Site":<br><br>
+            <table border = "1">
+            <tr><td colspan = "2">^(?P&lt;Plate&gt;.*)_(?P&lt;Well&gt;[A-P][0-9]{1,2})_s(?P&lt;Site&gt;[0-9])</td></tr>
+            <tr><td>^</td><td>Start only at beginning of the file name</td></tr>
+            <tr><td>(?P&lt;Plate&gt;</td><td>Name the captured field <i>Plate</i></td></tr>
+            <tr><td>.*</td><td>Capture as many characters as follow</td></tr>
+            <tr><td>_</td><td>Discard the underbar separating plate from well</td></tr>
+            <tr><td>(?P&lt;Well&gt;</td><td>Name the captured field <i>Well</i></td></tr>
+            <tr><td>[A-P]</td><td>Capture exactly one letter between A and P</td></tr>
+            <tr><td>[0-9]{1,2}</td><td>Capture one or two digits that follow</td></tr>
+            <tr><td>_s</td><td>Discard the underbar followed by <i>s</s> separating well from site</td></tr>
+            <tr><td>(?P&lt;Site&gt;</td><td>Name the captured field <i>Site</i></td></tr>
+            <tr><td>[0-9]</td><td>Capture one digit following</td></tr>
+            </table>
+            <p>The regular expression can be typed in the upper text box, with 
+            a sample file name given in the lower text box. Provided the syntax 
+            is correct, the corresponding fields will be highlighted in the same
+            color in the two boxes. Press <i>Submit</i> to enter the typed 
+            regular expression."""))
+        
+        group.append("path_metadata", cps.RegexpText(
+            'Type the regular expression that finds metadata in the subfolder path',
+            '.*[\\\\/](?P<Date>.*)[\\\\/](?P<Run>.*)$',
+            get_example_fn = example_path_fn,
+            doc="""
+            <i>(Used only if you want to extract metadata from the path)</i><br>
+            Enter the regular expression for extracting the metadata from the 
+            path. Note that this field is available whether you have selected 
+            <i>Text-Regular expressions</i> to load the files or not.
+            
+            <p>Clicking the magnifying glass icon to the right will bring up a
+            tool that will allow you to check the accuracy of your regular 
+            expression. The regular expression syntax can be used to 
+            name different parts of your expression. The syntax 
+            <i>(?&lt;fieldname&gt;expr)</i> will extract whatever matches 
+            <i>expr</i> and assign it to the image's <i>fieldname</i> measurement.
+                        
+            <p>For instance, a researcher uses folder names with the date and 
+            subfolders containing the images with the run ID 
+            (e.g., <i>./2009_10_02/1234/</i>) The following regular expression 
+            will capture the plate, well, and site in the fields 
+            <i>Date</i> and <i>Run</i>:<br>
+            <table border = "1">
+            <tr><td colspan = "2">.*[\\\/](?P&lt;Date&gt;.*)[\\\\/](?P&lt;Run&gt;.*)$</td></tr>
+            <tr><td>.*[\\\\/]</td><td>Skip characters at the beginning of the pathname until either a slash (/) or
+            backslash (\\) is encountered (depending on the operating system)</td></tr>
+            <tr><td>(?P&lt;Date&gt;</td><td>Name the captured field <i>Date</i></td></tr>
+            <tr><td>.*</td><td>Capture as many characters that follow</td></tr>
+            <tr><td>[\\\\/]</td><td>Discard the slash/backslash character</td></tr>
+            <tr><td>(?P&lt;Run&gt;</td><td>Name the captured field <i>Run</i></td></tr>
+            <tr><td>.*</td><td>Capture as many characters as follow</td></tr>
+            <tr><td>$</td><td>The <i>Run</i> field must be at the end of the path string, i.e., the
+            last folder on the path. This also means that the Date field contains the parent
+            folder of the Date folder.</td></tr>
+            </table></p>"""))
+        
+        #
+        # Flex files (and arguably others like color images and multichannel
+        # TIF files) can have more than one channel. So, within each image,
+        # we have a list of channels.
+        #
+        group.channels = []
+        group.append("channel_count", cps.HiddenCount(group.channels,
+                                                      "Channel count"))
+        def add_channel(can_remove = True):
+            self.add_channel(group, can_remove)
+        add_channel(False)
+        
+        group.append("add_channel_button", cps.DoSomething(
+            "Add another channel", "Add channel", add_channel))
+        
+        group.can_remove = can_remove
+        if can_remove:
+            group.append("remover", cps.RemoveSettingButton(
+                '', 'Remove this image', self.images, group))
+        
+    def add_channel(self, image_settings, can_remove=True):
+        '''Add another channel to an image
+        
+        image_settings - the image's settings group
+        can_remove - true if we are allowed to remove this channel
+        '''
+        
+        group = cps.SettingsGroup()
+        image_settings.channels.append(group)
+        img_index = 0
+        for ii in self.images:
+            for jj in ii.channels:
+                if id(jj) == id(group):
+                    break
+                img_index += 1
+                
+        group.append("image_name", cps.FileImageNameProvider(
+            'Name this loaded image', 
+            default_cpimage_name(img_index),doc="""
+            What do you want to call the images you are loading for use 
+            downstream in the pipeline? Give your images a meaningful name 
+            that you can use to refer to these images in later modules.  Keep 
+            the following points in mind:
+            <ul>
+            <li>Image names can consist of any combination of characters 
+            (e.g., letters, digits, and other non-alphanumeric characters). 
+            However, if you are using <b>ExportToDatabase</b>, these names will 
+            become part of the measurement column name, and some characters
+            are not permitted in MySQL (e.g., slashes).</li>
+            <li>Names are not case sensitive. Therefore, <i>OrigBlue</i>, 
+            <i>origblue</i>, and <i>ORIGBLUE</i> will all correspond to the 
+            same name, and unexpected results may ensue.</li>
+            <li>Although CellProfiler can accept names of any length, you may 
+            want to avoid making the name too long, especially if you are 
+            uploading to a database. The name is used to generate the column 
+            header for a given measurement, and in MySQL the total bytes used
+            for all column headers cannot exceed 64K. A warning will be 
+            generated later if this limit has been exceeded.</li>
+            </ul>"""))
+        channels = [ 
+            str(x) for x in range(1, max(10, len(image_settings.channels)+2)) ]
+        group.append("channel_number", cps.Choice(
+            "Channel number:", channels, channels[len(image_settings.channels)-1],
+            doc = """(Used only for multichannel images)
+            The channels of a multichannel image are numbered starting from 1.
+            Each channel is a greyscale image, acquired using different
+            illumination sources and/or optics. Use this setting to pick
+            the channel to associate with the above image name."""))
+        group.can_remove = can_remove
+        if can_remove:
+            group.append("remover", cps.RemoveSettingButton(
+                "Remove this channel", "Remove channel", image_settings.channels,
+                group))
+
     def help_settings(self):
         result = [self.file_types, 
                   self.match_method, 
@@ -517,14 +572,15 @@ class LoadImages(cpmodule.CPModule):
                   self.check_images, 
                   self.group_by_metadata, 
                   self.metadata_fields]
-        for image_group in self.images:
-            result += [
-                image_group[FD_COMMON_TEXT], 
-                image_group[FD_ORDER_POSITION], 
-                image_group[FD_IMAGE_NAME],
-                image_group[FD_METADATA_CHOICE],
-                image_group[FD_FILE_METADATA], 
-                image_group[FD_PATH_METADATA]]
+        image_group = self.images[0]
+        result += [
+            image_group.common_text, 
+            image_group.order_position, 
+            image_group.channels[0].image_name,
+            image_group.channels[0].channel_number,
+            image_group.metadata_choice,
+            image_group.file_metadata, 
+            image_group.path_metadata]
             
         result += [self.location]
         return result
@@ -538,19 +594,16 @@ class LoadImages(cpmodule.CPModule):
                 varlist += [self.match_exclude]
         elif self.match_method == MS_ORDER:
             varlist += [self.order_group_size]
-        varlist += [self.descend_subdirectories]
-        do_flex = self.file_types == FF_OTHER_MOVIES
-        if not do_flex:
-            if len(self.images) > 1:
-                varlist += [self.check_images]
-        varlist += [self.group_by_metadata]
+        varlist += [self.descend_subdirectories, self.check_images,
+                    self.group_by_metadata]
         if self.group_by_metadata.value:
             varlist += [self.metadata_fields]
             choices = set()
             for fd in self.images:
-                for setting, tag in ((fd[FD_FILE_METADATA], M_FILE_NAME),
-                                     (fd[FD_PATH_METADATA], M_PATH)):
-                    if fd[FD_METADATA_CHOICE].value in (tag, M_BOTH):
+                for setting, tag in (
+                    (fd.file_metadata, M_FILE_NAME),
+                    (fd.path_metadata, M_PATH)):
+                    if fd.metadata_choice in (tag, M_BOTH):
                         choices.update(
                             cpmeas.find_metadata_tokens(setting.value))
             if (any([cpmeas.is_well_column_token(x) for x in choices]) and
@@ -558,32 +611,36 @@ class LoadImages(cpmodule.CPModule):
                 any([x.lower() == cpmeas.FTR_WELL.lower() for x in choices])):
                 choices.add(cpmeas.FTR_WELL)
             if self.file_types == FF_OTHER_MOVIES:
-                choices.update([M_Z,M_T,M_SERIES])
+                choices.update([M_Z, M_T, M_SERIES])
+            elif self.file_types in (FF_AVI_MOVIES, FF_STK_MOVIES):
+                choices.add(M_T)
             choices = list(choices)
             choices.sort()
             self.metadata_fields.choices = choices
         
         # per image settings
-        if self.match_method != MS_ORDER:
-            file_kwd = FD_COMMON_TEXT
-        else:
-            file_kwd = FD_ORDER_POSITION
-        
         for i,fd in enumerate(self.images):
-            if do_flex:
-                varlist += [fd[FD_DIVIDER],fd[FD_IMAGE_NAME]]
-                if i == 0:
-                    varlist += [fd[FD_DIVIDER2],fd[file_kwd]]
+            varlist += [ fd.divider ]
+            if self.match_method != MS_ORDER:
+                varlist += [fd.common_text]
             else:
-                varlist += [fd[FD_DIVIDER],fd[file_kwd], 
-                            fd[FD_IMAGE_NAME]]
-            if i == 0 or not do_flex:
-                varlist += [fd[FD_METADATA_CHOICE]]
-                if fd[FD_METADATA_CHOICE].value in (M_FILE_NAME, M_BOTH):
-                    varlist.append(fd[FD_FILE_METADATA])
-                if fd[FD_METADATA_CHOICE].value in (M_PATH, M_BOTH):
-                    varlist.append(fd[FD_PATH_METADATA])
-            varlist.append(fd[FD_REMOVE_IMAGE])
+                varlist += [fd.order_position]
+            if not self.is_multichannel:
+                varlist += [ fd.channels[0].image_name ]
+            varlist += [fd.metadata_choice]
+            if self.has_file_metadata(fd):
+                varlist += fd.file_metadata
+            if self.has_path_metadata(fd):
+                varlist += [fd.path_metadata]
+            if self.is_multichannel:
+                for channel in fd.channels:
+                    varlist += [channel.image_name, channel.channel_number]
+                    if channel.can_remove:
+                        varlist += [channel.remover]
+                varlist += [fd.add_channel_button]
+            if fd.can_remove:
+                varlist += [fd.remover]
+                    
         varlist += [self.add_image]
         varlist += [self.location]
         return varlist
@@ -605,16 +662,29 @@ class LoadImages(cpmodule.CPModule):
     SLOT_FIRST_IMAGE_V2 = 9
     SLOT_FIRST_IMAGE_V3 = 10
     SLOT_FIRST_IMAGE_V4 = 11
-    SLOT_FIRST_IMAGE = 10
+    SLOT_FIRST_IMAGE_V5 = 10
+    SLOT_FIRST_IMAGE = 11
+    SLOT_IMAGE_COUNT = 10
     
     SLOT_OFFSET_COMMON_TEXT = 0
-    SLOT_OFFSET_IMAGE_NAME = 1
-    SLOT_OFFSET_ORDER_POSITION = 2
-    SLOT_OFFSET_METADATA_CHOICE = 3
-    SLOT_OFFSET_FILE_METADATA = 4
-    SLOT_OFFSET_PATH_METADATA = 5
+    SLOT_OFFSET_IMAGE_NAME_V5 = 1
+    SLOT_OFFSET_ORDER_POSITION_V5 = 2
+    SLOT_OFFSET_METADATA_CHOICE_V5 = 3
+    SLOT_OFFSET_FILE_METADATA_V5 = 4
+    SLOT_OFFSET_PATH_METADATA_V5 = 5
     SLOT_IMAGE_FIELD_COUNT_V1 = 3
+    SLOT_IMAGE_FIELD_COUNT_V5 = 6
     SLOT_IMAGE_FIELD_COUNT = 6
+    
+    SLOT_OFFSET_ORDER_POSITION = 1
+    SLOT_OFFSET_METADATA_CHOICE = 2
+    SLOT_OFFSET_FILE_METADATA = 3
+    SLOT_OFFSET_PATH_METADATA = 4
+    SLOT_OFFSET_CHANNEL_COUNT = 5
+    
+    SLOT_OFFSET_IMAGE_NAME = 0
+    SLOT_OFFSET_CHANNEL_NUMBER = 1
+    SLOT_CHANNEL_FIELD_COUNT = 2
     
     def settings(self):
         """Return the settings array in a consistent order"""
@@ -622,12 +692,14 @@ class LoadImages(cpmodule.CPModule):
             self.file_types, self.match_method, self.order_group_size,
             self.match_exclude, self.descend_subdirectories, self.location,
             self.check_images, self.group_by_metadata, self.exclude,
-            self.metadata_fields]
+            self.metadata_fields, self.image_count]
         for image_group in self.images:
             setting_values += [
-                image_group[FD_COMMON_TEXT], image_group[FD_IMAGE_NAME],
-                image_group[FD_ORDER_POSITION], image_group[FD_METADATA_CHOICE],
-                image_group[FD_FILE_METADATA], image_group[FD_PATH_METADATA]]
+                image_group.common_text, image_group.order_position, 
+                image_group.metadata_choice, image_group.file_metadata,
+                image_group.path_metadata, image_group.channel_count]
+            for channel in image_group.channels:
+                setting_values += [channel.image_name, channel.channel_number]
         return setting_values
     
     def prepare_settings(self, setting_values):
@@ -635,16 +707,27 @@ class LoadImages(cpmodule.CPModule):
         # Figure out how many images are in the saved settings - make sure
         # the array size matches the incoming #
         #
-        assert ((len(setting_values) - self.SLOT_FIRST_IMAGE) % 
-                self.SLOT_IMAGE_FIELD_COUNT == 0)
-        image_count = ((len(setting_values) - self.SLOT_FIRST_IMAGE) / 
-                       self.SLOT_IMAGE_FIELD_COUNT)
-        while len(self.images) > image_count:
-            self.remove_imagecb(self.image_keys[0])
-        while len(self.images) < image_count:
-            self.add_imagecb()
+        image_count = int(setting_values[self.SLOT_IMAGE_COUNT])
+        setting_values = setting_values[self.SLOT_FIRST_IMAGE:]
+        del self.images[:]
+        for i in range(image_count):
+            self.add_imagecb(i > 0)
+            image_settings = self.images[-1]
+            channel_count = int(setting_values[self.SLOT_OFFSET_CHANNEL_COUNT])
+            setting_values = setting_values[self.SLOT_IMAGE_FIELD_COUNT:]
+            for j in range(channel_count):
+                if j > 0:
+                    self.add_channel(image_settings)
+                setting_values = setting_values[self.SLOT_CHANNEL_FIELD_COUNT:]
     
-
+    @property
+    def is_multichannel(self):
+        '''True if the image is one of the multichannel types and needs to be split'''
+        #
+        # Currently, only Flex are handled this way
+        #
+        return self.file_types ==  FF_OTHER_MOVIES
+    
     def upgrade_settings(self, setting_values, variable_revision_number, module_name, from_matlab):
 
         #
@@ -750,7 +833,7 @@ class LoadImages(cpmodule.CPModule):
             else:
                 new_values += [cps.YES]
             for i in range((len(setting_values)-self.SLOT_FIRST_IMAGE_V2) / self.SLOT_IMAGE_FIELD_COUNT):
-                off = self.SLOT_FIRST_IMAGE_V2 + i * self.SLOT_IMAGE_FIELD_COUNT
+                off = self.SLOT_FIRST_IMAGE_V2 + i * self.SLOT_IMAGE_FIELD_COUNT_V5
                 new_values.extend([setting_values[off],
                                    setting_values[off+1],
                                    setting_values[off+2],
@@ -784,7 +867,29 @@ class LoadImages(cpmodule.CPModule):
                               [location] + 
                               setting_values[self.SLOT_LOCATION+2:])
             return (setting_values, 5)
-            
+        
+        def upgrade_new_5_to_6(setting_values):
+            '''Added separate channels for flex images'''
+            new_values = list(setting_values[:self.SLOT_FIRST_IMAGE_V5])
+            setting_values = setting_values[self.SLOT_FIRST_IMAGE_V5:]
+            image_count = (len(setting_values)  / self.SLOT_IMAGE_FIELD_COUNT_V5)
+            #
+            # Add the image count to the settings
+            #
+            new_values += [str(image_count)]
+            for i in range(image_count):
+                new_values += setting_values[:self.SLOT_OFFSET_IMAGE_NAME_V5]
+                new_values += setting_values[(self.SLOT_OFFSET_IMAGE_NAME_V5+1):
+                                             self.SLOT_IMAGE_FIELD_COUNT_V5]
+                # 
+                # Add a channel count of 1, the image name and a channel
+                # number of 1
+                #
+                new_values += [
+                    "1", setting_values[self.SLOT_OFFSET_IMAGE_NAME_V5], "1"]
+                setting_values = setting_values[self.SLOT_IMAGE_FIELD_COUNT_V5:]
+            return (new_values, 6)
+                
         if from_matlab:
             if variable_revision_number == 1:
                 setting_values,variable_revision_number = upgrade_1_to_2(setting_values)
@@ -807,6 +912,8 @@ class LoadImages(cpmodule.CPModule):
             setting_values, variable_revision_number = upgrade_new_3_to_4(setting_values)
         if variable_revision_number == 4:
             setting_values, variable_revision_number = upgrade_new_4_to_5(setting_values)
+        if variable_revision_number == 5:
+            setting_values, variable_revision_number = upgrade_new_5_to_6(setting_values)
 
         # Standardize input/output directory name references
         setting_values[self.SLOT_LOCATION] = \
@@ -815,16 +922,6 @@ class LoadImages(cpmodule.CPModule):
         assert variable_revision_number == self.variable_revision_number, "Cannot read version %d of %s"%(variable_revision_number, self.module_name)
 
         return setting_values, variable_revision_number, from_matlab
-
-
-    def write_to_handles(self,handles):
-        """Write out the module's state to the handles
-        
-        """
-    
-    def write_to_text(self,file):
-        """Write the module's state, informally, to a text file
-        """
 
     def prepare_run(self, pipeline, image_set_list, frame):
         """Set up all of the image providers inside the image_set_list
@@ -847,7 +944,7 @@ class LoadImages(cpmodule.CPModule):
         if len(files) == 0:
             raise ValueError("CellProfiler did not find any image files that "
                              'matched your matching pattern: "%s"' %
-                             self.images[0][FD_COMMON_TEXT])
+                             self.images[0].common_text.value)
         
         if (self.group_by_metadata.value and len(self.get_metadata_tags())):
             self.organize_by_metadata(pipeline, image_set_list, files, frame)
@@ -969,10 +1066,10 @@ class LoadImages(cpmodule.CPModule):
                             fd = self.images[i]
                             if mi[1][i] is None:
                                 message += ("%s: missing " %
-                                            (fd[FD_IMAGE_NAME].value))
+                                            (fd.channels[0].image_name.value))
                             else:
                                 message += ("%s: path=%s, file=%s" %
-                                            (fd[FD_IMAGE_NAME].value,
+                                            (fd.channels[0].image_name.value,
                                              mi[1][i][0],mi[1][i][1]))
                 raise ValueError(message)
                 
@@ -985,7 +1082,7 @@ class LoadImages(cpmodule.CPModule):
             for i in range(len(self.images)):
                 path = os.path.join(image_set[1][i][0],image_set[1][i][1])
                 self.save_image_set_info(cpimageset,
-                                         self.images[i][FD_IMAGE_NAME].value,
+                                         self.images[i].channels[0].image_name.value,
                                           P_IMAGES, V_IMAGES, root,path)
     
     def get_dictionary(self, image_set):
@@ -1167,9 +1264,9 @@ class LoadImages(cpmodule.CPModule):
                 table.InsertColumn(index,tag)
             for fd,index in zip(self.images,range(len(self.images))):
                 table.InsertColumn(index*2+tag_ct,
-                                   "%s path"%(fd[FD_IMAGE_NAME].value))
+                                   "%s path"%(fd.channels[0].image_name.value))
                 table.InsertColumn(index*2+1+tag_ct,
-                                   "%s filename"%(fd[FD_IMAGE_NAME].value))
+                                   "%s filename"%(fd[0].image_name.value))
             for metadata,files_and_paths in missing_images:
                 row = list(metadata)
                 for file_and_path in files_and_paths:
@@ -1206,25 +1303,25 @@ class LoadImages(cpmodule.CPModule):
         if len(files) == 0:
             raise ValueError("there are no image files in the chosen folder (or subfolders, if you requested them to be analyzed as well)")
         root = self.image_directory()
-        image_names = self.image_name_vars()
         #
         # The list of lists has one list per image type. Each per-image type
-        # list is composed of tuples of pathname and frame #
+        # list is composed of tuples of pathname, channel, z stack #, time
+        # and series.
         #
         image_set_count = 0
-        for file_pathname,image_index in files:
+        for file_pathname, image_index in files:
+            image_settings = self.images[image_index]
             pathname = os.path.join(self.image_directory(), file_pathname)
             formatreader.jutil.attach()
             path, filename = os.path.split(pathname)
-            metadata = self.get_filename_metadata(self.images[0], filename, 
+            metadata = self.get_filename_metadata(image_settings, filename, 
                                                   file_pathname)
             try:
                 rdr = ImageReader()
                 rdr.setId(pathname)
-                print "%s has %d series"%(pathname, rdr.getSeriesCount())
                 for i in range(rdr.getSeriesCount()):
                     rdr.setSeries(i)
-                    print "%s - series %d: %d channels, %d z, %d t"%(pathname, i, rdr.getSizeC(), rdr.getSizeZ(), rdr.getSizeT())
+                    channel_count = rdr.getSizeC()
                     for z in range(rdr.getSizeZ()):
                         for t in range(rdr.getSizeT()):
                             if self.group_by_metadata:
@@ -1236,8 +1333,15 @@ class LoadImages(cpmodule.CPModule):
                             else:
                                 image_set = image_set_list.get_image_set(image_set_count)
                             d = self.get_dictionary(image_set)
-                            for c,image_name in enumerate(image_names):
-                                d[image_name.value] = (P_FLEX, V_FLEX, pathname, c, z, t, i)
+                            for channel_settings in image_settings.channels:
+                                c = int(channel_settings.channel_number.value) - 1
+                                image_name = channel_settings.image_name.value
+                                if c >= channel_count:
+                                    raise ValueError(
+     ("The flex file, ""%s"", series # %d, has only %d channels. "
+      "%s is assigned to channel % d") % (file_pathname, i, channel_count, 
+                                          image_name, c))
+                                d[image_name] = (P_FLEX, V_FLEX, pathname, c, z, t, i)
                             image_set_count += 1
             finally:
                 formatreader.jutil.detach()
@@ -1313,9 +1417,13 @@ class LoadImages(cpmodule.CPModule):
         """Run the module - add the measurements
         
         """
+        do_flex = (self.file_types == FF_OTHER_MOVIES)
         if self.file_types in (FF_AVI_MOVIES, FF_STK_MOVIES):
-            header = ["Image name", "Path", "Filename","Frame"]
-            ratio = [1.0,2.5,2.0,0.5]
+            header = ["Image name", "Path", "Filename"]
+            ratio = [1.0,2.5,2.0]
+        elif do_flex:
+            header = ["Image name", "Path", "Filename", "Channel"]
+            ratio = [1.0, 2.5, 2.0, 0.5]
         else:
             header = ["Image name","Path","Filename"]
             ratio = [1.0,3.0,2.0]
@@ -1326,47 +1434,56 @@ class LoadImages(cpmodule.CPModule):
         statistics = [header]
         m = workspace.measurements
         image_set_metadata = {}
-        do_flex = (self.file_types == FF_OTHER_MOVIES)
-        if do_flex:
-            provider = workspace.image_set.get_image_provider(self.images[0][FD_IMAGE_NAME].value)
-            for tag, value in ((M_Z, provider.get_z()),
-                               (M_T, provider.get_t()),
-                               (M_SERIES, provider.get_series())):
-                m.add_image_measurement("Metadata_"+tag, value)
-                image_set_metadata[tag] = value
         for fd in self.images:
-            provider = workspace.image_set.get_image_provider(fd[FD_IMAGE_NAME].value)
-            path, filename = os.path.split(provider.get_filename())
-            name = provider.name
-            if self.file_types in (FF_AVI_MOVIES, FF_STK_MOVIES):
-                row = [name, path, filename, provider.get_frame()]
-            else:
-                row = [name, path, filename]
-            metadata = self.get_filename_metadata(self.images[0] if do_flex 
-                                                  else fd, filename, path)
-            m.add_measurement('Image',"_".join((C_FILE_NAME, name)), filename)
-            full_path = os.path.join(self.image_directory(),path)
-            m.add_measurement('Image',"_".join((C_PATH_NAME, name)), full_path)
-            pixel_data = provider.provide_image(workspace.image_set).pixel_data
-            digest = hashlib.md5()
-            digest.update(np.ascontiguousarray(pixel_data).data)
-            m.add_measurement('Image',"_".join((C_MD5_DIGEST, name)), digest.hexdigest())
-            for key in metadata:
-                measurement = '_'.join((cpmeas.C_METADATA, key))
-                if not m.has_current_measurements('Image',measurement):
-                    m.add_measurement('Image',measurement,metadata[key])
-                elif metadata[key] != m.get_current_measurement('Image',measurement):
-                    raise ValueError("Image set has conflicting %s metadata: %s vs %s"%
-                                     (key, metadata[key], 
-                                      m.get_current_measurement('Image',measurement)))
-            for tag in tags:
-                if metadata.has_key(tag):
-                    row.append(metadata[tag])
-                elif image_set_metadata.has_key(tag):
-                    row.append(image_set_metadata[tag])
+            for channel in fd.channels:
+                image_name = channel.image_name.value
+                provider = workspace.image_set.get_image_provider(image_name)
+                path, filename = os.path.split(provider.get_filename())
+                name = provider.name
+                if self.file_types in (FF_AVI_MOVIES, FF_STK_MOVIES):
+                    row = [name, path, filename]
+                    image_set_metadata[M_T] = provider.get_frame()
+                elif do_flex:
+                    assert isinstance(provider, LoadImagesFlexFrameProvider)
+                    series = provider.get_series()
+                    c = provider.get_c()
+                    z = provider.get_z()
+                    t = provider.get_t()
+                    for tag, value in ((M_Z, z),
+                                       (M_T, t),
+                                       (M_SERIES, series)):
+                        measurement = "Metadata_"+tag
+                        if not m.has_current_measurements('Image',measurement):
+                            m.add_image_measurement(measurement, value)
+                        image_set_metadata[tag] = value
+                    row = [name, path, filename, channel.channel_number.value]
                 else:
-                    row.append("")
-            statistics.append(row)
+                    row = [name, path, filename]
+                metadata = self.get_filename_metadata(fd, filename, path)
+                m.add_measurement('Image',"_".join((C_FILE_NAME, name)), filename)
+                full_path = os.path.join(self.image_directory(),path)
+                m.add_measurement('Image',"_".join((C_PATH_NAME, name)), full_path)
+                pixel_data = provider.provide_image(workspace.image_set).pixel_data
+                digest = hashlib.md5()
+                digest.update(np.ascontiguousarray(pixel_data).data)
+                m.add_measurement('Image',"_".join((C_MD5_DIGEST, name)), digest.hexdigest())
+                for d in (metadata, image_set_metadata):
+                    for key in d:
+                        measurement = '_'.join((cpmeas.C_METADATA, key))
+                        if not m.has_current_measurements('Image',measurement):
+                            m.add_measurement('Image',measurement, d[key])
+                        elif d[key] != m.get_current_measurement('Image',measurement):
+                            raise ValueError("Image set has conflicting %s metadata: %s vs %s"%
+                                             (key, d[key], 
+                                              m.get_current_measurement('Image',measurement)))
+                for tag in tags:
+                    if metadata.has_key(tag):
+                        row.append(metadata[tag])
+                    elif image_set_metadata.has_key(tag):
+                        row.append(image_set_metadata[tag])
+                    else:
+                        row.append("")
+                statistics.append(row)
         workspace.display_data.statistics = statistics
         workspace.display_data.ratio = ratio
 
@@ -1386,12 +1503,12 @@ class LoadImages(cpmodule.CPModule):
         path - path to be parsed
         """
         metadata = {}
-        if fd[FD_METADATA_CHOICE].value in (M_BOTH, M_FILE_NAME):
-            metadata.update(cpmeas.extract_metadata(fd[FD_FILE_METADATA].value,
-                                                 filename))
-        if fd[FD_METADATA_CHOICE].value in (M_BOTH, M_PATH):
+        if self.has_file_metadata(fd):
+            metadata.update(cpmeas.extract_metadata(fd.file_metadata.value,
+                                                    filename))
+        if self.has_path_metadata(fd):
             path = os.path.abspath(os.path.join(self.image_directory(), path))
-            metadata.update(cpmeas.extract_metadata(fd[FD_PATH_METADATA].value,
+            metadata.update(cpmeas.extract_metadata(fd.path_metadata.value,
                                                  path))
         if needs_well_metadata(metadata.keys()):
             well_row_token, well_column_token = well_metadata_tokens(metadata.keys())
@@ -1421,6 +1538,22 @@ class LoadImages(cpmodule.CPModule):
             
         raise NotImplementedError("get_frame_count not implemented for %s"%(self.file_types))
 
+    @staticmethod
+    def has_file_metadata(fd):
+        '''True if the metadata choice is either M_FILE_NAME or M_BOTH
+
+        fd - one of the image file descriptors from self.images
+        '''
+        return fd.metadata_choice in (M_FILE_NAME, M_BOTH)
+    
+    @staticmethod
+    def has_path_metadata(fd):
+        '''True if the metadata choice is either M_PATH or M_BOTH
+        
+        fd - one of the image file descriptors from self.images
+        '''
+        return fd.metadata_choice in (M_PATH, M_BOTH)
+        
     def get_metadata_tags(self, fd=None):
         """Find the metadata tags for the indexed image
 
@@ -1435,12 +1568,14 @@ class LoadImages(cpmodule.CPModule):
             return tags
         
         tags = []
-        if fd[FD_METADATA_CHOICE] in (M_FILE_NAME, M_BOTH):
-            tags += cpmeas.find_metadata_tokens(fd[FD_FILE_METADATA].value)
-        if fd[FD_METADATA_CHOICE] in (M_PATH, M_BOTH):
-            tags += cpmeas.find_metadata_tokens(fd[FD_PATH_METADATA].value)
+        if self.has_file_metadata(fd):
+            tags += cpmeas.find_metadata_tokens(fd.file_metadata.value)
+        if self.has_path_metadata(fd):
+            tags += cpmeas.find_metadata_tokens(fd.path_metadata.value)
         if self.file_types == FF_OTHER_MOVIES:
             tags += [M_Z, M_T, M_SERIES]
+        elif self.file_types in (FF_AVI_MOVIES, FF_STK_MOVIES):
+            tags += [M_T]
         if needs_well_metadata(tags):
             tags += [cpmeas.FTR_WELL]
         return tags
@@ -1571,15 +1706,13 @@ class LoadImages(cpmodule.CPModule):
     def image_name_vars(self):
         """Return the list of values in the image name field (the name that later modules see)
         """
-        return [fd[FD_IMAGE_NAME] for fd in self.images]
+        return sum([[channel.image_name for channel in fd.channels]
+                    for fd in self.images], [])
         
     def text_to_find_vars(self):
         """Return the list of values in the image name field (the name that later modules see)
         """
-        if self.file_types == FF_OTHER_MOVIES:
-            # Return only the first text to find for .flex files
-            return [self.images[0][FD_COMMON_TEXT]]
-        return [fd[FD_COMMON_TEXT] for fd in self.images]
+        return [fd.common_text for fd in self.images]
     
     def text_to_exclude(self):
         """Return the text to match against the file name to exclude it from the set
@@ -1620,8 +1753,12 @@ class LoadImages(cpmodule.CPModule):
         '''
         if object_name == cpmeas.IMAGE:
             res = [C_FILE_NAME, C_PATH_NAME, C_MD5_DIGEST]
-            fd = self.images[0]
-            if fd[FD_METADATA_CHOICE] != M_NONE:
+            has_metadata = (self.file_types in 
+                            (FF_AVI_MOVIES, FF_STK_MOVIES, FF_OTHER_MOVIES))
+            for fd in self.images:
+                if fd.metadata_choice != M_NONE:
+                    has_metadata = True
+            if has_metadata:
                 res += [cpmeas.C_METADATA]
             return res
         return []
@@ -1641,35 +1778,45 @@ class LoadImages(cpmodule.CPModule):
         '''Return a sequence describing the measurement columns needed by this module 
         '''
         cols = []
-        for fd in self.images:
-            name = fd[FD_IMAGE_NAME].value
-            cols += [(cpmeas.IMAGE, "_".join((C_FILE_NAME, name)), cpmeas.COLTYPE_VARCHAR_FILE_NAME)]
-            cols += [(cpmeas.IMAGE, "_".join((C_PATH_NAME, name)), cpmeas.COLTYPE_VARCHAR_PATH_NAME)]
-            cols += [(cpmeas.IMAGE, "_".join((C_MD5_DIGEST, name)), cpmeas.COLTYPE_VARCHAR_FORMAT%32)]
-        
-        fd = self.images[0]
         all_tokens = []
-        if fd[FD_METADATA_CHOICE]==M_FILE_NAME or fd[FD_METADATA_CHOICE]==M_BOTH:
-            tokens = cpmeas.find_metadata_tokens(fd[FD_FILE_METADATA].value)
-            cols += [(cpmeas.IMAGE, '_'.join((cpmeas.C_METADATA, token)), 
-                      cpmeas.COLTYPE_VARCHAR_FILE_NAME) for token in tokens]
-            all_tokens += tokens
+        for fd in self.images:
+            for channel in fd.channels:
+                name = channel.image_name.value
+                cols += [(cpmeas.IMAGE, "_".join((C_FILE_NAME, name)), 
+                          cpmeas.COLTYPE_VARCHAR_FILE_NAME)]
+                cols += [(cpmeas.IMAGE, "_".join((C_PATH_NAME, name)), 
+                          cpmeas.COLTYPE_VARCHAR_PATH_NAME)]
+                cols += [(cpmeas.IMAGE, "_".join((C_MD5_DIGEST, name)), 
+                          cpmeas.COLTYPE_VARCHAR_FORMAT%32)]
         
-        if fd[FD_METADATA_CHOICE]==M_PATH or fd[FD_METADATA_CHOICE]==M_BOTH:
-            tokens = cpmeas.find_metadata_tokens(fd[FD_PATH_METADATA].value)
-            all_tokens += tokens
-            cols += [(cpmeas.IMAGE, '_'.join((cpmeas.C_METADATA,token)), 
-                      cpmeas.COLTYPE_VARCHAR_PATH_NAME) for token in tokens]
+            if self.has_file_metadata(fd):
+                tokens = cpmeas.find_metadata_tokens(fd.file_metadata.value)
+                cols += [(cpmeas.IMAGE, '_'.join((cpmeas.C_METADATA, token)), 
+                          cpmeas.COLTYPE_VARCHAR_FILE_NAME) 
+                         for token in tokens
+                         if token not in all_tokens]
+                all_tokens += tokens
+        
+            if self.has_path_metadata(fd):
+                tokens = cpmeas.find_metadata_tokens(fd.path_metadata.value)
+                cols += [(cpmeas.IMAGE, '_'.join((cpmeas.C_METADATA,token)), 
+                          cpmeas.COLTYPE_VARCHAR_PATH_NAME) 
+                         for token in tokens
+                         if token not in all_tokens]
+                all_tokens += tokens
         #
         # Add a well feature if we have well row and well column
         #
         if needs_well_metadata(all_tokens):
             cols += [(cpmeas.IMAGE, '_'.join((cpmeas.C_METADATA, cpmeas.FTR_WELL)),
                       cpmeas.COLTYPE_VARCHAR_FILE_NAME)]
-        if self.file_types == FF_OTHER_MOVIES:
-            cols += [(cpmeas.IMAGE, M_Z, cpmeas.COLTYPE_INTEGER),
-                     (cpmeas.IMAGE, M_T, cpmeas.COLTYPE_INTEGER),
-                     (cpmeas.IMAGE, M_SERIES, cpmeas.COLTYPE_INTEGER)]
+        if self.file_types in (FF_AVI_MOVIES, FF_STK_MOVIES):
+            cols += [(cpmeas.IMAGE, "_".join((cpmeas.C_METADATA, M_T)),
+                      cpmeas.COLTYPE_INTEGER)]
+        elif self.file_types == FF_OTHER_MOVIES:
+            cols += [(cpmeas.IMAGE, "_".join((cpmeas.C_METADATA, feature)),
+                       cpmeas.COLTYPE_INTEGER)
+                     for feature in (M_Z, M_T, M_SERIES)]
         return cols
     
     def change_causes_prepare_run(self, setting):

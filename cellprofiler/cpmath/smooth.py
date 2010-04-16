@@ -53,7 +53,7 @@ def smooth_with_function_and_mask(image, function, mask):
     masked_image           = np.zeros(image.shape, image.dtype)
     masked_image[mask]     = image[mask]
     smoothed_image         = function(masked_image)
-    output_image           = smoothed_image / bleed_over
+    output_image           = smoothed_image / (bleed_over + np.finfo(float).eps)
     return output_image
 
 def circular_gaussian_kernel(sd,radius):

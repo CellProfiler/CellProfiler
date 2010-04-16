@@ -21,6 +21,7 @@ import Image as PILImage
 from StringIO import StringIO
 import unittest
 import tempfile
+import traceback
 import zlib
 
 from cellprofiler.preferences import set_headless
@@ -47,10 +48,8 @@ class TestSaveImages(unittest.TestCase):
     def setUp(self):
         # Change the default image directory to a temporary file
         cpprefs.set_headless()
-        self.old_image_directory = cpprefs.get_default_image_directory()
         self.new_image_directory = get_proper_case_filename(tempfile.mkdtemp())
         cpprefs.set_default_image_directory(self.new_image_directory)
-        self.old_output_directory = cpprefs.get_default_output_directory()
         self.new_output_directory = get_proper_case_filename(tempfile.mkdtemp())
         cpprefs.set_default_output_directory(self.new_output_directory)
         self.custom_directory = get_proper_case_filename(tempfile.mkdtemp())
@@ -59,12 +58,16 @@ class TestSaveImages(unittest.TestCase):
         for subdir in (self.new_image_directory, self.new_output_directory,
                        self.custom_directory):
             for filename in os.listdir(subdir):
-                os.remove(os.path.join(subdir, filename))
-            os.rmdir(subdir)
-        if os.path.isdir(self.old_image_directory):
-            cpprefs.set_default_image_directory(self.old_image_directory)
-        if os.path.isdir(self.old_output_directory):
-            cpprefs.set_default_output_directory(self.old_output_directory)
+                try:
+                    os.remove(os.path.join(subdir, filename))
+                except:
+                    sys.stderr.write("Failed to remove %s" % filename)
+                    traceback.print_exc()
+            try:
+                os.rmdir(subdir)
+            except:
+                sys.stderr.write("Failed to remove %s directory" % subdir)
+                traceback.print_exc()
     
     def on_event(self, pipeline, event):
         self.assertFalse(isinstance(event, cpp.RunExceptionEvent))
@@ -395,8 +398,8 @@ SaveImages:[module_num:6|svn_version:\'9507\'|variable_revision_number:5|show_wi
         load_images = cpm_li.LoadImages()
         load_images.file_types.value = cpm_li.FF_INDIVIDUAL_IMAGES
         load_images.match_method.value = cpm_li.MS_EXACT_MATCH
-        load_images.images[0][cpm_li.FD_COMMON_TEXT].value = '.tif'
-        load_images.images[0][cpm_li.FD_IMAGE_NAME].value = 'Orig'
+        load_images.images[0].common_text.value = '.tif'
+        load_images.images[0].channels[0].image_name.value = 'Orig'
         load_images.module_num = 1
         
         apply_threshold = cpm_a.ApplyThreshold()
@@ -451,8 +454,8 @@ SaveImages:[module_num:6|svn_version:\'9507\'|variable_revision_number:5|show_wi
         load_images = cpm_li.LoadImages()
         load_images.file_types.value = cpm_li.FF_INDIVIDUAL_IMAGES
         load_images.match_method.value = cpm_li.MS_EXACT_MATCH
-        load_images.images[0][cpm_li.FD_COMMON_TEXT].value = '.tif'
-        load_images.images[0][cpm_li.FD_IMAGE_NAME].value = 'Orig'
+        load_images.images[0].common_text.value = '.tif'
+        load_images.images[0].channels[0].image_name.value = 'Orig'
         load_images.module_num = 1
         
         apply_threshold = cpm_a.ApplyThreshold()
@@ -508,8 +511,8 @@ SaveImages:[module_num:6|svn_version:\'9507\'|variable_revision_number:5|show_wi
         load_images = cpm_li.LoadImages()
         load_images.file_types.value = cpm_li.FF_INDIVIDUAL_IMAGES
         load_images.match_method.value = cpm_li.MS_EXACT_MATCH
-        load_images.images[0][cpm_li.FD_COMMON_TEXT].value = '.tif'
-        load_images.images[0][cpm_li.FD_IMAGE_NAME].value = 'Orig'
+        load_images.images[0].common_text.value = '.tif'
+        load_images.images[0].channels[0].image_name.value = 'Orig'
         load_images.module_num = 1
         
         apply_threshold = cpm_a.ApplyThreshold()
@@ -557,8 +560,8 @@ SaveImages:[module_num:6|svn_version:\'9507\'|variable_revision_number:5|show_wi
         load_images = cpm_li.LoadImages()
         load_images.file_types.value = cpm_li.FF_INDIVIDUAL_IMAGES
         load_images.match_method.value = cpm_li.MS_EXACT_MATCH
-        load_images.images[0][cpm_li.FD_COMMON_TEXT].value = '.tif'
-        load_images.images[0][cpm_li.FD_IMAGE_NAME].value = 'Orig'
+        load_images.images[0].common_text.value = '.tif'
+        load_images.images[0].channels[0].image_name.value = 'Orig'
         load_images.module_num = 1
         
         apply_threshold = cpm_a.ApplyThreshold()
@@ -614,8 +617,8 @@ SaveImages:[module_num:6|svn_version:\'9507\'|variable_revision_number:5|show_wi
         load_images = cpm_li.LoadImages()
         load_images.file_types.value = cpm_li.FF_INDIVIDUAL_IMAGES
         load_images.match_method.value = cpm_li.MS_EXACT_MATCH
-        load_images.images[0][cpm_li.FD_COMMON_TEXT].value = '.tif'
-        load_images.images[0][cpm_li.FD_IMAGE_NAME].value = 'Orig'
+        load_images.images[0].common_text.value = '.tif'
+        load_images.images[0].channels[0].image_name.value = 'Orig'
         load_images.module_num = 1
         
         apply_threshold = cpm_a.ApplyThreshold()
@@ -672,8 +675,8 @@ SaveImages:[module_num:6|svn_version:\'9507\'|variable_revision_number:5|show_wi
         load_images = cpm_li.LoadImages()
         load_images.file_types.value = cpm_li.FF_INDIVIDUAL_IMAGES
         load_images.match_method.value = cpm_li.MS_EXACT_MATCH
-        load_images.images[0][cpm_li.FD_COMMON_TEXT].value = '.tif'
-        load_images.images[0][cpm_li.FD_IMAGE_NAME].value = 'Orig'
+        load_images.images[0].common_text.value = '.tif'
+        load_images.images[0].channels[0].image_name.value = 'Orig'
         load_images.module_num = 1
         
         apply_threshold = cpm_a.ApplyThreshold()
@@ -734,8 +737,8 @@ SaveImages:[module_num:6|svn_version:\'9507\'|variable_revision_number:5|show_wi
         load_images = cpm_li.LoadImages()
         load_images.file_types.value = cpm_li.FF_INDIVIDUAL_IMAGES
         load_images.match_method.value = cpm_li.MS_EXACT_MATCH
-        load_images.images[0][cpm_li.FD_COMMON_TEXT].value = '.tif'
-        load_images.images[0][cpm_li.FD_IMAGE_NAME].value = 'Orig'
+        load_images.images[0].common_text.value = '.tif'
+        load_images.images[0].channels[0].image_name.value = 'Orig'
         load_images.module_num = 1
         
         apply_threshold = cpm_a.ApplyThreshold()
@@ -795,8 +798,8 @@ SaveImages:[module_num:6|svn_version:\'9507\'|variable_revision_number:5|show_wi
         load_images = cpm_li.LoadImages()
         load_images.file_types.value = cpm_li.FF_INDIVIDUAL_IMAGES
         load_images.match_method.value = cpm_li.MS_EXACT_MATCH
-        load_images.images[0][cpm_li.FD_COMMON_TEXT].value = '.tif'
-        load_images.images[0][cpm_li.FD_IMAGE_NAME].value = 'Orig'
+        load_images.images[0].common_text.value = '.tif'
+        load_images.images[0].channels[0].image_name.value = 'Orig'
         load_images.module_num = 1
         
         apply_threshold = cpm_a.ApplyThreshold()
@@ -853,8 +856,8 @@ SaveImages:[module_num:6|svn_version:\'9507\'|variable_revision_number:5|show_wi
         load_images = cpm_li.LoadImages()
         load_images.file_types.value = cpm_li.FF_INDIVIDUAL_IMAGES
         load_images.match_method.value = cpm_li.MS_EXACT_MATCH
-        load_images.images[0][cpm_li.FD_COMMON_TEXT].value = '.tif'
-        load_images.images[0][cpm_li.FD_IMAGE_NAME].value = 'Orig'
+        load_images.images[0].common_text.value = '.tif'
+        load_images.images[0].channels[0].image_name.value = 'Orig'
         load_images.module_num = 1
         
         apply_threshold = cpm_a.ApplyThreshold()

@@ -323,6 +323,7 @@ class IdentifyObjectsInGrid(cpm.CPModule):
         labels = self.fill_grid(workspace, gridding)
         labels = self.fit_labels_to_guiding_objects(workspace, labels)
         labels[guide_label == 0] = 0
+        labels, count = relabel(labels)
         return labels
     
     def fit_labels_to_guiding_objects(self, workspace, labels):

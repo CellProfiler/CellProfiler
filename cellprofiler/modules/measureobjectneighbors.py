@@ -10,14 +10,14 @@ that objects are only considered neighbors if they are directly touching.
 
 <h4>Available measurements</h4>
 <ul>
-<li>NumberOfNeighbors: Number of neighbor objects
-<li>PercentTouching: Percent of the object's boundary pixels that touch 
+<li><i>NumberOfNeighbors:</i> Number of neighbor objects
+<li><i>PercentTouching:</i> Percent of the object's boundary pixels that touch 
 neighbors, after the objects have been expanded to the specified distance</li>
-<li>FirstClosestObjectNumber: The index of the closest object.</li>
-<li>FirstClosestDistance:< The distance to the closest object.</li>
-<li>SecondClosestObjectNumber: The index of the second closest object.</li>
-<li>SecondClosestDistance: The distance to the second closest object.</li>
-<li>AngleBetweenNeighbors: The angle formed with the object center as the 
+<li><i>FirstClosestObjectNumber:</i> The index of the closest object.</li>
+<li><i>FirstClosestDistance:</i> The distance to the closest object.</li>
+<li><i>SecondClosestObjectNumber: The index of the second closest object.</li>
+<li><i>SecondClosestDistance:</i> The distance to the second closest object.</li>
+<li><i>AngleBetweenNeighbors:</i> The angle formed with the object center as the 
 vertex and the first and second closest object centers along the vectors.</li>
 </ul>
 

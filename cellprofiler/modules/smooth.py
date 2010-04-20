@@ -34,6 +34,7 @@ MEDIAN_FILTER = 'Median Filter'
 GAUSSIAN_FILTER = 'Gaussian Filter'
 SMOOTH_KEEPING_EDGES = 'Smooth Keeping Edges'
 CIRCULAR_AVERAGE_FILTER = 'Circular Average Filter'
+SM_TO_AVERAGE = "Smooth to Average"
 
 class Smooth(cpm.CPModule):
     
@@ -49,7 +50,8 @@ class Smooth(cpm.CPModule):
                                             GAUSSIAN_FILTER,
                                             MEDIAN_FILTER,
                                             SMOOTH_KEEPING_EDGES,
-                                            CIRCULAR_AVERAGE_FILTER],doc="""
+                                            CIRCULAR_AVERAGE_FILTER,
+                                            SM_TO_AVERAGE],doc="""
             This module smooths images using one of several filters. 
             Fitting a polynomial
             is fastest but does not allow a very tight fit compared to the other methods:
@@ -84,6 +86,8 @@ class Smooth(cpm.CPModule):
             <li><i>Circular Average Filter:</i> This method convolves the image with
             a uniform circular averaging filter whose size is the artifact diameter entered. This filter is
             useful for re-creating an out-of-focus blur to an image.</li>
+            <li><i>Smooth to Average:</i> Creates a flat, smooth image where every pixel 
+            of the image equals the average value of the original image.</li>
             </ul>""")
         
         self.wants_automatic_object_size = cps.Binary('Calculate artifact diameter automatically?',True,doc="""
@@ -123,7 +127,7 @@ class Smooth(cpm.CPModule):
     def visible_settings(self):
         result = [self.image_name, self.filtered_image_name, 
                 self.smoothing_method]
-        if self.smoothing_method.value != FIT_POLYNOMIAL:
+        if self.smoothing_method.value not in [FIT_POLYNOMIAL,SM_TO_AVERAGE]:
             result.append(self.wants_automatic_object_size)
             if not self.wants_automatic_object_size.value:
                 result.append(self.object_size)
@@ -160,6 +164,12 @@ class Smooth(cpm.CPModule):
             output_pixels = fit_polynomial(pixel_data, image.mask)
         elif self.smoothing_method.value == CIRCULAR_AVERAGE_FILTER:
             output_pixels = circular_average_filter(pixel_data, object_size/2+1, image.mask)
+        elif self.smoothing_method.value == SM_TO_AVERAGE:
+            if image.has_mask:
+                mean = np.mean(pixel_data[image.mask])
+            else:
+                mean = np.mean(pixel_data)
+            output_pixels = np.ones(pixel_data.shape, pixel_data.dtype) * mean
         else:
             raise ValueError("Unsupported smoothing method: %s" %
                              self.smoothing_method.value)

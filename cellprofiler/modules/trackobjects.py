@@ -119,10 +119,10 @@ F_LIFETIME = "Lifetime"
 F_NEW_OBJECT_COUNT = "NewObjectCount"
 '''# of objects in the previous frame without parents in the new frame'''
 F_LOST_OBJECT_COUNT = "LostObjectCount"
-'''# of objects in the current frame that have siblings'''
-F_DAUGHTER_OBJECT_COUNT = "DaughterObjectCount"
-'''# of objects in the current frame that are children of more than one parent'''
-F_MERGED_OBJECT_COUNT = "MergedObjectCount"
+'''# of parents that split into more than one child'''
+F_SPLIT_COUNT = "SplitCount"
+'''# of children that are merged from more than one parent'''
+F_MERGE_COUNT = "MergeCount"
 '''Object area measurement for LAP method
 
 The final part of the LAP method needs the object area measurement
@@ -138,7 +138,14 @@ F_ALL_COLTYPE_ALL = [(F_LABEL, cpmeas.COLTYPE_INTEGER),
                      (F_LINEARITY, cpmeas.COLTYPE_FLOAT),
                      (F_LIFETIME, cpmeas.COLTYPE_INTEGER)]
 
+F_IMAGE_COLTYPE_ALL = [(F_NEW_OBJECT_COUNT, cpmeas.COLTYPE_INTEGER),
+                       (F_LOST_OBJECT_COUNT, cpmeas.COLTYPE_INTEGER),
+                       (F_SPLIT_COUNT, cpmeas.COLTYPE_INTEGER),
+                       (F_MERGE_COUNT, cpmeas.COLTYPE_INTEGER)]
+
 F_ALL = [feature for feature, coltype in F_ALL_COLTYPE_ALL]
+
+F_IMAGE_ALL = [feature for feature, coltype in F_IMAGE_COLTYPE_ALL]
 
 class TrackObjects(cpm.CPModule):
 
@@ -457,6 +464,11 @@ class TrackObjects(cpm.CPModule):
     def measurement_name(self, feature):
         '''Return a measurement name for the given feature'''
         return "%s_%s_%s" % (F_PREFIX, feature, str(self.pixel_radius.value))
+    
+    def image_measurement_name(self, feature):
+        '''Return a measurement name for an image measurement'''
+        return "%s_%s_%s_%s" % (F_PREFIX, feature, self.object_name.value,
+                               str(self.pixel_radius.value))
 
     def add_measurement(self, workspace, feature, values):
         '''Add a measurement to the workspace's measurements
@@ -470,6 +482,10 @@ class TrackObjects(cpm.CPModule):
             self.measurement_name(feature),
             values)
 
+    def add_image_measurement(self, workspace, feature, value):
+        measurement_name = self.image_measurement_name(feature)
+        workspace.measurements.add_image_measurement(measurement_name, value)
+        
     def is_interactive(self):
         return False
     
@@ -1213,12 +1229,14 @@ class TrackObjects(cpm.CPModule):
         if old_count:
             new_per_old = fix(scipy.ndimage.sum(np.ones(new_count),
                                                 old_of_new,
-                                                np.arange(old_count)+1))
+                                                np.arange(old_count)+1)).astype(int)
             one_to_one = ((new_per_old == 1) & (new_of_old != 0))
             mapping[(new_of_old[one_to_one]-1)] = old_object_numbers[one_to_one]
             miss_count = np.sum(mapping == 0)
+            lost_object_count = np.sum(new_per_old == 0)
         else:
             miss_count = new_count
+            lost_object_count = 0
         mapping[mapping == 0] = np.arange(miss_count)+max_object_number+1
         self.set_max_object_number(workspace, miss_count + max_object_number)
         self.add_measurement(workspace, F_LABEL, mapping)
@@ -1269,12 +1287,40 @@ class TrackObjects(cpm.CPModule):
         self.add_measurement(workspace, F_LIFETIME, age)
         self.set_saved_ages(workspace, age)
         self.set_saved_object_numbers(workspace, mapping)
+        #
+        # Add image measurements
+        #
+        self.add_image_measurement(workspace, F_NEW_OBJECT_COUNT, 
+                                   np.sum(parents==0))
+        self.add_image_measurement(workspace, F_LOST_OBJECT_COUNT, 
+                                   lost_object_count)
+        #
+        # Find parents with more than one child. These are the progenetors
+        # for daughter cells.
+        #
+        if np.any(parents != 0):
+            h = np.bincount(parents[parents != 0])
+            split_count = np.sum(h > 1)
+        else:
+            split_count = 0
+        self.add_image_measurement(workspace, F_SPLIT_COUNT, split_count)
+        #
+        # Find children with more than one parent. These are the merges
+        #
+        if np.any(new_of_old != 0):
+            h = np.bincount(new_of_old[new_of_old != 0])
+            merge_count = np.sum(h > 1)
+        else:
+            merge_count = 0
+        self.add_image_measurement(workspace, F_MERGE_COUNT, merge_count)
 
     def get_measurement_columns(self, pipeline):
         result =  [(self.object_name.value,
                     self.measurement_name(feature),
                     coltype)
                    for feature, coltype in F_ALL_COLTYPE_ALL]
+        result += [(cpmeas.IMAGE, self.image_measurement_name(feature), coltype)
+                   for feature, coltype in F_IMAGE_COLTYPE_ALL]
         if self.tracking_method == TM_LAP:
             result += [( self.object_name.value,
                          self.measurement_name(F_AREA),
@@ -1282,7 +1328,7 @@ class TrackObjects(cpm.CPModule):
         return result
 
     def get_categories(self, pipeline, object_name):
-        if object_name == self.object_name.value:
+        if object_name in (self.object_name.value, cpmeas.IMAGE):
             return [F_PREFIX]
         else:
             return []
@@ -1293,12 +1339,23 @@ class TrackObjects(cpm.CPModule):
             if self.tracking_method == TM_LAP:
                 result += [F_AREA]
             return result
+        if object_name == cpmeas.IMAGE:
+            result = F_IMAGE_ALL
+            return result
         return []
 
+    def get_measurement_objects(self, pipeline, object_name, category, 
+                                measurement):
+        if (object_name == cpmeas.IMAGE and category == F_PREFIX and
+            measurement in F_IMAGE_ALL):
+            return [ self.object_name.value]
+        
     def get_measurement_scales(self, pipeline, object_name, category, feature,image_name):
-        if (object_name == self.object_name.value and
-            category == F_PREFIX and
-            feature in F_ALL + [F_AREA]):
+        if ((object_name == self.object_name.value and
+             category == F_PREFIX and
+             feature in F_ALL + [F_AREA]) or
+            (object_name == cpmeas.IMAGE and category == F_PREFIX and
+             feature in F_IMAGE_ALL)):
             return [str(self.pixel_radius.value)]
         return []
 

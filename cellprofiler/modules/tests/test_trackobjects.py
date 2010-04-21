@@ -281,22 +281,35 @@ TrackObjects:[module_num:1|svn_version:\'9227\'|variable_revision_number:3|show_
     def test_02_01_track_nothing(self):
         '''Run TrackObjects on an empty labels matrix'''
         columns = []
-        def fn(module, workspace):
-            columns += module.get_measurement_columns(workspace.pipeline)
+        def fn(module, workspace, index, columns = columns):
+            if workspace is not None and index == 0:
+                columns += module.get_measurement_columns(workspace.pipeline)
         
         measurements = self.runTrackObjects((np.zeros((10,10),int),
-                                             np.zeros((10,10),int)))
+                                             np.zeros((10,10),int)), fn)
         
         features = [ feature 
                      for feature in measurements.get_feature_names(OBJECT_NAME)
                      if feature.startswith(T.F_PREFIX)]
         self.assertTrue(all([column[1] in features
-                             for column in columns]))
+                             for column in columns
+                             if column[0] == OBJECT_NAME]))
         for feature in T.F_ALL:
             name = "_".join((T.F_PREFIX, feature, "50"))
             self.assertTrue(name in features)
             value = measurements.get_current_measurement(OBJECT_NAME, name)
             self.assertEqual(len(value), 0)
+        
+        features = [ feature for feature in measurements.get_feature_names(cpmeas.IMAGE)
+                     if feature.startswith(T.F_PREFIX)]
+        self.assertTrue(all([column[1] in features
+                             for column in columns
+                             if column[0] == cpmeas.IMAGE]))
+        for feature in T.F_IMAGE_ALL:
+            name = "_".join((T.F_PREFIX, feature, OBJECT_NAME, "50"))
+            self.assertTrue(name in features)
+            value = measurements.get_current_image_measurement(name)
+            self.assertEqual(value, 0)
     
     def test_02_02_track_one_distance(self):
         '''Track an object that doesn't move using distance'''
@@ -319,6 +332,13 @@ TrackObjects:[module_num:1|svn_version:\'9227\'|variable_revision_number:3|show_
         self.assertEqual(m(T.F_LABEL), 1)
         self.assertEqual(m(T.F_PARENT), 1)
         self.assertEqual(m(T.F_LIFETIME), 1)
+        def m(feature):
+            name = "_".join((T.F_PREFIX, feature, OBJECT_NAME, "1"))
+            return measurements.get_current_image_measurement(name)
+        self.assertEqual(m(T.F_NEW_OBJECT_COUNT), 0)
+        self.assertEqual(m(T.F_LOST_OBJECT_COUNT), 0)
+        self.assertEqual(m(T.F_SPLIT_COUNT), 0)
+        self.assertEqual(m(T.F_MERGE_COUNT), 0)
     
     def test_02_03_track_one_moving(self):
         '''Track an object that moves'''
@@ -353,6 +373,13 @@ TrackObjects:[module_num:1|svn_version:\'9227\'|variable_revision_number:3|show_
         m(T.F_LABEL, [1,1,1,1])
         m(T.F_LIFETIME, [0,1,2,3])
         m(T.F_LINEARITY, [1,1,np.sqrt(5)/3,1.0/5.0])
+        def m(feature):
+            name = "_".join((T.F_PREFIX, feature, OBJECT_NAME, "3"))
+            return measurements.get_current_image_measurement(name)
+        self.assertEqual(m(T.F_NEW_OBJECT_COUNT), 0)
+        self.assertEqual(m(T.F_LOST_OBJECT_COUNT), 0)
+        self.assertEqual(m(T.F_SPLIT_COUNT), 0)
+        self.assertEqual(m(T.F_MERGE_COUNT), 0)
     
     def test_02_04_track_split(self):
         '''Track an object that splits'''
@@ -380,6 +407,13 @@ TrackObjects:[module_num:1|svn_version:\'9227\'|variable_revision_number:3|show_
         self.assertTrue(np.all(parents == 1))
         parents = m(T.F_PARENT,2)
         self.assertTrue(np.all(parents == labels))
+        def m(feature):
+            name = "_".join((T.F_PREFIX, feature, OBJECT_NAME, "5"))
+            return measurements.get_all_measurements(cpmeas.IMAGE, name)[1]
+        self.assertEqual(m(T.F_NEW_OBJECT_COUNT), 0)
+        self.assertEqual(m(T.F_LOST_OBJECT_COUNT), 0)
+        self.assertEqual(m(T.F_SPLIT_COUNT), 1)
+        self.assertEqual(m(T.F_MERGE_COUNT), 0)
     
     def test_02_05_track_negative(self):
         '''Track unrelated objects'''
@@ -399,7 +433,14 @@ TrackObjects:[module_num:1|svn_version:\'9227\'|variable_revision_number:3|show_
             return values[0]
         self.assertEqual(m(T.F_LABEL), 2)
         self.assertEqual(m(T.F_PARENT), 0)
-    
+        def m(feature):
+            name = "_".join((T.F_PREFIX, feature, OBJECT_NAME, "1"))
+            return measurements.get_current_image_measurement(name)
+        self.assertEqual(m(T.F_NEW_OBJECT_COUNT), 1)
+        self.assertEqual(m(T.F_LOST_OBJECT_COUNT), 1)
+        self.assertEqual(m(T.F_SPLIT_COUNT), 0)
+        self.assertEqual(m(T.F_MERGE_COUNT), 0)
+
     def test_02_06_track_ambiguous(self):
         '''Track disambiguation from among two possible parents'''
         labels1 = np.zeros((20,20), int)
@@ -542,13 +583,19 @@ TrackObjects:[module_num:1|svn_version:\'9227\'|variable_revision_number:3|show_
         module.object_name.value = OBJECT_NAME
         module.pixel_radius.value = 10
         columns = module.get_measurement_columns(None)
-        self.assertEqual(len(columns), len(T.F_ALL))
-        for feature in T.F_ALL:
-            name = "_".join((T.F_PREFIX, feature, "10"))
-            index = [column[1] for column in columns].index(name)
-            self.assertTrue(index != -1)
-            column = columns[index]
-            self.assertEqual(column[0], OBJECT_NAME)
+        self.assertEqual(len(columns), len(T.F_ALL) + len(T.F_IMAGE_ALL))
+        for object_name, features in ((OBJECT_NAME, T.F_ALL),
+                                      (cpmeas.IMAGE, T.F_IMAGE_ALL)):
+            for feature in features:
+                if object_name == OBJECT_NAME:
+                    name = "_".join((T.F_PREFIX, feature, "10"))
+                else:
+                    name = "_".join((T.F_PREFIX, feature, 
+                                     OBJECT_NAME, "10"))
+                index = [column[1] for column in columns].index(name)
+                self.assertTrue(index != -1)
+                column = columns[index]
+                self.assertEqual(column[0], object_name)
     
     def test_06_01_measurements(self):
         '''Test the different measurement pieces'''

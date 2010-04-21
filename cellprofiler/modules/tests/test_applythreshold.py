@@ -457,8 +457,9 @@ class TestApplyThreshold(unittest.TestCase):
         limage, d = T.log_transform(image)
         t1,t2 = otsu3(limage)
         threshold = T.inverse_log_transform(t1, d)
-        expected = image > threshold
         workspace, module = self.make_workspace(image)
+        image = workspace.image_set.get_image(INPUT_IMAGE_NAME).pixel_data
+        expected = image > threshold
         module.binary.value = A.BINARY
         module.threshold_method.value = T.TM_OTSU_GLOBAL
         module.use_weighted_variance.value = I.O_WEIGHTED_VARIANCE

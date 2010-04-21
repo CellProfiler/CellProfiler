@@ -285,18 +285,18 @@ def RunOne_2_0(x, run):
          "-cwd",PythonDir(x),
          "-g","/imaging/batch/%(batch_id)d"%(x),
          "-J","/imaging/batch/%(batch_id)d/%(start)s_to_%(end)s"%(x),
-         "-o","%(data_dir)s/txt_output/%(start)s_to_%(end)s.txt"%(x),
+         "-o",'"%(data_dir)s/txt_output/%(start)s_to_%(end)s.txt"'%(x),
          "./python-2.6.sh",
          "CellProfiler.py",
-         "-p","%(data_dir)s/Batch_data.mat"%(x),
+         "-p",'"%(data_dir)s/Batch_data.mat"'%(x),
          "-c","-r","-b",
          "-f","%(start)d"%(x),
          "-l","%(end)d"%(x),
-         "-d","%(done_file)s"%(x)]
+         "-d",'"%(done_file)s"'%(x)]
     if x["group_or_null"] is not None:
         cmd += ["-g",x["group_or_null"]]
     if x["write_data"]:
-        cmd += ["%(data_dir)s/%(start)s_to_%(end)s.mat"%(x)]
+        cmd += ['"%(data_dir)s/%(start)s_to_%(end)s.mat"'%(x)]
     cmd = ' '.join(cmd)
     p=os.popen(". /broad/lsf/conf/profile.lsf;umask 2;"+cmd,'r')
     output=p.read()

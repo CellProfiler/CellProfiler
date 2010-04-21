@@ -716,6 +716,13 @@ LoadImages:[module_num:1|svn_version:\'9799\'|variable_revision_number:6|show_wi
         self.assertEqual(logo.pixel_data.shape, (38, 150, 3))
         lip.release_memory()
         
+    def test_05_06_load_Nikon_tif(self):
+        '''This is the Nikon format TIF file from IMG-838'''
+        nikon_path = os.path.join(T.testimages_directory(), "NikonTIF.tif")
+        image = LI.load_using_bioformats(nikon_path)
+        self.assertEqual(tuple(image.shape), (731, 805, 3))
+        self.assertAlmostEqual(np.sum(image), 560156.69, 0)
+
     def test_06_01_file_metadata(self):
         """Test file metadata on two sets of two files
         

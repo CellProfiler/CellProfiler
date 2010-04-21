@@ -113,13 +113,20 @@ class TestModuleView(unittest.TestCase):
         self.assertEqual(len(combobox.GetItems()),2)
         self.assertEqual(combobox.GetItems()[0],'foo')
         self.assertEqual(combobox.GetItems()[1],'bar')
-        event = wx.CommandEvent(wx.wxEVT_COMMAND_COMBOBOX_SELECTED,combobox.Id)
-        event.SetInt(1)
-        combobox.Command(event)
-        app.ProcessPendingEvents()
-        combobox = self.get_edit_control(app,v)
-        self.assertEqual(combobox.Value,'bar')
-        self.assertTrue(v=='bar')
+        # wxPython bug: the code below does not work on OSX, so we must simply
+        # use setselection
+        import sys
+        if sys.platform == 'darwin':
+            combobox.SetSelection(1)
+            self.assertEqual(combobox.Value,'bar')
+        else:
+            event = wx.CommandEvent(wx.wxEVT_COMMAND_COMBOBOX_SELECTED,combobox.Id)
+            event.SetInt(1)
+            combobox.Command(event)
+            app.ProcessPendingEvents()
+            combobox = self.get_edit_control(app,v)
+            self.assertEqual(combobox.Value,'bar')
+            self.assertTrue(v=='bar')
         app.frame.Close(True)
         app.ProcessPendingEvents()
         app.ProcessIdle()

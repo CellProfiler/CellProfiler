@@ -128,8 +128,8 @@ class SaveImages(cpm.CPModule):
                 module also creates a cropping image which is typically the same size as the original 
                 image. However, since the <b>Crop</b> permits removal of the rows and columns that are left 
                 blank, the cropping can be of a different size than the mask.</li>
-                <li><i>Movie:</i> A sequence of images can be saved as a movie file. Each 
-                image becomes a frame of the movie.</li>
+                <li><i>Movie:</i> A sequence of images can be saved as a movie file. Currently only AVIs can be written. 
+                Each image becomes a frame of the movie.</li>
                 <li><i>Module display window:</i> The window associated with a module can be saved, which
                 will include all the panels and text within that window. <b>Currently, this option is not yet available.</b></li>
                 </ul>
@@ -775,7 +775,7 @@ class SaveImages(cpm.CPModule):
         """Return the file format associated with the extension in self.file_format
         """
         if self.save_image_or_figure == IF_MOVIE:
-            return FF_MOV
+            return FF_AVI
         if self.file_format == FF_JPG:
             return FF_JPEG
         if self.file_format == FF_TIF:

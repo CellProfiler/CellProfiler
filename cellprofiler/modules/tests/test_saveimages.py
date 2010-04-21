@@ -1088,7 +1088,7 @@ SaveImages:[module_num:6|svn_version:\'9507\'|variable_revision_number:5|show_wi
     def test_05_01_save_movie(self):
         frames = self.run_movie()
         for i, frame in enumerate(frames):
-            path = os.path.join(self.custom_directory, FILE_NAME + ".mov")
+            path = os.path.join(self.custom_directory, FILE_NAME + ".avi")
             frame_out = cpm_li.load_using_bioformats(path, t=i)
             self.assertTrue(np.all(np.abs(frame - frame_out) < .05))
             
@@ -1103,7 +1103,7 @@ SaveImages:[module_num:6|svn_version:\'9507\'|variable_revision_number:5|show_wi
             module.file_name_method.value = cpm_si.FN_WITH_METADATA
         frames = self.run_movie(grouping, fn)
         for group in grouping[1]:
-            path = os.path.join(self.custom_directory, group[0]["Metadata_test"] + ".mov")
+            path = os.path.join(self.custom_directory, group[0]["Metadata_test"] + ".avi")
             self.assertTrue(os.path.exists(path))
             for t,image_number in enumerate(group[1]):
                 frame = frames[image_number-1]

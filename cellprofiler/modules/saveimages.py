@@ -259,7 +259,7 @@ class SaveImages(cpm.CPModule):
                 </ul> """)
         
         self.rescale = cps.Binary("Rescale the images? ",False,doc="""
-                <i>(Used only when saving images or movies)</i><br>
+                <i>(Used only when saving non-MAT file images)</i><br>
                 Check this box if you want the image to occupy the full dynamic range of the bit 
                 depth you have chosen. For example, if you save an image to an 8-bit file, the
                 smallest grayscale value will be mapped to 0 and the largest value will be mapped 
@@ -271,13 +271,9 @@ class SaveImages(cpm.CPModule):
         self.colormap = cps.Colormap('Select colormap', 
                                      value = CM_GRAY,
                                      doc= """
-                <i>(Used only when saving images or movies)</i><br>
-                This affects how images' intensities are displayed.
-                The colormap choice is critical for movie files. 
-                Choosing anything other than gray may degrade image 
-                quality or result in image stretching.
-                <p>All available colormaps can be seen 
-                <a href="http://www.scipy.org/Cookbook/Matplotlib/Show_colormaps">here</a></p>.""")
+                <i>(Used only when saving non-MAT file images)</i><br>
+                This affects how images color intensities are displayed. All available colormaps can be seen 
+                <a href="http://www.scipy.org/Cookbook/Matplotlib/Show_colormaps">here</a>.""")
         
         self.update_file_names = cps.Binary("Update file names within CellProfiler?",False,doc="""
                 This setting stores filename and pathname data for each of the new files created 

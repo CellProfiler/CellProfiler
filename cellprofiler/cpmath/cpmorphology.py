@@ -63,11 +63,11 @@ def fill_labeled_holes(image, max_area = None, mask = None):
     image_with_high_holes = image.copy()
     image_with_high_holes[labeled_holes > 0] = high
     min_label = scind.minimum_filter(image_with_high_holes,
-                                     footprint=np.ones((3,3),bool),
+                                     footprint=four_connect,
                                      mode = 'constant',
                                      cval = 0)
     max_label = scind.maximum_filter(image,
-                                     footprint=np.ones((3,3),bool),
+                                     footprint=four_connect,
                                      mode = 'constant',
                                      cval = 0)
     min_label_per_hole = scind.minimum(min_label,

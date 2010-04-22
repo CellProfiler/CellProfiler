@@ -38,6 +38,7 @@ class TestCPFigure(unittest.TestCase):
         ax = my_frame.subplot_imshow(0, 0, image, normalize=False)
         
         assert (((ax.get_array()-image) < 0.000001).all()), 'Monochrome input image did not match subplot image.'
+        my_frame.Destroy()
         
     def test_01_02_imshow_raw_rgb(self):
         '''Make sure the image drawn by imshow matches the input RGB image.'''
@@ -48,6 +49,7 @@ class TestCPFigure(unittest.TestCase):
         ax = my_frame.subplot_imshow(0, 0, image, normalize=False)
         shown_im = ax.get_array().astype(float) / 255.0
         np.testing.assert_almost_equal(shown_im, image, decimal=2)
+        my_frame.Destroy()
         
     def test_01_03_imshow_normalized(self):
         '''Make sure the image drawn by imshow is normalized.'''
@@ -59,6 +61,7 @@ class TestCPFigure(unittest.TestCase):
         
         normed = ((image - np.min(image)) / np.max(image))
         np.testing.assert_almost_equal(ax.get_array(), normed, decimal=2)
+        my_frame.Destroy()
 
     def test_01_04_imshow_normalized_rgb(self):
         '''Make sure the RGB image drawn by imshow is normalized.'''
@@ -71,6 +74,7 @@ class TestCPFigure(unittest.TestCase):
         normed = ((image - np.min(image)) / np.max(image))
         shown_im = ax.get_array().astype(float) / 255.0
         np.testing.assert_almost_equal(normed, shown_im, decimal=2)
+        my_frame.Destroy()
 
     def test_01_05_imshow_log_normalized(self):
         '''Make sure the image drawn by imshow is log normalized.'''
@@ -82,7 +86,8 @@ class TestCPFigure(unittest.TestCase):
         
         (min, max) = (image[image > 0].min(), image.max())
         normed = (np.log(image.clip(min, max)) - np.log(min)) / (np.log(max) - np.log(min))
-        np.testing.assert_almost_equal(normed, ax.get_array(), decimal=2)        
+        np.testing.assert_almost_equal(normed, ax.get_array(), decimal=2)
+        my_frame.Destroy()
 
     def test_01_06_imshow_log_normalized_rgb(self):
         '''Make sure the RGB image drawn by imshow is log normalized.'''
@@ -96,6 +101,7 @@ class TestCPFigure(unittest.TestCase):
         normed = (np.log(image.clip(min, max)) - np.log(min)) / (np.log(max) - np.log(min))
         shown_im = ax.get_array().astype(float) / 255.0
         np.testing.assert_almost_equal(normed, shown_im, decimal=2)
+        my_frame.Destroy()
 
     def test_02_01_show_pixel_data(self):
         '''Make sure the values reported by show_pixel_data are the raw image
@@ -115,6 +121,7 @@ class TestCPFigure(unittest.TestCase):
         my_frame.on_mouse_move_show_pixel_data(evt, 0, 0, 0, 0)
         expected = "Intensity: %.4f"%(evt.ydata / 200.0)
         assert expected in [str(f) for f in my_frame.status_bar.GetFields()], 'Did not find "%s" in StatusBar fields'%(expected)
+        my_frame.Destroy()
 
     def test_02_02_show_pixel_data_rgb(self):
         '''Make sure the values reported by show_pixel_data are the raw image
@@ -139,6 +146,7 @@ class TestCPFigure(unittest.TestCase):
                     "Blue: %.4f"%(evt.ydata / 200.0 / 4.)]
         for field in expected:
             assert field in [str(f) for f in my_frame.status_bar.GetFields()], 'Did not find "%s" in StatusBar fields'%(field)
+        my_frame.Destroy()
              
     def test_03_01_menu_order(self):
         '''Make sure that the subplots submenus are presented in the right order
@@ -230,5 +238,6 @@ class TestCPFigure(unittest.TestCase):
 
         for i, item in enumerate(f.menu_subplots.MenuItems):
             assert item.Label == 'rgb%s'%(i+1)
+        f.Destroy()
             
 

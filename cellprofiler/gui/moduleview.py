@@ -207,7 +207,7 @@ class ModuleView:
     gives the ui for editing the setting.
     """
     
-    def __init__(self,module_panel,pipeline):
+    def __init__(self, module_panel, pipeline, as_datatool=False):
         #############################################
         #
         # Build the top-level GUI windows
@@ -223,10 +223,12 @@ class ModuleView:
         self.make_notes_gui()
         self.module_panel.Hide()
         self.notes_panel.Hide()
-        self.top_level_sizer.Add(self.notes_panel, 0, wx.EXPAND | wx.ALL, 4)
+        if not as_datatool:
+            self.top_level_sizer.Add(self.notes_panel, 0, wx.EXPAND | wx.ALL, 4)
         self.top_level_sizer.Add(self.module_panel, 1, wx.EXPAND | wx.ALL, 4)
 
         self.__pipeline = pipeline
+        self.__as_datatool = as_datatool
         pipeline.add_listener(self.__on_pipeline_event)
         self.__listeners = []
         self.__value_listeners = []
@@ -280,7 +282,9 @@ class ModuleView:
                                    self.__module.id == new_module.id)
             if not reselecting:
                 self.clear_selection()
-            self.notes_panel.Show()
+            if not self.__as_datatool:
+                print "showing notes"
+                self.notes_panel.Show()
             self.__module       = new_module
             self.__controls     = []
             self.__static_texts = []

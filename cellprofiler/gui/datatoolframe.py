@@ -64,7 +64,7 @@ class DataToolFrame(wx.Frame):
         module_panel.BackgroundColour = cpprefs.get_background_color()
         self.BackgroundColour = cpprefs.get_background_color()
 
-        self.module_view = ModuleView(module_panel, self.pipeline)
+        self.module_view = ModuleView(module_panel, self.pipeline, True)
         self.module_view.set_selection(self.module.module_num)
         def on_change(caller, event):
             setting = event.get_setting()

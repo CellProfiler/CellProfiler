@@ -368,7 +368,7 @@ class PipelineController:
             except:
                 pass
             if error_msg is None:
-                error_msg = event.error.message
+                error_msg = str(event.error)
             message = (("Error while processing %s:\n"
                         "%s\n\nDo you want to stop processing?") %
                        (event.module.module_name,error_msg))

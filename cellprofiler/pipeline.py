@@ -302,7 +302,7 @@ class ModuleRunner(threading.Thread):
             self.module.run(self.workspace)
         except Exception, instance:
             self.exception = instance
-            self.tb = sys.exc_traceback
+            self.tb = sys.exc_info()[2]
             traceback.print_exc()
             if os.getenv('CELLPROFILER_RERAISE') is not None:
                 raise
@@ -1098,7 +1098,7 @@ class Pipeline(object):
                     return None
             except Exception,instance:
                 traceback.print_exc()
-                event = RunExceptionEvent(instance,module)
+                event = RunExceptionEvent(instance, module, sys.exc_info()[2])
                 self.notify_listeners(event)
                 if event.cancel_run:
                     return None
@@ -1127,7 +1127,7 @@ class Pipeline(object):
                 module.post_run(workspace)
             except Exception, instance:
                 traceback.print_exc()
-                event = RunExceptionEvent(instance, module)
+                event = RunExceptionEvent(instance, module, sys.exc_info()[2])
                 self.notify_listeners(event)
                 if event.cancel_run:
                     return "Failure"
@@ -1154,7 +1154,7 @@ class Pipeline(object):
                                                fn_alter_path)
             except Exception, instance:
                 traceback.print_exc()
-                event = RunExceptionEvent(instance, module)
+                event = RunExceptionEvent(instance, module, sys.exc_info()[2])
                 self.notify_listeners(event)
                 if event.cancel_run:
                     return
@@ -1211,7 +1211,7 @@ class Pipeline(object):
                                      image_numbers)
             except Exception, instance:
                 traceback.print_exc()
-                event = RunExceptionEvent(instance, module)
+                event = RunExceptionEvent(instance, module, sys.exc_info()[2])
                 self.notify_listeners(event)
                 if event.cancel_run:
                     return False
@@ -1227,7 +1227,7 @@ class Pipeline(object):
                 module.post_group(workspace, grouping)
             except Exception, instance:
                 traceback.print_exc()
-                event = RunExceptionEvent(instance, module)
+                event = RunExceptionEvent(instance, module, sys.exc_info()[2])
                 self.notify_listeners(event)
                 if event.cancel_run:
                     return False

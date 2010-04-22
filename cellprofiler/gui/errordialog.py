@@ -36,7 +36,7 @@ def display_error_dialog(frame, exc, pipeline, message=None, tb = None):
     Returns either ED_STOP or ED_CONTINUE indicating how to handle.
     '''
     if message is None:
-        message = exc.message
+        message = str(exc)
     
     if tb is None:
         traceback_text = traceback.format_exc()

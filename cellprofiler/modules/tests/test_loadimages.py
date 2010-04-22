@@ -1316,8 +1316,10 @@ LoadImages:[module_num:1|svn_version:\'9799\'|variable_revision_number:6|show_wi
         if not os.path.isdir(path):
             path = '/imaging/analysis/2009_03_12_CellCycle_WolthuisLab_RobWolthuis/2009_09_19/Images/09_02_11-OA 10nM'
             if not os.path.isdir(path):
-                sys.stderr.write("WARNING: unknown path to stk file. Test not run.\n")
-                return
+                path = '/Volumes/imaging_analysis/2009_03_12_CellCycle_WolthuisLab_RobWolthuis/2009_09_19/Images/09_02_11-OA 10nM'
+                if not os.path.isdir(path):                
+                    sys.stderr.write("WARNING: unknown path to stk file. Test not run.\n")
+                    return
         module = LI.LoadImages()
         module.file_types.value = LI.FF_STK_MOVIES
         module.images[0].common_text.value = 'stk'

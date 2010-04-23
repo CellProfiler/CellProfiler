@@ -422,6 +422,10 @@ class LoadData(cpm.CPModule):
                 return []
         return []
     
+    def is_load_module(self):
+        '''LoadData can make image sets so it's a load module'''
+        return True
+    
     def prepare_run(self, pipeline, image_set_list, frame):
         '''Load the CSV file at the outset and populate the image set list'''
         if pipeline.in_batch_mode():
@@ -668,8 +672,14 @@ class LoadData(cpm.CPModule):
                 'MD5Digest_'+image_name,
                 md5.hexdigest())
         if not workspace.frame is None:
-            figure = workspace.create_or_find_figure(subplots=(1,1))
-            figure.subplot_table(0,0,statistics,[.3,.7])
+            workspace.display_data.statistics = statistics
+            
+    def is_interactive(self):
+        return False
+    
+    def display(self, workspace):
+        figure = workspace.create_or_find_figure(subplots=(1,1))
+        figure.subplot_table(0,0, workspace.display_data.statistics,[.3,.7])
     
     def get_groupings(self, image_set_list):
         '''Return the image groupings of the image sets

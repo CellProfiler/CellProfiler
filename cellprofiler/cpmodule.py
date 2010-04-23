@@ -426,6 +426,10 @@ class CPModule(object):
         Background threads cannot safely manipulate the GUI.  See
         display()."""
         return True
+    
+    def is_load_module(self):
+        """If true, the module will load files and make image sets"""
+        return False
 
     def run(self,workspace):
         """Run the module (abstract method)

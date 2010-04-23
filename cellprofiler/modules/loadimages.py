@@ -923,6 +923,10 @@ class LoadImages(cpmodule.CPModule):
 
         return setting_values, variable_revision_number, from_matlab
 
+    def is_load_module(self):
+        '''LoadImages creates image sets so it is a load module'''
+        return True
+    
     def prepare_run(self, pipeline, image_set_list, frame):
         """Set up all of the image providers inside the image_set_list
         """

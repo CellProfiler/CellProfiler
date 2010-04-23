@@ -206,6 +206,14 @@ class LoadSingleImage(cpm.CPModule):
                             ('MD5Digest', cpmeas.COLTYPE_VARCHAR_FORMAT % 32))]
         return columns
     
+    def validate_module(self, pipeline):
+        '''Keep users from using LoadSingleImage to define image sets'''
+        if not any([x.is_load_module() for x in pipeline.modules()]):
+            raise cps.ValidationError(
+                "LoadSingleImage cannot be used to run a pipeline on one "
+                "image file. Please use LoadImages or LoadData instead.",
+                self.directory)
+        
     def upgrade_settings(self, setting_values, variable_revision_number, module_name, from_matlab):
         if from_matlab and variable_revision_number == 4:
             new_setting_values = list(setting_values)

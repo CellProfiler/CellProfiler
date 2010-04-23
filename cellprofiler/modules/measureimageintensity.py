@@ -206,7 +206,7 @@ class MeasureImageIntensity(cpm.CPModule):
                                      (F_MIN_INTENSITY, cpmeas.COLTYPE_FLOAT),
                                      (F_MAX_INTENSITY, cpmeas.COLTYPE_FLOAT),
                                      (F_TOTAL_AREA, cpmeas.COLTYPE_INTEGER)):
-                measurement_name = im.image_name.value + ("_" + im.object_name.value if im.wants_objects.value else "")
+                measurement_name = im.image_name.value + (("_" + im.object_name.value) if im.wants_objects.value else "")
                 columns.append((cpmeas.IMAGE, feature % measurement_name, coltype))
         return columns
                         
@@ -222,21 +222,18 @@ class MeasureImageIntensity(cpm.CPModule):
             return ALL_MEASUREMENTS
         return []
 
-    def get_measurement_objects(self, pipeline, object_name, 
-                                category, measurement):
-        if (object_name == cpmeas.IMAGE and
-            category == "Intensity" and
-            measurement in ALL_MEASUREMENTS):
-            return [ im.object_name.value for im in self.images
-                    if im.wants_objects.value]
-        return []
-
     def get_measurement_images(self, pipeline, object_name, 
                                category, measurement):
         if (object_name == cpmeas.IMAGE and
             category == "Intensity" and
             measurement in ALL_MEASUREMENTS):
-            return [im.image_name.value for im in self.images]
+            result = []
+            for im in self.images:
+                image_name = im.image_name.value 
+                if im.wants_objects:
+                    image_name += "_" + im.object_name.value
+                result += [image_name]
+            return result
         return []
     
     def upgrade_settings(self, setting_values, 

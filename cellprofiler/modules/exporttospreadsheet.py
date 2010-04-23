@@ -44,6 +44,7 @@ import sys
 
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
+import cellprofiler.pipeline as cpp
 import cellprofiler.settings as cps
 from cellprofiler.measurements import IMAGE, EXPERIMENT
 from cellprofiler.preferences import get_absolute_path, get_output_file_name
@@ -454,15 +455,20 @@ class ExportToSpreadsheet(cpm.CPModule):
         file_name - create a file with this name
         workspace - the workspace that has the measurements
         """
+        m = workspace.measurements
+        feature_names = [ 
+            feature_name for feature_name in m.get_feature_names(EXPERIMENT)
+            if feature_name != cpp.EXIT_STATUS]
+        if len(feature_names) == 0:
+            return
         file_name = self.make_full_filename(file_name)
         fd = open(file_name,"wb")
         try:
             writer = csv.writer(fd,delimiter=self.delimiter_char)
-            m = workspace.measurements
-            for feature_name in m.get_feature_names(EXPERIMENT):
-                writer.writerow((feature_name, 
-                                 m.get_all_measurements(EXPERIMENT, 
-                                                        feature_name)))
+            for feature_name in feature_names:
+                writer.writerow((
+                    feature_name, 
+                    m.get_all_measurements(EXPERIMENT, feature_name)))
         finally:
             fd.close()
     

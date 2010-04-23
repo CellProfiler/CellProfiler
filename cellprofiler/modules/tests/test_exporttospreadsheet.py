@@ -654,6 +654,7 @@ ExportToSpreadsheet:[module_num:5|svn_version:\'9434\'|variable_revision_number:
         module.object_groups[0].wants_automatic_file_name.value = False
         m = cpmeas.Measurements()
         m.add_experiment_measurement("my_measurement", "Hello, world")
+        m.add_experiment_measurement("Exit_Status", "Complete")
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
@@ -677,6 +678,39 @@ ExportToSpreadsheet:[module_num:5|svn_version:\'9434\'|variable_revision_number:
             self.assertRaises(StopIteration,reader.next)
         finally:
             fd.close()
+            
+    def test_01_04_img_887_no_experiment_file(self):
+        '''Regression test of IMG-887: spirious experiment file
+        
+        ExportToSpreadsheet shouldn't generate an experiment file if
+        the only measurements are Exit_Status or Complete.
+        '''
+        np.random.seed(14887)
+        module = E.ExportToSpreadsheet()
+        module.module_num = 1
+        module.prepend_output_filename.value = False
+        module.wants_everything.value = False
+        module.directory.dir_choice = E.ABSOLUTE_FOLDER_NAME
+        module.directory.custom_path = self.output_dir
+        module.wants_everything.value = True
+        m = cpmeas.Measurements()
+        m.add_experiment_measurement("Exit_Status", "Complete")
+        image_measurements = np.random.uniform(size=4)
+        m.add_all_measurements(cpmeas.IMAGE, "my_measurement", image_measurements)
+        image_set_list = cpi.ImageSetList()
+        image_set = image_set_list.get_image_set(0)
+        object_set = cpo.ObjectSet()
+        workspace = cpw.Workspace(cpp.Pipeline(),
+                                  module,
+                                  image_set,
+                                  object_set,
+                                  m,
+                                  image_set_list)
+        module.post_run(workspace)
+        path = os.path.join(self.output_dir, "Experiment.csv")
+        self.assertFalse(os.path.exists(path))
+        path = os.path.join(self.output_dir, "Image.csv")
+        self.assertTrue(os.path.exists(path))
         
     def test_02_01_image_measurement(self):
         '''Test writing an image measurement'''

@@ -179,7 +179,7 @@ class CalculateMath(cpm.CPModule):
                                             "Measurement",doc="""
                                             What do you want to call the measurement calculated by this module?""")
         
-        self.operation = cps.Choice("Select the operation",
+        self.operation = cps.Choice("Operation",
                                     O_ALL,doc="""
                                     What arithmetic operation would you like to perform? <i>None</i> is useful if 
                                     you simply want to select some of the later options in the module, such as multiplying

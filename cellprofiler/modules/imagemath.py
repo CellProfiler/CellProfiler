@@ -101,24 +101,35 @@ class ImageMath(cpm.CPModule):
             </ul> <p>Note that <i>Invert</i>, <i>Log Transform</i>, and <i>None</i> operate on only a single image.
             """)
         self.divider_top = cps.Divider(line=False)
-        self.exponent = cps.Float("Raise to exponent", 1, doc="""Enter an exponent to raise the result to *after* the chosen operation""")
-        self.after_factor = cps.Float("Multiply by", 1, doc="""Enter a factor to multiply the result by *after* the chosen operation""")
+        
+        self.exponent = cps.Float("Raise the power of the result by", 1, doc="""Enter an exponent to raise the result to *after* the chosen operation""")
+        
+        self.after_factor = cps.Float("Multiply the result by", 1, doc="""Enter a factor to multiply the result by *after* the chosen operation""")
+        
         self.addend = cps.Float("Add to result", 0, doc ="""Enter a number to add to the result *after* the chosen operation""")
-        self.truncate_low = cps.Binary("Set values less than 0 equal to 0?", True, doc="""Do you want negative values to be set to 0?
+        
+        self.truncate_low = cps.Binary("Set values less than 0 equal to 0?", True, doc="""
+            Do you want negative values to be set to 0?
             Values outside the range 0 to 1 might not be handled well by other modules. 
             Here you have the option of setting negative values to 0.""")
-        self.truncate_high = cps.Binary("Set values greater than 1 equal to 1?", True, doc ="""Do you want values greater than one to be set to 1?
+        
+        self.truncate_high = cps.Binary("Set values greater than 1 equal to 1?", True, doc ="""
+            Do you want values greater than one to be set to 1?
             Values outside the range 0 to 1 might not be handled well by other modules. 
             Here you have the option of setting values greater than 1 to a maximum value of 1.""")
+        
         self.output_image_name = cps.ImageNameProvider("Name the output image", "ImageAfterMath", doc="""What do you want to call the resulting image?""")
+        
         self.add_button = cps.DoSomething("", "Add another image", self.add_image)
+        
         self.divider_bottom = cps.Divider(line=False)
     
     def add_image(self, removable=True):
         # The text for these settings will be replaced in renumber_settings()
         group = cps.SettingsGroup()
-        group.append("image_name", cps.ImageNameSubscriber("", ""))
-        group.append("factor", cps.Float("", 1))
+        group.append("image_name", cps.ImageNameSubscriber("", "",doc="""Which image do you want to use for this operation?"""))
+        group.append("factor", cps.Float("", 1,doc="""By what number would you like to multiply the above image? This multiplication
+                is applied before other operations."""))
         if removable:
             group.append("remover", cps.RemoveSettingButton("", "Remove this image", self.images, group))
         group.append("divider", cps.Divider())
@@ -127,7 +138,7 @@ class ImageMath(cpm.CPModule):
     def renumber_settings(self):
         for idx, image in enumerate(self.images):
             image.image_name.text = "Select the %s image"%(ordinal(idx + 1))
-            image.factor.text = "Enter a factor to multiply the %s image by (before other operations)"%ordinal(idx + 1)
+            image.factor.text = "Multiply the %s image by"%ordinal(idx + 1)
 
     def settings(self):
         result = [self.operation, self.exponent, self.after_factor, self.addend,

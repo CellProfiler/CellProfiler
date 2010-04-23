@@ -348,7 +348,8 @@ def static_call(class_name, method_name, sig, *args):
     env = get_env()
     klass = env.find_class(class_name)
     if klass is None:
-        raise JavaException(env)
+        jexception = get_env.exception_occurred()
+        raise JavaException(jexception)
     
     method_id = env.get_static_method_id(klass, method_name, sig)
     if method_id is None:
@@ -360,7 +361,7 @@ def static_call(class_name, method_name, sig, *args):
     result = env.call_static_method(klass, method_id,*nice_args)
     jexception = env.exception_occurred() 
     if jexception is not None:
-        raise JavaException(env, jexception)
+        raise JavaException(jexception)
     return get_nice_result(result, ret_sig)
 
 def make_method(name, sig, doc='No documentation'):
@@ -432,7 +433,8 @@ def get_static_field(klass, name, sig):
     elif sig == 'D':
         return env.get_static_double_field(klass, field_id)
     else:
-        return get_nice_result(env.get_static_object_field(klass, field_id))
+        return get_nice_result(env.get_static_object_field(klass, field_id),
+                               sig)
         
 def split_sig(sig):
     '''Split a signature into its constituent arguments'''

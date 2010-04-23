@@ -73,7 +73,7 @@ class RenameOrRenumberFiles(cpm.CPModule):
     
     module_name = "RenameOrRenumberFiles"
     category = "File Processing"
-    variable_revision_number = 1
+    variable_revision_number = 2
     
     def create_settings(self):
         '''Create the settings for the module's UI'''
@@ -145,12 +145,23 @@ class RenameOrRenumberFiles(cpm.CPModule):
             doc="""
             <i>(Used only if you chose to add text to the file name)</i><br>
             Enter the text that you want to add to each file name.""")
+        self.wants_to_replace_spaces = cps.Binary(
+            "Replace spaces?", False,
+            doc = """Check this setting to replace spaces in the final
+            version of the file name with some other text. Leave it unchecked
+            if the file name can have spaces or if none of the file names
+            have spaces.""")
+        self.space_replacement = cps.Text(
+            "Space replacement:", "_",
+            doc = """This is the text that will be substituted for spaces
+            in your file name.""")
             
     def settings(self):
         '''Return settings in the order that they should appear in pipeline'''
         return [ self.image_name, self.number_characters_prefix,
                  self.number_characters_suffix, self.action, 
-                 self.number_digits, self.wants_text, self.text_to_add]
+                 self.number_digits, self.wants_text, self.text_to_add,
+                 self.wants_to_replace_spaces, self.space_replacement]
     
     def visible_settings(self):
         '''Return the settings to display in the GUI'''
@@ -161,6 +172,9 @@ class RenameOrRenumberFiles(cpm.CPModule):
         result += [self.wants_text]
         if self.wants_text:
             result += [self.text_to_add]
+        result += [self.wants_to_replace_spaces]
+        if self.wants_to_replace_spaces:
+            result += [self.space_replacement]
         return result
     
     def is_interactive(self):
@@ -209,6 +223,9 @@ class RenameOrRenumberFiles(cpm.CPModule):
         if self.wants_text:
             middle += self.text_to_add.value
         new_file_name = prefix + middle + suffix
+        if self.wants_to_replace_spaces:
+            new_file_name = new_file_name.replace(
+                " ", self.space_replacement.value)
         if workspace.frame is not None:
             workspace.display_data.old_file_name = file_name
             workspace.display_data.new_file_name = new_file_name
@@ -257,4 +274,10 @@ class RenameOrRenumberFiles(cpm.CPModule):
                               number_digits, wants_text, text_to_add]
             variable_revision_number = 1
             from_matlab = False
+        if (not from_matlab) and variable_revision_number == 1:
+            #
+            # Added wants_to_replace_spaces and space_replacement
+            #
+            setting_values = setting_values + [cps.NO, "_"]
+            variable_revision_number = 2
         return setting_values, variable_revision_number, from_matlab

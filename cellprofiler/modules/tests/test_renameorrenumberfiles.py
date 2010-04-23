@@ -126,6 +126,7 @@ RenameOrRenumberFiles:[module_num:2|svn_version:\'1\'|variable_revision_number:1
         self.assertEqual(module.number_characters_suffix, 4)
         self.assertEqual(module.action, R.A_DELETE)
         self.assertFalse(module.wants_text)
+        self.assertFalse(module.wants_to_replace_spaces)
         
         module = pipeline.modules()[1]
         self.assertTrue(isinstance(module, R.RenameOrRenumberFiles))
@@ -135,6 +136,39 @@ RenameOrRenumberFiles:[module_num:2|svn_version:\'1\'|variable_revision_number:1
         self.assertEqual(module.action, R.A_RENUMBER)
         self.assertTrue(module.wants_text)
         self.assertEqual(module.number_digits, 5)
+        
+    def test_01_03_load_v2(self):
+        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:1
+SVNRevision:9161
+
+RenameOrRenumberFiles:[module_num:1|svn_version:\'1\'|variable_revision_number:1|show_window:True|notes:\x5B\x5D]
+    Image name\x3A:orig
+    Number of characters to retain at start of file name\x3A:22
+    Number of characters to retain at the end of file name\x3A:4
+    What do you want to do with the remaining characters?:Delete
+    How many numerical digits would you like to use?:4
+    Do you want to add text to the file name?:No
+    Replacement text:Do not use
+    Replace spaces?:Yes
+    Space replacement\x3A:+
+"""
+        pipeline = cpp.Pipeline()
+        def callback(caller,event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO(data))
+        self.assertEqual(len(pipeline.modules()), 1)
+        
+        module = pipeline.modules()[0]
+        self.assertTrue(isinstance(module, R.RenameOrRenumberFiles))
+        self.assertEqual(module.image_name, "orig")
+        self.assertEqual(module.number_characters_prefix, 22)
+        self.assertEqual(module.number_characters_suffix, 4)
+        self.assertEqual(module.action, R.A_DELETE)
+        self.assertFalse(module.wants_text)
+        self.assertTrue(module.wants_to_replace_spaces)
+        self.assertEqual(module.space_replacement, "+")
         
     def make_workspace(self, file_name):
         fd = open(os.path.join(self.path, file_name), 'w')
@@ -229,6 +263,24 @@ RenameOrRenumberFiles:[module_num:2|svn_version:\'1\'|variable_revision_number:1
         module.text_to_add.value = '_eek'
         
         self.assertTrue(os.path.exists(os.path.join(self.path, file_name)))
+        module.run(workspace)
+        self.assertFalse(os.path.exists(os.path.join(self.path, file_name)))
+        self.assertTrue(os.path.exists(os.path.join(self.path, expected_name)))
+        
+    def test_02_05_replace_spaces(self):
+        file_name = "my file.txt"
+        expected_name = "my+file.txt"
+        
+        workspace, module = self.make_workspace(file_name)
+        self.assertTrue(isinstance(module, R.RenameOrRenumberFiles))
+        #
+        # Delete nothing here.
+        #
+        module.action = R.A_DELETE
+        module.number_characters_prefix.value = 7
+        module.number_characters_suffix.value = 4
+        module.wants_to_replace_spaces.value = True
+        module.space_replacement.value = "+"
         module.run(workspace)
         self.assertFalse(os.path.exists(os.path.join(self.path, file_name)))
         self.assertTrue(os.path.exists(os.path.join(self.path, expected_name)))

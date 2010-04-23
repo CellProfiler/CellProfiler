@@ -985,17 +985,21 @@ class PipelineController:
                         self.__pipeline.save_measurements(self.__output_path,
                                                           self.__pipeline_measurements)
                     except IOError, err:
-                        result = wx.MessageBox(
-                            ("CellProfiler could not save your measurements. "
-                             "Do you want to try saving it using a different name?\n"
-                             "The error was:\n%s") % (err), 
-                            "Error saving measurements.", 
-                            wx.ICON_ERROR|wx.YES_NO)
-                        if result == wx.YES:
-                            try:
-                                self.save_measurements()
-                            except:
-                                pass
+                        while True:
+                            result = wx.MessageBox(
+                                ("CellProfiler could not save your measurements. "
+                                 "Do you want to try saving it using a different name?\n"
+                                 "The error was:\n%s") % (err), 
+                                "Error saving measurements.", 
+                                wx.ICON_ERROR|wx.YES_NO)
+                            if result == wx.YES:
+                                try:
+                                    self.save_measurements()
+                                    break
+                                except IOError, err:
+                                    pass
+                            else:
+                                break
                     self.__pipeline_measurements = None
                     self.__output_path = None
                 #

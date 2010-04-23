@@ -52,8 +52,9 @@ O_MULTIPLY = "Multiply"
 O_DIVIDE = "Divide"
 O_ADD = "Add"
 O_SUBTRACT = "Subtract"
+O_NONE = "None"
 
-O_ALL = [O_MULTIPLY, O_DIVIDE, O_ADD, O_SUBTRACT]
+O_ALL = [O_MULTIPLY, O_DIVIDE, O_ADD, O_SUBTRACT, O_NONE]
 
 MC_IMAGE = cpmeas.IMAGE
 MC_OBJECT = "Object"
@@ -168,10 +169,11 @@ class CalculateMath(cpm.CPModule):
                 self.operand_choice.text = self.operand_choice_text()
                 self.operand_objects.text = self.operand_objects_text()
                 self.operand_measurement.text = self.operand_measurement_text()
-                return ([self.operand_choice] +
-                        ([self.operand_objects] if self.operand_choice == MC_OBJECT
-                          else []) +
-                        [self.operand_measurement,self.multiplicand, self.exponent])
+                result = [self.operand_choice]
+                result += ([self.operand_objects] if self.operand_choice == MC_OBJECT \
+                          else [])
+                result += [self.operand_measurement, self.multiplicand, self.exponent]
+                return (result)
             
         self.output_feature_name = cps.Text("Name the output measurement",
                                             "Measurement",doc="""
@@ -179,7 +181,9 @@ class CalculateMath(cpm.CPModule):
         
         self.operation = cps.Choice("Select the operation",
                                     O_ALL,doc="""
-                                    What arithmetic operation would you like to perform?""")
+                                    What arithmetic operation would you like to perform? <i>None</i> is useful if 
+                                    you simply want to select some of the later options in the module, such as multiplying
+                                    or exponentiating your image by a constant.</li>""")
         
         self.operands = (Operand(0, self.operation), Operand(1, self.operation))
         
@@ -193,15 +197,19 @@ class CalculateMath(cpm.CPModule):
                                     Do you want the log (base 10) of the result?""")
         
         self.final_multiplicand = cps.Float("Multiply the result by",1,doc="""
+                                    <i>(Used only for operations other than None)</i><br>
                                     By what number would you like to multiply the result?""")
         
         self.final_exponent = cps.Float("Raise the power of result by",1,doc="""
+                                    <i>(Used only for operations other than None)</i><br>
                                     To what power would you like to raise the result?""")
             
     def settings(self):
-        return ([self.output_feature_name, self.operation] +
-                self.operands[0].settings() + self.operands[1].settings() + 
-                [self.wants_log, self.final_multiplicand, self.final_exponent])
+        result = [self.output_feature_name, self.operation] 
+        result += self.operands[0].settings() + self.operands[1].settings()
+        result += [self.wants_log, self.final_multiplicand, self.final_exponent]
+        
+        return (result)
 
     def post_pipeline_load(self, pipeline):
         '''Fixup any measurement names that might have been ambiguously loaded
@@ -224,13 +232,15 @@ class CalculateMath(cpm.CPModule):
                     pass
                  
     def visible_settings(self):
-        return ([self.output_feature_name, self.operation] +
-                [self.spacer_1] + 
-                self.operands[0].visible_settings() + 
-                [self.spacer_2] + 
-                self.operands[1].visible_settings() + 
-                [self.spacer_3] + 
-                [self.wants_log, self.final_multiplicand, self.final_exponent])
+        result = [self.output_feature_name, self.operation] + [self.spacer_1] 
+        result += self.operands[0].visible_settings() + [self.spacer_2]
+        if self.operation != O_NONE:
+            result += self.operands[1].visible_settings() + [self.spacer_3]
+        result += [self.wants_log]
+        if self.operation != O_NONE:
+            result += [self.final_multiplicand, self.final_exponent]
+
+        return (result)
         
 
     def run(self, workspace):
@@ -244,9 +254,18 @@ class CalculateMath(cpm.CPModule):
         all_object_names = list(set([operand.operand_objects.value
                                      for operand in self.operands
                                      if operand.object != cpmeas.IMAGE]))
-        for operand in self.operands:
-            value = m.get_current_measurement(operand.object,
-                                              operand.operand_measurement.value)
+        all_operands = self.operands
+        
+        if self.operation.value in (O_NONE):
+            # Only operate on the first image/object
+            all_operands  = all_operands[:1]
+            
+        for operand in all_operands:
+            value = m.get_current_measurement(operand.object,operand.operand_measurement.value)
+            # Copy the measurement (if it's right type) or else it gets altered by the operation
+            if not np.isscalar(value):
+                value = value.copy()
+               
             if isinstance(value, str) or isinstance(value, unicode):
                 try:
                     value = float(value)
@@ -257,12 +276,14 @@ class CalculateMath(cpm.CPModule):
             value **= operand.exponent.value
             values.append(value)
         
-        if (not has_image_measurement) and len(values[0]) != len(values[1]):
+        if (not has_image_measurement) and (self.operation.value not in (O_NONE)) and len(values[0]) != len(values[1]):
             raise ValueError("Incompatable objects: %s has %d objects and %s has %d objects"%
                              (self.operands[0].operand_objects.value, len(values[0]),
                               self.operands[1].operand_objects.value, len(values[1])))
         
-        if self.operation == O_ADD:
+        if self.operation == O_NONE:
+            result = values[0]
+        elif self.operation == O_ADD:
             result = values[0]+values[1]
         elif self.operation == O_SUBTRACT:
             result = values[0]-values[1]
@@ -284,9 +305,10 @@ class CalculateMath(cpm.CPModule):
         #
         if self.wants_log.value:
             result = np.log10(result)
-        result *= self.final_multiplicand.value
-        # Handle NaNs with np.power instead of **
-        result = np.power(result, self.final_exponent.value)
+        if self.operation != O_NONE:
+            result *= self.final_multiplicand.value
+            # Handle NaNs with np.power instead of **
+            result = np.power(result, self.final_exponent.value)
         feature = self.measurement_name()
         if all_image_measurements:
             m.add_image_measurement(feature, result)
@@ -298,7 +320,7 @@ class CalculateMath(cpm.CPModule):
             workspace.display_data.statistics = [("Measurement name","Measurement type","Result")]
             workspace.display_data.statistics += [(self.output_feature_name.value, 
                                                    "Image" if all_image_measurements else "Object", 
-                                                   "%.2f"%result)]
+                                                   "%.2f"%np.mean(result))]
             
     def run_as_data_tool(self, workspace):
         workspace.measurements.is_first_image = True

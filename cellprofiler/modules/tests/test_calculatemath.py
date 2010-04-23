@@ -441,3 +441,20 @@ CalculateRatios:[module_num:1|svn_version:\'8913\'|variable_revision_number:6|sh
         self.assertEqual(len(data), 1)
         self.assertTrue(np.isnan(data[0]))
         
+    def test_08_01_none_operation(self):
+        # In this case, just multiply the array by a constant
+        def fn(module):
+            module.operands[0].multiplicand.value = 2
+
+        measurements = self.run_workspace(C.O_NONE, False, np.array([1,2,3]),
+                                          False, np.array([1,4,9]), fn)
+        self.assertFalse(measurements.has_feature(cpmeas.IMAGE, MATH_OUTPUT_MEASUREMENTS))\
+        # There should be only one operand and a measurement for that operand only
+        self.assertTrue(len(OBJECT),1)
+        self.assertTrue(measurements.has_feature(OBJECT[0], MATH_OUTPUT_MEASUREMENTS))
+        # Check the operation result
+        data = measurements.get_current_measurement(OBJECT[0], MATH_OUTPUT_MEASUREMENTS)
+        self.assertAlmostEqual(data[0], 2)
+        self.assertAlmostEqual(data[1], 4)
+        self.assertAlmostEqual(data[2], 6)
+        

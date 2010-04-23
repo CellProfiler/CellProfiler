@@ -37,6 +37,7 @@ O_SUBTRACT = "Subtract"
 O_MULTIPLY = "Multiply"
 O_DIVIDE = "Divide"
 O_AVERAGE = "Average"
+O_MAXIMUM = "Maximum"
 O_INVERT = "Invert"
 O_COMPLEMENT = "Complement"
 O_LOG_TRANSFORM = "Log transform (base 2)"
@@ -67,7 +68,7 @@ class ImageMath(cpm.CPModule):
 
         # other settings
         self.operation = cps.Choice("Operation", 
-                                    [O_ADD, O_SUBTRACT, O_MULTIPLY, O_DIVIDE, O_AVERAGE, O_INVERT, O_LOG_TRANSFORM, O_NONE], doc=
+                                    [O_ADD, O_SUBTRACT, O_MULTIPLY, O_DIVIDE, O_AVERAGE, O_MAXIMUM, O_INVERT, O_LOG_TRANSFORM, O_NONE], doc=
             """What operation would you like performed?
                         
             <p><i>Note:</i> If more than 2 images are chosen, then operations will be 
@@ -86,6 +87,8 @@ class ImageMath(cpm.CPModule):
             by this module.  If you would like to average all of the images in 
             an entire pipeline, i.e., across cycles, you should instead use the <b>CorrectIlluminationCalculate</b> module 
             and choose the <i>All</i> (vs. <i>Each</i>) option.</li>
+            
+            <li><i>Maximum </i> returns the element-wise maximum value at each pixel location.            
             
             <li><i>Invert</i> subtracts the image intensities from 1. This makes the darkest
             color the brightest and vice-versa.</li>
@@ -195,7 +198,7 @@ class ImageMath(cpm.CPModule):
         output_mask = masks[0]
 
         opval = self.operation.value
-        if opval in (O_ADD, O_SUBTRACT, O_MULTIPLY, O_DIVIDE, O_AVERAGE):
+        if opval in (O_ADD, O_SUBTRACT, O_MULTIPLY, O_DIVIDE, O_AVERAGE, O_MAXIMUM):
             # Binary operations
             if opval in (O_ADD, O_AVERAGE):
                 op = np.add
@@ -203,6 +206,8 @@ class ImageMath(cpm.CPModule):
                 op = np.subtract
             elif opval == O_MULTIPLY:
                 op = np.multiply
+            elif opval == O_MAXIMUM:
+                op = np.maximum
             else:
                 op = np.divide
             for pd, mask in zip(pixel_data[1:], masks[1:]):

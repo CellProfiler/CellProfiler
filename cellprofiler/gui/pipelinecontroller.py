@@ -357,6 +357,7 @@ class PipelineController:
     def __on_pipeline_event(self,caller,event):
         if isinstance(event,cellprofiler.pipeline.RunExceptionEvent):
             error_msg = None
+            self.__pipeline_list_view.select_one_module(event.module.module_num)
             try:
                 import MySQLdb
                 if (isinstance(event.error, MySQLdb.OperationalError) and

@@ -8,10 +8,10 @@ from cellprofiler.gui.help import HELP
 from cellprofiler.utilities.relpath import relpath
 import cellprofiler.utilities.get_revision as get_revision
     
-LOCATION_COVERPAGE = os.path.join('images','CPCoverPage.png')
-LOCATION_WHITEHEADLOGO = os.path.join('images','WhiteheadInstituteLogo.png')
-LOCATION_CSAILLOGO = os.path.join('images','CSAIL_Logo.png')
-LOCATION_IMAGINGPLATFORMBANNER  = os.path.join('images','BroadPlusImagingPlusBanner.png')    
+LOCATION_COVERPAGE = '/'.join(['images','CPCoverPage.png'])
+LOCATION_WHITEHEADLOGO = '/'.join(['images','WhiteheadInstituteLogo.png'])
+LOCATION_CSAILLOGO = '/'.join(['images','CSAIL_Logo.png'])
+LOCATION_IMAGINGPLATFORMBANNER  = '/'.join(['images','BroadPlusImagingPlusBanner.png'])    
     
 def generate_html(webpage_path = None):
     if webpage_path is None:
@@ -149,7 +149,7 @@ def output_module_html(webpage_path):
             # Strip out end html tags so I can add more stuff
             result = result.replace('</body>','').replace('</html>','')
             # Include images specific to the module, relative to html files ('images' dir)
-            LOCATION_MODULE_IMAGES = os.path.join('images','%s.png'%(module_name))
+            LOCATION_MODULE_IMAGES = '/'.join(['images','%s.png'%(module_name)])
             result += '\n\n<div><p><img src="%s", width="50%%"></img></p></div>\n'%LOCATION_MODULE_IMAGES
             # Now end the help text
             result += '</body></html>'

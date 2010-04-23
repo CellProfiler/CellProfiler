@@ -283,7 +283,6 @@ class ModuleView:
             if not reselecting:
                 self.clear_selection()
             if not self.__as_datatool:
-                print "showing notes"
                 self.notes_panel.Show()
             self.__module       = new_module
             self.__controls     = []

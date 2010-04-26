@@ -398,6 +398,58 @@ class TestIdentifyObjectsInGrid(unittest.TestCase):
         count = m.get_current_image_measurement('Count_%s'%OUTPUT_OBJECTS_NAME)
         self.assertEqual(count[0], gridding.rows * gridding.columns)
 
+    def test_03_03_img_891(self):
+        '''Regression test of img-891, last spot filtered out'''
+        d = D.DefineGrid()
+        d.ordering.value = D.NUM_BY_COLUMNS
+        #
+        # Grid with x spacing = 10, y spacing = 20
+        #
+        diameter = 6
+        gridding =d.build_grid_info(15,25,1,1,32,45,2,2)
+        expected = self.make_rectangular_grid(gridding)
+        i,j = np.mgrid[0:expected.shape[0],0:expected.shape[1]]
+        ispot, jspot = np.mgrid[0:gridding.rows, 0:gridding.columns]
+        y_locations = np.zeros(np.max(gridding.spot_table)+1,int)
+        y_locations[gridding.spot_table.flatten()] = \
+                   gridding.y_locations[ispot.flatten()]
+        x_locations = np.zeros(np.max(gridding.spot_table)+1,int)
+        x_locations[gridding.spot_table.flatten()] =\
+                   gridding.x_locations[jspot.flatten()]
+        #
+        # Perturb the X and Y locations and diameters randomly
+        #
+        np.random.seed(0)
+        x_locations += (np.random.uniform(size=x_locations.shape[0])*3 - 1).astype(int)
+        y_locations += (np.random.uniform(size=y_locations.shape[0])*3 - 1).astype(int)
+        random_diameters = np.random.uniform(size=y_locations.shape[0]+1)*4*3
+        idist = (i - y_locations[expected])
+        jdist = (j - x_locations[expected])
+        guide_labels = expected.copy()
+        expected[idist**2 + jdist**2 > (float(diameter + 1)/2)**2] = 0
+        guide_labels[idist**2 + jdist**2 > ((random_diameters[guide_labels] + 1)/2)**2] = 0
+        #
+        # Erase the last one... this triggered the bug
+        #
+        expected[expected == np.max(guide_labels)] = 0
+        guide_labels[guide_labels == np.max(guide_labels)] = 0
+        workspace, module = self.make_workspace(gridding, guide_labels)
+        self.assertTrue(isinstance(module, I.IdentifyObjectsInGrid))
+        module.diameter_choice.value = I.AM_MANUAL
+        module.diameter.value = diameter
+        module.shape_choice.value = I.SHAPE_CIRCLE_NATURAL
+        module.run(workspace)
+        labels = workspace.object_set.get_objects(OUTPUT_OBJECTS_NAME).segmented
+        self.assertTrue(np.all(labels == expected[0:labels.shape[0],0:labels.shape[1]]))
+        m = workspace.measurements
+        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        xm = m.get_current_measurement(OUTPUT_OBJECTS_NAME, 'Location_Center_X')
+        self.assertTrue(np.all(xm == x_locations[1:-1]))
+        ym = m.get_current_measurement(OUTPUT_OBJECTS_NAME, 'Location_Center_Y')
+        self.assertTrue(np.all(ym == y_locations[1:-1]))
+        count = m.get_current_image_measurement('Count_%s'%OUTPUT_OBJECTS_NAME)
+        self.assertEqual(count[0], gridding.rows * gridding.columns - 1)
+        
     def test_04_01_natural(self):
         # Use natural objects.
         #
@@ -476,4 +528,6 @@ class TestIdentifyObjectsInGrid(unittest.TestCase):
         self.assertTrue(np.all(ym == y_locations[1:]))
         count = m.get_current_image_measurement('Count_%s'%OUTPUT_OBJECTS_NAME)
         self.assertEqual(count[0], gridding.rows * gridding.columns)
+        
+    
 

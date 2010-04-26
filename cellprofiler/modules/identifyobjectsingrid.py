@@ -309,6 +309,10 @@ class IdentifyObjectsInGrid(cpm.CPModule):
         labels = self.fill_grid(workspace,gridding)
         labels[guide_label[0:labels.shape[0],0:labels.shape[1]] == 0] = 0
         centers_i, centers_j = centers_of_labels(labels)
+        nmissing = np.max(gridding.spot_table) - len(centers_i)
+        if nmissing > 0:
+            centers_i = np.hstack((centers_i, [np.NaN] * nmissing))
+            centers_j = np.hstack((centers_j, [np.NaN] * nmissing))
         #
         # Broadcast these using the spot table
         #

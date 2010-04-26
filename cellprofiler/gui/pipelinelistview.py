@@ -101,6 +101,7 @@ class PipelineListView(object):
         self.drag_start = None
         self.drag_time = None
         self.list_ctrl.SetDropTarget(PipelineDropTarget(self))
+        panel.SetDropTarget(PanelDropTarget(self))
 
     def make_list(self):
         '''Make the list control with the pipeline items in it'''
@@ -369,19 +370,41 @@ class PipelineListView(object):
                                  (y-self.drag_start[1])**2)
             return distance > 10
         return True
+
+    def provide_panel_drag_feedback(self, x, y, data):
+        return self.where_to_drop_panel(x, y) is not None
     
     def on_drop(self, x, y):
         if self.where_to_drop(x,y)  is None:
             return False
         return True
+
+    def on_panel_drop(self, x, y):
+        if self.where_to_drop_panel(x, y) is None:
+            return False
+        return True
     
+    def where_to_drop_panel(self, x, y):
+        nmodules = len(self.__pipeline.modules())
+        if nmodules == 0:
+            return 0
+        x_screen, y_screen = self.__panel.ClientToScreenXY(x,y)
+        x_lv, y_lv = self.list_ctrl.ScreenToClientXY(x_screen, y_screen)
+        if y_lv < 0:
+            return 0
+        elif y_lv >= self.list_ctrl.Rect.Height:
+            return nmodules
+        else:
+            return None
+
     def where_to_drop(self, x, y):
         nmodules = len(self.__pipeline.modules())
         if nmodules == 0:
             return 0
         else:
             last_rect = self.list_ctrl.GetItemRect(nmodules-1)
-            if last_rect[1] + last_rect[3] < y:
+            last_rect_bottom = last_rect[1] + last_rect[3]
+            if last_rect_bottom < y:
                 # Below last item. Insert after last
                 return nmodules
             index, code = self.list_ctrl.HitTest(wx.Point(x,y))
@@ -399,18 +422,26 @@ class PipelineListView(object):
     def on_data(self, x, y, action, data):
         index = self.where_to_drop(x,y)
         if index is not None:
-            #
-            # Insert the new modules
-            #
-            wx.BeginBusyCursor()
-            try:
-                pipeline = cpp.Pipeline()
-                pipeline.load(StringIO(data))
-                for i, module in enumerate(pipeline.modules()):
-                    module.module_num = i + index + 1
-                    self.__pipeline.add_module(module)
-            finally:
-                wx.EndBusyCursor()
+            self.do_drop(index, action, data)
+
+    def on_panel_data(self, x, y, action, data):
+        index = self.where_to_drop_panel(x,y)
+        if index is not None:
+            self.do_drop(index, action, data)
+
+    def do_drop(self, index, action, data):
+        #
+        # Insert the new modules
+        #
+        wx.BeginBusyCursor()
+        try:
+            pipeline = cpp.Pipeline()
+            pipeline.load(StringIO(data))
+            for i, module in enumerate(pipeline.modules()):
+                module.module_num = i + index + 1
+                self.__pipeline.add_module(module)
+        finally:
+            wx.EndBusyCursor()
                     
     def __on_pipeline_loaded(self,pipeline,event):
         """Repopulate the list view after the pipeline loads
@@ -618,5 +649,28 @@ class PipelineDropTarget(wx.PyDropTarget):
         if self.GetData():
             data_object = self.GetDataObject()
             self.window.on_data(x, y, action, data_object.GetDataHere(
+                wx.CustomDataFormat(PIPELINE_DATA_FORMAT)))
+        return action
+
+class PanelDropTarget(wx.PyDropTarget):
+    def __init__(self, window):
+        super(PanelDropTarget, self).__init__()
+        self.window = window
+        self.SetDataObject(PipelineDataObject())
+        
+    def OnDragOver(self, x, y, data):
+        if not self.window.provide_panel_drag_feedback(x, y, data):
+            return wx.DragNone
+        if wx.GetKeyState(wx.WXK_CONTROL) == 0:
+            return wx.DragMove
+        return wx.DragCopy
+    
+    def OnDrop(self, x, y):
+        return self.window.on_panel_drop(x, y)
+    
+    def OnData(self, x, y, action):
+        if self.GetData():
+            data_object = self.GetDataObject()
+            self.window.on_panel_data(x, y, action, data_object.GetDataHere(
                 wx.CustomDataFormat(PIPELINE_DATA_FORMAT)))
         return action

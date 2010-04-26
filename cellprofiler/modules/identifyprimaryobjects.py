@@ -148,6 +148,7 @@ from cellprofiler.cpmath.cpmorphology import binary_shrink, relabel
 from cellprofiler.cpmath.cpmorphology import regional_maximum
 from cellprofiler.cpmath.filter import stretch, laplacian_of_gaussian
 from cellprofiler.cpmath.watershed import fast_watershed as watershed
+from cellprofiler.cpmath.propagate import propagate
 from cellprofiler.cpmath.smooth import smooth_with_noise
 import cellprofiler.cpmath.outline
 import cellprofiler.objects
@@ -175,6 +176,7 @@ UN_NONE                         = "None"
 WATERSHED_VAR                   = 11
 WA_INTENSITY                    = "Intensity"
 WA_DISTANCE                     = "Distance"
+WA_PROPAGATE                    = "Propagate"
 WA_NONE                         = "None"
 SMOOTHING_SIZE_VAR              = 12
 MAXIMA_SUPPRESSION_SIZE_VAR     = 13
@@ -304,7 +306,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
 
         self.watershed_method = cps.Choice(
             'Method to draw dividing lines between clumped objects', 
-            [WA_INTENSITY,WA_DISTANCE,WA_NONE], doc="""\
+            [WA_INTENSITY, WA_DISTANCE, WA_PROPAGATE, WA_NONE], doc="""\
             This setting allows you to choose the method that is used to draw the line
             bewteen segmented objects, provided that you have chosen to declump the objects.
             To decide between these methods, you can run Test mode to see the results of each.
@@ -320,6 +322,14 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             Technical description: Using the previously identified local maxima as seeds, 
             this method is a
             watershed on the distance-transformed thresholded image.</li>
+            <li><i>Propagate</i>: This method uses a propagation algorithm
+            instead of a watershed. The image is ignored and the pixels are
+            assigned to the objects by repeatedly adding unassigned pixels to
+            the objects that are immediately adjacent to them. This method
+            is suited in cases such as objects with branching extensions,
+            for instance neurites, where the goal is to trace outward from
+            the cell body along the branch, assigning pixels in the branch
+            along the way.</li>
             <li><i>None</i>: If objects are well separated and bright relative to the
             background, it may be unnecessary to attempt to separate clumped objects.
             Using the very fast <i>None</i> option, a simple threshold will be used to identify
@@ -978,6 +988,9 @@ class IdentifyPrimaryObjects(cpmi.Identify):
                     scipy.ndimage.distance_transform_edt(labeled_image>0)
             watershed_image = -distance_transformed_image
             watershed_image = watershed_image - np.min(watershed_image)
+        elif self.watershed_method == WA_PROPAGATE:
+            # No image used
+            pass
         else:
             raise NotImplementedError("Watershed method %s is not implemented"%(self.watershed_method.value))
         #
@@ -990,17 +1003,23 @@ class IdentifyPrimaryObjects(cpmi.Identify):
         #
         labeled_maxima,object_count = \
             scipy.ndimage.label(maxima_image>0,np.ones((3,3),bool))
-        markers = np.zeros(watershed_image.shape,np.int16)
-        markers[labeled_maxima>0]=-labeled_maxima[labeled_maxima>0]
-        #
-        # Some labels have only one marker in them, some have multiple and
-        # will be split up.
-        # 
-        watershed_boundaries = watershed(watershed_image,
-                                         markers,
-                                         np.ones((3,3),bool),
-                                         mask=labeled_image!=0)
-        watershed_boundaries = -watershed_boundaries
+        if self.watershed_method == WA_PROPAGATE:
+            watershed_boundaries, distance =\
+                propagate(np.zeros(labeled_maxima.shape),
+                          labeled_maxima,
+                          labeled_image != 0, 1.0)
+        else:
+            markers = np.zeros(watershed_image.shape,np.int16)
+            markers[labeled_maxima>0]=-labeled_maxima[labeled_maxima>0]
+            #
+            # Some labels have only one marker in them, some have multiple and
+            # will be split up.
+            # 
+            watershed_boundaries = watershed(watershed_image,
+                                             markers,
+                                             np.ones((3,3),bool),
+                                             mask=labeled_image!=0)
+            watershed_boundaries = -watershed_boundaries
         
         return watershed_boundaries, object_count, reported_maxima_suppression_size
 

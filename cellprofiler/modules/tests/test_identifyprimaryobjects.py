@@ -803,6 +803,63 @@ class test_IdentifyPrimaryObjects(unittest.TestCase):
         objects = object_set.get_objects("my_object")
         self.assertEqual(np.max(objects.segmented),2)
         self.assertNotEqual(objects.segmented[12,7],objects.segmented[4,7])
+        
+    def test_02_11_propagate(self):
+        """Test the propagate unclump method"""
+        x = ID.IdentifyPrimAutomatic()
+        x.image_name.value = "my_image"
+        x.object_name.value = "my_object"
+        x.exclude_size.value = False
+        x.size_range.value = (2,10)
+        x.fill_holes.value = False
+        x.smoothing_filter_size.value = 0
+        x.automatic_smoothing.value = 0
+        x.maxima_suppression_size.value = 3.6
+        x.automatic_suppression.value = False
+        x.threshold_method.value = T.TM_MANUAL
+        x.manual_threshold.value = .3
+        x.unclump_method.value = ID.UN_INTENSITY
+        x.watershed_method.value = ID.WA_PROPAGATE
+        img = np.array([[ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                           [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                           [ 0, 0, 0, 0, 0,.5,.5,.5,.5,.5,.5, 0, 0, 0, 0, 0],
+                           [ 0, 0, 0,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5, 0, 0, 0],
+                           [ 0, 0,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5, 0, 0],
+                           [ 0, 0,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5, 0, 0],
+                           [ 0, 0,.5,.5,.5,.5,.5,.9,.9,.5,.5,.5,.5,.5, 0, 0],
+                           [ 0, 0,.5,.5,.5,.5, 0, 0, 0, 0, 0, 0, 0,.5, 0, 0],
+                           [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,.5, 0, 0],
+                           [ 0, 0, 0, 0, 0, 0,.5,.5,.5,.5,.5,.5,.5,.5, 0, 0],
+                           [ 0, 0, 0, 0, 0,.5,.5,.5,.5, 0, 0, 0, 0, 0, 0, 0],
+                           [ 0, 0, 0, 0,.5,.5,.5,.5,.5, 0, 0, 0, 0, 0, 0, 0],
+                           [ 0, 0, 0,.4,.4,.4,.5,.5,.5,.4,.4,.4,.4, 0, 0, 0],
+                           [ 0, 0,.4,.4,.4,.4,.4,.4,.4,.4,.4,.4,.4,.4, 0, 0],
+                           [ 0, 0,.4,.4,.4,.4,.4,.4,.4,.4,.4,.4,.4,.4, 0, 0],
+                           [ 0, 0,.4,.4,.4,.4,.4,.9,.9,.4,.4,.4,.4,.4, 0, 0],
+                           [ 0, 0,.4,.4,.4,.4,.4,.4,.4,.4,.4,.4,.4,.4, 0, 0],
+                           [ 0, 0, 0,.4,.4,.4,.4,.4,.4,.4,.4,.4,.4, 0, 0, 0],
+                           [ 0, 0, 0, 0, 0,.4,.4,.4,.4,.4,.4, 0, 0, 0, 0, 0],
+                           [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                           [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+                           ])
+        # We do a little blur here so that there's some monotonic decrease
+        # from the central peak
+        img = scipy.ndimage.gaussian_filter(img, .5, mode='constant')
+        image = cellprofiler.cpimage.Image(img)
+        image_set_list = cellprofiler.cpimage.ImageSetList()
+        image_set = image_set_list.get_image_set(0)
+        image_set.providers.append(cellprofiler.cpimage.VanillaImageProvider("my_image",image))
+        object_set = cellprofiler.objects.ObjectSet()
+        measurements = cpmeas.Measurements()
+        pipeline = cellprofiler.pipeline.Pipeline()
+        x.run(Workspace(pipeline,x,image_set,object_set,measurements,None))
+        objects = object_set.get_objects("my_object")
+        self.assertEqual(np.max(objects.segmented),2)
+        # This point has a closer "crow-fly" distance to the upper object
+        # but should be in the lower one because of the serpentine path
+        self.assertEqual(objects.segmented[14,9],objects.segmented[9,9])
+        
+        
     
     def test_03_01_run_inside_pipeline(self):
         pass # No longer supported
@@ -1014,6 +1071,39 @@ IdentifyPrimaryObjects:[module_num:2|svn_version:\'8981\'|variable_revision_numb
     Enter LoG filter diameter\x3A :5
     How do you want to handle images with large numbers of objects?:Truncate
     Maximum # of objects\x3A:305
+
+IdentifyPrimaryObjects:[module_num:3|svn_version:\'8981\'|variable_revision_number:5|show_window:True|notes:\x5B\x5D]
+    Select the input image:DNA
+    Name the identified primary objects:MyObjects
+    Typical diameter of objects, in pixel units (Min,Max)\x3A:12,42
+    Discard objects outside the diameter range?:No
+    Try to merge too small objects with nearby larger objects?:Yes
+    Discard objects touching the border of the image?:No
+    Select the thresholding method:Otsu Adaptive
+    Threshold correction factor:1.2
+    Lower and upper bounds on threshold\x3A:0.1,0.6
+    Approximate fraction of image covered by objects?:0.01
+    Method to distinguish clumped objects:Intensity
+    Method to draw dividing lines between clumped objects:Propagate
+    Size of smoothing filter\x3A:10
+    Suppress local maxima within this distance\x3A:7
+    Speed up by using lower-resolution image to find local maxima?:No
+    Name the outline image:MyOutlines
+    Fill holes in identified objects?:No
+    Automatically calculate size of smoothing filter?:No
+    Automatically calculate minimum size of local maxima?:No
+    Enter manual threshold\x3A:0.0
+    Select binary image\x3A:MyBinaryImage
+    Save outlines of the identified objects?:Yes
+    Calculate the Laplacian of Gaussian threshold automatically?:No
+    Enter Laplacian of Gaussian threshold\x3A:0.5
+    Two-class or three-class thresholding?:Three classes
+    Minimize the weighted variance or the entropy?:Entropy
+    Assign pixels in the middle intensity class to the foreground or the background?:Background
+    Automatically calculate the size of objects for the Laplacian of Gaussian filter?:No
+    Enter LoG filter diameter\x3A :5
+    How do you want to handle images with large numbers of objects?:Erase
+    Maximum # of objects\x3A:305
 """
         pipeline = cellprofiler.pipeline.Pipeline()
         def callback(caller,event):
@@ -1021,8 +1111,8 @@ IdentifyPrimaryObjects:[module_num:2|svn_version:\'8981\'|variable_revision_numb
                 isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
         pipeline.add_listener(callback)
         pipeline.load(StringIO.StringIO(data))
-        self.assertEqual(len(pipeline.modules()),2)
-        module = pipeline.modules()[-1]
+        self.assertEqual(len(pipeline.modules()),3)
+        module = pipeline.modules()[1]
         self.assertTrue(isinstance(module, ID.IdentifyPrimaryObjects))
         self.assertEqual(module.image_name, "DNA")
         self.assertEqual(module.object_name, "MyObjects")
@@ -1057,6 +1147,41 @@ IdentifyPrimaryObjects:[module_num:2|svn_version:\'8981\'|variable_revision_numb
         self.assertEqual(module.limit_choice, ID.LIMIT_TRUNCATE)
         self.assertEqual(module.maximum_object_count, 305)
         
+        module = pipeline.modules()[2]
+        self.assertTrue(isinstance(module, ID.IdentifyPrimaryObjects))
+        self.assertEqual(module.image_name, "DNA")
+        self.assertEqual(module.object_name, "MyObjects")
+        self.assertEqual(module.size_range.min, 12)
+        self.assertEqual(module.size_range.max, 42)
+        self.assertFalse(module.exclude_size)
+        self.assertTrue(module.merge_objects)
+        self.assertFalse(module.exclude_border_objects)
+        self.assertEqual(module.threshold_method, T.TM_OTSU_ADAPTIVE)
+        self.assertAlmostEqual(module.threshold_correction_factor.value, 1.2)
+        self.assertAlmostEqual(module.threshold_range.min, 0.1)
+        self.assertAlmostEqual(module.threshold_range.max, 0.6)
+        self.assertEqual(module.object_fraction.value, "0.01")
+        self.assertEqual(module.unclump_method, ID.UN_INTENSITY)
+        self.assertEqual(module.watershed_method, ID.WA_PROPAGATE)
+        self.assertEqual(module.smoothing_filter_size, 10)
+        self.assertEqual(module.maxima_suppression_size, 7)
+        self.assertTrue(module.should_save_outlines)
+        self.assertEqual(module.save_outlines, "MyOutlines")
+        self.assertFalse(module.fill_holes)
+        self.assertFalse(module.automatic_smoothing)
+        self.assertFalse(module.automatic_suppression)
+        self.assertEqual(module.manual_threshold, 0)
+        self.assertEqual(module.binary_image, "MyBinaryImage")
+        self.assertFalse(module.wants_automatic_log_threshold)
+        self.assertAlmostEqual(module.manual_log_threshold.value, 0.5)
+        self.assertEqual(module.two_class_otsu, I.O_THREE_CLASS)
+        self.assertEqual(module.use_weighted_variance, I.O_ENTROPY)
+        self.assertEqual(module.assign_middle_to_foreground, I.O_BACKGROUND)
+        self.assertFalse(module.wants_automatic_log_diameter)
+        self.assertEqual(module.log_diameter, 5)
+        self.assertEqual(module.limit_choice, ID.LIMIT_ERASE)
+        self.assertEqual(module.maximum_object_count, 305)
+
     def test_05_01_discard_large(self):
         x = ID.IdentifyPrimAutomatic()
         x.object_name.value = "my_object"

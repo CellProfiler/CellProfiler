@@ -1,11 +1,11 @@
 '''<b>Make Projection</b> combines several two-dimensional images of 
-the same field of view together, either by averaging or taking the 
-maximum pixel value at each pixel position
+the same field of view together, either by performing a mathematical operation
+upon the pixel values at each pixel position.
 <hr>
 
-This module combines a set of images by averaging the pixel intensities
-(or taking the maximum pixel intensity) at each pixel position. The 
-process of averaging a Z-stack (3D image stack) is known as making a projection.
+This module combines a set of images by either averaging, suming or taking the 
+maximum or minimum pixel intensity at each pixel position. The process of averaging
+or summing a Z-stack (3D image stack) is known as making a projection.
 
 The image is not immediately available in subsequent modules because the
 output of this module is not complete until all image processing cycles have completed.
@@ -50,7 +50,9 @@ import cellprofiler.settings as cps
 
 P_AVERAGE = 'Average'
 P_MAXIMUM = 'Maximum'
-P_ALL = [P_AVERAGE, P_MAXIMUM]
+P_MINIMUM = 'Minimum'
+P_SUM = 'Sum'
+P_ALL = [P_AVERAGE, P_MAXIMUM, P_MINIMUM, P_SUM]
 
 class MakeProjection(cpm.CPModule):
     
@@ -63,11 +65,12 @@ class MakeProjection(cpm.CPModule):
             doc = '''What did you call the images to be made into a projection?''')
         self.projection_type = cps.Choice('Type of projection',
                                           P_ALL, doc = '''
-                                          What kind of projection would you like to make?
-                                          <ul><li><i>Average:</i> Use the average pixel intensity at each pixel position
-                                          to create the final image.</li>
-                                          <li><i>Maximum:</i> Use the maximum pixel value at each pixel position to
-                                          create the final image.</li></ul>''')
+                                          What kind of projection would you like to make? The final image can be created
+                                          by the following methods:
+                                          <ul><li><i>Average:</i> Use the average pixel intensity at each pixel position.</li>
+                                          <li><i>Maximum:</i> Use the maximum pixel value at each pixel position.</li>
+                                          <li><i>Minimum:</i> Use the minimum pixel value at each pixel position.</li>
+                                          <li><i>Sum:</i> Add the pixel values at each pixel position.</li></ul>''')
         self.projection_image_name = cps.ImageNameProvider(
             'Name the output image',
             'ProjectionBlue', 
@@ -164,7 +167,7 @@ class ImageProvider(cpi.AbstractImageProvider):
             self.__image_count = np.ones(image.pixel_data.shape, int)
     
     def accumulate_image(self, image):
-        if self.__how_to_accumulate == P_AVERAGE:
+        if self.__how_to_accumulate in [P_AVERAGE,P_SUM]:
             if image.has_mask:
                 self.__image[image.mask] += image.pixel_data[image.mask]
             else:
@@ -175,6 +178,12 @@ class ImageProvider(cpi.AbstractImageProvider):
                                                       image.pixel_data[image.mask])
             else:
                 self.__image = np.maximum(image.pixel_data, self.__image)
+        elif self.__how_to_accumulate == P_MINIMUM:
+            if image.has_mask:
+                self.__image[image.mask] = np.minimum(self.__image[image.mask],
+                                                      image.pixel_data[image.mask])
+            else:
+                self.__image = np.minimum(image.pixel_data, self.__image)
         else:
             raise NotImplementedError("No such accumulation method: %s"%
                                       self.__how_to_accumulate)

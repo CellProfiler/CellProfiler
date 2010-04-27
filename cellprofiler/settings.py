@@ -49,6 +49,8 @@ GRID_GROUP = 'gridgroup'
 CROPPING_ATTRIBUTE = "cropping_image"
 '''Indicates that the image was loaded from a file and has a file name and path'''
 FILE_IMAGE_ATTRIBUTE = "file_image"
+'''Indicates that the image is external (eg: from Java)'''
+EXTERNAL_IMAGE_ATTRIBUTE = "external_image"
 '''Indicates that the image is the result of an aggregate operation'''
 AGGREGATE_IMAGE_ATTRIBUTE = "aggregate_image"
 '''Indicates that the image is only available on the last cycle'''
@@ -867,6 +869,17 @@ class FileImageNameProvider(ImageNameProvider):
         kwargs[PROVIDED_ATTRIBUTES][FILE_IMAGE_ATTRIBUTE] = True
         super(FileImageNameProvider,self).__init__(text, value, *args,
                                                    **kwargs)
+        
+class ExternalImageNameProvider(ImageNameProvider):
+    """A setting that provides an image name where the image is loaded 
+    externally. (eg: from Java)"""
+    def __init__(self, text, value=DO_NOT_USE, *args, **kwargs):
+        kwargs = kwargs.copy()
+        if not kwargs.has_key(PROVIDED_ATTRIBUTES):
+            kwargs[PROVIDED_ATTRIBUTES] = {}
+        kwargs[PROVIDED_ATTRIBUTES][EXTERNAL_IMAGE_ATTRIBUTE] = True
+        super(ExternalImageNameProvider,self).__init__(text, value, *args,
+                                                   **kwargs)
 
 class CroppingNameProvider(ImageNameProvider):
     """A setting that provides an image name where the image has a cropping mask"""
@@ -876,7 +889,7 @@ class CroppingNameProvider(ImageNameProvider):
             kwargs[PROVIDED_ATTRIBUTES] = {}
         kwargs[PROVIDED_ATTRIBUTES][CROPPING_ATTRIBUTE] = True
         super(CroppingNameProvider,self).__init__(text, value, *args, **kwargs)
-    
+
 class ObjectNameProvider(NameProvider):
     """A setting that provides an image name
     """
@@ -1025,7 +1038,15 @@ class CroppingNameSubscriber(ImageNameSubscriber):
         super(CroppingNameSubscriber,self).__init__(text, value, can_be_blank,
                                                     blank_text, *args, 
                                                     **kwargs)
-    
+
+class ExternalImageNameSubscriber(ImageNameSubscriber):
+    """A setting that provides image names loaded externally (eg: from Java)"""
+    def __init__(self, text, value=DO_NOT_USE, can_be_blank = False,
+                 blank_text=LEAVE_BLANK, *args, **kwargs):
+        super(ExternalImageNameSubscriber,self).__init__(text, value, can_be_blank,
+                                                     blank_text, *args,
+                                                     **kwargs)
+
 class ObjectNameSubscriber(NameSubscriber):
     """A setting that subscribes to the list of available object names
     """

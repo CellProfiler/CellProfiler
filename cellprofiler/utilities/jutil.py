@@ -522,6 +522,9 @@ def get_dictionary_wrapper(dictionary):
         get = make_method('get',
                           '(Ljava/lang/Object;)Ljava/lang/Object;',
                           'Return the value associated with a key or None if no value')
+        put = make_method('put',
+                          '(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;',
+                          'Associate a value with a key in the dictionary')
     return Dictionary()
 
 def jdictionary_to_string_dictionary(hashtable):
@@ -626,5 +629,26 @@ def get_class_wrapper(obj):
         getMethods = make_method('getMethods','()[Ljava/lang/reflect/Method;')
     return Klass()
 
-
+def attach_ext_env(env_address):
+    '''Attach to an externally supplied Java environment
     
+    env_address - the numeric address of the env memory pointer
+    '''
+    global __thread_local_env 
+    env = javabridge.JB_Env()
+    env.set_env(env_address)
+    __thread_local_env.env = env
+    
+def make_run_dictionary(jobject_address):
+    '''Support function for Py_RunString - jobject address -> globals / locals
+    
+    jobject_address - address of a Java Map of string to object
+    '''
+    jmap = get_env().make_jb_object(jobject_address)
+    d = get_dictionary_wrapper(jmap)
+    
+    result = {}
+    keys = jenumeration_to_string_list(d.keys())
+    for key in keys:
+        result[key] = d.get(key)
+    return result

@@ -28,6 +28,7 @@ cdef extern from "stdlib.h":
     ctypedef unsigned long size_t
     void free(void *ptr)
     void *malloc(size_t size)
+    unsigned long long strtoull(char *str, char **end_ptr, int base)
 
 cdef extern from "string.h":
     void *memset(void *, int, int)
@@ -303,16 +304,22 @@ cdef class JB_Object:
     cdef:
         jobject o
         env
+        gc_collect
     def __cinit__(self):
         self.o = NULL
         self.env = None
+        self.gc_collect = False
     def __repr__(self):
         return "<Java object at 0x%x>"%<int>(self.o)
         
     def __dealloc__(self):
-        if self.env is not None:
+        if self.env is not None and self.gc_collect:
             self.env.dealloc_jobject(self)
 
+    def addr(self):
+        '''Return the address of the Java object as a string'''
+        return str(<int>(self.o))
+        
 cdef class JB_Class:
     '''A Java class'''
     cdef:
@@ -471,6 +478,18 @@ cdef class JB_Env:
 
     def __init__(self):
         self.defer_fn = None
+    def __repr__(self):
+        return "<JB_Env at 0x%x>"%(<size_t>(self.env))
+    
+    def set_env(self, char *address):
+        '''Set the JNIEnv to a memory address
+        
+        address - address as an integer representation of a string
+        '''
+        cdef:
+            size_t *cp_addr
+        cp_addr = <size_t *>&(self.env)
+        cp_addr[0] = strtoull(address, NULL, 10)
         
     def __dealloc__(self):
         self.env = NULL
@@ -969,6 +988,23 @@ cdef class JB_Env:
             raise e
         return result
         
+    def make_jb_object(self, char *address):
+        '''Wrap a java object in a javabridge object
+        
+        address - integer representation of the memory address, as a string
+        '''
+        cdef:
+            jobject jobj
+            size_t  *p_addr
+            size_t c_addr = strtoull(address, NULL, 10)
+            JB_Object jbo
+        p_addr = <size_t *>&jobj
+        p_addr[0] = c_addr
+        jbo = JB_Object()
+        jbo.o = jobj
+        jbo.env = self
+        return jbo
+        
 cdef make_jb_object(JB_Env env, jobject o):
     '''Wrap a Java object in a JB_Object with appropriate reference handling
     
@@ -987,4 +1023,5 @@ cdef make_jb_object(JB_Env env, jobject o):
     jbo = JB_Object()
     jbo.o = oref
     jbo.env = env
+    jbo.gc_collect = True
     return (jbo, None)

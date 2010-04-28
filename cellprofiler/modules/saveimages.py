@@ -753,7 +753,7 @@ class SaveImages(cpm.CPModule):
             filename = workspace.measurements.apply_metadata(filename)
         elif self.file_name_method == FN_SEQUENTIAL:
             filename = self.single_file_name.value
-            filename = '%s%d'%(filename, measurements.image_set_number+1)
+            filename = '%s%d'%(filename, measurements.image_set_number)
         else:
             file_name_feature = 'FileName_%s'%(self.file_image_name)
             filename = measurements.get_current_measurement('Image',

@@ -864,6 +864,56 @@ class Pipeline(object):
                         feature_measurements[0,measurements.image_set_number-1] = data
         return handles
     
+    def run_external(self, image_dict):
+        """Runs a single iteration of the pipeline with the images provided in
+        image_dict and returns a dictionary mapping from image names to images 
+        specified by ExternalImageNameSubscribers.
+        
+        image_dict - dictionary mapping image names to image pixel data in the 
+                     form of a numpy array.
+        """
+        import cellprofiler.settings as cps
+        import cpimage
+        from cellprofiler import objects as cpo
+
+        output_image_names = []
+        input_image_names = []
+        
+        # get the external image provider and subscriber names from the modules
+        for module in self.modules():
+            for setting in module.settings():
+                if isinstance(setting, cps.ExternalImageNameProvider):
+                    input_image_names += [setting.value]
+                if isinstance(setting, cps.ExternalImageNameSubscriber):
+                    output_image_names += [setting.value]
+
+        # Check that the incoming dictionary matches the names expected by the
+        # ExternalImageProviders
+        for name in input_image_names:
+            assert name in image_dict, 'Image named "%s" was not provided in the input dictionary'%(name)
+        
+        # Create image set from provided dict
+        image_set_list = cpimage.ImageSetList()
+        image_set = image_set_list.get_image_set(0)
+        for image_name in input_image_names:
+            input_pixels = image_dict[image_name]
+            image_set.add(image_name, cpimage.Image(input_pixels))
+        object_set = cpo.ObjectSet()
+        measurements = cpmeas.Measurements()
+
+        # Run the modules
+        for module in self.modules(): 
+            workspace = cpw.Workspace(self, module, image_set, object_set, 
+                                      measurements, image_set_list)
+            module.run(workspace)
+        
+        # Populate a dictionary for output with the images to be exported
+        output_dict = {}
+        for name in output_image_names:
+            output_dict[name] = image_set.get_image(name).get_pixel_data()
+            
+        return output_dict
+    
     def run(self,
             frame = None, 
             image_set_start = 0, 

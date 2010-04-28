@@ -5,7 +5,6 @@ __version__ = "$Revision$"
 
 import os
 import cellprofiler.utilities.jutil as jutil
-import cellprofiler.utilities.javabridge as javabridge
 from cellprofiler.preferences import get_headless
 import sys
 import traceback

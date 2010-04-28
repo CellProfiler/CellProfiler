@@ -116,6 +116,7 @@ import numpy as np
 import os
 import sys
 from StringIO import StringIO
+import matplotlib.mlab
 
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
@@ -319,6 +320,63 @@ class LoadData(cpm.CPModule):
             result += [self.row_range]
         return result
 
+    def convert(self):
+        data = matplotlib.mlab.csv2rec(self.csv_path)
+        src_dsc = data['source_description']
+
+        def uniquewaves(seq):
+          output = []
+          for x in seq:
+            if x not in output:
+              output.append(x)
+          return output
+
+        waves = uniquewaves(src_dsc)
+
+        pathname = []
+        filename = []
+        wave_pnames = []
+        wave_fnames = []
+
+        for i in range(len(waves)):
+            mask = data['source_description'] == waves[i]
+            pathname.append(data[mask]['file_path'])
+            filename.append(data[mask]['file_name'])
+            wave_pnames.append('PathName_%s'% (waves[i].strip('"')))
+            wave_fnames.append('FileName_%s'% (waves[i].strip('"')))
+            
+
+        def metadatacols(header):
+            output = []
+            for h in header:
+                if not h.startswith('file_'):
+                    output.append(h)
+            return output
+
+        def data_for_one_wave(data):
+            mask = data['source_description'] == waves[0]
+            data_onewave = data[mask]
+            return data_onewave
+
+        header = data.dtype.names
+        metadata_names = metadatacols(header)
+
+        data_onewave = data_for_one_wave(data)
+        strdate = []
+        for date in data_onewave['date_created']:
+            strdate += [str(date)]
+        metadata_names.remove('source_description')
+        metadata_names.remove('date_created')
+        data_onewave_nofilepaths = matplotlib.mlab.rec_keep_fields(data_onewave,metadata_names)
+        metadata_names = ['Metadata_'+ m for m in metadata_names]
+        data_onewave_nofilepaths.dtype.names = metadata_names
+        final_data = data_onewave_nofilepaths
+        final_data = matplotlib.mlab.rec_append_fields(final_data,'Metadata_date_created',strdate)
+        for i in range(len(waves)):
+            final_data = matplotlib.mlab.rec_append_fields(final_data,wave_pnames[i],pathname[i])
+            final_data = matplotlib.mlab.rec_append_fields(final_data,wave_fnames[i],filename[i])
+        return final_data
+
     @property
     def csv_path(self):
         '''The path and file name of the CSV file to be loaded'''
@@ -407,6 +465,9 @@ class LoadData(cpm.CPModule):
         reader = csv.reader(fd)
         header = reader.next()
         fd.close()
+        if header[0].startswith('ELN_RUN_ID'):
+            data = self.convert()
+            header = data.dtype.names
         entry["header"] = [header_to_column(column) for column in header]
         return entry["header"]
         
@@ -437,6 +498,9 @@ class LoadData(cpm.CPModule):
         fd = self.open_csv()
         reader = csv.reader(fd)
         header = [header_to_column(column) for column in reader.next()]
+        if header[0].startswith('ELN_RUN_ID'):
+            reader = self.convert()
+            header = reader.dtype.names
         if self.wants_rows.value:
             # skip initial rows
             n_to_skip = self.row_range.min-1
@@ -705,6 +769,9 @@ class LoadData(cpm.CPModule):
             fd = self.open_csv()
             reader = csv.reader(fd)
             header = [header_to_column(x) for x in reader.next()]
+            if header[0].startswith('ELN_RUN_ID'):
+                reader = self.convert()
+                header = reader.dtype.names
         except:
             if entry is not None:
                 entry["measurement_columns"] = []
@@ -731,7 +798,11 @@ class LoadData(cpm.CPModule):
                     (field.startswith(PATH_NAME) or
                      field.startswith(FILE_NAME))):
                     continue
-                len_field = len(field)
+                try:
+                    len_field = len(field)
+                except TypeError:
+                    field = str(field)
+                    len_field = len(field)
                 if field.startswith(PATH_NAME):
                     # Account for possible rewrite of the pathname
                     # in batch data
@@ -929,8 +1000,8 @@ def best_cast(sequence, coltype=None):
             # Cast very long "integers" as strings
             return np.array(sequence)
         return np.array([int(x) for x in sequence])
-    except ValueError:
+    except (TypeError, ValueError):
         try:
             return np.array([float(x) for x in sequence])
-        except ValueError:
+        except (TypeError, ValueError):
             return np.array(sequence)

@@ -476,6 +476,52 @@ class TestLoadData(unittest.TestCase):
                 match = re.search(pattern, provider.get_filename())
                 self.assertTrue(match)
                 self.assertEqual(row, match.group("ROW"))
+                
+    def test_09_01_load_bcb_file(self):
+        dir = os.path.join(example_images_directory(), "ExampleSBSImages")
+        file_name = 'Channel2-01-A-01.tif'
+        csv_text = '''ELN_RUN_ID,CBIP_RUN_ID,ASSAY_PLATE_BARCODE,\
+MX_PLATE_ID,ASSAY_WELL_POSITION,ASSAY_WELL_ROLE,SITE_X,SITE_Y,\
+MICROSCOPE,SOURCE_DESCRIPTION,DATE_CREATED,FILE_PATH,FILE_NAME,\
+CPD_PLATE_MAP_NAME,CPD_WELL_POSITION,BROAD_ID,\
+CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
+"4012-10-W01-01-02","4254","BR00021547","20777","N01","COMPOUND",\
+"2","2","GS IX Micro","DAPI","2010/03/19 06:01:12","%s",\
+"%s","C-4012-00-D80-001_Rev3","N01",\
+"BRD-K71194192-001-01-6","2.132352941","ChemBridge","",\
+"Oc1ccnc(SCC(=O)Nc2ccc(Oc3ccccc3)cc2)n1"
+'''%(dir,file_name)
+        pipeline, module, filename = self.make_pipeline(csv_text)
+        c0_ran = [False]
+        def callback(workspace):
+            imgset = workspace.image_set
+            image = imgset.get_image("DAPI")
+            pixels = image.pixel_data
+            self.assertEqual(pixels.shape[0],640)
+            c0_ran[0] = True    
+        c0 = C0()
+        c0.callback = callback
+        c0.module_num = 1
+        pipeline.add_module(c0)
+                
+        try:
+            m = pipeline.run()
+            self.assertTrue(isinstance(m, cpmeas.Measurements))
+            self.assertTrue(c0_ran[0])
+            hexdigest = m.get_current_image_measurement('MD5Digest_DAPI')
+            #
+            # This appears to be bistable, depending on whether PIL or
+            # Bioformats loads it (???)
+            #
+            self.assertTrue(hexdigest == '1a37c43914c7ceb7d9cac503a5c1c767')
+            self.assertTrue('PathName_DAPI' in m.get_feature_names(cpmeas.IMAGE))
+            self.assertEqual(m.get_current_image_measurement('PathName_DAPI'),
+                             dir)
+            self.assertTrue('FileName_DAPI' in m.get_feature_names(cpmeas.IMAGE))
+            self.assertEqual(m.get_current_image_measurement('FileName_DAPI'),
+                             file_name)
+        finally:
+            os.remove(filename)
 
 class C0(cpm.CPModule):
     def create_settings(self):
@@ -483,5 +529,4 @@ class C0(cpm.CPModule):
         self.callback = None
         
     def run(self, workspace):
-        self.callback(workspace)
-                
+        self.callback(workspace)       

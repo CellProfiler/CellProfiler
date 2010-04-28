@@ -124,12 +124,17 @@ class Crop(cpm.CPModule):
         self.crop_method = cps.Choice("Select the cropping method",
                             [CM_COORDINATES, CM_MOUSE], CM_COORDINATES, doc = """                                      
                             Would you like to crop by typing in pixel coordinates or clicking with the mouse?
-                            For <i>Ellipse</i>, you will be asked to click five or more
+                            <ul>
+                            <li><i>Coordinates:</i> For <i>Ellipse</i>, you will be asked to enter the geometric
+                            parameters of the ellipse. For <i>Rectangle</i>, you will be asked to specify
+                            the coordinates of the corners.</li> 
+                            <li><i>Mouse:</i> For <i>Ellipse</i>, you will be asked to click five or more
                             points to define an ellipse around the part of the image you want to
                             analyze.  Keep in mind that the more points you click, the longer it will
                             take to calculate the ellipse shape. For <i>Rectangle</i>, you can click as many
                             points as you like that are in the interior of the region you wish to
-                            retain.""")
+                            retain. <b>This functionality has not yet been implemented.</b></li>
+                            <ul>""")
         
         self.individual_or_once = cps.Choice("Apply which cycle's cropping pattern?",
                             [IO_INDIVIDUALLY, IO_FIRST],

@@ -57,10 +57,11 @@ if get_headless() or sys.platform=="darwin":
     __args += [ r"-Djava.awt.headless=true" ]
 
 jutil.start_vm(__args)
-jutil.attach()
-jutil.static_call("java/lang/System", "setProperty", '(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;', "java.awt.headless", "TRUE")
-print "started headless", jutil.to_string(jutil.static_call("java/lang/System", "getProperty", '(Ljava/lang/String;)Ljava/lang/String;', "java.awt.headless"))
-jutil.detach()
+
+if get_headless() or sys.platform=="darwin":
+    jutil.attach()
+    jutil.static_call("java/lang/System", "setProperty", '(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;', "java.awt.headless", "TRUE")
+    jutil.detach()
 #
 # Start the log4j logger to avoid error messages.
 #

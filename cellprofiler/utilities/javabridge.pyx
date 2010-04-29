@@ -489,7 +489,7 @@ cdef class JB_Env:
         cdef:
             size_t *cp_addr
         cp_addr = <size_t *>&(self.env)
-        cp_addr[0] = strtoull(address, NULL, 10)
+        cp_addr[0] = strtoull(address, NULL, 0)
         
     def __dealloc__(self):
         self.env = NULL
@@ -996,7 +996,7 @@ cdef class JB_Env:
         cdef:
             jobject jobj
             size_t  *p_addr
-            size_t c_addr = strtoull(address, NULL, 10)
+            size_t c_addr = strtoull(address, NULL, 0)
             JB_Object jbo
         p_addr = <size_t *>&jobj
         p_addr[0] = c_addr

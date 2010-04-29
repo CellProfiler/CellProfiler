@@ -40,6 +40,7 @@ import cellprofiler.cpimage
 import cellprofiler.measurements as cpmeas
 import cellprofiler.objects
 import cellprofiler.workspace as cpw
+import cellprofiler.settings as cps
 from cellprofiler.matlab.cputils import make_cell_struct_dtype, new_string_cell_array, encapsulate_strings_in_arrays
 
 '''The measurement name of the image number'''
@@ -864,6 +865,29 @@ class Pipeline(object):
                         feature_measurements[0,measurements.image_set_number-1] = data
         return handles
     
+    def find_external_input_images(self):
+        '''Find the names of the images that need to be supplied externally
+        
+        run_external needs a dictionary of name -> image pixels with
+        one name entry for every external image that must be provided.
+        This function returns a list of those names.
+        '''
+        result = []
+        for module in self.modules():
+            for setting in module.settings():
+                if isinstance(setting, cps.ExternalImageNameProvider):
+                    result.append(setting.value)
+        return result
+    
+    def find_external_output_images(self):
+        result = []
+        for module in self.modules():
+            for setting in module.settings():
+                if isinstance(setting, cps.ExternalImageNameSubscriber):
+                    result.append(setting.value)
+        return result
+        
+    
     def run_external(self, image_dict):
         """Runs a single iteration of the pipeline with the images provided in
         image_dict and returns a dictionary mapping from image names to images 
@@ -876,17 +900,9 @@ class Pipeline(object):
         import cpimage
         from cellprofiler import objects as cpo
 
-        output_image_names = []
-        input_image_names = []
+        output_image_names = self.find_external_output_images()
+        input_image_names = self.find_external_input_images()
         
-        # get the external image provider and subscriber names from the modules
-        for module in self.modules():
-            for setting in module.settings():
-                if isinstance(setting, cps.ExternalImageNameProvider):
-                    input_image_names += [setting.value]
-                if isinstance(setting, cps.ExternalImageNameSubscriber):
-                    output_image_names += [setting.value]
-
         # Check that the incoming dictionary matches the names expected by the
         # ExternalImageProviders
         for name in input_image_names:
@@ -910,7 +926,7 @@ class Pipeline(object):
         # Populate a dictionary for output with the images to be exported
         output_dict = {}
         for name in output_image_names:
-            output_dict[name] = image_set.get_image(name).get_pixel_data()
+            output_dict[name] = image_set.get_image(name).pixel_data
             
         return output_dict
     

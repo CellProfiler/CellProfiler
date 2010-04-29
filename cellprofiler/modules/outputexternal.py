@@ -23,15 +23,16 @@ class OutputExternal(cpm.CPModule):
     category = 'Other'
     
     def create_settings(self):
-        self.image_names = [cps.ExternalImageNameSubscriber('Select an image a name to export')]
+        self.image_names = []
+        self.add_image(False)
         self.add_button = cps.DoSomething('', 'Add another image name', self.add_image)
     
     def settings(self):
-        return self.image_names
+        return [x.image_name for x in self.image_names]
     
     def visible_settings(self):
-        result = [self.image_names[0]]
-        for group in self.image_names[1:]:
+        result = []
+        for group in self.image_names:
             result += group.visible_settings()
         result += [self.add_button]
         return result
@@ -41,8 +42,15 @@ class OutputExternal(cpm.CPModule):
         group = cps.SettingsGroup()
         group.append('divider', cps.Divider(line=False))
         group.append('image_name', cps.ExternalImageNameSubscriber('Select an image a name to export'))
-        group.append('remover', cps.RemoveSettingButton('', 'Remove this image name', self.image_names, group))
+        if can_remove:
+            group.append('remover', cps.RemoveSettingButton('', 'Remove this image name', self.image_names, group))
         self.image_names.append(group)
+        
+    def prepare_settings(self, setting_values):
+        while len(setting_values) < len(self.image_names):
+            del self.image_names[-1]
+        while len(setting_values) > len(self.image_names):
+            self.add_image()
         
     def run(self, workspace):
         pass

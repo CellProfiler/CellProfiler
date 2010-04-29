@@ -406,8 +406,8 @@ class LoadImages(cpmodule.CPModule):
             <a name='where_to_extract'>Metadata fields can be specified from 
             the image filename, the image path (including subfolders), or both. 
             The metadata entered here can be used for image grouping (see the  
-            <a href='#group_by_metadata'><i>Group images by metadata?</i></a> 
-            setting) or simply used as additional columns in the exported 
+            <i>Group images by metadata?</i> setting) or simply used as 
+            additional columns in the exported 
             measurements (see the <b>ExportToSpreadsheet</b> module).</a>"""))
         
         group.append("file_metadata", cps.RegexpText(

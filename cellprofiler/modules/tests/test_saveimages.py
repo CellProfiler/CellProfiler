@@ -1181,6 +1181,78 @@ SaveImages:[module_num:6|svn_version:\'9507\'|variable_revision_number:5|show_wi
                     'Expected: \n'
                     '%s\n'
                     %(setting, im[:,0], expected[:,0]))
+
+    def test_06_02_save_image_with_libtiff(self):
+        image = np.ones((255,255)).astype(np.uint8)
+        for i in range(image.shape[0]):
+            image[i,:] = i
+        image2 = np.ones((100,100)).astype(np.uint8)
+        for i in range(image2.shape[0]):
+            image2[i,:] = i
+            
+        test_settings = [
+            # 16-bit TIF from all image types
+            {'rescale'       : False, 
+             'file_format'   : cpm_si.FF_TIF, 
+             'bit_depth'     : '16',
+             'input_image'   : image},
+            {'rescale'       : False, 
+             'file_format'   : cpm_si.FF_TIF, 
+             'bit_depth'     : '16',
+             'input_image'   : image.astype(np.float) / 255.},
+            {'rescale'       : False, 
+             'file_format'   : cpm_si.FF_TIF, 
+             'bit_depth'     : '16',
+             'input_image'   : image.astype(np.uint16) * 255},
+
+            # Rescaled 16-bit image
+            {'rescale'       : True, 
+             'file_format'   : cpm_si.FF_TIF, 
+             'bit_depth'     : '16',
+             'input_image'   : image2},
+        ]
+
+        for setting in test_settings:
+            # Adjust settings each round and retest
+            workspace, module = self.make_workspace(setting['input_image'])
+
+            module.module_num = 1
+            module.save_image_or_figure.value = cpm_si.IF_IMAGE
+            module.image_name.value = IMAGE_NAME
+            module.pathname.dir_choice = cps.ABSOLUTE_FOLDER_NAME
+            module.pathname.custom_path = self.custom_directory
+            module.file_name_method.value = cpm_si.FN_SINGLE_NAME
+            module.single_file_name.value = FILE_NAME
+            
+            module.rescale.value = setting['rescale']
+            module.file_format.value = setting['file_format']
+            module.bit_depth.value = setting['bit_depth']
+            
+            filename = module.get_filename(workspace)
+            if os.path.isfile(filename):
+                os.remove(filename)
+        
+            module.save_image_with_libtiff(workspace)
+
+            # Convert original image to float to compare it to the saved image
+            if setting['input_image'].dtype == np.uint8:
+                expected = setting['input_image'] / 255.
+            elif setting['input_image'].dtype == np.uint16:
+                expected = setting['input_image'] / 65535.
+            elif issubclass(setting['input_image'].dtype.type, np.floating):
+                expected = setting['input_image']
+                
+            im = cpm_li.load_using_bioformats(filename)
+            
+            assert (np.allclose(im, expected), 
+                    'Saved image did not match original when reloaded.\n'
+                    'Settings were: \n'
+                    '%s\n'
+                    'Original: \n'
+                    '%s\n'
+                    'Expected: \n'
+                    '%s\n'
+                    %(setting, im[:,0], expected[:,0]))
         
         
 def make_array(encoded,shape,dtype=np.uint8):

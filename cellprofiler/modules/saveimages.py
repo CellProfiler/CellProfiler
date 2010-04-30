@@ -11,7 +11,8 @@ processed images created by CellProfiler during the analysis using this module.
 allows you to use the module as a file format converter, by loading files
 in their original format and then saving them in an alternate format.
 
-<p>Note that saving images in 12- or 16-bit format is not supported.
+<p>Note that saving images in 12-bit format is not supported, and 16-bit format
+is supported for TIFF only.
 <p>
 See also <b>LoadImages</b>, <b>ConserveMemory</b>.
 '''
@@ -43,9 +44,18 @@ try:
 except:
     traceback.print_exc()
     sys.stderr.write(
-        "Failed to load bioformats. SaveImages will not be able to save 16-bit TIFFS or movies.\n")
+        "Failed to load bioformats. SaveImages will not be able to save movies.\n")
     has_bioformats = False
-    
+
+try:
+    import libtiff
+    has_tiff = True
+except:
+    traceback.print_exc()
+    sys.stderr.write("Failed to load libtiff.  SaveImages on Mac may not be able to write 16-bit TIFF format")
+    has_tiff = False
+
+
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements
 import cellprofiler.settings as cps
@@ -62,10 +72,7 @@ IF_MASK        = "Mask"
 IF_CROPPING    = "Cropping"
 IF_FIGURE      = "Module window"
 IF_MOVIE       = "Movie"
-if has_bioformats:
-    IF_ALL = [IF_IMAGE, IF_MASK, IF_CROPPING, IF_MOVIE, IF_FIGURE]
-else:
-    IF_ALL = [IF_IMAGE, IF_MASK, IF_CROPPING, IF_FIGURE]
+IF_ALL = [IF_IMAGE, IF_MASK, IF_CROPPING, IF_MOVIE, IF_FIGURE]
     
 
 FN_FROM_IMAGE  = "From image filename"
@@ -345,8 +352,7 @@ class SaveImages(cpm.CPModule):
         if self.save_image_or_figure != IF_MOVIE:
             result.append(self.file_format)
         if (self.file_format in FF_SUPPORTING_16_BIT and 
-            self.save_image_or_figure == IF_IMAGE and
-            has_bioformats):
+            self.save_image_or_figure == IF_IMAGE):
             # TIFF supports 8 & 16-bit, all others are written 8-bit
             result.append(self.bit_depth)
         result.append(self.pathname)
@@ -616,9 +622,70 @@ class SaveImages(cpm.CPModule):
         finally:
             jutil.detach()
                         
+    def save_image_with_libtiff(self, workspace):
+        ''' Saves using libtiff.
+        '''
+        assert self.file_format in (FF_TIF, FF_TIFF)
+        assert self.save_image_or_figure == IF_IMAGE
+
+        workspace.display_data.wrote_image = False
+
+        # get the filename and check overwrite
+        filename = self.get_filename(workspace)
+        path=os.path.split(filename)[0]
+        if len(path) and not os.path.isdir(path):
+            os.makedirs(path)
+        if not self.check_overwrite(filename):
+            return
+        if os.path.isfile(filename):
+            # Important: bioformats will append to files by default, so we must
+            # delete it explicitly if it exists.
+            os.remove(filename)
+        
+        # Get the image data to be written
+        image = workspace.image_set.get_image(self.image_name.value)
+        pixels = image.pixel_data
+        
+        if self.rescale.value:
+            # Normalize intensities for each channel
+            pixels = pixels.astype(np.float32)
+            if pixels.ndim == 3:
+                # RGB
+                for i in range(3):
+                    img_min = np.min(pixels[:,:,i])
+                    img_max = np.max(pixels[:,:,i])
+                    pixels[:,:,i] = (pixels[:,:,i] - img_min) / (img_max - img_min)
+            else:
+                # Grayscale
+                img_min = np.min(pixels)
+                img_max = np.max(pixels)
+                pixels = (pixels - img_min) / (img_max - img_min)
+        
+        if pixels.dtype in (np.uint32, np.uint64, np.int32, np.int64):
+            sys.stderr.write("Warning: converting %s image to 16-bit could result in incorrect values.\n" % repr(pixels.dtype))
+        elif issubclass(pixels.dtype.type, np.floating):
+            # Scale pixel vals to 16 bit
+            pixels = (np.clip(pixels, 0, 1) * 65535)
+        # convert to uint16
+        pixels = pixels.astype(np.uint16)
+
+        if len(pixels.shape) == 3 and pixels.shape[2] == 3:  
+            pixels = np.array([pixels[:,:,0], pixels[:,:,1], pixels[:,:,2]])
+
+        out = libtiff.TIFF.open(filename, 'w')
+        out.write_image(pixels)
+        out.close()
+        workspace.display_data.wrote_image = True
+        if self.when_to_save != WS_LAST_CYCLE:
+            self.save_filename_measurements(workspace)
+                        
     def save_image(self, workspace):
-        if self.get_bit_depth()== '16':
-            return self.save_image_with_bioformats(workspace)
+        if self.get_bit_depth() == '16':
+            print 16, has_tiff, has_bioformats
+            if has_tiff:
+                return self.save_image_with_libtiff(workspace)
+            else:
+                return self.save_image_with_bioformats(workspace)
         
         workspace.display_data.wrote_image = False
         image = workspace.image_set.get_image(self.image_name.value)
@@ -905,6 +972,21 @@ class SaveImages(cpm.CPModule):
         return setting_values, variable_revision_number, from_matlab
     
     def validate_module(self, pipeline):
+        if (self.save_image_or_figure == IF_MOVIE and not has_bioformats):
+            raise cps.ValidationError("CellProfiler requires bioformats to write movies.",
+                                      self.save_image_or_figure)
+
+        if sys.platform == 'darwin':
+            if (self.file_format in FF_SUPPORTING_16_BIT and 
+                self.save_image_or_figure == IF_IMAGE and
+                self.get_bit_depth()== '16' and 
+                not has_tiff):
+                raise cps.ValidationError("Writing TIFFs on OS X using bioformats may cause CellProfiler to hang or crash (install libtiff).",
+                                          self.bit_depth)
+            if (self.save_image_or_figure == IF_MOVIE):
+                raise cps.ValidationError("Saving movies on OS X may cause CellProfiler to hang or crash.",
+                                          self.save_image_or_figure)
+
         if (self.save_image_or_figure in (IF_IMAGE, IF_MASK, IF_CROPPING) and
             self.when_to_save in (WS_FIRST_CYCLE, WS_EVERY_CYCLE)):
             #

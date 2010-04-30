@@ -348,7 +348,7 @@ def static_call(class_name, method_name, sig, *args):
     env = get_env()
     klass = env.find_class(class_name)
     if klass is None:
-        jexception = get_env.exception_occurred()
+        jexception = get_env().exception_occurred()
         raise JavaException(jexception)
     
     method_id = env.get_static_method_id(klass, method_name, sig)

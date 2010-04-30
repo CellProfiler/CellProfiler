@@ -51,8 +51,9 @@ try:
     import libtiff
     has_tiff = True
 except:
-    traceback.print_exc()
-    sys.stderr.write("Failed to load libtiff.  SaveImages on Mac may not be able to write 16-bit TIFF format")
+    if sys.platform == 'darwin':
+        traceback.print_exc()
+        sys.stderr.write("Failed to load libtiff.  SaveImages on Mac may not be able to write 16-bit TIFF format")
     has_tiff = False
 
 

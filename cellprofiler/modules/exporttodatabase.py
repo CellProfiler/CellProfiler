@@ -144,9 +144,11 @@ OT_DICTIONARY = {
 ##############################################
 D_MEASUREMENT_COLUMNS = "MeasurementColumns"
 
-def execute(cursor, query, return_result=True):
-    print query
-    cursor.execute(query)
+def execute(cursor, query, bindings = None, return_result=True):
+    if bindings == None:
+        cursor.execute(query)
+    else:
+        cursor.execute(query, bindings)
     if return_result:
         return get_results_as_list(cursor)
 
@@ -1130,7 +1132,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                     # Write the object table data
                     #
                     stmt = ('INSERT INTO %s (%s) VALUES (%s)'%
-                            (table_name,
+                            (table_name, 
                              ','.join(object_cols),
                              ','.join(['%s']*len(object_cols))))
             
@@ -1145,20 +1147,18 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                             row_stmt = stmt % tuple(row)
                             self.cursor.execute(row_stmt)
             
-            # wrap non-numeric types in quotes
-            image_row_formatted = [("NULL" if np.isnan(val) or val is None
-                                    else str(val))
-                                   if dtype in [cpmeas.COLTYPE_FLOAT, cpmeas.COLTYPE_INTEGER]
-                                   else "NULL" if val is None
-                                   else "'%s'"%MySQLdb.escape_string(str(val)) 
-                                   for val, dtype, colname in image_row]
-            
             image_table = self.get_table_name(cpmeas.IMAGE)
+            replacement = '%s' if self.db_type == DB_MYSQL else "?"
+            image_row_values = [
+                None 
+                if ((field[1] in (cpmeas.COLTYPE_FLOAT, cpmeas.COLTYPE_FLOAT))
+                    and (np.isnan(field[0])))
+                else field[0] for field in image_row]
             stmt = ('INSERT INTO %s (%s) VALUES (%s)' % 
                     (image_table, 
                      ','.join([mapping[colname] for val, dtype, colname in image_row]),
-                     ','.join([str(v) for v in image_row_formatted])))
-            execute(self.cursor, stmt)
+                     ','.join([replacement] * len(image_row))))
+            execute(self.cursor, stmt, image_row_values)
             self.connection.commit()
         except:
             traceback.print_exc()

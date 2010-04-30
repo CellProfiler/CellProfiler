@@ -771,7 +771,7 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
                     return ["Plate", "Well"]
                 return []
             
-        m = cpmeas.Measurements()
+        m = cpmeas.Measurements(can_overwrite = True)
         m.add_image_measurement(INT_IMG_MEASUREMENT, INT_VALUE)
         m.add_image_measurement(FLOAT_IMG_MEASUREMENT, FLOAT_VALUE)
         m.add_image_measurement(STRING_IMG_MEASUREMENT, STRING_VALUE)
@@ -1492,6 +1492,35 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
             self.assertRaises(StopIteration, self.cursor.next)
         finally:
             self.drop_tables(module, ("Per_Image","Per_Object"))
+            
+    def test_02_07_write_direct_backslash(self):
+        '''Regression test for IMG-898
+        
+        Make sure CP can write string data containing a backslash character
+        to the database in direct-mode.
+        '''
+        backslash_string = "\\Why worry?"
+        workspace, module = self.make_workspace(False)
+        self.assertTrue(isinstance(module, E.ExportToDatabase))
+        module.objects_choice.value = E.O_NONE
+        m = workspace.measurements
+        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        m.add_image_measurement(STRING_IMG_MEASUREMENT, backslash_string)
+        try:
+            module.prepare_run(workspace.pipeline, workspace.image_set_list,None)
+            module.prepare_group(workspace.pipeline, workspace.image_set_list,
+                                     {}, [1])
+            module.run(workspace)
+            self.cursor.execute("use CPUnitTest")
+            statement = "select Image_%s from %sPer_Image" % (
+                STRING_IMG_MEASUREMENT, module.table_prefix.value)
+            self.cursor.execute(statement)
+            row = self.cursor.fetchone()
+            self.assertEqual(len(row), 1)
+            self.assertEqual(row[0], backslash_string)
+            self.assertRaises(StopIteration, self.cursor.next)
+        finally:
+            self.drop_tables(module, ("Per_Image",))
                     
     def test_03_01_write_sqlite_direct(self):
         '''Write directly to a SQLite database'''
@@ -1540,6 +1569,50 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
                 self.assertEqual(row[0], 1)
                 self.assertEqual(row[1], i+1)
                 self.assertAlmostEqual(row[2], value)
+            self.assertRaises(StopIteration, cursor.next)
+        finally:
+            if cursor is not None:
+                cursor.close()
+            if connection is not None:
+                connection.close()
+            if hasattr(module, "cursor"):
+                module.cursor.close()
+            if hasattr(module, "connection"):
+                module.connection.close()
+            finally_fn()
+            
+    def test_03_02_write_sqlite_backslash(self):
+        '''Regression test of IMG-898 sqlite with backslash in string'''
+        workspace, module, output_dir, finally_fn = self.make_workspace(True)
+        backslash_string = "\\Why doesn't he worry?"
+        m = workspace.measurements
+        m.add_image_measurement(STRING_IMG_MEASUREMENT, backslash_string)
+        cursor = None
+        connection = None
+        try:
+            self.assertTrue(isinstance(module, E.ExportToDatabase))
+            module.db_type = E.DB_SQLITE
+            module.wants_agg_mean.value = False
+            module.wants_agg_median.value = False
+            module.wants_agg_std_dev.value = False
+            module.objects_choice.value = E.O_NONE
+            module.directory.dir_choice = E.ABSOLUTE_FOLDER_NAME
+            module.directory.custom_path = output_dir
+            module.prepare_run(workspace.pipeline, workspace.image_set_list,None)
+            module.prepare_group(workspace.pipeline, workspace.image_set_list,
+                                 {}, [1])
+            module.run(workspace)
+            cursor, connection = self.get_sqlite_cursor(module)
+            #
+            # Now read the image file from the database
+            #
+            image_table = module.table_prefix.value + "Per_Image"
+            statement = "select Image_%s from %s" % (
+                STRING_IMG_MEASUREMENT, image_table)
+            cursor.execute(statement)
+            row = cursor.fetchone()
+            self.assertEqual(len(row), 1)
+            self.assertEqual(row[0], backslash_string)
             self.assertRaises(StopIteration, cursor.next)
         finally:
             if cursor is not None:

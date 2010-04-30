@@ -1140,7 +1140,7 @@ SaveImages:[module_num:6|svn_version:\'9507\'|variable_revision_number:5|show_wi
              'input_image'   : image2},
         ]
 
-        for setting in test_settings:
+        for i, setting in enumerate(test_settings):
             # Adjust settings each round and retest
             workspace, module = self.make_workspace(setting['input_image'])
 
@@ -1150,15 +1150,12 @@ SaveImages:[module_num:6|svn_version:\'9507\'|variable_revision_number:5|show_wi
             module.pathname.dir_choice = cps.ABSOLUTE_FOLDER_NAME
             module.pathname.custom_path = self.custom_directory
             module.file_name_method.value = cpm_si.FN_SINGLE_NAME
-            module.single_file_name.value = FILE_NAME
+            module.single_file_name.value = FILE_NAME+str(i)
             
             module.rescale.value = setting['rescale']
             module.file_format.value = setting['file_format']
             module.bit_depth.value = setting['bit_depth']
             
-            filename = module.get_filename(workspace)
-            if os.path.isfile(filename):
-                os.remove(filename)
         
             module.save_image_with_bioformats(workspace)
 
@@ -1170,6 +1167,7 @@ SaveImages:[module_num:6|svn_version:\'9507\'|variable_revision_number:5|show_wi
             elif issubclass(setting['input_image'].dtype.type, np.floating):
                 expected = setting['input_image']
                 
+            filename = module.get_filename(workspace)
             im = cpm_li.load_using_bioformats(filename)
             
             assert (np.allclose(im, expected), 
@@ -1181,6 +1179,12 @@ SaveImages:[module_num:6|svn_version:\'9507\'|variable_revision_number:5|show_wi
                     'Expected: \n'
                     '%s\n'
                     %(setting, im[:,0], expected[:,0]))
+            if os.path.isfile(filename):
+                try:
+                    os.remove(filename)
+                except:
+                    sys.stderr.write("Not ideal, Bioformats still holding onto file handle.\n")
+                    traceback.print_exc()
 
     def test_06_02_save_image_with_libtiff(self):
         image = np.ones((255,255)).astype(np.uint8)

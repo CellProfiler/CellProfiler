@@ -932,7 +932,9 @@ cdef class JB_Env:
     def get_string_utf(self, JB_Object s):
         '''Turn a Java string object into a Python string'''
         cdef:
-            char *chars
+            char *chars 
+        if <int> s.o == 0:
+           return None
         chars = self.env[0].GetStringUTFChars(self.env, s.o, NULL)
         result = chars
         self.env[0].ReleaseStringUTFChars(self.env, s.o, chars)

@@ -55,7 +55,6 @@ else:
     
 if get_headless() or sys.platform=="darwin":
     __args += [ r"-Djava.awt.headless=true" ]
-    os.environ['JAVA_STARTED_ON_FIRST_THREAD_%d'%(os.getpid())] = '1'
 
 jutil.start_vm(__args)
 

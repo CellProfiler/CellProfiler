@@ -14,7 +14,7 @@ Example:
         [cs.open_bytes(cs.getIndex(0,i,0)) for i in range(3)]
 '''
     
-__version__ = "$Revision: 1$"
+__version__ = "$Revision$"
 
 import numpy as np
 import os

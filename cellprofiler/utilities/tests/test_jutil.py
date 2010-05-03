@@ -13,6 +13,7 @@ Website: http://www.cellprofiler.org
 
 __version__="$Revision$"
 
+import os
 import numpy as np
 import unittest
 
@@ -136,6 +137,5 @@ class TestJutil(unittest.TestCase):
         env = J.attach()
         self.assertEqual(my_integer.intValue(),my_value)
         
-    
 if __name__=="__main__":
     unittest.main()

@@ -24,6 +24,7 @@ __version__ = "$Revision: 1 %"
 
 import atexit
 import gc
+import numpy as np
 import threading
 import sys
 
@@ -475,6 +476,18 @@ def get_nice_arg(arg, sig):
         return make_instance('java/lang/Long', '(J)V', long(arg))
     if sig == 'Ljava/lang/Boolean;' and type(arg) in [int, long, bool]:
         return make_instance('java/lang/Boolean', '(Z)V', bool(arg))
+    if sig == '[B' and isinstance(arg, np.ndarray):
+        return env.make_byte_array(np.ascontiguousarray(arg.flatten(), np.uint8))
+    elif sig == '[S' and isinstance(arg, np.ndarray):
+        return env.make_short_array(np.ascontiguousarray(arg.flatten(), np.int16))
+    elif sig == '[I' and isinstance(arg, np.ndarray):
+        return env.make_int_array(np.ascontiguousarray(arg.flatten(), np.int32))
+    elif sig == '[J' and isinstance(arg, np.ndarray):
+        return env.make_long_array(np.ascontiguousarray(arg.flatten(), np.int64))
+    elif sig == '[F' and isinstance(arg, np.ndarray):
+        return env.make_float_array(np.ascontiguousarray(arg.flatten(), np.float32))
+    elif sig == '[D' and isinstance(arg, np.ndarray):
+        return env.make_double_array(np.ascontiguousarray(arg.flatten(), np.float64))
     return arg
 
 def get_nice_result(result, sig):
@@ -627,6 +640,8 @@ def get_class_wrapper(obj):
         getField = make_method('getField','(Ljava/lang/String;)Ljava/lang/reflect/Field;')
         getMethod = make_method('getMethod','(Ljava/lang/String;[Ljava/lang/Class;)Ljava/lang/reflect/Method;')
         getMethods = make_method('getMethods','()[Ljava/lang/reflect/Method;')
+        getDeclaredMethod = make_method('getDeclaredMethod',
+                                        '(Ljava/lang/String;[Ljava/lang/Class;)Ljava/lang/reflect/Method;')
     return Klass()
 
 def attach_ext_env(env_address):

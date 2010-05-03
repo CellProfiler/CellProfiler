@@ -25,12 +25,18 @@ WRITABLE_FORMATS = ('avi', 'eps', 'epsi', 'ics', 'ids', 'jp2', 'jpeg', 'jpg',
                     'mov', 'ome', 'ome.tiff', 'png', 'ps', 'tif', 'tiff')
 
 if hasattr(sys, 'frozen'):
-    __path = os.path.split(os.path.abspath(sys.argv[0]))[0]
-    __path = os.path.join(__path, 'bioformats')
+    __root_path = os.path.split(os.path.abspath(sys.argv[0]))[0]
 else:
-    __path = os.path.abspath(os.path.split(__file__)[0])
+    __root_path = os.path.abspath(os.path.split(__file__)[0])
+    __root_path = os.path.split(__root_path)[0]
+__path = os.path.join(__root_path, 'bioformats')
+__imagej_path = os.path.join(__root_path, 'imagej')
 __loci_jar = os.path.join(__path, "loci_tools.jar")
-__class_path = __loci_jar
+__ij_jar = os.path.join(__imagej_path, "ij.jar")
+__imglib_jar = os.path.join(__imagej_path, "imglib.jar")
+__javacl_jar = os.path.join(__imagej_path, "javacl-1.0-beta-4-shaded.jar")
+__class_path = os.pathsep.join((__loci_jar, __ij_jar, __imglib_jar, 
+                                __javacl_jar))
 if os.environ.has_key("CLASSPATH"):
     __class_path += os.pathsep + os.environ["CLASSPATH"]
     

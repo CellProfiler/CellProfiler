@@ -405,6 +405,8 @@ cdef fill_values(orig_sig, args, jvalue **pvalues):
             elif isinstance(arg, JB_Class):
                  jbclass = arg
                  values[i].l = jbclass.c
+            elif arg is None:
+                 values[i].l = NULL
             else:
                  free(<void *>values)
                  return ValueError("%s is not a Java object"%str(arg))
@@ -940,6 +942,10 @@ cdef class JB_Env:
         self.env[0].ReleaseStringUTFChars(self.env, s.o, chars)
         return result
 
+    def get_array_length(self, JB_Object array):
+        '''Return the length of an array'''
+        return self.env[0].GetArrayLength(self.env, array.o)
+        
     def get_byte_array_elements(self, JB_Object array):
         '''Return the contents of a Java byte array as a numpy array
 
@@ -955,7 +961,87 @@ cdef class JB_Env:
         data = result.data
         self.env[0].GetByteArrayRegion(self.env, array.o, 0, alen, <jbyte *>data)
         return result
+        
+    def get_short_array_elements(self, JB_Object array):
+        '''Return the contents of a Java short array as a numpy array
+        
+        array - a Java "short []" array
+        returns a 1-d numpy array of np.int16s
+        '''
+        cdef:
+            np.ndarray[dtype=np.int16_t, ndim=1, negative_indices=False, mode='c'] result
+            char *data
+            jsize alen = self.env[0].GetArrayLength(self.env, array.o)
+
+        result = np.zeros(shape=(alen,),dtype=np.int16)
+        data = result.data
+        self.env[0].GetShortArrayRegion(self.env, array.o, 0, alen, <jshort *>data)
+        return result
+
+    def get_int_array_elements(self, JB_Object array):
+        '''Return the contents of a Java byte array as a numpy array
+        
+        array - a Java "int []" array
+        returns a 1-d numpy array of np.int32s
+        '''
+        cdef:
+            np.ndarray[dtype=np.int32_t, ndim=1, negative_indices=False, mode='c'] result
+            char *data
+            jsize alen = self.env[0].GetArrayLength(self.env, array.o)
+
+        result = np.zeros(shape=(alen,),dtype=np.int32)
+        data = result.data
+        self.env[0].GetIntArrayRegion(self.env, array.o, 0, alen, <jint *>data)
+        return result
     
+    def get_long_array_elements(self, JB_Object array):
+        '''Return the contents of a Java long array as a numpy array
+        
+        array - a Java "long []" array
+        returns a 1-d numpy array of np.int64s
+        '''
+        cdef:
+            np.ndarray[dtype=np.int64_t, ndim=1, negative_indices=False, mode='c'] result
+            char *data
+            jsize alen = self.env[0].GetArrayLength(self.env, array.o)
+
+        result = np.zeros(shape=(alen,),dtype=np.int64)
+        data = result.data
+        self.env[0].GetLongArrayRegion(self.env, array.o, 0, alen, <jlong *>data)
+        return result
+        
+    def get_float_array_elements(self, JB_Object array):
+        '''Return the contents of a Java float array as a numpy array
+        
+        array - a Java "float []" array
+        returns a 1-d numpy array of np.int32s
+        '''
+        cdef:
+            np.ndarray[dtype=np.float32_t, ndim=1, negative_indices=False, mode='c'] result
+            char *data
+            jsize alen = self.env[0].GetArrayLength(self.env, array.o)
+
+        result = np.zeros(shape=(alen,),dtype=np.float32)
+        data = result.data
+        self.env[0].GetFloatArrayRegion(self.env, array.o, 0, alen, <jfloat *>data)
+        return result
+        
+    def get_double_array_elements(self, JB_Object array):
+        '''Return the contents of a Java double array as a numpy array
+        
+        array - a Java "int []" array
+        returns a 1-d numpy array of np.int32s
+        '''
+        cdef:
+            np.ndarray[dtype=np.float64_t, ndim=1, negative_indices=False, mode='c'] result
+            char *data
+            jsize alen = self.env[0].GetArrayLength(self.env, array.o)
+
+        result = np.zeros(shape=(alen,),dtype=np.float64)
+        data = result.data
+        self.env[0].GetDoubleArrayRegion(self.env, array.o, 0, alen, <jdouble *>data)
+        return result
+        
     def get_object_array_elements(self, JB_Object array):
         '''Return the contents of a Java object array as a list of wrapped objects'''
         cdef:
@@ -989,6 +1075,111 @@ cdef class JB_Env:
         if e is not None:
             raise e
         return result
+        
+    def make_short_array(self, np.ndarray[dtype=np.int16_t, ndim=1, negative_indices=False, mode='c'] array):
+        '''Create a java short [] array from the contents of a numpy array'''
+        cdef:
+            jobject o
+            jsize alen = array.shape[0]
+            jshort *data = <jshort *>(array.data)
+        
+        o = self.env[0].NewShortArray(self.env, alen)
+        if o == NULL:
+            raise MemoryError("Failed to allocate short array of size %d"%alen)
+        self.env[0].SetShortArrayRegion(self.env, o, 0, alen, data)
+        result, e = make_jb_object(self, o)
+        if e is not None:
+            raise e
+        return result
+    
+    def make_int_array(self, np.ndarray[dtype=np.int32_t, ndim=1, negative_indices=False, mode='c'] array):
+        '''Create a java int [] array from the contents of a numpy array'''
+        cdef:
+            jobject o
+            jsize alen = array.shape[0]
+            jint *data = <jint *>(array.data)
+        
+        o = self.env[0].NewIntArray(self.env, alen)
+        if o == NULL:
+            raise MemoryError("Failed to allocate int array of size %d"%alen)
+        self.env[0].SetIntArrayRegion(self.env, o, 0, alen, data)
+        result, e = make_jb_object(self, o)
+        if e is not None:
+            raise e
+        return result
+        
+    def make_long_array(self, np.ndarray[dtype=np.int64_t, ndim=1, negative_indices=False, mode='c'] array):
+        '''Create a java long [] array from the contents of a numpy array'''
+        cdef:
+            jobject o
+            jsize alen = array.shape[0]
+            jlong *data = <jlong *>(array.data)
+        
+        o = self.env[0].NewLongArray(self.env, alen)
+        if o == NULL:
+            raise MemoryError("Failed to allocate long array of size %d"%alen)
+        self.env[0].SetLongArrayRegion(self.env, o, 0, alen, data)
+        result, e = make_jb_object(self, o)
+        if e is not None:
+            raise e
+        return result
+        
+    def make_float_array(self, np.ndarray[dtype=np.float32_t, ndim=1, negative_indices=False, mode='c'] array):
+        '''Create a java float [] array from the contents of a numpy array'''
+        cdef:
+            jobject o
+            jsize alen = array.shape[0]
+            jfloat *data = <jfloat *>(array.data)
+        
+        o = self.env[0].NewFloatArray(self.env, alen)
+        if o == NULL:
+            raise MemoryError("Failed to allocate float array of size %d"%alen)
+        self.env[0].SetFloatArrayRegion(self.env, o, 0, alen, data)
+        result, e = make_jb_object(self, o)
+        if e is not None:
+            raise e
+        return result
+        
+    def make_double_array(self, np.ndarray[dtype=np.float64_t, ndim=1, negative_indices=False, mode='c'] array):
+        '''Create a java double [] array from the contents of a numpy array'''
+        cdef:
+            jobject o
+            jsize alen = array.shape[0]
+            jdouble *data = <jdouble *>(array.data)
+        
+        o = self.env[0].NewDoubleArray(self.env, alen)
+        if o == NULL:
+            raise MemoryError("Failed to allocate double array of size %d"%alen)
+        self.env[0].SetDoubleArrayRegion(self.env, o, 0, alen, data)
+        result, e = make_jb_object(self, o)
+        if e is not None:
+            raise e
+        return result
+        
+    def make_object_array(self, int len, JB_Class klass):
+        '''Create a java object [] array filled with all nulls
+        
+        len - # of elements in array
+        klass - class of objects that will be stored
+        '''
+        cdef:
+            jobject o
+        o = self.env[0].NewObjectArray(self.env, len, klass.c, NULL)
+        if o == NULL:
+            raise MemoryError("Failed to allocate object array of size %d" % len)
+        result, e = make_jb_object(self, o)
+        if e is not None:
+            raise e
+        return result
+        
+    def set_object_array_element(self, JB_Object jbo, int index, JB_Object v):
+        '''Set an element within an object array
+        
+        jbo - the object array
+        index - the zero-based index of the element to set
+        v - the value to be inserted
+        '''
+        self.env[0].SetObjectArrayElement(self.env, jbo.o, index, v.o)
         
     def make_jb_object(self, char *address):
         '''Wrap a java object in a javabridge object

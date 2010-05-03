@@ -2,7 +2,7 @@
 
 '''
 
-__version__ = "$Revision: 1$"
+__version__ = "$Revision$"
 
 import cellprofiler.utilities.jutil as jutil
 import bioformats

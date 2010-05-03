@@ -94,6 +94,132 @@ class TestJavabridge(unittest.TestCase):
         result = self.env.new_object(klass, method_id, jarray)
         self.assertEqual(self.env.get_string_utf(result), "Hello, world")
         
+    def test_01_16_get_array_length(self):
+        jstring = self.env.new_string_utf("Hello, world")
+        klass = self.env.get_object_class(jstring)
+        method_id = self.env.get_method_id(klass, 'split', '(Ljava/lang/String;)[Ljava/lang/String;')
+        split = self.env.new_string_utf(", ")
+        result = self.env.call_method(jstring, method_id, split)
+        self.assertEqual(self.env.get_array_length(result), 2)
+        
+    def test_01_17_make_object_array(self):
+        klass = self.env.find_class("java/lang/String")
+        jarray = self.env.make_object_array(15, klass)
+        length = self.env.get_array_length(jarray)
+        self.assertEqual(length, 15)
+        
+    def test_01_18_set_object_array_element(self):
+        klass = self.env.find_class("java/lang/String")
+        jarray = self.env.make_object_array(15, klass)
+        for i in range(15):
+            v = self.env.new_string_utf(str(i))
+            self.env.set_object_array_element(jarray, i, v)
+        result = self.env.get_object_array_elements(jarray)
+        self.assertEqual(len(result), 15)
+        for i, elem in enumerate(result):
+            v = self.env.get_string_utf(elem)
+            self.assertEqual(str(i), v)
+            
+    def test_01_19_make_short_array(self):
+        np.random.seed(119)
+        array = (np.random.uniform(size=10) * 65535 - 32768).astype(np.int16)
+        array = np.unique(array)
+        array.sort()
+        jarray = self.env.make_short_array(array)
+        klass = self.env.find_class("java/util/Arrays")
+        method_id = self.env.get_static_method_id(klass, "binarySearch",
+                                                  "([SS)I")
+        for i, value in enumerate(array):
+            self.assertEqual(i, self.env.call_static_method(
+                klass, method_id, jarray, array[i]))
+            
+    def test_01_20_make_int_array(self):
+        np.random.seed(120)
+        array = (np.random.uniform(size=10) * (2.0 ** 32-1) - (2.0 ** 31)).astype(np.int32)
+        array = np.unique(array)
+        array.sort()
+        jarray = self.env.make_int_array(array)
+        klass = self.env.find_class("java/util/Arrays")
+        method_id = self.env.get_static_method_id(klass, "binarySearch",
+                                                  "([II)I")
+        for i, value in enumerate(array):
+            self.assertEqual(i, self.env.call_static_method(
+                klass, method_id, jarray, array[i]))
+            
+    def test_01_21_make_long_array(self):
+        np.random.seed(121)
+        array = (np.random.uniform(size=10) * (2.0 ** 64) - (2.0 ** 63)).astype(np.int64)
+        array = np.unique(array)
+        array.sort()
+        jarray = self.env.make_long_array(array)
+        klass = self.env.find_class("java/util/Arrays")
+        method_id = self.env.get_static_method_id(klass, "binarySearch",
+                                                  "([JJ)I")
+        for i, value in enumerate(array):
+            self.assertEqual(i, self.env.call_static_method(
+                klass, method_id, jarray, array[i]))
+            
+    def test_01_22_make_float_array(self):
+        np.random.seed(122)
+        array = np.random.uniform(size=10).astype(np.float32)
+        array = np.unique(array)
+        array.sort()
+        jarray = self.env.make_float_array(array)
+        klass = self.env.find_class("java/util/Arrays")
+        method_id = self.env.get_static_method_id(klass, "binarySearch",
+                                                  "([FF)I")
+        for i, value in enumerate(array):
+            self.assertEqual(i, self.env.call_static_method(
+                klass, method_id, jarray, array[i]))
+            
+    def test_01_23_make_double_array(self):
+        np.random.seed(123)
+        array = np.random.uniform(size=10).astype(np.float64)
+        array = np.unique(array)
+        array.sort()
+        jarray = self.env.make_double_array(array)
+        klass = self.env.find_class("java/util/Arrays")
+        method_id = self.env.get_static_method_id(klass, "binarySearch",
+                                                  "([DD)I")
+        for i, value in enumerate(array):
+            self.assertEqual(i, self.env.call_static_method(
+                klass, method_id, jarray, array[i]))
+            
+    def test_01_24_get_short_array_elements(self):
+        np.random.seed(124)
+        array = (np.random.uniform(size=10) * 65535 - 32768).astype(np.int16)
+        jarray = self.env.make_short_array(array)
+        result = self.env.get_short_array_elements(jarray)
+        self.assertTrue(np.all(array == result))
+            
+    def test_01_25_get_int_array_elements(self):
+        np.random.seed(125)
+        array = (np.random.uniform(size=10) * (2.0 ** 32-1) - (2.0 ** 31)).astype(np.int32)
+        jarray = self.env.make_int_array(array)
+        result = self.env.get_int_array_elements(jarray)
+        self.assertTrue(np.all(array == result))
+            
+    def test_01_26_get_long_array_elements(self):
+        np.random.seed(126)
+        array = (np.random.uniform(size=10) * (2.0 ** 64) - (2.0 ** 63)).astype(np.int64)
+        jarray = self.env.make_long_array(array)
+        result = self.env.get_long_array_elements(jarray)
+        self.assertTrue(np.all(array == result))
+            
+    def test_01_27_get_float_array_elements(self):
+        np.random.seed(127)
+        array = np.random.uniform(size=10).astype(np.float32)
+        jarray = self.env.make_float_array(array)
+        result = self.env.get_float_array_elements(jarray)
+        self.assertTrue(np.all(array == result))
+            
+    def test_01_28_get_double_array_elements(self):
+        np.random.seed(128)
+        array = np.random.uniform(size=10).astype(np.float64)
+        jarray = self.env.make_double_array(array)
+        result = self.env.get_double_array_elements(jarray)
+        self.assertTrue(np.all(array == result))
+            
     def test_02_01_exception_did_not_occur(self):
         self.assertTrue(self.env.exception_occurred() is None)
         

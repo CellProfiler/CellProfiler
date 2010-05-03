@@ -22,7 +22,7 @@ and is especially useful for formats that do not support multiple images per
 file.
 '''
 
-__version__ = "$Revision: 1$"
+__version__ = "$Revision$"
 
 import numpy as np
 import os

@@ -398,7 +398,7 @@ class AbstractImageProvider(object):
     
     def release_memory(self):
         '''Release whatever memory is associated with the image'''
-        sys.stderr.write("Warning: no memory release funtion implemented for %s image\n"%self.get_name())
+        sys.stderr.write("Warning: no memory release function implemented for %s image\n"%self.get_name())
 
     name = property(__get_name)
 

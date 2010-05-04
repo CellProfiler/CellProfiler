@@ -790,7 +790,11 @@ class PipelineController:
             if (not module.is_interactive()) and module.show_window:
                 module.display(workspace)
             workspace.refresh()
-            if module.module_num < len(self.__pipeline.modules()):
+            if workspace.disposition == cpw.DISPOSITION_SKIP:
+                last_module_num = self.__pipeline.modules()[-1].module_num
+                self.__pipeline_list_view.select_one_module(last_module_num)
+                self.last_debug_module()
+            elif module.module_num < len(self.__pipeline.modules()):
                 self.__pipeline_list_view.select_one_module(module.module_num+1)
             failure=0
         except Exception,instance:
@@ -822,6 +826,9 @@ class PipelineController:
             return True
         else:
             return False
+        
+    def last_debug_module(self):
+        self.__movie_viewer.Value = len(self.__pipeline.modules()) - 1
 
     def on_debug_step(self, event):
         if len(self.__pipeline.modules()) == 0:

@@ -39,6 +39,7 @@ import sys
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.settings as cps
+import cellprofiler.workspace as cpw
 from cellprofiler.gui.help import USING_METADATA_TAGS_REF, USING_METADATA_HELP_REF
 
 C_ANY = "Flag if any fail"
@@ -52,14 +53,14 @@ S_ALL = [S_IMAGE, S_AVERAGE_OBJECT, S_ALL_OBJECTS]
 '''Number of settings in the module, aside from those in the flags'''
 N_FIXED_SETTINGS = 1
 '''Number of settings in each flag, aside from those in the measurements'''
-N_FIXED_SETTINGS_PER_FLAG = 4
+N_FIXED_SETTINGS_PER_FLAG = 5
 '''Number of settings per measurement'''
 N_SETTINGS_PER_MEASUREMENT = 7
 
 class FlagImage(cpm.CPModule):
    
     category = "Data Tools"
-    variable_revision_number = 1
+    variable_revision_number = 2
     module_name = "FlagImage"
     
     def create_settings(self):
@@ -102,6 +103,21 @@ class FlagImage(cpm.CPModule):
                                 of QC flaws; for example, you can flag only images that are both bright and out of focus.</li>
                                 </ul>'''))
         
+        group.append(
+            "wants_skip", cps.Binary("Skip image set if flagged?", False,
+            doc = """You can skip the remainder of the pipeline for image sets
+            that are flagged by checking this setting. If you check this
+            setting, CellProfiler will not run subsequent modules in the
+            pipeline on the images in any image set that is flagged. 
+            CellProfiler will continue to process the pipeline if you leave
+            the setting unchecked.<p>
+            You may want to check this setting in order to filter out
+            unwanted images during processing. For instance, you may want
+            to exclude out of focus images when running 
+            <b>CorrectIllumination_Calculate</b>. You can do this with a
+            pipeline that measures image quality and flags inappropriate
+            images before it runs <b>CorrectIllumination_Calculate</b>"""))
+            
         group.append("add_measurement_button", 
                      cps.DoSomething("",
                                      "Add another measurement",
@@ -158,7 +174,7 @@ class FlagImage(cpm.CPModule):
         result = [self.flag_count]
         for flag in self.flags:
             result += [flag.measurement_count, flag.category, flag.feature_name, 
-                       flag.combination_choice]
+                       flag.combination_choice, flag.wants_skip]
             for mg in flag.measurement_settings:
                 result += [mg.source_choice, mg.object_name, mg.measurement,
                            mg.wants_minimum, mg.minimum_value,
@@ -207,7 +223,7 @@ class FlagImage(cpm.CPModule):
                 result = [cps.Divider(line=True),cps.Divider(line=True)]
             else:
                 result = []
-            result += [flag.category, flag.feature_name]
+            result += [flag.category, flag.feature_name, flag.wants_skip]
             if len(flag.measurement_settings) > 1:
                 result += [flag.combination_choice]
             for measurement_settings in flag.measurement_settings:
@@ -337,6 +353,8 @@ class FlagImage(cpm.CPModule):
         m = workspace.measurements
         assert isinstance(m, cpmeas.Measurements)
         m.add_image_measurement(self.measurement_name(flag), 0 if ok else 1)
+        if (not ok) and flag.wants_skip:
+            workspace.disposition = cpw.DISPOSITION_SKIP
         return statistics
         
     def eval_measurement(self, workspace, ms):
@@ -465,7 +483,7 @@ class FlagImage(cpm.CPModule):
             new_setting_values = [setting_values[0]]
             idx = 1
             for flag_idx in range(int(setting_values[0])):
-                new_setting_values += setting_values[idx:idx+4]
+                new_setting_values += setting_values[idx:idx+4] + [cps.NO]
                 meas_count = int(setting_values[idx])
                 idx += 4
                 for meas_idx in range(meas_count):
@@ -481,5 +499,6 @@ class FlagImage(cpm.CPModule):
                     new_setting_values += setting_values[(idx+1):(idx+7)]
                     idx += 7
             setting_values = new_setting_values
+            variable_revision_number = 2
         return setting_values, variable_revision_number, from_matlab
     

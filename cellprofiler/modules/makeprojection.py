@@ -54,6 +54,8 @@ P_MINIMUM = 'Minimum'
 P_SUM = 'Sum'
 P_ALL = [P_AVERAGE, P_MAXIMUM, P_MINIMUM, P_SUM]
 
+K_PROVIDER = "Provider"
+
 class MakeProjection(cpm.CPModule):
     
     module_name = 'MakeProjection'
@@ -88,8 +90,14 @@ class MakeProjection(cpm.CPModule):
     def prepare_group(self, pipeline, image_set_list, grouping, image_numbers):
         '''Reset the aggregate image at the start of group processing'''
         if len(image_numbers) > 0:
-            provider = ImageProvider(self.projection_image_name.value,
-                                     self.projection_type.value)
+            d = self.get_dictionary(image_set_list)
+            if d.has_key(K_PROVIDER):
+                provider = d[K_PROVIDER]
+                provider.reset()
+            else:
+                provider = ImageProvider(self.projection_image_name.value,
+                                         self.projection_type.value)
+                d[K_PROVIDER] = provider
             for image_number in image_numbers:
                 image_set = image_set_list.get_image_set(image_number-1)
                 assert isinstance(image_set, cpi.ImageSet)
@@ -117,7 +125,7 @@ class MakeProjection(cpm.CPModule):
                                          self.image_name.value)
                 figure.subplot_imshow_bw(1,0,provider_image.pixel_data,
                                          self.projection_image_name.value)
-
+                
     def upgrade_settings(self, setting_values, 
                          variable_revision_number, 
                          module_name, from_matlab):
@@ -213,6 +221,7 @@ class ImageProvider(cpi.AbstractImageProvider):
         return self.__name
     
     def release_memory(self):
-        self.reset()
+        '''Don't discard the image at end of image set'''
+        pass
 
 

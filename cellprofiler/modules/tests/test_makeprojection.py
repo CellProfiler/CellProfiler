@@ -111,13 +111,19 @@ class TestMakeProjection(unittest.TestCase):
     
     def run_image_set(self, projection_type, images_and_masks):
         image_set_list = cpi.ImageSetList()
-        for i in range(len(images_and_masks)):
+        image_count = len(images_and_masks)
+        for i in range(image_count):
             pixel_data, mask = images_and_masks[i]
             if mask is None:
                 image = cpi.Image(pixel_data)
             else:
                 image = cpi.Image(pixel_data, mask)
             image_set_list.get_image_set(i).add(IMAGE_NAME, image)
+        #
+        # Add bogus image at end for 2nd group
+        #
+        bogus_image = cpi.Image(np.zeros((10,20)))
+        image_set_list.get_image_set(image_count).add(IMAGE_NAME, bogus_image)
         
         pipeline = cpp.Pipeline()
         module = M.MakeProjection()
@@ -129,7 +135,9 @@ class TestMakeProjection(unittest.TestCase):
         module.prepare_run(pipeline, image_set_list, None)
         module.prepare_group(pipeline, image_set_list, {},
                              range(1,len(images_and_masks)+1))
-        for i in range(len(images_and_masks)):
+        for i in range(image_count):
+            if i > 0:
+                image_set_list.purge_image_set(i-1)
             workspace = cpw.Workspace(pipeline, module, 
                                       image_set_list.get_image_set(i),
                                       cpo.ObjectSet(),
@@ -137,6 +145,13 @@ class TestMakeProjection(unittest.TestCase):
                                       image_set_list)
             module.run(workspace)
             image = workspace.image_set.get_image(PROJECTED_IMAGE_NAME)
+        #
+        # Make sure that the image provider is reset after prepare_group
+        #
+        module.prepare_group(pipeline, image_set_list, {}, [image_count+1])
+        image_set = image_set_list.get_image_set(image_count)
+        image_provider = image_set.get_image_provider(PROJECTED_IMAGE_NAME)
+        self.assertFalse(image_provider.has_image)
         return image
     
     def test_02_01_average(self):

@@ -29,8 +29,6 @@ __version__="$Revision$"
 ########################################################
 
 import os
-import wx
-import htmldialog
 import sys
 import cellprofiler.icons
 from cellprofiler.utilities.relpath import relpath
@@ -891,6 +889,8 @@ HELP = ( ("User guide", MAIN_HELP ),
          ("Preferences", PREFERENCES_HELP))
 
 def make_help_menu(h, window):
+    import wx
+    import htmldialog
     menu = wx.Menu()
     for key, value in h:
         my_id = wx.NewId()

@@ -36,14 +36,13 @@ if sys.platform.startswith('win'):
     from setup import find_javahome
     import os
     java_home = find_javahome()
+    jvm_dir = None
     if java_home is not None:
         for place_to_look in ('client','server'):
             jvm_dir = os.path.join(java_home,'bin',place_to_look)
-            if not os.path.isfile(os.path.join(jvm_dir, "jvm.dll")):
-                jvm_dir = None
-            else:
+            if os.path.isfile(os.path.join(jvm_dir, "jvm.dll")):
+                os.environ['PATH'] = os.environ['PATH'] +';'+jvm_dir
                 break
-        os.environ['PATH'] = os.environ['PATH'] +';'+jvm_dir
 elif sys.platform == 'darwin':
     #
     # Put the jvm library on the path, hoping it is always in the same place

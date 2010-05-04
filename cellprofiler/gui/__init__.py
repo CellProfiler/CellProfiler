@@ -14,22 +14,25 @@ Please see the AUTHORS file for credits.
 Website: http://www.cellprofiler.org
 """
 
-__version__="$Revision: 1 "
+__version__="$Revision$"
 
-import wx
 import os
 import sys
 import cellprofiler.preferences
 from cellprofiler.icons import get_builtin_image
 
-cp_image = get_builtin_image('CellProfilerIcon')
+cp_image = None
 
 def get_cp_image():
     """The CellProfiler icon as a wx.Image"""
+    global cp_image
+    if cp_image is None:
+        cp_image = get_builtin_image('CellProfilerIcon')
     return cp_image
 
 def get_cp_bitmap(size=None):
     """The CellProfiler icon as a wx.Bitmap"""
+    import wx
     img = get_cp_image()
     if size is not None:
         img.Rescale(size, size, wx.IMAGE_QUALITY_HIGH)
@@ -37,6 +40,7 @@ def get_cp_bitmap(size=None):
     
 def get_cp_icon(size=None):
     """The CellProfiler icon as a wx.Icon"""
+    import wx
     icon = wx.EmptyIcon()
     if size == None and sys.platform.startswith('win'):
         size = 32
@@ -58,6 +62,7 @@ def draw_bevel(dc, rect, width, state, shadow_pen = None, highlight_pen = None):
     
     returns the coordinates of the inside rectangle
     """
+    import wx
     if shadow_pen == None:
         shadow_pen = wx.Pen(wx.SystemSettings.GetColour(wx.SYS_COLOUR_3DSHADOW))
     if highlight_pen == None:

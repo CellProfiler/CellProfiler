@@ -11,7 +11,6 @@ Website: http://www.cellprofiler.org
 """
 __version__ = "$Revision: 8876 $"
 
-import wx
 import os.path
 import glob
 import weakref
@@ -26,6 +25,7 @@ else:
 image_cache = weakref.WeakValueDictionary()
 
 def get_builtin_image(name):
+    import wx
     try:
         return image_cache[name]
     except KeyError:

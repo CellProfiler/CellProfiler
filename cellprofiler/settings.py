@@ -1631,6 +1631,8 @@ class Measurement(Setting):
             category = self.get_category(pipeline, object_name)
         if feature_name is None:
             feature_name = self.get_feature_name(pipeline, object_name, category)
+        if any([x is None for x in (object_name, category, feature_name)]):
+            return []
         objects = set()
         for module in pipeline.modules():
             if self.key in [x.key() for x in module.settings()]:

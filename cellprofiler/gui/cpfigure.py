@@ -1211,6 +1211,30 @@ def renumber_labels_for_display(labels):
     label_copy[label_copy != 0] = renumber[label_copy[label_copy!=0]-1]+1
     return label_copy
 
+def only_display_image(figure, shape):
+    '''Set up a figure so that the image occupies the entire figure
+    
+    figure - a matplotlib figure
+    shape - i/j size of the image being displayed
+    '''
+    assert isinstance(figure, matplotlib.figure.Figure)
+    figure.set_frameon(False)
+    ax = figure.axes[0]
+    ax.set_axis_off()
+    figure.subplots_adjust(0, 0, 1, 1, 0, 0)
+    dpi = figure.dpi
+    width = float(shape[1]) / dpi
+    height = float(shape[0]) / dpi
+    figure.set_figheight(height)
+    figure.set_figwidth(width)
+    bbox = matplotlib.transforms.Bbox(
+        np.array([[0.0, 0.0], [width, height]]))
+    transform = matplotlib.transforms.Affine2D(
+        np.array([[dpi, 0, 0],
+                  [0, dpi, 0],
+                  [0,   0, 1]]))
+    figure.bbox = matplotlib.transforms.TransformedBbox(bbox, transform)
+    
 def figure_to_image(figure, *args, **kwargs):
     '''Convert a figure to a numpy array'''
     #

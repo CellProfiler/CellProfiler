@@ -504,7 +504,7 @@ class TrackObjects(cpm.CPModule):
                                       self.tracking_method.value)
         if self.wants_image.value:
             import matplotlib.transforms
-            from cellprofiler.gui.cpfigure import figure_to_image
+            from cellprofiler.gui.cpfigure import figure_to_image, only_display_image
             
             figure = matplotlib.figure.Figure()
             canvas = matplotlib.backends.backend_agg.FigureCanvasAgg(figure)
@@ -513,24 +513,8 @@ class TrackObjects(cpm.CPModule):
             #
             # This is the recipe for just showing the axis
             #
-            figure.set_frameon(False)
-            ax.set_axis_off()
-            figure.subplots_adjust(0, 0, 1, 1, 0, 0)
-            shape = objects.segmented.shape
-            dpi = figure.dpi
-            width = float(shape[1]) / dpi
-            height = float(shape[0]) / dpi
-            figure.set_figheight(height)
-            figure.set_figwidth(width)
-            bbox = matplotlib.transforms.Bbox(
-                np.array([[0.0, 0.0], [width, height]]))
-            transform = matplotlib.transforms.Affine2D(
-                np.array([[dpi, 0, 0],
-                          [0, dpi, 0],
-                          [0,   0, 1]]))
-            figure.bbox = matplotlib.transforms.TransformedBbox(bbox, transform)
-            
-            image_pixels = figure_to_image(figure, dpi=dpi)
+            only_display_image(figure, objects.segmented.shape)
+            image_pixels = figure_to_image(figure, dpi=figure.dpi)
             image = cpi.Image(image_pixels)
             workspace.image_set.add(self.image_name.value, image)
             
@@ -1349,6 +1333,7 @@ class TrackObjects(cpm.CPModule):
         if (object_name == cpmeas.IMAGE and category == F_PREFIX and
             measurement in F_IMAGE_ALL):
             return [ self.object_name.value]
+        return []
         
     def get_measurement_scales(self, pipeline, object_name, category, feature,image_name):
         if ((object_name == self.object_name.value and

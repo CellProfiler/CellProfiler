@@ -155,7 +155,7 @@ class DisplayDataOnImage(cpm.CPModule):
         import matplotlib.cm
         import matplotlib.backends.backend_wxagg
         import matplotlib.transforms
-        from cellprofiler.gui.cpfigure import figure_to_image
+        from cellprofiler.gui.cpfigure import figure_to_image, only_display_image
         #
         # Get the image
         #
@@ -208,25 +208,11 @@ class DisplayDataOnImage(cpm.CPModule):
             fig.set_figheight(height)
             fig.set_figwidth(width)
         elif self.saved_image_contents == E_IMAGE:
-            fig.set_frameon(False)
-            axes.set_axis_off()
-            fig.subplots_adjust(0,0,1,1,0,0)
-            shape = workspace.display_data.pixel_data.shape
-            width = float(shape[1]) / fig.dpi
-            height = float(shape[0]) / fig.dpi
-            fig.set_figheight(height)
-            fig.set_figwidth(width)
-            bbox = matplotlib.transforms.Bbox(
-                np.array([[0.0, 0.0], [width, height]]))
-            transform = matplotlib.transforms.Affine2D(
-                np.array([[fig.dpi, 0, 0],
-                          [0, fig.dpi, 0],
-                          [0, 0, 1]]))
-            fig.bbox = matplotlib.transforms.TransformedBbox(bbox, transform)
+            only_display_image(fig, workspace.display_data.pixel_data.shape)
         else:
             fig.subplots_adjust(.1,.1,.9,.9,0,0)
             
-        pixel_data = figure_to_image(fig)
+        pixel_data = figure_to_image(fig, dpi=fig.dpi)
         image = cpi.Image(pixel_data)
         workspace.image_set.add(self.display_image.value, image)
         

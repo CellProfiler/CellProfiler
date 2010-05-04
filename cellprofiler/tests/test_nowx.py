@@ -27,12 +27,15 @@ def import_all_but_wx(name,
         raise ImportError("Not allowed to import wx!")
     return default_import(name, globals, locals, fromlist, level)
 
-__builtin__.__import__ = import_all_but_wx
-
 class TestNoWX(unittest.TestCase):
     def setUp(self):
         from cellprofiler.preferences import set_headless
         set_headless()
+        self.old_import = __builtin__.__import__
+        __builtin__.__import__ = import_all_but_wx
+
+    def tearDown(self):
+        __builtin__.__import__ = self.old_import
 
     def example_dir(self):
         import os

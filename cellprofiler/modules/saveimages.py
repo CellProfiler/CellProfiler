@@ -682,7 +682,6 @@ class SaveImages(cpm.CPModule):
                         
     def save_image(self, workspace):
         if self.get_bit_depth() == '16':
-            print 16, has_tiff, has_bioformats
             if has_tiff:
                 return self.save_image_with_libtiff(workspace)
             else:

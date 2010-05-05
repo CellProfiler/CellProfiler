@@ -485,7 +485,7 @@ images with their corresponding illumination correction functions based on match
 <h3>Use of metadata-specific module settings</h3>
 
 <p>Once the metadata has been obtained, you can use <i>metadata tags</i> to reference them
-in later modules. A metadata tag has the syntax <i>\g&lt;metadata-tag&gt;</i> where 
+in later modules. A metadata tag has the syntax "\g&lt;metadata-tag&gt;" where 
 <i>&lt;metadata-tag&gt</i> is the name of the previously defined metadata field. Several modules are capable of 
 using metadata tags for various purposes. Examples include:
 <ul>
@@ -734,7 +734,7 @@ Please see <b>LoadImages</b>, <b>LoadData</b>, or <i>Help > General help > Using
 for more details on obtaining, extracting, and using metadata tags from your images'''
 
 USING_METADATA_TAGS_REF = '''
-Tags have the form <i>\g&lt;metadata-tag&gt;</i> where <i>&lt;metadata-tag&gt</i> is the name of the previously defined metadata field'''
+Tags have the form "\g&lt;metadata-tag&gt;" where <i>&lt;metadata-tag&gt</i> is the name of the previously defined metadata field'''
 
 ####################################################
 #

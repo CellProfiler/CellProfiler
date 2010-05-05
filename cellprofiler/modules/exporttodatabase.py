@@ -246,7 +246,7 @@ class ExportToDatabase(cpm.CPModule):
             <p>%(IO_WITH_METADATA_HELP_TEXT)s %(USING_METADATA_TAGS_REF)s. 
             For instance, if you have a metadata tag named 
             "Plate", you can create a per-plate folder by selecting one of the subfolder options
-            and then specifying the subfolder name as <i>\g&lt;Plate&gt;</i>. 
+            and then specifying the subfolder name as "\g&lt;Plate&gt;". 
             The module will substitute the metadata values for the last image set 
             processed for any metadata tags in the folder name. %(USING_METADATA_HELP_REF)s.</p>"""% globals())
         

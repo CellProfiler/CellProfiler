@@ -450,7 +450,14 @@ class LoadImages(cpmodule.CPModule):
             a sample file name given in the lower text box. Provided the syntax 
             is correct, the corresponding fields will be highlighted in the same
             color in the two boxes. Press <i>Submit</i> to enter the typed 
-            regular expression."""))
+            regular expression.</p>
+            <p>Also note that if you use the special fieldnames <i>&lt;WellColumn&gt;</i> and 
+            <i>&lt;WellRow&gt;</i> together, LoadImages will automatically create a <i><i>&lt;Well&gt;</i>
+            metadata field by joining the two fieldname values together. For example, 
+            if <i>&lt;WellRow&gt;</i> is "A" and <i>&lt;WellColumn&gt;</i> is "01", a field 
+            <i>&lt;Well&gt;</i> will be "A01". This is useful if your well row and column names are
+            separated from each other in the filename, but you want to retain the standard 
+            well nomenclature.</p>"""))
         
         group.append("path_metadata", cps.RegexpText(
             'Type the regular expression that finds metadata in the subfolder path',

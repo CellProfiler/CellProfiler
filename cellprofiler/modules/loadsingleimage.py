@@ -65,7 +65,7 @@ class LoadSingleImage(cpm.CPModule):
             <p>%(IO_WITH_METADATA_HELP_TEXT)s %(USING_METADATA_TAGS_REF)s. 
             For instance, if you have a "Plate" metadata tag, and your single files are 
             organized in subfolders named with the "Plate" tag, you can select one of the 
-            subfolder options and then specify a subfolder name of <i>\g&lt;Plate&gt;</i> 
+            subfolder options and then specify a subfolder name of "\g&lt;Plate&gt;" 
             to get the files from the subfolder associated with that image's plate. The module will 
             substitute the metadata values for the current image set for any metadata tags in the 
             folder name. %(USING_METADATA_HELP_REF)s.</p>'''%globals())

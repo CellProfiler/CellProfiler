@@ -199,7 +199,7 @@ class SaveImages(cpm.CPModule):
                 <li><i>Custom with metadata:</i> If you have metadata 
                 associated with your images, enter the filename text with the metadata tags. %(USING_METADATA_TAGS_REF)s.   
                 For example, if the <i>plate</i>, <i>well_row</i> and <i>well_column</i> tags have the values <i>XG45</i>, <i>A</i>
-                and <i>01</i>, respectively, the string <i>Illum_\g&lt;plate&gt;_\g&lt;well_row&gt;\g&lt;well_column&gt;</i>
+                and <i>01</i>, respectively, the string "Illum_\g&lt;plate&gt;_\g&lt;well_row&gt;\g&lt;well_column&gt;"
                 produces the output filename <i>Illum_XG45_A01</i>.</li>
                 </ul>
                 Do not enter the file extension in this setting; it will be appended automatically."""%globals())
@@ -234,7 +234,7 @@ class SaveImages(cpm.CPModule):
                 <p>%(IO_WITH_METADATA_HELP_TEXT)s %(USING_METADATA_TAGS_REF)s. 
                 For instance, if you have a metadata tag named 
                 "Plate", you can create a per-plate folder by selecting one the subfolder options
-                and then specifying the subfolder name as <i>\g&lt;Plate&gt;</i>. The module will 
+                and then specifying the subfolder name as "\g&lt;Plate&gt;". The module will 
                 substitute the metadata values for the current image set for any metadata tags in the 
                 folder name.%(USING_METADATA_HELP_REF)s.</p>"""%globals())
         

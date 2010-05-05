@@ -34,6 +34,7 @@ import cellprofiler.settings as cps
 
 O_ADD = "Add"
 O_SUBTRACT = "Subtract"
+O_DIFFERENCE = "Absolute Difference"
 O_MULTIPLY = "Multiply"
 O_DIVIDE = "Divide"
 O_AVERAGE = "Average"
@@ -68,7 +69,7 @@ class ImageMath(cpm.CPModule):
 
         # other settings
         self.operation = cps.Choice("Operation", 
-                                    [O_ADD, O_SUBTRACT, O_MULTIPLY, O_DIVIDE, O_AVERAGE, O_MAXIMUM, O_INVERT, O_LOG_TRANSFORM, O_NONE], doc=
+                                    [O_ADD, O_SUBTRACT, O_DIFFERENCE, O_MULTIPLY, O_DIVIDE, O_AVERAGE, O_MAXIMUM, O_INVERT, O_LOG_TRANSFORM, O_NONE], doc=
             """What operation would you like performed?
                         
             <p><i>Note:</i> If more than 2 images are chosen, then operations will be 
@@ -209,12 +210,14 @@ class ImageMath(cpm.CPModule):
         output_mask = masks[0]
 
         opval = self.operation.value
-        if opval in (O_ADD, O_SUBTRACT, O_MULTIPLY, O_DIVIDE, O_AVERAGE, O_MAXIMUM):
+        if opval in (O_ADD, O_SUBTRACT, O_DIFFERENCE, O_MULTIPLY, O_DIVIDE, O_AVERAGE, O_MAXIMUM):
             # Binary operations
             if opval in (O_ADD, O_AVERAGE):
                 op = np.add
             elif opval == O_SUBTRACT:
                 op = np.subtract
+            elif opval == O_DIFFERENCE:
+                op = lambda x, y: np.abs(np.subtract(x, y))
             elif opval == O_MULTIPLY:
                 op = np.multiply
             elif opval == O_MAXIMUM:

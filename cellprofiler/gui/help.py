@@ -711,6 +711,28 @@ can be resubmitted.</p>
 the CellProfiler <a href = "http://cellprofiler.org/forum/viewforum.php?f=14">forum</a>.</p>
 """
 
+RUN_MULTIPLE_PIPELINES_HELP = """<h2>Run multiple pipelines</h2>
+<br>The <b>Run multiple pipelines</b> dialog lets you select several pipelines
+which will be run consecutively. You can invoke <b>Run multiple pipelines</b>
+by selecting it from the file menu. The dialog has three parts to it:
+<br><ul><li><i>File chooser</i>: The file chooser lets you select the pipeline
+files to be run. The <i>Select all</i> and <i>Deselect all</i> buttons to
+the right will select or deselect all pipeline files in the list. The
+<i>Add</i> button will add the pipelines to the pipeline list. You can add
+a pipeline file multiple times, for instance if you want to run that pipeline
+on more than one input folder.</li>
+<li><i>Directory chooser</i>: The directory chooser lets you navigate to
+different directories. The file chooser displays all pipeline files in the
+directory chooser's current directory.</li>
+<li><i>Pipeline list</i>: The pipeline list has the pipelines to be run in
+the order that they will be run. Each pipeline has a default input and
+output folder and a measurements file. You can change any of these by clicking
+on the file name - an appropriate dialog will then be displayed. You can
+click the remove button to remove a pipeline from the list</li></ul>
+<br>
+CellProfiler will run all of the pipelines on the list when you hit the
+"OK" button."""
+
 '''The help menu for CP's main window'''
 MAIN_HELP = (
     ( "Getting started", (
@@ -721,7 +743,8 @@ MAIN_HELP = (
         ("Using Metadata In CellProfiler",USING_METADATA_HELP),
         ("Memory And Speed", MEMORY_AND_SPEED_HELP),
         ("Test Mode",TEST_MODE_HELP),
-        ("Batch Processing", BATCHPROCESSING_HELP) ) ),
+        ("Batch Processing", BATCHPROCESSING_HELP),
+        ("Run multiple pipelines", RUN_MULTIPLE_PIPELINES_HELP) ) ),
     ( "Folders and files", (
         ("Default Input Folder", DEFAULT_IMAGE_FOLDER_HELP),
         ("Default Output Folder", DEFAULT_OUTPUT_FOLDER_HELP),

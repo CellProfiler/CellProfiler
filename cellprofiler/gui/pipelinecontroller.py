@@ -32,6 +32,7 @@ from cellprofiler.gui.movieslider import EVT_TAKE_STEP
 from cellprofiler.gui.help import HELP_ON_MODULE_BUT_NONE_SELECTED
 import cellprofiler.utilities.get_revision as get_revision
 from errordialog import display_error_dialog, ED_CONTINUE, ED_STOP
+from runmultiplepipelinesdialog import RunMultplePipelinesDialog
 
 RECENT_FILE_MENU_ID = [wx.NewId() for i in range(cpprefs.RECENT_FILE_COUNT)]
 
@@ -57,6 +58,7 @@ class PipelineController:
         self.__keys = None
         self.__groupings = None
         self.__grouping_index = None
+        self.pipeline_list = []
         self.populate_recent_files()
         self.populate_edit_menu(self.__frame.menu_edit_add_module)
         wx.EVT_MENU(frame,cpframe.ID_FILE_LOAD_PIPELINE,self.__on_load_pipeline)
@@ -65,6 +67,7 @@ class PipelineController:
         wx.EVT_MENU(frame,cpframe.ID_FILE_CLEAR_PIPELINE,self.__on_clear_pipeline)
         wx.EVT_MENU(frame,cpframe.ID_FILE_ANALYZE_IMAGES,self.on_analyze_images)
         wx.EVT_MENU(frame,cpframe.ID_FILE_STOP_ANALYSIS,self.on_stop_running)
+        wx.EVT_MENU(frame, cpframe.ID_FILE_RUN_MULTIPLE_PIPELINES, self.on_run_multiple_pipelines)
         
         wx.EVT_MENU(frame, cpframe.ID_EDIT_MOVE_UP, self.on_module_up)
         wx.EVT_MENU(frame, cpframe.ID_EDIT_MOVE_DOWN, self.on_module_down)
@@ -597,7 +600,28 @@ class PipelineController:
     def status_callback(self, *args):
         self.__frame.preferences_view.on_start_module(*args)
             
-    def on_analyze_images(self,event):
+    def on_run_multiple_pipelines(self, event):
+        '''Menu handler for run multiple pipelines'''
+        dlg = RunMultplePipelinesDialog(
+                parent = self.__frame, 
+                title = "Run multiple pipelines",
+                style = wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER |wx.THICK_FRAME,
+                size = (640,480))
+        if dlg.ShowModal() == wx.ID_OK:
+            self.pipeline_list = dlg.get_pipelines()
+            self.run_next_pipeline(event)
+            
+    def run_next_pipeline(self, event):
+        if len(self.pipeline_list) == 0:
+            return
+        pipeline_details = self.pipeline_list.pop(0)
+        self.do_load_pipeline(pipeline_details.path)
+        cpprefs.set_default_image_directory(pipeline_details.default_input_folder)
+        cpprefs.set_default_output_directory(pipeline_details.default_output_folder)
+        cpprefs.set_output_file_name(pipeline_details.measurements_file)
+        self.on_analyze_images(event)
+        
+    def on_analyze_images(self, event):
         '''Handle a user request to start running the pipeline'''
         ##################################
         #
@@ -617,6 +641,7 @@ class PipelineController:
         if not ok:
             if wx.MessageBox("%s\nAre you sure you want to continue?" % reason,
                              "Problems with pipeline", wx.YES_NO) != wx.YES:
+                self.pipeline_list = []
                 return
         ##################################
         #
@@ -647,9 +672,13 @@ class PipelineController:
                     self.__pipeline.save_measurements(self.__output_path,self.__pipeline_measurements)
                     self.__pipeline_measurements = None
                     self.__output_path = None
-                    wx.MessageBox("Finished processing pipeline", "Analysis complete")
+                    message = "Finished processing pipeline", "Analysis complete"
                 else:
-                    wx.MessageBox("Pipeline processing finished, no measurements taken", "Analysis complete")
+                    message = "Pipeline processing finished, no measurements taken", "Analysis complete"
+                if len(self.pipeline_list) > 0:
+                    self.run_next_pipeline(event)
+                    return
+                wx.MessageBox(message)
     
     def on_pause(self, event):
         if not self.__pause_pipeline:
@@ -672,6 +701,7 @@ class PipelineController:
         pass
     
     def on_stop_running(self,event):
+        self.pipeline_list = []
         self.stop_running()
         if self.__pipeline_measurements is not None:
             self.save_measurements()
@@ -1009,6 +1039,9 @@ class PipelineController:
                                 break
                     self.__pipeline_measurements = None
                     self.__output_path = None
+                if len(self.pipeline_list) > 0:
+                    self.run_next_pipeline(event)
+                    return
                 #
                 # A little dialog with a "save pipeline" button in addition
                 # to the "OK" button.

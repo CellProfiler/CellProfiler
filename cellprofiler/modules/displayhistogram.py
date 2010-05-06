@@ -36,21 +36,27 @@ class DisplayHistogram(cpm.CPModule):
     
     module_name = "DisplayHistogram"
     category = "Data Tools"
-    variable_revision_number = 2
+    variable_revision_number = 3
     
     def get_object(self):
         return self.object.value
     
     def create_settings(self):
+        """Create the module settings
+        
+        create_settings is called at the end of initialization.
+        """
         self.object = cps.ObjectNameSubscriber(
-                            'Select the object whose measurements will be displayed','None',
+                            'Select the object whose measurements will be displayed',
+                            'None',
                             doc='''
                             Choose the name of objects identified by some previous 
                             module (such as <b>IdentifyPrimaryObjects</b> or 
                             <b>IdentifySecondaryObjects</b>) whose measurements are to be displayed.''')
         
         self.x_axis = cps.Measurement(
-                            'Select the object measurement to plot', self.get_object, 'None',
+                            'Select the object measurement to plot', 
+                            self.get_object, 'None',
                             doc='''
                             Choose the object measurement made by a previous 
                             module to plot.''')
@@ -62,7 +68,8 @@ class DisplayHistogram(cpm.CPModule):
                             used on the X-axis.''')
         
         self.xscale = cps.Choice(
-                            'Transform the data prior to plotting along the X-axis?', ['no', 'log'], None,
+                            'Transform the data prior to plotting along the X-axis?', 
+                            ['no', 'log'], None,
                             doc='''
                             The measurement data can be scaled with either a 
                             linear scale (<i>No</i>) or a <i>log</i> (base 10) 
@@ -74,7 +81,8 @@ class DisplayHistogram(cpm.CPModule):
                             measurement is plotted linearly.<p>''')
         
         self.yscale = cps.Choice(
-                            'How should the Y-axis be scaled?', ['linear', 'log'], None,
+                            'How should the Y-axis be scaled?', 
+                            ['linear', 'log'], None,
                             doc='''
                             The Y-axis can be scaled either with either a <i>linear</i> 
                             scale or a <i>log</i> (base 10) scaling. 
@@ -90,18 +98,48 @@ class DisplayHistogram(cpm.CPModule):
                             the title will default 
                             to <i>(cycle N)</i> where <i>N</i> is the current image 
                             cycle being executed.''')
+
+        self.wants_xbounds = cps.Binary(
+                            'Do you wish to specify min/max bounds for the x-axis',
+                            False, doc =''' ''')
+        
+        self.xbounds = cps.FloatRange(
+                            'Enter the min & max values for the x-axis', 
+                            doc=''' ''')
         
     def settings(self):
-        return [self.object, self.x_axis, self.bins, self.xscale, self.yscale,
-                self.title]
+        """Return the settings to be loaded or saved to/from the pipeline
+        
+        These are the settings (from cellprofiler.settings) that are
+        either read from the strings in the pipeline or written out
+        to the pipeline. The settings should appear in a consistent
+        order so they can be matched to the strings in the pipeline.
+        """
+        return [self.object, self.x_axis, self.bins, self.xscale, self.yscale, 
+                self.title, self.wants_xbounds, self.xbounds]
 
     def visible_settings(self):
-        return self.settings()
+        """The settings that are visible in the UI
+        """
+        result = [self.object, self.x_axis, self.bins, self.xscale, self.yscale,
+                  self.title, self.wants_xbounds]
+        if self.wants_xbounds:
+            result += [self.xbounds]
+        return result
 
     def run(self, workspace):
+        """Run the module
+        
+        If is_interactive() returns false, then run() will be run in a
+        background thread.  Background threads cannot safely
+        manipulate the GUI.  See display().
+        """
         if workspace.frame:
             m = workspace.get_measurements()
             x = m.get_current_measurement(self.get_object(), self.x_axis.value)
+            if self.wants_xbounds:
+                x = x[x > self.xbounds.min]
+                x = x[x < self.xbounds.max]
             figure = workspace.create_or_find_figure(subplots=(1,1))
             figure.subplot_histogram(0, 0, x, 
                                      bins=self.bins.value,
@@ -115,9 +153,13 @@ class DisplayHistogram(cpm.CPModule):
 
     def backwards_compatibilize(self, setting_values, variable_revision_number, 
                                 module_name, from_matlab):
-        if variable_revision_number==1:
-            # Add bins
-            setting_values = setting_values + [10]
+        if variable_revision_number == 1:
+            # Add bins=100 to second position
+            setting_values.insert(2, 100)
             variable_revision_number = 2
+        if variable_revision_number == 2:
+            # add wants_xbounds=False and xbounds=(0,1)
+            settings_values = settings_values + [False, (0,1)]
+            variable_revision_number = 3
         return setting_values, variable_revision_number, from_matlab
 

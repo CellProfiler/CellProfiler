@@ -674,7 +674,7 @@ class SaveImages(cpm.CPModule):
             pixels = np.array([pixels[:,:,0], pixels[:,:,1], pixels[:,:,2]])
 
         out = libtiff.TIFF.open(filename, 'w')
-        out.write_image(pixels)
+        out.write_image(pixels, write_rgb=True)
         out.close()
         workspace.display_data.wrote_image = True
         if self.when_to_save != WS_LAST_CYCLE:

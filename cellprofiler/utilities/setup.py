@@ -16,6 +16,10 @@ import os
 import sys
 import subprocess
 import traceback
+is_win = sys.platform.startswith("win")
+is_win64 = (is_win and (os.environ["PROCESSOR_ARCHITECTURE"] == "AMD64"))
+is_win32 = (is_win and not is_win64)
+
 if not hasattr(sys, 'frozen'):
     from distutils.core import setup,Extension
     from distutils.sysconfig import get_config_var
@@ -31,7 +35,7 @@ if not hasattr(sys, 'frozen'):
 
     def configuration():
         extensions = []
-        if sys.platform.startswith('win'):
+        if is_win:
             extensions += [Extension(name="_get_proper_case_filename",
                                      sources=["get_proper_case_filename.c"],
                                      libraries=["shlwapi", "shell32", "ole32"],
@@ -47,12 +51,13 @@ if not hasattr(sys, 'frozen'):
             extra_link_args = None
             libraries = None
             library_dirs = None
-            if sys.platform.startswith('win'):
+            javabridge_sources = [ "javabridge.pyx" ]
+            if is_win:
                 if jdk_home is not None:
                     jdk_include = os.path.join(jdk_home, "include")
                     jdk_include_plat = os.path.join(jdk_include, sys.platform)
                     include_dirs += [jdk_include, jdk_include_plat]
-                if os.environ["PROCESSOR_ARCHITECTURE"] != "AMD64":
+                if is_win32:
                     #
                     # Build libjvm from jvm.dll on Windows.
                     # This assumes that we're using mingw32 for build
@@ -71,6 +76,7 @@ if not hasattr(sys, 'frozen'):
                     #
                     jdk_lib = os.path.join(jdk_home, "lib")
                     library_dirs = [jdk_lib]
+                    javabridge_sources.append("strtoull.c")
             
                 libraries = ["jvm"]
             elif sys.platform == 'darwin':
@@ -82,7 +88,7 @@ if not hasattr(sys, 'frozen'):
                 library_dirs = [os.path.join(java_home,'jre','lib','amd64','server')]
                 libraries = ["jvm"]
             extensions += [Extension(name="javabridge",
-                                     sources=["javabridge.pyx"],
+                                     sources=javabridge_sources,
                                      libraries=libraries,
                                      library_dirs=library_dirs,
                                      include_dirs=include_dirs,
@@ -101,7 +107,7 @@ if not hasattr(sys, 'frozen'):
 
 def find_javahome():
     """Find JAVA_HOME if it doesn't exist"""
-    if hasattr(sys, 'frozen') and sys.platform.startswith('win'):
+    if hasattr(sys, 'frozen') and is_win:
         #
         # The standard installation of CellProfiler for Windows comes with a JRE
         #
@@ -116,7 +122,7 @@ def find_javahome():
         return os.environ['JAVA_HOME']
     if sys.platform == 'darwin':
         return "Doesn't matter"
-    if sys.platform.startswith('win'):
+    if is_win:
         import _winreg
         java_key_path = 'SOFTWARE\\JavaSoft\\Java Runtime Environment'
         looking_for = java_key_path
@@ -141,7 +147,7 @@ def find_jdk():
     """Find the JDK under Windows"""
     if sys.platform == 'darwin':
         return "Doesn't matter"
-    if sys.platform.startswith('win'):
+    if is_win:
         import _winreg
         jdk_key_path = 'SOFTWARE\\JavaSoft\\Java Development Kit'
         kjdk = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, jdk_key_path)

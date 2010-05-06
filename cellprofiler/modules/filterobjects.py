@@ -178,7 +178,7 @@ class FilterObjects(cpm.CPModule):
         
         self.wants_outlines = cps.Binary('Retain outlines of the identified objects?', False)
         
-        self.outlines_name = cps.ImageNameProvider('Name the outline image','FilteredObjects', doc = '''
+        self.outlines_name = cps.OutlineNameProvider('Name the outline image','FilteredObjects', doc = '''
                                  <i>(Used only if the outline image is to be retained for later use in the  
                                  pipeline)</i> <br> Choose a name by which the outline image can be 
                                  selected later in the pipeline.
@@ -244,7 +244,7 @@ class FilterObjects(cpm.CPModule):
                      cps.Binary('Retain outlines of relabeled objects?', False))
         
         group.append("outlines_name",
-                     cps.ImageNameProvider('Name the outline image','OutlinesFilteredGreen'))
+                     cps.OutlineNameProvider('Name the outline image','OutlinesFilteredGreen'))
         
         group.append("remover", cps.RemoveSettingButton("", "Remove this additional object", self.additional_objects, group))
         group.append("divider", cps.Divider(line=False))

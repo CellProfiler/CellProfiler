@@ -1118,10 +1118,10 @@ class TrackObjects(cpm.CPModule):
 
         #gets first, kk, and cc ready for LAP
 
-        counts = np.bincount(np.ndarray.astype(d[:,0], 'int32'))
+        counts = np.bincount(np.ndarray.astype(d[:,0], np.int32))
         first = np.ascontiguousarray(np.hstack((np.cumsum(counts) - counts+1,
-                                                [len(d)+1])))
-        kk = np.ascontiguousarray(np.hstack(([0],d[:, 1].astype("int32"))))
+                                                [len(d)+1])), np.int32)
+        kk = np.ascontiguousarray(np.hstack(([0],d[:, 1].astype(np.int32))))
         cc = np.ascontiguousarray(np.hstack(([0.0], d[:, 2])))
 
         x, y =  LAP.LAP(kk, first, cc, len(F)*2+len(P1)*4)

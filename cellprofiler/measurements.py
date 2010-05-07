@@ -188,7 +188,7 @@ class Measurements(object):
             self.__dictionary[EXPERIMENT] = {}
         self.__dictionary[EXPERIMENT][feature_name] = data
         
-    def add_measurement(self, object_name, feature_name, data):
+    def add_measurement(self, object_name, feature_name, data, can_overwrite=False):
         """Add a measurement or, for objects, an array of measurements to the set
         
         This is the classic interface - like CPaddmeasurements:
@@ -196,13 +196,14 @@ class Measurements(object):
         FeatureName - the feature name, encoded with underbars for category/measurement/image/scale
         Data - the data item to be stored
         """
+        can_overwrite = can_overwrite or self.__can_overwrite
         if self.is_first_image:
             if not self.__dictionary.has_key(object_name):
                 self.__dictionary[object_name] = {}
             object_dict = self.__dictionary[object_name]
             if not object_dict.has_key(feature_name):
                 object_dict[feature_name] = [data]
-            elif self.__can_overwrite:
+            elif can_overwrite:
                 object_dict[feature_name] = [data]
             elif (object_name == IMAGE and 
                   feature_name.startswith(C_METADATA)):
@@ -213,7 +214,7 @@ class Measurements(object):
             else:
                 assert False,"Adding a feature for a second time: %s.%s"%(object_name,feature_name)
         else:
-            if self.__can_overwrite:
+            if can_overwrite:
                 if not self.__dictionary.has_key(object_name):
                     self.__dictionary[object_name] = {}
                 object_dict = self.__dictionary[object_name]
@@ -230,7 +231,7 @@ class Measurements(object):
                 and self.has_current_measurements(object_name, feature_name)):
                 assert self.get_current_image_measurement(feature_name) == data
             else:
-                assert (self.__can_overwrite or not
+                assert (can_overwrite or not
                         self.has_current_measurements(object_name, feature_name)),\
                        ("Feature %s.%s has already been set for this image cycle" %
                         (object_name,feature_name))

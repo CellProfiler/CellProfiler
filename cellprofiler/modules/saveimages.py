@@ -555,12 +555,14 @@ class SaveImages(cpm.CPModule):
                 for i in range(3):
                     img_min = np.min(pixels[:,:,i])
                     img_max = np.max(pixels[:,:,i])
-                    pixels[:,:,i] = (pixels[:,:,i] - img_min) / (img_max - img_min)
+                    if img_max > img_min:
+                        pixels[:,:,i] = (pixels[:,:,i] - img_min) / (img_max - img_min)
             else:
                 # Grayscale
                 img_min = np.min(pixels)
                 img_max = np.max(pixels)
-                pixels = (pixels - img_min) / (img_max - img_min)
+                if img_max > img_min:
+                    pixels = (pixels - img_min) / (img_max - img_min)
         
         env = jutil.attach()
         try:
@@ -655,12 +657,14 @@ class SaveImages(cpm.CPModule):
                 for i in range(3):
                     img_min = np.min(pixels[:,:,i])
                     img_max = np.max(pixels[:,:,i])
-                    pixels[:,:,i] = (pixels[:,:,i] - img_min) / (img_max - img_min)
+                    if img_max > img_min:
+                        pixels[:,:,i] = (pixels[:,:,i] - img_min) / (img_max - img_min)
             else:
                 # Grayscale
                 img_min = np.min(pixels)
                 img_max = np.max(pixels)
-                pixels = (pixels - img_min) / (img_max - img_min)
+                if img_max > img_min:
+                    pixels = (pixels - img_min) / (img_max - img_min)
         
         if pixels.dtype in (np.uint32, np.uint64, np.int32, np.int64):
             sys.stderr.write("Warning: converting %s image to 16-bit could result in incorrect values.\n" % repr(pixels.dtype))
@@ -700,12 +704,14 @@ class SaveImages(cpm.CPModule):
                         for i in range(3):
                             img_min = np.min(pixels[:,:,i])
                             img_max = np.max(pixels[:,:,i])
-                            pixels[:,:,i] = (pixels[:,:,i] - img_min) / (img_max - img_min)
+                            if img_max > img_min:
+                                pixels[:,:,i] = (pixels[:,:,i] - img_min) / (img_max - img_min)
                     else:
                         # Grayscale
                         img_min = np.min(pixels)
                         img_max = np.max(pixels)
-                        pixels = (pixels - img_min) / (img_max - img_min)
+                        if img_max > img_ming:
+                            pixels = (pixels - img_min) / (img_max - img_min)
                 else:
                     # Clip at 0 and 1
                     if np.max(pixels) > 1 or np.min(pixels) < 0:
@@ -785,10 +791,12 @@ class SaveImages(cpm.CPModule):
             pn, fn = os.path.split(filename)
             workspace.measurements.add_measurement('Image',
                                                    self.file_name_feature,
-                                                   fn)
+                                                   fn,
+                                                   can_overwrite=True)
             workspace.measurements.add_measurement('Image',
                                                    self.path_name_feature,
-                                                   pn)
+                                                   pn,
+                                                   can_overwrite=True)
     
     @property
     def file_name_feature(self):

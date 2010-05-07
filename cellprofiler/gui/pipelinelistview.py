@@ -440,6 +440,9 @@ class PipelineListView(object):
             for i, module in enumerate(pipeline.modules()):
                 module.module_num = i + index + 1
                 self.__pipeline.add_module(module)
+            for i in range(len(pipeline.modules())):
+                item = self.list_ctrl.SetItemState(
+                    i+index, wx.LIST_STATE_SELECTED, wx.LIST_STATE_SELECTED)
         finally:
             wx.EndBusyCursor()
                     
@@ -531,7 +534,6 @@ class PipelineListView(object):
     def __on_module_removed(self,pipeline,event):
         self.list_ctrl.DeleteItem(event.module_num - 1)
         self.__adjust_rows()
-        self.__module_view.clear_selection()
         self.__controller.enable_module_controls_panel_buttons()
         
     def __on_module_moved(self,pipeline,event):

@@ -1334,6 +1334,7 @@ class ModuleView:
         self.notify(setting_edited_event)
         
     def __on_pipeline_event(self,pipeline,event):
+        print "Pipeline event: "+ repr(event)
         if (isinstance(event,cpp.PipelineClearedEvent)):
             self.clear_selection()
         elif (isinstance(event, cpp.PipelineLoadedEvent)):
@@ -1343,6 +1344,9 @@ class ModuleView:
             if (not self.__inside_notify and self.__module is not None
                 and self.__module.module_num == event.module_num):
                 self.reset_view()
+        elif isinstance(event, cpp.ModuleRemovedPipelineEvent):
+            if event.module_num == self.__module.module_num:
+                self.clear_selection()
     
     def __on_do_something(self, event, setting):
         setting.on_event_fired()

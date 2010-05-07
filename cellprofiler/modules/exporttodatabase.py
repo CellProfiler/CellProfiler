@@ -152,6 +152,7 @@ def execute(cursor, query, bindings = None, return_result=True):
     if return_result:
         return get_results_as_list(cursor)
 
+
 def get_results_as_list(cursor):
     r = get_next_result(cursor)
     l = []
@@ -159,6 +160,7 @@ def get_results_as_list(cursor):
         l.append(r)
         r = get_next_result(cursor)
     return l
+
 
 def get_next_result(cursor):
     try:
@@ -168,11 +170,13 @@ def get_next_result(cursor):
     except StopIteration, e:
         return None
     
+
 def connect_mysql(host, user, pw, db):
     '''Creates and returns a db connection and cursor.'''
     connection = MySQLdb.connect(host=host, user=user, passwd=pw, db=db)
     cursor = SSCursor(connection)
     return connection, cursor
+
 
 def connect_sqlite(db_file):
     '''Creates and returns a db connection and cursor.'''
@@ -180,6 +184,7 @@ def connect_sqlite(db_file):
     connection = sqlite3.connect(db_file)
     cursor = connection.cursor()
     return connection, cursor
+
 
     
     
@@ -260,20 +265,34 @@ class ExportToDatabase(cpm.CPModule):
             based on the pipeline's settings, including the 
             server name, username and password if MySQL or Oracle is used.""")
         
+        #
+        # Hack: if user is on Broad IP, then plug in the imageweb url prepend
+        #
+        import socket
+        ip = socket.gethostbyaddr(socket.gethostname())[-1][0]
+        default_prepend = ""
+        if ip.startswith('69.173'): # Broad
+            default_prepend = "http://imageweb/images/CPALinks"
+        self.properties_image_url_prepend = cps.Text(
+            "Enter an image url prepend if you plan to access your files via http (leave blank if local)",
+            default_prepend, 
+            doc = """The image paths written to the database will be the absolute
+            path the the image files on your computer. If you plan to make these 
+            files accessible via the web, you can enter a url prefix here. Eg: 
+            If an image is loaded from the path "/cellprofiler/images/" and you use
+            a url prepend of "http://mysite.com/", CellProfiler Analyst will look
+            for your file at "http://mysite.com/cellprofiler/images/" """)
+
         self.mysql_not_available = cps.Divider("Cannot write to MySQL directly - CSV file output only", line=False, 
             doc= """The MySQLdb python module could not be loaded.  MySQLdb is necessary for direct export.""")
         
         self.db_host = cps.Text("Database host", "")
-        
         self.db_user = cps.Text("Username", "")
-        
         self.db_passwd = cps.Text("Password", "")
-        
         self.sqlite_file = cps.Text("Name the SQLite database file", 
             "DefaultDB.db", doc = """
             <i>(Used if SQLite selected as database type)</i><br>
             What is the SQLite database filename to which you want to write?""")
-        
         self.wants_agg_mean = cps.Binary("Calculate the per-image mean values of object measurements?", True, doc = """
             <b>ExportToDatabase</b> can calculate population statistics over all the objects in each image
             and store the results in the database. For instance, if
@@ -289,11 +308,8 @@ class ExportToDatabase(cpm.CPModule):
                     (SELECT AVG(Nuclei_AreaShape_Area)
                      FROM Per_Object
                      WHERE Per_Image.ImageNumber = Per_Object.ImageNumber);</tt>""")
-        
         self.wants_agg_median = cps.Binary("Calculate the per-image median values of object measurements?", False)
-        
         self.wants_agg_std_dev = cps.Binary("Calculate the per-image standard deviation values of object measurements?", False)
-        
         self.wants_agg_mean_well = cps.Binary(
             "Calculate the per-well mean values of object measurements?", False, doc = '''
             <b>ExportToDatabase</b> can calculate statistics over all the objects in each well 
@@ -329,7 +345,6 @@ class ExportToDatabase(cpm.CPModule):
             the objects that were created by prior modules. If you choose an
             object, its measurements will be written out to the Per_Object and/or
             Per_Well(s) tables, otherwise, the object's measurements will be skipped.""")
-        
         self.max_column_size = cps.Integer(
             "Maximum # of characters in a column name", 64, 
             minval = 10, maxval = 64,
@@ -339,7 +354,6 @@ class ExportToDatabase(cpm.CPModule):
             in all of the columns of a table. <b>ExportToDatabase</b> will
             shorten all of the column names by removing characters, at the
             same time guaranteeing that no two columns have the same name.""")
-        
         self.separate_object_tables = cps.Choice(
             "Create one table per object or a single object table?",
             [OT_PER_OBJECT, OT_COMBINE],
@@ -367,7 +381,16 @@ class ExportToDatabase(cpm.CPModule):
             <i>%(OT_COMBINE)s</i> if parent objects have a single child,
             or if you want a simple table structure in your database.</li>
             </ul>""" % globals())
-                                                            
+        self.want_image_thumbnails = cps.Binary(
+            "Write image thumbnails directly to the database?", False, doc = """
+            Check this option if you'd like to write image thumbnails directly
+            into the database. This will slow down the writing step, but will
+            enable new functionality in CellProfiler Analyst such as quickly
+            viewing images in the Plate Viewer tool.""")
+        self.thumbnail_image_names = cps.ImageNameSubscriberMultiChoice(
+            "Select the images you want to save thumbnails of",
+            doc = """ """)
+                                                
     def visible_settings(self):
         needs_default_output_directory =\
             (self.db_type != DB_MYSQL or
@@ -391,6 +414,8 @@ class ExportToDatabase(cpm.CPModule):
         if self.want_table_prefix.value:
             result += [self.table_prefix]
         result += [self.save_cpa_properties]
+        if self.save_cpa_properties.value:
+            result += [self.properties_image_url_prepend]
         if needs_default_output_directory:
             result += [self.directory]
         result += [self.wants_agg_mean, self.wants_agg_median,
@@ -405,19 +430,24 @@ class ExportToDatabase(cpm.CPModule):
         if self.objects_choice != O_NONE:
             result += [self.separate_object_tables]
         result += [self.max_column_size]
+        if self.db_type == DB_MYSQL:
+            result += [self.want_image_thumbnails]
+            if self.want_image_thumbnails:
+                result += [self.thumbnail_image_names]
         return result
     
     def settings(self):
         return [self.db_type, self.db_name, self.want_table_prefix,
                 self.table_prefix, self.sql_file_prefix, 
                 self.directory,
-                self.save_cpa_properties, self.db_host, 
-                self.db_user, self.db_passwd, self.sqlite_file,
+                self.save_cpa_properties, self.properties_image_url_prepend,
+                self.db_host, self.db_user, self.db_passwd, self.sqlite_file,
                 self.wants_agg_mean, self.wants_agg_median,
                 self.wants_agg_std_dev, self.wants_agg_mean_well, 
                 self.wants_agg_median_well, self.wants_agg_std_dev_well,
                 self.objects_choice, self.objects_list, self.max_column_size,
-                self.separate_object_tables]
+                self.separate_object_tables, self.want_image_thumbnails,
+                self.thumbnail_image_names]
     
     def validate_module(self,pipeline):
         if self.want_table_prefix.value:
@@ -517,17 +547,55 @@ class ExportToDatabase(cpm.CPModule):
             self.create_database_tables(self.cursor, pipeline, image_set_list)
         return True
     
+
     def prepare_to_create_batch(self, pipeline, image_set_list, fn_alter_path):
         '''Alter the output directory path for the remote batch host'''
         self.directory.alter_for_create_batch_files(fn_alter_path)
         return True
+
+    def get_measurement_columns(self, pipeline):
+        if self.want_image_thumbnails:
+            cols = []
+            for name in self.thumbnail_image_names.get_selections():
+                # NOTE: We currently use type BLOB which can only store 64K
+                #   This is sufficient for images up to 256 x 256 px
+                #   If larger thumbnails are to be stored, this may have to be
+                #   bumped to a MEDIUMBLOB.
+                cols += [(cpmeas.IMAGE, "Thumbnail_%s"%(name), cpmeas.COLTYPE_BLOB)]
+            return cols
+        return []
             
+
     def run(self, workspace):
+        if self.want_image_thumbnails:
+            import Image
+            from StringIO import StringIO
+            measurements = workspace.measurements
+            image_set = workspace.image_set
+            for name in image_set.names:
+                # For each desired channel, convert the pixel data into a PIL
+                # image and then save it as a PNG into a StringIO buffer.
+                # Finally read the raw data out of the buffer and add it as
+                # as measurement to be written as a blob.
+                pixels = image_set.get_image(name).pixel_data
+                fd = StringIO()
+                im = Image.fromarray((pixels * 255).astype('uint8'), 'L')
+                # rescale major axis to 200
+                if im.size[0] == max(im.size):
+                    w, h = (200, 200 * max(im.size) / min(im.size))
+                else:
+                    h, w = (200, 200 * max(im.size) / min(im.size))
+                im = im.resize((w,h))
+                im.save(fd, 'PNG')
+                blob = fd.getvalue()
+                fd.close()
+                measurements.add_image_measurement('Thumbnail_%s'%(name), blob)
         if workspace.pipeline.test_mode:
             return
         if (self.db_type == DB_MYSQL or self.db_type == DB_SQLITE):
             if not workspace.pipeline.test_mode:
                 self.write_data_to_db(workspace)
+
             
 #    def run_as_data_tool(self, workspace):
 #        self.prepare_run(workspace.pipeline,
@@ -544,7 +612,7 @@ class ExportToDatabase(cpm.CPModule):
             if not os.path.isdir(path):
                 os.makedirs(path)
             self.write_mysql_table_defs(workspace)
-            self.write_data(workspace)
+            self.write_csv_data(workspace)
         elif self.wants_well_tables:
             if self.db_type != DB_SQLITE:
                 per_well = self.write_mysql_table_per_well(workspace)
@@ -552,6 +620,7 @@ class ExportToDatabase(cpm.CPModule):
             # commit changes to db here or in run?
             print 'Commit'
             self.connection.commit()
+
     
     @property
     def wants_well_tables(self):
@@ -561,10 +630,12 @@ class ExportToDatabase(cpm.CPModule):
         else:
             return (self.wants_agg_mean_well or self.wants_agg_median_well or
                     self.wants_agg_std_dev_well)
+
     
     def should_stop_writing_measurements(self):
         '''All subsequent modules should not write measurements'''
         return True
+
     
     def ignore_object(self,object_name, strict = False):
         """Ignore objects (other than 'Image') if this returns true
@@ -580,6 +651,7 @@ class ExportToDatabase(cpm.CPModule):
             return object_name not in self.objects_list.selections
         return False
 
+
     def ignore_feature(self, object_name, feature_name, measurements=None,
                        strict = False):
         """Return true if we should ignore a feature"""
@@ -591,6 +663,7 @@ class ExportToDatabase(cpm.CPModule):
             ):
             return True
         return False
+
     
     def get_column_name_mappings(self, pipeline, image_set_list):
         """Scan all the feature names in the measurements, creating column names"""
@@ -634,6 +707,7 @@ class ExportToDatabase(cpm.CPModule):
                                 '%s_%s' % (aggname, feature_name))
                                for aggname in self.agg_names ]
         return result
+
     
     def get_object_names(self, pipeline, image_set_list):
         '''Get the names of the objects whose measurements are being taken'''
@@ -648,6 +722,7 @@ class ExportToDatabase(cpm.CPModule):
                  if not self.ignore_object(obname, True) and
                  obname not in (cpmeas.IMAGE, cpmeas.EXPERIMENT, 
                                 cpmeas.NEIGHBORS)]
+
     @property
     def agg_names(self):
         '''The list of selected aggregate names'''
@@ -657,6 +732,7 @@ class ExportToDatabase(cpm.CPModule):
                     (cpmeas.AGG_MEDIAN, self.wants_agg_median),
                     (cpmeas.AGG_STD_DEV, self.wants_agg_std_dev))
                 if setting.value]
+
         
     @property
     def agg_well_names(self):
@@ -705,11 +781,12 @@ class ExportToDatabase(cpm.CPModule):
                     statement = self.get_create_object_table_statement(
                         object_name, pipeline, image_set_list)
                     execute(cursor, statement)
+        # Image table
 
-        statement = self.get_create_image_table_statement(pipeline, 
-                                                          image_set_list)
         execute(cursor, 'DROP TABLE IF EXISTS %s' % 
                 self.get_table_name(cpmeas.IMAGE))
+        statement = self.get_create_image_table_statement(pipeline, 
+                                                          image_set_list)
         execute(cursor, statement)
         cursor.connection.commit()
     
@@ -761,6 +838,7 @@ class ExportToDatabase(cpm.CPModule):
                     statement += ',\n%s %s'%(mappings[feature_name], ftype)
         statement += ',\nPRIMARY KEY (ImageNumber, %s) )' % object_pk
         return statement
+
         
     def write_mysql_table_defs(self, workspace):
         """Write the table definitions to the SETUP.SQL file
@@ -779,7 +857,7 @@ class ExportToDatabase(cpm.CPModule):
         
         file_name_width, path_name_width = self.get_file_path_width(workspace)
         metadata_name_width = 128
-        file_name = "%s_SETUP.SQL"%(self.sql_file_prefix)
+        file_name = "%sSETUP.SQL"%(self.sql_file_prefix)
         path_name = os.path.join(self.get_output_directory(workspace), file_name)
         fid = open(path_name,"wt")
         fid.write("CREATE DATABASE IF NOT EXISTS %s;\n"%(self.db_name.value))
@@ -823,7 +901,6 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
         '''Write SQL statements to generate a per-well table
         
         workspace - workspace at the end of the run
-        mappings - mappings between feature names and column names
         fid - file handle of file to write or None if statements
               should be written to a separate file.
         '''
@@ -919,9 +996,11 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                 
         if needs_close:
             fid.close()
+
     
-    def write_oracle_table_defs(self, workspace, mappings):
+    def write_oracle_table_defs(self, workspace):
         raise NotImplementedError("Writing to an Oracle database is not yet supported")
+
     
     def base_name(self,workspace):
         """The base for the output file name"""
@@ -929,14 +1008,12 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
         first = m.image_set_start_number
         last = m.image_set_number
         return '%s%d_%d'%(self.sql_file_prefix, first, last)
+
     
         
-    def write_data(self, workspace):
+    def write_csv_data(self, workspace):
         """Write the data in the measurements out to the csv files
         workspace - contains the measurements
-        mappings  - map a feature name to a column name
-        per_image - map a feature name to its column index in the per_image table
-        per_object - map a feature name to its column index in the per_object table
         """
         zeros_for_nan = False
         measurements = workspace.measurements
@@ -1028,6 +1105,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                             object_row.append(value)
                     csv_writer.writerow(object_row)
             fid.close()
+
             
     def write_data_to_db(self, workspace):
         """Write the data in the measurements out to the database
@@ -1075,6 +1153,8 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
             #
             # Delete any prior data for this image
             #
+            # XXX: This shouldn't be neccessary since the table is dropped 
+            #      before writing.
             stmt = ('DELETE FROM %s WHERE ImageNumber=%d'%
                     (self.get_table_name(cpmeas.IMAGE), image_number))
             execute(self.cursor, stmt)
@@ -1164,6 +1244,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
             traceback.print_exc()
             self.connection.rollback()
             raise
+
         
     
     def write_properties(self, workspace):
@@ -1228,19 +1309,19 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
         object_id = 'ObjectNumber'
         cell_x_loc = '%s_Location_Center_X'%(supposed_primary_object)
         cell_y_loc = '%s_Location_Center_Y'%(supposed_primary_object)
-        image_channel_file_names = ','.join(['Image_FileName_%s'%(name) for name in image_names])+','
-        image_channel_file_paths = ','.join(['Image_PathName_%s'%(name) for name in image_names])+','
-        image_channel_names = ','.join(image_names)+','
+        image_file_cols = ','.join(['Image_FileName_%s'%(name) for name in image_names])
+        image_path_cols = ','.join(['Image_PathName_%s'%(name) for name in image_names])
+        image_thumbnail_cols = ','.join(['Image_Thumbnail_%s'%(name) for name in self.thumbnail_image_names.get_selections()])
+        image_names = ','.join(image_names)
         if len(image_names) == 1:
             image_channel_colors = 'gray,'
         else:
-            image_channel_colors = 'red,green,blue,cyan,magenta,yellow,gray,none,none,none,'
-        # TODO: leave blank if image files are local  
-        image_url = 'http://imageweb/images/CPALinks'
+            image_channel_colors = 'red, green, blue, cyan, magenta, yellow, gray, '+('none, ' * 10)[:len(image_names)]
+        image_url = self.properties_image_url_prepend.value
         contents = """#%(date)s
 # ==============================================
 #
-# Classifier 2.0 properties file
+# CellProfiler Analyst 2.0 properties file
 #
 # ==============================================
 
@@ -1283,11 +1364,15 @@ cell_y_loc    = %(cell_y_loc)s
 # adding those column names here.
 #
 # NOTE: These lists must have equal length!
-image_channel_paths = %(image_channel_file_paths)s
-image_channel_files = %(image_channel_file_names)s
+image_path_cols = %(image_path_cols)s
+image_file_cols = %(image_file_cols)s
+
+# CPA will now read image thumbnails directly from the database.
+
+image_thumbnail_cols = %(image_thumbnail_cols)s
 
 # Give short names for each of the channels (respectively)...
-image_channel_names = %(image_channel_names)s
+image_names = %(image_names)s
 
 # Specify a default color for each of the channels (respectively)
 # Valid colors are: [red, green, blue, magenta, cyan, yellow, gray, none]
@@ -1301,7 +1386,6 @@ image_url_prepend = %(image_url)s
 # Here you can define groupings to choose from when classifier scores your experiment.  (eg: per-well)
 # This is OPTIONAL, you may leave "groups = ".
 # FORMAT:
-#   groups     =  comma separated list of group names (MUST END IN A COMMA IF THERE IS ONLY ONE GROUP)
 #   group_XXX  =  MySQL select statement that returns image-keys and group-keys.  This will be associated with the group name "XXX" from above.
 # EXAMPLE GROUPS:
 #   groups               =  Well, Gene, Well+Gene,
@@ -1309,20 +1393,19 @@ image_url_prepend = %(image_url)s
 #   group_SQL_Gene       =  SELECT Per_Image_Table.TableNumber, Per_Image_Table.ImageNumber, Well_ID_Table.gene FROM Per_Image_Table, Well_ID_Table WHERE Per_Image_Table.well=Well_ID_Table.well
 #   group_SQL_Well+Gene  =  SELECT Per_Image_Table.TableNumber, Per_Image_Table.ImageNumber, Well_ID_Table.well, Well_ID_Table.gene FROM Per_Image_Table, Well_ID_Table WHERE Per_Image_Table.well=Well_ID_Table.well
 
-groups  =  
+# 
 
 # ==== Image Filters ====
 # Here you can define image filters to let you select objects from a subset of your experiment when training the classifier.
 # This is OPTIONAL, you may leave "filters = ".
 # FORMAT:
-#   filters         =  comma separated list of filter names (MUST END IN A COMMA IF THERE IS ONLY ONE FILTER)
 #   filter_SQL_XXX  =  MySQL select statement that returns image keys you wish to filter out.  This will be associated with the filter name "XXX" from above.
 # EXAMPLE FILTERS:
 #   filters           =  EMPTY, CDKs,
 #   filter_SQL_EMPTY  =  SELECT TableNumber, ImageNumber FROM CPA_per_image, Well_ID_Table WHERE CPA_per_image.well=Well_ID_Table.well AND Well_ID_Table.Gene="EMPTY"
 #   filter_SQL_CDKs   =  SELECT TableNumber, ImageNumber FROM CPA_per_image, Well_ID_Table WHERE CPA_per_image.well=Well_ID_Table.well AND Well_ID_Table.Gene REGEXP 'CDK.*'
 
-filters  =  
+#
 
 # ==== Meta data ====
 # What are your objects called?
@@ -1415,15 +1498,18 @@ check_tables = yes
                 if len(names) > 0:
                     PathNameWidth = max(PathNameWidth, np.max(map(len,names)))
         return FileNameWidth, PathNameWidth
+
     
     def get_output_directory(self, workspace=None):
         return self.directory.get_absolute_path(None if workspace is None
                                                 else workspace.measurements)
+
     
     def get_table_prefix(self):
         if self.want_table_prefix.value:
             return self.table_prefix.value
         return ""
+
     
     def get_table_name(self, object_name):
         '''Return the table name associated with a given object
@@ -1431,6 +1517,7 @@ check_tables = yes
         object_name - name of object or "Image", "Object" or "Well"
         '''
         return self.get_table_prefix()+'Per_'+object_name
+
     
     def get_pipeline_measurement_columns(self, pipeline, image_set_list):
         '''Get the measurement columns for this pipeline, possibly cached'''
@@ -1459,6 +1546,7 @@ check_tables = yes
                 return cmp(x[1], y[1])
             d[D_MEASUREMENT_COLUMNS].sort(cmp=cmpfn)
         return d[D_MEASUREMENT_COLUMNS]
+
     
     def upgrade_settings(self,setting_values,variable_revision_number,
                          module_name, from_matlab):
@@ -1766,6 +1854,7 @@ class ColumnNameMapping:
             reverse_dictionary.pop(orig_name)
             reverse_dictionary[name] = key
             self.__dictionary[key] = name
+
 
 def random_number_generator(seed):
     '''This is a very repeatable pseudorandom number generator

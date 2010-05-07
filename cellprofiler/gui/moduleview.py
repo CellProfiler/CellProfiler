@@ -1338,7 +1338,6 @@ class ModuleView:
         self.notify(setting_edited_event)
         
     def __on_pipeline_event(self,pipeline,event):
-        print "Pipeline event: "+ repr(event)
         if (isinstance(event,cpp.PipelineClearedEvent)):
             self.clear_selection()
         elif (isinstance(event, cpp.PipelineLoadedEvent)):

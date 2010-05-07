@@ -731,6 +731,7 @@ class SaveImages(cpm.CPModule):
                     cm = matplotlib.cm.get_cmap(colormap)
                     
                     if self.get_bit_depth() == '8':
+                        mapper = matplotlib.cm.ScalarMappable(cmap=cm)
                         pixels = mapper.to_rgba(pixels, bytes=True)
                     else:
                         raise NotImplementedError("12 and 16-bit images not yet supported")

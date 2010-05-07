@@ -891,7 +891,78 @@ SaveImages:[module_num:6|svn_version:\'9507\'|variable_revision_number:5|show_wi
         data = matplotlib.image.imread(img1_out_filename)
         expected_data = matplotlib.image.imread(img1_filename) 
         self.assertTrue(np.all(data==expected_data))
-    
+        
+    def test_01_10_save_all_to_custom_png_rgb(self):
+        '''Tests the path of saving an image with a colormap other than gray'''
+        img1_filename = os.path.join(self.new_image_directory,'img1.tif')
+        img1_out_filename = os.path.join(self.custom_directory,'img1OUT.png')
+        img2_filename = os.path.join(self.new_image_directory,'img2.tif') 
+        img2_out_filename = os.path.join(self.custom_directory,'img2OUT.png')
+        make_file(img1_filename, cpmt.tif_8_1)
+        make_file(img2_filename, cpmt.tif_8_2)
+        pipeline = cpp.Pipeline()
+        pipeline.add_listener(self.on_event)
+        load_images = cpm_li.LoadImages()
+        load_images.file_types.value = cpm_li.FF_INDIVIDUAL_IMAGES
+        load_images.match_method.value = cpm_li.MS_EXACT_MATCH
+        load_images.images[0].common_text.value = '.tif'
+        load_images.images[0].channels[0].image_name.value = 'Orig'
+        load_images.module_num = 1
+        
+        apply_threshold = cpm_a.ApplyThreshold()
+        apply_threshold.image_name.value = 'Orig'
+        apply_threshold.thresholded_image_name.value = 'Derived'
+        apply_threshold.low_or_high.value = cpm_a.TH_BELOW_THRESHOLD
+        apply_threshold.threshold_method.value = cpm_a.TM_MANUAL
+        apply_threshold.manual_threshold.value = 0
+        apply_threshold.binary.value = cpm_a.GRAYSCALE
+        apply_threshold.module_num = 2
+
+        save_images = cpm_si.SaveImages()
+        save_images.save_image_or_figure.value = cpm_si.IF_IMAGE
+        save_images.image_name.value = 'Derived'
+        save_images.file_image_name.value = 'Orig'
+        save_images.file_name_method.value = cpm_si.FN_FROM_IMAGE
+        save_images.wants_file_name_suffix.value = True
+        save_images.file_name_suffix.value ='OUT'
+        save_images.file_format.value = cpm_si.FF_PNG
+        save_images.pathname.dir_choice = cps.ABSOLUTE_FOLDER_NAME
+        save_images.pathname.custom_path = self.custom_directory
+        save_images.when_to_save.value = cpm_si.WS_EVERY_CYCLE
+        # 
+        # Use Jet to force saving rgb images
+        #
+        save_images.colormap.value = 'jet'
+        save_images.update_file_names.value = True
+        save_images.module_num = 3
+        
+        pipeline.add_module(load_images)
+        pipeline.add_module(apply_threshold)
+        pipeline.add_module(save_images)
+        pipeline.test_valid()
+        measurements = pipeline.run()
+        self.assertTrue(os.path.isfile(img1_out_filename))
+        self.assertTrue(os.path.isfile(img2_out_filename))
+        pn,fn = os.path.split(img1_out_filename)
+        filenames = measurements.get_all_measurements('Image','FileName_Derived')
+        pathnames = measurements.get_all_measurements('Image','PathName_Derived')
+        self.assertEqual(filenames[0],fn)
+        self.assertEqual(pathnames[0],pn)
+        pil = PILImage.open(img1_out_filename)
+        data = matplotlib.image.pil_to_array(pil)
+        pil = PILImage.open(img1_filename)
+        mapper = matplotlib.cm.ScalarMappable(cmap=matplotlib.cm.jet)
+        expected_data = mapper.to_rgba(matplotlib.image.pil_to_array(pil), 
+                                       bytes=True)
+        self.assertTrue(np.all(data==expected_data))
+        pil = PILImage.open(img2_out_filename)
+        data = matplotlib.image.pil_to_array(pil)
+        pil = PILImage.open(img2_filename)
+        mapper = matplotlib.cm.ScalarMappable(cmap=matplotlib.cm.jet)
+        expected_data = mapper.to_rgba(matplotlib.image.pil_to_array(pil), 
+                                       bytes=True)
+        self.assertTrue(np.all(data==expected_data))
+        
     def test_02_01_prepare_to_create_batch(self):
         '''Test the "prepare_to_create_batch" method'''
         orig_path = '/foo/bar'

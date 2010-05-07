@@ -217,6 +217,7 @@ class ModuleView:
         self.notes_panel = wx.Panel(self.top_panel)
         self.__module_panel = wx.Panel(self.top_panel)
         self.__sizer = ModuleSizer(0, 3)
+        self.module_panel.Bind(wx.EVT_CHILD_FOCUS, self.skip_event)
         self.module_panel.SetSizer(self.__sizer)
         self.top_level_sizer = wx.BoxSizer(wx.VERTICAL)
         self.top_panel.SetSizer(self.top_level_sizer)
@@ -243,6 +244,9 @@ class ModuleView:
             self.__startup_blurb = None
         wx.EVT_SIZE(self.top_panel, self.on_size)
         wx.EVT_IDLE(self.top_panel, self.on_idle)
+
+    def skip_event(self, event):
+        event.Skip(False)
 
     def get_module_panel(self):
         """The panel that hosts the module controls

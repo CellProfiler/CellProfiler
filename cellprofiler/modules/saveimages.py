@@ -53,7 +53,7 @@ try:
 except:
     if sys.platform == 'darwin':
         traceback.print_exc()
-        sys.stderr.write("Failed to load libtiff.  SaveImages on Mac may not be able to write 16-bit TIFF format")
+        sys.stderr.write("Failed to load pylibtiff.  SaveImages on Mac may not be able to write 16-bit TIFF format")
     has_tiff = False
 
 
@@ -981,7 +981,7 @@ class SaveImages(cpm.CPModule):
                 self.save_image_or_figure == IF_IMAGE and
                 self.get_bit_depth()== '16' and 
                 not has_tiff):
-                raise cps.ValidationError("Writing TIFFs on OS X using bioformats may cause CellProfiler to hang or crash (install libtiff).",
+                raise cps.ValidationError("Writing TIFFs on OS X using bioformats may cause CellProfiler to hang or crash (install libtiff & pylibtiff).",
                                           self.bit_depth)
             if (self.save_image_or_figure == IF_MOVIE):
                 raise cps.ValidationError("Saving movies on OS X may cause CellProfiler to hang or crash.",

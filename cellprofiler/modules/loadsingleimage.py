@@ -1,18 +1,26 @@
 """<b>Load Single Image</b> loads a single image for use in all image cycles
 <hr>
 
-<i>Note:</i> For most purposes, you will probably want to use the <b>LoadImages</b>
-module, not <b>LoadSingleImage</b>.
-
-This module tells CellProfiler where to retrieve a single image and gives the image a
+<p>This module tells CellProfiler where to retrieve a single image and gives the image a
 meaningful name by which the other modules can access it. The module 
 executes only the first time through the pipeline; thereafter the image
 is accessible to all subsequent processing cycles. This is
 particularly useful for loading an image like an illumination correction
 image for use by the <b>CorrectIlluminationApply</b> module, when that single
-image will be used to correct all images in the analysis run.
+image will be used to correct all images in the analysis run.</p>
 
-See also <b>LoadImages</b>.
+<h3>Technical note</h3>
+
+For most purposes, you will probably want to use the <b>LoadImages</b> module, not 
+<b>LoadSingleImage</b>. The reason is that <b>LoadSingleImage</b> does not actually 
+create image sets (or even a single image set). Instead, it adds the single image 
+to every image cycle for an <i>already existing</i> image set. Hence 
+<b>LoadSingleImage</b> should never be used as the only image-loading module in a 
+pipeline; attempting to do so will display a warning message in the module settings. 
+<p>If you have a single file to load in the pipeline (and only that file), you 
+will want to use <b>LoadImages</b> or <b>LoadData</b> with a single, hardcoded file name. 
+
+See also <b>LoadImages</b>,<b>LoadData</b>.
 
 """
 __version__="$Revision$"

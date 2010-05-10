@@ -253,6 +253,12 @@ For a grayscale image, invert its intensity.
 <td>Binary</td>
 </tr>
 <tr>
+<td><i>Life</i></td><td>Applies the interaction rules from the 
+<a href="http://en.wikipedia.org/wiki/Conway%27s_Game_of_Life">Game of Life</a>, 
+an example of a cellular automaton.</td>
+<td>Binary</td>
+</tr>
+<tr>
 <td><i>Open</i></td><td>Performs an erosion followed by a dilation. The effect is to
 break bridges between objects and remove single pixels.</td>
 <td>Binary, grayscale</td>

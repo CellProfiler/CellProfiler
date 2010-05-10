@@ -18,6 +18,7 @@ import os
 import _winreg
 import matplotlib
 
+is_win64 = (os.environ["PROCESSOR_ARCHITECTURE"] == "AMD64")
 class CellProfilerMSI(distutils.core.Command):
     description = "Make CellProfiler.msi using the CellProfiler.iss InnoSetup compiler"
     user_options = []
@@ -29,12 +30,18 @@ class CellProfilerMSI(distutils.core.Command):
         pass
     
     def run(self):
-        required_files = ["dist\\CellProfiler.exe","CellProfiler.iss"]
+        if is_win64:
+            cell_profiler_iss = "CellProfiler64.iss"
+            cell_profiler_setup = "CellProfiler64Setup.exe"
+        else:
+            cell_profiler_iss = "CellProfiler.iss"
+            cell_profiler_setup = "CellProfilerSetup.exe"
+        required_files = ["dist\\CellProfiler.exe",cell_profiler_iss]
         compile_command = self.__compile_command()
-        compile_command = compile_command.replace("%1","CellProfiler.iss")
-        self.make_file(required_files,"Output\\CellProfiler.msi", 
+        compile_command = compile_command.replace("%1",cell_profiler_iss)
+        self.make_file(required_files,"Output\\"+cell_profiler_setup, 
                        subprocess.check_call,([compile_command]),
-                       "Compiling CellProfiler.iss")
+                       "Compiling %s" % cell_profiler_iss)
     
     def __compile_command(self):
         """Return the command to use to compile an .iss file
@@ -61,7 +68,7 @@ opts = {
     'msi': {}
        }
 
-if os.environ["PROCESSOR_ARCHITECTURE"] == "AMD64":
+if is_win64:
     opts['py2exe']['includes'] += [ "scipy.io.matlab.streams"]
     
 data_files = [('cellprofiler\\icons',

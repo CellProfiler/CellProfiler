@@ -1258,6 +1258,13 @@ SaveImages:[module_num:6|svn_version:\'9507\'|variable_revision_number:5|show_wi
                     traceback.print_exc()
 
     def test_06_02_save_image_with_libtiff(self):
+        try:
+            import libtiff
+        except:
+            sys.stderr.write("Failed to import libtiff.\n")
+            traceback.print_exc()
+            return
+            
         image = np.ones((255,255)).astype(np.uint8)
         for i in range(image.shape[0]):
             image[i,:] = i

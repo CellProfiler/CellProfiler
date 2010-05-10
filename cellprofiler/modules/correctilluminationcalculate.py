@@ -45,6 +45,8 @@ IC_BACKGROUND      = "Background"
 RE_MEDIAN          = "Median"
 EA_EACH            = "Each"
 EA_ALL             = "All"
+EA_ALL_FIRST       = "All: first cycle"
+EA_ALL_ACROSS      = "All: across cycles"
 SRC_LOAD_IMAGES    = "Load Images module"
 SRC_PIPELINE       = "Pipeline"
 SM_NONE            = "No smoothing"
@@ -136,15 +138,34 @@ class CorrectIlluminationCalculate(cpm.CPModule):
                                         to be very dark. The <i>Median</i> option chooses the median value in the 
                                         image to rescale so that division increases some values and decreases others.''')
         
-        self.each_or_all = cps.Choice("Calculate function for each image individually, or based on all images?",
-                                      [EA_EACH,EA_ALL], doc = '''
-                                      Calculate a separate function for each image, or one for all the images?
-                                      Select <i>Each</i> to calculate an illumination function for each image 
-                                      individually or <i>All</i> to calculate an illumination function based on all 
-                                      the specified images to be corrected. <i>All</i> will cycle through all the 
-                                      images in the image set, creating an averaged image, plus any smoothing you 
-                                      select.  The first cycle will be longer, but subsequent cycles will be processed
-                                      more quickly.''')
+        self.each_or_all = cps.Choice(
+            "Calculate function for each image individually, or based on all images?",
+            [EA_EACH, EA_ALL_FIRST, EA_ALL_ACROSS], doc = '''
+            Calculate a separate function for each image, or one for all the images?
+            You can calculate the illumination function using just the current
+            image or you can calculate the illumination function using all of
+            the images in each group.
+            <p>
+            Select <i>%(EA_EACH)s</i> to calculate an illumination function for each image 
+            individually. 
+            <p>
+            Select <i>%(EA_ALL_FIRST)s</i> to calculate an illumination 
+            function based on all of the images in a group, performing the
+            calculation before processing any images in the group. This option
+            lets you use the illumination function in a subsequent
+            <b>CorrectIllumination_Apply</b> module in the same pipeline. The
+            images must be loaded from disk and the images will not be filtered
+            by a previous <b>FlagImage</b> module.  The first cycle will be 
+            longer, but subsequent cycles will be processed more quickly.
+            <p>
+            Select <i>%(EA_ALL_ACROSS)s</i> to calculate an illumination function 
+            across all cycles in each group. This option takes any image
+            as input and excludes images that are filtered by a previous
+            <b>FlagImage</b> module. However, the illumination function 
+            will not be completed until the end of the last cycle in the group.
+            You can use <b>SaveImages</b> to save the illumination function
+            after the last cycle in the group and then use the resulting
+            image in another pipeline.''' % globals())
         
         self.smoothing_method = cps.Choice("Smoothing method",
                                            [SM_NONE, SM_FIT_POLYNOMIAL, 
@@ -243,7 +264,7 @@ class CorrectIlluminationCalculate(cpm.CPModule):
 
     def prepare_group(self, pipeline, image_set_list, grouping, 
                       image_numbers):
-        if self.each_or_all == EA_ALL and len(image_numbers) > 0:
+        if self.each_or_all != EA_EACH and len(image_numbers) > 0:
             output_image_provider =\
                 CorrectIlluminationImageProvider(self.illumination_image_name.value,
                                                  self)
@@ -259,7 +280,9 @@ class CorrectIlluminationCalculate(cpm.CPModule):
             for image_number in image_numbers:
                 image_set = image_set_list.get_image_set(image_number-1)
                 image_set.providers.extend(image_providers)
-            if pipeline.is_image_from_file(self.image_name.value):
+                
+            if self.each_or_all == EA_ALL_FIRST:
+            
                 if not pipeline.in_batch_mode() and not cpp.get_headless():
                     import wx
                     progress_dialog = wx.ProgressDialog("#%d: CorrectIlluminationCalculate for %s"%(self.module_num, self.image_name),
@@ -269,14 +292,16 @@ class CorrectIlluminationCalculate(cpm.CPModule):
                                                         wx.PD_APP_MODAL |
                                                         wx.PD_AUTO_HIDE |
                                                         wx.PD_CAN_ABORT)
- 
+                else:
+                    progress_dialog = None
+    
                 for i,image_number in enumerate(image_numbers):
                     image_set = image_set_list.get_image_set(image_number-1)
                     image     = image_set.get_image(self.image_name.value,
                                                     must_be_grayscale=True,
                                                     cache = False)
                     output_image_provider.add_image(image)
-                    if not pipeline.in_batch_mode():
+                    if progress_dialog is not None:
                         should_continue, skip = progress_dialog.Update(i+1)
                         if not should_continue:
                             progress_dialog.EndModal(0)
@@ -284,10 +309,10 @@ class CorrectIlluminationCalculate(cpm.CPModule):
         return True
         
     def run(self, workspace):
-        if self.each_or_all == EA_ALL:
+        if self.each_or_all != EA_EACH:
             output_image_provider = \
                 workspace.image_set.get_image_provider(self.illumination_image_name.value)
-            if not workspace.pipeline.is_image_from_file(self.image_name.value):
+            if self.each_or_all == EA_ALL_ACROSS:
                 #
                 # We are accumulating a pipeline image. Add this image set's
                 # image to the output image provider.
@@ -488,7 +513,7 @@ class CorrectIlluminationCalculate(cpm.CPModule):
     def validate_module(self, pipeline):
         '''Modify the image provider attributes based on other setttings'''
         d = self.illumination_image_name.provided_attributes
-        if self.each_or_all == EA_ALL:
+        if self.each_or_all == EA_ALL_ACROSS:
             d[cps.AVAILABLE_ON_LAST_ATTRIBUTE] = True
         elif d.has_key(cps.AVAILABLE_ON_LAST_ATTRIBUTE):
             del d[cps.AVAILABLE_ON_LAST_ATTRIBUTE]
@@ -564,6 +589,20 @@ class CorrectIlluminationCalculate(cpm.CPModule):
             from_matlab = False
         
         return setting_values, variable_revision_number, from_matlab
+    
+    def post_pipeline_load(self, pipeline):
+        '''After loading, set each_or_all appropriately
+        
+        This function handles the legacy EA_ALL which guessed the user's
+        intent: processing before the first cycle or not. We look for
+        the image provider and see if it is a file image provider.
+        '''
+        if self.each_or_all == EA_ALL:
+            if pipeline.is_image_from_file(self.image_name.value):
+                self.each_or_all.value = EA_ALL_FIRST
+            else:
+                self.each_or_all.value = EA_ALL_ACROSS
+            
 
 class CorrectIlluminationImageProvider(cpi.AbstractImageProvider):
     """CorrectIlluminationImageProvider provides the illumination correction image

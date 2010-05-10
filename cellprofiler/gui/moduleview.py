@@ -1348,7 +1348,8 @@ class ModuleView:
                 and self.__module.module_num == event.module_num):
                 self.reset_view()
         elif isinstance(event, cpp.ModuleRemovedPipelineEvent):
-            if event.module_num == self.__module.module_num:
+            if (self.__module is not None and 
+                event.module_num == self.__module.module_num):
                 self.clear_selection()
     
     def __on_do_something(self, event, setting):

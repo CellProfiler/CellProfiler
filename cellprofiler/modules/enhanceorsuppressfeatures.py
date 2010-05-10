@@ -87,7 +87,7 @@ class EnhanceOrSuppressFeatures(cpm.CPModule):
         
         self.object_size = cps.Integer('Feature size',
                                         10,2,doc="""
-                                        <i>(Used only if speckles or neurites are selected, or if supressing features)</i><br>
+                                        <i>(Used only if speckles or neurites are selected, or if suppressing features)</i><br>
                                         What is the feature size? 
                                         The diameter of the largest speckle (or the width of the neurites) to be enhanced or suppressed, which
                                         will be used to calculate an adequate filter size. If you don't know the width 

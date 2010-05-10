@@ -191,7 +191,7 @@ def connect_sqlite(db_file):
 class ExportToDatabase(cpm.CPModule):
  
     module_name = "ExportToDatabase"
-    variable_revision_number = 15
+    variable_revision_number = 16
     category = "Data Tools"
 
     def create_settings(self):
@@ -440,13 +440,13 @@ class ExportToDatabase(cpm.CPModule):
         return [self.db_type, self.db_name, self.want_table_prefix,
                 self.table_prefix, self.sql_file_prefix, 
                 self.directory,
-                self.save_cpa_properties, self.properties_image_url_prepend,
+                self.save_cpa_properties, 
                 self.db_host, self.db_user, self.db_passwd, self.sqlite_file,
                 self.wants_agg_mean, self.wants_agg_median,
                 self.wants_agg_std_dev, self.wants_agg_mean_well, 
                 self.wants_agg_median_well, self.wants_agg_std_dev_well,
                 self.objects_choice, self.objects_list, self.max_column_size,
-                self.separate_object_tables, self.want_image_thumbnails,
+                self.separate_object_tables, self.properties_image_url_prepend, self.want_image_thumbnails,
                 self.thumbnail_image_names]
     
     def validate_module(self,pipeline):
@@ -1761,6 +1761,13 @@ check_tables = yes
         directory = cps.DirectoryPath.upgrade_setting(directory)
         setting_values[SLOT_DIRCHOICE] = directory
         
+        if (not from_matlab) and variable_revision_number == 15:
+            #
+            # Added 3 new agrs: url_prepend and thumbnail options
+            #
+            setting_values = setting_values + ["", cps.NO, ""]
+            variable_revision_number = 16
+            
         return setting_values, variable_revision_number, from_matlab
     
 class ColumnNameMapping:

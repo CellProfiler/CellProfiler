@@ -45,6 +45,8 @@ from cellprofiler.matlab.cputils import make_cell_struct_dtype, new_string_cell_
 
 '''The measurement name of the image number'''
 IMAGE_NUMBER = "ImageNumber"
+GROUP_NUMBER = "Group_Number"
+GROUP_INDEX = "Group_Index"
 CURRENT = 'Current'
 NUMBER_OF_IMAGE_SETS     = 'NumberOfImageSets'
 NUMBER_OF_MODULES        = 'NumberOfModules'
@@ -975,22 +977,23 @@ class Pipeline(object):
                 raise ValueError("The grouping keys specified on the command line (%s) must be the same as those defined by the modules in the pipeline (%s)"%(
                         ", ".join(grouping.keys()), ", ".join(keys)))
             
-            for grouping_keys, image_numbers in groupings:
+            for group_number, (grouping_keys, image_numbers) in enumerate(groupings):
                 if grouping is not None and grouping != grouping_keys:
                     continue
                 need_to_run_prepare_group = True
-                for image_number in image_numbers:
+                for group_index, image_number in enumerate(image_numbers):
                     if image_number < image_set_start:
                         continue
                     if image_set_end is not None and image_number > image_set_end:
                         continue
                     if need_to_run_prepare_group:
-                        yield image_number, lambda: self.prepare_group(image_set_list, grouping_keys, image_numbers)
+                        yield group_number+1, group_index+1, image_number,\
+                              lambda: self.prepare_group(image_set_list, grouping_keys, image_numbers)
                     else:
-                        yield image_number, lambda: True
+                        yield group_number+1, group_index+1, image_number, lambda: True
                     need_to_run_prepare_group = False
                 if not need_to_run_prepare_group:
-                    yield None, lambda workspace: self.post_group(workspace, grouping_keys)
+                    yield None, None, None, lambda workspace: self.post_group(workspace, grouping_keys)
 
         with self.prepared_run(self, frame) as image_set_list:
             if image_set_list == None:
@@ -998,12 +1001,12 @@ class Pipeline(object):
 
             # Keep track of progress for the benefit of the progress window.
             num_image_sets = sum([image_number is not None 
-                                  for image_number, _ in group(image_set_list)])
+                                  for image_number, _, _, _ in group(image_set_list)])
             image_set_count = -1
             
             measurements = None
             last_image_number = None
-            for image_number, closure in group(image_set_list):
+            for group_number, group_index, image_number, closure in group(image_set_list):
                 if image_number is None:
                     if not closure(workspace):
                         measurements.add_experiment_measurement(EXIT_STATUS,
@@ -1023,6 +1026,8 @@ class Pipeline(object):
                     measurements.next_image_set(image_number)
                 # This is added by ExportToDatabase
                 #measurements.add_image_measurement(IMAGE_NUMBER, image_number)
+                measurements.add_image_measurement(GROUP_NUMBER, group_number)
+                measurements.add_image_measurement(GROUP_INDEX, group_index)
                 numberof_windows = 0;
                 slot_number = 0
                 object_set = cellprofiler.objects.ObjectSet()
@@ -1533,7 +1538,8 @@ class Pipeline(object):
                                   else terminating_module.module_num)
         if self.__measurement_columns.has_key(terminating_module_num):
             return self.__measurement_columns[terminating_module_num]
-        columns = []
+        columns = [(cpmeas.IMAGE, GROUP_NUMBER, cpmeas.COLTYPE_INTEGER),
+                   (cpmeas.IMAGE, GROUP_INDEX, cpmeas.COLTYPE_INTEGER)]
         should_write_columns = True
         for module in self.modules():
             if (terminating_module is not None and 

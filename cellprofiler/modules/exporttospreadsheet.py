@@ -541,6 +541,8 @@ class ExportToSpreadsheet(cpm.CPModule):
             if (is_file_name_feature(feature_name) or 
                 is_path_name_feature(feature_name) or
                 feature_name.startswith('ImageNumber') or
+                feature_name.startswith("Group_Number") or
+                feature_name.startswith("Group_Index") or
                 feature_name.startswith('Description_') or 
                 feature_name.startswith('ModuleError_') or 
                 feature_name.startswith('TimeElapsed_') or 

@@ -148,7 +148,15 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
         module.my_variable.value = "foo"
         x.add_module(module)
         columns = x.get_measurement_columns()
-        self.assertEqual(len(columns), 3)
+        self.assertEqual(len(columns), 5)
+        self.assertTrue(any([column[0] == 'Image' and 
+                             column[1] == 'Group_Number' and
+                             column[2] == cellprofiler.measurements.COLTYPE_INTEGER
+                             for column in columns]))
+        self.assertTrue(any([column[0] == 'Image' and 
+                             column[1] == 'Group_Index' and
+                             column[2] == cellprofiler.measurements.COLTYPE_INTEGER
+                             for column in columns]))
         self.assertTrue(any([column[0] == 'Image' and 
                              column[1] == 'ModuleError_01MyClassForTest0801'
                              for column in columns]))
@@ -159,18 +167,18 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
         self.assertTrue(any([column[1] == "foo" for column in columns]))
         module.my_variable.value = "bar"
         columns = x.get_measurement_columns()
-        self.assertEqual(len(columns), 3)
+        self.assertEqual(len(columns), 5)
         self.assertTrue(any([column[1] == "bar" for column in columns]))
         module = MyClassForTest0801()
         module.module_num = 2
         module.my_variable.value = "foo"
         x.add_module(module)
         columns = x.get_measurement_columns()
-        self.assertEqual(len(columns), 6)
+        self.assertEqual(len(columns), 8)
         self.assertTrue(any([column[1] == "foo" for column in columns]))
         self.assertTrue(any([column[1] == "bar" for column in columns]))
         columns = x.get_measurement_columns(module)
-        self.assertEqual(len(columns), 3)
+        self.assertEqual(len(columns), 5)
         self.assertTrue(any([column[1] == "bar" for column in columns]))
     
     def test_10_01_all_groups(self):
@@ -244,6 +252,10 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
         image_numbers = measurements.get_all_measurements("Image","mymeasurement")
         self.assertEqual(len(image_numbers), 4)
         self.assertTrue(np.all(image_numbers == np.array([1,3,2,4])))
+        group_numbers = measurements.get_all_measurements("Image","Group_Number")
+        self.assertTrue(np.all(group_numbers == np.array([1,1,2,2])))
+        group_indexes = measurements.get_all_measurements("Image","Group_Index")
+        self.assertTrue(np.all(group_indexes == np.array([1,2,1,2])))
          
     def test_10_02_one_group(self):
         '''Test running a pipeline on one group'''

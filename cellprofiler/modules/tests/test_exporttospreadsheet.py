@@ -1532,8 +1532,11 @@ ExportToSpreadsheet:[module_num:5|svn_version:\'9434\'|variable_revision_number:
             row = reader.next()
             self.assertEqual(row[1],input_dir)
         finally:
-            os.remove(input_filename)
-            os.remove(output_csv_filename)
+            try:
+                os.remove(input_filename)
+                os.remove(output_csv_filename)
+            except:
+                print("Failed to clean up files")
             
     def test_08_02_make_gct_file_with_filename(self):
             

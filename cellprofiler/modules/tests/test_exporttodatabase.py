@@ -772,6 +772,8 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
                 return []
             
         m = cpmeas.Measurements(can_overwrite = True)
+        m.add_image_measurement(cpp.GROUP_NUMBER, 1)
+        m.add_image_measurement(cpp.GROUP_INDEX, 1)
         m.add_image_measurement(INT_IMG_MEASUREMENT, INT_VALUE)
         m.add_image_measurement(FLOAT_IMG_MEASUREMENT, FLOAT_VALUE)
         m.add_image_measurement(STRING_IMG_MEASUREMENT, STRING_VALUE)
@@ -1085,18 +1087,20 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
             # Now read the image file from the database
             #
             image_table = module.table_prefix.value + "Per_Image"
-            statement = ("select ImageNumber, Image_%s, Image_%s, Image_%s, Image_Count_%s "
+            statement = ("select ImageNumber, Image_Group_Number, Image_Group_Index, Image_%s, Image_%s, Image_%s, Image_Count_%s "
                          "from %s" %
                          (INT_IMG_MEASUREMENT, FLOAT_IMG_MEASUREMENT,
                           STRING_IMG_MEASUREMENT, OBJECT_NAME, image_table))
             self.cursor.execute(statement)
             row = self.cursor.fetchone()
-            self.assertEqual(len(row), 5)
+            self.assertEqual(len(row), 7)
             self.assertEqual(row[0],1)
-            self.assertAlmostEqual(row[1], INT_VALUE)
-            self.assertAlmostEqual(row[2], FLOAT_VALUE)
-            self.assertEqual(row[3], STRING_VALUE)
-            self.assertEqual(row[4], len(OBJ_VALUE))
+            self.assertEqual(row[1], 1)
+            self.assertEqual(row[2], 1)
+            self.assertAlmostEqual(row[3], INT_VALUE)
+            self.assertAlmostEqual(row[4], FLOAT_VALUE)
+            self.assertEqual(row[5], STRING_VALUE)
+            self.assertEqual(row[6], len(OBJ_VALUE))
             self.assertRaises(StopIteration, self.cursor.next)
             statement = ("select ImageNumber, ObjectNumber, %s_%s "
                          "from %sPer_Object order by ObjectNumber"%

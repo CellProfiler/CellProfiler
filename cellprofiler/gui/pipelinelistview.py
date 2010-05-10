@@ -241,7 +241,7 @@ class PipelineListView(object):
     def get_selected_modules(self):
         return [self.__pipeline.modules()[i]
                 for i in range(self.list_ctrl.ItemCount) 
-                if self.list_ctrl.IsSelected(i)]
+                if self.list_ctrl.IsSelected(i) and i < len(self.__pipeline.modules())]
         
     def __on_list_dclick(self, event):
         if sys.platform.startswith("win"):

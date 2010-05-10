@@ -844,7 +844,7 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
         curdir = os.path.abspath(os.curdir)
         os.chdir(output_dir)
         try:
-            sql_file = os.path.join(output_dir, "SQL__SETUP.SQL")
+            sql_file = os.path.join(output_dir, "SQL_SETUP.SQL")
             base_name = "SQL_1_1"
             image_file = os.path.join(output_dir, base_name+"_image.CSV")
             if module.separate_object_tables == E.OT_PER_OBJECT:
@@ -937,7 +937,7 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
             module.directory.custom_path = output_dir
             module.separate_object_tables.value = E.OT_COMBINE
             module.post_run(workspace)
-            sql_file = os.path.join(output_dir, "SQL__SETUP.SQL")
+            sql_file = os.path.join(output_dir, "SQL_SETUP.SQL")
             base_name = "SQL_1_1"
             image_file = os.path.join(output_dir, base_name+"_image.CSV")
             object_file = os.path.join(output_dir, base_name+"_object.CSV")
@@ -1000,7 +1000,7 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
             module.directory.custom_path = output_dir
             module.separate_object_tables.value = E.OT_COMBINE
             module.post_run(workspace)
-            sql_file = os.path.join(output_dir, "SQL__SETUP.SQL")
+            sql_file = os.path.join(output_dir, "SQL_SETUP.SQL")
             base_name = "SQL_1_1"
             image_file = os.path.join(output_dir, base_name+"_image.CSV")
             object_file = os.path.join(output_dir, base_name+"_object.CSV")
@@ -1265,7 +1265,7 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
             module.directory.custom_path = output_dir
             module.separate_object_tables.value = E.OT_COMBINE
             module.post_run(workspace)
-            sql_file = os.path.join(output_dir, "SQL__SETUP.SQL")
+            sql_file = os.path.join(output_dir, "SQL_SETUP.SQL")
             base_name = "SQL_1_1"
             image_file = os.path.join(output_dir, base_name+"_image.CSV")
             object_file = os.path.join(output_dir, base_name+"_object.CSV")
@@ -1721,7 +1721,7 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
             module.directory.custom_path = output_dir
             module.separate_object_tables.value = E.OT_PER_OBJECT
             module.post_run(workspace)
-            sql_file = os.path.join(output_dir, "SQL__SETUP.SQL")
+            sql_file = os.path.join(output_dir, "SQL_SETUP.SQL")
             base_name = "SQL_1_1"
             image_file = os.path.join(output_dir, base_name+"_image.CSV")
             object_file = os.path.join(output_dir, base_name+"_" + OBJECT_NAME + ".CSV")
@@ -1890,7 +1890,7 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
             module.directory.custom_path = output_dir
             module.separate_object_tables.value = E.OT_PER_OBJECT
             module.post_run(workspace)
-            sql_file = os.path.join(output_dir, "SQL__SETUP.SQL")
+            sql_file = os.path.join(output_dir, "SQL_SETUP.SQL")
             base_name = "SQL_1_1"
             image_file = os.path.join(output_dir, base_name+"_image.CSV")
             object_file = os.path.join(output_dir, "%s_%s.CSV" %

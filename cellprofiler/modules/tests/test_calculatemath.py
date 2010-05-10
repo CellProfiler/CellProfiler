@@ -458,3 +458,22 @@ CalculateRatios:[module_num:1|svn_version:\'8913\'|variable_revision_number:6|sh
         self.assertAlmostEqual(data[1], 4)
         self.assertAlmostEqual(data[2], 6)
         
+    def test_09_01_img_919(self):
+        '''Regression test: one measurement, but both operands are from same object
+        
+        The bug was that the measurement gets added twice. It was fixed in run
+        but not in get_measurement_columns
+        '''
+        def fn(module):
+            module.operands[1].operand_objects.value = OBJECT[0]
+            module.operands[1].operand_measurement.value = "measurement0"
+
+        module = C.CalculateMath()
+        module.output_feature_name.value = OUTPUT_MEASUREMENTS
+        module.operands[0].operand_choice.value = C.MC_OBJECT
+        module.operands[1].operand_choice.value = C.MC_OBJECT
+        module.operands[0].operand_objects.value = OBJECT[0]
+        module.operands[1].operand_objects.value = OBJECT[0]
+        columns = module.get_measurement_columns(None)
+        self.assertEqual(columns[0][0],OBJECT[0])
+        self.assertEqual(len(columns),1)

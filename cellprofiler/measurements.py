@@ -35,6 +35,8 @@ OBJECT = "Object"
 
 COLTYPE_INTEGER = "integer"
 COLTYPE_FLOAT = "float"
+COLTYPE_BLOB = "blob"
+
 '''SQL format for a varchar column
 
 To get a varchar column of width X: COLTYPE_VARCHAR_FORMAT % X

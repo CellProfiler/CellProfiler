@@ -161,7 +161,7 @@ class ExpandOrShrinkObjects(cpm.CPModule):
                                          self.output_object_name.value)
         add_object_count_measurements(workspace.measurements, 
                                       self.output_object_name.value,
-                                      np.max(output_objects.segmented)+1)
+                                      np.max(output_objects.segmented))
         add_object_location_measurements(workspace.measurements,
                                          self.output_object_name.value,
                                          output_objects.segmented)

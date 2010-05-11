@@ -225,6 +225,7 @@ class TestExpandOrShrinkObjects(unittest.TestCase):
         location_x = m.get_current_measurement(OUTPUT_NAME, "Location_Center_X")
         self.assertEqual(len(location_x), 1)
         self.assertEqual(location_x[0], 4)
+        location_y = m.get_current_measurement(OUTPUT_NAME, "Location_Center_Y")
         self.assertEqual(len(location_y), 1)
         self.assertEqual(location_y[0], 4)
     

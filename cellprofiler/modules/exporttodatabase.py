@@ -1231,8 +1231,8 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
             replacement = '%s' if self.db_type == DB_MYSQL else "?"
             image_row_values = [
                 None 
-                if ((field[1] in (cpmeas.COLTYPE_FLOAT, cpmeas.COLTYPE_FLOAT))
-                    and (np.isnan(field[0])))
+                if ((field[1] == cpmeas.COLTYPE_FLOAT) and (np.isnan(field[0])))
+                else float(field[0]) if (field[1] == cpmeas.COLTYPE_FLOAT)
                 else field[0] for field in image_row]
             stmt = ('INSERT INTO %s (%s) VALUES (%s)' % 
                     (image_table, 

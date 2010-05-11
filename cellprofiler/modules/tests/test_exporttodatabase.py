@@ -1629,6 +1629,77 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
                 module.connection.close()
             finally_fn()
             
+    def test_03_03_numpy_float32(self):
+        '''Regression test of img-915
+
+        This error occurred when the sqlite3 driver was unable to convert
+        a numpy.float32 to a float.
+        '''
+        workspace, module, output_dir, finally_fn = self.make_workspace(True)
+        fim = workspace.measurements.get_all_measurements(
+            cpmeas.IMAGE, FLOAT_IMG_MEASUREMENT)
+        for i in range(len(fim)):
+            fim[i] = np.float32(fim[i])
+        iim = workspace.measurements.get_all_measurements(
+            cpmeas.IMAGE, INT_IMG_MEASUREMENT)
+        for i in range(len(iim)):
+            iim[i] = np.int32(iim[i])
+        cursor = None
+        connection = None
+        try:
+            self.assertTrue(isinstance(module, E.ExportToDatabase))
+            module.db_type = E.DB_SQLITE
+            module.wants_agg_mean.value = False
+            module.wants_agg_median.value = False
+            module.wants_agg_std_dev.value = False
+            module.objects_choice.value = E.O_ALL
+            module.directory.dir_choice = E.ABSOLUTE_FOLDER_NAME
+            module.directory.custom_path = output_dir
+            module.separate_object_tables.value = E.OT_COMBINE
+            module.prepare_run(workspace.pipeline, workspace.image_set_list,None)
+            module.prepare_group(workspace.pipeline, workspace.image_set_list,
+                                 {}, [1])
+            module.run(workspace)
+            cursor, connection = self.get_sqlite_cursor(module)
+            #
+            # Now read the image file from the database
+            #
+            image_table = module.table_prefix.value + "Per_Image"
+            statement = ("select ImageNumber, Image_%s, Image_%s, Image_%s, Image_Count_%s "
+                         "from %s" %
+                         (INT_IMG_MEASUREMENT, FLOAT_IMG_MEASUREMENT,
+                          STRING_IMG_MEASUREMENT, OBJECT_NAME, image_table))
+            cursor.execute(statement)
+            row = cursor.fetchone()
+            self.assertEqual(len(row), 5)
+            self.assertEqual(row[0],1)
+            self.assertAlmostEqual(row[1], INT_VALUE)
+            self.assertAlmostEqual(row[2], FLOAT_VALUE)
+            self.assertEqual(row[3], STRING_VALUE)
+            self.assertEqual(row[4], len(OBJ_VALUE))
+            self.assertRaises(StopIteration, cursor.next)
+            statement = ("select ImageNumber, ObjectNumber, %s_%s "
+                         "from %sPer_Object order by ObjectNumber"%
+                         (OBJECT_NAME, OBJ_MEASUREMENT, module.table_prefix.value))
+            cursor.execute(statement)
+            for i, value in enumerate(OBJ_VALUE):
+                row = cursor.fetchone()
+                self.assertEqual(len(row), 3)
+                self.assertEqual(row[0], 1)
+                self.assertEqual(row[1], i+1)
+                self.assertAlmostEqual(row[2], value)
+            self.assertRaises(StopIteration, cursor.next)
+        finally:
+            if cursor is not None:
+                cursor.close()
+            if connection is not None:
+                connection.close()
+            if hasattr(module, "cursor"):
+                module.cursor.close()
+            if hasattr(module, "connection"):
+                module.connection.close()
+            finally_fn()
+
     def test_04_01_stable_column_mapper(self):
         '''Make sure the column mapper always yields the same output'''
         mapping = E.ColumnNameMapping()

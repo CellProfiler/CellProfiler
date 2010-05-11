@@ -699,7 +699,7 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
         
     def make_workspace(self, wants_files, alt_object=False, 
                        long_measurement=False, wierd_measurement=False,
-                       well_metadata = False):
+                       well_metadata = False, image_set_count = 1):
         '''Make a measurements structure with image and object measurements'''
         class TestModule(cpm.CPModule):
             module_name = "TestModule"
@@ -772,29 +772,32 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
                 return []
             
         m = cpmeas.Measurements(can_overwrite = True)
-        m.add_image_measurement(cpp.GROUP_NUMBER, 1)
-        m.add_image_measurement(cpp.GROUP_INDEX, 1)
-        m.add_image_measurement(INT_IMG_MEASUREMENT, INT_VALUE)
-        m.add_image_measurement(FLOAT_IMG_MEASUREMENT, FLOAT_VALUE)
-        m.add_image_measurement(STRING_IMG_MEASUREMENT, STRING_VALUE)
-        m.add_image_measurement(OBJECT_COUNT_MEASUREMENT, len(OBJ_VALUE))
-        m.add_measurement(OBJECT_NAME, I.M_NUMBER_OBJECT_NUMBER, 
-                          np.arange(len(OBJ_VALUE)) + 1)
-        m.add_measurement(OBJECT_NAME, OBJ_MEASUREMENT, OBJ_VALUE.copy())
-        if alt_object:
-            m.add_measurement(ALTOBJECT_NAME, I.M_NUMBER_OBJECT_NUMBER, 
-                              np.arange(100) + 1)
-            m.add_image_measurement(ALTOBJECT_COUNT_MEASUREMENT, 100)
-            m.add_measurement(ALTOBJECT_NAME, OBJ_MEASUREMENT, ALTOBJ_VALUE)
-        if long_measurement:
-            m.add_image_measurement(LONG_IMG_MEASUREMENT, 100)
-            m.add_measurement(OBJECT_NAME, LONG_OBJ_MEASUREMENT, OBJ_VALUE.copy())
-        if wierd_measurement:
-            m.add_image_measurement(WIERD_IMG_MEASUREMENT, 100)
-            m.add_measurement(OBJECT_NAME, WIERD_OBJ_MEASUREMENT, OBJ_VALUE.copy())
-        if well_metadata:
-            m.add_image_measurement("Metadata_Plate", PLATE)
-            m.add_image_measurement("Metadata_Well", WELL)
+        for i in range(image_set_count):
+            if i > 0:
+                m.next_image_set()
+            m.add_image_measurement(cpp.GROUP_NUMBER, 1)
+            m.add_image_measurement(cpp.GROUP_INDEX, i+1)
+            m.add_image_measurement(INT_IMG_MEASUREMENT, INT_VALUE)
+            m.add_image_measurement(FLOAT_IMG_MEASUREMENT, FLOAT_VALUE)
+            m.add_image_measurement(STRING_IMG_MEASUREMENT, STRING_VALUE)
+            m.add_image_measurement(OBJECT_COUNT_MEASUREMENT, len(OBJ_VALUE))
+            m.add_measurement(OBJECT_NAME, I.M_NUMBER_OBJECT_NUMBER, 
+                              np.arange(len(OBJ_VALUE)) + 1)
+            m.add_measurement(OBJECT_NAME, OBJ_MEASUREMENT, OBJ_VALUE.copy())
+            if alt_object:
+                m.add_measurement(ALTOBJECT_NAME, I.M_NUMBER_OBJECT_NUMBER, 
+                                  np.arange(100) + 1)
+                m.add_image_measurement(ALTOBJECT_COUNT_MEASUREMENT, 100)
+                m.add_measurement(ALTOBJECT_NAME, OBJ_MEASUREMENT, ALTOBJ_VALUE)
+            if long_measurement:
+                m.add_image_measurement(LONG_IMG_MEASUREMENT, 100)
+                m.add_measurement(OBJECT_NAME, LONG_OBJ_MEASUREMENT, OBJ_VALUE.copy())
+            if wierd_measurement:
+                m.add_image_measurement(WIERD_IMG_MEASUREMENT, 100)
+                m.add_measurement(OBJECT_NAME, WIERD_OBJ_MEASUREMENT, OBJ_VALUE.copy())
+            if well_metadata:
+                m.add_image_measurement("Metadata_Plate", PLATE)
+                m.add_image_measurement("Metadata_Well", WELL)
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
         image_set.add(IMAGE_NAME, cpi.Image(np.zeros((10,10))))
@@ -840,14 +843,14 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
         else:
             return workspace, module
         
-    def load_database(self, output_dir, module):
+    def load_database(self, output_dir, module, image_set_count=1):
         '''Load a database written by DB_MYSQL_CSV'''
         self.assertTrue(isinstance(module, E.ExportToDatabase))
         curdir = os.path.abspath(os.curdir)
         os.chdir(output_dir)
         try:
             sql_file = os.path.join(output_dir, "SQL_SETUP.SQL")
-            base_name = "SQL_1_1"
+            base_name = "SQL_1_%d" % image_set_count
             image_file = os.path.join(output_dir, base_name+"_image.CSV")
             if module.separate_object_tables == E.OT_PER_OBJECT:
                 object_file = os.path.join(output_dir, base_name+"_" + OBJECT_NAME + ".CSV")
@@ -1526,6 +1529,57 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
         finally:
             self.drop_tables(module, ("Per_Image",))
                     
+    def test_02_08_mysql_as_data_tool(self):
+        '''Write directly to the mysql DB, not to a file'''
+        workspace, module = self.make_workspace(False, image_set_count = 2)
+        try:
+            self.assertTrue(isinstance(module, E.ExportToDatabase))
+            module.db_type = E.DB_MYSQL
+            module.wants_agg_mean.value = False
+            module.wants_agg_median.value = False
+            module.wants_agg_std_dev.value = False
+            module.objects_choice.value = E.O_ALL
+            module.separate_object_tables.value = E.OT_COMBINE
+            module.prepare_run(workspace.pipeline, workspace.image_set_list,None)
+            module.prepare_group(workspace.pipeline, workspace.image_set_list,
+                                 {}, [1])
+            module.run_as_data_tool(workspace)
+            self.cursor.execute("use CPUnitTest")
+            #
+            # Now read the image file from the database
+            #
+            image_table = module.table_prefix.value + "Per_Image"
+            statement = ("select ImageNumber, Image_Group_Number, Image_Group_Index, Image_%s, Image_%s, Image_%s, Image_Count_%s "
+                         "from %s" %
+                         (INT_IMG_MEASUREMENT, FLOAT_IMG_MEASUREMENT,
+                          STRING_IMG_MEASUREMENT, OBJECT_NAME, image_table))
+            self.cursor.execute(statement)
+            for i in range(2):
+                row = self.cursor.fetchone()
+                self.assertEqual(len(row), 7)
+                self.assertEqual(row[0], i+1)
+                self.assertEqual(row[1], 1)
+                self.assertEqual(row[2], i+1)
+                self.assertAlmostEqual(row[3], INT_VALUE)
+                self.assertAlmostEqual(row[4], FLOAT_VALUE)
+                self.assertEqual(row[5], STRING_VALUE)
+                self.assertEqual(row[6], len(OBJ_VALUE))
+            self.assertRaises(StopIteration, self.cursor.next)
+            statement = ("select ImageNumber, ObjectNumber, %s_%s "
+                         "from %sPer_Object order by ImageNumber, ObjectNumber"%
+                         (OBJECT_NAME, OBJ_MEASUREMENT, module.table_prefix.value))
+            self.cursor.execute(statement)
+            for j in range(2):
+                for i, value in enumerate(OBJ_VALUE):
+                    row = self.cursor.fetchone()
+                    self.assertEqual(len(row), 3)
+                    self.assertEqual(row[0], j+1)
+                    self.assertEqual(row[1], i+1)
+                    self.assertAlmostEqual(row[2], value)
+            self.assertRaises(StopIteration, self.cursor.next)
+        finally:
+            self.drop_tables(module, ("Per_Image","Per_Object"))
+    
     def test_03_01_write_sqlite_direct(self):
         '''Write directly to a SQLite database'''
         workspace, module, output_dir, finally_fn = self.make_workspace(True)
@@ -1564,7 +1618,7 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
             self.assertEqual(row[4], len(OBJ_VALUE))
             self.assertRaises(StopIteration, cursor.next)
             statement = ("select ImageNumber, ObjectNumber, %s_%s "
-                         "from %sPer_Object order by ObjectNumber"%
+                         "from %sPer_Object order by ImageNumber, ObjectNumber"%
                          (OBJECT_NAME, OBJ_MEASUREMENT, module.table_prefix.value))
             cursor.execute(statement)
             for i, value in enumerate(OBJ_VALUE):
@@ -1700,6 +1754,67 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
                 module.connection.close()
             finally_fn()
 
+    def test_03_04_sqlite_data_tool(self):
+        workspace, module, output_dir, finally_fn = self.make_workspace(
+            True, image_set_count = 2)
+        cursor = None
+        connection = None
+        try:
+            self.assertTrue(isinstance(module, E.ExportToDatabase))
+            module.db_type = E.DB_SQLITE
+            module.wants_agg_mean.value = False
+            module.wants_agg_median.value = False
+            module.wants_agg_std_dev.value = False
+            module.objects_choice.value = E.O_ALL
+            module.directory.dir_choice = E.ABSOLUTE_FOLDER_NAME
+            module.directory.custom_path = output_dir
+            module.separate_object_tables.value = E.OT_COMBINE
+            module.prepare_run(workspace.pipeline, workspace.image_set_list,None)
+            module.prepare_group(workspace.pipeline, workspace.image_set_list,
+                                 {}, [1])
+            module.run_as_data_tool(workspace)
+            cursor, connection = self.get_sqlite_cursor(module)
+            #
+            # Now read the image file from the database
+            #
+            image_table = module.table_prefix.value + "Per_Image"
+            statement = ("select ImageNumber, Image_%s, Image_%s, Image_%s, Image_Count_%s "
+                         "from %s" %
+                         (INT_IMG_MEASUREMENT, FLOAT_IMG_MEASUREMENT,
+                          STRING_IMG_MEASUREMENT, OBJECT_NAME, image_table))
+            cursor.execute(statement)
+            for i in range(2):
+                row = cursor.fetchone()
+                self.assertEqual(len(row), 5)
+                self.assertEqual(row[0],i+1)
+                self.assertAlmostEqual(row[1], INT_VALUE)
+                self.assertAlmostEqual(row[2], FLOAT_VALUE)
+                self.assertEqual(row[3], STRING_VALUE)
+                self.assertEqual(row[4], len(OBJ_VALUE))
+            self.assertRaises(StopIteration, cursor.next)
+            statement = ("select ImageNumber, ObjectNumber, %s_%s "
+                         "from %sPer_Object order by ImageNumber, ObjectNumber"%
+                         (OBJECT_NAME, OBJ_MEASUREMENT, module.table_prefix.value))
+            cursor.execute(statement)
+            for j in range(2):
+                for i, value in enumerate(OBJ_VALUE):
+                    row = cursor.fetchone()
+                    self.assertEqual(len(row), 3)
+                    self.assertEqual(row[0], j+1)
+                    self.assertEqual(row[1], i+1)
+                    self.assertAlmostEqual(row[2], value)
+            self.assertRaises(StopIteration, cursor.next)
+        finally:
+            if cursor is not None:
+                cursor.close()
+            if connection is not None:
+                connection.close()
+            if hasattr(module, "cursor"):
+                module.cursor.close()
+            if hasattr(module, "connection"):
+                module.connection.close()
+            finally_fn()
+    
     def test_04_01_stable_column_mapper(self):
         '''Make sure the column mapper always yields the same output'''
         mapping = E.ColumnNameMapping()
@@ -2236,6 +2351,56 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
             self.drop_tables(module, ("Per_Image","Per_%s" % OBJECT_NAME,
                                       "Per_%s" % ALTOBJECT_NAME))
                     
+    def test_05_09_write_mysql_db_as_data_tool(self):
+        '''Multiple objects / write - per-object tables'''
+        workspace, module, output_dir, finally_fn = self.make_workspace(
+            True, image_set_count = 2)
+        try:
+            self.assertTrue(isinstance(module, E.ExportToDatabase))
+            module.db_type = E.DB_MYSQL_CSV
+            module.wants_agg_mean.value = False
+            module.wants_agg_median.value = False
+            module.wants_agg_std_dev.value = False
+            module.objects_choice.value = E.O_ALL
+            module.directory.dir_choice = E.ABSOLUTE_FOLDER_NAME
+            module.directory.custom_path = output_dir
+            module.separate_object_tables.value = E.OT_PER_OBJECT
+            module.run_as_data_tool(workspace)
+            self.load_database(output_dir, module, image_set_count = 2)
+            #
+            # Now read the image file from the database
+            #
+            image_table = module.table_prefix.value + "Per_Image"
+            statement = ("select ImageNumber, Image_%s, Image_%s, Image_%s, Image_Count_%s "
+                         "from %s order by ImageNumber" %
+                         (INT_IMG_MEASUREMENT, FLOAT_IMG_MEASUREMENT,
+                          STRING_IMG_MEASUREMENT, OBJECT_NAME, image_table))
+            self.cursor.execute(statement)
+            for j in range(2):
+                row = self.cursor.fetchone()
+                self.assertEqual(len(row), 5)
+                self.assertEqual(row[0],j+1)
+                self.assertAlmostEqual(row[1], INT_VALUE)
+                self.assertAlmostEqual(row[2], FLOAT_VALUE)
+                self.assertEqual(row[3], STRING_VALUE)
+                self.assertEqual(row[4], len(OBJ_VALUE))
+            self.assertRaises(StopIteration, self.cursor.next)
+            statement = self.per_object_statement(module, OBJECT_NAME,
+                                                  [OBJ_MEASUREMENT])
+            self.cursor.execute(statement)
+            for j in range(2):
+                for i, value in enumerate(OBJ_VALUE):
+                    row = self.cursor.fetchone()
+                    self.assertEqual(len(row), 3)
+                    self.assertEqual(row[0], j+1)
+                    self.assertEqual(row[1], i+1)
+                    self.assertAlmostEqual(row[2], value)
+            self.assertRaises(StopIteration, self.cursor.next)
+        finally:
+            os.chdir(output_dir)
+            finally_fn()
+            self.drop_tables(module, ("Per_Image","Per_%s" % OBJECT_NAME))
+    
     def test_06_01_write_sqlite_direct(self):
         '''Write directly to a SQLite database'''
         workspace, module, output_dir, finally_fn = self.make_workspace(True)

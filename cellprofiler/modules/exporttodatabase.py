@@ -565,7 +565,26 @@ class ExportToDatabase(cpm.CPModule):
             return cols
         return []
             
-
+    def run_as_data_tool(self, workspace):
+        '''Run the module as a data tool
+        
+        ExportToDatabase has two modes - writing CSVs and writing directly.
+        We write CSVs in post_run. We write directly in run.
+        '''
+        if not self.prepare_run(workspace.pipeline, workspace.image_set_list,
+                                workspace.frame):
+            return
+        if self.db_type != DB_MYSQL_CSV:
+            workspace.measurements.is_first_image = True
+            for i in range(workspace.measurements.image_set_count):
+                if i > 0:
+                    workspace.measurements.next_image_set()
+                self.run(workspace)
+        else:
+            workspace.measurements.image_set_number = \
+                     workspace.measurements.image_set_count
+        self.post_run(workspace)
+    
     def run(self, workspace):
         if self.want_image_thumbnails:
             import Image
@@ -596,14 +615,6 @@ class ExportToDatabase(cpm.CPModule):
             if not workspace.pipeline.test_mode:
                 self.write_data_to_db(workspace)
 
-            
-#    def run_as_data_tool(self, workspace):
-#        self.prepare_run(workspace.pipeline,
-#                         workspace.image_set_list,
-#                         workspace.frame)
-#        self.run(workspace)
-#        self.post_run(workspace)
-        
     def post_run(self, workspace):
         if self.save_cpa_properties.value:
             self.write_properties(workspace)
@@ -1129,8 +1140,16 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
             ###########################################
             image_number = measurements.image_set_number
             image_row = [(image_number, cpmeas.COLTYPE_INTEGER, "ImageNumber")]
+            feature_names = set(measurements.get_feature_names(cpmeas.IMAGE))
             for m_col in measurement_cols:
                 if m_col[0] != cpmeas.IMAGE:
+                    continue
+                #
+                # Skip if feature name not in measurements. This
+                # can happen if image set gets aborted or for some legacy
+                # measurement files.
+                #
+                if m_col[1] not in feature_names:
                     continue
                 feature_name = "%s_%s"%(cpmeas.IMAGE, m_col[1])
                 value = measurements.get_current_image_measurement(m_col[1])
@@ -1233,6 +1252,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                 None 
                 if ((field[1] == cpmeas.COLTYPE_FLOAT) and (np.isnan(field[0])))
                 else float(field[0]) if (field[1] == cpmeas.COLTYPE_FLOAT)
+                else int(field[0]) if (field[1] == cpmeas.COLTYPE_INTEGER)
                 else field[0] for field in image_row]
             stmt = ('INSERT INTO %s (%s) VALUES (%s)' % 
                     (image_table, 

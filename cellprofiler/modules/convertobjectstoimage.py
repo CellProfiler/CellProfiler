@@ -59,6 +59,8 @@ class ConvertObjectsToImage(cpm.CPModule):
                                 <ul>
                                 <li><i>Color:</i> Allows you to choose a colormap that will
                                 produce jumbled colors for your objects. </li>
+                                <li><i>Binary:</i> All object pixels will be assigned 1 and all
+                                background pixels will be assigned 0, creating a binary image.</li>
                                 <li><i>Grayscale:</i> Gives each object
                                 a graylevel pixel intensity value corresponding to its number (also
                                 called label), so it usually results in objects on the left side of the
@@ -101,6 +103,7 @@ class ConvertObjectsToImage(cpm.CPModule):
                                          "Original: %s"%self.object_name.value)
         if self.image_mode == IM_BINARY:
             pixel_data = labels != 0
+            pixel_data = pixel_data.astype(float)
             if not workspace.frame is None:
                 figure.subplot_imshow_bw(1,0,pixel_data,self.image_name.value)
         elif self.image_mode == IM_GRAYSCALE:

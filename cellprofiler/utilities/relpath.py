@@ -14,8 +14,8 @@ def _relpath(target, base=os.curdir):
     if not os.path.isdir(base):
         raise OSError, 'Base is not a directory or does not exist: '+base
 
-    base_list = (os.path.abspath(base)).split(os.sep)
-    target_list = (os.path.abspath(target)).split(os.sep)
+    base_list = (os.path.normcase(os.path.abspath(base))).split(os.sep)
+    target_list = (os.path.normcase(os.path.abspath(target))).split(os.sep)
 
     # On the windows platform the target may be on a completely different drive from the base.
     if os.name in ['nt','dos','os2'] and base_list[0] <> target_list[0]:

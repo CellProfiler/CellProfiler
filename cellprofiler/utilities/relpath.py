@@ -32,6 +32,8 @@ def _relpath(target, base=os.curdir):
         i+=1
 
     rel_list = [os.pardir] * (len(base_list)-i) + target_list[i:]
+    if len(rel_list) == 0:
+        return "."
     return os.path.join(*rel_list)
 
 __all__ = ['relpath']

@@ -69,6 +69,7 @@ except:
     traceback.print_exc()
     has_bioformats = False
 import Image as PILImage
+cached_file_lists = {}
 #
 # Load all the PIL image plugins to initialize PIL in the
 # compiled version of CP
@@ -90,6 +91,7 @@ import cellprofiler.cpimage as cpimage
 import cellprofiler.measurements as cpmeas
 import cellprofiler.preferences as preferences
 import cellprofiler.settings as cps
+from cellprofiler.utilities.relpath import relpath
 from cellprofiler.preferences import \
      standardize_default_folder_names, DEFAULT_INPUT_FOLDER_NAME, \
      DEFAULT_OUTPUT_FOLDER_NAME, ABSOLUTE_FOLDER_NAME, \
@@ -950,7 +952,7 @@ class LoadImages(cpmodule.CPModule):
     
     def prepare_run_of_images(self, pipeline, image_set_list, frame):
         """Set up image providers for image files"""
-        files = self.collect_files()
+        files = self.collect_files(pipeline.test_mode, frame)
         if len(files) == 0:
             message = ("CellProfiler did not find any image files that "
                        'matched your matching pattern: "%s"' %
@@ -1330,7 +1332,7 @@ class LoadImages(cpmodule.CPModule):
     
     def prepare_run_of_flex(self, pipeline, image_set_list, frame):
         '''Set up image providers for flex files'''
-        files = self.collect_files()
+        files = self.collect_files(pipeline.test_mode, frame)
         if len(files) == 0:
             self.report_no_matching_files(frame)
             return False
@@ -1403,7 +1405,7 @@ class LoadImages(cpmodule.CPModule):
         
     def prepare_run_of_movies(self, pipeline, image_set_list, frame):
         """Set up image providers for movie files"""
-        files = self.collect_files()
+        files = self.collect_files(pipeline.test_mode, frame)
         if len(files) == 0:
             self.report_no_matching_files(frame)
             return False
@@ -1728,30 +1730,55 @@ class LoadImages(cpmodule.CPModule):
         """
         return self.descend_subdirectories.value
     
-    def collect_files(self, dirs=[]):
+    def collect_files(self, can_cache = False, frame = None):
         """Collect the files that match the filter criteria
         
         Collect the files that match the filter criteria, starting at the image directory
         and descending downward if AnalyzeSubDirs allows it.
-        dirs - a list of subdirectories connecting the image directory to the
-               directory currently being searched
+
         Returns a list of two-tuples where the first element of the tuple is the path
         from the root directory, including the file name, the second element is the
         index within the image settings (e.g. ImageNameVars).
         """
-        path = reduce(os.path.join, dirs, self.image_directory() )
-        files = os.listdir(path)
+        global cached_file_lists
+        root = self.image_directory()
+        use_cached = False
+        if can_cache and frame is not None and cached_file_lists.has_key(root):
+            how_long, files = cached_file_lists[root]
+            if how_long > 3:
+                import wx
+                if wx.MessageBox(
+                    ("The last time you started test mode it took %f seconds\n"
+                     "to find all of the image sets. Do you want to find the\n"
+                     'files again? Choose "No" if you are in a hurry.') % how_long,
+                    "Do you want to wait %f seconds again?" % how_long,
+                    wx.YES_NO | wx.NO_DEFAULT | wx.ICON_QUESTION, frame) == wx.NO:
+                    use_cached = True
+        if not use_cached:
+            import time
+            start_time = time.clock()
+            if self.analyze_sub_dirs():
+                files = []
+                w = os.walk(root)
+                for node in w:
+                    path = relpath(node[0], root)
+                    if path == os.path.curdir:
+                        files += [(file_name, file_name) 
+                                  for file_name in node[2]]
+                    else:
+                        files += [(os.path.join(path, file_name), file_name)
+                                  for file_name in node[2]]
+            else:
+                files = [ (file_name, file_name)
+                          for file_name in os.listdir(root)
+                          if os.path.isfile(os.path.join(root, file_name))]
+            how_long = time.clock() - start_time
+            cached_file_lists[self.image_directory()] = (how_long, files)
+            
+        files = [ (path, self.filter_filename(file_name))
+                  for path, file_name in files
+                  if self.filter_filename(file_name) is not None]
         files.sort()
-        isdir = lambda x: os.path.isdir(os.path.join(path,x))
-        isfile = lambda x: os.path.isfile(os.path.join(path,x))
-        subdirs = filter(isdir, files)
-        files = filter(isfile,files)
-        path_to = (len(dirs) and reduce(os.path.join, dirs)) or ''
-        files = [(os.path.join(path_to,file), self.filter_filename(file)) for file in files]
-        files = filter(lambda x: x[1] != None,files)
-        if self.analyze_sub_dirs():
-            for dir in subdirs:
-                files += self.collect_files(dirs + [dir])
         return files
         
     def image_directory(self):

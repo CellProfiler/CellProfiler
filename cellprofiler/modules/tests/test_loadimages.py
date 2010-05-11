@@ -1050,6 +1050,69 @@ LoadImages:[module_num:1|svn_version:\'9799\'|variable_revision_number:6|show_wi
                     os.rmdir(directory)
                 except:
                     print "Failed to remove " + directory
+                    
+    def test_06_07_subfolders(self):
+        '''Test recursion down the list of subfolders'''
+        directory = tempfile.mkdtemp()
+        filenames = [ ("d1","bar.tif"),
+                      ("d1","foo.tif"),
+                      (os.path.join("d2","d3"), "foo.tif"),
+                      (os.path.join("d2","d4"), "bar.tif")]
+        data = base64.b64decode(T.tif_8_1)
+        try:
+            for path, file_name in filenames:
+                d = os.path.join(directory, path)
+                if not os.path.isdir(d):
+                    os.makedirs(d)
+                fd = open(os.path.join(directory, path, file_name),"wb")
+                fd.write(data)
+                fd.close()
+            load_images = LI.LoadImages()
+            load_images.module_num = 1
+            load_images.file_types.value = LI.FF_INDIVIDUAL_IMAGES
+            load_images.match_method.value = LI.MS_EXACT_MATCH
+            load_images.location.dir_choice = LI.ABSOLUTE_FOLDER_NAME
+            load_images.descend_subdirectories.value = True
+            load_images.location.custom_path = directory
+            load_images.images[0].common_text.value = ".tif"
+            load_images.images[0].channels[0].image_name.value = "my_image"
+            load_images.check_images.value = False
+            pipeline = P.Pipeline()
+            pipeline.add_module(load_images)
+            pipeline.add_listener(self.error_callback)
+            image_set_list = I.ImageSetList()
+            self.assertTrue(load_images.prepare_run(pipeline, image_set_list, None))
+            self.assertEqual(image_set_list.count(), len(filenames))
+            m = measurements.Measurements()
+            load_images.prepare_group(pipeline, image_set_list, {}, np.arange(1, len(filenames)+1))
+            for i, (path, file_name) in enumerate(filenames):
+                if i > 0:
+                    m.next_image_set()
+                image_set = image_set_list.get_image_set(i)
+                w = W.Workspace(pipeline, load_images, image_set,
+                                cpo.ObjectSet(), m, image_set_list)
+                load_images.run(w)
+                image_provider = image_set.get_image_provider("my_image")
+                self.assertEqual(image_provider.get_pathname(), directory)
+                self.assertEqual(image_provider.get_filename(), os.path.join(path, file_name))
+                f = m.get_current_image_measurement("FileName_my_image")
+                self.assertEqual(f, file_name)
+                p = m.get_current_image_measurement("PathName_my_image")
+                self.assertEqual(os.path.join(directory, path), p)
+        finally:
+            for path, directories, file_names in os.walk(directory, False):
+                for file_name in file_names:
+                    p = os.path.join(path, file_name)
+                    try:
+                        os.remove(p)
+                    except:
+                        print "Failed to remove " + p
+                        traceback.print_exc()
+                try:
+                    os.rmdir(path)
+                except:
+                    print "Failed to remove " + path
+                    traceback.print_exc()
             
     def get_example_pipeline_data(self):
         data = r'''CellProfiler Pipeline: http://www.cellprofiler.org

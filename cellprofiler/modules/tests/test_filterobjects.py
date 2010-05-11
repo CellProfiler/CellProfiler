@@ -26,6 +26,7 @@ import cellprofiler.workspace as cpw
 import cellprofiler.pipeline as cpp
 import cellprofiler.objects as cpo
 import cellprofiler.cpimage as cpi
+import cellprofiler.preferences as cpprefs
 import cellprofiler.measurements as cpm
 import cellprofiler.modules.filterobjects as F
 
@@ -912,8 +913,9 @@ Module #3: FilterByObjectMeasurement revision - 6
         self.assertEqual(module.object_name.value, 'Nuclei')
         self.assertEqual(module.rules_or_measurement, F.ROM_RULES)
         self.assertEqual(module.rules_file_name, 'rules.txt')
-        self.assertEqual(module.rules_directory_choice, F.DIR_CUSTOM)
-        self.assertEqual(module.rules_directory, './')
+        self.assertEqual(module.rules_directory.dir_choice, 
+                         cpprefs.DEFAULT_INPUT_SUBFOLDER_NAME )
+        self.assertEqual(module.rules_directory.custom_path, "./")
         
     def test_05_04_load_matlab_v7(self):
         data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0s'
@@ -948,7 +950,8 @@ Module #3: FilterByObjectMeasurement revision - 6
         self.assertEqual(module.object_name, "Nucs")
         self.assertEqual(module.target_name, "FilteredNuclei")
         self.assertEqual(module.rules_or_measurement, F.ROM_RULES)
-        self.assertEqual(module.rules_directory_choice, F.DEFAULT_OUTPUT_FOLDER_NAME)
+        self.assertEqual(module.rules_directory.dir_choice, 
+                         cpprefs.DEFAULT_OUTPUT_FOLDER_NAME)
         self.assertEqual(module.rules_file_name, "myrules.txt")
         self.assertEqual(module.measurements[0].measurement, "Intensity_MeanIntensity_DNA_1")
     
@@ -985,7 +988,8 @@ FilterObjects:[module_num:1|svn_version:\'8955\'|variable_revision_number:3|show
         self.assertEqual(module.object_name, "Things")
         self.assertEqual(module.target_name, "FilteredThings")
         self.assertEqual(module.rules_or_measurement, F.ROM_MEASUREMENTS)
-        self.assertEqual(module.rules_directory_choice, F.DEFAULT_OUTPUT_FOLDER_NAME)
+        self.assertEqual(module.rules_directory.dir_choice, 
+                         cpprefs.DEFAULT_OUTPUT_FOLDER_NAME)
         self.assertEqual(module.rules_file_name, "myrules.txt")
         self.assertEqual(module.measurements[0].measurement, "Intensity_MeanIntensity_DNA")
         self.assertEqual(module.filter_choice, F.FI_MINIMAL)
@@ -1125,8 +1129,79 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:4|show
         self.assertEqual(module.object_name, "MyObjects")
         self.assertEqual(module.rules_or_measurement, F.ROM_MEASUREMENTS)
         self.assertEqual(module.filter_choice, F.FI_LIMITS)
-        self.assertEqual(module.rules_directory_choice, F.DEFAULT_INPUT_FOLDER_NAME)
-        self.assertEqual(module.rules_directory, "./rules")
+        self.assertEqual(module.rules_directory.dir_choice, cpprefs.DEFAULT_INPUT_FOLDER_NAME)
+        self.assertEqual(module.rules_directory.custom_path, "./rules")
+        self.assertEqual(module.rules_file_name, "myrules.txt")
+        self.assertEqual(module.measurement_count.value, 2)
+        self.assertEqual(module.additional_object_count.value, 2)
+        self.assertEqual(module.measurements[0].measurement, 
+                         "Intensity_LowerQuartileIntensity_DNA")
+        self.assertTrue(module.measurements[0].wants_minimum)
+        self.assertFalse(module.measurements[0].wants_maximum)
+        self.assertAlmostEqual(module.measurements[0].min_limit.value, 0.2)
+        self.assertAlmostEqual(module.measurements[0].max_limit.value, 1.5)
+        self.assertEqual(module.measurements[1].measurement,
+                         "Intensity_UpperQuartileIntensity_DNA")
+        self.assertFalse(module.measurements[1].wants_minimum)
+        self.assertTrue(module.measurements[1].wants_maximum)
+        self.assertAlmostEqual(module.measurements[1].min_limit.value, 0.9)
+        self.assertAlmostEqual(module.measurements[1].max_limit.value, 1.8)
+        for group, name in zip(module.additional_objects,('Cells','Cytoplasm')):
+            self.assertEqual(group.object_name, name)
+            self.assertEqual(group.target_name, "Filtered%s" % name)
+            self.assertEqual(group.outlines_name, "OutlinesFiltered%s" % name)
+            self.assertFalse(group.wants_outlines)
+        
+    def test_05_07_load_v5(self):
+        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:1
+SVNRevision:9025
+
+FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show_window:True|notes:\x5B\x5D]
+    Name the output objects:MyFilteredObjects
+    Select the object to filter:MyObjects
+    Filter using classifier rules or measurements?:Measurements
+    Select the filtering method:Limits
+    What did you call the objects that contain the filtered objects?:None
+    Retain the outlines of filtered objects for use later in the pipeline (for example, in SaveImages)?:No
+    Name the outline image:FilteredObjects
+    Rules file location:Default input folder\x7C./rules
+    Rules file name:myrules.txt
+    Hidden:2
+    Hidden:2
+    Select the measurement to filter by:Intensity_LowerQuartileIntensity_DNA
+    Filter using a minimum measurement value?:Yes
+    Minimum value:0.2
+    Filter using a maximum measurement value?:No
+    Maximum value:1.5
+    Select the measurement to filter by:Intensity_UpperQuartileIntensity_DNA
+    Filter using a minimum measurement value?:No
+    Minimum value:0.9
+    Filter using a maximum measurement value?:Yes
+    Maximum value:1.8
+    Select additional object to relabel:Cells
+    Name the relabeled objects:FilteredCells
+    Save outlines of relabeled objects?:No
+    Name the outline image:OutlinesFilteredCells
+    Select additional object to relabel:Cytoplasm
+    Name the relabeled objects:FilteredCytoplasm
+    Save outlines of relabeled objects?:No
+    Name the outline image:OutlinesFilteredCytoplasm
+"""
+        pipeline = cpp.Pipeline()
+        def callback(caller,event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO.StringIO(data))
+        self.assertEqual(len(pipeline.modules()), 1)
+        module = pipeline.modules()[-1]
+        self.assertTrue(isinstance(module, F.FilterObjects))
+        self.assertEqual(module.target_name, "MyFilteredObjects")
+        self.assertEqual(module.object_name, "MyObjects")
+        self.assertEqual(module.rules_or_measurement, F.ROM_MEASUREMENTS)
+        self.assertEqual(module.filter_choice, F.FI_LIMITS)
+        self.assertEqual(module.rules_directory.dir_choice, cpprefs.DEFAULT_INPUT_FOLDER_NAME)
+        self.assertEqual(module.rules_directory.custom_path, "./rules")
         self.assertEqual(module.rules_file_name, "myrules.txt")
         self.assertEqual(module.measurement_count.value, 2)
         self.assertEqual(module.additional_object_count.value, 2)
@@ -1227,8 +1302,8 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:4|show
             module.object_name.value = "MyObjects"
             module.rules_or_measurement.value = F.ROM_RULES
             module.rules_file_name.value = rules_file
-            module.rules_directory_choice.value = F.DIR_CUSTOM
-            module.rules_directory.value = rules_dir
+            module.rules_directory.dir_choice = cpprefs.ABSOLUTE_FOLDER_NAME
+            module.rules_directory.custom_path = rules_dir
             module.target_name.value = "MyTargetObjects"
             module.run(workspace)
             target_objects = workspace.object_set.get_objects("MyTargetObjects")

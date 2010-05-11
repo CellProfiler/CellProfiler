@@ -52,7 +52,7 @@ from cellprofiler.cpmath.cpmorphology import fixup_scipy_ndimage_result as fix
 from cellprofiler.modules.identify import add_object_count_measurements
 from cellprofiler.modules.identify import add_object_location_measurements
 from cellprofiler.modules.identify import get_object_measurement_columns
-from cellprofiler.preferences import standardize_default_folder_names, DEFAULT_INPUT_FOLDER_NAME, DEFAULT_OUTPUT_FOLDER_NAME
+from cellprofiler.preferences import IO_FOLDER_CHOICE_HELP_TEXT
 
 '''Minimal filter - pick a single object per image by minimum measured value'''
 FI_MINIMAL = "Minimal"
@@ -73,10 +73,16 @@ FI_ALL = [ FI_MINIMAL, FI_MAXIMAL, FI_MINIMAL_PER_OBJECT,
           FI_MAXIMAL_PER_OBJECT, FI_LIMITS ]
 
 '''The number of settings for this module in the pipeline if no additional objects'''
-FIXED_SETTING_COUNT = 15
+FIXED_SETTING_COUNT = 14
 
 '''The number of settings per additional object'''
 ADDITIONAL_OBJECT_SETTING_COUNT = 4
+
+'''The location of the setting count'''
+ADDITIONAL_OBJECT_SETTING_INDEX = 10
+
+'''The location of the measurements count setting'''
+MEASUREMENT_COUNT_SETTING_INDEX = 9
 
 ROM_RULES = "Rules"
 ROM_MEASUREMENTS = "Measurements"
@@ -87,7 +93,7 @@ class FilterObjects(cpm.CPModule):
 
     module_name = 'FilterObjects'
     category = "Object Processing"
-    variable_revision_number = 4
+    variable_revision_number = 5
     
     def create_settings(self):
         '''Create the initial settings and name the module'''
@@ -147,9 +153,27 @@ class FilterObjects(cpm.CPModule):
                                 This setting selects the container (i.e., parent) objects for the <i>Maximal per object</i> 
                                 and <i>Minimal per object</i> filtering choices.""")
         
-        self.rules_file_name = cps.Text(
+        self.rules_directory = cps.DirectoryPath(
+            "Rules file location",
+            doc = """<i>(Used only when filtering by rules)</i>
+            <br>
+            Select the location of the rules file that will be used for filtering.
+            %(IO_FOLDER_CHOICE_HELP_TEXT)s""" % globals())
+ 
+        def get_directory_fn():
+            '''Get the directory for the rules file name'''
+            return self.rules_directory.get_absolute_path()
+        
+        def set_directory_fn(path):
+            dir_choice, custom_path = self.rules_directory.get_parts_from_path(path)
+            self.rules_directory.join_parts(dir_choice, custom_path)
+        
+        self.rules_file_name = cps.FilenameText(
             "Rules file name","rules.txt",
-            doc="""<i>(Used only when filtering by rules)</i><br>The name of the file holding the rules. Each line of
+            get_directory_fn = get_directory_fn,
+            set_directory_fn = set_directory_fn,
+            doc="""<i>(Used only when filtering by rules)</i>
+            <br>The name of the file holding the rules. Each line of
             this file should be a rule naming a measurement to be made
             on the object you selected, for instance:
             <br><tt>
@@ -160,21 +184,6 @@ class FilterObjects(cpm.CPModule):
             pixels and will score the opposite for nuclei whose area is larger.
             The filter adds positive and negative and keeps only objects whose
             positive score is higher than the negative score""")
-        self.rules_directory_choice = cps.Choice(
-            "Rules file location",
-            [DEFAULT_INPUT_FOLDER_NAME, DEFAULT_OUTPUT_FOLDER_NAME, DIR_CUSTOM],
-            doc = """<i>(Used only when filtering by rules)</i><br>Select the location of the rules file that will be used for filtering:
-            <ul><li><i>Default Input
-            Folder</i> if the rules file is in the Default Input Folder.</li> 
-            <li><i>Default Output Folder</i> if the rules file is in the Default Output
-            Folder.</li><li><i>Custom folder</i> if you want to enter a folder name other
-            than the default input or output folder.</li></ul>""")
-        self.rules_directory = cps.Text(
-            "Rules folder name",".",
-            doc="""<i>(Used only when filtering by rules)</i><br>Enter the path to the folder containing the rules file. You
-            can use "." for a path name that's relative to the Default Input
-            folder and "&amp;" for a path that's relative to the Default 
-            Output Folder.""")
         
         self.wants_outlines = cps.Binary('Retain outlines of the identified objects?', False)
         
@@ -253,13 +262,13 @@ class FilterObjects(cpm.CPModule):
     def prepare_settings(self, setting_values):
         '''Make sure the # of slots for additional objects matches 
            the anticipated number of additional objects'''
-        additional_object_count = int(setting_values[11])
+        additional_object_count = int(setting_values[ADDITIONAL_OBJECT_SETTING_INDEX])
         while len(self.additional_objects) > additional_object_count:
             self.remove_additional_object(self.additional_objects[-1].key)
         while len(self.additional_objects) < additional_object_count:
             self.add_additional_object()
             
-        measurement_count = int(setting_values[10])
+        measurement_count = int(setting_values[MEASUREMENT_COUNT_SETTING_INDEX])
         while len(self.measurements) > measurement_count:
             del self.measurements[-1]
         while len(self.measurements) < measurement_count:
@@ -269,7 +278,7 @@ class FilterObjects(cpm.CPModule):
         result =[self.target_name, self.object_name, self.rules_or_measurement,
                  self.filter_choice, self.enclosing_object_name,
                   self.wants_outlines, self.outlines_name,
-                  self.rules_directory_choice, self.rules_directory, 
+                  self.rules_directory, 
                   self.rules_file_name,
                   self.measurement_count, self.additional_object_count]
         for x in self.measurements:
@@ -282,9 +291,7 @@ class FilterObjects(cpm.CPModule):
         result =[self.target_name, self.object_name, 
                  self.spacer_2, self.rules_or_measurement]
         if self.rules_or_measurement == ROM_RULES:
-            result += [self.rules_file_name, self.rules_directory_choice]
-            if self.rules_directory_choice == DIR_CUSTOM:
-                result += [self.rules_directory]
+            result += [self.rules_file_name, self.rules_directory]
         else:
             result += [self.spacer_1, self.filter_choice]
             if self.filter_choice in (FI_MINIMAL, FI_MAXIMAL):
@@ -570,16 +577,7 @@ class FilterObjects(cpm.CPModule):
     def get_rules(self):
         '''Read the rules from a file'''
         rules_file = self.rules_file_name.value
-        if self.rules_directory_choice == DEFAULT_INPUT_FOLDER_NAME:
-            rules_directory = cpprefs.get_default_image_directory()
-        elif self.rules_directory_choice == DEFAULT_OUTPUT_FOLDER_NAME:
-            rules_directory = cpprefs.get_default_output_directory()
-        elif self.rules_directory_choice == DIR_CUSTOM:
-            rules_directory = self.rules_directory.value
-            rules_directory = cpprefs.get_absolute_path(rules_directory)
-        else:
-            raise NotImplementedError("Unknown directory choice: %s"%
-                                      self.rules_directory_choice.value)
+        rules_directory = self.rules_directory.get_absolute_path()
         path = os.path.join(rules_directory, rules_file)
         if not os.path.isfile(path):
             raise cps.ValidationError("No such rules file: %s"%path, rules_file)
@@ -839,9 +837,28 @@ class FilterObjects(cpm.CPModule):
                 measurement, wants_minimum, minimum_value,
                 wants_maximum, maximum_value] + additional_object_settings
             variable_revision_number = 4
+        if (not from_matlab) and variable_revision_number == 4:
+            #
+            # Used DirectoryPath to combine directory choice & custom path
+            #
+            rules_directory_choice = setting_values[7]
+            rules_path_name = setting_values[8]
+            if rules_directory_choice == DIR_CUSTOM:
+                rules_directory_choice == cpprefs.ABSOLUTE_FOLDER_NAME
+                if rules_path_name.startswith('.'):
+                    rules_directory_choice = cps.DEFAULT_INPUT_SUBFOLDER_NAME
+                elif rules_path_name.startswith('&'):
+                    rules_directory_choice = cps.DEFAULT_OUTPUT_SUBFOLDER_NAME
+                    rules_path_name = "." + rules_path_name[1:]
+                
+            rules_directory = cps.DirectoryPath.static_join_string(
+                rules_directory_choice, rules_path_name)
+            setting_values = (
+                setting_values[:7] + [rules_directory] + setting_values[9:])
             
-        SLOT_DIRCHOICE = 7
-        setting_values = standardize_default_folder_names(setting_values,SLOT_DIRCHOICE)
+        SLOT_DIRECTORY = 7
+        setting_values[SLOT_DIRECTORY] = cps.DirectoryPath.upgrade_setting(
+            setting_values[SLOT_DIRECTORY])
         
         return setting_values, variable_revision_number, from_matlab
 

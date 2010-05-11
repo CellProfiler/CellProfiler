@@ -1402,6 +1402,7 @@ class ModuleView:
                             for child in control.GetChildren():
                                 child.SetToolTipString('OK')
                         static_text.SetForegroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOWTEXT))
+                        static_text.SetToolTip(None)
                         static_text.Refresh()
                 except cps.ValidationError, instance:
                     # always update the tooltip, in case the value changes to something that's still bad.

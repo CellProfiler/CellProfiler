@@ -658,13 +658,13 @@ class Morph(cpm.CPModule):
                     new_pixel_data = morph.black_tophat(pixel_data, mask=mask)
                 elif function_name == F_CLOSE:
                                                          
-                    new_pixel_data = morph.closing(pixel_data, mask==mask)
+                    new_pixel_data = morph.closing(pixel_data, mask=mask)
                 elif function_name == F_DILATE:
                     new_pixel_data = morph.grey_dilation(pixel_data, mask=mask)
                 elif function_name == F_ERODE:
                     new_pixel_data = morph.grey_erosion(pixel_data, mask=mask)
                 elif function_name == F_OPEN:
-                    new_pixel_data = morph.opening(pixel_data, mask==mask)
+                    new_pixel_data = morph.opening(pixel_data, mask=mask)
                 elif function_name == F_TOPHAT:
                     new_pixel_data = morph.white_tophat(pixel_data, mask=mask)
                 else:

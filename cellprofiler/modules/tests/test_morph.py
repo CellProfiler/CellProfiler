@@ -123,7 +123,7 @@ class TestMorph(unittest.TestCase):
         self.assertEqual(module.functions[2].function, morph.F_FILL)
         self.assertEqual(module.functions[2].repeats_choice.value, morph.R_FOREVER)
 
-    def execute(self, image, function):
+    def execute(self, image, function, mask=None):
         '''Run the morph module on an input and return the resulting image'''
         INPUT_IMAGE_NAME = 'input'
         OUTPUT_IMAGE_NAME = 'output'
@@ -142,7 +142,7 @@ class TestMorph(unittest.TestCase):
                                   object_set,
                                   cpmeas.Measurements(),
                                   image_set_list)
-        image_set.add(INPUT_IMAGE_NAME,cpi.Image(image))
+        image_set.add(INPUT_IMAGE_NAME,cpi.Image(image, mask=mask))
         module.run(workspace)
         output = image_set.get_image(OUTPUT_IMAGE_NAME)
         return output.pixel_data
@@ -254,5 +254,15 @@ class TestMorph(unittest.TestCase):
         image = np.random.uniform(size=(20,15)).astype(np.float32)
         result = self.execute(image, 'invert')
         self.assertTrue(np.all(result == (1-image)))
+    def test_02_24_gray_open(self):
+        np.random.seed(0)
+        image = np.random.uniform(size=(20,15)).astype(np.float32)
+        result = self.execute(image, 'open', mask=np.ones(image.shape, np.bool))
+        self.assertTrue(np.all(result <= image))
+    def test_02_25_gray_close(self):
+        np.random.seed(0)
+        image = np.random.uniform(size=(20,15)).astype(np.float32)
+        result = self.execute(image, 'close', mask=np.ones(image.shape, np.bool))
+        self.assertTrue(np.all(result >= image))
         
     

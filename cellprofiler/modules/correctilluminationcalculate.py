@@ -45,8 +45,8 @@ IC_BACKGROUND      = "Background"
 RE_MEDIAN          = "Median"
 EA_EACH            = "Each"
 EA_ALL             = "All"
-EA_ALL_FIRST       = "All: first cycle"
-EA_ALL_ACROSS      = "All: across cycles"
+EA_ALL_FIRST       = "All: First cycle"
+EA_ALL_ACROSS      = "All: Across cycles"
 SRC_LOAD_IMAGES    = "Load Images module"
 SRC_PIPELINE       = "Pipeline"
 SM_NONE            = "No smoothing"
@@ -145,27 +145,27 @@ class CorrectIlluminationCalculate(cpm.CPModule):
             You can calculate the illumination function using just the current
             image or you can calculate the illumination function using all of
             the images in each group.
-            <p>
-            Select <i>%(EA_EACH)s</i> to calculate an illumination function for each image 
-            individually. 
-            <p>
-            Select <i>%(EA_ALL_FIRST)s</i> to calculate an illumination 
+            The illumination function can be calculated in one of the three ways:
+            <ul>
+            <li><i>%(EA_EACH)s:</i> Calculate an illumination function for each image 
+            individually. </li>
+            <li><i>%(EA_ALL_FIRST)s:</i> Calculate an illumination 
             function based on all of the images in a group, performing the
             calculation before processing any images in the group. This option
             lets you use the illumination function in a subsequent
-            <b>CorrectIllumination_Apply</b> module in the same pipeline. The
-            images must be loaded from disk and the images will not be filtered
-            by a previous <b>FlagImage</b> module.  The first cycle will be 
-            longer, but subsequent cycles will be processed more quickly.
-            <p>
-            Select <i>%(EA_ALL_ACROSS)s</i> to calculate an illumination function 
+            <b>CorrectIllumination_Apply</b> module in the same pipeline, but also
+            means that you will not have the ability to filter out images (e.g., by using
+            <b>FlagImage</b>). The images will be loaded from disk, making the first 
+            cycle longer than subsequent cycles.</li>
+            <li><i>%(EA_ALL_ACROSS)s:</i> Calculate an illumination function 
             across all cycles in each group. This option takes any image
-            as input and excludes images that are filtered by a previous
-            <b>FlagImage</b> module. However, the illumination function 
+            as input; however, the illumination function 
             will not be completed until the end of the last cycle in the group.
             You can use <b>SaveImages</b> to save the illumination function
             after the last cycle in the group and then use the resulting
-            image in another pipeline.''' % globals())
+            image in another pipeline. The option is useful if you want to exclude
+            images that are filtered by a prior <b>FlagImage</b> module.</li>
+            </ul>''' % globals())
         
         self.smoothing_method = cps.Choice("Smoothing method",
                                            [SM_NONE, SM_FIT_POLYNOMIAL, 

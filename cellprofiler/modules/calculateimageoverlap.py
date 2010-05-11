@@ -30,7 +30,7 @@ while a background pixel in the test image that overlaps with foreground in the 
 <li><i>False negative rate:</i> Total number of false negative pixels / total number of actual postive pixels </li>
 <li><i>Precision:</i> Number of true positive pixels / (number of true positive pixels + number of false positive pixels) </li>
 <li><i>Recall:</i> Number of true positive pixels/ (number of true positive pixels + number of false negative pixels) </li>
-<li><i>F-factor:</i> 2 x (precision x recall)/(precision + recall) </li>
+<li><i>F-factor:</i> 2 x (precision x recall)/(precision + recall). Also known as F<sub>1</sub> score, F-score or F-measure.</li>
 </ul>
 
 '''
@@ -144,7 +144,10 @@ class CalculateImageOverlap(cpm.CPModule):
             recall = 1.0
         else:
             recall = float(true_positive_count) / float(true_count)
-        f_factor = 2.0 * precision * recall / (precision + recall)
+        if (precision + recall) == 0:
+            f_factor = 0.0 # From http://en.wikipedia.org/wiki/F1_score
+        else:
+            f_factor = 2.0 * precision * recall / (precision + recall)
         negative_count = false_positive_count + true_negative_count
         if negative_count == 0:
             false_positive_rate = 0.0

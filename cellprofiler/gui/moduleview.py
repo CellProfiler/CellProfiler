@@ -1413,12 +1413,12 @@ class ModuleView:
                         for child in control.GetChildren():
                             child.SetToolTipString(instance.message)
                     static_text_name = text_control_name(setting)
-                    static_text = self.__module_panel.FindWindowByName(
-                        static_text_name)
-                    if (static_text is not None and
-                        static_text.GetForegroundColour() != ERROR_COLOR):
-                        self.__static_texts[idx].SetForegroundColour(ERROR_COLOR)
-                        self.__static_texts[idx].Refresh()
+                    static_text = self.__module_panel.FindWindowByName(static_text_name)
+                    if static_text is not None:
+                        static_text.SetToolTipString(instance.message)
+                        if static_text.GetForegroundColour() != ERROR_COLOR:
+                            self.__static_texts[idx].SetForegroundColour(ERROR_COLOR)
+                            self.__static_texts[idx].Refresh()
         except:
             pass
 

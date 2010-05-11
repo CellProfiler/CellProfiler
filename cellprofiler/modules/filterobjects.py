@@ -659,6 +659,25 @@ class FilterObjects(cpm.CPModule):
                 result += ["Object_Number"]
         return result
     
+    def prepare_to_create_batch(self, pipeline, image_set_list, fn_alter_path):
+        '''Prepare to create a batch file
+        
+        This function is called when CellProfiler is about to create a
+        file for batch processing. It will pickle the image set list's
+        "legacy_fields" dictionary. This callback lets a module prepare for
+        saving.
+        
+        pipeline - the pipeline to be saved
+        image_set_list - the image set list to be saved
+        fn_alter_path - this is a function that takes a pathname on the local
+                        host and returns a pathname on the remote host. It
+                        handles issues such as replacing backslashes and
+                        mapping mountpoints. It should be called for every
+                        pathname stored in the settings or legacy fields.
+        '''
+        self.rules_directory.alter_for_create_batch_files(fn_alter_path)
+        return True
+    
     def upgrade_settings(self, setting_values, variable_revision_number, 
                          module_name, from_matlab):
         '''Account for old save formats

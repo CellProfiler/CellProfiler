@@ -216,6 +216,17 @@ class TestExpandOrShrinkObjects(unittest.TestCase):
         objects = workspace.object_set.get_objects(OUTPUT_NAME)
         self.assertTrue(np.all(objects.segmented == expected))
         self.assertTrue(OUTLINES_NAME not in workspace.get_outline_names())
+        m = workspace.measurements
+        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        count = m.get_current_image_measurement("Count_" + OUTPUT_NAME)
+        if not np.isscalar(count):
+            count = count[0]
+        self.assertEqual(count, 1)
+        location_x = m.get_current_measurement(OUTPUT_NAME, "Location_Center_X")
+        self.assertEqual(len(location_x), 1)
+        self.assertEqual(location_x[0], 4)
+        self.assertEqual(len(location_y), 1)
+        self.assertEqual(location_y[0], 4)
     
     def test_02_02_expand_twice(self):
         '''Expand an object "twice"'''

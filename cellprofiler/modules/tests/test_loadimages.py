@@ -995,7 +995,7 @@ LoadImages:[module_num:1|svn_version:\'9799\'|variable_revision_number:6|show_wi
                 # a float whose fractional part is always 0
                 #
                 if os.stat_float_times() and not sys.platform=="darwin":
-                    time.sleep(.01)
+                    time.sleep(.1)
                 else:
                     time.sleep(1)
             try:
@@ -1041,8 +1041,15 @@ LoadImages:[module_num:1|svn_version:\'9799\'|variable_revision_number:6|show_wi
                 self.assertEqual(image.file_name, filenames[chosen])
             finally:
                 for filename in filenames:
-                    os.remove(os.path.join(directory,filename))
-                os.rmdir(directory)
+                    p = os.path.join(directory,filename)
+                    try:
+                        os.remove(p)
+                    except:
+                        print "Failed to remove %s" % p
+                try:
+                    os.rmdir(directory)
+                except:
+                    print "Failed to remove " + directory
             
     def get_example_pipeline_data(self):
         data = r'''CellProfiler Pipeline: http://www.cellprofiler.org

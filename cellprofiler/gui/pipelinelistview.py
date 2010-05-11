@@ -171,6 +171,8 @@ class PipelineListView(object):
         self.__debug_mode = mode
         self.__pipeline_slider.Show(mode)
         self.__sizer.Layout()
+        # force a re-check of all modules
+        self.__first_dirty_module = 0
         
     def __set_min_width(self):
         """Make the minimum width of the panel be the best width

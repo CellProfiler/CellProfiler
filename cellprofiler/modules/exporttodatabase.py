@@ -462,10 +462,10 @@ class ExportToDatabase(cpm.CPModule):
                 raise cps.ValidationError("The sqlite file name has invalid characters",self.sqlite_file)
 
         if self.db_type == DB_MYSQL:
-            if not re.match("^[A-Za-z0-9_]+$",self.db_user.value):
-                raise cps.ValidationError("The database user name has invalid characters",self.db_user)
             if not re.match("^[A-Za-z0-9_].*$",self.db_host.value):
                 raise cps.ValidationError("The database host name has invalid characters",self.db_host)
+            if not re.match("^[A-Za-z0-9_]+$",self.db_user.value):
+                raise cps.ValidationError("The database user name has invalid characters",self.db_user)
         else:
             if not re.match("^[A-Za-z][A-Za-z0-9_]+$", self.sql_file_prefix.value):
                 raise cps.ValidationError('Invalid SQL file prefix', self.sql_file_prefix)
@@ -476,9 +476,18 @@ class ExportToDatabase(cpm.CPModule):
                 raise cps.ValidationError("Please choose at least one object",
                                           self.objects_choice)
             
+        if pipeline.test_mode:
+            raise cps.ValidationError("Warning: ExportToDatabase will not produce output in Test Mode",
+                                      self.db_type)
+
+
     def prepare_run(self, pipeline, image_set_list, frame):
         '''Prepare to run the pipeline
         Establish a connection to the database.'''
+
+        if pipeline.test_mode:
+            return True
+
         if self.db_type==DB_MYSQL:
             self.connection, self.cursor = connect_mysql(self.db_host.value, 
                                                          self.db_user.value, 
@@ -493,8 +502,6 @@ class ExportToDatabase(cpm.CPModule):
         #
         self.get_pipeline_measurement_columns(pipeline, image_set_list)
         
-        if pipeline.test_mode:
-            return True
         if pipeline.in_batch_mode():
             return True
         if self.db_type == DB_ORACLE:

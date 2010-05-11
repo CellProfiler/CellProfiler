@@ -315,6 +315,10 @@ class ExportToSpreadsheet(cpm.CPModule):
             not self.delimiter.value in (DELIMITER_TAB, DELIMITER_COMMA)):
             raise cps.ValidationError("The CSV field delimiter must be a single character", self.delimiter)
 
+        if pipeline.test_mode:
+            raise cps.ValidationError("Warning: ExportToSpreadsheet will not produce output in Test Mode",
+                                      self.delimiter)
+
     @property
     def delimiter_char(self):
         if self.delimiter == DELIMITER_TAB:

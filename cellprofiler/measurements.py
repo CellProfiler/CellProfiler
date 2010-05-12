@@ -476,10 +476,18 @@ def find_metadata_tokens(pattern):
               "\g<METADATA_TAG>" (Python-style replace)
               "(?P<METADATA_TAG>...match-exp..)" (Python-style search)
     """ 
-    # Convert Matlab to Python
-    pattern = re.sub('(\\(\\?)([<].+?[>])','\\1P\\2',pattern)
-    match = re.search('(|(%s))'%pattern, '')
-    return match.groupdict().keys()
+    result = []
+    while True:
+        m = re.search('\\(\\?[<](.+?)[>]', pattern)
+        if not m:
+            m = re.search('\\\\g[<](.+?)[>]', pattern)
+            if not m:
+                m = re.search('\\(\\?P[<](.+?)[>]', pattern)
+                if not m:
+                    break
+        result.append(m.groups()[0])
+        pattern = pattern[m.end():]
+    return result
 
 def extract_metadata(pattern, text):
     """Return a dictionary of metadata extracted from the text

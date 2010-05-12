@@ -241,10 +241,14 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
         def post_run(workspace):
             self.assertEqual(expects[0], 'PostRun')
             expects[0],expects[1] = ('Done', 0)
+            
+        def get_measurement_columns(pipeline):
+            return [(cellprofiler.measurements.IMAGE, "mymeasurement", 
+                     cellprofiler.measurements.COLTYPE_INTEGER)]
         
         module = GroupModule()
         module.setup((keys,groupings), prepare_run, prepare_group,
-                     run, post_group, post_run)
+                     run, post_group, post_run, get_measurement_columns)
         module.module_num = 1
         pipeline.add_module(module)
         measurements = pipeline.run()
@@ -310,10 +314,13 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
         def post_run(workspace):
             self.assertEqual(expects[0], 'PostRun')
             expects[0],expects[1] = ('Done', 0)
+        def get_measurement_columns(pipeline):
+            return [(cellprofiler.measurements.IMAGE, "mymeasurement", 
+                     cellprofiler.measurements.COLTYPE_INTEGER)]
         
         module = GroupModule()
         module.setup((keys,groupings), prepare_run, prepare_group,
-                     run, post_group, post_run)
+                     run, post_group, post_run, get_measurement_columns)
         module.module_num = 1
         pipeline.add_module(module)
         measurements = pipeline.run(grouping = {'foo':'foo-B', 'bar':'bar-B'})
@@ -509,13 +516,15 @@ class GroupModule(cellprofiler.cpmodule.CPModule):
                  prepare_group_callback = None,
                  run_callback = None,
                  post_group_callback = None,
-                 post_run_callback = None):
+                 post_run_callback = None,
+                 get_measurement_columns_callback = None):
         self.prepare_run_callback = prepare_run_callback
         self.prepare_group_callback = prepare_group_callback
         self.run_callback = run_callback
         self.post_group_callback = post_group_callback
         self.post_run_callback = post_run_callback
         self.groupings = groupings
+        self.get_measurement_columns_callback = get_measurement_columns_callback
     def get_groupings(self, image_set_list):
         return self.groupings
     def prepare_run(self, *args):
@@ -528,13 +537,17 @@ class GroupModule(cellprofiler.cpmodule.CPModule):
         return True
     def run(self, *args):
         if self.run_callback is not None:
-            self.run_callback(*args)
+            return self.run_callback(*args)
     def post_run(self, *args):
         if self.post_run_callback is not None:
-            self.post_run_callback(*args)
+            return self.post_run_callback(*args)
     def post_group(self, *args):
         if self.post_group_callback is not None:
-            self.post_group_callback(*args)
+            return self.post_group_callback(*args)
+    def get_measurement_columns(self, *args):
+        if self.get_measurement_columns_callback is not None:
+            return self.get_measurement_columns_callback(*args)
+        return []
 
 if __name__ == "__main__":
     unittest.main()

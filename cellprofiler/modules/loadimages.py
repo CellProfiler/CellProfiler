@@ -654,6 +654,20 @@ class LoadImages(cpmodule.CPModule):
         varlist += [self.location]
         return varlist
     
+    def validate_module(self, pipeline):
+        '''Validate a module's settings
+        
+        LoadImages marks the common_text as invalid if it's blank.
+        '''
+        if self.match_method == MS_EXACT_MATCH:
+            for image_group in self.images:
+                if len(image_group.common_text.value) == 0:
+                    raise cps.ValidationError(
+                        "The matching text is blank. This would match all images.\n"
+                        "Use regular expressions to match with a matching\n"
+                        'expression of ".*" if this is the desired behavior.',
+                        image_group.common_text)
+    
     #
     # Slots for storing settings in the array
     #

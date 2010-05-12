@@ -1022,6 +1022,7 @@ class Pipeline(object):
                 if measurements is None:
                     measurements = cpmeas.Measurements(
                         image_set_start=image_number - 1)
+                    measurements.initialize(self.get_measurement_columns())
                 else:
                     measurements.next_image_set(image_number)
                 # This is added by ExportToDatabase

@@ -83,7 +83,24 @@ class Measurements(object):
         self.__can_overwrite = can_overwrite
         self.__is_first_image = True
         self.__image_set_index = 0
+        self.__initialized_explicitly = False
     
+    def initialize(self, measurement_columns):
+        '''Initialize the measurements dictionary with a list of columns
+        
+        This explicitly initializes the measurements dictionary with
+        a list of columns as would be returned by get_measurement_columns()
+        
+        measurement_columns - list of 3-tuples: object name, feature, type
+        '''
+        self.__dictionary = {}
+        for object_name, feature, coltype in measurement_columns:
+            if not self.__dictionary.has_key(object_name):
+                self.__dictionary[object_name] = {}
+            self.__dictionary[object_name][feature] = [ None ]
+        self.__initialized_explicitly = True
+                
+        
     def next_image_set(self, explicit_image_set_number = None):
         if explicit_image_set_number is None:
             self.__image_set_number+=1
@@ -199,7 +216,7 @@ class Measurements(object):
         Data - the data item to be stored
         """
         can_overwrite = can_overwrite or self.__can_overwrite
-        if self.is_first_image:
+        if self.is_first_image and not self.__initialized_explicitly:
             if not self.__dictionary.has_key(object_name):
                 self.__dictionary[object_name] = {}
             object_dict = self.__dictionary[object_name]

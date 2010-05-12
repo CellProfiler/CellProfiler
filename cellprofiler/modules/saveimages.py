@@ -236,7 +236,14 @@ class SaveImages(cpm.CPModule):
                 "Plate", you can create a per-plate folder by selecting one the subfolder options
                 and then specifying the subfolder name as "\g&lt;Plate&gt;". The module will 
                 substitute the metadata values for the current image set for any metadata tags in the 
-                folder name.%(USING_METADATA_HELP_REF)s.</p>"""%globals())
+                folder name.%(USING_METADATA_HELP_REF)s.</p>
+                <p>If the subfolder does not exist when the pipeline is run, CellProfiler will
+                create it.</p>
+                <p>If you are creating nested subfolders using the sub-folder options, you can 
+                specify the additional folders separated with slashes. For example, "Outlines/Plate1" will create
+                a "Plate1" folder in the "Outlines" folder, which in turn is under the Default
+                Input/Output Folder. The use of a forward slash ("/") as a folder separator will 
+                avoid ambiguity between the various operating systems.</p>"""%globals())
         
         # TODO: 
         self.bit_depth = cps.Choice("Image bit depth",

@@ -672,13 +672,15 @@ class PipelineController:
                     self.__pipeline.save_measurements(self.__output_path,self.__pipeline_measurements)
                     self.__pipeline_measurements = None
                     self.__output_path = None
-                    message = "Finished processing pipeline", "Analysis complete"
+                    message = "Finished processing pipeline"
+                    title = "Analysis complete"
                 else:
-                    message = "Pipeline processing finished, no measurements taken", "Analysis complete"
+                    message = "Pipeline processing finished, no measurements taken"
+                    title = "Analysis complete"
                 if len(self.pipeline_list) > 0:
                     self.run_next_pipeline(event)
                     return
-                wx.MessageBox(message)
+                wx.MessageBox(title, message)
     
     def on_pause(self, event):
         if not self.__pause_pipeline:

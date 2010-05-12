@@ -476,18 +476,10 @@ def find_metadata_tokens(pattern):
               "\g<METADATA_TAG>" (Python-style replace)
               "(?P<METADATA_TAG>...match-exp..)" (Python-style search)
     """ 
-    result = []
-    while True:
-        m = re.search('\\(\\?[<](.+?)[>]', pattern)
-        if not m:
-            m = re.search('\\\\g[<](.+?)[>]', pattern)
-            if not m:
-                m = re.search('\\(\\?P[<](.+?)[>]', pattern)
-                if not m:
-                    break
-        result.append(m.groups()[0])
-        pattern = pattern[m.end():]
-    return result
+    # Convert Matlab to Python
+    pattern = re.sub('(\\(\\?)([<].+?[>])','\\1P\\2',pattern)
+    match = re.search('(|(%s))'%pattern, '')
+    return match.groupdict().keys()
 
 def extract_metadata(pattern, text):
     """Return a dictionary of metadata extracted from the text
@@ -502,12 +494,13 @@ def extract_metadata(pattern, text):
     before executing.
     """
     # Convert Matlab to Python
+    orig_pattern = pattern
     pattern = re.sub('(\\(\\?)([<].+?[>])','\\1P\\2',pattern)
     match = re.search(pattern, text)
     if match:
         return match.groupdict()
     else:
-        return {}
+        raise ValueError("Metadata extraction failed: regexp '%s' does not match '%s'"%(orig_pattern, text))
 
 def is_well_row_token(x):
     '''True if the string represents a well row metadata tag'''

@@ -130,7 +130,6 @@ def display_error_dialog(frame, exc, pipeline, message=None, tb = None):
     #
     ############################################################
     
-    print "pdb", tb is not None, hasattr(sys, 'frozen')
     if (tb is not None) and (not hasattr(sys, 'frozen')):
         pdb_button = wx.Button(dialog, -1, "Debug in pdb...")
         pdb_button.SetToolTipString("Debug in python's pdb on the console")

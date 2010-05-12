@@ -191,6 +191,14 @@ class RegexpText(Setting):
         self.get_example_fn = kwargs.pop("get_example_fn",None)
         super(RegexpText,self).__init__(text, value, *args, **kwargs)
 
+    def test_valid(self, pipeline):
+        try:
+            # Convert Matlab to Python
+            pattern = re.sub('(\\(\\?)([<].+?[>])','\\1P\\2',self.value)
+            re.search('(|(%s))'%(pattern), '')
+        except re.error, v:
+            raise ValidationError("Invalid regexp: %s"%(v), self)
+
 class DirectoryPath(Text):
     """A setting that displays a filesystem path name
     """

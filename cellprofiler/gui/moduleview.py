@@ -239,6 +239,7 @@ class ModuleView:
         self.__notes_text = None
         if cpprefs.get_startup_blurb():
             self.__startup_blurb = HtmlClickableWindow(self.top_panel, wx.ID_ANY, style=wx.NO_BORDER)
+            self.__startup_blurb.load_startup_blurb()
             self.top_level_sizer.Add(self.__startup_blurb, 1, wx.EXPAND)
         else:
             self.__startup_blurb = None

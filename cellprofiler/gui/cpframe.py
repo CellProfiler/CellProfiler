@@ -28,6 +28,7 @@ from cellprofiler.gui.moduleview import ModuleView
 from cellprofiler.gui.preferencesview import PreferencesView
 from cellprofiler.gui.directoryview import DirectoryView
 from cellprofiler.gui.datatoolframe import DataToolFrame
+from cellprofiler.gui.html.htmlwindow import HtmlClickableWindow
 import cellprofiler.gui.html
 import cellprofiler.gui.preferencesdlg
 import cellprofiler.utilities.get_revision as get_revision
@@ -347,18 +348,7 @@ class CPFrame(wx.Frame):
 
         sizer = wx.BoxSizer()
         helpframe.SetSizer(sizer)
-        class DumbHtmlWindow(wx.html.HtmlWindow):
-            def __init__(self, parent):
-                super(DumbHtmlWindow, self).__init__(parent)
-            def OnLinkClicked(self, link_info):
-                if link_info.Href.startswith("#"):
-                    super(DumbHtmlWindow, self).OnLinkClicked(link_info)
-                    return
-                import webbrowser
-                if link_info.Href.startswith("#"):
-                    return
-                webbrowser.open(link_info.Href)
-        window = DumbHtmlWindow(helpframe)
+        window = HtmlClickableWindow(helpframe)
         sizer.Add(window,1,wx.EXPAND)
         window.AppendToPage(help_text)
 

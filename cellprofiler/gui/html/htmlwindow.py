@@ -9,11 +9,15 @@ class HtmlClickableWindow(wx.html.HtmlWindow):
     def __init__(self, *args, **kwargs):
         wx.html.HtmlWindow.__init__(self, *args, **kwargs)
         self.HTMLBackgroundColour = cpprefs.get_background_color()
+
+    def load_startup_blurb(self):
         self.OnLinkClicked(wx.html.HtmlLinkInfo('startup_main', ''))
 
     def OnLinkClicked(self, linkinfo):
         href = linkinfo.Href
-        if href.startswith('http://'):
+        if href.startswith("#"):
+            super(HtmlClickableWindow, self).OnLinkClicked(linkinfo)
+        elif href.startswith('http://'):
             webbrowser.open(href)
         elif href.startswith('pref:'):
             if 'no_display' in href:
@@ -26,7 +30,7 @@ class HtmlClickableWindow(wx.html.HtmlWindow):
                 self.SetPage(newpage)
                 self.BackgroundColour = cpprefs.get_background_color()
             else:
-                wx.html.HtmlWindow.OnLinkClicked(self, linkinfo)
+                super(HtmlClickableWindow, self).OnLinkClicked(linkinfo)
 
     def OnOpeningURL(self, type, url):
         if type == wx.html.HTML_URL_IMAGE:

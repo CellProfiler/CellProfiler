@@ -32,26 +32,13 @@ import os
 import sys
 import cellprofiler.icons
 from cellprofiler.utilities.relpath import relpath
+from cellprofiler.gui.html.htmlwindow import HtmlClickableWindow
 
 #For some reason, Adobe doesn't like using absolute paths to assemble the PDF.
 #Also, Firefox doesn't like displaying the HTML image links using abs paths either.
 #So I have use relative ones. Should check this to see if works on the 
 #compiled version
-#path = os.path.split(os.path.abspath(sys.argv[0]))[0]
-#path = os.path.join(path, 'cellprofiler','icons')
-
-if not hasattr(sys, 'frozen'):
-    path = relpath(cellprofiler.icons.__path__[0])
-else:
-    #
-    # The following recipe was lifted from
-    # http://www.py2exe.org/index.cgi/WhereAmI
-    #
-    # Thank you Ryan Ginstorm
-    #
-    path = os.path.dirname(unicode(sys.executable, 
-                                   sys.getfilesystemencoding()))
-    path = os.path.join(path, 'cellprofiler','icons')
+path = relpath(cellprofiler.icons.get_builtin_images_path())
 
 LOCATION_REFRESH_BUTTON = os.path.join(path,'folder_refresh.png')
 LOCATION_BROWSE_BUTTON = os.path.join(path,'folder_browse.png')
@@ -897,9 +884,9 @@ PREFERENCES_HELP = (
 
 '''The help to be displayed if someone asks for help on a module but none is selected'''
 HELP_ON_MODULE_BUT_NONE_SELECTED = (
-    "The help button can be used to obtain help for a particular module\n"
-    "selected in the pipeline panel at the middle left of CellProfiler.\n"
-    "You currently have no modules in the pipeline. Add a module to the\n"
+    "The help button can be used to obtain help for the currently selected module "
+    "in the pipeline panel on the left side of the CellProfiler interface.\n\n"
+    "You do not have any modules in the pipeline, yet. Add a module to the "
     'pipeline using the "+" button or by using File > Load Pipeline.')
 
 #########################################################

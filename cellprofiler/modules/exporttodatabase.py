@@ -1330,7 +1330,10 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
             db_info += 'db_passwd    = '
         
         spot_tables = '%sPer_Image'%(self.get_table_prefix())
-        cell_tables = '%sPer_Object'%(self.get_table_prefix())
+        if self.separate_object_tables == OT_COMBINE:
+            cell_tables = '%sPer_Object'%(self.get_table_prefix())
+        else:
+            cell_tables = '%sPer_%s'%(self.get_table_prefix(),supposed_primary_object)               
         unique_id = 'ImageNumber'
         object_count = 'Image_Count_%s'%(supposed_primary_object)
         object_id = 'ObjectNumber'

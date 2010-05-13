@@ -356,7 +356,7 @@ class ExportToDatabase(cpm.CPModule):
             same time guaranteeing that no two columns have the same name.""")
         self.separate_object_tables = cps.Choice(
             "Create one table per object or a single object table?",
-            [OT_PER_OBJECT, OT_COMBINE],
+            [OT_COMBINE, OT_PER_OBJECT],
             doc = """<b>ExportToDatabase</b> can create either one table
             for each type of object exported or a single
             object table.<br><ul>

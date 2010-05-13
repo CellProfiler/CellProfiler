@@ -680,7 +680,7 @@ class PipelineController:
                 if len(self.pipeline_list) > 0:
                     self.run_next_pipeline(event)
                     return
-                wx.MessageBox(title, message)
+                wx.MessageBox(message,title)
     
     def on_pause(self, event):
         if not self.__pause_pipeline:

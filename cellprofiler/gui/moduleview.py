@@ -279,7 +279,7 @@ class ModuleView:
             self.__startup_blurb = None
         self.module_panel.Show()
         self.__module_panel.SetVirtualSizeWH(0, 0)
-        self.top_panel.SetupScrolling()
+        self.top_panel.SetupScrolling(scrollToTop=False)
         self.__handle_change = False
         try:
             new_module          = self.__pipeline.module(module_num)

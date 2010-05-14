@@ -899,10 +899,15 @@ class ModuleView:
     def make_text_control(self, v, control_name, control):
         """Make a textbox control"""
         if not control:
+            style = 0
+            if getattr(v, "multiline_display", False):
+                style = wx.TE_MULTILINE|wx.TE_PROCESS_ENTER
+
             control = wx.TextCtrl(self.__module_panel,
                                   -1,
                                   str(v),
-                                  name=control_name)
+                                  name=control_name,
+                                  style = style)
             def on_cell_change(event, setting = v, control=control):
                 self.__on_cell_change(event, setting,control)
             self.__module_panel.Bind(wx.EVT_TEXT,on_cell_change,control)

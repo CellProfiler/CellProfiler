@@ -38,11 +38,19 @@ if sys.platform.startswith('win'):
     java_home = find_javahome()
     jvm_dir = None
     if java_home is not None:
-        for place_to_look in ('client','server'):
-            jvm_dir = os.path.join(java_home,'bin',place_to_look)
-            if os.path.isfile(os.path.join(jvm_dir, "jvm.dll")):
-                os.environ['PATH'] = os.environ['PATH'] +';'+jvm_dir
+        found_jvm = False
+        for jre_home in (java_home, os.path.join(java_home, "jre")):
+            for place_to_look in ('client','server'):
+                jvm_dir = os.path.join(jre_home,'bin',place_to_look)
+                if os.path.isfile(os.path.join(jvm_dir, "jvm.dll")):
+                    os.environ['PATH'] = os.environ['PATH'] +';'+jvm_dir
+                    found_jvm = True
+                    break
+            if found_jvm:
                 break
+        if not found_jvm:
+            jvm_dir = None
+            
 elif sys.platform == 'darwin':
     #
     # Put the jvm library on the path, hoping it is always in the same place
@@ -317,6 +325,7 @@ def call(o, method_name, sig, *args):
     method_name - name of method on object's class
     sig - calling signature
     '''
+    assert o is not None
     env = get_env()
     klass = env.get_object_class(o)
     jexception = get_env().exception_occurred()

@@ -80,3 +80,15 @@ def load_imageplus(file_name):
                                     '(Ljava/lang/String;)V',
                                     file_name)
     return get_imageplus_wrapper(imageplus_obj)
+
+def make_imageplus_from_processor(title, processor):
+    '''Make an ImagePlus object from an ImageProcessor object
+    
+    title - the window title for the ImagePlus object
+    processor - the ImageProcessor instance
+    '''
+    imageplus_obj = J.make_instance(
+        'ij/ImagePlus',
+        '(Ljava/lang/String;Lij/process/ImageProcessor;)V',
+        title, processor)
+    return get_imageplus_wrapper(imageplus_obj)

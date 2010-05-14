@@ -40,6 +40,16 @@ __class_path = os.pathsep.join((__loci_jar, __ij_jar, __imglib_jar,
 if os.environ.has_key("CLASSPATH"):
     __class_path += os.pathsep + os.environ["CLASSPATH"]
     
+if sys.platform.startswith("win"):
+    # Have to find tools.jar
+    from cellprofiler.utilities.setup import find_jdk
+    jdk_path = find_jdk()
+    if jdk_path is not None:
+        __tools_jar = os.path.join(jdk_path, "lib","tools.jar")
+        __class_path += os.pathsep + __tools_jar
+    else:
+        sys.stderr.write("Warning: Failed to find tools.jar\n")
+        
 __args = [r"-Djava.class.path="+__class_path,
           #r"-Djava.ext.dirs=%s"%__path,
           r"-Dloci.bioformats.loaded=true",

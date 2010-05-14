@@ -181,6 +181,8 @@ class Text(Setting):
     
     """
     def __init__(self, text, value, *args, **kwargs):
+        kwargs = kwargs.copy()
+        self.multiline_display = kwargs.pop("multiline", False)
         super(Text,self).__init__(text, value, *args, **kwargs)
 
 class RegexpText(Setting):

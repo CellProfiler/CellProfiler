@@ -1336,7 +1336,10 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
             cell_tables = '%sPer_%s'%(self.get_table_prefix(),supposed_primary_object)               
         unique_id = 'ImageNumber'
         object_count = 'Image_Count_%s'%(supposed_primary_object)
-        object_id = 'ObjectNumber'
+        if self.separate_object_tables == OT_COMBINE:
+            object_id = 'ObjectNumber'
+        else:
+            object_id = '%s_Number_Object_Number'%(supposed_primary_object)
         cell_x_loc = '%s_Location_Center_X'%(supposed_primary_object)
         cell_y_loc = '%s_Location_Center_Y'%(supposed_primary_object)
         image_file_cols = ','.join(['Image_FileName_%s'%(name) for name in image_names])

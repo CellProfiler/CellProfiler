@@ -75,7 +75,10 @@ data_files = [('cellprofiler\\icons',
                ['cellprofiler\\icons\\%s'%(x) 
                 for x in os.listdir('cellprofiler\\icons')
                 if x.endswith(".png") or x.endswith(".psd")]),
-              ('bioformats', ['bioformats\\loci_tools.jar'])]
+              ('bioformats', ['bioformats\\loci_tools.jar']),
+              ('imagej', ['imagej\\'+jar_file
+                          for jar_file in os.listdir('imagej')
+                          if jar_file.endswith('.jar')])]
 data_files += matplotlib.get_py2exe_datafiles()
 # Collect the JVM
 #
@@ -100,6 +103,7 @@ def add_jre_files(path):
         add_jre_files(subdirectory)
     
 add_jre_files("jre")
+data_files += [("jre\\ext", [os.path.join(jdk_dir, "lib", "tools.jar")])]
 #
 # Call setup
 #

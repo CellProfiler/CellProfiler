@@ -40,7 +40,7 @@ __class_path = os.pathsep.join((__loci_jar, __ij_jar, __imglib_jar,
 if os.environ.has_key("CLASSPATH"):
     __class_path += os.pathsep + os.environ["CLASSPATH"]
     
-if sys.platform.startswith("win"):
+if sys.platform.startswith("win") and not hasattr(sys, 'frozen'):
     # Have to find tools.jar
     from cellprofiler.utilities.setup import find_jdk
     jdk_path = find_jdk()

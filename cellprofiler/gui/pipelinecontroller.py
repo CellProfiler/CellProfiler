@@ -68,6 +68,7 @@ class PipelineController:
         wx.EVT_MENU(frame,cpframe.ID_FILE_ANALYZE_IMAGES,self.on_analyze_images)
         wx.EVT_MENU(frame,cpframe.ID_FILE_STOP_ANALYSIS,self.on_stop_running)
         wx.EVT_MENU(frame, cpframe.ID_FILE_RUN_MULTIPLE_PIPELINES, self.on_run_multiple_pipelines)
+        wx.EVT_MENU(frame, cpframe.ID_FILE_RESTART, self.on_restart)
         
         wx.EVT_MENU(frame, cpframe.ID_EDIT_MOVE_UP, self.on_module_up)
         wx.EVT_MENU(frame, cpframe.ID_EDIT_MOVE_DOWN, self.on_module_down)
@@ -682,6 +683,54 @@ class PipelineController:
                     return
                 wx.MessageBox(message,title)
     
+    def on_restart(self, event):
+        '''Restart a pipeline from a measurements file'''
+        dlg = wx.FileDialog(self.__frame, "Select measurements file",
+                            wildcard = "Measurements file (*.mat)|*.mat",
+                            style = wx.FD_OPEN)
+        if dlg.ShowModal() != wx.ID_OK:
+            return
+        
+        ##################################
+        #
+        # Start the pipeline
+        #
+        ##################################
+        output_path = self.get_output_file_path()
+        if output_path:
+            self.__module_view.disable()
+            self.__frame.preferences_view.pause_button.Bind(wx.EVT_BUTTON,
+                                                            self.on_pause)
+            if self.__running_pipeline:
+                self.__running_pipeline.close()
+            self.__output_path = output_path
+            self.__frame.preferences_view.on_analyze_images()
+            self.__running_pipeline = \
+                self.__pipeline.restart_with_yield(dlg.Path, self.__frame,
+                                                   self.status_callback)
+            try:
+                # Start the first module.
+                self.__pipeline_measurements = self.__running_pipeline.next()
+            except StopIteration:
+                #
+                # Pipeline finished on the first go (typical for something
+                # like CreateBatchFiles)
+                #
+                self.stop_running()
+                if self.__pipeline_measurements is not None:
+                    self.__pipeline.save_measurements(self.__output_path,self.__pipeline_measurements)
+                    self.__pipeline_measurements = None
+                    self.__output_path = None
+                    message = "Finished processing pipeline"
+                    title = "Analysis complete"
+                else:
+                    message = "Pipeline processing finished, no measurements taken"
+                    title = "Analysis complete"
+                if len(self.pipeline_list) > 0:
+                    self.run_next_pipeline(event)
+                    return
+                wx.MessageBox(message,title)
+                
     def on_pause(self, event):
         if not self.__pause_pipeline:
             self.__frame.preferences_view.pause(True)

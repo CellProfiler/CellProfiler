@@ -112,7 +112,11 @@ class Measurements(object):
             if object_name in (EXPERIMENT, NEIGHBORS):
                 continue
             for measurements in object_features.values():
-                measurements.append(None)
+                mlen = len(measurements)
+                if mlen <= self.__image_set_index:
+                    measurements += [None] * (self.__image_set_index + 1 - mlen)
+                else:
+                    measurements[self.__image_set_index] = None
     
     @property
     def image_set_count(self):
@@ -171,6 +175,10 @@ class Measurements(object):
     def load(self, measurements_file_name):
         '''Load measurements from a matlab file'''
         handles = loadmat(measurements_file_name, struct_as_record=True)
+        self.create_from_handles(handles)
+        
+    def create_from_handles(self, handles):
+        '''Load measurements from a handles structure'''
         m = handles["handles"][0,0]["Measurements"][0,0]
         for object_name in m.dtype.fields.keys():
             omeas = m[object_name][0,0]

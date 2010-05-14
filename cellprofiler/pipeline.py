@@ -889,7 +889,31 @@ class Pipeline(object):
                     result.append(setting.value)
         return result
         
-    
+    def restart_with_yield(self, file_name, frame=None, status_callback = None):
+        '''Restart a pipeline from where we left off
+        
+        file_name - the name of a measurements .MAT file
+        '''
+        handles=scipy.io.matlab.mio.loadmat(file_name, 
+                                            struct_as_record=True)
+        measurements = cpmeas.Measurements()
+        measurements.create_from_handles(handles)
+        if handles.has_key("handles"):
+            handles=handles["handles"][0,0]
+        self.create_from_handles(handles)
+        #
+        # Redo the last image set
+        #
+        image_set_start = measurements.image_set_count
+        #
+        # Rewind the measurements to the previous image set
+        #
+        measurements.set_image_set_number(image_set_start - 1)
+        return self.run_with_yield(frame, 
+                                   image_set_start = image_set_start, 
+                                   status_callback = status_callback,
+                                   initial_measurements = measurements)
+        
     def run_external(self, image_dict):
         """Runs a single iteration of the pipeline with the images provided in
         image_dict and returns a dictionary mapping from image names to images 
@@ -957,7 +981,8 @@ class Pipeline(object):
                        image_set_start = 0, 
                        image_set_end = None,
                        grouping = None, run_in_background=True,
-                       status_callback=None):
+                       status_callback=None,
+                       initial_measurements = None):
         """Run the pipeline, yielding periodically to keep the GUI alive.
         Yields the measurements made.
         
@@ -1020,9 +1045,13 @@ class Pipeline(object):
                     image_set_list.purge_image_set(last_image_number-1)
                 last_image_number = image_number
                 if measurements is None:
-                    measurements = cpmeas.Measurements(
-                        image_set_start=image_number - 1)
-                    measurements.initialize(self.get_measurement_columns())
+                    if initial_measurements is None:
+                        measurements = cpmeas.Measurements(
+                            image_set_start=image_number - 1)
+                        measurements.initialize(self.get_measurement_columns())
+                    else:
+                        measurements = initial_measurements
+                        measurements.next_image_set(image_number)
                 else:
                     measurements.next_image_set(image_number)
                 # This is added by ExportToDatabase

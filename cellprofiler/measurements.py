@@ -101,7 +101,7 @@ class Measurements(object):
         self.__initialized_explicitly = True
                 
         
-    def next_image_set(self, explicit_image_set_number = None):
+    def next_image_set(self, explicit_image_set_number = None, erase=False):
         if explicit_image_set_number is None:
             self.__image_set_number+=1
         else:
@@ -115,7 +115,7 @@ class Measurements(object):
                 mlen = len(measurements)
                 if mlen <= self.__image_set_index:
                     measurements += [None] * (self.__image_set_index + 1 - mlen)
-                else:
+                elif erase:
                     measurements[self.__image_set_index] = None
     
     @property

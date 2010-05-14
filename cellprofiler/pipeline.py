@@ -1051,9 +1051,9 @@ class Pipeline(object):
                         measurements.initialize(self.get_measurement_columns())
                     else:
                         measurements = initial_measurements
-                        measurements.next_image_set(image_number)
+                        measurements.next_image_set(image_number, erase=True)
                 else:
-                    measurements.next_image_set(image_number)
+                    measurements.next_image_set(image_number, erase=True)
                 # This is added by ExportToDatabase
                 #measurements.add_image_measurement(IMAGE_NUMBER, image_number)
                 measurements.add_image_measurement(GROUP_NUMBER, group_number)

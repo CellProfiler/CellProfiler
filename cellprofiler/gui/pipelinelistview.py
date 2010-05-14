@@ -489,7 +489,7 @@ class PipelineListView(object):
             self.__pipeline_slider.Hide()
             self.__pipeline_slider.SetMinSize((20, 10))
         self.__sizer.Layout()
-        self.__panel.SetupScrolling(scroll_x=False, scroll_y=True)
+        self.__panel.SetupScrolling(scroll_x=False, scroll_y=True, scrollToTop=False)
     
     def set_subitem_image(self, index, column, image_number):
         item = wx.ListItem()

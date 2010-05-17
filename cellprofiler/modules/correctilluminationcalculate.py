@@ -139,33 +139,34 @@ class CorrectIlluminationCalculate(cpm.CPModule):
                                         image to rescale so that division increases some values and decreases others.''')
         
         self.each_or_all = cps.Choice(
-            "Calculate function for each image individually, or based on all images?",
-            [EA_EACH, EA_ALL_FIRST, EA_ALL_ACROSS], doc = '''
-            Calculate a separate function for each image, or one for all the images?
-            You can calculate the illumination function using just the current
-            image or you can calculate the illumination function using all of
-            the images in each group.
-            The illumination function can be calculated in one of the three ways:
-            <ul>
-            <li><i>%(EA_EACH)s:</i> Calculate an illumination function for each image 
-            individually. </li>
-            <li><i>%(EA_ALL_FIRST)s:</i> Calculate an illumination 
-            function based on all of the images in a group, performing the
-            calculation before processing any images in the group. This option
-            lets you use the illumination function in a subsequent
-            <b>CorrectIllumination_Apply</b> module in the same pipeline, but also
-            means that you will not have the ability to filter out images (e.g., by using
-            <b>FlagImage</b>). The images will be loaded from disk, making the first 
-            cycle longer than subsequent cycles.</li>
-            <li><i>%(EA_ALL_ACROSS)s:</i> Calculate an illumination function 
-            across all cycles in each group. This option takes any image
-            as input; however, the illumination function 
-            will not be completed until the end of the last cycle in the group.
-            You can use <b>SaveImages</b> to save the illumination function
-            after the last cycle in the group and then use the resulting
-            image in another pipeline. The option is useful if you want to exclude
-            images that are filtered by a prior <b>FlagImage</b> module.</li>
-            </ul>''' % globals())
+                                            "Calculate function for each image individually, or based on all images?",
+                                            [EA_EACH, EA_ALL_FIRST, EA_ALL_ACROSS], doc = '''
+                                            Calculate a separate function for each image, or one for all the images?
+                                            You can calculate the illumination function using just the current
+                                            image or you can calculate the illumination function using all of
+                                            the images in each group.
+                                            The illumination function can be calculated in one of the three ways:
+                                            <ul>
+                                            <li><i>%(EA_EACH)s:</i> Calculate an illumination function for each image 
+                                            individually. </li>
+                                            <li><i>%(EA_ALL_FIRST)s:</i> Calculate an illumination 
+                                            function based on all of the images in a group, performing the
+                                            calculation before proceeding to the next module. This means that the
+                                            illumination function will be created in the first cycle (making the first 
+                                            cycle longer than subsequent cycles), and lets you use the function in a subsequent
+                                            <b>CorrectIllumination_Apply</b> module in the same pipeline, but also
+                                            means that you will not have the ability to filter out images (e.g., by using
+                                            <b>FlagImage</b>). The input images need to be produced by a <b>LoadImage</b> 
+                                            or <b>LoadData</b> module; using images produced by other modules will yield an error.</li>
+                                            <li><i>%(EA_ALL_ACROSS)s:</i> Calculate an illumination function 
+                                            across all cycles in each group. This option takes any image
+                                            as input; however, the illumination function 
+                                            will not be completed until the end of the last cycle in the group.
+                                            You can use <b>SaveImages</b> to save the illumination function
+                                            after the last cycle in the group and then use the resulting
+                                            image in another pipeline. The option is useful if you want to exclude
+                                            images that are filtered by a prior <b>FlagImage</b> module.</li>
+                                            </ul>''' % globals())
         
         self.smoothing_method = cps.Choice("Smoothing method",
                                            [SM_NONE, SM_FIT_POLYNOMIAL, 
@@ -194,8 +195,14 @@ class CorrectIlluminationCalculate(cpm.CPModule):
         self.automatic_object_width = cps.Choice("Method to calculate smoothing filter size",
                                             [FI_AUTOMATIC, FI_OBJECT_SIZE, FI_MANUALLY], doc = '''
                                             <i>(Used only if a smoothing method other than Fit Polynomial is selected)</i><br>
-                                            Calculate the smoothing filter size automatically, relative to the width 
-                                            of artifacts to be smoothed or use a manually entered value?''')
+                                            Calculate the smoothing filter size. There are three options:
+                                            <ul>
+                                            <li><i>Automatic:</i> The size is computed as 1/40 the size of the image or 
+                                            30 pixels, whichever is smaller.</li>
+                                            <li><i>Object size:</i> The size is obtained relative to the width 
+                                            of artifacts to be smoothed.</li>
+                                            <li><i>Manually:</i> Use a manually entered value.</li>
+                                            </ul>''')
         
         self.object_width = cps.Integer("Approximate object size",10,doc = '''
                                             <i>(Used only if Automatic is selected for smoothing filter size calculation)</i><br>

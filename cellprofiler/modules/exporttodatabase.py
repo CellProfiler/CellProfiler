@@ -598,14 +598,20 @@ class ExportToDatabase(cpm.CPModule):
             from StringIO import StringIO
             measurements = workspace.measurements
             image_set = workspace.image_set
-            for name in image_set.names:
+            for name in self.thumbnail_image_names.get_selections():
                 # For each desired channel, convert the pixel data into a PIL
                 # image and then save it as a PNG into a StringIO buffer.
                 # Finally read the raw data out of the buffer and add it as
                 # as measurement to be written as a blob.
                 pixels = image_set.get_image(name).pixel_data
+                image_set.get_image(name)
                 fd = StringIO()
-                im = Image.fromarray((pixels * 255).astype('uint8'), 'L')
+                if pixels.ndim == 2:
+                    im = Image.fromarray((pixels * 255).astype('uint8'), 'L')
+                elif pixels.ndim == 3:
+                    im = Image.fromarray((pixels * 255).astype('uint8'), 'RGB')
+                else:
+                    raise Exception('ExportToDatabase only supports saving thumbnails of grayscale or 3-channel images. "%s" was neither.'%(name))
                 # rescale major axis to 200
                 if im.size[0] == max(im.size):
                     w, h = (200, 200 * max(im.size) / min(im.size))
@@ -1796,7 +1802,7 @@ check_tables = yes
         
         if (not from_matlab) and variable_revision_number == 15:
             #
-            # Added 3 new agrs: url_prepend and thumbnail options
+            # Added 3 new args: url_prepend and thumbnail options
             #
             setting_values = setting_values + ["", cps.NO, ""]
             variable_revision_number = 16

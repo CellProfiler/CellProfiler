@@ -132,6 +132,7 @@ MENU_CLOSE_WINDOW = wx.NewId()
 MENU_ZOOM_IN = wx.NewId()
 MENU_ZOOM_OUT = wx.NewId()
 MENU_TOOLS_MEASURE_LENGTH = wx.NewId()
+MENU_CLOSE_ALL = wx.NewId()
 
 '''mouse tool mode - do nothing'''
 MODE_NONE = 0
@@ -251,8 +252,19 @@ class CPFigureFrame(wx.Frame):
         self.MenuBar.Append(self.menu_subplots, 'Subplots')
             
         wx.EVT_MENU(self, MENU_TOOLS_MEASURE_LENGTH, self.on_measure_length)
-        accelerators = wx.AcceleratorTable(
-            [(wx.ACCEL_CMD, ord('W'), MENU_CLOSE_WINDOW)])
+
+        # work around mac window menu losing bindings
+        if wx.Platform == '__WXMAC__':        
+            hidden_menu = wx.Menu()
+            hidden_menu.Append(MENU_CLOSE_ALL, "&L")
+            self.Bind(wx.EVT_MENU, lambda evt: close_all(self.Parent), id=MENU_CLOSE_ALL)
+            accelerators = wx.AcceleratorTable(
+                [(wx.ACCEL_CMD, ord('W'), MENU_CLOSE_WINDOW),
+                 (wx.ACCEL_CMD, ord('L'), MENU_CLOSE_ALL)])
+        else:
+            accelerators = wx.AcceleratorTable(
+                [(wx.ACCEL_CMD, ord('W'), MENU_CLOSE_WINDOW)])
+
         self.SetAcceleratorTable(accelerators)
         wx.EVT_MENU(self, MENU_CLOSE_WINDOW, self.on_close)
         self.MenuBar.Append(make_help_menu(FIGURE_HELP, self), "&Help")

@@ -61,8 +61,24 @@ COLTYPE_VARCHAR_PATH_NAME = COLTYPE_VARCHAR_FORMAT % PATH_NAME_LENGTH
 '''The name of the metadata category'''
 C_METADATA = "Metadata"
 
+'''The name of the site metadata feature'''
+FTR_SITE = "Site"
+
 '''The name of the well metadata feature'''
 FTR_WELL = "Well"
+
+'''The name of the row metadata feature'''
+FTR_ROW = "Row"
+
+'''The name of the column metadata feature'''
+FTR_COLUMN = "Column"
+
+'''The name of the plate metadata feature'''
+FTR_PLATE = "Plate"
+
+M_SITE, M_WELL, M_ROW, M_COLUMN, M_PLATE = \
+      ['_'.join((C_METADATA, x))
+       for x in (FTR_SITE, FTR_WELL, FTR_ROW, FTR_COLUMN, FTR_PLATE)]
 
 def get_length_from_varchar(x):
     '''Retrieve the length of a varchar column from its coltype def'''

@@ -35,8 +35,16 @@ OBJECT = "Object"
 
 COLTYPE_INTEGER = "integer"
 COLTYPE_FLOAT = "float"
+'''16bit Binary Large Object. This object can fit 64K of raw data.
+Currently used for storing image thumbnails as 200 x 200px (max) 8-bit pngs.
+Should NOT be used for storing larger than 256 x 256px 8-bit pngs.'''
 COLTYPE_BLOB = "blob"
-
+'''24bit Binary Large Object. This object can fit 16M of raw data.
+Not currently used'''
+COLTYPE_MEDIUMBLOB = "mediumblob"
+'''32bit Binary Large Object. This object can fit 4GB of raw data.
+Not currently used'''
+COLTYPE_LONGBLOB = "longblob"
 '''SQL format for a varchar column
 
 To get a varchar column of width X: COLTYPE_VARCHAR_FORMAT % X

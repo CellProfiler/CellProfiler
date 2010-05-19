@@ -223,7 +223,7 @@ class IdentifySecondaryObjects(cpmi.Identify):
             of the primary objects after filtering. You can save these images
             using the <b>SaveImages</b> module.""")
         
-        self.new_primary_outlines_name = cps.ImageNameProvider(
+        self.new_primary_outlines_name = cps.OutlineNameProvider(
             "Name the new primary object outlines", "FilteredNucleiOutlines",
             doc = """<i>(Used only when saving outlines of new primary objects)</i><br>
             You can name the outline image of the

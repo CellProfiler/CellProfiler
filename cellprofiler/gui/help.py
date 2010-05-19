@@ -720,6 +720,79 @@ click the remove button to remove a pipeline from the list</li></ul>
 CellProfiler will run all of the pipelines on the list when you hit the
 "OK" button."""
 
+MENU_BAR_FILE_HELP = """ <h2>File Menu Items</h2>
+The <i>File</i> menu provides options for loading and saving your pipelines and 
+performing an analysis run.
+<ul>
+<li><b>Load Pipeline...:</b> Load a CellProfiler pipeline (.cp or .mat) file from 
+your hard drive.</li>
+<li><b>Load Pipeline from URL:</b> Load a CellProfiler pipeline from a web address 
+(i.e., http://...)</li>
+<li><b>Save Pipeline:</b> Save the pipeline you are currently working on as a 
+CellProfiler .cp pipeline file.</li>
+<li><b>Clear Pipeline:</b> Removes all modules from the current pipeline.</li>
+<li><b>Open Image:</b> Opens a dialog box prompting you to select an image file for
+display. Images listed in the file panel can be also be displayed by double-clicking 
+on the filename.</li>
+<li><b>Analyze Images:</b> Executes the current pipeline using the current module
+and Default Input and Output folder settings.</li>
+<li><b>Stop Analysis:</b> Stop the current analysis run.</li>
+<li><b>Run Multiple Pipelines:</b> Execute multiple pipelines in sequential order. 
+This option opens a dialog box allowing you to select the pipelines you would like 
+to run as well as the associated input and output folders. See
+the help in the Run Multiple Pipelines dialog for more details.</li>
+<li><b>Restart:</b> Resume a partially completed analysis run from here it left off.
+To restart an analysis run, go to <i>File > Restart</i> choose the output .mat file 
+containing the partially complete measurements and the analysis run will pick up 
+starting with the last cycle that was processed. </li>
+<li><b>Preferences...:</b> Displays the Preferences window, where you can change 
+many options in CellProfiler.</li>
+<li><b>Check for updates...:</b> Displays a dialog which lets you know whether your
+installation of CellProfiler is the latest version and if not, notifies you
+as what version is available from CellProfiler website.</li>
+<li><b>Recent:</b> Displays a list of the most recent pipelines loaded. Select any
+one of these pipelines to load it.</li>
+<li><b>Exit:</b></b> End the current CellProfiler session. You will be given the option
+of saving your current pipeline if you have not done so.</li>
+</ul>"""
+
+MENU_BAR_EDIT_HELP = """<h2>Edit Menu Items</h2>
+The <i>Edit</i> menu provides options for modifying modules in your current pipeline.
+<ul>
+<li><b>Undo:</b> Undo your previous module modification.</li>
+<li><b>Move Up:</b> Move the currently selected module(s) up in the module list. You
+can also use the <img src="%(LOCATION_MODULE_MOVEUP_BUTTON)s"></img> button located
+below the Pipeline panel.</li>
+<li><b>Move Down:</b> Move the currently selected module(s) down in the module list. You
+can also use the <img src="%(LOCATION_MODULE_MOVEDOWN_BUTTON)s"></img> button located
+below the Pipeline panel.</li>
+<li><b>Delete:</b> Remove the currently selected module(s) from the module list. 
+Pressing the Delete key also removes the module(s). You
+can also use the <img src="%(LOCATION_MODULE_REMOVE_BUTTON)s"></img> button located
+under the Pipeline panel.</li>
+<li><b>Duplicate:</b> Duplicate the currently selected module(s) in the pipeline.
+The current settings of the selected module(s) are retained in the duplicate.</li>
+<li><b>Add Module:</b> Select a module from the pop-up list to inster into the current
+pipeline. You can also use the <img src="%(LOCATION_MODULE_ADD_BUTTON)s"></img> button located
+under the Pipeline panel.</li>
+</ul>
+You can select multiple modules at once for moving, deletion and duplication 
+by selecting the first module and using Shift-click on the last module to select 
+all the modules in between.
+"""%globals()
+
+MENU_BAR_WINDOW_HELP = """<h2>Window Menu Items</h2>
+The <i>Windows</i> menu provides options for showing and hiding the module display windows.
+<ul>
+<li><b>Close All Open Windows:</b> Closes all display windows that are currently open.</li>
+<li><b>Show All Windows On Run:</b> Select to show all display windows during the
+current test run or next analysis run. The display mode icons next to each module
+in the pipeline panel will switch to <img src="%(LOCATION_DISPLAYMODE_SHOW_ICON)s"></img>.</li>
+<li><b>Hide All Windows On Run:</b> Select to show no display windows during the
+current test run or next analysis run. The display mode icons next to each module
+in the pipeline panel will switch to <img src="%(LOCATION_DISPLAYMODE_HIDE_ICON)s"></img>.</li>
+</ul>"""%globals()
+
 '''The help menu for CP's main window'''
 MAIN_HELP = (
     ( "Getting started", (
@@ -735,7 +808,12 @@ MAIN_HELP = (
     ( "Folders and files", (
         ("Default Input Folder", DEFAULT_IMAGE_FOLDER_HELP),
         ("Default Output Folder", DEFAULT_OUTPUT_FOLDER_HELP),
-        ("Output Filename", OUTPUT_FILENAME_HELP) ) )
+        ("Output Filename", OUTPUT_FILENAME_HELP) ) ),
+    ( "Menu bar", (
+        ("File",MENU_BAR_FILE_HELP),
+        ("Edit",MENU_BAR_EDIT_HELP),
+        ("Test",TEST_MODE_HELP),
+        ("Window",MENU_BAR_WINDOW_HELP) ) )
 )
 
 '''A couple of strings for generic insertion into module help'''

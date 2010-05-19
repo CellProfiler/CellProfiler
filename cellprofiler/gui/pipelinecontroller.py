@@ -1126,6 +1126,7 @@ class PipelineController:
                          save_pipeline_button)
                 button_sizer.Realize()
                 dlg.Fit()
+                dlg.CenterOnParent()
                 dlg.ShowModal()
                 
 

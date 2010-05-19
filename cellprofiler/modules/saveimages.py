@@ -717,7 +717,7 @@ class SaveImages(cpm.CPModule):
                         # Grayscale
                         img_min = np.min(pixels)
                         img_max = np.max(pixels)
-                        if img_max > img_ming:
+                        if img_max > img_min:
                             pixels = (pixels - img_min) / (img_max - img_min)
                 else:
                     # Clip at 0 and 1

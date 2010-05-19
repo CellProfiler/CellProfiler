@@ -1821,9 +1821,8 @@ class LoadImages(cpmodule.CPModule):
         """
         if not is_image(filename):
             return None
-        if ((True and is_movie(filename)) != 
-            (True and (self.file_types in (FF_AVI_MOVIES, FF_STK_MOVIES, 
-                                           FF_OTHER_MOVIES)))):
+        if (self.file_types in (FF_AVI_MOVIES, FF_STK_MOVIES, FF_OTHER_MOVIES)
+            and not is_movie(filename)):
             return None
                                                     
         if self.text_to_exclude() != cps.DO_NOT_USE and \
@@ -1961,7 +1960,7 @@ def is_image(filename):
 
 def is_movie(filename):
     ext = os.path.splitext(filename)[1].lower()
-    return ext in ('.avi', '.mpeg', '.stk','.flex', '.mov')
+    return ext in ('.avi', '.mpeg', '.stk','.flex', '.mov', '.tif', '.tiff')
 
 
 class LoadImagesImageProviderBase(cpimage.AbstractImageProvider):

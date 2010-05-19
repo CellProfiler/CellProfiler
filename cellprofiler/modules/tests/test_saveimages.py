@@ -1094,6 +1094,52 @@ SaveImages:[module_num:6|svn_version:\'9507\'|variable_revision_number:5|show_wi
         self.assertEqual(pixel_data.shape, image.shape)
         self.assertTrue(np.all(np.abs(expected - pixel_data) < .02))
         
+    def test_04_04_rescale_gray(self):
+        """Test rescaling a grayscale image
+        
+        Regression test of IMG-943
+        """
+        
+        np.random.seed(44)
+        expected = np.random.uniform(size=(10,20))
+        image = expected * .5
+        workspace, module = self.make_workspace(image, FILE_NAME)
+        self.assertTrue(isinstance(module, cpm_si.SaveImages))
+        module.save_image_or_figure.value = cpm_si.IF_IMAGE
+        module.file_name_method.value = cpm_si.FN_SINGLE_NAME
+        module.single_file_name.value = "foo"
+        module.file_format.value = cpm_si.FF_PNG
+        module.rescale.value = True
+        module.run(workspace)
+        filename = os.path.join(cpprefs.get_default_output_directory(),
+                                "foo.%s"%(cpm_si.FF_PNG))
+        self.assertTrue(os.path.isfile(filename))
+        pixel_data = cpm_li.load_using_PIL(filename)
+        pixel_data = pixel_data.astype(float) / 255.0
+        self.assertEqual(pixel_data.shape, image.shape)
+        self.assertTrue(np.all(np.abs(expected - pixel_data) < .02))
+
+    def test_04_05_rescale_color(self):
+        """Test rescaling a color image"""
+        
+        np.random.seed(44)
+        expected = np.random.uniform(size=(10,20,3))
+        image = expected * .5
+        workspace, module = self.make_workspace(image, FILE_NAME)
+        self.assertTrue(isinstance(module, cpm_si.SaveImages))
+        module.save_image_or_figure.value = cpm_si.IF_IMAGE
+        module.file_name_method.value = cpm_si.FN_SINGLE_NAME
+        module.single_file_name.value = "foo"
+        module.file_format.value = cpm_si.FF_PNG
+        module.rescale.value = True
+        module.run(workspace)
+        filename = os.path.join(cpprefs.get_default_output_directory(),
+                                "foo.%s"%(cpm_si.FF_PNG))
+        self.assertTrue(os.path.isfile(filename))
+        pixel_data = cpm_li.load_using_PIL(filename)
+        pixel_data = pixel_data.astype(float) / 255.0
+        self.assertEqual(pixel_data.shape, image.shape)
+        self.assertTrue(np.all(np.abs(expected - pixel_data) < .02))
 
     def run_movie(self, groupings=None, fn = None):
         '''Run a pipeline that produces a movie

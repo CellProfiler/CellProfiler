@@ -113,12 +113,17 @@ class CPModule(object):
         idx = module_num-1
         settings = handles[cpp.SETTINGS][0,0]
         setting_values = []
+        self.__notes = []
         if (settings.dtype.fields.has_key(cpp.MODULE_NOTES) and
             settings[cpp.MODULE_NOTES].shape[1] > idx):
-            n=settings[cpp.MODULE_NOTES][0,idx]
-            self.__notes = [str(n[i,0][0]) for i in range(0,n.size)]
-        else:
-            self.__notes = []
+            n=settings[cpp.MODULE_NOTES][0,idx].flatten()
+            for x in n:
+                if isinstance(x, np.ndarray):
+                    if len(x) == 0:
+                        x = ''
+                    else:
+                        x = x[0]
+                self.__notes.append(x)
         if settings.dtype.fields.has_key(cpp.SHOW_WINDOW):
             self.__show_window = settings[cpp.SHOW_WINDOW][0,idx] != 0
         if settings.dtype.fields.has_key(cpp.BATCH_STATE):

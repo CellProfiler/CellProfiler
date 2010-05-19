@@ -782,10 +782,10 @@ class DefineGrid(cpm.CPModule):
                                                color="red")
                 axes.add_line(line)
         #
-        # Draw labels
+        # Draw labels in corners
         #
-        for row in range(gridding.rows):
-            for column in range(gridding.columns):
+        for row in (0, gridding.rows - 1):
+            for column in (0, gridding.columns - 1):
                 label = str(gridding.spot_table[row,column])
                 x = gridding.x_locations[column]
                 y = gridding.y_locations[row]

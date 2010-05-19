@@ -15,6 +15,7 @@ Website: http://www.cellprofiler.org
 
 __version__="$Revision$"
 
+import inspect
 import math
 import numpy as np
 import scipy.ndimage
@@ -621,8 +622,8 @@ def sum_of_entropies(image, mask, threshold):
     log_bg = np.log2(bg)
     #
     # Make these into histograms
-    hfg = np.histogram(log_fg, 256, range=(lower,upper), new=True)[0]
-    hbg = np.histogram(log_bg, 256, range=(lower,upper), new=True)[0]
+    hfg = numpy_histogram(log_fg, 256, range=(lower,upper))[0]
+    hbg = numpy_histogram(log_bg, 256, range=(lower,upper))[0]
     #hfg = scipy.ndimage.histogram(log_fg,lower,upper,256)
     #hbg = scipy.ndimage.histogram(log_bg,lower,upper,256)
     #
@@ -673,3 +674,11 @@ def inverse_log_transform(image, d):
     d - object returned by log_transform
     '''
     return np.exp(unstretch(image, d["log_min"], d["log_max"]))
+
+def numpy_histogram(a, bins=10, range=None, normed=False, weights=None):
+    '''A version of numpy.histogram that accounts for numpy's version'''
+    args = inspect.getargs(np.histogram.func_code)[0]
+    if args[-1] == "new":
+        return np.histogram(a, bins, range, normed, weights, new=True)
+    return np.histogram(a, bins, range, normed, weights)
+    

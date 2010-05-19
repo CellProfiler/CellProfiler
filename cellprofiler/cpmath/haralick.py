@@ -13,7 +13,7 @@ Website: http://www.cellprofiler.org
 __version__="$Revision: 1 $"
 import numpy as np
 import scipy.ndimage as scind
-from scipy.linalg.basic import toeplitz
+from scipy.linalg import toeplitz
 
 from cpmorphology import fixup_scipy_ndimage_result as fix
 

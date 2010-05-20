@@ -130,11 +130,13 @@ class CorrectIlluminationCalculate(cpm.CPModule):
                                          [cps.YES, cps.NO, RE_MEDIAN], doc = '''
                                         The illumination function can be rescaled so that the pixel intensities
                                         are all equal to or greater than 1. Rescaling is recommended if you plan to
-                                        use the <i>Division</i> option in <b>CorrectIlluminationApply</b> so that the
-                                        corrected images are in the range 0 to 1. It is not recommended if you
-                                        plan to use the <i>Subtract</i> option in <b>CorrectIlluminationApply</b>. Note that
-                                        as a result of the illumination function being rescaled from 1 to
-                                        infinity, the rescaling of each image might be dramatic if there is substantial variation across the field of view, causing the corrected images
+                                        use the <i>Regular</i> method (and hence, the <i>Division</i> option in 
+                                        <b>CorrectIlluminationApply</b>) so that the corrected images are in the 
+                                        range 0 to 1. It is not recommended if you plan to use the <i>Background</i> 
+                                        method, which is paired with the <i>Subtract</i> option in <b>CorrectIlluminationApply</b>. 
+                                        Note that as a result of the illumination function being rescaled from 1 to
+                                        infinity, the rescaling of each image might be dramatic if there is substantial 
+                                        variation across the field of view, causing the corrected images
                                         to be very dark. The <i>Median</i> option chooses the median value in the 
                                         image to rescale so that division increases some values and decreases others.''')
         

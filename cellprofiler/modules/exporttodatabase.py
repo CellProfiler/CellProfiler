@@ -1098,7 +1098,6 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                                        file_object_name)
             file_name = os.path.join(self.get_output_directory(), file_name)
             fid = open(file_name, "wb")
-            print "file_name", file_name
             csv_writer = csv.writer(fid, lineterminator='\n')
             for i in range(measurements.image_set_index+1):
                 image_number = i+measurements.image_set_start_number

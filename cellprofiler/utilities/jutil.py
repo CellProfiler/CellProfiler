@@ -25,7 +25,9 @@ __version__ = "$Revision: 1 %"
 import atexit
 import gc
 import numpy as np
+import os
 import threading
+import subprocess
 import sys
 
 jvm_dir = None
@@ -34,7 +36,6 @@ if sys.platform.startswith('win'):
     # Try harder by looking for JAVA_HOME and in the registry
     #
     from setup import find_javahome
-    import os
     java_home = find_javahome()
     jvm_dir = None
     if java_home is not None:
@@ -55,20 +56,27 @@ elif sys.platform == 'darwin':
     #
     # Put the jvm library on the path, hoping it is always in the same place
     #
-    import os
     jvm_dir = '/System/Library/Frameworks/JavaVM.framework/Libraries'
     os.environ['PATH'] = os.environ['PATH'] + ':' + jvm_dir
 elif sys.platform.startswith('linux'):
     #
-    # The Broad's libjvm is here, but yours may be different if your
-    # processor is not x86-64
+    # Run the findlibjvm program which uses java.library.path to
+    # find the search path for the JVM.
     #
-    from setup import find_javahome
-    import os
-    java_home = find_javahome()
-    if java_home is not None:
-        jvm_dir = os.path.join(java_home, 'jre','lib','amd64','server')
-        os.environ['LD_LIBRARY_PATH'] = os.environ['LD_LIBRARY_PATH'] + ':' + jvm_dir
+    import ctypes
+    if hasattr(sys, 'frozen'):
+        path = os.path.split(os.path.abspath(sys.argv[0]))[0]
+        path = os.path.join(path, 'cellprofiler','utilities')
+    else:
+        path = os.path.split(__file__)[0]
+    findlibjvm = os.path.join(path, "findlibjvm.java")
+    p = subprocess.Popen(["javac",findlibjvm])
+    p.communicate()
+    p = subprocess.Popen(["java","-cp", path, "findlibjvm"],
+                         stdout=subprocess.PIPE)
+    stdout, stderr = p.communicate()
+    jvm_dir = stdout.strip()
+    ctypes.CDLL(os.path.join(jvm_dir, "libjvm.so"))
 
 if jvm_dir is None:
     from cellprofiler.preferences \

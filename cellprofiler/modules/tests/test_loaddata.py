@@ -172,7 +172,7 @@ class TestLoadData(unittest.TestCase):
         pipeline, module, filename = self.make_pipeline(csv_text)
         m = pipeline.run()
         data = m.get_current_image_measurement("Test_Measurement")
-        self.assertTrue(isinstance(data, int))
+        self.assertTrue(isinstance(data, np.int32))
         self.assertEqual(data, 1)
         os.remove(filename)
     
@@ -183,7 +183,7 @@ class TestLoadData(unittest.TestCase):
         pipeline, module, filename = self.make_pipeline(csv_text)
         m = pipeline.run()
         data = m.get_current_image_measurement("Test_Measurement")
-        self.assertTrue(isinstance(data, str))
+        self.assertTrue(isinstance(data, str), "Expected <type 'str'> got %s" %type(data))
         self.assertEqual(data, "1234567890123")
         os.remove(filename)
     
@@ -434,6 +434,10 @@ class TestLoadData(unittest.TestCase):
 '''%colnames
         pipeline, module, filename = self.make_pipeline(csv_text)
         columns = module.get_measurement_columns(pipeline)
+        fmt = "%15s %30s %20s"
+        print fmt % ("Object", "Feature", "Type")
+        for object_name, feature, coltype in columns:
+            print fmt % (object_name, feature, coltype)
         for colname, coltype in zip(colnames, coltypes):
             self.assertTrue(any([(column[0] == cpmeas.IMAGE and
                                   column[1] == colname and

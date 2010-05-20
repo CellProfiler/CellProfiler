@@ -787,7 +787,7 @@ class LoadData(cpm.CPModule):
         for i in range(len(header)):
             if (header[i].startswith(cpmeas.C_METADATA+"_") and
                 cpmeas.is_well_column_token(header[i].split("_")[1])):
-                coltypes[i] = cpmeas.COLTYPE_VARCHAR_FORMAT % 1
+                coltypes[i] = cpmeas.COLTYPE_VARCHAR
                 
         collen = [0]*len(header)
         for row in reader:
@@ -808,23 +808,20 @@ class LoadData(cpm.CPModule):
                     # in batch data
                     len_field = max(cpmeas.PATH_NAME_LENGTH, 
                                     len_field + PATH_PADDING)
+                ldtype = get_loaddata_type(field)
                 if coltypes[index] == cpmeas.COLTYPE_INTEGER:
-                    try:
-                        if isinstance(int(field), long):
-                            # "integers" that don't fit are saved as strings
-                            coltypes[index] = cpmeas.COLTYPE_VARCHAR_FORMAT % len(field)
-                        continue
-                    except ValueError:
-                        coltypes[index] = cpmeas.COLTYPE_FLOAT
-                if coltypes[index] == cpmeas.COLTYPE_FLOAT:
-                    try:
-                        float(field)
-                        continue
-                    except ValueError:
-                        coltypes[index] = cpmeas.COLTYPE_VARCHAR_FORMAT%len(field)
+                    coltypes[index] = ldtype
+                elif (coltypes[index] == cpmeas.COLTYPE_FLOAT and
+                      ldtype != cpmeas.COLTYPE_INTEGER):
+                    coltypes[index] = ldtype
+
                 if collen[index] < len(field):
                     collen[index] = len(field)
-                    coltypes[index] = cpmeas.COLTYPE_VARCHAR_FORMAT%len(field)
+
+        for index in range(len(header)):
+            if coltypes[index] == cpmeas.COLTYPE_VARCHAR:
+                coltypes[index] = cpmeas.COLTYPE_VARCHAR_FORMAT % collen[index]
+                
         image_names = self.other_providers('imagegroup')
         result = [(cpmeas.IMAGE, colname, coltype)
                    for colname, coltype in zip(header, coltypes)
@@ -994,14 +991,42 @@ def best_cast(sequence, coltype=None):
         coltype.startswith(cpmeas.COLTYPE_VARCHAR)):
         # Cast columns already defined as strings as same
         return np.array(sequence)
+    def fn(x,y):
+        if cpmeas.COLTYPE_VARCHAR in (x,y):
+            return cpmeas.COLTYPE_VARCHAR
+        if cpmeas.COLTYPE_FLOAT in (x,y):
+            return cpmeas.COLTYPE_FLOAT
+        return cpmeas.COLTYPE_INTEGER
+    
+    ldtype = reduce(fn, [get_loaddata_type(x) for x in sequence],
+                    cpmeas.COLTYPE_INTEGER)
+    if ldtype == cpmeas.COLTYPE_VARCHAR:
+        return np.array(sequence)
+    elif ldtype == cpmeas.COLTYPE_FLOAT:
+        return np.array(sequence, np.float64)
+    else:
+        return np.array(sequence, np.int32)
+
+
+def get_loaddata_type(x):
+    '''Return the type to use to represent x
+
+    If x is a 32-bit integer, return cpmeas.COLTYPE_INTEGER.
+    If x cannot be represented in 32 bits but is an integer,
+    return cpmeas.COLTYPE_VARCHAR
+    If x can be represented as a float, return COLTYPE_FLOAT
+    '''
+
     try:
-        if any([isinstance(int(x), long)
-                for x in sequence]):
-            # Cast very long "integers" as strings
-            return np.array(sequence)
-        return np.array([int(x) for x in sequence])
-    except (TypeError, ValueError):
+        iv = int(x)
+        if iv > np.iinfo(np.int32).max:
+            return cpmeas.COLTYPE_VARCHAR
+        if iv < np.iinfo(np.int32).min:
+            return cpmeas.COLTYPE_VARCHAR
+        return cpmeas.COLTYPE_INTEGER
+    except:
         try:
-            return np.array([float(x) for x in sequence])
-        except (TypeError, ValueError):
-            return np.array(sequence)
+            fv = float(x)
+            return cpmeas.COLTYPE_FLOAT
+        except:
+            return cpmeas.COLTYPE_VARCHAR

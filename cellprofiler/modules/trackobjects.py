@@ -642,7 +642,9 @@ class TrackObjects(cpm.CPModule):
             kk = np.hstack((np.array((0)), kk))
             cc = np.hstack((np.array((0.0)), cc))
 
-            x, y =  LAP.LAP(kk, first, cc, n)
+            x, y =  LAP.LAP(np.ascontiguousarray(kk, np.int32),
+                            np.ascontiguousarray(first, np.int32),
+                            np.ascontiguousarray(cc, np.float), n)
             a = np.argwhere(x > len(new_i))
             b = np.argwhere(y >len(old_i))
             x[a[0:len(a)]] = 0
@@ -1121,8 +1123,8 @@ class TrackObjects(cpm.CPModule):
         counts = np.bincount(np.ndarray.astype(d[:,0], np.int32))
         first = np.ascontiguousarray(np.hstack((np.cumsum(counts) - counts+1,
                                                 [len(d)+1])), np.int32)
-        kk = np.ascontiguousarray(np.hstack(([0],d[:, 1].astype(np.int32))))
-        cc = np.ascontiguousarray(np.hstack(([0.0], d[:, 2])))
+        kk = np.ascontiguousarray(np.hstack(([0],d[:, 1])), np.int32)
+        cc = np.ascontiguousarray(np.hstack(([0.0], d[:, 2])), np.float)
 
         x, y =  LAP.LAP(kk, first, cc, len(F)*2+len(P1)*4)
 

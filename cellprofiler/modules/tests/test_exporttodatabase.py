@@ -855,7 +855,8 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
             if module.separate_object_tables == E.OT_PER_OBJECT:
                 object_file = os.path.join(output_dir, base_name+"_" + OBJECT_NAME + ".CSV")
             else:
-                object_file = os.path.join(output_dir, base_name+"_object.csv")
+                object_file = "%s_%s.CSV" % (base_name, cpmeas.OBJECT)
+                object_file = os.path.join(output_dir, object_file)
             for filename in (sql_file, image_file, object_file):
                 self.assertTrue(os.path.isfile(filename))
             fd = open(sql_file,'rt')
@@ -879,7 +880,8 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
                 traceback.print_exc()
                 print "Failed to drop table %s"%table_name
             
-        
+
+
     def test_02_01_write_mysql_db(self):
         workspace, module, output_dir, finally_fn = self.make_workspace(True)
         try:
@@ -945,7 +947,8 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
             sql_file = os.path.join(output_dir, "SQL_SETUP.SQL")
             base_name = "SQL_1_1"
             image_file = os.path.join(output_dir, base_name+"_image.CSV")
-            object_file = os.path.join(output_dir, base_name+"_object.CSV")
+            object_file = "%s_%s.CSV" % (base_name, cpmeas.OBJECT)
+            object_file = os.path.join(output_dir, object_file)
             for filename in (sql_file, image_file, object_file):
                 self.assertTrue(os.path.isfile(filename))
             fd = open(sql_file,'rt')
@@ -1008,9 +1011,10 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
             sql_file = os.path.join(output_dir, "SQL_SETUP.SQL")
             base_name = "SQL_1_1"
             image_file = os.path.join(output_dir, base_name+"_image.CSV")
-            object_file = os.path.join(output_dir, base_name+"_object.CSV")
+            object_file = "%s_%s.CSV" % (base_name, cpmeas.OBJECT)
+            object_file = os.path.join(output_dir, object_file)
             for filename in (sql_file, image_file, object_file):
-                self.assertTrue(os.path.isfile(filename))
+                self.assertTrue(os.path.isfile(filename),"No such file: " + filename)
             fd = open(sql_file,'rt')
             sql_text = fd.read()
             fd.close()
@@ -1275,7 +1279,8 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
             sql_file = os.path.join(output_dir, "SQL_SETUP.SQL")
             base_name = "SQL_1_1"
             image_file = os.path.join(output_dir, base_name+"_image.CSV")
-            object_file = os.path.join(output_dir, base_name+"_object.CSV")
+            object_file = "%s_%s.CSV" % (base_name, cpmeas.OBJECT)
+            object_file = os.path.join(output_dir, object_file)
             for filename in (sql_file, image_file, object_file):
                 self.assertTrue(os.path.isfile(filename))
             fd = open(sql_file,'rt')

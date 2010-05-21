@@ -316,6 +316,8 @@ class LoadData(cpm.CPModule):
                     if self.has_synthetic_well_metadata():
                         fields += [cpmeas.FTR_WELL]
                     self.metadata_fields.choices = fields
+                except Exception, e:
+                    raise RuntimeError("%s" % (e))
                 except:
                     self.metadata_fields.choices = [ "No CSV file"]
                 
@@ -348,7 +350,11 @@ class LoadData(cpm.CPModule):
             filename.append(data[mask]['file_name'])
             wave_pnames.append('PathName_%s'% (waves[i].strip('"')))
             wave_fnames.append('FileName_%s'% (waves[i].strip('"')))
-            
+
+        for i in range(len(waves)):
+            if len(filename[i]) != len(filename[0]):
+                raise RuntimeError("Image %s has %d files, but image %s has %d files" %
+                                   (wave_fnames[i], len(filename[i]), wave_fnames[0], len(filename[0])))
 
         def metadatacols(header):
             output = []
@@ -470,8 +476,11 @@ class LoadData(cpm.CPModule):
         header = reader.next()
         fd.close()
         if header[0].startswith('ELN_RUN_ID'):
-            data = self.convert()
-            header = data.dtype.names
+           try:
+               data = self.convert()
+           except Exception, e:
+               raise RuntimeError("%s" %(e))
+           header = data.dtype.names
         entry["header"] = [header_to_column(column) for column in header]
         return entry["header"]
         

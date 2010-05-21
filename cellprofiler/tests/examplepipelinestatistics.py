@@ -320,8 +320,8 @@ def test_float_deviation(feature, test_measurement, reference_measurement,
                          (tm_nan_fraction + rm_nan_fraction))
         if nan_deviation > max_nan_deviation:
             message = ("# of NaNs differ: %d in test vs %d in reference" %
-                       np.sum(np.isnan(test_measurement)),
-                       np.sum(np.isnan(reference_measurement)))
+                       (np.sum(np.isnan(test_measurement)),
+                        np.sum(np.isnan(reference_measurement))))
             s = make_error_statistic(feature, {}, ERROR_TYPE_QUANTITY,
                                      message, "", per_image)
             return [s]

@@ -213,7 +213,7 @@ class Objects(object):
         """Get the indices for a scipy.ndimage-style function from the segmented labels
         
         """
-        return np.array(range(np.max(self.segmented)),int)+1
+        return np.array(range(np.max(self.segmented)), np.int32)+1
     
     indices = property(get_indices)
      

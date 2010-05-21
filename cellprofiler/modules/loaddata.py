@@ -6,8 +6,9 @@ This module loads a file that supplies text or numerical data associated with th
 identifiers, or even a list of image filenames to be processed in the analysis run.
 
 <p>The module currently reads files in CSV (comma-separated values) format. 
-These files can be produced by spreadsheet programs and are organized into rows and
-columns. The lines of the file represent the rows. (Technically, each row
+These files can be produced by saving a spreadsheet from Excel as
+"Windows Comma Separated Values" file format. 
+ The lines of the file represent the rows. (Technically, each row
 is terminated by the newline character ASCII 10.) Each field in a row is
 separated by a comma. Text values may be optionally enclosed by double
 quotes. The <b>LoadData</b> module uses the first row of the file as a header. The fields

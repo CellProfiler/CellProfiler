@@ -54,14 +54,17 @@ are loaded using the <b>LoadImages</b> module, <b>LoadImages</b> should be set t
 <Date> metadata field from the file names (see <b>LoadImages</b> for more details 
 on how to do so). The pipeline will then match the individual image with 
 their corresponding illumination correction functions based on matching 
-"Metadata_Date" fields.</li>
+"Metadata_Date" fields. This is useful if the same data is associated with several
+images (for example, multiple images obtained from a single well).</li>
 
 <li><i>Columns that contain dose-response or positive/negative control information</i>. 
 The <b>CalculateStatistics</b> module can calculate metrics of assay quality for 
 an experiment if provided with information about which images represent positive
 and negative controls and/or what dose of treatment has been used for which images.
 This information is provided to <b>CalculateStatistics</b> via the <b>LoadData</b> 
-module, using particular formats described in the help for <b>CalculateStatistics</b>.</li>
+module, using particular formats described in the help for <b>CalculateStatistics</b>.
+Again, using <b>LoadData</b> is useful if the same data is associated with several
+images (for example, multiple images obtained from a single well).</li>
 </ul>
 
 <h3>Example CSV file:</h3>

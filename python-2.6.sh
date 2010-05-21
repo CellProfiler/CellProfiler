@@ -1,4 +1,8 @@
 #!/bin/bash
+
+grep -q "SUSE" /proc/version
+if [ $? -eq 0 ]
+then
 export DK_ROOT=/broad/tools/dotkit
 source /broad/tools/dotkit/ksh/.dk_init
 use -q Python-2.6
@@ -12,5 +16,21 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$JAVA_HOME/jre/lib/amd64/server
 #
 export LAST_CHECKOUT=`echo "import os;cpdir='/imaging/analysis/CPCluster/CellProfiler-2.0';print os.path.join(cpdir,str(max(*[int(x) for x in os.listdir(cpdir) if x.isdigit()])))" | python`
 export PYTHONPATH=$PYTHONPATH:$LAST_CHECKOUT
+else
+grep -q "centos" /proc/version
+if [ $? -eq 0 ]
+then
+. /broad/tools/scripts/useuse
+reuse .python-2.6.5
+reuse .numpy-trunk-python-2.6.5
+reuse .scipy-trunk-python-2.6.5
+reuse .matplotlib-trunk-python-2.6.5
+reuse Java-1.6
+export MPLCONFIGDIR=/imaging/analysis/CPCluster/CellProfiler-2.0/.matplotlib
+export LAST_CHECKOUT=`echo "import os;cpdir='/imaging/analysis/CPCluster/CellProfiler-2.0';print os.path.join(cpdir,str(max(*[int(x) for x in os.listdir(cpdir) if x.isdigit()])))" | python`
+else
+echo "Unknown operating system"
+exit $E_NOFILE
+fi
+fi
 python "$@"
-

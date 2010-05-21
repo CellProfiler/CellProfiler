@@ -52,7 +52,8 @@ P_AVERAGE = 'Average'
 P_MAXIMUM = 'Maximum'
 P_MINIMUM = 'Minimum'
 P_SUM = 'Sum'
-P_ALL = [P_AVERAGE, P_MAXIMUM, P_MINIMUM, P_SUM]
+P_VARIANCE = 'Variance'
+P_ALL = [P_AVERAGE, P_MAXIMUM, P_MINIMUM, P_SUM, P_VARIANCE]
 
 K_PROVIDER = "Provider"
 
@@ -155,7 +156,12 @@ class ImageProvider(cpi.AbstractImageProvider):
         self.__how_to_accumulate = how_to_accumulate
         self.__image_count = None
         self.__cached_image = None
-    
+        #
+        # Variance needs image squared as float64, image sum and count
+        #
+        self.__vsquared = None
+        self.__vsum = None
+        
     def reset(self):
         '''Reset accumulator at start of groups'''
         self.__image_count = None
@@ -164,9 +170,16 @@ class ImageProvider(cpi.AbstractImageProvider):
         
     @property
     def has_image(self):
-        return self.__image is not None
+        return self.__image_count is not None
     
     def set_image(self, image):
+        if self.__how_to_accumulate == P_VARIANCE:
+            self.__vsum = image.pixel_data.copy()
+            self.__vsum[~ image.mask] = 0
+            self.__image_count = image.mask.astype(int)
+            self.__vsquared = self.__vsum.astype(np.float64) ** 2.0
+            return
+        
         self.__image = image.pixel_data.copy()
         if image.has_mask:
             self.__image[~image.mask] = 0
@@ -192,6 +205,10 @@ class ImageProvider(cpi.AbstractImageProvider):
                                                       image.pixel_data[image.mask])
             else:
                 self.__image = np.minimum(image.pixel_data, self.__image)
+        elif self.__how_to_accumulate == P_VARIANCE:
+            mask = image.mask
+            self.__vsum[mask] += image.pixel_data[mask]
+            self.__vsquared[mask] += image.pixel_data[mask].astype(np.float64) ** 2
         else:
             raise NotImplementedError("No such accumulation method: %s"%
                                       self.__how_to_accumulate)
@@ -203,13 +220,17 @@ class ImageProvider(cpi.AbstractImageProvider):
         self.__cached_image = None
     
     def provide_image(self, image_set):
+        mask = self.__image_count > 0
         if self.__cached_image is not None:
             return self.__cached_image
         if self.__how_to_accumulate == P_AVERAGE:
             cached_image = self.__image / self.__image_count
+        elif self.__how_to_accumulate == P_VARIANCE:
+            cached_image = np.zeros(self.__vsquared.shape, np.float32)
+            cached_image[mask] = self.__vsquared[mask] / self.__image_count[mask]
+            cached_image[mask] -= self.__vsum[mask]**2 / (self.__image_count[mask] ** 2)
         else:
             cached_image = self.__image
-        mask = self.__image_count > 0
         cached_image[~mask] = 0
         if np.all(mask):
             self.__cached_image = cpi.Image(cached_image)

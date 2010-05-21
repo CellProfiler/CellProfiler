@@ -240,3 +240,13 @@ class TestMakeProjection(unittest.TestCase):
         self.assertTrue(np.all(np.abs(image.pixel_data - expected) < 
                                np.finfo(float).eps))
     
+    def test_04_01_variance(self):
+        np.random.seed(41)
+        images_and_masks = [(np.random.uniform(size=(20,10)).astype(np.float32), None)
+                            for i in range(10)]
+        image = self.run_image_set(M.P_VARIANCE, images_and_masks)
+        images = np.array([x[0] for x in images_and_masks])
+        x = np.sum(images, 0)
+        x2 = np.sum(images**2, 0)
+        expected = x2 / 10.0 - x**2 / 100.0
+        np.testing.assert_almost_equal(image.pixel_data, expected, 4)

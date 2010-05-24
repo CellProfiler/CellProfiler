@@ -38,7 +38,19 @@ from cellprofiler.gui.html.htmlwindow import HtmlClickableWindow
 #Also, Firefox doesn't like displaying the HTML image links using abs paths either.
 #So I have use relative ones. Should check this to see if works on the 
 #compiled version
-path = relpath(cellprofiler.icons.get_builtin_images_path())
+try:
+    path = relpath(cellprofiler.icons.get_builtin_images_path())
+except:
+    if any([x == "--html" for x in sys.argv]) and sys.platform.startswith("win"):
+        if hasattr(sys, "frozen"):
+            drive = sys.argv[0][0]
+        else:
+            drive = __file__[0][0]
+        sys.stderr.write(
+            ("Warning: HTML being written with absolute paths. You must\n"
+             "change the current drive to %s: to get image links with\n"
+             "relative paths.\n") % drive)
+    path = os.path.abspath(cellprofiler.icons.get_builtin_images_path())
 
 LOCATION_REFRESH_BUTTON = os.path.join(path,'folder_refresh.png')
 LOCATION_BROWSE_BUTTON = os.path.join(path,'folder_browse.png')

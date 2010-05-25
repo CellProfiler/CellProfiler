@@ -146,7 +146,7 @@ class DisplayHistogram(cpm.CPModule):
                                      xlabel=self.x_axis.value,
                                      xscale=self.xscale.value,
                                      yscale=self.yscale.value,
-                                     title='%s (cycle %s)'%(self.title.value, workspace.image_set.number+1))
+                                     title='%s (cycle %s)'%(self.title.value, workspace.measurements.image_set_number))
             
     def run_as_data_tool(self, workspace):
         self.run(workspace)
@@ -162,4 +162,3 @@ class DisplayHistogram(cpm.CPModule):
             settings_values = settings_values + [False, (0,1)]
             variable_revision_number = 3
         return setting_values, variable_revision_number, from_matlab
-

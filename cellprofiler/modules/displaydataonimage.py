@@ -25,6 +25,8 @@ import numpy as np
 import cellprofiler.cpmodule as cpm
 import cellprofiler.settings as cps
 import cellprofiler.cpimage as cpi
+import cellprofiler.objects as cpo
+import cellprofiler.workspace as cpw
 import cellprofiler.measurements as cpmeas
 import cellprofiler.preferences as cpprefs
 from cellprofiler.modules.identify import M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y
@@ -197,7 +199,9 @@ class DisplayDataOnImage(cpm.CPModule):
             img = img.astype(np.uint8)
             axes.imshow(img, cmap = matplotlib.cm.Greys_r)
             
-        self.display_on_figure(workspace, axes, imshow_fn)
+        self.display(workspace)
+##        self.display_on_figure(workspace, axes, imshow_fn)
+
         canvas = matplotlib.backends.backend_wxagg.FigureCanvasAgg(fig)
         if self.saved_image_contents == E_AXES:
             fig.set_frameon(False)
@@ -216,11 +220,41 @@ class DisplayDataOnImage(cpm.CPModule):
         image = cpi.Image(pixel_data)
         workspace.image_set.add(self.display_image.value, image)
         
+    def run_as_data_tool(self, workspace):
+        # Note: workspace.measurements.image_set_number contains the image
+        #    number that should be displayed.
+        import loadimages as LI
+        import os.path
+        im_id = self.image_name.value
+        image_features = workspace.measurements.get_feature_names(cpmeas.IMAGE)
+        
+        try:
+            filecol = [x for x in image_features if x.startswith(LI.C_FILE_NAME) 
+                        and x.endswith(im_id)][0]
+            pathcol = [x for x in image_features if x.startswith(LI.C_PATH_NAME) 
+                        and x.endswith(im_id)][0]
+        except:
+            raise Exception('DisplayDataOnImage failed to find your image path and filename features in the supplied measurements.')
+            return
+        
+        index = workspace.measurements.image_set_index
+        filename = workspace.measurements.get_measurement(cpmeas.IMAGE, filecol, index)
+        pathname = workspace.measurements.get_measurement(cpmeas.IMAGE, pathcol, index)
+        
+        # Add the image to the workspace ImageSetList
+        image_set_list = workspace.image_set_list
+        image_set = image_set_list.get_image_set(0)
+        ip = LI.LoadImagesImageProvider(im_id, pathname, filename)
+        image_set.providers.append(ip)
+        
+        self.run(workspace)
+        
     def display(self, workspace):
-        fig = workspace.create_or_find_figure(title="Display data on image",
+        fig = workspace.create_or_find_figure(title="Display data on image (%s)"
+                                              %(workspace.measurements.image_set_number),
                                               subplots=(1,1))
         fig.clf()
-        title = "%s\n%s" % (self.objects_name.value, self.measurement.value)
+        title = "%s_%s" % (self.objects_name.value, self.measurement.value)
         def imshow_fn(pixel_data):
             if pixel_data.ndim == 3:
                 fig.subplot_imshow_color(0, 0, pixel_data, title=title)
@@ -228,6 +262,7 @@ class DisplayDataOnImage(cpm.CPModule):
                 fig.subplot_imshow_grayscale(0, 0, pixel_data, title=title)
 
         self.display_on_figure(workspace, fig.subplot(0,0), imshow_fn)
+        fig.figure.canvas.draw_idle()
         
     def display_on_figure(self, workspace, axes, imshow_fn):
         import matplotlib
@@ -272,3 +307,21 @@ class DisplayDataOnImage(cpm.CPModule):
             variable_revision_number = 2
         return setting_values, variable_revision_number, from_matlab
         
+
+    
+if __name__ == "__main__":
+    ''' For debugging purposes only...
+    '''
+    import wx
+    from cellprofiler.gui.datatoolframe import DataToolFrame
+    app = wx.PySimpleApp()
+
+    tool_name = 'DisplayDataOnImage'
+    dlg = wx.FileDialog(None, "Choose data output file for %s data tool" %
+                        tool_name, wildcard="*.mat",
+                        style=(wx.FD_OPEN | wx.FILE_MUST_EXIST))
+    if dlg.ShowModal() == wx.ID_OK:
+        data_tool_frame = DataToolFrame(None, module_name=tool_name, measurements_file_name = dlg.Path)
+    data_tool_frame.Show()
+    
+    app.MainLoop()

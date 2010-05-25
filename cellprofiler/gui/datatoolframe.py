@@ -163,6 +163,8 @@ class DataToolFrame(wx.Frame):
         choices = ["%d: %s" % (i+1, metadata_kv[i])
                    for i in range(self.measurements.image_set_count)]
         choice_ctl = wx.Choice(dlg, -1, choices=choices)
+        # Select the current image set
+        choice_ctl.SetSelection(self.measurements.image_set_index)
         choose_sizer.Add(choice_ctl, 1, wx.EXPAND | wx.LEFT, 5)
         button_sizer = wx.StdDialogButtonSizer()
         ok_button = wx.Button(dlg, wx.ID_OK)
@@ -183,6 +185,8 @@ class DataToolFrame(wx.Frame):
     def load_measurements(self, measurements_file_name):
         self.measurements = cpmeas.Measurements(can_overwrite = True)
         self.measurements.load(measurements_file_name)
+        # Start on the first image
+        self.measurements.set_image_set_number(1)
         
     def on_run(self, event):
         image_set_list = cpi.ImageSetList()

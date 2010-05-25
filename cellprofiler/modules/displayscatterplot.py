@@ -142,7 +142,7 @@ class DisplayScatterPlot(cpm.CPModule):
         else:
             xvals = m.get_current_measurement(self.get_x_object(), self.x_axis.value)
             yvals = m.get_current_measurement(self.get_y_object(), self.y_axis.value)
-            title = '%s (cycle %d)'%(self.title.value, workspace.image_set.number+1)
+            title = '%s (cycle %d)'%(self.title.value, workspace.measurements.image_set_number)
         
         if workspace.frame:
             figure = workspace.create_or_find_figure(subplots=(1,1))

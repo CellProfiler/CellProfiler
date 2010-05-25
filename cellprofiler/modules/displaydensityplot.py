@@ -164,7 +164,7 @@ class DisplayDensityPlot(cpm.CPModule):
                                    yscale=self.yscale.value,
                                    bins=bins,
                                    cmap=self.colormap.value,
-                                   title='%s (cycle %s)'%(self.title.value, workspace.image_set.number+1))
+                                   title='%s (cycle %s)'%(self.title.value, workspace.measurements.image_set_number))
                 
     def run_as_data_tool(self, workspace):
         self.run(workspace)

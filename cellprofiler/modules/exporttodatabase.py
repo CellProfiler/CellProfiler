@@ -386,10 +386,12 @@ class ExportToDatabase(cpm.CPModule):
             Check this option if you'd like to write image thumbnails directly
             into the database. This will slow down the writing step, but will
             enable new functionality in CellProfiler Analyst such as quickly
-            viewing images in the Plate Viewer tool.""")
+            viewing images in the Plate Viewer tool by selecting "thumbnail"
+            from the "Well display" dropdown.""")
         self.thumbnail_image_names = cps.ImageNameSubscriberMultiChoice(
             "Select the images you want to save thumbnails of",
-            doc = """ """)
+            doc = """Select the images that you wish to save as thumbnails to 
+            the database.""")
                                                 
     def visible_settings(self):
         needs_default_output_directory =\

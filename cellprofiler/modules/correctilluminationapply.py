@@ -37,24 +37,15 @@ DOS_SUBTRACT = "Subtract"
 
 ######################################
 #
-# Rescaling choices
-#
-######################################
-RE_NONE = "No rescaling"
-RE_STRETCH = "Stretch 0 to 1"
-RE_MATCH = "Match maximums"
-
-######################################
-#
 # # of settings per image when writing pipeline
 #
 ######################################
 
-SETTINGS_PER_IMAGE = 5
+SETTINGS_PER_IMAGE = 4
 
 class CorrectIlluminationApply(cpm.CPModule):
     category = "Image Processing"
-    variable_revision_number = 2
+    variable_revision_number = 3
     module_name = "CorrectIlluminationApply"
     
     def create_settings(self):
@@ -85,22 +76,13 @@ class CorrectIlluminationApply(cpm.CPModule):
                                         then you will want to choose <i>Subtract</i> here.</li><li>Select <i>Divide</i> if the the signal to background ratio 
                                         is high (the cells are stained very strongly). If you created the illumination correction function using <i>Regular</i>,
                                         then you will want to choose <i>Divide</i> here.</ul>''')
-        
-        rescale_option = cps.Choice("Select the rescaling method",
-                                    [RE_NONE, RE_STRETCH, RE_MATCH], doc = '''<i>(Used only when applying the illumination correction via divide)</i><br>
-                                   Applying an illumination function can produce an image in a very different range of intensity values relative to the original image.
-                                    If the illumination correction function is in the range 1 to infinity, <i>Divide</i> will usually yield an image in a reasonable
-                                    range (0 to 1).  However, if the image is not in this range, or the intensity gradient within the image is still very great,
-                                    you may want to rescale the image.  There are two methods for rescaling:<ul><li>Stretch the image from 0 to 1.<li>Match the maximum of the corrected image
-                                    to the maximum of the original image.</li></ul>
-Rescaling is only necessary when using the <i>Divide</i> method. (In the <i>Subtract</i> method, any resulting negative pixels are set to zero, so no rescaling is necessary.) ''')
+
         image_settings = cps.SettingsGroup()
         image_settings.append("image_name", image_name)
         image_settings.append("corrected_image_name", corrected_image_name)
         image_settings.append("illum_correct_function_image_name", 
                               illum_correct_function_image_name)
         image_settings.append("divide_or_subtract", divide_or_subtract)
-        image_settings.append("rescale_option", rescale_option)
         if can_delete:
             image_settings.append("remover",
                                   cps.RemoveSettingButton("","Remove this image",
@@ -121,21 +103,17 @@ Rescaling is only necessary when using the <i>Divide</i> method. (In the <i>Subt
         for image in self.images:
             result += [image.image_name, image.corrected_image_name,
                        image.illum_correct_function_image_name, 
-                       image.divide_or_subtract, image.rescale_option]
+                       image.divide_or_subtract]
         return result
 
     def visible_settings(self):
         """Return the list of displayed settings
-        
-        Only display the rescale option when dividing
         """
         result = []
         for image in self.images:
             result += [image.image_name, image.corrected_image_name,
                        image.illum_correct_function_image_name, 
                        image.divide_or_subtract]
-            if image.divide_or_subtract == DOS_DIVIDE:
-                result.append(image.rescale_option)
             #
             # Get the "remover" button if there is one
             #
@@ -200,8 +178,6 @@ Rescaling is only necessary when using the <i>Divide</i> method. (In the <i>Subt
         #
         if image.divide_or_subtract == DOS_DIVIDE:
             output_pixels = orig_image.pixel_data / illum_function.pixel_data
-            output_pixels = self.rescale(image, output_pixels,
-                                         orig_image.pixel_data)
         elif image.divide_or_subtract == DOS_SUBTRACT:
             output_pixels = orig_image.pixel_data - illum_function.pixel_data
             output_pixels[output_pixels < 0] = 0
@@ -215,34 +191,6 @@ Rescaling is only necessary when using the <i>Divide</i> method. (In the <i>Subt
         output_image = cpi.Image(output_pixels, parent_image = orig_image) 
         workspace.image_set.add(corrected_image_name, output_image)
     
-    def rescale(self, image, pixel_data, orig_pixel_data):
-        """Rescale according to the rescale option setting"""
-        if image.rescale_option == RE_NONE:
-            return pixel_data
-        elif image.rescale_option == RE_STRETCH:
-            #
-            # Scale the image intensity linearly so that the minimum
-            # is zero and the maximum is one.
-            #
-            pmin = pixel_data.min()
-            pmax = pixel_data.max()
-            if pmin==pmax:
-                return np.ones(pixel_data.shape)
-            return (pixel_data-pmin)/(pmax-pmin)
-        elif image.rescale_option == RE_MATCH:
-            #
-            # Make the maximum value in the output match the maximum
-            # value in the input, scaling all other pixels linearly
-            #
-            pmax = pixel_data.max()
-            omax = orig_pixel_data.max()
-            if pmax == 0:
-                return np.ones(orig_pixel_data.shape) * omax
-            else:
-                return pixel_data * omax /pmax
-        else:
-            raise ValueError("Unhandled option for rescaling: %s"%(self.rescale_option))
-
     def display(self, workspace):
         ''' Display one row of orig / illum / output per image setting group'''
         figure = workspace.create_or_find_figure(subplots=(3,len(self.images)))
@@ -270,7 +218,13 @@ Rescaling is only necessary when using the <i>Divide</i> method. (In the <i>Subt
 
     def is_interactive(self):
         return False
-
+    
+    def validate_module(self, pipeline):
+        """If a CP 1.0 pipeline used a rescaling option other than 'No rescaling', warn the user."""
+        if len(self.rescale_option) != 0:
+                raise cps.ValidationError("Your original pipeline used '%s' to rescale the final image, but the rescaling option has been removed. Please use RescaleIntensity to rescale your output image."%(self.rescaling_option),
+                                    self.images[0].divide_or_subtract)
+                
     def upgrade_settings(self, setting_values, variable_revision_number, 
                          module_name, from_matlab):
         """Adjust settings based on revision # of save file
@@ -293,6 +247,19 @@ Rescaling is only necessary when using the <i>Divide</i> method. (In the <i>Subt
             # Added multiple settings, but, if you only had 1,
             # the order didn't change
             variable_revision_number = 2
+            
+        if not from_matlab and variable_revision_number == 2:
+            # Removed rescaling option; warning user and suggest RescaleIntensity instead.
+            # Keep the option choice around for the validaton warning.
+            divide_or_subtract = setting_values[-2]
+            rescaling_option = setting_values[-1]
+            setting_values = setting_values[:-1]
+            if divide_or_subtract == "Divide" and rescaling_option != "No rescaling":
+                self.rescale_option = rescaling_option
+            else:
+                self.rescale_option = ""
+            variable_revision_number = 3
+            
         return setting_values, variable_revision_number, from_matlab
 
             

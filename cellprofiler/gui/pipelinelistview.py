@@ -102,6 +102,7 @@ class PipelineListView(object):
         self.drag_time = None
         self.list_ctrl.SetDropTarget(PipelineDropTarget(self))
         panel.SetDropTarget(PanelDropTarget(self))
+        panel.SetupScrolling()
 
     def make_list(self):
         '''Make the list control with the pipeline items in it'''
@@ -460,6 +461,7 @@ class PipelineListView(object):
         self.__adjust_rows()
         if nrows > 0:
             self.select_one_module(1)
+        self.__panel.SetupScrolling()
         self.__controller.enable_module_controls_panel_buttons()
     
     def __adjust_rows(self):
@@ -532,11 +534,13 @@ class PipelineListView(object):
         self.__populate_row(module)
         self.__adjust_rows()
         self.select_one_module(event.module_num)
-    
+        self.__panel.SetupScrolling(scrollToTop=False)
+
     def __on_module_removed(self,pipeline,event):
         self.list_ctrl.DeleteItem(event.module_num - 1)
         self.__adjust_rows()
         self.__controller.enable_module_controls_panel_buttons()
+        self.__panel.SetupScrolling(scrollToTop=False)
         
     def __on_module_moved(self,pipeline,event):
         if event.direction == cpp.DIRECTION_UP:

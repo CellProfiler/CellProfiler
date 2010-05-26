@@ -56,26 +56,26 @@ class CorrectIlluminationApply(cpm.CPModule):
     category = "Image Processing"
     variable_revision_number = 3
     module_name = "CorrectIlluminationApply"
-    
+
     def create_settings(self):
         """Make settings here (and set the module name)"""
         self.images = []
         self.add_image(can_delete = False)
         self.add_image_button = cps.DoSomething("", "Add another image",
                                                 self.add_image)
-    
+
     def add_image(self, can_delete = True):
         '''Add an image and its settings to the list of images'''
         image_name = cps.ImageNameSubscriber("Select the input image","None", doc = '''
                                         What did you call the image to be corrected?''')
-        
+
         corrected_image_name = cps.ImageNameProvider("Name the output image","CorrBlue", doc = '''
                                         What do you want to call the corrected image?''')
-        
+
         illum_correct_function_image_name = cps.ImageNameSubscriber("Select the illumination function","None", doc = '''
                                         What did you call the illumination correction function image that will be used to carry out the correction (produced by another module 
                                         or loaded as a .mat format image using <b>LoadSingleImage</b>)?''')
-        
+
         divide_or_subtract = cps.Choice("Select how the illumination function is applied",
                                         [DOS_DIVIDE, DOS_SUBTRACT], doc = '''
                                         This choice depends on how the illumination function was calculated
@@ -102,7 +102,7 @@ class CorrectIlluminationApply(cpm.CPModule):
 
     def settings(self):
         """Return the settings to be loaded or saved to/from the pipeline
-        
+
         These are the settings (from cellprofiler.settings) that are
         either read from the strings in the pipeline or written out
         to the pipeline. The settings should appear in a consistent
@@ -135,7 +135,7 @@ class CorrectIlluminationApply(cpm.CPModule):
 
     def prepare_settings(self, setting_values):
         """Do any sort of adjustment to the settings required for the given values
-        
+
         setting_values - the values for the settings
 
         This method allows a module to specialize itself according to
@@ -151,10 +151,10 @@ class CorrectIlluminationApply(cpm.CPModule):
         del self.images[image_count:]
         while len(self.images) < image_count:
             self.add_image()
-        
+
     def run(self, workspace):
         """Run the module
-        
+
         workspace    - The workspace contains
             pipeline     - instance of cpp for this run
             image_set    - the images in the image set being processed
@@ -164,10 +164,10 @@ class CorrectIlluminationApply(cpm.CPModule):
         """
         for image in self.images:
             self.run_image(image, workspace)
-        
+
     def run_image(self, image, workspace):
         '''Perform illumination according to the parameters of one image setting group
-        
+
         '''
         #
         # Get the image names from the settings
@@ -199,7 +199,7 @@ class CorrectIlluminationApply(cpm.CPModule):
         #
         output_image = cpi.Image(output_pixels, parent_image = orig_image) 
         workspace.image_set.add(corrected_image_name, output_image)
-    
+
     def display(self, workspace):
         ''' Display one row of orig / illum / output per image setting group'''
         figure = workspace.create_or_find_figure(subplots=(3,len(self.images)))
@@ -227,24 +227,25 @@ class CorrectIlluminationApply(cpm.CPModule):
 
     def is_interactive(self):
         return False
-    
+
     def validate_module(self, pipeline):
         """If a CP 1.0 pipeline used a rescaling option other than 'No rescaling', warn the user."""
-        if self.rescale_option != RE_NONE:
-                raise cps.ValidationError("Your original pipeline used '%s' to rescale the final image, but the rescaling option has been removed. Please use RescaleIntensity to rescale your output image."%(self.rescaling_option),
-                                    self.images[0].divide_or_subtract)
-                
+        for j, image in enumerate(self.images):
+            if self.rescale_option[j] != RE_NONE:
+                raise cps.ValidationError("Your original pipeline used '%s' to rescale the final image, but the rescaling option has been removed. Please use RescaleIntensity to rescale your output image."%(self.rescale_option[j]),
+                                          image.divide_or_subtract)
+
     def upgrade_settings(self, setting_values, variable_revision_number, 
                          module_name, from_matlab):
         """Adjust settings based on revision # of save file
-        
+
         setting_values - sequence of string values as they appear in the
                          saved pipeline
         variable_revision_number - the variable revision number of the module
                                    at the time of saving
         module_name - the name of the module that did the saving
         from_matlab - True if saved in CP Matlab, False if saved in pyCP
-        
+
         returns the updated setting_values, revision # and matlab flag
         """
         # No SVN records of revisions 1 & 2
@@ -256,18 +257,17 @@ class CorrectIlluminationApply(cpm.CPModule):
             # Added multiple settings, but, if you only had 1,
             # the order didn't change
             variable_revision_number = 2
-            
+
         self.rescale_option = RE_NONE
-	if not from_matlab and variable_revision_number == 2:
+        if not from_matlab and variable_revision_number == 2:
             # Removed rescaling option; warning user and suggest RescaleIntensity instead.
             # Keep the option choice around for the validaton warning.
-            divide_or_subtract = setting_values[-2]
-            rescaling_option = setting_values[-1]
-            setting_values = setting_values[:-1]
-            if divide_or_subtract == "Divide" and rescaling_option != RE_NONE:
-                self.rescale_option = rescaling_option
+            SLOT_RESCALE_OPTION = 4
+            SETTINGS_PER_IMAGE_V2 = 5
+            self.rescale_option = setting_values[SLOT_RESCALE_OPTION::SETTINGS_PER_IMAGE_V2]
+            del setting_values[SLOT_RESCALE_OPTION::SETTINGS_PER_IMAGE_V2]
             variable_revision_number = 3
-            
+
         return setting_values, variable_revision_number, from_matlab
 
-            
+

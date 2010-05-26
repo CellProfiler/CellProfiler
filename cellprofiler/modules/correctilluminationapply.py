@@ -37,6 +37,15 @@ DOS_SUBTRACT = "Subtract"
 
 ######################################
 #
+# Rescaling choices - deprecated
+#
+######################################
+RE_NONE = "No rescaling"
+RE_STRETCH = "Stretch 0 to 1"
+RE_MATCH = "Match maximums"
+
+######################################
+#
 # # of settings per image when writing pipeline
 #
 ######################################
@@ -221,7 +230,7 @@ class CorrectIlluminationApply(cpm.CPModule):
     
     def validate_module(self, pipeline):
         """If a CP 1.0 pipeline used a rescaling option other than 'No rescaling', warn the user."""
-        if len(self.rescale_option) != 0:
+        if self.rescale_option != RE_NONE:
                 raise cps.ValidationError("Your original pipeline used '%s' to rescale the final image, but the rescaling option has been removed. Please use RescaleIntensity to rescale your output image."%(self.rescaling_option),
                                     self.images[0].divide_or_subtract)
                 
@@ -248,16 +257,15 @@ class CorrectIlluminationApply(cpm.CPModule):
             # the order didn't change
             variable_revision_number = 2
             
-        if not from_matlab and variable_revision_number == 2:
+        self.rescale_option = RE_NONE
+	if not from_matlab and variable_revision_number == 2:
             # Removed rescaling option; warning user and suggest RescaleIntensity instead.
             # Keep the option choice around for the validaton warning.
             divide_or_subtract = setting_values[-2]
             rescaling_option = setting_values[-1]
             setting_values = setting_values[:-1]
-            if divide_or_subtract == "Divide" and rescaling_option != "No rescaling":
+            if divide_or_subtract == "Divide" and rescaling_option != RE_NONE:
                 self.rescale_option = rescaling_option
-            else:
-                self.rescale_option = ""
             variable_revision_number = 3
             
         return setting_values, variable_revision_number, from_matlab

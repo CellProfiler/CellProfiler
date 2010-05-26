@@ -258,7 +258,7 @@ class CorrectIlluminationApply(cpm.CPModule):
             # the order didn't change
             variable_revision_number = 2
 
-        self.rescale_option = RE_NONE
+        self.rescale_option = [RE_NONE]
         if not from_matlab and variable_revision_number == 2:
             # Removed rescaling option; warning user and suggest RescaleIntensity instead.
             # Keep the option choice around for the validaton warning.

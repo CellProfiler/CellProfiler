@@ -198,9 +198,7 @@ class DisplayDataOnImage(cpm.CPModule):
             img[img > 255] = 255
             img = img.astype(np.uint8)
             axes.imshow(img, cmap = matplotlib.cm.Greys_r)
-            
-        self.display(workspace)
-##        self.display_on_figure(workspace, axes, imshow_fn)
+            self.display_on_figure(workspace, axes, imshow_fn)
 
         canvas = matplotlib.backends.backend_wxagg.FigureCanvasAgg(fig)
         if self.saved_image_contents == E_AXES:
@@ -248,6 +246,7 @@ class DisplayDataOnImage(cpm.CPModule):
         image_set.providers.append(ip)
         
         self.run(workspace)
+        self.display(workspace)
         
     def display(self, workspace):
         fig = workspace.create_or_find_figure(title="Display data on image (%s)"

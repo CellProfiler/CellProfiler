@@ -31,6 +31,7 @@ IMG_EYE = get_builtin_image('IMG_EYE')
 IMG_CLOSED_EYE = get_builtin_image('IMG_CLOSED_EYE')
 IMG_PAUSE = get_builtin_image('IMG_PAUSE')
 IMG_GO = get_builtin_image('IMG_GO')
+BMP_WARNING = wx.ArtProvider.GetBitmap(wx.ART_WARNING,size=(16,16))
 
 NO_PIPELINE_LOADED = 'No pipeline loaded'
 PADDING = 1
@@ -44,6 +45,7 @@ ERROR_COLUMN = 2
 MODULE_NAME_COLUMN = 3
 NUM_COLUMNS = 4
 ERROR = "error"
+WARNING = "warning"
 OK = "ok"
 EYE = "eye"
 CLOSED_EYE = "closedeye"
@@ -122,6 +124,7 @@ class PipelineListView(object):
             bitmap = plv_get_bitmap(image)
             idx = get_image_index(name)
             d[idx] = bitmap
+        d[get_image_index(WARNING)] = BMP_WARNING
         idx = get_image_index(NOTDEBUG)
         bitmap = wx.EmptyBitmap(width, height)
         dc = wx.MemoryDC()
@@ -619,7 +622,11 @@ class PipelineListView(object):
                 try:
                     module.test_valid(self.__pipeline)
                     target_name = module.module_name
-                    ec_value = OK
+                    try:
+                        module.validate_module_warnings(self.__pipeline)
+                        ec_value = OK
+                    except:
+                        ec_value = WARNING
                 except:
                     ec_value = ERROR
                 ec_value = get_image_index(ec_value)

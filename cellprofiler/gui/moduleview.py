@@ -29,6 +29,7 @@ from htmldialog import HTMLDialog
 from treecheckboxdialog import TreeCheckboxDialog
 
 ERROR_COLOR = wx.RED
+WARNING_COLOR = wx.Colour(224,224,0,255)
 RANGE_TEXT_WIDTH = 40 # number of pixels in a range text box TO_DO - calculate it
 ABSOLUTE = "Absolute"
 FROM_EDGE = "From edge"
@@ -1385,47 +1386,71 @@ class ModuleView:
             
     def validate_module(self):
         validation_error = None
+        signal_error = True
+        signal_warning = False
+        default_fg_color = wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOWTEXT)
+        default_bg_color = cpprefs.get_background_color()
         try:
             self.__module.test_valid(self.__pipeline)
+            signal_error = False
+            signal_warning = True
+            self.__module.validate_module_warnings(self.__pipeline)
+            signal_warning = False
         except cps.ValidationError, instance:
             validation_error = instance
         try:
             for idx, setting in enumerate(self.__module.visible_settings()):
-                try:
-                    if validation_error and validation_error.setting.key() == setting.key():
-                        raise validation_error
-                    setting.test_valid(self.__pipeline)
-                    static_text_name = text_control_name(setting)
-                    static_text = self.__module_panel.FindWindowByName(
-                        static_text_name)
-                    if (static_text is not None and
-                        static_text.GetForegroundColour() == ERROR_COLOR):
-                        control_name = edit_control_name(setting)
-                        control = self.__module_panel.FindWindowByName(
-                            control_name)
-                        if control is not None:
-                            control.SetToolTipString('OK')
-                            for child in control.GetChildren():
-                                child.SetToolTipString('OK')
-                        static_text.SetForegroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOWTEXT))
-                        static_text.SetToolTip(None)
-                        static_text.Refresh()
-                except cps.ValidationError, instance:
+                static_text_name = text_control_name(setting)
+                error_message = None
+                if (validation_error is not None and 
+                    validation_error.setting.key() == setting.key()):
+                    error_message = validation_error.message
+                else:
+                    try:
+                        setting.test_valid(self.__pipeline)
+                    except cps.ValidationError, instance:
+                        error_message = instance.message
+                
+                if error_message is not None:    
                     # always update the tooltip, in case the value changes to something that's still bad.
                     control_name = edit_control_name(setting)
                     control = self.__module_panel.FindWindowByName(
                         control_name)
                     if control is not None:
-                        control.SetToolTipString(instance.message)
+                        control.SetToolTipString(error_message)
                         for child in control.GetChildren():
-                            child.SetToolTipString(instance.message)
-                    static_text_name = text_control_name(setting)
+                            child.SetToolTipString(error_message)
                     static_text = self.__module_panel.FindWindowByName(static_text_name)
                     if static_text is not None:
-                        static_text.SetToolTipString(instance.message)
-                        if static_text.GetForegroundColour() != ERROR_COLOR:
-                            self.__static_texts[idx].SetForegroundColour(ERROR_COLOR)
-                            self.__static_texts[idx].Refresh()
+                        static_text.SetToolTipString(error_message)
+                        if signal_error:
+                            if static_text.GetForegroundColour() != ERROR_COLOR:
+                                static_text.SetForegroundColour(ERROR_COLOR)
+                                static_text.SetBackgroundColour(default_bg_color)
+                                static_text.Refresh()
+                        elif signal_warning:
+                            if static_text.GetBackgroundColour() != WARNING_COLOR:
+                                static_text.SetForegroundColour(default_fg_color)
+                                static_text.SetBackgroundColour(WARNING_COLOR)
+                                static_text.Refresh()
+                    continue
+                static_text_name = text_control_name(setting)
+                static_text = self.__module_panel.FindWindowByName(
+                    static_text_name)
+                if (static_text is not None and
+                    ((static_text.GetForegroundColour() == ERROR_COLOR) or
+                     (static_text.GetBackgroundColour() == WARNING_COLOR))):
+                    control_name = edit_control_name(setting)
+                    control = self.__module_panel.FindWindowByName(
+                        control_name)
+                    if control is not None:
+                        control.SetToolTipString('OK')
+                        for child in control.GetChildren():
+                            child.SetToolTipString('OK')
+                    static_text.SetForegroundColour(default_fg_color)
+                    static_text.SetBackgroundColour(default_bg_color)
+                    static_text.SetToolTip(None)
+                    static_text.Refresh()
         except:
             pass
 

@@ -482,6 +482,14 @@ class ExportToDatabase(cpm.CPModule):
             raise cps.ValidationError("Warning: ExportToDatabase will not produce output in Test Mode",
                                       self.db_type)
 
+    def validate_module_warnings(self, pipeline):
+        '''Warn user that they will have to merge tables to use CPA'''
+        if self.separate_object_tables == OT_PER_OBJECT:
+            raise cps.ValidationError(
+                ("You will have to merge the separate object tables in order\n"
+                 "to use CellProfiler Analyst. Choose %s to write a single\n"
+                 "object table.") % OT_COMBINE, self.separate_object_tables)
+                
 
     def prepare_run(self, pipeline, image_set_list, frame):
         '''Prepare to run the pipeline

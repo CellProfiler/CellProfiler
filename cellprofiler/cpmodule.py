@@ -282,7 +282,7 @@ class CPModule(object):
         '''
         pass
     
-    def test_valid(self,pipeline):
+    def test_valid(self, pipeline):
         """Test to see if the module is in a valid state to run
         
         Throw a ValidationError exception with an explanation if a module is not valid.
@@ -298,6 +298,26 @@ class CPModule(object):
                                       self.visible_settings()[0])
     
     def validate_module(self,pipeline):
+        '''Implement this to validate module settings
+        
+        Module implementers should implement validate_module to
+        further validate a module's settings. For instance, load_data
+        checks the .csv file that it uses in validate_module to ensure
+        that the user has chosen a valid .csv file.
+        
+        Throw a cps.ValidationError, selecting the most egregiously offending
+        setting to indicate failure.
+        '''
+        pass
+    
+    def validate_module_warnings(self, pipeline):
+        '''Implement this to flag potentially dangerous settings
+        
+        Module implementers should implement validate_module_warnings to
+        find setting combinations that can cause unexpected results.
+        Implementers should throw a cps.ValidationError, selecting the
+        most egregiously offending setting to indicate failure.
+        '''
         pass
     
     def other_providers(self, group):

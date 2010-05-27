@@ -696,6 +696,10 @@ class CorrectIlluminationImageProvider(cpi.AbstractImageProvider):
             self.__module.apply_smoothing(self.__cached_dilated_image)
         self.__cached_image = self.__module.apply_scaling(smoothed_image)
         self.__dirty = False
+        
+    def release_memory(self):
+        # Memory is released during reset(), so this is a no-op
+        pass
     
 class CorrectIlluminationAvgImageProvider(cpi.AbstractImageProvider):
     """Provide the image after averaging but before dilation and smoothing"""

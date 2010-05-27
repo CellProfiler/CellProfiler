@@ -478,11 +478,13 @@ class ExportToDatabase(cpm.CPModule):
                 raise cps.ValidationError("Please choose at least one object",
                                           self.objects_choice)
             
-        if pipeline.test_mode:
-            raise cps.ValidationError("Warning: ExportToDatabase will not produce output in Test Mode",
-                                      self.db_type)
 
     def validate_module_warnings(self, pipeline):
+        '''Warn user re: Test mode '''
+        if pipeline.test_mode:
+            raise cps.ValidationError("ExportToDatabase will not produce output in Test Mode",
+                                      self.db_type)
+        
         '''Warn user that they will have to merge tables to use CPA'''
         if self.separate_object_tables == OT_PER_OBJECT:
             raise cps.ValidationError(

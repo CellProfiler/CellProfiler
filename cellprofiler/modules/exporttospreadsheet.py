@@ -308,16 +308,16 @@ class ExportToSpreadsheet(cpm.CPModule):
         return result
     
     def validate_module(self, pipeline):
-        '''Test the module settings to make sure they are internally consistent
-        
-        '''
+        '''Test the module settings to make sure they are internally consistent'''
         if (len(self.delimiter.value) != 1 and
             not self.delimiter.value in (DELIMITER_TAB, DELIMITER_COMMA)):
             raise cps.ValidationError("The CSV field delimiter must be a single character", self.delimiter)
 
+    def validate_module_warnings(self, pipeline):
+        '''Warn user re: Test mode '''
         if pipeline.test_mode:
-            raise cps.ValidationError("Warning: ExportToSpreadsheet will not produce output in Test Mode",
-                                      self.delimiter)
+            raise cps.ValidationError("ExportToSpreadsheet will not produce output in Test Mode",
+                                      self.directory)
 
     @property
     def delimiter_char(self):

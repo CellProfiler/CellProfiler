@@ -228,11 +228,14 @@ class CorrectIlluminationApply(cpm.CPModule):
     def is_interactive(self):
         return False
 
-    def validate_module(self, pipeline):
+    def validate_module_warnings(self, pipeline):
         """If a CP 1.0 pipeline used a rescaling option other than 'No rescaling', warn the user."""
         for j, image in enumerate(self.images):
             if self.rescale_option[j] != RE_NONE:
-                raise cps.ValidationError("Your original pipeline used '%s' to rescale the final image, but the rescaling option has been removed. Please use RescaleIntensity to rescale your output image."%(self.rescale_option[j]),
+                raise cps.ValidationError(("Your original pipeline used '%s' to rescale the final image, "
+                                          "but the rescaling option has been removed. Please use "
+                                          "RescaleIntensity to rescale your output image. Save your "
+                                          "pipeline to get rid of this warning.")%(self.rescale_option[j]),
                                           image.divide_or_subtract)
 
     def upgrade_settings(self, setting_values, variable_revision_number, 

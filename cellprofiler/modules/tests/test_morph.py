@@ -305,7 +305,7 @@ Morph:[module_num:1|svn_version:\'9935\'|variable_revision_number:2|show_window:
         input = np.random.uniform(size=(20,20)) > .7
         output = self.execute(input, function_name, scale=scale)
         if scale is None:
-            expected = function(input, scale = scale)
+            expected = function(input)
         else:
             footprint = cpmorph.strel_disk(float(scale) / 2.0)
             expected = function(input, footprint = footprint)

@@ -64,6 +64,9 @@ class TestMorph(unittest.TestCase):
                 '1P9NGrROuAE1uKvg=')
         fd = StringIO.StringIO(zlib.decompress(base64.b64decode(data)))
         pipeline = cpp.Pipeline()
+        def callback(caller, event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
         pipeline.load(fd)
         self.assertEqual(len(pipeline.modules()),2)
         module = pipeline.modules()[1]
@@ -108,6 +111,9 @@ class TestMorph(unittest.TestCase):
                 '158=')
         fd = StringIO.StringIO(zlib.decompress(base64.b64decode(data)))
         pipeline = cpp.Pipeline()
+        def callback(caller, event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
         pipeline.load(fd)
         self.assertEqual(len(pipeline.modules()),2)
         module = pipeline.modules()[1]
@@ -122,8 +128,147 @@ class TestMorph(unittest.TestCase):
         self.assertEqual(module.functions[1].custom_repeats.value, 2)
         self.assertEqual(module.functions[2].function, morph.F_FILL)
         self.assertEqual(module.functions[2].repeats_choice.value, morph.R_FOREVER)
+        
+    def test_01_03_load_v2(self):
+        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:1
+SVNRevision:10016
 
-    def execute(self, image, function, mask=None):
+Morph:[module_num:1|svn_version:\'9935\'|variable_revision_number:2|show_window:True|notes:\x5B\x5D]
+    Select the input image:InputImage
+    Name the output image:MorphImage
+    Select the operation to perform:bothat
+    Repeat operation:Once
+    Custom # of repeats:2
+    Scale\x3A:3
+    Select the operation to perform:branchpoints
+    Repeat operation:Forever
+    Custom # of repeats:2
+    Scale\x3A:3
+    Select the operation to perform:bridge
+    Repeat operation:Custom
+    Custom # of repeats:2
+    Scale\x3A:3
+    Select the operation to perform:clean
+    Repeat operation:Once
+    Custom # of repeats:2
+    Scale\x3A:3
+    Select the operation to perform:close
+    Repeat operation:Once
+    Custom # of repeats:2
+    Scale\x3A:3
+    Select the operation to perform:convex hull
+    Repeat operation:Once
+    Custom # of repeats:2
+    Scale\x3A:3
+    Select the operation to perform:diag
+    Repeat operation:Once
+    Custom # of repeats:2
+    Scale\x3A:3
+    Select the operation to perform:dilate
+    Repeat operation:Once
+    Custom # of repeats:2
+    Scale\x3A:3
+    Select the operation to perform:distance
+    Repeat operation:Once
+    Custom # of repeats:2
+    Scale\x3A:3
+    Select the operation to perform:endpoints
+    Repeat operation:Once
+    Custom # of repeats:2
+    Scale\x3A:3
+    Select the operation to perform:erode
+    Repeat operation:Once
+    Custom # of repeats:2
+    Scale\x3A:3
+    Select the operation to perform:fill
+    Repeat operation:Once
+    Custom # of repeats:2
+    Scale\x3A:3
+    Select the operation to perform:fill small holes
+    Repeat operation:Once
+    Maximum hole area:2
+    Scale\x3A:3
+    Select the operation to perform:hbreak
+    Repeat operation:Once
+    Custom # of repeats:2
+    Scale\x3A:3
+    Select the operation to perform:invert
+    Repeat operation:Once
+    Custom # of repeats:2
+    Scale\x3A:3
+    Select the operation to perform:majority
+    Repeat operation:Once
+    Custom # of repeats:2
+    Scale\x3A:3
+    Select the operation to perform:open
+    Repeat operation:Once
+    Custom # of repeats:2
+    Scale\x3A:3
+    Select the operation to perform:remove
+    Repeat operation:Once
+    Custom # of repeats:2
+    Scale\x3A:3
+    Select the operation to perform:shrink
+    Repeat operation:Once
+    Custom # of repeats:2
+    Scale\x3A:3
+    Select the operation to perform:skel
+    Repeat operation:Once
+    Custom # of repeats:2
+    Scale\x3A:3
+    Select the operation to perform:spur
+    Repeat operation:Once
+    Custom # of repeats:2
+    Scale\x3A:3
+    Select the operation to perform:thicken
+    Repeat operation:Once
+    Custom # of repeats:2
+    Scale\x3A:3
+    Select the operation to perform:thin
+    Repeat operation:Once
+    Custom # of repeats:2
+    Scale\x3A:3
+    Select the operation to perform:tophat
+    Repeat operation:Once
+    Custom # of repeats:2
+    Scale\x3A:3
+    Select the operation to perform:vbreak
+    Repeat operation:Once
+    Custom # of repeats:2
+    Scale\x3A:3
+"""
+        pipeline = cpp.Pipeline()
+        def callback(caller, event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO.StringIO(data))
+        ops = [morph.F_BOTHAT, morph.F_BRANCHPOINTS, morph.F_BRIDGE,
+               morph.F_CLEAN, morph.F_CLOSE, morph.F_CONVEX_HULL,
+               morph.F_DIAG, morph.F_DILATE, morph.F_DISTANCE,
+               morph.F_ENDPOINTS, morph.F_ERODE, morph.F_FILL,
+               morph.F_FILL_SMALL, morph.F_HBREAK, morph.F_INVERT,
+               morph.F_MAJORITY, morph.F_OPEN, morph.F_REMOVE, 
+               morph.F_SHRINK, morph.F_SKEL, morph.F_SPUR, morph.F_THICKEN,
+               morph.F_THIN, morph.F_TOPHAT, morph.F_VBREAK]
+        self.assertEqual(len(pipeline.modules()), 1)
+        module = pipeline.modules()[0]
+        self.assertTrue(isinstance(module, morph.Morph))
+        self.assertEqual(module.image_name, "InputImage")
+        self.assertEqual(module.output_image_name, "MorphImage")
+        self.assertEqual(len(module.functions), len(ops))
+        for op, function in zip(ops, module.functions):
+            self.assertEqual(function.function, op)
+            if op == morph.F_BRANCHPOINTS:
+                self.assertEqual(function.repeats_choice, morph.R_FOREVER)
+            elif op == morph.F_BRIDGE:
+                self.assertEqual(function.repeats_choice, morph.R_CUSTOM)
+            else:
+                self.assertEqual(function.repeats_choice, morph.R_ONCE)
+            self.assertEqual(function.custom_repeats, 2)
+            self.assertEqual(function.scale, 3)
+
+    def execute(self, image, function, mask=None, custom_repeats=None, scale=None):
         '''Run the morph module on an input and return the resulting image'''
         INPUT_IMAGE_NAME = 'input'
         OUTPUT_IMAGE_NAME = 'output'
@@ -131,7 +276,15 @@ class TestMorph(unittest.TestCase):
         module.image_name.value = INPUT_IMAGE_NAME
         module.output_image_name.value = OUTPUT_IMAGE_NAME
         module.functions[0].function.value = function
-        module.functions[0].repeats_choice.value = morph.R_ONCE
+        if custom_repeats is None:
+            module.functions[0].repeats_choice.value = morph.R_ONCE
+        elif custom_repeats == -1:
+            module.functions[0].repeats_choice.value = morph.R_FOREVER
+        else:
+            module.functions[0].repeats_choice.value = morph.R_CUSTOM
+            module.functions[0].custom_repeats.value = custom_repeats
+        if scale is not None:
+            module.functions[0].scale.value = scale
         pipeline = cpp.Pipeline()
         object_set = cpo.ObjectSet()
         image_set_list = cpi.ImageSetList()
@@ -147,11 +300,15 @@ class TestMorph(unittest.TestCase):
         output = image_set.get_image(OUTPUT_IMAGE_NAME)
         return output.pixel_data
     
-    def binary_tteesstt(self, function_name, function, gray_out = False):
+    def binary_tteesstt(self, function_name, function, gray_out = False, scale=None):
         np.random.seed(map(ord,function_name))
         input = np.random.uniform(size=(20,20)) > .7
-        output = self.execute(input, function_name)
-        expected = function(input)
+        output = self.execute(input, function_name, scale=scale)
+        if scale is None:
+            expected = function(input, scale = scale)
+        else:
+            footprint = cpmorph.strel_disk(float(scale) / 2.0)
+            expected = function(input, footprint = footprint)
         if not gray_out:
             expected = expected > 0
             self.assertTrue(np.all(output==expected))
@@ -159,7 +316,7 @@ class TestMorph(unittest.TestCase):
             self.assertTrue(np.all(np.abs(output-expected) < np.finfo(np.float32).eps))
         
     def test_02_01_binary_bothat(self):
-        self.binary_tteesstt('bothat',cpmorph.black_tophat)
+        self.binary_tteesstt('bothat',cpmorph.black_tophat, scale = 5)
         
     def test_02_015_binary_branchpoints(self):
         self.binary_tteesstt('branchpoints', cpmorph.branchpoints)
@@ -171,13 +328,17 @@ class TestMorph(unittest.TestCase):
         self.binary_tteesstt('clean', cpmorph.clean)
     
     def test_02_04_binary_close(self):
-        self.binary_tteesstt('close', lambda x:scind.binary_closing(x,np.ones((3,3),bool)))
+        self.binary_tteesstt(
+            'close', lambda x, footprint:scind.binary_closing(x,footprint),
+            scale=4)
     
     def test_02_05_binary_diag(self):
         self.binary_tteesstt('diag', cpmorph.diag)
     
     def test_02_06_binary_dilate(self):
-        self.binary_tteesstt('dilate', lambda x: scind.binary_dilation(x, np.ones((3,3),bool)))
+        self.binary_tteesstt(
+            'dilate', lambda x, footprint: scind.binary_dilation(x, footprint),
+            scale=7)
     
     def test_02_065_binary_endpoints(self):
         self.binary_tteesstt('endpoints', cpmorph.endpoints)
@@ -195,7 +356,9 @@ class TestMorph(unittest.TestCase):
         self.binary_tteesstt('majority', cpmorph.majority)
     
     def test_02_11_binary_open(self):
-        self.binary_tteesstt('open', lambda x: scind.binary_opening(x, np.ones((3,3),bool)))
+        self.binary_tteesstt(
+            'open', lambda x, footprint: scind.binary_opening(x, footprint),
+            scale=5)
     
     def test_02_12_binary_remove(self):
         self.binary_tteesstt('remove', cpmorph.remove)

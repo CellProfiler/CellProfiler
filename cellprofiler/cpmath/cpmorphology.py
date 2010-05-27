@@ -1934,7 +1934,7 @@ def block(shape, block_shape):
     indexes = np.array(range(np.product(ijmax)))
     return labels, indexes
 
-def white_tophat(image, radius=None, mask=None):
+def white_tophat(image, radius=None, mask=None, footprint=None):
     '''White tophat filter an image using a circular structuring element
     
     image - image in question
@@ -1946,7 +1946,7 @@ def white_tophat(image, radius=None, mask=None):
     #
     # Subtract the opening to get the tophat
     #
-    final_image = image - opening(image, radius, mask) 
+    final_image = image - opening(image, radius, mask, footprint) 
     #
     # Paint the masked pixels into the final image
     #
@@ -1955,7 +1955,7 @@ def white_tophat(image, radius=None, mask=None):
         final_image[not_mask] = image[not_mask]
     return final_image
 
-def black_tophat(image, radius=None, mask=None):
+def black_tophat(image, radius=None, mask=None, footprint=None):
     '''Black tophat filter an image using a circular structuring element
     
     image - image in question
@@ -1967,7 +1967,7 @@ def black_tophat(image, radius=None, mask=None):
     #
     # Subtract the image from the closing to get the bothat
     #
-    final_image = closing(image, radius, mask) - image 
+    final_image = closing(image, radius, mask, footprint) - image 
     #
     # Paint the masked pixels into the final image
     #
@@ -2148,7 +2148,7 @@ def grey_reconstruction(image, mask, footprint=None, offset=None):
     values.shape = np.array(image.shape)+2
     return values[inside_slices]
     
-def opening(image, radius=None, mask=None):
+def opening(image, radius=None, mask=None, footprint=None):
     '''Do a morphological opening
     
     image - pixel image to operate on
@@ -2156,10 +2156,10 @@ def opening(image, radius=None, mask=None):
              use an 8-connected structuring element.
     mask - if present, only use unmasked pixels for operations
     '''
-    eroded_image = grey_erosion(image, radius, mask)
-    return grey_dilation(eroded_image, radius, mask)
+    eroded_image = grey_erosion(image, radius, mask, footprint)
+    return grey_dilation(eroded_image, radius, mask, footprint)
 
-def closing(image, radius=None, mask=None):
+def closing(image, radius=None, mask=None, footprint = None):
     '''Do a morphological closing
     
     image - pixel image to operate on
@@ -2167,8 +2167,8 @@ def closing(image, radius=None, mask=None):
              element, use an 8-connected structuring element.
     mask - if present, only use unmasked pixels for operations
     '''
-    dilated_image = grey_dilation(image, radius, mask)
-    return grey_erosion(dilated_image, radius, mask)
+    dilated_image = grey_dilation(image, radius, mask, footprint)
+    return grey_erosion(dilated_image, radius, mask, footprint)
 
 def table_lookup(image, table, border_value, iterations = None):
     '''Perform a morphological transform on an image, directed by its neighbors

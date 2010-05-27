@@ -423,11 +423,15 @@ R_FOREVER = 'Forever'
 R_CUSTOM = 'Custom'
 R_ALL = [R_ONCE, R_FOREVER, R_CUSTOM]
 
+FUNCTION_SETTING_COUNT_V1 = 3
+FUNCTION_SETTING_COUNT_V2 = 4
+FUNCTION_SETTING_COUNT = 4
+
 class Morph(cpm.CPModule):
 
     module_name = "Morph"
     category="Image Processing"
-    variable_revision_number = 1
+    variable_revision_number = 2
     
     def create_settings(self):
         self.image_name = cps.ImageNameSubscriber("Select the input image","None",doc="""
@@ -471,14 +475,21 @@ class Morph(cpm.CPModule):
                     </ul>"""))
         group.append("custom_repeats", cps.Integer(self.CUSTOM_REPEATS_TEXT,2,1,
                      doc=self.CUSTOM_REPEATS_DOC))
+        group.append("scale", cps.Float(
+            "Scale:",3, minval=3,
+            doc="""Morphological open, close, erode and dialate are performed
+            with structuring elements which determine the diameter of the
+            circle enclosing the pixels to consider when applying the operation.
+            This setting controls the diameter of the structuring element."""))
+                                        
         if can_remove:
             group.append("remove", cps.RemoveSettingButton("", "Remove this operation", self.functions, group))
         self.functions.append(group)
 
     def prepare_settings(self, setting_values):
         '''Adjust the # of functions to match the # of setting values'''
-        assert (len(setting_values)-2)%3 == 0
-        function_count = (len(setting_values)-2) / 3
+        assert (len(setting_values)-2) % FUNCTION_SETTING_COUNT == 0
+        function_count = (len(setting_values)-2) / FUNCTION_SETTING_COUNT
         del self.functions[function_count:]
         while len(self.functions) < function_count:
             self.add_function()
@@ -487,7 +498,8 @@ class Morph(cpm.CPModule):
         '''Return the settings as saved in the pipeline file'''
         result = [self.image_name, self.output_image_name]
         for function in self.functions:
-            result += [function.function, function.repeats_choice, function.custom_repeats]
+            result += [function.function, function.repeats_choice, 
+                       function.custom_repeats, function.scale]
         return result
     
     def visible_settings(self):
@@ -505,6 +517,9 @@ class Morph(cpm.CPModule):
             else:
                 function.custom_repeats.text = self.CUSTOM_REPEATS_TEXT
                 function.custom_repeats.doc = self.CUSTOM_REPEATS_DOC
+            if function.function not in (F_CLOSE, F_OPEN, F_ERODE, F_DILATE, 
+                                         F_TOPHAT, F_BOTHAT):
+                temp.remove(function.scale)
             result += temp
         result += [self.add_button]
         return result
@@ -520,7 +535,8 @@ class Morph(cpm.CPModule):
             count = function.repeat_count
             
             pixel_data = self.run_function(function.function.value,
-                                           pixel_data, mask, count)
+                                           pixel_data, mask, count,
+                                           function.scale.value)
         new_image = cpi.Image(pixel_data, parent_image = image) 
         workspace.image_set.add(self.output_image_name.value, new_image)
         if not workspace.frame is None:
@@ -538,9 +554,10 @@ class Morph(cpm.CPModule):
                 figure.subplot_imshow_grayscale(1,0,pixel_data,
                                                 self.output_image_name.value)
     
-    def run_function(self, function_name, pixel_data, mask, count):
+    def run_function(self, function_name, pixel_data, mask, count, scale):
         '''Apply the function once to the image, returning the result'''
         is_binary =  pixel_data.dtype.kind == 'b'
+        strel = morph.strel_disk(scale / 2.0)
         if (function_name in (F_BRANCHPOINTS, F_BRIDGE, F_CLEAN, F_DIAG, 
                               F_CONVEX_HULL, F_DISTANCE, F_ENDPOINTS, F_FILL,
                               F_FILL_SMALL, F_HBREAK, F_LIFE, F_MAJORITY, 
@@ -571,11 +588,11 @@ class Morph(cpm.CPModule):
             elif function_name == F_CLOSE:
                 if mask is None:
                     return scind.binary_closing(pixel_data,
-                                                np.ones((3,3),bool),
+                                                strel,
                                                 iterations = count)
                 else:
                     return (scind.binary_closing(pixel_data & mask, 
-                                                 np.ones((3,3),bool),
+                                                 strel,
                                                  iterations = count) |
                             (pixel_data & ~ mask))
             elif function_name == F_CONVEX_HULL:
@@ -587,7 +604,7 @@ class Morph(cpm.CPModule):
                 return morph.diag(pixel_data, mask, count)
             elif function_name == F_DILATE:
                 return scind.binary_dilation(pixel_data, 
-                                             np.ones((3,3),bool),
+                                             strel,
                                              iterations=count,
                                              mask=mask)
             elif function_name == F_DISTANCE:
@@ -599,7 +616,7 @@ class Morph(cpm.CPModule):
             elif function_name == F_ENDPOINTS:
                 return morph.endpoints(pixel_data, mask)
             elif function_name == F_ERODE:
-                return scind.binary_erosion(pixel_data, np.ones((3,3),bool),
+                return scind.binary_erosion(pixel_data, strel,
                                             iterations = count,
                                             mask = mask)
             elif function_name == F_FILL:
@@ -628,11 +645,11 @@ class Morph(cpm.CPModule):
             elif function_name == F_OPEN:
                 if mask is None:
                     return scind.binary_opening(pixel_data,
-                                                np.ones((3,3),bool),
+                                                strel,
                                                 iterations = count)
                 else:
                     return (scind.binary_opening(pixel_data & mask, 
-                                                 np.ones((3,3),bool),
+                                                 strel,
                                                  iterations = count) |
                             (pixel_data & ~ mask))
             elif function_name == F_REMOVE:
@@ -655,18 +672,24 @@ class Morph(cpm.CPModule):
         else:
             for i in range(count):
                 if function_name == F_BOTHAT:
-                    new_pixel_data = morph.black_tophat(pixel_data, mask=mask)
+                    new_pixel_data = morph.black_tophat(pixel_data, mask=mask,
+                                                        footprint=strel)
                 elif function_name == F_CLOSE:
                                                          
-                    new_pixel_data = morph.closing(pixel_data, mask=mask)
+                    new_pixel_data = morph.closing(pixel_data, mask=mask,
+                                                   footprint=strel)
                 elif function_name == F_DILATE:
-                    new_pixel_data = morph.grey_dilation(pixel_data, mask=mask)
+                    new_pixel_data = morph.grey_dilation(pixel_data, mask=mask,
+                                                         footprint=strel)
                 elif function_name == F_ERODE:
-                    new_pixel_data = morph.grey_erosion(pixel_data, mask=mask)
+                    new_pixel_data = morph.grey_erosion(pixel_data, mask=mask,
+                                                        footprint=strel)
                 elif function_name == F_OPEN:
-                    new_pixel_data = morph.opening(pixel_data, mask=mask)
+                    new_pixel_data = morph.opening(pixel_data, mask=mask,
+                                                   footprint=strel)
                 elif function_name == F_TOPHAT:
-                    new_pixel_data = morph.white_tophat(pixel_data, mask=mask)
+                    new_pixel_data = morph.white_tophat(pixel_data, mask=mask,
+                                                        footprint=strel)
                 else:
                     raise NotImplementedError("Unimplemented morphological function: %s" %
                                               function_name)
@@ -710,6 +733,13 @@ class Morph(cpm.CPModule):
                               F_CONVEX_HULL, R_ONCE, "1"]
             module_name = self.module_name
             variable_revision_number = 1
+        if (not from_matlab) and variable_revision_number == 1:
+            new_setting_values = setting_values[:2]
+            for i in range(2, len(setting_values), FUNCTION_SETTING_COUNT_V1):
+                new_setting_values += setting_values[i:i+FUNCTION_SETTING_COUNT_V1]
+                new_setting_values += [ "3" ]
+            setting_values = new_setting_values
+            variable_revision_number = 2
         return setting_values, variable_revision_number, from_matlab
                         
 

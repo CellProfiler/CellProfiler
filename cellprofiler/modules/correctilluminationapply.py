@@ -258,16 +258,19 @@ class CorrectIlluminationApply(cpm.CPModule):
             # the order didn't change
             variable_revision_number = 2
 
-        self.rescale_option = [RE_NONE]
         if not from_matlab and variable_revision_number == 2:
-            # Removed rescaling option; warning user and suggest RescaleIntensity instead.
-            # Keep the option choice around for the validaton warning.
+            # If revsion < 2, remove rescaling option; warning user and suggest RescaleIntensity instead.
+            # Keep the prior selection around for the validation warning.
             SLOT_RESCALE_OPTION = 4
             SETTINGS_PER_IMAGE_V2 = 5
             self.rescale_option = setting_values[SLOT_RESCALE_OPTION::SETTINGS_PER_IMAGE_V2]
             del setting_values[SLOT_RESCALE_OPTION::SETTINGS_PER_IMAGE_V2]
             variable_revision_number = 3
-
+        else:
+            # If revision >= 2, initalize rescaling option for validation warning 
+            image_count = len(setting_values) / SETTINGS_PER_IMAGE
+            self.rescale_option = [RE_NONE]*image_count
+        
         return setting_values, variable_revision_number, from_matlab
 
 

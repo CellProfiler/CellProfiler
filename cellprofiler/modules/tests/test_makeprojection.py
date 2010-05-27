@@ -108,8 +108,69 @@ class TestMakeProjection(unittest.TestCase):
         self.assertEqual(module.image_name.value, "OrigRed")
         self.assertEqual(module.projection_image_name.value, "ProjectionRed") 
         self.assertEqual(module.projection_type, M.P_AVERAGE)
+        
+    def test_01_03_load_v2(self):
+        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:1
+SVNRevision:10000
+
+MakeProjection:[module_num:1|svn_version:\'9999\'|variable_revision_number:2|show_window:False|notes:\x5B\x5D]
+    Select the input image:ch02
+    Type of projection:Average
+    Name the output image:ProjectionCh00Scale6
+    Frequency\x3A:6
+
+MakeProjection:[module_num:2|svn_version:\'9999\'|variable_revision_number:2|show_window:False|notes:\x5B\x5D]
+    Select the input image:ch02
+    Type of projection:Maximum
+    Name the output image:ProjectionCh00Scale6
+    Frequency\x3A:6
+
+MakeProjection:[module_num:3|svn_version:\'9999\'|variable_revision_number:2|show_window:False|notes:\x5B\x5D]
+    Select the input image:ch02
+    Type of projection:Minimum
+    Name the output image:ProjectionCh00Scale6
+    Frequency\x3A:6
+
+MakeProjection:[module_num:4|svn_version:\'9999\'|variable_revision_number:2|show_window:False|notes:\x5B\x5D]
+    Select the input image:ch02
+    Type of projection:Sum
+    Name the output image:ProjectionCh00Scale6
+    Frequency\x3A:6
+
+MakeProjection:[module_num:5|svn_version:\'9999\'|variable_revision_number:2|show_window:False|notes:\x5B\x5D]
+    Select the input image:ch02
+    Type of projection:Variance
+    Name the output image:ProjectionCh00Scale6
+    Frequency\x3A:6
+
+MakeProjection:[module_num:6|svn_version:\'9999\'|variable_revision_number:2|show_window:False|notes:\x5B\x5D]
+    Select the input image:ch02
+    Type of projection:Power
+    Name the output image:ProjectionCh00Scale6
+    Frequency\x3A:6
+
+MakeProjection:[module_num:7|svn_version:\'9999\'|variable_revision_number:2|show_window:False|notes:\x5B\x5D]
+    Select the input image:ch02
+    Type of projection:Brightfield
+    Name the output image:ProjectionCh00Scale6
+    Frequency\x3A:6
+"""
+        pipeline = cpp.Pipeline()
+        def callback(caller, event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.load(StringIO(data))
+        methods = (M.P_AVERAGE, M.P_MAXIMUM, M.P_MINIMUM, M.P_SUM, M.P_VARIANCE,
+                   M.P_POWER, M.P_BRIGHTFIELD)
+        self.assertEqual(len(pipeline.modules()), len(methods))
+        for method, module in zip(methods, pipeline.modules()):
+            self.assertTrue(isinstance(module, M.MakeProjection))
+            self.assertEqual(module.image_name, "ch02")
+            self.assertEqual(module.projection_type, method)
+            self.assertEqual(module.projection_image_name, "ProjectionCh00Scale6")
+            self.assertEqual(module.frequency, 6)
     
-    def run_image_set(self, projection_type, images_and_masks):
+    def run_image_set(self, projection_type, images_and_masks, frequency=9):
         image_set_list = cpi.ImageSetList()
         image_count = len(images_and_masks)
         for i in range(image_count):
@@ -131,6 +192,7 @@ class TestMakeProjection(unittest.TestCase):
         module.image_name.value = IMAGE_NAME
         module.projection_image_name.value = PROJECTED_IMAGE_NAME
         module.projection_type.value = projection_type
+        module.frequency.value = frequency
         pipeline.add_module(module)
         module.prepare_run(pipeline, image_set_list, None)
         module.prepare_group(pipeline, image_set_list, {},
@@ -250,3 +312,28 @@ class TestMakeProjection(unittest.TestCase):
         x2 = np.sum(images**2, 0)
         expected = x2 / 10.0 - x**2 / 100.0
         np.testing.assert_almost_equal(image.pixel_data, expected, 4)
+        
+    def test_05_01_power(self):
+        image = np.ones((20,10))
+        images_and_masks = [(image.copy(), None) for i in range(9)]
+        for i, (img, _) in enumerate(images_and_masks):
+            img[5,5] *= np.sin(2*np.pi * float(i) / 9.0)
+        image_out = self.run_image_set(M.P_POWER, images_and_masks, frequency=9)
+        i,j=np.mgrid[:image.shape[0],:image.shape[1]]
+        np.testing.assert_almost_equal(image_out.pixel_data[(i != 5) & (j != 5)], 0)
+        self.assertTrue(image_out.pixel_data[5,5] > 1)
+        
+    def test_06_01_brightfield(self):
+        image = np.ones((20,10))
+        images_and_masks = [(image.copy(), None) for i in range(9)]
+        for i, (img, _) in enumerate(images_and_masks):
+            if i < 5:
+                img[:5,:5] = 0
+            else:
+                img[:5,5:] = 0
+        image_out = self.run_image_set(M.P_BRIGHTFIELD, images_and_masks)
+        i,j=np.mgrid[:image.shape[0],:image.shape[1]]
+        np.testing.assert_almost_equal(image_out.pixel_data[(i > 5) | (j < 5)], 0)
+        np.testing.assert_almost_equal(image_out.pixel_data[(i < 5) & (j >= 5)], 1)
+
+        

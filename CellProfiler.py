@@ -149,7 +149,7 @@ if (not hasattr(sys, 'frozen')) and (options.build_extensions and not options.ou
                 needs_build = True
         if not needs_build:
             continue
-        if sys.platform == 'win32':
+        if sys.platform == 'win32' and os.environ['PROCESSOR_ARCHITECTURE'] != 'AMD64':
             p = subprocess.Popen(["python",
                                   script_file,
                                   "build_ext", "-i",

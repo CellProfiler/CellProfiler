@@ -68,7 +68,7 @@ class testLoadImages(unittest.TestCase):
         x=LI.LoadImages()
     
     def test_00_01version(self):
-        self.assertEqual(LI.LoadImages().variable_revision_number, 6,
+        self.assertEqual(LI.LoadImages().variable_revision_number, 7,
                          "LoadImages' version number has changed")
     
     def test_01_01load_image_text_match(self):
@@ -484,6 +484,76 @@ LoadImages:[module_num:1|svn_version:\'9799\'|variable_revision_number:6|show_wi
     Regular expression that finds metadata in the file name:foo
     Type the regular expression that finds metadata in the subfolder path:bar
     Channel count:2
+    Name this loaded image:DNA
+    Channel number\x3A:1
+    Name this loaded image:Protein
+    Channel number\x3A:3
+"""
+        pipeline = cpp.Pipeline()
+        def callback(caller, event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO(data))
+        self.assertEqual(len(pipeline.modules()), 1)
+        
+        module = pipeline.modules()[0]
+        module.notes = "A flex file"
+        self.assertTrue(isinstance(module, LI.LoadImages))
+        self.assertEqual(module.file_types, LI.FF_OTHER_MOVIES)
+        self.assertEqual(module.match_method, LI.MS_EXACT_MATCH)
+        self.assertEqual(module.order_group_size, 3)
+        self.assertEqual(module.match_exclude, "Thumb")
+        self.assertFalse(module.descend_subdirectories)
+        self.assertEqual(module.location.dir_choice, LI.cps.DEFAULT_INPUT_FOLDER_NAME)
+        self.assertTrue(module.check_images)
+        self.assertTrue(module.group_by_metadata)
+        self.assertFalse(module.exclude)
+        self.assertEqual(len(module.metadata_fields.selections), 3)
+        self.assertEqual(module.metadata_fields.selections[0], LI.M_SERIES)
+        self.assertEqual(module.metadata_fields.selections[1], LI.M_T)
+        self.assertEqual(module.metadata_fields.selections[2], LI.M_Z)
+        self.assertEqual(module.image_count.value, 1)
+        self.assertEqual(len(module.images), 1)
+        image = module.images[0]
+        self.assertEqual(image.common_text, ".flex")
+        self.assertEqual(image.order_position, 1)
+        self.assertEqual(image.metadata_choice, LI.M_NONE)
+        self.assertEqual(image.file_metadata, "foo")
+        self.assertEqual(image.path_metadata, "bar")
+        self.assertEqual(image.channel_count.value, 2)
+        self.assertEqual(len(image.channels), 2)
+        for channel, channel_number, image_name in (
+            (image.channels[0], 1, "DNA"),
+            (image.channels[1], 3, "Protein")):
+            self.assertEqual(channel.channel_number, channel_number)
+            self.assertEqual(channel.image_name, image_name)
+            
+    def test_03_07_load_v7(self):
+        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:1
+SVNRevision:10021
+
+LoadImages:[module_num:1|svn_version:\'9976\'|variable_revision_number:7|show_window:True|notes:\x5B\'A flex file\'\x5D]
+    File type to be loaded:tif,tiff,flex movies
+    File selection method:Text-Exact match
+    Number of images in each group?:3
+    Type the text that the excluded images have in common:Thumb
+    Analyze all subfolders within the selected folder?:No
+    Input image file location:Default Input Folder\x7CNone
+    Check image sets for missing or duplicate files?:Yes
+    Group images by metadata?:Yes
+    Exclude certain files?:No
+    Specify metadata fields to group by:Series,T,Z
+    Image count:1
+    Text that these images have in common (case-sensitive):.flex
+    Position of this image in each group:1
+    Extract metadata from where?:None
+    Regular expression that finds metadata in the file name:foo
+    Type the regular expression that finds metadata in the subfolder path:bar
+    Channel count:2
+    Group movie frames?:No
+    Interleaving\x3A:Interleaved
+    Channels per group\x3A:2
     Name this loaded image:DNA
     Channel number\x3A:1
     Name this loaded image:Protein
@@ -1357,7 +1427,7 @@ LoadImages:[module_num:1|svn_version:\'9799\'|variable_revision_number:6|show_wi
         avi_path = T.testimages_directory()
         module = LI.LoadImages()
         module.file_types.value = LI.FF_AVI_MOVIES
-        module.images[0].common_text.value = 'avi'
+        module.images[0].common_text.value = 'DrosophilaEmbryo_GFPHistone.avi'
         module.images[0].channels[0].image_name.value = 'MyImage'
         module.location.dir_choice = LI.ABSOLUTE_FOLDER_NAME
         module.location.custom_path = avi_path
@@ -1367,6 +1437,7 @@ LoadImages:[module_num:1|svn_version:\'9799\'|variable_revision_number:6|show_wi
         pipeline.add_listener(self.error_callback)
         image_set_list = I.ImageSetList()
         module.prepare_run(pipeline, image_set_list, None)
+        self.assertEqual(image_set_list.count(), 65)
         module.prepare_group(pipeline, image_set_list, (), [1,2,3])
         image_set = image_set_list.get_image_set(0)
         m = measurements.Measurements()
@@ -1480,6 +1551,149 @@ LoadImages:[module_num:1|svn_version:\'9799\'|variable_revision_number:6|show_wi
                 self.assertEqual(tuple(red_image.pixel_data.shape),
                                  tuple(green_image.pixel_data.shape))
                 m.next_image_set()
+    
+    def test_09_04_group_interleaved_avi_frames(self):
+        #
+        # Test interleaved grouping by movie frames
+        #
+        if LI.FF_AVI_MOVIES not in LI.FF:
+            sys.stderr.write("WARNING: AVI movies not supported\n")
+            return
+        avi_path = T.testimages_directory()
+        module = LI.LoadImages()
+        module.file_types.value = LI.FF_AVI_MOVIES
+        image = module.images[0]
+        image.common_text.value = 'DrosophilaEmbryo_GFPHistone.avi'
+        image.wants_movie_frame_grouping.value = True
+        image.interleaving.value = LI.I_INTERLEAVED
+        image.channels_per_group.value = 5
+        channel = image.channels[0]
+        channel.image_name.value = 'Channel01'
+        channel.channel_number.value = "1"
+        module.add_channel(image)
+        channel = module.images[0].channels[1]
+        channel.channel_number.value = "3"
+        channel.image_name.value = 'Channel03'
+        module.location.dir_choice = LI.ABSOLUTE_FOLDER_NAME
+        module.location.custom_path = avi_path
+        module.module_num = 1
+        pipeline = P.Pipeline()
+        pipeline.add_module(module)
+        pipeline.add_listener(self.error_callback)
+        image_set_list = I.ImageSetList()
+        module.prepare_run(pipeline, image_set_list, None)
+        self.assertEqual(image_set_list.count(), 13)
+        module.prepare_group(pipeline, image_set_list, (), np.arange(1,16))
+        image_set = image_set_list.get_image_set(0)
+        m = measurements.Measurements()
+        workspace = W.Workspace(pipeline, module, image_set,
+                                cpo.ObjectSet(), m,
+                                image_set_list)
+        module.run(workspace)
+        self.assertTrue('Channel01' in image_set.get_names())
+        image = image_set.get_image('Channel01')
+        img1 = image.pixel_data
+        self.assertEqual(tuple(img1.shape), (264,542,3))
+        self.assertAlmostEqual(np.mean(img1), .07897, 3)
+        self.assertTrue('Channel03' in image_set.get_names())
+        provider = image_set.get_image_provider("Channel03")
+        self.assertTrue(isinstance(provider, LI.LoadImagesMovieFrameProvider))
+        self.assertEqual(provider.get_frame(), 2)
+        image = image_set.get_image('Channel03')
+        img3 = image.pixel_data
+        self.assertEqual(tuple(img3.shape), (264,542,3))
+        self.assertAlmostEqual(np.mean(img3), .07781, 3)
+        t = m.get_current_image_measurement("_".join((measurements.C_METADATA, LI.M_T)))
+        self.assertEqual(t, 0)
+        image_set = image_set_list.get_image_set(1)
+        m.next_image_set()
+        workspace = W.Workspace(pipeline, module, image_set,
+                                cpo.ObjectSet(), m,
+                                image_set_list)
+        module.run(workspace)
+        self.assertTrue('Channel01' in image_set.get_names())
+        image = image_set.get_image('Channel01')
+        img2 = image.pixel_data
+        self.assertEqual(tuple(img2.shape), (264,542,3))
+        self.assertAlmostEqual(np.mean(img2), .07860, 3)
+        t = m.get_current_image_measurement("_".join((measurements.C_METADATA, LI.M_T)))
+        self.assertEqual(t, 1)
+        provider = image_set.get_image_provider("Channel03")
+        self.assertTrue(isinstance(provider, LI.LoadImagesMovieFrameProvider))
+        self.assertEqual(provider.get_frame(), 7)
+        
+    def test_09_05_group_separated_avi_frames(self):
+        #
+        # Test separated grouping by movie frames
+        #
+        if LI.FF_AVI_MOVIES not in LI.FF:
+            sys.stderr.write("WARNING: AVI movies not supported\n")
+            return
+        avi_path = T.testimages_directory()
+        module = LI.LoadImages()
+        module.file_types.value = LI.FF_AVI_MOVIES
+        image = module.images[0]
+        image.common_text.value = 'DrosophilaEmbryo_GFPHistone.avi'
+        image.wants_movie_frame_grouping.value = True
+        image.interleaving.value = LI.I_SEPARATED
+        image.channels_per_group.value = 5
+        channel = image.channels[0]
+        channel.image_name.value = 'Channel01'
+        channel.channel_number.value = "1"
+        module.add_channel(image)
+        channel = module.images[0].channels[1]
+        channel.channel_number.value = "3"
+        channel.image_name.value = 'Channel03'
+        module.location.dir_choice = LI.ABSOLUTE_FOLDER_NAME
+        module.location.custom_path = avi_path
+        module.module_num = 1
+        pipeline = P.Pipeline()
+        pipeline.add_module(module)
+        pipeline.add_listener(self.error_callback)
+        image_set_list = I.ImageSetList()
+        module.prepare_run(pipeline, image_set_list, None)
+        self.assertEqual(image_set_list.count(), 13)
+        module.prepare_group(pipeline, image_set_list, (), np.arange(1,16))
+        image_set = image_set_list.get_image_set(0)
+        m = measurements.Measurements()
+        workspace = W.Workspace(pipeline, module, image_set,
+                                cpo.ObjectSet(), m,
+                                image_set_list)
+        module.run(workspace)
+        self.assertTrue('Channel01' in image_set.get_names())
+        image = image_set.get_image('Channel01')
+        img1 = image.pixel_data
+        self.assertEqual(tuple(img1.shape), (264,542,3))
+        self.assertAlmostEqual(np.mean(img1), .07897, 3)
+        self.assertTrue('Channel03' in image_set.get_names())
+        provider = image_set.get_image_provider("Channel03")
+        self.assertTrue(isinstance(provider, LI.LoadImagesMovieFrameProvider))
+        self.assertEqual(provider.get_frame(), 26)
+        image = image_set.get_image('Channel03')
+        img3 = image.pixel_data
+        self.assertEqual(tuple(img3.shape), (264,542,3))
+        self.assertAlmostEqual(np.mean(img3), .073312, 3)
+        t = m.get_current_image_measurement("_".join((measurements.C_METADATA, LI.M_T)))
+        self.assertEqual(t, 0)
+        image_set = image_set_list.get_image_set(1)
+        m.next_image_set()
+        workspace = W.Workspace(pipeline, module, image_set,
+                                cpo.ObjectSet(), m,
+                                image_set_list)
+        module.run(workspace)
+        self.assertTrue('Channel01' in image_set.get_names())
+        provider = image_set.get_image_provider("Channel01")
+        self.assertTrue(isinstance(provider, LI.LoadImagesMovieFrameProvider))
+        self.assertEqual(provider.get_frame(), 1)
+        image = image_set.get_image('Channel01')
+        img2 = image.pixel_data
+        self.assertEqual(tuple(img2.shape), (264,542,3))
+        self.assertAlmostEqual(np.mean(img2), .079923, 3)
+        t = m.get_current_image_measurement("_".join((measurements.C_METADATA, LI.M_T)))
+        self.assertEqual(t, 1)
+        provider = image_set.get_image_provider("Channel03")
+        self.assertTrue(isinstance(provider, LI.LoadImagesMovieFrameProvider))
+        self.assertEqual(provider.get_frame(), 27)
         
     def test_10_1_load_many(self):
         '''Load an image many times to ensure that memory is freed each time'''

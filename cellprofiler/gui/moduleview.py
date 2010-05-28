@@ -912,7 +912,7 @@ class ModuleView:
             def on_cell_change(event, setting = v, control=control):
                 self.__on_cell_change(event, setting,control)
             self.__module_panel.Bind(wx.EVT_TEXT,on_cell_change,control)
-        elif control.Value != str(v):
+        elif not (v == control.Value):
             control.Value = str(v)
         return control
     
@@ -1325,6 +1325,7 @@ class ModuleView:
                                                   proposed_value,
                                                   event)
         self.notify(setting_edited_event)
+        self.reset_view()
     
     def __on_min_change(self,event,setting,control):
         if not self.__handle_change:

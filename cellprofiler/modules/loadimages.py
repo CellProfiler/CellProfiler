@@ -159,12 +159,18 @@ V_IMAGES = 1
 '''The provider name for the movie file image provider'''
 P_MOVIES = "LoadImagesMovieProvider"
 '''The version number for the __init__ method of the movie file image provider'''
-V_MOVIES = 1
+V_MOVIES = 2
 
 '''The provider name for the flex file image provider'''
 P_FLEX = 'LoadImagesFlexFrameProvider'
 '''The version number for the __init__ method of the flex file image provider'''
 V_FLEX = 1
+
+'''Interleaved movies'''
+I_INTERLEAVED = "Interleaved"
+
+'''Separated movies'''
+I_SEPARATED = "Separated"
 
 def default_cpimage_name(index):
     # the usual suspects
@@ -176,7 +182,7 @@ def default_cpimage_name(index):
 class LoadImages(cpmodule.CPModule):
 
     module_name = "LoadImages"
-    variable_revision_number = 6
+    variable_revision_number = 7
     category = "File Processing"
 
     def create_settings(self):
@@ -496,7 +502,59 @@ class LoadImages(cpmodule.CPModule):
             last folder on the path. This also means that the Date field contains the parent
             folder of the Date folder.</td></tr>
             </table></p>"""))
-        
+        group.append("wants_movie_frame_grouping", cps.Binary(
+            "Group movie frames?", False,
+            doc = """<b>LoadImages</b> can load several frames from a movie
+            into different images within the same cycle. For example, a movie's
+            first frame might be an image of the red fluorescence channel at
+            time zero, the second might be the green channel at time zero,
+            the third might be the red channel at time one, etc. You can
+            check this setting to extract both channels for this movie
+            as separate images within the same cycle.
+            <p>
+            <b>LoadImages</b> refers to the individual images in a group
+            as <i>channels</i>. Channels are numbered consecutively, starting
+            at channel 1. To set up grouping, first specify how the channels
+            are grouped (interleaving and number of channels per group), then
+            assign image names to each of the channels individually.
+            """))
+        group.append("interleaving", cps.Choice(
+            "Interleaving:", [I_INTERLEAVED, I_SEPARATED],
+            doc = """Channels in a movie can be interleaved or separated.
+            In an interleaved movie, the first frame is channel 1, the second
+            is channel 2 and so on up to the number of channels per group.
+            In a separated movie, all of the frames for channel 1 appear first,
+            then the frames for channel 2, and so on. For example, an
+            interleaved movie might consist of 6 channels. The channels
+            would look like this:<br>
+            <table border="1">
+            <tr><th>Frame #</th><th>Channel #</th><th>Image set #</th></tr>
+            <tr><td>1</td><td>1</td><td>1</td></tr>
+            <tr><td>2</td><td>2</td><td>1</td></tr>
+            <tr><td>3</td><td>1</td><td>2</td></tr>
+            <tr><td>4</td><td>2</td><td>2</td></tr>
+            <tr><td>5</td><td>1</td><td>3</td></tr>
+            <tr><td>6</td><td>2</td><td>3</td></tr></table><br>
+            For a separated movie, the channels would look like this:<br>
+            <table border="1">
+            <tr><th>Frame #</th><th>Channel #</th><th>Image set #</th></tr>
+            <tr><td>1</td><td>1</td><td>1</td></tr>
+            <tr><td>2</td><td>2</td><td>1</td></tr>
+            <tr><td>3</td><td>1</td><td>2</td></tr>
+            <tr><td>4</td><td>2</td><td>2</td></tr>
+            <tr><td>5</td><td>1</td><td>3</td></tr>
+            <tr><td>6</td><td>2</td><td>3</td></tr></table>"""))
+        group.append("channels_per_group", cps.Integer(
+            "Channels per group:", 3, minval=2,
+            doc = """This setting controls the number of frames to be
+            grouped together. As an example, for an interleaved movie with
+            12 frames and three channels per group, the first, fourth,
+            seventh and tenth frame will be assigned to channel 1, the
+            second, fifth, eighth and eleventh frame will be assigned to
+            channel 2 and the third, sixth, ninth, and twelfth will be
+            assigned to channel 3. For a separated movie, frames 1 through 4
+            will be assigned to channel 1, 5 through 8 to channel 2 and
+            9 through 12 to channel 3."""))
         #
         # Flex files (and arguably others like color images and multichannel
         # TIF files) can have more than one channel. So, within each image,
@@ -589,7 +647,11 @@ class LoadImages(cpmodule.CPModule):
             image_group.channels[0].channel_number,
             image_group.metadata_choice,
             image_group.file_metadata, 
-            image_group.path_metadata]
+            image_group.path_metadata,
+            image_group.wants_movie_frame_grouping,
+            image_group.interleaving,
+            image_group.channels_per_group
+        ]
             
         result += [self.location]
         return result
@@ -629,21 +691,32 @@ class LoadImages(cpmodule.CPModule):
         
         # per image settings
         for i,fd in enumerate(self.images):
+            is_multichannel = (self.is_multichannel or fd.wants_movie_frame_grouping)
             varlist += [ fd.divider ]
             if self.match_method != MS_ORDER:
                 varlist += [fd.common_text]
             else:
                 varlist += [fd.order_position]
-            if not self.is_multichannel:
+            if not is_multichannel:
                 varlist += [ fd.channels[0].image_name ]
             varlist += [fd.metadata_choice]
             if self.has_file_metadata(fd):
                 varlist += [fd.file_metadata]
             if self.has_path_metadata(fd):
                 varlist += [fd.path_metadata]
-            if self.is_multichannel:
+            max_channels = 9
+            if self.file_types in (FF_AVI_MOVIES, FF_STK_MOVIES):
+                varlist += [fd.wants_movie_frame_grouping]
+                if fd.wants_movie_frame_grouping:
+                    varlist += [fd.interleaving, fd.channels_per_group]
+                    is_multichannel = True
+                    max_channels = fd.channels_per_group.value
+            if is_multichannel:
                 for channel in fd.channels:
                     varlist += [channel.image_name, channel.channel_number]
+                    choices = channel.channel_number.choices
+                    del choices[:]
+                    choices += [ str(x+1) for x in range(max_channels) ]
                     if channel.can_remove:
                         varlist += [channel.remover]
                 varlist += [fd.add_channel_button]
@@ -686,7 +759,9 @@ class LoadImages(cpmodule.CPModule):
     SLOT_FIRST_IMAGE_V3 = 10
     SLOT_FIRST_IMAGE_V4 = 11
     SLOT_FIRST_IMAGE_V5 = 10
+    SLOT_FIRST_IMAGE_V6 = 11
     SLOT_FIRST_IMAGE = 11
+    SLOT_IMAGE_COUNT_V6 = 10
     SLOT_IMAGE_COUNT = 10
     
     SLOT_OFFSET_COMMON_TEXT = 0
@@ -697,17 +772,23 @@ class LoadImages(cpmodule.CPModule):
     SLOT_OFFSET_PATH_METADATA_V5 = 5
     SLOT_IMAGE_FIELD_COUNT_V1 = 3
     SLOT_IMAGE_FIELD_COUNT_V5 = 6
-    SLOT_IMAGE_FIELD_COUNT = 6
+    SLOT_IMAGE_FIELD_COUNT_V7 = 9
+    SLOT_IMAGE_FIELD_COUNT = 9
     
     SLOT_OFFSET_ORDER_POSITION = 1
     SLOT_OFFSET_METADATA_CHOICE = 2
     SLOT_OFFSET_FILE_METADATA = 3
     SLOT_OFFSET_PATH_METADATA = 4
     SLOT_OFFSET_CHANNEL_COUNT = 5
+    SLOT_OFFSET_CHANNEL_COUNT_V6 = 5
+    SLOT_OFFSET_WANTS_MOVIE_FRAME_GROUPING = 6
+    SLOT_OFFSET_INTERLEAVING = 7
+    SLOT_OFFSET_CHANNELS_PER_GROUP = 8
     
     SLOT_OFFSET_IMAGE_NAME = 0
     SLOT_OFFSET_CHANNEL_NUMBER = 1
     SLOT_CHANNEL_FIELD_COUNT = 2
+    SLOT_CHANNEL_FIELD_COUNT_V6 = 2
     
     def settings(self):
         """Return the settings array in a consistent order"""
@@ -720,7 +801,9 @@ class LoadImages(cpmodule.CPModule):
             setting_values += [
                 image_group.common_text, image_group.order_position, 
                 image_group.metadata_choice, image_group.file_metadata,
-                image_group.path_metadata, image_group.channel_count]
+                image_group.path_metadata, image_group.channel_count,
+                image_group.wants_movie_frame_grouping, image_group.interleaving,
+                image_group.channels_per_group ]
             for channel in image_group.channels:
                 setting_values += [channel.image_name, channel.channel_number]
         return setting_values
@@ -855,14 +938,7 @@ class LoadImages(cpmodule.CPModule):
                 new_values += [cps.NO]
             else:
                 new_values += [cps.YES]
-            for i in range((len(setting_values)-self.SLOT_FIRST_IMAGE_V2) / self.SLOT_IMAGE_FIELD_COUNT):
-                off = self.SLOT_FIRST_IMAGE_V2 + i * self.SLOT_IMAGE_FIELD_COUNT_V5
-                new_values.extend([setting_values[off],
-                                   setting_values[off+1],
-                                   setting_values[off+2],
-                                   M_NONE,
-                                   "None",
-                                   "None"])
+            new_values += setting_values[self.SLOT_FIRST_IMAGE_V2:]
             return (new_values, 3)
 
         def upgrade_new_3_to_4(setting_values):
@@ -912,6 +988,21 @@ class LoadImages(cpmodule.CPModule):
                     "1", setting_values[self.SLOT_OFFSET_IMAGE_NAME_V5], "1"]
                 setting_values = setting_values[self.SLOT_IMAGE_FIELD_COUNT_V5:]
             return (new_values, 6)
+        
+        def upgrade_new_6_to_7(setting_values):
+            '''Added movie frame grouping'''
+            new_values = list(setting_values[:self.SLOT_FIRST_IMAGE_V6])
+            image_count = int(setting_values[self.SLOT_IMAGE_COUNT_V6])
+            setting_values = setting_values[self.SLOT_FIRST_IMAGE_V6:]
+            for i in range(image_count):
+                new_values += setting_values[:self.SLOT_IMAGE_FIELD_COUNT_V5]
+                new_values += [cps.NO, I_INTERLEAVED, "2"]
+                channel_count = int(setting_values[self.SLOT_OFFSET_CHANNEL_COUNT_V6])
+                setting_values = setting_values[self.SLOT_IMAGE_FIELD_COUNT_V5:]
+                channel_field_count = self.SLOT_CHANNEL_FIELD_COUNT_V6 * channel_count
+                new_values += setting_values[:channel_field_count]
+                setting_values = setting_values[channel_field_count:]
+            return (new_values, 7)
                 
         if from_matlab:
             if variable_revision_number == 1:
@@ -937,6 +1028,8 @@ class LoadImages(cpmodule.CPModule):
             setting_values, variable_revision_number = upgrade_new_4_to_5(setting_values)
         if variable_revision_number == 5:
             setting_values, variable_revision_number = upgrade_new_5_to_6(setting_values)
+        if variable_revision_number == 6:
+            setting_values, variable_revision_number = upgrade_new_6_to_7(setting_values)
 
         # Standardize input/output directory name references
         setting_values[self.SLOT_LOCATION] = \
@@ -1190,16 +1283,20 @@ class LoadImages(cpmodule.CPModule):
                 pathname, filename = values[2:]
                 p = LoadImagesImageProvider(image_name, pathname, filename)
             elif provider == P_MOVIES:
-                if version != V_MOVIES:
+                if version == 1:
+                    pathname, frame = values[2:]
+                    t = None
+                elif version == V_MOVIES:
+                    pathname, frame, t = values[2:]
+                else:
                     raise NotImplementedError("Can't restore file information: file image provider version %d not supported"%version)
-                pathname, frame = values[2:]
                 path,filename = os.path.split(pathname)
                 if self.file_types == FF_STK_MOVIES:
                     p = LoadImagesSTKFrameProvider(image_name, path, filename,
-                                                   frame)
+                                                   frame, t)
                 elif self.file_types == FF_AVI_MOVIES:
                     p = LoadImagesMovieFrameProvider(image_name, path, filename,
-                                                     int(frame))
+                                                     int(frame), t)
                 else:
                     raise NotImplementedError("File type %s not supported"%self.file_types.value)
             elif provider == P_FLEX:
@@ -1430,14 +1527,46 @@ class LoadImages(cpmodule.CPModule):
         # list is composed of tuples of pathname and frame #
         #
         list_of_lists = [[] for x in image_names]
-        for pathname,image_index in files:
+        image_index = 0
+        for pathname,image_group_index in files:
             pathname = os.path.join(self.image_directory(), pathname)
             frame_count = self.get_frame_count(pathname)
             if frame_count == 0:
                 print "Warning - no frame count detected"
                 frame_count = 256
-            for i in range(frame_count):
-                list_of_lists[image_index].append((pathname,i))
+            #
+            # 3 choices here:
+            #
+            # No grouping by movie frames: one channel
+            # Interleaved grouping
+            # Sequential grouping
+            #
+            image = self.images[image_group_index]
+            if image.wants_movie_frame_grouping:
+                group_size = image.channels_per_group.value
+                remainder = frame_count % group_size
+                if remainder > 0:
+                    sys.stderr.write(
+                        ("Warning: the movie, %s, has %d frames divided into "
+                         "%d channels per group.\n"
+                         "%d frames will be discarded.\n") %
+                        (pathname, frame_count, group_size, remainder))
+                group_count = int(frame_count / group_size)
+                for group_number in range(group_count):
+                    for i, channel in enumerate(image.channels):
+                        channel_idx = int(channel.channel_number.value) - 1
+                        if image.interleaving == I_INTERLEAVED:
+                            frame_number = \
+                                         group_number * group_size + channel_idx
+                        else:
+                            frame_number = \
+                                         group_count * channel_idx + group_number
+                        list_of_lists[image_index + i] += \
+                                     [(pathname, frame_number, group_number)]
+                image_index += len(image.channels)
+            else:
+                for i in range(frame_count):
+                    list_of_lists[image_index].append((pathname, i, i))
         image_set_count = len(list_of_lists[0])
         for x,name in zip(list_of_lists[1:],image_names):
             if len(x) != image_set_count:
@@ -1446,9 +1575,9 @@ class LoadImages(cpmodule.CPModule):
         for i in range(0,image_set_count):
             image_set = image_set_list.get_image_set(i)
             d = self.get_dictionary(image_set)
-            for name, (file, frame) \
+            for name, (file, frame, t) \
                 in zip(image_names, list_of_lists[:,i]):
-                d[name.value] = (P_MOVIES, V_MOVIES, file, frame)
+                d[name.value] = (P_MOVIES, V_MOVIES, file, frame, t)
         for name in image_names:
             image_set_list.legacy_fields['Pathname%s'%(name.value)]=root
         return True
@@ -1514,7 +1643,7 @@ class LoadImages(cpmodule.CPModule):
                 name = provider.name
                 if self.file_types in (FF_AVI_MOVIES, FF_STK_MOVIES):
                     row = [name, path, filename]
-                    image_set_metadata[M_T] = provider.get_frame()
+                    image_set_metadata[M_T] = provider.get_t()
                 elif do_flex:
                     assert isinstance(provider, LoadImagesFlexFrameProvider)
                     series = provider.get_series()
@@ -1803,8 +1932,14 @@ class LoadImages(cpmodule.CPModule):
     def image_name_vars(self):
         """Return the list of values in the image name field (the name that later modules see)
         """
-        return sum([[channel.image_name for channel in fd.channels]
-                    for fd in self.images], [])
+        result = []
+        for image in self.images:
+            if (self.is_multichannel or 
+                (self.load_movies() and image.wants_movie_frame_grouping)):
+                result += [channel.image_name for channel in image.channels]
+            else:
+                result += [image.channels[0].image_name]
+        return result
         
     def text_to_find_vars(self):
         """Return the list of values in the image name field (the name that later modules see)
@@ -2210,9 +2345,10 @@ def load_using_bioformats(path, c=None, z=0, t=0, series=None):
 class LoadImagesMovieFrameProvider(LoadImagesImageProviderBase):
     """Provide an image by filename:frame, loading the file as it is requested
     """
-    def __init__(self,name,pathname,filename,frame):
+    def __init__(self, name, pathname, filename, frame, t):
         super(LoadImagesMovieFrameProvider, self).__init__(name, pathname, filename)
         self.__frame = frame
+        self.__t = t
     
     def provide_image(self, image_set):
         """Load an image from a movie frame
@@ -2225,7 +2361,10 @@ class LoadImagesMovieFrameProvider(LoadImagesImageProviderBase):
     
     def get_frame(self):
         return self.__frame
-
+    
+    def get_t(self):
+        return self.__t
+    
 class LoadImagesFlexFrameProvider(LoadImagesImageProviderBase):
     """Provide an image by filename:frame, loading the file as it is requested
     """
@@ -2266,7 +2405,7 @@ class LoadImagesFlexFrameProvider(LoadImagesImageProviderBase):
     
 class LoadImagesSTKFrameProvider(LoadImagesImageProviderBase):
     """Provide an image by filename:frame from an STK file"""
-    def __init__(self, name, pathname, filename, frame):
+    def __init__(self, name, pathname, filename, frame, t):
         '''Initialize the provider
         
         name - name of the provider for access from image set
@@ -2276,6 +2415,7 @@ class LoadImagesSTKFrameProvider(LoadImagesImageProviderBase):
         '''
         super(LoadImagesSTKFrameProvider, self).__init__(name, pathname, filename)
         self.__frame    = frame
+        self.__t = t
         
     def provide_image(self, image_set):
         try:
@@ -2315,3 +2455,5 @@ class LoadImagesSTKFrameProvider(LoadImagesImageProviderBase):
     def get_frame(self):
         return self.__frame
 
+    def get_t(self):
+        return self.__t

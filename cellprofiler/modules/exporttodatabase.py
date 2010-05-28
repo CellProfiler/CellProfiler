@@ -185,8 +185,6 @@ def connect_sqlite(db_file):
     cursor = connection.cursor()
     return connection, cursor
 
-
-    
     
 class ExportToDatabase(cpm.CPModule):
  
@@ -795,8 +793,13 @@ class ExportToDatabase(cpm.CPModule):
         '''
         # Create the database
         if self.db_type==DB_MYSQL:
-            execute(cursor, 'CREATE DATABASE IF NOT EXISTS %s'%(self.db_name.value))
-            execute(cursor, 'USE %s'% self.db_name.value)
+            #result = execute(cursor, "SHOW DATABASES LIKE '%s'" % 
+                             #self.db_name.value)
+            #if len(result) == 0:
+            execute(cursor, 'CREATE DATABASE IF NOT EXISTS %s' % 
+                    (self.db_name.value), return_result = False)
+            execute(cursor, 'USE %s'% self.db_name.value, 
+                    return_result = False)
 
         columns = self.get_pipeline_measurement_columns(pipeline, 
                                                         image_set_list)
@@ -805,7 +808,8 @@ class ExportToDatabase(cpm.CPModule):
             # Object table
             if self.separate_object_tables == OT_COMBINE:
                 execute(cursor, 'DROP TABLE IF EXISTS %s' %
-                        self.get_table_name(cpmeas.OBJECT))
+                        self.get_table_name(cpmeas.OBJECT), 
+                        return_result = False)
                 statement = self.get_create_object_table_statement(
                     None, pipeline, image_set_list)
                 execute(cursor, statement)
@@ -813,14 +817,15 @@ class ExportToDatabase(cpm.CPModule):
                 for object_name in self.get_object_names(pipeline, 
                                                          image_set_list):
                     execute(cursor, 'DROP TABLE IF EXISTS %s' %
-                            self.get_table_name(object_name))
+                            self.get_table_name(object_name), 
+                            return_result = False)
                     statement = self.get_create_object_table_statement(
                         object_name, pipeline, image_set_list)
                     execute(cursor, statement)
         # Image table
 
         execute(cursor, 'DROP TABLE IF EXISTS %s' % 
-                self.get_table_name(cpmeas.IMAGE))
+                self.get_table_name(cpmeas.IMAGE), return_result = False)
         statement = self.get_create_image_table_statement(pipeline, 
                                                           image_set_list)
         execute(cursor, statement)

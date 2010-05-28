@@ -223,14 +223,15 @@ class IdentifyObjectsInGrid(cpm.CPModule):
             labels = self.run_natural(workspace, gridding)
         objects = cpo.Objects()
         objects.segmented = labels
+        object_count = gridding.rows * gridding.columns
         workspace.object_set.add_objects(objects, 
                                          self.output_objects_name.value)
         add_object_location_measurements(workspace.measurements,
                                          self.output_objects_name.value,
-                                         labels)
+                                         labels, object_count)
         add_object_count_measurements(workspace.measurements,
                                       self.output_objects_name.value,
-                                      len(np.unique(labels[labels!=0])))
+                                      object_count)
         if self.wants_outlines:
             outlines = outline(labels!=0)
             outline_image = cpi.Image(outlines)
@@ -247,12 +248,14 @@ class IdentifyObjectsInGrid(cpm.CPModule):
                     gridding.y_spacing / 2)
         j_min = int(gridding.x_location_of_lowest_x_spot -
                     gridding.x_spacing / 2)
-        labels=np.zeros((i_min + gridding.total_height,
-                         j_min + gridding.total_width), int)
+        labels=np.zeros((gridding.image_height,
+                         gridding.image_width), int)
         i,j = np.mgrid[0:gridding.total_height,0:gridding.total_width]
         i /= gridding.y_spacing
         j /= gridding.x_spacing
-        labels[i_min:,j_min:] = gridding.spot_table[i.astype(int),j.astype(int)]
+        labels[i_min:(i_min+gridding.total_height),
+               j_min:(j_min+gridding.total_width)] = \
+              gridding.spot_table[i.astype(int),j.astype(int)]
         return labels
     
     def run_forced_circle(self, workspace, gridding):
@@ -297,7 +300,7 @@ class IdentifyObjectsInGrid(cpm.CPModule):
         # Remove any label with a bogus center (no guiding object)
         #
         labels[np.isnan(centers_i) | np.isnan(centers_j)] = 0
-        labels, count = relabel(labels)
+        #labels, count = relabel(labels)
         return labels
     
     def run_natural_circle(self, workspace, gridding):
@@ -327,7 +330,7 @@ class IdentifyObjectsInGrid(cpm.CPModule):
         labels = self.fill_grid(workspace, gridding)
         labels = self.fit_labels_to_guiding_objects(workspace, labels)
         labels[guide_label == 0] = 0
-        labels, count = relabel(labels)
+        #labels, count = relabel(labels)
         return labels
     
     def fit_labels_to_guiding_objects(self, workspace, labels):

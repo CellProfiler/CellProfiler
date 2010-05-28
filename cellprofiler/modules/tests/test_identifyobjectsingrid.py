@@ -160,8 +160,9 @@ class TestIdentifyObjectsInGrid(unittest.TestCase):
         i = np.round((i - i0).astype(float) / di).astype(int)
         j = np.round((j - j0).astype(float) / dj).astype(int)
         mask = ((i >= 0) & (j >= 0) & (i<ni) & (j < nj))
-        grid = np.zeros(mask.shape,int)
-        grid[mask] = gridding.spot_table[i[mask],j[mask]]
+        grid = np.zeros((gridding.image_height, gridding.image_width), int)
+        g = grid[:i.shape[0],:i.shape[1]]
+        g[mask] = gridding.spot_table[i[mask],j[mask]]
         return grid
         
     def test_02_01_forced_location(self):
@@ -444,11 +445,13 @@ class TestIdentifyObjectsInGrid(unittest.TestCase):
         m = workspace.measurements
         self.assertTrue(isinstance(m, cpmeas.Measurements))
         xm = m.get_current_measurement(OUTPUT_OBJECTS_NAME, 'Location_Center_X')
-        self.assertTrue(np.all(xm == x_locations[1:-1]))
+        self.assertEqual(len(xm), 96)
+        self.assertTrue(np.all(xm[:-1] == x_locations[1:-1]))
+        self.assertTrue(np.isnan(xm[-1]))
         ym = m.get_current_measurement(OUTPUT_OBJECTS_NAME, 'Location_Center_Y')
-        self.assertTrue(np.all(ym == y_locations[1:-1]))
+        self.assertTrue(np.all(ym[:-1] == y_locations[1:-1]))
         count = m.get_current_image_measurement('Count_%s'%OUTPUT_OBJECTS_NAME)
-        self.assertEqual(count[0], gridding.rows * gridding.columns - 1)
+        self.assertEqual(count[0], gridding.rows * gridding.columns)
         
     def test_04_01_natural(self):
         # Use natural objects.

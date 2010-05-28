@@ -452,6 +452,11 @@ class DefineGrid(cpm.CPModule):
         
         Returns a CPGridInfo object
         '''
+        if self.display_image_name.value in workspace.image_set.names:
+            image = workspace.image_set.get_image(self.display_image_name.value)
+            shape = image.pixel_data.shape[:2]
+        else:
+            shape = None
         return self.build_grid_info(self.first_spot_coordinates.x,
                                     self.first_spot_coordinates.y,
                                     self.first_spot_row.value,
@@ -459,7 +464,8 @@ class DefineGrid(cpm.CPModule):
                                     self.second_spot_coordinates.x,
                                     self.second_spot_coordinates.y,
                                     self.second_spot_row.value,
-                                    self.second_spot_col.value)
+                                    self.second_spot_col.value,
+                                    shape)
     
     def run_mouse(self, workspace):
         '''Define a grid by running the UI
@@ -559,6 +565,11 @@ class DefineGrid(cpm.CPModule):
         button_sizer.Add(wx.Button(frame,wx.CANCEL, "Cancel"))
         status = [wx.OK]
         gridding = [None]
+        if self.display_image_name == cps.LEAVE_BLANK:
+            image_shape = None
+        else:
+            image_shape = workspace.image_set.get_image(
+                self.display_image_name.value).pixel_data.shape[:2]
         def redisplay(event):
             gridding[0] = self.build_grid_info(int(first_x.Value),
                                                int(first_y.Value),
@@ -567,7 +578,8 @@ class DefineGrid(cpm.CPModule):
                                                int(second_x.Value),
                                                int(second_y.Value),
                                                int(second_row.Value),
-                                               int(second_column.Value))
+                                               int(second_column.Value),
+                                               image_shape)
             self.display_grid(workspace, gridding[0], axes)
             canvas.draw()
         def cancel(event):
@@ -706,6 +718,14 @@ class DefineGrid(cpm.CPModule):
             raise ValueError(("The bottom edge of the last grid column is %d "
                               "pixels outside of the image.") %
                              (bottom_edge - image_shape[0]))
+        if image_shape is not None:
+            gridding.image_height = image_shape[0]
+            gridding.image_width = image_shape[1]
+        else:
+            # guess the image shape by adding the same border to the right
+            # and bottom that we have on the left and top
+            gridding.image_height = top_edge * 2 + gridding.y_spacing * gridding.rows
+            gridding.image_width = right_edge * 2 + gridding.x_spacing * gridding.columns
         return gridding
         
     def canonical_row_and_column(self, row, column):

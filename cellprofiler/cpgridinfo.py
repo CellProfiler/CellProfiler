@@ -35,3 +35,5 @@ class CPGridInfo(object):
         self.x_locations = None
         self.left_to_right = None
         self.top_to_bottom = None
+        self.image_width = None
+        self.image_height = None

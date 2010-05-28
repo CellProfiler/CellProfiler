@@ -525,14 +525,18 @@ class Identify(cellprofiler.cpmodule.CPModule):
     
 def add_object_location_measurements(measurements, 
                                      object_name,
-                                     labels):
+                                     labels, object_count = None):
     """Add the X and Y centers of mass to the measurements
     
     measurements - the measurements container
     object_name  - the name of the objects being measured
     labels       - the label matrix
+    object_count - (optional) the object count if known, otherwise
+                   takes the maximum value in the labels matrix which is
+                   usually correct.
     """
-    object_count = np.max(labels)
+    if object_count is None:
+        object_count = np.max(labels)
     #
     # Get the centers of each object - center_of_mass <- list of two-tuples.
     #

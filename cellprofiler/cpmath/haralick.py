@@ -104,13 +104,16 @@ class Haralick(object):
     erroneous formulas for the Haralick features in the
     literature.  There is also an error in the original paper.
     """
-    def __init__(self, image, labels, scale, nlevels=8):
+    def __init__(self, image, labels, scale, nlevels=8, mask=None):
         """
         image   -- 2-D numpy array of 32-bit floating-point numbers.
         labels  -- 2-D numpy array of integers.
         scale   -- an integer.
         nlevels -- an integer
         """
+        if mask is not None:
+            labels = labels.copy()
+            labels[~mask] = 0
         normalized = normalized_per_object(image, labels)
         quantized = quantize(normalized, nlevels)
         self.P,nlevels = cooccurrence(quantized, labels, scale)

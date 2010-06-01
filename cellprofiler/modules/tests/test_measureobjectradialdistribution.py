@@ -410,7 +410,7 @@ class TestMeasureObjectRadialDistribution(unittest.TestCase):
                 
     def test_04_02_center_outside_of_object(self):
         '''Make sure MeasureObjectRadialDistribution can handle oddly shaped objects'''
-        np.random.seed(41)
+        np.random.seed(42)
         labels = np.array([[ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ],
                            [ 0, 1, 1, 1, 1, 1, 1, 1, 1, 0 ],
                            [ 0, 1, 0, 0, 0, 0, 0, 0, 1, 0 ],
@@ -436,4 +436,20 @@ class TestMeasureObjectRadialDistribution(unittest.TestCase):
             data = m.get_current_measurement(OBJECT_NAME, 
                                              feature_frac_at_d(bin, 4))
             self.assertEqual(len(data), 1)
-            
+    
+    def test_04_03_wrong_size(self):
+        '''Regression test for IMG-961: objects & image of different sizes
+        
+        Make sure that the module executes without exception with and
+        without centers and with similarly and differently shaped centers
+        '''
+        np.random.seed(43)
+        labels = np.ones((30,40), int)
+        image = np.random.uniform(size=(20,50))
+        m = self.run_module(image, labels)
+        centers = np.zeros(labels.shape)
+        centers[15,20] = 1
+        m = self.run_module(image, labels, centers)
+        centers = np.zeros((35,35), int)
+        centers[15,20] = 1
+        m = self.run_module(image, labels, centers)

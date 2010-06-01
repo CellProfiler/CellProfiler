@@ -268,6 +268,8 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
         image = workspace.image_set.get_image(image_name,
                                               must_be_grayscale=True)
         objects = workspace.object_set.get_objects(object_name)
+        labels, pixel_data = cpo.crop_labels_and_image(objects.segmented,
+                                                       image.pixel_data)
         nobjects = np.max(objects.segmented)
         measurements = workspace.measurements
         assert isinstance(measurements, cpmeas.Measurements)
@@ -284,10 +286,11 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
         if dd.has_key(name):
             normalized_distance, i_center, j_center, good_mask = dd[name]
         else:
-            d_to_edge = distance_to_edge(objects.segmented)
+            d_to_edge = distance_to_edge(labels)
             if center_object_name is not None:
                 center_objects=workspace.object_set.get_objects(center_object_name)
-                center_labels = center_objects.segmented
+                center_labels, cmask = cpo.size_similarly(
+                    labels, center_objects.segmented)
                 pixel_counts = fix(scind.sum(np.ones(center_labels.shape),
                                              center_labels,
                                              np.arange(1, np.max(center_labels)+1)))
@@ -296,10 +299,10 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
                 ig = i[good]
                 jg = j[good]
                 center_labels = np.zeros(center_labels.shape, int)
-                center_labels[ig,jg] = objects.segmented[ig,jg]
+                center_labels[ig,jg] = labels[ig,jg]
                 cl,d_from_center = propagate(np.zeros(center_labels.shape),
                                              center_labels,
-                                             objects.segmented != 0, 1)
+                                             labels != 0, 1)
             else:
                 # Find the point in each object farthest away from the edge.
                 # This does better than the centroid:
@@ -308,17 +311,17 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
                 #   center of the nucleus or the center of one or the other
                 #   of two touching cells.
                 #
-                i,j = maximum_position_of_labels(d_to_edge, objects.segmented)
-                center_labels = np.zeros(objects.segmented.shape, int)
-                center_labels[i,j] = objects.segmented[i,j]
+                i,j = maximum_position_of_labels(d_to_edge, labels)
+                center_labels = np.zeros(labels.shape, int)
+                center_labels[i,j] = labels[i,j]
                 #
                 # Use the coloring trick here to process touching objects
                 # in separate operations
                 #
-                colors = color_labels(objects.segmented)
+                colors = color_labels(labels)
                 ncolors = np.max(colors)
-                d_from_center = np.zeros(objects.segmented.shape)
-                cl = np.zeros(objects.segmented.shape, int)
+                d_from_center = np.zeros(labels.shape)
+                cl = np.zeros(labels.shape, int)
                 for color in range(1,ncolors+1):
                     mask = colors == color
                     l,d = propagate(np.zeros(center_labels.shape),
@@ -332,7 +335,7 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
             j_center = np.zeros(cl.shape)
             j_center[good_mask] = j[cl[good_mask]-1]
             
-            normalized_distance = np.zeros(objects.segmented.shape)
+            normalized_distance = np.zeros(labels.shape)
             total_distance = d_from_center + d_to_edge
             normalized_distance[good_mask] = (d_from_center[good_mask] /
                                               (total_distance[good_mask] + .001))
@@ -363,8 +366,7 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
         # in each ring.
         #
         # Compute each pixel's delta from the center object's centroid
-        i,j = np.mgrid[0:objects.segmented.shape[0], 
-                       0:objects.segmented.shape[1]]
+        i,j = np.mgrid[0:labels.shape[0], 0:labels.shape[1]]
         imask = i[good_mask] > i_center[good_mask]
         jmask = j[good_mask] > j_center[good_mask]
         absmask = (abs(i[good_mask] - i_center[good_mask]) > 
@@ -375,10 +377,10 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
         for bin in range(bin_count):
             bin_mask = (good_mask & (bin_indexes == bin))
             bin_pixels = np.sum(bin_mask)
-            bin_labels = objects.segmented[bin_mask]
+            bin_labels = labels[bin_mask]
             bin_radial_index = radial_index[bin_indexes[good_mask] == bin]
             labels_and_radii = (bin_labels-1, bin_radial_index)
-            radial_values = coo_matrix((image.pixel_data[bin_mask],
+            radial_values = coo_matrix((pixel_data[bin_mask],
                                         labels_and_radii),
                                        (nobjects, 8)).toarray()
             pixel_count = coo_matrix((np.ones(bin_pixels), labels_and_radii),

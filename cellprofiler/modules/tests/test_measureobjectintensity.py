@@ -14,7 +14,7 @@ __version__="$Revision$"
 
 import base64
 import math
-import numpy
+import numpy as np
 from StringIO import StringIO
 import unittest
 import zlib
@@ -26,6 +26,9 @@ import cellprofiler.modules.injectimage as II
 import cellprofiler.modules.measureobjectintensity as MOI
 import cellprofiler.pipeline as P
 import cellprofiler.measurements as cpmeas
+import cellprofiler.objects as cpo
+import cellprofiler.cpimage as cpi
+import cellprofiler.workspace as cpw
 #
 # This is a pipeline consisting of Matlab modules for LoadImages,
 # IdentifyPrimAutomatic and MeasureObjectIntensity
@@ -143,9 +146,9 @@ class TestMeasureObjects(unittest.TestCase):
         
     def test_03_01_zero(self):
         """Make sure we can process a blank image"""
-        ii = II.InjectImage('MyImage',numpy.zeros((10,10)))
+        ii = II.InjectImage('MyImage',np.zeros((10,10)))
         ii.module_num = 1
-        io = II.InjectObjects('MyObjects',numpy.zeros((10,10),int))
+        io = II.InjectObjects('MyObjects',np.zeros((10,10),int))
         io.module_num = 2
         moi = MOI.MeasureObjectIntensity()
         moi.images[0].name.value = 'MyImage'
@@ -160,12 +163,12 @@ class TestMeasureObjects(unittest.TestCase):
         for meas_name in MOI.ALL_MEASUREMENTS:
             feature_name = "%s_%s_%s"%(MOI.INTENSITY, meas_name, 'MyImage')
             data = m.get_current_measurement('MyObjects',feature_name)
-            self.assertEqual(numpy.product(data.shape),0,"Got data for feature %s"%(feature_name))
+            self.assertEqual(np.product(data.shape),0,"Got data for feature %s"%(feature_name))
         self.features_and_columns_match(m, moi)
         
     def test_03_02_00_one(self):
         """Check measurements on a 3x3 square of 1's"""
-        img = numpy.array([[0,0,0,0,0,0,0],
+        img = np.array([[0,0,0,0,0,0,0],
                            [0,0,1,1,1,0,0],
                            [0,0,1,1,1,0,0],
                            [0,0,1,1,1,0,0],
@@ -200,12 +203,12 @@ class TestMeasureObjects(unittest.TestCase):
                                 (MOI.UPPER_QUARTILE_INTENSITY,1)):
             feature_name = "%s_%s_%s"%(MOI.INTENSITY, meas_name, 'MyImage')
             data = m.get_current_measurement('MyObjects',feature_name)
-            self.assertEqual(numpy.product(data.shape),1)
+            self.assertEqual(np.product(data.shape),1)
             self.assertEqual(data[0],value,"%s expected %f != actual %f"%(meas_name, value, data[0]))
         
     def test_03_02_01_one_masked(self):
         """Check measurements on a 3x3 square of 1's"""
-        img = numpy.array([[0,0,0,0,0,0,0],
+        img = np.array([[0,0,0,0,0,0,0],
                            [0,0,1,1,1,0,0],
                            [0,0,1,1,1,0,0],
                            [0,0,1,1,1,0,0],
@@ -240,13 +243,13 @@ class TestMeasureObjects(unittest.TestCase):
                                 (MOI.UPPER_QUARTILE_INTENSITY,1)):
             feature_name = "%s_%s_%s"%(MOI.INTENSITY, meas_name, 'MyImage')
             data = m.get_current_measurement('MyObjects',feature_name)
-            self.assertEqual(numpy.product(data.shape),1)
+            self.assertEqual(np.product(data.shape),1)
             self.assertEqual(data[0],value,"%s expected %f != actual %f"%(meas_name, value, data[0]))
 
     def test_03_03_00_mass_displacement(self):
         """Check the mass displacement of three squares"""
         
-        labels = numpy.array([[0,0,0,0,0,0,0],
+        labels = np.array([[0,0,0,0,0,0,0],
                               [0,1,1,1,1,1,0],
                               [0,1,1,1,1,1,0],
                               [0,1,1,1,1,1,0],
@@ -265,7 +268,7 @@ class TestMeasureObjects(unittest.TestCase):
                               [0,3,3,3,3,3,0],
                               [0,3,3,3,3,3,0],
                               [0,0,0,0,0,0,0]])
-        image = numpy.zeros(labels.shape,dtype=float)
+        image = np.zeros(labels.shape,dtype=float)
         #
         # image # 1 has a single value in one of the corners
         # whose distance is sqrt(8) from the center
@@ -294,7 +297,7 @@ class TestMeasureObjects(unittest.TestCase):
         m = pipeline.run()
         feature_name = '%s_%s_%s'%(MOI.INTENSITY,MOI.MASS_DISPLACEMENT,'MyImage')
         mass_displacement = m.get_current_measurement('MyObjects', feature_name)
-        self.assertEqual(numpy.product(mass_displacement.shape),3)
+        self.assertEqual(np.product(mass_displacement.shape),3)
         self.assertAlmostEqual(mass_displacement[0],math.sqrt(8.0))
         self.assertAlmostEqual(mass_displacement[1],2.0)
         self.assertAlmostEqual(mass_displacement[2],2.0)
@@ -302,7 +305,7 @@ class TestMeasureObjects(unittest.TestCase):
     def test_03_03_01_mass_displacement_masked(self):
         """Regression test IMG-766 - mass displacement of a masked image"""
         
-        labels = numpy.array([[0,0,0,0,0,0,0],
+        labels = np.array([[0,0,0,0,0,0,0],
                               [0,1,1,1,1,1,0],
                               [0,1,1,1,1,1,0],
                               [0,1,1,1,1,1,0],
@@ -321,7 +324,7 @@ class TestMeasureObjects(unittest.TestCase):
                               [0,3,3,3,3,3,0],
                               [0,3,3,3,3,3,0],
                               [0,0,0,0,0,0,0]])
-        image = numpy.zeros(labels.shape,dtype=float)
+        image = np.zeros(labels.shape,dtype=float)
         #
         # image # 1 has a single value in one of the corners
         # whose distance is sqrt(8) from the center
@@ -334,7 +337,7 @@ class TestMeasureObjects(unittest.TestCase):
         # image # 3 has a single value on the left edge
         # and should have distance 2
         image[15,1] = 1
-        mask = numpy.zeros(image.shape, bool)
+        mask = np.zeros(image.shape, bool)
         mask[labels > 0] = True
         ii = II.InjectImage('MyImage',image, mask)
         ii.module_num = 1
@@ -352,16 +355,16 @@ class TestMeasureObjects(unittest.TestCase):
         m = pipeline.run()
         feature_name = '%s_%s_%s'%(MOI.INTENSITY,MOI.MASS_DISPLACEMENT,'MyImage')
         mass_displacement = m.get_current_measurement('MyObjects', feature_name)
-        self.assertEqual(numpy.product(mass_displacement.shape),3)
+        self.assertEqual(np.product(mass_displacement.shape),3)
         self.assertAlmostEqual(mass_displacement[0],math.sqrt(8.0))
         self.assertAlmostEqual(mass_displacement[1],2.0)
         self.assertAlmostEqual(mass_displacement[2],2.0)
 
     def test_03_04_quartiles(self):
         """test quartile values on a 250x250 square filled with uniform values"""
-        labels = numpy.ones((250,250),int)
-        numpy.random.seed(0)
-        image = numpy.random.uniform(size=(250,250))
+        labels = np.ones((250,250),int)
+        np.random.seed(0)
+        image = np.random.uniform(size=(250,250))
         ii = II.InjectImage('MyImage',image)
         ii.module_num = 1
         io = II.InjectObjects('MyObjects',labels)
@@ -388,11 +391,11 @@ class TestMeasureObjects(unittest.TestCase):
         
     def test_03_05_quartiles(self):
         """Regression test a bug that occurs in an image with one pixel"""
-        labels = numpy.zeros((10,20))
+        labels = np.zeros((10,20))
         labels[2:7,3:8] = 1
         labels[5,15] = 2
-        numpy.random.seed(0)
-        image = numpy.random.uniform(size=(10,20))
+        np.random.seed(0)
+        image = np.random.uniform(size=(10,20))
         ii = II.InjectImage('MyImage',image)
         ii.module_num = 1
         io = II.InjectObjects('MyObjects',labels)
@@ -411,11 +414,11 @@ class TestMeasureObjects(unittest.TestCase):
 
     def test_03_06_quartiles(self):
         """test quartile values on a 250x250 square with 4 objects"""
-        labels = numpy.ones((250,250),int)
+        labels = np.ones((250,250),int)
         labels[125:,:]+=1
         labels[:,125:]+=2
-        numpy.random.seed(0)
-        image = numpy.random.uniform(size=(250,250))
+        np.random.seed(0)
+        image = np.random.uniform(size=(250,250))
         #
         # Make the distributions center around .5, .25, 1/6 and .125
         #
@@ -452,3 +455,33 @@ class TestMeasureObjects(unittest.TestCase):
         self.assertAlmostEqual(data[1],3.0/8.0,2)
         self.assertAlmostEqual(data[2],3.0/12.0,2)
         self.assertAlmostEqual(data[3],3.0/16.0,2)
+
+    def test_04_01_wrong_image_size(self):
+        '''Regression test of IMG-961 - object and image size differ'''
+        np.random.seed(41)
+        labels = np.ones((20,50), int)
+        image = np.random.uniform(size=(30,40)).astype(np.float32)
+        image_set_list = cpi.ImageSetList()
+        image_set = image_set_list.get_image_set(0)
+        image_set.add('MyImage', cpi.Image(image))
+        object_set = cpo.ObjectSet()
+        o = cpo.Objects()
+        o.segmented = labels
+        object_set.add_objects(o, "MyObjects")
+        pipeline = P.Pipeline()
+        def callback(caller, event):
+            self.assertFalse(isinstance(event, P.RunExceptionEvent))
+        pipeline.add_listener(callback)
+        module = MOI.MeasureObjectIntensity()
+        module.module_num = 1
+        module.images[0].name.value = "MyImage"
+        module.objects[0].name.value = "MyObjects"
+        pipeline.add_module(module)
+        workspace = cpw.Workspace(pipeline, module, image_set, object_set,
+                                  cpmeas.Measurements(), image_set_list)
+        module.run(workspace)
+        feature_name = '%s_%s_%s' % (MOI.INTENSITY, MOI.INTEGRATED_INTENSITY, "MyImage")
+        m = workspace.measurements.get_current_measurement("MyObjects", feature_name)
+        self.assertEqual(len(m), 1)
+        self.assertAlmostEqual(m[0], np.sum(image[:20,:40]),4)
+    

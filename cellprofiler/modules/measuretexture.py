@@ -101,6 +101,7 @@ import numpy as np
 import scipy.ndimage as scind
 
 import cellprofiler.cpmodule as cpm
+import cellprofiler.objects as cpo
 import cellprofiler.settings as cps
 import cellprofiler.measurements as cpmeas
 from cellprofiler.cpmath.cpmorphology import fixup_scipy_ndimage_result as fix
@@ -363,8 +364,25 @@ class MeasureTexture(cpm.CPModule):
                                               must_be_grayscale=True)
         objects = workspace.get_objects(object_name)
         pixel_data = image.pixel_data
+        if image.has_mask:
+            mask = image.mask
+        else:
+            mask = None
         labels = objects.segmented
-        pixel_data = objects.crop_image_similarly(pixel_data)
+        try:
+            pixel_data = objects.crop_image_similarly(pixel_data)
+        except ValueError:
+            #
+            # Recover by cropping the image to the labels
+            #
+            pixel_data, m1 = cpo.size_similarly(labels, pixel_data)
+            if np.any(~m1):
+                if mask is None:
+                    mask = m1
+                else:
+                    mask, m2 = cpo.size_similarly(labels, mask)
+                    mask[~m2] = False
+            
         if np.all(labels == 0):
             for name in F_HARALICK:
                 statistics += self.record_measurement(workspace, 
@@ -376,7 +394,8 @@ class MeasureTexture(cpm.CPModule):
         else:
             for name, value in zip(F_HARALICK, Haralick(pixel_data,
                                                         labels,
-                                                        scale).all()):
+                                                        scale,
+                                                        mask=mask).all()):
                 statistics += self.record_measurement(workspace, 
                                                       image_name, 
                                                       object_name, 
@@ -412,8 +431,24 @@ class MeasureTexture(cpm.CPModule):
             image = workspace.image_set.get_image(image_name,
                                                   must_be_grayscale=True)
             pixel_data = image.pixel_data
-            pixel_data = objects.crop_image_similarly(pixel_data)
-            pixel_data = normalized_per_object(pixel_data, objects.segmented)
+            labels = objects.segmented
+            if image.has_mask:
+                mask = image.mask
+            else:
+                mask = None
+            try:
+                pixel_data = objects.crop_image_similarly(pixel_data)
+                if mask is not None:
+                    mask = objects.crop_image_similarly(mask)
+                    labels[~mask] = 0
+            except ValueError:
+                pixel_data, m1 = cpo.size_similarly(labels, pixel_data)
+                labels[~m1] = 0
+                if mask is not None:
+                    mask, m2 = cpo.size_similarly(labels, mask)
+                    labels[~m2] = 0
+                    labels[~mask] = 0
+            pixel_data = normalized_per_object(pixel_data, labels)
             best_score = np.zeros((object_count,))
             for angle in range(self.gabor_angles.value):
                 theta = np.pi * angle / self.gabor_angles.value

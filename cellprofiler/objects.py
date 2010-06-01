@@ -317,4 +317,49 @@ def downsample_labels(labels):
         return labels.astype(np.uint8)
     elif labels_max < 65536:
         return labels.astype(np.uint16)
-    return labels
+    return labels.astype(np.uint32)
+
+def crop_labels_and_image(labels, image):
+    '''Crop a labels matrix and an image to the lowest common size
+    
+    labels - a n x m labels matrix
+    image - a 2-d or 3-d image
+    
+    Assumes that points outside of the common boundary should be masked.
+    '''
+    min_height = min(labels.shape[0], image.shape[0])
+    min_width = min(labels.shape[1], image.shape[1])
+    if image.ndim == 2:
+        return (labels[:min_height, :min_width], 
+                image[:min_height, :min_width])
+    else:
+        return (labels[:min_height, :min_width], 
+                image[:min_height, :min_width,:])
+    
+def size_similarly(labels, secondary):
+    '''Size the secondary matrix similarly to the labels matrix
+    
+    labels - labels matrix
+    secondary - a secondary image or labels matrix which might be of
+                different size.
+    Return the resized secondary matrix and a mask indicating what portion
+    of the secondary matrix is bogus (manufactured values).
+    '''
+    assert secondary.ndim == 2
+    if labels.shape == secondary.shape:
+        return secondary, np.ones(secondary.shape, bool)
+    if (labels.shape[0] <= secondary.shape[0] and
+        labels.shape[1] <= secondary.shape[1]):
+        return (secondary[:labels.shape[0], :labels.shape[1]],
+                np.ones(labels.shape, bool))
+    #
+    # Some portion of the secondary matrix does not cover the labels
+    #
+    result = np.zeros(labels.shape, secondary.dtype)
+    i_max = min(secondary.shape[0], labels.shape[0])
+    j_max = min(secondary.shape[1], labels.shape[1])
+    result[:i_max,:j_max] = secondary[:i_max, :j_max]
+    mask = np.zeros(labels.shape, bool)
+    mask[:i_max, :j_max] = 1
+    return result, mask
+

@@ -43,6 +43,7 @@ from scipy.linalg import lstsq
 import scipy.ndimage as scind
 
 import cellprofiler.cpmodule as cpm
+import cellprofiler.objects as cpo
 import cellprofiler.settings as cps
 import cellprofiler.measurements as cpmeas
 from cellprofiler.cpmath.cpmorphology import fixup_scipy_ndimage_result as fix
@@ -258,11 +259,21 @@ class MeasureCorrelation(cpm.CPModule):
         #
         # Crop both images to the size of the labels matrix
         #
-        first_pixels  = objects.crop_image_similarly(first_image.pixel_data)
-        first_mask    = objects.crop_image_similarly(first_image.mask)
-        second_pixels = objects.crop_image_similarly(second_image.pixel_data)
-        second_mask   = objects.crop_image_similarly(second_image.mask)
         labels = objects.segmented
+        try:
+            first_pixels  = objects.crop_image_similarly(first_image.pixel_data)
+            first_mask    = objects.crop_image_similarly(first_image.mask)
+        except ValueError:
+            first_pixels, m1 = cpo.size_similarly(labels, first_image.pixel_data)
+            first_mask, m1 = cpo.size_similarly(labels, first_image.mask)
+            first_mask[~m1] = False
+        try:
+            second_pixels = objects.crop_image_similarly(second_image.pixel_data)
+            second_mask   = objects.crop_image_similarly(second_image.mask)
+        except ValueError:
+            second_pixels, m1 = cpo.size_similarly(labels, second_image.pixel_data)
+            second_mask, m1 = cpo.size_similarly(labels, second_image.mask)
+            second_mask[~m1] = False
         mask   = ((labels > 0) & first_mask & second_mask)
         first_pixels = first_pixels[mask]
         second_pixels = second_pixels[mask]

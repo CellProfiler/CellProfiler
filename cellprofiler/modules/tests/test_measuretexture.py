@@ -39,7 +39,7 @@ import cellprofiler.preferences as cpprefs
 INPUT_IMAGE_NAME = 'Cytoplasm'
 INPUT_OBJECTS_NAME = 'inputobjects'
 class TestMeasureTexture(unittest.TestCase):
-    def make_workspace(self, image, labels, convert = True):
+    def make_workspace(self, image, labels, convert = True, mask = None):
         '''Make a workspace for testing MeasureTexture'''
         module = M.MeasureTexture()
         module.image_groups[0].image_name.value = INPUT_IMAGE_NAME
@@ -54,7 +54,8 @@ class TestMeasureTexture(unittest.TestCase):
                                   object_set,
                                   cpmeas.Measurements(),
                                   image_set_list)
-        image_set.add(INPUT_IMAGE_NAME, cpi.Image(image, convert=convert))
+        image_set.add(INPUT_IMAGE_NAME, cpi.Image(image, convert=convert,
+                                                  mask = mask))
         objects = cpo.Objects()
         objects.segmented = labels
         object_set.add_objects(objects, INPUT_OBJECTS_NAME)
@@ -294,4 +295,38 @@ class TestMeasureTexture(unittest.TestCase):
             if f.startswith(M.TEXTURE):
                 values = m.get_current_measurement(INPUT_OBJECTS_NAME, f)
                 self.assertEqual(len(values),0)
-        
+                
+    def test_04_02_wrong_size(self):
+        '''Regression test for IMG-961: objects & image different size'''
+        np.random.seed(42)
+        image = np.random.uniform(size=(10,30))
+        labels = np.ones((20,20), int)
+        workspace, module = self.make_workspace(image, labels)
+        module.run(workspace)
+        m = workspace.measurements
+        workspace, module = self.make_workspace(image[:,:20], labels[:10,:])
+        module.run(workspace)
+        me = workspace.measurements
+        for f in m.get_feature_names(INPUT_OBJECTS_NAME):
+            if f.startswith(M.TEXTURE):
+                values = m.get_current_measurement(INPUT_OBJECTS_NAME, f)
+                expected = me.get_current_measurement(INPUT_OBJECTS_NAME, f)
+                self.assertEqual(values, expected)
+    
+    def test_04_03_mask(self):
+        np.random.seed(42)
+        image = np.random.uniform(size=(10,30))
+        mask = np.zeros(image.shape, bool)
+        mask[:,:20] = True
+        labels = np.ones((10,30), int)
+        workspace, module = self.make_workspace(image, labels, mask = mask)
+        module.run(workspace)
+        m = workspace.measurements
+        workspace, module = self.make_workspace(image[:,:20], labels[:,:20])
+        module.run(workspace)
+        me = workspace.measurements
+        for f in m.get_feature_names(INPUT_OBJECTS_NAME):
+            if f.startswith(M.TEXTURE):
+                values = m.get_current_measurement(INPUT_OBJECTS_NAME, f)
+                expected = me.get_current_measurement(INPUT_OBJECTS_NAME, f)
+                self.assertEqual(values, expected)

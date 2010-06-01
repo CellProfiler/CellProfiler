@@ -102,7 +102,21 @@ class TestHaralick(unittest.TestCase):
         c, nlevels = haralick.cooccurrence(image, labels, 30)
         self.assertTrue(np.all(c==0))
         
-
+    def test_01_02_mask(self):
+        '''Test with a masked image'''
+        labels = np.ones((10,20), int)
+        np.random.seed(12)
+        image = np.random.uniform(size=(10,20)).astype(np.float32)
+        image[:,:10] *= .5
+        mask = np.ones((10,20), bool)
+        mask[:,10:] = False
+        # Masked haralick
+        hm = haralick.Haralick(image, labels, 1, mask=mask)
+        # Expected haralick
+        he = haralick.Haralick(image[:,:10], labels[:,:10], 1)
+        for measured, expected in zip(hm.all(), he.all()):
+            self.assertEqual(measured, expected)
+        
 if __name__ == "__main__":
     unittest.main()
 

@@ -582,3 +582,22 @@ MeasureCorrelation:[module_num:4|svn_version:\'Unknown\'|variable_revision_numbe
             else:
                 self.assertEqual(column[0],OBJECTS_NAME)
                 self.assertTrue(column[1] in object_features)
+                
+    def test_06_04_wrong_size(self):
+        '''Regression test of IMG-961 - objects and images of different sizes'''
+        np.random.seed(0)
+        image1 = np.random.uniform(size = (20,20))
+        i1 = cpi.Image(image1)
+        labels = np.zeros((10,30), int)
+        labels[:4,:4] = 1
+        labels[6:,6:] = 2
+        o  = cpo.Objects()
+        o.segmented = labels
+        workspace, module = self.make_workspace(i1, i1,o)
+        module.run(workspace)
+        m = workspace.measurements
+        mi = module.get_measurement_images(None,OBJECTS_NAME, "Correlation","Correlation")
+        corr = m.get_current_measurement(OBJECTS_NAME, "Correlation_Correlation_%s"%mi[0])
+        self.assertAlmostEqual(corr[0],1)
+        self.assertAlmostEqual(corr[1],1)
+        

@@ -55,6 +55,7 @@ import scipy.ndimage as nd
 
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
+import cellprofiler.objects as cpo
 import cellprofiler.settings as cps
 import cellprofiler.cpmath.outline as cpmo
 from cellprofiler.cpmath.cpmorphology import fixup_scipy_ndimage_result as fix
@@ -262,26 +263,30 @@ class MeasureObjectIntensity(cpm.CPModule):
         for image_name in [img.name for img in self.images]:
             image = workspace.image_set.get_image(image_name.value,
                                                   must_be_grayscale=True)
-            img = image.pixel_data
-            if image.has_mask:
-                masked_image = img.copy()
-                masked_image[~image.mask] = 0
-                img = img[image.mask]
-            else:
-                masked_image = img
             for object_name in [obj.name for obj in self.objects]:
+                # Need to refresh image after each iteration...
+                img = image.pixel_data
+                if image.has_mask:
+                    masked_image = img.copy()
+                    masked_image[~image.mask] = 0
+                    img = img[image.mask]
+                else:
+                    masked_image = img
                 objects = workspace.object_set.get_objects(object_name.value)
                 labels   = objects.segmented
+                labels, img = cpo.crop_labels_and_image(labels, img)
+                _, masked_image = cpo.crop_labels_and_image(labels, masked_image)
                 nobjects = np.int32(np.max(labels))
                 outlines = cpmo.outline(labels)
                 
                 if image.has_mask:
+                    _, mask = cpo.crop_labels_and_image(labels, image.mask)
                     masked_labels = labels.copy()
-                    masked_labels[~image.mask] = 0
-                    labels = labels[image.mask]
+                    masked_labels[~mask] = 0
+                    labels = labels[mask]
                     masked_outlines = outlines.copy()
-                    masked_outlines[~image.mask] = 0
-                    outlines = outlines[image.mask]
+                    masked_outlines[~mask] = 0
+                    outlines = outlines[mask]
                 else:
                     masked_labels = labels
                     masked_outlines = outlines

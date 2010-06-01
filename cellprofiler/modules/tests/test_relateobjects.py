@@ -363,6 +363,32 @@ Relate:[module_num:8|svn_version:\'8866\'|variable_revision_number:2|show_window
         self.assertEqual(np.product(child_count.shape), 1)
         self.assertEqual(child_count[0],1)
         self.features_and_columns_match(workspace)
+        
+    def test_02_02_relate_wrong_size(self):
+        '''Regression test of IMG-961
+        
+        Perhaps someone is trying to relate cells to wells and the grid
+        doesn't completely cover the labels matrix.
+        '''
+        parent_labels = np.ones((20,10),int)
+        parent_labels[10:,:] = 0
+        child_labels = np.zeros((10,20),int)
+        child_labels[3:5,4:7] = 1
+        workspace, module = self.make_workspace(parent_labels, child_labels)
+        module.wants_per_parent_means.value = False
+        module.run(workspace)
+        m = workspace.measurements
+        parents_of = m.get_current_measurement(CHILD_OBJECTS, 
+                                               "Parent_%s"%PARENT_OBJECTS)
+        self.assertEqual(np.product(parents_of.shape), 1)
+        self.assertEqual(parents_of[0],1)
+        child_count = m.get_current_measurement(PARENT_OBJECTS,
+                                                "Children_%s_Count"%
+                                                CHILD_OBJECTS)
+        self.assertEqual(np.product(child_count.shape), 1)
+        self.assertEqual(child_count[0],1)
+        self.features_and_columns_match(workspace)
+        
     
     def test_03_01_mean(self):
         '''Compute the mean for two parents and four children'''

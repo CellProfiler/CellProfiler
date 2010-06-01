@@ -162,16 +162,23 @@ class Objects(object):
         """
         parent_labels = self.segmented
         child_labels = children.segmented
+        parent_count = np.max(parent_labels)
+        child_count = np.max(child_labels)
         # Apply cropping to the parent if done to the child
-        parent_labels  = children.crop_image_similarly(parent_labels)
-        any_parents = np.any(parent_labels > 0)
-        any_children = np.any(child_labels > 0)
+        try:
+            parent_labels  = children.crop_image_similarly(parent_labels)
+        except ValueError:
+            # If parents and children are not similarly cropped, take the LCD
+            parent_labels, child_labels = crop_labels_and_image(parent_labels,
+                                                                child_labels)
+        any_parents = (parent_count > 0)
+        any_children = (child_count > 0)
         if (not any_parents) and (not any_children):
             return np.zeros((0,)),np.zeros((0,))
         elif (not any_parents):
-            return np.zeros((0,)),np.zeros((np.max(child_labels),))
+            return np.zeros((0,)),np.zeros((child_count,))
         elif (not any_children):
-            return np.zeros((np.max(parent_labels),)), np.zeros((0,))
+            return np.zeros((parent_count,)), np.zeros((0,))
         #
         # Only look at points that are labeled in parent and child
         #
@@ -179,12 +186,10 @@ class Objects(object):
                                      child_labels > 0)
         not_zero_count = np.sum(not_zero)
          
-        max_parent = np.max(parent_labels)
-        max_child  = np.max(child_labels)
         histogram = scipy.sparse.coo_matrix((np.ones((not_zero_count,)),
                                              (parent_labels[not_zero],
                                               child_labels[not_zero])),
-                                             shape=(max_parent+1,max_child+1))
+                                             shape=(parent_count+1,child_count+1))
         #
         # each row (axis = 0) is a parent
         # each column (axis = 1) is a child
@@ -193,10 +198,10 @@ class Objects(object):
         parents_of_children = np.argmax(histogram,axis=0)
         #
         # Create a histogram of # of children per parent
-        poc_histogram = scipy.sparse.coo_matrix((np.ones((max_child+1,)),
+        poc_histogram = scipy.sparse.coo_matrix((np.ones((child_count+1,)),
                                                  (parents_of_children,
-                                                  np.zeros((max_child+1,),int))),
-                                                 shape=(max_parent+1,1))
+                                                  np.zeros((child_count+1,),int))),
+                                                 shape=(parent_count+1,1))
         children_per_parent = poc_histogram.toarray().flatten()
         #
         # Make sure to remove the background elements at index 0. Also,

@@ -223,10 +223,18 @@ class MaskObjects(I.Identify):
         if self.wants_inverted_mask:
             mask = ~mask
         #
-        # Apply the mask according to the overlap choice.
+        # Load the labels
         #
         labels = original_objects.segmented.copy()
         nobjects = np.max(labels)
+        #
+        # Resize the mask to cover the objects
+        #
+        mask, m1 = cpo.size_similarly(labels, mask)
+        mask[~m1] = False
+        #
+        # Apply the mask according to the overlap choice.
+        #
         if nobjects == 0:
             pass
         elif self.overlap_choice == P_MASK:

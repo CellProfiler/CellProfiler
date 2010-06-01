@@ -581,3 +581,31 @@ MaskObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:1|sho
         module.run(workspace)
         objects = workspace.object_set.get_objects(OUTPUT_OBJECTS)
         self.assertTrue(np.all(objects.segmented == expected))
+        
+    def test_05_01_different_object_sizes(self):
+        labels = np.zeros((30,10), int)
+        labels[2:8,3:7] = 1
+        labels[12:18, 3:7] = 2
+        mask = np.zeros((20,20), int)
+        mask[3:17,2:6] = 1
+        expected = labels.copy()
+        expected[:20,:][mask[:,:10] == 0] = 0
+        workspace, module = self.make_workspace(labels, M.P_MASK, mask)
+        module.run(workspace)
+        objects = workspace.object_set.get_objects(OUTPUT_OBJECTS)
+        self.assertTrue(np.all(objects.segmented == expected))
+
+    def test_05_02_different_image_sizes(self):
+        labels = np.zeros((30,10), int)
+        labels[2:8,3:7] = 1
+        labels[12:18, 3:7] = 2
+        mask = np.zeros((20,20), bool)
+        mask[3:17,2:6] = 1
+        expected = labels.copy()
+        expected[:20,:][mask[:,:10] == 0] = 0
+        workspace, module = self.make_workspace(labels, M.P_MASK, 
+                                                masking_image = mask)
+        module.run(workspace)
+        objects = workspace.object_set.get_objects(OUTPUT_OBJECTS)
+        self.assertTrue(np.all(objects.segmented == expected))
+

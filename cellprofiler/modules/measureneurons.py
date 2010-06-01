@@ -40,6 +40,7 @@ import os
 
 import cellprofiler.cpimage as cpi
 import cellprofiler.cpmodule as cpm
+import cellprofiler.objects as cpo
 import cellprofiler.measurements as cpmeas
 import cellprofiler.settings as cps
 import cellprofiler.cpmath.cpmorphology as morph
@@ -203,7 +204,11 @@ class MeasureNeurons(cpm.CPModule):
         skeleton = skeleton_image.pixel_data
         if skeleton_image.has_mask:
             skeleton = skeleton & skeleton_image.mask
-        labels = skeleton_image.crop_image_similarly(labels)
+        try:
+            labels = skeleton_image.crop_image_similarly(labels)
+        except:
+            labels, m1 = cpo.size_similarly(skeleton, labels)
+            labels[~m1] = 0
         #
         # The following code makes a ring around the seed objects with
         # the skeleton trunks sticking out of it.

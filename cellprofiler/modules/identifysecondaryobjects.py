@@ -380,6 +380,16 @@ class IdentifySecondaryObjects(cpmi.Identify):
         is_touching = is_touching[labels_in]
         
         labels_in[(~ is_touching) & (objects.segmented == 0)] = 0
+        #
+        # Stretch the input labels to match the image size. If there's no
+        # label matrix, then there's no label in that area.
+        #
+        if tuple(labels_in.shape) != tuple(img.shape):
+            tmp = np.zeros(img.shape, labels_in.dtype)
+            i_max = min(img.shape[0], labels_in.shape[0])
+            j_max = min(img.shape[1], labels_in.shape[1])
+            tmp[:i_max, :j_max] = labels_in[:i_max, :j_max]
+            labels_in = tmp
         
         if self.method in (M_DISTANCE_B, M_DISTANCE_N):
             if self.method == M_DISTANCE_N:
@@ -606,6 +616,8 @@ class IdentifySecondaryObjects(cpmi.Identify):
         segmented_labels = objects.segmented
         max_out = np.max(labels_out)
         if max_out > 0:
+            segmented_labels, m1 = cpo.size_similarly(labels_out, segmented_labels)
+            segmented_labels[~m1] = 0
             lookup = scind.maximum(segmented_labels,labels_out,
                                    range(max_out+1))
             lookup = np.array(lookup, int)

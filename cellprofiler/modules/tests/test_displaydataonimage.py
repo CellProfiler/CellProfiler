@@ -111,7 +111,7 @@ class TestDisplayDataOnImage(unittest.TestCase):
         self.assertEqual(module.display_image, "Display")
         self.assertEqual(module.saved_image_contents, "Figure")
 
-    def make_workspace(self, measurement, labels = None):
+    def make_workspace(self, measurement, labels = None, image = None):
         object_set = cpo.ObjectSet()
         module = D.DisplayDataOnImage()
         module.module_num = 1
@@ -123,7 +123,8 @@ class TestDisplayDataOnImage(unittest.TestCase):
         if labels is None:
             module.objects_or_image.value = D.OI_IMAGE
             m.add_image_measurement(MEASUREMENT_NAME, measurement)
-            image = np.zeros((50,120))
+            if image is None:
+                image = np.zeros((50,120))
         else:
             module.objects_or_image.value = D.OI_OBJECTS
             o = cpo.Objects()
@@ -133,7 +134,8 @@ class TestDisplayDataOnImage(unittest.TestCase):
             y,x = centers_of_labels(labels)
             m.add_measurement(OBJECTS_NAME, "Location_Center_X",x)
             m.add_measurement(OBJECTS_NAME, "Location_Center_Y",y)
-            image = np.zeros(labels.shape)
+            if image is None:
+                image = np.zeros(labels.shape)
         module.measurement.value = MEASUREMENT_NAME
         
         pipeline = cpp.Pipeline()
@@ -183,3 +185,14 @@ class TestDisplayDataOnImage(unittest.TestCase):
             module.run(workspace)
             image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         
+    def test_02_05_display_objects_wrong_size(self):
+        labels = np.zeros((50,120),int)
+        labels[10:20,20:27] = 1
+        labels[30:35,35:50] = 2
+        labels[5:18,44:100] = 3
+        input_image = np.random.uniform(size=(60, 110))
+        for display in (D.E_AXES, D.E_FIGURE, D.E_IMAGE):
+            workspace, module = self.make_workspace([0,1,2], labels, input_image)
+            module.saved_image_contents.value = display
+            module.run(workspace)
+            image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)

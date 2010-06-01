@@ -307,6 +307,30 @@ MeasureNeurons:[module_num:1|svn_version:\'8401\'|variable_revision_number:1|sho
             self.assertEqual(data[0], expected, 
                              "%s: expected %d, got %d" % (feature, expected, data[0]))
     
+    def test_02_07_wrong_size(self):
+        '''Regression of img-961, image and labels size differ
+        
+        Assume that image is primary, labels outside of image are ignored
+        and image outside of labels is unlabeled.
+        '''
+        image = np.zeros((40,15),bool)
+        image[1:25,7] = True
+        labels = np.zeros((30,20),int)
+        labels[6:13,3:10] = 1
+        labels[18:26,3:10] = 2
+        workspace, module = self.make_workspace(labels, image)
+        module.run(workspace)
+        m = workspace.measurements
+        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        for feature, expected in ((M.F_NUMBER_NON_TRUNK_BRANCHES, [0,0]),
+                                  (M.F_NUMBER_TRUNKS, [2,1])):
+            mname = "_".join((M.C_NEURON, feature, IMAGE_NAME))
+            data = m.get_current_measurement(OBJECT_NAME, mname)
+            self.assertEqual(len(data), 2)
+            for i in range(2):
+                self.assertEqual(data[i], expected[i])
+        
+    
     def read_graph_file(self, file_name):
         type_dict = dict(image_number="i4", v1="i4", v2="i4", length="i4",
                          total_intensity="f8", i="i4", j="i4",

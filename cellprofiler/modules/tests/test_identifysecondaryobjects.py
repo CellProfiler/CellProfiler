@@ -195,15 +195,21 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'9194\'|variable_revision_nu
         self.assertTrue(module.wants_primary_outlines)
         self.assertEqual(module.new_primary_outlines_name, "FilteredPrimaryOutlines")
         
-    def test_02_01_zeros_propagation(self):
+    def make_workspace(self, image, segmented, unedited_segmented = None,
+                       small_removed_segmented = None):
         p = cpp.Pipeline()
+        def callback(caller, event):
+            self.assertFalse(isinstance(event, cpp.RunExceptionEvent))
+        p.add_listener(callback)
         o_s = cpo.ObjectSet()
         i_l = cpi.ImageSetList()
-        image = cpi.Image(np.zeros((10,10)))
+        image = cpi.Image(image)
         objects = cpo.Objects()
-        objects.unedited_segmented = np.zeros((10,10),int)
-        objects.small_removed_segmented = np.zeros((10,10),int)
-        objects.segmented = np.zeros((10,10),int)
+        if unedited_segmented is not None:
+            objects.unedited_segmented = unedited_segmented
+        if small_removed_segmented is not None:
+            objects.small_removed_segmented = small_removed_segmented
+        objects.segmented = segmented
         o_s.add_objects(objects, "primary")
         i_s = i_l.get_image_set(0)
         i_s.add("my_image",image)
@@ -214,9 +220,15 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'9194\'|variable_revision_nu
         module.image_name.value = "my_image"
         module.use_outlines.value = False
         module.outlines_name.value = "my_outlines"
-        module.method = cpmi2.M_PROPAGATION
         workspace = cpw.Workspace(p,module,i_s,o_s,m,i_l)
+        return workspace, module
+        
+    def test_02_01_zeros_propagation(self):
+        workspace, module = self.make_workspace(np.zeros((10,10)),
+                                                np.zeros((10,10), int))
+        module.method = cpmi2.M_PROPAGATION
         module.run(workspace)
+        m = workspace.measurements
         self.assertTrue("my_objects" in m.get_object_names())
         self.assertTrue("Image" in m.get_object_names())
         self.assertTrue("Count_my_objects" in m.get_feature_names("Image"))
@@ -232,36 +244,21 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'9194\'|variable_revision_nu
         self.assertTrue("my_outlines" not in workspace.get_outline_names())
     
     def test_02_02_one_object_propagation(self):
-        p = cpp.Pipeline()
-        o_s = cpo.ObjectSet()
-        i_l = cpi.ImageSetList()
         img = np.zeros((10,10))
         img[2:7,2:7] = .5
-        image = cpi.Image(img)
-        objects = cpo.Objects()
         labels = np.zeros((10,10),int)
         labels[3:6,3:6] = 1
-        objects.unedited_segmented = labels 
-        objects.small_removed_segmented = labels
-        objects.segmented = labels
-        o_s.add_objects(objects, "primary")
-        i_s = i_l.get_image_set(0)
-        i_s.add("my_image",image)
-        m = cpm.Measurements()
-        module = cpmi2.IdentifySecondary()
-        module.primary_objects.value="primary"
-        module.objects_name.value="my_objects"
-        module.image_name.value = "my_image"
+        workspace, module = self.make_workspace(img, labels)
         module.method = cpmi2.M_PROPAGATION
-        workspace = cpw.Workspace(p,module,i_s,o_s,m,i_l)
         module.run(workspace)
+        m = workspace.measurements
         self.assertTrue("my_objects" in m.get_object_names())
         self.assertTrue("Image" in m.get_object_names())
         self.assertTrue("Count_my_objects" in m.get_feature_names("Image"))
+        objects_out = workspace.object_set.get_objects("my_objects")
         counts = m.get_current_measurement("Image", "Count_my_objects")
         self.assertEqual(np.product(counts.shape), 1)
         self.assertEqual(counts[0],1)
-        objects_out = o_s.get_objects("my_objects")
         expected = np.zeros((10,10),int)
         expected[2:7,2:7] = 1
         self.assertTrue(np.all(objects_out.segmented==expected))
@@ -273,41 +270,26 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'9194\'|variable_revision_nu
         self.assertEqual(parents[0],1)
 
     def test_02_03_two_objects_propagation_image(self):
-        p = cpp.Pipeline()
-        o_s = cpo.ObjectSet()
-        i_l = cpi.ImageSetList()
         img = np.zeros((10,20))
         img[2:7,2:7] = .3
         img[2:7,7:17] = .5
-        image = cpi.Image(img)
-        objects = cpo.Objects()
         labels = np.zeros((10,20),int)
         labels[3:6,3:6] = 1
         labels[3:6,13:16] = 2
-        objects.unedited_segmented = labels 
-        objects.small_removed_segmented = labels
-        objects.segmented = labels
-        o_s.add_objects(objects, "primary")
-        i_s = i_l.get_image_set(0)
-        i_s.add("my_image",image)
-        m = cpm.Measurements()
-        module = cpmi2.IdentifySecondary()
-        module.primary_objects.value="primary"
-        module.objects_name.value="my_objects"
-        module.image_name.value = "my_image"
+        workspace, module = self.make_workspace(img, labels)
         module.method.value = cpmi2.M_PROPAGATION
         module.regularization_factor.value = 0 # propagate by image
         module.threshold_method.value = cpmi.TM_MANUAL
         module.manual_threshold.value = .2
-        workspace = cpw.Workspace(p,module,i_s,o_s,m,i_l)
         module.run(workspace)
+        m = workspace.measurements
         self.assertTrue("my_objects" in m.get_object_names())
         self.assertTrue("Image" in m.get_object_names())
         self.assertTrue("Count_my_objects" in m.get_feature_names("Image"))
         counts = m.get_current_measurement("Image", "Count_my_objects")
         self.assertEqual(np.product(counts.shape), 1)
         self.assertEqual(counts[0],2)
-        objects_out = o_s.get_objects("my_objects")
+        objects_out = workspace.object_set.get_objects("my_objects")
         expected = np.zeros((10,10),int)
         expected[2:7,2:7] = 1
         expected[2:7,7:17] = 2
@@ -357,6 +339,34 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'9194\'|variable_revision_nu
         mask = np.ones((10,20),bool)
         mask[:,9:11] = False
         self.assertTrue(np.all(objects_out.segmented[mask]==expected[mask]))
+        
+    def test_02_05_propagation_wrong_size(self):
+        '''Regression test of img-961: different image / object sizes'''
+        img = np.zeros((10,20))
+        img[2:7,2:7] = .5
+        labels = np.zeros((20,10),int)
+        labels[3:6,3:6] = 1
+        workspace, module = self.make_workspace(img, labels)
+        module.method = cpmi2.M_PROPAGATION
+        module.run(workspace)
+        m = workspace.measurements
+        self.assertTrue("my_objects" in m.get_object_names())
+        self.assertTrue("Image" in m.get_object_names())
+        self.assertTrue("Count_my_objects" in m.get_feature_names("Image"))
+        objects_out = workspace.object_set.get_objects("my_objects")
+        counts = m.get_current_measurement("Image", "Count_my_objects")
+        self.assertEqual(np.product(counts.shape), 1)
+        self.assertEqual(counts[0],1)
+        expected = np.zeros((10,20),int)
+        expected[2:7,2:7] = 1
+        self.assertTrue(np.all(objects_out.segmented==expected))
+        child_counts = m.get_current_measurement("primary","Children_my_objects_Count")
+        self.assertEqual(len(child_counts),1)
+        self.assertEqual(child_counts[0],1)
+        parents = m.get_current_measurement("my_objects","Parent_primary")
+        self.assertEqual(len(parents),1)
+        self.assertEqual(parents[0],1)
+        
     
     def test_03_01_zeros_watershed_gradient(self):
         p = cpp.Pipeline()
@@ -385,7 +395,7 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'9194\'|variable_revision_nu
         self.assertEqual(np.product(counts.shape), 1)
         self.assertEqual(counts[0],0)
     
-    def test_03_02_one_object_watershed_gradiant(self):
+    def test_03_02_one_object_watershed_gradient(self):
         p = cpp.Pipeline()
         o_s = cpo.ObjectSet()
         i_l = cpi.ImageSetList()
@@ -472,6 +482,34 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'9194\'|variable_revision_nu
         mask[:,7:9] = False
         self.assertTrue(np.all(objects_out.segmented[mask]==expected[mask]))
     
+    def test_03_04_watershed_gradient_wrong_size(self):
+        img = np.zeros((20,10))
+        img[2:7,2:7] = .5
+        labels = np.zeros((10,20),int)
+        labels[3:6,3:6] = 1
+        workspace, module = self.make_workspace(img, labels)
+        module.method = cpmi2.M_WATERSHED_G
+        module.run(workspace)
+        m = workspace.measurements
+        self.assertTrue("my_objects" in m.get_object_names())
+        self.assertTrue("Image" in m.get_object_names())
+        self.assertTrue("Count_my_objects" in m.get_feature_names("Image"))
+        counts = m.get_current_measurement("Image", "Count_my_objects")
+        self.assertEqual(np.product(counts.shape), 1)
+        self.assertEqual(counts[0],1)
+        objects_out = workspace.object_set.get_objects("my_objects")
+        expected = np.zeros((20,10),int)
+        expected[2:7,2:7] = 1
+        self.assertTrue(np.all(objects_out.segmented==expected))
+        self.assertTrue("Location_Center_X" in m.get_feature_names("my_objects"))
+        values = m.get_current_measurement("my_objects","Location_Center_X")
+        self.assertEqual(np.product(values.shape),1)
+        self.assertEqual(values[0],4)
+        self.assertTrue("Location_Center_Y" in m.get_feature_names("my_objects"))
+        values = m.get_current_measurement("my_objects","Location_Center_Y")
+        self.assertEqual(np.product(values.shape),1)
+        self.assertEqual(values[0],4)
+
     def test_04_01_zeros_watershed_image(self):
         p = cpp.Pipeline()
         o_s = cpo.ObjectSet()
@@ -579,6 +617,26 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'9194\'|variable_revision_nu
         mask[:,7] = False
         self.assertTrue(np.all(objects_out.segmented[mask]==expected[mask]))
     
+    def test_04_04_watershed_image_wrong_size(self):
+        img = np.zeros((20,10))
+        img[2:7,2:7] = .5
+        labels = np.zeros((10,20),int)
+        labels[3:6,3:6] = 1
+        workspace, module = self.make_workspace(img, labels)
+        module.method = cpmi2.M_WATERSHED_I
+        module.run(workspace)
+        m = workspace.measurements
+        self.assertTrue("my_objects" in m.get_object_names())
+        self.assertTrue("Image" in m.get_object_names())
+        self.assertTrue("Count_my_objects" in m.get_feature_names("Image"))
+        counts = m.get_current_measurement("Image", "Count_my_objects")
+        self.assertEqual(np.product(counts.shape), 1)
+        self.assertEqual(counts[0],1)
+        objects_out = workspace.object_set.get_objects("my_objects")
+        expected = np.zeros((20,10),int)
+        expected[2:7,2:7] = 1
+        self.assertTrue(np.all(objects_out.segmented==expected))
+
     def test_05_01_zeros_distance_n(self):
         p = cpp.Pipeline()
         o_s = cpo.ObjectSet()
@@ -681,6 +739,29 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'9194\'|variable_revision_nu
         expected[:,10:] = 2
         self.assertTrue(np.all(objects_out.segmented==expected))
     
+    def test_05_04_distance_n_wrong_size(self):
+        img = np.zeros((20,10))
+        labels = np.zeros((10,20),int)
+        labels[3:6,3:6] = 1
+        workspace, module = self.make_workspace(img, labels)
+        module.method = cpmi2.M_DISTANCE_N
+        module.distance_to_dilate.value = 1
+        module.run(workspace)
+        m = workspace.measurements
+        self.assertTrue("my_objects" in m.get_object_names())
+        self.assertTrue("Image" in m.get_object_names())
+        self.assertTrue("Count_my_objects" in m.get_feature_names("Image"))
+        counts = m.get_current_measurement("Image", "Count_my_objects")
+        self.assertEqual(np.product(counts.shape), 1)
+        self.assertEqual(counts[0],1)
+        objects_out = workspace.object_set.get_objects("my_objects")
+        expected = np.zeros((20,10),int)
+        expected[2:7,2:7] = 1
+        for x in (2,6):
+            for y in (2,6):
+                expected[x,y] = 0
+        self.assertTrue(np.all(objects_out.segmented==expected))
+
     def test_06_01_save_outlines(self):
         '''Test the "save_outlines" feature'''
         p = cpp.Pipeline()

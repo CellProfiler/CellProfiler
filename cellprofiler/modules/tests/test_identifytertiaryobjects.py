@@ -221,6 +221,36 @@ class TestIdentifyTertiaryObjects(unittest.TestCase):
             mapped_labels = label_map[output_labels]
             self.assertTrue(np.all(parent_labels == mapped_labels))
             
+    def test_01_04_wrong_size(self):
+        '''Regression test of img-961, what if objects have different sizes?
+        
+        Slightly bizarre use case: maybe if user wants to measure background
+        outside of cells in a plate of wells???
+        '''
+        expected_primary_parents = np.zeros((20,20),int)
+        expected_secondary_parents = np.zeros((20,20),int)
+        primary_labels = np.zeros((10,30),int)
+        secondary_labels = np.zeros((20,20),int)
+        primary_labels[3:6,3:10] = 2
+        primary_labels[3:6,10:17] = 1
+        secondary_labels[2:7,2:12] = 1
+        expected_primary_parents[2:7,2:12]=2
+        expected_primary_parents[4,4:12]=0 # the middle of the primary
+        expected_primary_parents[4,9]=2    # the outline of primary # 2
+        expected_primary_parents[4,10]=2   # the outline of primary # 1
+        expected_secondary_parents[expected_primary_parents>0]=1
+        workspace = self.make_workspace(primary_labels, secondary_labels)
+        module = workspace.module
+        self.assertTrue(isinstance(module, cpmit.IdentifyTertiarySubregion))
+        module.use_outlines.value = True
+        module.outlines_name.value = OUTLINES
+        module.run(workspace)
+        measurements = workspace.measurements
+        output_labels = workspace.object_set.get_objects(TERTIARY).segmented
+        output_outlines = workspace.image_set.get_image(OUTLINES,
+                                                        must_be_binary=True)
+        self.assertTrue(np.all(output_labels[output_outlines.pixel_data] > 0))
+            
     def test_02_01_load_matlab(self):
         '''Load a Matlab pipeline with an IdentifyTertiary module'''
         data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0'

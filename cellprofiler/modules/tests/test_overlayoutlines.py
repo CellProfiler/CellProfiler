@@ -223,6 +223,43 @@ OverlayOutlines:[module_num:5|svn_version:\'9000\'|variable_revision_number:2|sh
         module.run(workspace)
         output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         self.assertTrue(np.all(output_image.pixel_data == expected))
+        
+    def test_02_04_wrong_size_gray_to_color(self):
+        '''Regression test of img-961'''
+        np.random.seed(24)
+        image = np.random.uniform(size=(50,50)).astype(np.float32)
+        outline = np.zeros((60,40),bool)
+        outline[20:31,20:31] = 1
+        outline[21:30,21:30] = 0
+        expected = np.dstack((image,image,image))
+        expected[:,:,0][outline.astype(bool)] = 1
+        expected[:,:,1][outline.astype(bool)] = 0
+        expected[:,:,2][outline.astype(bool)] = 0
+        workspace, module = self.make_workspace(image, outline)
+        module.wants_color.value = O.WANTS_COLOR
+        module.outlines[0].color.value = "Red"
+        module.line_width.value = 0.0
+        module.run(workspace)
+        output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+        self.assertTrue(np.all(output_image.pixel_data == expected))
+        
+    def test_02_05_wrong_size_color_to_color(self):
+        np.random.seed(25)
+        image = np.random.uniform(size=(50,50,3)).astype(np.float32)
+        outline = np.zeros((60,40),bool)
+        outline[20:31,20:31] = 1
+        outline[21:30,21:30] = 0
+        expected = image.copy()
+        expected[:,:,0][outline.astype(bool)] = 1
+        expected[:,:,1][outline.astype(bool)] = 0
+        expected[:,:,2][outline.astype(bool)] = 0
+        workspace, module = self.make_workspace(image, outline)
+        module.wants_color.value = O.WANTS_COLOR
+        module.outlines[0].color.value = "Red"
+        module.line_width.value = 0.0
+        module.run(workspace)
+        output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+        self.assertTrue(np.all(output_image.pixel_data == expected))
     
     def test_03_01_blank_to_gray(self):
         np.random.seed(0)
@@ -273,3 +310,23 @@ OverlayOutlines:[module_num:5|svn_version:\'9000\'|variable_revision_number:2|sh
         module.run(workspace)
         output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         self.assertTrue(np.all(output_image.pixel_data == expected))
+
+    def test_03_03_wrong_size_gray(self):
+        '''Regression test of IMG-961 - image and outline size differ'''
+        np.random.seed(41)
+        image = np.random.uniform(size=(50,50)).astype(np.float32) * .5
+        outline = np.zeros((60,40),bool)
+        outline[20:31,20:31] = True
+        outline[21:30,21:30] = False
+        expected = image.copy()
+        expected[outline[:50,:40]] = 1
+        workspace, module = self.make_workspace(image, outline)
+        module.blank_image.value = False
+        module.wants_color.value = O.WANTS_GRAYSCALE
+        module.max_type.value = O.MAX_POSSIBLE
+        module.line_width.value = 0.0
+        module.run(workspace)
+        output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+        self.assertTrue(np.all(output_image.pixel_data == expected))
+
+        

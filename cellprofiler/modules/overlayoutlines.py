@@ -234,10 +234,15 @@ class OverlayOutlines(cpm.CPModule):
                 pixel_data = pixel_data.copy()
         for outline in self.outlines:
             outline_img = self.get_outline(image_set, outline.outline_name.value)
+            i_max = min(outline_img.shape[0], pixel_data.shape[0])
+            j_max = min(outline_img.shape[1], pixel_data.shape[1])
+            outline_img = outline_img[:i_max, :j_max]
+            
             color = COLORS[outline.color.value]
             for i in range(3):
-                pixel_data[:,:,i] = (pixel_data[:,:,i] * (1-outline_img) +
-                                     outline_img * float(color[i])/255.0)
+                pixel_data[:i_max, :j_max, i] = \
+                    (pixel_data[:i_max,:j_max,i] * 
+                     (1-outline_img) + outline_img * float(color[i])/255.0)
         return pixel_data
     
     def get_outline(self, image_set, name):

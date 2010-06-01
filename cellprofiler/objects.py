@@ -349,6 +349,9 @@ def size_similarly(labels, secondary):
                 different size.
     Return the resized secondary matrix and a mask indicating what portion
     of the secondary matrix is bogus (manufactured values).
+    
+    Either the mask is all ones or the result is a copy, so you can
+    modify the output within the unmasked region w/o destroying the original.
     '''
     assert secondary.ndim == 2
     if labels.shape == secondary.shape:

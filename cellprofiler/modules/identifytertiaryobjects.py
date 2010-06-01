@@ -152,24 +152,36 @@ class IdentifyTertiaryObjects(cpm.CPModule):
         # If one of the two label images is smaller than the other, we
         # try to find the cropping mask and we apply that mask to the larger
         #
-        if any([p_size < s_size 
-                for p_size,s_size
-                in zip(primary_labels.shape, secondary_labels.shape)]):
+        try:
+            if any([p_size < s_size 
+                    for p_size,s_size
+                    in zip(primary_labels.shape, secondary_labels.shape)]):
+                #
+                # Look for a cropping mask associated with the primary_labels
+                # and apply that mask to resize the secondary labels
+                #
+                secondary_labels = primary_objects.crop_image_similarly(secondary_labels)
+                tertiary_image = primary_objects.parent_image
+            elif any([p_size > s_size 
+                    for p_size,s_size
+                    in zip(primary_labels.shape, secondary_labels.shape)]):
+                primary_labels = secondary_objects.crop_image_similarly(primary_labels)
+                tertiary_image = secondary_objects.parent_image
+            elif secondary_objects.parent_image != None:
+                tertiary_image = secondary_objects.parent_image
+            else:
+                tertiary_image = primary_objects.parent_image
+        except ValueError:
+            # No suitable cropping - resize all to fit the secondary
+            # labels which are the most critical.
             #
-            # Look for a cropping mask associated with the primary_labels
-            # and apply that mask to resize the secondary labels
-            #
-            secondary_labels = primary_objects.crop_image_similarly(secondary_labels)
-            tertiary_image = primary_objects.parent_image
-        elif any([p_size > s_size 
-                for p_size,s_size
-                in zip(primary_labels.shape, secondary_labels.shape)]):
-            primary_labels = secondary_objects.crop_image_similarly(primary_labels)
-            tertiary_image = secondary_objects.parent_image
-        elif secondary_objects.parent_image != None:
-            tertiary_image = secondary_objects.parent_image
-        else:
-            tertiary_image = primary_objects.parent_image
+            primary_labels, _ = cpo.size_similarly(secondary_labels, primary_labels)
+            if secondary_objects.parent_image != None:
+                tertiary_image = secondary_objects.parent_image
+            else:
+                tertiary_image = primary_objects.parent_image
+                if tertiary_image is not None:
+                    tertiary_image, _ = cpo.size_similarly(secondary_labels, tertiary_image)
         #
         # Find the outlines of the primary image and use this to shrink the
         # primary image by one. This guarantees that there is something left

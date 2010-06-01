@@ -269,7 +269,6 @@ class MeasureObjectIntensity(cpm.CPModule):
                 if image.has_mask:
                     masked_image = img.copy()
                     masked_image[~image.mask] = 0
-                    img = img[image.mask]
                 else:
                     masked_image = img
                 objects = workspace.object_set.get_objects(object_name.value)
@@ -281,6 +280,7 @@ class MeasureObjectIntensity(cpm.CPModule):
                 
                 if image.has_mask:
                     _, mask = cpo.crop_labels_and_image(labels, image.mask)
+                    img = img[mask]
                     masked_labels = labels.copy()
                     masked_labels[~mask] = 0
                     labels = labels[mask]

@@ -2271,6 +2271,7 @@ def load_using_bioformats(path, c=None, z=0, t=0, series=None):
     try:
         formatreader.jutil.attach()
         rdr = ImageReader()
+        rdr.setGroupFiles(False)
         rdr.setId(path)
         width = rdr.getSizeX()
         height = rdr.getSizeY()

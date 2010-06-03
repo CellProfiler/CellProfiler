@@ -121,6 +121,8 @@ def make_iformat_reader_class():
                                           x,y - offset into image
                                           w,h - dimensions of image to return''')
         setSeries = jutil.make_method('setSeries','(I)V','Set the currently selected image series')
+        setGroupFiles = jutil.make_method('setGroupFiles', '(Z)V', 
+                                          'Force reader to group or not to group files in a multi-file set')
         setMetadataStore = jutil.make_method('setMetadataStore',
                                              '(Lloci/formats/meta/MetadataStore;)V',
                                              'Sets the default metadata store for this reader.')

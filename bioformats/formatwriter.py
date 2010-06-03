@@ -20,6 +20,18 @@ been written.  This allows you to write to any number of output files using
 the same writer and output settings (compression, frames per second, etc.),
 and is especially useful for formats that do not support multiple images per
 file.
+
+CellProfiler is distributed under the GNU General Public License,
+but this file is licensed under the more permissive BSD license.
+See the accompanying file LICENSE for details.
+
+Copyright (c) 2003-2009 Massachusetts Institute of Technology
+Copyright (c) 2009-2010 Broad Institute
+All rights reserved.
+
+Please see the AUTHORS file for credits.
+
+Website: http://www.cellprofiler.org
 '''
 
 __version__ = "$Revision$"

@@ -1,6 +1,7 @@
 /* get_proper_case_filename.c - retrieve a filename in its correct case
  *
- * CellProfiler is distributed under the GNU General Public License.
+ * CellProfiler is distributed under the GNU General Public License,
+but this file is licensed under the more permissive BSD license.
  * See the accompanying file LICENSE for details.
  *
  * Developed by the Broad Institute

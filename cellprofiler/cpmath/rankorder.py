@@ -1,11 +1,13 @@
 """rankorder.py - convert an image of any type to an image of ints whose
 pixels have an identical rank order compared to the original image
 
-CellProfiler is distributed under the GNU General Public License.
+CellProfiler is distributed under the GNU General Public License,
+but this file is licensed under the more permissive BSD license.
 See the accompanying file LICENSE for details.
 
-Developed by the Broad Institute
-Copyright 2003-2010
+Copyright (c) 2003-2009 Massachusetts Institute of Technology
+Copyright (c) 2009-2010 Broad Institute
+All rights reserved.
 
 Please see the AUTHORS file for credits.
 

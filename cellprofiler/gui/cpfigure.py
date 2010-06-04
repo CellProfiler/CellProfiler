@@ -796,7 +796,7 @@ class CPFigureFrame(wx.Frame):
                                    sharex=sharex, sharey=sharey)
     
     def subplot_imshow_labels(self, x, y, labels, title=None, clear=True, 
-                              renumber=True):
+                              renumber=True, sharex=None, sharey=None):
         if renumber:
             labels = renumber_labels_for_display(labels)
         if np.all(labels == 0):
@@ -806,7 +806,8 @@ class CPFigureFrame(wx.Frame):
             cm.set_bad((0,0,0))
             labels = numpy.ma.array(labels, mask=labels==0)
         return self.subplot_imshow(x, y, labels, title, clear, cm, 
-                                   normalize=False, vmin=None, vmax=None)
+                                   normalize=False, vmin=None, vmax=None,
+                                   sharex=sharex, sharey=sharey)
     
     def subplot_imshow_grayscale(self, x, y, image, title=None, clear=True,
                                  colorbar=False, normalize=True, vmin=0, vmax=1,

@@ -22,6 +22,7 @@ if [ $? -eq 0 ]
 then
 . /broad/tools/scripts/useuse
 reuse .python-2.6.5
+reuse .cython-0.12.1-python-2.6.5
 reuse .numpy-trunk-python-2.6.5
 reuse .scipy-trunk-python-2.6.5
 reuse .matplotlib-trunk-python-2.6.5

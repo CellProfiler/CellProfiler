@@ -355,29 +355,39 @@ class MeasureObjectNeighbors(cpm.CPModule):
                                       colormap = neighbor_cm,
                                       colorbar=True, vmin=-1,
                                       vmax=neighbor_count_image.max(),
-                                      normalize=False)
+                                      normalize=False,
+                                      sharex = figure.subplot(0,0),
+                                      sharey = figure.subplot(0,0))
                 figure.subplot_imshow(1,1, percent_touching_image,
                                       "%s colored by pct touching"%
                                       self.object_name.value,
                                       colormap = percent_touching_cm,
                                       colorbar=True, vmin=0, 
                                       vmax=percent_touching_image.max(),
-                                      normalize=False)
+                                      normalize=False,
+                                      sharex = figure.subplot(0,0),
+                                      sharey = figure.subplot(0,0))
             else:
                 # No objects - colorbar blows up.
                 figure.subplot_imshow(0,1, neighbor_count_image,
                                       "%s colored by # of neighbors" %
                                       self.object_name.value,
-                                      colormap = neighbor_cm)
+                                      colormap = neighbor_cm,
+                                      sharex = figure.subplot(0,0),
+                                      sharey = figure.subplot(0,0))
                 figure.subplot_imshow(1,1, percent_touching_image,
                                       "%s colored by pct touching"%
                                       self.object_name.value,
-                                      colormap = percent_touching_cm)
+                                      colormap = percent_touching_cm,
+                                      sharex = figure.subplot(0,0),
+                                      sharey = figure.subplot(0,0))
                 
             if self.distance_method == D_EXPAND:
                 figure.subplot_imshow_labels(1,0, labels,
                                              "Expanded %s"%
-                                             self.object_name.value)
+                                             self.object_name.value,
+                                             sharex = figure.subplot(0,0),
+                                             sharey = figure.subplot(0,0))
     
     def get_measurement_columns(self, pipeline):
         '''Return column definitions for measurements made by this module'''

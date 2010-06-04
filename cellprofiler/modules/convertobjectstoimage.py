@@ -105,11 +105,15 @@ class ConvertObjectsToImage(cpm.CPModule):
             pixel_data = labels != 0
             pixel_data = pixel_data.astype(float)
             if not workspace.frame is None:
-                figure.subplot_imshow_bw(1,0,pixel_data,self.image_name.value)
+                figure.subplot_imshow_bw(1,0,pixel_data,self.image_name.value,
+                                         sharex=figure.subplot(0,0),
+                                         sharey=figure.subplot(0,0))
         elif self.image_mode == IM_GRAYSCALE:
             pixel_data = labels.astype(float) / np.max(labels)
             if not workspace.frame is None:
-                figure.subplot_imshow_grayscale(1,0,pixel_data,self.image_name.value)
+                figure.subplot_imshow_grayscale(1,0,pixel_data,self.image_name.value,
+                                                sharex=figure.subplot(0,0),
+                                                sharey=figure.subplot(0,0))
         elif self.image_mode == IM_COLOR:
             import matplotlib.cm
             from cellprofiler.gui.cpfigure import renumber_labels_for_display
@@ -136,12 +140,16 @@ class ConvertObjectsToImage(cpm.CPModule):
             pixel_data = pixel_data[:,:,:3]
             pixel_data[labels == 0,:] = 0
             if not workspace.frame is None:
-                figure.subplot_imshow(1,0,pixel_data, self.image_name.value)
+                figure.subplot_imshow(1, 0, pixel_data, self.image_name.value,
+                                      sharex=figure.subplot(0,0),
+                                      sharey=figure.subplot(0,0))
         elif self.image_mode == IM_UINT16:
             pixel_data = labels.copy()
             if not workspace.frame is None:
-                figure.subplot_imshow_grayscale(1,0,pixel_data,
-                                                self.image_name.value)
+                figure.subplot_imshow_grayscale(1, 0, pixel_data,
+                                                self.image_name.value,
+                                                sharex=figure.subplot(0,0),
+                                                sharey=figure.subplot(0,0))
             convert = False
         image = cpi.Image(pixel_data, parent_image = objects.parent_image,
                           convert = convert)

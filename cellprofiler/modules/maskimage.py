@@ -150,7 +150,9 @@ class MaskImage(cpm.CPModule):
             figure.subplot_imshow_grayscale(0,0,orig_image.pixel_data,
                                             "Original image: %s"%(self.image_name.value))
             figure.subplot_imshow_grayscale(1,0,masked_pixels,
-                                            "Masked image: %s"%(self.masked_image_name.value))
+                                            "Masked image: %s"%(self.masked_image_name.value),
+                                            sharex = figure.subplot(0,0),
+                                            sharey = figure.subplot(0,0))
         image_set.add(self.masked_image_name.value, masked_image)
     
     def upgrade_settings(self, setting_values, 

@@ -291,12 +291,16 @@ class GrayToColor(cpm.CPModule):
                 image = imgset.get_image(input_image_setting.value,
                                          must_be_grayscale=True)
                 my_frame.subplot_imshow_grayscale(x,y,image.pixel_data,
-                                                  title=input_image_setting.value)
+                                                  title=input_image_setting.value,
+                                                  sharex = my_frame.subplot(0,0),
+                                                  sharey = my_frame.subplot(0,0))
             for x,y in subplot_indices[len(input_image_settings):]:
                 my_frame.subplot(x,y).set_visible(False)
             my_frame.subplot_imshow(color_subplot[0], color_subplot[1]
                                     ,rgb_pixel_data,
-                                    title=self.rgb_image_name.value)
+                                    title=self.rgb_image_name.value,
+                                    sharex = my_frame.subplot(0,0),
+                                    sharey = my_frame.subplot(0,0))
         ##############
         # Save image #
         ##############

@@ -229,7 +229,9 @@ with respect to the first image.""")
                              np.zeros(first_pixels.shape)))
             title = ("Unaligned images: %s and %s"%
                      (self.first_input_image.value, input_name))
-            figure.subplot_imshow(0,i,img,title)
+            figure.subplot_imshow(0, i, img, title, 
+                                  sharex=figure.subplot(0,0), 
+                                  sharey=figure.subplot(0,0))
             
             other_image = image_set.get_image(output_name,
                                               must_be_grayscale=True)
@@ -240,7 +242,9 @@ with respect to the first image.""")
             title = ("Aligned images: %s and %s\nX offset: %d, Y offset: %d"%
                      (self.first_output_image.value, output_name,
                       off_x, off_y))
-            figure.subplot_imshow(1,i,img,title)
+            figure.subplot_imshow(1, i, img, title, 
+                                  sharex=figure.subplot(0,0), 
+                                  sharey=figure.subplot(0,0))
 
     def is_interactive(self):
         return False

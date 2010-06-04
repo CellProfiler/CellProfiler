@@ -2588,3 +2588,32 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
                 ["Per_Well_" + x for x in ("avg", "median", "std")])
             finally_fn()
             
+    def test_08_01_image_thumbnails(self):
+        workspace, module, output_dir, finally_fn = self.make_workspace(True)
+        try:
+            self.assertTrue(isinstance(module, E.ExportToDatabase))
+            module.db_type = E.DB_MYSQL
+            module.wants_agg_mean.value = False
+            module.wants_agg_median.value = False
+            module.wants_agg_std_dev.value = False
+            module.objects_choice.value = E.O_ALL
+            module.max_column_size.value = 50
+            module.separate_object_tables.value = E.OT_COMBINE
+            module.wants_agg_mean_well.value = False
+            module.wants_agg_median_well.value = False
+            module.wants_agg_std_dev_well.value = False
+            module.want_image_thumbnails = True
+            print workspace.image_set.get_names()
+            module.thumbnail_image_names.choices = [0]
+            print module.thumbnail_image_names.get_selections()
+            module.prepare_run(workspace.pipeline, workspace.image_set_list, None)
+            module.prepare_group(workspace.pipeline, workspace.image_set_list, {}, [1])
+            module.run(workspace)
+            module.post_run(workspace)
+            
+##            E.execute('SELECT %s FROM Per_Image')
+            
+        finally:
+            self.drop_tables(module, ["Per_Image", "Per_%s" % OBJECT_NAME, "Per_%s" % ALTOBJECT_NAME])
+            finally_fn()
+            

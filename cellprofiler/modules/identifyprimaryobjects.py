@@ -1149,7 +1149,9 @@ class IdentifyPrimaryObjects(cpmi.Identify):
                                               workspace.display_data.image.pixel_data,
                                               title)
             my_frame.subplot_imshow_labels(1, 0, workspace.display_data.labeled_image, 
-                                           self.object_name.value)
+                                           self.object_name.value,
+                                           sharex = my_frame.subplot(0,0),
+                                           sharey = my_frame.subplot(0,0))
     
             if workspace.display_data.image.pixel_data.ndim == 2:
                 # Outline the size-excluded pixels in red
@@ -1176,7 +1178,9 @@ class IdentifyPrimaryObjects(cpmi.Identify):
                          cpp.get_tertiary_outline_color())
             
             title = "%s outlines"%(self.object_name.value) 
-            my_frame.subplot_imshow(0, 1, outline_img, title, normalize=False)
+            my_frame.subplot_imshow(0, 1, outline_img, title, normalize=False,
+                                    sharex = my_frame.subplot(0,0),
+                                    sharey = my_frame.subplot(0,0))
             
             table_axes.clear()
             table = table_axes.table(cellText=workspace.display_data.statistics,

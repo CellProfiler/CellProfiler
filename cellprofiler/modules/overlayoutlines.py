@@ -190,10 +190,14 @@ class OverlayOutlines(cpm.CPModule):
                 if self.wants_color.value == WANTS_COLOR:
                     figure.subplot_imshow(1, 0, pixel_data,
                                           self.output_image_name.value,
-                                          normalize=False)
+                                          normalize=False,
+                                          sharex = figure.subplot(0,0),
+                                          sharey = figure.subplot(0,0))
                 else:
                     figure.subplot_imshow_bw(1, 0, pixel_data,
-                                             self.output_image_name.value)
+                                             self.output_image_name.value,
+                                             sharex = figure.subplot(0,0),
+                                             sharey = figure.subplot(0,0))
 
     def run_bw(self, workspace):
         image_set = workspace.image_set

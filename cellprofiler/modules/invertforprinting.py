@@ -205,7 +205,9 @@ class InvertForPrinting(cpm.CPModule):
         if workspace.frame is not None:
             figure = workspace.create_or_find_figure(subplots=(2,1))
             figure.subplot_imshow(0, 0, color_image, "Original image")
-            figure.subplot_imshow(1, 0, inverted_color, "Color-inverted image")
+            figure.subplot_imshow(1, 0, inverted_color, "Color-inverted image",
+                                  sharex = figure.subplot(0,0),
+                                  sharey = figure.subplot(0,0))
     
     def upgrade_settings(self, setting_values, variable_revision_number,
                          module_name, from_matlab):

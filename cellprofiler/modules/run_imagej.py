@@ -206,9 +206,13 @@ class RunImageJ(cpm.CPModule):
             pixel_data = img.pixel_data
             title = "Output image: %s" % output_image_name
             if pixel_data.ndim == 3:
-                figure.subplot_imshow_color(1,0, pixel_data, title=title)
+                figure.subplot_imshow_color(1,0, pixel_data, title=title,
+                                            sharex = figure.subplot(0,0),
+                                            sharey = figure.subplot(0,0))
             else:
-                figure.subplot_imshow_bw(1,0, pixel_data, title=title)
+                figure.subplot_imshow_bw(1,0, pixel_data, title=title,
+                                         sharex = figure.subplot(0,0),
+                                         sharey = figure.subplot(0,0))
         else:
             figure.figure.text(.75, .5, "No output image",
                                verticalalignment='center',

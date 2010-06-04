@@ -214,16 +214,22 @@ class CorrectIlluminationApply(cpm.CPModule):
             corrected_image = workspace.image_set.get_image(corrected_image_name)
 
             figure.subplot_imshow_grayscale(0, j, orig_image.pixel_data,
-                                            "Original image: %s" % image_name)
+                                            "Original image: %s" % image_name,
+                                            sharex=figure.subplot(0,0),
+                                            sharey=figure.subplot(0,0))
             title = ("Illumination function: %s\nmin=%f, max=%f" %
                      (illum_correct_function_image_name,
                       round(illum_image.pixel_data.min(),4),
                       round(illum_image.pixel_data.max(),4)))
 
-            figure.subplot_imshow_grayscale(1, j, illum_image.pixel_data, title)
+            figure.subplot_imshow_grayscale(1, j, illum_image.pixel_data, title,
+                                            sharex=figure.subplot(0,0),
+                                            sharey=figure.subplot(0,0))
             figure.subplot_imshow_grayscale(2, j, corrected_image.pixel_data,
                                             "Final image: %s" %
-                                            corrected_image_name)
+                                            corrected_image_name,
+                                            sharex=figure.subplot(0,0),
+                                            sharey=figure.subplot(0,0))
 
     def is_interactive(self):
         return False

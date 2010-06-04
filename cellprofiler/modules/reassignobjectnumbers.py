@@ -264,11 +264,15 @@ class ReassignObjectNumbers(cpm.CPModule):
                 image[output_labels > 0] / 4 * 3 +
                 output_image[output_labels > 0,:] / 4)
             figure.subplot_imshow(0,1, image,
-                                  title = self.output_objects_name.value)
+                                  title = self.output_objects_name.value,
+                                  sharex = figure.subplot(0,0),
+                                  sharey = figure.subplot(0,0))
         else:
             figure.subplot_imshow_labels(0,1, 
                                          workspace.display_data.output_labels,
-                                         title = self.output_objects_name.value)
+                                         title = self.output_objects_name.value,
+                                         sharex = figure.subplot(0,0),
+                                         sharey = figure.subplot(0,0))
 
     def filter_using_image(self, workspace, mask):
         '''Filter out connections using local intensity minima between objects

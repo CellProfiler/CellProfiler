@@ -188,7 +188,9 @@ class Smooth(cpm.CPModule):
         figure.subplot_imshow_grayscale(0, 1,
                                         workspace.display_data.output_pixels,
                                         "Filtered: %s" %
-                                        self.filtered_image_name.value)
+                                        self.filtered_image_name.value,
+                                        sharex = figure.subplot(0,0),
+                                        sharey = figure.subplot(0,0))
     
     def upgrade_settings(self, setting_values, variable_revision_number, 
                          module_name, from_matlab):

@@ -448,17 +448,23 @@ class FilterObjects(cpm.CPModule):
                                          title="Original: %s"%src_name)
             figure.subplot_imshow_labels(0,1,target_objects.segmented,
                                          title="Filtered: %s"%
-                                         target_name)
+                                         target_name,
+                                         sharex = figure.subplot(0,0),
+                                         sharey = figure.subplot(0,0))
         else:
             figure = workspace.create_or_find_figure(subplots=(2,2))
             figure.subplot_imshow_labels(0,0,src_objects.segmented,
                                          title="Original: %s"%src_name)
             figure.subplot_imshow_labels(0,1,target_objects.segmented,
                                          title="Filtered: %s"%
-                                         target_name)
+                                         target_name,
+                                         sharex = figure.subplot(0,0),
+                                         sharey = figure.subplot(0,0))
             figure.subplot_imshow_grayscale(1,0,image.pixel_data,
                                             "Input image #%d"%
-                                            (workspace.measurements.image_set_number+1))
+                                            (workspace.measurements.image_set_number+1),
+                                            sharex = figure.subplot(0,0),
+                                            sharey = figure.subplot(0,0))
             outs = outline(target_objects.segmented) > 0
             pixel_data = image.pixel_data
             maxpix = np.max(pixel_data)
@@ -470,7 +476,9 @@ class FilterObjects(cpm.CPModule):
                 picture = np.dstack((pixel_data,pixel_data,pixel_data))
             red_channel = picture[:,:,0]
             red_channel[outs] = maxpix
-            figure.subplot_imshow(1, 1, picture, "Outlines")
+            figure.subplot_imshow(1, 1, picture, "Outlines",
+                                  sharex = figure.subplot(0,0),
+                                  sharey = figure.subplot(0,0))
             
             if workspace.frame != None:
                 number_of_src_objects = np.max(src_objects.segmented)

@@ -225,11 +225,17 @@ class IdentifyTertiaryObjects(cpm.CPModule):
                                       workspace.image_set.number+1)
             my_frame.subplot_imshow_labels(0,0,primary_labels,title)
             my_frame.subplot_imshow_labels(1,0,secondary_labels, 
-                                           self.secondary_objects_name.value)
+                                           self.secondary_objects_name.value,
+                                           sharex = my_frame.subplot(0,0),
+                                           sharey = my_frame.subplot(0,0))
             my_frame.subplot_imshow_labels(0, 1,tertiary_labels, 
-                                           self.subregion_objects_name.value)
+                                           self.subregion_objects_name.value,
+                                           sharex = my_frame.subplot(0,0),
+                                           sharey = my_frame.subplot(0,0))
             my_frame.subplot_imshow_bw(1,1,tertiary_outlines, 
-                                       "Outlines")
+                                       "Outlines",
+                                       sharex = my_frame.subplot(0,0),
+                                       sharey = my_frame.subplot(0,0))
             my_frame.Refresh()
         #
         # Write out the objects

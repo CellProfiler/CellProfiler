@@ -372,9 +372,11 @@ class Crop(cpm.CPModule):
             
             title = "Original: %s, cycle # %d"%(self.image_name.value,
                                       workspace.image_set.number+1)
-            my_frame.subplot_imshow_grayscale(0,0,orig_image.pixel_data,title)
-            my_frame.subplot_imshow_bw(1,0,cropped_pixel_data,
-                                       self.cropped_image_name.value)
+            my_frame.subplot_imshow_grayscale(0,0, orig_image.pixel_data, title)
+            my_frame.subplot_imshow_bw(1, 0, cropped_pixel_data,
+                                       self.cropped_image_name.value,
+                                       sharex=my_frame.subplot(0,0),
+                                       sharey=my_frame.subplot(0,0))
         if save_flag:
             d[D_FIRST_CROPPING_MASK] = mask
             d[D_FIRST_CROPPING] = cropping

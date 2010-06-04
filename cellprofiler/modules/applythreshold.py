@@ -176,7 +176,9 @@ class ApplyThreshold(Identify):
 
         figure.subplot_imshow_grayscale(0,1, workspace.display_data.output_pixel_data,
                               title = "Thresholded image: %s" %
-                              self.thresholded_image_name.value)
+                              self.thresholded_image_name.value, 
+                              sharex=figure.subplot(0,0), 
+                              sharey=figure.subplot(0,0))
         figure.subplot_table(0,2, workspace.display_data.statistics)
         
     def get_measurement_columns(self, pipeline):

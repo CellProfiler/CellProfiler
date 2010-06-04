@@ -261,14 +261,18 @@ class RelateObjects(cpm.CPModule):
             figure.subplot_imshow_labels(0,0,parents.segmented,
                                          title = self.parent_name.value)
             figure.subplot_imshow_labels(1,0,children.segmented,
-                                         title = self.sub_object_name.value)
+                                         title = self.sub_object_name.value,
+                                         sharex = figure.subplot(0,0),
+                                         sharey = figure.subplot(0,0))
             parent_labeled_children = np.zeros(children.segmented.shape, int)
             parent_labeled_children[children.segmented > 0] = \
                 parents_of[children.segmented[children.segmented > 0]-1]
             figure.subplot_imshow_labels(0,1,parent_labeled_children,
                                          "%s labeled by %s"%
                                          (self.sub_object_name.value,
-                                          self.parent_name.value))
+                                          self.parent_name.value),
+                                         sharex = figure.subplot(0,0),
+                                         sharey = figure.subplot(0,0))
     
     def get_parent_names(self):
         '''Get the names of parents to be measured for distance'''

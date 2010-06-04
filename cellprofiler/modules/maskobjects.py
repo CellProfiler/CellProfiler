@@ -349,7 +349,9 @@ class MaskObjects(I.Identify):
         figure.subplot_imshow_labels(0, 0, original_labels,
                                      title = self.object_name.value)
         figure.subplot_imshow_color(1, 0, image,
-                                    title = self.remaining_objects.value)
+                                    title = self.remaining_objects.value,
+                                    sharex = figure.subplot(0,0),
+                                    sharey = figure.subplot(0,0))
         
     def get_measurement_columns(self, pipeline):
         '''Return column definitions for measurements made by this module'''

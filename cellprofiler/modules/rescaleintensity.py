@@ -365,10 +365,14 @@ class RescaleIntensity(cpm.CPModule):
             if pixel_data.ndim == 2:
                 figure.subplot_imshow_grayscale(i,j,pixel_data,
                                                 title = image_name,
-                                                vmin = 0, vmax = 1)
+                                                vmin = 0, vmax = 1,
+                                                sharex = figure.subplot(0,0),
+                                                sharey = figure.subplot(0,0))
             else:
                 figure.subplot_imshow(i, j, pixel_data, title=image_name,
-                                      normalize=False)
+                                      normalize=False,
+                                      sharex = figure.subplot(0,0),
+                                      sharey = figure.subplot(0,0))
     
     def stretch(self, input_image):
         '''Stretch the input image to the range 0:1'''

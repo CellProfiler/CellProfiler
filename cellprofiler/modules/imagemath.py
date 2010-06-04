@@ -285,11 +285,15 @@ class ImageMath(cpm.CPModule):
                 if display_pixel_data[i].ndim == 3:
                     figure.subplot_imshow(i%columns, int(i / columns),
                                           display_pixel_data[i],
-                                          title=display_names[i])
+                                          title=display_names[i],
+                                          sharex = figure.subplot(0,0),
+                                          sharey = figure.subplot(0,0))
                 else:
                     figure.subplot_imshow_bw(i%columns, int(i / columns),
                                              display_pixel_data[i],
-                                             title=display_names[i])
+                                             title=display_names[i],
+                                             sharex = figure.subplot(0,0),
+                                             sharey = figure.subplot(0,0))
 
     def upgrade_settings(self, setting_values, variable_revision_number, 
                          module_name, from_matlab):

@@ -219,7 +219,9 @@ class EditObjectsManually(I.Identify):
             figure = workspace.create_or_find_figure(subplots=(2,1))
             figure.subplot_imshow_labels(0, 0, orig_labels, orig_objects_name)
             figure.subplot_imshow_labels(1, 0, filtered_labels,
-                                         filtered_objects_name)
+                                         filtered_objects_name,
+                                         sharex = figure.subplot(0,0),
+                                         sharey = figure.subplot(0,0))
             
     def filter_objects(self, workspace, orig_labels):
         import wx

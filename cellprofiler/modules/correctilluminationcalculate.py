@@ -368,9 +368,13 @@ class CorrectIlluminationCalculate(cpm.CPModule):
                                         "Averaged image")
         pixel_data = output_image.pixel_data
         figure.subplot_imshow_grayscale(0, 1, pixel_data,
-                                        "Final illumination function")
+                                        "Final illumination function",
+                                        sharex=figure.subplot(0,0),
+                                        sharey=figure.subplot(0,0))
         figure.subplot_imshow_grayscale(1, 0, dilated_image.pixel_data,
-                                        "Dilated image")
+                                        "Dilated image",
+                                        sharex=figure.subplot(0,0),
+                                        sharey=figure.subplot(0,0))
         statistics = [["Min value", round(np.min(output_image.pixel_data),2)],
                       ["Max value", round(np.max(output_image.pixel_data),2)],
                       ["Calculation type", self.intensity_choice.value]

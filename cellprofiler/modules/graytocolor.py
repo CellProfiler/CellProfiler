@@ -287,13 +287,13 @@ class GrayToColor(cpm.CPModule):
             my_frame = workspace.create_or_find_figure(title, subplots)
             for i, input_image_setting in enumerate(input_image_settings):
                 x,y = subplot_indices[i]
-                my_frame.subplot(x,y).set_visible(True)
                 image = imgset.get_image(input_image_setting.value,
                                          must_be_grayscale=True)
                 my_frame.subplot_imshow_grayscale(x,y,image.pixel_data,
                                                   title=input_image_setting.value,
                                                   sharex = my_frame.subplot(0,0),
                                                   sharey = my_frame.subplot(0,0))
+                my_frame.subplot(x,y).set_visible(True)
             for x,y in subplot_indices[len(input_image_settings):]:
                 my_frame.subplot(x,y).set_visible(False)
             my_frame.subplot_imshow(color_subplot[0], color_subplot[1]

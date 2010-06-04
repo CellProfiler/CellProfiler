@@ -223,8 +223,8 @@ class ColorToGray(cpm.CPModule):
             figure.subplot_imshow(xy[0], xy[1], disp[0],
                                   title = "%s image"%(disp[1]),
                                   colormap = matplotlib.cm.Greys_r, 
-                                  sharex=figure.subplot(layout[0][0],layout[0][1]),
-                                  sharey=figure.subplot(layout[0][0],layout[0][1]))
+                                  sharex=figure.subplot(0,0),
+                                  sharey=figure.subplot(0,0))
         
     def is_interactive(self):
         return False

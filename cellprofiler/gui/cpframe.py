@@ -459,9 +459,9 @@ class CPFrame(wx.Frame):
             image = lip.provide_image(None).pixel_data
             frame = CPFigureFrame(self, title=dlg.Path, subplots=(1,1))
             if image.ndim == 3:
-                frame.subplot_imshow(0,0,image, title = dlg.Path)
+                frame.subplot_imshow(0, 0, image, title = dlg.Path)
             else:
-                frame.subplot_imshow_grayscale(0,0,image, title=dlg.Path)
+                frame.subplot_imshow_grayscale(0, 0, image, title=dlg.Path)
             frame.Refresh()
             
                                   

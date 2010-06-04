@@ -22,6 +22,8 @@ import numpy.ma
 import matplotlib.patches
 import matplotlib.colorbar
 import matplotlib.backends.backend_wxagg
+from matplotlib.backends.backend_wxagg import NavigationToolbar2WxAgg as NavigationToolbar
+import cellprofiler.utilities.matplotlib_axes_monkey_patch
 from cellprofiler.preferences import update_cpfigure_position, get_next_cpfigure_position, reset_cpfigure_position
 import scipy.misc
 from cStringIO import StringIO
@@ -108,7 +110,6 @@ def find_fig(parent=None, title="", name=wx.FrameNameStr, subplots=None):
             window.clf()
             if subplots!=None:
                 window.subplots = np.zeros(subplots,dtype=object)
-                window.zoom_rects = np.zeros(subplots,dtype=object)
         return window
 
 def create_or_find(parent=None, id=-1, title="", 
@@ -130,16 +131,11 @@ def close_all(parent):
         
 MENU_FILE_SAVE = wx.NewId()
 MENU_CLOSE_WINDOW = wx.NewId()
-MENU_ZOOM_IN = wx.NewId()
-MENU_ZOOM_OUT = wx.NewId()
 MENU_TOOLS_MEASURE_LENGTH = wx.NewId()
 MENU_CLOSE_ALL = wx.NewId()
 
 '''mouse tool mode - do nothing'''
 MODE_NONE = 0
-
-'''mouse tool mode - zoom in'''   
-MODE_ZOOM = 1
 
 '''mouse tool mode - show pixel data'''
 MODE_MEASURE_LENGTH = 2
@@ -170,7 +166,6 @@ class CPFigureFrame(wx.Frame):
         self.close_fn = on_close
         self.BackgroundColour = cpprefs.get_background_color()
         self.mouse_mode = MODE_NONE
-        self.zoom_stack = []
         self.length_arrow = None
         self.colorbar = {}
         self.subplot_params = {}
@@ -190,8 +185,8 @@ class CPFigureFrame(wx.Frame):
         wx.EVT_CLOSE(self, self.on_close)
         if subplots:
             self.subplots = np.zeros(subplots,dtype=object)
-            self.zoom_rects = np.zeros(subplots,dtype=object)
         self.create_menu()
+        self.create_toolbar()
         self.figure.canvas.mpl_connect('button_press_event', self.on_button_press)
         self.figure.canvas.mpl_connect('motion_notify_event', self.on_mouse_move)
         self.figure.canvas.mpl_connect('button_release_event', self.on_button_release)
@@ -232,17 +227,7 @@ class CPFigureFrame(wx.Frame):
         self.__menu_file.Append(MENU_FILE_SAVE,"&Save")
         wx.EVT_MENU(self, MENU_FILE_SAVE, self.on_file_save)
         self.MenuBar.Append(self.__menu_file,"&File")
-        
-        self.__menu_zoom = wx.Menu()
-        self.__menu_item_zoom_in = \
-            self.__menu_zoom.AppendCheckItem(MENU_ZOOM_IN,"&Zoom in")
-        wx.EVT_MENU(self,MENU_ZOOM_IN,self.on_zoom_in)
-        self.__menu_item_zoom_out = \
-            self.__menu_zoom.Append(MENU_ZOOM_OUT,"&Zoom out")
-        wx.EVT_MENU(self,MENU_ZOOM_OUT,self.on_zoom_out)
-        self.__menu_item_zoom_out.Enable(len(self.zoom_stack) > 0)
-        self.MenuBar.Append(self.__menu_zoom, "&Zoom")
-        
+                
         self.__menu_tools = wx.Menu()
         self.__menu_item_measure_length = \
             self.__menu_tools.AppendCheckItem(MENU_TOOLS_MEASURE_LENGTH,
@@ -270,13 +255,20 @@ class CPFigureFrame(wx.Frame):
         wx.EVT_MENU(self, MENU_CLOSE_WINDOW, self.on_close)
         self.MenuBar.Append(make_help_menu(FIGURE_HELP, self), "&Help")
     
+    def create_toolbar(self):
+        self.navtoolbar = NavigationToolbar(self.figure.canvas)
+        self.SetToolBar(self.navtoolbar)
+        self.navtoolbar.DeleteToolByPos(6)
+#        ID_LASSO_TOOL = wx.NewId()
+#        lasso = self.navtoolbar.InsertSimpleTool(5, ID_LASSO_TOOL, lasso_tool.ConvertToBitmap(), '', '', isToggle=True)
+#        self.navtoolbar.Realize()
+#        self.Bind(wx.EVT_TOOL, self.toggle_lasso_tool, id=ID_LASSO_TOOL)
+
     def clf(self):
         '''Clear the figure window, resetting the display'''
         self.figure.clf()
         if hasattr(self,"subplots"):
             self.subplots[:,:] = None
-        if hasattr(self,"zoom_rects"):
-            self.zoom_rects[:,:] = None
         # Remove the subplot menus
         for (x,y) in self.subplot_menus:
             self.menu_subplots.RemoveItem(self.subplot_menus[(x,y)])
@@ -304,28 +296,10 @@ class CPFigureFrame(wx.Frame):
             menu.Delete(menu_id)
         self.Destroy()
 
-    def on_zoom_in(self,event):
-        if self.__menu_item_zoom_in.IsChecked():
-            self.mouse_mode = MODE_ZOOM
-            self.__menu_item_measure_length.Check(False)
-        elif self.mouse_mode == MODE_ZOOM:
-            self.mouse_mode = MODE_NONE
-
-    def on_zoom_out(self, event):
-        if self.subplots != None and len(self.zoom_stack) > 0:
-            old_extents = self.zoom_stack.pop()
-            for subplot in self.subplots.flatten():
-                if subplot and len(subplot.images) > 0:
-                    subplot.set_xlim(old_extents[0][0],old_extents[0][1])
-                    subplot.set_ylim(old_extents[1][0],old_extents[1][1])
-        self.__menu_item_zoom_out.Enable(len(self.zoom_stack) > 0)
-        self.Refresh()
-    
     def on_measure_length(self, event):
         '''Measure length menu item selected.'''
         if self.__menu_item_measure_length.IsChecked():
             self.mouse_mode = MODE_MEASURE_LENGTH
-            self.__menu_item_zoom_in.Check(False)
             self.Layout()
         elif self.mouse_mode == MODE_MEASURE_LENGTH:
             self.mouse_mode = MODE_NONE
@@ -335,26 +309,8 @@ class CPFigureFrame(wx.Frame):
             return
         if event.inaxes in self.subplots.flatten():
             self.mouse_down = (event.xdata,event.ydata)
-            if self.mouse_mode == MODE_ZOOM:
-                self.on_zoom_mouse_down(event)
-            elif self.mouse_mode == MODE_MEASURE_LENGTH:
+            if self.mouse_mode == MODE_MEASURE_LENGTH:
                 self.on_measure_length_mouse_down(event)
-    
-    def on_zoom_mouse_down(self, event):
-        for x in range(self.subplots.shape[0]):
-            for y in range(self.subplots.shape[1]):
-                plot = self.subplots[x,y]
-                if plot:
-                    self.zoom_rects[x,y] = \
-                        matplotlib.patches.Rectangle(self.mouse_down, 
-                                                     1, 1,
-                                                     fill=False,
-                                                     edgecolor='red',
-                                                     linewidth=1,
-                                                     linestyle='solid')
-                    plot.add_patch(self.zoom_rects[x,y])
-        self.figure.canvas.draw()
-        self.Refresh()
     
     def on_measure_length_mouse_down(self, event):
         pass
@@ -370,9 +326,7 @@ class CPFigureFrame(wx.Frame):
             x1 = max(self.mouse_down[0], event.xdata)
             y0 = min(self.mouse_down[1], event.ydata)
             y1 = max(self.mouse_down[1], event.ydata)
-        if self.mouse_mode == MODE_ZOOM:
-            self.on_mouse_move_zoom(event, x0, y0, x1, y1)
-        elif self.mouse_mode == MODE_MEASURE_LENGTH:
+        if self.mouse_mode == MODE_MEASURE_LENGTH:
             self.on_mouse_move_measure_length(event, x0, y0, x1, y1)
         elif not self.mouse_mode == MODE_MEASURE_LENGTH:
             self.on_mouse_move_show_pixel_data(event, x0, y0, x1, y1)
@@ -446,17 +400,6 @@ class CPFigureFrame(wx.Frame):
             self.Refresh()
         self.status_bar.SetFields(fields)
     
-    def on_mouse_move_zoom(self, event, x0, y0, x1, y1):
-        if event.inaxes in self.subplots.flatten() and self.mouse_down:
-            for zoom_rect in self.zoom_rects.flatten():
-                if zoom_rect:
-                    zoom_rect.set_x(x0)
-                    zoom_rect.set_y(y0)
-                    zoom_rect.set_width(x1-x0)
-                    zoom_rect.set_height(y1-y0)
-            self.figure.canvas.draw()
-            self.Refresh()
-    
     def on_mouse_move_show_pixel_data(self, event, x0, y0, x1, y1):
         if event.xdata is None or event.ydata is None:
             return
@@ -487,50 +430,12 @@ class CPFigureFrame(wx.Frame):
             x1 = max(self.mouse_down[0], event.xdata)
             y0 = min(self.mouse_down[1], event.ydata)
             y1 = max(self.mouse_down[1], event.ydata)
-            if self.mouse_mode == MODE_ZOOM:
-                self.on_zoom_done( event, x0, y0, x1, y1)
-            elif self.mouse_mode == MODE_MEASURE_LENGTH:
+            if self.mouse_mode == MODE_MEASURE_LENGTH:
                 self.on_measure_length_done(event, x0, y0, x1, y1)
         elif self.mouse_down:
-            if self.mouse_mode == MODE_ZOOM:
-                self.on_zoom_canceled(event)
-            elif self.mouse_mode == MODE_MEASURE_LENGTH:
+            if self.mouse_mode == MODE_MEASURE_LENGTH:
                 self.on_measure_length_canceled(event)
         self.mouse_down = None
-    
-    def on_zoom_done(self, event, x0, y0, x1, y1):
-        old_limits = None
-        for x in range(self.subplots.shape[0]):
-            for y in range(self.subplots.shape[1]):
-                if self.zoom_rects[x,y]:
-                    self.zoom_rects[x,y].remove()
-                    self.zoom_rects[x,y] = 0
-                if self.subplots[x,y]:
-                    axes = self.subplots[x,y]
-                    if len(axes.images) == 0:
-                        continue
-                    if abs(x1 - x0) >= 5 and abs(y1-y0) >= 5:
-                        if not old_limits:
-                            old_x0,old_x1 = axes.get_xlim()
-                            old_y0,old_y1 = axes.get_ylim()  
-                            old_limits = ((old_x0, old_x1),
-                                          (old_y0, old_y1))
-                        axes.set_xlim(x0,x1)
-                        axes.set_ylim(y1,y0)
-                        self.zoom_stack.append(old_limits)
-                        self.__menu_item_zoom_out.Enable(True)
-        self.figure.canvas.draw()
-        self.Refresh()
-    
-    def on_zoom_canceled(self, event):
-        # cancel if released outside of axes
-        for x in range(self.subplots.shape[0]):
-            for y in range(self.subplots.shape[1]):
-                if self.zoom_rects[x,y]:
-                    self.zoom_rects[x,y].remove()
-                    self.zoom_rects[x,y] = 0
-        self.figure.canvas.draw()
-        self.Refresh()
     
     def on_measure_length_done(self, event, x0, y0, x1, y1):
         self.on_measure_length_canceled(event)
@@ -560,15 +465,20 @@ class CPFigureFrame(wx.Frame):
                 format = "pdf"
             self.figure.savefig(path, format = format)
             
-    def subplot(self,x,y):
+    def subplot(self, x, y, sharex=None, sharey=None):
         """Return the indexed subplot
         
         x - column
         y - row
+        sharex - If creating a new subplot, you can specify a subplot instance 
+                 here to share the X axis with. eg: for zooming, panning
+        sharey - If creating a new subplot, you can specify a subplot instance 
+                 here to share the Y axis with. eg: for zooming, panning
         """
         if not self.subplots[x,y]:
             rows, cols = self.subplots.shape
-            plot = self.figure.add_subplot(cols,rows,x+y*rows+1)
+            plot = self.figure.add_subplot(cols, rows, x + y * rows + 1,
+                                           sharex=sharex, sharey=sharey)
             self.subplots[x,y] = plot
         return self.subplots[x,y]
     
@@ -584,11 +494,13 @@ class CPFigureFrame(wx.Frame):
                                    fontsize=cpprefs.get_title_font_size())
     
     def clear_subplot(self, x, y):
-        """Clear a subplot of its gui junk
+        """Clear a subplot of its gui junk. Noop if no subplot exists at x,y
 
         x - subplot's column
         y - subplot's row
         """
+        if not self.subplots[x,y]:
+            return
         axes = self.subplot(x,y)
         try:
             del self.images[(x,y)]
@@ -653,9 +565,14 @@ class CPFigureFrame(wx.Frame):
             fig = create_or_find(self, -1, new_title, subplots=(1,1), 
                                  name=new_title)
             fig.subplot_imshow(0, 0, self.images[(x,y)], **params)
-            # Copy over plot zoom stack
-            fig.zoom_stack = list(self.zoom_stack)
-            fig.__menu_item_zoom_out.Enable(len(self.zoom_stack) > 0)
+            
+            # XXX: Cheat here so the home button works.
+            # This needs to be fixed so it copies the view history for the 
+            # launched subplot to the new figure.
+            fig.navtoolbar.push_current()
+##            print fig.navtoolbar._views._elements
+##            print fig.navtoolbar._positions._elements
+
             # Set current zoom
             fig.subplot(0,0).set_xlim(xlims[0], xlims[1])
             fig.subplot(0,0).set_ylim(ylims[0], ylims[1])      
@@ -724,7 +641,7 @@ class CPFigureFrame(wx.Frame):
     
     def subplot_imshow(self, x, y, image, title=None, clear=True, colormap=None,
                        colorbar=False, normalize=True, vmin=0, vmax=1, 
-                       rgb_mask=[1, 1, 1]):
+                       rgb_mask=[1, 1, 1], sharex=None, sharey=None):
         '''Show an image in a subplot
         
         x, y  - show image in this subplot
@@ -741,6 +658,8 @@ class CPFigureFrame(wx.Frame):
                      If normalize is True, vmin and vmax will be ignored.
         rgb_mask - 3-element list to be multiplied to all pixel values in the
                    image. Used to show/hide individual channels in color images.
+        sharex, sharey - specify a subplot to link axes with (for zooming and
+                         panning). Specify a subplot using CPFigure.subplot(x,y)
         '''
 
         # NOTE: self.subplot_user_params is used to store changes that are made 
@@ -811,7 +730,8 @@ class CPFigureFrame(wx.Frame):
             image = image * rgb_mask
 
         # Draw
-        subplot = self.subplot(x,y)
+        subplot = self.subplot(x, y, sharex=sharex, sharey=sharey)
+        subplot._adjustable = 'box-forced'
         result = subplot.imshow(make_1_or_3_channels(image), colormap, 
                                 vmin=vmin, vmax=vmax, interpolation='nearest')
 
@@ -869,9 +789,11 @@ class CPFigureFrame(wx.Frame):
         return result
     
     def subplot_imshow_color(self, x, y, image, title=None, clear=True, 
-                             normalize=True, rgb_mask=[1,1,1]):
+                             normalize=True, rgb_mask=[1,1,1],
+                             sharex=None, sharey=None):
         return self.subplot_imshow(x, y, image, title=None, clear=True, 
-                   normalize=True, rgb_mask=[1,1,1])
+                                   normalize=True, rgb_mask=[1,1,1], 
+                                   sharex=sharex, sharey=sharey)
     
     def subplot_imshow_labels(self, x, y, labels, title=None, clear=True, 
                               renumber=True):
@@ -887,14 +809,17 @@ class CPFigureFrame(wx.Frame):
                                    normalize=False, vmin=None, vmax=None)
     
     def subplot_imshow_grayscale(self, x, y, image, title=None, clear=True,
-                                 colorbar=False, normalize=True, vmin=0, vmax=1):
+                                 colorbar=False, normalize=True, vmin=0, vmax=1,
+                                 sharex=None, sharey=None):
         if image.dtype.type == np.float64:
             image = image.astype(np.float32)
         return self.subplot_imshow(x, y, image, title, clear, 
                                    matplotlib.cm.Greys_r, normalize=normalize,
-                                   colorbar=colorbar, vmin=vmin, vmax=vmax)
+                                   colorbar=colorbar, vmin=vmin, vmax=vmax,
+                                   sharex=sharex, sharey=sharey)
     
-    def subplot_imshow_bw(self, x, y, image, title=None, clear=True):
+    def subplot_imshow_bw(self, x, y, image, title=None, clear=True, 
+                          sharex=None, sharey=None):
 #        a = 0.3
 #        b = 0.59
 #        c = 0.11
@@ -902,7 +827,8 @@ class CPFigureFrame(wx.Frame):
 #            # Convert to luminance
 #            image = np.sum(image * (a,b,c), axis=2)
         return self.subplot_imshow(x, y, image, title, clear, 
-                                   matplotlib.cm.binary_r)
+                                   matplotlib.cm.binary_r,
+                                   sharex=sharex, sharey=sharey)
     
     def subplot_table(self, x, y, statistics, 
                       ratio = (.6, .4),
@@ -1181,6 +1107,7 @@ class CPFigureFrame(wx.Frame):
         axes.format_coord = format_coord
         
         return plot
+        
 
 def format_plate_data_as_array(plate_dict, plate_type):
     ''' Returns an array shaped like the given plate type with the values from
@@ -1267,25 +1194,25 @@ if __name__ == "__main__":
     app = wx.PySimpleApp()
     
 ##    f = CPFigureFrame(subplots=(4, 2))
-    f = CPFigureFrame(subplots=(1, 1))
+    f = CPFigureFrame(subplots=(2, 2))
     f.Show()
     
-    img = np.random.uniform(.5, .6, size=(5, 5, 3))
+    img = np.random.uniform(.5, .6, size=(50, 50, 3))
     
     pdict = {'plate 1': {'A01':1, 'A02':3, 'A03':2},
              'plate 2': {'C01':1, 'C02':3, 'C03':2},
              }
     
-    f.subplot_platemap(0, 0, pdict, '96', title='platemap test')
-#    f.subplot_histogram(1, 0, [1,1,1,2], 2, 'x', title="hist")
-#    f.subplot_scatter(2, 0, [1,1,1,2], [1,2,3,4], title="scatter")
-#    f.subplot_density(3, 0, np.random.randn(100).reshape((50,2)), title="density")
-##    f.subplot_imshow(0, 0, img[:,:,0], "1-channel colormapped", colorbar=True)
-##    f.subplot_imshow_grayscale(1, 0, img[:,:,0], "1-channel grayscale", colorbar=True)
+##    f.subplot_platemap(0, 0, pdict, '96', title='platemap test')
+##    f.subplot_histogram(1, 0, np.random.randn(1000), 50, 'x', title="hist")
+##    f.subplot_scatter(2, 0, np.random.randn(1000), np.random.randn(1000), title="scatter")
+##    f.subplot_density(3, 0, np.random.randn(100).reshape((50,2)), title="density")
+    f.subplot_imshow(0, 0, img[:,:,0], "1-channel colormapped", sharex=f.subplot(0,0), sharey=f.subplot(0,0))
+    f.subplot_imshow_grayscale(1, 0, img[:,:,0], "1-channel grayscale", sharex=f.subplot(0,0), sharey=f.subplot(0,0))
 ##    f.subplot_imshow_grayscale(2, 0, img[:,:,0], "1-channel raw", normalize=False, colorbar=True)
 ##    f.subplot_imshow_grayscale(3, 0, img[:,:,0], "1-channel minmax=(.5,.6)", vmin=.5, vmax=.6, normalize=False, colorbar=True)
-##    f.subplot_imshow(0, 1, img, "rgb")
-##    f.subplot_imshow(1, 1, img, "rgb raw", normalize=False)
+    f.subplot_imshow(0, 1, img, "rgb")
+    f.subplot_imshow(1, 1, img, "rgb raw", normalize=False, sharex=f.subplot(0,1), sharey=f.subplot(0,1))
 ##    f.subplot_imshow(2, 1, img, "rgb, log normalized", normalize='log')
 ##    f.subplot_imshow_bw(3, 1, img[:,:,0], "B&W")
 

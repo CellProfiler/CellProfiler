@@ -13,10 +13,15 @@ to each of your samples and labeled them with the metadata names "Treatment1"
 and "Treatment2", and you might want to create separate files for each 
 combination of treatments, storing all measurements with a given "Treatment1"
 in separate directories. You can do this by specifying metadata tags for the folder name and
-file name. Choose <i>Custom folder with metadata</i>, enter the
-directory name "\g&lt;Treatment1&gt;" and enter the file name 
-"\g&lt;Treatment2&gt;". Here's an example table of the files that
-would be generated:<br><br><tt>
+file name:
+<ul>
+<li>Choose <i>Default Input/Output Folder sub-folder</i> for the output file location.</li>
+<li>Enter the sub-folder name "\g&lt;Treatment1&gt;"</li>
+<li>Uncheck "Export all measurements?"</li>
+<li>Uncheck <i>Use the object name for the file name?</i>.</li>
+<li>Enter the file name "\g&lt;Treatment2&gt;.csv". </li>
+</ul>
+Here's an example table of the files that would be generated:<br><br><tt>
 <table border="1"><tr><th>Treatment1</th><th>Treatment2</th><th>Path</th></tr>
 
 <tr><td>1M_NaCl</td><td>20uM_DMSO</td><td>1M_NaCl/20uM_DMSO.csv</td></tr>

@@ -32,11 +32,11 @@ Source: ".\dist\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs create
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
-Name: "{group}\CellProfiler"; Filename: "{app}\CellProfiler.exe"
+Name: "{group}\CellProfiler"; Filename: "{app}\CellProfiler.exe"; WorkingDir: "{app}"
 Name: "{group}\{cm:ProgramOnTheWeb,CellProfiler}"; Filename: "http://www.cellprofiler.org"
 Name: "{group}\{cm:UninstallProgram,CellProfiler}"; Filename: "{uninstallexe}"
-Name: "{commondesktop}\CellProfiler"; Filename: "{app}\CellProfiler.exe"; Tasks: desktopicon
+Name: "{commondesktop}\CellProfiler"; Filename: "{app}\CellProfiler.exe"; WorkingDir: "{app}"; Tasks: desktopicon
 
 [Run]
-Filename: "{app}\CellProfiler.exe"; Description: "{cm:LaunchProgram,CellProfiler}"; Flags: nowait postinstall skipifsilent
+Filename: "{app}\CellProfiler.exe"; Description: "{cm:LaunchProgram,CellProfiler}"; Flags: nowait postinstall skipifsilent; WorkingDir: "{app}"
 

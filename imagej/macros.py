@@ -44,10 +44,9 @@ def execute_macro(macro_text):
     
     macro_text - the macro program to be run
     '''
-    macro_runner = J.make_instance("ij/macro/MacroRunner",
-                                   "(Ljava/lang/String;)V",
-                                   macro_text)
-    J.call(macro_runner, "run", "()V")
+    show_imagej();
+    interp = J.make_instance("ij/macro/Interpreter","()V");
+    J.call(interp, "run","(Ljava/lang/String;)V", macro_text);
     
 def show_imagej():
     '''Show the ImageJ user interface'''

@@ -289,10 +289,12 @@ class LoadImages(cpmodule.CPModule):
                 Specify text that marks files for exclusion. <b>LoadImages</b> looks for this text as an 
                 exact match within the filename and not as a regular expression. """)
         
-        self.order_group_size = cps.Integer('Number of images in each group?', 3,doc="""
-                <i>(Used only when Order is selected for file loading)</i><br>
-                Enter the number of images that comprise a group. For example, for images given in the order:
-                <i>DAPI, FITC, Red; DAPI, FITC, Red;</i> and so on, the number of images that in each group would be 3.""")
+        self.order_group_size = cps.Integer(
+            'Number of images in each group?', 3,
+            doc="""
+            <i>(Used only when Order is selected for file loading)</i><br>
+            Enter the number of images that comprise a group. For example, for images given in the order:
+            <i>DAPI, FITC, Red; DAPI, FITC, Red;</i> and so on, the number of images that in each group would be 3.""")
         
         self.descend_subdirectories = cps.Binary('Analyze all subfolders within the selected folder?', False, doc="""
                 If this box is checked, <b>LoadImages</b> will search all the subfolders under your specified image folder location
@@ -546,6 +548,7 @@ class LoadImages(cpmodule.CPModule):
             <tr><td>6</td><td>2</td><td>3</td></tr></table>"""))
         group.append("channels_per_group", cps.Integer(
             "Channels per group:", 3, minval=2,
+            reset_view=True,
             doc = """This setting controls the number of frames to be
             grouped together. As an example, for an interleaved movie with
             12 frames and three channels per group, the first, fourth,

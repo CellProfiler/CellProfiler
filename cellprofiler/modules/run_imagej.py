@@ -24,10 +24,14 @@ import cellprofiler.preferences as cpprefs
 
 CM_COMMAND = "Command"
 CM_MACRO = "Macro"
+CM_NOTHING = "Nothing"
+
+D_FIRST_IMAGE_SET = "FirstImageSet"
+D_LAST_IMAGE_SET = "LastImageSet"
 
 class RunImageJ(cpm.CPModule):
     module_name = "RunImageJ"
-    variable_revision_number = 1
+    variable_revision_number = 2
     category = "Image Processing"
     
     def create_settings(self):
@@ -94,6 +98,66 @@ class RunImageJ(cpm.CPModule):
             <br>
             This command will not wait if CellProfiler is executed in
             batch mode.""")
+        self.prepare_group_choice = cps.Choice(
+            "Run before each group?", [CM_NOTHING, CM_COMMAND, CM_MACRO],
+            doc="""You can run an ImageJ macro or a command before each group of
+            images. This can be useful in order to set up ImageJ before
+            processing a stack of images. Choose <i>%(CM_NOTHING)s</s> if
+            you do not want to run a command or macro, <i>%(CM_COMMAND)s</i>
+            to choose a command to run or <i>%(CM_MACRO)s</i> to run a macro.
+            """ % globals())
+        self.prepare_group_command = cps.Choice(
+            "Command:", [], value="None", choices_fn = get_command_choices,
+            doc = """The command to execute before processing a group of images.""")
+        self.prepare_group_macro = cps.Text(
+            "Macro:", 'run("Invert");',
+            multiline = True,
+            doc="""This is the ImageJ macro to be executed before processing
+            a group of images. For help on writing macros, see 
+            http://rsb.info.nih.gov/ij/developer/macro/macros.html""")
+        self.prepare_group_options = cps.Text(
+            "Options:", "",
+            doc = """Use this setting to provide options to the command or
+            macro.""")
+        self.post_group_choice = cps.Choice(
+            "Run after each group?", [CM_NOTHING, CM_COMMAND, CM_MACRO],
+            doc="""You can run an ImageJ macro or a command after each group of
+            images. This can be used to do some sort of operation on a whole
+            stack of images that have been accumulated by the group operation.
+            Choose <i>%(CM_NOTHING)s</s> if you do not want to run a command or 
+            macro, <i>%(CM_COMMAND)s</i> to choose a command to run or 
+            <i>%(CM_MACRO)s</i> to run a macro.
+            """ % globals())
+        self.post_group_command = cps.Choice(
+            "Command:", [], value="None", choices_fn = get_command_choices,
+            doc = """The command to execute after processing a group of images.""")
+        self.post_group_macro = cps.Text(
+            "Macro:", 'run("Invert");',
+            multiline = True,
+            doc="""This is the ImageJ macro to be executed after processing
+            a group of images. For help on writing macros, see 
+            http://rsb.info.nih.gov/ij/developer/macro/macros.html""")
+        self.post_group_options = cps.Text(
+            "Options:", "",
+            doc = """Use this setting to provide options to the command or
+            macro.""")
+        self.wants_post_group_image = cps.Binary(
+            "Save the selected image?", False,
+            doc="""You can save the image that is currently selected in ImageJ
+            at the end of macro processing and use it later in CellProfiler.
+            The image will only be available during the last cycle of the
+            group. Check this setting to use the selected image in CellProfiler
+            or leave it unchecked if you do not want to use the selected image.
+            """)
+        self.post_group_output_image = cps.ImageNameProvider(
+            "Image name:", "ImageJGroupImage",
+            doc="""This setting names the output image produced by the
+            ImageJ command or macro that CellProfiler runs after processing
+            all images in the group. The image is only available at the
+            last cycle in the group""",
+            provided_attributes={cps.AGGREGATE_IMAGE_ATTRIBUTE: True,
+                                 cps.AVAILABLE_ON_LAST_ATTRIBUTE: True } )
+           
         self.show_imagej_button = cps.DoSomething(
             "Show ImageJ", "Show", self.on_show_imagej,
             doc="""Press this button to show the ImageJ user interface.
@@ -106,7 +170,12 @@ class RunImageJ(cpm.CPModule):
                 self.options, self.wants_to_set_current_image,
                 self.current_input_image_name,
                 self.wants_to_get_current_image, self.current_output_image_name,
-                self.pause_before_proceeding]
+                self.pause_before_proceeding,
+                self.prepare_group_choice, self.prepare_group_command,
+                self.prepare_group_macro, self.prepare_group_options,
+                self.post_group_choice, self.post_group_command,
+                self.post_group_macro, self.post_group_options,
+                self.wants_post_group_image, self.post_group_output_image]
     
     def visible_settings(self):
         '''The settings as seen by the user'''
@@ -121,6 +190,20 @@ class RunImageJ(cpm.CPModule):
         result += [self.wants_to_get_current_image]
         if self.wants_to_get_current_image:
             result += [self.current_output_image_name]
+        result += [ self.prepare_group_choice]
+        if self.prepare_group_choice == CM_MACRO:
+            result += [self.prepare_group_macro]
+        elif self.prepare_group_choice == CM_COMMAND:
+            result += [self.prepare_group_command, self.prepare_group_options]
+        result += [self.post_group_choice]
+        if self.post_group_choice == CM_MACRO:
+            result += [self.post_group_macro]
+        elif self.post_group_choice == CM_COMMAND:
+            result += [self.post_group_command, self.post_group_options]
+        if self.post_group_choice != CM_NOTHING:
+            result += [self.wants_post_group_image]
+            if self.wants_post_group_image:
+                result += [self.post_group_output_image]
         result += [self.pause_before_proceeding, self.show_imagej_button]
         return result
     
@@ -141,6 +224,17 @@ class RunImageJ(cpm.CPModule):
     def is_interactive(self):
         return self.pause_before_proceeding.value
     
+    def prepare_group(self, pipeline, image_set_list, grouping,
+                      image_numbers):
+        '''Prepare to run a group
+        
+        RunImageJ remembers the image number of the first and last image
+        for later processing.
+        '''
+        d = self.get_dictionary(image_set_list)
+        d[D_FIRST_IMAGE_SET] = image_numbers[0]
+        d[D_LAST_IMAGE_SET] = image_numbers[-1]
+        
     def run(self, workspace):
         '''Run the imageJ command'''
         import cellprofiler.utilities.jutil as J
@@ -149,13 +243,36 @@ class RunImageJ(cpm.CPModule):
         import imagej.imageprocessor as ijiproc
         import imagej.imageplus as ijip
         
+        image_set = workspace.image_set
+        assert isinstance(image_set, cpi.ImageSet)
+        d = self.get_dictionary(workspace.image_set_list)
         if self.wants_to_set_current_image:
             input_image_name = self.current_input_image_name.value
-            img = workspace.image_set.get_image(input_image_name)
+            img = image_set.get_image(input_image_name)
         else:
             img = None
         J.attach()
         try:
+            #
+            # Run a command or macro on the first image of the set
+            #
+            if d[D_FIRST_IMAGE_SET] == image_set.number + 1:
+                if self.prepare_group_choice == CM_COMMAND:
+                    execute_command(self.prepare_group_command.value,
+                                    self.prepare_group_options.value)
+                elif self.prepare_group_choice == CM_MACRO:
+                    macro = workspace.measurements.apply_metadata(
+                        self.prepare_group_macro.value)
+                    execute_macro(macro)
+                if (self.prepare_group_choice != CM_NOTHING and 
+                    (not cpprefs.get_headless()) and 
+                    self.pause_before_proceeding):
+                    import wx
+                    wx.MessageBox("Please edit the image in ImageJ and hit OK to proceed",
+                                  "Waiting for ImageJ")
+            #
+            # Install the input image as the current image
+            #
             if img is not None:
                 ij_processor = ijiproc.make_image_processor(img.pixel_data * 255.0)
                 image_plus = ijip.make_imageplus_from_processor(
@@ -164,21 +281,59 @@ class RunImageJ(cpm.CPModule):
                 current_image = image_plus
             else:
                 current_image = ijwm.get_current_image()
+            #
+            # Do the per-imageset macro or command
+            #
             if self.command_or_macro == CM_COMMAND:
                 execute_command(self.command.value, self.options.value)
             else:
-                execute_macro(self.macro.value)
+                macro = workspace.measurements.apply_metadata(
+                    self.macro.value)
+                execute_macro(macro)
             if (not cpprefs.get_headless()) and self.pause_before_proceeding:
                 import wx
                 wx.MessageBox("Please edit the image in ImageJ and hit OK to proceed",
                               "Waiting for ImageJ")
+            #
+            # Get the output image
+            #
             if self.wants_to_get_current_image:
                 output_image_name = self.current_output_image_name.value
                 image_plus = ijwm.get_current_image()
                 ij_processor = image_plus.getProcessor()
                 pixel_data = ijiproc.get_image(ij_processor) / 255.0
                 image = cpi.Image(pixel_data)
-                workspace.image_set.add(output_image_name, image)
+                image_set.add(output_image_name, image)
+            #
+            # Execute the post-group macro or command
+            #
+            if d[D_LAST_IMAGE_SET] == image_set.number + 1:
+                if self.post_group_choice == CM_COMMAND:
+                    execute_command(self.post_group_command.value, 
+                                    self.post_group_options.value)
+                elif self.post_group_choice == CM_MACRO:
+                    macro = workspace.measurements.apply_metadata(
+                        self.post_group_macro.value)
+                    execute_macro(macro)
+                if (self.post_group_choice != CM_NOTHING and 
+                    (not cpprefs.get_headless()) and 
+                    self.pause_before_proceeding):
+                    import wx
+                    wx.MessageBox("Please edit the image in ImageJ and hit OK to proceed",
+                                  "Waiting for ImageJ")
+                #
+                # Save the current ImageJ image after executing the post-group
+                # command or macro
+                #
+                if (self.post_group_choice != CM_NOTHING and
+                    self.wants_post_group_image):
+                    output_image_name = self.post_group_output_image.value
+                    image_plus = ijwm.get_current_image()
+                    ij_processor = image_plus.getProcessor()
+                    pixel_data = ijiproc.get_image(ij_processor) / 255.0
+                    image = cpi.Image(pixel_data)
+                    image_set.add(output_image_name, image)
+                
         finally:
             J.detach()
         if self.is_interactive():
@@ -217,5 +372,17 @@ class RunImageJ(cpm.CPModule):
             figure.figure.text(.75, .5, "No output image",
                                verticalalignment='center',
                                horizontalalignment='center')
+    
+    def upgrade_settings(self, setting_values, variable_revision_number,
+                         module_name, from_matlab):
+        if variable_revision_number == 1:
+            setting_values = setting_values + [
+                CM_NOTHING, "None",
+                'print("Enter macro here")\n', "",
+                CM_NOTHING, "None",
+                'print("Enter macro here")\n', "",
+                cps.NO, "AggregateImage"]
+            variable_revision_number = 2
+        return setting_values, variable_revision_number, from_matlab
         
             

@@ -1326,7 +1326,8 @@ class ModuleView:
                                                   proposed_value,
                                                   event)
         self.notify(setting_edited_event)
-        self.reset_view()
+        if setting.reset_view:
+            self.reset_view()
     
     def __on_min_change(self,event,setting,control):
         if not self.__handle_change:

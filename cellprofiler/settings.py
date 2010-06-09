@@ -65,18 +65,20 @@ class Setting(object):
     # This should be set to False for UI elements like buttons and dividers
     #
     save_to_pipeline = True
-    def __init__(self,text,value,doc=None):
+    def __init__(self,text,value,doc=None, reset_view = False):
         """Initialize a setting with the enclosing module and its string value
         
         module - the module containing this setting
         text   - the explanatory text for the setting
         value  - the default or initial value for the setting
         doc - documentation for the setting
+        reset_view - True if miniscule editing should re-evaluate the module view
         """
         self.__text = text
         self.__value = value
         self.doc = doc
         self.__key = uuid.uuid1() 
+        self.reset_view = reset_view
     
     def set_value(self,value):
         self.__value=value

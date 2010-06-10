@@ -276,11 +276,20 @@ def RunOne_2_0(x, run):
     x["memory_limit_gb"]=max(1,int(x["memory_limit"]/1000))
     x["memory_limit_gb2"]=x["memory_limit_gb"]*2
     x["done_file"] = RunDoneFilePath(x, run)
+    python_dir = PythonDir(x)
+    select = "select[centos]"
+    try:
+        version = int(os.path.split(python_dir)[1])
+        if version < 9970:
+            # Pre-centos: use PC6000
+            select="select[model=PC6000]"
+    except:
+        pass
     cmd=["bsub",
          "-q","%(queue)s"%(x),
          "-M","%(memory_limit_gb2)d"%(x),
          "-R",'"rusage[mem=%(memory_limit_gb)d]"'%(x),
-         "-R",'"select[model=PC6000]"',
+         "-R",'"%s"'%select,
          "-P","%(project)s"%(x),
          "-cwd",PythonDir(x),
          "-g","/imaging/batch/%(batch_id)d"%(x),

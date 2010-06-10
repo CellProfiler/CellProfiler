@@ -1422,7 +1422,7 @@ cell_y_loc    = %(cell_y_loc)s
 image_path_cols = %(image_path_cols)s
 image_file_cols = %(image_file_cols)s
 
-# CPA will now read image thumbnails directly from the database.
+# CPA will now read image thumbnails directly from the database, if chosen in ExportToDatabase.
 
 image_thumbnail_cols = %(image_thumbnail_cols)s
 

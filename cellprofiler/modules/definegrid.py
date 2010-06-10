@@ -210,7 +210,7 @@ class DefineGrid(cpm.CPModule):
                         This setting defines the location of the first of
                         two cells in your grid. You should enter the coordinates of
                         the center of the cell. You can display an image of your grid
-                        and use the <i>Tools > Show pixel data</i> tool to determine the
+                        and use the pixel coordinate display to determine the
                         coordinates of the center of your cell.""")
         
         self.first_spot_row = cps.Integer(
@@ -235,8 +235,7 @@ class DefineGrid(cpm.CPModule):
                         This setting defines the location of the second of
                         two cells in your grid. You should enter the coordinates of
                         the center of the cell. You can display an image of your grid
-                        and use the <i>Tools > Show pixel data</i> tool to determine the
-                        coordinates of the center of your cell.""")
+                        and use use the pixel coordinate display to determine the coordinates of the center of your cell.""")
         
         self.second_spot_row = cps.Integer(
                         "Row number of the second cell", 1, minval=1, doc="""<i>(Used only if you selected Manual + Coordinates to define the grid)</i><br>

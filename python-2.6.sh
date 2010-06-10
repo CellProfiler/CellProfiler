@@ -34,4 +34,18 @@ echo "Unknown operating system"
 exit $E_NOFILE
 fi
 fi
+if [ -n "$CELLPROFILER_USE_XVFB" ]
+then
+DISPLAY=:1
+tmp=/tmp/CellProfilerXVFB.$RANDOM.$RANDOM
+echo "Xvfb directory = $tmp"
+mkdir $tmp
+Xvfb :1 -fbdir $tmp &
+XVFBPID=$!
+echo "Xvfb PID = $XVFBPID"
 python "$@"
+kill $XVFBPID
+rmdir $tmp
+else
+python "$@"
+fi

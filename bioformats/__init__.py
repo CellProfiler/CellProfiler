@@ -80,7 +80,8 @@ if os.path.exists(__log4j_properties):
 else:
     __init_logger = True
     
-if get_headless() or sys.platform=="darwin":
+if ((get_headless() and not os.environ.has_key("CELLPROFILER_USE_XVFB"))
+    or sys.platform=="darwin"):
     __args += [ r"-Djava.awt.headless=true" ]
 
 jutil.start_vm(__args)

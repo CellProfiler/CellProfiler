@@ -484,7 +484,7 @@ class ExportToDatabase(cpm.CPModule):
                                       self.db_type)
         
         '''Warn user that they will have to merge tables to use CPA'''
-        if self.separate_object_tables == OT_PER_OBJECT:
+        if self.objects_choice != O_NONE and self.separate_object_tables == OT_PER_OBJECT:
             raise cps.ValidationError(
                 ("You will have to merge the separate object tables in order\n"
                  "to use CellProfiler Analyst. Choose %s to write a single\n"

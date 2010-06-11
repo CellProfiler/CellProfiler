@@ -1012,6 +1012,25 @@ SaveImages:[module_num:6|svn_version:\'9507\'|variable_revision_number:5|show_wi
         module.run(workspace)
         self.assertTrue(os.path.exists(img_filename))
         
+    def test_01_14_create_subdirectories(self):
+        img_path = os.path.join(self.new_output_directory, "test")
+        input_path = os.path.join(self.new_image_directory, "test")
+        # Needed for relpath
+        os.mkdir(input_path)
+        img_filename = os.path.join(img_path, 'img1.tiff')
+        workspace, module = self.make_workspace(np.zeros((10,10)))
+        m = workspace.measurements
+        self.assertTrue(isinstance(m, cpm.Measurements))
+        self.assertTrue(isinstance(module, cpm_si.SaveImages))
+        m.add_image_measurement(module.file_name_feature, "img1.tiff")
+        m.add_image_measurement(module.path_name_feature, input_path)
+        module.file_name_method.value = cpm_si.FN_FROM_IMAGE
+        module.file_format.value = cpm_si.FF_TIFF
+        module.pathname.dir_choice = cps.DEFAULT_OUTPUT_FOLDER_NAME
+        module.create_subdirectories.value = True
+        module.run(workspace)
+        self.assertTrue(os.path.exists(img_filename))
+        
         
     def test_02_01_prepare_to_create_batch(self):
         '''Test the "prepare_to_create_batch" method'''

@@ -67,6 +67,7 @@ from cellprofiler.preferences import \
      DEFAULT_OUTPUT_FOLDER_NAME, ABSOLUTE_FOLDER_NAME, \
      DEFAULT_INPUT_SUBFOLDER_NAME, DEFAULT_OUTPUT_SUBFOLDER_NAME, \
      IO_FOLDER_CHOICE_HELP_TEXT, IO_WITH_METADATA_HELP_TEXT
+from cellprofiler.utilities.relpath import relpath
 
 IF_IMAGE       = "Image"
 IF_MASK        = "Mask"
@@ -872,6 +873,11 @@ class SaveImages(cpm.CPModule):
         
         filename = "%s.%s"%(filename,self.get_file_format())
         pathname = self.pathname.get_absolute_path(measurements)
+        if self.create_subdirectories:
+            image_path = workspace.measurements.get_current_image_measurement(
+                self.path_name_feature)
+            subdir = relpath(image_path, cpp.get_default_image_directory())
+            pathname = os.path.join(pathname, subdir)
         
         return os.path.join(pathname,filename)
     

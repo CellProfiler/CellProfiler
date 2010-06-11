@@ -603,6 +603,8 @@ class MeasureImageQuality(cpm.CPModule):
             image_name = image_group.image_name.value
             values = m.get_all_measurements(cpmeas.IMAGE, 
                                             image_group.threshold_feature_name)
+            # Ignore missing values
+            values = [v for v in values if v is not None]
             feature_name = "%s_Mean%s%s_%s"%(IMAGE_QUALITY,THRESHOLD,
                                              image_group.threshold_algorithm,
                                              image_name)

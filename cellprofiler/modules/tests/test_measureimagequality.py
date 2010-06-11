@@ -346,6 +346,72 @@ class TestMeasureImageQuality(unittest.TestCase):
             self.assertTrue(m.has_current_measurements(cpmeas.IMAGE,
                                                        feature_name)) 
         self.features_and_columns_match(m, q)
+        
+    def test_03_02_experiment_threshold(self):
+        '''Test experiment-wide thresholds'''
+        np.random.seed(32)
+        workspace = self.make_workspace(np.zeros((10,10)))
+        self.assertTrue(isinstance(workspace, cpw.Workspace))
+        module = workspace.module
+        self.assertTrue(isinstance(module, miq.MeasureImageQuality))
+        m = workspace.measurements
+        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        feature = module.image_groups[0].threshold_feature_name
+        data = np.random.uniform(size=100)
+        m.add_all_measurements(cpmeas.IMAGE, feature, data.tolist())
+        module.post_run(workspace)
+        
+        threshold_algorithm = module.image_groups[0].threshold_algorithm
+        image_name = module.image_groups[0].image_name.value
+        f_mean, f_median, f_std = [
+            miq.IMAGE_QUALITY + "_" + x + miq.THRESHOLD + threshold_algorithm + 
+            "_" + image_name for x in ("Mean", "Median", "Std")]
+
+        expected = ( (f_mean, np.mean(data)),
+                     (f_median, np.median(data)),
+                     (f_std, np.std(data)))
+        for feature, expected_value in expected:
+            value = m.get_experiment_measurement(feature)
+            self.assertEqual(value, expected_value)
+    
+    def test_03_03_experiment_threshold_cycle_skipping(self):
+        """Regression test of IMG-970: can you handle nulls in measurements?"""
+        
+        np.random.seed(33)
+        workspace = self.make_workspace(np.zeros((10,10)))
+        self.assertTrue(isinstance(workspace, cpw.Workspace))
+        module = workspace.module
+        self.assertTrue(isinstance(module, miq.MeasureImageQuality))
+        m = workspace.measurements
+        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        feature = module.image_groups[0].threshold_feature_name
+        data = np.random.uniform(size=100)
+        dlist = data.tolist()
+        #
+        # Erase 10 randomly
+        #
+        eraser = np.lexsort([np.random.uniform(size=100)])[:10]
+        mask = np.ones(data.shape, bool)
+        mask[eraser] = False
+        for e in eraser:
+            dlist[e] = None
+            
+        m.add_all_measurements(cpmeas.IMAGE, feature, dlist)
+        module.post_run(workspace)
+        
+        threshold_algorithm = module.image_groups[0].threshold_algorithm
+        image_name = module.image_groups[0].image_name.value
+        f_mean, f_median, f_std = [
+            miq.IMAGE_QUALITY + "_" + x + miq.THRESHOLD + threshold_algorithm + 
+            "_" + image_name for x in ("Mean", "Median", "Std")]
+
+        expected = ( (f_mean, np.mean(data[mask])),
+                     (f_median, np.median(data[mask])),
+                     (f_std, np.std(data[mask])))
+        for feature, expected_value in expected:
+            value = m.get_experiment_measurement(feature)
+            self.assertEqual(value, expected_value)
+        
 
     def check_error(self, caller, event):
         self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))

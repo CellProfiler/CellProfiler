@@ -604,6 +604,7 @@ class SaveImages(cpm.CPModule):
             writer = ImageWriter()    
             writer.setMetadataRetrieve(meta)
             writer.setId(filename)
+            true_writer = writer.getWriter()
 
             if pixels.dtype in (np.uint8, np.int16):
                 # Leave the values alone, but cast to unsigned int 16
@@ -621,8 +622,27 @@ class SaveImages(cpm.CPModule):
             pixels = pixels.flatten()
             # split the 16-bit image into byte-sized chunks for saveBytes
             pixels = np.fromstring(pixels.tostring(), dtype=np.uint8)
+            
+            ifd = jutil.make_instance("loci/formats/tiff/IFD","()V")
+            #
+            # Need to explicitly set the maximum sample value or images
+            # get rescaled inside the TIFF writer.
+            #
+            max_sample_value = jutil.get_static_field(
+                "loci/formats/tiff/IFD", "MAX_SAMPLE_VALUE","I")
+            jutil.call(ifd, "putIFDValue","(IJ)V",
+                       max_sample_value, 65535)
+            try:
+                # A more-modern interface... Bioformats SVN 6230+
+                jutil.call(true_writer, "saveBytes", 
+                           "(I[BLloci/formats/tiff/IFD;)",
+                           0, env.make_byte_array(pixels), ifd)
+            except jutil.JavaException:
+                # The old method with the "last" flag
+                jutil.call(true_writer, "saveBytes", 
+                           "([BLloci/formats/tiff/IFD;Z)V",
+                           env.make_byte_array(pixels), ifd, True)
                 
-            writer.saveBytes(env.make_byte_array(pixels), True)
             writer.close()
         
             workspace.display_data.wrote_image = True
@@ -1010,14 +1030,13 @@ class SaveImages(cpm.CPModule):
             #
             for setting in cps.get_name_providers(pipeline,
                                                   self.image_name):
-                if not setting.provided_attributes.get(cps.AVAILABLE_ON_LAST_ATTRIBUTE):
-                    return
-            #
-            # If we fell through, then you can only save on the last cycle
-            #
-            raise cps.ValidationError("%s is only available after processing all images in an image group" %
-                                      self.image_name.value,
-                                      self.when_to_save)
+                if setting.provided_attributes.get(cps.AVAILABLE_ON_LAST_ATTRIBUTE):
+                    #
+                    # If we fell through, then you can only save on the last cycle
+                    #
+                    raise cps.ValidationError("%s is only available after processing all images in an image group" %
+                                              self.image_name.value,
+                                              self.when_to_save)
     
 class SaveImagesDirectoryPath(cps.DirectoryPath):
     '''A specialized version of DirectoryPath to handle saving in the image dir'''

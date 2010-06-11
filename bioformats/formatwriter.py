@@ -79,6 +79,8 @@ def make_iformat_writer_class(class_name):
                                             'Checks if the given pixel type is supported.')
         saveBytes = jutil.make_method('saveBytes', '([BZ)V', 
                                       'Saves the given byte array to the current file.')
+        saveBytesIB = jutil.make_method('saveBytes', '(I[B)V',
+                                        'Saves bytes, first arg is image #')
 #        saveBytes = jutil.make_method('saveBytes', '([BIZZ)V', 
 #                                      'Saves the given byte array to the given series in the current file.')
         savePlane = jutil.make_method('savePlane', '(Ljava/lang/Object;Z)V', 

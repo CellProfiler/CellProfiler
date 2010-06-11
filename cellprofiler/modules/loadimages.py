@@ -2288,16 +2288,16 @@ def load_using_bioformats(path, c=None, z=0, t=0, series=None):
             scale = 255
         elif pixel_type == FormatTools.UINT16:
             dtype = '<u2' if little_endian else '>u2'
-            scale = 65536
+            scale = 65535
         elif pixel_type == FormatTools.INT16:
             dtype = '<i2' if little_endian else '>i2'
-            scale = 65536
+            scale = 65535
         elif pixel_type == FormatTools.UINT32:
             dtype = '<u4' if little_endian else '>u4'
             scale = 2**32
         elif pixel_type == FormatTools.INT32:
             dtype = '<i4' if little_endian else '>i4'
-            scale = 2**32
+            scale = 2**32-1
         elif pixel_type == FormatTools.FLOAT:
             dtype = '<f4' if little_endian else '>f4'
             scale = 1

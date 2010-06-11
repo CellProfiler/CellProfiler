@@ -1000,11 +1000,11 @@ SaveImages:[module_num:6|svn_version:\'9507\'|variable_revision_number:5|show_wi
             self.assertEqual(column[0], "Image")
             self.assertTrue(column[1] in ("PathName_MyImage","FileName_MyImage"))
             
-    def make_workspace(self, image, filename = None, path = None):
+    def make_workspace(self, image, filename = None, path = None, convert=True):
         '''Make a workspace and module appropriate for running saveimages'''
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        img = cpi.Image(image)
+        img = cpi.Image(image, convert=convert)
         image_set.add(IMAGE_NAME, img)
         
         module = cpm_si.SaveImages()
@@ -1229,38 +1229,60 @@ SaveImages:[module_num:6|svn_version:\'9507\'|variable_revision_number:5|show_wi
                 self.assertTrue(np.all(np.abs(frame - frame_out) < .05))
                 
     def test_06_01_save_image_with_bioformats(self):
-        image = np.ones((255,255)).astype(np.uint8)
-        for i in range(image.shape[0]):
-            image[i,:] = i
-        image2 = np.ones((100,100)).astype(np.uint8)
-        for i in range(image2.shape[0]):
-            image2[i,:] = i
-            
+        np.random.seed(61)
+        image8 = (np.random.uniform(size=(100,100))*255).astype(np.uint8)
+        image16 = (np.random.uniform(size=(100,100))*65535).astype(np.uint16)
+        imagefloat = np.random.uniform(size=(100,100))
+        image8s = (np.random.uniform(size=(100,100))*245).astype(np.uint8)
+        image8s[0,0] = 245
+        image8s[0,1] = 0
+        image16s = (np.random.uniform(size=(100,100))*64535).astype(np.uint16)
+        image16s[0,0] = 64535
+        image16s[0,1] = 0
+        imagefloats = imagefloat.copy()
+        imagefloats[0,0] = 1
+        imagefloats[0,1] = 0
+        
         test_settings = [
             # 16-bit TIF from all image types
             {'rescale'       : False, 
              'file_format'   : cpm_si.FF_TIF, 
              'bit_depth'     : '16',
-             'input_image'   : image},
+             'input_image'   : image8,
+             'expected'      : image8.astype(np.uint16) },
             {'rescale'       : False, 
              'file_format'   : cpm_si.FF_TIF, 
              'bit_depth'     : '16',
-             'input_image'   : image.astype(np.float) / 255.},
+             'input_image'   : imagefloat,
+             'expected'      : (imagefloat * 65535).astype(np.uint16) },
             {'rescale'       : False, 
              'file_format'   : cpm_si.FF_TIF, 
              'bit_depth'     : '16',
-             'input_image'   : image.astype(np.uint16) * 255},
+             'input_image'   : image16,
+             'expected'      : image16 },
 
             # Rescaled 16-bit image
             {'rescale'       : True, 
              'file_format'   : cpm_si.FF_TIF, 
              'bit_depth'     : '16',
-             'input_image'   : image2},
+             'input_image'   : image8s + 10,
+             'expected'      : image8s.astype(np.float32)*65535.0/245.0 },
+            {'rescale'       : True, 
+             'file_format'   : cpm_si.FF_TIF, 
+             'bit_depth'     : '16',
+             'input_image'   : image16s + 1000,
+             'expected'      : image16s.astype(np.float32)*65535.0/64535.0 },
+            {'rescale'       : True, 
+             'file_format'   : cpm_si.FF_TIF, 
+             'bit_depth'     : '16',
+             'input_image'   : imagefloats / 2 + .1,
+             'expected'      : (imagefloats * 65535.0).astype(np.uint16) }
         ]
 
         for i, setting in enumerate(test_settings):
             # Adjust settings each round and retest
-            workspace, module = self.make_workspace(setting['input_image'])
+            workspace, module = self.make_workspace(setting['input_image'],
+                                                    convert=False)
 
             module.module_num = 1
             module.save_image_or_figure.value = cpm_si.IF_IMAGE
@@ -1277,26 +1299,10 @@ SaveImages:[module_num:6|svn_version:\'9507\'|variable_revision_number:5|show_wi
         
             module.save_image_with_bioformats(workspace)
 
-            # Convert original image to float to compare it to the saved image
-            if setting['input_image'].dtype == np.uint8:
-                expected = setting['input_image'] / 255.
-            elif setting['input_image'].dtype == np.uint16:
-                expected = setting['input_image'] / 65535.
-            elif issubclass(setting['input_image'].dtype.type, np.floating):
-                expected = setting['input_image']
-                
+            expected = setting['expected']
             filename = module.get_filename(workspace)
             im = cpm_li.load_using_bioformats(filename)
-            
-            assert (np.allclose(im, expected), 
-                    'Saved image did not match original when reloaded.\n'
-                    'Settings were: \n'
-                    '%s\n'
-                    'Original: \n'
-                    '%s\n'
-                    'Expected: \n'
-                    '%s\n'
-                    %(setting, im[:,0], expected[:,0]))
+            self.assertTrue(np.all(np.abs(im*65535 - expected) <= 1))
             if os.path.isfile(filename):
                 try:
                     os.remove(filename)

@@ -514,7 +514,7 @@ class CorrectIlluminationCalculate(cpm.CPModule):
             robust_minimum = sorted_pixel_data[idx]
             pixel_data = pixel_data.copy()
             pixel_data[pixel_data < robust_minimum] = robust_minimum
-        elif self.rescale_option == cps.MEDIAN:
+        elif self.rescale_option == RE_MEDIAN:
             idx = int(sorted_pixel_data.shape[0]/2)
             robust_minimum = sorted_pixel_data[idx]
         if robust_minimum == 0:

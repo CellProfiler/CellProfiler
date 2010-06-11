@@ -144,7 +144,7 @@ class Crop(cpm.CPModule):
                             analyze.  Keep in mind that the more points you click, the longer it will
                             take to calculate the ellipse shape. For <i>Rectangle</i>, you can click as many
                             points as you like that are in the interior of the region you wish to
-                            retain. <b>This functionality has not yet been implemented.</b></li>
+                            retain.</li>
                             <ul>""")
         
         self.individual_or_once = cps.Choice("Apply which cycle's cropping pattern?",

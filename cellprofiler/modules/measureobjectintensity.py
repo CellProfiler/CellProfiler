@@ -368,11 +368,19 @@ class MeasureObjectIntensity(cpm.CPModule):
                     # Check for round-up overflow
                     #
                     for indices in (indices_25, indices_50, indices_75):
-                        imask = indices > max_indices
+                        imask = (indices > max_indices)
                         indices[imask] = max_indices[imask]
-                    lower_quartile_intensity = flat_img[image_idx[indices_25]]
-                    median_intensity         = flat_img[image_idx[indices_50]]
-                    upper_quartile_intensity = flat_img[image_idx[indices_75]]
+                    good_objects = areas[1:] != 0
+                    lower_quartile_intensity = np.zeros(nobjects)
+                    median_intensity = np.zeros(nobjects)
+                    upper_quartile_intensity = np.zeros(nobjects)
+                    for meas, indices in (
+                        (lower_quartile_intensity, indices_25),
+                        (median_intensity, indices_50),
+                        (upper_quartile_intensity, indices_75)):
+                        meas[good_objects] =\
+                            flat_img[image_idx[indices[good_objects]]]
+                        meas[~good_objects] = np.nan
                 else:
                     lower_quartile_intensity = np.zeros((0,))
                     median_intensity = np.zeros((0,))

@@ -145,7 +145,7 @@ class TestMeasureObjects(unittest.TestCase):
             self.assertTrue(column[1] in features[index])
             self.assertTrue(column[2] == cpmeas.COLTYPE_FLOAT)
         
-    def test_03_01_zero(self):
+    def test_03_01_00_zero(self):
         """Make sure we can process a blank image"""
         ii = II.InjectImage('MyImage',np.zeros((10,10)))
         ii.module_num = 1
@@ -166,6 +166,34 @@ class TestMeasureObjects(unittest.TestCase):
             data = m.get_current_measurement('MyObjects',feature_name)
             self.assertEqual(np.product(data.shape),0,"Got data for feature %s"%(feature_name))
         self.features_and_columns_match(m, moi)
+        
+    def test_03_01_01_masked(self):
+        """Make sure we can process a completely masked image
+        
+        Regression test of IMG-971
+        """
+        ii = II.InjectImage('MyImage',np.zeros((10,10)), 
+                            np.zeros((10,10), bool))
+        ii.module_num = 1
+        io = II.InjectObjects('MyObjects',np.ones((10,10),int))
+        io.module_num = 2
+        moi = MOI.MeasureObjectIntensity()
+        moi.images[0].name.value = 'MyImage'
+        moi.objects[0].name.value = 'MyObjects'
+        moi.module_num = 3
+        pipeline = P.Pipeline()
+        pipeline.add_listener(self.error_callback)
+        pipeline.add_module(ii)
+        pipeline.add_module(io)
+        pipeline.add_module(moi)
+        m = pipeline.run()
+        for meas_name in MOI.ALL_MEASUREMENTS:
+            feature_name = "%s_%s_%s"%(MOI.INTENSITY, meas_name, 'MyImage')
+            data = m.get_current_measurement('MyObjects',feature_name)
+            self.assertEqual(np.product(data.shape),1)
+            self.assertTrue(np.all(np.isnan(data) | (data == 0)))
+        self.features_and_columns_match(m, moi)
+        
         
     def test_03_02_00_one(self):
         """Check measurements on a 3x3 square of 1's"""

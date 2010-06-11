@@ -616,10 +616,16 @@ class ExportToDatabase(cpm.CPModule):
                 pixels = image_set.get_image(name).pixel_data
                 image_set.get_image(name)
                 fd = StringIO()
+                
+                if issubclass(pixels.dtype.type, np.floating):
+                    factor = 255
+                else:
+                    raise Exception('ExportToDatabase cannot write image thumbnails from images of type "%s".'%(str(pixels.dtype)))
+
                 if pixels.ndim == 2:
-                    im = Image.fromarray((pixels * 255).astype('uint8'), 'L')
+                    im = Image.fromarray((pixels * factor).astype('uint8'), 'L')
                 elif pixels.ndim == 3:
-                    im = Image.fromarray((pixels * 255).astype('uint8'), 'RGB')
+                    im = Image.fromarray((pixels * factor).astype('uint8'), 'RGB')
                 else:
                     raise Exception('ExportToDatabase only supports saving thumbnails of grayscale or 3-channel images. "%s" was neither.'%(name))
                 # rescale major axis to 200

@@ -964,6 +964,55 @@ SaveImages:[module_num:6|svn_version:\'9507\'|variable_revision_number:5|show_wi
                                        bytes=True)
         self.assertTrue(np.all(data==expected_data))
         
+    def test_01_11_save_to_image_subfolder(self):
+        '''Test saving to a subfolder of the image folder
+        
+        Regression test of IMG-978
+        '''
+        img_filename = os.path.join(self.new_image_directory, "test", 'img1.tiff')
+        workspace, module = self.make_workspace(np.zeros((10,10)))
+        self.assertTrue(isinstance(module, cpm_si.SaveImages))
+        module.file_name_method.value = cpm_si.FN_SINGLE_NAME
+        module.single_file_name.value = "img1"
+        module.file_format.value = cpm_si.FF_TIFF
+        module.pathname.dir_choice = cps.DEFAULT_INPUT_SUBFOLDER_NAME
+        module.pathname.custom_path = "test"
+        module.run(workspace)
+        self.assertTrue(os.path.exists(img_filename))
+        
+    def test_01_12_save_to_output_subfolder(self):
+        '''Test saving to a subfolder of the image folder
+        
+        Regression test of IMG-978
+        '''
+        img_filename = os.path.join(self.new_output_directory, "test", 'img1.tiff')
+        workspace, module = self.make_workspace(np.zeros((10,10)))
+        self.assertTrue(isinstance(module, cpm_si.SaveImages))
+        module.file_name_method.value = cpm_si.FN_SINGLE_NAME
+        module.single_file_name.value = "img1"
+        module.file_format.value = cpm_si.FF_TIFF
+        module.pathname.dir_choice = cps.DEFAULT_OUTPUT_SUBFOLDER_NAME
+        module.pathname.custom_path = "test"
+        module.run(workspace)
+        self.assertTrue(os.path.exists(img_filename))
+        
+    def test_01_13_save_with_metadata(self):
+        '''Test saving to a custom folder with metadata in the path'''
+        img_filename = os.path.join(self.new_output_directory, "test", 'img1.tiff')
+        workspace, module = self.make_workspace(np.zeros((10,10)))
+        m = workspace.measurements
+        self.assertTrue(isinstance(m, cpm.Measurements))
+        m.add_image_measurement("Metadata_T","test")
+        self.assertTrue(isinstance(module, cpm_si.SaveImages))
+        module.file_name_method.value = cpm_si.FN_SINGLE_NAME
+        module.single_file_name.value = "img1"
+        module.file_format.value = cpm_si.FF_TIFF
+        module.pathname.dir_choice = cps.DEFAULT_OUTPUT_SUBFOLDER_NAME
+        module.pathname.custom_path = "\\g<T>"
+        module.run(workspace)
+        self.assertTrue(os.path.exists(img_filename))
+        
+        
     def test_02_01_prepare_to_create_batch(self):
         '''Test the "prepare_to_create_batch" method'''
         orig_path = '/foo/bar'

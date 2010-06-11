@@ -222,7 +222,9 @@ class SaveImages(cpm.CPModule):
                 Select the image or movie format to save the image(s). Most common
                 image formats are available; MAT-files are readable by MATLAB.""")
         
-        self.pathname = SaveImagesDirectoryPath("Output file location", doc = """ 
+        self.pathname = SaveImagesDirectoryPath(
+            "Output file location", self.file_image_name,
+            doc = """ 
                 <i>(Used only when saving non-movie files)</i><br>
                 This setting lets you choose the folder for the output
                 files. %(IO_FOLDER_CHOICE_HELP_TEXT)s
@@ -869,8 +871,7 @@ class SaveImages(cpm.CPModule):
                 filename += str(self.file_name_suffix)
         
         filename = "%s.%s"%(filename,self.get_file_format())
-        pathname = self.pathname.get_absolute_path(measurements,
-                                                   self.file_image_name.value)
+        pathname = self.pathname.get_absolute_path(measurements)
         
         return os.path.join(pathname,filename)
     
@@ -1041,19 +1042,26 @@ class SaveImages(cpm.CPModule):
 class SaveImagesDirectoryPath(cps.DirectoryPath):
     '''A specialized version of DirectoryPath to handle saving in the image dir'''
     
-    def __init__(self, text, doc):
+    def __init__(self, text, file_image_name, doc):
+        '''Constructor
+        text - explanatory text to display
+        file_image_name - the file_image_name setting so we can save in same dir
+        doc - documentation for user
+        '''
         super(SaveImagesDirectoryPath, self).__init__(
             text, dir_choices = [
                 cps.DEFAULT_OUTPUT_FOLDER_NAME, cps.DEFAULT_INPUT_FOLDER_NAME,
                 PC_WITH_IMAGE, cps.ABSOLUTE_FOLDER_NAME,
                 cps.DEFAULT_OUTPUT_SUBFOLDER_NAME, 
                 cps.DEFAULT_INPUT_SUBFOLDER_NAME], doc=doc)
+        self.file_image_name = file_image_name
         
-    def get_absolute_path(self, measurements, image_name):
+    def get_absolute_path(self, measurements=None, image_set_index=None):
         if self.dir_choice == PC_WITH_IMAGE:
-            path_name_feature = "PathName_%s" % image_name
+            path_name_feature = "PathName_%s" % self.file_image_name.value
             return measurements.get_current_image_measurement(path_name_feature)
-        return super(SaveImagesDirectoryPath, self).get_absolute_path(measurements)
+        return super(SaveImagesDirectoryPath, self).get_absolute_path(
+            measurements, image_set_index)
     
     def test_valid(self, pipeline):
         if self.dir_choice not in self.dir_choices:

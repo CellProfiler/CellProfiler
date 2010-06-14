@@ -91,26 +91,29 @@ class CPFrame(wx.Frame):
         kwds["style"] = wx.DEFAULT_FRAME_STYLE
         wx.Frame.__init__(self, *args, **kwds)
         self.BackgroundColour = cellprofiler.preferences.get_background_color()
-        self.__splitter = wx.SplitterWindow(self, -1)
-        self.__left_win = wx.Panel(self.__splitter, style=wx.BORDER_NONE)
+        self.__splitter = wx.SplitterWindow(self, -1, style=wx.SP_BORDER)
+        self.__left_splitter = wx.SplitterWindow(self.__splitter, -1, style=wx.SP_NOBORDER)
         self.__right_win = wx.Panel(self.__splitter, style=wx.BORDER_NONE)
 
-        self.__logo_panel = wx.Panel(self.__left_win,-1,style=wx.RAISED_BORDER)
+        self.__top_left_win = wx.Panel(self.__left_splitter, style=wx.BORDER_NONE)
+        # bottom left will be the file browser
+
+        self.__logo_panel = wx.Panel(self.__top_left_win,-1,style=wx.SIMPLE_BORDER)
         self.__logo_panel.BackgroundColour = cellprofiler.preferences.get_background_color()
-        self.__module_list_panel = wx.lib.scrolledpanel.ScrolledPanel(self.__left_win, -1)
+        self.__module_list_panel = wx.lib.scrolledpanel.ScrolledPanel(self.__top_left_win, -1)
         self.__module_list_panel.SetBackgroundColour('white')
         self.__module_list_panel.SetToolTipString("The pipeline panel contains the modules in the pipeline. Click on the '+' button below or right-click in the panel to begin adding modules.")
-        self.__pipeline_test_panel = wx.Panel(self.__left_win,-1)
+        self.__pipeline_test_panel = wx.Panel(self.__top_left_win,-1)
         self.__pipeline_test_panel.SetToolTipString("The test mode panel is used for previewing the module settings prior to an analysis run. Click the buttons or use the 'Test' menu item to begin testing your module settings.")
         self.__pipeline_test_panel.Hide()
         self.__pipeline_test_panel.BackgroundColour = cellprofiler.preferences.get_background_color()
-        self.__module_controls_panel = wx.Panel(self.__left_win,-1)
+        self.__module_controls_panel = wx.Panel(self.__top_left_win,-1, style=wx.BORDER_NONE)
         self.__module_controls_panel.BackgroundColour = cellprofiler.preferences.get_background_color()
         self.__module_controls_panel.SetToolTipString("The module controls add, remove, move and get help for modules. Click on the '+' button to begin adding modules.")
         self.__module_panel = wx.lib.scrolledpanel.ScrolledPanel(self.__right_win,-1,style=wx.SUNKEN_BORDER)
         self.__module_panel.BackgroundColour = cellprofiler.preferences.get_background_color()
         self.__module_panel.SetToolTipString("The settings panel contains the available options for each module.")
-        self.__file_list_panel = wx.Panel(self.__left_win,-1)
+        self.__file_list_panel = wx.Panel(self.__left_splitter,-1)
         self.__file_list_panel.BackgroundColour = cellprofiler.preferences.get_background_color()
         self.__file_list_panel.SetToolTipString("The file panel shows the images and pipeline files in the Default Input folder. Click on an image to display it or on a pipeline to load it.")
         self.__preferences_panel = wx.Panel(self.__right_win,-1)
@@ -486,19 +489,28 @@ class CPFrame(wx.Frame):
         height = wx.SystemSettings.GetMetric(wx.SYS_SCREEN_Y)
         self.SetSize((int(width * 2 / 3), int(height * 2 / 3)))
         splitter = self.__splitter
-        left_win = self.__left_win
+        left_splitter = self.__left_splitter
         right_win = self.__right_win
+        top_left_win = self.__top_left_win
         
         self.__splitter.SetMinimumPaneSize(self.__logopic.GetBestSize()[0] + 5)
-        self.__splitter.SplitVertically(self.__left_win, self.__right_win, 300)
+        self.__splitter.SplitVertically(self.__left_splitter, self.__right_win, 300)
+        self.__splitter.BorderSize = 0
+        self.__splitter.SashSize = 5
+        self.__splitter.BackgroundColour = self.BackgroundColour
 
-        left_sizer = wx.BoxSizer(wx.VERTICAL)
-        left_sizer.Add(self.__logo_panel,0,wx.EXPAND|wx.ALL,1)
-        left_sizer.Add(self.__module_list_panel,1,wx.EXPAND|wx.ALL,1)
-        left_sizer.Add(self.__pipeline_test_panel, 0, wx.EXPAND|wx.ALL,2)
-        left_sizer.Add(self.__module_controls_panel,0,wx.EXPAND|wx.ALL,2)
-        left_sizer.Add(self.__file_list_panel,0,wx.EXPAND|wx.ALL|wx.CENTER,2)
-        left_win.SetSizer(left_sizer)
+        self.__left_splitter.SetMinimumPaneSize(self.__logopic.GetBestSize()[1] * 2)
+        self.__left_splitter.SplitHorizontally(self.__top_left_win, self.__file_list_panel, -1)
+        self.__left_splitter.BorderSize = 0
+        self.__left_splitter.SashSize = 5
+        self.__left_splitter.BackgroundColour = self.BackgroundColour
+
+        top_left_sizer = wx.BoxSizer(wx.VERTICAL)
+        top_left_sizer.Add(self.__logo_panel,0,wx.EXPAND|wx.ALL,1)
+        top_left_sizer.Add(self.__module_list_panel,1,wx.EXPAND|wx.ALL,1)
+        top_left_sizer.Add(self.__pipeline_test_panel, 0, wx.EXPAND|wx.ALL,2)
+        top_left_sizer.Add(self.__module_controls_panel,0,wx.EXPAND|wx.ALL,2)
+        top_left_win.SetSizer(top_left_sizer)
 
         right_sizer = wx.BoxSizer(wx.VERTICAL)
         right_sizer.Add(self.__module_panel, 1, wx.EXPAND|wx.ALL, 1)

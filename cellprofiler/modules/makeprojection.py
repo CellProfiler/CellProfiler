@@ -295,7 +295,8 @@ class ImageProvider(cpi.AbstractImageProvider):
         
         self.__image = image.pixel_data.copy()
         if image.has_mask:
-            self.__image[~image.mask] = 0
+            nan_value = 1 if self.__how_to_accumulate == P_MINIMUM else 0
+            self.__image[~image.mask] = nan_value
     
     def accumulate_image(self, image):
         self.__cached_image = None
@@ -364,6 +365,9 @@ class ImageProvider(cpi.AbstractImageProvider):
         elif self.__how_to_accumulate == P_BRIGHTFIELD:
             cached_image = np.zeros(self.__image_count.shape, np.float32)
             cached_image[mask] = self.__bright_max[mask] - self.__bright_min[mask]
+        elif self.__how_to_accumulate == P_MINIMUM and np.any(~mask):
+            cached_image = self.__image.copy()
+            cached_image[~mask] = 0
         else:
             cached_image = self.__image
         cached_image[~mask] = 0

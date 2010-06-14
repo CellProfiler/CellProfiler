@@ -337,4 +337,47 @@ MakeProjection:[module_num:7|svn_version:\'9999\'|variable_revision_number:2|sho
         np.testing.assert_almost_equal(image_out.pixel_data[(i > 5) | (j < 5)], 0)
         np.testing.assert_almost_equal(image_out.pixel_data[(i < 5) & (j >= 5)], 1)
 
+    def test_07_01_minimum(self):
+        np.random.seed(0)
+        images_and_masks = [(np.random.uniform(size=(10,10)).astype(np.float32), None)
+                             for i in range(3)]
+        expected = np.ones((10,10), np.float32)
+        for image, mask in images_and_masks:
+            expected = np.minimum(expected,image)
+        image = self.run_image_set(M.P_MINIMUM, images_and_masks)
+        self.assertFalse(image.has_mask)
+        self.assertTrue(np.all(np.abs(image.pixel_data - expected) < 
+                               np.finfo(float).eps))
+    
+    def test_07_02_minimum_mask(self):
+        np.random.seed(72)
+        images_and_masks = [(np.random.uniform(size=(100,100)).astype(np.float32), 
+                             np.random.uniform(size=(100,100)) > .3)
+                             for i in range(3)]
+        expected = np.ones((100,100), np.float32)
+        expected_mask = np.zeros((100,100), bool)
+        for image, mask in images_and_masks:
+            expected[mask] = np.minimum(expected[mask],image[mask])
+            expected_mask = mask | expected_mask
+        image = self.run_image_set(M.P_MINIMUM, images_and_masks)
+        self.assertTrue(image.has_mask)
+        self.assertTrue(np.any(image.mask == False))
+        self.assertTrue(np.all(expected_mask == image.mask))
+        self.assertTrue(np.all(np.abs(image.pixel_data[image.mask] -
+                                      expected[expected_mask]) < 
+                               np.finfo(float).eps))
+        self.assertTrue(np.all(image.pixel_data[~image.mask] == 0))
+    
+    def test_07_03_minimum_color(self):
+        np.random.seed(0)
+        images_and_masks = [(np.random.uniform(size=(10,10,3)).astype(np.float32), None)
+                             for i in range(3)]
+        expected = np.ones((10,10,3), np.float32)
+        for image, mask in images_and_masks:
+            expected = np.minimum(expected, image)
+        image = self.run_image_set(M.P_MINIMUM, images_and_masks)
+        self.assertFalse(image.has_mask)
+        self.assertTrue(np.all(np.abs(image.pixel_data - expected) < 
+                               np.finfo(float).eps))
+    
         

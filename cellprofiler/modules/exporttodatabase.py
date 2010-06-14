@@ -619,6 +619,8 @@ class ExportToDatabase(cpm.CPModule):
                 
                 if issubclass(pixels.dtype.type, np.floating):
                     factor = 255
+                elif pixels.dtype == np.bool:
+                    factor = 255
                 else:
                     raise Exception('ExportToDatabase cannot write image thumbnails from images of type "%s".'%(str(pixels.dtype)))
 

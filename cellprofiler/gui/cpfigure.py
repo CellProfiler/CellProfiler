@@ -84,6 +84,14 @@ def make_1_or_3_channels(im):
             out[:, :, idx] += v * im[:, :, chanidx]
     return (out * 255).clip(0, 255).astype(np.uint8)
 
+def getbitmap(im):
+    if im.ndim == 2:
+        im = (255 * np.dstack((im, im, im))).astype(np.uint8)
+    h, w, _ = im.shape
+    outim = wx.EmptyImage(w, h)
+    outim.SetDataBuffer(buffer(im))
+    return outim.ConvertToBitmap()
+
 def match_rgbmask_to_image(rgb_mask, image):
     rgb_mask = list(rgb_mask) # copy
     nchannels = image.shape[2]
@@ -167,6 +175,7 @@ class CPFigureFrame(wx.Frame):
         self.BackgroundColour = cpprefs.get_background_color()
         self.mouse_mode = MODE_NONE
         self.length_arrow = None
+        self.images = {}
         self.colorbar = {}
         self.subplot_params = {}
         self.subplot_user_params = {}
@@ -273,7 +282,7 @@ class CPFigureFrame(wx.Frame):
         for (x,y) in self.subplot_menus:
             self.menu_subplots.RemoveItem(self.subplot_menus[(x,y)])
         for (x,y) in self.event_bindings:
-            self.figure.canvas.mpl_disconnect(self.event_bindings[(x,y)])
+            [self.figure.canvas.mpl_disconnect(b) for b in self.event_bindings[(x,y)]]
         self.subplot_menus = {}
         self.subplot_params = {}
         self.subplot_user_params = {}
@@ -291,7 +300,6 @@ class CPFigureFrame(wx.Frame):
             self.close_fn(event)
         self.clf() # Free memory allocated by imshow
         for menu, menu_id in self.remove_menu:
-            print "Removing menu ID %d"%menu_id
             self.Parent.Unbind(wx.EVT_MENU, id=menu_id)
             menu.Delete(menu_id)
         self.Destroy()
@@ -418,7 +426,7 @@ class CPFigureFrame(wx.Frame):
     def find_image_for_axes(self, axes):
         for i, sl in enumerate(self.subplots):
             for j, slax in enumerate(sl):
-                if axes == slax and 'images' in self.__dict__:
+                if axes == slax:
                     return self.images.get((i, j), None)
         return None
 
@@ -570,8 +578,6 @@ class CPFigureFrame(wx.Frame):
             # This needs to be fixed so it copies the view history for the 
             # launched subplot to the new figure.
             fig.navtoolbar.push_current()
-##            print fig.navtoolbar._views._elements
-##            print fig.navtoolbar._positions._elements
 
             # Set current zoom
             fig.subplot(0,0).set_xlim(xlims[0], xlims[1])
@@ -703,49 +709,43 @@ class CPFigureFrame(wx.Frame):
         
         if clear:
             self.clear_subplot(x, y)
-        if 'images' not in self.__dict__:
-            self.images = {}
         # Store the raw image keyed by it's subplot location
         self.images[(x,y)] = image
-        # create a copy to draw
-        image = image.astype(np.float32)
         
-        # Perform normalization
-        if normalize == True:
-            if is_color_image(image):
-                image = np.dstack([auto_contrast(image[:,:,ch]) 
-                                   for ch in range(image.shape[2])])
-            else:
-                image = auto_contrast(image)
-        elif normalize == 'log':
-            if is_color_image(image):
-                image = np.dstack([log_transform(image[:,:,ch]) 
-                                   for ch in range(image.shape[2])])
-            else:
-                image = log_transform(image)
-                
-        # Apply rgb mask to hide/show channels
-        if is_color_image(image):
-            rgb_mask = match_rgbmask_to_image(rgb_mask, image)
-            image = image * rgb_mask
-
-        # Draw
+        # Draw (actual image drawing in on_redraw() below)
         subplot = self.subplot(x, y, sharex=sharex, sharey=sharey)
         subplot._adjustable = 'box-forced'
-        result = subplot.imshow(make_1_or_3_channels(image), colormap, 
-                                vmin=vmin, vmax=vmax, interpolation='nearest')
+        subplot.plot([0, 0], list(image.shape[:2]), 'k')
+        subplot.set_xlim([-0.5, image.shape[1] - 0.5])
+        subplot.set_ylim([image.shape[0] - 0.5, -0.5])
+        subplot.set_aspect('equal')
 
         # Set title
         if title != None:
             self.set_subplot_title(title, x, y)
+        
         # Update colorbar
         if colorbar and not is_color_image(image):
-            if self.colorbar.has_key(subplot):
-                axc = self.colorbar[subplot]
+            if not subplot in self.colorbar:
+                if colormap is None:
+                    colormap = matplotlib.cm.get_cmap(cpprefs.get_default_colormap())
+                cax = matplotlib.colorbar.make_axes(subplot)[0]
+                self.colorbar[subplot] = (cax, matplotlib.colorbar.ColorbarBase(cax, cmap=colormap, ticks=[]))
+            cax, _ = self.colorbar[subplot]
+            cax.set_yticks(np.linspace(0, 1, 10))
+            if normalize == True:
+                cax.set_yticklabels(['%0.1f'%(v) for v in np.linspace(image.min(), image.max(), 10)])
+            elif normalize == 'log':
+                if image.max() > 0 and image.max() > image[image > 0].min():
+                    lo = image[image > 0].min()
+                    hi = image.max()
+                    cax.set_yticklabels(['%0.1f'%(v) for v in lo * np.logspace(0, 1, 10, base=(hi / lo))])
+                else:
+                    cax.set_yticklabels([''] * 10)
             else:
-                self.colorbar[subplot] = self.figure.colorbar(result)
-#                self.colorbar[subplot].ax.set_yticklabels(tick_labels)
-            
+                cax.set_yticklabels(['%0.1f'%(v) for v in np.linspace(0, 1, 10)])
+                                      
+
         # NOTE: We bind this event each time imshow is called to a new closure
         #    of on_release so that each function will be called when a
         #    button_release_event is fired.  It might be cleaner to bind the
@@ -754,13 +754,62 @@ class CPFigureFrame(wx.Frame):
         #    taken. In this case each subplot_xxx call would have to append
         #    an action response to a dictionary keyed by subplot.
         if (x,y) in self.event_bindings:
-            self.figure.canvas.mpl_disconnect(self.event_bindings[(x,y)])
+            [self.figure.canvas.mpl_disconnect(b) for b in self.event_bindings[(x,y)]]
+            
         def on_release(evt):
             if evt.inaxes == subplot:
                 if evt.button != 1:
                     self.show_imshow_popup_menu((evt.x, self.figure.canvas.GetSize()[1] - evt.y), (x,y))
-        self.event_bindings[(x,y)] = self.figure.canvas.mpl_connect(
-                                         'button_release_event', on_release)
+        def on_redraw(evt):
+            def do_redraw():
+                # fetch out values from enclosing frame
+                image = self.images[(x, y)]
+                rgb_mask = kwargs['rgb_mask']
+
+                image = image.astype(np.float32)
+                # Perform normalization
+                if normalize == True:
+                    if is_color_image(image):
+                        image = np.dstack([auto_contrast(image[:,:,ch]) 
+                                           for ch in range(image.shape[2])])
+                    else:
+                        image = auto_contrast(image)
+                elif normalize == 'log':
+                    if is_color_image(image):
+                        image = np.dstack([log_transform(image[:,:,ch]) 
+                                           for ch in range(image.shape[2])])
+                    else:
+                        image = log_transform(image)
+
+                # Apply rgb mask to hide/show channels
+                if is_color_image(image):
+                    rgb_mask = match_rgbmask_to_image(rgb_mask, image)
+                    image = image * rgb_mask
+
+                if not is_color_image(image) and colormap is not None:
+                    image = matplotlib.cm.ScalarMappable(cmap=colormap).to_rgba(image)[:,:,:3]
+
+                # cut out the displayed portion of the image
+                llpix = subplot.transAxes.transform((0, 0))
+                urpix = subplot.transAxes.transform((1, 1))
+                # i = 0 to height, j = 0 to width
+                jmin, imin = subplot.transData.inverted().transform(llpix)
+                jmax, imax = subplot.transData.inverted().transform(urpix)
+                imin, imax = (imax, imin) if imax < imin else (imin, imax)
+                jmin, jmax = (jmax, jmin) if jmax < jmin else (jmin, jmax)
+                # create an indexing array
+                isteps = np.clip(np.linspace(imin, imax, abs(llpix[1] - urpix[1]) + 1).round().astype(int), 0, image.shape[0] - 1)
+                jsteps = np.clip(np.linspace(jmin, jmax, abs(llpix[0] - urpix[0]) + 1).round().astype(int), 0, image.shape[1] - 1)
+                jsteps, isteps = np.meshgrid(jsteps, isteps)
+                bm = getbitmap(make_1_or_3_channels(image[isteps, jsteps]))
+                
+                dc = wx.ClientDC(self.figure.canvas)
+                dest = subplot.transAxes.transform((0,1))
+                dc.DrawBitmap(bm, int(dest[0]), dc.Size[1] - int(dest[1]), False)
+            wx.CallAfter(do_redraw)
+
+        self.event_bindings[(x,y)] = [self.figure.canvas.mpl_connect('button_release_event', on_release),
+                                      self.figure.canvas.mpl_connect('draw_event', on_redraw)]
         
         # Also add this menu to the main menu
         if (x,y) in self.subplot_menus:
@@ -786,7 +835,7 @@ class CPFigureFrame(wx.Frame):
             hist_fig.subplot_histogram(0, 0, self.images[(x,y)].flatten(), 
                                        bins=200, xlabel='pixel intensity')
             hist_fig.figure.canvas.draw()
-        return result
+        return subplot
     
     def subplot_imshow_color(self, x, y, image, title=None, clear=True, 
                              normalize=True, rgb_mask=[1,1,1],
@@ -1198,7 +1247,8 @@ if __name__ == "__main__":
     f = CPFigureFrame(subplots=(2, 2))
     f.Show()
     
-    img = np.random.uniform(.5, .6, size=(50, 50, 3))
+    img = np.random.uniform(.4, .6, size=(100, 50, 3))
+    img[range(30), range(30), 0] = 1
     
     pdict = {'plate 1': {'A01':1, 'A02':3, 'A03':2},
              'plate 2': {'C01':1, 'C02':3, 'C03':2},
@@ -1208,7 +1258,7 @@ if __name__ == "__main__":
 ##    f.subplot_histogram(1, 0, np.random.randn(1000), 50, 'x', title="hist")
 ##    f.subplot_scatter(2, 0, np.random.randn(1000), np.random.randn(1000), title="scatter")
 ##    f.subplot_density(3, 0, np.random.randn(100).reshape((50,2)), title="density")
-    f.subplot_imshow(0, 0, img[:,:,0], "1-channel colormapped", sharex=f.subplot(0,0), sharey=f.subplot(0,0))
+    f.subplot_imshow(0, 0, img[:,:,0], "1-channel colormapped", sharex=f.subplot(0,0), sharey=f.subplot(0,0), colormap=matplotlib.cm.jet, colorbar=True)
     f.subplot_imshow_grayscale(1, 0, img[:,:,0], "1-channel grayscale", sharex=f.subplot(0,0), sharey=f.subplot(0,0))
 ##    f.subplot_imshow_grayscale(2, 0, img[:,:,0], "1-channel raw", normalize=False, colorbar=True)
 ##    f.subplot_imshow_grayscale(3, 0, img[:,:,0], "1-channel minmax=(.5,.6)", vmin=.5, vmax=.6, normalize=False, colorbar=True)

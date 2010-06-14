@@ -325,10 +325,11 @@ def test_float_deviation(feature, test_measurement, reference_measurement,
             s = make_error_statistic(feature, {}, ERROR_TYPE_QUANTITY,
                                      message, "", per_image)
             return [s]
-    sd = (np.std(tm_no_nan) + np.std(rm_no_nan)) / 2.0
-    sd = max(sd, .000001)
     test_mean = np.mean(tm_no_nan) 
     reference_mean = np.mean(rm_no_nan)
+
+    sd = (np.std(tm_no_nan) + np.std(rm_no_nan)) / 2.0
+    sd = max(sd, .000001, .00001 * (test_mean+reference_mean) / 2.0)
     mean_diff = abs(test_mean - reference_mean) / sd
     if mean_diff > max_deviation:
         message = ("Test and reference means differ: %f / %f test, %f / %f reference" %

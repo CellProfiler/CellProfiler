@@ -625,6 +625,9 @@ class CPFigureFrame(wx.Frame):
                 ylims = self.subplot(x,y).get_ylim()
                 if 'rgb_mask' not in params:
                     params['rgb_mask'] = list(rgb_mask)
+                else:
+                    # copy to prevent modifying shared values
+                    params['rgb_mask'] = list(params['rgb_mask'])
                 for idx, id in enumerate(ids):
                     if id == evt.Id:
                         params['rgb_mask'][idx] = not params['rgb_mask'][idx]
@@ -647,7 +650,7 @@ class CPFigureFrame(wx.Frame):
     
     def subplot_imshow(self, x, y, image, title=None, clear=True, colormap=None,
                        colorbar=False, normalize=True, vmin=0, vmax=1, 
-                       rgb_mask=[1, 1, 1], sharex=None, sharey=None):
+                       rgb_mask=(1, 1, 1), sharex=None, sharey=None):
         '''Show an image in a subplot
         
         x, y  - show image in this subplot
@@ -787,7 +790,9 @@ class CPFigureFrame(wx.Frame):
                     image = image * rgb_mask
 
                 if not is_color_image(image) and colormap is not None:
-                    image = matplotlib.cm.ScalarMappable(cmap=colormap).to_rgba(image)[:,:,:3]
+                    mappable = matplotlib.cm.ScalarMappable(cmap=colormap)
+                    mappable.set_clim(0, 1)
+                    image = mappable.to_rgba(image)[:,:,:3]
 
                 # cut out the displayed portion of the image
                 llpix = subplot.transAxes.transform((0, 0))
@@ -1244,7 +1249,7 @@ if __name__ == "__main__":
     app = wx.PySimpleApp()
     
 ##    f = CPFigureFrame(subplots=(4, 2))
-    f = CPFigureFrame(subplots=(2, 2))
+    f = CPFigureFrame(subplots=(3, 2))
     f.Show()
     
     img = np.random.uniform(.4, .6, size=(100, 50, 3))
@@ -1260,10 +1265,12 @@ if __name__ == "__main__":
 ##    f.subplot_density(3, 0, np.random.randn(100).reshape((50,2)), title="density")
     f.subplot_imshow(0, 0, img[:,:,0], "1-channel colormapped", sharex=f.subplot(0,0), sharey=f.subplot(0,0), colormap=matplotlib.cm.jet, colorbar=True)
     f.subplot_imshow_grayscale(1, 0, img[:,:,0], "1-channel grayscale", sharex=f.subplot(0,0), sharey=f.subplot(0,0))
+    f.subplot_imshow_bw(2, 0, img[:,:,0], "1-channel bw", sharex=f.subplot(0,0), sharey=f.subplot(0,0))
 ##    f.subplot_imshow_grayscale(2, 0, img[:,:,0], "1-channel raw", normalize=False, colorbar=True)
 ##    f.subplot_imshow_grayscale(3, 0, img[:,:,0], "1-channel minmax=(.5,.6)", vmin=.5, vmax=.6, normalize=False, colorbar=True)
     f.subplot_imshow(0, 1, img, "rgb")
     f.subplot_imshow(1, 1, img, "rgb raw", normalize=False, sharex=f.subplot(0,1), sharey=f.subplot(0,1))
+    f.subplot_imshow(2, 1, img, "rgb raw disconnected")
 ##    f.subplot_imshow(2, 1, img, "rgb, log normalized", normalize='log')
 ##    f.subplot_imshow_bw(3, 1, img[:,:,0], "B&W")
 

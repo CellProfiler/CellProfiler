@@ -380,4 +380,22 @@ MakeProjection:[module_num:7|svn_version:\'9999\'|variable_revision_number:2|sho
         self.assertTrue(np.all(np.abs(image.pixel_data - expected) < 
                                np.finfo(float).eps))
     
+    def test_08_01_mask_unmasked(self):
+        np.random.seed (81)
+        images_and_masks = [ (np.random.uniform(size=(10,10)), None)
+                             for i in range(3)]
+        image = self.run_image_set(M.P_MASK, images_and_masks)
+        self.assertEqual(tuple(image.pixel_data.shape), (10,10))
+        self.assertTrue(np.all(image.pixel_data == True))
+        self.assertFalse(image.has_mask)
         
+    def test_08_02_mask(self):
+        np.random.seed (81)
+        images_and_masks = [ (np.random.uniform(size=(10,10)), 
+                              np.random.uniform(size=(10,10)) > .3)
+                             for i in range(3)]
+        expected = np.ones((10,10), bool)
+        for _, mask in images_and_masks:
+            expected = expected & mask
+        image = self.run_image_set(M.P_MASK, images_and_masks)
+        self.assertTrue(np.all(image.pixel_data == expected))

@@ -60,6 +60,16 @@ method scores these as zero since the dark appears in the early z-stacks.
 These pixels have a high score for the variance method but have a reduced
 score when using the brightfield method.
 <p>
+The mask method operates on any masks that might have been applied to the
+images in a group. The output is a binary image where the "1" pixels are
+those that are not masked in all of the images and the "0" pixels are those
+that are masked in one or more of the images.
+<p>You can use the output of the mask method to mask or crop all of the
+images in a group similarly. Use the mask method to combine all of the
+masks in a group, save the image and then use <b>Crop</b>, <b>MaskImage</b> or 
+<b>MaskObjects</b> in another pipeline to mask all images or objects in the
+group similarly.
+<p>
 See also <b>LoadImages</b>.
 '''
 # CellProfiler is distributed under the GNU General Public License.
@@ -87,8 +97,9 @@ P_SUM = 'Sum'
 P_VARIANCE = 'Variance'
 P_POWER = 'Power'
 P_BRIGHTFIELD = 'Brightfield'
+P_MASK = 'Mask'
 P_ALL = [P_AVERAGE, P_MAXIMUM, P_MINIMUM, P_SUM, P_VARIANCE, P_POWER, 
-         P_BRIGHTFIELD]
+         P_BRIGHTFIELD, P_MASK]
 
 K_PROVIDER = "Provider"
 
@@ -113,6 +124,8 @@ class MakeProjection(cpm.CPModule):
             <li><i>%(P_VARIANCE)s:</i> Compute the variance at each pixel position.</li>
             <li><i>%(P_POWER)s:</i> Compute the power at a given frequency at each pixel position.</li>
             <li><i>%(P_BRIGHTFIELD)s:</i>Perform the brightfield projection at each pixel position.</li>
+            <li><i>%(P_MASK)s:</i> Compute a binary image of the pixels that are 
+            masked in any of the input images</li>
             </ul>
             ''' % globals())
         self.projection_image_name = cps.ImageNameProvider(
@@ -268,7 +281,7 @@ class ImageProvider(cpi.AbstractImageProvider):
             self.__image_count = image.mask.astype(int)
         else:
             self.__image_count = np.ones(image.pixel_data.shape, int)
-            
+        
         if self.__how_to_accumulate == P_VARIANCE:
             self.__vsum = image.pixel_data.copy()
             self.__vsum[~ image.mask] = 0
@@ -291,6 +304,10 @@ class ImageProvider(cpi.AbstractImageProvider):
             self.__bright_max = image.pixel_data.copy()
             self.__bright_min = image.pixel_data.copy()
             self.__norm0 = np.mean(image.pixel_data)
+            return
+
+        if self.__how_to_accumulate == P_MASK:
+            self.__image = image.mask
             return
         
         self.__image = image.pixel_data.copy()
@@ -342,6 +359,8 @@ class ImageProvider(cpi.AbstractImageProvider):
             self.__bright_min[min_mask] = pixel_data[min_mask]
             self.__bright_max[max_mask] = pixel_data[max_mask]
             self.__bright_min[max_mask] = self.__bright_max[max_mask]
+        elif self.__how_to_accumulate == P_MASK:
+            self.__image = self.__image & image.mask
         else:
             raise NotImplementedError("No such accumulation method: %s"%
                                       self.__how_to_accumulate)
@@ -371,7 +390,7 @@ class ImageProvider(cpi.AbstractImageProvider):
         else:
             cached_image = self.__image
         cached_image[~mask] = 0
-        if np.all(mask):
+        if np.all(mask) or self.__how_to_accumulate == P_MASK:
             self.__cached_image = cpi.Image(cached_image)
         else:
             self.__cached_image = cpi.Image(cached_image, mask=mask)

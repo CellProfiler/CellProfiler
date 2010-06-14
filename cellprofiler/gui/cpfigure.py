@@ -84,6 +84,17 @@ def make_1_or_3_channels(im):
             out[:, :, idx] += v * im[:, :, chanidx]
     return (out * 255).clip(0, 255).astype(np.uint8)
 
+def make_3_channels_float(im):
+    if im.ndim == 3 and im.shape[2] == 1:
+        im = im[:,:,0]
+    if im.ndim == 2:
+        return np.dstack((im,im,im)).astype(np.double).clip(0,1)
+    out = np.zeros((im.shape[0], im.shape[1], 3), np.double)
+    for chanidx, weights in zip(range(im.shape[2]), wraparound(COLOR_VALS)):
+        for idx, v in enumerate(weights):
+            out[:, :, idx] += v * im[:, :, chanidx]
+    return out.clip(0,1)
+
 def getbitmap(im):
     if im.ndim == 2:
         im = (255 * np.dstack((im, im, im))).astype(np.uint8)
@@ -764,54 +775,63 @@ class CPFigureFrame(wx.Frame):
                 if evt.button != 1:
                     self.show_imshow_popup_menu((evt.x, self.figure.canvas.GetSize()[1] - evt.y), (x,y))
         def on_redraw(evt):
-            def do_redraw():
-                # fetch out values from enclosing frame
-                image = self.images[(x, y)]
-                rgb_mask = kwargs['rgb_mask']
+            # fetch out values from enclosing frame
+            image = self.images[(x, y)]
+            rgb_mask = kwargs['rgb_mask']
 
-                image = image.astype(np.float32)
-                # Perform normalization
-                if normalize == True:
-                    if is_color_image(image):
-                        image = np.dstack([auto_contrast(image[:,:,ch]) 
-                                           for ch in range(image.shape[2])])
-                    else:
-                        image = auto_contrast(image)
-                elif normalize == 'log':
-                    if is_color_image(image):
-                        image = np.dstack([log_transform(image[:,:,ch]) 
-                                           for ch in range(image.shape[2])])
-                    else:
-                        image = log_transform(image)
-
-                # Apply rgb mask to hide/show channels
+            image = image.astype(np.float32)
+            # Perform normalization
+            if normalize == True:
                 if is_color_image(image):
-                    rgb_mask = match_rgbmask_to_image(rgb_mask, image)
-                    image = image * rgb_mask
+                    image = np.dstack([auto_contrast(image[:,:,ch]) 
+                                       for ch in range(image.shape[2])])
+                else:
+                    image = auto_contrast(image)
+            elif normalize == 'log':
+                if is_color_image(image):
+                    image = np.dstack([log_transform(image[:,:,ch]) 
+                                       for ch in range(image.shape[2])])
+                else:
+                    image = log_transform(image)
 
-                if not is_color_image(image) and colormap is not None:
-                    mappable = matplotlib.cm.ScalarMappable(cmap=colormap)
-                    mappable.set_clim(0, 1)
-                    image = mappable.to_rgba(image)[:,:,:3]
+            # Apply rgb mask to hide/show channels
+            if is_color_image(image):
+                rgb_mask = match_rgbmask_to_image(rgb_mask, image)
+                image = image * rgb_mask
+            if not is_color_image(image) and colormap is not None:
+                mappable = matplotlib.cm.ScalarMappable(cmap=colormap)
+                mappable.set_clim(0, 1)
+                image = mappable.to_rgba(image)[:,:,:3]
 
-                # cut out the displayed portion of the image
-                llpix = subplot.transAxes.transform((0, 0))
-                urpix = subplot.transAxes.transform((1, 1))
-                # i = 0 to height, j = 0 to width
-                jmin, imin = subplot.transData.inverted().transform(llpix)
-                jmax, imax = subplot.transData.inverted().transform(urpix)
-                imin, imax = (imax, imin) if imax < imin else (imin, imax)
-                jmin, jmax = (jmax, jmin) if jmax < jmin else (jmin, jmax)
-                # create an indexing array
-                isteps = np.clip(np.linspace(imin, imax, abs(llpix[1] - urpix[1]) + 1).round().astype(int), 0, image.shape[0] - 1)
-                jsteps = np.clip(np.linspace(jmin, jmax, abs(llpix[0] - urpix[0]) + 1).round().astype(int), 0, image.shape[1] - 1)
-                jsteps, isteps = np.meshgrid(jsteps, isteps)
-                bm = getbitmap(make_1_or_3_channels(image[isteps, jsteps]))
+            # cut out the displayed portion of the image
+            llpix = subplot.transAxes.transform((0, 0))
+            urpix = subplot.transAxes.transform((1, 1))
                 
-                dc = wx.ClientDC(self.figure.canvas)
-                dest = subplot.transAxes.transform((0,1))
-                dc.DrawBitmap(bm, int(dest[0]), dc.Size[1] - int(dest[1]), False)
-            wx.CallAfter(do_redraw)
+            # i = 0 to height, j = 0 to width
+            jmin, imin = subplot.transData.inverted().transform(llpix)
+            jmax, imax = subplot.transData.inverted().transform(urpix)
+            imin, imax = (imax, imin) if imax < imin else (imin, imax)
+            jmin, jmax = (jmax, jmin) if jmax < jmin else (jmin, jmax)
+            # create an indexing array
+            isteps_noclip = np.linspace(
+                imin, imax, abs(llpix[1] - urpix[1]) + 1, endpoint=False).round().astype(int)
+            isteps_clip = np.clip(isteps_noclip, 0, image.shape[0] - 1)
+            jsteps_noclip = np.linspace(
+                jmin, jmax, abs(llpix[0] - urpix[0]) + 1, endpoint=False).round().astype(int)
+            jsteps_clip = np.clip(jsteps_noclip, 0, image.shape[1] - 1)
+            jsteps, isteps = np.meshgrid(jsteps_clip, isteps_clip)
+            jsteps_noclip, isteps_noclip = np.meshgrid(jsteps_noclip, isteps_noclip)
+            
+            image = image[isteps, jsteps]
+            image[(isteps_noclip != isteps) | (jsteps_noclip != jsteps)] = 1
+            timg = make_3_channels_float(image)
+            timg = np.flipud(timg)
+            mimg = matplotlib.image.fromarray(timg, 1)
+            llpix, urpix = np.array((np.minimum(llpix, urpix), 
+                                     np.maximum(llpix, urpix)))
+            bbox = np.array((llpix, urpix))
+            
+            evt.renderer.draw_image(llpix[0], llpix[1], mimg, bbox)
 
         self.event_bindings[(x,y)] = [self.figure.canvas.mpl_connect('button_release_event', on_release),
                                       self.figure.canvas.mpl_connect('draw_event', on_redraw)]

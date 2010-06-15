@@ -94,6 +94,7 @@ class CPFrame(wx.Frame):
         self.__splitter = wx.SplitterWindow(self, -1, style=wx.SP_BORDER)
         self.__left_splitter = wx.SplitterWindow(self.__splitter, -1, style=wx.SP_NOBORDER)
         self.__right_win = wx.Panel(self.__splitter, style=wx.BORDER_NONE)
+        self.__right_win.BackgroundColour = self.BackgroundColour
 
         self.__top_left_win = wx.Panel(self.__left_splitter, style=wx.BORDER_NONE)
         # bottom left will be the file browser
@@ -522,6 +523,8 @@ class CPFrame(wx.Frame):
         border.Add(splitter, 1, wx.EXPAND|wx.ALL,1)
         self.SetSizer(border)
         self.Layout()
+        right_win.Layout()
+        top_left_win.Layout()
 
     def __layout_logo(self):
         import cStringIO

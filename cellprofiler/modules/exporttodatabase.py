@@ -189,7 +189,7 @@ def connect_sqlite(db_file):
 class ExportToDatabase(cpm.CPModule):
  
     module_name = "ExportToDatabase"
-    variable_revision_number = 16
+    variable_revision_number = 17
     category = "Data Tools"
 
     def create_settings(self):
@@ -390,6 +390,11 @@ class ExportToDatabase(cpm.CPModule):
             "Select the images you want to save thumbnails of",
             doc = """Select the images that you wish to save as thumbnails to 
             the database.""")
+        self.auto_scale_thumbnail_intensities = cps.Binary(
+            "Auto-scale thumbnail pixel intensities?", True,
+            doc = """Check this option if you'd like to automatically rescale 
+            the thumbnail pixel intensities to the range 0-1, where 0 is 
+            black/unsaturated, and 1 is white/saturated.""")
                                                 
     def visible_settings(self):
         needs_default_output_directory =\
@@ -433,7 +438,8 @@ class ExportToDatabase(cpm.CPModule):
         if self.db_type == DB_MYSQL:
             result += [self.want_image_thumbnails]
             if self.want_image_thumbnails:
-                result += [self.thumbnail_image_names]
+                result += [self.thumbnail_image_names, 
+                           self.auto_scale_thumbnail_intensities]
         return result
     
     def settings(self):
@@ -446,8 +452,9 @@ class ExportToDatabase(cpm.CPModule):
                 self.wants_agg_std_dev, self.wants_agg_mean_well, 
                 self.wants_agg_median_well, self.wants_agg_std_dev_well,
                 self.objects_choice, self.objects_list, self.max_column_size,
-                self.separate_object_tables, self.properties_image_url_prepend, self.want_image_thumbnails,
-                self.thumbnail_image_names]
+                self.separate_object_tables, self.properties_image_url_prepend, 
+                self.want_image_thumbnails,self.thumbnail_image_names, 
+                self.auto_scale_thumbnail_intensities]
     
     def validate_module(self,pipeline):
         if self.want_table_prefix.value:
@@ -614,28 +621,28 @@ class ExportToDatabase(cpm.CPModule):
                 # Finally read the raw data out of the buffer and add it as
                 # as measurement to be written as a blob.
                 pixels = image_set.get_image(name).pixel_data
-                image_set.get_image(name)
-                fd = StringIO()
-                
-                if issubclass(pixels.dtype.type, np.floating):
+
+                if issubclass(pixels.dtype.type, np.floating) or pixels.dtype == np.bool:
                     factor = 255
-                elif pixels.dtype == np.bool:
-                    factor = 255
+                    if self.auto_scale_thumbnail_intensities:
+                        pixels = (pixels - pixels.min()) / pixels.max()
                 else:
                     raise Exception('ExportToDatabase cannot write image thumbnails from images of type "%s".'%(str(pixels.dtype)))
-
                 if pixels.ndim == 2:
                     im = Image.fromarray((pixels * factor).astype('uint8'), 'L')
                 elif pixels.ndim == 3:
                     im = Image.fromarray((pixels * factor).astype('uint8'), 'RGB')
                 else:
                     raise Exception('ExportToDatabase only supports saving thumbnails of grayscale or 3-channel images. "%s" was neither.'%(name))
-                # rescale major axis to 200
+
+                # resize the image so the major axis is 200px long
                 if im.size[0] == max(im.size):
-                    w, h = (200, 200 * max(im.size) / min(im.size))
+                    w, h = (200, 200 * min(im.size) / max(im.size))
                 else:
-                    h, w = (200, 200 * max(im.size) / min(im.size))
+                    h, w = (200, 200 * min(im.size) / max(im.size))
                 im = im.resize((w,h))
+
+                fd = StringIO()
                 im.save(fd, 'PNG')
                 blob = fd.getvalue()
                 fd.close()
@@ -1830,7 +1837,14 @@ check_tables = yes
             #
             setting_values = setting_values + ["", cps.NO, ""]
             variable_revision_number = 16
-            
+
+        if (not from_matlab) and variable_revision_number == 16:
+            #
+            # Added binary choice for auto-scaling thumbnail intensities
+            #
+            setting_values = setting_values + [cps.NO]
+            variable_revision_number = 17
+
         return setting_values, variable_revision_number, from_matlab
     
 class ColumnNameMapping:

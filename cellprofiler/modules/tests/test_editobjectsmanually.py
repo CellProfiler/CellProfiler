@@ -90,6 +90,36 @@ EditObjectsManually:[module_num:1|svn_version:\'1\'|variable_revision_number:1|s
         self.assertTrue(module.wants_outlines)
         self.assertEqual(module.outlines_name, "EditedNucleiOutlines")
         self.assertEqual(module.renumber_choice, E.R_RENUMBER)
+        self.assertFalse(module.wants_image_display)
+ 
+    def test_01_03_load_v2(self):
+        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:1
+SVNRevision:9120
+
+EditObjectsManually:[module_num:1|svn_version:\'10039\'|variable_revision_number:2|show_window:True|notes:\x5B\x5D]
+    Select the objects to be edited:Nuclei
+    Name the edited objects:EditedNuclei
+    Retain outlines of the edited objects?:No
+    Name the outline image:EditedObjectOutlines
+    Numbering of the edited objects:Retain
+    Display a guiding image?:Yes
+    Image name\x3A:DNA
+"""
+        pipeline = cpp.Pipeline()
+        def callback(caller,event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO(data))
+        self.assertEqual(len(pipeline.modules()), 1)
+        module = pipeline.modules()[0]
+        self.assertTrue(isinstance(module, E.EditObjectsManually))
+        self.assertEqual(module.object_name, "Nuclei")
+        self.assertEqual(module.filtered_objects, "EditedNuclei")
+        self.assertFalse(module.wants_outlines)
+        self.assertEqual(module.renumber_choice, E.R_RETAIN)
+        self.assertTrue(module.wants_image_display)
+        self.assertEqual(module.image_name, "DNA")
         
     def test_02_02_measurements(self):
         module = E.EditObjectsManually()

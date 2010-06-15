@@ -55,7 +55,7 @@ R_RETAIN = "Retain"
 
 class EditObjectsManually(I.Identify):
     category = "Object Processing"
-    variable_revision_number = 1
+    variable_revision_number = 2
     module_name = 'EditObjectsManually'
     
     def create_settings(self):
@@ -114,6 +114,16 @@ class EditObjectsManually(I.Identify):
             the edited objects to be directly aligned with measurements you might 
             have made of the original, unedited objects (or objects directly 
             associated with them).""")
+        
+        self.wants_image_display = cps.Binary(
+            "Display a guiding image?", True,
+            doc = """Check this setting to display an image and outlines
+            of the objects. Leave the setting unchecked if you do not
+            want a guide image while editing""")
+        self.image_name = cps.ImageNameSubscriber(
+            "Image name:", "None",
+            doc = """This is the image that will appear when editing objects.
+            Choose an image supplied by a previous module.""")
     
     def settings(self):
         """Return the settings to be loaded or saved to/from the pipeline
@@ -124,7 +134,8 @@ class EditObjectsManually(I.Identify):
         order so they can be matched to the strings in the pipeline.
         """
         return [self.object_name, self.filtered_objects, self.wants_outlines,
-                self.outlines_name, self.renumber_choice]
+                self.outlines_name, self.renumber_choice, 
+                self.wants_image_display, self.image_name]
     
     def is_interactive(self):
         return True
@@ -138,7 +149,9 @@ class EditObjectsManually(I.Identify):
         result = [self.object_name, self.filtered_objects, self.wants_outlines]
         if self.wants_outlines:
             result.append(self.outlines_name)
-        result.append(self.renumber_choice)
+        result += [ self.renumber_choice, self.wants_image_display]
+        if self.wants_image_display:
+            result += [self.image_name]
         return result
     
     def run(self, workspace):
@@ -227,6 +240,7 @@ class EditObjectsManually(I.Identify):
         import wx
         import matplotlib
         from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg
+        from matplotlib.backends.backend_wxagg import NavigationToolbar2WxAgg
         from cellprofiler.gui.cpfigure import renumber_labels_for_display
         
         assert isinstance(workspace,cpw.Workspace)
@@ -246,19 +260,39 @@ class EditObjectsManually(I.Identify):
         figure = matplotlib.figure.Figure()
         panel = FigureCanvasWxAgg(dialog_box, -1, figure)
         sizer.Add(panel, 1, wx.EXPAND)
+        toolbar = NavigationToolbar2WxAgg(panel)
+        sizer.Add(toolbar, 0, wx.EXPAND)
         mask = orig_labels != 0
         #
         # Make 3 axes
         #
-        orig_axes = figure.add_subplot(2,2,1)
-        keep_axes = figure.add_subplot(2,2,2)
-        remove_axes = figure.add_subplot(2,2,4)
+        orig_axes = figure.add_subplot(2, 2, 1)
+        orig_axes._adjustable = 'box-forced'
+        keep_axes = figure.add_subplot(2, 2, 2,
+                                       sharex = orig_axes,
+                                       sharey = orig_axes)
+        remove_axes = figure.add_subplot(2, 2, 4,
+                                         sharex = orig_axes,
+                                         sharey = orig_axes)
+        for axes in (orig_axes, keep_axes, remove_axes):
+            axes._adjustable = 'box-forced'
+            
+        info_axes = figure.add_subplot(2, 2, 3)
+        assert isinstance(info_axes, matplotlib.axes.Axes)
+        info_axes.set_axis_off()
+        #
+        # Add an explanation and possibly a checkbox to the info axis
+        #
         ui_text = ("Keep or remove objects by clicking\n"
                    "on them with the mouse.\n"
                    'Press the "Done" button when\nediting is complete.')
-        figure.text(0.05,0.2, ui_text)
+        info_axes.text(0,0, ui_text, size="small")
+        wants_image_display = [self.wants_image_display.value]
         sub_sizer = wx.BoxSizer(wx.HORIZONTAL)
-        sizer.Add(sub_sizer, 0, wx.EXPAND)
+        #
+        # Need padding on top because tool bar is wonky about its height
+        #
+        sizer.Add(sub_sizer, 0, wx.EXPAND | wx.TOP, 10)
         
         resume_id = 100
         cancel_id = 101
@@ -275,10 +309,10 @@ class EditObjectsManually(I.Identify):
         sub_sizer.Add(keep_button, 0, wx.ALIGN_CENTER)
         
         remove_button = wx.Button(dialog_box, remove_all_id, "Remove all")
-        sub_sizer.Add(remove_button, 0, wx.ALIGN_CENTER)
+        sub_sizer.Add(remove_button,0, wx.ALIGN_CENTER)
         
         toggle_button = wx.Button(dialog_box, reverse_select, "Reverse selection")
-        sub_sizer.Add(toggle_button, 0, wx.ALIGN_CENTER)
+        sub_sizer.Add(toggle_button,0, wx.ALIGN_CENTER)
         
         ######################################
         #
@@ -286,9 +320,9 @@ class EditObjectsManually(I.Identify):
         #
         ######################################
         button_sizer = wx.StdDialogButtonSizer()
-        sub_sizer.Add(button_sizer, 0, wx.EXPAND)
         resume_button = wx.Button(dialog_box, resume_id, "Done")
         button_sizer.AddButton(resume_button)
+        sub_sizer.Add(button_sizer, 0, wx.ALIGN_CENTER)
         def on_resume(event):
             dialog_box.EndModal(wx.OK)
         dialog_box.Bind(wx.EVT_BUTTON, on_resume, resume_button)
@@ -312,6 +346,13 @@ class EditObjectsManually(I.Identify):
         cm.set_bad((0,0,0))
         
         def display():
+            if len(orig_axes.images) > 0:
+                # Save zoom and scale if coming through here a second time
+                x0, x1 = orig_axes.get_xlim()
+                y0, y1 = orig_axes.get_ylim()
+                set_lim = True
+            else:
+                set_lim = False
             for axes, labels, title in (
                 (orig_axes, orig_labels, "Original: %s"%orig_objects_name),
                 (keep_axes, orig_labels * mask,"Objects to keep"),
@@ -322,15 +363,61 @@ class EditObjectsManually(I.Identify):
                 axes.clear()
                 if np.all(labels == 0):
                     use_cm = matplotlib.cm.gray
+                    is_blank = True
                 else:
                     use_cm = cm
-                axes.imshow(labels, cmap = cm)
+                    is_blank = False
+                if wants_image_display[0]:
+                    outlines = outline(labels)
+                    image = workspace.image_set.get_image(self.image_name.value)
+                    image = image.pixel_data.astype(np.float)
+                    image, _ = cpo.size_similarly(labels, image)
+                    if image.ndim == 2:
+                        image = np.dstack((image, image, image))
+                    if not is_blank:
+                        mappable = matplotlib.cm.ScalarMappable(cmap=use_cm)
+                        mappable.set_clim(1,labels.max())
+                        limage = mappable.to_rgba(labels)[:,:,:3]
+                        image[outlines != 0,:] = limage[outlines != 0, :]
+                    axes.imshow(image)
+                    
+                else:
+                    axes.imshow(labels, cmap = use_cm)
                 axes.set_title(title,
-                                   fontname=cpprefs.get_title_font_name(),
-                                   fontsize=cpprefs.get_title_font_size())
+                               fontname=cpprefs.get_title_font_name(),
+                               fontsize=cpprefs.get_title_font_size())
+            if set_lim:
+                orig_axes.set_xlim((x0, x1))
+                orig_axes.set_ylim((y0, y1))
             figure.canvas.draw()
             panel.Refresh()
                 
+        if self.wants_image_display:
+            display_image_checkbox = matplotlib.widgets.CheckButtons(
+                info_axes, ["Display image"], [True])
+            display_image_checkbox.labels[0].set_size("small")
+            r = display_image_checkbox.rectangles[0]
+            rwidth = r.get_width()
+            rheight = r.get_height()
+            rx, ry = r.get_xy()
+            new_rwidth = rwidth / 2 
+            new_rheight = rheight / 2
+            new_rx = rx + rwidth/2
+            new_ry = ry + rheight/4
+            r.set_width(new_rwidth)
+            r.set_height(new_rheight)
+            r.set_xy((new_rx, new_ry))
+            l1, l2 = display_image_checkbox.lines[0]
+            l1.set_data((np.array((new_rx, new_rx+new_rwidth)),
+                         np.array((new_ry, new_ry+new_rheight))))
+            l2.set_data((np.array((new_rx, new_rx+new_rwidth)),
+                         np.array((new_ry + new_rheight, new_ry))))
+            
+            def on_display_image_clicked(_):
+                wants_image_display[0] = not wants_image_display[0]
+                display()
+            display_image_checkbox.on_clicked(on_display_image_clicked)
+            
         def on_click(event):
             if event.inaxes not in (orig_axes, keep_axes, remove_axes):
                 return
@@ -450,5 +537,10 @@ class EditObjectsManually(I.Identify):
             variable_revision_number = 1
             from_matlab = False
             module_name = self.module_name
+            
+        if (not from_matlab) and variable_revision_number == 1:
+            # Added wants image + image
+            setting_values = setting_values + [ cps.NO, "None"]
+            variable_revision_number = 2
         
         return setting_values, variable_revision_number, from_matlab

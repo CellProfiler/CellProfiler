@@ -139,6 +139,8 @@ if (not hasattr(sys, 'frozen')) and (options.build_extensions and not options.ou
     else:
         os.environ['PYTHONPATH'] = site_packages
 
+    use_mingw = (sys.platform == 'win32' and sys.version_info[0] <= 2 and
+                 sys.version_info[1] <= 5)
     for compile_script, my_module in compile_scripts:
         script_path, script_file = os.path.split(compile_script)
         os.chdir(os.path.join(root, script_path))
@@ -150,7 +152,7 @@ if (not hasattr(sys, 'frozen')) and (options.build_extensions and not options.ou
                 needs_build = True
         if not needs_build:
             continue
-        if sys.platform == 'win32' and os.environ['PROCESSOR_ARCHITECTURE'] != 'AMD64':
+        if use_mingw:
             p = subprocess.Popen(["python",
                                   script_file,
                                   "build_ext", "-i",

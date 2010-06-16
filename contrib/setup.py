@@ -14,8 +14,10 @@ def configuration():
              maintainer_email="leek@broadinstitute.org",
              cmdclass=cmdclass,
              ext_modules=extension)
+    python_version = sys.version_info
     if (sys.platform.startswith("win") and
-        os.environ["PROCESSOR_ARCHITECTURE"] == "AMD64"):
+        (os.environ["PROCESSOR_ARCHITECTURE"] == "AMD64" or
+         (python_version[0] >= 2 and python_version[1] >= 6))):
         d["include_dirs"] = ["include"]
     return d
 

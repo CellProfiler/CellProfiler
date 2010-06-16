@@ -20,7 +20,8 @@ import subprocess
 import traceback
 is_win = sys.platform.startswith("win")
 is_win64 = (is_win and (os.environ["PROCESSOR_ARCHITECTURE"] == "AMD64"))
-is_win32 = (is_win and not is_win64)
+is_msvc = (is_win and sys.version_info[0] >= 2 and sys.version_info[1] >= 6)
+is_mingw = (is_win and not is_msvc)
 
 if not hasattr(sys, 'frozen'):
     from distutils.core import setup,Extension
@@ -59,7 +60,7 @@ if not hasattr(sys, 'frozen'):
                     jdk_include = os.path.join(jdk_home, "include")
                     jdk_include_plat = os.path.join(jdk_include, sys.platform)
                     include_dirs += [jdk_include, jdk_include_plat]
-                if is_win32:
+                if is_mingw:
                     #
                     # Build libjvm from jvm.dll on Windows.
                     # This assumes that we're using mingw32 for build

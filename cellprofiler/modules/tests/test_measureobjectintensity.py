@@ -36,6 +36,9 @@ import cellprofiler.workspace as cpw
 #
 pipeline_data = 'TUFUTEFCIDUuMCBNQVQtZmlsZSwgUGxhdGZvcm06IFBDV0lOLCBDcmVhdGVkIG9uOiBXZWQgRmViIDExIDE2OjU4OjUyIDIwMDkgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAABSU0PAAAAkgIAAHic7VhPb9MwFHfatPwZmsomJtRTjhzGaAUHjlQqgkqsrdg0iaObuMUoiavEnlo+xaR9EY4cOCDxxYjbpHW8UudvAamWLOs57/3eez87z04OAQCNEwDqwXg/6BWwbLVQ1oTO5QtEKXYnfg3o4Gk4/zPoV9DDcGSjK2gz5INVi+Z77phczqerR+fEYjbqQ0dUDlqfOSPk+YNxZBg+HuIZsi/wVwTiLVL7iK6xj4kb2of48uzKL6GS38OgfztY86BJPFSDfizMc/03YK2vb+CtIeg3wn6JZvT52xk0qeFAan7mOC0FTjWGUwXdfgeUaafH7HTQ7Qx73O61wq4u5cvlPjNthJd85bXPmq/Kb03yy+V26/QV95dknR9K9lzuEsMl1GB+uGGLxEnLw6dgr/+PeVRiOBXQJ/v1KDMPFc6BhMPlAfWZ8c4mI2jvPJ6i1keL4WigHdrtOg55n7RO27E40ubxMqGdXO9bZ612GfmrcB5IOFzuuRS5PqZzIZ5ofK/AeyzhcRm7Fr7GFoO2gR04Wd0CyoivrPq2KY4OoyS4UGAzQxzyvjnLwce2OLLgTTw4901oIwEna73Na6+KP+l7kDSOss+/rHy4L2Ah65CXh8j+pr793i7Wgbx1bVE0Jh5h0+JxojFLXSOjL8ikC0AjqHFomiLPTee6gJcYZ9P3zjrPZVi7jCcpzq552vO95/tv8C2PReWr8vOvj6p6ewTiPHCZMGpjF90puCJuQ/vzuSSfj1nPkQ8EWj3hIpsknycSDpd7FnIpHs+HHnbEO1wSvBMJj8vnCPrMQ4PFdhQuyfJ5X1fwUgmko+N7ub7j0vqrParc+W+kstNDnV/NH83b5tLvd5Bu/Z9t0Y/arvR/A0/mSFM='
 
+IMAGE_NAME = "MyImage"
+OBJECT_NAME = "MyObjects"
+
 class TestMeasureObjects(unittest.TestCase):
     def error_callback(self, calller, event):
         if isinstance(event, P.RunExceptionEvent):
@@ -144,6 +147,26 @@ class TestMeasureObjects(unittest.TestCase):
             index = object_names.index(column[0])
             self.assertTrue(column[1] in features[index])
             self.assertTrue(column[2] == cpmeas.COLTYPE_FLOAT)
+        
+    def make_workspace(self, labels, pixel_data, mask=None):
+        image_set_list = cpi.ImageSetList()
+        image_set = image_set_list.get_image_set(0)
+        image_set.add(IMAGE_NAME, cpi.Image(pixel_data, mask))
+        object_set = cpo.ObjectSet()
+        o = cpo.Objects()
+        o.segmented = labels
+        object_set.add_objects(o, OBJECT_NAME)
+        pipeline = P.Pipeline()
+        module = MOI.MeasureObjectIntensity()
+        module.images[0].name.value = IMAGE_NAME
+        module.objects[0].name.value = OBJECT_NAME
+        module.module_num = 1
+        pipeline.add_listener(self.error_callback)
+        pipeline.add_module(module)
+        workspace = cpw.Workspace(pipeline, module, image_set,
+                                  object_set, cpmeas.Measurements(),
+                                  image_set_list)
+        return workspace, module
         
     def test_03_01_00_zero(self):
         """Make sure we can process a blank image"""
@@ -484,6 +507,24 @@ class TestMeasureObjects(unittest.TestCase):
         self.assertAlmostEqual(data[1],3.0/8.0,2)
         self.assertAlmostEqual(data[2],3.0/12.0,2)
         self.assertAlmostEqual(data[3],3.0/16.0,2)
+        
+    def test_03_07_median_intensity_masked(self):
+        np.random.seed(37)
+        labels = np.ones((10,10), int)
+        mask = np.ones((10,10), bool)
+        mask[:,:5] = False
+        pixel_data = np.random.uniform(size=(10,10)).astype(np.float32)
+        pixel_data[~mask] = 1
+        expected = np.sort(pixel_data[mask])[np.sum(mask) / 2 ]
+        self.assertNotEqual(expected, np.median(pixel_data))
+        workspace, module = self.make_workspace(labels, pixel_data, mask)
+        module.run(workspace)
+        m = workspace.measurements
+        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        values = m.get_current_measurement(
+            OBJECT_NAME, '_'.join((MOI.INTENSITY, MOI.MEDIAN_INTENSITY, IMAGE_NAME)))
+        self.assertEqual(len(values), 1)
+        self.assertEqual(expected, values[0])
 
     def test_04_01_wrong_image_size(self):
         '''Regression test of IMG-961 - object and image size differ'''

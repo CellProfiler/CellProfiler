@@ -291,7 +291,8 @@ class MeasureObjectIntensity(cpm.CPModule):
                     masked_labels = labels
                     masked_outlines = outlines
                 
-                if nobjects > 0:
+                has_objects = np.any(labels > 0)
+                if has_objects:
                     lindexes = np.arange(nobjects)+1
                     integrated_intensity = fix(nd.sum(img, labels, lindexes))
                     integrated_intensity_edge = fix(nd.sum(img, outlines,
@@ -309,22 +310,22 @@ class MeasureObjectIntensity(cpm.CPModule):
                     max_intensity_edge = fix(nd.maximum(img, outlines,
                                                         lindexes))
                 else:
-                    integrated_intensity = np.zeros((0,))
-                    integrated_intensity_edge = np.zeros((0,))
-                    mean_intensity = np.zeros((0,))
-                    mean_intensity_edge = np.zeros((0,))
-                    std_intensity = np.zeros((0,))
-                    std_intensity_edge = np.zeros((0,))
-                    min_intensity = np.zeros((0,))
-                    min_intensity_edge = np.zeros((0,))
-                    max_intensity = np.zeros((0,))
-                    max_intensity_edge = np.zeros((0,))
+                    integrated_intensity = np.zeros((nobjects,))
+                    integrated_intensity_edge = np.zeros((nobjects,))
+                    mean_intensity = np.zeros((nobjects,))
+                    mean_intensity_edge = np.zeros((nobjects,))
+                    std_intensity = np.zeros((nobjects,))
+                    std_intensity_edge = np.zeros((nobjects,))
+                    min_intensity = np.zeros((nobjects,))
+                    min_intensity_edge = np.zeros((nobjects,))
+                    max_intensity = np.zeros((nobjects,))
+                    max_intensity_edge = np.zeros((nobjects,))
                     
                 # The mass displacement is the distance between the center
                 # of mass of the binary image and of the intensity image. The
                 # center of mass is the average X or Y for the binary image
                 # and the sum of X or Y * intensity / integrated intensity
-                if nobjects > 0:
+                if has_objects:
                     mesh_x, mesh_y = np.meshgrid(range(masked_image.shape[1]),
                                                  range(masked_image.shape[0]))
                     cm_x = fix(nd.mean(mesh_x, masked_labels, lindexes))
@@ -340,7 +341,7 @@ class MeasureObjectIntensity(cpm.CPModule):
                     diff_y = cm_y - cmi_y
                     mass_displacement = np.sqrt(diff_x * diff_x+diff_y*diff_y)
                 else:
-                    mass_displacement = np.zeros((0,))
+                    mass_displacement = np.zeros((nobjects,))
                 
                 # We do the quantile measurements using an indexing trick:
                 # given a label integer L and the intensity at that label, I
@@ -350,7 +351,7 @@ class MeasureObjectIntensity(cpm.CPModule):
                 # do a cumsum of areas of labels, you'll get indices into
                 # the ordered array and you can read out quantiles pretty easily
                 
-                if nobjects > 0:
+                if has_objects:
                     stretched_img = stretch(img) * .99
                     flat_img = img.flatten()
                     areas = fix(nd.sum(np.ones(labels.shape,int),
@@ -382,9 +383,9 @@ class MeasureObjectIntensity(cpm.CPModule):
                             flat_img[image_idx[indices[good_objects]]]
                         meas[~good_objects] = np.nan
                 else:
-                    lower_quartile_intensity = np.zeros((0,))
-                    median_intensity = np.zeros((0,))
-                    upper_quartile_intensity = np.zeros((0,))
+                    lower_quartile_intensity = np.zeros((nobjects,))
+                    median_intensity = np.zeros((nobjects,))
+                    upper_quartile_intensity = np.zeros((nobjects,))
                 
                 m = workspace.measurements
                 for feature_name, measurement in \

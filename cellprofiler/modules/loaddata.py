@@ -316,8 +316,6 @@ class LoadData(cpm.CPModule):
                     if self.has_synthetic_well_metadata():
                         fields += [cpmeas.FTR_WELL]
                     self.metadata_fields.choices = fields
-                except Exception, e:
-                    raise RuntimeError("%s" % (e))
                 except:
                     self.metadata_fields.choices = [ "No CSV file"]
                 

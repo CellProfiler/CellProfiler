@@ -792,7 +792,7 @@ LoadImages:[module_num:1|svn_version:\'9976\'|variable_revision_number:7|show_wi
         nikon_path = os.path.join(T.testimages_directory(), "NikonTIF.tif")
         image = LI.load_using_bioformats(nikon_path)
         self.assertEqual(tuple(image.shape), (731, 805, 3))
-        self.assertAlmostEqual(np.sum(image), 560156.69, 0)
+        self.assertAlmostEqual(np.sum(image.astype(np.float64)), 560730.83, 0)
         
     def test_05_07_load_Metamorph_tif(self):
         '''Regression test of IMG-883
@@ -804,7 +804,7 @@ LoadImages:[module_num:1|svn_version:\'9976\'|variable_revision_number:7|show_wi
             "IXMtest_P24_s9_w560D948A4-4D16-49D0-9080-7575267498F9.tif")
         image = LI.load_using_bioformats(metamorph_path)
         self.assertEqual(tuple(image.shape), (520, 696))
-        self.assertAlmostEqual(np.sum(image), 2074.2227, 0)
+        self.assertAlmostEqual(np.sum(image.astype(np.float64)), 2071.93, 0)
         
 
     def test_06_01_file_metadata(self):

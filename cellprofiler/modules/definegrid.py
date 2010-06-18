@@ -785,7 +785,7 @@ class DefineGrid(cpm.CPModule):
         # draw the image on the figure
         #
         if has_figure:
-            figure.subplot_imshow(0,0, image)
+            figure.subplot_imshow(0,0, image, use_imshow=True)
         else:
             display_image = image *255
             display_image[display_image < 0] = 0

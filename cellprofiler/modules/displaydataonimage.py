@@ -236,7 +236,6 @@ class DisplayDataOnImage(cpm.CPModule):
                         and x.endswith(im_id)][0]
         except:
             raise Exception('DisplayDataOnImage failed to find your image path and filename features in the supplied measurements.')
-            return
         
         index = workspace.measurements.image_set_index
         filename = workspace.measurements.get_measurement(cpmeas.IMAGE, filecol, index)
@@ -259,9 +258,11 @@ class DisplayDataOnImage(cpm.CPModule):
         title = "%s_%s" % (self.objects_name.value, self.measurement.value)
         def imshow_fn(pixel_data):
             if pixel_data.ndim == 3:
-                fig.subplot_imshow_color(0, 0, pixel_data, title=title)
+                fig.subplot_imshow_color(0, 0, pixel_data, title=title,
+                                         use_imshow = True)
             else:
-                fig.subplot_imshow_grayscale(0, 0, pixel_data, title=title)
+                fig.subplot_imshow_grayscale(0, 0, pixel_data, title=title,
+                                             use_imshow = True)
 
         self.display_on_figure(workspace, fig.subplot(0,0), imshow_fn)
         fig.figure.canvas.draw_idle()

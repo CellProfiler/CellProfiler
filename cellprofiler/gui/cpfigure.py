@@ -100,7 +100,8 @@ def getbitmap(im):
         im = (255 * np.dstack((im, im, im))).astype(np.uint8)
     h, w, _ = im.shape
     outim = wx.EmptyImage(w, h)
-    outim.SetDataBuffer(buffer(im))
+    b = buffer(im) # make sure buffer exists through the remainder of function
+    outim.SetDataBuffer(b)
     return outim.ConvertToBitmap()
 
 def match_rgbmask_to_image(rgb_mask, image):

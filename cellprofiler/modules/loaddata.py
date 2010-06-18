@@ -292,15 +292,24 @@ class LoadData(cpm.CPModule):
             if not os.path.isfile(csv_path):
                 raise cps.ValidationError("No such CSV file: %s"%csv_path,
                                           self.csv_file_name)
-            else:
-                # This will throw if the URL can't be retrieved
-                self.open_csv()
-        else:
-            try:
-                self.get_header()
-            except:
-                raise cps.ValidationError("The CSV file, %s, is not in the proper format. See this module's help for details on CSV format." %
+
+        # This will throw if the URL can't be retrieved
+        try:
+            self.open_csv()
+        except IOError, e:
+            import errno
+            if e.errno == errno.EWOULDBLOCK:
+                raise cps.ValidationError("Another program (Excel?) is locking the CSV file %s." %
                                           self.csv_path, self.csv_file_name)
+            else:
+                raise cps.ValidationError("Could not open CSV file %s (error: %s)" %
+                                          (self.csv_path, e), self.csv_file_name)
+
+        try:
+            self.get_header()
+        except Exception, e:
+            raise cps.ValidationError("The CSV file, %s, is not in the proper format. See this module's help for details on CSV format. (error: %s)" %
+                                      (self.csv_path, e), self.csv_file_name)
 
     def visible_settings(self):
         result = [self.csv_directory, self.csv_file_name, 

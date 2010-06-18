@@ -72,7 +72,7 @@ data_files = []
 is_2_6 = sys.version_info[0] >= 2 and sys.version_info[1] >= 6
 if is_2_6:
     opts['py2exe']['includes'] += [ "scipy.io.matlab.streams"]
-if is_2_6:
+if is_2_6 and not is_win64:
     # A trick to load the dlls
     key = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE,
                           r"SOFTWARE\Microsoft\VisualStudio\9.0\Setup\VC")

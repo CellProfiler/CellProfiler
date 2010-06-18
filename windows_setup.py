@@ -47,8 +47,8 @@ class CellProfilerMSI(distutils.core.Command):
         """Return the command to use to compile an .iss file
         """
         try:
-            key = _winreg.OpenKey(_winreg.HKEY_CLASSES_ROOT,
-                                  "InnoSetupScriptFile\\shell\\Compile\\command")
+            key = _winreg.OpenKey(_winreg.HKEY_CLASSES_ROOT, 
+                                   "InnoSetupScriptFile\\shell\\Compile\\command")
             result = _winreg.QueryValueEx(key,None)[0]
             key.Close()
             return result
@@ -68,10 +68,22 @@ opts = {
     'msi': {}
        }
 
-if is_win64:
+data_files = []
+is_2_6 = sys.version_info[0] >= 2 and sys.version_info[1] >= 6
+if is_2_6:
     opts['py2exe']['includes'] += [ "scipy.io.matlab.streams"]
+if is_2_6:
+    # A trick to load the dlls
+    key = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE,
+                          r"SOFTWARE\Microsoft\VisualStudio\9.0\Setup\VC")
+    product_dir = _winreg.QueryValueEx(key, "ProductDir")[0]
+    key.Close()
+    redist = os.path.join(product_dir, r"redist\x86\Microsoft.VC90.CRT")
+    data_files += [(".",[os.path.join(redist, x)
+                         for x in ("Microsoft.VC90.CRT.manifest", "msvcr90.dll")])]
     
-data_files = [('cellprofiler\\icons',
+    
+data_files += [('cellprofiler\\icons',
                ['cellprofiler\\icons\\%s'%(x) 
                 for x in os.listdir('cellprofiler\\icons')
                 if x.endswith(".png") or x.endswith(".psd")]),

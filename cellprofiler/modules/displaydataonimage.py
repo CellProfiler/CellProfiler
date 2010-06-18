@@ -21,7 +21,7 @@ CellProfiler 1.0 were merged into DisplayDataOnImage in the CellProfiler 2.0.
 # 
 # Website: http://www.cellprofiler.org
 
-__version__="$Revision: 1 $"
+__version__="$Revision$"
 
 import numpy as np
 

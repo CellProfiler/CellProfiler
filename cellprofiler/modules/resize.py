@@ -38,7 +38,7 @@ I_ALL = [I_NEAREST_NEIGHBOR, I_BILINEAR, I_BICUBIC]
 class Resize(cpm.CPModule):
 
     category = "Image Processing"
-    variable_revision_number = 2
+    variable_revision_number = 3
     module_name = "Resize"
     
     def create_settings(self):
@@ -77,11 +77,42 @@ class Resize(cpm.CPModule):
                                         <li><i>Bicubic:</i> Each output pixel is given the intensity of the weighted average
                                         of the 4x4 neighborhood at the corresponding position in the input image.</li>
                                         </ul>''')
+        
+        self.separator = cps.Divider(line=False)
+        
+        self.additional_images = []
+        
+        self.add_button = cps.DoSomething("", "Add another image",
+                                          self.add_image)
+        
+    def add_image(self, can_remove = True):
+        '''Add an image + associated questions and buttons'''
+        group = cps.SettingsGroup()
+        if can_remove:
+            group.append("divider", cps.Divider(line=False))
+        
+        group.append("input_image_name", 
+                     cps.ImageNameSubscriber("Select the additional image?",
+                                            "None",doc="""
+                                            What is the name of the additional image to resize? This image will be
+                                            resized with the same settings as the first image."""))
+        group.append("output_image_name",
+                     cps.ImageNameProvider("Name the output image",
+                                            "ResizedBlue",doc="""
+                                            What is the name of the additional resized image?"""))
+        if can_remove:
+            group.append("remover", cps.RemoveSettingButton("", "Remove above image", self.additional_images, group))
+        self.additional_images.append(group)
 
     def settings(self):
-        return [self.image_name, self.resized_image_name, self.size_method,
+        result = [self.image_name, self.resized_image_name, self.size_method,
                 self.resizing_factor, self.specific_width, 
                 self.specific_height, self.interpolation]
+        
+        for additional in self.additional_images:
+            result += [additional.input_image_name, additional.output_image_name]
+            
+        return result
 
     def visible_settings(self):
         result = [self.image_name, self.resized_image_name, self.size_method]
@@ -93,10 +124,29 @@ class Resize(cpm.CPModule):
             raise ValueError("Unsupported size method: %s" % 
                              self.size_method.value)
         result += [self.interpolation]
+        
+        for additional in self.additional_images:
+            result += additional.visible_settings()
+        result += [self.add_button]
+        
         return result
 
     def run(self, workspace):
-        image = workspace.image_set.get_image(self.image_name.value)
+        self.apply_resize(workspace, self.image_name.value, self.resized_image_name.value)
+        statistics = [[0,
+                       self.image_name.value, 
+                       self.resized_image_name.value]]
+        
+        for additional in self.additional_images:
+            self.apply_resize(workspace, additional.input_image_name.value, additional.output_image_name.value)
+            statistics += [[len(statistics),
+                            additional.input_image_name.value,
+                            additional.output_image_name.value]]
+        # Save data for display
+        workspace.display_data.statistics = statistics
+    
+    def apply_resize(self, workspace, input_image_name, output_image_name):
+        image = workspace.image_set.get_image(input_image_name)
         image_pixels = image.pixel_data
         if self.size_method == R_BY_FACTOR:
             factor = self.resizing_factor.value
@@ -131,25 +181,39 @@ class Resize(cpm.CPModule):
                                              output_shape = shape,
                                              order = order)
         output_image = cpi.Image(output_pixels)
-        workspace.image_set.add(self.resized_image_name.value,
-                                output_image) 
-        if workspace.frame is not None:
-            figure = workspace.create_or_find_figure(subplots=(2,1))
-            if image_pixels.ndim == 2:
-                figure.subplot_imshow_bw(0,0,image_pixels,
-                                         title=self.image_name.value)
-                figure.subplot_imshow_bw(1,0,output_pixels,
-                                         title=self.resized_image_name.value,
-                                         sharex = figure.subplot(0,0),
-                                         sharey = figure.subplot(0,0))
+        workspace.image_set.add(output_image_name, output_image) 
+        
+    def is_interactive(self):
+        return False
+    
+    def display(self, workspace):
+        '''Display the resized images
+        
+        workspace - the workspace being run
+        statistics - a list of lists:
+            0: index of this statistic
+            1: input image name of image being aligned
+            2: output image name of image being aligned
+        '''
+        statistics = workspace.display_data.statistics
+        figure = workspace.create_or_find_figure(subplots=(2,len(statistics)))
+        for i, input_name, output_name in statistics:
+            input_image = workspace.image_set.get_image(input_name)
+            input_image_pixels = input_image.pixel_data
+            
+            output_image = workspace.image_set.get_image(output_name)
+            output_image_pixels = output_image.pixel_data
+            
+            if input_image_pixels.ndim == 2:
+                figure.subplot_imshow_bw(0,i,input_image_pixels,
+                                         title=input_name)
+                figure.subplot_imshow_bw(1,i,output_image_pixels,
+                                         title=output_name)
             else:
-                figure.subplot_imshow(0, 0, image_pixels, 
-                                      title=self.image_name.value)
-                figure.subplot_imshow(1, 0, output_pixels,
-                                      title=self.resized_image_name.value,
-                                      sharex = figure.subplot(0,0),
-                                      sharey = figure.subplot(0,0))
-                
+                figure.subplot_imshow(0, i, input_image_pixels, 
+                                      title=input_name)
+                figure.subplot_imshow(1, i, output_image_pixels,
+                                      title=output_name)
                 
     def upgrade_settings(self, setting_values, variable_revision_number, 
                          module_name, from_matlab):
@@ -172,6 +236,11 @@ class Resize(cpm.CPModule):
             if setting_values[2] == "Resize to a size in pixels":
                 setting_values[2] = R_TO_SIZE
             variable_revision_number = 2
+            
+        if (not from_matlab) and variable_revision_number == 2:
+            # Add additional images to be resized similarly, but if you only had 1,
+            # the order didn't change
+            variable_revision_number = 3
             
         return setting_values, variable_revision_number, from_matlab
         

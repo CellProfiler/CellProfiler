@@ -115,6 +115,57 @@ class TestResize(unittest.TestCase):
         self.assertEqual(module.size_method, R.R_BY_FACTOR)
         self.assertAlmostEqual(module.resizing_factor.value, .25)
         self.assertEqual(module.interpolation, R.I_NEAREST_NEIGHBOR)
+        
+    def test_01_03_load_v3(self):
+        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:1
+SVNRevision:10104
+
+Resize:[module_num:1|svn_version:\'10104\'|variable_revision_number:3|show_window:True|notes:\x5B\x5D]
+    Select the input image:DNA
+    Name the output image:ResizedDNA
+    Select resizing method:Resize by specifying desired final dimensions
+    Resizing factor:0.25
+    Width of the final image, in pixels:141
+    Height of the final image, in pixels:169
+    Interpolation method:Bilinear
+    Additional image count:1
+    Select the additional image?:Actin
+    Name the output image:ResizedActin
+
+Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_window:True|notes:\x5B\x5D]
+    Select the input image:DNA
+    Name the output image:ResizedDNA
+    Select resizing method:Resize by specifying desired final dimensions
+    Resizing factor:0.25
+    Width of the final image, in pixels:100
+    Height of the final image, in pixels:100
+    Interpolation method:Bicubic
+    Additional image count:0
+"""
+        pipeline = cpp.Pipeline()
+        def callback(caller,event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO(data))
+        self.assertEqual(len(pipeline.modules()),2)
+        module = pipeline.modules()[0]
+        self.assertTrue(isinstance(module, R.Resize))
+        self.assertEqual(module.image_name, "DNA")
+        self.assertEqual(module.resized_image_name, "ResizedDNA")
+        self.assertEqual(module.size_method, R.R_TO_SIZE)
+        self.assertAlmostEqual(module.resizing_factor.value, 0.25)
+        self.assertEqual(module.specific_width, 141)
+        self.assertEqual(module.specific_height, 169)
+        self.assertEqual(module.interpolation, R.I_BILINEAR)
+        self.assertEqual(module.additional_image_count.value, 1)
+        additional_image = module.additional_images[0]
+        self.assertEqual(additional_image.input_image_name, "Actin")
+        self.assertEqual(additional_image.output_image_name, "ResizedActin")
+        
+        module = pipeline.modules()[1]
+        self.assertTrue(isinstance(module, R.Resize))
+        self.assertEqual(module.interpolation, R.I_BICUBIC)
     
     def make_workspace(self, image, size_method, interpolation):
         module = R.Resize()

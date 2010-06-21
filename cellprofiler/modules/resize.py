@@ -18,6 +18,7 @@ method to use.
 __version__="$Revision$"
 
 import numpy as np
+import traceback
 from scipy.ndimage import affine_transform
 
 import cellprofiler.cpmodule as cpm
@@ -33,7 +34,8 @@ I_BILINEAR = 'Bilinear'
 I_BICUBIC = 'Bicubic'
 
 I_ALL = [I_NEAREST_NEIGHBOR, I_BILINEAR, I_BICUBIC]
-
+'''The index of the additional image count setting'''
+S_ADDITIONAL_IMAGE_COUNT = 7
 
 class Resize(cpm.CPModule):
 
@@ -82,6 +84,9 @@ class Resize(cpm.CPModule):
         
         self.additional_images = []
         
+        self.additional_image_count = cps.HiddenCount(
+            self.additional_images, "Additional image count")
+        
         self.add_button = cps.DoSomething("", "Add another image",
                                           self.add_image)
         
@@ -107,7 +112,8 @@ class Resize(cpm.CPModule):
     def settings(self):
         result = [self.image_name, self.resized_image_name, self.size_method,
                 self.resizing_factor, self.specific_width, 
-                self.specific_height, self.interpolation]
+                self.specific_height, self.interpolation,
+                self.additional_image_count]
         
         for additional in self.additional_images:
             result += [additional.input_image_name, additional.output_image_name]
@@ -128,8 +134,23 @@ class Resize(cpm.CPModule):
         for additional in self.additional_images:
             result += additional.visible_settings()
         result += [self.add_button]
-        
         return result
+    
+    def prepare_settings(self, setting_values):
+        '''Create the correct number of additional images'''
+        try:
+            additional_image_setting_count = \
+                int(setting_values[S_ADDITIONAL_IMAGE_COUNT])
+            if len(self.additional_images) > additional_image_setting_count:
+                del self.additional_images[additional_image_setting_count:]
+            else:
+                for i in range(len(self.additional_images),
+                               additional_image_setting_count):
+                    self.add_image()
+        except ValueError:
+            print 'Additional image setting count was "%s" which is not an integer.' % setting_values[S_ADDITIONAL_IMAGE_COUNT]
+            traceback.print_exc()
+            pass
 
     def run(self, workspace):
         self.apply_resize(workspace, self.image_name.value, self.resized_image_name.value)
@@ -240,6 +261,7 @@ class Resize(cpm.CPModule):
         if (not from_matlab) and variable_revision_number == 2:
             # Add additional images to be resized similarly, but if you only had 1,
             # the order didn't change
+            setting_values = setting_values + [ "0"]
             variable_revision_number = 3
             
         return setting_values, variable_revision_number, from_matlab

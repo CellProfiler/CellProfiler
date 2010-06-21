@@ -162,6 +162,7 @@ PRIMARY_OUTLINE_COLOR = 'PrimaryOutlineColor'
 SECONDARY_OUTLINE_COLOR = 'SecondaryOutlineColor'
 TERTIARY_OUTLINE_COLOR = 'TertiaryOutlineColor'
 JVM_ERROR = 'JVMError'
+ALLOW_OUTPUT_FILE_OVERWRITE = 'AllowOutputFileOverwrite'
 
 def recent_file(index):
     return FF_RECENTFILES % (index + 1)
@@ -577,3 +578,23 @@ def set_has_reported_jvm_error():
     global __has_reported_jvm_error
     __has_reported_jvm_error = True
     
+__allow_output_file_overwrite = None
+
+def get_allow_output_file_overwrite():
+    '''Return true if the user wants to allow CP to overwrite the output file
+    
+    This is the .MAT output file, typically Default_OUT.mat
+    '''
+    global __allow_output_file_overwrite
+    if __allow_output_file_overwrite is not None:
+        return __allow_output_file_overwrite
+    if not get_config().Exists(ALLOW_OUTPUT_FILE_OVERWRITE):
+        return False
+    return get_config().Read(ALLOW_OUTPUT_FILE_OVERWRITE) == "True"
+
+def set_allow_output_file_overwrite(value):
+    '''Allow overwrite of .MAT file if true, warn user if false'''
+    global __allow_output_file_overwrite
+    __allow_output_file_overwrite = value
+    get_config().Write(ALLOW_OUTPUT_FILE_OVERWRITE, 
+                       "True" if value else "False")

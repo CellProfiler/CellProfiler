@@ -1134,7 +1134,7 @@ class PipelineController:
     def get_output_file_path(self):
         path = os.path.join(cpprefs.get_default_output_directory(),
                             cpprefs.get_output_file_name())
-        if os.path.exists(path):
+        if os.path.exists(path) and not cpprefs.get_allow_output_file_overwrite():
             (first_part,ext)=os.path.splitext(path)
             start = 1
             match = re.match('^(.+)__([0-9]+)$',first_part)

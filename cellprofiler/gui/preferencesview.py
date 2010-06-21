@@ -135,6 +135,15 @@ class PreferencesView:
         panel = self.__odds_and_ends_panel
         output_filename_text = wx.StaticText(panel,-1,'Output Filename:')
         self.__output_filename_edit_box = wx.TextCtrl(panel,-1,'DefaultOUT.mat')
+        self.__allow_output_filename_overwrite_check_box = \
+            wx.CheckBox(panel, label = "Allow overwrite?")
+        self.__allow_output_filename_overwrite_check_box.Value = \
+            cpprefs.get_allow_output_file_overwrite()
+        def on_allow_checkbox(event):
+            cpprefs.set_allow_output_file_overwrite(
+                self.__allow_output_filename_overwrite_check_box.Value)
+        self.__allow_output_filename_overwrite_check_box.Bind(
+            wx.EVT_CHECKBOX, on_allow_checkbox)
         output_filename_help_button = wx.Button(panel,-1,'?', (0,0), (30,-1))
         self.__analyze_images_button = wx.Button(panel,-1,'Analyze images')
         self.__stop_analysis_button = wx.Button(panel,-1,'Stop analysis')
@@ -142,6 +151,7 @@ class PreferencesView:
         sizer.AddMany([(output_filename_help_button,0,wx.ALIGN_CENTER|wx.ALL,1),
                        (output_filename_text,0,wx.ALIGN_CENTER,1),
                        (self.__output_filename_edit_box,3,wx.ALL,1),
+                       (self.__allow_output_filename_overwrite_check_box, 0, wx.ALIGN_CENTER | wx.ALL, 1),
                        (self.__analyze_images_button,0,wx.ALL,1),
                        (self.__stop_analysis_button, 0, wx.ALL,1)])
         sizer.Hide(self.__stop_analysis_button)

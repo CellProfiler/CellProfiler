@@ -119,7 +119,10 @@ import hashlib
 import numpy as np
 import os
 import sys
-from StringIO import StringIO
+try:
+    from cStringIO import StringIO
+except:
+    from StringIO import StringIO
 import matplotlib.mlab
 
 import cellprofiler.cpmodule as cpm
@@ -277,6 +280,24 @@ class LoadData(cpm.CPModule):
         self.row_range = cps.IntegerRange("Rows to process",
                                           (1,100000),1, doc = 
                                           """<i>(Used only if a range of rows is to be specified)</i><br>Enter the row numbers of the first and last row to be processed.""")
+        def do_erase():
+            global header_cache
+            header_cache = {}
+            
+        self.clear_cache_button = cps.DoSomething(
+            "Erase cached information", "Erase", do_erase,
+            doc = """Press this button to erase the header information saved
+            inside CellProfiler. <b>LoadData</b> saves information about your
+            .csv file in its memory so that displays take less time to load.
+            The information is reloaded if a modification is detected.
+            <b>LoadData</b> might fail to detect a modification on a file
+            accessed over the network and will fail to detect modifications
+            on files accessed through HTTP or FTP. In this case, you will
+            have to press this button to reload the header information after
+            changing the file.
+            <p>This button will never destroy any information on disk. It is
+            always safe to press it.
+            """)
 
     def settings(self):
         return [self.csv_directory,
@@ -313,7 +334,10 @@ class LoadData(cpm.CPModule):
 
     def visible_settings(self):
         result = [self.csv_directory, self.csv_file_name, 
-                  self.browse_csv_button, self.wants_images]
+                  self.browse_csv_button]
+        if self.csv_directory.dir_choice == cps.URL_FOLDER_NAME:
+            result += [self.clear_cache_button]
+        result += [ self.wants_images ]
         if self.wants_images.value:
             result += [self.image_directory, self.wants_image_groupings]
             if self.wants_image_groupings.value:
@@ -416,6 +440,8 @@ class LoadData(cpm.CPModule):
         global header_cache
         entry = header_cache.get(self.csv_path, dict(ctime=0))
         if cpprefs.is_url_path(self.csv_path):
+            if not header_cache.has_key(self.csv_path):
+                header_cache[self.csv_path] = entry
             return entry
         ctime = os.stat(self.csv_path).st_ctime
         if ctime > entry["ctime"]:
@@ -425,21 +451,31 @@ class LoadData(cpm.CPModule):
         
     def open_csv(self):
         '''Open the csv file or URL, returning a file descriptor'''
+        global header_cache
+        
         if cpprefs.is_url_path(self.csv_path):
-            entry = header_cache.get(self.csv_path, {})
-            if entry.has_key("URLFD"):
-                fd = entry["URLFD"]
+            if not header_cache.has_key(self.csv_path):
+                header_cache[self.csv_path] = {}
+            entry = header_cache[self.csv_path]
+            if entry.has_key("URLEXCEPTION"):
+                raise entry["URLEXCEPTION"]
+            if entry.has_key("URLDATA"):
+                fd = StringIO(entry["URLDATA"])
             else:
                 import urllib2
-                url_fd = urllib2.urlopen(self.csv_path)
+                try:
+                    url_fd = urllib2.urlopen(self.csv_path)
+                except Exception, e:
+                    entry["URLEXCEPTION"] = e
+                    raise e
                 fd = StringIO()
                 while True:
                     text = url_fd.read()
                     if len(text) == 0:
                         break
                     fd.write(text)
-                entry["URLFD"] = fd
-            fd.seek(0)
+                fd.seek(0)
+                entry["URLDATA"] = fd.getvalue()
             return fd
         else:
             return open(self.csv_path, 'rb')

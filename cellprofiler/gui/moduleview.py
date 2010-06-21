@@ -190,6 +190,9 @@ def help_ctrl_name(v):
 def subedit_control_name(v):
     return "%s_subedit" % str(v.key())
 
+def custom_label_name(v):
+    return "%s_customlabel" % str(v.key())
+
 def encode_label(text):
     """Encode text escapes for the static control and button labels
     
@@ -821,6 +824,7 @@ class ModuleView:
         assert isinstance(v, cps.DirectoryPath)
         dir_ctrl_name = combobox_ctrl_name(v)
         custom_ctrl_name = subedit_control_name(v)
+        custom_ctrl_label_name = custom_label_name(v)
         browse_ctrl_name = button_control_name(v)
         if control is None:
             control = wx.Panel(self.module_panel, name=control_name)
@@ -831,6 +835,8 @@ class ModuleView:
             sizer.Add(dir_ctrl, 0, wx.ALIGN_LEFT | wx.BOTTOM, 2)
             custom_sizer = wx.BoxSizer(wx.HORIZONTAL)
             sizer.Add(custom_sizer, 1, wx.EXPAND)
+            custom_label = wx.StaticText(control, name = custom_ctrl_label_name)
+            custom_sizer.Add(custom_label, 0, wx.ALIGN_CENTER_VERTICAL)
             custom_ctrl = wx.TextCtrl(control, value = v.custom_path,
                                       name = custom_ctrl_name)
             custom_sizer.Add(custom_ctrl, 1, wx.ALIGN_CENTER_VERTICAL)
@@ -881,6 +887,7 @@ class ModuleView:
         else:
             dir_ctrl = self.module_panel.FindWindowByName(dir_ctrl_name)
             custom_ctrl = self.module_panel.FindWindowByName(custom_ctrl_name)
+            custom_label = self.module_panel.FindWindowByName(custom_ctrl_label_name)
             browse_ctrl = self.module_panel.FindWindowByName(browse_ctrl_name)
             if dir_ctrl.GetStringSelection() != v.dir_choice:
                 dir_ctrl.SetStringSelection(v.dir_choice)
@@ -890,6 +897,11 @@ class ModuleView:
             dir_ctrl.StringSelection = v.dir_choice
         if v.is_custom_choice:
             custom_ctrl.Show()
+            if v.dir_choice in (cps.DEFAULT_INPUT_SUBFOLDER_NAME,
+                                cps.DEFAULT_OUTPUT_SUBFOLDER_NAME):
+                custom_label.Label = "Sub-folder:"
+            elif v.dir_choice == cps.URL_FOLDER_NAME:
+                custom_label.Label = "URL folder:"
             if custom_ctrl.Value != v.custom_path:
                 custom_ctrl.Value = v.custom_path
             browse_ctrl.Show()
@@ -1384,8 +1396,10 @@ class ModuleView:
         else:
             return
         if self.__module:
-            self.validate_module()
-            self.running_time = time.time() - self.last_idle_time
+            try:
+                self.validate_module()
+            finally:
+                self.running_time = time.time() - self.last_idle_time
             
     def validate_module(self):
         validation_error = None

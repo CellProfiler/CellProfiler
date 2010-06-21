@@ -24,23 +24,23 @@ For an example pipeline using TrackObjects, see the CellProfiler <a href="http:/
 <ul>
 <li><i>Object features</i>
 <ul>
-<li>Label: Each tracked object is assigned a unique identifier (label). 
+<li><i>Label:</i> Each tracked object is assigned a unique identifier (label). 
 Results of splits or merges are seen as new objects and assigned a new
 label.</li>
-<li>Parent: The label of the object in the last frame. For a split, each
+<li><i>Parent:</i> The label of the object in the last frame. For a split, each
 child object will have the label of the object it split from. For a merge,
 the child will have the label of the closest parent.</li>
-<li>TrajectoryX, TrajectoryY: The direction of motion (in x and y coordinates) of the 
+<li><i>TrajectoryX, TrajectoryY:</i> The direction of motion (in x and y coordinates) of the 
 object from the previous frame to the current frame.</li>
-<li>DistanceTraveled: The distance traveled by the object from the 
+<li><i>DistanceTraveled:</i> The distance traveled by the object from the 
 previous frame to the current frame (calculated as the magnitude of 
 the distance traveled vector).</li>
-<li>IntegratedDistance: The total distance traveled by the object during
+<li><i>IntegratedDistance:</i> The total distance traveled by the object during
 the lifetime of the object.</li>
-<li>Linearity: A measure of how linear the object trajectity is during the
+<li><i>Linearity:</i> A measure of how linear the object trajectity is during the
 object lifetime. Calculated as (distance from initial to final 
 location)/(integrated object distance). Value is in range of [0,1].</li>
-<li>Lifetime: The duration (in frames) of the object. The lifetime begins 
+<li><i>Lifetime:</i> The duration (in frames) of the object. The lifetime begins 
 at the frame when an object appears and is output as a measurement when
 the object disappears. At the final frame of the image set/movie, the 
 lifetimes of all remaining objects are output.</li>
@@ -48,13 +48,13 @@ lifetimes of all remaining objects are output.</li>
 </li>
 <li><i>Image features</i>
 <ul>
-<li>LostObjectCount: Number of objects that appear in the previous frame
+<li><i>LostObjectCount:</i> Number of objects that appear in the previous frame
 but have no identifiable child in the current frame.</li>
-<li>NewObjectCount: Number of objects that appear in the current frame but
+<li><i>NewObjectCount:</i> Number of objects that appear in the current frame but
 have no identifiable parent in the previous frame. </li>
-<li>DaughterObjectCount: Number of objects in the current frame that 
+<li><i>DaughterObjectCount:</i> Number of objects in the current frame that 
 resulted from a split from a parent object in the previous frame.</li>
-<li>MergedObjectCount: Number of objects in the current frame that 
+<li><i>MergedObjectCount:</i> Number of objects in the current frame that 
 resulted from the merging of child objects in the previous frame.</li>
 </ul>
 </li>
@@ -237,12 +237,24 @@ class TrackObjects(cpm.CPModule):
         self.born_cost = cps.Integer(
             'Cost of being born', 100, minval=1, doc = '''
             <i>(Used only if the LAP tracking method is applied)</i><br>
-            What is the cost of an object being born?''')
+            What is the cost of an object being born? This setting assigns a cost to the
+            birth (i.e., initiation) of an object track, i.e., an object has appeared 
+            for the first time in the current frame and exists in following frames.<br><br>
+            Set this value lower if tracks are being started less often than they 
+            should be. It should be set higher if too many new tracks are appearing. 
+            Since this value is weighed against the cost of an object track
+            dying, keep the relative values of both of these settings in mind.''')
 
         self.die_cost = cps.Integer(
             'Cost of dying', 100, minval=1, doc = '''
             <i>(Used only if the LAP tracking method is applied)</i><br>
-            What is the cost of an object dying?''')
+            What is the cost of an object dying? This setting assigns a cost to the
+            death (i.e., termination) of an object track, i.e., an object has disappeared from
+            the current frame and does not appear in succesive frames.<br><br>
+            Set this value lower if tracks are lasting longer in time than they 
+            should be. It should be set higher if tracks are being terminated in time 
+            prematurely. Since this value is weighed against the cost of an object track
+            being born, keep the relative values of both of these settings in mind.''')
         
         self.wants_second_phase = cps.Binary(
             "Run the second phase of the LAP algorithm?", True, doc="""
@@ -250,7 +262,12 @@ class TrackObjects(cpm.CPModule):
             Check this box to run the second phase of the LAP algorithm
             after processing all images. Leave the box unchecked to omit the
             second phase or to perform the second phase when running as a data
-            tool.""")
+            tool.<br><br>
+            Since object tracks may start and end not only because of the true appearance 
+            and disappearance of objects, but also because of apparent disappearances due
+            to noise and limitations in imaging, you may want to run the second phase 
+            which attempts to close temporal gaps between tracked objects and tries to
+            capture merging and splitting events.""")
         
         self.gap_cost = cps.Integer(
             'Gap cost', 40, minval=1, doc = '''

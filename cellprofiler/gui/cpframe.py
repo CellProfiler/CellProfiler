@@ -453,7 +453,7 @@ class CPFrame(wx.Frame):
     def on_open_image(self, event):
         dlg = wx.FileDialog(self,
                             message = "Open an image file",
-                            wildcard = "*.tif|*.tif|*.tiff|*.tiff|*.jpg|*.jpg|*.jpeg|*.jpeg|*.png|*.png|*.gif|*.gif|*.* (all files)|*.*",
+                            wildcard = "Image file (*.tif,*.tiff,*.jpg,*.jpeg,*.png,*.gif,*.bmp)|*.tif;*.tiff;*.jpg;*.jpeg;*.png;*.gif;*.bmp|*.* (all files)|*.*",
                             style = wx.FD_OPEN)
         dlg.Directory = cellprofiler.preferences.get_default_image_directory()
         if dlg.ShowModal() == wx.ID_OK:

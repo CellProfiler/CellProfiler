@@ -92,6 +92,8 @@ class CorrectIlluminationApply(cpm.CPModule):
         image_settings.append("illum_correct_function_image_name", 
                               illum_correct_function_image_name)
         image_settings.append("divide_or_subtract", divide_or_subtract)
+        image_settings.append("rescale_option",RE_NONE)
+        
         if can_delete:
             image_settings.append("remover",
                                   cps.RemoveSettingButton("","Remove this image",
@@ -237,11 +239,11 @@ class CorrectIlluminationApply(cpm.CPModule):
     def validate_module_warnings(self, pipeline):
         """If a CP 1.0 pipeline used a rescaling option other than 'No rescaling', warn the user."""
         for j, image in enumerate(self.images):
-            if self.rescale_option[j] != RE_NONE:
+            if image.rescale_option != RE_NONE:
                 raise cps.ValidationError(("Your original pipeline used '%s' to rescale the final image, "
                                           "but the rescaling option has been removed. Please use "
                                           "RescaleIntensity to rescale your output image. Save your "
-                                          "pipeline to get rid of this warning.")%(self.rescale_option[j]),
+                                          "pipeline to get rid of this warning.")%(image.rescale_option),
                                           image.divide_or_subtract)
 
     def upgrade_settings(self, setting_values, variable_revision_number, 
@@ -272,13 +274,16 @@ class CorrectIlluminationApply(cpm.CPModule):
             # Keep the prior selection around for the validation warning.
             SLOT_RESCALE_OPTION = 4
             SETTINGS_PER_IMAGE_V2 = 5
-            self.rescale_option = setting_values[SLOT_RESCALE_OPTION::SETTINGS_PER_IMAGE_V2]
+            rescale_option = setting_values[SLOT_RESCALE_OPTION::SETTINGS_PER_IMAGE_V2]
+            for i,image in enumerate(self.images):
+                image.rescale_option = rescale_option[i] 
             del setting_values[SLOT_RESCALE_OPTION::SETTINGS_PER_IMAGE_V2]
+            
             variable_revision_number = 3
         else:
             # If revision >= 2, initalize rescaling option for validation warning 
-            image_count = len(setting_values) / SETTINGS_PER_IMAGE
-            self.rescale_option = [RE_NONE]*image_count
+            for i,image in enumerate(self.images):
+                image.rescale_option = RE_NONE
         
         return setting_values, variable_revision_number, from_matlab
 

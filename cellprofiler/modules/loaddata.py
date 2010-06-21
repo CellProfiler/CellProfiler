@@ -280,23 +280,23 @@ class LoadData(cpm.CPModule):
         self.row_range = cps.IntegerRange("Rows to process",
                                           (1,100000),1, doc = 
                                           """<i>(Used only if a range of rows is to be specified)</i><br>Enter the row numbers of the first and last row to be processed.""")
-        def do_erase():
+        def do_reload():
             global header_cache
             header_cache = {}
             
         self.clear_cache_button = cps.DoSomething(
-            "Erase cached information", "Erase", do_erase,
-            doc = """Press this button to erase the header information saved
-            inside CellProfiler. <b>LoadData</b> saves information about your
-            .csv file in its memory so that displays take less time to load.
-            The information is reloaded if a modification is detected.
-            <b>LoadData</b> might fail to detect a modification on a file
-            accessed over the network and will fail to detect modifications
-            on files accessed through HTTP or FTP. In this case, you will
-            have to press this button to reload the header information after
-            changing the file.
-            <p>This button will never destroy any information on disk. It is
-            always safe to press it.
+            "Reload cached information", "Reload", do_reload,
+            doc = """Press this button to reload header information saved inside
+            CellProfiler. <b>LoadData</b> caches information about
+            your .csv file in its memory for efficiency.  The
+            information is reloaded if a modification is detected.
+            <b>LoadData</b> might fail to detect a modification on a
+            file accessed over the network and will fail to detect
+            modifications on files accessed through HTTP or FTP. In
+            this case, you will have to use this button to reload the
+            header information after changing the file.  
+            <p>This button will never destroy any information on
+            disk. It is always safe to press it.
             """)
 
     def settings(self):

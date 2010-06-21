@@ -16,10 +16,10 @@ for example.
 
 <h4>Available measurements</h4>
 <ul>
-<li>FracAtD: Fraction of total stain in an object at a given radius.
-<li>MeanFrac: Mean fractional intensity at a given radius; calculated
+<li><i>FracAtD:</i> Fraction of total stain in an object at a given radius.
+<li><i>MeanFrac:</i> Mean fractional intensity at a given radius; calculated
 as fraction of total intensity normalized by fraction of pixels at a given radius.</li>
-<li>RadialCV: Coefficient of variation of intensity within a ring, calculated 
+<li><i>RadialCV:</i> Coefficient of variation of intensity within a ring, calculated 
 over 8 slices.</li>
 </ul>
 <br>

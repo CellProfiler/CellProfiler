@@ -27,7 +27,7 @@ the right. <b>MeasureTexture</b> quantizes the image into eight intensity
 levels. There are then 8x8 possible ways to categorize a pixel with its
 scale-neighbor. <b>MeasureTexture</b> forms the 8x8 co-occurrence matrix
 by counting how many pixels and neighbors have each of the 8x8 intensity
-combinations. Fourteen features are then calculated for the image by performing
+combinations. Thirteen features are then calculated for the image by performing
 mathematical operations on the co-occurrence matrix:
 <ul>
 <li><i>H1:</i> Angular Second Moment</li>

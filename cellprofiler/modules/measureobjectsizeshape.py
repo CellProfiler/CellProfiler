@@ -9,15 +9,15 @@ the image using <b>IdentifyPrimaryObjects</b>.
 
 <h4>Available measurements</h4>
 <ul>
-<li>Area: The actual number of pixels in the region.</li>
+<li><i>Area:</i> The actual number of pixels in the region.</li>
 
-<li>Perimeter: The total number of pixels around the boundary of each
+<li><i>Perimeter:</i> The total number of pixels around the boundary of each
 region in the image.</li>
 
-<li>FormFactor: Calculated as 4*&pi;*Area/Perimeter<sup>2</sup>. Equals 1 for a 
+<li><i>FormFactor:</i> Calculated as 4*&pi;*Area/Perimeter<sup>2</sup>. Equals 1 for a 
 perfectly circular object.</li>
 
-<li>Eccentricity: The eccentricity of the ellipse that has the
+<li><i>Eccentricity:</i> The eccentricity of the ellipse that has the
 same second-moments as the region. The eccentricity is the ratio of the
 distance between the foci of the ellipse and its major axis length. The
 value is between 0 and 1. (0 and 1 are degenerate cases; an ellipse whose
@@ -25,29 +25,29 @@ eccentricity is 0 is actually a circle, while an ellipse whose eccentricity
 is 1 is a line segment.) This property is supported only for 2D input
 label matrices.</li>
 
-<li>Solidity: The proportion of the pixels in the convex hull that
+<li><i>Solidity:</i> The proportion of the pixels in the convex hull that
 are also in the region. Also known as <i>convexity</i>. Computed as Area/ConvexArea.</li>
 
-<li>Extent: The proportion of the pixels in the bounding box that
+<li><i>Extent:</i> The proportion of the pixels in the bounding box that
 are also in the region. Computed as the Area divided by the area of the
 bounding box.</li>
 
-<li>EulerNumber: The number of objects in the region
+<li><i>EulerNumber:</i> The number of objects in the region
 minus the number of holes in those objects, assuming 8-connectivity.</li>
 
-<li>MajorAxisLength: The length (in pixels) of the major axis of
+<li><i>MajorAxisLength:</li> The length (in pixels) of the major axis of
 the ellipse that has the same normalized second central moments as the
 region.</li>
 
-<li>MinorAxisLength: The length (in pixels) of the minor axis of
+<li><i>MinorAxisLength:</i> The length (in pixels) of the minor axis of
 the ellipse that has the same normalized second central moments as the
 region.</li>
 
-<li>Orientation: The angle (in degrees ranging from -90 to 90
+<li><i>Orientation:</i> The angle (in degrees ranging from -90 to 90
 degrees) between the x-axis and the major axis of the ellipse that has the
 same second-moments as the region.</li>
 
-<li>Zernike shape features: Measure shape by describing a binary object (or
+<li><i>Zernike shape features:</i> Measure shape by describing a binary object (or
 more precisely, a patch with background and an object in the center) in a
 basis of Zernike polynomials, using the coefficients as features <i>(Boland
 et al., 1998</i>. Currently, Zernike polynomials from order 0 to order 9 are

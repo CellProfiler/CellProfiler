@@ -106,6 +106,16 @@ class PipelineListView(object):
         self.list_ctrl.SetDropTarget(PipelineDropTarget(self))
         panel.SetDropTarget(PanelDropTarget(self))
         panel.SetupScrolling()
+        #
+        # The following code prevents the panel from scrolling every
+        # time it gets the focus - why would anyone ever want this!
+        # Remove the code to see something truly horrible.
+        #
+        # Thank you Mike Conley:
+        # http://groups.google.com/group/wxpython-users/browse_thread/thread/5fed262dc3d144bb/2dc29b45d452c8a0?lnk=raot&fwc=2
+        def defeat_its_purpose(event):
+            event.Skip(False)
+        panel.Bind(wx.EVT_CHILD_FOCUS, defeat_its_purpose)
 
     def make_list(self):
         '''Make the list control with the pipeline items in it'''

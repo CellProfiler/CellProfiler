@@ -631,6 +631,9 @@ class SaveImages(cpm.CPModule):
             # Need to explicitly set the maximum sample value or images
             # get rescaled inside the TIFF writer.
             #
+            min_sample_value = jutil.get_static_field(
+                "loci/formats/tiff/IFD", "MIN_SAMPLE_VALUE", "I")
+            jutil.call(ifd, "putIFDValue", "(IJ)V", min_sample_value, 0)
             max_sample_value = jutil.get_static_field(
                 "loci/formats/tiff/IFD", "MAX_SAMPLE_VALUE","I")
             jutil.call(ifd, "putIFDValue","(IJ)V",

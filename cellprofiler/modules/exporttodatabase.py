@@ -749,7 +749,9 @@ class ExportToDatabase(cpm.CPModule):
         result = []
         for ob_table in ob_tables:
             for obname, feature, ftype in columns:
-                if obname==ob_table and not self.ignore_feature(obname, feature):
+                if (obname==ob_table and 
+                    (not self.ignore_feature(obname, feature)) and
+                    (not cpmeas.agg_ignore_feature(feature))):
                     feature_name = '%s_%s'%(obname, feature)
                     # create per_image aggregate column defs 
                     result += [(obname, feature, aggname,

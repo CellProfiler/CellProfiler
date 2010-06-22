@@ -1376,6 +1376,14 @@ class MeasurementMultiChoice(MultiChoice):
     def make_measurement_choice(self, object_name, feature):
         return self.encode_object_name(object_name) + "|" + feature
     
+    @staticmethod
+    def get_value_string(choices):
+        '''Return the string value representing the choices made
+        
+        choices - a collection of choices as returned by make_measurement_choice
+        '''
+        return ','.join(choices)
+    
     def test_valid(self, pipeline):
         '''Get the choices here and call the superclass validator'''
         #

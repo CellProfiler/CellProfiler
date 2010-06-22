@@ -1247,7 +1247,105 @@ ExportToSpreadsheet:[module_num:5|svn_version:\'9434\'|variable_revision_number:
             self.assertRaises(StopIteration,reader.next)
         finally:
             fd.close()
-    
+            
+    def test_05_03_aggregate_and_filtered(self):
+        '''Regression test of IMG-987
+        
+        A bug in ExportToSpreadsheet caused it to fail to write any
+        aggregate object measurements if measurements were filtered by
+        pick_columns.
+        '''
+        image_path = os.path.join(self.output_dir, "my_image_file.csv")
+        object_path = os.path.join(self.output_dir, "my_object_file.csv")
+        module = E.ExportToExcel()
+        module.module_num = 1
+        module.prepend_output_filename.value = False
+        module.wants_everything.value = False
+        module.object_groups[0].name.value = cpmeas.IMAGE
+        module.object_groups[0].file_name.value = image_path
+        module.object_groups[0].wants_automatic_file_name.value = False
+        module.add_object_group()
+        module.object_groups[1].name.value = "my_objects"
+        module.object_groups[1].file_name.value = object_path
+        module.object_groups[1].wants_automatic_file_name.value = False
+        module.wants_aggregate_means.value = True
+        module.wants_aggregate_medians.value = False
+        module.wants_aggregate_std.value = False
+        module.pick_columns.value = True
+        columns = [module.columns.make_measurement_choice(ob, feature)
+                   for ob, feature in (
+                       (cpmeas.IMAGE, "ImageNumber"),
+                       (cpmeas.IMAGE, "Count_my_objects"),
+                       (cpmeas.IMAGE, "first_measurement"),
+                       ("my_objects", "my_measurement"),
+                       ("my_objects", "ImageNumber"),
+                       ("my_objects", "Number_Object_Number")
+                   )]
+        module.columns.value = module.columns.get_value_string(columns)
+        
+        m = cpmeas.Measurements()
+        np.random.seed(0)
+        data = np.random.uniform(size=(6,))
+        m.add_image_measurement("Count_my_objects", 6)
+        m.add_image_measurement("first_measurement", np.sum(data))
+        m.add_image_measurement("another_measurement", 43.2)
+        m.add_measurement("my_objects","Number_Object_Number", np.arange(1,7))
+        m.add_measurement("my_objects","my_measurement",data)
+        m.add_measurement("my_objects","my_filtered_measurement", 
+                          np.random.uniform(size=(6,)))
+        image_set_list = cpi.ImageSetList()
+        image_set = image_set_list.get_image_set(0)
+        object_set = cpo.ObjectSet()
+        object_set.add_objects(cpo.Objects(), "my_objects")
+        workspace = cpw.Workspace(cpp.Pipeline(),
+                                  module,
+                                  image_set,
+                                  object_set,
+                                  m,
+                                  image_set_list)
+        module.post_run(workspace)
+        try:
+            fd = open(image_path,"r")
+            reader = csv.reader(fd, delimiter=module.delimiter_char)
+            header = reader.next()
+            self.assertEqual(len(header),4)
+            expected_image_columns = (
+                "ImageNumber", "Count_my_objects", "first_measurement",
+                "Mean_my_objects_my_measurement")
+            d = {}
+            for index, caption in enumerate(header):
+                self.assertTrue(caption in expected_image_columns)
+                d[caption]=index
+            row = reader.next()
+            self.assertEqual(row[d["ImageNumber"]], "1")
+            self.assertEqual(row[d["Count_my_objects"]],"6")
+            self.assertAlmostEqual(float(row[d["first_measurement"]]), np.sum(data))
+            self.assertAlmostEqual(float(row[d["Mean_my_objects_my_measurement"]]), 
+                                   np.mean(data))
+            self.assertRaises(StopIteration,reader.next)
+        finally:
+            fd.close()
+        try:
+            fd = open(object_path, "r")
+            reader = csv.reader(fd, delimiter=module.delimiter_char)
+            header = reader.next()
+            self.assertEqual(len(header),4)
+            expected_object_columns = (
+                "ImageNumber", "ObjectNumber", "Number_Object_Number", 
+                "my_measurement")
+            d = {}
+            for index, caption in enumerate(header):
+                self.assertTrue(caption in expected_object_columns)
+                d[caption]=index
+            for index, row in enumerate(reader):
+                self.assertEqual(row[d["ImageNumber"]],  "1")
+                self.assertEqual(int(row[d["ObjectNumber"]]), index+1)
+                self.assertEqual(int(row[d["Number_Object_Number"]]), index+1)
+                self.assertAlmostEqual(float(row[d["my_measurement"]]),
+                                       data[index])
+        finally:
+            fd.close()
+                
     def test_06_01_image_index_columns(self):
         '''Test presence of index column'''
         path = os.path.join(self.output_dir, "my_file.csv")

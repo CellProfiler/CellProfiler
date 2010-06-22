@@ -587,7 +587,7 @@ class ModuleView:
                     for object_name in [x for x in d.keys() if x is not None]:
                         selections += collect_state(object_name, None, 
                                                     d[object_name])
-                    proposed_value = ','.join(selections)
+                    proposed_value = v.get_value_string(selections)
                     setting_edited_event = SettingEditedEvent(v, self.__module, 
                                                               proposed_value, 
                                                               event)

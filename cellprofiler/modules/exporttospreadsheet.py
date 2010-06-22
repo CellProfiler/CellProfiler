@@ -658,6 +658,20 @@ Do you want to save it anyway?""" %
                 self.columns.get_measurement_feature(x)
                 for x in self.columns.selections
                 if self.columns.get_measurement_object(x) == object_name]
+            if object_name == cpmeas.IMAGE:
+                for agg, wants_it in (
+                    (cpmeas.AGG_MEAN, self.wants_aggregate_means),
+                    (cpmeas.AGG_MEDIAN, self.wants_aggregate_medians),
+                    (cpmeas.AGG_STD_DEV, self.wants_aggregate_std)):
+                    if not wants_it:
+                        continue
+                    for column in self.columns.selections:
+                        if self.columns.get_measurement_object(column) not in (
+                            cpmeas.IMAGE, cpmeas.EXPERIMENT, cpmeas.NEIGHBORS):
+                            columns += [ cpmeas.get_agg_measurement_name(
+                                agg, self.columns.get_measurement_object(column),
+                                self.columns.get_measurement_feature(column))]
+                                
             columns = set(columns)
             features = [x for x in features if x in columns]
         return features

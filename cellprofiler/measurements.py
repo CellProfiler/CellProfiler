@@ -448,15 +448,8 @@ class Measurements(object):
             return True
         if self.has_feature(object_name, "SubObjectFlag"):
             return True
-        if feature_name.startswith('Description_'):
-            return True
-        if feature_name.startswith('ModuleError_'):
-            return True
-        if feature_name.startswith('TimeElapsed_'):
-            return True
-        return False
+        return agg_ignore_feature(feature_name)
     
-
     def compute_aggregate_measurements(self, image_set_number, 
                                        aggs=AGG_NAMES):
         """Compute aggregate measurements for a given image set
@@ -480,18 +473,18 @@ class Measurements(object):
                 # Compute the mean and standard deviation
                 #
                 if AGG_MEAN in aggs:
-                    mean_feature_name = '%s_%s_%s'%(AGG_MEAN, object_name,
-                                                     feature)
+                    mean_feature_name = get_agg_measurement_name(
+                        AGG_MEAN, object_name,feature)
                     mean = values.mean() if values is not None else np.NaN
                     d[mean_feature_name] = mean
                 if AGG_MEDIAN in aggs:
-                    median_feature_name = '%s_%s_%s'%(AGG_MEDIAN, 
-                                                      object_name, feature)
+                    median_feature_name = get_agg_measurement_name(
+                        AGG_MEDIAN, object_name, feature)
                     median = np.median(values) if values is not None else np.NaN
                     d[median_feature_name] = median
                 if AGG_STD_DEV in aggs:
-                    stdev_feature_name = '%s_%s_%s'%(AGG_STD_DEV,
-                                                     object_name, feature)
+                    stdev_feature_name = get_agg_measurement_name(
+                        AGG_STD_DEV, object_name, feature)
                     stdev = values.std() if values is not None else np.NaN
                     d[stdev_feature_name] = stdev
         return d
@@ -575,3 +568,25 @@ def load_measurements(measurements_file_name):
     m = Measurements()
     m.load(measurements_file_name)
     return m
+
+def get_agg_measurement_name(agg, object_name, feature):
+    '''Return the name of an aggregate measurement
+    
+    agg - one of the names in AGG_NAMES, like AGG_MEAN
+    object_name - the name of the object that we're aggregating
+    feature - the name of the object's measurement
+    '''
+    return "%s_%s_%s" % (agg, object_name, feature)
+
+def agg_ignore_feature(feature_name):
+    '''Return True if the feature is one to be ignored when aggregating'''
+    if feature_name.startswith('Description_'):
+        return True
+    if feature_name.startswith('ModuleError_'):
+        return True
+    if feature_name.startswith('TimeElapsed_'):
+        return True
+    if feature_name == "Number_Object_Number":
+        return True
+    return False
+    

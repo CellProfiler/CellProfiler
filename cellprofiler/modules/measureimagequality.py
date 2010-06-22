@@ -451,17 +451,19 @@ class MeasureImageQuality(cpm.CPModule):
         # Compute the sum of local_squared_normalized_image values for each
         # grid for means > 0. Exclude grid label = 0 because that's masked
         #
-        nz_grid_range = grid_range[(local_means != 0) & ~ np.isnan(local_means)]
+        grid_mask = (local_means != 0) & ~ np.isnan(local_means)
+        nz_grid_range = grid_range[grid_mask]
         if len(nz_grid_range) and nz_grid_range[0] == 0:
             nz_grid_range = nz_grid_range[1:]
             local_means = local_means[1:]
+            grid_mask = grid_mask[1:]
         local_focus_score = 0 # assume the worst - that we can't calculate it
         if len(nz_grid_range):
             sums = fix(scind.sum(local_squared_normalized_image, grid, 
                                  nz_grid_range)) 
             pixel_counts = fix(scind.sum(np.ones(shape), grid, nz_grid_range))
             local_norm_var = (sums / 
-                              (pixel_counts * local_means[local_means != 0]))
+                              (pixel_counts * local_means[grid_mask]))
             local_norm_median = np.median(local_norm_var)
             if np.isfinite(local_norm_median) and local_norm_median > 0:
                 local_focus_score = np.var(local_norm_var) / local_norm_median

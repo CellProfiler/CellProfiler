@@ -437,7 +437,7 @@ class MeasureImageQuality(cpm.CPModule):
         m,n = (np.array(shape) + window_size - 1)/window_size
         i = (i * float(m) / float(shape[0])).astype(int)
         j = (j * float(n) / float(shape[1])).astype(int)
-        grid = i * m + j + 1
+        grid = i * n + j + 1
         if image.has_mask:
             grid[np.logical_not(image.mask)] = 0
         grid_range = np.arange(0, m*n+1,dtype=int)
@@ -451,7 +451,7 @@ class MeasureImageQuality(cpm.CPModule):
         # Compute the sum of local_squared_normalized_image values for each
         # grid for means > 0. Exclude grid label = 0 because that's masked
         #
-        nz_grid_range = grid_range[local_means != 0]
+        nz_grid_range = grid_range[(local_means != 0) & ~ np.isnan(local_means)]
         if len(nz_grid_range) and nz_grid_range[0] == 0:
             nz_grid_range = nz_grid_range[1:]
             local_means = local_means[1:]

@@ -39,6 +39,8 @@ from cellprofiler.cpmath.smooth import circular_gaussian_kernel
 from cellprofiler.cpmath.smooth import fit_polynomial
 from cellprofiler.cpmath.filter import median_filter
 from cellprofiler.cpmath.cpmorphology import fixup_scipy_ndimage_result as fix
+from cellprofiler.cpmath.bg_compensate import backgr, MODE_AUTO, MODE_BRIGHT
+from cellprofiler.cpmath.bg_compensate import MODE_DARK, MODE_GRAY
 
 IC_REGULAR         = "Regular"
 IC_BACKGROUND      = "Background"
@@ -54,6 +56,7 @@ SM_FIT_POLYNOMIAL  = "Fit Polynomial"
 SM_MEDIAN_FILTER   = "Median Filter"
 SM_GAUSSIAN_FILTER = "Gaussian Filter"
 SM_TO_AVERAGE      = "Smooth to Average"
+SM_SPLINES         = "Splines"
 
 FI_AUTOMATIC       = "Automatic"
 FI_OBJECT_SIZE     = "Object size"
@@ -64,7 +67,7 @@ ROBUST_FACTOR      = .02 # For rescaling, take 2nd percentile value
 class CorrectIlluminationCalculate(cpm.CPModule):
     
     module_name = "CorrectIlluminationCalculate"
-    variable_revision_number = 1
+    variable_revision_number = 2
     category = "Image Processing"
     
     def create_settings(self):
@@ -170,29 +173,44 @@ class CorrectIlluminationCalculate(cpm.CPModule):
                                             images that are filtered by a prior <b>FlagImage</b> module.</li>
                                             </ul>''' % globals())
         
-        self.smoothing_method = cps.Choice("Smoothing method",
-                                           [SM_NONE, SM_FIT_POLYNOMIAL, 
-                                            SM_MEDIAN_FILTER, 
-                                            SM_GAUSSIAN_FILTER,
-                                            SM_TO_AVERAGE], doc = '''
-                                            If requested, the resulting image is smoothed. See the
-                                            <b>EnhanceOrSuppressFeatures</b> module help for more details. If you are using <i>Each</i> mode,
-                                            this is almost certainly necessary. If you have few objects in each image or a
-                                            small image set, you may want to smooth. You should smooth to the
-                                            point where the illumination function resembles a believable pattern.
-                                            For example, if you are trying to correct a lamp illumination problem, 
-                                            apply smoothing until you obtain a fairly smooth pattern
-                                            without sharp bright or dim regions.  Note that smoothing is a
-                                            time-consuming process; fitting a polynomial is fastest but does not
-                                            allow a very tight fit compared to the slower median and Gaussian 
-                                            filtering methods. We typically recommend median vs. Gaussian because median 
-                                            is less sensitive to outliers, although the results are also slightly 
-                                            less smooth and the fact that images are in the range of 0 to 1 means that
-                                            outliers typically will not dominate too strongly anyway. A less commonly
-                                            used option is to completely smooth the entire image by choosing
-                                            <i>Smooth to average</i>, which will create a flat, smooth image where every
-                                            pixel of the image is the average of what the illumination function would
-                                            otherwise have been.''')
+        self.smoothing_method = cps.Choice(
+            "Smoothing method",
+            [SM_NONE, SM_FIT_POLYNOMIAL, 
+             SM_MEDIAN_FILTER, 
+             SM_GAUSSIAN_FILTER,
+             SM_TO_AVERAGE,
+             SM_SPLINES], doc = '''
+             If requested, the resulting image is smoothed. See the
+             <b>EnhanceOrSuppressFeatures</b> module help for more details. If you are using <i>Each</i> mode,
+             this is almost certainly necessary. If you have few objects in each image or a
+             small image set, you may want to smooth. You should smooth to the
+             point where the illumination function resembles a believable pattern.
+             For example, if you are trying to correct a lamp illumination problem, 
+             apply smoothing until you obtain a fairly smooth pattern
+             without sharp bright or dim regions.  Note that smoothing is a
+             time-consuming process; fitting a polynomial is fastest but does not
+             allow a very tight fit compared to the slower median and Gaussian 
+             filtering methods. We typically recommend median vs. Gaussian because median 
+             is less sensitive to outliers, although the results are also slightly 
+             less smooth and the fact that images are in the range of 0 to 1 means that
+             outliers typically will not dominate too strongly anyway. A less commonly
+             used option is to completely smooth the entire image by choosing
+             <i>Smooth to average</i>, which will create a flat, smooth image where every
+             pixel of the image is the average of what the illumination function would
+             otherwise have been.
+             <p>The <i>Splines</i> method is based on the paper:
+             <br>
+             J. Lindblad and E. Bengtsson, "A comparison of methods for estimation of 
+             intensity nonuniformities in 2D and 3D microscope images of fluorescence 
+             stained cells.", Proceedings of the 12th Scandinavian Conference on Image 
+             Analysis (SCIA), pp. 264-271, Bergen, Norway, June 2001
+             <br>
+             The method fits a grid of cubic splines to the background while
+             excluding foreground pixels from the calculation. It operates
+             iteratively, classifying pixels as background, computing a best
+             fit spline to this background and then reclassifying pixels
+             as background until the spline converges on its final value.
+             ''')
         
         self.automatic_object_width = cps.Choice("Method to calculate smoothing filter size",
                                             [FI_AUTOMATIC, FI_OBJECT_SIZE, FI_MANUALLY], doc = '''
@@ -231,6 +249,84 @@ class CorrectIlluminationCalculate(cpm.CPModule):
         self.dilated_image_name = cps.ImageNameProvider("Name the dilated image","IllumBlueDilated",doc='''
                                             <i>(Used only if the dilated image is to be retained for later use in the pipeline)</i><br>
                                             Enter a name that will allow the dilated image to be selected later in the pipeline.''')
+        self.automatic_splines = cps.Binary(
+            "Automatically calculate spline parameters?", True,
+            doc = """Leave this setting checked to automatically calculate
+            the parameters for spline fitting. Uncheck the setting to
+            specify the background mode, background threshold, scale,
+            maximum # of iterations and convergence.""")
+        self.spline_bg_mode = cps.Choice(
+            "Background mode",
+            [MODE_AUTO, MODE_DARK, MODE_BRIGHT, MODE_GRAY],
+            doc = """This setting determines which pixels are background
+            and which are foreground.<br>
+            <ul><li><i>%(MODE_AUTO)s</i>: Determine the mode from the image.
+            This will set the mode to %(MODE_DARK)s if most of the pixels are
+            dark, %(MODE_BRIGHT)s if most of the pixels are bright and
+            %(MODE_GRAY)s if there are relatively few dark and light pixels
+            relative to the number of mid-level pixels</li>
+            <li><i>%(MODE_DARK)s</i>: Fit the spline to the darkest pixels
+            in the image, excluding brighter pixels from consideration.
+            This may be appropriate for a fluorescent image.
+            </li>
+            <li><i>%(MODE_BRIGHT)s</i>: Fit the spline to the lightest pixels
+            in the image, excluding the darker pixels. This may be appropriate
+            for a histologically stained image.</li>
+            <li><i>%(MODE_GRAY)s</i>: Fit the spline to mid-range pixels,
+            excluding both dark and light pixels. This may be appropriate
+            for a brightfield image where the objects of interest have
+            light and dark features.</li></ul>""" % globals())
+        self.spline_threshold = cps.Float(
+            "Background threshold", 2, minval=.1, maxval = 5.0,
+            doc = """This setting determines the cutoff used when excluding
+            foreground pixels from consideration. On each iteration,
+            the method computes the standard deviation of background
+            pixels from the computed background. The number entered in this
+            setting is the number of standard deviations a pixel can be
+            from the computed background on the last pass if it is to
+            be considered as background during the next pass.
+            <p>
+            You should enter a higher number to converge stabily and slowly
+            on a final background and a lower number to converge more
+            rapidly, but with lower stability. The default for this
+            parameter is two standard deviations; this will provide a fairly
+            stable background estimate.""")
+        self.spline_points = cps.Integer(
+            "# of spline points", 5, 4,
+            doc = """This is the number of control points for the spline.
+            A value of 5 results in a 5x5 grid of splines across the image and
+            is the value suggested by the method's authors. A lower value
+            will give you a more stable background while a higher one will
+            fit variations in the background more closely and take more time
+            to compute.""")
+        self.spline_rescale = cps.Float(
+            "Image resampling factor", 2, minval=1,
+            doc = """This setting controls how the image is resampled to
+            make a smaller image. Resampling will speed up processing,
+            but may degrade performance if the resampling factor is larger
+            than the diameter of foreground objects. The image will
+            be downsampled by the factor you enter. For instance, a 500x600
+            image will be downsampled into a 250x300 image if a factor of 2
+            is entered.""")
+        self.spline_maximum_iterations = cps.Integer(
+            "Max # of iterations", 40, minval=1,
+            doc = """This setting determines the maximum number of iterations
+            of the algorithm to be performed. The algorithm will perform
+            fewer iterations if it converges.""")
+        self.spline_convergence = cps.Float(
+            "Convergence", value = .001, minval = .00001, maxval = .1,
+            doc = """This setting determines the convergence criterion.
+            The software sets the convergence criterion to the number entered
+            here times the signal intensity; the convergence you enter is the
+            fraction of the signal intensity that indicates convergence.
+            The algorithm derives a standard deviation of the background
+            pixels from the calculated background on each iteration. The
+            algorithm terminates when the difference between the standard
+            deviation for the current iteration and the previous iteration
+            is less than the convergence criterion.
+            <p>Enter a smaller number for the convergence to calculate a
+            more accurate background. Enter a larger number to calculate
+            the background using fewer iterations, but less accuracy.""")
 
     def settings(self):
         return [ self.image_name, self.illumination_image_name,
@@ -240,7 +336,10 @@ class CorrectIlluminationCalculate(cpm.CPModule):
                 self.automatic_object_width, self.object_width,
                 self.size_of_smoothing_filter, self.save_average_image,
                 self.average_image_name, self.save_dilated_image,
-                self.dilated_image_name]
+                self.dilated_image_name,
+                self.automatic_splines, self.spline_bg_mode,
+                self.spline_points, self.spline_threshold, self.spline_rescale,
+                self.spline_maximum_iterations, self.spline_convergence]
 
     def visible_settings(self):
         """The settings as seen by the UI
@@ -252,7 +351,7 @@ class CorrectIlluminationCalculate(cpm.CPModule):
             result += [self.dilate_objects]
             if self.dilate_objects.value:
                 result += [ self.object_dilation_radius]
-        else:
+        elif self.smoothing_method != SM_SPLINES:
             result += [self.block_size]
         
         result += [ self.rescale_option, self.each_or_all,
@@ -263,6 +362,13 @@ class CorrectIlluminationCalculate(cpm.CPModule):
                 result += [self.object_width]
             elif self.automatic_object_width == FI_MANUALLY:
                 result += [self.size_of_smoothing_filter]
+        elif self.smoothing_method == SM_SPLINES:
+            result += [self.automatic_splines]
+            if not self.automatic_splines:
+                result += [self.spline_bg_mode, self.spline_points,
+                           self.spline_threshold,
+                           self.spline_rescale, self.spline_maximum_iterations,
+                           self.spline_convergence]
         result += [self.save_average_image]
         if self.save_average_image.value:
             result += [self.average_image_name]
@@ -381,7 +487,7 @@ class CorrectIlluminationCalculate(cpm.CPModule):
                       ]
         if self.intensity_choice == IC_REGULAR:
             statistics.append(["Radius",self.object_dilation_radius.value])
-        else:
+        elif self.smoothing_method != SM_SPLINES:
             statistics.append(["Block size",self.block_size.value])
         statistics.append(["Rescaling?", self.rescale_option.value])
         statistics.append(["Each or all?", self.each_or_all.value])
@@ -433,7 +539,8 @@ class CorrectIlluminationCalculate(cpm.CPModule):
         
         """
         pixels = orig_image.pixel_data
-        if self.intensity_choice == IC_REGULAR:
+        if (self.intensity_choice == IC_REGULAR or 
+            self.smoothing_method == SM_SPLINES):
             if orig_image.has_mask:
                 pixels[np.logical_not(orig_image.mask)] = 0
                 avg_image = cpi.Image(pixels, parent_image = orig_image)
@@ -487,10 +594,47 @@ class CorrectIlluminationCalculate(cpm.CPModule):
             else:
                 mean = np.mean(pixel_data)
             output_pixels = np.ones(pixel_data.shape, pixel_data.dtype) * mean
+        elif self.smoothing_method == SM_SPLINES:
+            if pixel_data.ndim == 3:
+                output_pixels = np.zeros(pixel_data.shape, pixel_data.dtype)
+                for i in range(pixel_data.shape[2]):
+                    output_pixels[:,:,i] = self.smooth_with_splines(
+                        pixel_data[:,:,i], image.mask)
+            else:
+                output_pixels = self.smooth_with_splines(pixel_data, image.mask)
         else:
             raise ValueError("Unimplemented smoothing method: %s:"%(self.smoothing_method.value))
         output_image = cpi.Image(output_pixels, parent_image = orig_image)
         return output_image
+    
+    def smooth_with_splines(self, pixel_data, mask):
+        if self.automatic_splines:
+            # Make the image 200 pixels long on its shortest side
+            shortest_side = min(pixel_data.shape)
+            if shortest_side < 200:
+                scale = 1
+            else:
+                scale = float(shortest_side) / 200
+            result = backgr(pixel_data, mask, scale=scale)
+        else:
+            mode = self.spline_bg_mode.value
+            spline_points = self.spline_points.value
+            threshold = self.spline_threshold.value
+            convergence = self.spline_convergence.value
+            iterations = self.spline_maximum_iterations.value
+            rescale = self.spline_rescale.value
+            result =  backgr(pixel_data, mask, mode=mode, thresh=threshold,
+                             splinepoints = spline_points, scale = rescale,
+                             maxiter = iterations, convergence = convergence)
+        #
+        # The result is a fit to the background intensity, but we
+        # want to normalize the intensity by subtraction, leaving
+        # the mean intensity alone.
+        #
+        mean_intensity = np.mean(result[mask])
+        result[mask] -= mean_intensity
+        return result
+                          
 
     def apply_scaling(self, image, orig_image=None):
         """Return an image that is rescaled according to the settings
@@ -607,6 +751,18 @@ class CorrectIlluminationCalculate(cpm.CPModule):
             variable_revision_number = 1
             from_matlab = False
         
+        if (not from_matlab) and variable_revision_number == 1:
+            # Added spline parameters
+            setting_values = setting_values + [
+                cps.YES,          # automatic_splines
+                MODE_AUTO,        # spline_bg_mode
+                "5",              # spline points
+                "2",              # spline threshold
+                "2",              # spline rescale
+                "40",             # spline maximum iterations
+                "0.001"]          # spline convergence
+            variable_revision_number = 2
+            
         return setting_values, variable_revision_number, from_matlab
     
     def post_pipeline_load(self, pipeline):

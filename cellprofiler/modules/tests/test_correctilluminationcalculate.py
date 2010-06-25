@@ -32,10 +32,47 @@ import cellprofiler.measurements as cpm
 import cellprofiler.modules.injectimage as inj
 import cellprofiler.modules.correctilluminationcalculate as calc
 
+INPUT_IMAGE_NAME = "MyImage"
+OUTPUT_IMAGE_NAME = "MyResult"
+AVERAGE_IMAGE_NAME = "Ave"
+DILATED_IMAGE_NAME = "Dilate"
+
 class TestCorrectImage_Calculate(unittest.TestCase):
     def error_callback(self, calller, event):
         if isinstance(event, cpp.RunExceptionEvent):
             self.fail(event.error.message)
+            
+    def make_workspaces(self, images_and_masks):
+        '''Make a workspace for each image set provided
+        
+        images_and_masks - a collection of two-tuples: image+mask
+        
+        returns a list of workspaces + the module
+        '''
+        image_set_list = cpi.ImageSetList()
+        workspaces = []
+        module = calc.CorrectIlluminationCalculate()
+        module.module_num = 1
+        module.image_name.value = INPUT_IMAGE_NAME
+        module.illumination_image_name.value = OUTPUT_IMAGE_NAME
+        module.average_image_name.value = AVERAGE_IMAGE_NAME
+        module.dilated_image_name.value = DILATED_IMAGE_NAME
+        pipeline = cpp.Pipeline()
+        pipeline.add_listener(self.error_callback)
+        measurements = cpm.Measurements()
+        
+        for i, (image, mask) in enumerate(images_and_masks):
+            image_set = image_set_list.get_image_set(i)
+            if mask is None:
+                image = cpi.Image(image)
+            else:
+                image = cpi.Image(image, mask)
+            image_set.add(INPUT_IMAGE_NAME, image)
+            workspace = cpw.Workspace(
+                pipeline, module, image_set, cpo.ObjectSet(),
+                measurements, image_set_list)
+            workspaces.append(workspace)
+        return workspaces, module
 
     def test_00_00_zeros(self):
         """Test all combinations of options with an image of all zeros"""
@@ -63,7 +100,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
                         for smoothing_method \
                          in (calc.SM_NONE, calc.SM_FIT_POLYNOMIAL, 
                              calc.SM_GAUSSIAN_FILTER, calc.SM_MEDIAN_FILTER, 
-                             calc.SM_TO_AVERAGE):
+                             calc.SM_TO_AVERAGE, calc.SM_SPLINES):
                             module.smoothing_method.value = smoothing_method
                             for ow in (calc.FI_AUTOMATIC, calc.FI_MANUALLY, 
                                        calc.FI_OBJECT_SIZE):
@@ -117,7 +154,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
                     for smoothing_method \
                      in (calc.SM_NONE, calc.SM_FIT_POLYNOMIAL, 
                          calc.SM_GAUSSIAN_FILTER, calc.SM_MEDIAN_FILTER, 
-                         calc.SM_TO_AVERAGE):
+                         calc.SM_TO_AVERAGE, calc.SM_SPLINES):
                         module.smoothing_method.value = smoothing_method
                         for ow in (calc.FI_AUTOMATIC, calc.FI_MANUALLY, 
                                    calc.FI_OBJECT_SIZE):
@@ -138,7 +175,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
                             module.run(workspace)
                             image = image_set.get_image("OutputImage")
                             self.assertTrue(image != None)
-                            self.assertTrue(np.all(abs(image.pixel_data - 1 < .00001)),
+                            self.assertTrue(np.all(np.std(image.pixel_data) < .00001),
                                                 """Failure case:
             each_or_all            = %(ea)s
             intensity_choice       = %(intensity_choice)s
@@ -455,7 +492,217 @@ class TestCorrectImage_Calculate(unittest.TestCase):
         module.run(workspace)
         image = image_set.get_image("OutputImage")
         np.testing.assert_almost_equal(image.pixel_data, expected_image)
+        
+    def test_03_05_splines(self):
+        for automatic, bg_mode, spline_points, threshold, convergence, offset, hi, lo, succeed in (
+            (True, calc.MODE_AUTO, 5, 2, .001, 0, True, False, True),
+            (True, calc.MODE_AUTO, 5, 2, .001, .7, False, True, True),
+            (True, calc.MODE_AUTO, 5, 2, .001, .5, True, True, True),
+            (False, calc.MODE_AUTO, 5, 2, .001, 0, True, False, True),
+            (False, calc.MODE_AUTO, 5, 2, .001, .7, False, True, True),
+            (False, calc.MODE_AUTO, 5, 2, .001, .5, True, True, True),
+            (False, calc.MODE_BRIGHT, 5, 2, .001, .7, False, True, True), 
+            (False, calc.MODE_DARK, 5, 2, .001, 0, True, False, True), 
+            (False, calc.MODE_GRAY, 5, 2, .001, .5, True, True, True), 
+            (False, calc.MODE_AUTO, 7, 2, .001, 0, True, False, True),
+            (False, calc.MODE_AUTO, 4, 2, .001, 0, True, False, True),
+            (False, calc.MODE_DARK, 5, 2, .001, .7, False, True, False), 
+            (False, calc.MODE_BRIGHT, 5, 2, .001, 0, True, False, False)
+            ):
+                
+            #
+            # Make an image with a random background
+            #
+            np.random.seed(35)
+            image = np.random.uniform(size=(21,31)) * .05 + offset
+            if hi:
+                #
+                # Add some "foreground" pixels
+                #
+                fg = np.random.permutation(400)[:100]
+                image[fg % image.shape[0], (fg / image.shape[0]).astype(int)] *= 10
+            if lo:
+                #
+                # Add some "background" pixels
+                #
+                bg = np.random.permutation(400)[:100]
+                image[bg % image.shape[0], (bg / image.shape[0]).astype(int)] -= offset
+                
+            #
+            # Make a background function
+            #
+            ii, jj = np.mgrid[-10:11,-15:16]
+            bg = ((ii.astype(float) / 10) ** 2) * ((jj.astype(float) / 15) ** 2)
+            bg *= .2
+            image += bg
+            
+            workspaces, module = self.make_workspaces(((image, None),))
+            self.assertTrue(isinstance(module, calc.CorrectIlluminationCalculate))
+            module.intensity_choice.value = calc.IC_BACKGROUND
+            module.each_or_all.value = calc.EA_EACH
+            module.rescale_option.value = cps.NO
+            module.smoothing_method.value = calc.SM_SPLINES
+            module.automatic_splines.value = automatic
+            module.spline_bg_mode.value = bg_mode
+            module.spline_convergence.value = convergence
+            module.spline_threshold.value = threshold
+            module.spline_points.value = spline_points
+            module.spline_rescale.value = 1
+            module.prepare_group(workspaces[0].pipeline, 
+                                 workspaces[0].image_set_list, {}, [1])
+            module.run(workspaces[0])
+            img = workspaces[0].image_set.get_image(OUTPUT_IMAGE_NAME)
+            pixel_data = img.pixel_data
+            diff = pixel_data - np.min(pixel_data) - bg
+            if succeed:
+                self.assertTrue(np.all(diff < .05))
+            else:
+                self.assertFalse(np.all(diff < .05))
     
+    def test_03_06_splines_scaled(self):
+        #
+        # Make an image with a random background
+        #
+        np.random.seed(36)
+        image = np.random.uniform(size=(101,131)) * .05
+        #
+        # Add some "foreground" pixels
+        #
+        fg = np.random.permutation(np.prod(image.shape))[:200]
+        image[fg % image.shape[0], (fg / image.shape[0]).astype(int)] *= 15
+        #
+        # Make a background function
+        #
+        ii, jj = np.mgrid[-50:51,-65:66]
+        bg = ((ii.astype(float) / 10) ** 2) * ((jj.astype(float) / 15) ** 2)
+        bg *= .2
+        image += bg
+        
+        workspaces, module = self.make_workspaces(((image, None),))
+        self.assertTrue(isinstance(module, calc.CorrectIlluminationCalculate))
+        module.intensity_choice.value = calc.IC_BACKGROUND
+        module.each_or_all.value = calc.EA_EACH
+        module.rescale_option.value = cps.NO
+        module.smoothing_method.value = calc.SM_SPLINES
+        module.automatic_splines.value = False
+        module.spline_rescale.value = 2
+        module.prepare_group(workspaces[0].pipeline, 
+                             workspaces[0].image_set_list, {}, [1])
+        module.run(workspaces[0])
+        img = workspaces[0].image_set.get_image(OUTPUT_IMAGE_NAME)
+        pixel_data = img.pixel_data
+        diff = pixel_data - np.min(pixel_data) - bg
+        np.all(diff < .05)
+        
+    def test_03_07_splines_masked(self):
+        #
+        # Make an image with a random background
+        #
+        np.random.seed(37)
+        image = np.random.uniform(size=(21,31)) * .05
+        #
+        # Mask 1/2 of the pixels
+        #
+        mask = np.random.uniform(size=(21,31)) < .5
+        #
+        # Make a background function
+        #
+        ii, jj = np.mgrid[-10:11,-15:16]
+        bg = ((ii.astype(float) / 10) ** 2) * ((jj.astype(float) / 15) ** 2)
+        bg *= .2
+        image += bg
+        #
+        # Offset the background within the mask
+        #
+        image[~mask] += bg[~mask]
+        
+        workspaces, module = self.make_workspaces(((image, mask),))
+        self.assertTrue(isinstance(module, calc.CorrectIlluminationCalculate))
+        module.intensity_choice.value = calc.IC_BACKGROUND
+        module.each_or_all.value = calc.EA_EACH
+        module.rescale_option.value = cps.NO
+        module.smoothing_method.value = calc.SM_SPLINES
+        module.automatic_splines.value = True
+        module.prepare_group(workspaces[0].pipeline, 
+                             workspaces[0].image_set_list, {}, [1])
+        module.run(workspaces[0])
+        img = workspaces[0].image_set.get_image(OUTPUT_IMAGE_NAME)
+        pixel_data = img.pixel_data
+        diff = pixel_data - np.min(pixel_data) - bg
+        self.assertTrue(np.all(diff < .05))
+        #
+        # Make sure test fails w/o mask
+        #
+        workspaces, module = self.make_workspaces(((image, None),))
+        self.assertTrue(isinstance(module, calc.CorrectIlluminationCalculate))
+        module.intensity_choice.value = calc.IC_BACKGROUND
+        module.each_or_all.value = calc.EA_EACH
+        module.rescale_option.value = cps.NO
+        module.smoothing_method.value = calc.SM_SPLINES
+        module.automatic_splines.value = True
+        module.prepare_group(workspaces[0].pipeline, 
+                             workspaces[0].image_set_list, {}, [1])
+        module.run(workspaces[0])
+        img = workspaces[0].image_set.get_image(OUTPUT_IMAGE_NAME)
+        pixel_data = img.pixel_data
+        diff = pixel_data - np.min(pixel_data) - bg
+        self.assertFalse(np.all(diff < .05))
+
+    def test_03_07_splines_cropped(self):
+        #
+        # Make an image with a random background
+        #
+        np.random.seed(37)
+        image = np.random.uniform(size=(21,31)) * .05
+        #
+        # Mask 1/2 of the pixels
+        #
+        mask = np.zeros(image.shape, bool)
+        mask[4:-4,6:-6] = True
+        #
+        # Make a background function
+        #
+        ii, jj = np.mgrid[-10:11,-15:16]
+        bg = ((ii.astype(float) / 10) ** 2) * ((jj.astype(float) / 15) ** 2)
+        bg *= .2
+        image += bg
+        #
+        # Offset the background within the mask
+        #
+        image[~mask] += bg[~mask]
+        
+        workspaces, module = self.make_workspaces(((image, mask),))
+        self.assertTrue(isinstance(module, calc.CorrectIlluminationCalculate))
+        module.intensity_choice.value = calc.IC_BACKGROUND
+        module.each_or_all.value = calc.EA_EACH
+        module.rescale_option.value = cps.NO
+        module.smoothing_method.value = calc.SM_SPLINES
+        module.automatic_splines.value = True
+        module.prepare_group(workspaces[0].pipeline, 
+                             workspaces[0].image_set_list, {}, [1])
+        module.run(workspaces[0])
+        img = workspaces[0].image_set.get_image(OUTPUT_IMAGE_NAME)
+        pixel_data = img.pixel_data
+        diff = pixel_data - np.min(pixel_data) - bg
+        self.assertTrue(np.all(diff < .05))
+        #
+        # Make sure test fails w/o mask
+        #
+        workspaces, module = self.make_workspaces(((image, None),))
+        self.assertTrue(isinstance(module, calc.CorrectIlluminationCalculate))
+        module.intensity_choice.value = calc.IC_BACKGROUND
+        module.each_or_all.value = calc.EA_EACH
+        module.rescale_option.value = cps.NO
+        module.smoothing_method.value = calc.SM_SPLINES
+        module.automatic_splines.value = True
+        module.prepare_group(workspaces[0].pipeline, 
+                             workspaces[0].image_set_list, {}, [1])
+        module.run(workspaces[0])
+        img = workspaces[0].image_set.get_image(OUTPUT_IMAGE_NAME)
+        pixel_data = img.pixel_data
+        diff = pixel_data - np.min(pixel_data) - bg
+        self.assertFalse(np.all(diff < .05))
+        
     def test_04_01_intermediate_images(self):
         """Make sure the average and dilated image flags work"""
         for average_flag, dilated_flag in ((False,False),
@@ -780,3 +1027,146 @@ CorrectIlluminationCalculate:[module_num:6|svn_version:\'9401\'|variable_revisio
             self.assertEqual(module.save_dilated_image, save_dilated_image)
             self.assertEqual(module.dilated_image_name, dilated_image_name)
             
+    def test_06_03_load_v2(self):
+        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:1
+SVNRevision:10125
+
+CorrectIlluminationCalculate:[module_num:1|svn_version:\'10063\'|variable_revision_number:2|show_window:True|notes:\x5B\x5D]
+    Select the input image:Masked
+    Name the output image:Illum
+    Select how the illumination function is calculated:Background
+    Dilate objects in the final averaged image?:No
+    Dilation radius:2
+    Block size:55
+    Rescale the illumination function?:No
+    Calculate function for each image individually, or based on all images?:Each
+    Smoothing method:Splines
+    Method to calculate smoothing filter size:Automatic
+    Approximate object size:11
+    Smoothing filter size:12
+    Retain the averaged image for use later in the pipeline (for example, in SaveImages)?:No
+    Name the averaged image:IllumAverage
+    Retain the dilated image for use later in the pipeline (for example, in SaveImages)?:No
+    Name the dilated image:IllumDilated
+    Automatically calculate spline parameters?:No
+    Background mode:bright
+    # of spline points:4
+    Background threshold:2
+    Image resampling factor:2
+    Max # of iterations:40
+    Convergence:0.001
+
+CorrectIlluminationCalculate:[module_num:2|svn_version:\'10063\'|variable_revision_number:2|show_window:True|notes:\x5B\x5D]
+    Select the input image:Masked
+    Name the output image:Illum
+    Select how the illumination function is calculated:Background
+    Dilate objects in the final averaged image?:No
+    Dilation radius:1
+    Block size:60
+    Rescale the illumination function?:No
+    Calculate function for each image individually, or based on all images?:Each
+    Smoothing method:Splines
+    Method to calculate smoothing filter size:Automatic
+    Approximate object size:10
+    Smoothing filter size:10
+    Retain the averaged image for use later in the pipeline (for example, in SaveImages)?:No
+    Name the averaged image:IllumBlueAvg
+    Retain the dilated image for use later in the pipeline (for example, in SaveImages)?:No
+    Name the dilated image:IllumBlueDilated
+    Automatically calculate spline parameters?:Yes
+    Background mode:auto
+    # of spline points:3
+    Background threshold:2
+    Image resampling factor:2
+    Max # of iterations:40
+    Convergence:0.001
+
+CorrectIlluminationCalculate:[module_num:3|svn_version:\'10063\'|variable_revision_number:2|show_window:True|notes:\x5B\x5D]
+    Select the input image:Masked
+    Name the output image:Illum
+    Select how the illumination function is calculated:Background
+    Dilate objects in the final averaged image?:No
+    Dilation radius:1
+    Block size:60
+    Rescale the illumination function?:No
+    Calculate function for each image individually, or based on all images?:Each
+    Smoothing method:Splines
+    Method to calculate smoothing filter size:Automatic
+    Approximate object size:10
+    Smoothing filter size:10
+    Retain the averaged image for use later in the pipeline (for example, in SaveImages)?:No
+    Name the averaged image:IllumBlueAvg
+    Retain the dilated image for use later in the pipeline (for example, in SaveImages)?:No
+    Name the dilated image:IllumBlueDilated
+    Automatically calculate spline parameters?:Yes
+    Background mode:dark
+    # of spline points:3
+    Background threshold:2
+    Image resampling factor:2
+    Max # of iterations:40
+    Convergence:0.001
+
+CorrectIlluminationCalculate:[module_num:4|svn_version:\'10063\'|variable_revision_number:2|show_window:True|notes:\x5B\x5D]
+    Select the input image:Masked
+    Name the output image:Illum
+    Select how the illumination function is calculated:Background
+    Dilate objects in the final averaged image?:No
+    Dilation radius:1
+    Block size:60
+    Rescale the illumination function?:No
+    Calculate function for each image individually, or based on all images?:Each
+    Smoothing method:Splines
+    Method to calculate smoothing filter size:Automatic
+    Approximate object size:10
+    Smoothing filter size:10
+    Retain the averaged image for use later in the pipeline (for example, in SaveImages)?:No
+    Name the averaged image:IllumBlueAvg
+    Retain the dilated image for use later in the pipeline (for example, in SaveImages)?:No
+    Name the dilated image:IllumBlueDilated
+    Automatically calculate spline parameters?:No
+    Background mode:gray
+    # of spline points:3
+    Background threshold:2
+    Image resampling factor:2
+    Max # of iterations:40
+    Convergence:0.001
+"""
+        pipeline = cpp.Pipeline()
+        def callback(caller,event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO(data))
+        self.assertEqual(len(pipeline.modules()), 4)
+        module = pipeline.modules()[0]
+        self.assertTrue(isinstance(module, calc.CorrectIlluminationCalculate))
+        self.assertEqual(module.image_name, "Masked")
+        self.assertEqual(module.illumination_image_name, "Illum")
+        self.assertEqual(module.intensity_choice, calc.IC_BACKGROUND)
+        self.assertFalse(module.dilate_objects)
+        self.assertEqual(module.object_dilation_radius, 2)
+        self.assertEqual(module.block_size, 55)
+        self.assertEqual(module.rescale_option, cps.NO)
+        self.assertEqual(module.each_or_all, calc.EA_EACH)
+        self.assertEqual(module.smoothing_method, calc.SM_SPLINES)
+        self.assertEqual(module.automatic_object_width, calc.FI_AUTOMATIC)
+        self.assertEqual(module.object_width, 11)
+        self.assertEqual(module.size_of_smoothing_filter, 12)
+        self.assertFalse(module.save_average_image)
+        self.assertEqual(module.average_image_name, "IllumAverage")
+        self.assertFalse(module.save_dilated_image)
+        self.assertEqual(module.dilated_image_name, "IllumDilated")
+        self.assertFalse(module.automatic_splines)
+        self.assertEqual(module.spline_bg_mode, calc.MODE_BRIGHT)
+        self.assertEqual(module.spline_points, 4)
+        self.assertEqual(module.spline_threshold, 2)
+        self.assertEqual(module.spline_rescale, 2)
+        self.assertEqual(module.spline_maximum_iterations, 40)
+        self.assertAlmostEqual(module.spline_convergence.value, 0.001)
+        
+        self.assertTrue(pipeline.modules()[1].automatic_splines)
+        
+        for module, spline_bg_mode in zip(pipeline.modules()[1:], (
+            calc.MODE_AUTO, calc.MODE_DARK, calc.MODE_GRAY)):
+            self.assertTrue(isinstance(module, calc.CorrectIlluminationCalculate))
+            self.assertEqual(module.spline_bg_mode, spline_bg_mode)

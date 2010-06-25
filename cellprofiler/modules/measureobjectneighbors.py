@@ -15,7 +15,7 @@ that objects are only considered neighbors if they are directly touching.
 neighbors, after the objects have been expanded to the specified distance</li>
 <li><i>FirstClosestObjectNumber:</i> The index of the closest object.</li>
 <li><i>FirstClosestDistance:</i> The distance to the closest object.</li>
-<li><i>SecondClosestObjectNumber: The index of the second closest object.</li>
+<li><i>SecondClosestObjectNumber:</i> The index of the second closest object.</li>
 <li><i>SecondClosestDistance:</i> The distance to the second closest object.</li>
 <li><i>AngleBetweenNeighbors:</i> The angle formed with the object center as the 
 vertex and the first and second closest object centers along the vectors.</li>
@@ -26,6 +26,15 @@ colored by the percentage of pixels that are touching other objects.
 CellProfiler creates a color image using the color map you choose. Use
 the <b>SaveImages</b> module to save the image to a file. See the settings help 
 for further details on interpreting the output.
+
+<h3>Technical note</h3> 
+Objects discarded via modules such as <b>IdentifyPrimaryObjects</b> or 
+<b>IdentifySecondaryObjects</b> will still register as a neighbors for the purposes
+of accurate measurement. For instance, if an object touches a single object and 
+that object had been discarded, <i>NumberOfNeighbors</i> will be positive, but 
+there will not be a corresponding <i>ClosestObjectNumber<i>.
+
+See also the <b>Identify</b> modules.
 '''
 
 # CellProfiler is distributed under the GNU General Public License.
@@ -104,7 +113,9 @@ class MeasureObjectNeighbors(cpm.CPModule):
             distance</i>, two objects are touching if their any of their boundary 
             pixels are adjacent after expansion and PercentTouching measures the 
             percentage of boundary pixels of an <i>expanded</i> object that 
-            touch adjacent objects.""")
+            touch adjacent objects.
+            
+            <p></p>""")
         
         self.distance = cps.Integer('Neighbor distance',
                                     5,1,doc="""

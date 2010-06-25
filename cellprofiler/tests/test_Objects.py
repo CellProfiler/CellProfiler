@@ -74,9 +74,9 @@ class TestObjects(unittest.TestCase):
     def test_03_02_default_small_removed_segmented(self):
         x = cpo.Objects()
         x.segmented = self.__segmented10
-        self.assertTrue((x.small_removed_segmented == 0).all())
+        self.assertTrue((x.small_removed_segmented == self.__segmented10).all())
         x.unedited_segmented = self.__unedited_segmented10
-        self.assertTrue((x.small_removed_segmented == self.__small_removed_segmented10).all())
+        self.assertTrue((x.small_removed_segmented == self.__unedited_segmented10).all())
     
     def test_04_01_mis_size(self):
         x = cpo.Objects()

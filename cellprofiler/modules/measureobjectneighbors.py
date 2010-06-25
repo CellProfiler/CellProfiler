@@ -176,8 +176,11 @@ class MeasureObjectNeighbors(cpm.CPModule):
 
     def run(self, workspace):
         objects = workspace.object_set.get_objects(self.object_name.value)
-        labels = objects.segmented
+        labels = objects.small_removed_segmented
+        kept_labels = objects.segmented
         nobjects = np.max(labels)
+        nkept_objects = np.max(kept_labels)
+        _, object_numbers = objects.relate_labels(labels, kept_labels)
         neighbor_count = np.zeros((nobjects,))
         pixel_count = np.zeros((nobjects,))
         first_object_number = np.zeros((nobjects,),int)
@@ -187,6 +190,7 @@ class MeasureObjectNeighbors(cpm.CPModule):
         first_y_vector = np.zeros((nobjects,))
         second_y_vector = np.zeros((nobjects,))
         angle = np.zeros((nobjects,))
+        percent_touching = np.zeros((nobjects,))
         if self.distance_method == D_EXPAND:
             # Find the i,j coordinates of the nearest foreground point
             # to every background point
@@ -232,12 +236,10 @@ class MeasureObjectNeighbors(cpm.CPModule):
             #
             order = np.lexsort([distance_matrix])
             first_object_index = order[:,1]
-            first_object_number = first_object_index+1
             first_x_vector = centers[first_object_index,1] - centers[:,1]
             first_y_vector = centers[first_object_index,0] - centers[:,0]
             if nobjects > 2:
                 second_object_index = order[:,2]
-                second_object_number = second_object_index+1
                 second_x_vector = centers[second_object_index,1] - centers[:,1]
                 second_y_vector = centers[second_object_index,0] - centers[:,0]
                 v1 = np.array((first_x_vector,first_y_vector))
@@ -289,8 +291,37 @@ class MeasureObjectNeighbors(cpm.CPModule):
                 overlap = np.sum(patch_mask & extended)
                 pixel_count[index] = overlap
             percent_touching = pixel_count * 100.0 / areas
-        else:
-            percent_touching = np.zeros((nobjects,))
+            #
+            # Now convert all measurements from the small-removed to
+            # the final number set.
+            #
+            object_indexes = object_numbers - 1
+            neighbor_count = neighbor_count[object_indexes]
+            percent_touching = percent_touching[object_indexes]
+            first_x_vector = first_x_vector[object_indexes]
+            second_x_vector = second_x_vector[object_indexes]
+            first_y_vector = first_y_vector[object_indexes]
+            second_y_vector = second_y_vector[object_indexes]
+            angle = angle[object_numbers - 1]
+            #
+            # Have to recompute nearest
+            #
+            first_object_number = np.zeros(nkept_objects)
+            second_object_number = np.zeros(nkept_objects)
+            if nkept_objects > 1:
+                i,j = np.mgrid[0:nkept_objects,0:nkept_objects]
+                di = centers[object_indexes[i], 0] - centers[object_indexes[j], 0]
+                dj = centers[object_indexes[i], 1] - centers[object_indexes[j], 1]
+                distance_matrix = np.sqrt(di**2 + dj**2)
+                #
+                # order[:,0] should be arange(nobjects)
+                # order[:,1] should be the nearest neighbor
+                # order[:,2] should be the next nearest neighbor
+                #
+                order = np.lexsort([distance_matrix])
+                first_object_number = order[:,1] + 1
+                if nkept_objects > 2:
+                    second_object_number = order[:,2] + 1
         #
         # Record the measurements
         #
@@ -306,9 +337,8 @@ class MeasureObjectNeighbors(cpm.CPModule):
             m.add_measurement(self.object_name.value,
                               '%s_%s_%s'%(C_NEIGHBORS, feature_name, scale),
                               data)
-        #
-        # Calculate the two heatmap images
-        #
+        labels = kept_labels
+        
         neighbor_count_image = np.zeros(labels.shape,int)
         object_mask = objects.segmented != 0
         object_indexes = objects.segmented[object_mask]-1

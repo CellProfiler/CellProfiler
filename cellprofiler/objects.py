@@ -104,15 +104,10 @@ class Objects(object):
         if self.__small_removed_segmented != None:
             return self.__small_removed_segmented
         if self.__segmented != None:
-            if self.__unedited_segmented != None:
-                # The small removed are the unedited minus the
-                # official segmentation.
-                result = self.__unedited_segmented.copy()
-                result[self.__unedited_segmented == self.__segmented] = 0
-                return result
+            if self.has_unedited_segmented():
+                return self.__unedited_segmented
             # If there's only a segmented, then there is no junk.
-            return np.zeros(shape=self.__segmented.shape,
-                               dtype=self.__segmented.dtype)
+            return self.__segmented
         return self.__small_removed_segmented
     
     def set_small_removed_segmented(self,labels):
@@ -163,8 +158,6 @@ class Objects(object):
         """
         parent_labels = self.segmented
         child_labels = children.segmented
-        parent_count = np.max(parent_labels)
-        child_count = np.max(child_labels)
         # Apply cropping to the parent if done to the child
         try:
             parent_labels  = children.crop_image_similarly(parent_labels)
@@ -172,6 +165,21 @@ class Objects(object):
             # If parents and children are not similarly cropped, take the LCD
             parent_labels, child_labels = crop_labels_and_image(parent_labels,
                                                                 child_labels)
+        return self.relate_labels(parent_labels, child_labels)
+    
+    @staticmethod
+    def relate_labels(parent_labels, child_labels):
+        """Relate the object numbers in one label to the object numbers in another
+        
+        parent_labels - the parents which contain the children
+        child_labels - the children to be mapped to a parent
+        
+        Returns two 1-d arrays. The first gives the number of children within
+        each parent. The second gives the mapping of each child to its parent's
+        object number.
+        """
+        parent_count = np.max(parent_labels)
+        child_count = np.max(child_labels)
         any_parents = (parent_count > 0)
         any_children = (child_count > 0)
         if (not any_parents) and (not any_children):

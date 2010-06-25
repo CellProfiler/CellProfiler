@@ -342,6 +342,38 @@ class TestMeasureObjectNeighbors(unittest.TestCase):
         self.assertAlmostEqual(angle[0],90)
         self.assertAlmostEqual(angle[1],np.arccos(3.0/5.0) * 180.0 / np.pi)
         self.assertAlmostEqual(angle[2],np.arccos(4.0/5.0) * 180.0 / np.pi)
+        
+    def test_02_09_touching_discarded(self):
+        '''Make sure that we count edge-touching discarded objects
+        
+        Regression test of IMG-1012.
+        '''
+        labels = np.zeros((10,10),int)
+        labels[2,3] = 1
+        workspace, module = self.make_workspace(labels,
+                                                M.D_ADJACENT, 5)
+        object_set = workspace.object_set
+        self.assertTrue(isinstance(object_set, cpo.ObjectSet))
+        objects = object_set.get_objects(OBJECTS_NAME)
+        self.assertTrue(isinstance(objects, cpo.Objects))
+        
+        sm_labels = labels.copy() * 2
+        sm_labels[0:2,3] = 1
+        objects.small_removed_segmented = sm_labels
+        module.run(workspace)
+        m = workspace.measurements
+        neighbors = m.get_current_measurement(OBJECTS_NAME,
+                                              "Neighbors_NumberOfNeighbors_Adjacent")
+        self.assertEqual(len(neighbors),1)
+        self.assertTrue(np.all(neighbors==1))
+        pct = m.get_current_measurement(OBJECTS_NAME,
+                                        "Neighbors_PercentTouching_Adjacent")
+        self.assertEqual(len(pct),1)
+        self.assertAlmostEqual(pct[0],100)
+        fo = m.get_current_measurement(OBJECTS_NAME,
+                                       "Neighbors_FirstClosestObjectNumber_Adjacent")
+        self.assertEqual(len(fo),1)
+        self.assertEqual(fo[0],0)
     
     def test_03_01_NeighborCountImage(self):
         '''Test production of a neighbor-count image'''

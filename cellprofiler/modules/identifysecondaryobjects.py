@@ -128,28 +128,39 @@ class IdentifySecondaryObjects(cpmi.Identify):
             ICCV Workshop on Computer Vision for Biomedical Image Applications, pp.
             535-543).</li>
            
-            <li><i>Watershed:</i> This method will find dividing lines between
-            objects by looking for dim lines between objects (Vincent, Luc and Pierre Soille,
+            <li><i>%(M_WATERSHED_G)s:</i> This method uses the watershed algorithm
+            (Vincent, Luc and Pierre Soille,
             <i>Watersheds in Digital Spaces: An Efficient Algorithm Based on Immersion
             Simulations</i>, IEEE Transactions of Pattern Analysis and Machine
-            Intelligence, Vol. 13, No. 6, June 1991, pp. 583-598).</li>
-           
+            Intelligence, Vol. 13, No. 6, June 1991, pp. 583-598) to assign
+            pixels to the primary objects which act as seeds for the watershed.
+            In this variant, the watershed algorithm operates on the Sobel
+            transformed image which computes an intensity gradient. This method
+            works best when the image intensity drops off or increases rapidly
+            near the boundary between cells.
+            </li>
+            <li><i>%(M_WATERSHED_I)s:</i> This method is similar to the above,
+            but it uses the inverted intensity of the image for the watershed.
+            The areas of lowest intensity will form the boundaries between
+            cells. This method works best when there is a saddle of relatively
+            low intensity at the cell-cell boundary.
+            </li>
             <li><i>Distance:</i> In this method, the edges of the primary
             objects are expanded a specified distance to create the secondary
             objects. For example, if nuclei are labeled but there is no stain to help
             locate cell edges, the nuclei can simply be expanded in order to estimate
             the cell's location. This is often called the "doughnut" or "annulus" or
-            "ring" approach for identifying the cytoplasmt. 
+            "ring" approach for identifying the cytoplasm. 
             There are two methods that can be used:
             <ul>
-            <li><i>Distance - N</i>: In this method, the image of the secondary 
+            <li><i>%(M_DISTANCE_N)s</i>: In this method, the image of the secondary 
             staining is not used at all; the expanded objects are the 
             final secondary objects. 
-            <li><i>Distance - B</i>: Thresholding of the secondary staining image is used to eliminate background
+            <li><i>%(M_DISTANCE_B)s</i>: Thresholding of the secondary staining image is used to eliminate background
             regions from the secondary objects. This allows the extent of the
             secondary objects to be limited to a certain distance away from the edge
             of the primary objects without including regions of background.</li></ul></li>
-            </ul>""")
+            </ul>""" % globals())
         
         self.image_name = cps.ImageNameSubscriber("Select the input image",
                                                   "None",doc="""

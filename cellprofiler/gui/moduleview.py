@@ -324,7 +324,7 @@ class ModuleView:
             #
             #################################
             for i, v in enumerate(settings):
-                flag = 0
+                flag = wx.EXPAND
                 border = 0
                 control_name = edit_control_name(v)
                 text_name    = text_control_name(v)
@@ -345,6 +345,7 @@ class ModuleView:
                 self.__static_texts.append(static_text)
                 if isinstance(v,cps.Binary):
                     control = self.make_binary_control(v,control_name,control)
+                    flag = wx.ALIGN_LEFT
                 elif isinstance(v, cps.MeasurementMultiChoice):
                     control = self.make_measurement_multichoice_control(
                         v, control_name, control)
@@ -364,21 +365,25 @@ class ModuleView:
                                                        control_name, 
                                                        wx.CB_READONLY,
                                                        control)
+                    flag = wx.ALIGN_LEFT
                 elif isinstance(v,cps.NameSubscriber):
                     choices = v.get_choices(self.__pipeline)
                     control = self.make_choice_control(v, choices,
                                                        control_name, 
                                                        wx.CB_READONLY,
                                                        control)
+                    flag = wx.ALIGN_LEFT
                 elif isinstance(v,cps.FigureSubscriber):
                     choices = v.get_choices(self.__pipeline)
                     control = self.make_choice_control(v, choices,
                                                        control_name, 
                                                        wx.CB_DROPDOWN,
                                                        control)
+                    flag = wx.ALIGN_LEFT
                 elif isinstance(v, cps.DoSomething):
                     control = self.make_callback_control(v, control_name,
                                                          control)
+                    flag = wx.ALIGN_LEFT
                 elif isinstance(v, cps.IntegerRange) or\
                      isinstance(v, cps.FloatRange):
                     control = self.make_range_control(v, control)
@@ -937,12 +942,10 @@ class ModuleView:
             panel.SetSizer(sizer)
             min_ctrl = wx.TextCtrl(panel,-1,str(v.min),
                                    name=min_control_name(v))
-            best_width = min_ctrl.GetCharWidth()*5
-            min_ctrl.SetInitialSize(wx.Size(best_width,-1))
             sizer.Add(min_ctrl,0,wx.EXPAND|wx.RIGHT,1)
             max_ctrl = wx.TextCtrl(panel,-1,str(v.max),
                                    name=max_control_name(v))
-            max_ctrl.SetInitialSize(wx.Size(best_width,-1))
+            #max_ctrl.SetInitialSize(wx.Size(best_width,-1))
             sizer.Add(max_ctrl,0,wx.EXPAND)
             def on_min_change(event, setting = v, control=min_ctrl):
                 self.__on_min_change(event, setting,control)
@@ -957,7 +960,9 @@ class ModuleView:
             max_ctrl = panel.FindWindowByName(max_control_name(v))
             if max_ctrl.Value != str(v.max):
                 max_ctrl.Value = str(v.max)
-            
+        
+        for ctrl in (min_ctrl, max_ctrl):
+            self.fit_ctrl(ctrl)
         return panel
     
     def make_unbounded_range_control(self, v, panel):
@@ -1003,6 +1008,7 @@ class ModuleView:
                 setting_edited_event = SettingEditedEvent(setting, self.__module,
                                                           proposed_value,event)
                 self.notify(setting_edited_event)
+                self.fit_ctrl(control)
                 
             self.__module_panel.Bind(wx.EVT_TEXT,on_min_change,min_ctrl)
             def on_max_change(event, setting = v, control=max_ctrl, 
@@ -1020,6 +1026,8 @@ class ModuleView:
                 setting_edited_event = SettingEditedEvent(setting, self.__module,
                                                           proposed_value,event)
                 self.notify(setting_edited_event)
+                self.fit_ctrl(control)
+                
             self.__module_panel.Bind(wx.EVT_TEXT,on_max_change,max_ctrl)
             def on_absrel_change(event, setting = v, control=absrel_ctrl):
                 if not self.__handle_change:
@@ -1341,6 +1349,12 @@ class ModuleView:
         if setting.reset_view:
             self.reset_view()
     
+    def fit_ctrl(self, ctrl):
+        '''Fit the control to its text size'''
+        width , height = ctrl.GetTextExtent(ctrl.Value + "MM")
+        ctrl.SetSizeHintsSz(wx.Size(width, -1))
+        ctrl.Parent.Fit()
+        
     def __on_min_change(self,event,setting,control):
         if not self.__handle_change:
             return
@@ -1349,6 +1363,7 @@ class ModuleView:
         setting_edited_event = SettingEditedEvent(setting,self.__module, 
                                                   proposed_value,event)
         self.notify(setting_edited_event)
+        self.fit_ctrl(control)
         
     def __on_max_change(self,event,setting,control):
         if not self.__handle_change:
@@ -1358,6 +1373,7 @@ class ModuleView:
         setting_edited_event = SettingEditedEvent(setting,self.__module, 
                                                   proposed_value,event)
         self.notify(setting_edited_event)
+        self.fit_ctrl(control)
         
     def __on_pipeline_event(self,pipeline,event):
         if (isinstance(event,cpp.PipelineClearedEvent)):
@@ -1665,7 +1681,7 @@ class ModuleSizer(wx.PySizer):
                         control.Wrap(inner_text_width)
                     for j in range(self.__cols):
                         item = self.GetItem(self.idx(j, i))
-                        if isinstance(item.GetWindow(), wx.Button):
+                        if (item.Flag & wx.EXPAND) == 0:
                             item_size = item.CalcMin()
                         else:
                             item_size = wx.Size(widths[j], item.CalcMin()[1])

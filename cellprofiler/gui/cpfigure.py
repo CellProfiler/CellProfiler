@@ -685,7 +685,8 @@ class CPFigureFrame(wx.Frame):
         use_imshow - True to use Axes.imshow to paint images, False to fill
                      the image into the axes after painting.
         '''
-
+        orig_vmin = vmin
+        orig_vmax = vmax
         # NOTE: self.subplot_user_params is used to store changes that are made 
         #    to the display through GUI interactions (eg: hiding a channel).
         #    Once a subplot that uses this mechanism has been drawn, it will
@@ -758,9 +759,11 @@ class CPFigureFrame(wx.Frame):
                 if image.max() > 0 and image.max() > image[image > 0].min():
                     lo = image[image > 0].min()
                     hi = image.max()
-                    cax.set_yticklabels(['%0.1f'%(v) for v in lo * np.logspace(0, 1, 10, base=(hi / lo))])
+                    cax.set_yticklabels(['%0.1f'%(v) for v in lo * np.logspace(image.min(), image.max(), 10, base=(hi / lo))])
                 else:
                     cax.set_yticklabels([''] * 10)
+            elif (orig_vmin is not None) and (orig_vmax is not None):
+                cax.set_yticklabels(['%0.1f'%(v) for v in np.linspace(orig_vmin, orig_vmax, 10)])
             else:
                 cax.set_yticklabels(['%0.1f'%(v) for v in np.linspace(0, 1, 10)])
                                       
@@ -931,7 +934,7 @@ class CPFigureFrame(wx.Frame):
             image = image * rgb_mask
         if not is_color_image(image):
             mappable = matplotlib.cm.ScalarMappable(cmap=colormap)
-            mappable.set_clim(0, 1)
+            mappable.set_clim(vmin, vmax)
             image = mappable.to_rgba(image)[:,:,:3]
         return image
     

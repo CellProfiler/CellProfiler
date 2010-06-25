@@ -306,8 +306,8 @@ class MeasureObjectNeighbors(cpm.CPModule):
             #
             # Have to recompute nearest
             #
-            first_object_number = np.zeros(nkept_objects)
-            second_object_number = np.zeros(nkept_objects)
+            first_object_number = np.zeros(nkept_objects, int)
+            second_object_number = np.zeros(nkept_objects, int)
             if nkept_objects > 1:
                 i,j = np.mgrid[0:nkept_objects,0:nkept_objects]
                 di = centers[object_indexes[i], 0] - centers[object_indexes[j], 0]
@@ -383,7 +383,7 @@ class MeasureObjectNeighbors(cpm.CPModule):
                                       "%s colored by # of neighbors" %
                                       self.object_name.value,
                                       colormap = neighbor_cm,
-                                      colorbar=True, vmin=-1,
+                                      colorbar=True, vmin=0,
                                       vmax=neighbor_count_image.max(),
                                       normalize=False,
                                       sharex = figure.subplot(0,0),

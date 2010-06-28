@@ -174,6 +174,11 @@ class PipelineController:
         self.__test_controls_panel.Bind(wx.EVT_BUTTON, self.on_debug_next_image_set, self.__tcp_next_imageset)
 
     def __on_load_pipeline(self,event):
+        if self.__dirty_pipeline:
+            if wx.MessageBox('Do you want to save your current pipeline\n'
+                             'before loading?', 'Save modified pipeline',
+                             wx.YES_NO|wx.ICON_QUESTION, self.__frame) & wx.YES:
+                self.do_save_pipeline()
         dlg = wx.FileDialog(self.__frame,
                             "Choose a pipeline file to open",
                             wildcard = ("CellProfiler pipeline (*.cp,*.mat)|*.cp;*.mat"))
@@ -183,6 +188,11 @@ class PipelineController:
             self.do_load_pipeline(pathname)
             
     def __on_url_load_pipeline(self, event):
+        if self.__dirty_pipeline:
+            if wx.MessageBox('Do you want to save your current pipeline\n'
+                             'before loading?', 'Save modified pipeline',
+                             wx.YES_NO|wx.ICON_QUESTION, self.__frame) & wx.YES:
+                self.do_save_pipeline()
         dlg = wx.TextEntryDialog(self.__frame,
                                  "Enter the pipeline's URL\n\n"
                                  "Example: https://svn.broadinstitute.org/"

@@ -735,6 +735,12 @@ class LoadImages(cpmodule.CPModule):
         
         LoadImages marks the common_text as invalid if it's blank.
         '''
+        if self.match_method == MS_ORDER:
+            raise cps.ValidationError("Load by Order is not yet implemented.\n"
+                                      "Please use 'Text-Exact match' or 'Text-Regular expressions'.",
+                                      self.match_method)
+
+
         if self.match_method == MS_EXACT_MATCH:
             for image_group in self.images:
                 if len(image_group.common_text.value) == 0:

@@ -375,6 +375,7 @@ class FlipAndRotate(cpm.CPModule):
         sizer.Add(btnsizer, 0, wx.ALIGN_CENTER_HORIZONTAL|wx.ALL, 5)
         dialog.Fit()
         result = dialog.ShowModal()
+        dialog.Destroy()
         if result == wx.ID_OK:
             return angle[0]
         raise ValueError("Canceled by user in FlipAndRotate")

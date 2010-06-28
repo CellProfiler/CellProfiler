@@ -410,17 +410,22 @@ class CorrectIlluminationCalculate(cpm.CPModule):
                 else:
                     progress_dialog = None
     
-                for i,image_number in enumerate(image_numbers):
-                    image_set = image_set_list.get_image_set(image_number-1)
-                    image     = image_set.get_image(self.image_name.value,
-                                                    must_be_grayscale=True,
-                                                    cache = False)
-                    output_image_provider.add_image(image)
+                
+                try:
+                    for i,image_number in enumerate(image_numbers):
+                        image_set = image_set_list.get_image_set(image_number-1)
+                        image     = image_set.get_image(self.image_name.value,
+                                                        must_be_grayscale=True,
+                                                        cache = False)
+                        output_image_provider.add_image(image)
+                        if progress_dialog is not None:
+                            should_continue, skip = progress_dialog.Update(i+1)
+                            if not should_continue:
+                                progress_dialog.EndModal(0)
+                                return False
+                finally:
                     if progress_dialog is not None:
-                        should_continue, skip = progress_dialog.Update(i+1)
-                        if not should_continue:
-                            progress_dialog.EndModal(0)
-                            return False
+                        progress_dialog.Destroy()
         return True
         
     def run(self, workspace):

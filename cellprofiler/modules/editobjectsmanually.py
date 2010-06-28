@@ -463,6 +463,7 @@ class EditObjectsManually(I.Identify):
         display()
         dialog_box.Fit()
         result = dialog_box.ShowModal()
+        dialog_box.Destroy()
         if result != wx.OK:
             raise RuntimeError("User cancelled EditObjectsManually")
         filtered_labels = orig_labels.copy()

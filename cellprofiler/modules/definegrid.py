@@ -608,6 +608,7 @@ class DefineGrid(cpm.CPModule):
         frame.Bind(wx.EVT_BUTTON, ok, id=wx.OK)
         canvas.mpl_connect("button_release_event", button_release)
         frame.ShowModal()
+        frame.Destroy()
         if status[0] != wx.OK:
             raise RuntimeError("Pipeline aborted during grid editing")
         return gridding[0]

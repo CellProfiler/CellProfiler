@@ -686,8 +686,11 @@ class Crop(cpm.CPModule):
         figure.canvas.mpl_connect('pick_event', on_pick_event)
         
         dialog_box.Layout()
-        if dialog_box.ShowModal() != wx.ID_OK:
-            raise ValueError("Cancelled by user")
+        try:
+            if dialog_box.ShowModal() != wx.ID_OK:
+                raise ValueError("Cancelled by user")
+        finally:
+            dialog_box.Destroy()
         if self.shape == SH_RECTANGLE:
             d[SH_RECTANGLE] = {
                 RE_LEFT: shape.left,

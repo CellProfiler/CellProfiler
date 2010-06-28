@@ -290,30 +290,34 @@ class RescaleIntensity(cpm.CPModule):
         
         min_value = None
         max_value = None
-        for i,image_number in enumerate(image_numbers):
-            image_set = image_set_list.get_image_set(image_number-1)
-            image     = image_set.get_image(self.image_name.value,
-                                            must_be_grayscale=True,
-                                            cache = False)
-            if self.wants_automatic_high == HIGH_ALL_IMAGES:
-                if image.has_mask:
-                    vmax = np.max(image.pixel_data[image.mask])
-                else:
-                    vmax = np.max(image.pixel_data)
-                max_value = vmax if max_value is None else max(max_value, vmax)
-                
-            if self.wants_automatic_low == LOW_ALL_IMAGES:
-                if image.has_mask:
-                    vmin = np.min(image.pixel_data[image.mask])
-                else:
-                    vmin = np.min(image.pixel_data)
-                min_value = vmin if min_value is None else min(min_value, vmin)
-                
+        try:
+            for i,image_number in enumerate(image_numbers):
+                image_set = image_set_list.get_image_set(image_number-1)
+                image     = image_set.get_image(self.image_name.value,
+                                                must_be_grayscale=True,
+                                                cache = False)
+                if self.wants_automatic_high == HIGH_ALL_IMAGES:
+                    if image.has_mask:
+                        vmax = np.max(image.pixel_data[image.mask])
+                    else:
+                        vmax = np.max(image.pixel_data)
+                    max_value = vmax if max_value is None else max(max_value, vmax)
+
+                if self.wants_automatic_low == LOW_ALL_IMAGES:
+                    if image.has_mask:
+                        vmin = np.min(image.pixel_data[image.mask])
+                    else:
+                        vmin = np.min(image.pixel_data)
+                    min_value = vmin if min_value is None else min(min_value, vmin)
+
+                if progress_dialog is not None:
+                    should_continue, skip = progress_dialog.Update(i+1)
+                    if not should_continue:
+                        progress_dialog.EndModal(0)
+                        return False
+        finally:
             if progress_dialog is not None:
-                should_continue, skip = progress_dialog.Update(i+1)
-                if not should_continue:
-                    progress_dialog.EndModal(0)
-                    return False
+                progress_dialog.Destroy()
         if self.wants_automatic_high == HIGH_ALL_IMAGES:
             self.set_automatic_maximum(image_set_list, max_value)
         if self.wants_automatic_low == LOW_ALL_IMAGES:

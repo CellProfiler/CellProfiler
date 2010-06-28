@@ -330,6 +330,7 @@ class IdentifyObjectsManually(I.Identify):
         draw()
         dialog_box.Fit()
         dialog_box.ShowModal()
+        dialog_box.Destroy()
         
     def upgrade_settings(self, setting_values, variable_revision_number,
                          module_name, from_matlab):

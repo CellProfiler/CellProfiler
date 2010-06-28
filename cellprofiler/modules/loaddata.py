@@ -519,11 +519,11 @@ class LoadData(cpm.CPModule):
         header = reader.next()
         fd.close()
         if header[0].startswith('ELN_RUN_ID'):
-           try:
-               data = self.convert()
-           except Exception, e:
-               raise RuntimeError("%s" %(e))
-           header = data.dtype.names
+            try:
+                data = self.convert()
+            except Exception, e:
+                raise RuntimeError("%s" %(e))
+            header = data.dtype.names
         entry["header"] = [header_to_column(column) for column in header]
         return entry["header"]
         
@@ -539,6 +539,11 @@ class LoadData(cpm.CPModule):
                 return []
         return []
     
+    def is_image_from_file(self, image_name):
+        '''Return True if LoadData provides the given image name'''
+        providers = self.other_providers('imagegroup')
+        return image_name in providers
+        
     def is_load_module(self):
         '''LoadData can make image sets so it's a load module'''
         return True
@@ -929,7 +934,7 @@ class LoadData(cpm.CPModule):
             elif feature.lower() == cpmeas.FTR_WELL.lower():
                 return False
         return has_well_col and has_well_row
-        
+    
     def get_categories(self, pipeline, object_name):
         if object_name != cpmeas.IMAGE:
             return []

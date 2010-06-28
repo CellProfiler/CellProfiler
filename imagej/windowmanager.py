@@ -64,3 +64,19 @@ def set_current_image(imagej_obj):
     image_window = imagej_obj.getWindow()
     J.static_call('ij/WindowManager', 'setCurrentWindow', 
                   '(Lij/gui/ImageWindow;)V', image_window)
+
+def close_all_windows():
+    '''Close all ImageJ windows
+    
+    Hide the ImageJ windows so that they don't go through the Save dialog,
+    then call the Window Manager's closeAllWindows to get the rest.
+    '''
+    jimage_list = J.static_call('ij/WindowManager', 'getIDList', '()[I')
+    image_list = J.get_env().get_int_array_elements(jimage_list)
+    for image_id in image_list:
+        ip = J.static_call('ij/WindowManager', 'getImage', 
+                           '(I)Lij/ImagePlus;', image_id)
+        ip = get_imageplus_wrapper(ip)
+        ip.hide()
+    J.static_call('ij/WindowManager', 'closeAllWindows', '()Z')
+    

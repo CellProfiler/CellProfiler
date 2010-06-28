@@ -183,11 +183,11 @@ class Objects(object):
         any_parents = (parent_count > 0)
         any_children = (child_count > 0)
         if (not any_parents) and (not any_children):
-            return np.zeros((0,)),np.zeros((0,))
+            return np.zeros((0,), int),np.zeros((0,), int)
         elif (not any_parents):
-            return np.zeros((0,)),np.zeros((child_count,))
+            return np.zeros((0,), int),np.zeros((child_count,), int)
         elif (not any_children):
-            return np.zeros((parent_count,)), np.zeros((0,))
+            return np.zeros((parent_count,), int), np.zeros((0,), int)
         #
         # Only look at points that are labeled in parent and child
         #

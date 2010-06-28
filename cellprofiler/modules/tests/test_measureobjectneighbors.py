@@ -374,6 +374,36 @@ class TestMeasureObjectNeighbors(unittest.TestCase):
                                        "Neighbors_FirstClosestObjectNumber_Adjacent")
         self.assertEqual(len(fo),1)
         self.assertEqual(fo[0],0)
+        
+    def test_02_10_all_discarded(self):
+        '''Test the case where all objects touch the edge
+        
+        Regression test of a follow-on bug to IMG-1012
+        '''
+        labels = np.zeros((10,10),int)
+        workspace, module = self.make_workspace(labels,
+                                                M.D_ADJACENT, 5)
+        object_set = workspace.object_set
+        self.assertTrue(isinstance(object_set, cpo.ObjectSet))
+        objects = object_set.get_objects(OBJECTS_NAME)
+        self.assertTrue(isinstance(objects, cpo.Objects))
+        
+        # Needs 2 objects to trigger the bug
+        sm_labels = np.zeros((10,10), int)
+        sm_labels[0:2,3] = 1
+        sm_labels[-3:-1, 5] = 2
+        objects.small_removed_segmented = sm_labels
+        module.run(workspace)
+        m = workspace.measurements
+        neighbors = m.get_current_measurement(OBJECTS_NAME,
+                                              "Neighbors_NumberOfNeighbors_Adjacent")
+        self.assertEqual(len(neighbors),0)
+        pct = m.get_current_measurement(OBJECTS_NAME,
+                                        "Neighbors_PercentTouching_Adjacent")
+        self.assertEqual(len(pct),0)
+        fo = m.get_current_measurement(OBJECTS_NAME,
+                                       "Neighbors_FirstClosestObjectNumber_Adjacent")
+        self.assertEqual(len(fo),0)
     
     def test_03_01_NeighborCountImage(self):
         '''Test production of a neighbor-count image'''

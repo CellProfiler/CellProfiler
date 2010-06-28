@@ -76,6 +76,13 @@ LOCATION_RUNSTATUS_PAUSE_BUTTON = os.path.join(path,'status_pause.png')
 LOCATION_RUNSTATUS_STOP_BUTTON  = os.path.join(path,'status_stop.png')
 LOCATION_RUNSTATUS_SAVE_BUTTON  = os.path.join(path,'status_save.png')
 
+LOCATION_WINDOW_HOME_BUTTON = os.path.join(path,'window_home.png')
+LOCATION_WINDOW_BACK_BUTTON  = os.path.join(path,'window_back.png')
+LOCATION_WINDOW_FORWARD_BUTTON  = os.path.join(path,'window_forward.png')
+LOCATION_WINDOW_PAN_BUTTON  = os.path.join(path,'window_pan.png')
+LOCATION_WINDOW_ZOOMTORECT_BUTTON  = os.path.join(path,'window_zoom_to_rect.png')
+LOCATION_WINDOW_SAVE_BUTTON  = os.path.join(path,'window_filesave.png')
+
 ##################################################
 #
 # Help for the main window
@@ -83,7 +90,7 @@ LOCATION_RUNSTATUS_SAVE_BUTTON  = os.path.join(path,'status_save.png')
 ##################################################
 
 DEFAULT_IMAGE_FOLDER_HELP = """
-<p>The <i>Default Input Folder</i> contains the input image or data files
+<p>In the Folder panel, the <i>Default Input Folder</i> contains the input image or data files
 that you want to analyze. Several File Processing modules (e.g., 
 <b>LoadImages</b> or <b>LoadData</b>) provide the option of retrieving images 
 from this folder on a default basis unless you specify, within the module, an alternate, 
@@ -110,7 +117,7 @@ pipeline from the file. To refresh the contents of this panel, click the <i>Refr
 button <img src="%(LOCATION_REFRESH_BUTTON)s"></img>.</p>"""%globals()
 
 DEFAULT_OUTPUT_FOLDER_HELP = """
-<p>The <i>Default Output Folder</i> is the folder that CellProfiler uses to
+<p>In the Folder panel, the <i>Default Output Folder</i> is the folder that CellProfiler uses to
 store the output file it creates. Also, several File Processing modules (e.g., <b>SaveImages</b> or 
 <b>ExportToSpreadsheet</b>) provide the option of saving analysis results to 
 this folder on a default basis unless you specify, within the module, an alternate, 
@@ -130,9 +137,9 @@ click on the <i>New folder</i> icon to the right of the <i>Browse folder</i> ico
 The folder will be created according to the pathname you have typed.</p>"""
 
 OUTPUT_FILENAME_HELP = """
-<p>Specify the name of the output file where all information 
-about the analysis as well as any measurements will be stored to the hard drive. 
-The output file is a 
+<p>In the <i>Output Filename</i> box in the Folder panel, you can specify the name of the output file 
+where all information about the analysis as well as any measurements will be 
+stored to the hard drive. The output file is a 
 .mat file, which is readable by CellProfiler and by MATLAB. Results in the 
 output file can be accessed or exported
 using <b>Data Tools</b> from the main menu of CellProfiler.
@@ -711,7 +718,7 @@ can be resubmitted.</p>
 the CellProfiler <a href = "http://cellprofiler.org/forum/viewforum.php?f=14">forum</a>.</p>
 """
 
-RUN_MULTIPLE_PIPELINES_HELP = """<h2>Run multiple pipelines</h2>
+RUN_MULTIPLE_PIPELINES_HELP = """
 <br>The <b>Run multiple pipelines</b> dialog lets you select several pipelines
 which will be run consecutively. You can invoke <b>Run multiple pipelines</b>
 by selecting it from the file menu. The dialog has three parts to it:
@@ -733,7 +740,7 @@ click the remove button to remove a pipeline from the list</li></ul>
 CellProfiler will run all of the pipelines on the list when you hit the
 "OK" button."""
 
-MENU_BAR_FILE_HELP = """ <h2>File Menu Items</h2>
+MENU_BAR_FILE_HELP = """
 The <i>File</i> menu provides options for loading and saving your pipelines and 
 performing an analysis run.
 <ul>
@@ -769,7 +776,7 @@ one of these pipelines to load it.</li>
 of saving your current pipeline if you have not done so.</li>
 </ul>"""
 
-MENU_BAR_EDIT_HELP = """<h2>Edit Menu Items</h2>
+MENU_BAR_EDIT_HELP = """
 The <i>Edit</i> menu provides options for modifying modules in your current pipeline.
 <ul>
 <li><b>Undo:</b> Undo your previous module modification.</li>
@@ -794,7 +801,7 @@ by selecting the first module and using Shift-click on the last module to select
 all the modules in between.
 """%globals()
 
-MENU_BAR_WINDOW_HELP = """<h2>Window Menu Items</h2>
+MENU_BAR_WINDOW_HELP = """
 The <i>Windows</i> menu provides options for showing and hiding the module display windows.
 <ul>
 <li><b>Close All Open Windows:</b> Closes all display windows that are currently open.</li>
@@ -808,25 +815,25 @@ in the pipeline panel will switch to <img src="%(LOCATION_DISPLAYMODE_HIDE_ICON)
 
 '''The help menu for CP's main window'''
 MAIN_HELP = (
-    ( "Getting started", (
+    ( "Getting Started", (
         ("When To Use CellProfiler",WHEN_CAN_I_USE_CELLPROFILER_HELP),
         ("New Features",NEW_FEATURES_HELP),
         ("How To Build A Pipeline", BUILDING_A_PIPELINE_HELP) ) ),
-    ( "General help", (
+    ( "General Help", (
         ("Using Metadata In CellProfiler",USING_METADATA_HELP),
         ("Memory And Speed", MEMORY_AND_SPEED_HELP),
         ("Test Mode",TEST_MODE_HELP),
         ("Batch Processing", BATCHPROCESSING_HELP),
-        ("Run multiple pipelines", RUN_MULTIPLE_PIPELINES_HELP) ) ),
-    ( "Folders and files", (
-        ("Default Input Folder", DEFAULT_IMAGE_FOLDER_HELP),
-        ("Default Output Folder", DEFAULT_OUTPUT_FOLDER_HELP),
-        ("Output Filename", OUTPUT_FILENAME_HELP) ) ),
-    ( "Menu bar", (
-        ("File",MENU_BAR_FILE_HELP),
-        ("Edit",MENU_BAR_EDIT_HELP),
-        ("Test",TEST_MODE_HELP),
-        ("Window",MENU_BAR_WINDOW_HELP) ) )
+        ("Running Multiple Pipelines", RUN_MULTIPLE_PIPELINES_HELP) ) ),
+    ( "Folders and Files", (
+        ("Setting The Default Input Folder", DEFAULT_IMAGE_FOLDER_HELP),
+        ("Setting The Default Output Folder", DEFAULT_OUTPUT_FOLDER_HELP),
+        ("Setting the Output Filename", OUTPUT_FILENAME_HELP) ) ),
+    ( "Menu Bar", (
+        ("File Menu Items",MENU_BAR_FILE_HELP),
+        ("Edit Menu Items",MENU_BAR_EDIT_HELP),
+        ("Test Menu Items",TEST_MODE_HELP),
+        ("Window Menu Items",MENU_BAR_WINDOW_HELP) ) )
 )
 
 '''A couple of strings for generic insertion into module help'''
@@ -844,32 +851,78 @@ Tags have the form "\g&lt;metadata-tag&gt;" where <i>&lt;metadata-tag&gt</i> is 
 ####################################################
 '''The help menu for the figure window'''
 
-SAVE_HELP = """
-You can save the figure window to a file (currently,
-Postscript (.PS), PNGs and PDFs are supported). Note that this will save the entire
-contents of the window, not just the individual subplot(s) or images.
-"""
-
-ZOOM_HELP = """ 
+MODULE_DISPLAY_MENU_BAR_HELP = """
+From the menu bar of each module display window, you have the following options:
 <ul>
-<li>To zoom in, click and drag in the image window to draw a box around the area 
-you want to zoom in on. When you release the
-mouse button, the image is re-drawn to display the specified area.</li>
-<li>Zoom out is active only when you have zoomed into the field of view. Click any
-point within the current image window to zoom out to the previous zoom level; that is, each
-zoom out undoes the previous zoom in.
+<li><b>File</b>
+<ul>
+<li><i>Save</i>: You can save the figure window to a file (currently,
+Postscript (.PS), PNGs and PDFs are supported). Note that this will save the entire
+contents of the window, not just the individual subplot(s) or images.</li>
 </ul>
-"""
 
-SHOW_MEASURE_LENGTH_HELP = """
-Select this option to measure distances within an image window. 
+<li><b>Tools</b>
+<ul>
+<li><i>Measure length: </i> Select this option to measure distances within an image window. 
 If you click on an image and drag, a line will appear 
 between the two endpoints, and the distance between them shown at the right-most
 portion of the bottom panel. This is useful for measuring distances in order to obtain
-estimates of typical object diameters for use in <b>IdentifyPrimaryObjects</b>.
+estimates of typical object diameters for use in <b>IdentifyPrimaryObjects</b>.</li>
+</ul>
+
+<li><b>Subplots:</b> If the module display window has multiple subplots (such as 
+<b>IdentifyPrimaryObjects</b>), the Image Tool options for the individual subplots 
+are displayed here. See <i>Help > Image Tools</i> for more details.
+</li>
+</ul>
 """
 
-IMAGE_TOOLS_HELP = """
+MODULE_DISPLAY_INTERACTIVE_NAVIGATION_HELP = """
+All figure windows come with a navigation toolbar, which can be used to navigate through the data set.
+<ul>
+<li><b>Home, Forward, Back buttons:</b>
+<i>Home</i> <img src="%(LOCATION_WINDOW_HOME_BUTTON)s"></img> always takes you to 
+the initial, default view of your data. The <i>Forward</i> <img src="%(LOCATION_WINDOW_FORWARD_BUTTON)s"></img>
+and <i>Back</i> <img src="%(LOCATION_WINDOW_BACK_BUTTON)s"></img> buttons are akin 
+to the web browser forward and back buttons in that they are used to navigate back 
+and forth between previously defined views, one step at a time. They will not be 
+enabled unless you have already navigated within an image else using 
+the <b>Pan</b> and <b>Zoom</b> buttons, which are used to define new views. </li>
+
+<li><b>Pan/Zoom button:</b>
+This button has two modes: pan and zoom. Click the toolbar button 
+<img src="%(LOCATION_WINDOW_PAN_BUTTON)s"></img> to activate panning 
+and zooming, then put your mouse somewhere over an axes, where it will turn into a hand
+icon. 
+<ul>
+<li><i>Pan:</i> Press the left mouse button and hold it to pan the figure, dragging it to a new 
+position. Press Ctrl+Shift with the pan tool to move in one axis only, which one you
+have moved farther on.<br>
+Keep in mind that that this button will allow you pan outside the bounds of
+the image; if you get lost, you can always use the <b>Home</b> to back you back to the
+initial view.</li>
+<li><i>Zoom:</i> You can zoom in and out of a plot by pressing Ctrl (Mac)
+or holding down the right mouse button (Windows) while panning. <br>
+Once you're done, the right click menu will pop up when you're done with the action; dismiss it by 
+clicking off the plot. This is a known bug to be corrected in the next release.</li>
+</ul>
+</li>
+
+<li><b>Zoom-to-rectangle button:</b> Click this toolbar button <img src="%(LOCATION_WINDOW_ZOOMTORECT_BUTTON)s"></img> 
+to activate this mode. To zoom in, press the left mouse button and drag in the window 
+to draw a box around the area you want to zoom in on. When you release the mouse button, 
+the image is re-drawn to display the specified area. Remember that you can always use 
+<i>Backward</i> button to go back to the previous zoom level, or use the <i>Home</i> 
+button to reset the window to the initial view.</li>
+
+<li><b>Save:</b> Click this button <img src="%(LOCATION_WINDOW_SAVE_BUTTON)s"></img>to launch a file save dialog. You can save the 
+figure window to a file (currently, Postscript (.PS), PNGs and PDFs are supported). 
+Note that this will save the entire contents of the window, not just the individual 
+subplot(s) or images.</li>
+</ul>
+"""%globals()
+
+MODULE_DISPLAY_IMAGE_TOOLS_HELP = """
 Right-clicking in an image displayed in a window will bring up a pop-up menu with
 the following options:
 <ul>
@@ -904,10 +957,9 @@ green, and blue color channels.</li>
 """
 
 FIGURE_HELP = (
-    ("File Save", SAVE_HELP),
-    ("Zoom", ZOOM_HELP ),
-    ("Measure Length Tool", SHOW_MEASURE_LENGTH_HELP),
-    ("Image Tools",IMAGE_TOOLS_HELP))
+    ("Using The Display Window Menu Bar", MODULE_DISPLAY_MENU_BAR_HELP ),
+    ("Using The Interactive Navigation Toolbar", MODULE_DISPLAY_INTERACTIVE_NAVIGATION_HELP),
+    ("How To Use The Image Tools",MODULE_DISPLAY_IMAGE_TOOLS_HELP))
 
 ###################################################
 #
@@ -932,7 +984,8 @@ window background color of the CellProfiler main window."""
 CHECK_FOR_UPDATES_HELP = """The <i>Check for Updates</i> preference controls how
 CellProfiler looks for updates on startup."""
 
-SHOW_STARTUP_BLURB_HELP = """The <i>Display welcome text on startup</i> preference controls whether CellProfiler displays an orientation message on startup."""
+SHOW_STARTUP_BLURB_HELP = """The <i>Display welcome text on startup</i> preference 
+controls whether CellProfiler displays an orientation message on startup."""
 
 PRIMARY_OUTLINE_COLOR_HELP = """The <i>Primary Outline Color</i> preference
 sets the color used for the outline of the object of interest in the
@@ -954,9 +1007,7 @@ preference determines whether CellProfiler will display a warning on startup
 if CellProfiler can't locate the Java installation on your computer. Check
 this box if you want to be warned. Uncheck this box to hide warnings."""
 
-PREFERENCES_HELP = (
-    ( "Default Input Folder", DEFAULT_IMAGE_FOLDER_HELP),
-    ( "Default Output Folder", DEFAULT_OUTPUT_FOLDER_HELP),
+EACH_PREFERENCE_HELP = (
     ( "Title font", TITLE_FONT_HELP ),
     ( "Table font", TABLE_FONT_HELP ),
     ( "Default colormap", DEFAULT_COLORMAP_HELP ),
@@ -964,9 +1015,14 @@ PREFERENCES_HELP = (
     ( "Check for updates", CHECK_FOR_UPDATES_HELP ),
     ( "Primary outline color", PRIMARY_OUTLINE_COLOR_HELP),
     ( "Secondary outline color", SECONDARY_OUTLINE_COLOR_HELP),
-    ( "Tertiary outline color", TERTIARY_OUTLINE_COLOR_HELP)
+    ( "Tertiary outline color", TERTIARY_OUTLINE_COLOR_HELP),
+    ( "Warn if Java runtime not present", REPORT_JVM_ERROR_HELP)
     )
-
+PREFERENCES_HELP = """The Preferences allow you to change many options in CellProfiler
+<ul>"""
+for key, value in enumerate(EACH_PREFERENCE_HELP):
+    PREFERENCES_HELP += """<li><b>""" + value[0] + """:</b>""" + value[1] + """</li>"""
+PREFERENCES_HELP += """</ul>"""
 #########################################################
 #
 # Misc. help
@@ -985,9 +1041,9 @@ HELP_ON_MODULE_BUT_NONE_SELECTED = (
 # The top-level of help - used when building the HTML manual
 #
 #########################################################
-HELP = ( ("User guide", MAIN_HELP ), 
-         ("Module figures", FIGURE_HELP ),
-         ("Preferences", PREFERENCES_HELP))
+HELP = ( ("Introduction to using CellProfiler", MAIN_HELP ), 
+         ("How to use the Module Display Windows", FIGURE_HELP ),
+         ("Setting the Preferences", PREFERENCES_HELP))
 
 def make_help_menu(h, window):
     import wx

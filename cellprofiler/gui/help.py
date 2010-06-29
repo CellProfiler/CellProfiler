@@ -417,8 +417,6 @@ image, preview the results, and adjust the module settings on the fly. See
 
 
 USING_METADATA_HELP = """
-<h2>Using Metadata in CellProfiler</h2>
-
 Metadata (i.e., additional data about image data) is sometimes available for input images.
 This information can be:
 <ol>
@@ -512,8 +510,6 @@ information on how to use them in the context of the specific module.</p>
 """
 
 MEMORY_AND_SPEED_HELP = """
-<h2>Help for memory and speed issues in CellProfiler</h2>
-
 <p>CellProfiler includes several options for dealing with out-of-memory
 errors associated with image analysis: </p>
 <ul>
@@ -554,8 +550,6 @@ module to eliminate such objects.</p></li>
 """%globals()
 
 TEST_MODE_HELP = """ 
-<h2>Test mode for pipeline development</h2>
-
 <p>You can test an analysis on a selected image cycle using the <i>Test</i> mode option on 
 the main menu. Test mode allows you to run the pipeline on a selected
 image, preview the results and adjust the module settings on the fly.</p>
@@ -611,8 +605,6 @@ code, so any changes to the code will be reflected immediately.</li>
 """%globals()
 
 BATCHPROCESSING_HELP = """ 
-<h2>Batch processing in CellProfiler</h2>
-
 CellProfiler is designed to analyze images in a high-throughput manner.   
 Once a pipeline has been established for a set of images, CellProfiler    
 can export batches of images to be analyzed on a computing cluster with the         
@@ -740,6 +732,79 @@ click the remove button to remove a pipeline from the list</li></ul>
 CellProfiler will run all of the pipelines on the list when you hit the
 "OK" button."""
 
+
+MEASUREMENT_NOMENCLATURE_HELP = """
+In CellProfiler, measurements are exported as well as stored internally using the 
+following general nomenclature:
+<code><i>MeasurementType_Category_SpecificFeatureName_Parameters</i></code>
+
+<p>Below is the description for each of the terms:
+<ul>
+<li><code>MeasurementType</code>: The type of data contained in the measurement, which can be
+one of three forms:
+<ul>
+<li><i>Per-image:</i> These measurements are image-based (e.g., thresholds, counts) and 
+are specified with the name "Image" or with the measurement (e.g.,
+"Mean") for per-object measurements aggregated over an image.</li>
+<li><i>Per-object:</i> These measurements are per-object and are specified as the name given 
+by the user to the identified objects (e.g., "Nuclei" or "Cells")</li>
+<li><i>Experiment:</i> These measurements are produced for a particular measurement 
+across the entire analysis run (e.g., Z'-factors), and are specified with the 
+name "Experiment". See <b>CalculateStatistics</b> for an example.
+</ul></li>
+
+<li><code>Category:</code> Typically, this information is specified in one of two ways
+<ul>
+<li>A descriptive name indicative of the type of measurement taken (e.g., "Intensity")</li>
+<li>No name if there is no appropriate <code>Category</code> (e.g., if the <i>SpecificFeatureName</i> is
+"Count", no <code>Category</code> is specfied).</li>
+</ul></li>
+
+<li><code>SpecificFeatureName:</code> The specific feature recorded by a module (e.g., 
+"Perimeter"). Usually the module recording the measurement assigns this name, but 
+a few modules allow the user to type in the name of the feature (e.g., the 
+<b>CalculateMath</b> module allows the user to name the arithmetic measurement).</li>
+
+<li><code>Parameters:</code> This specifier is to distinguish measurements 
+obtained from the same objects but in different ways. For example, 
+<b>MeasureObjectIntensity</b> can measure intensities for "Nuclei" in two different 
+images. This specifier is used primarily for data obtained from an individual image 
+channel specified by a <b>Load</b> module (e.g.,  "OrigBlue" and "OrigGreen") or a
+particular spatial scale (e.g., under the category "Texture" or "Neighbors"). Multiple 
+parameters are separated by underscores.
+
+<p>Below are additional details specific to various modules:
+<ul>
+<li>Measurements from the <i>AreaShape</i> and <i>Math</i> categories do not have a 
+<code>Parameter</code> specifier.</li>
+<li>Measurements from <i>Intensity</i>, <i>Granularity</i>, <i>Children</i>, 
+<i>RadialDistribution</i>, <i>Parent</i> and
+<i>AreaOccupied</i> categories will have an associated image as the Parameter.</li>
+<li><i>Measurements from the <i>Neighbors</i> and <i>Texture</i> category will have a
+spatial scale <code>Parameter</code>.</li>
+<li>Measurements from the <i>Texture</i> and <i>RadialDistribution</i> categories will
+have both a spatial scale and an image <code>Parameter</code>.</li>
+</ul>
+</li>
+</ul>
+
+<p>As an example, consider a measurement specified as <code>Nuclei_Texture_DifferenceVariance_ER_3</code>:
+<ul>
+<li><code>MeasurementType</code> is "Nuclei," the name given to the detected objects by the user.</li>
+<li><code>Category</code> is "Texture," indicating that the module <b>MeasureTexture</b> 
+produced the measurements.</li>
+<li><code>SpecificFeatureName</code> is "DifferenceVariance," which is one of the many 
+texture measurements made by the <b>MeasureTexture</b> module.
+<li>There are two <code>Parameters</code>, the first of which is "ER". "ER" is the user-provided 
+name of the image in which this texture measurement was made.</li>
+<li>The second <code>Parameter</code> is "3", which is the spatial scale at which this texture 
+measurement was made.</li>
+</ul>
+
+<p>See also the <i>Available measurements</i> heading under the main help for many
+of the modules, as well as <b>ExportToSpreadsheet</b> and <b>ExportToDatabase</b> modules.
+"""
+
 MENU_BAR_FILE_HELP = """
 The <i>File</i> menu provides options for loading and saving your pipelines and 
 performing an analysis run.
@@ -821,10 +886,11 @@ MAIN_HELP = (
         ("How To Build A Pipeline", BUILDING_A_PIPELINE_HELP) ) ),
     ( "General Help", (
         ("Using Metadata In CellProfiler",USING_METADATA_HELP),
-        ("Memory And Speed", MEMORY_AND_SPEED_HELP),
-        ("Test Mode",TEST_MODE_HELP),
-        ("Batch Processing", BATCHPROCESSING_HELP),
-        ("Running Multiple Pipelines", RUN_MULTIPLE_PIPELINES_HELP) ) ),
+        ("Dealing With Memory And Speed Issues", MEMORY_AND_SPEED_HELP),
+        ("Using Test Mode For Pipeline Development",TEST_MODE_HELP),
+        ("Batch Processing In CellProfiler", BATCHPROCESSING_HELP),
+        ("Running Multiple Pipelines", RUN_MULTIPLE_PIPELINES_HELP),
+        ("How Measurements Are Named", MEASUREMENT_NOMENCLATURE_HELP)) ),
     ( "Folders and Files", (
         ("Setting The Default Input Folder", DEFAULT_IMAGE_FOLDER_HELP),
         ("Setting The Default Output Folder", DEFAULT_OUTPUT_FOLDER_HELP),
@@ -836,7 +902,12 @@ MAIN_HELP = (
         ("Window Menu Items",MENU_BAR_WINDOW_HELP) ) )
 )
 
-'''A couple of strings for generic insertion into module help'''
+
+####################################################
+#
+# Module help specifics for repeated use
+#
+####################################################
 USING_METADATA_HELP_REF = ''' 
 Please see <b>LoadImages</b>, <b>LoadData</b>, or <i>Help > General help > Using metadata in CellProfiler</i> 
 for more details on obtaining, extracting, and using metadata tags from your images'''

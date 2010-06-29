@@ -28,8 +28,13 @@ Here's an example table of the files that would be generated:<br><br><tt>
 <tr><td>1M_NaCl</td><td>40uM_DMSO</td><td>1M_NaCl/40uM_DMSO.csv</td></tr>
 <tr><td>2M_NaCl</td><td>20uM_DMSO</td><td>2M_NaCl/20uM_DMSO.csv</td></tr>
 <tr><td>2M_NaCl</td><td>40uM_DMSO</td><td>2M_NaCl/40uM_DMSO.csv</td></tr>\
-
 </table></tt>
+
+<h4>Available measurements</h4>
+For details on the nomenclature used by CellProfiler for the exported measurements,
+see <i>Help > General Help > How Measurements Are Named</i>.
+
+See also <b>ExportToDatabase</b>.
 '''
 # CellProfiler is distributed under the GNU General Public License.
 # See the accompanying file LICENSE for details.

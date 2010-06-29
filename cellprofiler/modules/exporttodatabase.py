@@ -43,6 +43,10 @@ The commands written by CellProfiler to create the Per_Well table will be execut
 Oracle is not fully supported at present; you can create your own Oracle DB using
 the .csv output option and writing a simple script to upload to the database.
 
+<h4>Available measurements</h4>
+For details on the nomenclature used by CellProfiler for the exported measurements,
+see <i>Help > General Help > How Measurements Are Named</i>.
+
 See also <b>ExportToSpreadsheet</b>.
 
 '''

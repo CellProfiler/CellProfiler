@@ -17,7 +17,7 @@ can be exported as the "Experiment" set of data.
 
 <ul>
 <li><i>Experiment features:</i> Whereas most CellProfiler measurements are calculated for each object (per-object) 
-or for each image (per-image), theis module produces <i>per-experiment</i> values; 
+or for each image (per-image), this module produces <i>per-experiment</i> values; 
 for example, one Z' factor is calculated for each measurement, across the entire analysis run.
 <ul>
 <li><i>Zfactor:</i> The Z'-factor indicates how well separated the positive and negative controls are.

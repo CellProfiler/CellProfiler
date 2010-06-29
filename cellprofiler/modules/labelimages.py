@@ -58,16 +58,16 @@ class LabelImages(cpm.CPModule):
     
     def create_settings(self):
         self.site_count = cps.Integer(
-            "# sites / well:", 1, minval=1,
+            "Number of image sites per well", 1, minval=1,
             doc = """This setting controls the number of image sets for each well""")
         self.column_count = cps.Integer(
-            "# of columns:", 12, minval=1,
+            "Number of columns per plate", 12, minval=1,
             doc = """The number of columns per plate""")
         self.row_count = cps.Integer(
-            "# of rows:", 8, minval=1,
+            "Number of rows per plate", 8, minval=1,
             doc = """The number of rows per plate""")
         self.order = cps.Choice(
-            "Order:", [O_ROW, O_COLUMN],
+            "Order of image data", [O_ROW, O_COLUMN],
             doc = """This setting controls whether the data is ordered by
             row and then by column or by column and then by row. Choose, 
             "%(O_ROW)s", if data appears by row and then by column. Choose,

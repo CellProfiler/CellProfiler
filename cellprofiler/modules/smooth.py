@@ -217,7 +217,7 @@ class Smooth(cpm.CPModule):
             variable_revision_number == 5):
             if setting_values[2] in ('Remove BrightRoundSpeckles',
                                      'Enhance BrightRoundSpeckles (Tophat Filter)'):
-                raise ValueError('The Smooth module does not support speckles operations. Please use EnhanceOrSuppressSpeckles instead')
+                raise ValueError('The Smooth module does not support speckles operations. Please use EnhanceOrSuppressFeatures with the Speckles feature type instead')
             setting_values = [setting_values[0], # image name
                               setting_values[1], # result name
                               setting_values[2], # smoothing method

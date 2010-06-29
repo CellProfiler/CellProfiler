@@ -154,7 +154,8 @@ spaces or characters disallowed by your computer's platform.</p>
 <p>If the output filename ends in <i>OUT.mat</i> (the typical text appended to 
 an output filename), CellProfiler will prevent you from overwriting this file 
 on a subsequent run by generating a new file name and asking if you want to 
-use it instead.</p>"""
+use it instead. You can override this behavior by checking the <i>Allow 
+overwrite?</i> box to the right.</p>"""
 
 NEW_FEATURES_HELP = """ 
 <h2>New Features in CellProfiler 2.0</h2>

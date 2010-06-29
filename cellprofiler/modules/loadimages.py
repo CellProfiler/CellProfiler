@@ -205,12 +205,6 @@ class LoadImages(cpmodule.CPModule):
         self.match_method = cps.Choice('File selection method', [MS_EXACT_MATCH, MS_REGEXP, MS_ORDER],doc="""
                 Three options are available:
                 <ul>
-                <li><i>Order:</i> Used when image (or movie) files are present in a repeating order,
-                like "DAPI, FITC, Red; DAPI, FITC, Red;" and so on. Images are
-                loaded based on the order of their location on the hard disk, and they are
-                assigned an identity based on how many images are in each group and what position
-                within each group the file is located (e.g., three images per
-                group; DAPI is always first).
                 <li><i>Text-Exact match:</i> Used to load image (or movie) files that have a particular piece of
                 text in the name. The specific text that is entered will be searched for in the filenames and
                 the files that contain that text exactly will be loaded and given the name you specify. 
@@ -276,6 +270,14 @@ class LoadImages(cpmodule.CPModule):
                 <li>^[0-9]*$ matches any string that is a natural number or ''</li>
                 <li>^-[0-9]+$|^\+?[0-9]+$ matches any integer</li>
                 </ul>
+                
+                <li><i>Order:</i> Used when image (or movie) files are present in a repeating order,
+                like "DAPI, FITC, Red; DAPI, FITC, Red;" and so on. Images are
+                loaded based on the order of their location on the hard disk, and they are
+                assigned an identity based on how many images are in each group and what position
+                within each group the file is located (e.g., three images per
+                group; DAPI is always first). <b>This option has not yet been implemented.</b>
+                
                 </ul>""")
         
         self.exclude = cps.Binary('Exclude certain files?', False,doc="""

@@ -342,11 +342,12 @@ class ExportToDatabase(cpm.CPModule):
         
         self.objects_list = cps.ObjectSubscriberMultiChoice(
             "Select the objects", doc = """
-            <i>(Used if Select is chosen for adding objects)</i><br>
+            <i>(Used only if Select is chosen for adding objects)</i><br>
             Choose one or more objects from this list (click using shift or command keys to select multiple objects). The list includes
             the objects that were created by prior modules. If you choose an
             object, its measurements will be written out to the Per_Object and/or
             Per_Well(s) tables, otherwise, the object's measurements will be skipped.""")
+        
         self.max_column_size = cps.Integer(
             "Maximum # of characters in a column name", 64, 
             minval = 10, maxval = 64,
@@ -356,6 +357,7 @@ class ExportToDatabase(cpm.CPModule):
             in all of the columns of a table. <b>ExportToDatabase</b> will
             shorten all of the column names by removing characters, at the
             same time guaranteeing that no two columns have the same name.""")
+        
         self.separate_object_tables = cps.Choice(
             "Create one table per object or a single object table?",
             [OT_COMBINE, OT_PER_OBJECT],
@@ -383,20 +385,28 @@ class ExportToDatabase(cpm.CPModule):
             <i>%(OT_COMBINE)s</i> if parent objects have a single child,
             or if you want a simple table structure in your database.</li>
             </ul>""" % globals())
+        
         self.want_image_thumbnails = cps.Binary(
             "Write image thumbnails directly to the database?", False, doc = """
+            <i>(Used only if MySQL is selected as database type)</i><br>
             Check this option if you'd like to write image thumbnails directly
             into the database. This will slow down the writing step, but will
             enable new functionality in CellProfiler Analyst such as quickly
             viewing images in the Plate Viewer tool by selecting "thumbnail"
             from the "Well display" dropdown.""")
+        
         self.thumbnail_image_names = cps.ImageNameSubscriberMultiChoice(
             "Select the images you want to save thumbnails of",
-            doc = """Select the images that you wish to save as thumbnails to 
+            doc = """
+            <i>(Used only if MySQL is selected as database type and writing thumbnails is selected)</i><br>
+            Select the images that you wish to save as thumbnails to 
             the database.""")
+        
         self.auto_scale_thumbnail_intensities = cps.Binary(
             "Auto-scale thumbnail pixel intensities?", True,
-            doc = """Check this option if you'd like to automatically rescale 
+            doc = """
+            <i>(Used only if MySQL is selected as database type and writing thumbnails is selected)</i><br>
+            Check this option if you'd like to automatically rescale 
             the thumbnail pixel intensities to the range 0-1, where 0 is 
             black/unsaturated, and 1 is white/saturated.""")
                                                 

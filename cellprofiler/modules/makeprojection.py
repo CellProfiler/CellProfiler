@@ -135,8 +135,10 @@ class MakeProjection(cpm.CPModule):
             provided_attributes={cps.AGGREGATE_IMAGE_ATTRIBUTE: True,
                                  cps.AVAILABLE_ON_LAST_ATTRIBUTE: True } )
         self.frequency = cps.Float(
-            "Frequency:", 6.0, minval=1.0,
-            doc = """This setting controls the frequency at which the power
+            "Frequency", 6.0, minval=1.0,
+            doc = """
+            <i>(Used only if Frequency is selected as the projection method)</i><br>
+            This setting controls the frequency at which the power
             is measured. A frequency of 2 will respond most strongly to
             pixels that alternate between dark and light in successive
             z-stack slices. A frequency of N will respond most strongly

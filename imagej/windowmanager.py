@@ -72,6 +72,8 @@ def close_all_windows():
     then call the Window Manager's closeAllWindows to get the rest.
     '''
     jimage_list = J.static_call('ij/WindowManager', 'getIDList', '()[I')
+    if jimage_list is None:
+        return
     image_list = J.get_env().get_int_array_elements(jimage_list)
     for image_id in image_list:
         ip = J.static_call('ij/WindowManager', 'getImage', 

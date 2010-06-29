@@ -71,6 +71,7 @@ LOCATION_DISPLAYMODE_HIDE_ICON = os.path.join(path,'IMG_CLOSED_EYE.png')
 
 LOCATION_SETTINGS_OK_ICON = os.path.join(path,'IMG_OK.png')
 LOCATION_SETTINGS_ERROR_ICON = os.path.join(path,'IMG_ERROR.png')
+LOCATION_SETTINGS_WARNING_ICON = os.path.join(path,'IMG_WARN.png')
 
 LOCATION_RUNSTATUS_PAUSE_BUTTON = os.path.join(path,'status_pause.png')
 LOCATION_RUNSTATUS_STOP_BUTTON  = os.path.join(path,'status_stop.png')
@@ -378,11 +379,14 @@ settings in the main workspace. To learn more about the settings for each
 module, select the module in the pipeline and click the <i>Help</i> button to the 
 right of each setting, or at the bottom of the pipeline panel
 for the help for all the settings for that module.</p>
-<p>If there is an error with the settings (e.g., a reference to an image that doesn't exist yet), 
+<p>If there is an error with the settings (e.g., a setting refers to an image 
+that doesn't exist yet), 
 a <img src="%(LOCATION_SETTINGS_ERROR_ICON)s"></img>  icon will appear next to the 
-module name. Once the errors have been resolved, a
-<img src="%(LOCATION_SETTINGS_OK_ICON)s"></img>  icon will appear indicating 
-that the module is ready to run.</p>
+module name. If there is a warning (e.g., a special notification attached to a choice of setting), 
+a <img src="%(LOCATION_SETTINGS_WARNING_ICON)s"></img>  icon will appear. Errors
+will cause the pipeline to fail upon running, whereas a warning will not. Once 
+the errors/warnings have been resolved, a <img src="%(LOCATION_SETTINGS_OK_ICON)s">
+</img>  icon will appear indicating that the module is ready to run.</p>
 </li>
 <li><p><i>Set your Default Input Folder, Default Output Folder and output filename.</i><br>
 For more help, click their nearby <i>Help</i> buttons in the main window. </p></li>

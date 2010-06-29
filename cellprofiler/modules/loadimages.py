@@ -1969,8 +1969,8 @@ class LoadImages(cpmodule.CPModule):
             and not is_movie(filename)):
             return None
                                                     
-        if self.text_to_exclude() != cps.DO_NOT_USE and \
-            filename.find(self.text_to_exclude()) >=0:
+        if ((self.text_to_exclude() != cps.DO_NOT_USE) and
+            self.exclude and (filename.find(self.text_to_exclude()) >= 0)):
             return None
         if self.load_choice() == MS_EXACT_MATCH:
             ttfs = self.text_to_find_vars()

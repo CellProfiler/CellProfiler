@@ -45,6 +45,15 @@ import cellprofiler.modules.tests as cpmt
 IMAGE_NAME = 'inputimage'
 FILE_NAME = 'filenm'
 
+from cellprofiler.utilities import jutil
+import bioformats
+jutil.attach()
+env = jutil.get_env()
+klass = env.find_class('loci/formats/FormatTools')
+bioformats_revision = jutil.get_static_field(klass, 'SVN_REVISION', 'Ljava/lang/String;')
+BIOFORMATS_CANT_WRITE = (bioformats_revision == '6181' and sys.platform=='darwin')
+
+
 class TestSaveImages(unittest.TestCase):
     def setUp(self):
         # Change the default image directory to a temporary file
@@ -1272,6 +1281,9 @@ SaveImages:[module_num:6|svn_version:\'9507\'|variable_revision_number:5|show_wi
         return frames
         
     def test_05_01_save_movie(self):
+        if BIOFORMATS_CANT_WRITE:
+            print "WARNING: Skipping test. The current version of bioformats can't be used for writing images on MacOS X."
+            return
         frames = self.run_movie()
         for i, frame in enumerate(frames):
             path = os.path.join(self.custom_directory, FILE_NAME + ".avi")
@@ -1280,6 +1292,9 @@ SaveImages:[module_num:6|svn_version:\'9507\'|variable_revision_number:5|show_wi
             
     def test_05_02_save_two_movies(self):
         '''Use metadata grouping to write two movies'''
+        if BIOFORMATS_CANT_WRITE:
+            print "WARNING: Skipping test. The current version of bioformats can't be used for writing images on MacOS X."
+            return
         grouping = (('Metadata_test',),
                     (({'Metadata_test':"foo"}, [1,2,3,4,5]),
                      ({'Metadata_test':"bar"}, [6,7,8,9])))
@@ -1297,6 +1312,9 @@ SaveImages:[module_num:6|svn_version:\'9507\'|variable_revision_number:5|show_wi
                 self.assertTrue(np.all(np.abs(frame - frame_out) < .05))
                 
     def test_06_01_save_image_with_bioformats(self):
+        if BIOFORMATS_CANT_WRITE:
+            print "WARNING: Skipping test. The current version of bioformats can't be used for writing images on MacOS X."
+            return
         np.random.seed(61)
         image8 = (np.random.uniform(size=(100,100))*255).astype(np.uint8)
         image16 = (np.random.uniform(size=(100,100))*65535).astype(np.uint16)
@@ -1469,5 +1487,3 @@ def make_file(filename, encoded):
     fid.write(data)
     fid.close()
     
-
-        

@@ -87,7 +87,7 @@ from cellprofiler.cpmath.watershed import fast_watershed as watershed
 from cellprofiler.cpmath.outline import outline
 
 M_PROPAGATION = "Propagation"
-M_WATERSHED_G = "Watershed"
+M_WATERSHED_G = "Watershed - Gradient"
 M_WATERSHED_I = "Watershed - Image"
 M_DISTANCE_N = "Distance - N"
 M_DISTANCE_B = "Distance - B"
@@ -95,7 +95,7 @@ M_DISTANCE_B = "Distance - B"
 class IdentifySecondaryObjects(cpmi.Identify):
 
     module_name = "IdentifySecondaryObjects"
-    variable_revision_number = 5
+    variable_revision_number = 6
     category = "Object Processing"
     
     def create_settings(self):
@@ -348,6 +348,12 @@ class IdentifySecondaryObjects(cpmi.Identify):
             # Added measurements to threshold methods
             setting_values = setting_values + ["None"]
             variable_revision_number = 5
+            
+        if (not from_matlab) and variable_revision_number == 5:
+            # Change name of watershed option
+            if setting_values[2] == "Watershed":
+                setting_values[2] = M_WATERSHED_G
+            variable_revision_number = 6
             
         return setting_values, variable_revision_number, from_matlab
 

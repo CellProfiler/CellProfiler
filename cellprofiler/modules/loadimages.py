@@ -506,9 +506,12 @@ class LoadImages(cpmodule.CPModule):
             last folder on the path. This also means that the Date field contains the parent
             folder of the Date folder.</td></tr>
             </table></p>"""))
+        
         group.append("wants_movie_frame_grouping", cps.Binary(
-            "Group movie frames?", False,
-            doc = """<b>LoadImages</b> can load several frames from a movie
+            "Group the movie frames?", False,
+            doc = """
+            <i>(Used only if a movie image format is selected as file type)</i><br>
+            <b>LoadImages</b> can load several frames from a movie
             into different images within the same cycle. For example, a movie's
             first frame might be an image of the red fluorescence channel at
             time zero, the second might be the green channel at time zero,
@@ -522,41 +525,53 @@ class LoadImages(cpmodule.CPModule):
             are grouped (interleaving and number of channels per group), then
             assign image names to each of the channels individually.
             """))
+        
         group.append("interleaving", cps.Choice(
-            "Interleaving:", [I_INTERLEAVED, I_SEPARATED],
-            doc = """Channels in a movie can be interleaved or separated.
-            In an interleaved movie, the first frame is channel 1, the second
-            is channel 2 and so on up to the number of channels per group.
-            In a separated movie, all of the frames for channel 1 appear first,
-            then the frames for channel 2, and so on. For example, an
-            interleaved movie might consist of 6 channels. The channels
-            would look like this:<br>
-            <table border="1">
-            <tr><th>Frame #</th><th>Channel #</th><th>Image set #</th></tr>
+            "Grouping method", [I_INTERLEAVED, I_SEPARATED],
+            doc = """
+            <i>(Used only if a movie image format is selected as file type and movie frame grouping are selected)</i><br>
+            Channels in a movie can be interleaved or separated.
+            <p>In an interleaved movie, the first frame is channel 1, the second
+            is channel 2 and so on up to the number of channels per group for a given
+            image cycle.
+            In a separated movie, all of the frames for channel 1 are processed as the first
+            image cycle, then the frames for channel 2 for the second image cycle, and so on. 
+            
+            <p>For example, a movie may consist of 6 frames and we would like to
+            process the movie as two channels per group. An interleaved movie would be processed like this:
+            <p><table border="1">
+            <tr><th>Frame #</th><th>Channel #</th><th>Image cycle #</th></tr>
             <tr><td>1</td><td>1</td><td>1</td></tr>
             <tr><td>2</td><td>2</td><td>1</td></tr>
             <tr><td>3</td><td>1</td><td>2</td></tr>
             <tr><td>4</td><td>2</td><td>2</td></tr>
             <tr><td>5</td><td>1</td><td>3</td></tr>
             <tr><td>6</td><td>2</td><td>3</td></tr></table><br>
-            For a separated movie, the channels would look like this:<br>
-            <table border="1">
-            <tr><th>Frame #</th><th>Channel #</th><th>Image set #</th></tr>
+            
+            <p>For a separated movie, the channels would be processed like this:<br>
+            <p><table border="1">
+            <tr><th>Frame #</th><th>Channel #</th><th>Image cycle #</th></tr>
             <tr><td>1</td><td>1</td><td>1</td></tr>
-            <tr><td>2</td><td>2</td><td>1</td></tr>
-            <tr><td>3</td><td>1</td><td>2</td></tr>
-            <tr><td>4</td><td>2</td><td>2</td></tr>
-            <tr><td>5</td><td>1</td><td>3</td></tr>
-            <tr><td>6</td><td>2</td><td>3</td></tr></table>"""))
+            <tr><td>2</td><td>1</td><td>2</td></tr>
+            <tr><td>3</td><td>1</td><td>3</td></tr>
+            <tr><td>4</td><td>2</td><td>1</td></tr>
+            <tr><td>5</td><td>2</td><td>2</td></tr>
+            <tr><td>6</td><td>2</td><td>3</td></tr></table>
+            
+            <p>Note the difference in which frames are processed in which image cycle
+            between the two methods."""))
+        
         group.append("channels_per_group", cps.Integer(
-            "Channels per group:", 3, minval=2,
+            "Number of channels per group", 3, minval=2,
             reset_view=True,
-            doc = """This setting controls the number of frames to be
+            doc = """
+            <i>(Used only if a movie image format is selected as file type and movie frame grouping is selected)</i><br>
+            This setting controls the number of frames to be
             grouped together. As an example, for an interleaved movie with
             12 frames and three channels per group, the first, fourth,
             seventh and tenth frame will be assigned to channel 1, the
-            second, fifth, eighth and eleventh frame will be assigned to
-            channel 2 and the third, sixth, ninth, and twelfth will be
+            2<sup>nd</sup>, 5,<sup>th</sup> 8<sup>th</sup> and 11<sup>th</sup> frame will be assigned to
+            channel 2 and the 3<sup>rd</sup>, 6<sup>th</sup>, 9<sup>th</sup>, and 12<sup>th</sup> will be
             assigned to channel 3. For a separated movie, frames 1 through 4
             will be assigned to channel 1, 5 through 8 to channel 2 and
             9 through 12 to channel 3."""))

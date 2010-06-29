@@ -120,9 +120,12 @@ class EditObjectsManually(I.Identify):
             doc = """Check this setting to display an image and outlines
             of the objects. Leave the setting unchecked if you do not
             want a guide image while editing""")
+        
         self.image_name = cps.ImageNameSubscriber(
-            "Image name:", "None",
-            doc = """This is the image that will appear when editing objects.
+            "Select the guiding image", "None",
+            doc = """
+            <i>(Used only if a guiding image is desired)</i><br>
+            This is the image that will appear when editing objects.
             Choose an image supplied by a previous module.""")
     
     def settings(self):

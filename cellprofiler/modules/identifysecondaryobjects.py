@@ -80,6 +80,7 @@ import cellprofiler.workspace as cpw
 import cellprofiler.settings as cps
 import identify as cpmi
 import cellprofiler.cpmath.threshold as cpthresh
+import cellprofiler.cpmath.otsu
 from cellprofiler.cpmath.propagate import propagate
 from cellprofiler.cpmath.cpmorphology import fill_labeled_holes
 from cellprofiler.cpmath.cpmorphology import fixup_scipy_ndimage_result as fix
@@ -95,7 +96,7 @@ M_DISTANCE_B = "Distance - B"
 class IdentifySecondaryObjects(cpmi.Identify):
 
     module_name = "IdentifySecondaryObjects"
-    variable_revision_number = 6
+    variable_revision_number = 7
     category = "Object Processing"
     
     def create_settings(self):
@@ -205,6 +206,10 @@ class IdentifySecondaryObjects(cpmi.Identify):
             as "unedited objects"; this allows them to be considered in downstream modules that modify the
             segmentation.""")
         
+        self.fill_holes = cps.Binary(
+            "Fill holes in identified objects?", True,
+            doc = """Check this box to fill any holes inside objects.""")
+        
         self.wants_discard_primary = cps.Binary(
             "Discard the associated primary objects?",
             False,
@@ -253,7 +258,8 @@ class IdentifySecondaryObjects(cpmi.Identify):
                  self.assign_middle_to_foreground,
                  self.wants_discard_edge, self.wants_discard_primary,
                  self.new_primary_objects_name, self.wants_primary_outlines,
-                 self.new_primary_outlines_name,self.thresholding_measurement]
+                 self.new_primary_outlines_name, self.thresholding_measurement,
+                 self.fill_holes]
     
     def visible_settings(self):
         result = [self.image_name, self.primary_objects, self.objects_name,  
@@ -264,7 +270,7 @@ class IdentifySecondaryObjects(cpmi.Identify):
             result.append(self.distance_to_dilate)
         elif self.method == M_PROPAGATION:
             result.append(self.regularization_factor)
-        result.append(self.wants_discard_edge)
+        result += [self.fill_holes, self.wants_discard_edge]
         if self.wants_discard_edge:
             result.append(self.wants_discard_primary)
             if self.wants_discard_primary:
@@ -355,6 +361,14 @@ class IdentifySecondaryObjects(cpmi.Identify):
                 setting_values[2] = M_WATERSHED_G
             variable_revision_number = 6
             
+        if (not from_matlab) and variable_revision_number == 6:
+            # Fill labeled holes added
+            fill_holes = (cps.NO 
+                          if setting_values[2] in (M_DISTANCE_B, M_DISTANCE_N) 
+                          else cps.YES)
+            setting_values = setting_values + [fill_holes]
+            variable_revision_number = 7
+            
         return setting_values, variable_revision_number, from_matlab
 
     def run(self, workspace):
@@ -370,9 +384,9 @@ class IdentifySecondaryObjects(cpmi.Identify):
         elif self.threshold_method == cpthresh.TM_BINARY_IMAGE:
             binary_image = workspace.image_set.get_image(self.binary_image.value,
                                                          must_be_binary = True)
-            local_threshold = numpy.ones(img.shape)
-            local_threshold[binary_image.pixel_data] = 0
-            global_threshold = otsu(img[mask],
+            local_threshold = np.ones(img.shape) * np.max(img) + np.finfo(float).eps
+            local_threshold[binary_image.pixel_data] = np.min(img) - np.finfo(float).eps
+            global_threshold = cellprofiler.cpmath.otsu.otsu(img[mask],
                         self.threshold_range.min,
                         self.threshold_range.max)
             has_threshold = True
@@ -422,18 +436,25 @@ class IdentifySecondaryObjects(cpmi.Identify):
                                                   1.0)
                 labels_out[distances>self.distance_to_dilate.value] = 0
                 labels_out[labels_in > 0] = labels_in[labels_in>0] 
+            if self.fill_holes:
+                small_removed_segmented_out = fill_labeled_holes(labels_out)
+            else:
+                small_removed_segmented_out = labels_out
             #
             # Create the final output labels by removing labels in the
             # output matrix that are missing from the segmented image
             # 
             segmented_labels = objects.segmented
-            small_removed_segmented_out = labels_out
-            segmented_out = self.filter_labels(labels_out, objects, workspace)
+            segmented_out = self.filter_labels(small_removed_segmented_out,
+                                               objects, workspace)
         elif self.method == M_PROPAGATION:
             labels_out, distance = propagate(img, labels_in, 
                                              thresholded_image,
                                              self.regularization_factor.value)
-            small_removed_segmented_out = fill_labeled_holes(labels_out)
+            if self.fill_holes:
+                small_removed_segmented_out = fill_labeled_holes(labels_out)
+            else:
+                small_removed_segmented_out = labels_out.copy()
             segmented_out = self.filter_labels(small_removed_segmented_out,
                                                objects, workspace)
         elif self.method == M_WATERSHED_G:
@@ -454,7 +475,10 @@ class IdentifySecondaryObjects(cpmi.Identify):
                                    labels_in,
                                    np.ones((3,3),bool),
                                    mask=watershed_mask)
-            small_removed_segmented_out = fill_labeled_holes(labels_out)
+            if self.fill_holes:
+                small_removed_segmented_out = fill_labeled_holes(labels_out)
+            else:
+                small_removed_segmented_out = labels_out.copy()
             segmented_out = self.filter_labels(small_removed_segmented_out,
                                                objects, workspace)
         elif self.method == M_WATERSHED_I:
@@ -475,7 +499,10 @@ class IdentifySecondaryObjects(cpmi.Identify):
                                    labels_in,
                                    np.ones((3,3),bool),
                                    mask=watershed_mask)
-            small_removed_segmented_out = fill_labeled_holes(labels_out)
+            if self.fill_holes:
+                small_removed_segmented_out = fill_labeled_holes(labels_out)
+            else:
+                small_removed_segmented_out = labels_out
             segmented_out = self.filter_labels(small_removed_segmented_out,
                                                 objects, workspace)
 

@@ -380,7 +380,7 @@ class DirectoryPath(Text):
                 regexp_substitution = regexp_substitution)
         
     def test_valid(self, pipeline):
-        if self.dir_choice not in self.DIR_ALL:
+        if self.dir_choice not in self.DIR_ALL + [NO_FOLDER_NAME]:
             raise ValidationError("Unsupported directory choice: %s" %
                                   self.dir_choice, self)
         if (not self.allow_metadata and self.is_custom_choice and

@@ -31,6 +31,12 @@ import cellprofiler.cpimage as cpi
 import cellprofiler.objects as cpo
 import cellprofiler.measurements as cpm
 
+INPUT_OBJECTS_NAME = "input_objects"
+OUTPUT_OBJECTS_NAME = "output_objects"
+NEW_OBJECTS_NAME = "new_objects"
+IMAGE_NAME = "image"
+THRESHOLD_IMAGE_NAME = "threshold"
+
 class TestIdentifySecondaryObjects(unittest.TestCase):
     def test_01_01_load_matlab(self):
         u64data = 'TUFUTEFCIDUuMCBNQVQtZmlsZSwgUGxhdGZvcm06IFBDV0lOLCBDcmVhdGVkIG9uOiBUaHUgRmViIDE5IDE1OjQyOjQyIDIwMDkgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAABSU0PAAAAyAIAAHic7VjLjtMwFHWfGqAalRmBYFZZshiGRIDEkqegErQVHY3E0k3cYOTEVeIMLV/DZ7BgMWu+iQVOm7SuJ2ncJM1ssGRF1/U5vvf4+sbpIQBAvw9Amz8PeK+DZWtFdk3ooT1CjGHX9lugCR5E41e8X0APwzFBF5AEyAerFo/33Ak9n09XP32iVkBQHzriZN76gTNGnj+YxMDo5yGeITLCPxDYbPG0z+gS+5i6ET7il0dX61ImrXvI+8/OWoeapEOD92NhPJz/EqznNxN06wrzu1E/RzP2+N0MmkxzIDO/hjwvMngOJJ7QHnjYfs2lVsG3JXx7obNJEF7GoWfg6xv4OvhuLHFF183CtyR8aL9BhPhADV9Ut6T1Df30mQ7U9v+OhA/toUen0IaMJ+ViXIXntsQT2m+p5lKmBX50IFT2sbHB0wBf+BkoQ8eq/JfzsE/z78OA+YH2ntAxJKv1q4ojbR+ycLUNXA0YJftdlo67xq+fGpXqn6ZjFq65gWsC/Uw3bjJvYt12PTeGnk+npwV1yoF7XmV+35J4QrvnMuT6mM2BOo+qPx8yeO5KPKGNXQtfYiuARMMOtFe3mDLjy1uH91W/k/x+FTDKL1DYFPxW9V/O67MC+m3zIw+f7cG5b0KCBJ6875Oi+Cz/VfNc1Y+8+VG2H7Ie7hNYyj4U1SHGX7W2f6eIdWOXfEzScVFkbI8GU3WepHsCHX9DJlsTiX7lqYMCn8ZrIprukS8r3qTvvLVuS7q0/W9LfHGL+eoCTn5m+VXWft5UfHl5/sdTTTxpz6zzdyT5G9o0YAS76NoB3GXdfT33FU+3ll7H5fdJ3vP+kUKrJ1wUVeK5J/GEds9CLsOT+dDDjnjnyVtvY74RMqlrQS/t/innp6xLnVtHx53SvvtU1mt1Gtf+N8nCNaM5f09+n/x5uFz3F9ht/x9tmR+3qub/A5FILLM='
@@ -195,6 +201,71 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'9194\'|variable_revision_nu
         self.assertEqual(module.new_primary_objects_name, "FilteredPrimary")
         self.assertTrue(module.wants_primary_outlines)
         self.assertEqual(module.new_primary_outlines_name, "FilteredPrimaryOutlines")
+        self.assertTrue(module.fill_holes)
+        
+    def test_01_07_load_v7(self):
+        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:1
+SVNRevision:10231
+
+IdentifySecondaryObjects:[module_num:1|svn_version:\'10220\'|variable_revision_number:7|show_window:True|notes:\x5B\x5D]
+    Select the input objects:Nuclei
+    Name the objects to be identified:PropCells
+    Select the method to identify the secondary objects:Propagation
+    Select the input image:CorrGreen
+    Select the thresholding method:Otsu Global
+    Threshold correction factor:1
+    Lower and upper bounds on threshold:0.02,1
+    Approximate fraction of image covered by objects?:15%
+    Number of pixels by which to expand the primary objects:12
+    Regularization factor:0.05
+    Name the outline image:MyOutline
+    Manual threshold:0
+    Select binary image:MyMask
+    Retain outlines of the identified secondary objects?:No
+    Two-class or three-class thresholding?:Two classes
+    Minimize the weighted variance or the entropy?:Weighted variance
+    Assign pixels in the middle intensity class to the foreground or the background?:Foreground
+    Discard secondary objects that touch the edge of the image?:No
+    Discard the associated primary objects?:No
+    Name the new primary objects:FilteredNuclei
+    Retain outlines of the new primary objects?:No
+    Name the new primary object outlines:FilteredNucleiOutlines
+    Select the measurement to threshold with:None
+    Fill holes in identified objects?:No
+"""
+        pipeline = cpp.Pipeline()
+        def callback(caller,event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO.StringIO(data))
+        self.assertEqual(len(pipeline.modules()), 1)
+        module = pipeline.modules()[0]
+        self.assertTrue(isinstance(module, cpmi2.IdentifySecondary))
+        self.assertEqual(module.primary_objects, "Nuclei")
+        self.assertEqual(module.objects_name, "PropCells")
+        self.assertEqual(module.method, cpmi2.M_PROPAGATION)
+        self.assertEqual(module.image_name, "CorrGreen")
+        self.assertEqual(module.threshold_method, cpmi2.cpthresh.TM_OTSU_GLOBAL)
+        self.assertAlmostEqual(module.threshold_correction_factor.value, 1)
+        self.assertAlmostEqual(module.threshold_range.min, 0.02)
+        self.assertAlmostEqual(module.threshold_range.max, 1)
+        self.assertEqual(module.object_fraction, "15%")
+        self.assertEqual(module.distance_to_dilate, 12)
+        self.assertAlmostEqual(module.regularization_factor.value, 0.05)
+        self.assertEqual(module.outlines_name, "MyOutline")
+        self.assertAlmostEqual(module.manual_threshold.value, 0)
+        self.assertEqual(module.binary_image, "MyMask")
+        self.assertFalse(module.use_outlines)
+        self.assertEqual(module.two_class_otsu, cpmi.O_TWO_CLASS)
+        self.assertEqual(module.use_weighted_variance, cpmi.O_WEIGHTED_VARIANCE)
+        self.assertEqual(module.assign_middle_to_foreground, cpmi.O_FOREGROUND)
+        self.assertFalse(module.wants_discard_edge)
+        self.assertFalse(module.wants_discard_primary)
+        self.assertEqual(module.new_primary_objects_name, "FilteredNuclei")
+        self.assertFalse(module.wants_primary_outlines)
+        self.assertEqual(module.new_primary_outlines_name, "FilteredNucleiOutlines")        
+        self.assertFalse(module.fill_holes)
         
     def make_workspace(self, image, segmented, unedited_segmented = None,
                        small_removed_segmented = None):
@@ -211,14 +282,14 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'9194\'|variable_revision_nu
         if small_removed_segmented is not None:
             objects.small_removed_segmented = small_removed_segmented
         objects.segmented = segmented
-        o_s.add_objects(objects, "primary")
+        o_s.add_objects(objects, INPUT_OBJECTS_NAME)
         i_s = i_l.get_image_set(0)
-        i_s.add("my_image",image)
+        i_s.add(IMAGE_NAME,image)
         m = cpm.Measurements()
         module = cpmi2.IdentifySecondary()
-        module.primary_objects.value="primary"
-        module.objects_name.value="my_objects"
-        module.image_name.value = "my_image"
+        module.primary_objects.value=INPUT_OBJECTS_NAME
+        module.objects_name.value=OUTPUT_OBJECTS_NAME
+        module.image_name.value = IMAGE_NAME
         module.use_outlines.value = False
         module.outlines_name.value = "my_outlines"
         workspace = cpw.Workspace(p,module,i_s,o_s,m,i_l)
@@ -230,14 +301,14 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'9194\'|variable_revision_nu
         module.method = cpmi2.M_PROPAGATION
         module.run(workspace)
         m = workspace.measurements
-        self.assertTrue("my_objects" in m.get_object_names())
+        self.assertTrue(OUTPUT_OBJECTS_NAME in m.get_object_names())
         self.assertTrue("Image" in m.get_object_names())
-        self.assertTrue("Count_my_objects" in m.get_feature_names("Image"))
-        counts = m.get_current_measurement("Image", "Count_my_objects")
+        self.assertTrue("Count_%s" % OUTPUT_OBJECTS_NAME in m.get_feature_names("Image"))
+        counts = m.get_current_measurement("Image", "Count_%s" % OUTPUT_OBJECTS_NAME)
         self.assertEqual(np.product(counts.shape), 1)
         self.assertEqual(counts[0],0)
         columns = module.get_measurement_columns(workspace.pipeline)
-        for object_name in (cpm.IMAGE, "my_objects","primary"):
+        for object_name in (cpm.IMAGE, OUTPUT_OBJECTS_NAME,INPUT_OBJECTS_NAME):
             ocolumns =[x for x in columns if x[0] == object_name]
             features = m.get_feature_names(object_name)
             self.assertEqual(len(ocolumns), len(features))
@@ -253,20 +324,21 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'9194\'|variable_revision_nu
         module.method = cpmi2.M_PROPAGATION
         module.run(workspace)
         m = workspace.measurements
-        self.assertTrue("my_objects" in m.get_object_names())
+        self.assertTrue(OUTPUT_OBJECTS_NAME in m.get_object_names())
         self.assertTrue("Image" in m.get_object_names())
-        self.assertTrue("Count_my_objects" in m.get_feature_names("Image"))
-        objects_out = workspace.object_set.get_objects("my_objects")
-        counts = m.get_current_measurement("Image", "Count_my_objects")
+        self.assertTrue("Count_%s" % OUTPUT_OBJECTS_NAME in m.get_feature_names("Image"))
+        objects_out = workspace.object_set.get_objects(OUTPUT_OBJECTS_NAME)
+        counts = m.get_current_measurement("Image", "Count_%s" % OUTPUT_OBJECTS_NAME)
         self.assertEqual(np.product(counts.shape), 1)
         self.assertEqual(counts[0],1)
         expected = np.zeros((10,10),int)
         expected[2:7,2:7] = 1
         self.assertTrue(np.all(objects_out.segmented==expected))
-        child_counts = m.get_current_measurement("primary","Children_my_objects_Count")
+        child_counts = m.get_current_measurement(INPUT_OBJECTS_NAME, 
+                                                 "Children_%s_Count" % OUTPUT_OBJECTS_NAME)
         self.assertEqual(len(child_counts),1)
         self.assertEqual(child_counts[0],1)
-        parents = m.get_current_measurement("my_objects","Parent_primary")
+        parents = m.get_current_measurement(OUTPUT_OBJECTS_NAME,"Parent_%s" % INPUT_OBJECTS_NAME)
         self.assertEqual(len(parents),1)
         self.assertEqual(parents[0],1)
 
@@ -284,13 +356,13 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'9194\'|variable_revision_nu
         module.manual_threshold.value = .2
         module.run(workspace)
         m = workspace.measurements
-        self.assertTrue("my_objects" in m.get_object_names())
+        self.assertTrue(OUTPUT_OBJECTS_NAME in m.get_object_names())
         self.assertTrue("Image" in m.get_object_names())
-        self.assertTrue("Count_my_objects" in m.get_feature_names("Image"))
-        counts = m.get_current_measurement("Image", "Count_my_objects")
+        self.assertTrue("Count_%s" % OUTPUT_OBJECTS_NAME in m.get_feature_names("Image"))
+        counts = m.get_current_measurement("Image", "Count_%s" % OUTPUT_OBJECTS_NAME)
         self.assertEqual(np.product(counts.shape), 1)
         self.assertEqual(counts[0],2)
-        objects_out = workspace.object_set.get_objects("my_objects")
+        objects_out = workspace.object_set.get_objects(OUTPUT_OBJECTS_NAME)
         expected = np.zeros((10,10),int)
         expected[2:7,2:7] = 1
         expected[2:7,7:17] = 2
@@ -313,27 +385,27 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'9194\'|variable_revision_nu
         objects.unedited_segmented = labels 
         objects.small_removed_segmented = labels
         objects.segmented = labels
-        o_s.add_objects(objects, "primary")
+        o_s.add_objects(objects, INPUT_OBJECTS_NAME)
         i_s = i_l.get_image_set(0)
-        i_s.add("my_image",image)
+        i_s.add(IMAGE_NAME,image)
         m = cpm.Measurements()
         module = cpmi2.IdentifySecondary()
-        module.primary_objects.value="primary"
-        module.objects_name.value="my_objects"
-        module.image_name.value = "my_image"
+        module.primary_objects.value=INPUT_OBJECTS_NAME
+        module.objects_name.value=OUTPUT_OBJECTS_NAME
+        module.image_name.value = IMAGE_NAME
         module.method.value = cpmi2.M_PROPAGATION
         module.regularization_factor.value = 1000 # propagate by distance
         module.threshold_method.value = cpmi.TM_MANUAL
         module.manual_threshold.value = .2
         workspace = cpw.Workspace(p,module,i_s,o_s,m,i_l)
         module.run(workspace)
-        self.assertTrue("my_objects" in m.get_object_names())
+        self.assertTrue(OUTPUT_OBJECTS_NAME in m.get_object_names())
         self.assertTrue("Image" in m.get_object_names())
-        self.assertTrue("Count_my_objects" in m.get_feature_names("Image"))
-        counts = m.get_current_measurement("Image", "Count_my_objects")
+        self.assertTrue("Count_%s" % OUTPUT_OBJECTS_NAME in m.get_feature_names("Image"))
+        counts = m.get_current_measurement("Image", "Count_%s" % OUTPUT_OBJECTS_NAME)
         self.assertEqual(np.product(counts.shape), 1)
         self.assertEqual(counts[0],2)
-        objects_out = o_s.get_objects("my_objects")
+        objects_out = o_s.get_objects(OUTPUT_OBJECTS_NAME)
         expected = np.zeros((10,20),int)
         expected[2:7,2:10] = 1
         expected[2:7,10:17] = 2
@@ -351,20 +423,20 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'9194\'|variable_revision_nu
         module.method = cpmi2.M_PROPAGATION
         module.run(workspace)
         m = workspace.measurements
-        self.assertTrue("my_objects" in m.get_object_names())
+        self.assertTrue(OUTPUT_OBJECTS_NAME in m.get_object_names())
         self.assertTrue("Image" in m.get_object_names())
-        self.assertTrue("Count_my_objects" in m.get_feature_names("Image"))
-        objects_out = workspace.object_set.get_objects("my_objects")
-        counts = m.get_current_measurement("Image", "Count_my_objects")
+        self.assertTrue("Count_%s" % OUTPUT_OBJECTS_NAME in m.get_feature_names("Image"))
+        objects_out = workspace.object_set.get_objects(OUTPUT_OBJECTS_NAME)
+        counts = m.get_current_measurement("Image", "Count_%s" % OUTPUT_OBJECTS_NAME)
         self.assertEqual(np.product(counts.shape), 1)
         self.assertEqual(counts[0],1)
         expected = np.zeros((10,20),int)
         expected[2:7,2:7] = 1
         self.assertTrue(np.all(objects_out.segmented==expected))
-        child_counts = m.get_current_measurement("primary","Children_my_objects_Count")
+        child_counts = m.get_current_measurement(INPUT_OBJECTS_NAME,"Children_%s_Count" % OUTPUT_OBJECTS_NAME)
         self.assertEqual(len(child_counts),1)
         self.assertEqual(child_counts[0],1)
-        parents = m.get_current_measurement("my_objects","Parent_primary")
+        parents = m.get_current_measurement(OUTPUT_OBJECTS_NAME,"Parent_%s" % INPUT_OBJECTS_NAME)
         self.assertEqual(len(parents),1)
         self.assertEqual(parents[0],1)
         
@@ -378,21 +450,21 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'9194\'|variable_revision_nu
         objects.unedited_segmented = np.zeros((10,10),int)
         objects.small_removed_segmented = np.zeros((10,10),int)
         objects.segmented = np.zeros((10,10),int)
-        o_s.add_objects(objects, "primary")
+        o_s.add_objects(objects, INPUT_OBJECTS_NAME)
         i_s = i_l.get_image_set(0)
-        i_s.add("my_image",image)
+        i_s.add(IMAGE_NAME,image)
         m = cpm.Measurements()
         module = cpmi2.IdentifySecondary()
-        module.primary_objects.value="primary"
-        module.objects_name.value="my_objects"
-        module.image_name.value = "my_image"
+        module.primary_objects.value=INPUT_OBJECTS_NAME
+        module.objects_name.value=OUTPUT_OBJECTS_NAME
+        module.image_name.value = IMAGE_NAME
         module.method = cpmi2.M_WATERSHED_G
         workspace = cpw.Workspace(p,module,i_s,o_s,m,i_l)
         module.run(workspace)
-        self.assertTrue("my_objects" in m.get_object_names())
+        self.assertTrue(OUTPUT_OBJECTS_NAME in m.get_object_names())
         self.assertTrue("Image" in m.get_object_names())
-        self.assertTrue("Count_my_objects" in m.get_feature_names("Image"))
-        counts = m.get_current_measurement("Image", "Count_my_objects")
+        self.assertTrue("Count_%s" % OUTPUT_OBJECTS_NAME in m.get_feature_names("Image"))
+        counts = m.get_current_measurement("Image", "Count_%s" % OUTPUT_OBJECTS_NAME)
         self.assertEqual(np.product(counts.shape), 1)
         self.assertEqual(counts[0],0)
     
@@ -409,33 +481,33 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'9194\'|variable_revision_nu
         objects.unedited_segmented = labels 
         objects.small_removed_segmented = labels
         objects.segmented = labels
-        o_s.add_objects(objects, "primary")
+        o_s.add_objects(objects, INPUT_OBJECTS_NAME)
         i_s = i_l.get_image_set(0)
-        i_s.add("my_image",image)
+        i_s.add(IMAGE_NAME,image)
         m = cpm.Measurements()
         module = cpmi2.IdentifySecondary()
-        module.primary_objects.value="primary"
-        module.objects_name.value="my_objects"
-        module.image_name.value = "my_image"
+        module.primary_objects.value=INPUT_OBJECTS_NAME
+        module.objects_name.value=OUTPUT_OBJECTS_NAME
+        module.image_name.value = IMAGE_NAME
         module.method = cpmi2.M_WATERSHED_G
         workspace = cpw.Workspace(p,module,i_s,o_s,m,i_l)
         module.run(workspace)
-        self.assertTrue("my_objects" in m.get_object_names())
+        self.assertTrue(OUTPUT_OBJECTS_NAME in m.get_object_names())
         self.assertTrue("Image" in m.get_object_names())
-        self.assertTrue("Count_my_objects" in m.get_feature_names("Image"))
-        counts = m.get_current_measurement("Image", "Count_my_objects")
+        self.assertTrue("Count_%s" % OUTPUT_OBJECTS_NAME in m.get_feature_names("Image"))
+        counts = m.get_current_measurement("Image", "Count_%s" % OUTPUT_OBJECTS_NAME)
         self.assertEqual(np.product(counts.shape), 1)
         self.assertEqual(counts[0],1)
-        objects_out = o_s.get_objects("my_objects")
+        objects_out = o_s.get_objects(OUTPUT_OBJECTS_NAME)
         expected = np.zeros((10,10),int)
         expected[2:7,2:7] = 1
         self.assertTrue(np.all(objects_out.segmented==expected))
-        self.assertTrue("Location_Center_X" in m.get_feature_names("my_objects"))
-        values = m.get_current_measurement("my_objects","Location_Center_X")
+        self.assertTrue("Location_Center_X" in m.get_feature_names(OUTPUT_OBJECTS_NAME))
+        values = m.get_current_measurement(OUTPUT_OBJECTS_NAME,"Location_Center_X")
         self.assertEqual(np.product(values.shape),1)
         self.assertEqual(values[0],4)
-        self.assertTrue("Location_Center_Y" in m.get_feature_names("my_objects"))
-        values = m.get_current_measurement("my_objects","Location_Center_Y")
+        self.assertTrue("Location_Center_Y" in m.get_feature_names(OUTPUT_OBJECTS_NAME))
+        values = m.get_current_measurement(OUTPUT_OBJECTS_NAME,"Location_Center_Y")
         self.assertEqual(np.product(values.shape),1)
         self.assertEqual(values[0],4)
 
@@ -456,26 +528,26 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'9194\'|variable_revision_nu
         objects.unedited_segmented = labels 
         objects.small_removed_segmented = labels
         objects.segmented = labels
-        o_s.add_objects(objects, "primary")
+        o_s.add_objects(objects, INPUT_OBJECTS_NAME)
         i_s = i_l.get_image_set(0)
-        i_s.add("my_image",image)
+        i_s.add(IMAGE_NAME,image)
         m = cpm.Measurements()
         module = cpmi2.IdentifySecondary()
-        module.primary_objects.value="primary"
-        module.objects_name.value="my_objects"
-        module.image_name.value = "my_image"
+        module.primary_objects.value=INPUT_OBJECTS_NAME
+        module.objects_name.value=OUTPUT_OBJECTS_NAME
+        module.image_name.value = IMAGE_NAME
         module.method.value = cpmi2.M_WATERSHED_G
         module.threshold_method.value = cpmi.TM_MANUAL
         module.manual_threshold.value = .2
         workspace = cpw.Workspace(p,module,i_s,o_s,m,i_l)
         module.run(workspace)
-        self.assertTrue("my_objects" in m.get_object_names())
+        self.assertTrue(OUTPUT_OBJECTS_NAME in m.get_object_names())
         self.assertTrue("Image" in m.get_object_names())
-        self.assertTrue("Count_my_objects" in m.get_feature_names("Image"))
-        counts = m.get_current_measurement("Image", "Count_my_objects")
+        self.assertTrue("Count_%s" % OUTPUT_OBJECTS_NAME in m.get_feature_names("Image"))
+        counts = m.get_current_measurement("Image", "Count_%s" % OUTPUT_OBJECTS_NAME)
         self.assertEqual(np.product(counts.shape), 1)
         self.assertEqual(counts[0],2)
-        objects_out = o_s.get_objects("my_objects")
+        objects_out = o_s.get_objects(OUTPUT_OBJECTS_NAME)
         expected = np.zeros((10,20),int)
         expected[2:7,2:7] = 1
         expected[2:7,7:17] = 2
@@ -492,22 +564,22 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'9194\'|variable_revision_nu
         module.method = cpmi2.M_WATERSHED_G
         module.run(workspace)
         m = workspace.measurements
-        self.assertTrue("my_objects" in m.get_object_names())
+        self.assertTrue(OUTPUT_OBJECTS_NAME in m.get_object_names())
         self.assertTrue("Image" in m.get_object_names())
-        self.assertTrue("Count_my_objects" in m.get_feature_names("Image"))
-        counts = m.get_current_measurement("Image", "Count_my_objects")
+        self.assertTrue("Count_%s" % OUTPUT_OBJECTS_NAME in m.get_feature_names("Image"))
+        counts = m.get_current_measurement("Image", "Count_%s" % OUTPUT_OBJECTS_NAME)
         self.assertEqual(np.product(counts.shape), 1)
         self.assertEqual(counts[0],1)
-        objects_out = workspace.object_set.get_objects("my_objects")
+        objects_out = workspace.object_set.get_objects(OUTPUT_OBJECTS_NAME)
         expected = np.zeros((20,10),int)
         expected[2:7,2:7] = 1
         self.assertTrue(np.all(objects_out.segmented==expected))
-        self.assertTrue("Location_Center_X" in m.get_feature_names("my_objects"))
-        values = m.get_current_measurement("my_objects","Location_Center_X")
+        self.assertTrue("Location_Center_X" in m.get_feature_names(OUTPUT_OBJECTS_NAME))
+        values = m.get_current_measurement(OUTPUT_OBJECTS_NAME,"Location_Center_X")
         self.assertEqual(np.product(values.shape),1)
         self.assertEqual(values[0],4)
-        self.assertTrue("Location_Center_Y" in m.get_feature_names("my_objects"))
-        values = m.get_current_measurement("my_objects","Location_Center_Y")
+        self.assertTrue("Location_Center_Y" in m.get_feature_names(OUTPUT_OBJECTS_NAME))
+        values = m.get_current_measurement(OUTPUT_OBJECTS_NAME,"Location_Center_Y")
         self.assertEqual(np.product(values.shape),1)
         self.assertEqual(values[0],4)
 
@@ -520,21 +592,21 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'9194\'|variable_revision_nu
         objects.unedited_segmented = np.zeros((10,10),int)
         objects.small_removed_segmented = np.zeros((10,10),int)
         objects.segmented = np.zeros((10,10),int)
-        o_s.add_objects(objects, "primary")
+        o_s.add_objects(objects, INPUT_OBJECTS_NAME)
         i_s = i_l.get_image_set(0)
-        i_s.add("my_image",image)
+        i_s.add(IMAGE_NAME,image)
         m = cpm.Measurements()
         module = cpmi2.IdentifySecondary()
-        module.primary_objects.value="primary"
-        module.objects_name.value="my_objects"
-        module.image_name.value = "my_image"
+        module.primary_objects.value=INPUT_OBJECTS_NAME
+        module.objects_name.value=OUTPUT_OBJECTS_NAME
+        module.image_name.value = IMAGE_NAME
         module.method = cpmi2.M_WATERSHED_I
         workspace = cpw.Workspace(p,module,i_s,o_s,m,i_l)
         module.run(workspace)
-        self.assertTrue("my_objects" in m.get_object_names())
+        self.assertTrue(OUTPUT_OBJECTS_NAME in m.get_object_names())
         self.assertTrue("Image" in m.get_object_names())
-        self.assertTrue("Count_my_objects" in m.get_feature_names("Image"))
-        counts = m.get_current_measurement("Image", "Count_my_objects")
+        self.assertTrue("Count_%s" % OUTPUT_OBJECTS_NAME in m.get_feature_names("Image"))
+        counts = m.get_current_measurement("Image", "Count_%s" % OUTPUT_OBJECTS_NAME)
         self.assertEqual(np.product(counts.shape), 1)
         self.assertEqual(counts[0],0)
     
@@ -551,24 +623,24 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'9194\'|variable_revision_nu
         objects.unedited_segmented = labels 
         objects.small_removed_segmented = labels
         objects.segmented = labels
-        o_s.add_objects(objects, "primary")
+        o_s.add_objects(objects, INPUT_OBJECTS_NAME)
         i_s = i_l.get_image_set(0)
-        i_s.add("my_image",image)
+        i_s.add(IMAGE_NAME,image)
         m = cpm.Measurements()
         module = cpmi2.IdentifySecondary()
-        module.primary_objects.value="primary"
-        module.objects_name.value="my_objects"
-        module.image_name.value = "my_image"
+        module.primary_objects.value=INPUT_OBJECTS_NAME
+        module.objects_name.value=OUTPUT_OBJECTS_NAME
+        module.image_name.value = IMAGE_NAME
         module.method = cpmi2.M_WATERSHED_I
         workspace = cpw.Workspace(p,module,i_s,o_s,m,i_l)
         module.run(workspace)
-        self.assertTrue("my_objects" in m.get_object_names())
+        self.assertTrue(OUTPUT_OBJECTS_NAME in m.get_object_names())
         self.assertTrue("Image" in m.get_object_names())
-        self.assertTrue("Count_my_objects" in m.get_feature_names("Image"))
-        counts = m.get_current_measurement("Image", "Count_my_objects")
+        self.assertTrue("Count_%s" % OUTPUT_OBJECTS_NAME in m.get_feature_names("Image"))
+        counts = m.get_current_measurement("Image", "Count_%s" % OUTPUT_OBJECTS_NAME)
         self.assertEqual(np.product(counts.shape), 1)
         self.assertEqual(counts[0],1)
-        objects_out = o_s.get_objects("my_objects")
+        objects_out = o_s.get_objects(OUTPUT_OBJECTS_NAME)
         expected = np.zeros((10,10),int)
         expected[2:7,2:7] = 1
         self.assertTrue(np.all(objects_out.segmented==expected))
@@ -591,26 +663,26 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'9194\'|variable_revision_nu
         objects.unedited_segmented = labels 
         objects.small_removed_segmented = labels
         objects.segmented = labels
-        o_s.add_objects(objects, "primary")
+        o_s.add_objects(objects, INPUT_OBJECTS_NAME)
         i_s = i_l.get_image_set(0)
-        i_s.add("my_image",image)
+        i_s.add(IMAGE_NAME,image)
         m = cpm.Measurements()
         module = cpmi2.IdentifySecondary()
-        module.primary_objects.value="primary"
-        module.objects_name.value="my_objects"
-        module.image_name.value = "my_image"
+        module.primary_objects.value=INPUT_OBJECTS_NAME
+        module.objects_name.value=OUTPUT_OBJECTS_NAME
+        module.image_name.value = IMAGE_NAME
         module.method.value = cpmi2.M_WATERSHED_I
         module.threshold_method.value = cpmi.TM_MANUAL
         module.manual_threshold.value = .01
         workspace = cpw.Workspace(p,module,i_s,o_s,m,i_l)
         module.run(workspace)
-        self.assertTrue("my_objects" in m.get_object_names())
+        self.assertTrue(OUTPUT_OBJECTS_NAME in m.get_object_names())
         self.assertTrue("Image" in m.get_object_names())
-        self.assertTrue("Count_my_objects" in m.get_feature_names("Image"))
-        counts = m.get_current_measurement("Image", "Count_my_objects")
+        self.assertTrue("Count_%s" % OUTPUT_OBJECTS_NAME in m.get_feature_names("Image"))
+        counts = m.get_current_measurement("Image", "Count_%s" % OUTPUT_OBJECTS_NAME)
         self.assertEqual(np.product(counts.shape), 1)
         self.assertEqual(counts[0],2)
-        objects_out = o_s.get_objects("my_objects")
+        objects_out = o_s.get_objects(OUTPUT_OBJECTS_NAME)
         expected = np.zeros((10,20),int)
         expected[2:7,2:7] = 1
         expected[2:7,7:17] = 2
@@ -627,13 +699,13 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'9194\'|variable_revision_nu
         module.method = cpmi2.M_WATERSHED_I
         module.run(workspace)
         m = workspace.measurements
-        self.assertTrue("my_objects" in m.get_object_names())
+        self.assertTrue(OUTPUT_OBJECTS_NAME in m.get_object_names())
         self.assertTrue("Image" in m.get_object_names())
-        self.assertTrue("Count_my_objects" in m.get_feature_names("Image"))
-        counts = m.get_current_measurement("Image", "Count_my_objects")
+        self.assertTrue("Count_%s" % OUTPUT_OBJECTS_NAME in m.get_feature_names("Image"))
+        counts = m.get_current_measurement("Image", "Count_%s" % OUTPUT_OBJECTS_NAME)
         self.assertEqual(np.product(counts.shape), 1)
         self.assertEqual(counts[0],1)
-        objects_out = workspace.object_set.get_objects("my_objects")
+        objects_out = workspace.object_set.get_objects(OUTPUT_OBJECTS_NAME)
         expected = np.zeros((20,10),int)
         expected[2:7,2:7] = 1
         self.assertTrue(np.all(objects_out.segmented==expected))
@@ -647,21 +719,21 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'9194\'|variable_revision_nu
         objects.unedited_segmented = np.zeros((10,10),int)
         objects.small_removed_segmented = np.zeros((10,10),int)
         objects.segmented = np.zeros((10,10),int)
-        o_s.add_objects(objects, "primary")
+        o_s.add_objects(objects, INPUT_OBJECTS_NAME)
         i_s = i_l.get_image_set(0)
-        i_s.add("my_image",image)
+        i_s.add(IMAGE_NAME,image)
         m = cpm.Measurements()
         module = cpmi2.IdentifySecondary()
-        module.primary_objects.value="primary"
-        module.objects_name.value="my_objects"
-        module.image_name.value = "my_image"
+        module.primary_objects.value=INPUT_OBJECTS_NAME
+        module.objects_name.value=OUTPUT_OBJECTS_NAME
+        module.image_name.value = IMAGE_NAME
         module.method = cpmi2.M_DISTANCE_N
         workspace = cpw.Workspace(p,module,i_s,o_s,m,i_l)
         module.run(workspace)
-        self.assertTrue("my_objects" in m.get_object_names())
+        self.assertTrue(OUTPUT_OBJECTS_NAME in m.get_object_names())
         self.assertTrue("Image" in m.get_object_names())
-        self.assertTrue("Count_my_objects" in m.get_feature_names("Image"))
-        counts = m.get_current_measurement("Image", "Count_my_objects")
+        self.assertTrue("Count_%s" % OUTPUT_OBJECTS_NAME in m.get_feature_names("Image"))
+        counts = m.get_current_measurement("Image", "Count_%s" % OUTPUT_OBJECTS_NAME)
         self.assertEqual(np.product(counts.shape), 1)
         self.assertEqual(counts[0],0)
     
@@ -677,25 +749,25 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'9194\'|variable_revision_nu
         objects.unedited_segmented = labels 
         objects.small_removed_segmented = labels
         objects.segmented = labels
-        o_s.add_objects(objects, "primary")
+        o_s.add_objects(objects, INPUT_OBJECTS_NAME)
         i_s = i_l.get_image_set(0)
-        i_s.add("my_image",image)
+        i_s.add(IMAGE_NAME,image)
         m = cpm.Measurements()
         module = cpmi2.IdentifySecondary()
-        module.primary_objects.value="primary"
-        module.objects_name.value="my_objects"
-        module.image_name.value = "my_image"
+        module.primary_objects.value=INPUT_OBJECTS_NAME
+        module.objects_name.value=OUTPUT_OBJECTS_NAME
+        module.image_name.value = IMAGE_NAME
         module.method = cpmi2.M_DISTANCE_N
         module.distance_to_dilate.value = 1
         workspace = cpw.Workspace(p,module,i_s,o_s,m,i_l)
         module.run(workspace)
-        self.assertTrue("my_objects" in m.get_object_names())
+        self.assertTrue(OUTPUT_OBJECTS_NAME in m.get_object_names())
         self.assertTrue("Image" in m.get_object_names())
-        self.assertTrue("Count_my_objects" in m.get_feature_names("Image"))
-        counts = m.get_current_measurement("Image", "Count_my_objects")
+        self.assertTrue("Count_%s" % OUTPUT_OBJECTS_NAME in m.get_feature_names("Image"))
+        counts = m.get_current_measurement("Image", "Count_%s" % OUTPUT_OBJECTS_NAME)
         self.assertEqual(np.product(counts.shape), 1)
         self.assertEqual(counts[0],1)
-        objects_out = o_s.get_objects("my_objects")
+        objects_out = o_s.get_objects(OUTPUT_OBJECTS_NAME)
         expected = np.zeros((10,10),int)
         expected[2:7,2:7] = 1
         for x in (2,6):
@@ -716,25 +788,25 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'9194\'|variable_revision_nu
         objects.unedited_segmented = labels 
         objects.small_removed_segmented = labels
         objects.segmented = labels
-        o_s.add_objects(objects, "primary")
+        o_s.add_objects(objects, INPUT_OBJECTS_NAME)
         i_s = i_l.get_image_set(0)
-        i_s.add("my_image",image)
+        i_s.add(IMAGE_NAME,image)
         m = cpm.Measurements()
         module = cpmi2.IdentifySecondary()
-        module.primary_objects.value="primary"
-        module.objects_name.value="my_objects"
-        module.image_name.value = "my_image"
+        module.primary_objects.value=INPUT_OBJECTS_NAME
+        module.objects_name.value=OUTPUT_OBJECTS_NAME
+        module.image_name.value = IMAGE_NAME
         module.method.value = cpmi2.M_DISTANCE_N
         module.distance_to_dilate.value = 100
         workspace = cpw.Workspace(p,module,i_s,o_s,m,i_l)
         module.run(workspace)
-        self.assertTrue("my_objects" in m.get_object_names())
+        self.assertTrue(OUTPUT_OBJECTS_NAME in m.get_object_names())
         self.assertTrue("Image" in m.get_object_names())
-        self.assertTrue("Count_my_objects" in m.get_feature_names("Image"))
-        counts = m.get_current_measurement("Image", "Count_my_objects")
+        self.assertTrue("Count_%s" % OUTPUT_OBJECTS_NAME in m.get_feature_names("Image"))
+        counts = m.get_current_measurement("Image", "Count_%s" % OUTPUT_OBJECTS_NAME)
         self.assertEqual(np.product(counts.shape), 1)
         self.assertEqual(counts[0],2)
-        objects_out = o_s.get_objects("my_objects")
+        objects_out = o_s.get_objects(OUTPUT_OBJECTS_NAME)
         expected = np.zeros((10,20),int)
         expected[:,:10] = 1
         expected[:,10:] = 2
@@ -749,13 +821,13 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'9194\'|variable_revision_nu
         module.distance_to_dilate.value = 1
         module.run(workspace)
         m = workspace.measurements
-        self.assertTrue("my_objects" in m.get_object_names())
+        self.assertTrue(OUTPUT_OBJECTS_NAME in m.get_object_names())
         self.assertTrue("Image" in m.get_object_names())
-        self.assertTrue("Count_my_objects" in m.get_feature_names("Image"))
-        counts = m.get_current_measurement("Image", "Count_my_objects")
+        self.assertTrue("Count_%s" % OUTPUT_OBJECTS_NAME in m.get_feature_names("Image"))
+        counts = m.get_current_measurement("Image", "Count_%s" % OUTPUT_OBJECTS_NAME)
         self.assertEqual(np.product(counts.shape), 1)
         self.assertEqual(counts[0],1)
-        objects_out = workspace.object_set.get_objects("my_objects")
+        objects_out = workspace.object_set.get_objects(OUTPUT_OBJECTS_NAME)
         expected = np.zeros((20,10),int)
         expected[2:7,2:7] = 1
         for x in (2,6):
@@ -777,26 +849,26 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'9194\'|variable_revision_nu
         objects.unedited_segmented = labels 
         objects.small_removed_segmented = labels
         objects.segmented = labels
-        o_s.add_objects(objects, "primary")
+        o_s.add_objects(objects, INPUT_OBJECTS_NAME)
         i_s = i_l.get_image_set(0)
-        i_s.add("my_image",image)
+        i_s.add(IMAGE_NAME,image)
         m = cpm.Measurements()
         module = cpmi2.IdentifySecondary()
-        module.primary_objects.value="primary"
-        module.objects_name.value="my_objects"
-        module.image_name.value = "my_image"
+        module.primary_objects.value=INPUT_OBJECTS_NAME
+        module.objects_name.value=OUTPUT_OBJECTS_NAME
+        module.image_name.value = IMAGE_NAME
         module.use_outlines.value = True
         module.outlines_name.value = "my_outlines"
         module.method = cpmi2.M_WATERSHED_I
         workspace = cpw.Workspace(p,module,i_s,o_s,m,i_l)
         module.run(workspace)
-        self.assertTrue("my_objects" in m.get_object_names())
+        self.assertTrue(OUTPUT_OBJECTS_NAME in m.get_object_names())
         self.assertTrue("Image" in m.get_object_names())
-        self.assertTrue("Count_my_objects" in m.get_feature_names("Image"))
-        counts = m.get_current_measurement("Image", "Count_my_objects")
+        self.assertTrue("Count_%s" % OUTPUT_OBJECTS_NAME in m.get_feature_names("Image"))
+        counts = m.get_current_measurement("Image", "Count_%s" % OUTPUT_OBJECTS_NAME)
         self.assertEqual(np.product(counts.shape), 1)
         self.assertEqual(counts[0],1)
-        objects_out = o_s.get_objects("my_objects")
+        objects_out = o_s.get_objects(OUTPUT_OBJECTS_NAME)
         outlines_out = workspace.image_set.get_image("my_outlines",
                                                      must_be_binary=True).pixel_data
         expected = np.zeros((10,10),int)
@@ -820,31 +892,32 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'9194\'|variable_revision_nu
         objects.unedited_segmented = labels 
         objects.small_removed_segmented = labels
         objects.segmented = labels
-        o_s.add_objects(objects, "primary")
+        o_s.add_objects(objects, INPUT_OBJECTS_NAME)
         i_s = i_l.get_image_set(0)
-        i_s.add("my_image",image)
+        i_s.add(IMAGE_NAME,image)
         m = cpm.Measurements()
         module = cpmi2.IdentifySecondary()
-        module.primary_objects.value="primary"
-        module.objects_name.value="my_objects"
-        module.image_name.value = "my_image"
+        module.primary_objects.value=INPUT_OBJECTS_NAME
+        module.objects_name.value=OUTPUT_OBJECTS_NAME
+        module.image_name.value = IMAGE_NAME
         module.use_outlines.value = True
         module.outlines_name.value = "my_outlines"
         module.wants_discard_edge.value = True
         module.wants_discard_primary.value = True
         module.wants_primary_outlines.value = True
-        module.new_primary_objects_name.value = "newprimary"
+        module.new_primary_objects_name.value = NEW_OBJECTS_NAME
         module.new_primary_outlines_name.value = "newprimaryoutlines"
         module.method = cpmi2.M_WATERSHED_I
         workspace = cpw.Workspace(p,module,i_s,o_s,m,i_l)
         module.run(workspace)
-        self.assertTrue("my_objects" in m.get_object_names())
+        self.assertTrue(OUTPUT_OBJECTS_NAME in m.get_object_names())
         self.assertTrue("Image" in m.get_object_names())
-        self.assertTrue("Count_my_objects" in m.get_feature_names("Image"))
-        counts = m.get_current_measurement("Image", "Count_my_objects")
+        count_feature = "Count_%s" % OUTPUT_OBJECTS_NAME
+        self.assertTrue(count_feature in m.get_feature_names("Image"))
+        counts = m.get_current_measurement("Image", count_feature)
         self.assertEqual(np.product(counts.shape), 1)
         self.assertEqual(counts[0],1)
-        objects_out = o_s.get_objects("my_objects")
+        objects_out = o_s.get_objects(OUTPUT_OBJECTS_NAME)
         outlines_out = workspace.image_set.get_image("newprimaryoutlines",
                                                      must_be_binary=True)
         expected = np.zeros((10,10), bool)
@@ -857,28 +930,28 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'9194\'|variable_revision_nu
         for discard_edge in (True, False):
             module.wants_discard_edge.value = discard_edge
             module.wants_discard_primary.value = False
-            module.primary_objects.value = "Primary"
-            module.objects_name.value = "Secondary"
-            module.new_primary_objects_name.value = "NewPrimary"
+            module.primary_objects.value = INPUT_OBJECTS_NAME
+            module.objects_name.value = OUTPUT_OBJECTS_NAME
+            module.new_primary_objects_name.value = NEW_OBJECTS_NAME
             
             categories = module.get_categories(None, cpm.IMAGE)
             self.assertEqual(len(categories), 2)
             self.assertTrue(all([any([x == y for x in categories])
                                  for y in ("Count", "Threshold")]))
-            categories = module.get_categories(None, "Secondary")
+            categories = module.get_categories(None, OUTPUT_OBJECTS_NAME)
             self.assertEqual(len(categories), 3)
             self.assertTrue(all([any([x == y for x in categories])
                                  for y in ("Location","Parent", "Number")]))
-            categories = module.get_categories(None, "Primary")
+            categories = module.get_categories(None, INPUT_OBJECTS_NAME)
             self.assertEqual(len(categories), 1)
             self.assertEqual(categories[0], "Children")
             
-            categories = module.get_categories(None, "NewPrimary")
+            categories = module.get_categories(None, NEW_OBJECTS_NAME)
             self.assertEqual(len(categories), 0)
             
             features = module.get_measurements(None, cpm.IMAGE, "Count")
             self.assertEqual(len(features), 1)
-            self.assertEqual(features[0], "Secondary")
+            self.assertEqual(features[0], OUTPUT_OBJECTS_NAME)
             
             features = module.get_measurements(None, cpm.IMAGE, "Threshold")
             threshold_features = ("OrigThreshold", "FinalThreshold",
@@ -891,33 +964,40 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'9194\'|variable_revision_nu
                                                          "Threshold",
                                                          threshold_feature)
                 self.assertEqual(len(objects), 1)
-                self.assertEqual(objects[0], "Secondary")
+                self.assertEqual(objects[0], OUTPUT_OBJECTS_NAME)
                 
-            features = module.get_measurements(None, "Primary","Children")
+            features = module.get_measurements(None, INPUT_OBJECTS_NAME,"Children")
             self.assertEqual(len(features), 1)
-            self.assertEqual(features[0], "Secondary_Count")
+            self.assertEqual(features[0], OUTPUT_OBJECTS_NAME + "_Count")
             
-            features = module.get_measurements(None,"Secondary","Parent")
+            features = module.get_measurements(None,OUTPUT_OBJECTS_NAME,"Parent")
             self.assertEqual(len(features), 1)
-            self.assertEqual(features[0], "Primary")
+            self.assertEqual(features[0], INPUT_OBJECTS_NAME)
             
-            features = module.get_measurements(None, "Secondary", "Location")
+            features = module.get_measurements(None, OUTPUT_OBJECTS_NAME, "Location")
             self.assertEqual(len(features), 2)
             self.assertTrue(all([any([x==y for x in features])
                                  for y in ("Center_X","Center_Y")]))
-            features = module.get_measurements(None, "Secondary", "Number")
+            features = module.get_measurements(None, OUTPUT_OBJECTS_NAME, "Number")
             self.assertEqual(len(features), 1)
             self.assertEqual(features[0], "Object_Number")
             
             columns = module.get_measurement_columns(None)
-            expected_columns = [ (cpm.IMAGE, "Threshold_%s_Secondary"%f, cpm.COLTYPE_FLOAT)
+            expected_columns = [ (cpm.IMAGE, 
+                                  "Threshold_%s_%s" % (f, OUTPUT_OBJECTS_NAME), 
+                                  cpm.COLTYPE_FLOAT)
                                  for f in threshold_features]
-            expected_columns += [(cpm.IMAGE, "Count_Secondary", cpm.COLTYPE_INTEGER),
-                                 ("Primary", "Children_Secondary_Count", cpm.COLTYPE_INTEGER),
-                                 ("Secondary", "Location_Center_X", cpm.COLTYPE_FLOAT),
-                                 ("Secondary", "Location_Center_Y", cpm.COLTYPE_FLOAT),
-                                 ("Secondary", "Number_Object_Number", cpm.COLTYPE_INTEGER),
-                                 ("Secondary", "Parent_Primary", cpm.COLTYPE_INTEGER)]
+            expected_columns += [(cpm.IMAGE, "Count_%s" % OUTPUT_OBJECTS_NAME, 
+                                  cpm.COLTYPE_INTEGER),
+                                 (INPUT_OBJECTS_NAME, 
+                                  "Children_%s_Count" % OUTPUT_OBJECTS_NAME,
+                                  cpm.COLTYPE_INTEGER),
+                                 (OUTPUT_OBJECTS_NAME, "Location_Center_X", cpm.COLTYPE_FLOAT),
+                                 (OUTPUT_OBJECTS_NAME, "Location_Center_Y", cpm.COLTYPE_FLOAT),
+                                 (OUTPUT_OBJECTS_NAME, "Number_Object_Number", cpm.COLTYPE_INTEGER),
+                                 (OUTPUT_OBJECTS_NAME, 
+                                  "Parent_%s" % INPUT_OBJECTS_NAME, 
+                                  cpm.COLTYPE_INTEGER)]
             self.assertEqual(len(columns), len(expected_columns))
             for column in expected_columns:
                 self.assertTrue(any([all([fa == fb 
@@ -929,31 +1009,31 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'9194\'|variable_revision_nu
         module = cpmi2.IdentifySecondary()
         module.wants_discard_edge.value = True
         module.wants_discard_primary.value = True
-        module.primary_objects.value = "Primary"
-        module.objects_name.value = "Secondary"
-        module.new_primary_objects_name.value = "NewPrimary"
+        module.primary_objects.value = INPUT_OBJECTS_NAME
+        module.objects_name.value = OUTPUT_OBJECTS_NAME
+        module.new_primary_objects_name.value = NEW_OBJECTS_NAME
         
         categories = module.get_categories(None, cpm.IMAGE)
         self.assertEqual(len(categories), 2)
         self.assertTrue(all([any([x == y for x in categories])
                              for y in ("Count", "Threshold")]))
-        categories = module.get_categories(None, "Secondary")
+        categories = module.get_categories(None, OUTPUT_OBJECTS_NAME)
         self.assertEqual(len(categories), 3)
         self.assertTrue(all([any([x == y for x in categories])
                              for y in ("Location","Parent","Number")]))
-        categories = module.get_categories(None, "Primary")
+        categories = module.get_categories(None, INPUT_OBJECTS_NAME)
         self.assertEqual(len(categories), 1)
         self.assertEqual(categories[0], "Children")
         
-        categories = module.get_categories(None, "NewPrimary")
+        categories = module.get_categories(None, NEW_OBJECTS_NAME)
         self.assertEqual(len(categories), 4)
         self.assertTrue(all([any([x == y for x in categories])
                              for y in ("Location","Parent","Children","Number")]))
         
         features = module.get_measurements(None, cpm.IMAGE, "Count")
         self.assertEqual(len(features), 2)
-        self.assertTrue("Secondary" in features)
-        self.assertTrue("NewPrimary" in features)
+        self.assertTrue(OUTPUT_OBJECTS_NAME in features)
+        self.assertTrue(NEW_OBJECTS_NAME in features)
         
         features = module.get_measurements(None, cpm.IMAGE, "Threshold")
         threshold_features = ("OrigThreshold", "FinalThreshold",
@@ -966,36 +1046,43 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'9194\'|variable_revision_nu
                                                      "Threshold",
                                                      threshold_feature)
             self.assertEqual(len(objects), 1)
-            self.assertEqual(objects[0], "Secondary")
+            self.assertEqual(objects[0], OUTPUT_OBJECTS_NAME)
             
-        features = module.get_measurements(None, "Primary","Children")
+        features = module.get_measurements(None, INPUT_OBJECTS_NAME,"Children")
         self.assertEqual(len(features), 2)
         self.assertTrue(all([any([x==y for x in features])
-                            for y in ("Secondary_Count","NewPrimary_Count")]))
+                            for y in ("%s_Count" % OUTPUT_OBJECTS_NAME,
+                                      "%s_Count" % NEW_OBJECTS_NAME )]))
         
-        features = module.get_measurements(None,"Secondary","Parent")
+        features = module.get_measurements(None,OUTPUT_OBJECTS_NAME,"Parent")
         self.assertEqual(len(features), 2)
         self.assertTrue(all([any([x==y for x in features])
-                             for y in ("Primary","NewPrimary")]))
+                             for y in (INPUT_OBJECTS_NAME, NEW_OBJECTS_NAME)]))
         
-        for oname in ("Secondary","NewPrimary"):
+        for oname in (OUTPUT_OBJECTS_NAME, NEW_OBJECTS_NAME):
             features = module.get_measurements(None, oname, "Location")
             self.assertEqual(len(features), 2)
             self.assertTrue(all([any([x==y for x in features])
                                  for y in ("Center_X","Center_Y")]))
         
         columns = module.get_measurement_columns(None)
-        expected_columns = [ (cpm.IMAGE, "Threshold_%s_Secondary"%f, cpm.COLTYPE_FLOAT)
+        expected_columns = [ (cpm.IMAGE, 
+                              "Threshold_%s_%s" % (f, OUTPUT_OBJECTS_NAME), 
+                              cpm.COLTYPE_FLOAT)
                              for f in threshold_features]
-        for oname in ("NewPrimary","Secondary"):
+        for oname in (NEW_OBJECTS_NAME, OUTPUT_OBJECTS_NAME):
             expected_columns += [(cpm.IMAGE, "Count_%s"%oname, cpm.COLTYPE_INTEGER),
-                                 ("Primary", "Children_%s_Count"%oname, cpm.COLTYPE_INTEGER),
+                                 (INPUT_OBJECTS_NAME, "Children_%s_Count"%oname, cpm.COLTYPE_INTEGER),
                                  (oname, "Location_Center_X", cpm.COLTYPE_FLOAT),
                                  (oname, "Location_Center_Y", cpm.COLTYPE_FLOAT),
                                  (oname, "Number_Object_Number", cpm.COLTYPE_INTEGER),
                                  (oname, "Parent_Primary", cpm.COLTYPE_INTEGER)]
-        expected_columns += [("NewPrimary","Children_Secondary_Count", cpm.COLTYPE_INTEGER),
-                             ("Secondary","Parent_NewPrimary", cpm.COLTYPE_INTEGER)]
+        expected_columns += [(NEW_OBJECTS_NAME, 
+                              "Children_%s_Count" % OUTPUT_OBJECTS_NAME, 
+                              cpm.COLTYPE_INTEGER),
+                             (OUTPUT_OBJECTS_NAME, 
+                              "Parent_%s" % NEW_OBJECTS_NAME, 
+                              cpm.COLTYPE_INTEGER)]
         self.assertEqual(len(columns), len(expected_columns))
         for column in expected_columns:
             self.assertTrue(any([all([fa == fb 
@@ -1028,25 +1115,25 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'9194\'|variable_revision_nu
         objects.unedited_segmented = labels 
         objects.small_removed_segmented = labels
         objects.segmented = labels
-        o_s.add_objects(objects, "primary")
+        o_s.add_objects(objects, INPUT_OBJECTS_NAME)
         i_s = i_l.get_image_set(0)
-        i_s.add("my_image",image)
+        i_s.add(IMAGE_NAME,image)
         m = cpm.Measurements()
         module = cpmi2.IdentifySecondary()
-        module.primary_objects.value="primary"
-        module.objects_name.value="my_objects"
-        module.image_name.value = "my_image"
+        module.primary_objects.value=INPUT_OBJECTS_NAME
+        module.objects_name.value=OUTPUT_OBJECTS_NAME
+        module.image_name.value = IMAGE_NAME
         module.method.value = cpmi2.M_PROPAGATION
         module.wants_discard_edge.value = True
         module.wants_discard_primary.value = True
-        module.new_primary_objects_name.value = "newprimary"
+        module.new_primary_objects_name.value = NEW_OBJECTS_NAME
         workspace = cpw.Workspace(p,module,i_s,o_s,m,i_l)
         module.run(workspace)
-        object_out = workspace.object_set.get_objects("my_objects")
+        object_out = workspace.object_set.get_objects(OUTPUT_OBJECTS_NAME)
         self.assertTrue(np.all(object_out.segmented == 0))
         self.assertTrue(np.all(object_out.unedited_segmented == expected_unedited))
         
-        object_out = workspace.object_set.get_objects("newprimary")
+        object_out = workspace.object_set.get_objects(NEW_OBJECTS_NAME)
         self.assertTrue(np.all(object_out.segmented == 0))
         self.assertTrue(np.all(object_out.unedited_segmented == labels))
 
@@ -1086,25 +1173,25 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'9194\'|variable_revision_nu
         objects.small_removed_segmented = labels
         objects.unedited_segmented = labels_unedited
         objects.segmented = labels
-        o_s.add_objects(objects, "primary")
+        o_s.add_objects(objects, INPUT_OBJECTS_NAME)
         i_s = i_l.get_image_set(0)
-        i_s.add("my_image",image)
+        i_s.add(IMAGE_NAME,image)
         m = cpm.Measurements()
         module = cpmi2.IdentifySecondary()
-        module.primary_objects.value="primary"
-        module.objects_name.value="my_objects"
-        module.image_name.value = "my_image"
+        module.primary_objects.value=INPUT_OBJECTS_NAME
+        module.objects_name.value=OUTPUT_OBJECTS_NAME
+        module.image_name.value = IMAGE_NAME
         module.method.value = cpmi2.M_PROPAGATION
         module.wants_discard_edge.value = True
         module.wants_discard_primary.value = True
-        module.new_primary_objects_name.value = "newprimary"
+        module.new_primary_objects_name.value = NEW_OBJECTS_NAME
         workspace = cpw.Workspace(p,module,i_s,o_s,m,i_l)
         module.run(workspace)
-        object_out = workspace.object_set.get_objects("my_objects")
+        object_out = workspace.object_set.get_objects(OUTPUT_OBJECTS_NAME)
         self.assertTrue(np.all(object_out.segmented == expected))
         self.assertTrue(np.all(object_out.unedited_segmented == expected_unedited))
         
-        object_out = workspace.object_set.get_objects("newprimary")
+        object_out = workspace.object_set.get_objects(NEW_OBJECTS_NAME)
         self.assertTrue(np.all(object_out.segmented == labels))
         self.assertTrue(np.all(object_out.unedited_segmented == labels_unedited))
         
@@ -1145,20 +1232,20 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'9194\'|variable_revision_nu
         objects.small_removed_segmented = labels
         objects.unedited_segmented = labels_unedited
         objects.segmented = labels
-        o_s.add_objects(objects, "primary")
+        o_s.add_objects(objects, INPUT_OBJECTS_NAME)
         i_s = i_l.get_image_set(0)
-        i_s.add("my_image",image)
+        i_s.add(IMAGE_NAME,image)
         m = cpm.Measurements()
         module = cpmi2.IdentifySecondary()
-        module.primary_objects.value = "primary"
-        module.objects_name.value="my_objects"
-        module.image_name.value = "my_image"
+        module.primary_objects.value = INPUT_OBJECTS_NAME
+        module.objects_name.value=OUTPUT_OBJECTS_NAME
+        module.image_name.value = IMAGE_NAME
         module.method.value = cpmi2.M_PROPAGATION
         module.threshold_method.value = cpmi.TM_MANUAL
         module.manual_threshold.value = .5
         workspace = cpw.Workspace(p,module,i_s,o_s,m,i_l)
         module.run(workspace)
-        object_out = workspace.object_set.get_objects("my_objects")
+        object_out = workspace.object_set.get_objects(OUTPUT_OBJECTS_NAME)
         self.assertTrue(np.all(object_out.segmented == expected))
         
     def test_08_04_small_touching(self):
@@ -1197,22 +1284,93 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'9194\'|variable_revision_nu
         objects.small_removed_segmented = labels
         objects.unedited_segmented = labels_unedited
         objects.segmented = labels
-        o_s.add_objects(objects, "primary")
+        o_s.add_objects(objects, INPUT_OBJECTS_NAME)
         i_s = i_l.get_image_set(0)
-        i_s.add("my_image",image)
+        i_s.add(IMAGE_NAME,image)
         m = cpm.Measurements()
         module = cpmi2.IdentifySecondary()
-        module.primary_objects.value = "primary"
-        module.objects_name.value="my_objects"
-        module.image_name.value = "my_image"
+        module.primary_objects.value = INPUT_OBJECTS_NAME
+        module.objects_name.value=OUTPUT_OBJECTS_NAME
+        module.image_name.value = IMAGE_NAME
         module.method.value = cpmi2.M_PROPAGATION
         module.threshold_method.value = cpmi.TM_MANUAL
         module.manual_threshold.value = .5
         workspace = cpw.Workspace(p,module,i_s,o_s,m,i_l)
         module.run(workspace)
-        object_out = workspace.object_set.get_objects("my_objects")
+        object_out = workspace.object_set.get_objects(OUTPUT_OBJECTS_NAME)
         i,j = np.argwhere(labels_unedited == 2)[0]
         self.assertTrue(np.all(object_out.segmented[i-1:,j-1:j+2] == 0))
         self.assertEqual(len(np.unique(object_out.unedited_segmented)), 3)
         self.assertEqual(len(np.unique(object_out.unedited_segmented[i-1:,j-1:j+2])), 1)
         
+    def test_09_01_binary_threshold(self):
+        '''Test segmentation using a binary image for thresholding'''
+        np.random.seed(91)
+        image = np.random.uniform(size=(20,10))
+        labels = np.zeros((20,10), int)
+        labels[5,5] = 1
+        labels[15,5] = 2
+        threshold = np.zeros((20,10), bool)
+        threshold[4:7,4:7] = True
+        threshold[14:17,4:7] = True
+        expected = np.zeros((20,10), int)
+        expected[4:7,4:7] = 1
+        expected[14:17,4:7] = 2
+        
+        workspace, module = self.make_workspace(image, labels)
+        self.assertTrue(isinstance(module, cpmi2.IdentifySecondaryObjects))
+        module.threshold_method.value = cpmi.TM_BINARY_IMAGE
+        module.binary_image.value = "threshold"
+        image_set = workspace.image_set
+        self.assertTrue(isinstance(image_set, cpi.ImageSet))
+        image_set.add("threshold", cpi.Image(threshold, convert=False))
+        
+        module.run(workspace)
+        object_out = workspace.object_set.get_objects(OUTPUT_OBJECTS_NAME)
+        labels_out = object_out.segmented
+        indexes = workspace.measurements.get_current_measurement(
+            OUTPUT_OBJECTS_NAME, "Parent_" + INPUT_OBJECTS_NAME)
+        self.assertEqual(len(indexes), 2)
+        indexes = np.hstack(([0], indexes))
+        self.assertTrue(np.all(indexes[labels_out] == expected))
+        
+    def test_10_01_holes_no_holes(self):
+        np.random.seed(92)
+        for wants_fill_holes in (True, False):
+            for method in (cpmi2.M_DISTANCE_B,
+                           cpmi2.M_PROPAGATION,
+                           cpmi2.M_WATERSHED_G,
+                           cpmi2.M_WATERSHED_I):
+                image = np.random.uniform(size=(20,10))
+                labels = np.zeros((20,10), int)
+                labels[5,5] = 1
+                labels[15,5] = 2
+                threshold = np.zeros((20,10), bool)
+                threshold[1:7,4:7] = True
+                threshold[2, 5] = False
+                threshold[14:17,4:7] = True
+                expected = np.zeros((20,10), int)
+                expected[1:7,4:7] = 1
+                expected[14:17,4:7] = 2
+                if not wants_fill_holes:
+                    expected[2, 5] = 0
+                workspace, module = self.make_workspace(image, labels)
+                self.assertTrue(isinstance(module, cpmi2.IdentifySecondaryObjects))
+                module.threshold_method.value = cpmi.TM_BINARY_IMAGE
+                module.binary_image.value = "threshold"
+                module.method.value = method
+                module.fill_holes.value = wants_fill_holes
+                module.distance_to_dilate.value = 10000
+                image_set = workspace.image_set
+                self.assertTrue(isinstance(image_set, cpi.ImageSet))
+                image_set.add("threshold", cpi.Image(threshold, convert=False))
+                
+                module.run(workspace)
+                object_out = workspace.object_set.get_objects(OUTPUT_OBJECTS_NAME)
+                labels_out = object_out.segmented
+                indexes = workspace.measurements.get_current_measurement(
+                    OUTPUT_OBJECTS_NAME, "Parent_" + INPUT_OBJECTS_NAME)
+                self.assertEqual(len(indexes), 2)
+                indexes = np.hstack(([0], indexes))
+                self.assertTrue(np.all(indexes[labels_out] == expected))
+                

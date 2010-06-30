@@ -68,37 +68,33 @@ class MyEvent(wx.PyEvent):
         wx.PyEvent.__init__(self)
         self.SetEventType(myEVT_CUSTOM_EVENT)
 
+# helpers
+def labeled_thing(label, thing, parent):
+    text = wx.StaticText(parent, -1, label)
+    sizer = wx.BoxSizer(wx.HORIZONTAL)
+    sizer.Add(text, 0, wx.ALIGN_CENTER)
+    sizer.AddSpacer(5)
+    sizer.Add(thing, 0, wx.ALIGN_CENTER)
+    return thing, sizer
+        
+def boxed_thing(box, thing, flag=0):
+    boxsizer = wx.StaticBoxSizer(box, wx.VERTICAL)
+    boxsizer.Add(thing, 1, flag=flag)
+    return thing, boxsizer
 
-class CPFileSelector(wx.Frame):
-    def __init__(self, *args, **kwds):
-
-        kwds["style"] = wx.DEFAULT_FRAME_STYLE
-        wx.Frame.__init__(self, *args, **kwds)
+class LocationPanel(wx.Panel):
+    def __init__(self, *args, **kwargs):
+        wx.Panel.__init__(self, *args, **kwargs)
 
         # top level splitter
-        self.splitter = splitter = wx.SplitterWindow(self, -1, style=wx.BORDER_NONE)
-
-        # panels
-        self.top_panel = top_panel = wx.Panel(splitter, -1, style=wx.BORDER_SIMPLE)
-        bottom_panel = wx.Panel(splitter, -1)
+        self.splitter = splitter = wx.SplitterWindow(self, -1, style=wx.SP_NOBORDER|wx.SP_3DSASH)
+        top_panel = wx.Panel(splitter, -1, style=wx.SIMPLE_BORDER)
+        self.bottom_panel = bottom_panel = scrollable_text.ScrollableText(splitter, -1)
         splitter.SplitHorizontally(top_panel, bottom_panel)
-        
-        # controls
-        def labeled_thing(label, thing, parent=top_panel):
-            text = wx.StaticText(parent, -1, label)
-            sizer = wx.BoxSizer(wx.HORIZONTAL)
-            sizer.Add(text, 0, wx.ALIGN_CENTER)
-            sizer.AddSpacer(5)
-            sizer.Add(thing, 0, wx.ALIGN_CENTER)
-            return thing, sizer
-        
-        def boxed_thing(box, thing, flag=0):
-            boxsizer = wx.StaticBoxSizer(box, wx.VERTICAL)
-            boxsizer.Add(thing, 1, flag=flag)
-            return thing, boxsizer
+        self.splitter.SashGravity = 0.0
 
         # Base directory
-        base_dir, base_dir_sizer = labeled_thing("Where are your images located?", wx.Choice(top_panel, -1, choices=base_dir_choices))
+        base_dir, base_dir_sizer = labeled_thing("Where are your images located?", wx.Choice(top_panel, -1, choices=base_dir_choices), top_panel)
         self.base_dir = base_dir
         # otherdir entry & browse
         otherdir_label = wx.StaticText(top_panel, -1, "Other directory:")
@@ -106,7 +102,7 @@ class CPFileSelector(wx.Frame):
         otherdir_browse = wx.Button(top_panel, -1, "Browse...")
 
         # descend?
-        descend_dirs, descend_sizer = labeled_thing("Descend into subdirectories?", wx.Choice(top_panel, -1, choices=descend_dir_choices))
+        descend_dirs, descend_sizer = labeled_thing("Descend into subdirectories?", wx.Choice(top_panel, -1, choices=descend_dir_choices), top_panel)
         self.descend_dirs = descend_dirs
         # descend force update
         self.descend_update_filelist = descend_update_filelist = wx.Button(top_panel, -1, "Update file list...")
@@ -115,20 +111,11 @@ class CPFileSelector(wx.Frame):
         self.dirtree, self.dirtree_boxsizer = dirtree, dirtree_boxsizer = boxed_thing(box, DirTree(top_panel, self), flag=wx.EXPAND)
 
         # exclude some files?
-        exclude, exclude_sizer = labeled_thing("Exclude some files by substring in filename?", wx.CheckBox(top_panel, -1, ""))
+        exclude, exclude_sizer = labeled_thing("Exclude some files by substring in filename?", wx.CheckBox(top_panel, -1, ""), top_panel)
         self.exclude = exclude
 
         box = wx.StaticBox(top_panel, -1, "Exclude substrings...")
         self.exclude_list, self.exclude_boxsizer = exclude_list, exclude_boxsizer = boxed_thing(box, wx.TextCtrl(top_panel, -1, "", size=(300,30), style=wx.TE_MULTILINE))
-                                                                                                
-        # Matching Mode
-        mode, mode_sizer = labeled_thing("Identify channels by:", wx.Choice(bottom_panel, -1, choices=match_modes), parent=bottom_panel)
-        self.mode = mode
-
-        # images notebook
-        self.imagebook = imagebook = wx.Notebook(bottom_panel, -1, style=wx.BK_TOP)
-        imagebook.AddPage(ImagePage(self, imagebook, default_image_name(0)), default_image_name(0))
-        imagebook.AddPage(wx.Panel(imagebook, -1), "Add another image...")
 
         # Layout
         self.otherdir_sizer = otherdir_sizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -136,7 +123,7 @@ class CPFileSelector(wx.Frame):
         otherdir_sizer.Add(otherdir, 1)
         otherdir_sizer.AddSpacer(5)
         otherdir_sizer.Add(otherdir_browse)
-
+                                                                                                
         self.top_sizer = top_sizer = wx.BoxSizer(wx.VERTICAL)
         top_sizer.Add(base_dir_sizer, 0, wx.ALIGN_CENTER)
         top_sizer.AddSpacer(5)
@@ -144,35 +131,26 @@ class CPFileSelector(wx.Frame):
         top_sizer.AddSpacer(10)
         top_sizer.Add(descend_sizer, 0, wx.ALIGN_CENTER)
         top_sizer.AddSpacer(5)
-        top_sizer.Add(descend_update_filelist, 0, wx.ALIGN_CENTER)
-        top_sizer.AddSpacer(5)
         top_sizer.Add(dirtree_boxsizer, 1, wx.EXPAND | wx.LEFT | wx.RIGHT, border=20)
         top_sizer.AddSpacer(10)
         top_sizer.Add(exclude_sizer, 0,  wx.ALIGN_CENTER)
         top_sizer.AddSpacer(5)
-        top_sizer.Add(exclude_boxsizer, 1, wx.ALIGN_CENTER)
-
-        bottom_sizer = wx.BoxSizer(wx.VERTICAL)
-        bottom_sizer.Add(mode_sizer, 0, wx.ALIGN_CENTER)
-        bottom_sizer.AddSpacer(5)
-        bottom_sizer.Add(imagebook, 1, wx.ALIGN_CENTER | wx.EXPAND)
+        top_sizer.Add(exclude_boxsizer, 1, wx.ALIGN_CENTER) 
+        top_sizer.AddSpacer(5)
+        top_sizer.Add(descend_update_filelist, 0, wx.ALIGN_CENTER)
 
         top_border = wx.BoxSizer()
         top_border.Add(top_sizer, 1, wx.EXPAND | wx.ALL, 5)
         top_panel.SetSizer(top_border)
 
-        bot_border = wx.BoxSizer()
-        bot_border.Add(bottom_sizer, 1, wx.EXPAND | wx.ALL, 5)
-        bottom_panel.SetSizer(bot_border)
-        
         border = wx.BoxSizer()
-        border.Add(splitter, 1, wx.EXPAND | wx.ALL, 5)
-
-        self.SetAutoLayout(True)
+        border.Add(splitter, 1, wx.EXPAND | wx.ALL)
         self.SetSizer(border)
-        self.Layout()
 
-        # bindings
+        self.update_file_list()
+        self.Layout()
+        self.SetAutoLayout(True)
+
         base_dir.Bind(wx.EVT_CHOICE, self.change_basedir)
         otherdir.Bind(wx.EVT_TEXT, self.change_otherdir)
         descend_update_filelist.Bind(wx.EVT_BUTTON, self.start_update)
@@ -180,10 +158,7 @@ class CPFileSelector(wx.Frame):
         descend_dirs.Bind(wx.EVT_CHOICE, self.change_descend)
         exclude.Bind(wx.EVT_CHECKBOX, self.change_exclude)
         exclude_list.Bind(wx.EVT_TEXT, self.update_exclusions)
-        mode.Bind(wx.EVT_CHOICE, self.change_mode)
-        imagebook.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGING, self.page_changing)
-        imagebook.Bind(wx.EVT_LEFT_DOWN, self.notebook_click)
-        
+
         # default state
         base_dir.SetSelection(base_dir_choices.index(FS_DEFAULT_IMAGE))
         top_sizer.Hide(otherdir_sizer)
@@ -192,17 +167,11 @@ class CPFileSelector(wx.Frame):
         top_sizer.Hide(dirtree_boxsizer)
         exclude.SetValue(False)
         top_sizer.Hide(exclude_boxsizer)
-        mode.SetSelection(match_modes.index(FS_SUBSTRING))
-        self.new_page = 0
-
-        self.update_file_list()
-        self.Layout()
-        self.SetAutoLayout(True)
 
     def set_shown(self, sizer, item, show):
         was_shown = sizer.IsShown(item)
         sizer.Show(item, show=show)
-        is_shown =  sizer.IsShown(item)
+        is_shown = sizer.IsShown(item)
         if (sizer == self.top_sizer) and (is_shown and not was_shown):
             if hasattr(item, 'GetBestSize'):
                 sz = item.GetBestSize()[1]
@@ -212,7 +181,6 @@ class CPFileSelector(wx.Frame):
         elif (sizer == self.top_sizer) and (was_shown and not is_shown):
             self.splitter.SashPosition -= item.GetSize()[1]
 
-
     def change_basedir(self, evt):
         idx = self.base_dir.GetSelection()
         self.set_shown(self.top_sizer, self.otherdir_sizer, (base_dir_choices[idx] == FS_OTHER_DIR))
@@ -220,8 +188,7 @@ class CPFileSelector(wx.Frame):
             self.dirtree.set_directory(self.get_current_directory())
             if descend_dir_choices[self.descend_dirs.GetSelection()] == FS_DESCEND_NO:
                 self.update_file_list()
-                
-        self.top_panel.Layout()
+        self.Layout()
         self.Refresh()
 
     def change_otherdir(self, evt):
@@ -233,6 +200,9 @@ class CPFileSelector(wx.Frame):
     def get_current_directory(self):
         idx = self.base_dir.GetSelection()
         return [default_input, default_output, self.otherdir.GetValue()][idx]
+
+    def format_file(self, file_info):
+        return [('black', os.path.join(*file_info))]
 
     def update_file_list(self, dir=None, descend_dirs=None):
         if dir is None:
@@ -266,9 +236,10 @@ class CPFileSelector(wx.Frame):
             progress.Destroy()
 
         self.file_list.sort()
+        self.update_list_display()
 
-        for i in range(self.imagebook.GetPageCount() - 1):
-            self.imagebook.GetPage(i).update_file_list()
+    def update_list_display(self):
+        self.bottom_panel.set_text([self.format_file(f) for f in self.get_file_list()])
 
     def start_update(self, evt):
         self.update_file_list()
@@ -294,18 +265,75 @@ class CPFileSelector(wx.Frame):
         idx = self.descend_dirs.GetSelection()
         self.set_shown(self.top_sizer, self.descend_update_filelist, show=(descend_dir_choices[idx] != FS_DESCEND_NO))
         self.set_shown(self.top_sizer, self.dirtree_boxsizer, show=(descend_dir_choices[idx] == FS_DESCEND_CHOOSE))
-        self.top_panel.Layout()
+        self.Layout()
         self.Refresh()
 
     def change_exclude(self, evt):
         self.set_shown(self.top_sizer, self.exclude_boxsizer, show=self.exclude.GetValue())
         self.update_exclusions()
-        self.top_panel.Layout()
+        self.Layout()
         self.Refresh()
 
     def update_exclusions(self, evt=None):
-        for i in range(self.imagebook.GetPageCount() - 1):
-            self.imagebook.GetPage(i).update_file_list()
+        self.update_list_display()
+
+
+
+
+class CPFileSelector(wx.Frame):
+    def __init__(self, *args, **kwargs):
+
+        kwargs["style"] = wx.DEFAULT_FRAME_STYLE
+        wx.Frame.__init__(self, *args, **kwargs)
+
+        # top level notebook
+        self.notebook = notebook = wx.Notebook(self, -1, style=wx.BK_TOP)
+        notebook.AddPage(LocationPanel(notebook, -1), "Location")
+        notebook.AddPage(wx.Panel(notebook, -1), "Image Names")
+        notebook.AddPage(wx.Panel(notebook, -1), "Metadata")
+        notebook.AddPage(wx.Panel(notebook, -1), "Grouping")
+        
+        # panels
+        self.location = location = notebook.GetPage(0)
+        self.names = names = notebook.GetPage(1)
+        
+        # Matching Mode
+        mode, mode_sizer = labeled_thing("Identify channels by:", wx.Choice(names, -1, choices=match_modes), parent=names)
+        self.mode = mode
+
+        # images notebook
+        self.imagebook = imagebook = wx.Notebook(names, -1, style=wx.BK_TOP)
+        imagebook.AddPage(ImagePage(self, imagebook, default_image_name(0)), default_image_name(0))
+        imagebook.AddPage(wx.Panel(imagebook, -1), "Add another image...")
+
+        # Layout
+        bottom_sizer = wx.BoxSizer(wx.VERTICAL)
+        bottom_sizer.Add(mode_sizer, 0, wx.ALIGN_CENTER)
+        bottom_sizer.AddSpacer(5)
+        bottom_sizer.Add(imagebook, 1, wx.ALIGN_CENTER | wx.EXPAND)
+
+        bot_border = wx.BoxSizer()
+        bot_border.Add(bottom_sizer, 1, wx.EXPAND | wx.ALL, 5)
+        names.SetSizer(bot_border)
+        
+        border = wx.BoxSizer()
+        border.Add(notebook, 1, wx.EXPAND | wx.ALL, 5)
+
+        self.SetAutoLayout(True)
+        self.SetSizer(border)
+        self.Layout()
+
+        # bindings
+        mode.Bind(wx.EVT_CHOICE, self.change_mode)
+        imagebook.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGING, self.page_changing)
+        imagebook.Bind(wx.EVT_LEFT_DOWN, self.notebook_click)
+        
+        # default state
+        mode.SetSelection(match_modes.index(FS_SUBSTRING))
+        self.new_page = 0
+
+        self.Layout()
+        self.SetAutoLayout(True)
 
     def change_mode(self, evt):
         idx = self.mode.GetSelection()
@@ -374,7 +402,7 @@ class ImagePage(wx.Panel):
         path_sizer.AddSpacer(10)
         path_sizer.Add(matches_only, 0, wx.ALIGN_CENTER)
 
-        self.top_sizer = top_sizer = wx.BoxSizer(wx.VERTICAL)
+        top_sizer = wx.BoxSizer(wx.VERTICAL)
         top_sizer.Add(name_sizer, 0, wx.EXPAND)
         top_sizer.AddSpacer(10)
         top_sizer.Add(pattern_sizer, 0, wx.EXPAND)
@@ -382,6 +410,9 @@ class ImagePage(wx.Panel):
         top_sizer.Add(path_sizer, 0, wx.ALIGN_CENTER)
         top_sizer.AddSpacer(10)
         top_sizer.Add(file_list, 1, wx.EXPAND)
+
+
+
 
         border = wx.BoxSizer()
         border.Add(top_sizer, 1, wx.EXPAND | wx.ALL, 10)
@@ -444,7 +475,7 @@ class ImagePage(wx.Panel):
             return prefix + [('grey', file_string)]
 
     def format_file_list(self):
-        flist = [self.format_file(f) for f in self.file_selector.get_file_list()]
+        flist = [self.format_file(f) for f in self.file_selector.location.get_file_list()]
         return [f for f in flist if f is not None]
         
     def update_file_list(self, evt=None, keep_pos=False):

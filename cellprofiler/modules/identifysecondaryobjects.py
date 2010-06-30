@@ -194,6 +194,7 @@ class IdentifySecondaryObjects(cpmi.Identify):
         self.use_outlines = cps.Binary("Retain outlines of the identified secondary objects?",False)
         
         self.outlines_name = cps.OutlineNameProvider('Name the outline image',"SecondaryOutlines", doc="""\
+            <i>(Used only if outlines are to be saved)</i><br>
             Once the outline image is named here, the outlines of the identified objects may be used by modules downstream,
             by selecting them from any drop-down image list.""")
         
@@ -282,6 +283,20 @@ class IdentifySecondaryObjects(cpmi.Identify):
         if self.use_outlines.value:
             result.append(self.outlines_name)
         return result
+    
+    def help_settings(self):
+        return [ self.primary_objects, self.objects_name,   
+                 self.method, self.image_name, self.threshold_method, 
+                 self.two_class_otsu, self.use_weighted_variance,
+                 self.assign_middle_to_foreground, self.object_fraction, self.manual_threshold,  
+                 self.binary_image, self.thresholding_measurement,
+                 self.threshold_correction_factor, self.threshold_range,
+                 self.distance_to_dilate, 
+                 self.regularization_factor,
+                 self.fill_holes, self.wants_discard_edge, self.wants_discard_primary,
+                 self.new_primary_objects_name, self.wants_primary_outlines,
+                 self.new_primary_outlines_name, 
+                 self.use_outlines, self.outlines_name]
     
     def upgrade_settings(self,
                          setting_values,

@@ -86,6 +86,8 @@ def median_filter(data, mask, radius, percent=50):
       not overlap the mask, the filtered result is undefined, but in
       practice, it will be the lowest value in the valid area.
     '''
+    if np.all(~ mask):
+        return data.copy()
     #
     # Normalize the ranked data to 0-255
     #

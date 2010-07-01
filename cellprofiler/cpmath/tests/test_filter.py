@@ -82,6 +82,18 @@ class TestMedianFilter(unittest.TestCase):
         '''The median filter on an array of all zeros should be zero'''
         result = F.median_filter(np.zeros((10,10)), np.ones((10,10),bool), 3)
         self.assertTrue(np.all(result == 0))
+        
+    def test_00_01_all_masked(self):
+        '''Test a completely masked image
+        
+        Regression test of IMG-1029'''
+        result = F.median_filter(np.zeros((10,10)), np.zeros((10,10), bool), 3)
+        self.assertTrue(np.all(result == 0))
+        
+    def test_00_02_all_but_one_masked(self):
+        mask = np.zeros((10,10), bool)
+        mask[5,5] = True
+        result = F.median_filter(np.zeros((10,10)), mask, 3)
     
     def test_01_01_mask(self):
         '''The median filter, masking a single value'''

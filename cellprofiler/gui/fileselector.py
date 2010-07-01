@@ -101,21 +101,24 @@ class LocationPanel(wx.Panel):
         self.otherdir = otherdir = wx.TextCtrl(top_panel, -1, "")
         otherdir_browse = wx.Button(top_panel, -1, "Browse...")
 
+        # Advanced options
+        advanced = wx.CollapsiblePane(top_panel, -1, 'Options').GetPane()
+
         # descend?
-        descend_dirs, descend_sizer = labeled_thing("Descend into subdirectories?", wx.Choice(top_panel, -1, choices=descend_dir_choices), top_panel)
+        descend_dirs, descend_sizer = labeled_thing("Descend into subdirectories?", wx.Choice(advanced, -1, choices=descend_dir_choices), advanced)
         self.descend_dirs = descend_dirs
         # descend force update
-        self.descend_update_filelist = descend_update_filelist = wx.Button(top_panel, -1, "Update file list...")
+        self.descend_update_filelist = descend_update_filelist = wx.Button(advanced, -1, "Update file list...")
         # descent tree chooser...
-        box = wx.StaticBox(top_panel, -1, "Choose directories to search for files...")
-        self.dirtree, self.dirtree_boxsizer = dirtree, dirtree_boxsizer = boxed_thing(box, DirTree(top_panel, self), flag=wx.EXPAND)
+        box = wx.StaticBox(advanced, -1, "Choose directories to search for files...")
+        self.dirtree, self.dirtree_boxsizer = dirtree, dirtree_boxsizer = boxed_thing(box, DirTree(advanced, self), flag=wx.EXPAND)
 
         # exclude some files?
-        exclude, exclude_sizer = labeled_thing("Exclude some files by substring in filename?", wx.CheckBox(top_panel, -1, ""), top_panel)
+        exclude, exclude_sizer = labeled_thing("Exclude some files by substring in filename?", wx.CheckBox(advanced, -1, ""), advanced)
         self.exclude = exclude
 
-        box = wx.StaticBox(top_panel, -1, "Exclude substrings...")
-        self.exclude_list, self.exclude_boxsizer = exclude_list, exclude_boxsizer = boxed_thing(box, wx.TextCtrl(top_panel, -1, "", size=(300,30), style=wx.TE_MULTILINE))
+        box = wx.StaticBox(advanced, -1, "Exclude substrings...")
+        self.exclude_list, self.exclude_boxsizer = exclude_list, exclude_boxsizer = boxed_thing(box, wx.TextCtrl(advanced, -1, "", size=(300,30), style=wx.TE_MULTILINE))
 
         # Layout
         self.otherdir_sizer = otherdir_sizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -129,19 +132,24 @@ class LocationPanel(wx.Panel):
         top_sizer.AddSpacer(5)
         top_sizer.Add(otherdir_sizer, 0, wx.EXPAND | wx.LEFT | wx.RIGHT, border=20)
         top_sizer.AddSpacer(10)
-        top_sizer.Add(descend_sizer, 0, wx.ALIGN_CENTER)
-        top_sizer.AddSpacer(5)
-        top_sizer.Add(dirtree_boxsizer, 1, wx.EXPAND | wx.LEFT | wx.RIGHT, border=20)
+        top_sizer.Add(advanced, 0, wx.EXPAND, border=0)
         top_sizer.AddSpacer(10)
-        top_sizer.Add(exclude_sizer, 0,  wx.ALIGN_CENTER)
-        top_sizer.AddSpacer(5)
-        top_sizer.Add(exclude_boxsizer, 1, wx.ALIGN_CENTER) 
-        top_sizer.AddSpacer(5)
-        top_sizer.Add(descend_update_filelist, 0, wx.ALIGN_CENTER)
 
         top_border = wx.BoxSizer()
         top_border.Add(top_sizer, 1, wx.EXPAND | wx.ALL, 5)
         top_panel.SetSizer(top_border)
+
+        self.advanced_sizer = advanced_sizer = wx.BoxSizer(wx.VERTICAL)
+        advanced_sizer.Add(descend_sizer, 0, wx.ALIGN_CENTER)
+        advanced_sizer.AddSpacer(5)
+        advanced_sizer.Add(dirtree_boxsizer, 1, wx.EXPAND | wx.LEFT | wx.RIGHT, border=20)
+        advanced_sizer.AddSpacer(10)
+        advanced_sizer.Add(exclude_sizer, 0,  wx.ALIGN_CENTER)
+        advanced_sizer.AddSpacer(5)
+        advanced_sizer.Add(exclude_boxsizer, 1, wx.ALIGN_CENTER) 
+        advanced_sizer.AddSpacer(5)
+        advanced_sizer.Add(descend_update_filelist, 0, wx.ALIGN_CENTER)
+        advanced.SetSizer(advanced_sizer)
 
         border = wx.BoxSizer()
         border.Add(splitter, 1, wx.EXPAND | wx.ALL)
@@ -263,19 +271,72 @@ class LocationPanel(wx.Panel):
 
     def change_descend(self, evt):
         idx = self.descend_dirs.GetSelection()
-        self.set_shown(self.top_sizer, self.descend_update_filelist, show=(descend_dir_choices[idx] != FS_DESCEND_NO))
-        self.set_shown(self.top_sizer, self.dirtree_boxsizer, show=(descend_dir_choices[idx] == FS_DESCEND_CHOOSE))
+        self.set_shown(self.advanced_sizer, self.descend_update_filelist, show=(descend_dir_choices[idx] != FS_DESCEND_NO))
+        self.set_shown(self.advanced_sizer, self.dirtree_boxsizer, show=(descend_dir_choices[idx] == FS_DESCEND_CHOOSE))
         self.Layout()
         self.Refresh()
 
     def change_exclude(self, evt):
-        self.set_shown(self.top_sizer, self.exclude_boxsizer, show=self.exclude.GetValue())
+        self.set_shown(self.advanced_sizer, self.exclude_boxsizer, show=self.exclude.GetValue())
         self.update_exclusions()
         self.Layout()
         self.Refresh()
 
     def update_exclusions(self, evt=None):
         self.update_list_display()
+
+
+class NamesPanel(wx.Panel):
+    def __init__(self, *args, **kwargs):
+        wx.Panel.__init__(self, *args, **kwargs)
+
+        self.file_selector = self.Parent.Parent
+
+        # images notebook
+        self.imagebook = imagebook = wx.Notebook(self, -1, style=wx.BK_TOP)
+        imagebook.AddPage(ImagePage(imagebook, self.file_selector, default_image_name(0)), default_image_name(0))
+        imagebook.AddPage(wx.Panel(imagebook, -1), "Add another image...")
+
+        # Layout
+        border = wx.BoxSizer()
+        border.Add(imagebook, 1, wx.EXPAND | wx.ALL, 5)
+        self.SetSizer(border)
+
+        # bindings
+        imagebook.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGING, self.page_changing)
+        imagebook.Bind(wx.EVT_LEFT_DOWN, self.notebook_click)
+        
+        # default state
+        self.new_page = 0
+
+        self.Layout()
+        self.SetAutoLayout(True)
+
+    def page_changing(self, evt):
+        old = evt.GetOldSelection()
+        new = evt.GetSelection()
+        if old == new: # windows behavior (http://docs.wxwidgets.org/stable/wx_wxnotebookevent.html#wxnotebookeventgetselection)
+            new = self.new_page
+        imagebook = self.imagebook
+        if new == (imagebook.GetPageCount() - 1):
+            newpage = ImagePage(imagebook, self.file_selector, default_image_name(new))
+            imagebook.InsertPage(new, newpage, default_image_name(new))
+            newpage.update_file_list()
+            evt.Veto()
+        else:
+            evt.Skip()
+
+    def notebook_click(self,evt):
+        page = self.imagebook.HitTest(evt.GetPosition())[0]
+        if page != wx.NOT_FOUND:
+            self.new_page = page
+        evt.Skip()
+
+    def change_image_name(self, image_window, new_name):
+        imagebook = self.imagebook
+        for idx in range(imagebook.GetPageCount()):
+            if imagebook.GetPage(idx) == image_window:
+                imagebook.SetPageText(idx, new_name)
 
 
 
@@ -289,32 +350,13 @@ class CPFileSelector(wx.Frame):
         # top level notebook
         self.notebook = notebook = wx.Notebook(self, -1, style=wx.BK_TOP)
         notebook.AddPage(LocationPanel(notebook, -1), "Location")
-        notebook.AddPage(wx.Panel(notebook, -1), "Image Names")
+        notebook.AddPage(NamesPanel(notebook, -1), "Identify Images")
         notebook.AddPage(wx.Panel(notebook, -1), "Metadata")
         notebook.AddPage(wx.Panel(notebook, -1), "Grouping")
         
         # panels
         self.location = location = notebook.GetPage(0)
         self.names = names = notebook.GetPage(1)
-        
-        # Matching Mode
-        mode, mode_sizer = labeled_thing("Identify channels by:", wx.Choice(names, -1, choices=match_modes), parent=names)
-        self.mode = mode
-
-        # images notebook
-        self.imagebook = imagebook = wx.Notebook(names, -1, style=wx.BK_TOP)
-        imagebook.AddPage(ImagePage(self, imagebook, default_image_name(0)), default_image_name(0))
-        imagebook.AddPage(wx.Panel(imagebook, -1), "Add another image...")
-
-        # Layout
-        bottom_sizer = wx.BoxSizer(wx.VERTICAL)
-        bottom_sizer.Add(mode_sizer, 0, wx.ALIGN_CENTER)
-        bottom_sizer.AddSpacer(5)
-        bottom_sizer.Add(imagebook, 1, wx.ALIGN_CENTER | wx.EXPAND)
-
-        bot_border = wx.BoxSizer()
-        bot_border.Add(bottom_sizer, 1, wx.EXPAND | wx.ALL, 5)
-        names.SetSizer(bot_border)
         
         border = wx.BoxSizer()
         border.Add(notebook, 1, wx.EXPAND | wx.ALL, 5)
@@ -323,52 +365,8 @@ class CPFileSelector(wx.Frame):
         self.SetSizer(border)
         self.Layout()
 
-        # bindings
-        mode.Bind(wx.EVT_CHOICE, self.change_mode)
-        imagebook.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGING, self.page_changing)
-        imagebook.Bind(wx.EVT_LEFT_DOWN, self.notebook_click)
-        
-        # default state
-        mode.SetSelection(match_modes.index(FS_SUBSTRING))
-        self.new_page = 0
-
-        self.Layout()
-        self.SetAutoLayout(True)
-
-    def change_mode(self, evt):
-        idx = self.mode.GetSelection()
-        for i in range(self.imagebook.GetPageCount() - 1):
-            self.imagebook.GetPage(i).set_mode(idx)
-
-    def page_changing(self, evt):
-        old = evt.GetOldSelection()
-        new = evt.GetSelection()
-        if old == new: # windows behavior (http://docs.wxwidgets.org/stable/wx_wxnotebookevent.html#wxnotebookeventgetselection)
-            new = self.new_page
-        imagebook = self.imagebook
-        if new == (imagebook.GetPageCount() - 1):
-            newpage = ImagePage(self, imagebook, default_image_name(new))
-            imagebook.InsertPage(new, newpage, default_image_name(new))
-            newpage.update_file_list()
-            evt.Veto()
-        else:
-            evt.Skip()
-
-    def notebook_click(self,evt):
-        page = self.imagebook.HitTest(evt.GetPosition())[0]
-        if page != wx.NOT_FOUND:
-            self.new_page = page
-        evt.Skip()
-
-
-    def change_image_name(self, image_window, new_name):
-        imagebook = self.imagebook
-        for idx in range(imagebook.GetPageCount()):
-            if imagebook.GetPage(idx) == image_window:
-                imagebook.SetPageText(idx, new_name)
-
 class ImagePage(wx.Panel):
-    def __init__(self, file_selector, parent, initial_name):
+    def __init__(self, parent, file_selector, initial_name):
         wx.Panel.__init__(self, parent, style=wx.BK_TOP)
 
         self.file_selector = file_selector
@@ -377,7 +375,11 @@ class ImagePage(wx.Panel):
         nlabel = wx.StaticText(self, -1, "Name for this image in CellProfiler: ")
         self.name = name = wx.TextCtrl(self, -1, initial_name)
 
-        self.pattern_label = pattern_label = wx.StaticText(self, -1, pattern_label_strings[self.file_selector.mode.GetSelection()])
+        mode, mode_sizer = labeled_thing("Identify channels by:", wx.Choice(self, -1, choices=match_modes), parent=self)
+        mode.SetSelection(match_modes.index(FS_SUBSTRING))
+        self.mode = mode
+
+        self.pattern_label = pattern_label = wx.StaticText(self, -1, pattern_label_strings[self.mode.GetSelection()])
         self.pattern = pattern = wx.TextCtrl(self, -1, "")
 
         pathtext = wx.StaticText(self, -1, "Match against:")
@@ -407,6 +409,8 @@ class ImagePage(wx.Panel):
         top_sizer.AddSpacer(10)
         top_sizer.Add(pattern_sizer, 0, wx.EXPAND)
         top_sizer.AddSpacer(10)
+        top_sizer.Add(mode_sizer, 0, wx.EXPAND)
+        top_sizer.AddSpacer(10)
         top_sizer.Add(path_sizer, 0, wx.ALIGN_CENTER)
         top_sizer.AddSpacer(10)
         top_sizer.Add(file_list, 1, wx.EXPAND)
@@ -422,6 +426,7 @@ class ImagePage(wx.Panel):
         name.Bind(wx.EVT_TEXT, self.change_name)
         pattern.Bind(wx.EVT_TEXT, self.update_file_list)
         pattern.Bind(wx.EVT_KEY_UP, self.update_file_list) # some editing keys don't cause EVT_TEXT (e.g., control-D)
+        mode.Bind(wx.EVT_CHOICE, self.change_mode)
         fullpath.Bind(wx.EVT_CHOICE, self.update_file_list)
         matches_only.Bind(wx.EVT_CHECKBOX, self.update_file_list)
 
@@ -432,14 +437,15 @@ class ImagePage(wx.Panel):
         self.SetAutoLayout(True)
         self.Layout()
 
+
     def change_name(self, evt):
-        self.file_selector.change_image_name(self, self.name.GetValue())
+        self.file_selector.names.change_image_name(self, self.name.GetValue())
 
     def format_file(self, file_info):
         base_dir, sub_dir, filename = file_info
         pattern = self.pattern.GetValue()
         match_elements_choice = match_elements[self.fullpath.GetSelection()]
-        modestr = match_modes[self.file_selector.mode.GetSelection()]
+        modestr = match_modes[self.mode.GetSelection()]
             
         prefix = []
         if match_elements_choice == FS_FILENAME_ONLY:
@@ -486,7 +492,8 @@ class ImagePage(wx.Panel):
             # don't blow up when the pattern isn't valid
             pass
 
-    def set_mode(self, idx):
+    def change_mode(self, evt):
+        idx = self.mode.GetSelection()
         self.path_sizer.Show(self.fullpath, (match_modes[idx] != FS_POSITION))
         self.pattern_label.SetLabel(pattern_label_strings[idx])
         self.Layout()

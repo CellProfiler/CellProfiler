@@ -129,6 +129,7 @@ class FilterObjects(cpm.CPModule):
             "Add another measurement",
             "Add", self.add_measurement)
         self.filter_choice = cps.Choice("Select the filtering method", FI_ALL, FI_LIMITS, doc = """
+                                <i>(Used only if filtering using measurements)</i><br>
                                 There are five different ways to filter objects:
                                 <ul>
                                 <li><i>Limits:</i> Keep an object if its measurement value falls within a range you specify.</li> 
@@ -172,7 +173,7 @@ class FilterObjects(cpm.CPModule):
             "Rules file name","rules.txt",
             get_directory_fn = get_directory_fn,
             set_directory_fn = set_directory_fn,
-            doc="""<i>(Used only when filtering by rules)</i>
+            doc="""<i>(Used only when filtering using rules)</i>
             <br>The name of the file holding the rules. Each line of
             this file should be a rule naming a measurement to be made
             on the object you selected, for instance:
@@ -195,8 +196,7 @@ class FilterObjects(cpm.CPModule):
                                  to pass object outlines along to the module <b>OverlayOutlines</b>, and then save
                                  them with the <b>SaveImages</b> module. Also, the identified objects themselves
                                  can be passed along to the object processing module <b>ConvertToImage</b>
-                                 and then saved with the <b>SaveImages</b> module.
-''')
+                                 and then saved with the <b>SaveImages</b> module.''')
         self.additional_objects = []
         self.additional_object_count = cps.HiddenCount(self.additional_objects,
                                                        "Additional object count")
@@ -214,6 +214,7 @@ class FilterObjects(cpm.CPModule):
         group.append("measurement", cps.Measurement(
             'Select the measurement to filter by', 
             self.object_name.get_value, "AreaShape_Area", doc = """
+            <i>(Used only if filtering using measurements)</i><br>
             See the <b>Measurements</b> modules help pages 
             for more information on the features measured."""))
         
@@ -287,6 +288,12 @@ class FilterObjects(cpm.CPModule):
             result += [x.object_name, x.target_name, x.wants_outlines, x.outlines_name]
         return result
 
+    def help_settings(self):
+        return [self.target_name, self.object_name, self.rules_or_measurement,
+                self.filter_choice, self.rules_directory, 
+                self.rules_file_name,self.enclosing_object_name,
+                self.wants_outlines, self.outlines_name]
+    
     def visible_settings(self):
         result =[self.target_name, self.object_name, 
                  self.spacer_2, self.rules_or_measurement]

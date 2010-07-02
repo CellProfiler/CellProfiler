@@ -260,7 +260,8 @@ class SaveImages(cpm.CPModule):
         
         self.overwrite = cps.Binary("Overwrite existing files without warning?",False,doc="""
                 Check this box to automatically overwrite a file if it already exists. Otherwise, you
-                will be prompted for confirmation first.""")
+                will be prompted for confirmation first. If you are running the pipeline on a computing cluster,
+                you should uncheck this box since you will not be able to intervene and answer the confirmation prompt.""")
         
         self.when_to_save = cps.Choice("Select how often to save",
                 [WS_EVERY_CYCLE,WS_FIRST_CYCLE,WS_LAST_CYCLE],

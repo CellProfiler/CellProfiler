@@ -453,7 +453,7 @@ class Morph(cpm.CPModule):
         self.functions = []
         self.add_function(can_remove = False)
     
-    CUSTOM_REPEATS_TEXT = "Custom # of repeats"
+    CUSTOM_REPEATS_TEXT = "Repetition number"
     CUSTOM_REPEATS_DOC = "<i>(Used only if Custom selected)</i><br>Enter the number of times to repeat the operation"
     def add_function(self, can_remove = True):
         group = MorphSettingsGroup()
@@ -463,7 +463,7 @@ class Morph(cpm.CPModule):
                                            F_ALL, F_OPEN,doc="""
                                            What operation do you want to perform?
                     Choose one of the operations described in this module's help."""))
-        group.append("repeats_choice", cps.Choice("Repeat operation",
+        group.append("repeats_choice", cps.Choice("Number of times to repeat operation",
                                                   R_ALL,doc="""
                     This setting controls the number of times that the same operation is applied
                     successively to the image.
@@ -476,7 +476,7 @@ class Morph(cpm.CPModule):
         group.append("custom_repeats", cps.Integer(self.CUSTOM_REPEATS_TEXT,2,1,
                      doc=self.CUSTOM_REPEATS_DOC))
         group.append("scale", cps.Float(
-            "Scale:",3, minval=3,
+            "Scale",3, minval=3,
             doc="""Morphological open, close, erode and dialate are performed
             with structuring elements which determine the diameter of the
             circle enclosing the pixels to consider when applying the operation.

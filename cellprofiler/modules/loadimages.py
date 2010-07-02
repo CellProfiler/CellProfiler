@@ -634,15 +634,18 @@ class LoadImages(cpmodule.CPModule):
             for all column headers cannot exceed 64K. A warning will be 
             generated later if this limit has been exceeded.</li>
             </ul>"""))
+        
         channels = [ 
             str(x) for x in range(1, max(10, len(image_settings.channels)+2)) ]
+        
         group.append("channel_number", cps.Choice(
-            "Channel number:", channels, channels[len(image_settings.channels)-1],
-            doc = """(Used only for multichannel images)
+            "Channel number", channels, channels[len(image_settings.channels)-1],
+            doc = """<i>(Used only if a movie image format is selected as file type and movie frame grouping is selected)</i><br>
             The channels of a multichannel image are numbered starting from 1.
             Each channel is a greyscale image, acquired using different
             illumination sources and/or optics. Use this setting to pick
             the channel to associate with the above image name."""))
+        
         group.can_remove = can_remove
         if can_remove:
             group.append("remover", cps.RemoveSettingButton(

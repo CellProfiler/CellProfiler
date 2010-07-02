@@ -99,7 +99,6 @@ class ApplyThreshold(Identify):
         return vv
     
     def settings(self):
-        """Return all  settings in a consistent order"""
         return [self.image_name, self.thresholded_image_name,
                 self.binary, self.low_or_high, 
                 self.shift, self.dilation,
@@ -109,6 +108,17 @@ class ApplyThreshold(Identify):
                 self.two_class_otsu, self.use_weighted_variance,
                 self.assign_middle_to_foreground,
                 self.thresholding_measurement]
+    
+    def help_settings(self):
+        """Return all settings in a consistent order"""
+        return [self.image_name, self.thresholded_image_name,
+                self.binary, self.low_or_high, 
+                self.shift, self.dilation,
+                self.threshold_method, self.two_class_otsu, self.use_weighted_variance,
+                self.assign_middle_to_foreground,
+                self.object_fraction, self.manual_threshold, self.thresholding_measurement, 
+                self.threshold_range, self.threshold_correction_factor,
+                self.enclosing_objects_name]
     
     def is_interactive(self):
         return False

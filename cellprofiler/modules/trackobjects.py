@@ -94,6 +94,7 @@ from cellprofiler.cpmath.cpmorphology import centers_of_labels
 from cellprofiler.cpmath.cpmorphology import associate_by_distance
 from cellprofiler.cpmath.cpmorphology import all_connected_components
 from identify import M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y
+from cellprofiler.gui.help import HELP_ON_MEASURING_DISTANCES
 
 TM_OVERLAP = 'Overlap'
 TM_DISTANCE = 'Distance'
@@ -232,7 +233,7 @@ class TrackObjects(cpm.CPModule):
             Objects in the subsequent frame will be considered potential matches if 
             they are within this distance. To determine a suitable pixel distance, you can look
             at the axis increments on each image (shown in pixel units) or
-            using <i>Tools > Show pixel data</i> of any CellProfiler figure window.""")
+            use the distance measurement tool. %(HELP_ON_MEASURING_DISTANCES)s"""%globals())
 
         self.born_cost = cps.Integer(
             'Cost of being born', 100, minval=1, doc = '''

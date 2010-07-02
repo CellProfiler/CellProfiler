@@ -30,6 +30,7 @@ from cellprofiler.cpmath.threshold import TM_MANUAL, TM_MEASUREMENT, TM_METHODS,
 from cellprofiler.cpmath.threshold import TM_GLOBAL, TM_BINARY_IMAGE, TM_MOG
 from cellprofiler.cpmath.threshold import TM_OTSU
 from cellprofiler.cpmath.threshold import weighted_variance, sum_of_entropies
+from cellprofiler.gui.help import HELP_ON_PIXEL_INTENSITIES
 
 O_TWO_CLASS = 'Two classes'
 O_THREE_CLASS = 'Three classes'
@@ -104,7 +105,7 @@ class Identify(cellprofiler.cpmodule.CPModule):
         '''Create settings related to thresholding'''
         self.threshold_method = cps.Choice(
             'Select the thresholding method',
-            methods, doc='''\
+            methods, doc="""
             The intensity threshold affects the decision of whether each pixel
             will be considered foreground (regions of interest) or background.
             A stringent threshold will result in only 
@@ -112,9 +113,9 @@ class Identify(cellprofiler.cpmodule.CPModule):
             a lenient threshold will include dim regions and the lines between regions 
             and background will be more loose. You can have the threshold automatically calculated 
             using several methods, or you can enter an absolute number between 0 
-            and 1 for the threshold (to see the pixel intensities for your images 
-            in the appropriate range of 0 to 1, use <i>Tools &gt; Show pixel data</i> 
-            in a window showing your image). Both options have advantages. 
+            and 1 for the threshold. To help determine the choice of threshold manually, you
+            can inspect the pixel intensities in an image of your choice. 
+            %(HELP_ON_PIXEL_INTENSITIES)s"""%globals() + """ Both options have advantages. 
             An absolute number treats every image identically, but is not robust 
             with regard to slight changes in lighting/staining conditions between images. An
             automatically calculated threshold adapts to changes in
@@ -223,7 +224,7 @@ class Identify(cellprofiler.cpmodule.CPModule):
             in order to threshold the image. Like manual thresholding, this setting can be useful when you are 
             certain what the cutoff should be. The difference in this case is that the desired threshold does 
             vary from image to image in the experiment but can be measured using a Measurement module. 
-            ''')
+            """)
 
         self.threshold_correction_factor = cps.Float('Threshold correction factor', 1,
                                                 doc="""\

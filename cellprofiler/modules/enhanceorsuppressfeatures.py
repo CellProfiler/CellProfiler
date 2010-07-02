@@ -24,6 +24,7 @@ import cellprofiler.cpimage as cpi
 import cellprofiler.settings as cps
 from cellprofiler.cpmath.cpmorphology import opening, closing, white_tophat
 from cellprofiler.cpmath.filter import enhance_dark_holes
+from cellprofiler.gui.help import HELP_ON_PIXEL_INTENSITIES
 
 ENHANCE = 'Enhance'
 SUPPRESS = 'Suppress'
@@ -90,9 +91,7 @@ class EnhanceOrSuppressFeatures(cpm.CPModule):
                                         <i>(Used only if speckles or neurites are selected, or if suppressing features)</i><br>
                                         What is the feature size? 
                                         The diameter of the largest speckle (or the width of the neurites) to be enhanced or suppressed, which
-                                        will be used to calculate an adequate filter size. If you don't know the width 
-                                        of your objects, use the <i>Tools > Show pixel data</i> image tool 
-                                        in the image window menu to find out.""")
+                                        will be used to calculate an adequate filter size. %(HELP_ON_PIXEL_INTENSITIES)s"""%globals())
         
         self.hole_size = cps.IntegerRange('Range of hole sizes',
                                         value=(1,10),minval=1, doc="""

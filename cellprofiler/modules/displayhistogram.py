@@ -100,12 +100,13 @@ class DisplayHistogram(cpm.CPModule):
                             cycle being executed.''')
 
         self.wants_xbounds = cps.Binary(
-                            'Do you wish to specify min/max bounds for the x-axis',
-                            False, doc =''' ''')
+                            'Specify min/max bounds for the x-axis?',
+                            False, doc ='''You can specifiy minimum and maximum values for the 
+                            plot on the x-axis. This is helpful if an outlier bin skews the
+                            plot such that the bins of interest are no longer visible.''')
         
         self.xbounds = cps.FloatRange(
-                            'Enter the min & max values for the x-axis', 
-                            doc=''' ''')
+                            'Minimum/maximum values for the x-axis')
         
     def settings(self):
         """Return the settings to be loaded or saved to/from the pipeline

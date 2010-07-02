@@ -168,6 +168,14 @@ class ImageMath(cpm.CPModule):
                    self.addend, self.truncate_low, self.truncate_high]
         return result
 
+    def help_settings(self):
+        result = [self.operation, self.output_image_name, ]
+        for image in self.images:
+            result += [image.image_name, image.factor]
+        result += [self.exponent, self.after_factor, self.addend,
+                  self.truncate_low, self.truncate_high]
+        return result
+    
     def prepare_settings(self, setting_values):
         value_count = len(setting_values)
         assert (value_count - FIXED_SETTING_COUNT) % IMAGE_SETTING_COUNT == 0

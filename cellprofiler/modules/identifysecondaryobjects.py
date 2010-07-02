@@ -242,7 +242,7 @@ class IdentifySecondaryObjects(cpmi.Identify):
         
         self.new_primary_outlines_name = cps.OutlineNameProvider(
             "Name the new primary object outlines", "FilteredNucleiOutlines",
-            doc = """<i>(Used only when saving outlines of new primary objects)</i><br>
+            doc = """<i>(Used only if associated primary objects are discarded and saving outlines of new primary objects)</i><br>
             You can name the outline image of the
             primary objects after filtering. You can refer to this image
             using this name in subsequent modules such as <b>SaveImages</b>.""")

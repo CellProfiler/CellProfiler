@@ -3,9 +3,9 @@ the same field of view together, either by performing a mathematical operation
 upon the pixel values at each pixel position.
 <hr>
 
-This module combines a set of images by either averaging, suming or taking the 
-maximum or minimum pixel intensity at each pixel position. The process of averaging
-or summing a Z-stack (3D image stack) is known as making a projection.
+This module combines a set of images by performing a mathematic operation of your
+choice at each pixel position; please refer to the settings help for more information on the available
+operations. The process of averaging or summing a Z-stack (3D image stack) is known as making a projection.
 
 The image is not immediately available in subsequent modules because the
 output of this module is not complete until all image processing cycles have completed.
@@ -28,48 +28,6 @@ However, unlike <b>LoadImageDirectory</b>, this per-folder projection is also no
 immediately available in subsequent modules until all image processing cycles for 
 the given subfolder have completed.
 
-<h2>Projection methods</h2>
-The variance method is described in "Selinummi J, Ruusuvuori P, Podolsky I, 
-Ozinsky A, Gold E, et al. (2009), <i>Bright Field Microscopy
-as an Alternative to Whole Cell Fluorescence in Automated Analysis of
-Macrophage Images</i>, PLoS ONE 4(10): e7497. doi:10.1371/journal.pone.0007497".
-The method is designed to operate on a z-stack of brightfield images taken
-at different focus planes. Background pixels will have relatively uniform
-illumination whereas cytoplasm pixels will have higher variance across the
-z-stack.
-<p>The power method is experimental. The method computes the power at a given
-frequency through the z-stack. It might be used with a phase contrast image
-where the signal at a given pixel will vary sinusoidally with depth. The
-frequency is measured in z-stack steps and pixels that vary with the given
-frequency will have a higher score than other pixels with similar variance,
-but different frequencies.
-<p>The brightfield method is designed to operate on a z-stack of brightfield
-images where the first image in the z-stack is the closest to the microscope
-objective and the last is the farthest away. It assumes that the highest
-intensity for a cytoplasm pixel occurs at the z-height closest to the
-boundary of the cell and medium since this is where the refractive index
-changes and the highest reflection takes place. Pixels below this one should
-be in shadow and have lower values. The method finds the brightest pixel in
-the z-stack and the darkest below it, subtracting the dark value from the
-light to get the recorded intensity. The brightfield method normalizes the
-intensities of all images in a z-stack to match that of the first z-stack
-image.
-<p>Artifacts such as dust appear as black spots which are most strongly resolved
-at their focal plane with gradually increasing signals below. The brightfield
-method scores these as zero since the dark appears in the early z-stacks.
-These pixels have a high score for the variance method but have a reduced
-score when using the brightfield method.
-<p>
-The mask method operates on any masks that might have been applied to the
-images in a group. The output is a binary image where the "1" pixels are
-those that are not masked in all of the images and the "0" pixels are those
-that are masked in one or more of the images.
-<p>You can use the output of the mask method to mask or crop all of the
-images in a group similarly. Use the mask method to combine all of the
-masks in a group, save the image and then use <b>Crop</b>, <b>MaskImage</b> or 
-<b>MaskObjects</b> in another pipeline to mask all images or objects in the
-group similarly.
-<p>
 See also <b>LoadImages</b>.
 '''
 # CellProfiler is distributed under the GNU General Public License.
@@ -121,11 +79,38 @@ class MakeProjection(cpm.CPModule):
             <li><i>%(P_MAXIMUM)s:</i> Use the maximum pixel value at each pixel position.</li>
             <li><i>%(P_MINIMUM)s:</i> Use the minimum pixel value at each pixel position.</li>
             <li><i>%(P_SUM)s:</i> Add the pixel values at each pixel position.</li>
-            <li><i>%(P_VARIANCE)s:</i> Compute the variance at each pixel position.</li>
-            <li><i>%(P_POWER)s:</i> Compute the power at a given frequency at each pixel position.</li>
-            <li><i>%(P_BRIGHTFIELD)s:</i>Perform the brightfield projection at each pixel position.</li>
+            <li><i>%(P_VARIANCE)s:</i> Compute the variance at each pixel position. <br>
+            The variance  method is described in "Selinummi J, Ruusuvuori P, Podolsky I, Ozinsky A, Gold E, et al. (2009), 
+            "Bright Field Microscopy as an Alternative to Whole Cell Fluorescence in Automated Analysis of
+            Macrophage Images", PLoS ONE 4(10): e7497 <a href="http://dx.doi.org/10.1371/journal.pone.0007497">(link)</a>.
+            The method is designed to operate on a z-stack of brightfield images taken
+            at different focus planes. Background pixels will have relatively uniform
+            illumination whereas cytoplasm pixels will have higher variance across the
+            z-stack.</li>
+            <li><i>%(P_POWER)s:</i> Compute the power at a given frequency at each pixel position.<br>
+            The power method is experimental. The method computes the power at a given
+            frequency through the z-stack. It might be used with a phase contrast image
+            where the signal at a given pixel will vary sinusoidally with depth. The
+            frequency is measured in z-stack steps and pixels that vary with the given
+            frequency will have a higher score than other pixels with similar variance,
+            but different frequencies.</li>
+            <li><i>%(P_BRIGHTFIELD)s:</i> Perform the brightfield projection at each pixel position.<br>
+            Artifacts such as dust appear as black spots which are most strongly resolved
+            at their focal plane with gradually increasing signals below. The brightfield
+            method scores these as zero since the dark appears in the early z-stacks.
+            These pixels have a high score for the variance method but have a reduced
+            score when using the brightfield method.</li>
             <li><i>%(P_MASK)s:</i> Compute a binary image of the pixels that are 
-            masked in any of the input images</li>
+            masked in any of the input images.<br>
+            The mask method operates on any masks that might have been applied to the
+            images in a group. The output is a binary image where the "1" pixels are
+            those that are not masked in all of the images and the "0" pixels are those
+            that are masked in one or more of the images.<br>
+            You can use the output of the mask method to mask or crop all of the
+            images in a group similarly. Use the mask method to combine all of the
+            masks in a group, save the image and then use <b>Crop</b>, <b>MaskImage</b> or 
+            <b>MaskObjects</b> in another pipeline to mask all images or objects in the
+            group similarly.</li>
             </ul>
             ''' % globals())
         self.projection_image_name = cps.ImageNameProvider(

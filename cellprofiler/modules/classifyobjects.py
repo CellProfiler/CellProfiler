@@ -174,24 +174,32 @@ class ClassifyObjects(cpm.CPModule):
         
         self.low_low_custom_name = cps.Text(
             "Enter the low-low bin name","low_low",
-            doc="""Name of the measurement for objects that
+            doc="""
+            <i>(Used only if using a pair of measurements)</i><br>
+            Name of the measurement for objects that
             fall below the threshold for both measurements.""")
         
         self.low_high_custom_name = cps.Text(
             "Enter the low-high bin name","low_high",
-            doc="""Name of the measurement for objects whose
+            doc="""
+            <i>(Used only if using a pair of measurements)</i><br>
+            Name of the measurement for objects whose
             first measurement is below threshold and whose second measurement
             is above threshold.""")
         
         self.high_low_custom_name = cps.Text(
             "Enter the high-low bin name","high_low",
-            doc="""Name of the measurement for objects whose
+            doc="""
+            <i>(Used only if using a pair of measurements)</i><br>
+            Name of the measurement for objects whose
             first measurement is above threshold and whose second measurement
             is below threshold.""")
         
         self.high_high_custom_name = cps.Text(
             "Enter the high-high bin name","high_high",
-            doc="""Name of the measurement for objects that
+            doc="""
+            <i>(Used only if using a pair of measurements)</i><br>
+            Name of the measurement for objects that
             are above the threshold for both measurements.""")
         
         self.wants_image = cps.Binary(

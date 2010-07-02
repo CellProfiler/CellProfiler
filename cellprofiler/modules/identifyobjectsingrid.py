@@ -63,6 +63,7 @@ from cellprofiler.modules.identify import add_object_location_measurements
 from cellprofiler.modules.identify import get_object_measurement_columns
 from cellprofiler.cpmath.outline import outline
 from cellprofiler.cpmath.cpmorphology import centers_of_labels, relabel
+from cellprofiler.gui.help import HELP_ON_MEASURING_DISTANCES
 
 SHAPE_RECTANGLE = "Rectangle Forced Location"
 SHAPE_CIRCLE_FORCED = "Circle Forced Location"
@@ -144,7 +145,8 @@ class IdentifyObjectsInGrid(cpm.CPModule):
             "Circle diameter", 20, minval=2,
             doc="""<i>(Used only if Circle is selected as object shape and diameter is 
             specified manually)</i><br>
-            Enter the diameter to be used for each grid circle, in pixels. You can use <i>Tools > Show Pixel Data</i> on an open image to measure distances in pixels.""")
+            Enter the diameter to be used for each grid circle, in pixels. 
+            %(HELP_ON_MEASURING_DISTANCES)s"""%globals())
         
         self.guiding_object_name = cps.ObjectNameSubscriber(
             "Select the guiding objects", "None",

@@ -28,6 +28,7 @@ from cellprofiler.cpmath.smooth import smooth_with_function_and_mask
 from cellprofiler.cpmath.smooth import circular_gaussian_kernel
 from cellprofiler.cpmath.smooth import fit_polynomial
 from cellprofiler.cpmath.filter import median_filter, bilateral_filter, circular_average_filter
+from cellprofiler.gui.help import HELP_ON_MEASURING_DISTANCES, HELP_ON_PIXEL_INTENSITIES
 
 FIT_POLYNOMIAL = 'Fit Polynomial'
 MEDIAN_FILTER = 'Median Filter'
@@ -100,12 +101,9 @@ class Smooth(cpm.CPModule):
             <i>(Used only if choosing the artifact diameter automatically is unchecked)</i><br>
             Enter the approximate diameter of the features to be blurred by
             the smoothing algorithm. This value is used to calculate the size of 
-            the spatial filter. To measure distances easily in an open image, 
-            use <i>Tools > Show pixel data</i>. Clicking and dragging the 
-            mouse will yield a <i>Length</i> measurement in the 
-            bottom bar of the figure window.
+            the spatial filter. %(HELP_ON_MEASURING_DISTANCES)s
             For most smoothing methods, selecting a
-            diameter over ~50 will take substantial amounts of time to process.""")
+            diameter over ~50 will take substantial amounts of time to process."""%globals())
         
         self.sigma_range = cps.Float('Edge intensity difference', .1,doc="""
             <i>(Used only if Smooth Keeping Edges is selected)</i><br>
@@ -114,10 +112,7 @@ class Smooth(cpm.CPModule):
             Edges are locations where the intensity changes precipitously, so this
             setting is used to adjust the rough magnitude of these changes. A lower
             number will preserve weaker edges. A higher number will preserve only stronger edges.
-            Values should be between zero and one. To view pixel intensities in 
-            an open image, use <i>Tools > Show pixel data</i>. When you move 
-            your mouse over the image,the pixel intensities will appear in the 
-            bottom bar of the figure window.""")
+            Values should be between zero and one. %(HELP_ON_PIXEL_INTENSITIES)s"""%globals())
 
     def settings(self):
         return [self.image_name, self.filtered_image_name, 

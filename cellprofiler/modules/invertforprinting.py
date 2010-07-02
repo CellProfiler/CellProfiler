@@ -88,7 +88,7 @@ class InvertForPrinting(cpm.CPModule):
             doc = '''<i>(Used only when producing a blue image)</i><br>What do you want to call the blue image?''')
         self.color_output_image = cps.ImageNameProvider(
             "Name the inverted color image",
-            "InvertedColor", doc = '''What do you want to call the inverted color image?''')
+            "InvertedColor", doc = '''<i>(Used only when producing a color output image)</i><br>What do you want to call the inverted color image?''')
         
     def settings(self):
         '''Return the settings as saved in the pipeline'''
@@ -102,7 +102,18 @@ class InvertForPrinting(cpm.CPModule):
                 self.wants_green_output, self.green_output_image,
                 self.wants_blue_output, self.blue_output_image,
                 self.color_output_image]
-    
+    def help_settings(self):
+        return [self.input_color_choice, 
+                self.wants_red_input, self.red_input_image,
+                self.wants_green_input, self.green_input_image,
+                self.wants_blue_input, self.blue_input_image,
+                elf.color_input_image,
+                self.output_color_choice,
+                self.color_output_image,
+                sself.wants_red_output, self.red_output_image,
+                self.wants_green_output, self.green_output_image,
+                self.wants_blue_output, self.blue_output_image ]
+
     def visible_settings(self):
         '''Return the settings as displayed in the UI'''
         result = [self.input_color_choice]

@@ -1112,6 +1112,15 @@ HELP_ON_MODULE_BUT_NONE_SELECTED = (
     "You do not have any modules in the pipeline, yet. Add a module to the "
     'pipeline using the "+" button or by using File > Load Pipeline.')
 
+HELP_ON_MEASURING_DISTANCES = """To measure distances in an open image, use the "Measure
+length" tool under <i>Tools</i> in the display window menu bar. If you click on an image 
+and drag, a line will appear between the two endpoints, and the distance between them shown at the right-most
+portion of the bottom panel."""
+
+HELP_ON_PIXEL_INTENSITIES = """To view pixel intensities in an open image, use the 
+pixel intensity tool which is available in any open display window. When you move 
+your mouse over the image, the pixel intensities will appear in the bottom bar of the display window."""
+
 #########################################################
 #
 # The top-level of help - used when building the HTML manual

@@ -217,7 +217,18 @@ class MeasureImageQuality(cpm.CPModule):
                        image_group.use_weighted_variance, 
                        image_group.assign_middle_to_foreground]
         return result
-
+    def help_settings(self):
+        '''The settings in the help order'''
+        result = []
+        for image_group in self.image_groups:
+            result += [image_group.image_name, image_group.check_blur, image_group.window_size,
+                       image_group.check_saturation, image_group.calculate_threshold,
+                       image_group.threshold_method, image_group.two_class_otsu, 
+                       image_group.use_weighted_variance, 
+                       image_group.assign_middle_to_foreground, image_group.object_fraction,
+                       image_group.compute_power_spectrum]
+        return result
+    
     def visible_settings(self):
         '''The settings as displayed to the user'''
         result = []

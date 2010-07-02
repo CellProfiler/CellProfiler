@@ -157,6 +157,7 @@ import cellprofiler.cpmath.threshold as cpthresh
 from identify import FF_FINAL_THRESHOLD, FF_ORIG_THRESHOLD
 from identify import FF_SUM_OF_ENTROPIES, FF_WEIGHTED_VARIANCE
 from identify import draw_outline
+from cellprofiler.gui.help import HELP_ON_MEASURING_DISTANCES
 
 IMAGE_NAME_VAR                  = 0
 OBJECT_NAME_VAR                 = 1
@@ -218,12 +219,9 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             image. For example, for some of the identification methods, the smoothing
             applied to the image is based on the minimum size of the objects. The units
             here are pixels so that it is easy to zoom in on objects and determine
-            typical diameters. To measure distances in an open image, use
-            <i>Tools &gt; Show pixel data</i>. Once this tool is activated, you can
-            draw a line across objects in your image and the length of the line 
-            will be shown in pixel units. Note that for non-round objects, the 
+            typical diameters. %(HELP_ON_MEASURING_DISTANCES)s Note that for non-round objects, the 
             diameter here is actually the "equivalent diameter", i.e.,
-            the diameter of a circle with the same area as the object.''')
+            the diameter of a circle with the same area as the object.'''%globals())
         
         self.exclude_size = cps.Binary(
             "Discard objects outside the diameter range?",

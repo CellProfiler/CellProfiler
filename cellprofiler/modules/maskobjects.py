@@ -186,6 +186,14 @@ class MaskObjects(I.Identify):
                 self.wants_outlines, self.outlines_name, 
                 self.wants_inverted_mask]
     
+    def help_settings(self):
+        '''The settings as they appear in the pipeline'''
+        return [self.object_name, self.remaining_objects, self.mask_choice,
+                self.masking_objects, self.masking_image, 
+                self.wants_inverted_mask, 
+                self.overlap_choice, self.overlap_fraction, self.retain_or_renumber, 
+                self.wants_outlines, self.outlines_name]
+    
     def visible_settings(self):
         '''The settings as they appear in the UI'''
         result = [self.object_name, self.remaining_objects, self.mask_choice,

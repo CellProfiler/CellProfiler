@@ -50,7 +50,7 @@ class AddModuleFrame(wx.Frame):
         module_help_button = wx.Button(selected_module_panel,-1,'? Module Help')
         # Other buttons
         getting_started_button = wx.Button(left_panel,-1,'Getting Started')
-        wheres_my_module_button = wx.Button(left_panel,-1,'Where''s my Module?')
+        wheres_my_module_button = wx.Button(left_panel,-1,"Where's my Module?")
         browse_button = wx.Button(left_panel,-1,'Browse...')
         done_button = wx.Button(left_panel,-1,'Done')
         # Right-side panel

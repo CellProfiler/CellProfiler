@@ -192,7 +192,9 @@ class SaveImages(cpm.CPModule):
                 Select an image loaded using <b>LoadImages</b> or <b>LoadData</b>. The original filename will be
                 used as the prefix for the output filename.""")
         
-        self.single_file_name = cps.Text(SINGLE_NAME_TEXT, "OrigBlue",doc="""
+        self.single_file_name = cps.Text(SINGLE_NAME_TEXT, "OrigBlue",
+                                         metadata = True,
+                                         doc="""
                 <i>(Used only when constructing the filename from the image filename, a single name or a name with metadata)</i><br>
                 If you are constructing the filenames using...
                 <ul>

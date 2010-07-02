@@ -56,6 +56,8 @@ EXTERNAL_IMAGE_ATTRIBUTE = "external_image"
 AGGREGATE_IMAGE_ATTRIBUTE = "aggregate_image"
 '''Indicates that the image is only available on the last cycle'''
 AVAILABLE_ON_LAST_ATTRIBUTE = "available_on_last"
+'''Indicates that the control can contain metadata tags'''
+METADATA_ATTRIBUTE = "metadata"
 
 class Setting(object):
     """A module setting which holds a single string value
@@ -186,6 +188,7 @@ class Text(Setting):
     def __init__(self, text, value, *args, **kwargs):
         kwargs = kwargs.copy()
         self.multiline_display = kwargs.pop("multiline", False)
+        self.metadata_display = kwargs.pop(METADATA_ATTRIBUTE, False)
         super(Text,self).__init__(text, value, *args, **kwargs)
 
 class RegexpText(Setting):

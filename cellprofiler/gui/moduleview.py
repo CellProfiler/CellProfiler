@@ -28,6 +28,7 @@ from cellprofiler.gui.html import HtmlClickableWindow
 from regexp_editor import edit_regexp
 from htmldialog import HTMLDialog
 from treecheckboxdialog import TreeCheckboxDialog
+from metadatactrl import MetadataControl
 
 ERROR_COLOR = wx.RED
 WARNING_COLOR = wx.Colour(224,224,0,255)
@@ -832,7 +833,9 @@ class ModuleView:
         custom_ctrl_label_name = custom_label_name(v)
         browse_ctrl_name = button_control_name(v)
         if control is None:
-            control = wx.Panel(self.module_panel, name=control_name)
+            control = wx.Panel(self.module_panel, 
+                               style = wx.TAB_TRAVERSAL,
+                               name=control_name)
             sizer = wx.BoxSizer(wx.VERTICAL)
             control.SetSizer(sizer)
             dir_ctrl = wx.Choice(control, choices = v.dir_choices, 
@@ -842,8 +845,10 @@ class ModuleView:
             sizer.Add(custom_sizer, 1, wx.EXPAND)
             custom_label = wx.StaticText(control, name = custom_ctrl_label_name)
             custom_sizer.Add(custom_label, 0, wx.ALIGN_CENTER_VERTICAL)
-            custom_ctrl = wx.TextCtrl(control, value = v.custom_path,
-                                      name = custom_ctrl_name)
+            custom_ctrl = MetadataControl(self.__pipeline,
+                                          self.__module,
+                                          control, value = v.custom_path,
+                                          name = custom_ctrl_name)
             custom_sizer.Add(custom_ctrl, 1, wx.ALIGN_CENTER_VERTICAL)
             browse_bitmap = wx.ArtProvider.GetBitmap(wx.ART_FOLDER,
                                                      wx.ART_CMN_DIALOG,
@@ -894,14 +899,11 @@ class ModuleView:
             custom_ctrl = self.module_panel.FindWindowByName(custom_ctrl_name)
             custom_label = self.module_panel.FindWindowByName(custom_ctrl_label_name)
             browse_ctrl = self.module_panel.FindWindowByName(browse_ctrl_name)
-            if dir_ctrl.GetStringSelection() != v.dir_choice:
-                dir_ctrl.SetStringSelection(v.dir_choice)
-            if v.is_custom_choice:
-                custom_ctrl.Value = v.custom_path
         if dir_ctrl.StringSelection != v.dir_choice:
             dir_ctrl.StringSelection = v.dir_choice
         if v.is_custom_choice:
-            custom_ctrl.Show()
+            if not custom_ctrl.IsShown():
+                custom_ctrl.Show()
             if v.dir_choice in (cps.DEFAULT_INPUT_SUBFOLDER_NAME,
                                 cps.DEFAULT_OUTPUT_SUBFOLDER_NAME):
                 custom_label.Label = "Sub-folder:"
@@ -909,8 +911,10 @@ class ModuleView:
                 custom_label.Label = "URL folder:"
             if custom_ctrl.Value != v.custom_path:
                 custom_ctrl.Value = v.custom_path
-            browse_ctrl.Show()
+            if not browse_ctrl.IsShown():
+                browse_ctrl.Show()
         else:
+            custom_label.Hide()
             custom_ctrl.Hide()
             browse_ctrl.Hide()
         return control
@@ -918,15 +922,24 @@ class ModuleView:
     def make_text_control(self, v, control_name, control):
         """Make a textbox control"""
         if not control:
-            style = 0
-            if getattr(v, "multiline_display", False):
-                style = wx.TE_MULTILINE|wx.TE_PROCESS_ENTER
-
-            control = wx.TextCtrl(self.__module_panel,
-                                  -1,
-                                  str(v),
-                                  name=control_name,
-                                  style = style)
+            if v.metadata_display:
+                control = MetadataControl(
+                    self.__pipeline,
+                    self.__module,
+                    self.__module_panel,
+                    value = v.value,
+                    name = control_name
+                )
+            else:
+                style = 0
+                if getattr(v, "multiline_display", False):
+                    style = wx.TE_MULTILINE|wx.TE_PROCESS_ENTER
+    
+                control = wx.TextCtrl(self.__module_panel,
+                                      -1,
+                                      str(v),
+                                      name=control_name,
+                                      style = style)
             def on_cell_change(event, setting = v, control=control):
                 self.__on_cell_change(event, setting,control)
             self.__module_panel.Bind(wx.EVT_TEXT,on_cell_change,control)

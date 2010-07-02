@@ -111,7 +111,7 @@ class CPFrame(wx.Frame):
         self.__module_controls_panel = wx.Panel(self.__top_left_win,-1, style=wx.BORDER_NONE)
         self.__module_controls_panel.BackgroundColour = cellprofiler.preferences.get_background_color()
         self.__module_controls_panel.SetToolTipString("The module controls add, remove, move and get help for modules. Click on the '+' button to begin adding modules.")
-        self.__module_panel = wx.lib.scrolledpanel.ScrolledPanel(self.__right_win,-1,style=wx.SUNKEN_BORDER)
+        self.__module_panel = wx.lib.scrolledpanel.ScrolledPanel(self.__right_win,-1,style=wx.SUNKEN_BORDER | wx.TAB_TRAVERSAL)
         self.__module_panel.BackgroundColour = cellprofiler.preferences.get_background_color()
         self.__module_panel.SetToolTipString("The settings panel contains the available options for each module.")
         self.__file_list_panel = wx.Panel(self.__left_splitter,-1)

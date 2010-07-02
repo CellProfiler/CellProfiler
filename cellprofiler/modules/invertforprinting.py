@@ -107,10 +107,10 @@ class InvertForPrinting(cpm.CPModule):
                 self.wants_red_input, self.red_input_image,
                 self.wants_green_input, self.green_input_image,
                 self.wants_blue_input, self.blue_input_image,
-                elf.color_input_image,
+                self.color_input_image,
                 self.output_color_choice,
                 self.color_output_image,
-                sself.wants_red_output, self.red_output_image,
+                self.wants_red_output, self.red_output_image,
                 self.wants_green_output, self.green_output_image,
                 self.wants_blue_output, self.blue_output_image ]
 

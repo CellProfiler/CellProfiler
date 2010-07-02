@@ -447,19 +447,31 @@ def get_background_threshold(image, mask = None):
     cropped_image = np.array(image.flat) if mask is None else image[mask]
     if np.product(cropped_image.shape)==0:
         return 0
-    if np.min(cropped_image) == np.max(cropped_image):
+    img_min = np.min(cropped_image)
+    img_max = np.max(cropped_image)
+    if img_min == img_max:
         return cropped_image[0]
     
     # Only do the histogram between values a bit removed from saturation
-    robust_min = 0.02
-    robust_max = 0.98
+    robust_min = 0.02 * (img_max - img_min) + img_min
+    robust_max = 0.98 * (img_max - img_min) + img_min
     nbins = 256
     cropped_image = cropped_image[np.logical_and(cropped_image > robust_min,
                                                  cropped_image < robust_max)]
-    h = scipy.ndimage.histogram(cropped_image,0,1,nbins)
+    if len(cropped_image) == 0:
+        return robust_min
+    
+    h = scipy.ndimage.histogram(cropped_image, robust_min, robust_max, nbins)
     index = np.argmax(h)
     cutoff = float(index) / float(nbins-1)
-    return cutoff * 2
+    #
+    # If we have a low (or almost no) background, the cutoff will be
+    # zero since the background falls into the lowest bin. We want to
+    # offset by the robust cutoff factor of .02. We rescale by 1.04
+    # to account for the 0.02 at the top and bottom.
+    #
+    cutoff = (cutoff + 0.02) / 1.04
+    return img_min + cutoff * 2 * (img_max - img_min)
 
 def get_robust_background_threshold(image, mask = None):
     """Calculate threshold based on mean & standard deviation

@@ -143,6 +143,7 @@ def output_module_html(webpage_path):
             d[module.category] = {}
         d[module.category][module_name] = module
         result = module.get_help()
+        result = result.replace('<body><h1>','<body><h1>Module: ')
         
         # Check if a corresponding image exists for the module
         if module_name in icon_names:

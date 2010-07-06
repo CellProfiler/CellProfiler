@@ -31,7 +31,8 @@ def plugin_list():
     plugin_dir = cpprefs.get_plugin_directory()
     if plugin_dir is not None and os.path.isdir(plugin_dir):
         file_list = glob.glob(os.path.join(plugin_dir, '*.py'))
-        return [os.path.basename(f)[:-3] for f in file_list]
+        return [os.path.basename(f)[:-3] for f in file_list
+                if not f.endswith('__init__.py')]
     return []
 
 

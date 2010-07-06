@@ -1062,6 +1062,12 @@ page</a> for pictures of available colormaps."""
 WINDOW_BACKGROUND_HELP = """The <i>Window Background</i> preference sets the
 window background color of the CellProfiler main window."""
 
+PLUGINS_DIRECTORY_HELP = """The <i>Plugins directory</i> preference chooses
+the directory that holds dynamically-loaded CellProfiler modules. You
+can write your own module and place it in this directory and CellProfiler
+will make it available for your pipeline. You must restart CellProfiler
+after modifying this setting."""
+
 CHECK_FOR_UPDATES_HELP = """The <i>Check for Updates</i> preference controls how
 CellProfiler looks for updates on startup."""
 
@@ -1093,6 +1099,7 @@ EACH_PREFERENCE_HELP = (
     ( "Table font", TABLE_FONT_HELP ),
     ( "Default colormap", DEFAULT_COLORMAP_HELP ),
     ( "Window background", WINDOW_BACKGROUND_HELP ),
+    ( "Plugins directory", PLUGINS_DIRECTORY_HELP ),
     ( "Check for updates", CHECK_FOR_UPDATES_HELP ),
     ( "Primary outline color", PRIMARY_OUTLINE_COLOR_HELP),
     ( "Secondary outline color", SECONDARY_OUTLINE_COLOR_HELP),

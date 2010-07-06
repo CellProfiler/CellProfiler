@@ -19,6 +19,7 @@ import os.path
 import glob
 import cellprofiler.cpmodule as cpm
 from cellprofiler.modules.plugins import plugin_list
+from cellprofiler.preferences import get_plugin_directory
 
 # python modules and their corresponding cellprofiler.module classes
 pymodule_to_cpmodule = {'align' : 'Align',
@@ -298,8 +299,16 @@ def fill_modules():
     for mod in builtin_modules:
         add_module('cellprofiler.modules.'+ mod, True)
 
-    for mod in plugin_list():
-        add_module('cellprofiler.modules.plugins.' + mod, False)
+
+    plugin_directory = get_plugin_directory()
+    if plugin_directory is not None:
+        old_path = sys.path
+        sys.path.insert(0, plugin_directory)
+        try:
+            for mod in plugin_list():
+                add_module(mod, False)
+        finally:
+            sys.path = old_path
 
     datatools.sort()
     if len(badmodules) > 0:

@@ -163,6 +163,7 @@ SECONDARY_OUTLINE_COLOR = 'SecondaryOutlineColor'
 TERTIARY_OUTLINE_COLOR = 'TertiaryOutlineColor'
 JVM_ERROR = 'JVMError'
 ALLOW_OUTPUT_FILE_OVERWRITE = 'AllowOutputFileOverwrite'
+PLUGIN_DIRECTORY = 'PluginDirectory'
 
 def recent_file(index):
     return FF_RECENTFILES % (index + 1)
@@ -455,13 +456,28 @@ def add_recent_file(filename):
     for i, filename in enumerate(recent_files):
         get_config().Write(recent_file(i), filename)
 
+__plugin_directory = None
 def get_plugin_directory():
-    if get_headless():
+    global __plugin_directory
+    
+    if __plugin_directory is not None:
+        return __plugin_directory
+    
+    if get_config().Exists(PLUGIN_DIRECTORY):
+        __plugin_directory = get_config().Read(PLUGIN_DIRECTORY)
+    elif get_headless():
         return None
-    import wx
-    if wx.GetApp() is not None:
-        return os.path.join(wx.StandardPaths.Get().GetUserDataDir(), 'plugins')
-    return None
+    else:
+        import wx
+        if wx.GetApp() is not None:
+            __plugin_directory = os.path.join(wx.StandardPaths.Get().GetUserDataDir(), 'plugins')
+    return __plugin_directory
+
+def set_plugin_directory(value):
+    global __plugin_directory
+    
+    __plugin_directory = value
+    get_config().Write(PLUGIN_DIRECTORY, value)
 
 __data_file=None
 

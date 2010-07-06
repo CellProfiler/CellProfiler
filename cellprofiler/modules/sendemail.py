@@ -80,6 +80,7 @@ class SendEmail(cpm.CPModule):
         
         self.subject = cps.Text(
             "Subject line","CellProfiler notification",
+            metadata=True,
             doc="""Enter the text for the email's subject line. If you have metadata 
             associated with your images, you can use metadata tags here. %s. 
             For instance, if you have plate metadata,
@@ -164,6 +165,7 @@ class SendEmail(cpm.CPModule):
         
         group.append("message", cps.Text(
             "Message text","Notification from CellProfiler",
+            metadata=True,
             doc="""The body of the message sent from CellProfiler.
             Your message can include metadata values. For instance,
             if you group by plate and want to send an email after processing each

@@ -795,7 +795,16 @@ class ModuleView:
                                name = control_name)
             sizer = wx.BoxSizer(wx.HORIZONTAL)
             control.SetSizer(sizer)
-            edit_control = wx.TextCtrl(control, -1, str(v), name = edit_name)
+            if v.metadata_display:
+                edit_control = MetadataControl(
+                    self.__pipeline,
+                    self.__module,
+                    control,
+                    value = v.value,
+                    name = edit_name)
+            else:
+                edit_control = wx.TextCtrl(control, -1, str(v), 
+                                           name = edit_name)
             sizer.Add(edit_control, 1, wx.ALIGN_LEFT | wx.ALIGN_TOP)
             def on_cell_change(event, setting = v, control=edit_control):
                 self.__on_cell_change(event, setting, control)

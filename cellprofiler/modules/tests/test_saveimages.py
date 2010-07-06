@@ -356,10 +356,10 @@ SaveImages:[module_num:6|svn_version:\'9507\'|variable_revision_number:5|show_wi
         sif = [ cpm_si.IF_IMAGE, cpm_si.IF_MASK, cpm_si.IF_CROPPING,
                 cpm_si.IF_MOVIE, cpm_si.IF_FIGURE, cpm_si.IF_IMAGE]
         fnm = [ cpm_si.FN_FROM_IMAGE, cpm_si.FN_SEQUENTIAL,
-                cpm_si.FN_SINGLE_NAME, cpm_si.FN_WITH_METADATA,
-                cpm_si.FN_IMAGE_FILENAME_WITH_METADATA,
+                cpm_si.FN_SINGLE_NAME, cpm_si.FN_SINGLE_NAME,
+                cpm_si.FN_FROM_IMAGE,
                 cpm_si.FN_FROM_IMAGE]
-        suf = [ False, True, False, False, False, False]
+        suf = [ False, True, False, False, True, False]
         ff = [cpm_si.FF_BMP, cpm_si.FF_GIF, cpm_si.FF_JPG,
               cpm_si.FF_JPG, cpm_si.FF_PNG, cpm_si.FF_PNG]
         ov = [ False, True, False, False, False, False]
@@ -385,7 +385,11 @@ SaveImages:[module_num:6|svn_version:\'9507\'|variable_revision_number:5|show_wi
             self.assertEqual(module.file_image_name, "Pfx%d" % (i+1))
             self.assertEqual(module.single_file_name, "Sfn%d" % (i+1))
             self.assertEqual(module.wants_file_name_suffix, suf[i])
-            self.assertEqual(module.file_name_suffix, "A%d" % (i+1))
+            if i == 4:
+                # Single file name got copied into file name suffix
+                self.assertEqual(module.file_name_suffix, "Sfn%d" %(i+1))
+            else:
+                self.assertEqual(module.file_name_suffix, "A%d" % (i+1))
             self.assertEqual(module.file_format, ff[i])
             self.assertEqual(module.pathname.dir_choice, dir_choice[i])
             self.assertEqual(module.pathname.custom_path, "cp%d" %(i+1))
@@ -396,6 +400,56 @@ SaveImages:[module_num:6|svn_version:\'9507\'|variable_revision_number:5|show_wi
             self.assertEqual(module.update_file_names, up[i])
             self.assertEqual(module.create_subdirectories, cre[i])
     
+    def test_00_06_load_v6(self):
+        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:1
+SVNRevision:10237
+
+SaveImages:[module_num:1|svn_version:\'10244\'|variable_revision_number:6|show_window:True|notes:\x5B\x5D]
+    Select the type of image to save:Image
+    Select the image to save:DNA
+    Select the module display window to save:MyFigure
+    Select method for constructing file names:Single name
+    Select image name for file prefix:MyImage
+    Enter single file name:DNA_\\g<WellColumn>
+    Do you want to add a suffix to the image file name?:No
+    Text to append to the image name:MySuffix
+    Select file format to use:bmp
+    Output file location:Default Output Folder sub-folder\x7CDNA_\\g<WellRow>
+    Image bit depth:8
+    Overwrite existing files without warning?:No
+    Select how often to save:Every cycle
+    Rescale the images? :No
+    Select colormap:gray
+    Update file names within CellProfiler?:No
+    Create subfolders in the output folder?:No
+"""
+        pipeline = cpp.Pipeline()
+        def callback(caller,event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO(data))        
+        self.assertEqual(len(pipeline.modules()), 1)
+        module = pipeline.modules()[0]
+        self.assertTrue(isinstance(module, cpm_si.SaveImages))
+        self.assertEqual(module.save_image_or_figure, cpm_si.IF_IMAGE)
+        self.assertEqual(module.image_name, "DNA")
+        self.assertEqual(module.figure_name, "MyFigure")
+        self.assertEqual(module.file_name_method, cpm_si.FN_SINGLE_NAME)
+        self.assertEqual(module.file_image_name, "MyImage")
+        self.assertEqual(module.single_file_name, r"DNA_\g<WellColumn>")
+        self.assertFalse(module.wants_file_name_suffix)
+        self.assertEqual(module.file_name_suffix, "MySuffix")
+        self.assertEqual(module.file_format, cpm_si.FF_BMP)
+        self.assertEqual(module.pathname.dir_choice, cps.DEFAULT_OUTPUT_SUBFOLDER_NAME)
+        self.assertEqual(module.pathname.custom_path, r"DNA_\g<WellRow>")
+        self.assertEqual(module.bit_depth, 8)
+        self.assertFalse(module.overwrite)
+        self.assertEqual(module.when_to_save, cpm_si.WS_EVERY_CYCLE)
+        self.assertEqual(module.colormap, "gray")
+        self.assertFalse(module.update_file_names)
+        self.assertFalse(module.create_subdirectories)
+        
     def test_01_01_save_first_to_same_tif(self):
         img1_filename = os.path.join(self.new_image_directory,'img1.tif')
         img1_out_filename = os.path.join(self.new_image_directory,'img1OUT.tiff')
@@ -1111,8 +1165,9 @@ SaveImages:[module_num:6|svn_version:\'9507\'|variable_revision_number:5|show_wi
         workspace, module = self.make_workspace(image, FILE_NAME)
         self.assertTrue(isinstance(module, cpm_si.SaveImages))
         module.save_image_or_figure.value = cpm_si.IF_IMAGE
-        module.file_name_method.value = cpm_si.FN_IMAGE_FILENAME_WITH_METADATA
-        module.single_file_name.value = '\\g<Well>'
+        module.file_name_method.value = cpm_si.FN_FROM_IMAGE
+        module.wants_file_name_suffix.value = True
+        module.file_name_suffix.value = '\\g<Well>'
         module.file_format.value = cpm_si.FF_PNG
         
         m = workspace.measurements
@@ -1133,7 +1188,7 @@ SaveImages:[module_num:6|svn_version:\'9507\'|variable_revision_number:5|show_wi
         workspace, module = self.make_workspace(image, FILE_NAME)
         self.assertTrue(isinstance(module, cpm_si.SaveImages))
         module.save_image_or_figure.value = cpm_si.IF_IMAGE
-        module.file_name_method.value = cpm_si.FN_WITH_METADATA
+        module.file_name_method.value = cpm_si.FN_SINGLE_NAME
         module.single_file_name.value = 'metadatatest\\g<Well>'
         module.file_format.value = cpm_si.FF_PNG
         
@@ -1246,6 +1301,7 @@ SaveImages:[module_num:6|svn_version:\'9507\'|variable_revision_number:5|show_wi
         module.module_num = 1
         module.save_image_or_figure.value = cpm_si.IF_MOVIE
         module.image_name.value = IMAGE_NAME
+        module.file_image_name.value = IMAGE_NAME
         module.pathname.dir_choice = cps.ABSOLUTE_FOLDER_NAME
         module.pathname.custom_path = self.custom_directory
         module.file_name_method.value = cpm_si.FN_SINGLE_NAME
@@ -1301,7 +1357,7 @@ SaveImages:[module_num:6|svn_version:\'9507\'|variable_revision_number:5|show_wi
         def fn(module):
             self.assertTrue(isinstance(module, cpm_si.SaveImages))
             module.single_file_name.value = r"\g<test>"
-            module.file_name_method.value = cpm_si.FN_WITH_METADATA
+            module.file_name_method.value = cpm_si.FN_SINGLE_NAME
         frames = self.run_movie(grouping, fn)
         for group in grouping[1]:
             path = os.path.join(self.custom_directory, group[0]["Metadata_test"] + ".avi")

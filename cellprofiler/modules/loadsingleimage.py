@@ -93,6 +93,7 @@ class LoadSingleImage(cpm.CPModule):
         group.append("file_name", cps.FilenameText(
             "Filename of the image to load (Include the extension, e.g., .tif)",
             "None",
+            metadata=True,
             get_directory_fn = get_directory_fn,
             exts = [("Tagged image file (*.tif)","*.tif"),
                     ("Portable network graphics (*.png)", "*.png"),

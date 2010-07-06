@@ -237,6 +237,7 @@ class ExportToSpreadsheet(cpm.CPModule):
         group.append("file_name", 
                      cps.Text(
                          "File name", "DATA.csv",
+                         metadata = True,
                          doc="""<i>(Used only when Export all measurements? is left unchecked)</i><br>Enter a file name for the named objects' 
                          measurements. <b>ExportToSpreadsheet</b> will
                          prepend the name of the measurements file to this

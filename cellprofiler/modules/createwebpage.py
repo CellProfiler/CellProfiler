@@ -114,6 +114,7 @@ class CreateWebPage(cpm.CPModule):
         
         self.web_page_file_name = cps.Text(
             "Webpage file name", "images1",
+            metadata= True,
             doc="""Enter the desired file name for the web page. <b>CreateWebPage</b>
             will add the .html extension if no extension is specified.
             If you have metadata associated with your images, you can name the 
@@ -191,6 +192,7 @@ class CreateWebPage(cpm.CPModule):
         
         self.zipfile_name = cps.Text(
             "Enter the ZIP file name", "Images.zip",
+            metadata = True,
             doc="""
             <i>(Used only if creating a ZIP file)</i><br>
             Specify the name for the ZIP file.""")

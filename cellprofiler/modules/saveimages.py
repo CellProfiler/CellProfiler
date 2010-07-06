@@ -116,7 +116,7 @@ CM_GRAY        = "gray"
 class SaveImages(cpm.CPModule):
 
     module_name = "SaveImages"
-    variable_revision_number = 5
+    variable_revision_number = 6
     category = "File Processing"
     
     def create_settings(self):
@@ -156,8 +156,7 @@ class SaveImages(cpm.CPModule):
         
         self.file_name_method = cps.Choice("Select method for constructing file names",
                                            [FN_FROM_IMAGE, FN_SEQUENTIAL,
-                                            FN_SINGLE_NAME, FN_WITH_METADATA,
-                                            FN_IMAGE_FILENAME_WITH_METADATA],
+                                            FN_SINGLE_NAME],
                                             FN_FROM_IMAGE,doc="""
                 <i>(Used only if saving non-movie files)</i><br>
                 Four choices are available:
@@ -212,7 +211,9 @@ class SaveImages(cpm.CPModule):
             doc = """Check this setting to add a suffix to the image's file name.
             Leave the setting unchecked to use the image name as-is.""")
         
-        self.file_name_suffix = cps.Text("Text to append to the image name",cps.DO_NOT_USE,doc="""
+        self.file_name_suffix = cps.Text("Text to append to the image name",
+                                         "", metadata = True,
+                                         doc="""
                 <i>(Used only when constructing the filename from the image filename)</i><br>
                 Enter the text that should be appended to the filename specified above.""")
         
@@ -339,8 +340,7 @@ class SaveImages(cpm.CPModule):
             result.append(self.image_name)
 
         result.append(self.file_name_method)
-        if (self.file_name_method not in 
-            (FN_FROM_IMAGE, FN_IMAGE_FILENAME_WITH_METADATA) and
+        if (self.file_name_method != FN_FROM_IMAGE and
             self.pathname.dir_choice == PC_WITH_IMAGE):
             # Need just the file image name here to associate
             # the file-name image path
@@ -349,17 +349,11 @@ class SaveImages(cpm.CPModule):
             result += [self.file_image_name, self.wants_file_name_suffix]
             if self.wants_file_name_suffix:
                 result.append(self.file_name_suffix)
-        elif self.file_name_method == FN_IMAGE_FILENAME_WITH_METADATA:
-            self.single_file_name.text = METADATA_NAME_TEXT
-            result += [self.file_image_name, self.single_file_name]
         elif self.file_name_method == FN_SEQUENTIAL:
             self.single_file_name.text = SEQUENTIAL_NUMBER_TEXT
             result.append(self.single_file_name)
         elif self.file_name_method == FN_SINGLE_NAME:
             self.single_file_name.text = SINGLE_NAME_TEXT
-            result.append(self.single_file_name)
-        elif self.file_name_method == FN_WITH_METADATA:
-            self.single_file_name.text = METADATA_NAME_TEXT
             result.append(self.single_file_name)
         else:
             raise NotImplementedError("Unhandled file name method: %s"%(self.file_name_method))
@@ -860,22 +854,20 @@ class SaveImages(cpm.CPModule):
         measurements=workspace.measurements
         if self.file_name_method == FN_SINGLE_NAME:
             filename = self.single_file_name.value
-        elif self.file_name_method == FN_WITH_METADATA:
-            filename = self.single_file_name.value
             filename = workspace.measurements.apply_metadata(filename)
         elif self.file_name_method == FN_SEQUENTIAL:
             filename = self.single_file_name.value
+            filename = workspace.measurements.apply_metadata(filename)
             filename = '%s%d'%(filename, measurements.image_set_number)
         else:
             file_name_feature = 'FileName_%s'%(self.file_image_name)
             filename = measurements.get_current_measurement('Image',
                                                             file_name_feature)
             filename = os.path.splitext(filename)[0]
-            if self.file_name_method == FN_IMAGE_FILENAME_WITH_METADATA:
-                filename += workspace.measurements.apply_metadata(
-                    self.single_file_name.value)
-            elif self.wants_file_name_suffix:
-                filename += str(self.file_name_suffix)
+            if self.wants_file_name_suffix:
+                suffix = self.file_name_suffix.value
+                suffix = workspace.measurements.apply_metadata(suffix)
+                filename += suffix
         
         filename = "%s.%s"%(filename,self.get_file_format())
         pathname = self.pathname.get_absolute_path(measurements)
@@ -1014,7 +1006,24 @@ class SaveImages(cpm.CPModule):
                 pathname, bit_depth, overwrite, when_to_save,
                 rescale, colormap, update_file_names, create_subdirectories]
             variable_revision_number = 5
-        
+            
+        if (not from_matlab) and variable_revision_number == 5:
+            setting_values = list(setting_values)
+            file_name_method = setting_values[3]
+            single_file_name = setting_values[5]
+            wants_file_suffix = setting_values[6]
+            file_name_suffix = setting_values[7]
+            if file_name_method == FN_IMAGE_FILENAME_WITH_METADATA:
+                file_name_suffix = single_file_name
+                wants_file_suffix = cps.YES
+                file_name_method = FN_FROM_IMAGE
+            elif file_name_method == FN_WITH_METADATA:
+                file_name_method = FN_SINGLE_NAME
+            setting_values[3] = file_name_method
+            setting_values[6] = wants_file_suffix
+            setting_values[7] = file_name_suffix
+            variable_revision_number = 6
+            
         setting_values[9] = \
             SaveImagesDirectoryPath.upgrade_setting(setting_values[9])
         

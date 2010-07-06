@@ -45,6 +45,7 @@ class MetadataControl(wx.PyControl):
         style = kwargs.get("style", wx.BORDER_DEFAULT)
         value = kwargs.pop("value", "")
         self.padding = kwargs.pop("padding", 1)
+        self.offset = 0
         if (style & wx.BORDER_MASK) == wx.BORDER_DEFAULT:
             self.native_border = True
             self.padding += 2
@@ -72,15 +73,19 @@ class MetadataControl(wx.PyControl):
             self.Bind(wx.EVT_MENU, self.select_value, id=choice_id)
         
         def on_focus(event):
+            if self.__caret is None:
+                self.make_caret()
             self.show_caret()
             
         def on_lose_focus(event):
             if self.__caret is not None:
                 self.__caret.Hide()
+                del self.__caret
+                self.__caret = None
             
         def on_show(event):
             if event.GetShow():
-                self.__caret = wx.Caret(self, wx.Size(1, self.Size[1] - 2*self.padding))
+                self.make_caret()
             else:
                 del self.__caret
                 self.__caret = None
@@ -94,6 +99,14 @@ class MetadataControl(wx.PyControl):
         self.Bind(wx.EVT_RIGHT_DOWN, self.on_right_down)
         self.Bind(wx.EVT_CONTEXT_MENU, self.on_context_menu)
         self.Bind(wx.EVT_SHOW, on_show)
+        self.Bind(wx.EVT_SIZE, self.OnSize)
+        
+    @property
+    def xoffset(self):
+        return self.offset + self.padding
+    
+    def make_caret(self):
+        self.__caret = wx.Caret(self, wx.Size(1, self.Size[1] - 2*self.padding))
         
     def SetValue(self, value):
         #
@@ -136,6 +149,7 @@ class MetadataControl(wx.PyControl):
             index += 1
         self.SetMinSize(self.DoGetBestSize())
         self.__cursor_pos = len(self.__tokens)
+        self.Cursor = wx.StockCursor(wx.CURSOR_IBEAM)
         
     def GetValue(self):
         '''The setting value underlying the text representation'''
@@ -152,14 +166,36 @@ class MetadataControl(wx.PyControl):
     value = property(GetValue, SetValue)
     Value = property(GetValue, SetValue)
     
+    def adjust_scroll(self):
+        '''Scroll the cursor position into view'''
+
+        rawpos = 0
+        for i in range(self.__cursor_pos):
+            rawpos += self.GetTextExtent(self.get_text(i,i+1))[0]
+        xsize = self.Size[0] - self.padding * 2
+        
+        pos = self.xoffset + rawpos
+        slop = pos - xsize
+        if slop > 0:
+            slop += self.GetTextExtent("M")[0]
+            self.offset -= slop
+            pos -= slop
+            self.Refresh()
+        elif pos < self.padding:
+            self.offset = rawpos
+            pos = self.padding
+            self.Refresh()
+        elif rawpos + self.GetTextExtent("M")[0] < xsize:
+            self.offset = 0
+            self.Refresh()
+        if self.__caret is not None:
+            pos = rawpos + self.xoffset
+            self.__caret.MoveXY(pos, self.padding)
+
     def show_caret(self):
         if (self.__caret is not None and
             self.FindFocus() == self):
-            if self.__cursor_pos == 0:
-                pos = 0
-            else:
-                pos = self.GetTextExtent(self.get_text(0,self.__cursor_pos))[0]
-            self.__caret.MoveXY(pos + self.padding, self.padding)
+            self.adjust_scroll()
             self.__caret.Show()
     
     def on_key_down(self, event):
@@ -237,7 +273,13 @@ class MetadataControl(wx.PyControl):
             ne.SetCurrentFocus(self)
             ne.SetEventObject(self)
             self.GetParent().GetEventHandler().ProcessEvent(ne)
-
+            #
+            # Seems to be confused about the focus
+            #
+            if self.FindFocus() != self and self.__caret is not None:
+                self.__caret.Hide()
+                del self.__caret
+                self.__caret = None
         else:
             event.Skip()
     
@@ -282,11 +324,17 @@ class MetadataControl(wx.PyControl):
                        size[1] + self.padding * 2)
         return self.ClientToWindowSize(size)
     
+    def OnSize(self, event):
+        self.offset = 0
+        self.adjust_scroll()
+        event.Skip()
+    
     def hit_test(self, pos):
         last = 0
+        x = self.xoffset
         for i, token in enumerate(self.__tokens):
-            text = self.get_text(0, i+1)
-            x = self.GetTextExtent(text)[0] + self.padding
+            text = self.get_text(i, i+1)
+            x += self.GetTextExtent(text)[0]
             if x > pos:
                 if isinstance(token, self.MetadataToken):
                     return i
@@ -340,39 +388,42 @@ class MetadataControl(wx.PyControl):
     
     def OnPaint(self, event):
         dc = wx.GCDC(wx.BufferedPaintDC(self))
-        dc.BackgroundMode = wx.SOLID
-        background_color = wx.SystemSettings_GetColour(wx.SYS_COLOUR_WINDOW)
-        metadata_color = get_primary_outline_color()
-        dc.Background = wx.Brush(background_color)
-        dc.Font = self.Font
-        dc.Clear()
-        if self.native_border:
-            renderer = wx.RendererNative.Get()
-            style = 0
-            if self.FindFocus() == self:
-                style |= wx.CONTROL_FOCUSED | wx.CONTROL_CURRENT
-            if not self.Enabled:
-                style |= wx.CONTROL_DISABLED
-            renderer.DrawTextCtrl(self, dc, (0, 0, self.Size[0], self.Size[1]),
-                                  style)
-        loc = self.padding
-        start = 0
-        for i, token in enumerate(self.__tokens):
-            if isinstance(token, self.MetadataToken):
-                if start < i:
-                    text = self.get_text(start, i)
+        dc.GraphicsContext.PushState()
+        try:
+            dc.BackgroundMode = wx.SOLID
+            background_color = wx.SystemSettings_GetColour(wx.SYS_COLOUR_WINDOW)
+            metadata_color = get_primary_outline_color()
+            dc.Background = wx.Brush(background_color)
+            dc.Font = self.Font
+            dc.Clear()
+            if self.native_border:
+                renderer = wx.RendererNative.Get()
+                style = 0
+                if self.FindFocus() == self:
+                    style |= wx.CONTROL_FOCUSED | wx.CONTROL_CURRENT
+                if not self.Enabled:
+                    style |= wx.CONTROL_DISABLED
+                renderer.DrawTextCtrl(self, dc, (0, 0, 
+                                                 self.ClientSize[0], 
+                                                 self.ClientSize[1]),
+                                      style)
+                dc.SetClippingRect((self.padding, self.padding, 
+                                    self.ClientSize[0] - 2*self.padding,
+                                    self.ClientSize[1] - 2*self.padding))
+            loc = self.xoffset
+            for i, token in enumerate(self.__tokens):
+                if isinstance(token, self.MetadataToken):
+                    dc.TextBackground = metadata_color
+                    text = token.value
+                else:
+                    text = self.get_text(i, i+1)
                     dc.TextBackground = background_color
-                    dc.DrawText(text, loc, self.padding)
-                    loc += dc.GetTextExtent(text)[0]
-                dc.TextBackground = metadata_color
-                dc.DrawText(token.value, loc, self.padding)
-                loc += dc.GetTextExtent(token.value)[0]
-                start = i+1
-        if start < len(self.__tokens):
-            text = self.get_text(start)
-            dc.TextBackground = background_color
-            dc.DrawText(text, loc, self.padding)
+                dc.DrawText(text, loc, self.padding)
+                loc += self.GetTextExtent(text)[0]
+        finally:
+            dc.GraphicsContext.PopState()
     
+            
 if __name__ == "__main__":
     import cellprofiler.pipeline as cpp
     import sys

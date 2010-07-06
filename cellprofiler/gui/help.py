@@ -84,6 +84,25 @@ LOCATION_WINDOW_PAN_BUTTON  = os.path.join(path,'window_pan.png')
 LOCATION_WINDOW_ZOOMTORECT_BUTTON  = os.path.join(path,'window_zoom_to_rect.png')
 LOCATION_WINDOW_SAVE_BUTTON  = os.path.join(path,'window_filesave.png')
 
+
+####################################################
+#
+# Module help specifics for repeated use
+#
+####################################################
+USING_METADATA_HELP_REF = ''' 
+Please see <b>LoadImages</b>, <b>LoadData</b>, or <i>Help > General help > Using metadata in CellProfiler</i> 
+for more details on obtaining, extracting, and using metadata tags from your images'''
+
+USING_METADATA_TAGS_REF = """
+You can insert a previously defined metadata tag by either using:
+<ul><li>The insert key</li>
+<li>A right mouse button click inside the control</li>
+<li>In Windows, the Context menu key, which is between the Windows key and Ctrl key </li></ul>
+The inserted metadata tag will appear in green. To change a previously inserted metadata tag, navigate the cursor to just before the tag and either:
+<ul><li>Use the up and down arrows to cycle through possible values.</li>
+<li>Right-click on the tag to display and select the available values.</li></ul>"""
+
 ##################################################
 #
 # Help for the main window
@@ -491,12 +510,11 @@ are loaded using the <b>LoadImages</b> module, <b>LoadImages</b> should be set t
 <Date> metadata field from the file names. The pipeline will then match the individual 
 images with their corresponding illumination correction functions based on matching 
 "Metadata_Date" fields.</p>
-
-<h3>Use of metadata-specific module settings</h3>
+""" + \
+"""<h3>Use of metadata-specific module settings</h3>
 
 <p>Once the metadata has been obtained, you can use <i>metadata tags</i> to reference them
-in later modules. A metadata tag has the syntax "\g&lt;metadata-tag&gt;" where 
-<i>&lt;metadata-tag&gt</i> is the name of the previously defined metadata field. Several modules are capable of 
+in later modules. %(USING_METADATA_TAGS_REF)s Several modules are capable of 
 using metadata tags for various purposes. Examples include:
 <ul>
 <li>You would like to create and apply an illumination correction function to all images from a particular
@@ -512,7 +530,7 @@ a folder named according to the experiment.</li>
 the name must match the metadata field defined by <b>LoadImages</b> or <b>LoadData</b>. The options
 for the setting will specify whether tags are applicable; see the module setting help for additional
 information on how to use them in the context of the specific module.</p>
-"""
+"""%globals()
 
 MEMORY_AND_SPEED_HELP = """
 <p>CellProfiler includes several options for dealing with out-of-memory
@@ -906,19 +924,6 @@ MAIN_HELP = (
         ("Test Menu Items",TEST_MODE_HELP),
         ("Window Menu Items",MENU_BAR_WINDOW_HELP) ) )
 )
-
-
-####################################################
-#
-# Module help specifics for repeated use
-#
-####################################################
-USING_METADATA_HELP_REF = ''' 
-Please see <b>LoadImages</b>, <b>LoadData</b>, or <i>Help > General help > Using metadata in CellProfiler</i> 
-for more details on obtaining, extracting, and using metadata tags from your images'''
-
-USING_METADATA_TAGS_REF = '''
-Tags have the form "\g&lt;metadata-tag&gt;" where <i>&lt;metadata-tag&gt</i> is the name of the previously defined metadata field'''
 
 ####################################################
 #

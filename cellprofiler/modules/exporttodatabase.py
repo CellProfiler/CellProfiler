@@ -250,10 +250,10 @@ class ExportToDatabase(cpm.CPModule):
             you decide to save measurements to files instead of writing them
             directly to the database. %(IO_FOLDER_CHOICE_HELP_TEXT)s 
             
-            <p>%(IO_WITH_METADATA_HELP_TEXT)s %(USING_METADATA_TAGS_REF)s. 
+            <p>%(IO_WITH_METADATA_HELP_TEXT)s %(USING_METADATA_TAGS_REF)s<br>
             For instance, if you have a metadata tag named 
             "Plate", you can create a per-plate folder by selecting one of the subfolder options
-            and then specifying the subfolder name as "\g&lt;Plate&gt;". 
+            and then specifying the subfolder name with the "Plate" metadata tag. 
             The module will substitute the metadata values for the last image set 
             processed for any metadata tags in the folder name. %(USING_METADATA_HELP_REF)s.</p>"""% globals())
         

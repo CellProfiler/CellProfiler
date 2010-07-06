@@ -128,7 +128,7 @@ class ExportToSpreadsheet(cpm.CPModule):
             doc="""This setting lets you choose the folder for the output
             files. %(IO_FOLDER_CHOICE_HELP_TEXT)s
             
-            <p>%(IO_WITH_METADATA_HELP_TEXT)s %(USING_METADATA_TAGS_REF)s. 
+            <p>%(IO_WITH_METADATA_HELP_TEXT)s %(USING_METADATA_TAGS_REF)s<br>
             For instance, if you have a metadata tag named 
             "Plate", you can create a per-plate folder by selecting one of the subfolder options
             and then specifying the subfolder name as "\g&lt;Plate&gt;". The module will 
@@ -243,8 +243,7 @@ class ExportToSpreadsheet(cpm.CPModule):
                          prepend the name of the measurements file to this
                          if you asked to do so above. If you have metadata 
                          associated with your images, this setting will also substitute
-                         metadata tags if desired. %(USING_METADATA_TAGS_REF)s. 
-                         %(USING_METADATA_HELP_REF)s."""% globals()))
+                         metadata tags if desired. %(USING_METADATA_TAGS_REF)s%(USING_METADATA_HELP_REF)s."""% globals()))
         
         group.append("remover", cps.RemoveSettingButton("", "Remove this data set", self.object_groups, group))
         group.append("divider", cps.Divider(line=False))

@@ -82,9 +82,10 @@ class SendEmail(cpm.CPModule):
             "Subject line","CellProfiler notification",
             metadata=True,
             doc="""Enter the text for the email's subject line. If you have metadata 
-            associated with your images, you can use metadata tags here. %s. 
+            associated with your images, you can use metadata tags here. %(USING_METADATA_TAGS_REF)s<br>
             For instance, if you have plate metadata,
-            you might use the line, "CellProfiler: processing plate \\g&lt;Plate&gt;". %s."""% (USING_METADATA_TAGS_REF, USING_METADATA_HELP_REF))
+            you might use the line, "CellProfiler: processing plate " and insert the metadata tag
+            for the plate at the end. %(USING_METADATA_HELP_REF)s."""%globals())
         
         self.smtp_server = cps.Text(
             "SMTP server", "mail",

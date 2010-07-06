@@ -110,9 +110,9 @@ class LoadSingleImage(cpm.CPModule):
                     if you want your output given a unique label according to the
                     metadata corresponding to an image group. The name of the metadata 
                     to substitute is included in a special tag format embedded 
-                    in your file specification. %(USING_METADATA_TAGS_REF)s. %(USING_METADATA_HELP_REF)s</li>
+                    in your file specification. %(USING_METADATA_TAGS_REF)s%(USING_METADATA_HELP_REF)s.</li>
                     </ul>
-                    In either case, the extension, if any, should be included."""% globals() ))
+                    <p>Keep in mind that in either case, the image file extension, if any, must be included."""% globals() ))
         
         group.append("image_name", cps.FileImageNameProvider("Name the image that will be loaded", 
                     "OrigBlue", doc = '''What do you want to call the image you are loading? 

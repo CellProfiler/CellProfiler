@@ -118,10 +118,11 @@ class CreateWebPage(cpm.CPModule):
             doc="""Enter the desired file name for the web page. <b>CreateWebPage</b>
             will add the .html extension if no extension is specified.
             If you have metadata associated with your images, you can name the 
-            file using metadata tags. %s. For instance, if you have metadata tags named "Plate" and 
+            file using metadata tags. %(USING_METADATA_TAGS_REF)s<br>
+            For instance, if you have metadata tags named "Plate" and 
             "Well", you can create separate per-plate, per-well web pages based on
-            your metadata using "\g&lt;Plate&gt;_\g&lt;Well&gt;" to specify the 
-            name. %s."""%(USING_METADATA_TAGS_REF,USING_METADATA_HELP_REF))
+            your metadata by inserting the tags "Plate_Well" to specify the 
+            name. %(USING_METADATA_HELP_REF)s."""%globals())
         
         self.directory_choice = cps.Choice(
             "Select the folder for the .html file",
@@ -139,10 +140,10 @@ class CreateWebPage(cpm.CPModule):
             "Webpage title", "Image",
             doc = """This is the title that appears at the top of the browser
             window. If you have metadata associated with your images, you can name the 
-            file using metadata tags. %s. For instance, if you have a metadata tag 
-            named "Plate", you can use the metadata substitutions "Plate: \g&lt;Plate&gt;", 
-            to display the plate metadata item. %s."""
-            %(USING_METADATA_TAGS_REF,USING_METADATA_HELP_REF))
+            file using metadata tags. %(USING_METADATA_TAGS_REF)sFor instance, if you 
+            have a metadata tag named "Plate", you can type "Plate: " and then insert 
+            the metadata tag "Plate" to display the plate metadata item. %(USING_METADATA_HELP_REF)s."""
+            %globals())
         
         self.background_color = cps.Color(
             "Webpage background color", "White",

@@ -163,27 +163,24 @@ class SaveImages(cpm.CPModule):
                 <ul>
                 <li><i>From image filename:</i> The filename will be constructed based
                 on the original filename of an input image specified in <b>LoadImages</b>
-                or <b>LoadData</b>. You will have the opportuity to prefix or append
-                additional text.</li>
+                or <b>LoadData</b>. You will have the opportunity to prefix or append
+                additional text. <br>
+                If you have metadata associated with your images, you can append an text 
+                to the image filename using a metadata tag. This is especially useful if you 
+                want your output given a unique label according to the metadata corresponding 
+                to an image group. The name of the metadata to substitute can be extracted from
+                the image filename each cycle using <b>LoadImages</b> or provided for each image using 
+                <b>LoadData</b>. %(USING_METADATA_TAGS_REF)s%(USING_METADATA_HELP_REF)s.</li>
                 <li><i>Sequential numbers:</i> Same as above, but in addition, each filename
                 will have a number appended to the end that corresponds to
                 the image cycle number (starting at 1).</li>
-                <li><i>Single file name:</i> A single, fixed name will be given to the
-                file, with no additional text prefixed or appended. Since the filename is fixed,
-                this file will be overwritten with each cycle. Unless you want the file to be 
-                updated every cycle during the analysis run, you would probably want to save it
-                on the last cycle (see the <a href='#when_to_save'><i>Select how often to save</i></a> setting)</li>
-                <li><i>Name with metadata:</i> The filenames are constructed using the metadata
-                associated with an image cycle in <b>LoadImages</b> or <b>LoadData</b>. This is 
-                especially useful if you want your output given a unique label according to the
-                metadata corresponding to an image group. The name of the metadata to substitute 
-                is included in a special tag format embedded in your file specification. 
-                %s. %s</li>
-                <li><i>Image filename with metadata:</i> This is a combination of
-                <i>From image filename</i> and <i>Name with metadata</i>. If you have metadata 
-                associated with your images, you can append an extension to the image filename 
-                using a metadata tag. </li>
-                </ul>"""% (USING_METADATA_TAGS_REF,USING_METADATA_HELP_REF))
+                <li><i>Single name:</i> A single name will be given to the
+                file. Since the filename is fixed, this file will be overwritten with each cycle. 
+                In this case, you would probably want to save the image on the last cycle 
+                (see the <i>Select how often to save</i> setting)<br>
+                The exception to this is to use a metadata tag to provide a unique label, as mentioned 
+                in the <i>From image filename</i> option.</li>
+                </ul>"""%globals())
         
         self.file_image_name = cps.FileImageNameSubscriber("Select image name for file prefix",
                                                            "None",doc="""

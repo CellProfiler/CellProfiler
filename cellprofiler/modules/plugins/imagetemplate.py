@@ -120,7 +120,8 @@ class ImageTemplate(cpm.CPModule):
             # we use the actual text that's displayed in the documentation.
             #
             # %(GRADIENT_MAGNITUDE)s will get changed into "Gradient magnitude"
-            # etc.
+            # etc. Python will look in globals() for the "GRADIENT_" names
+            # and paste them in where it sees %(GRADIENT_...)s
             #
             # The <ul> and <li> tags make a neat bullet-point list in the docs
             #
@@ -133,7 +134,10 @@ class ImageTemplate(cpm.CPModule):
             0 to .5 = decreasing with increasing X, .5 to 1 = increasing
             with increasing X).</li>
             <li><i>%(GRADIENT_DIRECTION_Y)s</i> to get the relative
-            contribution of the gradient in the Y direction.</li></ul>""")
+            contribution of the gradient in the Y direction.</li></ul>
+            """ % globals()
+                                                                          
+        )
         #
         # A binary setting displays a checkbox.
         #
@@ -243,8 +247,8 @@ class ImageTemplate(cpm.CPModule):
         else:
             # Numpy uses i and j instead of x and y. The x axis is 1
             # and the y axis is 0
-            x = correlate1d(g, [1, -2, 1], 1)
-            y = correlate1d(g, [1, -2, 1], 0)
+            x = correlate1d(g, [-1, 0, 1], 1)
+            y = correlate1d(g, [-1, 0, 1], 0)
             norm = np.sqrt(x**2+y**2)
             if self.gradient_choice == GRADIENT_DIRECTION_X:
                 output_pixels = .5 + x / norm / 2

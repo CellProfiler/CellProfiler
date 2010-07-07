@@ -832,7 +832,13 @@ class CPFigureFrame(wx.Frame):
                                          np.maximum(llpix, urpix)))
                 bbox = np.array((llpix, urpix))
                 
-                evt.renderer.draw_image(llpix[0], llpix[1], mimg, bbox)
+                # Two ways to do this, try by version
+                mplib_version = matplotlib.__version__.split(".")
+                if mplib_version[0] == '0':
+                    evt.renderer.draw_image(llpix[0], llpix[1], mimg, bbox)
+                else:
+                    gc = evt.renderer.new_gc()
+                    evt.renderer.draw_image(gc, llpix[0], llpix[1], mimg)
     
             self.event_bindings[(x,y)] += [
                 self.figure.canvas.mpl_connect('draw_event', on_redraw)]

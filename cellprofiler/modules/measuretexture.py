@@ -144,7 +144,7 @@ class MeasureTexture(cpm.CPModule):
         self.add_images = cps.DoSomething("", "Add another image",
                                           self.add_image_cb)
         self.image_divider = cps.Divider()
-        self.add_object_cb(can_remove = False)
+        self.add_object_cb(can_remove = True)
         self.add_objects = cps.DoSomething("", "Add another object",
                                            self.add_object_cb)
         self.object_divider = cps.Divider()

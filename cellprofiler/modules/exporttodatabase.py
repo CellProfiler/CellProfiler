@@ -571,7 +571,9 @@ class ExportToDatabase(cpm.CPModule):
                                     'Overwrite tables?', 
                                     style=wx.OK|wx.CANCEL|wx.ICON_QUESTION)
                 if dlg.ShowModal() != wx.ID_OK:
+                    dlg.Destroy()
                     return False
+                dlg.Destroy()
 
             mappings = self.get_column_name_mappings(pipeline, image_set_list)
             column_defs = self.get_pipeline_measurement_columns(pipeline, 

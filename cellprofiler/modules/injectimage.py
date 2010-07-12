@@ -24,12 +24,13 @@ class InjectImage(cellprofiler.cpmodule.CPModule):
     """
     module_name = "InjectImage"
 
-    def __init__(self, image_name, image, mask=None):
+    def __init__(self, image_name, image, mask=None, release_image = False):
         super(InjectImage,self).__init__()
         self.__image_name = image_name
         self.__image = image
         self.__mask  = mask
         self.image_name = cellprofiler.settings.NameProvider("Hardwired image name","imagegroup",image_name) 
+        self.__release_image = release_image
     
     def visible_settings(self):
         return [self.image_name]
@@ -75,6 +76,11 @@ class InjectImage(cellprofiler.cpmodule.CPModule):
         """
         pass
 
+    def post_run(self, workspace):
+        if self.__release_image:
+            del self.__image
+            del self.__mask
+            
     def get_categories(self,pipeline, object_name):
         """Return the categories of measurements that this module produces
         

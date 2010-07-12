@@ -1,4 +1,4 @@
-'''test_measureimagegranularity - Test the MeasureImageGranularity module
+'''test_measuregranularity - Test the MeasureGranularity module
 
 CellProfiler is distributed under the GNU General Public License.
 See the accompanying file LICENSE for details.
@@ -29,16 +29,18 @@ import cellprofiler.cpimage as cpi
 import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo
 import cellprofiler.workspace as cpw
-import cellprofiler.modules.measureimagegranularity as M
-
+import cellprofiler.modules.measuregranularity as M
+from cellprofiler.cpmath.cpmorphology import fixup_scipy_ndimage_result as fix
 
 import sys
 print sys.path
 
 IMAGE_NAME = 'myimage'
-class TestMeasureImageGranularity(unittest.TestCase):
+OBJECTS_NAME = 'myobjects'
+
+class TestMeasureGranularity(unittest.TestCase):
     def test_01_01_load_matlab(self):
-        '''Load a Matlab MeasureImageGranularity pipeline'''
+        '''Load a Matlab MeasureGranularity pipeline'''
         data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0s'
                 'SU1RyM+zUggH0sGpBQqGZgqGplamFlYGxgpGBgaWCiQDBkZPX34GBoYXjAwM'
                 'FXPehp31O+QgMM/JO0C4Oe7LAs/+OJcJRypCmgOFfnYKLDouOm2X58tJ/wQ+'
@@ -60,10 +62,10 @@ class TestMeasureImageGranularity(unittest.TestCase):
         pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 2)
         module = pipeline.modules()[1]
-        self.assertTrue(isinstance(module,M.MeasureImageGranularity))
+        self.assertTrue(isinstance(module,M.MeasureGranularity))
         self.assertEqual(len(module.images), 1)
         image_setting = module.images[0]
-        #self.assertTrue(isinstance(image_setting, M.MeasureImageGranularity))
+        #self.assertTrue(isinstance(image_setting, M.MeasureGranularity))
         self.assertEqual(image_setting.image_name.value, 'OrigBlue')
         self.assertAlmostEqual(image_setting.subsample_size.value, .33)
         self.assertAlmostEqual(image_setting.image_sample_size.value, .166)
@@ -97,31 +99,82 @@ class TestMeasureImageGranularity(unittest.TestCase):
         pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 2)
         module = pipeline.modules()[1]
-        self.assertTrue(isinstance(module,M.MeasureImageGranularity))
+        self.assertTrue(isinstance(module,M.MeasureGranularity))
         self.assertEqual(len(module.images), 2)
         for image_setting, image_name, subsample_size, bsize, elsize, glen in\
             ((module.images[0], 'DNA', .25, .25, 10, 16),
              (module.images[1], 'Actin', .33, .50, 12, 20)):
-            #self.assertTrue(isinstance(image_setting, M.MeasureImageGranularity))
+            #self.assertTrue(isinstance(image_setting, M.MeasureGranularity))
             self.assertEqual(image_setting.image_name, image_name)
             self.assertAlmostEqual(image_setting.subsample_size.value, subsample_size)
             self.assertAlmostEqual(image_setting.image_sample_size.value, bsize)
             self.assertEqual(image_setting.element_size.value, elsize)
             self.assertEqual(image_setting.granular_spectrum_length.value, glen)
+            self.assertEqual(len(image_setting.objects), 0)
+            self.assertEqual(image_setting.object_count.value, 0)
+            
+    def test_01_03_load_v3(self):
+        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:1
+SVNRevision:10252
+
+MeasureGranularity:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|show_window:True|notes:\x5B\x5D]
+    Image count:2
+    Object count:2
+    Select an image to measure:DNA
+    Subsampling factor for granularity measurements:0.25
+    Subsampling factor for background reduction:0.25
+    Radius of structuring element:10
+    Range of the granular spectrum:16
+    Object name:Nuclei
+    Object name:Cells
+    Object count:3
+    Select an image to measure:Actin
+    Subsampling factor for granularity measurements:0.33
+    Subsampling factor for background reduction:0.5
+    Radius of structuring element:12
+    Range of the granular spectrum:20
+    Object name:Nuclei
+    Object name:Cells
+    Object name:Cytoplasm    
+"""
+        pipeline = cpp.Pipeline()
+        def callback(caller,event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO(data))
+        self.assertEqual(len(pipeline.modules()), 1)
+        module = pipeline.modules()[0]
+        self.assertTrue(isinstance(module,M.MeasureGranularity))
+        self.assertEqual(len(module.images), 2)
+        for image_setting, image_name, subsample_size, bsize, elsize, glen, objs, in\
+            ((module.images[0], 'DNA', .25, .25, 10, 16, ("Nuclei", "Cells")),
+             (module.images[1], 'Actin', .33, .50, 12, 20, ("Nuclei", "Cells", "Cytoplasm"))):
+            #self.assertTrue(isinstance(image_setting, M.MeasureGranularity))
+            self.assertEqual(image_setting.image_name, image_name)
+            self.assertAlmostEqual(image_setting.subsample_size.value, subsample_size)
+            self.assertAlmostEqual(image_setting.image_sample_size.value, bsize)
+            self.assertEqual(image_setting.element_size.value, elsize)
+            self.assertEqual(image_setting.granular_spectrum_length.value, glen)
+            self.assertEqual(len(image_setting.objects), len(objs))
+            self.assertEqual(image_setting.object_count.value, len(objs))
+            self.assertTrue(all([ob.objects_name.value in objs
+                                 for ob in image_setting.objects]))
     
     def make_pipeline(self, image, mask, subsample_size, image_sample_size, 
-                      element_size, granular_spectrum_length):
-        '''Make a pipeline with a MeasureImageGranularity module
+                      element_size, granular_spectrum_length,
+                      labels = None):
+        '''Make a pipeline with a MeasureGranularity module
         
         image - measure granularity on this image
         mask - exclude / include pixels from measurement. None = no mask
         subsample_size, etc. - values for corresponding settings in the module
         returns tuple of module & workspace
         '''
-        module = M.MeasureImageGranularity()
+        module = M.MeasureGranularity()
         module.module_num = 1
         image_setting = module.images[0]
-        #assert isinstance(image_setting, M.MeasureImageGranularity)
+        #assert isinstance(image_setting, M.MeasureGranularity)
         image_setting.image_name.value = IMAGE_NAME
         image_setting.subsample_size.value = subsample_size
         image_setting.image_sample_size.value = image_sample_size
@@ -136,16 +189,38 @@ class TestMeasureImageGranularity(unittest.TestCase):
             self.assertFalse(isinstance(event, cpp.RunExceptionEvent))
         pipeline.add_listener(error_callback)
         pipeline.add_module(module)
+        object_set = cpo.ObjectSet()
+        if labels is not None:
+            objects = cpo.Objects()
+            objects.segmented = labels
+            object_set.add_objects(objects, OBJECTS_NAME)
+            image_setting.add_objects()
+            image_setting.objects[0].objects_name.value = OBJECTS_NAME
         workspace = cpw.Workspace(pipeline, module, image_set, 
-                                  cpo.ObjectSet(), cpmeas.Measurements(),
+                                  object_set, cpmeas.Measurements(),
                                   image_set_list)
         return module, workspace
+    
+    def test_02_00_all_masked(self):
+        '''Run on a totally masked image'''
+        module, workspace = self.make_pipeline(np.zeros((40,40)), 
+                                               np.zeros((40,40), bool),
+                                               .25, .25, 10, 16)
+        self.assertTrue(isinstance(module, M.MeasureGranularity))
+        module.run(workspace)
+        m = workspace.measurements
+        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        for i in range(1,16):
+            feature = module.images[0].granularity_feature(i)
+            self.assertTrue(feature in m.get_feature_names(cpmeas.IMAGE))
+            value = m.get_current_image_measurement(feature)
+            self.assertTrue(np.isnan(value))
     
     def test_02_01_zeros(self):
         '''Run on an image of all zeros'''
         module, workspace = self.make_pipeline(np.zeros((40,40)), None,
                                                .25, .25, 10, 16)
-        self.assertTrue(isinstance(module, M.MeasureImageGranularity))
+        self.assertTrue(isinstance(module, M.MeasureGranularity))
         module.run(workspace)
         m = workspace.measurements
         self.assertTrue(isinstance(m, cpmeas.Measurements))
@@ -165,7 +240,7 @@ class TestMeasureImageGranularity(unittest.TestCase):
         expected = [100,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
         module, workspace = self.make_pipeline(image, None,
                                                1, 1, 10, 16)
-        self.assertTrue(isinstance(module, M.MeasureImageGranularity))
+        self.assertTrue(isinstance(module, M.MeasureGranularity))
         module.run(workspace)
         m = workspace.measurements
         self.assertTrue(isinstance(m, cpmeas.Measurements))
@@ -189,7 +264,7 @@ class TestMeasureImageGranularity(unittest.TestCase):
         expected = [0,96,0,4,0,0,0,0,0,0,0,0,0,0,0,0]
         module, workspace = self.make_pipeline(image, None,
                                                .5, 1, 10, 16)
-        self.assertTrue(isinstance(module, M.MeasureImageGranularity))
+        self.assertTrue(isinstance(module, M.MeasureGranularity))
         module.run(workspace)
         m = workspace.measurements
         self.assertTrue(isinstance(m, cpmeas.Measurements))
@@ -217,7 +292,7 @@ class TestMeasureImageGranularity(unittest.TestCase):
         expected = [0,99,0,1,0,0,0,0,0,0,0,0,0,0,0,0]
         module, workspace = self.make_pipeline(image, None,
                                                1, .5, 10, 16)
-        self.assertTrue(isinstance(module, M.MeasureImageGranularity))
+        self.assertTrue(isinstance(module, M.MeasureGranularity))
         module.run(workspace)
         m = workspace.measurements
         self.assertTrue(isinstance(m, cpmeas.Measurements))
@@ -262,7 +337,7 @@ class TestMeasureImageGranularity(unittest.TestCase):
         expected = [0,99,0,1,0,0,0,0,0,0,0,0,0,0,0,0]
         module, workspace = self.make_pipeline(image, None,
                                                1, 1, 5, 16)
-        self.assertTrue(isinstance(module, M.MeasureImageGranularity))
+        self.assertTrue(isinstance(module, M.MeasureGranularity))
         module.run(workspace)
         m = workspace.measurements
         self.assertTrue(isinstance(m, cpmeas.Measurements))
@@ -272,3 +347,121 @@ class TestMeasureImageGranularity(unittest.TestCase):
             value = m.get_current_image_measurement(feature)
             self.assertAlmostEqual(value, expected[i-1])
             
+    def test_05_01_all_masked(self):
+        '''Run on objects and a totally masked image'''
+        labels = np.ones((40,40), int)
+        labels[20:,:] = 2
+        module, workspace = self.make_pipeline(np.zeros((40,40)), 
+                                               np.zeros((40,40), bool),
+                                               .25, .25, 10, 16,
+                                               labels)
+        self.assertTrue(isinstance(module, M.MeasureGranularity))
+        module.run(workspace)
+        m = workspace.measurements
+        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        for i in range(1,16):
+            feature = module.images[0].granularity_feature(i)
+            self.assertTrue(feature in m.get_feature_names(cpmeas.IMAGE))
+            value = m.get_current_image_measurement(feature)
+            self.assertTrue(np.isnan(value))
+            values = m.get_current_measurement(OBJECTS_NAME,
+                                               feature)
+            self.assertEqual(len(values), 2)
+            self.assertTrue(np.all(np.isnan(values)))
+            
+    def test_05_02_no_objects(self):
+        '''Run on a labels matrix with no objects'''
+        module, workspace = self.make_pipeline(np.zeros((40,40)), 
+                                               None,
+                                               .25, .25, 10, 16,
+                                               np.zeros((40,40), int))
+        self.assertTrue(isinstance(module, M.MeasureGranularity))
+        module.run(workspace)
+        m = workspace.measurements
+        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        for i in range(1,16):
+            feature = module.images[0].granularity_feature(i)
+            self.assertTrue(feature in m.get_feature_names(cpmeas.IMAGE))
+            value = m.get_current_image_measurement(feature)
+            self.assertAlmostEqual(value, 0)
+            values = m.get_current_measurement(OBJECTS_NAME,
+                                               feature)
+            self.assertEqual(len(values), 0)
+    
+    def test_05_03_zeros(self):
+        '''Run on an image of all zeros'''
+        labels = np.ones((40,40), int)
+        labels[20:,:] = 2
+        module, workspace = self.make_pipeline(np.zeros((40,40)), None,
+                                               .25, .25, 10, 16, labels)
+        self.assertTrue(isinstance(module, M.MeasureGranularity))
+        module.run(workspace)
+        m = workspace.measurements
+        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        for i in range(1,16):
+            feature = module.images[0].granularity_feature(i)
+            self.assertTrue(feature in m.get_feature_names(cpmeas.IMAGE))
+            value = m.get_current_image_measurement(feature)
+            self.assertAlmostEqual(value, 0)
+            values = m.get_current_measurement(OBJECTS_NAME, feature)
+            self.assertEqual(len(values), 2)
+            np.testing.assert_almost_equal(values, 0)
+    
+    def test_06_01_no_scaling(self):
+        '''Run on an image without subsampling or background scaling'''
+        #
+        # Make an image with granularity at scale 1
+        #
+        i,j = np.mgrid[0:40,0:30]
+        image = (i % 2 == j%2).astype(float)
+        expected = [100,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+        labels = np.ones((40,30), int)
+        labels[20:,:] = 2
+        module, workspace = self.make_pipeline(image, None,
+                                               1, 1, 10, 16, labels)
+        self.assertTrue(isinstance(module, M.MeasureGranularity))
+        module.run(workspace)
+        m = workspace.measurements
+        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        for i in range(1,16):
+            feature = module.images[0].granularity_feature(i)
+            self.assertTrue(feature in m.get_feature_names(cpmeas.IMAGE))
+            value = m.get_current_image_measurement(feature)
+            self.assertAlmostEqual(value, expected[i-1])
+            values = m.get_current_measurement(OBJECTS_NAME, feature)
+            self.assertEqual(len(values), 2)
+            np.testing.assert_almost_equal(values, expected[i-1])
+        
+    def test_06_02_subsampling(self):
+        '''Run on an image with subsampling'''
+        #
+        # Make an image with granularity at scale 2
+        #
+        i,j = np.mgrid[0:80,0:80]
+        image = ((i/8).astype(int) % 2 == (j/8).astype(int) % 2).astype(float)
+        #
+        # The 4x4 blocks need two erosions before disappearing. The corners
+        # need an additional two erosions before disappearing
+        #
+        expected = [0,96,0,4,0,0,0,0,0,0,0,0,0,0,0,0]
+        labels = np.ones((80,80), int)
+        labels[40:,:] = 2
+        module, workspace = self.make_pipeline(image, None,
+                                               .5, 1, 10, 16, labels)
+        self.assertTrue(isinstance(module, M.MeasureGranularity))
+        module.run(workspace)
+        m = workspace.measurements
+        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        for i in range(1,16):
+            feature = module.images[0].granularity_feature(i)
+            self.assertTrue(feature in m.get_feature_names(cpmeas.IMAGE))
+            value = m.get_current_image_measurement(feature)
+            self.assertAlmostEqual(value, expected[i-1])
+            values = m.get_current_measurement(OBJECTS_NAME, feature)
+            self.assertEqual(len(values), 2)
+            #
+            # We rescale the downscaled image to the size of the labels
+            # and this throws the images off during interpolation
+            #
+            np.testing.assert_almost_equal(values, expected[i-1], 0)
+        

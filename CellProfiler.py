@@ -85,6 +85,11 @@ parser.add_option("--html",
                           'option to specify the output directory for the '
                           'files. Assumes -b.'))
 
+parser.add_option("--plugins-directory",
+                  dest="plugins_directory",
+                  help=("CellProfiler will look for plugin modules in this "
+                        "directory."))
+
 if not hasattr(sys, 'frozen'):
     parser.add_option("-b", "--do-not_build",
                       dest="build_extensions",
@@ -208,6 +213,8 @@ try:
             print "%s,%s,%s" % (object_name, feature, data_type)
         print "--- end measurements ---"
     
+    if options.plugins_directory is not None:
+        cpprefs.set_plugin_directory(options.plugins_directory)
     if options.data_file is not None:
         cpprefs.set_data_file(os.path.abspath(options.data_file))
         

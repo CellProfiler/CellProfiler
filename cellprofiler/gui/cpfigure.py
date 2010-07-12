@@ -146,7 +146,7 @@ def close_all(parent):
     windows = [x for x in parent.GetChildren()
                if isinstance(x, CPFigureFrame)]
     for window in windows:
-        window.Close()
+        window.Destroy()
     reset_cpfigure_position()
     try:
         from imagej.windowmanager import close_all_windows

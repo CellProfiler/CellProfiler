@@ -221,8 +221,8 @@ class MeasureTexture(cpm.CPModule):
         group.append('object_name', 
                      cps.ObjectNameSubscriber("Select objects to measure","None", doc="""
                         What did you call the objects whose texture you want to measure? 
-                        You can select <i>None</i> if you only want to measure the texture 
-                        for the image overall. 
+                        If you only want to measure the texture 
+                        for the image overall, you can remove all objects using the "Remove this object" button. 
                         <p>Objects specified here will have their
                         texture measured against <i>all</i> images specfied above, which
                         may lead to image-object combinations that are unneccesary. If you

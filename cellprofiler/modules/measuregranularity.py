@@ -1,7 +1,6 @@
 '''<b>Measure Granularity</b> outputs spectra of size measurements 
 of the textures in the image
 <hr>
-
 Image granularity is a texture measurement that tries a series of structure elements 
 of increasing size and outputs a spectrum of measures of how well these structure 
 elements fit in the texture of the image. Granularity is measured as described by 
@@ -82,7 +81,8 @@ class MeasureGranularity(cpm.CPModule):
         if can_remove:
             group.append("divider", cps.Divider(line=True))
         
-        group.append("image_name",cps.ImageNameSubscriber("Select an image to measure","None",doc="What did you call the images whose granularity you want to measure?"))
+        group.append("image_name",cps.ImageNameSubscriber("Select an image to measure","None",doc="""
+            What did you call the grayscale images whose granularity you want to measure?"""))
         
         group.append("subsample_size",cps.Float(
             "Subsampling factor for granularity measurements",
@@ -132,9 +132,9 @@ class MeasureGranularity(cpm.CPModule):
             narrow it down to the informative range to save time.'''))
         
         group.append("add_objects_button", cps.DoSomething(
-            "Add another object", "Add object", group.add_objects,
+            "", "Add another object", group.add_objects,
             doc = """Press this button to add granularity measurements for
-            objects, such as those produced by a prior 
+            objects, such as those identified by a prior 
             <b>IdentifyPrimaryObjects</b> module. <b>MeasureGranularity</b>
             will measure the image's granularity within each object at the
             requested scales."""))
@@ -402,12 +402,13 @@ class GranularitySettingsGroup(cps.SettingsGroup):
     def add_objects(self):
         og = cps.SettingsGroup()
         og.append("objects_name", cps.ObjectNameSubscriber(
-            "Object name:", "None",
-            doc = """This setting picks the objects whose granualarity
+            "Select objects to measure", "None",
+            doc = """Select the objects whose granualarity
             will be measured. You can select objects from prior modules
-            that produce objects, such as <b>IdentifyPrimaryObjects</b>"""))
+            that identify objects, such as <b>IdentifyPrimaryObjects</b>. If you only want to measure the granularity 
+            for the image overall, you can remove all objects using the "Remove this object" button."""))
         og.append("remover", cps.RemoveSettingButton(
-            "", "Remove these objects", self.objects, og))
+            "", "Remove this object", self.objects, og))
         self.objects.append(og)
             
     def visible_settings(self):

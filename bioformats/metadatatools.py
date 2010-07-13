@@ -33,26 +33,135 @@ class MetadataStore(object):
         self.o = o
         
     createRoot = jutil.make_method('createRoot', '()V', '')
-    setPixelsBigEndian = jutil.make_method('setPixelsBigEndian', '(Ljava/lang/Boolean;II)V',
-                                            'for a particular Pixels, sets endianness of the pixels set.')
-    setPixelsDimensionOrder = jutil.make_method('setPixelsDimensionOrder', '(Ljava/lang/String;II)V', 
-                                                'For a particular Pixels, sets the dimension order of the pixels set.')
-    setPixelsPixelType = jutil.make_method('setPixelsPixelType', '(Ljava/lang/String;II)V', 
-                                           'For a particular Pixels, sets the pixel type.')
-    setPixelsSizeX = jutil.make_method('setPixelsSizeX', '(Ljava/lang/Integer;II)V', 
-                                       'For a particular Pixels, sets The size of an individual plane or section\'s X axis (width).')
-    setPixelsSizeY = jutil.make_method('setPixelsSizeY', '(Ljava/lang/Integer;II)V', 
-                                       'For a particular Pixels, sets The size of an individual plane or section\'s Y axis (height).')
-    setPixelsSizeZ = jutil.make_method('setPixelsSizeZ', '(Ljava/lang/Integer;II)V', 
-                                       'For a particular Pixels, sets number of optical sections per stack.')
-    setPixelsSizeC = jutil.make_method('setPixelsSizeC', '(Ljava/lang/Integer;II)V', 
-                                       'For a particular Pixels, sets number of channels per timepoint.')
-    setPixelsSizeT = jutil.make_method('setPixelsSizeT', '(Ljava/lang/Integer;II)V', 
-                                       'For a particular Pixels, sets number of timepoints.')
-    setLogicalChannelSamplesPerPixel = jutil.make_method('setLogicalChannelSamplesPerPixel',
-                                                         '(Ljava/lang/Integer;II)V',
-                                                         'For a particular LogicalChannel, sets number of channel components in the logical channel.')
+    def setPixelsBigEndian(self, bigEndian, imageIndex, binDataIndex):
+        '''Set the endianness for a particular image
+        
+        bigEndian - True for big-endian, False for little-endian
+        imageIndex - index of the image in question from IFormatReader.get_index?
+        binDataIndex - ???
+        '''
+        # Post loci_tools 4.2
+        try:
+            jutil.call(self.o, 'setPixelsBinDataBigEndian',
+                       '(Ljava/lang/Boolean;II)V',
+                       bigEndian, imageIndex, binDataIndex)
+        except jutil.JavaException:
+            jutil.call(self.o, 'setPixelsBigEndian', '(Ljava/lang/Boolean;II)V',
+                       bigEndian, imageIndex, binDataIndex)
 
+    def setPixelsDimensionOrder(self, dimension_order, imageIndex, binDataIndex):
+        '''Set the dimension order for a series'''
+        # Post loci_tools 4.2 - use ome.xml.model.DimensionOrder
+        try:
+            jdimension_order = jutil.static_call(
+                'ome/xml/model/enums/DimensionOrder', 'fromString',
+                '(Ljava/lang/String;)Lome/xml/model/enums/DimensionOrder;',
+                dimension_order)
+            jutil.call(self.o, 'setPixelsDimensionOrder',
+                       '(Lome/xml/model/enums/DimensionOrder;I)V',
+                       jdimension_order, imageIndex)
+        except jutil.JavaException:
+            jutil.call(self.o, 'setPixelsDimensionOrder',
+                       '(Ljava/lang/String;II)V',
+                       dimension_order, imageIndex, binDataIndex)
+            
+    setPixelsPixelType = jutil.make_method(
+        'setPixelsPixelType', '(Ljava/lang/String;II)V', 
+        '''Sets the pixel storage type
+        pixel_type - text representation of the type, e.g. "uint8"
+        imageIndex - ?
+        binDataIndex - ?
+        
+        WARNING: only available in BioFormats < 4.2
+        ''')
+    setPixelsType = jutil.make_method(
+        'setPixelsType', '(Lome/xml/model/enums/PixelType;I)V',
+        '''Set the pixel storage type
+        
+        pixel_type - one of the enumerated values from PixelType.
+        imageIndex - ?
+        
+        See the ome.xml.model.enums.PixelType and make_pixel_type_class's
+        PixelType for possible values.
+        ''')
+    
+    def setPixelsSizeX(self, x, imageIndex, binDataIndex):
+        try:
+            jutil.call(self.o, 'setPixelsSizeX',
+                       '(Lome/xml/model/primitives/PositiveInteger;I)V',
+                       PositiveInteger(x), imageIndex)
+        except jutil.JavaException:
+            jutil.call(self.o, 'setPixelsSizeX', 
+                       '(Ljava/lang/Integer;II)V', x, imageIndex, binDataIndex)
+
+    def setPixelsSizeY(self, y, imageIndex, binDataIndex):
+        try:
+            jutil.call(self.o, 'setPixelsSizeY',
+                       '(Lome/xml/model/primitives/PositiveInteger;I)V',
+                       PositiveInteger(y), imageIndex)
+        except jutil.JavaException:
+            jutil.call(self.o, 'setPixelsSizeY', 
+                       '(Ljava/lang/Integer;II)V', y, imageIndex, binDataIndex)
+            
+    def setPixelsSizeZ(self, z, imageIndex, binDataIndex):
+        try:
+            jutil.call(self.o, 'setPixelsSizeZ',
+                       '(Lome/xml/model/primitives/PositiveInteger;I)V',
+                       PositiveInteger(z), imageIndex)
+        except jutil.JavaException:
+            jutil.call(self.o, 'setPixelsSizeZ', 
+                       '(Ljava/lang/Integer;II)V', z, imageIndex, binDataIndex)
+
+    def setPixelsSizeC(self, c, imageIndex, binDataIndex):
+        try:
+            jutil.call(self.o, 'setPixelsSizeC',
+                       '(Lome/xml/model/primitives/PositiveInteger;I)V',
+                       PositiveInteger(c), imageIndex)
+        except jutil.JavaException:
+            jutil.call(self.o, 'setPixelsSizeC', 
+                       '(Ljava/lang/Integer;II)V', c, imageIndex, binDataIndex)
+
+    def setPixelsSizeT(self, t, imageIndex, binDataIndex):
+        try:
+            jutil.call(self.o, 'setPixelsSizeT',
+                       '(Lome/xml/model/primitives/PositiveInteger;I)V',
+                       PositiveInteger(t), imageIndex)
+        except jutil.JavaException:
+            jutil.call(self.o, 'setPixelsSizeT', 
+                       '(Ljava/lang/Integer;II)V', t, imageIndex, binDataIndex)
+
+    def setLogicalChannelSamplesPerPixel(self, samplesPerPixel, imageIndex, channelIndex):
+        'For a particular LogicalChannel, sets number of channel components in the logical channel.'
+        try:
+            jutil.call(self.o, 'setChannelSamplesPerPixel',
+                       '(Lome/xml/model/primitives/PositiveInteger;II)V',
+                       PositiveInteger(samplesPerPixel),
+                       imageIndex, channelIndex)
+        except jutil.JavaException:
+            jutil.call(self.o, 'setLogicalChannelSamplesPerPixel',
+                       '(Ljava/lang/Integer;II)V', samplesPerPixel,
+                       imageIndex, channelIndex)
+    setImageID = jutil.make_method(
+        'setImageID', '(Ljava/lang/String;I)V',
+        '''Tag the indexed image with a name
+        
+        id - the name, for instance Image:0
+        imageIndex - the index of the image (series???)
+        ''')
+    setPixelsID = jutil.make_method(
+        'setPixelsID', '(Ljava/lang/String;I)V',
+        '''Tag the pixels with a name (???)
+        
+        id - the name, for instance Pixels:0
+        imageIndex - the index of the image (???)
+        ''')
+    setChannelID = jutil.make_method(
+        'setChannelID', '(Ljava/lang/String;II)V',
+        '''Give an ID name to the given channel
+        
+        id - the name of the channel
+        imageIndex - (???)
+        channelIndex - index of the channel to be ID'ed''')
 
 class MetadataRetrieve(object):
     '''  '''
@@ -90,4 +199,38 @@ def wrap_imetadata_object(o):
             self.o = o
     
     return IMetadata(o)
+
+__pixel_type_class = None
+def make_pixel_type_class():
+    '''The class, ome.xml.model.enums.PixelType
+    
+    The Java class has enumerations for the various image data types
+    such as UINT8 or DOUBLE
+    '''
+    global __pixel_type_class
+    if __pixel_type_class is None:
+        class PixelType(object):
+            '''Provide enums from ome.xml.model.enums.PixelType'''
+            klass = jutil.get_env().find_class('ome/xml/model/enums/PixelType')
+            INT8 = jutil.get_static_field(klass, 'INT8', 'Lome/xml/model/enums/PixelType;')
+            INT16 = jutil.get_static_field(klass, 'INT16', 'Lome/xml/model/enums/PixelType;')
+            INT32 = jutil.get_static_field(klass, 'INT32', 'Lome/xml/model/enums/PixelType;')
+            UINT8 = jutil.get_static_field(klass, 'UINT8', 'Lome/xml/model/enums/PixelType;')
+            UINT16 = jutil.get_static_field(klass, 'UINT16', 'Lome/xml/model/enums/PixelType;')
+            UINT32 = jutil.get_static_field(klass, 'UINT32', 'Lome/xml/model/enums/PixelType;')
+            FLOAT = jutil.get_static_field(klass, 'FLOAT', 'Lome/xml/model/enums/PixelType;')
+            BIT = jutil.get_static_field(klass, 'BIT', 'Lome/xml/model/enums/PixelType;')
+            DOUBLE = jutil.get_static_field(klass, 'DOUBLE', 'Lome/xml/model/enums/PixelType;')
+            COMPLEX = jutil.get_static_field(klass, 'COMPLEX', 'Lome/xml/model/enums/PixelType;')
+            DOUBLECOMPLEX = jutil.get_static_field(klass, 'DOUBLECOMPLEX', 'Lome/xml/model/enums/PixelType;')
+        __pixel_type_class = PixelType()
+    return __pixel_type_class
+
+def PositiveInteger(some_number):
+    '''Return an instance of ome.xml.model.primitives.PositiveInteger
+    
+    some_number - the number to be wrapped up in the class
+    '''
+    return jutil.make_instance('ome/xml/model/primitives/PositiveInteger',
+                               '(Ljava/lang/Integer;)V', some_number)
 

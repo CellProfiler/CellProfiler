@@ -97,6 +97,13 @@ def make_iformat_writer_class(class_name):
                                            'Sets whether or not the channels in an image are interleaved.')
         setMetadataRetrieve = jutil.make_method('setMetadataRetrieve', '(Lloci/formats/meta/MetadataRetrieve;)V', 
                                                 'Sets the metadata retrieval object from which to retrieve standardized metadata.')
+        setSeries = jutil.make_method(
+            'setSeries', '(I)V',
+            '''Set the series for the image file
+            
+            series - the zero-based index of the image stack in the file,
+            for instance in a multi-image tif.''')
+        
     return IFormatWriter
     
 def make_image_writer_class():

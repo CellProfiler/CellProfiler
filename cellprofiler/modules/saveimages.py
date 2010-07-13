@@ -75,7 +75,9 @@ IF_CROPPING    = "Cropping"
 IF_FIGURE      = "Module window"
 IF_MOVIE       = "Movie"
 IF_ALL = [IF_IMAGE, IF_MASK, IF_CROPPING, IF_MOVIE, IF_FIGURE]
-    
+
+BIT_DEPTH_8 = "8"
+BIT_DEPTH_16 = "16"
 
 FN_FROM_IMAGE  = "From image filename"
 FN_SEQUENTIAL  = "Sequential numbers"
@@ -250,7 +252,7 @@ class SaveImages(cpm.CPModule):
         
         # TODO: 
         self.bit_depth = cps.Choice("Image bit depth",
-                ["8","16"],doc="""
+                [BIT_DEPTH_8, BIT_DEPTH_16],doc="""
                 <i>(Used only when saving files in a non-MAT format)</i><br>
                 What is the bit-depth at which you want to save the images?
                 <b>16-bit images are supported only for TIF formats.
@@ -480,19 +482,9 @@ class SaveImages(cpm.CPModule):
             stacks = 1
             frames = d['N_FRAMES']
             
-            FormatTools = make_format_tools_class()
-            imeta = createOMEXMLMetadata()
-            meta = wrap_imetadata_object(imeta)
-            meta.createRoot()
-            meta.setPixelsBigEndian(True, 0, 0)
-            meta.setPixelsDimensionOrder('XYCZT', 0, 0)
-            meta.setPixelsPixelType(FormatTools.getPixelTypeString(FormatTools.UINT8), 0, 0)
-            meta.setPixelsSizeX(width, 0, 0)
-            meta.setPixelsSizeY(height, 0, 0)
-            meta.setPixelsSizeC(channels, 0, 0)
-            meta.setPixelsSizeZ(stacks, 0, 0)
-            meta.setPixelsSizeT(frames, 0, 0)
-            meta.setLogicalChannelSamplesPerPixel(channels, 0, 0)   
+            nice_name = self.image_name.value+":" + os.path.split(out_file)[1]
+            meta = self.make_metadata(nice_name, width, height, channels, 
+                                      stacks, frames)
             ImageWriter = make_image_writer_class()
             writer = ImageWriter()    
             writer.setMetadataRetrieve(meta)
@@ -508,12 +500,62 @@ class SaveImages(cpm.CPModule):
                 save_im = np.array([pixels[:,:,0], pixels[:,:,1], pixels[:,:,2]]).flatten()
             else:
                 save_im = pixels.flatten()
-            writer.saveBytes(env.make_byte_array(save_im), is_last_image)
+            byte_array = env.make_byte_array(save_im)
+            try:
+                writer.saveBytesIB(d['CURRENT_FRAME'], byte_array)
+            except jutil.JavaException:
+                writer.saveBytes(byte_array, is_last_image)
             writer.close()
             d['CURRENT_FRAME'] += 1
         finally:
             jutil.detach()
         
+    def make_metadata(self, nice_name, width, height, channels, stacks, frames, 
+                      bit_depth = BIT_DEPTH_8, channel_names = None):
+        '''Make a Bioformats IMetadata for an image'''
+        assert channels in (1,3) or len(channel_names) == channels
+        imeta = createOMEXMLMetadata()
+        meta = wrap_imetadata_object(imeta)
+        meta.createRoot()
+        is_big = (sys.byteorder != 'little')
+        meta.setPixelsBigEndian(is_big, 0, 0)
+        meta.setPixelsDimensionOrder('XYCZT', 0, 0)
+        try:
+            PixelType = make_pixel_type_class()
+            if bit_depth == BIT_DEPTH_8:
+                meta.setPixelsType(PixelType.UINT8, 0)
+            else:
+                meta.setPixelsType(PixelType.UINT16, 0)
+        except jutil.JavaException:
+            FormatTools = make_format_tools_class()
+            if bit_depth == BIT_DEPTH_8:
+                bit_depth_enum = FormatTools.UINT8
+            else:
+                bit_depth_enum = FormatTools.UINT16
+                
+            meta.setPixelsPixelType( 
+                FormatTools.getPixelTypeString(bit_depth_enum), 0, 0)
+        meta.setPixelsSizeX(width, 0, 0)
+        meta.setPixelsSizeY(height, 0, 0)
+        meta.setPixelsSizeC(channels, 0, 0)
+        meta.setPixelsSizeZ(stacks, 0, 0)
+        meta.setPixelsSizeT(frames, 0, 0)
+        meta.setLogicalChannelSamplesPerPixel(1, 0, 0)
+        try:
+            meta.setImageID(nice_name, 0)
+            meta.setPixelsID(nice_name, 0)
+            if channels == 1:
+                meta.setChannelID(self.image_name.value, 0, 0)
+            else:
+                if channel_names is None:
+                    channel_names = ("Red","Green","Blue")
+                for i, channel_name in channel_names:
+                    meta.setChannelID(self.image_name.value + ":" + channel_name,
+                                      0, i)
+        except jutil.JavaException:
+            # Pre 4.2 will throw.
+            pass
+        return meta
     
     def post_group(self, workspace, *args):
         if (self.when_to_save == WS_LAST_CYCLE and 
@@ -534,7 +576,7 @@ class SaveImages(cpm.CPModule):
 
         # get the filename and check overwrite before attaching to java bridge
         filename = self.get_filename(workspace)
-        path=os.path.split(filename)[0]
+        path, fname =os.path.split(filename)
         if len(path) and not os.path.isdir(path):
             os.makedirs(path)
         if not self.check_overwrite(filename):
@@ -579,21 +621,12 @@ class SaveImages(cpm.CPModule):
             frames = 1
             is_big_endian = (sys.byteorder.lower() == 'big')
             FormatTools = make_format_tools_class()
-            pixel_type = FormatTools.getPixelTypeString(FormatTools.UINT16)
             
             # Build bioformats metadata object
-            imeta = createOMEXMLMetadata()
-            meta = wrap_imetadata_object(imeta)
-            meta.createRoot()
-            meta.setPixelsBigEndian(is_big_endian, 0, 0)
-            meta.setPixelsDimensionOrder('XYCZT', 0, 0)
-            meta.setPixelsPixelType(pixel_type, 0, 0)
-            meta.setPixelsSizeX(width, 0, 0)
-            meta.setPixelsSizeY(height, 0, 0)
-            meta.setPixelsSizeC(channels, 0, 0)
-            meta.setPixelsSizeZ(stacks, 0, 0)
-            meta.setPixelsSizeT(frames, 0, 0)
-            meta.setLogicalChannelSamplesPerPixel(channels, 0, 0)
+            nice_name = self.image_name.value + ":" + fname
+            meta = self.make_metadata(nice_name, width, height, channels, 
+                                      stacks, frames, 
+                                      bit_depth = BIT_DEPTH_16)
             ImageWriter = make_image_writer_class()
             writer = ImageWriter()    
             writer.setMetadataRetrieve(meta)
@@ -632,7 +665,7 @@ class SaveImages(cpm.CPModule):
             try:
                 # A more-modern interface... Bioformats SVN 6230+
                 jutil.call(true_writer, "saveBytes", 
-                           "(I[BLloci/formats/tiff/IFD;)",
+                           "(I[BLloci/formats/tiff/IFD;)V",
                            0, env.make_byte_array(pixels), ifd)
             except jutil.JavaException:
                 # The old method with the "last" flag
@@ -709,7 +742,7 @@ class SaveImages(cpm.CPModule):
             self.save_filename_measurements(workspace)
                         
     def save_image(self, workspace):
-        if self.get_bit_depth() == '16':
+        if self.get_bit_depth() == BIT_DEPTH_16:
             if has_tiff:
                 return self.save_image_with_libtiff(workspace)
             else:

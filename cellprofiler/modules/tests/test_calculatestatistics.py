@@ -462,7 +462,7 @@ CalculateStatistics:[module_num:1|svn_version:\'9495\'|variable_revision_number:
                     print ("Warning: > 1%% difference for %s: Matlab: %f, Python: %f diff: %f" %
                            (feature_name, e_value, value, diff))
                 if feature_name.startswith("EC50"):
-                    filename = "EC49_"+feature_name[5:]+".m"
+                    filename = "EC49_"+feature_name[5:]+".pdf"
                     self.assertTrue(os.path.isfile(os.path.join(temp_dir, filename)))
         finally:
             for filename in os.listdir(temp_dir):

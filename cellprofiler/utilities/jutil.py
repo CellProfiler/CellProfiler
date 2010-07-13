@@ -504,18 +504,28 @@ def get_nice_arg(arg, sig):
         return make_instance('java/lang/Long', '(J)V', long(arg))
     if sig == 'Ljava/lang/Boolean;' and type(arg) in [int, long, bool]:
         return make_instance('java/lang/Boolean', '(Z)V', bool(arg))
-    if sig == '[B' and isinstance(arg, np.ndarray):
-        return env.make_byte_array(np.ascontiguousarray(arg.flatten(), np.uint8))
-    elif sig == '[S' and isinstance(arg, np.ndarray):
-        return env.make_short_array(np.ascontiguousarray(arg.flatten(), np.int16))
-    elif sig == '[I' and isinstance(arg, np.ndarray):
-        return env.make_int_array(np.ascontiguousarray(arg.flatten(), np.int32))
-    elif sig == '[J' and isinstance(arg, np.ndarray):
-        return env.make_long_array(np.ascontiguousarray(arg.flatten(), np.int64))
-    elif sig == '[F' and isinstance(arg, np.ndarray):
-        return env.make_float_array(np.ascontiguousarray(arg.flatten(), np.float32))
-    elif sig == '[D' and isinstance(arg, np.ndarray):
-        return env.make_double_array(np.ascontiguousarray(arg.flatten(), np.float64))
+    if isinstance(arg, np.ndarray):
+        if sig == '[B':
+            return env.make_byte_array(np.ascontiguousarray(arg.flatten(), np.uint8))
+        elif sig == '[S':
+            return env.make_short_array(np.ascontiguousarray(arg.flatten(), np.int16))
+        elif sig == '[I':
+            return env.make_int_array(np.ascontiguousarray(arg.flatten(), np.int32))
+        elif sig == '[J':
+            return env.make_long_array(np.ascontiguousarray(arg.flatten(), np.int64))
+        elif sig == '[F':
+            return env.make_float_array(np.ascontiguousarray(arg.flatten(), np.float32))
+        elif sig == '[D':
+            return env.make_double_array(np.ascontiguousarray(arg.flatten(), np.float64))
+    elif (sig.startswith('L') and sig.endswith(';') and
+          not isinstance(arg, (javabridge.JB_Object, javabridge.JB_Class))):
+        #
+        # Desperately try to make an instance of it with an integer constructor
+        #
+        if isinstance(arg, (int, long, bool)):
+            return make_instance(sig[1:-1], '(I)V', int(arg))
+        elif isinstance(arg, (str, unicode)):
+            return make_instance(sig[1:-1], '(Ljava/lang/String;)V', arg)
     return arg
 
 def get_nice_result(result, sig):

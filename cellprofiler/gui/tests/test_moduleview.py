@@ -86,7 +86,7 @@ class TestModuleView(unittest.TestCase):
         edit_control.SetValue("abc")
         app.ProcessPendingEvents()
         self.assertEqual(v.value,"abc")
-        app.frame.Close(True)
+        app.frame.Destroy()
         app.ProcessPendingEvents()
         app.ProcessIdle()
     
@@ -101,7 +101,7 @@ class TestModuleView(unittest.TestCase):
         app.ProcessPendingEvents()
         checkbox = self.get_edit_control(app,v)
         self.assertFalse(checkbox.Value)
-        app.frame.Close(True)
+        app.frame.Destroy()
         app.ProcessPendingEvents()
         app.ProcessIdle()
     
@@ -121,7 +121,7 @@ class TestModuleView(unittest.TestCase):
         combobox = self.get_edit_control(app,v)
         self.assertEqual(combobox.Value,'bar')
         self.assertEqual(v,'bar')
-        app.frame.Close(True)
+        app.frame.Destroy()
         app.ProcessPendingEvents()
         app.ProcessIdle()
 
@@ -135,7 +135,7 @@ class TestModuleView(unittest.TestCase):
         edit_control = self.get_edit_control(app,v)
         self.assertEqual(edit_control.Value,'2')
         self.assertTrue(v==2)
-        app.frame.Close(True)
+        app.frame.Destroy()
         app.ProcessPendingEvents()
         app.ProcessIdle()
     
@@ -153,7 +153,7 @@ class TestModuleView(unittest.TestCase):
         max_control.SetValue("3")
         app.ProcessPendingEvents()
         self.assertEqual(v.max,3)
-        app.frame.Close(True)
+        app.frame.Destroy()
         app.ProcessPendingEvents()
         app.ProcessIdle()
 
@@ -167,7 +167,7 @@ class TestModuleView(unittest.TestCase):
         edit_control = self.get_edit_control(app,v)
         self.assertAlmostEqual(float(edit_control.Value),2.5)
         self.assertAlmostEqual(v.value,2.5)
-        app.frame.Close(True)
+        app.frame.Destroy()
         app.ProcessPendingEvents()
         app.ProcessIdle()
     
@@ -185,7 +185,7 @@ class TestModuleView(unittest.TestCase):
         max_control.SetValue("3.5")
         app.ProcessPendingEvents()
         self.assertAlmostEqual(v.max,3.5)
-        app.frame.Close(True)
+        app.frame.Destroy()
         app.ProcessPendingEvents()
         app.ProcessIdle()
     
@@ -199,7 +199,7 @@ class TestModuleView(unittest.TestCase):
         edit_control.SetValue("abc")
         app.ProcessPendingEvents()
         self.assertEqual(v.value,"abc")
-        app.frame.Close(True)
+        app.frame.Destroy()
         app.ProcessPendingEvents()
         app.ProcessIdle()
 
@@ -211,6 +211,6 @@ class TestModuleView(unittest.TestCase):
         app.frame.module_view.on_idle(None)
         text_control = self.get_text_control(app,v)
         self.assertEqual(text_control.ForegroundColour,wx.RED)
-        app.frame.Close(True)
+        app.frame.Destroy()
         app.ProcessPendingEvents()
         app.ProcessIdle()

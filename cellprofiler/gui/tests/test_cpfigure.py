@@ -26,6 +26,8 @@ import cellprofiler.gui.cpfigure as cpfig
 class TestCPFigure(unittest.TestCase):
     def setUp(self):
         self.app = wx.PySimpleApp()
+        self.frame = wx.Frame(None, title="Hello, world")
+        self.frame.Show()
         
     def tearDown(self):
         self.app.Exit()
@@ -35,7 +37,8 @@ class TestCPFigure(unittest.TestCase):
         image = np.zeros((100, 100))
         for y in range(image.shape[0]):
             image[y,:] = y / 200.0
-        my_frame = cpfig.create_or_find(None, -1, subplots=(1,1))
+        my_frame = cpfig.create_or_find(self.frame, -1, subplots=(1,1), 
+                                        name="test_01_01_imshow_raw")
         ax = my_frame.subplot_imshow(0, 0, image, normalize=False)
         # assert (((ax.get_array()-image) < 0.000001).all()), 'Monochrome input image did not match subplot image.'
         my_frame.Destroy()
@@ -45,7 +48,8 @@ class TestCPFigure(unittest.TestCase):
         image = np.zeros((100, 100, 3))
         for y in range(image.shape[0]):
             image[y,:,:] = y / 200.0
-        my_frame = cpfig.create_or_find(None, -1, subplots=(1,1))
+        my_frame = cpfig.create_or_find(None, -1, subplots=(1,1),
+                                        name = "test_01_02_imshow_raw_rgb")
         ax = my_frame.subplot_imshow(0, 0, image, normalize=False)
         # shown_im = ax.get_array().astype(float) / 255.0
         # np.testing.assert_almost_equal(shown_im, image, decimal=2)
@@ -56,7 +60,8 @@ class TestCPFigure(unittest.TestCase):
         image = np.zeros((100, 100))
         for y in range(image.shape[0]):
             image[y,:] = y / 200.0
-        my_frame = cpfig.create_or_find(None, -1, subplots=(1,1))
+        my_frame = cpfig.create_or_find(None, -1, subplots=(1,1),
+                                        name = "test_01_03_imshow_normalized")
         ax = my_frame.subplot_imshow(0, 0, image, normalize=True)
         
         normed = ((image - np.min(image)) / np.max(image))
@@ -68,7 +73,8 @@ class TestCPFigure(unittest.TestCase):
         image = np.zeros((100, 100, 3))
         for y in range(image.shape[0]):
             image[y,:,:] = y / 200.0
-        my_frame = cpfig.create_or_find(None, -1, subplots=(1,1))
+        my_frame = cpfig.create_or_find(None, -1, subplots=(1,1),
+                                        name="test_01_04_imshow_normalized_rgb")
         ax = my_frame.subplot_imshow(0, 0, image, normalize=True)
         
         normed = ((image - np.min(image)) / np.max(image))
@@ -81,7 +87,8 @@ class TestCPFigure(unittest.TestCase):
         image = np.zeros((100, 100))
         for y in range(image.shape[0]):
             image[y,:] = y / 200.0
-        my_frame = cpfig.create_or_find(None, -1, subplots=(1,1))
+        my_frame = cpfig.create_or_find(None, -1, subplots=(1,1),
+                                        name = "test_01_05_imshow_log_normalized")
         ax = my_frame.subplot_imshow(0, 0, image, normalize='log')
         
         (min, max) = (image[image > 0].min(), image.max())
@@ -94,7 +101,8 @@ class TestCPFigure(unittest.TestCase):
         image = np.zeros((100, 100, 3))
         for y in range(image.shape[0]):
             image[y,:] = y / 200.0
-        my_frame = cpfig.create_or_find(None, -1, subplots=(1,1))
+        my_frame = cpfig.create_or_find(None, -1, subplots=(1,1),
+                                        name="test_01_06_imshow_log_normalized_rgb")
         ax = my_frame.subplot_imshow(0, 0, image, normalize='log')
         
         (min, max) = (image[image > 0].min(), image.max())
@@ -109,7 +117,8 @@ class TestCPFigure(unittest.TestCase):
         image = np.zeros((100, 100))
         for y in range(image.shape[0]):
             image[y,:] = y / 200.0
-        my_frame = cpfig.create_or_find(None, -1, subplots=(1,1))
+        my_frame = cpfig.create_or_find(None, -1, subplots=(1,1),
+                                        name="test_02_01_show_pixel_data")
         ax = my_frame.subplot_imshow(0, 0, image, normalize=True)
         
         evt = matplotlib.backend_bases.MouseEvent('motion_notify_event',
@@ -131,7 +140,8 @@ class TestCPFigure(unittest.TestCase):
             image[y,:,:] = y / 200.0
         image[:,:,1] = image[:,:,1] / 2.
         image[:,:,2] = image[:,:,2] / 4.
-        my_frame = cpfig.create_or_find(None, -1, subplots=(1,1))
+        my_frame = cpfig.create_or_find(None, -1, subplots=(1,1),
+                                        name="test_02_02_show_pixel_data_rgb")
         ax = my_frame.subplot_imshow(0, 0, image, normalize=True)
         
         evt = matplotlib.backend_bases.MouseEvent('motion_notify_event',
@@ -152,7 +162,8 @@ class TestCPFigure(unittest.TestCase):
         '''Make sure that the subplots submenus are presented in the right order
         no matter what order they are drawn in.
         Also tests that the order is not affected after calling clf()'''
-        f = cpfig.create_or_find(None, -1, subplots=(4,2))
+        f = cpfig.create_or_find(None, -1, subplots=(4,2),
+                                 name="test_03_01_menu_order")
 
         img = np.random.uniform(.5, .6, size=(5, 5, 3))
         
@@ -191,7 +202,8 @@ class TestCPFigure(unittest.TestCase):
         '''Make sure that the subplots submenus are presented in the right order
         after they are redrawn as a result of menu handlers 
         (e.g. change_contrast)'''
-        f = cpfig.create_or_find(None, -1, subplots=(2,2))
+        f = cpfig.create_or_find(None, -1, subplots=(2,2),
+                                 name="test_03_02_menu_order2")
 
         img = np.random.uniform(.5, .6, size=(5, 5, 3))
         

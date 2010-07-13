@@ -115,6 +115,7 @@ __version__="$Revision$"
 import numpy as np
 import scipy.optimize
 import os
+import pylab
 
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
@@ -635,18 +636,6 @@ def calculate_ec50(conc, responses, Logarithmic):
 
     n=responses.shape[1]
     results=np.zeros((n,4))
-    def sigmoid(v, x):
-        '''This is the EC50 sigmoid function
-        
-        v is a vector of parameters:
-            v[0] = minimum allowed value
-            v[1] = maximum allowed value
-            v[2] = ec50
-            v[3] = Hill coefficient
-        '''
-        p_min, p_max, ec50, hill = v
-        return p_min + ((p_max - p_min) /
-                        (1+(x/ec50)**hill))
     
     def error_fn(v, x, y):
         '''Least-squares error function
@@ -664,6 +653,19 @@ def calculate_ec50(conc, responses, Logarithmic):
                                 disp=False)
         results[i,:] = v
     return results
+
+def sigmoid(v, x):
+        '''This is the EC50 sigmoid function
+        
+        v is a vector of parameters:
+            v[0] = minimum allowed value
+            v[1] = maximum allowed value
+            v[2] = ec50
+            v[3] = Hill coefficient
+        '''
+        p_min, p_max, ec50, hill = v
+        return p_min + ((p_max - p_min) /
+                        (1+(x/ec50)**hill))
 
 def calc_init_params(x,y):
     '''This generates the min, max, x value at the mid-y value, and Hill
@@ -754,20 +756,14 @@ def write_figures(prefix, directory, dose_name,
     for i, (object_name, feature_name) in enumerate(feature_set):
         fdata = data[:,i]
         fcoeffs = ec50_coeffs[i,:]
-        filename = "%s%s_%s.m"%(prefix, object_name, feature_name)
+        filename = "%s%s_%s.pdf"%(prefix, object_name, feature_name)
         pathname = os.path.join(directory, filename)
-        fd = open(pathname,'w')
-        fd.write('%%%%%% EC50 dose/response for %s vs %s %s\n'%
-                 (dose_name, object_name, feature_name))
-        fd.write('dose=[%s];\n'%
-                 ','.join([str(x) for x in dose_data]))
-        fd.write('response=[%s];\n'%
-                 ','.join([str(x) for x in fdata]))
-        fd.write('coeffs=[%s];\n'%
-                 ','.join([str(x) for x in fcoeffs]))
-        fd.write('%% A lambda function that computes the sigmoid\n')
-        fd.write('sigmoid_fn=@(v,x) v(1)+(v(2)-v(1))./(1+(x(:,1)/v(3)).^v(4))\n')
-        fd.write("nlintool(dose, response, sigmoid_fn, coeffs, .05,'%s','%s_%s');\n" %
-                 (dose_name, object_name, feature_name))
-        fd.close()
+        pylab.figure()
+        x = np.linspace(0, np.max(dose_data), num=100)
+        y = sigmoid(fcoeffs, x)
+        pylab.plot(y)
+        pylab.xlabel('Dose')
+        pylab.ylabel('Response')
+        pylab.title('%s_%s'%(object_name, feature_name))
+        pylab.savefig(pathname)
         

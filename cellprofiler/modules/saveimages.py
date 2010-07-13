@@ -368,11 +368,8 @@ class SaveImages(cpm.CPModule):
             self.file_format != FF_MAT):
             result.append(self.rescale)
             result.append(self.colormap)
-        if self.file_name_method in (
-            FN_FROM_IMAGE, FN_SEQUENTIAL, FN_WITH_METADATA, 
-            FN_IMAGE_FILENAME_WITH_METADATA):
-            result.append(self.update_file_names)
-            result.append(self.create_subdirectories)
+        result.append(self.update_file_names)
+        result.append(self.create_subdirectories)
         return result
     
     @property

@@ -93,6 +93,13 @@ class CPFrame(wx.Frame):
         self.BackgroundColour = cellprofiler.preferences.get_background_color()
         self.__splitter = wx.SplitterWindow(self, -1, style=wx.SP_BORDER)
         self.__left_splitter = wx.SplitterWindow(self.__splitter, -1, style=wx.SP_NOBORDER)
+        
+        # Crappy splitters leave crud on the screen because they want custom
+        # background painting but fail to do it. Here, we have a fight with
+        # them and beat them.
+        self.__splitter.BackgroundStyle = 0
+        self.__left_splitter.BackgroundStyle = 0
+        
         self.__right_win = wx.Panel(self.__splitter, style=wx.BORDER_NONE)
         self.__right_win.BackgroundColour = self.BackgroundColour
 

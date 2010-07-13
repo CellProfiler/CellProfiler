@@ -387,8 +387,7 @@ class MetadataControl(wx.PyControl):
         self.on_token_change()
     
     def OnPaint(self, event):
-        dc = wx.GCDC(wx.BufferedPaintDC(self))
-        dc.GraphicsContext.PushState()
+        dc = wx.BufferedPaintDC(self)
         try:
             dc.BackgroundMode = wx.SOLID
             background_color = wx.SystemSettings_GetColour(wx.SYS_COLOUR_WINDOW)
@@ -421,7 +420,7 @@ class MetadataControl(wx.PyControl):
                 dc.DrawText(text, loc, self.padding)
                 loc += self.GetTextExtent(text)[0]
         finally:
-            dc.GraphicsContext.PopState()
+            dc.Destroy()
     
             
 if __name__ == "__main__":

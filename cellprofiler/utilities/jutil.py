@@ -81,9 +81,6 @@ elif sys.platform.startswith('linux'):
         path = os.path.join(path, 'cellprofiler','utilities')
     else:
         path = os.path.split(__file__)[0]
-    findlibjvm = os.path.join(path, "findlibjvm.java")
-    p = subprocess.Popen(["javac",findlibjvm])
-    p.communicate()
     p = subprocess.Popen(["java","-cp", path, "findlibjvm"],
                          stdout=subprocess.PIPE)
     stdout, stderr = p.communicate()

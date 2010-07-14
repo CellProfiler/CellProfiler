@@ -81,6 +81,7 @@ window_ids = []
 
 ID_HELP_MODULE = wx.NewId()
 ID_HELP_DATATOOLS = wx.NewId()
+ID_HELP_ONLINE_MANUAL = wx.NewId()
 ID_HELP_DEVELOPERS_GUIDE = wx.NewId()
 
 class CPFrame(wx.Frame):
@@ -209,8 +210,11 @@ class CPFrame(wx.Frame):
         self.__menu_window.AppendSeparator()
         self.__menu_help = make_help_menu(MAIN_HELP, self)
         self.__menu_help.AppendSubMenu(self.data_tools_help(), 'Data tool help','Display documentation for available data tools')
-        self.__menu_help.Append(ID_HELP_MODULE,'Module help','Display documentation for the current module')
-        self.__menu_help.Append(ID_HELP_DEVELOPERS_GUIDE,"Developer's guide",
+        self.__menu_help.Append(ID_HELP_MODULE,'Module Help','Display documentation for the current module')
+        self.__menu_help.AppendSeparator()
+        self.__menu_help.Append(ID_HELP_ONLINE_MANUAL,"Online Manual",
+                                "Launch the HTML help in a browser")
+        self.__menu_help.Append(ID_HELP_DEVELOPERS_GUIDE,"Developer's Guide",
                                 "Launch the developer's guide webpage")
 
         self.__menu_bar = wx.MenuBar()
@@ -229,6 +233,7 @@ class CPFrame(wx.Frame):
         wx.EVT_MENU(self, ID_FILE_OPEN_IMAGE, self.on_open_image)
         wx.EVT_MENU(self,ID_FILE_WIDGET_INSPECTOR,self.__on_widget_inspector)
         wx.EVT_MENU(self,ID_HELP_MODULE,self.__on_help_module)
+        wx.EVT_MENU(self,ID_HELP_ONLINE_MANUAL,self.__on_help_online_manual)
         wx.EVT_MENU(self,ID_HELP_DEVELOPERS_GUIDE, self.__on_help_developers_guide)
         wx.EVT_MENU(self,ID_OPTIONS_PREFERENCES, self.__on_preferences)
         wx.EVT_MENU(self,ID_CHECK_NEW_VERSION, self.__on_check_new_version)
@@ -308,6 +313,10 @@ class CPFrame(wx.Frame):
     def __on_close_all(self, event):
         close_all(self)
 
+    def __on_help_online_manual(self, event):
+        import webbrowser
+        webbrowser.open("http://cellprofiler.org/CPmanual/")
+        
     def __on_help_developers_guide(self, event):
         import webbrowser
         webbrowser.open("http://www.cellprofiler.org/wiki/index.php/Main_Page")

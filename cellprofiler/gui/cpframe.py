@@ -44,6 +44,7 @@ ID_FILE_WIDGET_INSPECTOR=wx.NewId()
 ID_FILE_SAVE_PIPELINE=wx.NewId()
 ID_FILE_CLEAR_PIPELINE=wx.NewId()
 ID_FILE_ANALYZE_IMAGES=wx.NewId()
+ID_FILE_NEW_CP_WINDOW=wx.NewId()
 ID_FILE_STOP_ANALYSIS=wx.NewId()
 ID_FILE_RESTART = wx.NewId()
 ID_FILE_PRINT=wx.NewId()
@@ -58,7 +59,7 @@ ID_EDIT_MOVE_UP = wx.NewId()
 ID_EDIT_MOVE_DOWN = wx.NewId()
 ID_EDIT_DELETE = wx.NewId()
 
-ID_OPTIONS_PREFERENCES = wx.NewId()
+ID_OPTIONS_PREFERENCES = wx.ID_PREFERENCES
 ID_CHECK_NEW_VERSION = wx.NewId()
 
 ID_DEBUG_TOGGLE = wx.NewId()
@@ -158,6 +159,7 @@ class CPFrame(wx.Frame):
 
         """
         self.__menu_file = wx.Menu()
+        self.__menu_file.Append(ID_FILE_NEW_CP_WINDOW,'New pipeline window\tctrl+shift+N','Create a new CP window')
         self.__menu_file.Append(ID_FILE_LOAD_PIPELINE,'Load Pipeline...\tctrl+O','Load a pipeline from a .MAT or .CP file')
         self.__menu_file.Append(ID_FILE_URL_LOAD_PIPELINE, 'Load Pipeline from URL', 'Load a pipeline from the web')
         self.__menu_file.Append(ID_FILE_SAVE_PIPELINE,'Save Pipeline as...\tctrl+shift+S','Save a pipeline as a .CP file')
@@ -225,6 +227,7 @@ class CPFrame(wx.Frame):
             self.__menu_bar.Append(self.__menu_help, '&Help')
         self.SetMenuBar(self.__menu_bar)
 
+        wx.EVT_MENU(self, ID_FILE_NEW_CP_WINDOW, self.__create_new_cp_window)
         wx.EVT_MENU(self,ID_FILE_EXIT,lambda event: self.Close())
         wx.EVT_MENU(self, ID_FILE_OPEN_IMAGE, self.on_open_image)
         wx.EVT_MENU(self,ID_FILE_WIDGET_INSPECTOR,self.__on_widget_inspector)
@@ -236,6 +239,7 @@ class CPFrame(wx.Frame):
         wx.EVT_MENU(self, ID_DEBUG_NUMPY, self.__debug_numpy_references)
         accelerator_table = wx.AcceleratorTable(
             [(wx.ACCEL_CMD,ord('N'),ID_FILE_ANALYZE_IMAGES),
+             (wx.ACCEL_CMD|wx.ACCEL_SHIFT, ord('N'), ID_FILE_NEW_CP_WINDOW),
              (wx.ACCEL_CMD,ord('O'),ID_FILE_LOAD_PIPELINE),
              (wx.ACCEL_CMD|wx.ACCEL_SHIFT,ord('S'),ID_FILE_SAVE_PIPELINE),
              (wx.ACCEL_CMD,ord('L'),ID_WINDOW_CLOSE_ALL),
@@ -305,6 +309,14 @@ class CPFrame(wx.Frame):
     def __on_check_new_version(self, event):
         wx.GetApp().new_version_check(force=True)
 
+    def __create_new_cp_window(self, event):
+        if hasattr(sys, 'frozen'):
+            print "FROZEN"
+            print sys.executable, sys.argv
+        else:
+            print "THAWED"
+            print sys.executable, sys.argv
+
     def __on_close_all(self, event):
         close_all(self)
 
@@ -320,7 +332,7 @@ class CPFrame(wx.Frame):
         try:
             import contrib.objgraph as objgraph
             numpyobj = [(o, objgraph.numpy_size(o)) for o in objgraph.by_instanceof(objgraph.numpyarray)]
-            numpyobj = [o for o, sz in numpyobj if (sz is None) or (sz > 1024)]
+            numpyobj = [o for o, sz in numpyobj if (sz is None) or (sz > 1024 * 1024)]
             objgraph.show_backrefs(numpyobj, max_depth=4,
                                    filename=os.path.join(cellprofiler.preferences.get_default_output_directory(),
                                                          'cellprofiler_numpy.dot'))

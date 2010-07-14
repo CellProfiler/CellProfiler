@@ -132,7 +132,7 @@ class LocationPanel(wx.Panel):
         top_sizer.AddSpacer(5)
         top_sizer.Add(otherdir_sizer, 0, wx.EXPAND | wx.LEFT | wx.RIGHT, border=20)
         top_sizer.AddSpacer(10)
-        top_sizer.Add(advanced, 0, wx.EXPAND, border=0)
+        top_sizer.Add(advanced, 0, wx.EXPAND | wx.ALIGN_CENTER)
         top_sizer.AddSpacer(10)
 
         top_border = wx.BoxSizer()

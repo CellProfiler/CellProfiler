@@ -24,6 +24,8 @@ import pytz
 pytz.zoneinfo = pytz.tzinfo
 pytz.zoneinfo.UTC = pytz.UTC
 
+from libtiff.libtiff_ctypes import tiff_h_name
+
 if sys.platform == "darwin":
     os.system("svn info | grep Revision | sed -e 's/Revision:/\"Version/' -e 's/^/VERSION = /' -e 's/$/\"/' > version.py")
 
@@ -33,7 +35,7 @@ DATA_FILES = [('cellprofiler/icons', glob.glob(os.path.join('.', 'cellprofiler',
               ('bioformats', ['bioformats/loci_tools.jar'])]
 OPTIONS = {'argv_emulation': True,
            'packages': ['cellprofiler', 'contrib', 'bioformats'],
-           'includes': ['numpy', 'wx', 'matplotlib','email.iterators', 'smtplib', 'sqlite3', 'libtiff', 'wx.lib.intctrl'],
+           'includes': ['numpy', 'wx', 'matplotlib','email.iterators', 'smtplib', 'sqlite3', 'libtiff', 'wx.lib.intctrl', 'libtiff.'+tiff_h_name],
            'excludes': ['pylab', 'nose', 'Tkinter', 'Cython', 'scipy.weave'],
            'resources': ['CellProfilerIcon.png', 'cellprofiler/icons'],
            'iconfile' : 'CellProfilerIcon.icns',

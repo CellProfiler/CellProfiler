@@ -16,7 +16,6 @@ __version__="$Revision$"
 import numpy as np
 import re
 from scipy.io.matlab import loadmat
-import copy
 
 AGG_MEAN = "Mean"
 AGG_STD_DEV= "StDev"
@@ -298,19 +297,6 @@ class Measurements(object):
                 a[0,0]=data
             self.__dictionary[object_name][feature_name][self.image_set_index] = data
     
-    def pack(self):
-        return
-        def docopy(v):
-            if isinstance(v, np.ndarray):
-                return np.copy(v)
-            return copy.copy(v)
-        new_dict = {}
-        for object_name, object_val in self.__dictionary.iteritems():
-            newobj = new_dict[object_name] = {}
-            for feature_name, feature_val in object_val.iteritems():
-                newobj[feature_name] = [docopy(val) for val in feature_val]
-        self.__dictionary = new_dict
-
     def get_object_names(self):
         """The list of object names (including Image) that have measurements
         """

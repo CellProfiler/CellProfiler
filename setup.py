@@ -39,6 +39,7 @@ OPTIONS = {'argv_emulation': True,
            'excludes': ['pylab', 'nose', 'Tkinter', 'Cython', 'scipy.weave'],
            'resources': ['CellProfilerIcon.png', 'cellprofiler/icons'],
            'iconfile' : 'CellProfilerIcon.icns',
+           'frameworks' : ['libtiff.dylib'],
            }
 
 setup(

@@ -37,7 +37,7 @@ fi
 if [ -n "$CELLPROFILER_USE_XVFB" ]
 then
 DISPLAY=:1
-tmp=/tmp/CellProfilerXVFB.$RANDOM.$RANDOM
+tmp=/local/scratch/CellProfilerXVFB.$RANDOM.$RANDOM
 echo "Xvfb directory = $tmp"
 mkdir $tmp
 Xvfb :1 -fbdir $tmp &

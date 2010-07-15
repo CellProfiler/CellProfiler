@@ -67,6 +67,7 @@ ID_DEBUG_NEXT_IMAGE_SET = wx.NewId()
 ID_DEBUG_NEXT_GROUP = wx.NewId()
 ID_DEBUG_CHOOSE_GROUP = wx.NewId()
 ID_DEBUG_CHOOSE_IMAGE_SET = wx.NewId()
+ID_DEBUG_CHOOSE_RANDOM_IMAGE_SET = wx.NewId()
 ID_DEBUG_RELOAD = wx.NewId()
 ID_DEBUG_NUMPY = wx.NewId()
 
@@ -190,6 +191,7 @@ class CPFrame(wx.Frame):
         self.__menu_debug.Append(ID_DEBUG_STEP,'Ste&p to next module\tF6','Execute the currently selected module')
         self.__menu_debug.Append(ID_DEBUG_NEXT_IMAGE_SET,'&Next image cycle\tF7','Advance to the next image cycle in the image set')
         self.__menu_debug.Append(ID_DEBUG_NEXT_GROUP, 'Next &group\tF8','Advance to the next group in the image set')
+        self.__menu_debug.Append(ID_DEBUG_CHOOSE_RANDOM_IMAGE_SET, 'Random image cycle','Advance to a random image cycle in the current image set list')
         self.__menu_debug.Append(ID_DEBUG_CHOOSE_GROUP, 'Choose group', 'Choose which image set group to process in test-mode')
         self.__menu_debug.Append(ID_DEBUG_CHOOSE_IMAGE_SET, 'Choose image cycle','Choose any of the available image cycles in the current image set list')
         if not hasattr(sys, 'frozen'):
@@ -200,6 +202,8 @@ class CPFrame(wx.Frame):
         self.__menu_debug.Enable(ID_DEBUG_NEXT_GROUP, False)
         self.__menu_debug.Enable(ID_DEBUG_CHOOSE_GROUP, False)
         self.__menu_debug.Enable(ID_DEBUG_CHOOSE_IMAGE_SET, False)
+        self.__menu_debug.Enable(ID_DEBUG_CHOOSE_RANDOM_IMAGE_SET, False)
+        
         self.__menu_window = wx.Menu()
         self.__menu_window.Append(ID_WINDOW_CLOSE_ALL, "Close &all open windows\tctrl+L", 
                                   "Close all open module display windows")
@@ -294,6 +298,7 @@ class CPFrame(wx.Frame):
         self.__menu_debug.Enable(ID_DEBUG_NEXT_GROUP, enable)
         self.__menu_debug.Enable(ID_DEBUG_CHOOSE_GROUP, enable)
         self.__menu_debug.Enable(ID_DEBUG_CHOOSE_IMAGE_SET, enable)
+        self.__menu_debug.Enable(ID_DEBUG_CHOOSE_RANDOM_IMAGE_SET,enable)
 
     def __on_widget_inspector(self, evt):
         try:

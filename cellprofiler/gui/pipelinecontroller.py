@@ -81,8 +81,9 @@ class PipelineController:
         wx.EVT_MENU(frame,cpframe.ID_DEBUG_STEP,self.on_debug_step)
         wx.EVT_MENU(frame,cpframe.ID_DEBUG_NEXT_IMAGE_SET,self.on_debug_next_image_set)
         wx.EVT_MENU(frame,cpframe.ID_DEBUG_NEXT_GROUP, self.on_debug_next_group)
-        wx.EVT_MENU(frame, cpframe.ID_DEBUG_CHOOSE_GROUP, self.on_debug_choose_group)
+        wx.EVT_MENU(frame,cpframe.ID_DEBUG_CHOOSE_GROUP, self.on_debug_choose_group)
         wx.EVT_MENU(frame,cpframe.ID_DEBUG_CHOOSE_IMAGE_SET, self.on_debug_choose_image_set)
+        wx.EVT_MENU(frame,cpframe.ID_DEBUG_CHOOSE_RANDOM_IMAGE_SET, self.on_debug_random_image_set)
         wx.EVT_MENU(frame,cpframe.ID_DEBUG_RELOAD, self.on_debug_reload)
         
         wx.EVT_MENU(frame,cpframe.ID_WINDOW_SHOW_ALL_WINDOWS, self.on_show_all_windows)
@@ -967,7 +968,6 @@ class PipelineController:
         self.__movie_viewer.Value = 0
         self.__debug_outlines = {}
 
-
     def on_debug_next_group(self, event):
         if self.__grouping_index is not None:
             self.debug_choose_group(((self.__grouping_index + 1) % 
@@ -977,7 +977,20 @@ class PipelineController:
         if self.__grouping_index is not None:
             self.debug_choose_group(((self.__grouping_index + len(self.__groupings) - 1) % 
                                len(self.__groupings)))
-    
+            
+    def on_debug_random_image_set(self,event):
+        group_index = 0 if len(self.__groupings) == 1 else numpy.random.randint(0,len(self.__groupings)-1,size=1)
+        keys, image_numbers = self.__groupings[group_index]
+        if len(image_numbers) == 0:
+            return
+        image_number_index = numpy.random.randint(1,len(image_numbers),size=1)
+        self.__within_group_index = ((image_number_index-1) % len(image_numbers))
+        image_number = image_numbers[self.__within_group_index]
+        self.__debug_measurements.next_image_set(image_number)
+        self.__pipeline_list_view.select_one_module(1)
+        self.__movie_viewer.Value = 0
+        self.__debug_outlines = {}
+        
     def debug_choose_group(self, index):
         self.__grouping_index = index
         self.__within_group_index = 0

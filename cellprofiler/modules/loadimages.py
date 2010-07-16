@@ -689,9 +689,10 @@ class LoadImages(cpmodule.CPModule):
                 varlist += [self.match_exclude]
         elif self.match_method == MS_ORDER:
             varlist += [self.order_group_size]
-        varlist += [self.descend_subdirectories, self.check_images,
-                    self.group_by_metadata]
-        if self.group_by_metadata.value:
+        varlist += [self.descend_subdirectories, self.check_images]
+        if self.has_metadata:
+            varlist += [self.group_by_metadata]
+        if self.do_group_by_metadata:
             varlist += [self.metadata_fields]
             choices = set()
             for fd in self.images:
@@ -863,6 +864,25 @@ class LoadImages(cpmodule.CPModule):
         # Currently, only Flex are handled this way
         #
         return self.file_types ==  FF_OTHER_MOVIES
+    
+    @property
+    def has_metadata(self):
+        if self.file_types in ( FF_AVI_MOVIES, FF_STK_MOVIES, FF_OTHER_MOVIES):
+            return True
+        return any([self.has_file_metadata(fd) or self.has_path_metadata(fd)
+                    for fd in self.images])
+    
+    @property
+    def do_group_by_metadata(self):
+        '''Return true if we should group by metadata
+        
+        The group-by-metadata checkbox won't show unless there are
+        metadata groupings to group by - so go by the checkbox
+        and the presence of metadata to group by
+        '''
+        if not self.group_by_metadata:
+            return False
+        return self.has_metadata
     
     def upgrade_settings(self, setting_values, variable_revision_number, module_name, from_matlab):
 
@@ -1097,7 +1117,7 @@ class LoadImages(cpmodule.CPModule):
             self.report_no_matching_files(frame, message)
             return False
         
-        if (self.group_by_metadata.value and len(self.get_metadata_tags())):
+        if (self.do_group_by_metadata and len(self.get_metadata_tags())):
             result = self.organize_by_metadata(
                 pipeline, image_set_list, files, frame)
         else:
@@ -1433,7 +1453,7 @@ class LoadImages(cpmodule.CPModule):
             table = wx.ListCtrl(panel,style=wx.LC_REPORT)
             tables.append(table)
             sizer.Add(table, 1, wx.EXPAND|wx.ALL,3)
-            if self.group_by_metadata:
+            if self.do_group_by_metadata:
                 for tag, index in zip(tags,range(tag_ct)):
                     table.InsertColumn(index,tag)
             for fd,index in zip(self.images,range(len(self.images))):
@@ -1525,7 +1545,7 @@ class LoadImages(cpmodule.CPModule):
                             nframes -= nframes % nchannels
                         nsets = int(nframes / nchannels)
                         for idx in range(nsets):
-                            if self.group_by_metadata:
+                            if self.do_group_by_metadata:
                                 key = metadata.copy()
                                 key[M_Z] = "1" # so sorry, real Z obliterated
                                 key[M_T] = str(idx)
@@ -1549,7 +1569,7 @@ class LoadImages(cpmodule.CPModule):
                     else:
                         for z in range(rdr.getSizeZ()):
                             for t in range(rdr.getSizeT()):
-                                if self.group_by_metadata:
+                                if self.do_group_by_metadata:
                                     key = metadata.copy()
                                     key[M_Z] = str(z)
                                     key[M_T] = str(t)
@@ -1881,7 +1901,7 @@ class LoadImages(cpmodule.CPModule):
         Returns None to indicate that the module does not contribute any
         groupings.
         '''
-        if self.group_by_metadata.value:
+        if self.do_group_by_metadata:
             keys = self.metadata_fields.selections
             if len(keys) == 0:
                 return None

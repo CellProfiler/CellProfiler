@@ -15,6 +15,7 @@ __version__ = "$Revision$"
 
 import numpy as np
 import os
+import uuid
 import wx
 import matplotlib
 import matplotlib.cm
@@ -593,7 +594,7 @@ class CPFigureFrame(wx.Frame):
             ylims = self.subplot(x,y).get_ylim()
             new_title = self.subplot(x,y).get_title()
             fig = create_or_find(self, -1, new_title, subplots=(1,1), 
-                                 name=new_title)
+                                 name=str(uuid.uuid4()))
             fig.subplot_imshow(0, 0, self.images[(x,y)], **params)
             
             # XXX: Cheat here so the home button works.

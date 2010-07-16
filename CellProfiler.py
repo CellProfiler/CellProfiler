@@ -251,9 +251,16 @@ try:
     if options.show_gui:
         import cellprofiler.gui.cpframe as cpgframe
         if options.pipeline_filename:
-            App.frame.pipeline.load(os.path.expanduser(options.pipeline_filename))
-            if options.run_pipeline:
-                App.frame.Command(cpgframe.ID_FILE_ANALYZE_IMAGES)
+            try:
+                App.frame.pipeline.load(os.path.expanduser(options.pipeline_filename))
+                if options.run_pipeline:
+                    App.frame.Command(cpgframe.ID_FILE_ANALYZE_IMAGES)
+            except:
+                import wx
+                wx.MessageBox(
+                    'CellProfiler was unable to load the pipeline file, "%s"' %
+                    options.pipeline_filename, "Error loading pipeline",
+                    style = wx.OK | wx.ICON_ERROR)
         App.MainLoop()
     elif options.run_pipeline:
         from cellprofiler.pipeline import Pipeline, EXIT_STATUS

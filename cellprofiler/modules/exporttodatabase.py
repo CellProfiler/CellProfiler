@@ -318,17 +318,41 @@ class ExportToDatabase(cpm.CPModule):
             and store the results as columns in a "per-well" table in the database. For instance, 
             if you are measuring the area of the Nuclei objects and you check the aggregate
             mean box in this module, <b>ExportToDatabase</b> will create a table in the database called
-            "Per_Well_Mean", with a column called "Mean_Nuclei_AreaShape_Area". 
+            "Per_Well_avg", with a column called "Mean_Nuclei_AreaShape_Area". Selecting all three aggregate measurements will create three per-well tables, one for each of the measurements.
+
+<p>The per-well functionality will create the appropriate lines in a .SQL file, which can be run on your Per-Image and Per-Object tables to create the desired per-well table. 
             <p><i>Note:</i> this option is only
             available if you have extracted plate and well metadata from the filename or via a <b>LoadData</b> module.
             It will write out a .sql file with the statements necessary to create the Per_Well
             table, regardless of the option chosen above. %s'''% USING_METADATA_HELP_REF)
         
         self.wants_agg_median_well = cps.Binary(
-            "Calculate the per-well median values of object measurements?", False)
+            "Calculate the per-well median values of object measurements?", False, doc = '''
+            <b>ExportToDatabase</b> can calculate statistics over all the objects in each well 
+            and store the results as columns in a "per-well" table in the database. For instance, 
+            if you are measuring the area of the Nuclei objects and you check the aggregate
+            median box in this module, <b>ExportToDatabase</b> will create a table in the database called
+            "Per_Well_median", with a column called "Median_Nuclei_AreaShape_Area". Selecting all three aggregate measurements will create three per-well tables, one for each of the measurements.
+
+<p>The per-well functionality will create the appropriate lines in a .SQL file, which can be run on your Per-Image and Per-Object tables to create the desired per-well table. 
+            <p><i>Note:</i> this option is only
+            available if you have extracted plate and well metadata from the filename or via a <b>LoadData</b> module.
+            It will write out a .sql file with the statements necessary to create the Per_Well
+            table, regardless of the option chosen above. %s'''% USING_METADATA_HELP_REF)
         
         self.wants_agg_std_dev_well = cps.Binary(
-            "Calculate the per-well standard deviation values of object measurements?", False)
+            "Calculate the per-well standard deviation values of object measurements?", False, doc = '''
+            <b>ExportToDatabase</b> can calculate statistics over all the objects in each well 
+            and store the results as columns in a "per-well" table in the database. For instance, 
+            if you are measuring the area of the Nuclei objects and you check the aggregate
+            standard deviation box in this module, <b>ExportToDatabase</b> will create a table in the database called
+            "Per_Well_std", with a column called "Mean_Nuclei_AreaShape_Area".  Selecting all three aggregate measurements will create three per-well tables, one for each of the measurements.
+
+<p>The per-well functionality will create the appropriate lines in a .SQL file, which can be run on your Per-Image and Per-Object tables to create the desired per-well table. 
+            <p><i>Note:</i> this option is only
+            available if you have extracted plate and well metadata from the filename or via a <b>LoadData</b> module.
+            It will write out a .sql file with the statements necessary to create the Per_Well
+            table, regardless of the option chosen above. %s'''% USING_METADATA_HELP_REF)
         
         self.objects_choice = cps.Choice(
             "Export measurements for all objects to the database?",

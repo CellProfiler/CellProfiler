@@ -367,7 +367,7 @@ MeasureGranularity:[module_num:1|svn_version:\'Unknown\'|variable_revision_numbe
             values = m.get_current_measurement(OBJECTS_NAME,
                                                feature)
             self.assertEqual(len(values), 2)
-            self.assertTrue(np.all(np.isnan(values)))
+            self.assertTrue(np.all(np.isnan(values)) or np.all(values == 0))
             
     def test_05_02_no_objects(self):
         '''Run on a labels matrix with no objects'''

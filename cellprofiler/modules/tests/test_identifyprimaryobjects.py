@@ -1581,7 +1581,7 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'8981\'|variable_revision_numb
         '''Test the background method with a mixture of gaussian distributions'''
         np.random.seed(103)
         image = np.random.normal(.2, .01, size=10000)
-        ind = np.random.permutation(image.shape[0])[:image.shape[0] / 5]
+        ind = np.random.permutation(int(image.shape[0]))[:image.shape[0] / 5]
         image[ind] = np.random.normal(.5, .2, size=len(ind))
         image[image < 0] = 0
         image[image > 1] = 1

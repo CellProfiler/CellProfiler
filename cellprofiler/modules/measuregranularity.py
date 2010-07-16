@@ -246,15 +246,19 @@ class MeasureGranularity(cpm.CPModule):
             def __init__(self, name):
                 self.name = name
                 self.labels = workspace.object_set.get_objects(name).segmented
-                self.range = np.arange(1, np.max(self.labels)+1)
-                self.labels = self.labels.copy()
-                self.labels[~ im.mask] = 0
-                self.current_mean = fix(scind.mean(im.pixel_data,
-                                                   self.labels,
-                                                   self.range))
-                self.start_mean = np.maximum(self.current_mean, np.finfo(float).eps)
+                self.nobjects = np.max(self.labels)
+                if self.nobjects != 0:
+                    self.range = np.arange(1, np.max(self.labels)+1)
+                    self.labels = self.labels.copy()
+                    self.labels[~ im.mask] = 0
+                    self.current_mean = fix(
+                        scind.mean(im.pixel_data,
+                                   self.labels,
+                                   self.range))
+                    self.start_mean = np.maximum(
+                        self.current_mean, np.finfo(float).eps)
         object_records = [ObjectRecord(ob.objects_name.value)
-                          for ob in image.objects]
+                          for ob in image.objects ]
         #
         # Transcribed from the Matlab module: granspectr function
         #
@@ -309,11 +313,14 @@ class MeasureGranularity(cpm.CPModule):
             #
             for object_record in object_records:
                 assert isinstance(object_record, ObjectRecord)
-                new_mean = fix(scind.mean(rec, object_record.labels, 
-                                          object_record.range))
-                gss = ((object_record.current_mean - new_mean) * 100 / 
-                       object_record.start_mean)
-                object_record.current_mean = new_mean
+                if object_record.nobjects > 0:
+                    new_mean = fix(scind.mean(rec, object_record.labels, 
+                                              object_record.range))
+                    gss = ((object_record.current_mean - new_mean) * 100 / 
+                           object_record.start_mean)
+                    object_record.current_mean = new_mean
+                else:
+                    gss = np.zeros((0,))
                 measurements.add_measurement(object_record.name, feature, gss)
         return statistics
     

@@ -89,6 +89,7 @@ import uuid
 import cellprofiler.cpmodule as cpmodule
 import cellprofiler.cpimage as cpimage
 import cellprofiler.measurements as cpmeas
+from cellprofiler.pipeline import GROUP_INDEX
 import cellprofiler.preferences as preferences
 import cellprofiler.settings as cps
 from cellprofiler.utilities.relpath import relpath
@@ -728,7 +729,7 @@ class LoadImages(cpmodule.CPModule):
             if self.has_path_metadata(fd):
                 varlist += [fd.path_metadata]
             max_channels = 9
-            if self.file_types in (FF_AVI_MOVIES, FF_STK_MOVIES):
+            if self.file_types in (FF_AVI_MOVIES, FF_STK_MOVIES, FF_OTHER_MOVIES):
                 varlist += [fd.wants_movie_frame_grouping]
                 if fd.wants_movie_frame_grouping:
                     varlist += [fd.interleaving, fd.channels_per_group]
@@ -1497,29 +1498,78 @@ class LoadImages(cpmodule.CPModule):
                 for i in range(rdr.getSeriesCount()):
                     rdr.setSeries(i)
                     channel_count = rdr.getSizeC()
-                    for z in range(rdr.getSizeZ()):
-                        for t in range(rdr.getSizeT()):
+                    stack_count = rdr.getSizeZ()
+                    timepoint_count = rdr.getSizeT()
+                    if image_settings.wants_movie_frame_grouping:
+                        #
+                        # For movie frame grouping, assume that all of
+                        # the images are to be processed in a consecutive
+                        # series taking T as the outside, then Z, then C
+                        # and divvied up among the channels.
+                        # 
+                        # Metadata Z = 1
+                        # Metadata T is the cycle #
+                        #
+                        # Really, whoever set up the microscope should
+                        # have done it right so that the file saved
+                        # the channels into the TIF correctly.
+                        #
+                        nframes = timepoint_count * stack_count * channel_count
+                        nchannels = image_settings.channels_per_group.value
+                        if nframes % nchannels != 0:
+                            sys.stderr.write(
+                                ("Warning: the movie, %s, has %d frames divided into "
+                                 "%d channels per group.\n"
+                                 "%d frames will be discarded.\n") %
+                                (pathname, nframes, nchannels, nframes % nchannels))
+                            nframes -= nframes % nchannels
+                        nsets = int(nframes / nchannels)
+                        for idx in range(nsets):
                             if self.group_by_metadata:
                                 key = metadata.copy()
-                                key[M_Z] = str(z)
-                                key[M_T] = str(t)
+                                key[M_Z] = "1" # so sorry, real Z obliterated
+                                key[M_T] = str(idx)
                                 key[M_SERIES] = str(i)
                                 image_set = image_set_list.get_image_set(key)
                             else:
                                 image_set = image_set_list.get_image_set(image_set_count)
                             d = self.get_dictionary(image_set)
                             for channel_settings in image_settings.channels:
-                                c = int(channel_settings.channel_number.value) - 1
                                 image_name = channel_settings.image_name.value
-                                if c >= channel_count:
-                                    message = \
-     ("The flex file, ""%s"", series # %d, has only %d channels. "
-      "%s is assigned to channel % d") % (file_pathname, i, channel_count, 
-                                          image_name, c+1)
-                                    self.report_no_matching_files(frame, message)
-                                    return False
+                                channel = int(channel_settings.channel_number.value) - 1
+                                if image_settings.interleaving == I_INTERLEAVED:
+                                    cidx = idx * nchannels + channel
+                                else:
+                                    cidx = channel * nsets + idx
+                                c = cidx % channel_count
+                                z = int(cidx / channel_count) % stack_count
+                                t = int(cidx / channel_count / stack_count) % timepoint_count
                                 d[image_name] = (P_FLEX, V_FLEX, pathname, c, z, t, i)
                             image_set_count += 1
+                    else:
+                        for z in range(rdr.getSizeZ()):
+                            for t in range(rdr.getSizeT()):
+                                if self.group_by_metadata:
+                                    key = metadata.copy()
+                                    key[M_Z] = str(z)
+                                    key[M_T] = str(t)
+                                    key[M_SERIES] = str(i)
+                                    image_set = image_set_list.get_image_set(key)
+                                else:
+                                    image_set = image_set_list.get_image_set(image_set_count)
+                                d = self.get_dictionary(image_set)
+                                for channel_settings in image_settings.channels:
+                                    c = int(channel_settings.channel_number.value) - 1
+                                    image_name = channel_settings.image_name.value
+                                    if c >= channel_count:
+                                        message = \
+         ("The flex file, ""%s"", series # %d, has only %d channels. "
+          "%s is assigned to channel % d") % (file_pathname, i, channel_count, 
+                                              image_name, c+1)
+                                        self.report_no_matching_files(frame, message)
+                                        return False
+                                    d[image_name] = (P_FLEX, V_FLEX, pathname, c, z, t, i)
+                                image_set_count += 1
             finally:
                 formatreader.jutil.detach()
         return True
@@ -1676,9 +1726,12 @@ class LoadImages(cpmodule.CPModule):
                 elif do_flex:
                     assert isinstance(provider, LoadImagesFlexFrameProvider)
                     series = provider.get_series()
-                    c = provider.get_c()
-                    z = provider.get_z()
-                    t = provider.get_t()
+                    if fd.wants_movie_frame_grouping:
+                        z = 0
+                        t = m.get_current_image_measurement(GROUP_INDEX)
+                    else:
+                        z = provider.get_z()
+                        t = provider.get_t()
                     for tag, value in ((M_Z, z),
                                        (M_T, t),
                                        (M_SERIES, series)):

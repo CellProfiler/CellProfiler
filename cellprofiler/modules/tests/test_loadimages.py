@@ -1696,6 +1696,119 @@ LoadImages:[module_num:1|svn_version:\'9976\'|variable_revision_number:7|show_wi
         self.assertTrue(isinstance(provider, LI.LoadImagesMovieFrameProvider))
         self.assertEqual(provider.get_frame(), 27)
         
+    def test_09_06_load_flex_interleaved(self):
+        # needs better test case file
+        flex_path = T.testimages_directory()
+        module = LI.LoadImages()
+        module.file_types.value = LI.FF_OTHER_MOVIES
+        module.images[0].common_text.value = 'RLM1 SSN3 300308 008015000.flex'
+        module.images[0].channels[0].image_name.value = 'Green'
+        module.images[0].channels[0].channel_number.value = "2"
+        module.add_channel(module.images[0])
+        module.images[0].channels[1].image_name.value = 'Red'
+        module.images[0].channels[1].channel_number.value = "1"
+        module.images[0].wants_movie_frame_grouping.value = True
+        module.images[0].channels_per_group.value = 2
+        module.location.dir_choice = LI.ABSOLUTE_FOLDER_NAME
+        module.location.custom_path = flex_path
+        module.images[0].interleaving.value = LI.I_INTERLEAVED
+        module.module_num = 1
+        pipeline = P.Pipeline()
+        pipeline.add_module(module)
+        pipeline.add_listener(self.error_callback)
+        image_set_list = I.ImageSetList()
+        module.prepare_run(pipeline, image_set_list, None)
+        keys, groupings = module.get_groupings(image_set_list)
+        self.assertTrue("FileName" in keys)
+        self.assertTrue("Series" in keys)
+        self.assertEqual(len(groupings), 4)
+        m = measurements.Measurements()
+        for group_number, (grouping, image_numbers) in enumerate(groupings):
+            module.prepare_group(pipeline, image_set_list, grouping, image_numbers)
+            for group_index, image_number in enumerate(image_numbers):
+                image_set = image_set_list.get_image_set(image_number-1)
+                m.add_image_measurement(cpp.GROUP_INDEX, group_index)
+                m.add_image_measurement(cpp.GROUP_NUMBER, group_number)
+                workspace = W.Workspace(pipeline, module, image_set,
+                                        cpo.ObjectSet(), m,
+                                        image_set_list)
+                module.run(workspace)
+                for feature, expected in ((LI.M_SERIES, grouping[LI.M_SERIES]),
+                                          (LI.M_Z, 0),
+                                          (LI.M_T, 0)):
+                    value = m.get_current_image_measurement(
+                        measurements.C_METADATA + "_" + feature)
+                    self.assertEqual(value, expected)
+                
+                red_image_provider = image_set.get_image_provider("Red")
+                green_image_provider = image_set.get_image_provider("Green")
+                self.assertEqual(red_image_provider.get_c(), 0)
+                self.assertEqual(green_image_provider.get_c(), 1)
+                self.assertEqual(red_image_provider.get_t(), 0)
+                self.assertEqual(green_image_provider.get_t(), 0)
+                red_image = image_set.get_image("Red")
+                green_image = image_set.get_image("Green")
+                self.assertEqual(tuple(red_image.pixel_data.shape),
+                                 tuple(green_image.pixel_data.shape))
+                m.next_image_set()
+                
+    def test_09_07_load_flex_separated(self):
+        # Needs better test case file
+        flex_path = T.testimages_directory()
+        module = LI.LoadImages()
+        module.file_types.value = LI.FF_OTHER_MOVIES
+        module.images[0].common_text.value = 'RLM1 SSN3 300308 008015000.flex'
+        module.images[0].channels[0].image_name.value = 'Green'
+        module.images[0].channels[0].channel_number.value = "2"
+        module.add_channel(module.images[0])
+        module.images[0].channels[1].image_name.value = 'Red'
+        module.images[0].channels[1].channel_number.value = "1"
+        module.images[0].wants_movie_frame_grouping.value = True
+        module.images[0].channels_per_group.value = 2
+        module.images[0].interleaving.value = LI.I_SEPARATED
+        module.location.dir_choice = LI.ABSOLUTE_FOLDER_NAME
+        module.location.custom_path = flex_path
+        module.module_num = 1
+        pipeline = P.Pipeline()
+        pipeline.add_module(module)
+        pipeline.add_listener(self.error_callback)
+        image_set_list = I.ImageSetList()
+        module.prepare_run(pipeline, image_set_list, None)
+        keys, groupings = module.get_groupings(image_set_list)
+        self.assertTrue("FileName" in keys)
+        self.assertTrue("Series" in keys)
+        self.assertEqual(len(groupings), 4)
+        m = measurements.Measurements()
+        for group_number, (grouping, image_numbers) in enumerate(groupings):
+            module.prepare_group(pipeline, image_set_list, grouping, image_numbers)
+            
+            for group_index, image_number in enumerate(image_numbers):
+                image_set = image_set_list.get_image_set(image_number-1)
+                workspace = W.Workspace(pipeline, module, image_set,
+                                        cpo.ObjectSet(), m,
+                                        image_set_list)
+                m.add_image_measurement(cpp.GROUP_INDEX, group_index)
+                m.add_image_measurement(cpp.GROUP_NUMBER, group_number)
+                module.run(workspace)
+                for feature, expected in ((LI.M_SERIES, grouping[LI.M_SERIES]),
+                                          (LI.M_Z, 0),
+                                          (LI.M_T, 0)):
+                    value = m.get_current_image_measurement(
+                        measurements.C_METADATA + "_" + feature)
+                    self.assertEqual(value, expected)
+                
+                red_image_provider = image_set.get_image_provider("Red")
+                green_image_provider = image_set.get_image_provider("Green")
+                self.assertEqual(red_image_provider.get_c(), 0)
+                self.assertEqual(green_image_provider.get_c(), 1)
+                self.assertEqual(red_image_provider.get_t(), 0)
+                self.assertEqual(green_image_provider.get_t(), 0)
+                red_image = image_set.get_image("Red")
+                green_image = image_set.get_image("Green")
+                self.assertEqual(tuple(red_image.pixel_data.shape),
+                                 tuple(green_image.pixel_data.shape))
+                m.next_image_set()
+                
     def test_10_1_load_many(self):
         '''Load an image many times to ensure that memory is freed each time'''
         path = os.path.join(example_images_directory(), "ExampleSBSImages")

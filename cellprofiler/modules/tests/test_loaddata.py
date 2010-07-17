@@ -55,7 +55,7 @@ class TestLoadData(unittest.TestCase):
     
     def test_01_00_revision(self):
         '''Remember to update this and write another test on new revision'''
-        self.assertEqual(L.LoadData().variable_revision_number, 4)
+        self.assertEqual(L.LoadData().variable_revision_number, 5)
         
     def test_01_01_load_v1(self):
         data = ('eJztV01v2jAYdvgabBPith59mnrootANqeWyMtAEU6EVRdV2qlwwzJITR46'

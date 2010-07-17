@@ -212,14 +212,12 @@ class DirectoryPath(Text):
     """
     DIR_ALL = [DEFAULT_INPUT_FOLDER_NAME, DEFAULT_OUTPUT_FOLDER_NAME,
                ABSOLUTE_FOLDER_NAME, DEFAULT_INPUT_SUBFOLDER_NAME,
-               DEFAULT_OUTPUT_SUBFOLDER_NAME]
+               DEFAULT_OUTPUT_SUBFOLDER_NAME, URL_FOLDER_NAME]
     def __init__(self, text, value = None, dir_choices = None, 
-                 allow_metadata = True, support_urls = False,
+                 allow_metadata = True,
                  *args, **kwargs):
         if dir_choices is None:
             dir_choices = DirectoryPath.DIR_ALL
-        if support_urls and not (URL_FOLDER_NAME in dir_choices):
-            dir_choices = dir_choices + [URL_FOLDER_NAME]
         if value is None:
             value = DirectoryPath.static_join_string(
                 dir_choices[0], "None")
@@ -385,7 +383,7 @@ class DirectoryPath(Text):
                 regexp_substitution = regexp_substitution)
         
     def test_valid(self, pipeline):
-        if self.dir_choice not in self.dir_choices + [NO_FOLDER_NAME]:
+        if self.dir_choice not in self.DIR_ALL + [NO_FOLDER_NAME]:
             raise ValidationError("Unsupported directory choice: %s" %
                                   self.dir_choice, self)
         if (not self.allow_metadata and self.is_custom_choice and
@@ -412,10 +410,6 @@ class FilenameText(Text):
         self.browse_msg = kwargs.pop("browse_msg", "Choose a file")
         self.exts = kwargs.pop("exts", None)
         super(FilenameText,self).__init__(text, value, *args, **kwargs)
-        self.browsable = True
- 
-    def set_browsable(self, val):
-        self.browsable = val
 
 class ImageFileSpecifier(Text):
     """A setting for choosing an image file, including switching between substring, file globbing, and regular expressions,

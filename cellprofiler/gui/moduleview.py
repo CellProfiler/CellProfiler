@@ -831,10 +831,8 @@ class ModuleView:
             sizer.Add(button_control, 0, wx.EXPAND | wx.LEFT, 2)
         else:
             edit_control = self.module_panel.FindWindowByName(edit_name)
-            button_control = self.module_panel.FindWindowByName(button_name)
             if edit_control.Value != v.value:
                 edit_control.Value = v.value
-            button_control.Show(v.browsable)
         return control
     
     def make_directory_path_control(self, v, control_name, control):
@@ -915,19 +913,15 @@ class ModuleView:
         if v.is_custom_choice:
             if not custom_ctrl.IsShown():
                 custom_ctrl.Show()
-            if not custom_label.IsShown():
-                custom_label.Show()
-            if not browse_ctrl.IsShown():
-                browse_ctrl.Show()
             if v.dir_choice in (cps.DEFAULT_INPUT_SUBFOLDER_NAME,
                                 cps.DEFAULT_OUTPUT_SUBFOLDER_NAME):
                 custom_label.Label = "Sub-folder:"
             elif v.dir_choice == cps.URL_FOLDER_NAME:
-                custom_label.Hide()
-                custom_ctrl.Hide()
-                browse_ctrl.Hide()
+                custom_label.Label = "URL folder:"
             if custom_ctrl.Value != v.custom_path:
                 custom_ctrl.Value = v.custom_path
+            if not browse_ctrl.IsShown():
+                browse_ctrl.Show()
         else:
             custom_label.Hide()
             custom_ctrl.Hide()

@@ -54,20 +54,17 @@ from cellprofiler.preferences import standardize_default_folder_names, \
 DIR_CUSTOM_FOLDER = "Custom folder"
 DIR_CUSTOM_WITH_METADATA = "Custom with metadata"
 
-FILE_TEXT = "Filename of the image to load (Include the extension, e.g., .tif)"
-URL_TEXT = "URL of the image to load (Include the extension, e.g., .tif)"
-
 class LoadSingleImage(cpm.CPModule):
 
     module_name = "LoadSingleImage"
     category = "File Processing"
-    variable_revision_number = 3
+    variable_revision_number = 2
     def create_settings(self):
         """Create the settings during initialization
         
         """
         self.directory = cps.DirectoryPath(
-            "Input image file location", support_urls = True,
+            "Input image file location",
             doc = '''Select the folder containing the image(s) to be loaded. Generally, 
             it is best to store the image you want to load in either the Default Input or 
             Output Folder, so that the correct image is loaded into the pipeline 
@@ -94,7 +91,7 @@ class LoadSingleImage(cpm.CPModule):
             return self.directory.get_absolute_path()
         
         group.append("file_name", cps.FilenameText(
-            FILE_TEXT,
+            "Filename of the image to load (Include the extension, e.g., .tif)",
             "None",
             metadata=True,
             get_directory_fn = get_directory_fn,
@@ -128,9 +125,6 @@ class LoadSingleImage(cpm.CPModule):
         """Return the settings in the order in which they appear in a pipeline file"""
         result = [self.directory]
         for file_setting in self.file_settings:
-            url_based = (self.directory.dir_choice == cps.URL_FOLDER_NAME)
-            file_setting.file_name.set_browsable(not url_based)
-            file_setting.file_name.text = URL_TEXT if url_based else FILE_TEXT
             result += [file_setting.file_name, file_setting.image_name]
         return result
 
@@ -278,18 +272,5 @@ class LoadSingleImage(cpm.CPModule):
         setting_values[SLOT_DIR] = cps.DirectoryPath.upgrade_setting(
             setting_values[SLOT_DIR])
         
-        # changes to DirectoryPath and URL handling
-        if variable_revision_number == 2 and (not from_matlab):
-            dir = setting_values[0]
-            dir_choice, custom_dir = cps.DirectoryPath.split_string(dir)
-            if dir_choice == cps.URL_FOLDER_NAME:
-                dir = cps.DirectoryPath.static_join_string(dir_choice, '')
-                filenames = settings[1::2]
-                imagenames = settings[2::2]
-                setting_values = [dir] + zip([custom_dir + '/' + filename for filename in filenames],
-                                             imagenames)
-            variable_revision_number = 3
-
-
         return setting_values, variable_revision_number, from_matlab
 

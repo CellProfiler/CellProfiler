@@ -203,11 +203,11 @@ class LoadData(cpm.CPModule):
     
     module_name = "LoadData"
     category = 'File Processing'
-    variable_revision_number = 5
+    variable_revision_number = 4
 
     def create_settings(self):
         self.csv_directory = cps.DirectoryPath(
-            "Input data file location", allow_metadata = False, support_urls = True,
+            "Input data file location", allow_metadata = False,
             doc ="""Select the folder containing the CSV file to be loaded.
             %(IO_FOLDER_CHOICE_HELP_TEXT)s
             <p>An additional option is the following:
@@ -283,10 +283,6 @@ class LoadData(cpm.CPModule):
         def do_reload():
             global header_cache
             header_cache = {}
-            try:
-                self.open_csv()
-            except:
-                pass
             
         self.clear_cache_button = cps.DoSomething(
             "Reload cached information", "Reload", do_reload,
@@ -319,13 +315,6 @@ class LoadData(cpm.CPModule):
                                           self.csv_file_name)
 
         # This will throw if the URL can't be retrieved
-        if self.csv_directory.dir_choice == cps.URL_FOLDER_NAME:
-            try:
-                # do not automatically load URLs
-                self.open_csv(do_not_cache=True)
-            except Exception, e:
-                raise cps.ValidationError("Data loaded by URL are not validated automatically.  Press View or Reload to validate module settings.", self.browse_csv_button)
-                
         try:
             self.open_csv()
         except IOError, e:
@@ -348,11 +337,6 @@ class LoadData(cpm.CPModule):
                   self.browse_csv_button]
         if self.csv_directory.dir_choice == cps.URL_FOLDER_NAME:
             result += [self.clear_cache_button]
-            self.csv_file_name.text = "URL of the file"
-            self.csv_file_name.set_browsable(False)
-        else:
-            self.csv_file_name.text = "Name of the file"
-            self.csv_file_name.set_browsable(True)
         result += [ self.wants_images ]
         if self.wants_images.value:
             result += [self.image_directory, self.wants_image_groupings]
@@ -437,10 +421,9 @@ class LoadData(cpm.CPModule):
     @property
     def csv_path(self):
         '''The path and file name of the CSV file to be loaded'''
-        if self.csv_directory.dir_choice == cps.URL_FOLDER_NAME:
-            return self.csv_file_name.value
-        
         path = self.csv_directory.get_absolute_path()
+        if self.csv_directory.dir_choice == cps.URL_FOLDER_NAME:
+            return path + "/" + self.csv_file_name.value
         return os.path.join(path, self.csv_file_name.value)
     
     @property
@@ -466,7 +449,7 @@ class LoadData(cpm.CPModule):
             entry["ctime"] = ctime
         return entry
         
-    def open_csv(self, do_not_cache=False):
+    def open_csv(self):
         '''Open the csv file or URL, returning a file descriptor'''
         global header_cache
         
@@ -479,8 +462,6 @@ class LoadData(cpm.CPModule):
             if entry.has_key("URLDATA"):
                 fd = StringIO(entry["URLDATA"])
             else:
-                if do_not_cache:
-                    raise RuntimeError('Need to fetch URL manually.')
                 import urllib2
                 try:
                     url_fd = urllib2.urlopen(self.csv_path)
@@ -517,13 +498,13 @@ class LoadData(cpm.CPModule):
         for i, field in enumerate(header):
             list_ctl.InsertColumn(i, field)
         for line in reader:
-            list_ctl.Append(line[:len(header)])
+            list_ctl.Append(line)
         frame.SetMinSize((640,480))
         frame.SetIcon(get_cp_icon())
         frame.Fit()
         frame.Show()
         
-    def get_header(self, do_not_cache=False):
+    def get_header(self):
         '''Read the header fields from the csv file
         
         Open the csv file indicated by the settings and read the fields
@@ -533,7 +514,7 @@ class LoadData(cpm.CPModule):
         if entry.has_key("header"):
             return entry["header"]
         
-        fd = self.open_csv(do_not_cache=do_not_cache)
+        fd = self.open_csv()
         reader = csv.reader(fd)
         header = reader.next()
         fd.close()
@@ -550,8 +531,7 @@ class LoadData(cpm.CPModule):
         '''Get name providers from the CSV header'''
         if group=='imagegroup' and self.wants_images.value:
             try:
-                # do not load URLs automatically
-                header = self.get_header(do_not_cache=True)
+                header = self.get_header()
                 return [get_image_name(field)
                         for field in header
                         if is_file_name_feature(field)]
@@ -1056,21 +1036,6 @@ class LoadData(cpm.CPModule):
             setting_values[index] = cps.DirectoryPath.upgrade_setting(
                 setting_values[index])
             
-        if variable_revision_number == 4 and (not from_matlab):
-            csv_directory, csv_file_name, wants_images,
-            image_directory, wants_rows, row_range, wants_image_groupings,
-            metadata_fields = setting_values
-            dir_choice, custom_dir = cps.DirectoryPath.split_string(csv_directory)
-            if dir_choice == cps.URL_FOLDER_NAME:
-                csv_file_name = custom_dir + '/' + csv_file_name
-                csv_directory = cps.DirectoryPath.static_join_string(dir_choice, '')
-            setting_values = [
-                csv_directory, csv_file_name, wants_images,
-                image_directory, wants_rows, row_range, wants_image_groupings,
-                metadata_fields]
-            variable_revision_number = 5
-            
-
         return setting_values, variable_revision_number, from_matlab 
 
 LoadText = LoadData

@@ -327,11 +327,11 @@ class ObjectSet(object):
 def downsample_labels(labels):
     '''Convert a labels matrix to the smallest possible integer format'''
     labels_max = np.max(labels)
-    if labels_max < 256:
-        return labels.astype(np.uint8)
-    elif labels_max < 65536:
-        return labels.astype(np.uint16)
-    return labels.astype(np.uint32)
+    if labels_max < 128:
+        return labels.astype(np.int8)
+    elif labels_max < 32768:
+        return labels.astype(np.int16)
+    return labels.astype(np.int32)
 
 def crop_labels_and_image(labels, image):
     '''Crop a labels matrix and an image to the lowest common size

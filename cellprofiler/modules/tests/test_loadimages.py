@@ -119,7 +119,7 @@ class testLoadImages(unittest.TestCase):
             self.assertTrue("my_image%d"%(i) in image_set.get_names())
             self.assertTrue(image_set.get_image("my_image%d"%(i)))
         
-    def test_02_01load_image_regex_match(self):
+    def test_02_01_load_image_regex_match(self):
         l=LI.LoadImages()
         l.match_method.value = LI.MS_REGEXP
         l.location.dir_choice = LI.ABSOLUTE_FOLDER_NAME
@@ -139,6 +139,94 @@ class testLoadImages(unittest.TestCase):
         self.assertEqual(image_set.get_names()[0],"my_image")
         self.assertTrue(image_set.get_image("my_image"))
         
+    def test_02_02_load_image_by_order(self):
+        #
+        # Make a list of 12 files
+        #
+        directory = tempfile.mkdtemp()
+        self.directory = directory
+        data = base64.b64decode(T.tif_8_1)
+        tiff_fmt = "image%02d.tif"
+        for i in range(12):
+            path = os.path.join(directory, tiff_fmt % i)
+            fd = open(path, "wb")
+            fd.write(data)
+            fd.close()
+        #
+        # Code for permutations taken from 
+        # http://docs.python.org/library/itertools.html#itertools.permutations
+        # which has the Python copyright
+        #
+        def permutations(iterable, r=None):
+            # permutations('ABCD', 2) --> AB AC AD BA BC BD CA CB CD DA DB DC
+            # permutations(range(3)) --> 012 021 102 120 201 210
+            pool = tuple(iterable)
+            n = len(pool)
+            r = n if r is None else r
+            if r > n:
+                return
+            indices = range(n)
+            cycles = range(n, n-r, -1)
+            yield tuple(pool[i] for i in indices[:r])
+            while n:
+                for i in reversed(range(r)):
+                    cycles[i] -= 1
+                    if cycles[i] == 0:
+                        indices[i:] = indices[i+1:] + indices[i:i+1]
+                        cycles[i] = n - i
+                    else:
+                        j = cycles[i]
+                        indices[i], indices[-j] = indices[-j], indices[i]
+                        yield tuple(pool[i] for i in indices[:r])
+                        break
+                else:
+                    return
+    
+        #
+        # Run through group sizes = 2-4, # of images 2-4
+        #
+        for group_size in range(2, 5):
+            for image_count in range(2, group_size+1):
+                #
+                # For each possible permutation of image numbers
+                #
+                for indexes in permutations(range(group_size), image_count):
+                    l = LI.LoadImages()
+                    l.match_method.value = LI.MS_ORDER
+                    l.location.dir_choice = LI.ABSOLUTE_FOLDER_NAME
+                    l.location.custom_path = directory
+                    l.order_group_size.value = group_size
+                    l.images[0].channels[0].image_name.value = "image%d" % 1
+                    l.images[0].order_position.value = indexes[0] + 1
+                    for i, index in enumerate(indexes[1:]):
+                        l.add_imagecb()
+                        l.images[i+1].order_position.value = index + 1
+                        l.images[i+1].channels[0].image_name.value = "image%d" % (i+2)
+                    l.module_num = 1
+                    image_set_list = I.ImageSetList()
+                    pipeline = P.Pipeline()
+                    pipeline.add_module(l)
+                    l.prepare_run(pipeline, image_set_list,None)
+                    nsets = 12 / group_size
+                    self.assertEqual(image_set_list.count(), nsets)
+                    l.prepare_group(pipeline, image_set_list, (), 
+                                    list(range(1, nsets+1)))
+                    m = measurements.Measurements()
+                    for i in range(0, nsets):
+                        if i > 0:
+                            m.next_image_set(i)
+                        image_set = image_set_list.get_image_set(i)
+                        workspace = W.Workspace(pipeline, l, image_set,
+                                                cpo.ObjectSet(), m,
+                                                image_set_list)
+                        l.run(workspace)
+                        for j in range(image_count):
+                            feature = LI.C_FILE_NAME + ("_image%d" % (j+1))
+                            idx = i * group_size + indexes[j]
+                            expected = tiff_fmt % idx
+                            value = m.get_current_image_measurement(feature)
+                            self.assertEqual(expected, value)
+                    
     def test_03_00_load_matlab_v1(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1

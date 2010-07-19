@@ -856,9 +856,13 @@ class ModuleView:
             sizer.Add(custom_sizer, 1, wx.EXPAND)
             custom_label = wx.StaticText(control, name = custom_ctrl_label_name)
             custom_sizer.Add(custom_label, 0, wx.ALIGN_CENTER_VERTICAL)
-            custom_ctrl = MetadataControl(self.__pipeline,
-                                          self.__module,
-                                          control, value = v.custom_path,
+            if v.allow_metadata:
+                custom_ctrl = MetadataControl(self.__pipeline,
+                                              self.__module,
+                                              control, value = v.custom_path,
+                                              name = custom_ctrl_name)
+            else:
+                custom_ctrl = wx.TextCtrl(control, -1, v.custom_path,
                                           name = custom_ctrl_name)
             custom_sizer.Add(custom_ctrl, 1, wx.ALIGN_CENTER_VERTICAL)
             browse_bitmap = wx.ArtProvider.GetBitmap(wx.ART_FOLDER,
@@ -897,6 +901,9 @@ class ModuleView:
                 if dlg.ShowModal() == wx.ID_OK:
                     dir_choice, custom_path = v.get_parts_from_path(dlg.Path)
                     proposed_value = v.join_string(dir_choice, custom_path)
+                    if v.allow_metadata:
+                        # Do escapes on backslashes
+                        proposed_value = proposed_value.replace('\\','\\\\')
                     setting_edited_event = SettingEditedEvent(
                         v, self.__module, proposed_value, event)
                     self.notify(setting_edited_event)

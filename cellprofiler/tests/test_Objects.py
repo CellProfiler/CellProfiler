@@ -166,32 +166,32 @@ class TestObjects(unittest.TestCase):
         self.assertEqual(parents_of_children[1],1)
 
 class TestDownsampleLabels(unittest.TestCase):
-    def test_01_01_downsample_255(self):
-        i,j = np.mgrid[0:16, 0:16]
-        labels = (i*16 + j).astype(int)
+    def test_01_01_downsample_127(self):
+        i,j = np.mgrid[0:16, 0:8]
+        labels = (i*8 + j).astype(int)
         result = cpo.downsample_labels(labels)
-        self.assertEqual(result.dtype, np.dtype(np.uint8))
+        self.assertEqual(result.dtype, np.dtype(np.int8))
         self.assertTrue(np.all(result == labels))
         
-    def test_01_02_downsample_256(self):
-        i,j = np.mgrid[0:16, 0:16]
-        labels = (i*16 + j).astype(int) + 1
+    def test_01_02_downsample_128(self):
+        i,j = np.mgrid[0:16, 0:8]
+        labels = (i*8 + j).astype(int) + 1
         result = cpo.downsample_labels(labels)
-        self.assertEqual(result.dtype, np.dtype(np.uint16))
+        self.assertEqual(result.dtype, np.dtype(np.int16))
         self.assertTrue(np.all(result == labels))
     
-    def test_01_03_downsample_65535(self):
-        i,j = np.mgrid[0:256, 0:256]
-        labels = (i*256 + j).astype(int)
+    def test_01_03_downsample_32767(self):
+        i,j = np.mgrid[0:256, 0:128]
+        labels = (i*128 + j).astype(int)
         result = cpo.downsample_labels(labels)
-        self.assertEqual(result.dtype, np.dtype(np.uint16))
+        self.assertEqual(result.dtype, np.dtype(np.int16))
         self.assertTrue(np.all(result == labels))
 
-    def test_01_04_downsample_65536(self):
-        i,j = np.mgrid[0:256, 0:256]
-        labels = (i*256 + j).astype(int) + 1
+    def test_01_04_downsample_32768(self):
+        i,j = np.mgrid[0:256, 0:128]
+        labels = (i*128 + j).astype(int) + 1
         result = cpo.downsample_labels(labels)
-        self.assertEqual(result.dtype, np.dtype(np.uint32))
+        self.assertEqual(result.dtype, np.dtype(np.int32))
         self.assertTrue(np.all(result == labels))
 
 class TestCropLabelsAndImage(unittest.TestCase):

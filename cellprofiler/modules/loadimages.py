@@ -406,7 +406,9 @@ class LoadImages(cpmodule.CPModule):
             help for more information on regular expressions."""))
         
         group.append("order_position", cps.Integer(
-            'Position of this image in each group', img_index+1,doc="""
+            'Position of this image in each group', img_index+1,
+            minval = 1,
+            doc="""
             <i>(Used only for the image-loading Order option)</i><br>
             Enter the number in the image order that this image channel 
             occupies. For example, if the order is "DAPI, FITC, Red; 
@@ -757,12 +759,6 @@ class LoadImages(cpmodule.CPModule):
         
         LoadImages marks the common_text as invalid if it's blank.
         '''
-        if self.match_method == MS_ORDER:
-            raise cps.ValidationError("Load by Order is not yet implemented.\n"
-                                      "Please use 'Text-Exact match' or 'Text-Regular expressions'.",
-                                      self.match_method)
-
-
         if self.match_method == MS_EXACT_MATCH:
             for image_group in self.images:
                 if len(image_group.common_text.value) == 0:
@@ -2020,9 +2016,21 @@ class LoadImages(cpmodule.CPModule):
             how_long = time.clock() - start_time
             cached_file_lists[self.image_directory()] = (how_long, files)
             
-        files = [ (path, self.filter_filename(file_name))
-                  for path, file_name in files
-                  if self.filter_filename(file_name) is not None]
+        if self.load_choice() == MS_EXACT_MATCH:
+            files = [ (path, self.assign_filename_by_exact_match(file_name))
+                      for path, file_name in files]
+        elif self.load_choice() == MS_REGEXP:
+            files = [ (path, self.assign_filename_by_regexp(file_name))
+                      for path, file_name in files]
+        else:
+            # Load by order.
+            files = [path for path, file_name in files
+                     if self.filter_filename(file_name)]
+            files = [ (path, self.assign_filename_by_order(idx)) 
+                      for idx, path in enumerate(files) ]
+            
+        files = [ (path, idx) for path, idx in files
+                  if idx is not None]
         files.sort()
         return files
         
@@ -2054,31 +2062,63 @@ class LoadImages(cpmodule.CPModule):
         return self.match_exclude.value
     
     def filter_filename(self, filename):
-        """Returns either None or the index of the match setting
+        """Returns True if the file extension is correct
+        
+        Returns true if in image mode and an image extension
+        or if in movie mode and extension is a movie extension.
         """
         if not is_image(filename):
-            return None
+            return False
         if (self.file_types in (FF_AVI_MOVIES, FF_STK_MOVIES, FF_OTHER_MOVIES)
             and not is_movie(filename)):
-            return None
-                                                    
+            return False
         if ((self.text_to_exclude() != cps.DO_NOT_USE) and
             self.exclude and (filename.find(self.text_to_exclude()) >= 0)):
+            return False
+        return True
+    
+    def assign_filename_by_exact_match(self, filename):
+        '''Assign the file name to an image by matching a portion exactly
+        
+        filename - filename in question
+        
+        Returns either the index of the image or None if no match
+        '''
+        if not self.filter_filename(filename):
             return None
-        if self.load_choice() == MS_EXACT_MATCH:
-            ttfs = self.text_to_find_vars()
-            for i,ttf in enumerate(ttfs):
-                if filename.find(ttf.value) >=0:
-                    return i
-        elif self.load_choice() == MS_REGEXP:
-            ttfs = self.text_to_find_vars()
-            for i,ttf in enumerate(ttfs):
-                if re.search(ttf.value, filename):
-                    return i
-        else:
-            raise NotImplementedError("Load by order not implemented")
+        ttfs = self.text_to_find_vars()
+        for i,ttf in enumerate(ttfs):
+            if filename.find(ttf.value) >=0:
+                return i
         return None
-
+    
+    def assign_filename_by_regexp(self, filename):
+        '''Assign the file name to an image by regular expression matching
+        
+        filename - filename in question
+        
+        Returns either the index of the image or None if no match
+        '''
+        ttfs = self.text_to_find_vars()
+        for i,ttf in enumerate(ttfs):
+            if re.search(ttf.value, filename):
+                return i
+        return None
+    
+    def assign_filename_by_order(self, index):
+        '''Assign the file name to an image by alphabetical order
+        
+        index - the order in which it appears in the list
+        
+        Returns either the image index or None if the index, modulo the
+        # of files in a group is greater than the number of images.
+        '''
+        result = (index % self.order_group_size.value)+1
+        for i,fd in enumerate(self.images):
+            if result == fd.order_position:
+                return i
+        return None
+    
     def get_categories(self, pipeline, object_name):
         '''Return the categories of measurements that this module produces
         

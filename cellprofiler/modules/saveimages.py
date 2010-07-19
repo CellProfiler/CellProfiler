@@ -339,11 +339,6 @@ class SaveImages(cpm.CPModule):
             result.append(self.image_name)
 
         result.append(self.file_name_method)
-        if (self.file_name_method != FN_FROM_IMAGE and
-            self.pathname.dir_choice == PC_WITH_IMAGE):
-            # Need just the file image name here to associate
-            # the file-name image path
-            result.append(self.file_image_name)
         if self.file_name_method == FN_FROM_IMAGE:
             result += [self.file_image_name, self.wants_file_name_suffix]
             if self.wants_file_name_suffix:

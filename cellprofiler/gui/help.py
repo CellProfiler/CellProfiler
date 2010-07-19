@@ -33,7 +33,6 @@ import os
 import sys
 import cellprofiler.icons
 from cellprofiler.utilities.relpath import relpath
-from cellprofiler.gui.html.htmlwindow import HtmlClickableWindow
 
 #For some reason, Adobe doesn't like using absolute paths to assemble the PDF.
 #Also, Firefox doesn't like displaying the HTML image links using abs paths either.

@@ -632,6 +632,13 @@ class SaveImages(cpm.CPModule):
             writer.setMetadataRetrieve(meta)
             writer.setId(filename)
             true_writer = writer.getWriter()
+            
+            if channels == 1:
+                # Baseline TIFF does not support a planar configuration.
+                # The spec says to ignore planar configuration = 2 if there
+                # is only one channel, but at least one reader barfs anyway.
+                # Setting interleaved on makes it work.
+                writer.setInterleaved(True)
 
             if pixels.dtype in (np.uint8, np.int16):
                 # Leave the values alone, but cast to unsigned int 16
@@ -657,10 +664,10 @@ class SaveImages(cpm.CPModule):
             #
             min_sample_value = jutil.get_static_field(
                 "loci/formats/tiff/IFD", "MIN_SAMPLE_VALUE", "I")
-            jutil.call(ifd, "putIFDValue", "(IJ)V", min_sample_value, 0)
+            jutil.call(ifd, "putIFDValue", "(II)V", min_sample_value, 0)
             max_sample_value = jutil.get_static_field(
                 "loci/formats/tiff/IFD", "MAX_SAMPLE_VALUE","I")
-            jutil.call(ifd, "putIFDValue","(IJ)V",
+            jutil.call(ifd, "putIFDValue","(II)V",
                        max_sample_value, 65535)
             try:
                 # A more-modern interface... Bioformats SVN 6230+

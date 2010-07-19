@@ -115,7 +115,6 @@ __version__="$Revision$"
 import numpy as np
 import scipy.optimize
 import os
-import pylab
 
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
@@ -751,6 +750,8 @@ def write_figures(prefix, directory, dose_name,
     feature_set - tuples of object name and feature name in same order as data
     log_transform - true to log-transform the dose data
     '''
+    import pylab
+    
     if log_transform:
         dose_data = np.log(dose_data)
     for i, (object_name, feature_name) in enumerate(feature_set):

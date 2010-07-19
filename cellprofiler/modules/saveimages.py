@@ -425,7 +425,8 @@ class SaveImages(cpm.CPModule):
         if workspace.frame != None:
             if self.save_image_or_figure == IF_MOVIE:
                 return
-            figure = workspace.create_or_find_figure(subplots=(1,1))
+            figure = workspace.create_or_find_figure(title="SaveImages, image cycle #%d"%(
+                workspace.measurements.image_set_number),subplots=(1,1))
             outcome = ("Wrote %s" if workspace.display_data.wrote_image
                        else "Did not write %s")
             figure.subplot_table(0, 0, [[outcome %

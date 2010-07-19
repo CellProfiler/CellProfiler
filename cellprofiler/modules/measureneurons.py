@@ -437,9 +437,11 @@ class MeasureNeurons(cpm.CPModule):
         import matplotlib.cm
         
         if self.wants_neuron_graph:
-            figure = workspace.create_or_find_figure(subplots=(2,1))
+            figure = workspace.create_or_find_figure(title="MeasureNeurons, image cycle #%d"%(
+                workspace.measurements.image_set_number),subplots=(2,1))
         else:
-            figure = workspace.create_or_find_figure(subplots=(1,1))
+            figure = workspace.create_or_find_figure(title="MeasureNeurons, image cycle #%d"%(
+                workspace.measurements.image_set_number),subplots=(1,1))
         title = ("Branchpoints of %s and %s\nTrunks are red\nBranches are green\nEndpoints are blue" %
                  (self.seed_objects_name.value, self.image_name.value))
         figure.subplot_imshow(0, 0, workspace.display_data.branchpoint_image,

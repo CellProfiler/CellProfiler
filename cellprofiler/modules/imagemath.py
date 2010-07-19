@@ -288,7 +288,8 @@ class ImageMath(cpm.CPModule):
             display_pixel_data = [image.pixel_data for image in images] + [output_pixel_data]
             display_names = image_names + [self.output_image_name.value]
             columns = (len(display_pixel_data) + 1 ) / 2
-            figure = workspace.create_or_find_figure(subplots=(columns, 2))
+            figure = workspace.create_or_find_figure(title="ImageMath, image cycle #%d"%(
+                workspace.measurements.image_set_number),subplots=(columns, 2))
             for i in range(len(display_pixel_data)):
                 if display_pixel_data[i].ndim == 3:
                     figure.subplot_imshow(i%columns, int(i / columns),

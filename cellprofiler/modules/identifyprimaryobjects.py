@@ -1134,7 +1134,8 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             """Display the image and labeling"""
             window_name = "CellProfiler:%s:%d"%(self.module_name, self.module_num)
             my_frame=cpf.create_or_find(workspace.frame, 
-                                        title="Identify primary automatic", 
+                                        title="IdentifyPrimaryObjects, image cycle #%d"%(
+                workspace.measurements.image_set_number), 
                                         name=window_name, subplots=(2,2))
             
             orig_axes     = my_frame.subplot(0,0)

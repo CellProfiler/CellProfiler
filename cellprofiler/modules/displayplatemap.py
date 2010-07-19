@@ -189,7 +189,8 @@ class DisplayPlatemap(cpm.CPModule):
                         raise NotImplemented
             
             figure = workspace.create_or_find_figure(
-                         title='Display platemap #%d'%(self.module_num), 
+                         title="DisplayPlateMap, image cycle #%d"%(
+                workspace.measurements.image_set_number), 
                          subplots=(1,1))
             if self.title.value != '':
                 title = '%s (cycle %s)'%(self.title.value, workspace.measurements.image_set_number)

@@ -284,7 +284,8 @@ class GrayToColor(cpm.CPModule):
                 subplots = (1, 1)
                 subplot_indices = []
                 color_subplot = (0, 0)
-            my_frame = workspace.create_or_find_figure(title, subplots)
+            my_frame = workspace.create_or_find_figure(title="GrayToColor, image cycle #%d"%(
+                workspace.measurements.image_set_number), subplots = subplots)
             for i, input_image_setting in enumerate(input_image_settings):
                 x,y = subplot_indices[i]
                 image = imgset.get_image(input_image_setting.value,

@@ -232,7 +232,8 @@ class EditObjectsManually(I.Identify):
         # Do the drawing here
         #
         if workspace.frame is not None:
-            figure = workspace.create_or_find_figure(subplots=(2,1))
+            figure = workspace.create_or_find_figure(title="EditObjectsManually, image cycle #%d"%(
+                workspace.measurements.image_set_number),subplots=(2,1))
             figure.subplot_imshow_labels(0, 0, orig_labels, orig_objects_name)
             figure.subplot_imshow_labels(1, 0, filtered_labels,
                                          filtered_objects_name,

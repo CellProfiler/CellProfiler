@@ -218,7 +218,8 @@ class IdentifyTertiaryObjects(cpm.CPModule):
             #
             window_name = "CellProfiler:%s:%d"%(self.module_name,self.module_num)
             my_frame=cpf.create_or_find(workspace.frame, 
-                                        title="Identify tertiary subregion", 
+                                        title="IdentifyTertiaryObjects, image cycle #%d"%(
+                workspace.measurements.image_set_number), 
                                         name=window_name, subplots=(2,2))
             
             title = "%s, cycle # %d"%(self.primary_objects_name.value,

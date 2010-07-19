@@ -193,7 +193,8 @@ class CreateBatchFiles(cpm.CPModule):
                 message = 'In test mode: no batch files created'
             else:
                 message = 'Batch files created.'
-            figure = workspace.create_or_find_figure(title='CreateBatchFiles', subplots=(1,1))
+            figure = workspace.create_or_find_figure(title="CreateBatchFiles, image cycle #%d"%(
+                workspace.measurements.image_set_number), subplots=(1,1))
             figure.subplot_table(0, 0, [[message]])
 
     def is_interactive(self):

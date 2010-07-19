@@ -353,7 +353,8 @@ class MaskObjects(I.Identify):
         image[outlines,1] = 0
         image[outlines,2] = 0
         
-        figure = workspace.create_or_find_figure(subplots=(2,1))
+        figure = workspace.create_or_find_figure(title="MaskObjects, image cycle #%d"%(
+                workspace.measurements.image_set_number),subplots=(2,1))
         figure.subplot_imshow_labels(0, 0, original_labels,
                                      title = self.object_name.value)
         figure.subplot_imshow_color(1, 0, image,

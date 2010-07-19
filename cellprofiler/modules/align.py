@@ -218,7 +218,8 @@ with respect to the first image.""")
         first_image = image_set.get_image(self.first_input_image.value,
                                           must_be_grayscale=True)
         first_pixels = crop_image.crop_image_similarly(first_image.pixel_data)
-        figure = workspace.create_or_find_figure(subplots=(2,len(statistics)))
+        figure = workspace.create_or_find_figure(title="Align, image cycle #%d"%(
+                workspace.measurements.image_set_number),subplots=(2,len(statistics)))
         for i, input_name, output_name, off_x, off_y in statistics:
             other_image = image_set.get_image(input_name,
                                               must_be_grayscale=True)

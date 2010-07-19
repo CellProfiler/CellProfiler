@@ -295,7 +295,8 @@ class UnmixColors(cpm.CPModule):
         
     def display(self, workspace):
         '''Display all of the images in a figure'''
-        figure = workspace.create_or_find_figure(subplots=(len(self.outputs)+1,1))
+        figure = workspace.create_or_find_figure(title="UnmixColors, image cycle #%d"%(
+                workspace.measurements.image_set_number),subplots=(len(self.outputs)+1,1))
         image_set = workspace.image_set
         assert isinstance(image_set, cpi.ImageSet)
         input_image_name = self.input_image_name.value

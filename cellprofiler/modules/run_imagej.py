@@ -340,7 +340,8 @@ class RunImageJ(cpm.CPModule):
             self.display(workspace)
             
     def display(self, workspace):
-        figure = workspace.create_or_find_figure(subplots=(2,1))
+        figure = workspace.create_or_find_figure(title="RunImageJ, image cycle #%d"%(
+                workspace.measurements.image_set_number),subplots=(2,1))
         if self.wants_to_set_current_image:
             input_image_name = self.current_input_image_name.value
             img = workspace.image_set.get_image(input_image_name)

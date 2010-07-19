@@ -176,7 +176,8 @@ class MakeProjection(cpm.CPModule):
     def display(self, workspace):
         image = workspace.image_set.get_image(self.image_name.value)
         provider = workspace.image_set.get_image_provider(self.projection_image_name.value)
-        figure = workspace.create_or_find_figure(subplots=(2,1))
+        figure = workspace.create_or_find_figure(title="MakeProjection, image cycle #%d"%(
+                workspace.measurements.image_set_number),subplots=(2,1))
         provider_image = provider.provide_image(workspace.image_set)
         if provider_image.pixel_data.ndim == 3:
             figure.subplot_imshow(0, 0, image.pixel_data,

@@ -155,7 +155,8 @@ class DisplayDensityPlot(cpm.CPModule):
             bins = self.bins.value
             
         if workspace.frame:
-            figure = workspace.create_or_find_figure(subplots=(1,1))
+            figure = workspace.create_or_find_figure(title="DisplayDensityPlot, image cycle #%d"%(
+                workspace.measurements.image_set_number),subplots=(1,1))
             figure.subplot_density(0, 0, data,
                                    gridsize=self.gridsize.value,
                                    xlabel=self.x_axis.value,

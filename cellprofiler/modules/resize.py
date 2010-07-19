@@ -217,7 +217,8 @@ class Resize(cpm.CPModule):
             2: output image name of image being aligned
         '''
         statistics = workspace.display_data.statistics
-        figure = workspace.create_or_find_figure(subplots=(2,len(statistics)))
+        figure = workspace.create_or_find_figure(title="Resize, image cycle #%d"%(
+                workspace.measurements.image_set_number),subplots=(2,len(statistics)))
         for i, input_name, output_name in statistics:
             input_image = workspace.image_set.get_image(input_name)
             input_image_pixels = input_image.pixel_data

@@ -243,7 +243,8 @@ class RenameOrRenumberFiles(cpm.CPModule):
         statistics = [('Old file name','New file name'),
                       (workspace.display_data.old_file_name,
                        workspace.display_data.new_file_name)]
-        figure = workspace.create_or_find_figure(subplots=(1,1))
+        figure = workspace.create_or_find_figure(title="RenameOrRenumberFiles, image cycle #%d"%(
+                workspace.measurements.image_set_number),subplots=(1,1))
         figure.subplot_table(0,0,statistics, ratio = (.5, .5))
 
     def upgrade_settings(self, setting_values, variable_revision_number,

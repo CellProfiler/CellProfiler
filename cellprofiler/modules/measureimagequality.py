@@ -398,7 +398,8 @@ class MeasureImageQuality(cpm.CPModule):
     def display(self, workspace):
         if workspace.frame is not None:
             statistics = workspace.display_data.statistics
-            figure = workspace.create_or_find_figure(subplots=(1,1))
+            figure = workspace.create_or_find_figure(title="MeasureImageQuality, image cycle #%d"%(
+                workspace.measurements.image_set_number),subplots=(1,1))
             figure.subplot_table(0,0,statistics)
     
     def post_run(self, workspace):

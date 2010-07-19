@@ -98,7 +98,8 @@ class ConvertObjectsToImage(cpm.CPModule):
         labels = objects.segmented
         convert = True
         if not workspace.frame is None:
-            figure = workspace.create_or_find_figure(subplots=(2,1))
+            figure = workspace.create_or_find_figure(title="ConvertObjectsToImage, image cycle #%d"%(
+                workspace.measurements.image_set_number),subplots=(2,1))
             figure.subplot_imshow_labels(0,0,labels,
                                          "Original: %s"%self.object_name.value)
         if self.image_mode == IM_BINARY:

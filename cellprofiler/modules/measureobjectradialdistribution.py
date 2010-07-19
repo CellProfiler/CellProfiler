@@ -223,7 +223,8 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
         if workspace.frame is not None:
             images = [d[key][0] for key in d.keys()]
             names = d.keys()
-            figure = workspace.create_or_find_figure(subplots=(1,len(images)))
+            figure = workspace.create_or_find_figure(title="MeasureObjectRadialDistribution, image cycle #%d"%(
+                workspace.measurements.image_set_number),subplots=(1,len(images)))
             figure.figure.clf()
             nimages = len(images)
             shrink = .05

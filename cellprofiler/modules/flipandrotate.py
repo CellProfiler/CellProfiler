@@ -228,7 +228,8 @@ class FlipAndRotate(cpm.CPModule):
             M_ROTATION_F % self.output_name.value, angle)
         
         if workspace.frame is not None:
-            figure = workspace.create_or_find_figure(subplots=(2,1))
+            figure = workspace.create_or_find_figure(title="FlipAndRotate, image cycle #%d"%(
+                workspace.measurements.image_set_number),subplots=(2,1))
             vmin = min(np.min(image.pixel_data), 
                        np.min(output_image.pixel_data[output_image.mask]))
             vmax = max(np.max(image.pixel_data), 

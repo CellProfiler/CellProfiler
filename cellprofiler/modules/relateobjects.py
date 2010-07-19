@@ -257,7 +257,8 @@ class RelateObjects(cpm.CPModule):
                 self.calculate_minimum_distances(workspace, parent_name)
             
         if workspace.frame is not None:
-            figure = workspace.create_or_find_figure(subplots=(2,2))
+            figure = workspace.create_or_find_figure(title="RelateObjects, image cycle #%d"%(
+                workspace.measurements.image_set_number),subplots=(2,2))
             figure.subplot_imshow_labels(0,0,parents.segmented,
                                          title = self.parent_name.value)
             figure.subplot_imshow_labels(1,0,children.segmented,

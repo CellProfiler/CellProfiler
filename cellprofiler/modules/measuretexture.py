@@ -353,7 +353,8 @@ class MeasureTexture(cpm.CPModule):
             workspace.display_data.statistics = statistics
     
     def display(self, workspace):
-        figure = workspace.create_or_find_figure(subplots=(1,1))
+        figure = workspace.create_or_find_figure(title="MeasureTexture, image cycle #%d"%(
+                workspace.measurements.image_set_number),subplots=(1,1))
         figure.subplot_table(0, 0, workspace.display_data.statistics,
                              ratio=(.20,.20,.20,.20,.20))
     

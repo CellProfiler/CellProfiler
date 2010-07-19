@@ -382,7 +382,8 @@ class MeasureObjectNeighbors(cpm.CPModule):
         else:
             percent_touching_cm = matplotlib.cm.get_cmap(cpprefs.get_default_colormap())
         if not workspace.frame is None:
-            figure = workspace.create_or_find_figure(subplots=(2,2))
+            figure = workspace.create_or_find_figure(title="MeasureObjectNeighbors, image cycle #%d"%(
+                workspace.measurements.image_set_number),subplots=(2,2))
             figure.subplot_imshow_labels(0,0,objects.segmented,
                                          "Original: %s"%self.object_name.value)
             neighbor_count_image[~ object_mask] = -1

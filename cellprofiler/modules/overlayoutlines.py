@@ -165,7 +165,8 @@ class OverlayOutlines(cpm.CPModule):
             output_image = cpi.Image(pixel_data)
             workspace.image_set.add(self.output_image_name.value, output_image)
             if not workspace.frame is None:
-                figure = workspace.create_or_find_figure(subplots=(1,1))
+                figure = workspace.create_or_find_figure(title="OverlayOutlines, image cycle #%d"%(
+                workspace.measurements.image_set_number),subplots=(1,1))
                 if self.wants_color.value == WANTS_COLOR:
                     figure.subplot_imshow(0, 0, pixel_data, 
                                           self.output_image_name.value)

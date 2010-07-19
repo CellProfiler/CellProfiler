@@ -141,7 +141,8 @@ class DisplayHistogram(cpm.CPModule):
             if self.wants_xbounds:
                 x = x[x > self.xbounds.min]
                 x = x[x < self.xbounds.max]
-            figure = workspace.create_or_find_figure(subplots=(1,1))
+            figure = workspace.create_or_find_figure(title="DisplayHistogram, image cycle #%d"%(
+                workspace.measurements.image_set_number),subplots=(1,1))
             figure.subplot_histogram(0, 0, x, 
                                      bins=self.bins.value,
                                      xlabel=self.x_axis.value,

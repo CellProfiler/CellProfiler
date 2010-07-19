@@ -206,7 +206,8 @@ class LoadSingleImage(cpm.CPModule):
             statistics += [(image_name, dict[image_name])]
         if workspace.frame:
             title = "Load single image: image cycle # %d"%(workspace.measurements.image_set_number+1)
-            figure = workspace.create_or_find_figure(title=title,
+            figure = workspace.create_or_find_figure(title="LoadSingleImage, image cycle #%d"%(
+                workspace.measurements.image_set_number),
                                                      subplots=(1,1))
             figure.subplot_table(0,0, statistics)
     

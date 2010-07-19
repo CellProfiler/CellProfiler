@@ -171,7 +171,8 @@ class ColorToGray(cpm.CPModule):
 
         input_image = workspace.display_data.input_image
         output_image = workspace.display_data.output_image
-        figure = workspace.create_or_find_figure(title="Color to gray",
+        figure = workspace.create_or_find_figure(title="ColorToGray, image cycle #%d"%(
+                workspace.measurements.image_set_number),
                                                  subplots=(1,2))
         figure.subplot_imshow(0, 0, input_image, 
                               title = "Original image: %s"%(self.image_name))
@@ -208,7 +209,8 @@ class ColorToGray(cpm.CPModule):
             subplots = (1,2)
         else:
             subplots = (2,2)
-        figure=workspace.create_or_find_figure(title="Color to gray",
+        figure=workspace.create_or_find_figure(title="ColorToGray, image cycle #%d"%(
+                workspace.measurements.image_set_number),
                                                subplots=subplots)
         figure.subplot_imshow(0, 0, input_image,
                               title = "Original image")

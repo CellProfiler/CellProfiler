@@ -537,7 +537,8 @@ class TrackObjects(cpm.CPModule):
             workspace.image_set.add(self.image_name.value, image)
             
     def display(self, workspace):
-        frame = workspace.create_or_find_figure(subplots=(1,1))
+        frame = workspace.create_or_find_figure(title="TrackObjects, image cycle #%d"%(
+                workspace.measurements.image_set_number),subplots=(1,1))
         figure = frame.figure
         figure.clf()
         ax = figure.add_subplot(1,1,1)

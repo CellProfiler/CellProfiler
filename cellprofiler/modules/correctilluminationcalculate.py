@@ -505,7 +505,8 @@ class CorrectIlluminationCalculate(cpm.CPModule):
         dilated_image = workspace.display_data.dilated_image
         output_image = workspace.display_data.output_image
         
-        figure = workspace.create_or_find_figure(subplots=(2,2))
+        figure = workspace.create_or_find_figure(title="CorrectIlluminationCalculate, image cycle #%d"%(
+                workspace.measurements.image_set_number),subplots=(2,2))
         figure.subplot_imshow_grayscale(0, 0, avg_image.pixel_data, 
                                         "Averaged image")
         pixel_data = output_image.pixel_data

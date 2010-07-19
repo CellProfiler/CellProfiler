@@ -540,7 +540,8 @@ class Morph(cpm.CPModule):
         new_image = cpi.Image(pixel_data, parent_image = image) 
         workspace.image_set.add(self.output_image_name.value, new_image)
         if not workspace.frame is None:
-            figure = workspace.create_or_find_figure(subplots=(2,1))
+            figure = workspace.create_or_find_figure(title="Morph, image cycle #%d"%(
+                workspace.measurements.image_set_number),subplots=(2,1))
             if pixel_data.dtype.kind == 'b':
                 figure.subplot_imshow_bw(0,0,image.pixel_data,
                                          'Original image: %s'%

@@ -251,8 +251,8 @@ class DisplayDataOnImage(cpm.CPModule):
         self.display(workspace)
         
     def display(self, workspace):
-        fig = workspace.create_or_find_figure(title="Display data on image (%s)"
-                                              %(workspace.measurements.image_set_number),
+        fig = workspace.create_or_find_figure(title="DisplayDataOnImage, image cycle #%d"%(
+                workspace.measurements.image_set_number),
                                               subplots=(1,1))
         fig.clf()
         title = "%s_%s" % (self.objects_name.value, self.measurement.value)

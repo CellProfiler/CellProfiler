@@ -145,7 +145,8 @@ class DisplayScatterPlot(cpm.CPModule):
             title = '%s (cycle %d)'%(self.title.value, workspace.measurements.image_set_number)
         
         if workspace.frame:
-            figure = workspace.create_or_find_figure(subplots=(1,1))
+            figure = workspace.create_or_find_figure(title="DisplayScatterplot', image cycle #%d"%(
+                workspace.measurements.image_set_number),subplots=(1,1))
             figure.subplot_scatter(0, 0, xvals, yvals,
                                    xlabel=self.x_axis.value,
                                    ylabel=self.y_axis.value,

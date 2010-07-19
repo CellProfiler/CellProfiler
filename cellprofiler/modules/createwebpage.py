@@ -362,7 +362,8 @@ class CreateWebPage(cpm.CPModule):
 
     def display(self, workspace):
         '''Put up a simple display of web file statistics'''
-        figure = workspace.create_or_find_figure(subplots=(1,1))
+        figure = workspace.create_or_find_figure(title="CreateWebPage, image cycle #%d"%(
+                workspace.measurements.image_set_number),subplots=(1,1))
         figure.subplot_table(0, 0, workspace.display_data.statistics)
         
     def post_run(self, workspace):

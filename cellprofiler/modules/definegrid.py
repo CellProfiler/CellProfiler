@@ -758,7 +758,8 @@ class DefineGrid(cpm.CPModule):
         
         if axes is None:
             has_figure = True
-            figure = workspace.create_or_find_figure(subplots=(1,1))
+            figure = workspace.create_or_find_figure(title="DefineGrid, image cycle #%d"%(
+                workspace.measurements.image_set_number),subplots=(1,1))
             figure.clf()
             axes = figure.subplot(0,0)
         else:

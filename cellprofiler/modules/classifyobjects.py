@@ -533,7 +533,8 @@ class ClassifyObjects(cpm.CPModule):
             workspace.display_data.saved_values = saved_values
             
     def display_two_measurements(self, workspace):            
-        figure = workspace.create_or_find_figure(subplots=(2,2))
+        figure = workspace.create_or_find_figure(title="ClassifyObjects, image cycle #%d"%(
+                workspace.measurements.image_set_number),subplots=(2,2))
         object_name = self.object_name.value
         for i, feature_name in ((0, self.first_measurement.value),
                                 (1, self.second_measurement.value)):
@@ -614,7 +615,8 @@ class ClassifyObjects(cpm.CPModule):
     
     def display_single_measurement(self, workspace):
         '''Display an array of single measurements'''
-        figure = workspace.create_or_find_figure(
+        figure = workspace.create_or_find_figure(title="ClassifyObjects, image cycle #%d"%(
+                workspace.measurements.image_set_number),
             subplots=(3,len(self.single_measurements)))
         for i, group in enumerate(self.single_measurements):
             bin_hits = workspace.display_data.bins[i]

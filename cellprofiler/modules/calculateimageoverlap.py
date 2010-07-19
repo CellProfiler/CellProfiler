@@ -184,7 +184,8 @@ class CalculateImageOverlap(cpm.CPModule):
             
     def display(self, workspace):
         '''Display the image confusion matrix & statistics'''
-        figure = workspace.create_or_find_figure(subplots=(2,3))
+        figure = workspace.create_or_find_figure(title="CalculateImageOverlap, image cycle #%d"%(
+                workspace.measurements.image_set_number),subplots=(2,3))
         for x, y, image, label in (
             (0, 0, workspace.display_data.true_positives, "True positives"),
             (0, 1, workspace.display_data.false_positives, "False positives"),

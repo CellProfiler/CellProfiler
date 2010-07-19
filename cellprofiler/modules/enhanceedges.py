@@ -190,7 +190,8 @@ class EnhanceEdges(cpm.CPModule):
             raise NotImplementedError("Unimplemented edge detection method: %s"%
                                       self.method.value)
         if not workspace.frame is None:
-            figure = workspace.create_or_find_figure(subplots=(2,2))
+            figure = workspace.create_or_find_figure(title="EnhanceEdges, image cycle #%d"%(
+                workspace.measurements.image_set_number),subplots=(2,2))
             figure.subplot_imshow_grayscale(0,0, orig_pixels,
                                             "Original: %s"%
                                             self.image_name.value)

@@ -14,6 +14,11 @@ __version__ = "$Revision$"
 
 import sys
 import os
+import numpy as np
+#
+# CellProfiler expects NaN as a result during calculation
+#
+np.seterr(all='ignore')
 
 # Mark's machine
 if sys.platform.startswith('win'):

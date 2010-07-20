@@ -2469,6 +2469,11 @@ def load_using_bioformats(path, c=None, z=0, t=0, series=None):
                 for i in range(3)]
             image = np.dstack((red_image, green_image, blue_image))
             image.shape=(height,width,3)
+        elif rdr.getSizeC() > 1:
+            images = [np.frombuffer(rdr.openBytes(rdr.getIndex(z,i,t)), dtype)
+                      for i in range(rdr.getSizeC())]
+            image = np.dstack(images)
+            image.shape = (height, width, rdr.getSizeC())
         else:
             index = rdr.getIndex(z,0,t)
             image = np.frombuffer(rdr.openBytes(index),dtype)

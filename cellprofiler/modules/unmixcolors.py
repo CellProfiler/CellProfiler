@@ -254,7 +254,7 @@ class UnmixColors(cpm.CPModule):
         '''Unmix the colors on an image in the image set'''
         input_image_name = self.input_image_name.value
         input_image = workspace.image_set.get_image(input_image_name,
-                                                    must_be_color = True)
+                                                    must_be_rgb = True)
         input_pixels = input_image.pixel_data
         for output in self.outputs:
             self.run_on_output(workspace, input_image, output)

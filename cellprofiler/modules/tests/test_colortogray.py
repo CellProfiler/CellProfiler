@@ -13,9 +13,9 @@ Website: http://www.cellprofiler.org
 """
 __version__="$Revision$"
 
+from StringIO import StringIO
 import unittest
-
-import numpy
+import numpy as np
 
 from cellprofiler.preferences import set_headless
 set_headless()
@@ -31,10 +31,13 @@ import cellprofiler.modules.colortogray as cpm_ctg
 import cellprofiler.modules.tests as cpmt
 from cellprofiler.workspace import Workspace
 
+IMAGE_NAME = "image"
+OUTPUT_IMAGE_F = "outputimage%d"
+
 class TestColorToGray(unittest.TestCase):
     def get_my_image(self):
         """A color image with red in the upper left, green in the lower left and blue in the upper right"""
-        img = numpy.zeros((50,50,3))
+        img = np.zeros((50,50,3))
         img[0:25,0:25,0] = 1
         img[0:25,25:50,1] = 1
         img[25:50,0:25,2] = 1
@@ -124,6 +127,78 @@ class TestColorToGray(unittest.TestCase):
         self.assertAlmostEqual(img[0,25],0)
         self.assertAlmostEqual(img[25,0],1)
         self.assertAlmostEqual(img[25,25],0)
+        
+    def test_01_03_combine_channels(self):
+        np.random.seed(13)
+        image = np.random.uniform(size = (20, 10, 5))
+        image_set_list = cpi.ImageSetList()
+        image_set = image_set_list.get_image_set(0)
+        image_set.add(IMAGE_NAME, cpi.Image(image))
+        
+        module = cpm_ctg.ColorToGray()
+        module.module_num = 1
+        module.image_name.value = IMAGE_NAME
+        module.combine_or_split.value = cpm_ctg.COMBINE
+        module.grayscale_name.value = OUTPUT_IMAGE_F % 1
+        module.rgb_or_channels.value = cpm_ctg.CH_CHANNELS
+        module.add_channel()
+        module.add_channel()
+        
+        channel_indexes = np.array([2,0,3])
+        factors = np.random.uniform(size=3)
+        divisor = np.sum(factors)
+        expected = np.zeros((20,10))
+        for i, channel_index in enumerate(channel_indexes):
+            module.channels[i].channel_choice.value = module.channel_names[channel_index]
+            module.channels[i].contribution.value = factors[i]
+            expected += image[:,:, channel_index] * factors[i] / divisor
+        
+        pipeline = cpp.Pipeline()
+        def callback(caller, event):
+            self.assertFalse(isinstance(event, cpp.RunExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.add_module(module)
+        workspace = Workspace(pipeline, module, image_set, cpo.ObjectSet(),
+                              cpm.Measurements(), image_set_list)
+        module.run(workspace)
+        pixels = image_set.get_image(module.grayscale_name.value).pixel_data
+        self.assertEqual(pixels.ndim, 2)
+        self.assertEqual(tuple(pixels.shape), (20,10))
+        np.testing.assert_almost_equal(expected, pixels)
+    
+    def test_01_04_split_channels(self):
+        np.random.seed(13)
+        image = np.random.uniform(size = (20, 10, 5))
+        image_set_list = cpi.ImageSetList()
+        image_set = image_set_list.get_image_set(0)
+        image_set.add(IMAGE_NAME, cpi.Image(image))
+        
+        module = cpm_ctg.ColorToGray()
+        module.module_num = 1
+        module.image_name.value = IMAGE_NAME
+        module.combine_or_split.value = cpm_ctg.SPLIT
+        module.rgb_or_channels.value = cpm_ctg.CH_CHANNELS
+        module.add_channel()
+        module.add_channel()
+        
+        channel_indexes = np.array([1,4,2])
+        for i, channel_index in enumerate(channel_indexes):
+            module.channels[i].channel_choice.value = module.channel_names[channel_index]
+            module.channels[i].image_name.value = OUTPUT_IMAGE_F % i
+        
+        pipeline = cpp.Pipeline()
+        def callback(caller, event):
+            self.assertFalse(isinstance(event, cpp.RunExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.add_module(module)
+        workspace = Workspace(pipeline, module, image_set, cpo.ObjectSet(),
+                              cpm.Measurements(), image_set_list)
+        module.run(workspace)
+        for i, channel_index in enumerate(channel_indexes):
+            pixels = image_set.get_image(module.channels[i].image_name.value).pixel_data
+            self.assertEqual(pixels.ndim, 2)
+            self.assertEqual(tuple(pixels.shape), (20,10))
+            np.testing.assert_almost_equal(image[:,:,channel_index], pixels)
     
     def test_2_1_load_matlab_combine(self):
         data = 'TUFUTEFCIDUuMCBNQVQtZmlsZSwgUGxhdGZvcm06IFBDV0lOLCBDcmVhdGVkIG9uOiBNb24gSmFuIDEyIDA5OjE3OjA0IDIwMDkgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAABSU0PAAAAdAEAAHiczZS9TsMwEIAvTdpSKlURA2JkZONvYUR0QAwU1EYVq6teI0uJHeUHUZ6Ax+rMU2G3TupEoUlDB05ynDvfd2efdR4AwFcXoCPmIzFasJG20g1tSH2CcUyZG7XBgjNlX4kxJSElMw+nxEswgkxS+xNbcGcZZEvPfJ54OCK+7ixklPgzDKOXRQqq5Vf6gd6EfiLkJXUb4zuNKGeKV/GL1iwvjwt5B/JjbutglNThRLNL/zvY+lsl/nocW+kORvFjSJZ1+G6Bl/qQ+zPKcJ3/qoI3c7wJ7JIcZN9VeY0cb8C1qte+3E1D7rYm17Q+Zfci6zPG+Zq/r+B7Bb6X1ReRKftf7ulBtOBAi7PvvDJ290Ef8n1Qdd7jwj6lTn3iohvyJPh9H1Vx7UJcOxf3nLI5BnXOe6g8/y1OALvvUe+bOnn1e7eVPuQeDx0un4Ysjt53nYq8LfHXL+Gavit18hkNOEuQ36cb7m3Pul7s8E8ltf8AGWV9Kw=='
@@ -163,6 +238,7 @@ class TestColorToGray(unittest.TestCase):
         data = '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'
         pipeline = cpmt.load_pipeline(self, data)
         module = pipeline.module(1)
+        self.assertTrue(isinstance(module, cpm_ctg.ColorToGray))
         self.assertEqual(module.image_name.value, "TestInput")
         self.assertTrue(module.should_split)
         self.assertTrue(module.use_red.value)
@@ -170,5 +246,67 @@ class TestColorToGray(unittest.TestCase):
         self.assertTrue(module.use_green.value)
         self.assertEqual(module.green_name.value, "TestGreen")
         self.assertFalse(module.use_blue.value)
+        self.assertEqual(module.rgb_or_channels, cpm_ctg.CH_RGB)
         
+    def test_2_5_load_v2(self):
+        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:1
+SVNRevision:10308
+
+ColorToGray:[module_num:1|svn_version:\'10300\'|variable_revision_number:2|show_window:True|notes:\x5B\x5D]
+    Select the input image:DNA
+    Conversion method:Combine
+    Image type\x3A:Channels
+    Name the output image:OrigGrayw
+    Relative weight of the red channel:1
+    Relative weight of the green channel:3
+    Relative weight of the blue channel:5
+    Convert red to gray?:Yes
+    Name the output image:OrigRedx
+    Convert green to gray?:Yes
+    Name the output image:OrigGreeny
+    Convert blue to gray?:Yes
+    Name the output image:OrigBluez
+    Channel count:3
+    Channel number\x3A:Red\x3A 1
+    Relative weight of the channel:1
+    Image name\x3A:RedChannel1
+    Channel number\x3A:Blue\x3A 3
+    Relative weight of the channel:2
+    Image name\x3A:GreenChannel2
+    Channel number\x3A:Green\x3A 2
+    Relative weight of the channel:3
+    Image name\x3A:BlueChannel3
+"""
+        pipeline = cpp.Pipeline()
+        def callback(caller, event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO(data))
+        self.assertEqual(len(pipeline.modules()), 1)
+        module = pipeline.modules()[0]
+        self.assertTrue(isinstance(module, cpm_ctg.ColorToGray))
+        self.assertEqual(module.image_name, "DNA")
+        self.assertEqual(module.combine_or_split, cpm_ctg.COMBINE)
+        self.assertEqual(module.rgb_or_channels, cpm_ctg.CH_CHANNELS)
+        self.assertEqual(module.grayscale_name, "OrigGrayw")
+        self.assertEqual(module.red_contribution, 1)
+        self.assertEqual(module.green_contribution, 3)
+        self.assertEqual(module.blue_contribution, 5)
+        self.assertTrue(module.use_red)
+        self.assertTrue(module.use_green)
+        self.assertTrue(module.use_blue)
+        self.assertEqual(module.red_name, "OrigRedx")
+        self.assertEqual(module.green_name, "OrigGreeny")
+        self.assertEqual(module.blue_name, "OrigBluez")
+        self.assertEqual(module.channel_count.value, 3)
+        self.assertEqual(module.channels[0].channel_choice, module.channel_names[0])
+        self.assertEqual(module.channels[1].channel_choice, module.channel_names[2])
+        self.assertEqual(module.channels[2].channel_choice, module.channel_names[1])
+        self.assertEqual(module.channels[0].contribution, 1)
+        self.assertEqual(module.channels[1].contribution, 2)
+        self.assertEqual(module.channels[2].contribution, 3)
+        self.assertEqual(module.channels[0].image_name, "RedChannel1")
+        self.assertEqual(module.channels[1].image_name, "GreenChannel2")
+        self.assertEqual(module.channels[2].image_name, "BlueChannel3")
         

@@ -41,6 +41,8 @@ import cellprofiler.pipeline as P
 import cellprofiler.workspace as W
 from cellprofiler.modules.tests import example_images_directory
 
+IMAGE_NAME = "image"
+
 class testLoadImages(unittest.TestCase):
     def setUp(self):
         self.directory = None
@@ -872,7 +874,7 @@ LoadImages:[module_num:1|svn_version:\'9976\'|variable_revision_number:7|show_wi
             "http://www.cellprofiler.org/linked_files",
             "broad-logo.gif")
         logo = lip.provide_image(None)
-        self.assertEqual(logo.pixel_data.shape, (38, 150, 3))
+        self.assertEqual(logo.pixel_data.shape, (38, 150, 4))
         lip.release_memory()
         
     def test_05_06_load_Nikon_tif(self):
@@ -894,6 +896,42 @@ LoadImages:[module_num:1|svn_version:\'9976\'|variable_revision_number:7|show_wi
         self.assertEqual(tuple(image.shape), (520, 696))
         self.assertAlmostEqual(np.sum(image.astype(np.float64)), 2071.93, 0)
         
+    def test_05_08_load_5channel_tif(self):
+        '''Load a 5-channel image'''
+        
+        path = T.testimages_directory()
+        module = LI.LoadImages()
+        module.module_num = 1
+        module.file_types.value = LI.FF_INDIVIDUAL_IMAGES
+        module.match_method.value = LI.MS_EXACT_MATCH
+        module.location.dir_choice = LI.ABSOLUTE_FOLDER_NAME
+        module.location.custom_path = path
+        module.images[0].channels[0].image_name.value = IMAGE_NAME
+        module.images[0].common_text.value = "5channel.tif"
+        
+        pipeline = P.Pipeline()
+        def callback(caller, event):
+            self.assertFalse(isinstance(event, P.RunExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.add_module(module)
+        
+        image_set_list = I.ImageSetList()
+        self.assertTrue(module.prepare_run(pipeline, image_set_list, None))
+        self.assertEqual(image_set_list.count(), 1)
+        key_names, group_list = pipeline.get_groupings(image_set_list)
+        self.assertEqual(len(group_list), 1)
+        grouping, image_numbers = group_list[0]
+        self.assertEqual(len(image_numbers), 1)
+        module.prepare_group(pipeline, image_set_list, grouping, image_numbers)
+        
+        image_set = image_set_list.get_image_set(0)
+        workspace = W.Workspace(pipeline, module, image_set, cpo.ObjectSet(),
+                                measurements.Measurements(), image_set_list)
+        module.run(workspace)
+        image = image_set.get_image(IMAGE_NAME)
+        pixels = image.pixel_data
+        self.assertEqual(pixels.ndim, 3)
+        self.assertEqual(tuple(pixels.shape), (64, 64, 5))
 
     def test_06_01_file_metadata(self):
         """Test file metadata on two sets of two files

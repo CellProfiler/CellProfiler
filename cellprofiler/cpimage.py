@@ -140,10 +140,6 @@ class Image(object):
             # These types will always have ranges between 0 and 1. Make it so.
             img[img<0]=0
             img[img>1]=1
-        if len(img.shape)==3:
-            if img.shape[2] == 4:
-                sys.stderr.write("Warning: discarding alpha channel in color image.\n")
-                img = img[:,:,:-1]
         check_consistency(img,self.__mask)
         self.__image = img
     
@@ -371,10 +367,27 @@ class GrayscaleImage(object):
     
     pixel_data = property(get_pixel_data)
     
+class RGBImage(object):
+    """A wrapper that discards the alpha channel
+    
+    This is meant to be used if the image is 3-d + alpha but the alpha
+    channel is discarded
+    """
+    def __init__(self, image):
+        self.__image = image
+
+    def __getattr__(self, name):
+        return getattr(self.__image, name)
+    
+    def get_pixel_data(self):
+        '''Return the pixel data without the alpha channel'''
+        return self.__image.pixel_data[:,:,:3]
+    
+    pixel_data = property(get_pixel_data)
+    
 def check_consistency(image, mask):
     """Check that the image, mask and labels arrays have the same shape and that the arrays are of the right dtype"""
     assert (image==None) or (len(image.shape) in (2,3)),"Image must have 2 or 3 dimensions"
-    assert (image==None) or (len(image.shape)==2) or (image.shape[2] in (1,3)),"3-dimensional images must have either one or three colors"
     assert (mask==None) or (len(mask.shape)==2),"Mask must have 2 dimensions"
     assert (image==None) or (mask==None) or (image.shape[:2] == mask.shape), "Image and mask sizes don't match"
     assert (mask==None) or (mask.dtype.type is np.bool_), "Mask must be boolean, was %s"%(repr(mask.dtype.type))
@@ -477,12 +490,15 @@ class ImageSet(object):
                  must_be_binary=False,
                  must_be_color=False,
                  must_be_grayscale=False,
+                 must_be_rgb = False,
                  cache = True):
         """Return the image associated with the given name
         
         name - name of the image within the image_set
         must_be_color - raise an exception if not a color image
         must_be_grayscale - raise an exception if not a grayscale image
+        must_be_rgb - raise an exception if 2-d or if # channels not 3 or 4,
+                      discard alpha channel.
         """
         if not self.__images.has_key(name):
             image = self.get_image_provider(name).provide_image(self)
@@ -506,6 +522,15 @@ class ImageSet(object):
             raise ValueError("Image must be grayscale, but it was color")
         if must_be_grayscale and image.pixel_data.dtype.kind == 'b':
             return GrayscaleImage(image)
+        if must_be_rgb:
+            if image.pixel_data.ndim != 3:
+                raise ValueError("Image must be RGB, but it was grayscale")
+            elif image.pixel_data.shape[2] not in (3,4):
+                raise ValueError("Image must be RGB, but it had %d channels" %
+                                 image.pixel_data.shape[2])
+            elif image.pixel_data.shape[2] == 4:
+                sys.stderr.write("Warning: discarding alpha channel.\n")
+                return RGBImage(image)
         return image
     
     def get_providers(self):

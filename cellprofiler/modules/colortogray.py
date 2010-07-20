@@ -21,6 +21,8 @@ the relative weights will adjust the contribution of the colors relative to each
 # Website: http://www.cellprofiler.org
 __version__="$Revision$"
 
+import numpy as np
+import re
 
 import cellprofiler.cpmodule as cpm
 import cellprofiler.settings as cps
@@ -29,10 +31,18 @@ import cellprofiler.cpimage  as cpi
 COMBINE = "Combine"
 SPLIT = "Split"
 
+CH_RGB = "RGB"
+CH_CHANNELS = "Channels"
+
+SLOT_CHANNEL_COUNT = 13
+SLOT_FIXED_COUNT = 14
+SLOTS_PER_CHANNEL = 3
+SLOT_CHANNEL_CHOICE = 0
+
 class ColorToGray(cpm.CPModule):
 
     module_name = "ColorToGray"
-    variable_revision_number = 1
+    variable_revision_number = 2
     category = "Image Processing"
     
     def create_settings(self):
@@ -47,6 +57,17 @@ class ColorToGray(cpm.CPModule):
                                            <li><i>Combine:</i> Converts a color image to a grayscale 
                                            image by combining the three channels (red, green, blue) together.</li>
                                            </ul>''')
+        self.rgb_or_channels = cps.Choice(
+            "Image type:", [CH_RGB, CH_CHANNELS],
+            doc = """Many images contain color channels other than red, green
+            and blue. For instance, GIF and PNG formats can have an alpha
+            channel that encodes transparency. TIF formats can have an arbitrary
+            number of channels which represent pixel measurements made by
+            different detectors, filters or lighting conditions. This setting
+            chooses between a simple RGB model of the image (the typical way
+            images are stored) and a more complex model involving more
+            than three chnnels. Choose <i>%(CH_RGB)s</i> for the RGB model or
+            <i>%(CH_CHANNELS)s</i> for the channels model.""" % globals())
         
         # The following settings are used for the combine option
         self.grayscale_name = cps.ImageNameProvider("Name the output image",
@@ -81,31 +102,95 @@ class ColorToGray(cpm.CPModule):
         self.use_blue = cps.Binary('Convert blue to gray?',True)
         self.blue_name = cps.ImageNameProvider('Name the output image',
                                          "OrigBlue")
+        
+        # The alternative model:
+        self.channels = []
+        self.add_channel(False)
+        self.channel_button = cps.DoSomething(
+            "Add another channel", "Add", self.add_channel)
+        self.channel_count = cps.HiddenCount(self.channels, "Channel count")
+        
+    channel_names = (["Red: 1", "Green: 2", "Blue: 3", "Alpha: 4"] + 
+                     [str(x) for x in range(5,20)])
+    
+    def add_channel(self, can_remove = True):
+        '''Add another channel to the channels list'''
+        group = cps.SettingsGroup()
+        group.can_remove = can_remove
+        group.append("channel_choice", cps.Choice(
+            "Channel number:", self.channel_names,
+            self.channel_names[len(self.channels) % len(self.channel_names)],
+            doc = """This setting chooses a channel to be processed.
+            <i>Red: 1</i> is the first channel in a .TIF or the red channel
+            in a traditional image file. <i>Green: 2</i> and <i>Blue: 3</i>
+            are the second and third channels of a TIF or the green and blue
+            channels in other formats. <i>Alpha: 4</i> is the transparency
+            channel for image formats that support transparency and is
+            channel # 4 for a .TIF file.
+            
+            <b>ColorToGray</b> will fail to process an image if you select
+            a channel that is not supported by that image, for example, "5"
+            for a .PNG file"""))
+        group.append("contribution", cps.Float(
+            "Relative weight of the channel",
+            1,0,doc='''<i>(Used only when combining channels)</i><br>
+            Relative weights: If all relative weights are equal, all three 
+            colors contribute equally in the final image. To weight colors relative 
+            to each other, increase or decrease the relative weights.'''))
+        group.append("image_name", cps.ImageNameProvider(
+            "Image name:", value="Channel%d" % (len(self.channels)+1),
+            doc = """This is the name of the grayscale image that holds
+            the image data from the chosen channel"""))
+        if group.can_remove:
+            group.append("remover", cps.RemoveSettingButton(
+                "Remove this channel", "Remove", self.channels, group))
+        self.channels.append(group)
+
 
     def visible_settings(self):
         """Return either the "combine" or the "split" settings"""
         vv = [self.image_name, self.combine_or_split]
         if self.should_combine():
-            vv.extend([self.grayscale_name, self.red_contribution,
-                       self.green_contribution, self.blue_contribution])
+            vv += [self.grayscale_name, self.rgb_or_channels]
+            if self.rgb_or_channels == CH_RGB:
+                vv.extend([self.red_contribution,
+                           self.green_contribution, self.blue_contribution])
+            else:
+                for channel in self.channels:
+                    vv += [channel.channel_choice, channel.contribution]
+                    if channel.can_remove:
+                        vv += [channel.remover]
+                vv += [self.channel_button]
         else:
-            for v_use,v_name in ((self.use_red  ,self.red_name),
-                                 (self.use_green,self.green_name),
-                                 (self.use_blue ,self.blue_name)):
-                vv.append(v_use)
-                if v_use.value:
-                    vv.append(v_name)
+            vv += [ self.rgb_or_channels ]
+            if self.rgb_or_channels == CH_RGB:
+                for v_use,v_name in ((self.use_red  ,self.red_name),
+                                     (self.use_green,self.green_name),
+                                     (self.use_blue ,self.blue_name)):
+                    vv.append(v_use)
+                    if v_use.value:
+                        vv.append(v_name)
+            else:
+                for channel in self.channels:
+                    vv += [channel.channel_choice, channel.image_name]
+                    if channel.can_remove:
+                        vv += [channel.remover]
+                vv += [self.channel_button]
         return vv
     
     def settings(self):
         """Return all of the settings in a consistent order"""
         return [self.image_name, self.combine_or_split,
+                self.rgb_or_channels,
                 self.grayscale_name, self.red_contribution,
                 self.green_contribution, self.blue_contribution,
                 self.use_red, self.red_name,
                 self.use_green, self.green_name,
-                self.use_blue, self.blue_name
-                ]
+                self.use_blue, self.blue_name,
+                self.channel_count
+                ] + sum([ [channel.channel_choice, channel.contribution,
+                           channel.image_name] for channel in self.channels],
+                        [])
     
     def should_combine(self):
         """True if we are supposed to combine RGB to gray"""
@@ -121,10 +206,51 @@ class ColorToGray(cpm.CPModule):
         Throw a ValidationError exception with an explanation if a module is not valid.
         Make sure that we output at least one image if split
         """
-        if self.should_split() and not any([self.use_red.value, self.use_blue.value, self.use_green.value]):
+        if (self.should_split() and (self.rgb_or_channels == CH_RGB) and
+            not any([self.use_red.value, self.use_blue.value, self.use_green.value])):
             raise cps.ValidationError("You must output at least one of the color images when in split mode",
                                       self.use_red)
     
+    def channels_and_contributions(self):
+        """Return tuples of channel indexes and their relative contributions
+        
+        Used when combining channels to find the channels to combine
+        """
+        if self.rgb_or_channels == CH_RGB:
+            return [ (i, contribution.value) for i,contribution in enumerate(
+                (self.red_contribution, self.green_contribution, 
+                 self.blue_contribution))]
+        
+        return [ (self.channel_names.index(channel.channel_choice),
+                  channel.contribution.value) for channel in self.channels ]
+    
+    @staticmethod
+    def get_channel_idx_from_choice(choice):
+        '''Convert one of the channel choice strings to a channel index
+        
+        choice - one of the strings from channel_choices or similar
+                 (string ending in a one-based index)
+        returns the zero-based index of the channel.
+        '''
+        return int(re.search("[0-9]+$", choice).group()) - 1
+    
+    def channels_and_image_names(self):
+        """Return tuples of channel indexes and the image names for output"""
+        if self.rgb_or_channels == CH_RGB:
+            rgb = ((self.use_red.value, self.red_name.value, "Red"),
+                   (self.use_green.value, self.green_name.value, "Green"),
+                   (self.use_blue.value, self.blue_name.value, "Blue"))
+            return [ (i, name, title) for i, (use_it, name, title) 
+                     in enumerate(rgb) if use_it ]
+        
+        result = []
+        for channel in self.channels:
+            choice = channel.channel_choice.value
+            channel_idx = self.get_channel_idx_from_choice(choice)
+            result.append((channel_idx, channel.image_name.value,
+                           channel.channel_choice.value))
+        return result
+        
     def run(self,workspace):
         """Run the module
         
@@ -152,13 +278,13 @@ class ColorToGray(cpm.CPModule):
         """Combine images to make a grayscale one
         """
         input_image  = image.pixel_data
-        denominator = (self.red_contribution.value +
-                       self.green_contribution.value +
-                       self.blue_contribution.value )
+        channels, contributions = zip(*self.channels_and_contributions())
+        denominator = sum(contributions)
+        channels = np.array(channels, int)
+        contributions = np.array(contributions)  / denominator
 
-        output_image = (input_image[:,:,0] * self.red_contribution.value + 
-                        input_image[:,:,1] * self.green_contribution.value + 
-                        input_image[:,:,2] * self.blue_contribution.value) / denominator
+        output_image = np.sum(input_image[:, :, channels] * 
+                              contributions[np.newaxis, np.newaxis, :], 2)
         image = cpi.Image(output_image,parent_image=image)
         workspace.image_set.add(self.grayscale_name.value,image)
 
@@ -187,14 +313,11 @@ class ColorToGray(cpm.CPModule):
         """
         input_image  = image.pixel_data
         disp_collection = []
-        for index, v_use, v_name, title in ((0, self.use_red, self.red_name, "Red"),
-                                            (1, self.use_green, self.green_name, "Green"),
-                                            (2, self.use_blue, self.blue_name, "Blue")):
-            if v_use.value:
-                output_image = input_image[:,:,index]
-                image = cpi.Image(output_image,parent_image=image)
-                workspace.image_set.add(v_name.value,image)
-                disp_collection.append([output_image, title])
+        for index, name, title in self.channels_and_image_names():
+            output_image = input_image[:,:,index]
+            image = cpi.Image(output_image,parent_image=image)
+            workspace.image_set.add(name, image)
+            disp_collection.append([output_image, title])
 
         workspace.display_data.input_image = input_image
         workspace.display_data.disp_collection = disp_collection
@@ -230,6 +353,19 @@ class ColorToGray(cpm.CPModule):
         
     def is_interactive(self):
         return False
+    
+    def prepare_settings(self, setting_values):
+        '''Prepare the module to receive the settings
+        
+        setting_values - one string per setting to be initialized
+        
+        Adjust the number of channels to match the number indicated in
+        the settings.
+        '''
+        del self.channels[1:]
+        nchannels = int(setting_values[SLOT_CHANNEL_COUNT])
+        while len(self.channels) < nchannels:
+            self.add_channel()
 
     def upgrade_settings(self,
                          setting_values,
@@ -255,6 +391,25 @@ class ColorToGray(cpm.CPModule):
             module_name = self.module_class()
             variable_revision_number = 1
             from_matlab = False
+            
+        if not from_matlab and variable_revision_number == 1:
+            #
+            # Added rgb_or_channels at position # 2, added channel count
+            # at end.
+            #
+            setting_values = (
+                setting_values[:2] + [ CH_RGB ] + setting_values[2:] +
+                [ "1", "Red: 1", "1", "Channel1"])
+            variable_revision_number = 2
+        #
+        # Standardize the channel choices
+        #
+        setting_values = list(setting_values)
+        nchannels = int(setting_values[SLOT_CHANNEL_COUNT])
+        for i in range(nchannels):
+            idx = SLOT_FIXED_COUNT + SLOT_CHANNEL_CHOICE + i * SLOTS_PER_CHANNEL
+            channel_idx = self.get_channel_idx_from_choice(setting_values[idx])
+            setting_values[idx] = self.channel_names[channel_idx]
             
         return setting_values, variable_revision_number, from_matlab
         

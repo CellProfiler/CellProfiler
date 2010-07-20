@@ -375,7 +375,7 @@ class CPFigureFrame(wx.Frame):
                        "Green: %.4f"%(im[yi,xi,1]),
                        "Blue: %.4f"%(im[yi,xi,2])]
         elif im.ndim == 3: 
-            fields += ["Channel %d: %.4f"%(idx + 1, im[yi, xi, idx]) for idx in im.shape[2]]
+            fields += ["Channel %d: %.4f"%(idx + 1, im[yi, xi, idx]) for idx in range(im.shape[2])]
         return fields
     
     @staticmethod

@@ -80,7 +80,8 @@ def load_pipeline(test_case, encoded_data):
     finally:
         matfh.close()
     def blowup(pipeline,event):
-        if isinstance(event,cellprofiler.pipeline.RunExceptionEvent):
+        if isinstance(event, (cellprofiler.pipeline.RunExceptionEvent, 
+                              cellprofiler.pipeline.LoadExceptionEvent)):
             test_case.assertFalse(event.error.message)
     pipeline.add_listener(blowup)
     pipeline.create_from_handles(handles)

@@ -655,3 +655,12 @@ class CPModule(object):
         '''
         return False
     
+    def obfuscate(self):
+        '''Erase any sensitive information in a module's settings
+        
+        You should implement "obfuscate" to erase information like
+        passwords or file names so that the pipeline can be uploaded
+        for error reporting without revealing that information.
+        '''
+        pass
+    

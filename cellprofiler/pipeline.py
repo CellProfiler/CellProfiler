@@ -889,6 +889,15 @@ class Pipeline(object):
                 if isinstance(setting, cps.ExternalImageNameSubscriber):
                     result.append(setting.value)
         return result
+    
+    def obfuscate(self):
+        '''Tell all modules in the pipeline to obfuscate any sensitive info
+        
+        This call is designed to erase any information that users might
+        not like to see uploaded. You should copy a pipeline before obfuscating.
+        '''
+        for module in self.modules():
+            module.obfuscate()
         
     def restart_with_yield(self, file_name, frame=None, status_callback = None):
         '''Restart a pipeline from where we left off

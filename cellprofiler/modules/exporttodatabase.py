@@ -1659,6 +1659,15 @@ check_tables = yes
             d[D_MEASUREMENT_COLUMNS].sort(cmp=cmpfn)
         return d[D_MEASUREMENT_COLUMNS]
 
+    def obfuscate(self):
+        '''Erase sensitive information about the database
+        
+        This is run on a copy of the pipeline, so it's ok to erase info.
+        '''
+        self.db_host.value = ''.join(['*'] * len(self.db_host.value))
+        self.db_user.value = ''.join(['*'] * len(self.db_user.value))
+        self.db_name.value = ''.join(['*'] * len(self.db_name.value))
+        self.db_passwd.value = ''.join(['*'] * len(self.db_passwd.value))
     
     def upgrade_settings(self,setting_values,variable_revision_number,
                          module_name, from_matlab):

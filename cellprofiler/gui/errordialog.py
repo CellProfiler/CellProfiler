@@ -179,8 +179,10 @@ def on_report(event, dialog, traceback_text, pipeline):
                "platform":str(platform.platform())
                }
     try:
+        obfuscated_pipeline = pipeline.copy()
+        obfuscated_pipeline.obfuscate()
         fd = StringIO()
-        pipeline.savetxt(fd)
+        obfuscated_pipeline.savetxt(fd)
         fd.seek(0)
         pipeline_text = fd.read()
         params["pipeline"] = pipeline_text

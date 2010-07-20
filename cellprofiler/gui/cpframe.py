@@ -213,7 +213,7 @@ class CPFrame(wx.Frame):
                                   "Hide all module display windows for all modules during analysis")
         self.__menu_window.AppendSeparator()
         self.__menu_help = make_help_menu(MAIN_HELP, self)
-        self.__menu_help.AppendSubMenu(self.data_tools_help(), 'Data tool help','Display documentation for available data tools')
+        self.__menu_help.AppendSubMenu(self.data_tools_help(), 'Data Tool Help','Display documentation for available data tools')
         self.__menu_help.Append(ID_HELP_MODULE,'Module Help','Display documentation for the current module')
         self.__menu_help.AppendSeparator()
         self.__menu_help.Append(ID_HELP_ONLINE_MANUAL,"Online Manual",

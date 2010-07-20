@@ -89,9 +89,14 @@ LOCATION_WINDOW_SAVE_BUTTON  = os.path.join(path,'window_filesave.png')
 # Module help specifics for repeated use
 #
 ####################################################
-USING_METADATA_HELP_REF = ''' 
-Please see <b>LoadImages</b>, <b>LoadData</b>, or <i>Help > General help > Using metadata in CellProfiler</i> 
-for more details on obtaining, extracting, and using metadata tags from your images'''
+BATCH_PROCESSING_HELP_REF = """Help > Using CellProfiler > Other Features > Batch Processing"""
+TEST_MODE_HELP_REF = """Help > Using CellProfiler > Testing Your Pipeline"""
+METADATA_HELP_REF = """Help > Using CellProfiler > How Data Is Handled > Using Metadata In CellProfiler"""
+IMAGE_TOOLS_HELP_REF = """"Help > How To Use The Image Tools"""
+
+USING_METADATA_HELP_REF = """ 
+Please see <b>LoadImages</b>, <b>LoadData</b>, or <i>%(METADATA_HELP_REF)s</i> 
+for more details on obtaining, extracting, and using metadata tags from your images"""%globals()
 
 USING_METADATA_TAGS_REF = """
 You can insert a previously defined metadata tag by either using:
@@ -177,7 +182,6 @@ use it instead. You can override this behavior by checking the <i>Allow
 overwrite?</i> box to the right.</p>"""
 
 NEW_FEATURES_HELP = """ 
-<h2>New Features in CellProfiler 2.0</h2>
 A number of new features have been incorporated into this re-engineered Python 
 version of CellProfiler:
 <h3>Interface</h3>
@@ -257,8 +261,7 @@ suite of data exploration and machine-leaning tools without installing a complic
 </ul>
 """
 
-WHEN_CAN_I_USE_CELLPROFILER_HELP = """ 
-<h2>When should I use CellProfiler?</h2>
+WHEN_CAN_I_USE_CELLPROFILER_HELP = """
 
 <p>Most laboratories studying biological processes and human disease use 
 light/fluorescence microscopes to image cells and other biological samples. There 
@@ -319,7 +322,6 @@ software for automated biological image analysis. <i>Biotechniques</i>
 """
 
 BUILDING_A_PIPELINE_HELP = """
-<h2>Making a pipeline</h2>
 <p>A <i>pipeline</i> is a sequential set of image analysis modules. The 
 best way to learn how to use CellProfiler is to load an example pipeline 
 from the CellProfiler website's Examples page and try it out, then adapt it for your own images. You can also build a 
@@ -343,7 +345,7 @@ measurements (e.g., to Excel).</li>
 <li>If you modify the modules or settings in the pipeline, you can save the 
 pipeline using <i>File > Save Pipeline.</i></li>
 <li>To learn how to use a cluster of computers to process 
-large batches of images, see <i>Help > General Help > Batch Processing</i>.</li>
+large batches of images, see <i>%(BATCH_PROCESSING_HELP_REF)s</i>.</li>
 </ol>
 
 <h3>Building a pipeline from scratch</h3>
@@ -431,7 +433,7 @@ At the end of each cycle, CellProfiler saves the measurements in the output file
 You can optimize your pipeline by selecting the <i>Test</i> option from 
 the main menu. Test mode allows you to run the pipeline on a selected
 image, preview the results, and adjust the module settings on the fly. See 
-<i>Help > General Help > Test Mode </i> for more details.</p>
+<i>%(TEST_MODE_HELP_REF)s</i> for more details.</p>
 </li>
 <li><p>Save your pipeline via <i>File > Save Pipeline</i>.</p>
 </li>
@@ -669,7 +671,7 @@ algorithms will incorrectly choose a very low threshold, and therefore "find"
 spurious objects. This can be overcome by setting a lower limit on the threshold in 
 the <b>IdentifyPrimaryObjects</b> module.</p>
 <p>The Test mode in CellProfiler may be used for previewing the results of your settings
-on images of your choice. Please refer to <i>Help > General Help > Test Mode</i>
+on images of your choice. Please refer to <i>%(TEST_MODE_HELP_REF)</i>
 for more details on how to use this utility.</li>
 
 <li><i>Add the <b>CreateBatchFiles</b> module to the end of your pipeline.</i>
@@ -900,30 +902,6 @@ current test run or next analysis run. The display mode icons next to each modul
 in the pipeline panel will switch to <img src="%(LOCATION_DISPLAYMODE_HIDE_ICON)s"></img>.</li>
 </ul>"""%globals()
 
-'''The help menu for CP's main window'''
-MAIN_HELP = (
-    ( "Getting Started", (
-        ("When To Use CellProfiler",WHEN_CAN_I_USE_CELLPROFILER_HELP),
-        ("New Features",NEW_FEATURES_HELP),
-        ("How To Build A Pipeline", BUILDING_A_PIPELINE_HELP) ) ),
-    ( "General Help", (
-        ("Using Metadata In CellProfiler",USING_METADATA_HELP),
-        ("Dealing With Memory And Speed Issues", MEMORY_AND_SPEED_HELP),
-        ("Using Test Mode For Pipeline Development",TEST_MODE_HELP),
-        ("Batch Processing In CellProfiler", BATCHPROCESSING_HELP),
-        ("Running Multiple Pipelines", RUN_MULTIPLE_PIPELINES_HELP),
-        ("How Measurements Are Named", MEASUREMENT_NOMENCLATURE_HELP)) ),
-    ( "Folders and Files", (
-        ("Setting The Default Input Folder", DEFAULT_IMAGE_FOLDER_HELP),
-        ("Setting The Default Output Folder", DEFAULT_OUTPUT_FOLDER_HELP),
-        ("Setting the Output Filename", OUTPUT_FILENAME_HELP) ) ),
-    ( "Menu Bar", (
-        ("File Menu Items",MENU_BAR_FILE_HELP),
-        ("Edit Menu Items",MENU_BAR_EDIT_HELP),
-        ("Test Menu Items",TEST_MODE_HELP),
-        ("Window Menu Items",MENU_BAR_WINDOW_HELP) ) )
-)
-
 ####################################################
 #
 # Help for the module figure windows
@@ -952,7 +930,7 @@ estimates of typical object diameters for use in <b>IdentifyPrimaryObjects</b>.<
 
 <li><b>Subplots:</b> If the module display window has multiple subplots (such as 
 <b>IdentifyPrimaryObjects</b>), the Image Tool options for the individual subplots 
-are displayed here. See <i>Help > Image Tools</i> for more details.
+are displayed here. See <i>%(IMAGE_TOOLS_HELP_REF)</i> for more details.
 </li>
 </ul>
 """
@@ -1137,9 +1115,35 @@ your mouse over the image, the pixel intensities will appear in the bottom bar o
 # The top-level of help - used when building the HTML manual
 #
 #########################################################
-HELP = ( ("Introduction to using CellProfiler", MAIN_HELP ), 
-         ("How to use the Module Display Windows", FIGURE_HELP ),
-         ("Setting the Preferences", PREFERENCES_HELP))
+
+'''The help menu for CP's main window'''
+MAIN_HELP = (
+    ("Introduction",(
+        ("Why Use CellProfiler", WHEN_CAN_I_USE_CELLPROFILER_HELP),
+        ("New Features in 2.0", NEW_FEATURES_HELP))),
+    ("Using CellProfiler",(
+        ( "Navigating The Menu Bar", (
+            ("Using The File Menu",MENU_BAR_FILE_HELP),
+            ("Using The Edit Menu",MENU_BAR_EDIT_HELP),
+            ("Using The Test Menu",TEST_MODE_HELP),
+            ("Using The Window Menu",MENU_BAR_WINDOW_HELP) ) ),
+        ("Using Module Display Windows", FIGURE_HELP ),
+        ("Setting the Preferences", PREFERENCES_HELP),
+        ("How Data Is Handled",(
+            ("Using Metadata In CellProfiler",USING_METADATA_HELP),
+            ("How Measurements Are Named", MEASUREMENT_NOMENCLATURE_HELP))),
+        ("How To Build A Pipeline", BUILDING_A_PIPELINE_HELP),
+        ("Before The Analysis Run", (
+            ("Setting The Default Input Folder", DEFAULT_IMAGE_FOLDER_HELP),
+            ("Setting The Default Output Folder", DEFAULT_OUTPUT_FOLDER_HELP),
+            ("Setting The Output Filename", OUTPUT_FILENAME_HELP))),
+        ("Testing Your Pipeline",TEST_MODE_HELP),
+        ("Troubleshooting Memory and Speed Issues",MEMORY_AND_SPEED_HELP),
+        ("Other Features",(
+            ("Batch Processing", BATCHPROCESSING_HELP),
+            ("Running Multiple Pipelines", RUN_MULTIPLE_PIPELINES_HELP)))
+    ))
+)
 
 def make_help_menu(h, window):
     import wx

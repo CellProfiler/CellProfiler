@@ -4,7 +4,7 @@ import cellprofiler.icons
 from glob import glob
 from shutil import copy
 from cellprofiler.modules import get_module_names, instantiate_module
-from cellprofiler.gui.help import HELP
+from cellprofiler.gui.help import MAIN_HELP
 from cellprofiler.utilities.relpath import relpath
 import cellprofiler.utilities.get_revision as get_revision
     
@@ -114,7 +114,7 @@ def output_gui_html(webpage_path):
         help_text += "</ul>\n"
         return help_text
         
-    help_text = write_menu("Help", HELP, help_text)
+    help_text = write_menu("Help", MAIN_HELP, help_text)
     help_text += "\n"
     
     return help_text

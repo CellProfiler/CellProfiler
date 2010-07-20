@@ -346,3 +346,42 @@ class IdentifyObjectsManually(I.Identify):
             from_matlab = False
         return setting_values, variable_revision_number, from_matlab
             
+    def get_measurement_columns(self, pipeline):
+        '''Return database info on measurements made in module
+        
+        pipeline - pipeline being run
+        
+        Return a list of tuples of object name, measurement name and data type
+        '''
+        result = I.get_object_measurement_columns(self.objects_name.value)
+        return result
+
+    @property
+    def measurement_dictionary(self):
+        '''Return the dictionary to be used in get_object_categories/measurements
+        
+        Identify.get_object_categories and Identify.get_object_measurements
+        use a dictionary to match against the objects produced. We
+        return a dictionary whose only key is the object name and
+        whose value (the parents) is an empty list.
+        '''
+        return { self.objects_name.value: [] }
+    
+    def get_categories(self, pipeline, object_name):
+        '''Return a list of categories of measurements made by this module
+        
+        pipeline - pipeline being run
+        object_name - find categories of measurements made on this object
+        '''
+        return self.get_object_categories(pipeline, object_name, 
+                                          self.measurement_dictionary)
+    
+    def get_measurements(self, pipeline, object_name, category):
+        '''Return a list of features measured on object & category
+        
+        pipeline - pipeline being run
+        object_name - name of object being measured
+        category - category of measurement being queried
+        '''
+        return self.get_object_measurements(pipeline, object_name, category,
+                                            self.measurement_dictionary)

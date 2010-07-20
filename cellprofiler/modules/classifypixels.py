@@ -12,17 +12,17 @@ import sys, os
 # Import vigra
 try:
     import vigra
-except ImportError as vigraImport:
+except ImportError, vigraImport:
     print """vigra import: failed to import the vigra library. Please follow the instructions on 
 "http://hci.iwr.uni-heidelberg.de/vigra/" to install vigra"""
-    raise(vigraImport)
+    raise vigraImport
 
 # Import h5py
 try:
     import h5py
-except ImportError as h5pyImport:
+except ImportError, h5pyImport:
     print """h5py import: failed to import the h5py library."""
-    raise(h5pyImport)
+    raise h5pyImport
     
 # Import ilastik 
 try:
@@ -30,10 +30,10 @@ try:
     from core import dataMgr, featureMgr, classificationMgr
     from core.features.featureBase import FeatureBase
     from core.classifiers.classifierRandomForestNew import ClassifierRandomForestNew
-except ImportError as ilastikImport:
+except ImportError, ilastikImport:
     print """ilastik import: failed to import the ilastik. Please follow the instructions on 
 "http://www.ilastik.org" to install ilastik"""
-    raise(ilastikImport)
+    raise ilastikImport
 
 class ClassifyPixels(cpm.CPModule):
     module_name = 'ClassifyPixels'

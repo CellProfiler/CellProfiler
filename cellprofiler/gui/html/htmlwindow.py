@@ -2,6 +2,7 @@ import wx
 import wx.html
 import content
 import webbrowser
+import urllib2
 import cellprofiler.preferences as cpprefs
 from cellprofiler.icons import get_builtin_images_path
 
@@ -24,6 +25,14 @@ class HtmlClickableWindow(wx.html.HtmlWindow):
                 cpprefs.set_startup_blurb(False)
                 self.SetPage('')
                 self.BackgroundColour = cpprefs.get_background_color()
+        elif href.startswith('load:'):
+            try:
+                wx.CallAfter(wx.GetApp().frame.pipeline.load, urllib2.urlopen(href[5:]))
+            except:
+                wx.MessageBox(
+                    'CellProfiler was unable to load href[5:]' %
+                    options.pipeline_filename, "Error loading pipeline",
+                    style = wx.OK | wx.ICON_ERROR)
         else:
             newpage = content.find_link(href)
             if newpage is not None:

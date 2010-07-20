@@ -15,7 +15,11 @@ From here, you can...
     <td>There is an <a href="http://www.cellprofiler.org/CPmanual#table_of_contents">online manual</a>. Also, detailed help is available for any module by clicking the "<b>?</b>" button, or using the <i>Help</i> menu in the toolbar.</td>
  </tr>
 <tr>
-    <td><i>Try example pipelines, read tutorials</i></td>
+    <td><i>Try an example pipeline</i></td>
+    <td>You can <a href="load:http://cellprofiler.org/ExampleFlyImages/ExampleFlyURL.cp">load a simple pipeline</a> via http.</td>
+</tr>
+<tr>
+    <td><i>Find other examples, read tutorials</i></td>
     <td>We have <a href="http://www.cellprofiler.org/examples.shtml">examples</a> of pipelines and images for various biological assays. You can pick one that most resembles your phenotypes of interest and begin adjusting its settings.  There are also text and video <a href="http://www.cellprofiler.org/tutorials.shtml">tutorials</a>.</td>
 </tr>
 <tr>

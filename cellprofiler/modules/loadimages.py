@@ -2275,16 +2275,25 @@ class LoadImagesImageProviderBase(cpimage.AbstractImageProvider):
         # If so, handle normally
         #
         path = self.get_pathname()
-        if len(path) == 0 or os.path.exists(path):
+        if len(path) == 0:
+            filename = self.get_filename()
+            if os.path.exists(filename):
+                return
+            parsed_path = urlparse.urlparse(filename)
+            url = filename
+            if len(parsed_path.scheme) < 2:
+                raise IOError("Test for access to file failed. File: %s" % filename)
+        elif os.path.exists(path):
             return
-        parsed_path = urlparse.urlparse(path)
-        #
-        # Scheme length == 0 means no scheme
-        # Scheme length == 1 - probably DOS drive letter
-        #
-        if len(parsed_path.scheme) < 2:
-            raise IOError("Test for access to directory failed. Directory: %s" %path)
-        url = '/'.join((path, self.get_filename()))
+        else:
+            parsed_path = urlparse.urlparse(path)
+            url = '/'.join((path, self.get_filename()))
+            #
+            # Scheme length == 0 means no scheme
+            # Scheme length == 1 - probably DOS drive letter
+            #
+            if len(parsed_path.scheme) < 2:
+                raise IOError("Test for access to directory failed. Directory: %s" %path)
         self.__cached_file, headers = urllib.urlretrieve(url)
         self.__is_cached = True
             

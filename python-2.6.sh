@@ -36,15 +36,17 @@ fi
 fi
 if [ -n "$CELLPROFILER_USE_XVFB" ]
 then
-DISPLAY=:1
+DISPLAY=:$LSB_JOBID
+echo "Xvfb display = $DISPLAY"
 tmp=/local/scratch/CellProfilerXVFB.$RANDOM.$RANDOM
 echo "Xvfb directory = $tmp"
 mkdir $tmp
-Xvfb :1 -fbdir $tmp &
+Xvfb $DISPLAY -fbdir $tmp &
 XVFBPID=$!
 echo "Xvfb PID = $XVFBPID"
 python "$@"
 kill $XVFBPID
+sleep 5
 rmdir $tmp
 else
 python "$@"

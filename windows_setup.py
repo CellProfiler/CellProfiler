@@ -74,6 +74,10 @@ if is_2_6:
     opts['py2exe']['includes'] += [ "scipy.io.matlab.streams"]
 if is_2_6:
     # A trick to load the dlls
+    if is_win64:
+        path = r"SOFTWARE\WOW6432node\Microsoft\VisualStudio\9.0\Setup\VC"
+    else:
+        path = r"SOFTWARE\Microsoft\VisualStudio\9.0\Setup\VC"
     key = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE,
                           r"SOFTWARE\Microsoft\VisualStudio\9.0\Setup\VC")
     product_dir = _winreg.QueryValueEx(key, "ProductDir")[0]

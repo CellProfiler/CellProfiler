@@ -879,7 +879,9 @@ class IdentifyPrimaryObjects(cpmi.Identify):
         edge_array = fgaussian(mask.astype(float))
         masked_image = image.copy()
         masked_image[~mask] = 0
-        return fgaussian(masked_image) / edge_array
+        smoothed_image = fgaussian(masked_image)
+        masked_image[mask] = smoothed_image[mask] / edge_array[mask]
+        return masked_image
     
     def separate_neighboring_objects(self, image, mask, 
                                      labeled_image,object_count,threshold):

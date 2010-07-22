@@ -207,6 +207,12 @@ class CreateBatchFiles(cpm.CPModule):
                                       "the last in the pipeline.",
                                       self.wants_default_output_directory)
     
+    def validate_module_warnings(self, pipeline):
+        '''Warn user re: Test mode '''
+        if pipeline.test_mode:
+            raise cps.ValidationError("CreateBatchFiles will not produce output in Test Mode",
+                                      self.wants_default_output_directory)
+        
     def save_pipeline(self, pipeline, image_set_list, frame):
         '''Save the pipeline in Batch_data.mat
         

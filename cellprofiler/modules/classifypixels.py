@@ -15,6 +15,8 @@ try:
 except ImportError, vigraImport:
     print """vigra import: failed to import the vigra library. Please follow the instructions on 
 "http://hci.iwr.uni-heidelberg.de/vigra/" to install vigra"""
+    import traceback
+    traceback.print_exc()
     raise vigraImport
 
 # Import h5py
@@ -22,17 +24,20 @@ try:
     import h5py
 except ImportError, h5pyImport:
     print """h5py import: failed to import the h5py library."""
+    import traceback
+    traceback.print_exc()
     raise h5pyImport
     
 # Import ilastik 
 try:
-    sys.path.append(os.path.join(os.getcwd(), '../../ilastik'))
-    from core import dataMgr, featureMgr, classificationMgr
-    from core.features.featureBase import FeatureBase
-    from core.classifiers.classifierRandomForestNew import ClassifierRandomForestNew
+    from ilastik.core import dataMgr, featureMgr, classificationMgr
+    from ilastik.core.features.featureBase import FeatureBase
+    from ilastik.core.classifiers.classifierRandomForestNew import ClassifierRandomForestNew
 except ImportError, ilastikImport:
     print """ilastik import: failed to import the ilastik. Please follow the instructions on 
 "http://www.ilastik.org" to install ilastik"""
+    import traceback
+    traceback.print_exc()
     raise ilastikImport
 
 class ClassifyPixels(cpm.CPModule):

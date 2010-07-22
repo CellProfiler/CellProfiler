@@ -1,9 +1,10 @@
-'''<b>UnmixColors</b> - create separate images per dye stain for histologically
-stained images.
-</hr>
+'''<b>Unmix Colors</b> creates separate images per dye stain for histologically
+stained images
+<hr>
+
 This module creates separate grayscale images from a color image stained
 with light-absorbing dyes. Dyes are assumed to absorb an amount of light
-in the red, green and blue channels that increases in proportion in each
+in the red, green and blue channels that increases proportionally in each
 channel with increasing amounts of stain; the hue does not shift with
 increasing staining.
 
@@ -15,7 +16,7 @@ dye each.
 This code is adapted from the ImageJ plugin, "Colour_Deconvolution.java"
 (http://www.dentistry.bham.ac.uk/landinig/software/cdeconv/cdeconv.html).
 Colour_Deconvolution.java was adapted from an NIH Image macro written
-by A.C. Ruifrok who is the author of the paper,
+by A.C. Ruifrok, who is the author of the paper,
 Ruifrok AC, Johnston DA. Quantification of histochemical staining by color 
 deconvolution. Analytical & Quantitative Cytology & Histology 2001; 23: 291-299.
 which forms the basis for this code.
@@ -131,7 +132,7 @@ class UnmixColors(cpm.CPModule):
         self.outputs = []
         self.stain_count = cps.HiddenCount(self.outputs, "Stain count")
         self.input_image_name = cps.ImageNameSubscriber(
-            "Color image:", "None",
+            "Color image", "None",
             doc = """Choose the name of the histologically stained color image
             loaded or created by some prior module.""")
         self.add_image(False)
@@ -140,7 +141,7 @@ class UnmixColors(cpm.CPModule):
             doc = """Press this button to add another stain to the list.
             You will be able to name the image produced and to either pick
             the stain from a list of precalibrated stains or to enter
-            custom values for the stain's red, green and blue absorbance""")
+            custom values for the stain's red, green and blue absorbance.""")
         
     def add_image(self, can_remove = True):
         group = cps.SettingsGroup()
@@ -151,14 +152,14 @@ class UnmixColors(cpm.CPModule):
         default_name = STAINS_BY_POPULARITY[idx % len(STAINS_BY_POPULARITY)]
         default_name = default_name.replace(" ","")
         group.append("image_name", cps.ImageNameProvider(
-            "Image name:", default_name,
-            doc = """This setting names one of the images produced by the
+            "Image name", default_name,
+            doc = """Use this setting to name one of the images produced by the
             module for a particular stain. The image can be used in
-            subsequent modules in the pipeline"""))
+            subsequent modules in the pipeline."""))
         choices = list(sorted(STAIN_DICTIONARY.keys())) + [ CHOICE_CUSTOM ]
         group.append("stain_choice", cps.Choice(
             "Stain", choices = choices,
-            doc = """This setting chooses the absorbance values for a
+            doc = """Use this setting to choose the absorbance values for a
             particular stain. The stains are:
             <br>
             <table><tr><th>Stain</th><th>Color</th><th>Specific to</th></tr>
@@ -178,28 +179,28 @@ class UnmixColors(cpm.CPModule):
             <br>
             (Information taken from http://en.wikipedia.org/wiki/Histology#Staining
             http://en.wikipedia.org/wiki/Staining
-            and http://stainsfile.info)
+            and http://stainsfile.info.)
             <br>
             You can choose <i>%(CHOICE_CUSTOM)s</i> and enter your custom 
             values for the absorbance (or use the estimator to determine values 
             from a single-stain image).
             """ % globals()))
         group.append("red_absorbance", cps.Float(
-            "Red absorbance:", .5, 0, 1,
+            "Red absorbance", .5, 0, 1,
             doc = """The red absorbance setting estimates the dye's
-            absorbance of light in the red channel. You should enter a value
+            absorbance of light in the red channel.You should enter a value
             between 0 and 1 where 0 is no absorbance and 1 is complete
             absorbance. You can use the estimator to calculate this
             value automatically."""))
         group.append("green_absorbance", cps.Float(
-            "Green absorbance:", .5, 0, 1,
+            "Green absorbance", .5, 0, 1,
             doc = """The green absorbance setting estimates the dye's
             absorbance of light in the green channel. You should enter a value
             between 0 and 1 where 0 is no absorbance and 1 is complete
             absorbance. You can use the estimator to calculate this
             value automatically."""))
         group.append("blue_absorbance", cps.Float(
-            "Blue absorbance:", .5, 0, 1,
+            "Blue absorbance", .5, 0, 1,
             doc = """The blue absorbance setting estimates the dye's
             absorbance of light in the blue channel. You should enter a value
             between 0 and 1 where 0 is no absorbance and 1 is complete
@@ -217,7 +218,7 @@ class UnmixColors(cpm.CPModule):
             doc = """Press this button to load an image of a sample stained
             only with the dye of interest. <b>UnmixColors</b> will estimate
             appropriate red, green and blue absorbance values from the
-            image"""))
+            image."""))
         if can_remove:
             group.append("remover", cps.RemoveSettingButton(
                 "", "Remove image", self.outputs, group))

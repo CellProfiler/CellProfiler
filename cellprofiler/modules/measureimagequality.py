@@ -235,9 +235,10 @@ class MeasureImageQuality(cpm.CPModule):
         for i, image_group in enumerate(self.image_groups):
             if i != 0:
                 result += [ image_group.divider ]
-            result += [image_group.image_name, image_group.check_blur,
-                       image_group.window_size, image_group.check_saturation,
-                       image_group.calculate_threshold]
+            result += [image_group.image_name,image_group.check_blur,]
+            if image_group.check_blur:
+                result += [image_group.window_size]
+            result += [image_group.check_saturation, image_group.calculate_threshold]
             if image_group.calculate_threshold:
                 result += [image_group.threshold_method]
                 if image_group.threshold_method == cpthresh.TM_MOG_GLOBAL:

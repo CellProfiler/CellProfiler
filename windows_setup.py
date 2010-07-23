@@ -57,6 +57,18 @@ class CellProfilerMSI(distutils.core.Command):
         Read the manifest using "mt", hack the XML to change the version
         and reinsert it into the resource.
         '''
+        #
+        # Find mt
+        #
+        try:
+            key_path = r"SOFTWARE\Microsoft\Microsoft SDKs\Windows\v7.0"
+            key = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, key_path)
+            path = _winreg.QueryValueEx(key, "InstallationFolder")[0]
+            mt = os.path.join(path,"bin", "mt.exe")
+            key.Close()
+        except:
+            print "Using MT from path"
+            mt = "mt"
         directory = "dist"
         msvcrt = xml.dom.minidom.parse(os.path.join(
             directory, "Microsoft.VC90.CRT.manifest"))
@@ -66,7 +78,7 @@ class CellProfilerMSI(distutils.core.Command):
         
         manifest_file_name = tempfile.mktemp()
         pipe = subprocess.Popen(
-            ("mt",
+            (mt,
              "-inputresource:%s" % os.path.join(directory, resource_name),
              "-out:%s" % manifest_file_name))
         pipe.communicate()
@@ -85,7 +97,7 @@ class CellProfilerMSI(distutils.core.Command):
         fd.close()
         
         pipe = subprocess.Popen(
-            ("mt",
+            (mt,
              "-outputresource:%s" % os.path.join(directory, resource_name),
              "-manifest",
              manifest_file_name))

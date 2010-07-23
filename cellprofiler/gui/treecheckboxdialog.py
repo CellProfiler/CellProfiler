@@ -183,16 +183,17 @@ class TreeCheckboxDialog(wx.Dialog):
         width, height - size of bitmap to return
         '''
         dc = wx.MemoryDC()
-        dc.SetBrush(wx.BLACK_BRUSH)
-        dc.SetTextForeground(wx.BLACK)
         bitmap = wx.EmptyBitmap(width, height)
         dc.SelectObject(bitmap)
+        dc.SetBrush(wx.BLACK_BRUSH)
+        dc.SetTextForeground(wx.BLACK)
         try:
             dc.Clear()
             render = wx.RendererNative.Get()
             render.DrawCheckBox(self, dc, (0, 0, width, height), flags)
         finally:
             dc.SelectObject(wx.NullBitmap)
+        dc.Destroy()
         self.bitmaps.append(bitmap)
         return bitmap
 

@@ -120,7 +120,7 @@ class TreeCheckboxDialog(wx.Dialog):
                 
     def on_left_down(self, event):
         item_id, where = self.tree_ctrl.HitTest(event.Position)
-        if where != wx.TREE_HITTEST_ONITEMICON:
+        if where & wx.TREE_HITTEST_ONITEMICON == 0:
             event.Skip()
             return
 

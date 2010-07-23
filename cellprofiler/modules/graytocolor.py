@@ -193,6 +193,7 @@ class GrayToColor(cpm.CPModule):
                  self.cyan_adjustment_factor, self.magenta_adjustment_factor,
                  self.yellow_adjustment_factor, self.gray_adjustment_factor]
         result += [sc.image_name for sc in self.stack_channels]
+        print type(result)
         return result
     
     def prepare_settings(self, setting_values):

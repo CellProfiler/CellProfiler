@@ -1358,11 +1358,15 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
         #
         # Find the primary object
         #
-        for object_name in workspace.measurements.get_object_names():
-            if object_name == 'Image':
-                continue
-            if self.ignore_object(object_name):
-                continue
+        if self.objects_choice == O_SELECT:
+            object_names = (self.objects_list.value).split(',')
+            object_name = object_names[-1]
+        else:
+            for object_name in workspace.measurements.get_object_names():
+                if object_name == 'Image':
+                    continue
+                if self.ignore_object(object_name):
+                    continue
         supposed_primary_object = object_name
         #
         # Find all images that have FileName and PathName

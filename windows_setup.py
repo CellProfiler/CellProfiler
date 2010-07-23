@@ -17,8 +17,11 @@ import re
 import os
 import _winreg
 import matplotlib
+import tempfile
+import xml.dom.minidom
 
 is_win64 = (os.environ["PROCESSOR_ARCHITECTURE"] == "AMD64")
+is_2_6 = sys.version_info[0] >= 2 and sys.version_info[1] >= 6
 class CellProfilerMSI(distutils.core.Command):
     description = "Make CellProfiler.msi using the CellProfiler.iss InnoSetup compiler"
     user_options = []
@@ -30,6 +33,9 @@ class CellProfilerMSI(distutils.core.Command):
         pass
     
     def run(self):
+        if is_2_6:
+            self.modify_manifest("CellProfiler.exe")
+            self.modify_manifest("python26.dll;#2")
         if is_win64:
             cell_profiler_iss = "CellProfiler64.iss"
             cell_profiler_setup = "CellProfiler64Setup.exe"
@@ -42,6 +48,48 @@ class CellProfilerMSI(distutils.core.Command):
         self.make_file(required_files,"Output\\"+cell_profiler_setup, 
                        subprocess.check_call,([compile_command]),
                        "Compiling %s" % cell_profiler_iss)
+        
+    def modify_manifest(self, resource_name):
+        '''Change the manifest of a resource to match the CRT
+        
+        resource_name - the name of the executable or DLL maybe + ;#2
+                        to pick up the manifest in the assembly
+        Read the manifest using "mt", hack the XML to change the version
+        and reinsert it into the resource.
+        '''
+        directory = "dist"
+        msvcrt = xml.dom.minidom.parse(os.path.join(
+            directory, "Microsoft.VC90.CRT.manifest"))
+        msvcrt_assembly = msvcrt.getElementsByTagName("assembly")[0]
+        msvcrt_assembly_identity = msvcrt.getElementsByTagName("assemblyIdentity")[0]
+        msvcrt_version = msvcrt_assembly_identity.getAttribute("version")
+        
+        manifest_file_name = tempfile.mktemp()
+        pipe = subprocess.Popen(
+            ("mt",
+             "-inputresource:%s" % os.path.join(directory, resource_name),
+             "-out:%s" % manifest_file_name))
+        pipe.communicate()
+        
+        manifest = xml.dom.minidom.parse(manifest_file_name)
+        manifest_assembly = manifest.getElementsByTagName("assembly")[0]
+        manifest_dependencies = manifest_assembly.getElementsByTagName("dependency")
+        for dependency in manifest_dependencies:
+            dependent_assemblies = dependency.getElementsByTagName("dependentAssembly")
+            for dependent_assembly in dependent_assemblies:
+                assembly_identity = dependent_assembly.getElementsByTagName("assemblyIdentity")[0]
+                if assembly_identity.getAttribute("name") == "Microsoft.VC90.CRT":
+                    assembly_identity.setAttribute("version", msvcrt_version)
+        fd = open(manifest_file_name, "wt")
+        fd.write(manifest.toprettyxml())
+        fd.close()
+        
+        pipe = subprocess.Popen(
+            ("mt",
+             "-outputresource:%s" % os.path.join(directory, resource_name),
+             "-manifest",
+             manifest_file_name))
+        pipe.communicate()
     
     def __compile_command(self):
         """Return the command to use to compile an .iss file
@@ -69,7 +117,6 @@ opts = {
        }
 
 data_files = []
-is_2_6 = sys.version_info[0] >= 2 and sys.version_info[1] >= 6
 if is_2_6:
     opts['py2exe']['includes'] += [ "scipy.io.matlab.streams"]
 if is_2_6:
@@ -83,7 +130,10 @@ if is_2_6:
     key.Close()
     redist = os.path.join(product_dir, r"redist\x86\Microsoft.VC90.CRT")
     data_files += [(".",[os.path.join(redist, x)
-                         for x in ("Microsoft.VC90.CRT.manifest", "msvcr90.dll")])]
+                         for x in ("Microsoft.VC90.CRT.manifest", 
+                                   "msvcr90.dll",
+                                   "msvcm90.dll",
+                                   "msvcp90.dll")])]
     
     
 data_files += [('cellprofiler\\icons',

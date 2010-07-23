@@ -161,7 +161,7 @@ class SaveImages(cpm.CPModule):
                                             FN_SINGLE_NAME],
                                             FN_FROM_IMAGE,doc="""
                 <i>(Used only if saving non-movie files)</i><br>
-                Four choices are available:
+                Three choices are available:
                 <ul>
                 <li><i>From image filename:</i> The filename will be constructed based
                 on the original filename of an input image specified in <b>LoadImages</b>

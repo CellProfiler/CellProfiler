@@ -36,6 +36,17 @@ class CellProfilerMSI(distutils.core.Command):
         if is_2_6:
             self.modify_manifest("CellProfiler.exe")
             self.modify_manifest("python26.dll;#2")
+            self.modify_manifest("_imaging.pyd;#2")
+            self.modify_manifest("wx._stc.pyd;#2")
+            self.modify_manifest("wx._controls_.pyd;#2")
+            self.modify_manifest("wx._aui.pyd;#2")
+            self.modify_manifest("wx._misc_.pyd;#2")
+            self.modify_manifest("wx._windows_.pyd;#2")
+            self.modify_manifest("wx._gdi_.pyd;#2")
+            self.modify_manifest("wx._html.pyd;#2")
+            self.modify_manifest("wx._grid.pyd;#2")
+            self.modify_manifest("PIL._imaging.pyd;#2")
+            self.modify_manifest("wx._core_.pyd;#2")
         if is_win64:
             cell_profiler_iss = "CellProfiler64.iss"
             cell_profiler_setup = "CellProfiler64Setup.exe"
@@ -82,6 +93,8 @@ class CellProfilerMSI(distutils.core.Command):
              "-inputresource:%s" % os.path.join(directory, resource_name),
              "-out:%s" % manifest_file_name))
         pipe.communicate()
+        if not os.path.exists(manifest_file_name):
+            return
         
         manifest = xml.dom.minidom.parse(manifest_file_name)
         manifest_assembly = manifest.getElementsByTagName("assembly")[0]
@@ -102,6 +115,7 @@ class CellProfilerMSI(distutils.core.Command):
              "-manifest",
              manifest_file_name))
         pipe.communicate()
+        os.remove(manifest_file_name)
     
     def __compile_command(self):
         """Return the command to use to compile an .iss file

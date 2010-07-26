@@ -20,16 +20,10 @@ from scipy.linalg import toeplitz
 from cpmorphology import fixup_scipy_ndimage_result as fix
 
 def minimum(input, labels, index):
-    r = scind.minimum(input, labels, index)
-    if len(index) == 1:
-        r = [r]
-    return np.array(r)
+    return fix(scind.minimum(input, labels, index))
 
 def maximum(input, labels, index):
-    r = scind.maximum(input, labels, index)
-    if len(index) == 1:
-        r = [r]
-    return np.array(r)
+    return fix(scind.maximum(input, labels, index))
 
 def normalized_per_object(image, labels):
     """Normalize the intensities of each object to the [0, 1] range."""

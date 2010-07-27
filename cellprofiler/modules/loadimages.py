@@ -1943,7 +1943,13 @@ class LoadImages(cpmodule.CPModule):
             for i in range(image_set_list.count()):
                 image_set = image_set_list.get_image_set(i)
                 d = self.get_dictionary(image_set)
-                protocol, version, file_name, frame = d[first_image_name]
+                values = d[first_image_name]
+                protocol, version = values[:2]
+                if version == 1:
+                    file_name, frame = values[2:]
+                    t = None
+                elif version == V_MOVIES:
+                    file_name, frame, t = values[2:]
                 if not file_to_image_numbers.has_key(file_name):
                     files.append(file_name)
                     file_to_image_numbers[file_name] = []

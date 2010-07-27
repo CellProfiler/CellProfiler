@@ -621,7 +621,7 @@ first module in the pipeline.</li>
 modules will also automatically exit test mode.</li>
 <li><i>Step to next module:</i> Execute the next module (as indicated by the slider location)</li>
 <li><i>Next image cycle:</i> Step to the next image cycle in the current group or the .</li>
-<li><i>Next image group:</i> Step to the next group in the image set.</li>
+<li><i>Next image group:</i> Step to the next group in the image set</li>
 <li><i>Random image cycle:</i> Randomly select an image cycle in the current group to jump to.</li>
 <li><i>Choose image cycle:</i> Choose the image cycle to jump to.
 The slider will then automatically return to the first module in the pipeline.</li>
@@ -630,7 +630,10 @@ The slider will then automatically return to the first module in the pipeline.</
 <li><i>Reload modules source:</i> For developers only. This option will reload the module source 
 code, so any changes to the code will be reflected immediately.</li>
 </ul>
-For more information on groups and how to define them, refer to metadata grouping in <b>LoadImages</b>.
+Note that if movies are being loaded, the individual movie is defined as a group automatically.
+Selecting <i>Choose group</i> will allow you to choose the movie file, and <i>Choose image cycle</i> 
+will let you choose the individual movie frame from that file.
+<p>For more information on groups and how to define them, refer to metadata grouping in <b>LoadImages</b>.</p>
 </p>
 """%globals()
 

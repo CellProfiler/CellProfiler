@@ -22,6 +22,11 @@ import xml.dom.minidom
 
 is_win64 = (os.environ["PROCESSOR_ARCHITECTURE"] == "AMD64")
 is_2_6 = sys.version_info[0] >= 2 and sys.version_info[1] >= 6
+vcredist = os.path.join("windows",
+                        "vcredist_x64.exe" if is_win64
+                        else "vcredist_x32.exe")
+do_modify = is_2_6 and not os.path.exists(vcredist)
+
 class CellProfilerMSI(distutils.core.Command):
     description = "Make CellProfiler.msi using the CellProfiler.iss InnoSetup compiler"
     user_options = []
@@ -33,7 +38,7 @@ class CellProfilerMSI(distutils.core.Command):
         pass
     
     def run(self):
-        if is_2_6:
+        if is_2_6 and do_modify:
             self.modify_manifest("CellProfiler.exe")
             self.modify_manifest("python26.dll;#2")
             self.modify_manifest("_imaging.pyd;#2")
@@ -143,9 +148,14 @@ opts = {
        }
 
 data_files = []
-if is_2_6:
+try:
+    # Include this package if present
+    import scipy.io.matlab.streams
     opts['py2exe']['includes'] += [ "scipy.io.matlab.streams"]
-if is_2_6:
+except:
+    pass
+
+if do_modify:
     # A trick to load the dlls
     if is_win64:
         path = r"SOFTWARE\WOW6432node\Microsoft\VisualStudio\9.0\Setup\VC"
@@ -160,7 +170,6 @@ if is_2_6:
                                    "msvcr90.dll",
                                    "msvcm90.dll",
                                    "msvcp90.dll")])]
-    
     
 data_files += [('cellprofiler\\icons',
                ['cellprofiler\\icons\\%s'%(x) 

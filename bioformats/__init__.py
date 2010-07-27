@@ -54,7 +54,7 @@ if get_headless() or sys.platform == "darwin":
     # precompiled_headless.jar contains substitute classes for running
     # headless.
     #
-    __class_path = os.pathsep.join(__precompiled_headless_jar, __class_path)
+    __class_path = os.pathsep.join((__precompiled_headless_jar, __class_path))
 if os.environ.has_key("CLASSPATH"):
     __class_path += os.pathsep + os.environ["CLASSPATH"]
     

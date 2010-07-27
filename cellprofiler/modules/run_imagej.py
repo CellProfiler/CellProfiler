@@ -15,6 +15,8 @@ then retrieves images you want to process further in CellProfiler.'''
 
 __version__ = "$Revision: 1 %"
 
+import sys
+
 import bioformats
 
 import cellprofiler.cpmodule as cpm
@@ -248,7 +250,8 @@ class RunImageJ(cpm.CPModule):
         d = self.get_dictionary(workspace.image_set_list)
         if self.wants_to_set_current_image:
             input_image_name = self.current_input_image_name.value
-            img = image_set.get_image(input_image_name)
+            img = image_set.get_image(input_image_name,
+                                      must_be_grayscale = True)
         else:
             img = None
         J.attach()
@@ -277,7 +280,10 @@ class RunImageJ(cpm.CPModule):
                 ij_processor = ijiproc.make_image_processor(img.pixel_data * 255.0)
                 image_plus = ijip.make_imageplus_from_processor(
                     input_image_name, ij_processor)
-                ijwm.set_current_image(image_plus)
+                if sys.platform == "darwin":
+                    ijwm.set_temp_current_image(image_plus)
+                else:
+                    ijwm.set_current_image(image_plus)
                 current_image = image_plus
             else:
                 current_image = ijwm.get_current_image()

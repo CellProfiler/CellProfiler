@@ -11,8 +11,12 @@
 #
 __version__="$Revision$"
 
+import sys
+
 import bioformats
 import cellprofiler.utilities.jutil as J
+
+from cellprofiler.preferences import get_headless
 
 def get_commands():
     '''Return a list of the available command strings'''
@@ -44,9 +48,15 @@ def execute_macro(macro_text):
     
     macro_text - the macro program to be run
     '''
-    show_imagej();
-    interp = J.make_instance("ij/macro/Interpreter","()V");
-    J.call(interp, "run","(Ljava/lang/String;)V", macro_text);
+    if sys.platform == "darwin":
+        J.set_static_field("ij/macro/Interpreter", "batchMode", "Z", True)
+        J.static_call("ij/IJ", "runMacro", 
+                      "(Ljava/lang/String;)Ljava/lang/String;",
+                      macro_text)
+    else:
+        show_imagej();
+        interp = J.make_instance("ij/macro/Interpreter","()V");
+        J.call(interp, "run","(Ljava/lang/String;)V", macro_text);
     
 def show_imagej():
     '''Show the ImageJ user interface'''

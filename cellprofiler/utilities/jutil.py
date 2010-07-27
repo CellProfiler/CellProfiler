@@ -462,6 +462,45 @@ def get_static_field(klass, name, sig):
         return get_nice_result(env.get_static_object_field(klass, field_id),
                                sig)
         
+def set_static_field(klass, name, sig, value):
+    '''Set the value for a static field on a class
+    
+    klass - the class or string name of class
+    name - the name of the field
+    sig - the signature, typically, 'I' or 'Ljava/lang/String;'
+    value - the value to set
+    '''
+    env = get_env()
+    if isinstance(klass, javabridge.JB_Object):
+        # Get the object's class
+        klass = env.get_object_class(klass)
+    elif not isinstance(klass, javabridge.JB_Class):
+        class_name = str(klass)
+        klass = env.find_class(class_name)
+        if klass is None:
+            raise ValueError("Could not load class %s"%class_name)
+    field_id = env.get_static_field_id(klass, name, sig)
+    if sig == 'Z':
+        env.set_static_boolean_field(klass, field_id, value)
+    elif sig == 'B':
+        env.set_static_byte_field(klass, field_id, value)
+    elif sig == 'C':
+        assert len(str(value)) > 0
+        env.set_static_char_field(klass, field_id, value)
+    elif sig == 'S':
+        env.set_static_short_field(klass, field_id, value)
+    elif sig == 'I':
+        env.set_static_int_field(klass, field_id, value)
+    elif sig == 'J':
+        env.set_static_long_field(klass, field_id, value)
+    elif sig == 'F':
+        env.get_static_float_field(klass, field_id, value)
+    elif sig == 'D':
+        env.set_static_double_field(klass, field_id, value)
+    else:
+        jobject = get_nice_arg(value, sig)
+        env.set_static_object_field(klass, field_id, jobject)
+        
 def split_sig(sig):
     '''Split a signature into its constituent arguments'''
     split = []

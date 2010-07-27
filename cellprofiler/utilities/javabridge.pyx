@@ -843,6 +843,103 @@ cdef class JB_Env:
         '''Return a double field's value'''
         return self.env[0].GetDoubleField(self.env, o.o, field.id)
         
+    def set_object_field(self, JB_Object o, __JB_FieldID field, JB_Object value):
+        '''Set a static object field in an object
+        
+        o - object in question
+        field - a field id retrieved from get_static_field_id
+        value - the object that will become the field's new value
+        '''
+        self.env[0].SetObjectField(self.env, o.o, field.id, value.o)
+        
+    def set_boolean_field(self, JB_Object o, __JB_FieldID field, value):
+        '''Set a boolean field in an object
+        
+        o - object in question
+        field - a field id retrieved from get_static_field_id
+        value - a value whose truth value determines the field's value
+        '''
+        cdef:
+            jboolean jvalue = 1 if value else 0
+        self.env[0].SetBooleanField(self.env, o.o, field.id, jvalue)
+        
+    def set_byte_field(self, JB_Object o, __JB_FieldID field, value):
+        '''Set a byte field in an object
+        
+        o - object in question
+        field - a field id retrieved from get_static_field_id
+        value - a value suitable for int() conversion
+        '''
+        cdef:
+            jbyte jvalue = int(value)
+        self.env[0].SetByteField(self.env, o.o, field.id, jvalue)
+        
+    def set_char_field(self, JB_Object o, __JB_FieldID field, value):
+        '''Set a char field in an object
+        
+        o - object in question
+        field - a field id retrieved from get_static_field_id
+        value - should be convertible to unicode and at least 1 char long
+        '''
+        cdef:
+            jchar jvalue = PyUnicode_AS_UNICODE(unicode(value))[0]
+        self.env[0].SetCharField(self.env, o.o, field.id, jvalue)
+        
+    def set_short_field(self, JB_Object o, __JB_FieldID field, value):
+        '''Set a static short field in a class
+        
+        o - object in question
+        field - a field id retrieved from get_static_field_id
+        value - the value to set, should be castable using int()
+        '''
+        cdef:
+            jshort jvalue = int(value)
+        self.env[0].SetShortField(self.env, o.o, field.id, jvalue)
+        
+    def set_int_field(self, JB_Object o, __JB_FieldID field, value):
+        '''Set an int field in an object
+        
+        o - object in question
+        field - a field id retrieved from get_static_field_id
+        value - the value to set, should be castable using int()
+        '''
+        cdef:
+            jint jvalue = int(value)
+        self.env[0].SetIntField(self.env, o.o, field.id, jvalue)
+        
+    def set_long_field(self, JB_Object o, __JB_FieldID field, value):
+        '''Set a long field in an object
+        
+        o - object in question
+        field - a field id retrieved from get_static_field_id
+        value - the value to set, should be castable using int()
+        '''
+        cdef:
+            jlong jvalue = int(value)
+        self.env[0].SetLongField(self.env, o.o, field.id, jvalue)
+        
+    def set_float_field(self, JB_Object o, __JB_FieldID field, value):
+        '''Set a float field in an object
+        
+        o - object in question
+        field - a field id retrieved from get_static_field_id
+        value - the value to set, should be castable using float()
+        '''
+        cdef:
+            jfloat jvalue = float(value)
+        self.env[0].SetFloatField(self.env, o.o, field.id, jvalue)
+        
+    def set_double_field(self, JB_Object o, __JB_FieldID field, value):
+        '''Set a double field in an object
+        
+        o - object in question
+        field - a field id retrieved from get_static_field_id
+        value - the value to set, should be castable using float()
+        '''
+        cdef:
+            jdouble jvalue = float(value)
+        self.env[0].SetDoubleField(self.env, o.o, field.id, jvalue)
+
     def get_static_field_id(self, JB_Class c, char *name, char *sig):
         '''Look up a static field ID on a class'''
         cdef:
@@ -897,6 +994,103 @@ cdef class JB_Env:
     def get_static_double_field(self, JB_Class c, __JB_FieldID field):
         '''Return a double field's value'''
         return self.env[0].GetStaticDoubleField(self.env, c.c, field.id)
+        
+    def set_static_object_field(self, JB_Class c, __JB_FieldID field, JB_Object o):
+        '''Set a static object field in a class
+        
+        c - class in question, e.g. as retrieved from find_class
+        field - a field id retrieved from get_static_field_id
+        o - the object that will become the field's new value
+        '''
+        self.env[0].SetStaticObjectField(self.env, c.c, field.id, o.o)
+        
+    def set_static_boolean_field(self, JB_Class c, __JB_FieldID field, value):
+        '''Set a static object field in a class
+        
+        c - class in question, e.g. as retrieved from find_class
+        field - a field id retrieved from get_static_field_id
+        value - a value whose truth value determines the field's value
+        '''
+        cdef:
+            jboolean jvalue = 1 if value else 0
+        self.env[0].SetStaticBooleanField(self.env, c.c, field.id, jvalue)
+        
+    def set_static_byte_field(self, JB_Class c, __JB_FieldID field, value):
+        '''Set a static byte field in a class
+        
+        c - class in question, e.g. as retrieved from find_class
+        field - a field id retrieved from get_static_field_id
+        value - a value suitable for int() conversion
+        '''
+        cdef:
+            jbyte jvalue = int(value)
+        self.env[0].SetStaticByteField(self.env, c.c, field.id, jvalue)
+        
+    def set_static_char_field(self, JB_Class c, __JB_FieldID field, value):
+        '''Set a static object field in a class
+        
+        c - class in question, e.g. as retrieved from find_class
+        field - a field id retrieved from get_static_field_id
+        value - should be convertible to unicode and at least 1 char long
+        '''
+        cdef:
+            jchar jvalue = PyUnicode_AS_UNICODE(unicode(jvalue))[0]
+        self.env[0].SetStaticCharField(self.env, c.c, field.id, jvalue)
+        
+    def set_static_short_field(self, JB_Class c, __JB_FieldID field, value):
+        '''Set a static short field in a class
+        
+        c - class in question, e.g. as retrieved from find_class
+        field - a field id retrieved from get_static_field_id
+        value - the value to set, should be castable using int()
+        '''
+        cdef:
+            jshort jvalue = int(value)
+        self.env[0].SetStaticShortField(self.env, c.c, field.id, jvalue)
+        
+    def set_static_int_field(self, JB_Class c, __JB_FieldID field, value):
+        '''Set a static int field in a class
+        
+        c - class in question, e.g. as retrieved from find_class
+        field - a field id retrieved from get_static_field_id
+        value - the value to set, should be castable using int()
+        '''
+        cdef:
+            jint jvalue = int(value)
+        self.env[0].SetStaticIntField(self.env, c.c, field.id, jvalue)
+        
+    def set_static_long_field(self, JB_Class c, __JB_FieldID field, value):
+        '''Set a static long field in a class
+        
+        c - class in question, e.g. as retrieved from find_class
+        field - a field id retrieved from get_static_field_id
+        value - the value to set, should be castable using int()
+        '''
+        cdef:
+            jlong jvalue = int(value)
+        self.env[0].SetStaticLongField(self.env, c.c, field.id, jvalue)
+        
+    def set_static_float_field(self, JB_Class c, __JB_FieldID field, value):
+        '''Set a static float field in a class
+        
+        c - class in question, e.g. as retrieved from find_class
+        field - a field id retrieved from get_static_field_id
+        value - the value to set, should be castable using float()
+        '''
+        cdef:
+            jfloat jvalue = float(value)
+        self.env[0].SetStaticFloatField(self.env, c.c, field.id, jvalue)
+        
+    def set_static_double_field(self, JB_Class c, __JB_FieldID field, value):
+        '''Set a static double field in a class
+        
+        c - class in question, e.g. as retrieved from find_class
+        field - a field id retrieved from get_static_field_id
+        value - the value to set, should be castable using float()
+        '''
+        cdef:
+            jdouble jvalue = float(value)
+        self.env[0].SetStaticDoubleField(self.env, c.c, field.id, jvalue)
 
     def new_object(self, JB_Class c, __JB_MethodID m, *args):
         '''Call a class constructor with arguments

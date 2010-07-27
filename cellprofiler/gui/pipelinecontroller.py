@@ -1055,6 +1055,11 @@ class PipelineController:
             for provider in image_set.providers:
                 if hasattr(provider, "get_filename"):
                     text.append(provider.get_name()+":"+provider.get_filename())
+                # Add frame info for movie files
+                if hasattr(provider, "get_series"):
+                    text[-1] += ": Z="+str(provider.get_z())+": T="+str(provider.get_t())
+                if hasattr(provider, "get_frame"):
+                    text[-1] += ": Frame="+str(provider.get_frame())
             text = ', '.join(text)
             choices.append(text)
         if len(choices) == 0:

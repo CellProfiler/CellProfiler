@@ -610,7 +610,7 @@ been inserted at that point.</li>
 the next module pause is reached. When all modules have been executed for a given image cycle,
 execution will stop.</li>
 <li><i>Step:</i> Execute the next module (as indicated by the slider location)</li>
-<li><i>Next image cycle:</i> Skip ahead to the next image cycle as determined by the image 
+<li><i>Next image:</i> Skip ahead to the next image cycle as determined by the image 
 order in <b>LoadImages</b>/<b>LoadData</b>. The slider will automatically return to the 
 first module in the pipeline.</li>
 </ul>
@@ -620,11 +620,17 @@ first module in the pipeline.</li>
 <li><i>Stop test run:</i> Exit <i>Test</i> mode. Loading a new pipeline or adding/subtracting
 modules will also automatically exit test mode.</li>
 <li><i>Step to next module:</i> Execute the next module (as indicated by the slider location)</li>
-<li><i>Choose image / group:</i> Choose the image or group to jump to.
+<li><i>Next image cycle:</i> Step to the next image cycle in the current group or the .</li>
+<li><i>Next image group:</i> Step to the next group in the image set.</li>
+<li><i>Random image cycle:</i> Randomly select an image cycle in the current group to jump to.</li>
+<li><i>Choose image cycle:</i> Choose the image cycle to jump to.
+The slider will then automatically return to the first module in the pipeline.</li>
+<li><i>Choose group:</i> Choose the group to jump to.
 The slider will then automatically return to the first module in the pipeline.</li>
 <li><i>Reload modules source:</i> For developers only. This option will reload the module source 
 code, so any changes to the code will be reflected immediately.</li>
 </ul>
+For more information on groups and how to define them, refer to metadata grouping in <b>LoadImages</b>.
 </p>
 """%globals()
 

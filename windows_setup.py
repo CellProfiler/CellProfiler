@@ -20,6 +20,8 @@ import matplotlib
 import tempfile
 import xml.dom.minidom
 
+from cellprofiler.utilities.get_revision import get_revision
+
 is_win64 = (os.environ["PROCESSOR_ARCHITECTURE"] == "AMD64")
 is_2_6 = sys.version_info[0] >= 2 and sys.version_info[1] >= 6
 vcredist = os.path.join("windows",
@@ -38,6 +40,7 @@ class CellProfilerMSI(distutils.core.Command):
         pass
     
     def run(self):
+        revision = str(get_revision())
         if is_2_6 and do_modify:
             self.modify_manifest("CellProfiler.exe")
             self.modify_manifest("python26.dll;#2")
@@ -52,18 +55,25 @@ class CellProfilerMSI(distutils.core.Command):
             self.modify_manifest("wx._grid.pyd;#2")
             self.modify_manifest("PIL._imaging.pyd;#2")
             self.modify_manifest("wx._core_.pyd;#2")
+        fd = open("version.iss", "w")
+        fd.write("""
+AppVerName=CellProfiler 2.0 r%s
+OutputBaseFilename=CellProfiler_2.0_win32_r%s
+""" % (revision, revision))
+        fd.close()
         if is_win64:
             cell_profiler_iss = "CellProfiler64.iss"
-            cell_profiler_setup = "CellProfiler64Setup.exe"
+            cell_profiler_setup = "CellProfiler_2.0_win64_r%s.exe" % revision
         else:
             cell_profiler_iss = "CellProfiler.iss"
-            cell_profiler_setup = "CellProfilerSetup.exe"
+            cell_profiler_setup = "CellProfiler_2.0_win32_r%s.exe" % revision
         required_files = ["dist\\CellProfiler.exe",cell_profiler_iss]
         compile_command = self.__compile_command()
         compile_command = compile_command.replace("%1",cell_profiler_iss)
         self.make_file(required_files,"Output\\"+cell_profiler_setup, 
                        subprocess.check_call,([compile_command]),
                        "Compiling %s" % cell_profiler_iss)
+        os.remove("version.iss")
         
     def modify_manifest(self, resource_name):
         '''Change the manifest of a resource to match the CRT
@@ -215,3 +225,10 @@ setup(console=[{'script':'CellProfiler.py',
       cmdclass={'msi':CellProfilerMSI
                 },
       options=opts)
+try:
+    import cellprofiler.utilities.jutil as jutil
+    jutil.kill_vm()
+except:
+    import traceback
+    traceback.print_exc()
+    print "Caught exception while killing VM"

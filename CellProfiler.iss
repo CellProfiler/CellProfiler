@@ -7,7 +7,7 @@
 ; (To generate a new GUID, click Tools | Generate GUID inside the IDE.)
 AppId={{E6064576-236D-4C12-ACBD-BC8B606F9329}
 AppName=CellProfiler
-AppVerName=CellProfiler 2.0 r10102
+#include "version.iss"
 AppPublisher=Broad Institute
 AppPublisherURL=http://www.cellprofiler.org
 AppSupportURL=http://www.cellprofiler.org
@@ -15,7 +15,6 @@ AppUpdatesURL=http://www.cellprofiler.org
 DefaultDirName={pf}\CellProfiler
 DefaultGroupName=CellProfiler
 OutputDir=.\output
-OutputBaseFilename=CellProfilerSetup
 SetupIconFile=.\CellProfilerIcon.ico
 Compression=lzma
 SolidCompression=yes

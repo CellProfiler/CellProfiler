@@ -680,7 +680,7 @@ algorithms will incorrectly choose a very low threshold, and therefore "find"
 spurious objects. This can be overcome by setting a lower limit on the threshold in 
 the <b>IdentifyPrimaryObjects</b> module.</p>
 <p>The Test mode in CellProfiler may be used for previewing the results of your settings
-on images of your choice. Please refer to <i>%(TEST_MODE_HELP_REF)</i>
+on images of your choice. Please refer to <i>%(TEST_MODE_HELP_REF)s</i>
 for more details on how to use this utility.</li>
 
 <li><i>Add the <b>CreateBatchFiles</b> module to the end of your pipeline.</i>
@@ -729,7 +729,11 @@ set specified, &lt;last_image_set_number&gt;</li>
 </ul>
 To submit all the batches for a full image set, you will need a script that calls
 CellProfiler with these options with sequential image set numbers, e.g, 1-50, 51-100, 
-etc and submit each as an individual job.</li>
+etc and submit each as an individual job.
+<p>The above notes assume that you are running CellProfiler using our source code (see 
+"Developer's Guide" under Help for more details). If you are using the compiled version,
+you would replace <code>./python-2.6.sh CellProfiler.py</code> with the CellProfiler 
+executable file itself and run it from the installation folder.</li>
 </ol>
 
 <p>Once all the jobs are submitted, the cluster will run each batch individually 

@@ -3,6 +3,9 @@ including measurements of blur (poor focus) and the percentage
 of pixels in the image that are minimal and maximal (i.e., saturated)
 <hr>
 
+Please note that for best results, this module should be applied to the original raw images, 
+as opposed to images that already been corrected for illumination.
+ 
 <h4>Available measurements</h4>  
 <ul>
 <li><i>PercentMaximal:</i> Percent of pixels at the maximum intensity value of the image</li>

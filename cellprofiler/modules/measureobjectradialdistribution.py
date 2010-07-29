@@ -121,7 +121,7 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
         if can_remove:
             group.append("divider", cps.Divider(line=False))
         group.append("object_name", cps.ObjectNameSubscriber(
-                "Select objects to meaasure", "None",doc="""
+                "Select objects to measure", "None",doc="""
                 What did you call the objects you want to measure?"""))
         group.append("center_choice", cps.Choice(
                 "Object to use as center?", C_ALL,doc="""

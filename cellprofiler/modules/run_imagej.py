@@ -224,7 +224,8 @@ class RunImageJ(cpm.CPModule):
             detach()
         
     def is_interactive(self):
-        return self.pause_before_proceeding.value
+        # On Mac, run in main thread for stability
+        return sys.platform == 'darwin'
     
     def prepare_group(self, pipeline, image_set_list, grouping,
                       image_numbers):

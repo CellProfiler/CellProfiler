@@ -419,4 +419,4 @@ class TestJavabridge(unittest.TestCase):
         field_id = self.env.get_static_field_id(klass, "PI","D")
         result = self.env.get_static_double_field(klass, field_id)
         self.assertAlmostEqual(result, 3.141592653589793)
-    
+        

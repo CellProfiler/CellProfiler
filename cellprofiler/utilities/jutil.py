@@ -258,6 +258,7 @@ def start_vm(args):
     pt.append(t)
     t.start()
     start_event.wait()
+    attach()
 
 def print_all_stack_traces():
     thread_map = static_call("java/lang/Thread","getAllStackTraces",
@@ -286,7 +287,7 @@ def make_kill_vm():
         global __vm
         if __vm is None:
             return
-        attach()
+        assert thread_local_env.attach_count == 1
         runtime = static_call("java/lang/Runtime","getRuntime",
                               "()Ljava/lang/Runtime;")
         call(runtime, "exit", "(I)V", 0)
@@ -303,7 +304,10 @@ def attach():
     global __thread_local_env
     global __vm
     assert isinstance(__vm, javabridge.JB_VM)
-    __thread_local_env.env = __vm.attach()
+    attach_count = getattr(__thread_local_env, "attach_count", 0)
+    __thread_local_env.attach_count = attach_count + 1
+    if attach_count == 0:
+        __thread_local_env.env = __vm.attach()
     return __thread_local_env.env
     
 def get_env():
@@ -322,6 +326,10 @@ def detach():
     global __wake_event
     global __kill
     
+    assert __thread_local_env.attach_count > 0
+    __thread_local_env.attach_count -= 1
+    if __thread_local_env.attach_count > 0:
+        return
     env = __thread_local_env.env
     dead_objects = __dead_objects
     wake_event = __wake_event

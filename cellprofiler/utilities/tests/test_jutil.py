@@ -15,8 +15,10 @@ Website: http://www.cellprofiler.org
 
 __version__="$Revision$"
 
+import gc
 import os
 import numpy as np
+import threading
 import unittest
 
 import cellprofiler.utilities.jutil as J
@@ -135,9 +137,65 @@ class TestJutil(unittest.TestCase):
             intValue = J.make_method("intValue", '()I')
         my_value = 543
         my_integer=MyInteger(my_value)
-        J.detach()
-        env = J.attach()
-        self.assertEqual(my_integer.intValue(),my_value)
+        def run(my_integer = my_integer):
+            env = J.attach()
+            self.assertEqual(my_integer.intValue(),my_value)
+            J.detach()
+        t = threading.Thread(target = run)
+        t.start()
+        t.join()
         
+    def test_02_02_delete_in_environment(self):
+        env = self.env
+        self.assertTrue(isinstance(env,J.javabridge.JB_Env))
+        class MyInteger:
+            new_fn = J.make_new("java/lang/Integer",'(I)V')
+            def __init__(self, value):
+                self.new_fn(value)
+            intValue = J.make_method("intValue", '()I')
+        my_value = 543
+        my_integer=MyInteger(my_value)
+        def run(my_integer = my_integer):
+            env = J.attach()
+            self.assertEqual(my_integer.intValue(),my_value)
+            del my_integer
+            J.detach()
+        t = threading.Thread(target = run)
+        t.start()
+        t.join()
+        
+    def test_02_03_death_and_resurrection(self):
+        '''Put an object into another in Java, delete it in Python and recover it'''
+        
+        np.random.seed(24)
+        my_value = np.random.randint(0, 1000)
+        jobj = J.make_instance("java/lang/Integer", "(I)V", my_value)
+        integer_klass = self.env.find_class("java/lang/Integer")
+        jcontainer = self.env.make_object_array(1, integer_klass)
+        self.env.set_object_array_element(jcontainer, 0, jobj)
+        del jobj
+        gc.collect()
+        jobjs = self.env.get_object_array_elements(jcontainer)
+        jobj = jobjs[0]
+        self.assertEqual(J.call(jobj, "intValue", "()I"), my_value)
+        
+    def test_02_04_memory(self):
+        '''Make sure that memory is truly released when an object is dereferenced'''
+        env = self.env
+        self.assertTrue(isinstance(env,J.javabridge.JB_Env))
+        for i in range(25):
+            print "starting pass %d" % (i+1)
+            memory = np.random.uniform(size=1000*1000*10)
+            jarray = env.make_double_array(memory)
+            J.static_call("java/util/Arrays", "sort",
+                          "([D)V", jarray)
+            sorted_memory = env.get_double_array_elements(jarray)
+            np.testing.assert_almost_equal(sorted_memory[0], memory.min())
+            np.testing.assert_almost_equal(sorted_memory[-1], memory.max())
+            del memory
+            del sorted_memory
+            del jarray
+            gc.collect()
+            
 if __name__=="__main__":
     unittest.main()

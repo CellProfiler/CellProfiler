@@ -948,7 +948,7 @@ class CPFigureFrame(wx.Frame):
         # Apply rgb mask to hide/show channels
         if is_color_image(image):
             rgb_mask = match_rgbmask_to_image(rgb_mask, image)
-            image = image * rgb_mask
+            image *= rgb_mask
         if not is_color_image(image):
             mappable = matplotlib.cm.ScalarMappable(cmap=colormap)
             mappable.set_clim(vmin, vmax)

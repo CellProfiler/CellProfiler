@@ -717,7 +717,8 @@ class IdentifyPrimaryObjects(cpmi.Identify):
         labeled_image,object_count,maxima_suppression_size = \
             self.separate_neighboring_objects(img, mask, 
                                               labeled_image,
-                                              object_count,global_threshold)
+                                              object_count,
+                                              local_threshold)
         unedited_labels = labeled_image.copy()
         # Filter out objects touching the border or mask
         border_excluded_labeled_image = labeled_image.copy()
@@ -914,7 +915,11 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             else:
                 maxima_suppression_size = self.maxima_suppression_size.value
             reported_maxima_suppression_size = maxima_suppression_size
-        maxima_mask = strel_disk(maxima_suppression_size-.5)
+        if maxima_suppression_size > 0:
+            maxima_mask = strel_disk(maxima_suppression_size-.5)
+        else:
+            # User wants to use thresholding and shrinking
+            maxima_mask = None
         distance_transformed_image = None
         if self.unclump_method == UN_LOG:
             if self.wants_automatic_log_diameter.value:
@@ -1035,9 +1040,10 @@ class IdentifyPrimaryObjects(cpmi.Identify):
         # set all pixels that aren't local maxima to zero
         #
         maxima_image = resized_image
-        maximum_filtered_image = scipy.ndimage.maximum_filter(maxima_image,
-                                                              footprint=maxima_mask)
-        maxima_image[resized_image < maximum_filtered_image] = 0
+        if maxima_mask is not None:
+            maximum_filtered_image = scipy.ndimage.maximum_filter(maxima_image,
+                                                                  footprint=maxima_mask)
+            maxima_image[resized_image < maximum_filtered_image] = 0
         #
         # Get rid of the "maxima" that are really large areas of zero
         #
@@ -1055,9 +1061,9 @@ class IdentifyPrimaryObjects(cpmi.Identify):
         
         # Erode blobs of touching maxima to a single point
         
+        binary_maxima_image[labeled_image==0]=0
         shrunk_image = binary_shrink(binary_maxima_image)
         maxima_image[np.logical_not(shrunk_image)]=0
-        maxima_image[labeled_image==0]=0
         return maxima_image
     
     def filter_on_size(self,labeled_image,object_count):

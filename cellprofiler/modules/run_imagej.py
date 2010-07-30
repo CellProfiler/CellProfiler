@@ -206,7 +206,8 @@ class RunImageJ(cpm.CPModule):
             result += [self.wants_post_group_image]
             if self.wants_post_group_image:
                 result += [self.post_group_output_image]
-        result += [self.pause_before_proceeding, self.show_imagej_button]
+        if sys.platform != "darwin":
+            result += [self.pause_before_proceeding, self.show_imagej_button]
         return result
     
     def on_show_imagej(self):

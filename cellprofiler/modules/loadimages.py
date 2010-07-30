@@ -1514,6 +1514,7 @@ class LoadImages(cpmodule.CPModule):
                                                   file_pathname)
             try:
                 rdr = ImageReader()
+                rdr.setGroupFiles(False)
                 rdr.setId(pathname)
                 for i in range(rdr.getSeriesCount()):
                     rdr.setSeries(i)
@@ -1825,6 +1826,7 @@ class LoadImages(cpmodule.CPModule):
             formatreader.jutil.attach()
             try:
                 rdr = ImageReader()
+                rdr.setGroupFiles(False)
                 rdr.setId(pathname)
                 if self.file_types == FF_STK_MOVIES:
                     #
@@ -2482,6 +2484,7 @@ def load_using_bioformats(path, c=None, z=0, t=0, series=None):
         elif rdr.getRGBChannelCount() > 1:
             rdr.close()
             rdr = ChannelSeparator(ImageReader())
+            rdr.setGroupFiles(False)
             rdr.setId(path)
             red_image, green_image, blue_image = [
                 np.frombuffer(rdr.openBytes(rdr.getIndex(z,i,t)),dtype)

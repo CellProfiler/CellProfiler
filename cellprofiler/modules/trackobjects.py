@@ -1231,7 +1231,7 @@ class TrackObjects(cpm.CPModule):
         # Assign object IDs to the new objects if unambiguous
         #
         mapping = np.zeros(new_count, int)
-        if old_count:
+        if old_count > 0 and new_count > 0:
             new_per_old = fix(scipy.ndimage.sum(np.ones(new_count),
                                                 old_of_new,
                                                 np.arange(old_count)+1)).astype(int)
@@ -1241,7 +1241,7 @@ class TrackObjects(cpm.CPModule):
             lost_object_count = np.sum(new_per_old == 0)
         else:
             miss_count = new_count
-            lost_object_count = 0
+            lost_object_count = old_count
         mapping[mapping == 0] = np.arange(miss_count)+max_object_number+1
         self.set_max_object_number(workspace, miss_count + max_object_number)
         self.add_measurement(workspace, F_LABEL, mapping)

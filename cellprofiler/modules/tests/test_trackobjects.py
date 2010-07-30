@@ -311,6 +311,20 @@ TrackObjects:[module_num:1|svn_version:\'9227\'|variable_revision_number:3|show_
             self.assertTrue(name in features)
             value = measurements.get_current_image_measurement(name)
             self.assertEqual(value, 0)
+            
+    def test_02_01_00_track_one_then_nothing(self):
+        '''Run track objects on an object that disappears
+
+        Regression test of IMG-1090
+        '''
+        labels = np.zeros((10,10),int)
+        labels[3:6, 2:7] = 1
+        measurements = self.runTrackObjects((labels,
+                                             np.zeros((10,10),int)))
+        feature = "_".join((T.F_PREFIX, T.F_LOST_OBJECT_COUNT, 
+                            OBJECT_NAME, "50"))
+        value = measurements.get_current_image_measurement(feature)
+        self.assertEqual(value, 1)
     
     def test_02_02_track_one_distance(self):
         '''Track an object that doesn't move using distance'''

@@ -239,6 +239,8 @@ class PipelineController:
             self.__pipeline.save(path)
             self.__dirty_pipeline = False
             self.set_title()
+            self.__frame.preferences_view.set_message_text(
+                "Saved pipeline to " + path)
             
     def __on_save_as_pipeline(self,event):
         try:

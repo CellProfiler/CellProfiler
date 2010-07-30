@@ -246,7 +246,7 @@ class CreateBatchFiles(cpm.CPModule):
             if (wx.MessageBox("%s already exists. Do you want to overwrite it?"%
                               path,
                               "Overwriting %s" % F_BATCH_DATA,
-                              wx.YES_NO, frame) == wx.ID_NO):
+                              wx.YES_NO, frame) == wx.NO):
                 return
         
         pipeline.save(path, format=cpp.FMT_MATLAB)

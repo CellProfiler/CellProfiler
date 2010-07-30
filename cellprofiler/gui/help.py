@@ -1064,6 +1064,11 @@ CellProfiler looks for updates on startup."""
 SHOW_STARTUP_BLURB_HELP = """The <i>Display welcome text on startup</i> preference 
 controls whether CellProfiler displays an orientation message on startup."""
 
+SHOW_ANALYSIS_COMPLETE_HELP = """The <i>Show "Analysis complete"</i>
+preference determines whether CellProfiler displays a message box at the
+end of a run. Check this preference to show the message box or uncheck it
+to stop display."""
+
 PRIMARY_OUTLINE_COLOR_HELP = """The <i>Primary Outline Color</i> preference
 sets the color used for the outline of the object of interest in the
 <i>IdentifyPrimaryObjects</i>, <i>IdentifySecondaryObjects</i> and

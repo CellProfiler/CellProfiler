@@ -192,7 +192,11 @@ class PreferencesDlg(wx.Dialog):
                 ["Warn if Java runtime environment not present",
                  cpprefs.get_report_jvm_error,
                  cpprefs.set_report_jvm_error,
-                 CHOICE, cphelp.REPORT_JVM_ERROR_HELP]
+                 CHOICE, cphelp.REPORT_JVM_ERROR_HELP],
+                ['Show the "Analysis complete" message at the end of a run.',
+                 cpprefs.get_show_analysis_complete_dlg,
+                 cpprefs.set_show_analysis_complete_dlg,
+                 CHOICE, cphelp.SHOW_ANALYSIS_COMPLETE_HELP]
                 ]
     
     def get_title_font(self):

@@ -164,6 +164,7 @@ TERTIARY_OUTLINE_COLOR = 'TertiaryOutlineColor'
 JVM_ERROR = 'JVMError'
 ALLOW_OUTPUT_FILE_OVERWRITE = 'AllowOutputFileOverwrite'
 PLUGIN_DIRECTORY = 'PluginDirectory'
+SHOW_ANALYSIS_COMPLETE_DLG = "ShowAnalysisCompleteDlg"
 
 def recent_file(index):
     return FF_RECENTFILES % (index + 1)
@@ -614,3 +615,24 @@ def set_allow_output_file_overwrite(value):
     __allow_output_file_overwrite = value
     get_config().Write(ALLOW_OUTPUT_FILE_OVERWRITE, 
                        "True" if value else "False")
+
+__show_analysis_complete_dlg = None
+
+def get_show_analysis_complete_dlg():
+    '''Return true if the user wants to see the "analysis complete" dialog
+    
+    '''
+    global __show_analysis_complete_dlg
+    if __show_analysis_complete_dlg is not None:
+        return __show_analysis_complete_dlg
+    if not get_config().Exists(SHOW_ANALYSIS_COMPLETE_DLG):
+        return True
+    return get_config().Read(SHOW_ANALYSIS_COMPLETE_DLG) == "True"
+
+def set_show_analysis_complete_dlg(value):
+    '''Set the "show analysis complete" flag'''
+    global __show_analysis_complete_dlg
+    __show_analysis_complete_dlg = value
+    get_config().Write(SHOW_ANALYSIS_COMPLETE_DLG, 
+                       "True" if value else "False")
+    

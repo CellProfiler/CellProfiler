@@ -636,7 +636,7 @@ class SaveImages(cpm.CPModule):
                 # Setting interleaved on makes it work.
                 writer.setInterleaved(True)
 
-            if pixels.dtype in (np.uint8, np.int16):
+            if pixels.dtype in (np.int8, np.uint8, np.int16):
                 # Leave the values alone, but cast to unsigned int 16
                 pixels = pixels.astype(np.uint16)
             elif pixels.dtype in (np.uint32, np.uint64, np.int32, np.int64):

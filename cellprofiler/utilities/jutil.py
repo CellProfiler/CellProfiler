@@ -287,7 +287,8 @@ def make_kill_vm():
         global __vm
         if __vm is None:
             return
-        assert thread_local_env.attach_count == 1
+        while thread_local_env.attach_count > 1:
+            detach()
         runtime = static_call("java/lang/Runtime","getRuntime",
                               "()Ljava/lang/Runtime;")
         call(runtime, "exit", "(I)V", 0)

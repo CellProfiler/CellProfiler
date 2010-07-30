@@ -62,12 +62,13 @@ class PipelineController:
         self.pipeline_list = []
         self.populate_recent_files()
         self.populate_edit_menu(self.__frame.menu_edit_add_module)
-        wx.EVT_MENU(frame,cpframe.ID_FILE_LOAD_PIPELINE,self.__on_load_pipeline)
+        wx.EVT_MENU(frame, cpframe.ID_FILE_LOAD_PIPELINE,self.__on_load_pipeline)
         wx.EVT_MENU(frame, cpframe.ID_FILE_URL_LOAD_PIPELINE, self.__on_url_load_pipeline)
-        wx.EVT_MENU(frame,cpframe.ID_FILE_SAVE_PIPELINE,self.__on_save_pipeline)
-        wx.EVT_MENU(frame,cpframe.ID_FILE_CLEAR_PIPELINE,self.__on_clear_pipeline)
-        wx.EVT_MENU(frame,cpframe.ID_FILE_ANALYZE_IMAGES,self.on_analyze_images)
-        wx.EVT_MENU(frame,cpframe.ID_FILE_STOP_ANALYSIS,self.on_stop_running)
+        wx.EVT_MENU(frame, cpframe.ID_FILE_SAVE_PIPELINE,self.__on_save_pipeline)
+        wx.EVT_MENU(frame, cpframe.ID_FILE_SAVE_AS_PIPELINE, self.__on_save_as_pipeline)
+        wx.EVT_MENU(frame, cpframe.ID_FILE_CLEAR_PIPELINE,self.__on_clear_pipeline)
+        wx.EVT_MENU(frame, cpframe.ID_FILE_ANALYZE_IMAGES,self.on_analyze_images)
+        wx.EVT_MENU(frame, cpframe.ID_FILE_STOP_ANALYSIS,self.on_stop_running)
         wx.EVT_MENU(frame, cpframe.ID_FILE_RUN_MULTIPLE_PIPELINES, self.on_run_multiple_pipelines)
         wx.EVT_MENU(frame, cpframe.ID_FILE_RESTART, self.on_restart)
         
@@ -230,7 +231,16 @@ class PipelineController:
             self.__frame.preferences_view.pop_error_text(error)
         self.__setting_errors = {}
         
-    def __on_save_pipeline(self,event):
+    def __on_save_pipeline(self, event):
+        path = cpprefs.get_current_pipeline_path()
+        if path is None:
+            self.do_save_pipeline()
+        else:
+            self.__pipeline.save(path)
+            self.__dirty_pipeline = False
+            self.set_title()
+            
+    def __on_save_as_pipeline(self,event):
         try:
             self.do_save_pipeline()
         except Exception, e:

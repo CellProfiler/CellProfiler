@@ -35,6 +35,9 @@ import traceback
 import datetime
 import traceback
 import threading
+import urlparse
+import urllib2
+
 import cellprofiler.cpmodule
 import cellprofiler.preferences
 import cellprofiler.cpimage
@@ -491,9 +494,16 @@ class Pipeline(object):
                     break
                 fd.write(text)
             fd.seek(0)
-        else:
+        elif os.path.exists(fd_or_filename):
             fd = open(fd_or_filename,'r')
             needs_close = True
+        else:
+            # Assume is string URL
+            parsed_path = urlparse.urlparse(fd_or_filename)
+            if len(parsed_path.scheme) < 2:
+                raise IOError("Could not find file, " + fd_or_filename)
+            fd = urllib2.urlopen(fd_or_filename)
+            return self.load(fd)
         header = fd.read(len(COOKIE))
         if header == COOKIE:
             fd.seek(0)

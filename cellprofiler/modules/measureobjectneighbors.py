@@ -230,7 +230,7 @@ class MeasureObjectNeighbors(cpm.CPModule):
             # nearest neighbors
             #
             centers = scind.center_of_mass(np.ones(labels.shape), 
-                                           objects.segmented, 
+                                           objects.small_removed_segmented, 
                                            object_indexes)
             if nobjects == 1:
                 centers = np.array([centers])
@@ -282,7 +282,8 @@ class MeasureObjectNeighbors(cpm.CPModule):
             # Calculate which ones overlap "index"
             # Calculate how much overlap there is of others to "index"
             #
-            for index in range(nobjects):
+            for object_number in object_numbers:
+                index = object_number - 1
                 patch = labels[min_i[index]:max_i[index],
                                min_j[index]:max_j[index]]
                 #

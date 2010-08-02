@@ -357,8 +357,9 @@ class TestMeasureObjectNeighbors(unittest.TestCase):
         objects = object_set.get_objects(OBJECTS_NAME)
         self.assertTrue(isinstance(objects, cpo.Objects))
         
-        sm_labels = labels.copy() * 2
-        sm_labels[0:2,3] = 1
+        sm_labels = labels.copy() * 3
+        sm_labels[-1,-1] = 1
+        sm_labels[0:2,3] = 2
         objects.small_removed_segmented = sm_labels
         module.run(workspace)
         m = workspace.measurements
@@ -374,6 +375,11 @@ class TestMeasureObjectNeighbors(unittest.TestCase):
                                        "Neighbors_FirstClosestObjectNumber_Adjacent")
         self.assertEqual(len(fo),1)
         self.assertEqual(fo[0],0)
+        
+        angle = m.get_current_measurement(OBJECTS_NAME,
+                                          "Neighbors_AngleBetweenNeighbors_Adjacent")
+        self.assertEqual(len(angle), 1)
+        self.assertFalse(np.isnan(angle)[0])
         
     def test_02_10_all_discarded(self):
         '''Test the case where all objects touch the edge

@@ -197,7 +197,7 @@ class ExportToSpreadsheet(cpm.CPModule):
             Select which image whose filename will be used to identify each sample row.""")
         
         self.wants_everything = cps.Binary(
-            "Export all measurements?", True,
+            "Export all measurements, using default file names?", True,
             doc="""Check this setting to export every measurement.
             <b>ExportToSpreadsheet</b> will create one file per object type,
             including image and experiment. It will use the object name as

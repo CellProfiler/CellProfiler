@@ -1,3 +1,7 @@
+'''
+ijbridge provides a high-level interface to ImageJ so in-process and inter-
+process execution of ImageJ can be abstracted and branched cleanly.
+'''
 import sys
 
 class ij_bridge(object):

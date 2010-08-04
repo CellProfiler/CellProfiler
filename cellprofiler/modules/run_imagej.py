@@ -51,10 +51,11 @@ class RunImageJ(cpm.CPModule):
             if len(self.command.choices) > 0:
                 return self.command.choices
             import cellprofiler.utilities.jutil as J
-            from imagej.macros import get_commands
+            import imagej.ijbridge as ijbridge
+            ijb = ijbridge.in_proc_ij_bridge()
             J.attach()
             try:
-                return sorted(get_commands())
+                return sorted(ijb.get_commands())
             finally:
                 J.detach()
             
@@ -217,10 +218,11 @@ class RunImageJ(cpm.CPModule):
         the Show ImageJ button.
         '''
         from cellprofiler.utilities.jutil import attach, detach
-        from imagej.macros import show_imagej
+        import imagej.ijbridge as ijbridge
         attach()
         try:
-            show_imagej()
+            ijb = ijbridge.in_proc_ij_bridge()
+            ijb.show_imagej()
         finally:
             detach()
         
@@ -241,11 +243,8 @@ class RunImageJ(cpm.CPModule):
         
     def run(self, workspace):
         '''Run the imageJ command'''
+        import imagej.ijbridge as ijbridge
         import cellprofiler.utilities.jutil as J
-        from imagej.macros import execute_command, execute_macro
-        import imagej.windowmanager as ijwm
-        import imagej.imageprocessor as ijiproc
-        import imagej.imageplus as ijip
         
         image_set = workspace.image_set
         assert isinstance(image_set, cpi.ImageSet)
@@ -257,18 +256,22 @@ class RunImageJ(cpm.CPModule):
         else:
             img = None
         J.attach()
+        
+        # TODO: branch here when using inter-process bridge
+        ijb = ijbridge.in_proc_ij_bridge()
+        
         try:
             #
             # Run a command or macro on the first image of the set
             #
             if d[D_FIRST_IMAGE_SET] == image_set.number + 1:
                 if self.prepare_group_choice == CM_COMMAND:
-                    execute_command(self.prepare_group_command.value,
-                                    self.prepare_group_options.value)
+                    ijb.execute_command(self.prepare_group_command.value,
+                                        self.prepare_group_options.value)
                 elif self.prepare_group_choice == CM_MACRO:
                     macro = workspace.measurements.apply_metadata(
-                        self.prepare_group_macro.value)
-                    execute_macro(macro)
+                                self.prepare_group_macro.value)
+                    ijb.execute_macro(macro)
                 if (self.prepare_group_choice != CM_NOTHING and 
                     (not cpprefs.get_headless()) and 
                     self.pause_before_proceeding):
@@ -279,25 +282,16 @@ class RunImageJ(cpm.CPModule):
             # Install the input image as the current image
             #
             if img is not None:
-                ij_processor = ijiproc.make_image_processor(img.pixel_data * 255.0)
-                image_plus = ijip.make_imageplus_from_processor(
-                    input_image_name, ij_processor)
-                if sys.platform == "darwin":
-                    ijwm.set_temp_current_image(image_plus)
-                else:
-                    ijwm.set_current_image(image_plus)
-                current_image = image_plus
-            else:
-                current_image = ijwm.get_current_image()
+                ijb.inject_image(img.pixel_data, input_image_name)
+
             #
             # Do the per-imageset macro or command
             #
             if self.command_or_macro == CM_COMMAND:
-                execute_command(self.command.value, self.options.value)
+                ijb.execute_command(self.command.value, self.options.value)
             else:
-                macro = workspace.measurements.apply_metadata(
-                    self.macro.value)
-                execute_macro(macro)
+                macro = workspace.measurements.apply_metadata(self.macro.value)
+                ijb.execute_macro(macro)
             if (not cpprefs.get_headless()) and self.pause_before_proceeding:
                 import wx
                 wx.MessageBox("Please edit the image in ImageJ and hit OK to proceed",
@@ -307,9 +301,7 @@ class RunImageJ(cpm.CPModule):
             #
             if self.wants_to_get_current_image:
                 output_image_name = self.current_output_image_name.value
-                image_plus = ijwm.get_current_image()
-                ij_processor = image_plus.getProcessor()
-                pixel_data = ijiproc.get_image(ij_processor) / 255.0
+                pixel_data = ijb.get_current_image()
                 image = cpi.Image(pixel_data)
                 image_set.add(output_image_name, image)
             #
@@ -317,12 +309,12 @@ class RunImageJ(cpm.CPModule):
             #
             if d[D_LAST_IMAGE_SET] == image_set.number + 1:
                 if self.post_group_choice == CM_COMMAND:
-                    execute_command(self.post_group_command.value, 
-                                    self.post_group_options.value)
+                    ijb.execute_command(self.post_group_command.value, 
+                                        self.post_group_options.value)
                 elif self.post_group_choice == CM_MACRO:
                     macro = workspace.measurements.apply_metadata(
-                        self.post_group_macro.value)
-                    execute_macro(macro)
+                                self.post_group_macro.value)
+                    ijb.execute_macro(macro)
                 if (self.post_group_choice != CM_NOTHING and 
                     (not cpprefs.get_headless()) and 
                     self.pause_before_proceeding):
@@ -336,9 +328,7 @@ class RunImageJ(cpm.CPModule):
                 if (self.post_group_choice != CM_NOTHING and
                     self.wants_post_group_image):
                     output_image_name = self.post_group_output_image.value
-                    image_plus = ijwm.get_current_image()
-                    ij_processor = image_plus.getProcessor()
-                    pixel_data = ijiproc.get_image(ij_processor) / 255.0
+                    pixel_data = ijb.get_current_image()
                     image = cpi.Image(pixel_data)
                     image_set.add(output_image_name, image)
                 

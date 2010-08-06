@@ -347,3 +347,31 @@ Name the second output image:AlignedImage2
         self.assertEqual(m.get_current_image_measurement('Align_Xshift_Aligned0_vs_Aligned1'), 0)
         self.assertEqual(m.get_current_image_measurement('Align_Yshift_Aligned0_vs_Aligned1'), 0)
         
+    def test_06_01_with_masks(self):
+        '''Align images with masks
+        
+        The first image is bigger than the second and, when cropped,
+        the image is made smaller, but not the mask.
+        Regression test for bug img-1094
+        '''
+        np.random.seed(61)
+        source = np.random.uniform(size=(3, 4))
+        i, j = np.mgrid[0:30, 0:40].astype(float) / 10
+        source = scipy.ndimage.map_coordinates(source, (i,j))
+        source_mask = np.random.uniform(size=(30,40)) > .2
+        pixels_1 = source[:-2,:-6]
+        mask_1 = source_mask[:-2:-6]
+        pixels_2 = source[3:, 7:]
+        mask_2 = source_mask[3:, 7:]
+        
+        workspace, module = self.make_workspace((pixels_1, pixels_2),
+                                                (mask_1, mask_2))
+        self.assertTrue(isinstance(module, A.Align))
+        module.alignment_method.value = A.M_MUTUAL_INFORMATION
+        module.wants_cropping.value = True
+        module.run(workspace)
+
+        image = workspace.image_set.get_image("Aligned0")
+        self.assertEqual(tuple(image.pixel_data.shape),
+                         tuple(image.mask.shape))
+    

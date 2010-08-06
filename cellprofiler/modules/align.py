@@ -458,7 +458,12 @@ with respect to the first image.""")
                                               must_be_grayscale = True)
         most_cropped_image = workspace.image_set.get_image(most_cropped_image_name)
         pixels = most_cropped_image.crop_image_similarly(image.pixel_data)
+        if image.has_mask:
+            mask = most_cropped_image.crop_image_similarly(image.mask)
+        else:
+            mask = None
         output_image = cpi.Image(pixels, 
+                                 mask = mask,
                                  crop_mask = most_cropped_image.crop_mask,
                                  parent_image = image)
         workspace.image_set.add(output_image_name, output_image)

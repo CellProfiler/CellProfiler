@@ -751,7 +751,8 @@ def write_figures(prefix, directory, dose_name,
     feature_set - tuples of object name and feature name in same order as data
     log_transform - true to log-transform the dose data
     '''
-    import pylab
+    from matplotlib.figure import Figure
+    from matplotlib.backends.backend_pdf import FigureCanvasPdf
     
     if log_transform:
         dose_data = np.log(dose_data)
@@ -760,12 +761,14 @@ def write_figures(prefix, directory, dose_name,
         fcoeffs = ec50_coeffs[i,:]
         filename = "%s%s_%s.pdf"%(prefix, object_name, feature_name)
         pathname = os.path.join(directory, filename)
-        pylab.figure()
+        f = Figure()
+        canvas = FigureCanvasPdf(f)
+        ax = f.add_subplot(1,1,1)
         x = np.linspace(0, np.max(dose_data), num=100)
         y = sigmoid(fcoeffs, x)
-        pylab.plot(y)
-        pylab.xlabel('Dose')
-        pylab.ylabel('Response')
-        pylab.title('%s_%s'%(object_name, feature_name))
-        pylab.savefig(pathname)
+        ax.plot(y)
+        ax.set_xlabel('Dose')
+        ax.set_ylabel('Response')
+        ax.set_title('%s_%s'%(object_name, feature_name))
+        f.savefig(pathname)
         

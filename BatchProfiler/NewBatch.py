@@ -101,7 +101,7 @@ def minus_key(d, key):
 
 keys = { 'data_dir':lookup('data_dir', '/imaging/analysis'),
          'email':lookup('email', 'user@broadinstitute.org'),
-         'queue':lookup('queue', 'broad'),
+         'queue':lookup('queue', 'hour'),
          'project':lookup('project','imaging'),
          'write_data':lookup('write_data','no'),
          'batch_size':lookup('batch_size','10'),
@@ -267,7 +267,7 @@ print '''<form action='%(url)s'>
 <div style='white-space=nowrap'><label for='input_queue'>Queue:&nbsp;</label>
 <select id='input_queue' name='queue'>
 '''%(keys)
-for queue in ('broad','short','long','hugemem','preview','priority'):
+for queue in ('hour', 'week', 'broad','short','long','hugemem','preview','priority'):
     selected = 'selected="selected"' if queue == keys['queue'] else ''
     print '''<option value='%(queue)s' %(selected)s>%(queue)s</option>'''%(locals())
 

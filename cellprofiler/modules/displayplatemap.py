@@ -68,11 +68,9 @@ class DisplayPlatemap(cpm.CPModule):
             doc='''
             Choose the object measurement made by a previous 
             module to plot.''')
-        
-        self.plate_keys = []
-        self.add_plate_measurement(False)
-        self.add_plate_key = cps.DoSomething("","Add another plate identifier",
-                                               self.add_plate)
+                
+        self.plate_name = cps.Measurement('Select your plate metadata',
+                                          lambda:cpmeas.IMAGE, 'Metadata_Plate')
         
         self.plate_type = cps.Choice(
             'What type of plate is the data from?',
@@ -108,40 +106,19 @@ class DisplayPlatemap(cpm.CPModule):
             the title will default 
             to <i>(cycle N)</i> where <i>N</i> is the current image 
             cycle being executed.''')
-
-    def add_plate_measurement(self, removable=True):
-        # The text for these settings will be replaced in renumber_settings()
-        group = cps.SettingsGroup()
-        group.append('plate_meas', cps.Measurement('', lambda:cpmeas.IMAGE, 'Metadata_Plate'))
-        if removable:
-            group.append('remover', cps.RemoveSettingButton('', 
-                        'Remove this plate identifier', self.plate_keys, group))
-        self.plate_keys.append(group)
-        
-    def add_plate(self):
-        self.add_plate_measurement()
-        
-    def renumber_settings(self):
-        for idx, meas in enumerate(self.plate_keys):
-            meas.plate_meas.text = 'Select the %s plate identifier'%(ordinal(idx + 1))
         
     def settings(self):
-        result = [self.objects_or_image, self.object, self.plot_measurement]
-        for group in self.plate_keys:
-            result += group.settings
-        result += [self.plate_type, self.well_name, self.well_row, 
-                   self.well_col, self.agg_method, self.title]
-        return result
+        return [self.objects_or_image, self.object, self.plot_measurement,
+                self.plate_name, self.plate_type, self.well_name, 
+                self.well_row, self.well_col, self.agg_method, self.title]
 
     def visible_settings(self):
-        self.renumber_settings()
         result = [self.objects_or_image]
         if self.objects_or_image.value == OI_OBJECTS:
             result += [self.object]
         result += [self.plot_measurement]
-        for group in self.plate_keys:
-            result += group.visible_settings()
         result += [self.plate_type]
+        result += [self.plate_name]
         if self.well_format == WF_NAME:
             result += [self.well_name]
         elif self.well_format == WF_ROWCOL:
@@ -153,8 +130,7 @@ class DisplayPlatemap(cpm.CPModule):
         if workspace.frame:
             m = workspace.get_measurements()
             # Get plates
-            for plate in self.plate_keys:
-                plates = m.get_all_measurements(cpmeas.IMAGE, plate.plate_meas.value)
+            plates = m.get_all_measurements(cpmeas.IMAGE, self.plate_name.value)
             # Get wells
             if self.well_format == WF_NAME:
                 wells = m.get_all_measurements(cpmeas.IMAGE, self.well_name.value)

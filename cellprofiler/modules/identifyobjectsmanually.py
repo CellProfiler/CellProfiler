@@ -266,7 +266,9 @@ class IdentifyObjectsManually(I.Identify):
         
         current_lasso = []
         def on_lasso(vertices):
-            mask = np.zeros(pixel_data.shape, int)
+            lasso = current_lasso.pop()
+            figure.canvas.widgetlock.release(lasso)
+            mask = np.zeros(pixel_data.shape[:2], int)
             new_label = np.max(labels) + 1
             for i in range(len(vertices)):
                 v0 = (int(vertices[i][1]), int(vertices[i][0]))
@@ -276,6 +278,7 @@ class IdentifyObjectsManually(I.Identify):
             mask = fill_labeled_holes(mask)
             labels[mask != 0] = new_label
             draw()
+
             
         ##################################
         #
@@ -303,13 +306,7 @@ class IdentifyObjectsManually(I.Identify):
                     labels[labels > erase_label] -= 1
                 draw()
             
-        def on_left_mouse_up(event):
-            if len(current_lasso) > 0:
-                lasso = current_lasso.pop()
-                figure.canvas.widgetlock.release(lasso)
-                
         figure.canvas.mpl_connect('button_press_event', on_left_mouse_down)
-        figure.canvas.mpl_connect('button_release_event', on_left_mouse_up)
         
         ######################################
         #

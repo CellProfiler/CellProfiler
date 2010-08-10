@@ -362,20 +362,28 @@ def size_similarly(labels, secondary):
     Either the mask is all ones or the result is a copy, so you can
     modify the output within the unmasked region w/o destroying the original.
     '''
-    assert secondary.ndim == 2
-    if labels.shape == secondary.shape:
+    if labels.shape[:2] == secondary.shape[:2]:
         return secondary, np.ones(secondary.shape, bool)
     if (labels.shape[0] <= secondary.shape[0] and
         labels.shape[1] <= secondary.shape[1]):
-        return (secondary[:labels.shape[0], :labels.shape[1]],
-                np.ones(labels.shape, bool))
+        if secondary.ndim == 2:
+            return (secondary[:labels.shape[0], :labels.shape[1]],
+                    np.ones(labels.shape, bool))
+        else:
+            return (secondary[:labels.shape[0], :labels.shape[1],:],
+                    np.ones(labels.shape, bool))
+            
     #
     # Some portion of the secondary matrix does not cover the labels
     #
-    result = np.zeros(labels.shape, secondary.dtype)
+    result = np.zeros(list(labels.shape) + list(secondary.shape[2:]),
+                      secondary.dtype)
     i_max = min(secondary.shape[0], labels.shape[0])
     j_max = min(secondary.shape[1], labels.shape[1])
-    result[:i_max,:j_max] = secondary[:i_max, :j_max]
+    if secondary.ndim == 2:
+        result[:i_max,:j_max] = secondary[:i_max, :j_max]
+    else:
+        result[:i_max,:j_max,:] = secondary[:i_max, :j_max, :]
     mask = np.zeros(labels.shape, bool)
     mask[:i_max, :j_max] = 1
     return result, mask

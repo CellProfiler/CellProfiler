@@ -252,3 +252,11 @@ class TestSizeSimilarly(unittest.TestCase):
         self.assertTrue(np.all(~mask[:10,15:]))
         self.assertEqual(secondary.dtype, np.dtype(np.float32))
         
+    def test_01_04_size_color(self):
+        secondary, mask = cpo.size_similarly(np.zeros((10,20), int), 
+                                             np.zeros((10,15,3), np.float32))
+        self.assertEqual(tuple(secondary.shape), (10,20,3))
+        self.assertTrue(np.all(mask[:10,:15]))
+        self.assertTrue(np.all(~mask[:10,15:]))
+        self.assertEqual(secondary.dtype, np.dtype(np.float32))
+        

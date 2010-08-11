@@ -124,7 +124,7 @@ options, args = parser.parse_args()
 from matplotlib import use as mpluse
 mpluse('WXAgg')
 
-if (not hasattr(sys, 'frozen')) and (options.build_extensions and not options.output_html):
+if (not hasattr(sys, 'frozen')) and options.build_extensions:
     import subprocess
     import cellprofiler.cpmath.setup
     import cellprofiler.utilities.setup

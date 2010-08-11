@@ -58,8 +58,8 @@ class CellProfilerMSI(distutils.core.Command):
         fd = open("version.iss", "w")
         fd.write("""
 AppVerName=CellProfiler 2.0 r%s
-OutputBaseFilename=CellProfiler_2.0_win32_r%s
-""" % (revision, revision))
+OutputBaseFilename=CellProfiler_2.0_win%d_r%s
+""" % (revision, (64 if is_win64 else 32), revision))
         fd.close()
         if is_win64:
             cell_profiler_iss = "CellProfiler64.iss"

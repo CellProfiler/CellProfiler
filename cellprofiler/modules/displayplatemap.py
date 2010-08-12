@@ -2,7 +2,17 @@
 '''<b>Display Platemap </b> displays a desired measurement in plate map view
 <hr>
 
-A plate map is a...
+<b>Display Platemap</b> is a tool for browsing image-based data laid out on 
+multi-well plates common to high-throughput biological screens. The display
+window for this module shows a plate map with each well color-coded according
+to the measurement chosen. 
+
+<p>As the pipeline runs, the measurement information displayed is updated, 
+so value shown for each well is current up to the image
+cycle currently being processed; wells which have no corresponding measurements
+as yet as shown as blank.
+
+See also <b>DisplayDensityPlot</b>, <b>DisplayHistogram</b>, <b>DisplayScatterPlot</b>.
 '''
 
 #CellProfiler is distributed under the GNU General Public License.
@@ -24,6 +34,7 @@ import cellprofiler.cpimage as cpi
 import cellprofiler.cpmodule as cpm
 import cellprofiler.settings as cps
 import cellprofiler.measurements as cpmeas
+from cellprofiler.gui.help import USING_METADATA_HELP_REF
 
 AGG_AVG = 'avg'
 AGG_MEDIAN = 'median'
@@ -64,18 +75,25 @@ class DisplayPlatemap(cpm.CPModule):
             <b>IdentifySecondaryObjects</b>) whose measurements are to be displayed.''')
         
         self.plot_measurement = cps.Measurement(
-            'Select the object measurement to plot', self.get_object, 'None',
-            doc='''
-            Choose the object measurement made by a previous 
-            module to plot.''')
+            'Select the measurement to plot', self.get_object, 'None', doc='''
+            Choose the image or object measurement made by a previous module to plot.''')
                 
         self.plate_name = cps.Measurement('Select your plate metadata',
-                                          lambda:cpmeas.IMAGE, 'Metadata_Plate')
+            lambda:cpmeas.IMAGE, 'Metadata_Plate', doc = '''
+            Choose the metadata that corresponds to the plate identifier. That is,
+            each plate should have a metadata tag containing a specifier corresponding
+            uniquely to that plate. 
+            <p>%(USING_METADATA_HELP_REF)s.</p>'''%globals())
         
         self.plate_type = cps.Choice(
             'What type of plate is the data from?',
-            ['96','384'],
-            doc = ''' ''')
+            ['96','384'],doc = 
+            '''The module assumes that your data is laid out in a multi-well plate format
+            common to high-throughput biological screens. Supported formats are:
+            <ul>
+            <li><i>96:</i> A 96-well plate with 8 rows x 12 columns</li>
+            <li><i>384:</i> A 384-well plate with 16 rows x 24 columns</li>
+            </ul>''')
         
         self.well_format = cps.Choice(
             "What form is your well metadata in?",
@@ -86,18 +104,36 @@ class DisplayPlatemap(cpm.CPModule):
             for each well.</li></ul>"""%(WF_NAME, WF_ROWCOL))
 
         self.well_name = cps.Measurement('Select your well metadata', 
-                                         lambda:cpmeas.IMAGE, 'Metadata_Well')
+            lambda:cpmeas.IMAGE, 'Metadata_Well', doc = '''
+            Choose the metadata that corresponds to the well identifier, such as
+            "A01." 
+            <p>%(USING_METADATA_HELP_REF)s.</p>'''%globals())
 
         self.well_row = cps.Measurement('Select your well row metadata', 
-                                         lambda:cpmeas.IMAGE, 'Metadata_WellRow')
+            lambda:cpmeas.IMAGE, 'Metadata_WellRow', doc = '''
+            Choose the metadata that corresponds to the well row identifier. For many plates,
+            the column is specified as a letter. 
+            <p>%(USING_METADATA_HELP_REF)s.</p>'''%globals())
         
         self.well_col = cps.Measurement('Select your well column metadata', 
-                                         lambda:cpmeas.IMAGE, 'Metadata_WellCol')
+            lambda:cpmeas.IMAGE, 'Metadata_WellCol', doc = '''
+            Choose the metadata that corresponds to the well row identifier. For many plates,
+            the row is specified as a number. 
+            <p>%(USING_METADATA_HELP_REF)s.</p>'''%globals())
 
         self.agg_method = cps.Choice(
             'How should the values be aggregated?', 
-            AGG_NAMES, AGG_NAMES[0],
-            doc=''' ''')
+            AGG_NAMES, AGG_NAMES[0], doc='''Measurements must be aggregated to a 
+            single number for each well so that they can be represented by a color. 
+            Options are:
+            <ul>
+            <li><i>avg:</i> Average</li>
+            <li><i>stdev(standard deviation)
+            <li><i>median</i>
+            <li><i>cv%:</i> Coefficient of variation, defined as the ratio of the standard 
+            deviation to the mean. This is useful for comparing between data sets with 
+            different units or widely different means.</li>
+            </ul>''')
 
         self.title = cps.Text(
             'Enter a title for the plot, if desired', '',

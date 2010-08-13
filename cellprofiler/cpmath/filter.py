@@ -15,6 +15,7 @@ Website: http://www.cellprofiler.org
 __version__="$Revision$"
 
 import numpy as np
+import itertools
 import _filter
 from rankorder import rank_order
 import scipy.ndimage as scind
@@ -763,3 +764,539 @@ def circular_average_filter(image, radius, mask=None):
     output[mask==0] = image[mask==0]
     
     return output
+
+#######################################
+# 
+# Structure and ideas for the Kalman filter derived from u-track 
+# as described in
+#
+#  Jaqaman, "Robust single-particle tracking in live-cell
+#  time-lapse sequences", NATURE METHODS | VOL.5 NO.8 | AUGUST 2008
+#
+#######################################
+class KalmanState(object):
+    '''A data structure representing the state at a frame
+    
+    The original method uses "feature" to mean the same thing as
+    CellProfiler's "object".
+    
+    The state vector is somewhat abstract: it's up to the caller to
+    determine what each of the indices mean. For instance, in a model
+    with a 2-d position and velocity component, the state might be
+    i, j, di, dj
+    
+    .observation_matrix - matrix to transform the state vector into the
+                          observation vector. The observation matrix gives
+                          the dimensions of the observation vector from its
+                          i-shape and the dimensions of the state vector
+                          from its j-shape. For observations of position
+                          and states with velocity, the observation matrix
+                          might be:
+                          
+                          np.array([[1,0,0,0],
+                                    [0,1,0,0]])
+                          
+    .translation_matrix - matrix to translate the state vector from t-1 to t
+                          For instance, the translation matrix for position
+                          and velocity might be:
+                          
+                          np.array([[1,0,1,0],
+                                    [0,1,0,1],
+                                    [0,0,1,0],
+                                    [0,0,0,1]])
+    
+    .state_vec - an array of vectors per feature
+    
+    .state_cov - the covariance matrix yielding the prediction. Each feature
+                has a 4x4 matrix that can be used to predict the new value
+                
+    .noise_var - the variance of the state noise for each feature for each
+                vector element
+                
+    .state_noise - a N x 4 array: the state noise for the i, j, vi and vj
+    
+    .state_noise_idx - the feature indexes for each state noise vector
+    
+    .obs_vec   - the prediction for the observed variables
+    '''
+    
+    def __init__(self, 
+                 observation_matrix,
+                 translation_matrix,
+                 state_vec = None,
+                 state_cov = None,
+                 noise_var = None,
+                 state_noise = None,
+                 state_noise_idx = None):
+        self.observation_matrix = observation_matrix
+        self.translation_matrix = translation_matrix
+        if state_vec is not None:
+            self.state_vec = state_vec
+        else:
+            self.state_vec = np.zeros((0, self.state_len))
+        if state_cov is not None:
+            self.state_cov = state_cov
+        else:
+            self.state_cov = np.zeros((0, self.state_len, self.state_len))
+        if noise_var is not None:
+            self.noise_var = noise_var
+        else:
+            self.noise_var = np.zeros((0, self.state_len))
+        if state_noise is not None:
+            self.state_noise = state_noise
+        else:
+            self.state_noise = np.zeros((0, self.state_len))
+        if state_noise_idx is not None:
+            self.state_noise_idx = state_noise_idx
+        else:
+            self.state_noise_idx = np.zeros(0, int)
+    
+    @property
+    def state_len(self):
+        '''# of elements in the state vector'''
+        return self.observation_matrix.shape[1]
+    @property
+    def obs_len(self):
+        '''# of elements in the observation vector'''
+        return self.observation_matrix.shape[0]
+
+    @property
+    def has_cached_predicted_state_vec(self):
+        '''True if next state vec has been calculated'''
+        return hasattr(self, "p_state_vec")
+    
+    @property
+    def predicted_state_vec(self):
+        '''The predicted state vector for the next time point
+        
+        From Welch eqn 1.9
+        '''
+        if not self.has_cached_predicted_state_vec:
+            self.p_state_vec = dot_n(
+                self.translation_matrix,
+                self.state_vec[:, :, np.newaxis])[:,:,0]
+        return self.p_state_vec
+    
+    @property
+    def has_cached_obs_vec(self):
+        '''True if the observation vector for the next state has been calculated'''
+        return hasattr(self, "obs_vec")
+    
+    @property
+    def predicted_obs_vec(self):
+        '''The predicted observation vector
+        
+        The observation vector for the next step in the filter.
+        '''
+        if not self.has_cached_obs_vec:
+            self.obs_vec = dot_n(
+                self.observation_matrix,
+                self.predicted_state_vec[:,:,np.newaxis])[:,:,0]
+        return self.obs_vec
+    
+    def map_frames(self, old_indices):
+        '''Rewrite the feature indexes based on the next frame's identities
+        
+        old_indices - for each feature in the new frame, the index of the
+                      old feature
+        '''
+        nfeatures = len(old_indices)
+        noldfeatures = len(self.state_vec)
+        if nfeatures > 0:
+            self.state_vec = self.state_vec[old_indices]
+            self.state_cov = self.state_cov[old_indices]
+            self.noise_var = self.noise_var[old_indices]
+            if self.has_cached_obs_vec:
+                self.obs_vec = self.obs_vec[old_indices]
+            if self.has_cached_predicted_state_vec:
+                self.p_state_vec = self.p_state_vec[old_indices]
+            if len(self.state_noise_idx) > 0:
+                #
+                # We have to renumber the new_state_noise indices and get rid
+                # of those that don't map to numbers. Typical index trick here:
+                # * create an array for each legal old element: -1 = no match
+                # * give each old element in the array the new number
+                # * Filter out the "no match" elements.
+                #
+                reverse_indices = -np.ones(noldfeatures, int)
+                reverse_indices[old_indices] = np.arange(nfeatures)
+                self.state_noise_idx = reverse_indices[self.state_noise_idx]
+                self.state_noise = self.state_noise[self.state_noise_idx != -1,:]
+                self.state_noise_idx = self.state_noise_idx[self.state_noise_idx != -1]
+    
+    def add_features(self, kept_indices, new_indices,
+                     new_state_vec, new_state_cov, new_noise_var):
+        '''Add new features to the state
+        
+        kept_indices - the mapping from all indices in the state to new
+                       indices in the new version
+                       
+        new_indices - the indices of the new features in the new version
+        
+        new_state_vec - the state vectors for the new indices
+        
+        new_state_cov - the covariance matrices for the new indices
+        
+        new_noise_var - the noise variances for the new indices
+        '''
+        assert len(kept_indices) == len(self.state_vec)
+        assert len(new_indices) == len(new_state_vec)
+        assert len(new_indices) == len(new_state_cov)
+        assert len(new_indices) == len(new_noise_var)
+        
+        if self.has_cached_obs_vec:
+            del self.obs_vec
+        if self.has_cached_predicted_state_vec:
+            del self.predicted_obs_vec
+        
+        nfeatures = len(kept_indices) + len(new_indices)
+        next_state_vec = np.zeros((nfeatures, self.state_len))
+        next_state_cov = np.zeros((nfeatures, self.state_len, self.state_len))
+        next_noise_var = np.zeros((nfeatures, self.state_len))
+        
+        if len(kept_indices) > 0:
+            next_state_vec[kept_indices] = self.state_vec
+            next_state_cov[kept_indices] = self.state_cov
+            next_noise_var[kept_indices] = self.noise_var
+            if len(self.state_noise_idx) > 0:
+                self.state_noise_idx = kept_indices[self.state_noise_idx]
+        if len(new_indices) > 0:
+            next_state_vec[new_indices] = new_state_vec
+            next_state_cov[new_indices] = new_state_cov
+            next_noise_var[new_indices] = new_noise_var
+        self.state_vec = next_state_vec
+        self.state_cov = next_state_cov
+        self.noise_var = next_noise_var
+        
+    def deep_copy(self):
+        '''Return a deep copy of the state'''
+        c = KalmanState(self.observation_matrix, self.translation_matrix)
+        c.state_vec = self.state_vec.copy()
+        c.state_cov = self.state_cov.copy()
+        c.noise_var = self.noise_var.copy()
+        c.state_noise = self.state_noise.copy()
+        c.state_noise_idx = self.state_noise_idx.copy()
+        return c
+    
+LARGE_KALMAN_COV = 2000
+SMALL_KALMAN_COV = 1
+
+def velocity_kalman_model():
+    '''Return a KalmanState set up to model objects with constant velocity
+    
+    The observation and measurement vectors are i,j.
+    The state vector is i,j,vi,vj
+    '''
+    om = np.array([[1,0,0,0], [0, 1, 0, 0]])
+    tm = np.array([[1,0,1,0],
+                   [0,1,0,1],
+                   [0,0,1,0],
+                   [0,0,0,1]])
+    return KalmanState(om, tm)
+
+def static_kalman_model():
+    '''Return a KalmanState set up to model objects whose motion is random
+    
+    The observation, measurement and state vectors are all i,j
+    '''
+    return KalmanState(np.eye(2), np.eye(2))
+
+def kalman_filter(kalman_state, old_indices, coordinates, q, r):
+    '''Return the kalman filter for the features in the new frame
+    
+    kalman_state - state from last frame
+    
+    old_indices - the index per feature in the last frame or -1 for new
+    
+    coordinates - Coordinates of the features in the new frame.
+    
+    q - the process error covariance - see equ 1.3 and 1.10 from Welch
+    
+    r - measurement error covariance of features - see eqn 1.7 and 1.8 from welch.
+    
+    returns a new KalmanState containing the kalman filter of
+    the last state by the given coordinates.
+    
+    Refer to kalmanGainLinearMotion.m and
+    http://www.cs.unc.edu/~welch/media/pdf/kalman_intro.pdf
+    
+    for info on the algorithm.
+    '''
+    assert isinstance(kalman_state, KalmanState)
+    old_indices = np.array(old_indices)
+    if len(old_indices) == 0:
+        return KalmanState(kalman_state.observation_matrix,
+                           kalman_state.translation_matrix)
+    #
+    # Cull missing features in old state and collect only matching coords
+    #
+    matching = old_indices != -1
+    new_indices = np.arange(len(old_indices))[~matching]
+    retained_indices = np.arange(len(old_indices))[matching]
+    new_coords = coordinates[new_indices]
+    observation_matrix_t = kalman_state.observation_matrix.transpose()
+    if len(retained_indices) > 0:
+        kalman_state = kalman_state.deep_copy()
+        coordinates = coordinates[retained_indices]
+        kalman_state.map_frames(old_indices[retained_indices])
+        #
+        # Time update equations
+        #
+        # From eqn 1.9 of Welch
+        #
+        state_vec = kalman_state.predicted_state_vec
+        #
+        # From eqn 1.10 of Welch
+        #
+        state_cov = dot_n(
+            dot_n(kalman_state.translation_matrix, kalman_state.state_cov),
+            kalman_state.translation_matrix.transpose()) + q[matching]
+        #
+        # From eqn 1.11 of welch
+        #
+        kalman_gain_numerator = dot_n(state_cov, observation_matrix_t)
+        
+        kalman_gain_denominator = dot_n(
+            dot_n(kalman_state.observation_matrix, state_cov),
+                  observation_matrix_t) + r[matching]
+        kalman_gain_denominator = inv_n(kalman_gain_denominator)
+        kalman_gain = dot_n(kalman_gain_numerator, kalman_gain_denominator)
+        #
+        # Eqn 1.12 of Welch
+        #
+        difference = coordinates - dot_n(kalman_state.observation_matrix,
+                                         state_vec[:,:,np.newaxis])[:,:,0]
+        state_noise = dot_n(kalman_gain, difference[:,:,np.newaxis])[:,:,0]
+        state_vec = state_vec + state_noise
+        #
+        # Eqn 1.13 of Welch (factored from (I - KH)P to P - KHP)
+        #
+        state_cov = (state_cov - 
+                     dot_n(dot_n(kalman_gain, kalman_state.observation_matrix), 
+                           state_cov))
+        #
+        # Collect all of the state noise in one array. We produce an I and J
+        # variance. Notes in kalmanGainLinearMotion indicate that you
+        # might want a single variance, combining I & J. An alternate
+        # might be R and theta, a variance of angular consistency and one
+        # of absolute velocity.
+        #
+        # Add an index to the state noise in the rightmost column
+        #
+        idx = np.arange(len(state_noise))
+        #
+        # Stack the rows with the old ones
+        #
+        all_state_noise = np.vstack((kalman_state.state_noise, state_noise))
+        all_state_noise_idx = np.hstack((kalman_state.state_noise_idx, idx))
+        noise_var = np.zeros((len(idx), all_state_noise.shape[1]))
+        for i in range(all_state_noise.shape[1]):
+            noise_var[:, i] = fix(scind.variance(all_state_noise[:, i],
+                                                 all_state_noise_idx,
+                                                 idx))
+        obs_vec = dot_n(kalman_state.observation_matrix, 
+                        state_vec[:,:,np.newaxis])[:,:,0]
+        kalman_state = KalmanState(kalman_state.observation_matrix,
+                                   kalman_state.translation_matrix,
+                                   state_vec, state_cov, noise_var, 
+                                   all_state_noise,
+                                   all_state_noise_idx)
+    else:
+        # Erase all previous features
+        kalman_state = KalmanState(kalman_state.observation_matrix,
+                                   kalman_state.translation_matrix)
+    if len(new_coords) > 0:
+        #
+        # Fill in the initial states:
+        #
+        state_vec = dot_n(observation_matrix_t,
+                          new_coords[:,:,np.newaxis])[:,:,0]
+        #
+        # The COV for the hidden, undetermined features should be large
+        # and the COV for others should be small
+        #
+        nstates = kalman_state.state_len
+        nnew_features = len(new_indices)
+        cov_vec = SMALL_KALMAN_COV / np.dot(observation_matrix_t, 
+                                            np.ones(kalman_state.obs_len))
+        cov_vec[~ np.isfinite(cov_vec)] = LARGE_KALMAN_COV
+        cov_matrix = np.diag(cov_vec)
+        state_cov = cov_matrix[np.newaxis,:,:][np.zeros(nnew_features,int)]
+        #
+        # The noise variance is all ones in Jaqman
+        #
+        noise_var = np.ones((len(new_indices), kalman_state.state_len))
+        #
+        # Map the retained indices to their new slots and new ones to empty
+        # slots (=-1)
+        #
+        kalman_state.add_features(retained_indices,
+                                  new_indices,
+                                  state_vec, state_cov, noise_var)
+    return kalman_state
+                            
+def inv_n(x):
+    '''given N matrices, return N inverses'''
+    #
+    # The inverse of a small matrix (e.g. 3x3) is
+    #
+    #   1
+    # -----   C(j,i)
+    # det(A)
+    #
+    # where C(j,i) is the cofactor of matrix A at position j,i
+    #
+    assert x.ndim == 3
+    assert x.shape[1] == x.shape[2]
+    c = np.array([ [cofactor_n(x, j, i) * (1 - ((i+j) % 2)*2)
+                    for j in range(x.shape[1])]
+                   for i in range(x.shape[1])]).transpose(2,0,1)
+    return c / det_n(x)[:, np.newaxis, np.newaxis]
+    
+def det_n(x):
+    '''given N matrices, return N determinants'''
+    assert x.ndim == 3
+    assert x.shape[1] == x.shape[2]
+    if x.shape[1] == 1:
+        return x[:,0,0]
+    result = np.zeros(x.shape[0])
+    for permutation in permutations(np.arange(x.shape[1])):
+        sign = parity(permutation)
+        result += np.prod([x[:, i, permutation[i]] 
+                           for i in range(x.shape[1])], 0) * sign
+        sign = - sign
+    return result
+
+def parity(x):
+    '''The parity of a permutation
+    
+    The parity of a permutation is even if the permutation can be
+    formed by an even number of transpositions and is odd otherwise.
+    
+    The parity of a permutation is even if there are an even number of
+    compositions of even size and odd otherwise. A composition is a cycle:
+    for instance in (1, 2, 0, 3), there is the cycle: (0->1, 1->2, 2->0)
+    and the cycle, (3->3). Both cycles are odd, so the parity is even:
+    you can exchange 0 and 1 giving (0, 2, 1, 3) and 2 and 1 to get
+    (0, 1, 2, 3)
+    '''
+    
+    order = np.lexsort((x,))
+    hit = np.zeros(len(x), bool)
+    p = 0
+    for j in range(len(x)):
+        if not hit[j]:
+            cycle = 1
+            i = order[j]
+            # mark every node in a cycle
+            while i != j:
+                hit[i] = True
+                i = order[i]
+                cycle += 1
+            p += cycle - 1
+    return 1 if p % 2 == 0 else -1
+
+def cofactor_n(x, i, j):
+    '''Return the cofactor of n matrices x[n,i,j] at position i,j
+    
+    The cofactor is the determinant of the matrix formed by removing
+    row i and column j.
+    '''
+    m = x.shape[1]
+    mr = np.arange(m)
+    i_idx = mr[mr != i]
+    j_idx = mr[mr != j]
+    return det_n(x[:, i_idx[:, np.newaxis], 
+                      j_idx[np.newaxis, :]])
+    
+def dot_n(x, y):
+    '''given two tensors N x I x K and N x K x J return N dot products
+    
+    If either x or y is 2-dimensional, broadcast it over all N.
+    
+    Dot products are size N x I x J.
+    Example:
+    x = np.array([[[1,2], [3,4], [5,6]],[[7,8], [9,10],[11,12]]])
+    y = np.array([[[1,2,3], [4,5,6]],[[7,8,9],[10,11,12]]])
+    print dot_n(x,y)
+    
+    array([[[  9,  12,  15],
+        [ 19,  26,  33],
+        [ 29,  40,  51]],
+
+       [[129, 144, 159],
+        [163, 182, 201],
+        [197, 220, 243]]])
+    '''
+    if x.ndim == 2:
+        if y.ndim == 2:
+            return np.dot(x, y)
+        x3 = False
+        y3 = True
+        nlen = y.shape[0]
+    elif y.ndim == 2:
+        nlen = x.shape[0]
+        x3 = True
+        y3 = False
+    else:
+        assert x.shape[0] == y.shape[0]
+        nlen = x.shape[0]
+        x3 = True
+        y3 = True
+    assert x.shape[1+x3] == y.shape[0+y3]
+    n, i, j, k = np.mgrid[0:nlen, 0:x.shape[0+x3], 0:y.shape[1+y3], 
+                          0:y.shape[0+y3]]
+    return np.sum((x[n, i, k] if x3 else x[i,k]) * 
+                  (y[n, k, j] if y3 else y[k,j]), 3)
+    
+def permutations(x):
+    '''Given a listlike, x, return all permutations of x
+    
+    Returns the permutations of x in the lexical order of their indices:
+    e.g.
+    >>> x = [ 1, 2, 3, 4 ]
+    >>> for p in permutations(x):
+    >>>   print p
+    [ 1, 2, 3, 4 ]
+    [ 1, 2, 4, 3 ] 
+    [ 1, 3, 2, 4 ]
+    [ 1, 3, 4, 2 ]
+    [ 1, 4, 2, 3 ]
+    [ 1, 4, 3, 2 ]
+    [ 2, 1, 3, 4 ]
+    ...
+    [ 4, 3, 2, 1 ]
+    '''
+    #
+    # The algorithm is attributed to Narayana Pandit from his 
+    # Ganita Kaumundi (1356). The following is from
+    #
+    # http://en.wikipedia.org/wiki/Permutation#Systematic_generation_of_all_permutations
+    #
+    # 1. Find the largest index k such that a[k] < a[k + 1]. 
+    #    If no such index exists, the permutation is the last permutation.
+    # 2. Find the largest index l such that a[k] < a[l]. 
+    #    Since k + 1 is such an index, l is well defined and satisfies k < l.
+    # 3. Swap a[k] with a[l].
+    # 4. Reverse the sequence from a[k + 1] up to and including the final
+    #    element a[n].
+    #
+    yield list(x) # don't forget to do the first one
+    x = np.array(x)
+    a = np.arange(len(x))
+    while True:
+        # 1 - find largest or stop
+        ak_lt_ak_next = np.argwhere(a[:-1] < a[1:])
+        if len(ak_lt_ak_next) == 0:
+            raise StopIteration()
+        k = ak_lt_ak_next[-1, 0]
+        # 2 - find largest a[l] < a[k]
+        ak_lt_al = np.argwhere(a[k] < a)
+        l =  ak_lt_al[-1, 0]
+        # 3 - swap
+        a[k], a[l]  = (a[l], a[k])
+        # 4 - reverse
+        if k < len(x)-1:
+            a[k+1:] = a[:k:-1].copy()
+        yield x[a].tolist()
+        

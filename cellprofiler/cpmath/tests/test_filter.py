@@ -1190,3 +1190,451 @@ class TestEnhanceDarkHoles(unittest.TestCase):
                 eimg = F.enhance_dark_holes(image,lo, hi)
                 self.assertTrue(np.all(eimg==0))
         
+class TestKalmanFilter(unittest.TestCase):
+    def test_00_00_none(self):
+        kalman_state = F.velocity_kalman_model()
+        result = F.kalman_filter(kalman_state,
+                                 np.zeros(0,int),
+                                 np.zeros((0,2)),
+                                 np.zeros((0, 4, 4)),
+                                 np.zeros((0, 2, 2)))
+        self.assertTrue(isinstance(result, F.KalmanState))
+        self.assertEqual(len(result.state_vec), 0)
+        
+    def test_01_01_add_one(self):
+        np.random.seed(11)
+        locs = np.random.randint(0, 1000, size=(1,2))
+        kalman_state = F.velocity_kalman_model()
+        result = F.kalman_filter(kalman_state,
+                                 np.ones(1, int) * -1,
+                                 locs,
+                                 np.zeros((1, 4, 4)),
+                                 np.zeros((1, 2, 2)))
+        self.assertTrue(isinstance(result, F.KalmanState))
+        self.assertEqual(len(result.state_vec), 1)
+        self.assertTrue(np.all(result.state_vec[:,:2] == locs))
+        
+    def test_01_02_same_loc_twice(self):
+        np.random.seed(12)
+        locs = np.random.randint(0, 1000, size=(1,2))
+        kalman_state = F.velocity_kalman_model()
+        result = F.kalman_filter(kalman_state,
+                                 np.ones(1, int) * -1,
+                                 locs,
+                                 np.zeros((1, 4, 4)),
+                                 np.zeros((1, 2, 2)))
+        self.assertTrue(isinstance(result, F.KalmanState))
+        self.assertEqual(len(result.state_vec), 1)
+        self.assertTrue(np.all(result.state_vec[:,:2] == locs))
+        
+        result = F.kalman_filter(result,
+                                 np.zeros(1, int),
+                                 locs,
+                                 np.eye(4)[np.newaxis, :, :],
+                                 np.eye(2)[np.newaxis, :, :])
+        self.assertTrue(isinstance(result, F.KalmanState))
+        self.assertEqual(len(result.state_vec), 1)
+        self.assertTrue(np.all(result.state_vec[:,:2] == locs))
+        self.assertTrue(np.all(result.predicted_obs_vec == locs))
+        self.assertTrue(np.all(result.noise_var == 0))
+
+    def test_01_03_same_loc_thrice(self):
+        np.random.seed(13)
+        locs = np.random.randint(0, 1000, size=(1,2))
+        kalman_state = F.velocity_kalman_model()
+        result = F.kalman_filter(kalman_state,
+                                 np.ones(1, int) * -1,
+                                 locs,
+                                 np.zeros((1,4,4)),
+                                 np.zeros((1,2,2)))
+        self.assertTrue(isinstance(result, F.KalmanState))
+        self.assertEqual(len(result.state_vec), 1)
+        self.assertTrue(np.all(result.state_vec[:,:2] == locs))
+        
+        result = F.kalman_filter(result,
+                                 np.zeros(1, int),
+                                 locs,
+                                 np.eye(4)[np.newaxis, :, :],
+                                 np.eye(2)[np.newaxis, :, :])
+        self.assertTrue(isinstance(result, F.KalmanState))
+        self.assertEqual(len(result.state_vec), 1)
+        self.assertTrue(np.all(result.state_vec[:,:2] == locs))
+        self.assertTrue(np.all(result.predicted_obs_vec == locs))
+        self.assertTrue(np.all(result.noise_var == 0))
+        #
+        # The third time through exercises some code to join the state_noise
+        #
+        result = F.kalman_filter(result,
+                                 np.zeros(1, int),
+                                 locs,
+                                 np.eye(4)[np.newaxis, :, :],
+                                 np.eye(2)[np.newaxis, :, :])
+        self.assertTrue(isinstance(result, F.KalmanState))
+        self.assertEqual(len(result.state_vec), 1)
+        self.assertTrue(np.all(result.state_vec[:,:2] == locs))
+        self.assertTrue(np.all(result.predicted_obs_vec == locs))
+        self.assertTrue(np.all(result.noise_var == 0))
+    
+    def test_01_04_disappear(self):
+        np.random.seed(13)
+        locs = np.random.randint(0, 1000, size=(1,2))
+        kalman_state = F.velocity_kalman_model()
+        result = F.kalman_filter(kalman_state,
+                                 np.ones(1, int) * -1,
+                                 locs,
+                                 np.zeros((1,4,4)),
+                                 np.zeros((1,2,2)))
+        self.assertTrue(isinstance(result, F.KalmanState))
+        self.assertEqual(len(result.state_vec), 1)
+        self.assertTrue(np.all(result.state_vec[:,:2] == locs))
+        
+        result = F.kalman_filter(kalman_state,
+                                 np.zeros(0, int),
+                                 np.zeros((0,2)),
+                                 np.zeros((0,4,4)),
+                                 np.zeros((0,2,2)))
+        self.assertEqual(len(result.state_vec), 0)
+        
+    def test_01_05_follow_2(self):
+        np.random.seed(15)
+        locs = np.random.randint(0, 1000, size=(2,2))
+        kalman_state = F.velocity_kalman_model()
+        result = F.kalman_filter(kalman_state,
+                                 np.ones(2, int) * -1,
+                                 locs,
+                                 np.zeros((0,2,2)),
+                                 np.zeros((0,4,4)))
+        self.assertTrue(isinstance(result, F.KalmanState))
+        self.assertEqual(len(result.state_vec), 2)
+        self.assertTrue(np.all(result.state_vec[:,:2] == locs))
+        
+        result = F.kalman_filter(result,
+                                 np.arange(2),
+                                 locs,
+                                 np.array([np.eye(4)]*2),
+                                 np.array([np.eye(2)]*2))
+        self.assertTrue(isinstance(result, F.KalmanState))
+        self.assertEqual(len(result.state_vec), 2)
+        self.assertTrue(np.all(result.state_vec[:,:2] == locs))
+        self.assertTrue(np.all(result.predicted_obs_vec == locs))
+        self.assertTrue(np.all(result.noise_var == 0))
+
+        result = F.kalman_filter(result,
+                                 np.arange(2),
+                                 locs,
+                                 np.array([np.eye(4)]*2),
+                                 np.array([np.eye(2)]*2))
+        self.assertTrue(isinstance(result, F.KalmanState))
+        self.assertEqual(len(result.state_vec), 2)
+        self.assertTrue(np.all(result.state_vec[:,:2] == locs))
+        self.assertTrue(np.all(result.predicted_obs_vec == locs))
+        self.assertTrue(np.all(result.noise_var == 0))
+        
+    def test_01_06_follow_with_movement(self):
+        np.random.seed(16)
+        vi = 5
+        vj = 7
+        e = np.ones(2)
+        locs = np.random.randint(0, 1000, size=(1,2))
+        kalman_state = F.velocity_kalman_model()
+        for i in range(100):
+            kalman_state = F.kalman_filter(kalman_state,
+                                           [0] if i > 0 else [-1],
+                                           locs,
+                                           np.eye(4)[np.newaxis, :, :] * 2,
+                                           np.eye(2)[np.newaxis, :, :] * .5)
+            locs[0,0] += vi
+            locs[0,1] += vj
+            if i > 0:
+                new_e = np.abs(kalman_state.predicted_obs_vec[0] - locs[0])
+                self.assertTrue(np.all(new_e <= e + np.finfo(np.float32).eps))
+                e = new_e
+
+    def test_01_07_scramble_and_follow(self):
+        np.random.seed(17)
+        nfeatures = 20
+        v = np.random.uniform(size=(nfeatures,2)) * 5
+        locs = np.random.uniform(size=(nfeatures, 2)) * 100
+        e = np.ones((nfeatures, 2))
+        q = np.eye(4)[np.newaxis, :, :][np.zeros(nfeatures, int)] * 2
+        r = np.eye(2)[np.newaxis, :, :][np.zeros(nfeatures, int)] * .5
+
+        kalman_state = F.kalman_filter(F.velocity_kalman_model(),
+                                       -np.ones(nfeatures, int),
+                                       locs, q, r)
+        locs += v
+        for i in range(100):
+            scramble = np.random.permutation(np.arange(nfeatures))
+            #scramble = np.arange(nfeatures)
+            locs = locs[scramble]
+            v = v[scramble]
+            e = e[scramble]
+            kalman_state = F.kalman_filter(kalman_state,
+                                           scramble,
+                                           locs, q, r)
+            locs += v
+            new_e = np.abs(kalman_state.predicted_obs_vec - locs)
+            self.assertTrue(np.all(new_e <= e + np.finfo(np.float32).eps))
+            e = new_e
+            
+    def test_01_08_scramble_add_and_remove(self):
+        np.random.seed(18)
+        nfeatures = 20
+        v = np.random.uniform(size=(nfeatures,2)) * 5
+        locs = np.random.uniform(size=(nfeatures, 2)) * 100
+        e = np.ones((nfeatures, 2))
+        q = np.eye(4)[np.newaxis, :, :][np.zeros(nfeatures, int)] * 2
+        r = np.eye(2)[np.newaxis, :, :][np.zeros(nfeatures, int)] * .5
+
+        kalman_state = F.kalman_filter(F.velocity_kalman_model(),
+                                       -np.ones(nfeatures, int),
+                                       locs, q, r)
+        locs += v
+        for i in range(100):
+            add = np.random.randint(1, 10)
+            remove = np.random.randint(1, nfeatures-1)
+            scramble = np.random.permutation(np.arange(nfeatures))[remove:]
+            locs = locs[scramble]
+            v = v[scramble]
+            e = e[scramble]
+            new_v = np.random.uniform(size=(add,2)) * 5
+            new_locs = np.random.uniform(size=(add, 2)) * 100
+            new_e = np.ones((add, 2))
+            scramble = np.hstack((scramble, -np.ones(add, int)))
+            v = np.vstack((v, new_v))
+            locs = np.vstack((locs, new_locs))
+            e = np.vstack((e, new_e))
+            nfeatures += add - remove
+            q = np.eye(4)[np.newaxis, :, :][np.zeros(nfeatures, int)] * 2
+            r = np.eye(2)[np.newaxis, :, :][np.zeros(nfeatures, int)] * .5
+            kalman_state = F.kalman_filter(kalman_state,
+                                           scramble,
+                                           locs, q, r)
+            locs += v
+            new_e = np.abs(kalman_state.predicted_obs_vec - locs)
+            self.assertTrue(np.all(new_e[:-add] <= e[:-add] + np.finfo(np.float32).eps))
+            e = new_e
+            
+    def test_02_01_with_noise(self):
+        np.random.seed(21)
+        nfeatures = 20
+        nsteps = 200
+        vq = np.random.uniform(size=nfeatures) * 2
+        vr = np.random.uniform(size=nfeatures) * .5
+        sdq = np.sqrt(vq)
+        sdr = np.sqrt(vr)
+        v = np.random.uniform(size=(nfeatures,2)) * 10
+        locs = np.random.uniform(size=(nfeatures, 2)) * 200
+        locs = locs[np.newaxis,:,:] + np.arange(nsteps)[:,np.newaxis, np.newaxis] * v[np.newaxis,:,:]
+        process_error = np.random.normal(scale=sdq, size=(nsteps, 2, nfeatures)).transpose((0,2,1))
+        measurement_error = np.random.normal(scale=sdr, size=(nsteps, 2, nfeatures)).transpose((0,2,1))
+        locs = locs + np.cumsum(process_error, 0)
+        meas = locs + measurement_error
+        q = np.eye(4)[np.newaxis, :, :][np.zeros(nfeatures, int)] * vq[:, np.newaxis, np.newaxis]
+        r = np.eye(2)[np.newaxis, :, :][np.zeros(nfeatures, int)] * vr[:, np.newaxis, np.newaxis]
+
+        obs = np.zeros((nsteps, nfeatures, 2))
+        kalman_state = F.kalman_filter(F.velocity_kalman_model(),
+                                       -np.ones(nfeatures, int),
+                                       meas[0], q, r)
+        obs[0] = kalman_state.state_vec[:,:2]
+        for i in range(1, nsteps):
+            kalman_state = F.kalman_filter(kalman_state,
+                                           np.arange(nfeatures),
+                                           meas[i], q, r)
+            obs[i] = kalman_state.predicted_obs_vec
+        #
+        # The true variance between the real location and the predicted
+        #
+        k_var = np.array([np.var(obs[:,i,0] - locs[:,i,0]) for i in range(nfeatures)])
+        #
+        # I am not sure if the difference between the estimated process
+        # variance and the real process variance is reasonable.
+        #
+        self.assertTrue(np.all(k_var / kalman_state.noise_var[:,0] < 4))
+        self.assertTrue(np.all(kalman_state.noise_var[:,0] / k_var < 4))
+        
+        
+class TestPermutations(unittest.TestCase):
+    def test_01_01_permute_one(self):
+        np.random.seed(11)
+        a = [np.random.uniform()]
+        b = [p for p in F.permutations(a)]
+        self.assertEqual(len(b), 1)
+        self.assertEqual(len(b[0]), 1)
+        self.assertEqual(b[0][0], a[0])
+        
+    def test_01_02_permute_two(self):
+        np.random.seed(12)
+        a = np.random.uniform(size=2)
+        b = [p for p in F.permutations(a)]
+        self.assertEqual(len(b), 2)
+        self.assertEqual(len(b[0]), 2)
+        self.assertTrue(np.all(np.array(b) == a[np.array([[0,1],[1,0]])]))
+        
+    def test_01_03_permute_three(self):
+        np.random.seed(13)
+        a = np.random.uniform(size=3)
+        b = [p for p in F.permutations(a)]
+        self.assertEqual(len(b), 6)
+        self.assertEqual(len(b[0]), 3)
+        expected = np.array([[0,1,2],
+                             [0,2,1],
+                             [1,0,2],
+                             [1,2,0],
+                             [2,0,1],
+                             [2,1,0]])
+        self.assertTrue(np.all(np.array(b) == a[expected]))
+       
+class TestParity(unittest.TestCase):
+    def test_01_01_one(self):
+        self.assertEqual(F.parity([1]), 1)
+        
+    def test_01_02_lots(self):
+        np.random.seed(12)
+        for i in range(100):
+            size = np.random.randint(3,20)
+            a = np.arange(size)
+            n = np.random.randint(1, 20)
+            for j in range(n):
+                k,l = np.random.permutation(np.arange(size))[:2]
+                a[k],a[l] = a[l],a[k]
+            self.assertEqual(F.parity(a), 1 - (n % 2) * 2)
+            
+class TestDotN(unittest.TestCase):
+    def test_00_00_dot_nothing(self):
+        result = F.dot_n(np.zeros((0,4,4)), np.zeros((0,4,4)))
+        self.assertEqual(len(result), 0)
+        
+    def test_01_01_dot_2x2(self):
+        np.random.seed(11)
+        a = np.random.uniform(size = (1,2,2))
+        b = np.random.uniform(size = (1,2,2))
+        result = F.dot_n(a, b)
+        expected = np.array([np.dot(a[0], b[0])])
+        np.testing.assert_array_almost_equal(result, expected)
+
+    def test_01_02_dot_2x3(self):
+        np.random.seed(12)
+        a = np.random.uniform(size = (1,3,2))
+        b = np.random.uniform(size = (1,2,3))
+        result = F.dot_n(a, b)
+        expected = np.array([np.dot(a[0], b[0])])
+        np.testing.assert_array_almost_equal(result, expected)
+
+    def test_01_02_dot_nx2x3(self):
+        np.random.seed(13)
+        a = np.random.uniform(size = (20,3,2))
+        b = np.random.uniform(size = (20,2,3))
+        result = F.dot_n(a, b)
+        expected = np.array([np.dot(a[i], b[i]) for i in range(20)])
+        np.testing.assert_array_almost_equal(result, expected)
+
+class TestDetN(unittest.TestCase):
+    def test_00_00_det_nothing(self):
+        result = F.det_n(np.zeros((0,4,4)))
+        self.assertEqual(len(result), 0)
+        
+    def test_01_01_det_1x1x1(self):
+        np.random.seed(11)
+        a = np.random.uniform(size=(1,1,1))
+        result = F.det_n(a)
+        self.assertEqual(len(result), 1)
+        self.assertEqual(a[0,0,0], result[0])
+        
+    def test_01_02_det_1x2x2(self):
+        np.random.seed(12)
+        a = np.random.uniform(size=(1,2,2))
+        result = F.det_n(a)
+        expected = np.array([np.linalg.det(a[i]) for i in range(len(a))])
+        np.testing.assert_almost_equal(result, expected)
+
+    def test_01_03_det_1x3x3(self):
+        np.random.seed(13)
+        a = np.random.uniform(size=(1,3,3))
+        result = F.det_n(a)
+        expected = np.array([np.linalg.det(a[i]) for i in range(len(a))])
+        np.testing.assert_almost_equal(result, expected)
+
+    def test_01_04_det_nx3x3(self):
+        np.random.seed(14)
+        a = np.random.uniform(size=(21,3,3))
+        result = F.det_n(a)
+        expected = np.array([np.linalg.det(a[i]) for i in range(len(a))])
+        np.testing.assert_almost_equal(result, expected)
+
+class TestCofactorN(unittest.TestCase):
+    def test_01_01_cofactor_1x2x2(self):
+        np.random.seed(11)
+        a = np.random.uniform(size=(1,2,2))
+        ii, jj = np.mgrid[:(a.shape[1]-1),:(a.shape[1]-1)]
+        r = np.arange(a.shape[1])
+        for i in range(a.shape[1]):
+            for j in range(a.shape[1]):
+                result = F.cofactor_n(a, i, j)
+                for n in range(a.shape[0]):
+                    iii = r[r!=i]
+                    jjj = r[r!=j]
+                    aa = a[n][iii[ii], jjj[jj]]
+                    expected = np.linalg.det(aa)
+                    self.assertAlmostEqual(expected, result[n])
+                
+    def test_01_02_cofactor_1x3x3(self):
+        np.random.seed(12)
+        a = np.random.uniform(size=(1,3,3))
+        ii, jj = np.mgrid[:(a.shape[1]-1),:(a.shape[1]-1)]
+        r = np.arange(a.shape[1])
+        for i in range(a.shape[1]):
+            for j in range(a.shape[1]):
+                result = F.cofactor_n(a, i, j)
+                for n in range(a.shape[0]):
+                    iii = r[r!=i]
+                    jjj = r[r!=j]
+                    aa = a[n][iii[ii], jjj[jj]]
+                    expected = np.linalg.det(aa)
+                    self.assertAlmostEqual(expected, result[n])
+                
+    def test_01_03_cofactor_nx4x4(self):
+        np.random.seed(13)
+        a = np.random.uniform(size=(21,4,4))
+        ii, jj = np.mgrid[:(a.shape[1]-1),:(a.shape[1]-1)]
+        r = np.arange(a.shape[1])
+        for i in range(a.shape[1]):
+            for j in range(a.shape[1]):
+                result = F.cofactor_n(a, i, j)
+                for n in range(a.shape[0]):
+                    iii = r[r!=i]
+                    jjj = r[r!=j]
+                    aa = a[n][iii[ii], jjj[jj]]
+                    expected = np.linalg.det(aa)
+                    self.assertAlmostEqual(expected, result[n])
+                
+class TestInvN(unittest.TestCase):
+    def test_01_01_inv_1x1x1(self):
+        np.random.seed(11)
+        a = np.random.uniform(size=(1,1,1))
+        result = F.inv_n(a)
+        self.assertEqual(len(result), 1)
+        self.assertEqual(a[0,0,0], 1/result[0])
+        
+    def test_01_02_inv_1x2x2(self):
+        np.random.seed(12)
+        a = np.random.uniform(size=(1,2,2))
+        result = F.inv_n(a)
+        expected = np.array([np.linalg.inv(a[i]) for i in range(len(a))])
+        np.testing.assert_almost_equal(result, expected)
+
+    def test_01_03_inv_1x3x3(self):
+        np.random.seed(13)
+        a = np.random.uniform(size=(1,3,3))
+        result = F.inv_n(a)
+        expected = np.array([np.linalg.inv(a[i]) for i in range(len(a))])
+        np.testing.assert_almost_equal(result, expected)
+
+    def test_01_04_inv_nx3x3(self):
+        np.random.seed(14)
+        a = np.random.uniform(size=(21,3,3))
+        result = F.inv_n(a)
+        expected = np.array([np.linalg.inv(a[i]) for i in range(len(a))])
+        np.testing.assert_almost_equal(result, expected)
+        

@@ -220,8 +220,6 @@ TrackObjects:[module_num:1|svn_version:\'9227\'|variable_revision_number:3|show_
         self.assertFalse(module.wants_image)
         self.assertEqual(module.measurement, "AreaShape_Area")
         self.assertEqual(module.image_name, "TrackedCells")
-        self.assertEqual(module.born_cost, 100)
-        self.assertEqual(module.die_cost, 100)
         self.assertTrue(module.wants_second_phase)
         self.assertEqual(module.split_cost, 41)
         self.assertEqual(module.merge_cost, 42)
@@ -229,7 +227,106 @@ TrackObjects:[module_num:1|svn_version:\'9227\'|variable_revision_number:3|show_
         self.assertEqual(module.max_split_score, 54)
         self.assertEqual(module.max_merge_score, 55)
         self.assertEqual(module.max_frame_distance, 6)
-                         
+        
+    def test_01_05_load_v4(self):
+        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:1
+SVNRevision:10400
+
+TrackObjects:[module_num:1|svn_version:\'10373\'|variable_revision_number:4|show_window:False|notes:\x5B\x5D]
+    Choose a tracking method:Measurements
+    Select the objects to track:Objs
+    Select object measurement to use for tracking:Slothfulness
+    Maximum pixel distance to consider matches:50
+    Select display option:Color and Number
+    Save color-coded image?:Yes
+    Name the output image:TrackByLAP
+    Motion model(s)\x3A:Both
+    # standard deviations for radius:3
+    Radius limit:3.0,10.0
+    Run the second phase of the LAP algorithm?:Yes
+    Gap cost:40
+    Split alternative cost:1
+    Merge alternative cost:1
+    Maximum gap displacement:51
+    Maximum split score:52
+    Maximum merge score:53
+    Maximum gap:4
+
+TrackObjects:[module_num:2|svn_version:\'10373\'|variable_revision_number:4|show_window:False|notes:\x5B\x5D]
+    Choose a tracking method:Overlap
+    Select the objects to track:Objs
+    Select object measurement to use for tracking:Prescience
+    Maximum pixel distance to consider matches:50
+    Select display option:Color Only
+    Save color-coded image?:No
+    Name the output image:TrackByLAP
+    Motion model(s)\x3A:Random
+    # standard deviations for radius:3
+    Radius limit:3.0,10.0
+    Run the second phase of the LAP algorithm?:No
+    Gap cost:40
+    Split alternative cost:1
+    Merge alternative cost:1
+    Maximum gap displacement:51
+    Maximum split score:52
+    Maximum merge score:53
+    Maximum gap:4
+
+TrackObjects:[module_num:1|svn_version:\'10373\'|variable_revision_number:4|show_window:False|notes:\x5B\x5D]
+    Choose a tracking method:Distance
+    Select the objects to track:Objs
+    Select object measurement to use for tracking:Trepidation
+    Maximum pixel distance to consider matches:50
+    Select display option:Color and Number
+    Save color-coded image?:Yes
+    Name the output image:TrackByLAP
+    Motion model(s)\x3A:Velocity
+    # standard deviations for radius:3
+    Radius limit:3.0,10.0
+    Run the second phase of the LAP algorithm?:Yes
+    Gap cost:40
+    Split alternative cost:1
+    Merge alternative cost:1
+    Maximum gap displacement:51
+    Maximum split score:52
+    Maximum merge score:53
+    Maximum gap:4
+"""
+        pipeline = cpp.Pipeline()
+        def callback(caller,event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO(data))
+        self.assertEqual(len(pipeline.modules()), 3)
+        for module, tracking_method, model, save_img, phase2, meas, dop in zip(
+            pipeline.modules(), 
+            (T.TM_MEASUREMENTS, T.TM_OVERLAP, T.TM_DISTANCE),
+            (T.M_BOTH, T.M_RANDOM, T.M_VELOCITY),
+            (True, False, True), (True, False, True),
+            ("Slothfulness", "Prescience", "Trepidation"),
+            (T.DT_COLOR_AND_NUMBER, T.DT_COLOR_ONLY, T.DT_COLOR_AND_NUMBER)):
+            self.assertTrue(isinstance(module, T.TrackObjects))
+            self.assertEqual(module.tracking_method, tracking_method)
+            self.assertEqual(module.model, model)
+            self.assertEqual(module.wants_image.value, save_img)
+            self.assertEqual(module.wants_second_phase.value, phase2)
+            self.assertEqual(module.measurement, meas)
+            self.assertEqual(module.pixel_radius, 50)
+            self.assertEqual(module.display_type, dop)
+            self.assertEqual(module.image_name, "TrackByLAP")
+            self.assertEqual(module.radius_std, 3)
+            self.assertEqual(module.radius_limit.min, 3.0)
+            self.assertEqual(module.radius_limit.max, 10.0)
+            self.assertEqual(module.gap_cost, 40)
+            self.assertEqual(module.split_cost, 1)
+            self.assertEqual(module.merge_cost, 1)
+            self.assertEqual(module.max_gap_score, 51)
+            self.assertEqual(module.max_split_score, 52)
+            self.assertEqual(module.max_merge_score, 53)
+            self.assertEqual(module.max_frame_distance, 4)
+            
+        
         
     def runTrackObjects(self, labels_list, fn = None, measurement = None):
         '''Run two cycles of TrackObjects
@@ -596,6 +693,7 @@ TrackObjects:[module_num:1|svn_version:\'9227\'|variable_revision_number:3|show_
         '''Test get_measurement_columns function'''
         module = T.TrackObjects()
         module.object_name.value = OBJECT_NAME
+        module.tracking_method.value = T.TM_DISTANCE
         module.pixel_radius.value = 10
         columns = module.get_measurement_columns(None)
         self.assertEqual(len(columns), len(T.F_ALL) + len(T.F_IMAGE_ALL))
@@ -612,6 +710,64 @@ TrackObjects:[module_num:1|svn_version:\'9227\'|variable_revision_number:3|show_
                 column = columns[index]
                 self.assertEqual(column[0], object_name)
     
+    def test_05_02_measurement_columns_lap(self):
+        '''Test get_measurement_columns function for LAP'''
+        module = T.TrackObjects()
+        module.object_name.value = OBJECT_NAME
+        module.tracking_method.value = T.TM_LAP
+        module.model.value = T.M_BOTH
+        columns = module.get_measurement_columns(None)
+        # 1 for area
+        # 2, 2, 4 for the static model
+        # 4, 4, 16 for the velocity model
+        self.assertEqual(len(columns), len(T.F_ALL) + len(T.F_IMAGE_ALL) + 
+                         1 + 2 + 2 + 4 + 4 + 4+ 16)
+        kalman_features = [ 
+            T.kalman_feature(T.F_STATIC_MODEL, T.F_STATE, T.F_X),
+            T.kalman_feature(T.F_STATIC_MODEL, T.F_STATE, T.F_Y),
+            T.kalman_feature(T.F_VELOCITY_MODEL, T.F_STATE, T.F_X),
+            T.kalman_feature(T.F_VELOCITY_MODEL, T.F_STATE, T.F_Y),
+            T.kalman_feature(T.F_VELOCITY_MODEL, T.F_STATE, T.F_VX),
+            T.kalman_feature(T.F_VELOCITY_MODEL, T.F_STATE, T.F_VY),
+            T.kalman_feature(T.F_STATIC_MODEL, T.F_NOISE, T.F_X),
+            T.kalman_feature(T.F_STATIC_MODEL, T.F_NOISE, T.F_Y),
+            T.kalman_feature(T.F_VELOCITY_MODEL, T.F_NOISE, T.F_X),
+            T.kalman_feature(T.F_VELOCITY_MODEL, T.F_NOISE, T.F_Y),
+            T.kalman_feature(T.F_VELOCITY_MODEL, T.F_NOISE, T.F_VX),
+            T.kalman_feature(T.F_VELOCITY_MODEL, T.F_NOISE, T.F_VY),
+            T.kalman_feature(T.F_STATIC_MODEL, T.F_COV, T.F_X, T.F_X),
+            T.kalman_feature(T.F_STATIC_MODEL, T.F_COV, T.F_X, T.F_Y),
+            T.kalman_feature(T.F_STATIC_MODEL, T.F_COV, T.F_Y, T.F_X),
+            T.kalman_feature(T.F_STATIC_MODEL, T.F_COV, T.F_X, T.F_Y),
+            T.kalman_feature(T.F_VELOCITY_MODEL, T.F_COV, T.F_X, T.F_X),
+            T.kalman_feature(T.F_VELOCITY_MODEL, T.F_COV, T.F_X, T.F_Y),
+            T.kalman_feature(T.F_VELOCITY_MODEL, T.F_COV, T.F_X, T.F_VX),
+            T.kalman_feature(T.F_VELOCITY_MODEL, T.F_COV, T.F_X, T.F_VY),
+            T.kalman_feature(T.F_VELOCITY_MODEL, T.F_COV, T.F_Y, T.F_X),
+            T.kalman_feature(T.F_VELOCITY_MODEL, T.F_COV, T.F_Y, T.F_Y),
+            T.kalman_feature(T.F_VELOCITY_MODEL, T.F_COV, T.F_Y, T.F_VX),
+            T.kalman_feature(T.F_VELOCITY_MODEL, T.F_COV, T.F_Y, T.F_VY),
+            T.kalman_feature(T.F_VELOCITY_MODEL, T.F_COV, T.F_VX, T.F_X),
+            T.kalman_feature(T.F_VELOCITY_MODEL, T.F_COV, T.F_VX, T.F_Y),
+            T.kalman_feature(T.F_VELOCITY_MODEL, T.F_COV, T.F_VX, T.F_VX),
+            T.kalman_feature(T.F_VELOCITY_MODEL, T.F_COV, T.F_VX, T.F_VY),
+            T.kalman_feature(T.F_VELOCITY_MODEL, T.F_COV, T.F_VY, T.F_X),
+            T.kalman_feature(T.F_VELOCITY_MODEL, T.F_COV, T.F_VY, T.F_Y),
+            T.kalman_feature(T.F_VELOCITY_MODEL, T.F_COV, T.F_VY, T.F_VX),
+            T.kalman_feature(T.F_VELOCITY_MODEL, T.F_COV, T.F_VY, T.F_VY)]
+        for object_name, features in ((OBJECT_NAME, T.F_ALL + kalman_features),
+                                      (cpmeas.IMAGE, T.F_IMAGE_ALL)):
+            for feature in features:
+                if object_name == OBJECT_NAME:
+                    name = "_".join((T.F_PREFIX, feature))
+                else:
+                    name = "_".join((T.F_PREFIX, feature, 
+                                     OBJECT_NAME))
+                index = [column[1] for column in columns].index(name)
+                self.assertTrue(index != -1)
+                column = columns[index]
+                self.assertEqual(column[0], object_name)
+                
     def test_06_01_measurements(self):
         '''Test the different measurement pieces'''
         module = T.TrackObjects()

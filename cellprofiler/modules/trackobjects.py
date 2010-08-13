@@ -89,6 +89,7 @@ import cellprofiler.settings as cps
 import cellprofiler.measurements as cpmeas
 import cellprofiler.preferences as cpprefs
 import contrib.LAP as LAP
+import cellprofiler.cpmath.filter as cpfilter
 from cellprofiler.cpmath.cpmorphology import fixup_scipy_ndimage_result as fix
 from cellprofiler.cpmath.cpmorphology import centers_of_labels
 from cellprofiler.cpmath.cpmorphology import associate_by_distance
@@ -115,6 +116,28 @@ F_DISTANCE_TRAVELED = "DistanceTraveled"
 F_INTEGRATED_DISTANCE = "IntegratedDistance"
 F_LINEARITY = "Linearity"
 F_LIFETIME = "Lifetime"
+F_KALMAN = "Kalman"
+F_STATE = "State"
+F_COV = "COV"
+F_NOISE = "Noise"
+F_VELOCITY_MODEL = "Vel"
+F_STATIC_MODEL = "NoVel"
+F_X = "X"
+F_Y = "Y"
+F_VX = "VX"
+F_VY = "VY"
+def kalman_feature(model, matrix_or_vector, i, j=None):
+    '''Return the feature name for a Kalman feature
+    
+    model - model used for Kalman feature: velocity or static
+    matrix_or_vector - the part of the Kalman state to save, vec, COV or noise
+    i - the name for the first (or only for vec and noise) index into the vector
+    j - the name of the second index into the matrix
+    '''
+    pieces = [F_KALMAN, model, matrix_or_vector, i]
+    if j is not None:
+        pieces.append(j)
+    return "_".join(pieces)
 
 '''# of objects in the current frame without parents in the previous frame'''
 F_NEW_OBJECT_COUNT = "NewObjectCount"
@@ -148,11 +171,18 @@ F_ALL = [feature for feature, coltype in F_ALL_COLTYPE_ALL]
 
 F_IMAGE_ALL = [feature for feature, coltype in F_IMAGE_COLTYPE_ALL]
 
+'''Random motion model, for instance Brownian motion'''
+M_RANDOM = "Random"
+'''Velocity motion model, object position depends on prior velocity'''
+M_VELOCITY = "Velocity"
+'''Random and velocity models'''
+M_BOTH = "Both"
+
 class TrackObjects(cpm.CPModule):
 
     module_name = 'TrackObjects'
     category = "Object Processing"
-    variable_revision_number = 3
+    variable_revision_number = 4
 
     def create_settings(self):
         self.tracking_method = cps.Choice('Choose a tracking method',
@@ -235,27 +265,50 @@ class TrackObjects(cpm.CPModule):
             at the axis increments on each image (shown in pixel units) or
             use the distance measurement tool. %(HELP_ON_MEASURING_DISTANCES)s"""%globals())
 
-        self.born_cost = cps.Integer(
-            'Cost of being born', 100, minval=1, doc = '''
-            <i>(Used only if the LAP tracking method is applied)</i><br>
-            What is the cost of an object being born? This setting assigns a cost to the
-            birth (i.e., initiation) of an object track, i.e., an object has appeared 
-            for the first time in the current frame and exists in following frames.<br><br>
-            Set this value lower if tracks are being started less often than they 
-            should be. It should be set higher if too many new tracks are appearing. 
-            Since this value is weighed against the cost of an object track
-            dying, keep the relative values of both of these settings in mind.''')
-
-        self.die_cost = cps.Integer(
-            'Cost of dying', 100, minval=1, doc = '''
-            <i>(Used only if the LAP tracking method is applied)</i><br>
-            What is the cost of an object dying? This setting assigns a cost to the
-            death (i.e., termination) of an object track, i.e., an object has disappeared from
-            the current frame and does not appear in succesive frames.<br><br>
-            Set this value lower if tracks are lasting longer in time than they 
-            should be. It should be set higher if tracks are being terminated in time 
-            prematurely. Since this value is weighed against the cost of an object track
-            being born, keep the relative values of both of these settings in mind.''')
+        self.model = cps.Choice(
+            "Motion model(s):",[M_RANDOM, M_VELOCITY, M_BOTH], value=M_BOTH,
+            doc = """<i>(Used only if the LAP tracking method is applied)</i><br>
+            This setting controls how to predict an object's position in
+            the next frame, assuming that each object moves randomly with
+            a frame-to-frame variance in position that follows a Gaussian
+            distribution.<br>
+            <ul><li><i>%(M_RANDOM)s</i> - a model in which objects move due to 
+            Brownian Motion or a similar process where the variance in position
+            differs between objects.</li>
+            <li><i>%(M_VELOCITY)s</i> - a model in which the object moves with
+            a velocity. Both velocity and position (after correcting for
+            velocity) vary following a Gaussian distribution.</li>
+            <li><i>%(M_BOTH)s</i> - <b>TrackObjects</b> will predict each
+            object's position using both models and use the model with the
+            lowest penalty to join an object in one frame with one in another.
+            </li></ul>""" % globals())
+        
+        self.radius_std = cps.Float(
+            '# standard deviations for radius', 3, minval=1,
+            doc = """<i>(Used only if the LAP tracking method is applied)</i>
+            <br>
+            <b>TrackObjects</b> will estimate the variance of the error
+            between the observed and predicted positions of an object for
+            each movement model. It will constrain the search for matching
+            objects from one frame to the next to the standard deviation
+            of the error times the number of standard
+            deviations that you enter here.""")
+        
+        self.radius_limit = cps.FloatRange(
+            'Radius limit', (2, 10), minval = 0,
+            doc = """<i>(Used only if the LAP tracking method is applied)</i>
+            <br>
+            <b>TrackObjects</b> derives a search radius based on the error
+            estimation. Potentially, the module can make an erroneous assignment
+            with a large error, leading to a large estimated error for
+            the object in the next frame. Conversely, the module can arrive
+            at a small estimated error by chance, leading to a maximum radius
+            that does not track the object in a subsequent frame. The radius
+            limit constrains the maximum radius to reasonable values. You
+            should set the lower limit to a radius (in pixels) that is a
+            reasonable displacement for any object from one frame to the next.
+            You should set the upper limit to the maximum reasonable 
+            displacement under any circumstances.""")
         
         self.wants_second_phase = cps.Binary(
             "Run the second phase of the LAP algorithm?", True, doc="""
@@ -381,7 +434,8 @@ class TrackObjects(cpm.CPModule):
     def settings(self):
         return [self.tracking_method, self.object_name, self.measurement,
                 self.pixel_radius, self.display_type, self.wants_image,
-                self.image_name, self.born_cost, self.die_cost, 
+                self.image_name, self.model,
+                self.radius_std, self.radius_limit,
                 self.wants_second_phase,
                 self.gap_cost, self.split_cost, self.merge_cost,
                 self.max_gap_score, self.max_split_score,
@@ -391,19 +445,30 @@ class TrackObjects(cpm.CPModule):
         result = [self.tracking_method, self.object_name]
         if self.tracking_method == TM_MEASUREMENTS:
             result += [ self.measurement]
-        result += [self.pixel_radius]
         if self.tracking_method == TM_LAP:
-            result += [self.born_cost, self.die_cost, self.wants_second_phase]
+            result += [self.model, self.radius_std, self.radius_limit]
+            result += [self.wants_second_phase]
             if self.wants_second_phase:
                 result += [ 
                     self.gap_cost, self.split_cost, self.merge_cost,
                     self.max_gap_score, self.max_split_score,
                     self.max_merge_score, self.max_frame_distance]
+        else:
+            result += [self.pixel_radius]
+            
         result +=[ self.display_type, self.wants_image]
         if self.wants_image.value:
             result += [self.image_name]
         return result
 
+    @property
+    def static_model(self):
+        return self.model in (M_RANDOM, M_BOTH)
+    
+    @property
+    def velocity_model(self):
+        return self.model in (M_VELOCITY, M_BOTH)
+    
     def get_ws_dictionary(self, workspace):
         return self.get_dictionary(workspace.image_set_list)
 
@@ -470,6 +535,12 @@ class TrackObjects(cpm.CPModule):
 
     def set_max_object_number(self, workspace, value):
         self.__set("max_object_number", workspace, value)
+        
+    def get_kalman_states(self, workspace):
+        return self.__get("kalman_states", workspace, None)
+    
+    def set_kalman_states(self, workspace, value):
+        self.__set("kalman_states", workspace, value)
 
     def prepare_group(self, pipeline, image_set_list, grouping, image_numbers):
         '''Erase any tracking information at the start of a run'''
@@ -481,10 +552,14 @@ class TrackObjects(cpm.CPModule):
 
     def measurement_name(self, feature):
         '''Return a measurement name for the given feature'''
+        if self.tracking_method == TM_LAP:
+            return "%s_%s" % (F_PREFIX, feature)
         return "%s_%s_%s" % (F_PREFIX, feature, str(self.pixel_radius.value))
     
     def image_measurement_name(self, feature):
         '''Return a measurement name for an image measurement'''
+        if self.tracking_method == TM_LAP:
+            return "%s_%s_%s" % (F_PREFIX, feature, self.object_name.value)
         return "%s_%s_%s_%s" % (F_PREFIX, feature, self.object_name.value,
                                str(self.pixel_radius.value))
 
@@ -614,14 +689,62 @@ class TrackObjects(cpm.CPModule):
 
     def run_lapdistance(self, workspace, objects):
         '''Track objects based on distance'''
-        costBorn = self.born_cost.value
-        costDie = self.die_cost.value
-        minDist = self.pixel_radius.value
         old_i, old_j = self.get_saved_coordinates(workspace)
-        if len(old_i):
+        n_old = len(old_i)
+        #
+        # Automatically set the cost of birth and death above
+        # that of the largest allowable cost.
+        #
+        costBorn = costDie = self.radius_limit.max * 1.10
+        kalman_states = self.get_kalman_states(workspace)
+        if kalman_states == None:
+            if self.static_model:
+                kalman_states = [ cpfilter.static_kalman_model()]
+            else:
+                kalman_states = []
+            if self.velocity_model:
+                kalman_states.append(cpfilter.velocity_kalman_model())
+        areas = fix(scipy.ndimage.sum(
+            np.ones(objects.segmented.shape), objects.segmented, 
+            np.arange(1, np.max(objects.segmented) + 1)))
+        areas = areas.astype(int)
+
+        if n_old > 0:
             new_i, new_j = centers_of_labels(objects.segmented)
-            i,j = np.mgrid[0:len(old_i), 0:len(new_i)]
-            d = np.sqrt((old_i[i]-new_i[j])**2 + (old_j[i]-new_j[j])**2)
+            n_new = len(new_i)
+            i,j = np.mgrid[0:n_old, 0:n_new]
+            ##############################
+            #
+            #  Kalman filter prediction
+            #
+            #
+            # We take the lowest cost among all possible models
+            #
+            minDist = np.ones((n_old, n_new)) * self.radius_limit.max
+            d = np.ones((n_old, n_new)) * np.inf
+            # The index of the Kalman filter used: -1 means not used
+            kalman_used = -np.ones((n_old, n_new), int)
+            for nkalman, kalman_state in enumerate(kalman_states):
+                assert isinstance(kalman_state, cpfilter.KalmanState)
+                obs = kalman_state.predicted_obs_vec
+                dk = np.sqrt((obs[i,0] - new_i[j])**2 +
+                             (obs[i,1] - new_j[j])**2)
+                noise_sd = np.sqrt(np.sum(kalman_state.noise_var[:,0:2], 1))
+                radius = np.maximum(np.minimum(noise_sd * self.radius_std.value, 
+                                               self.radius_limit.max),
+                                    self.radius_limit.min)
+                                    
+                is_best = ((dk < d) & (dk < radius[:, np.newaxis]))
+                d[is_best] = dk[is_best]
+                minDist[is_best] = radius[i][is_best]
+                kalman_used[is_best] = nkalman
+            minDist = np.maximum(np.minimum(minDist, self.radius_limit.max),
+                                 self.radius_limit.min)
+            #
+            #############################
+            #
+            # Linear assignment setup
+            #
             n = len(old_i)+len(new_i)
             kk = np.zeros((n+10)*(n+10), np.int32)
             first = np.zeros(n+10, np.int32)
@@ -673,25 +796,145 @@ class TrackObjects(cpm.CPModule):
             new_object_numbers = x[a[0:len(a)]]
             old_object_numbers = y[b[0:len(b)]]
 
-
+            ###############################
+            # 
+            #  Kalman filter update
+            #
+            model_idx = np.zeros(len(old_object_numbers), int)
+            mask = old_object_numbers > 0
+            old_idx = old_object_numbers - 1
+            model_idx[mask] =\
+                kalman_used[old_idx[mask], mask]
+            #
+            # The measurement covariance is the square of the
+            # standard deviation of the measurement error. Assume
+            # that the measurement error comes from not knowing where
+            # the center is within the cell, then the error is
+            # proportional to the radius and the square to the area.
+            #
+            measurement_variance = areas.astype(float) / np.pi
+            #
+            # Broadcast the measurement error into a diagonal matrix
+            #
+            r = (measurement_variance[:, np.newaxis, np.newaxis] * 
+                 np.eye(2)[np.newaxis,:,:])
+            new_kalman_states = []
+            for kalman_state in kalman_states:
+                #
+                # The process noise covariance is a diagonal of the
+                # state noise variance.
+                #
+                state_len = kalman_state.state_len
+                q = np.zeros((len(old_idx), state_len, state_len))
+                if np.any(mask):
+                    #
+                    # Broadcast into the diagonal
+                    #
+                    new_idx = np.arange(len(old_idx))[mask]
+                    matching_idx = old_idx[new_idx]
+                    i,j = np.mgrid[0:len(matching_idx),0:state_len]
+                    q[new_idx[i], j, j] = \
+                        kalman_state.noise_var[matching_idx[i],j]
+                new_kalman_state = cpfilter.kalman_filter(
+                    kalman_state,
+                    old_idx,
+                    np.column_stack((new_i, new_j)),
+                    q,r)
+                new_kalman_states.append(new_kalman_state)
+            self.set_kalman_states(workspace, new_kalman_states)
+                    
             i,j = (centers_of_labels(objects.segmented)+.5).astype(int)
             self.map_objects(workspace, 
                              new_object_numbers,
                              old_object_numbers, 
                              i,j)
         else:
-            i,j = (centers_of_labels(objects.segmented)+.5).astype(int)
+            i,j = centers_of_labels(objects.segmented)
             count = len(i)
+            #
+            # Initialize the kalman_state with the new objects
+            #
+            new_kalman_states = []
+            r = np.zeros((count, 2, 2))
+            for kalman_state in kalman_states:
+                q = np.zeros((count, kalman_state.state_len, kalman_state.state_len))
+                new_kalman_state = cpfilter.kalman_filter(
+                    kalman_state, -np.ones(count),
+                    np.column_stack((i,j)), q, r)
+                new_kalman_states.append(new_kalman_state)
+            self.set_kalman_states(workspace, new_kalman_states)
+                                        
+            i = (i+.5).astype(int)
+            j = (j+.5).astype(int)
             self.map_objects(workspace, np.zeros((0,),int), 
                              np.zeros(count,int), i,j)
-        areas = fix(scipy.ndimage.sum(
-            np.ones(objects.segmented.shape), objects.segmented, 
-            np.arange(1, np.max(objects.segmented) + 1)))
-        areas = areas.astype(int)
         workspace.measurements.add_measurement(self.object_name.value,
                                                self.measurement_name(F_AREA),
                                                areas)
+        self.save_kalman_measurements(workspace)
         self.set_saved_labels(workspace, objects.segmented)
+        
+    def get_kalman_models(self):
+        '''Return tuples of model and names of the vector elements'''
+        if self.static_model:
+            models = [ (F_STATIC_MODEL, (F_Y, F_X))]
+        else:
+            models = []
+        if self.velocity_model:
+            models.append((F_VELOCITY_MODEL, (F_Y, F_X, F_VY, F_VX)))
+        return models
+    
+    def save_kalman_measurements(self, workspace):
+        '''Save the first-pass state_vec, state_cov and state_noise'''
+        
+        m = workspace.measurements
+        object_name = self.object_name.value
+        for (model, elements), kalman_state in zip(
+            self.get_kalman_models(), self.get_kalman_states(workspace)):
+            assert isinstance(kalman_state, cpfilter.KalmanState)
+            nobjs = len(kalman_state.state_vec)
+            if nobjs > 0:
+                #
+                # Get the last state_noise entry for each object
+                #
+                # scipy.ndimage.maximum probably should return NaN if
+                # no index exists, but, in 0.8.0, returns 0. So stack
+                # a bunch of -1 values so every object will have a "-1"
+                # index.
+                last_idx = scipy.ndimage.maximum(
+                    np.hstack((
+                        -np.ones(nobjs),
+                        np.arange(len(kalman_state.state_noise_idx)))),
+                    np.hstack((
+                        np.arange(nobjs), kalman_state.state_noise_idx)),
+                    np.arange(nobjs))
+                last_idx = last_idx.astype(int)
+            for i, element in enumerate(elements):
+                #
+                # state_vec
+                #
+                mname = self.measurement_name(
+                    kalman_feature(model, F_STATE, element))
+                values = np.zeros(0) if nobjs == 0 else kalman_state.state_vec[:,i]
+                m.add_measurement(object_name, mname, values)
+                #
+                # state_noise
+                #
+                mname = self.measurement_name(
+                    kalman_feature(model, F_NOISE, element))
+                values = np.zeros(nobjs)
+                if nobjs > 0:
+                    values[last_idx == -1] = np.NaN
+                    values[last_idx > -1] = kalman_state.state_noise[last_idx[last_idx > -1], i]
+                m.add_measurement(object_name, mname, values)
+                #
+                # state_cov
+                #
+                for j, el2 in enumerate(elements):
+                    mname = self.measurement_name(
+                        kalman_feature(model, F_COV, element, el2))
+                    values = kalman_state.state_cov[:, i, j]
+                    m.add_measurement(object_name, mname, values)
 
     def run_overlap(self, workspace, objects):
         '''Track objects by maximum # of overlapping pixels'''
@@ -770,7 +1013,7 @@ class TrackObjects(cpm.CPModule):
 
     def run_as_data_tool(self, workspace):
         '''Assume that all images belong to the same group'''
-        image_numbers = np.arange(workspace.measurements.image_set_count)
+        image_numbers = np.arange(workspace.measurements.image_set_count) + 1
         self.set_image_numbers(workspace, image_numbers)
         self.post_group(workspace, {})
 
@@ -849,7 +1092,7 @@ class TrackObjects(cpm.CPModule):
         # Reduce the lists to only the ones in the group
         #
         for mlist in (label, a, b, Area):
-            mlist = [mlist[image_number] for image_number in image_numbers]
+            mlist = [mlist[image_number-1] for image_number in image_numbers]
         numFrames = len(b)
 
         #Calculates the maximum number of cells in a single frame
@@ -1204,7 +1447,7 @@ class TrackObjects(cpm.CPModule):
         # inside the list retrieved from the measurements
         #
         for i, image_number in enumerate(image_numbers):
-            orig_label[image_number] = newlabel[i]
+            orig_label[image_number-1] = newlabel[i]
 
     def map_objects(self, workspace, new_of_old, old_of_new, i,j):
         '''Record the mapping of old to new objects and vice-versa
@@ -1319,6 +1562,18 @@ class TrackObjects(cpm.CPModule):
             merge_count = 0
         self.add_image_measurement(workspace, F_MERGE_COUNT, merge_count)
 
+    def get_kalman_feature_names(self):
+        if self.tracking_method != TM_LAP:
+            return []
+        return sum(
+            [sum(
+                [[ kalman_feature(model, F_STATE, element),
+                   kalman_feature(model, F_NOISE, element)] + 
+                 [ kalman_feature(model, F_COV, element, e2)
+                   for e2 in elements]
+                 for element in elements],[])
+             for model, elements  in self.get_kalman_models()], [])
+    
     def get_measurement_columns(self, pipeline):
         result =  [(self.object_name.value,
                     self.measurement_name(feature),
@@ -1330,6 +1585,9 @@ class TrackObjects(cpm.CPModule):
             result += [( self.object_name.value,
                          self.measurement_name(F_AREA),
                          cpmeas.COLTYPE_INTEGER)]
+            result += [( self.object_name.value,
+                         self.measurement_name(name),
+                         coltype) for name in self.get_kalman_feature_names()]
         return result
 
     def get_categories(self, pipeline, object_name):
@@ -1343,6 +1601,7 @@ class TrackObjects(cpm.CPModule):
             result = list(F_ALL)
             if self.tracking_method == TM_LAP:
                 result += [F_AREA]
+                result += self.get_kalman_feature_names()
             return result
         if object_name == cpmeas.IMAGE:
             result = F_IMAGE_ALL
@@ -1357,11 +1616,10 @@ class TrackObjects(cpm.CPModule):
         return []
         
     def get_measurement_scales(self, pipeline, object_name, category, feature,image_name):
-        if ((object_name == self.object_name.value and
-             category == F_PREFIX and
-             feature in F_ALL + [F_AREA]) or
-            (object_name == cpmeas.IMAGE and category == F_PREFIX and
-             feature in F_IMAGE_ALL)):
+        if self.tracking_method == TM_LAP:
+            return []
+        
+        if feature in self.get_measurements(pipeline, object_name, category):
             return [str(self.pixel_radius.value)]
         return []
 
@@ -1387,6 +1645,14 @@ class TrackObjects(cpm.CPModule):
             setting_values = setting_values + [
                 "40","40","40","50","50","50","5"]
             variable_revision_number = 3
+        if (not from_matlab) and variable_revision_number == 3:
+            # Added Kalman choices:
+            # Model
+            # radius std
+            # radius limit
+            setting_values = (setting_values[:7] + 
+                              [ M_BOTH, "3", "2,10"] +
+                              setting_values[9:])
         return setting_values, variable_revision_number, from_matlab
 
 

@@ -101,6 +101,11 @@ if not hasattr(sys, 'frozen'):
                       default=True,
                       action="store_false",
                       help="Do not build C and Cython extensions")
+    parser.add_option("--build-and-exit",
+                      dest="build_and_exit",
+                      default=False,
+                      action="store_true",
+                      help="Build extensions, then exit CellProfiler")
 parser.add_option("-d", "--done-file",
                   dest="done_file",
                   default=None,
@@ -177,6 +182,8 @@ if (not hasattr(sys, 'frozen')) and options.build_extensions:
         os.environ['PYTHONPATH'] = old_pythonpath
     else:
         del os.environ['PYTHONPATH']
+    if options.build_and_exit:
+        exit()
 
 if options.show_gui and not options.output_html:
     from cellprofiler.cellprofilerapp import CellProfilerApp

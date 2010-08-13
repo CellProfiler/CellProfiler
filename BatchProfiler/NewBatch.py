@@ -263,39 +263,34 @@ parent.location = url+"#input_"+key
 
 print '''<form action='%(url)s'>
 <input type='hidden' name='submit_batch' value='yes'/>
-<div style='white-space=nowrap'><label for='input_email'>E-mail:&nbsp;</label>
-<input type='text' size="40" id='input_email' name='email' value='%(email)s'/></div>
-
-<div style='white-space=nowrap'><label for='input_queue'>Queue:&nbsp;</label>
-<select id='input_queue' name='queue'>
+<table style='white-space=nowrap'>
+<tr><th>E-mail:</th>
+<td><input type='text' size="40" id='input_email' name='email' value='%(email)s'/></td></tr>
+<tr><th>Queue:</th>
+<td><select id='input_queue' name='queue'>
 '''%(keys)
 for queue in ('hour', 'week', 'broad','short','long','hugemem','preview','priority'):
     selected = 'selected="selected"' if queue == keys['queue'] else ''
     print '''<option value='%(queue)s' %(selected)s>%(queue)s</option>'''%(locals())
 
-print '''</select></div>'''
+print '''</select></td></tr>'''
 keys_plus = keys.copy()
 keys_plus["write_data_checked"] = "" if keys["write_data"] == "no" else 'checked="yes"'
 print '''
-<div style='white-space=nowrap'><label for='input_priority'>Priority:&nbsp;</label>
-<input type='text' id='input_priority' name='priority' value='%(priority)s'/></div>
-
-<div style='white-space=nowrap'><label for='input_project'>Project:&nbsp;</label>
-<input type='text' id='input_project' name='project' value='%(project)s'/></div>
-
-<div style='white-space=nowrap'><label for='input_batch_size'>Batch size:&nbsp;</label>
-<input type='text' id='input_batch_size' name='batch_size' value='%(batch_size)s'/></div>
-
-<div style='white-space=nowrap'><label for='input_memory_limit'>Memory limit:&nbsp;</label>
-<input type='text' id='input_memory_limit' name='memory_limit' value='%(memory_limit)s'/></div>
-
-<div style='white-space=nowrap'><label for='input_write_data'>Write data:&nbsp;</label>
-<input type='checkbox' id='input_write_data' name='write_data' value='yes' %(write_data_checked)s/></div>
-
-<div style='white-space=nowrap'><label for='input_timeout'>Timeout:&nbsp;</label>
-<input type='text' id='input_timeout' name='timeout' value='%(timeout)s'/></div>
+<tr><th>Priority:</th>
+<td><input type='text' id='input_priority' name='priority' value='%(priority)s'/></td></tr>
+<tr><th>Project:</th>
+<td><input type='text' id='input_project' name='project' value='%(project)s'/></td></tr>
+<tr><th>Batch size:</th>
+<td><input type='text' id='input_batch_size' name='batch_size' value='%(batch_size)s'/></td></tr>
+<tr><th>Memory limit:</th>
+<td><input type='text' id='input_memory_limit' name='memory_limit' value='%(memory_limit)s'/></td></tr>
+<tr><th>Write data:</th>
+<td><input type='checkbox' id='input_write_data' name='write_data' value='yes' %(write_data_checked)s/></td></tr>
+<tr><th>Timeout:&nbsp;</th>
+<td><input type='text' id='input_timeout' name='timeout' value='%(timeout)s'/></td></tr>
 '''%(keys_plus)
-print '''SVN revision:<select name='revision' id='input_revision'>'''
+print '''<tr><th>SVN revision:</th><td><select name='revision' id='input_revision'>'''
 vroot = '/imaging/analysis/CPCluster/CellProfiler-2.0'
 vdirs = list(os.listdir(vroot))
 vdirs.sort()
@@ -304,7 +299,7 @@ for filename in vdirs:
     if not os.path.isdir(vpath):
         continue
     print '''<option %s>%s</option>'''%('selected="selected"' if filename == keys['revision'] else '',filename)
-print '''</select> (at /imaging/analysis/CPCluster/CellProfiler-2.0/)'''
+print '''</select> (at /imaging/analysis/CPCluster/CellProfiler-2.0/)</td></tr></table>'''
 show_directory('data_dir','Data output directory',keys['data_dir'], 
                minus_key(keys,'data_dir'))
 if grouping_keys is not None:

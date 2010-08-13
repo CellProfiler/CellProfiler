@@ -103,6 +103,7 @@ keys = { 'data_dir':lookup('data_dir', '/imaging/analysis'),
          'email':lookup('email', 'user@broadinstitute.org'),
          'queue':lookup('queue', 'hour'),
          'project':lookup('project','imaging'),
+         'priority':lookup('priority','50'),
          'write_data':lookup('write_data','no'),
          'batch_size':lookup('batch_size','10'),
          'memory_limit':lookup('memory_limit','2000'),
@@ -152,6 +153,7 @@ if (form_data.has_key('submit_batch') and
     batch = {
         "email":         form_data["email"].value,
         "queue":         form_data["queue"].value,
+        "priority":      int(form_data["priority"].value) if form_data.has_key("priority") else 50,
         "project":       form_data["project"].value if form_data.has_key("project") else 'imaging',
         "data_dir":      form_data["data_dir"].value,
         "write_data":    (form_data.has_key("write_data") and 1) or 0,
@@ -230,7 +232,7 @@ print '''<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://
 function go_to_key(key) {
     url='%(myself)s'
     add_char = "?"
-    all_k = new Array("data_dir","email","queue",
+    all_k = new Array("data_dir","email","queue","priority",
                         "project","batch_size","memory_limit",
                         "timeout","revision")
     for (k in all_k) {
@@ -274,13 +276,17 @@ for queue in ('hour', 'week', 'broad','short','long','hugemem','preview','priori
 print '''</select></div>'''
 keys_plus = keys.copy()
 keys_plus["write_data_checked"] = "" if keys["write_data"] == "no" else 'checked="yes"'
-print '''<div style='white-space=nowrap'><label for='input_email'>Project:&nbsp;</label>
+print '''
+<div style='white-space=nowrap'><label for='input_priority'>Priority:&nbsp;</label>
+<input type='text' id='input_priority' name='priority' value='%(priority)s'/></div>
+
+<div style='white-space=nowrap'><label for='input_project'>Project:&nbsp;</label>
 <input type='text' id='input_project' name='project' value='%(project)s'/></div>
 
-<div style='white-space=nowrap'><label for='input_email'>Batch size:&nbsp;</label>
+<div style='white-space=nowrap'><label for='input_batch_size'>Batch size:&nbsp;</label>
 <input type='text' id='input_batch_size' name='batch_size' value='%(batch_size)s'/></div>
 
-<div style='white-space=nowrap'><label for='input_email'>Memory limit:&nbsp;</label>
+<div style='white-space=nowrap'><label for='input_memory_limit'>Memory limit:&nbsp;</label>
 <input type='text' id='input_memory_limit' name='memory_limit' value='%(memory_limit)s'/></div>
 
 <div style='white-space=nowrap'><label for='input_write_data'>Write data:&nbsp;</label>

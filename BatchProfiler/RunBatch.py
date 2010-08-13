@@ -59,10 +59,11 @@ def CreateBatchRecord(my_batch):
     cursor = connection.cursor()
     cmd = """
     insert into batch (batch_id, email, data_dir, queue, batch_size, 
-                       write_data, timeout,cpcluster,project,memory_limit)
+                       write_data, timeout, cpcluster, project, memory_limit,
+                       priority)
     values (null,'%(email)s','%(data_dir)s','%(queue)s',%(batch_size)d,
             %(write_data)d,%(timeout)f,'%(cpcluster)s','%(project)s',
-            %(memory_limit)f)"""%(my_batch)
+            %(memory_limit)f, %(priority)d)"""%(my_batch)
     cursor.execute(cmd)
     cursor = connection.cursor()
     cursor.execute("select last_insert_id()")
@@ -134,7 +135,9 @@ def LoadBatch(batch_id):
     
     Return the batch with the given batch ID and the associated runs
     """
-    sql = "select email,data_dir,queue,batch_size,write_data,timeout,cpcluster,project,memory_limit from batch where batch_id=%d"%(batch_id)
+    sql = ("select email, data_dir, queue, batch_size, write_data, timeout,"
+           "cpcluster, project, memory_limit, priority "
+           "from batch where batch_id=%d") % (batch_id)
     cursor = connection.cursor()
     cursor.execute(sql)
     row = cursor.fetchone()
@@ -149,7 +152,8 @@ def LoadBatch(batch_id):
         "timeout":      float(row[5]),
         "cpcluster":    row[6],
         "project":      row[7],
-        "memory_limit": float(row[8])
+        "memory_limit": float(row[8]),
+        "priority": int(row[9])
         }
     cursor = connection.cursor()
     cursor.execute("""
@@ -238,6 +242,7 @@ def RunOne_1_0(x, run):
          "-g","/imaging/batch/%(batch_id)d"%(x),
          "-J","/imaging/batch/%(batch_id)d/%(start)s_to_%(end)s"%(x),
          "-o","%(data_dir)s/txt_output/%(start)s_to_%(end)s.txt"%(x),
+         "-sp","%(priority)d" % x,
          "%(cpcluster)s/CPCluster.py"%(x),
          "%(data_dir)s/Batch_data.mat"%(x),
          "%(start)d"%(x),
@@ -287,6 +292,7 @@ def RunOne_2_0(x, run):
         pass
     cmd=["bsub",
          "-q","%(queue)s"%(x),
+         "-sp","%(priority)d" % x,
          "-M","%(memory_limit_gb2)d"%(x),
          "-R",'"rusage[mem=%(memory_limit_gb)d]"'%(x),
          "-R",'"%s"'%select,

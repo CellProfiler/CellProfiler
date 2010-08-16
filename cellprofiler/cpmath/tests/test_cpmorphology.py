@@ -167,6 +167,21 @@ class TestAdjacent(unittest.TestCase):
         result = morph.adjacent(image)
         self.assertTrue(np.all(result==expected))
         
+    def test_02_01_127_objects(self):
+        '''Test that adjacency works for int8 and 127 labels
+        
+        Regression test of img-1099. Adjacent sets the background to the
+        maximum value of the labels matrix + 1. For 127 and int8, it wraps
+        around and uses -127.
+        '''
+        # Create 127 labels
+        labels = np.zeros((32,16), np.int8)
+        i,j = np.mgrid[0:32, 0:16]
+        mask = (i % 2 > 0) & (j % 2 > 0)
+        labels[mask] = np.arange(np.sum(mask))
+        result = morph.adjacent(labels)
+        self.assertTrue(np.all(result == False))
+        
 class TestStrelDisk(unittest.TestCase):
     """Test cellprofiler.cpmath.cpmorphology.strel_disk"""
     
@@ -2593,6 +2608,20 @@ class TestColor(unittest.TestCase):
             lij = labels[1+i:i-2,1+j:j-2]
             cij = colors[1+i:i-2,1+j:j-2]
             self.assertTrue(np.all((l00 == lij) | (c00 != cij)))
+            
+    def test_02_01_color_127(self):
+        '''Color 127 labels stored in a int8 array
+        
+        Regression test of img-1099
+        '''
+        # Create 127 labels
+        labels = np.zeros((32,16), np.int8)
+        i,j = np.mgrid[0:32, 0:16]
+        mask = (i % 2 > 0) & (j % 2 > 0)
+        labels[mask] = np.arange(np.sum(mask))
+        colors = morph.color_labels(labels)
+        self.assertTrue(np.all(colors[labels==0] == 0))
+        self.assertTrue(np.all(colors[labels!=0] == 1))
             
 class TestSkeletonizeLabels(unittest.TestCase):
     def test_01_01_skeletonize_complex(self):

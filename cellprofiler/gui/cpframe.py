@@ -85,7 +85,7 @@ ID_HELP_MODULE = wx.NewId()
 ID_HELP_DATATOOLS = wx.NewId()
 ID_HELP_ONLINE_MANUAL = wx.NewId()
 ID_HELP_DEVELOPERS_GUIDE = wx.NewId()
-ID_HELP_ABOUT = wx.NewId()
+ID_HELP_ABOUT = wx.ID_ABOUT
 
 class CPFrame(wx.Frame):
     def __init__(self, *args, **kwds):

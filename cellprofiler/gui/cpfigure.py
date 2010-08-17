@@ -34,6 +34,7 @@ from cellprofiler.gui import get_cp_icon
 from cellprofiler.gui.help import make_help_menu, FIGURE_HELP
 import cellprofiler.preferences as cpprefs
 
+g_use_imshow = False
 
 def log_transform(im):
     '''returns log(image) scaled to the interval [0,1]'''
@@ -796,53 +797,109 @@ class CPFigureFrame(wx.Frame):
         self.event_bindings[(x, y)] = [
             self.figure.canvas.mpl_connect('button_release_event', on_release)]
 
-        if use_imshow:
+        if use_imshow or g_use_imshow:
             image = self.images[(x, y)]
             subplot.imshow(self.normalize_image(image, **kwargs))
         else:
-            def on_redraw(evt):
-                # fetch out values from enclosing frame
-                image = self.images[(x, y)]
-                image = self.normalize_image(image, **kwargs)
-    
-                # cut out the displayed portion of the image
-                llpix = subplot.transAxes.transform((0, 0))
-                urpix = subplot.transAxes.transform((1, 1))
+            class CPImageArtist(matplotlib.artist.Artist):
+                def __init__(self, image, frame):
+                    super(CPImageArtist, self).__init__()
+                    self.image = image
+                    self.frame = frame
+                    #
+                    # The radius for the gaussian blur of 1 pixel sd
+                    #
+                    self.filterrad = 4.0
                     
-                # i = 0 to height, j = 0 to width
-                jmin, imin = subplot.transData.inverted().transform(llpix)
-                jmax, imax = subplot.transData.inverted().transform(urpix)
-                imin, imax = (imax, imin) if imax < imin else (imin, imax)
-                jmin, jmax = (jmax, jmin) if jmax < jmin else (jmin, jmax)
-                # create an indexing array
-                isteps_noclip = np.linspace(
-                    imin, imax, abs(llpix[1] - urpix[1]) + 1, endpoint=False).round().astype(int)
-                isteps_clip = np.clip(isteps_noclip, 0, image.shape[0] - 1)
-                jsteps_noclip = np.linspace(
-                    jmin, jmax, abs(llpix[0] - urpix[0]) + 1, endpoint=False).round().astype(int)
-                jsteps_clip = np.clip(jsteps_noclip, 0, image.shape[1] - 1)
-                jsteps, isteps = np.meshgrid(jsteps_clip, isteps_clip)
-                jsteps_noclip, isteps_noclip = np.meshgrid(jsteps_noclip, isteps_noclip)
-                
-                image = image[isteps, jsteps]
-                image[(isteps_noclip != isteps) | (jsteps_noclip != jsteps)] = 1
-                timg = make_3_channels_float(image)
-                timg = np.flipud(timg)
-                mimg = matplotlib.image.fromarray(timg, 1)
-                llpix, urpix = np.array((np.minimum(llpix, urpix), 
-                                         np.maximum(llpix, urpix)))
-                bbox = np.array((llpix, urpix))
-                
-                # Two ways to do this, try by version
-                mplib_version = matplotlib.__version__.split(".")
-                if mplib_version[0] == '0':
-                    evt.renderer.draw_image(llpix[0], llpix[1], mimg, bbox)
-                else:
-                    gc = evt.renderer.new_gc()
-                    evt.renderer.draw_image(gc, llpix[0], llpix[1], mimg)
-    
-            self.event_bindings[(x,y)] += [
-                self.figure.canvas.mpl_connect('draw_event', on_redraw)]
+                def draw(self, renderer):
+                    image = make_3_channels_float(self.image)
+                    magnification = renderer.get_image_magnification()
+                    #
+                    # Code partially borrowed from matplotlib/image.py
+                    # AxesImage.make_image
+                    #
+                    dxintv = image.shape[1]
+                    dyintv = image.shape[0]
+            
+                    # the viewport scale factor
+                    sx = dxintv/self.axes.viewLim.width
+                    sy = dyintv/self.axes.viewLim.height
+                    flip_ud = sy < 0
+                    if flip_ud:
+                        image = np.flipud(image)
+                    sy = abs(sy)
+                    numrows, numcols = self.image.shape[:2]
+                    if sx > 2:
+                        x0 = self.axes.viewLim.x0/dxintv * numcols
+                        ix0 = max(0, int(x0 - self.filterrad))
+                        x1 = self.axes.viewLim.x1/dxintv * numcols
+                        ix1 = min(numcols, int(x1 + self.filterrad))
+                        xslice = slice(ix0, ix1)
+                        xmin = ix0*dxintv/numcols
+                        xmax = ix1*dxintv/numcols
+                        dxintv = xmax - xmin
+                        sx = dxintv/self.axes.viewLim.width
+                    else:
+                        xmin = 0
+                        xmax = numcols
+                        xslice = slice(0, numcols)
+            
+                    if sy > 2:
+                        y0 = self.axes.viewLim.y1/dyintv * numrows
+                        iy0 = max(0, int(y0 - self.filterrad))
+                        y1 = self.axes.viewLim.y0/dyintv * numrows
+                        iy1 = min(numrows, int(y1 + self.filterrad))
+                        yslice = slice(numrows-iy1, numrows-iy0)
+                        ymin = iy0*dyintv/numrows
+                        ymax = iy1*dyintv/numrows
+                        dyintv = ymin - ymax
+                        sy = abs(dyintv/self.axes.viewLim.height)
+                    else:
+                        ymin = 0
+                        ymax = numrows
+                        yslice = slice(0, numrows)
+            
+                    im = matplotlib.image.fromarray(
+                        image[yslice, xslice, :], 0)
+                    im.is_grayscale = False
+                    fc = self.axes.patch.get_facecolor()
+                    bg = matplotlib.colors.colorConverter.to_rgba(fc, 0)
+                    im.set_bg( *bg)
+            
+                    # image input dimensions
+                    im.reset_matrix()
+                    numrows, numcols = im.get_size()
+                    if numrows < 1 or numcols < 1:  # out of range
+                        return
+            
+                    # the viewport translation
+                    tx = (xmin-self.axes.viewLim.x0)/dxintv * numcols
+                    ty = (self.axes.viewLim.y1-ymin)/dyintv * numrows
+            
+                    l, b, r, t = self.axes.bbox.extents
+                    widthDisplay = (round(r) + 0.5) - (round(l) - 0.5)
+                    heightDisplay = (round(t) + 0.5) - (round(b) - 0.5)
+                    widthDisplay *= magnification
+                    heightDisplay *= magnification
+                    im.apply_translation(tx, ty)
+            
+                    # resize viewport to display
+                    rx = widthDisplay / numcols
+                    ry = heightDisplay  / numrows
+                    im.apply_scaling(rx*sx, ry*sy)
+                    im.resize(int(widthDisplay+0.5), int(heightDisplay+0.5),
+                              norm=1, radius=self.filterrad)
+                    bbox = self.axes.bbox.frozen()
+                    im._url = self.frame.Title
+                    
+                    # Two ways to do this, try by version
+                    mplib_version = matplotlib.__version__.split(".")
+                    if mplib_version[0] == '0':
+                        renderer.draw_image(l, b, im, bbox)
+                    else:
+                        gc = renderer.new_gc()
+                        renderer.draw_image(gc, l, b, im)
+            subplot.add_artist(CPImageArtist(self.images[(x,y)], self))
         
         # Also add this menu to the main menu
         if (x,y) in self.subplot_menus:

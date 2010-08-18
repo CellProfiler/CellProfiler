@@ -1073,7 +1073,7 @@ class ModuleView:
                     
                     if control.Value == ABSOLUTE:
                         proposed_value="%s,%s"%(setting.display_min,
-                                                setting.max)
+                                                abs(setting.max))
                     else:
                         setting_max = setting.max
                         if setting_max is not None:

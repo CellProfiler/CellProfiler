@@ -545,7 +545,7 @@ class SaveImages(cpm.CPModule):
             else:
                 if channel_names is None:
                     channel_names = ("Red","Green","Blue")
-                for i, channel_name in channel_names:
+                for i, channel_name in enumerate(channel_names):
                     meta.setChannelID(self.image_name.value + ":" + channel_name,
                                       0, i)
         except jutil.JavaException:

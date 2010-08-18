@@ -201,7 +201,7 @@ class DisplayDataOnImage(cpm.CPModule):
             img[img > 255] = 255
             img = img.astype(np.uint8)
             axes.imshow(img, cmap = matplotlib.cm.Greys_r)
-            self.display_on_figure(workspace, axes, imshow_fn)
+        self.display_on_figure(workspace, axes, imshow_fn)
 
         canvas = matplotlib.backends.backend_wxagg.FigureCanvasAgg(fig)
         if self.saved_image_contents == E_AXES:

@@ -164,7 +164,7 @@ class CPFrame(wx.Frame):
         self.__menu_file = wx.Menu()
         self.__menu_file.Append(ID_FILE_LOAD_PIPELINE,'Load Pipeline...\tctrl+O','Load a pipeline from a .MAT or .CP file')
         self.__menu_file.Append(ID_FILE_URL_LOAD_PIPELINE, 'Load Pipeline from URL', 'Load a pipeline from the web')
-        self.__menu_file.Append(ID_FILE_SAVE_PIPELINE,'Save Pipeline...\tctrl+shift+S','Save changes to a pipeline')
+        self.__menu_file.Append(ID_FILE_SAVE_PIPELINE,'Save Pipeline\tctrl+shift+S','Save changes to a pipeline')
         self.__menu_file.Append(ID_FILE_SAVE_AS_PIPELINE,'Save Pipeline as...','Save a pipeline as a .CP file')
         self.__menu_file.Append(ID_FILE_CLEAR_PIPELINE,'Clear pipeline','Remove all modules from the current pipeline')
         self.__menu_file.Append(ID_FILE_OPEN_IMAGE, 'Open image', 'Open an image file for viewing')

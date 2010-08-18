@@ -852,6 +852,8 @@ your hard drive.</li>
 (i.e., http://...)</li>
 <li><b>Save Pipeline:</b> Save the pipeline you are currently working on as a 
 CellProfiler .cp pipeline file.</li>
+<li><b>Save Pipeline as...:</b> Prompts the user for a filename to save the 
+pipeline as.</li>
 <li><b>Clear Pipeline:</b> Removes all modules from the current pipeline.</li>
 <li><b>Open Image:</b> Opens a dialog box prompting you to select an image file for
 display. Images listed in the file panel can be also be displayed by double-clicking 

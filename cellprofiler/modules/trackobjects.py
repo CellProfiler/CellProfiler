@@ -266,25 +266,28 @@ class TrackObjects(cpm.CPModule):
             use the distance measurement tool. %(HELP_ON_MEASURING_DISTANCES)s"""%globals())
 
         self.model = cps.Choice(
-            "Motion model(s):",[M_RANDOM, M_VELOCITY, M_BOTH], value=M_BOTH,
+            "Select the motion model",[M_RANDOM, M_VELOCITY, M_BOTH], value=M_BOTH,
             doc = """<i>(Used only if the LAP tracking method is applied)</i><br>
             This setting controls how to predict an object's position in
             the next frame, assuming that each object moves randomly with
             a frame-to-frame variance in position that follows a Gaussian
             distribution.<br>
-            <ul><li><i>%(M_RANDOM)s</i> - a model in which objects move due to 
+            <ul><li><i>%(M_RANDOM)s:</i> A model in which objects move due to 
             Brownian Motion or a similar process where the variance in position
-            differs between objects.</li>
-            <li><i>%(M_VELOCITY)s</i> - a model in which the object moves with
+            differs between objects. Use this model if the objects move with some
+            random jitter around a stationary location.</li>
+            <li><i>%(M_VELOCITY)s:</i> A model in which the object moves with
             a velocity. Both velocity and position (after correcting for
-            velocity) vary following a Gaussian distribution.</li>
-            <li><i>%(M_BOTH)s</i> - <b>TrackObjects</b> will predict each
+            velocity) vary following a Gaussian distribution. Use this model if
+            the objects move along a spatial trajectory in some direction over time.</li>
+            <li><i>%(M_BOTH)s:</i> <b>TrackObjects</b> will predict each
             object's position using both models and use the model with the
-            lowest penalty to join an object in one frame with one in another.
+            lowest penalty to join an object in one frame with one in another. Use this
+            option if both models above are applicable over time.
             </li></ul>""" % globals())
         
         self.radius_std = cps.Float(
-            '# standard deviations for radius', 3, minval=1,
+            'Number of standard deviations for search radius', 3, minval=1,
             doc = """<i>(Used only if the LAP tracking method is applied)</i>
             <br>
             <b>TrackObjects</b> will estimate the variance of the error
@@ -295,7 +298,7 @@ class TrackObjects(cpm.CPModule):
             deviations that you enter here.""")
         
         self.radius_limit = cps.FloatRange(
-            'Radius limit', (2, 10), minval = 0,
+            'Search radius limit, in pixel units (Min,Max)', (2, 10), minval = 0,
             doc = """<i>(Used only if the LAP tracking method is applied)</i>
             <br>
             <b>TrackObjects</b> derives a search radius based on the error
@@ -304,11 +307,11 @@ class TrackObjects(cpm.CPModule):
             the object in the next frame. Conversely, the module can arrive
             at a small estimated error by chance, leading to a maximum radius
             that does not track the object in a subsequent frame. The radius
-            limit constrains the maximum radius to reasonable values. You
-            should set the lower limit to a radius (in pixels) that is a
+            limit constrains the maximum radius to reasonable values. 
+            <p>The lower limit should be set to a radius (in pixels) that is a
             reasonable displacement for any object from one frame to the next.
-            You should set the upper limit to the maximum reasonable 
-            displacement under any circumstances.""")
+            The upper limit should be set to the maximum reasonable 
+            displacement under any circumstances.</p>""")
         
         self.wants_second_phase = cps.Binary(
             "Run the second phase of the LAP algorithm?", True, doc="""
@@ -316,12 +319,12 @@ class TrackObjects(cpm.CPModule):
             Check this box to run the second phase of the LAP algorithm
             after processing all images. Leave the box unchecked to omit the
             second phase or to perform the second phase when running as a data
-            tool.<br><br>
-            Since object tracks may start and end not only because of the true appearance 
+            tool.
+            <p>Since object tracks may start and end not only because of the true appearance 
             and disappearance of objects, but also because of apparent disappearances due
             to noise and limitations in imaging, you may want to run the second phase 
             which attempts to close temporal gaps between tracked objects and tries to
-            capture merging and splitting events.""")
+            capture merging and splitting events.</p>""")
         
         self.gap_cost = cps.Integer(
             'Gap cost', 40, minval=1, doc = '''

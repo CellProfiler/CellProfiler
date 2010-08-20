@@ -127,13 +127,15 @@ MS_ORDER = 'Order'
 FF_INDIVIDUAL_IMAGES = 'individual images'
 FF_STK_MOVIES = 'stk movies'
 FF_AVI_MOVIES = 'avi movies'
-FF_OTHER_MOVIES = 'tif,tiff,flex movies'
+FF_OTHER_MOVIES = 'tif,tiff,flex movies, zvi movies'
+FF_OTHER_MOVIES_OLD = 'tif,tiff,flex movies'
+
 if has_bioformats:
     FF = [FF_INDIVIDUAL_IMAGES, FF_STK_MOVIES, FF_AVI_MOVIES, FF_OTHER_MOVIES]
 else:
     FF = [FF_INDIVIDUAL_IMAGES, FF_STK_MOVIES]
 
-USE_BIOFORMATS_FIRST = [".tiff", ".tif", ".flex",".stk",".dib",".c01"]
+USE_BIOFORMATS_FIRST = [".tiff", ".tif", ".flex",".stk",".dib",".c01",'.zvi']
 
 # The metadata choices:
 # M_NONE - don't extract metadata
@@ -201,6 +203,8 @@ class LoadImages(cpmodule.CPModule):
                 The same is true for the FLEX file format (used by Evotec Opera automated microscopes).</li>
                 <li><i>STK movies:</i> STKs are a proprietary image format used by MetaMorph (Molecular Devices). It is typically
                 used to encode 3D image data, e.g. from confocal microscopy, and is a special version of the TIF format. </li>
+                <li><i>ZVI movies:</i> ZVIs are a proprietary image format used by Zeiss. It is typically
+                used to encode 3D image data, e.g. from fluorescence microscopy. </li>
                 </ul>""")
         
         self.match_method = cps.Choice('File selection method', [MS_EXACT_MATCH, MS_REGEXP, MS_ORDER],doc="""
@@ -315,7 +319,7 @@ class LoadImages(cpmodule.CPModule):
                 process those images that have the same plate field together (the alternative would be
                 to place the images from each plate in a separate folder). The next setting allows you
                 to select the metadata tags by which to group.
-                <p>Note that if you are loading an image movie (e.g., TIFs, FLEX, STKs, AVIs), grouping
+                <p>Note that if you are loading an image movie (e.g., TIFs, FLEX, STKs, AVIs, ZVIs), grouping
                 is automatically performed on the basis of the filename, so that each movie
                 is already treated as a group. This is required since a movie is effectively
                 a self-contained image set.""")
@@ -1084,6 +1088,9 @@ class LoadImages(cpmodule.CPModule):
         # Standardize input/output directory name references
         setting_values[self.SLOT_LOCATION] = \
             cps.DirectoryPath.upgrade_setting(setting_values[self.SLOT_LOCATION])
+        # Upgrade the file type slot
+        if setting_values[self.SLOT_FILE_TYPE] == FF_OTHER_MOVIES_OLD:
+            setting_values[self.SLOT_FILE_TYPE] = FF_OTHER_MOVIES
 
         assert variable_revision_number == self.variable_revision_number, "Cannot read version %d of %s"%(variable_revision_number, self.module_name)
 
@@ -2245,11 +2252,11 @@ def is_image(filename):
     ext = os.path.splitext(filename)[1].lower()
     if PILImage.EXTENSION.has_key(ext):
         return True
-    return ext in ('.avi', '.mpeg', '.mat', '.stk','.flex', '.mov', '.c01')
+    return ext in ('.avi', '.mpeg', '.mat', '.stk','.flex', '.mov', '.c01','.zvi')
 
 def is_movie(filename):
     ext = os.path.splitext(filename)[1].lower()
-    return ext in ('.avi', '.mpeg', '.stk','.flex', '.mov', '.tif', '.tiff')
+    return ext in ('.avi', '.mpeg', '.stk','.flex', '.mov', '.tif', '.tiff','.zvi')
 
 
 class LoadImagesImageProviderBase(cpimage.AbstractImageProvider):
@@ -2417,7 +2424,7 @@ def load_using_PIL(path, index=0, seekfn=None):
         img = matplotlib.image.pil_to_array(img)
     return img
 
-def load_using_bioformats(path, c=None, z=0, t=0, series=None):
+def load_using_bioformats(path, c=None, z=0, t=0, series=None, rescale = True):
     '''Load the given image file using the Bioformats library
     
     path: path to the file
@@ -2507,7 +2514,8 @@ def load_using_bioformats(path, c=None, z=0, t=0, series=None):
         #
         formatreader.jutil.static_call("java/lang/System",
                                        "gc","()V")
-        image = image.astype(np.float32) / float(scale)
+        if rescale:
+            image = image.astype(np.float32) / float(scale)
     finally:
         formatreader.jutil.detach()
     return image

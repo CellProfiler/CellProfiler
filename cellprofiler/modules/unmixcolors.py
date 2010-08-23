@@ -187,21 +187,24 @@ class UnmixColors(cpm.CPModule):
             """ % globals()))
         group.append("red_absorbance", cps.Float(
             "Red absorbance", .5, 0, 1,
-            doc = """The red absorbance setting estimates the dye's
+            doc = """<i>(Used only if Custom is selected for the stain)</i><br>
+            The red absorbance setting estimates the dye's
             absorbance of light in the red channel.You should enter a value
             between 0 and 1 where 0 is no absorbance and 1 is complete
             absorbance. You can use the estimator to calculate this
             value automatically."""))
         group.append("green_absorbance", cps.Float(
             "Green absorbance", .5, 0, 1,
-            doc = """The green absorbance setting estimates the dye's
+            doc = """<i>(Used only if Custom is selected for the stain)</i><br>
+            The green absorbance setting estimates the dye's
             absorbance of light in the green channel. You should enter a value
             between 0 and 1 where 0 is no absorbance and 1 is complete
             absorbance. You can use the estimator to calculate this
             value automatically."""))
         group.append("blue_absorbance", cps.Float(
             "Blue absorbance", .5, 0, 1,
-            doc = """The blue absorbance setting estimates the dye's
+            doc = """<i>(Used only if Custom is selected for the stain)</i><br>
+            The blue absorbance setting estimates the dye's
             absorbance of light in the blue channel. You should enter a value
             between 0 and 1 where 0 is no absorbance and 1 is complete
             absorbance. You can use the estimator to calculate this

@@ -536,6 +536,29 @@ class ExportToDatabase(cpm.CPModule):
                  "object table.") % OT_COMBINE, self.separate_object_tables)
                 
 
+    def make_full_filename(self, file_name, 
+                           workspace = None, image_set_index = None):
+        """Convert a file name into an absolute path
+        
+        We do a few things here:
+        * apply metadata from an image set to the file name if an 
+          image set is specified
+        * change the relative path into an absolute one using the "." and "&"
+          convention
+        * Create any directories along the path
+        """
+        if image_set_index is not None and workspace is not None:
+            file_name = workspace.measurements.apply_metadata(file_name,
+                                                              image_set_index)
+        measurements = None if workspace is None else workspace.measurements
+        path_name = self.directory.get_absolute_path(measurements, 
+                                                     image_set_index)
+        file_name = os.path.join(path_name, file_name)
+        path, file = os.path.split(file_name)
+        if not os.path.isdir(path):
+            os.makedirs(path)
+        return os.path.join(path,file)
+    
     def prepare_run(self, pipeline, image_set_list, frame):
         '''Prepare to run the pipeline
         Establish a connection to the database.'''
@@ -549,7 +572,7 @@ class ExportToDatabase(cpm.CPModule):
                                                          self.db_passwd.value,
                                                          self.db_name.value)
         elif self.db_type==DB_SQLITE:
-            db_file = self.get_output_directory()+'/'+self.sqlite_file.value
+            db_file = self.make_full_filename(self.sqlite_file.value)
             self.connection, self.cursor = connect_sqlite(db_file)
         #
         # This caches the list of measurement columns for the run,
@@ -697,7 +720,8 @@ class ExportToDatabase(cpm.CPModule):
         if self.save_cpa_properties.value:
             self.write_properties(workspace)
         if self.db_type == DB_MYSQL_CSV:
-            path = self.get_output_directory(workspace)
+            path = self.directory.get_absolute_path(None if workspace is None
+                                                else workspace.measurements)
             if not os.path.isdir(path):
                 os.makedirs(path)
             self.write_mysql_table_defs(workspace)
@@ -956,7 +980,7 @@ class ExportToDatabase(cpm.CPModule):
         file_name_width, path_name_width = self.get_file_path_width(workspace)
         metadata_name_width = 128
         file_name = "%sSETUP.SQL"%(self.sql_file_prefix)
-        path_name = os.path.join(self.get_output_directory(workspace), file_name)
+        path_name = self.make_full_filename(file_name,workspace)
         fid = open(path_name,"wt")
         fid.write("CREATE DATABASE IF NOT EXISTS %s;\n"%(self.db_name.value))
         fid.write("USE %s;\n"%(self.db_name.value))
@@ -1004,8 +1028,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
         '''
         if fid is None:
             file_name = "%s_Per_Well_SETUP.SQL"%(self.sql_file_prefix)
-            path_name = os.path.join(self.get_output_directory(workspace), 
-                                     file_name)
+            path_name = self.make_full_filename(file_name,workspace)
             fid = open(path_name,"wt")
             needs_close = True
         else:
@@ -1117,8 +1140,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
         measurements = workspace.measurements
         pipeline = workspace.pipeline
         image_set_list = workspace.image_set_list
-        image_filename = os.path.join(self.get_output_directory(workspace),
-                                      '%s_image.CSV'%(self.base_name(workspace)))
+        image_filename = self.make_full_filename('%s_image.CSV'%(self.base_name(workspace)),workspace)
         fid_per_image = open(image_filename,"wb")
         columns = self.get_pipeline_measurement_columns(pipeline, 
                                                         image_set_list)
@@ -1170,7 +1192,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
         for file_object_name, object_list in data:
             file_name = "%s_%s.CSV" % (self.base_name(workspace), 
                                        file_object_name)
-            file_name = os.path.join(self.get_output_directory(), file_name)
+            file_name = self.make_full_filename(file_name)
             fid = open(file_name, "wb")
             csv_writer = csv.writer(fid, lineterminator='\n')
             for i in range(measurements.image_set_index+1):
@@ -1382,8 +1404,8 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
         else:
             name = self.db_name
         filename = '%s.properties'%(name)
-        path = os.path.join(self.get_output_directory(workspace), filename)
-        fid = open(path,'wt')
+        file_name = self.make_full_filename(filename,workspace)
+        fid = open(file_name,'wt')
         date = datetime.datetime.now().ctime()
         db_type = (self.db_type == DB_MYSQL and 'mysql') or (self.db_type == DB_SQLITE and 'sqlite') or 'oracle_not_supported'
         db_port = (self.db_type == DB_MYSQL and 3306) or (self.db_type == DB_ORACLE and 1521) or ''
@@ -1392,8 +1414,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
         db_name = self.db_name
         db_user = self.db_user
         db_sqlite_file = (self.db_type == DB_SQLITE and 
-                          self.get_output_directory(workspace)+
-                          '/'+self.sqlite_file.value) or ''
+                          self.make_full_filename(self.sqlite_file.value) ) or ''
         if self.db_type == DB_MYSQL or self.db_type == DB_ORACLE:
             db_info =  'db_type      = %(db_type)s\n'%(locals())
             db_info += 'db_port      = %(db_port)d\n'%(locals())
@@ -1614,12 +1635,6 @@ check_tables = yes
                 if len(names) > 0:
                     PathNameWidth = max(PathNameWidth, np.max(map(len,names)))
         return FileNameWidth, PathNameWidth
-
-    
-    def get_output_directory(self, workspace=None):
-        return self.directory.get_absolute_path(None if workspace is None
-                                                else workspace.measurements)
-
     
     def get_table_prefix(self):
         if self.want_table_prefix.value:

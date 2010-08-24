@@ -1082,8 +1082,8 @@ class TrackObjects(cpm.CPModule):
         para7 = merge_initiation_cost #value for lower-middle
         para8 = self.max_frame_distance.value #max frame difference
 
-        image_numbers = self.get_image_numbers(workspace)
         m = workspace.measurements
+        image_numbers = self.get_image_numbers(workspace)-m.image_set_start_number # Offset image number by group index
         label = m.get_all_measurements(self.object_name.value, 
                                        self.measurement_name(F_LABEL))
         orig_label = label
@@ -1095,7 +1095,7 @@ class TrackObjects(cpm.CPModule):
         # Reduce the lists to only the ones in the group
         #
         for mlist in (label, a, b, Area):
-            mlist = [mlist[image_number-1] for image_number in image_numbers]
+            mlist = [mlist[image_number] for image_number in image_numbers]
         numFrames = len(b)
 
         #Calculates the maximum number of cells in a single frame
@@ -1450,7 +1450,7 @@ class TrackObjects(cpm.CPModule):
         # inside the list retrieved from the measurements
         #
         for i, image_number in enumerate(image_numbers):
-            orig_label[image_number-1] = newlabel[i]
+            orig_label[image_number] = newlabel[i]
 
     def map_objects(self, workspace, new_of_old, old_of_new, i,j):
         '''Record the mapping of old to new objects and vice-versa

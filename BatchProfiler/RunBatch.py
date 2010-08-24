@@ -309,7 +309,7 @@ def RunOne_2_0(x, run):
          "-l","%(end)d"%(x),
          "-d",'"%(done_file)s"'%(x)]
     if x["group_or_null"] is not None:
-        cmd += ["-g",x["group_or_null"]]
+        cmd += ["-g",'"%s"'%(x["group_or_null"])]
     if x["write_data"]:
         cmd += ['"%(data_dir)s/%(start)s_to_%(end)s.mat"'%(x)]
     cmd = ' '.join(cmd)

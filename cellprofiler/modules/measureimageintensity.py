@@ -10,6 +10,7 @@ unmasked pixels will be measured.
 <ul>
 <li><i>TotalIntensity:</i> Sum of all pixel intensity values.</li>
 <li><i>MeanIntensity, MedianIntensity:</i> Mean and median of pixel intensity values.</li>
+<li><i>StdIntensity, MADIntensity:</i> Standard deviation and median absolute deviation (MAD) of pixel intensity values.</li>
 <li><i>MinIntensity, MaxIntensity:</i> Minimum and maximum of pixel intensity values.</li>
 <li><i>TotalArea:</i> Number of pixels measured.</li>
 </ul>

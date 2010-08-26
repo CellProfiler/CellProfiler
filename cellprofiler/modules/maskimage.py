@@ -131,6 +131,8 @@ class MaskImage(cpm.CPModule):
                 mask = image_set.get_image(self.masking_image_name.value,
                                            must_be_grayscale=True).pixel_data
                 mask = mask > .5
+            if self.invert_mask.value:
+                mask = mask == 0
         orig_image = image_set.get_image(self.image_name.value,
                                          must_be_grayscale = True)
         if mask.shape != orig_image.pixel_data.shape:

@@ -44,6 +44,12 @@ F_MEAN_INTENSITY = 'Intensity_MeanIntensity_%s'
 '''Measurement feature name format for the MeanIntensity measurement'''
 F_MEDIAN_INTENSITY = 'Intensity_MedianIntensity_%s'
 
+'''Measurement feature name format for the StdIntensity measurement'''
+F_STD_INTENSITY = 'Intensity_StdIntensity_%s'
+
+'''Measurement feature name format for the MedAbsDevIntensity measurement'''
+F_MAD_INTENSITY = 'Intensity_MADIntensity_%s'
+
 '''Measurement feature name format for the MaxIntensity measurement'''
 F_MAX_INTENSITY = 'Intensity_MaxIntensity_%s'
 
@@ -53,7 +59,7 @@ F_MIN_INTENSITY = 'Intensity_MinIntensity_%s'
 '''Measurement feature name format for the TotalArea measurement'''
 F_TOTAL_AREA = 'Intensity_TotalArea_%s'
 
-ALL_MEASUREMENTS = ["TotalIntensity", "MeanIntensity", "MedianIntensity",
+ALL_MEASUREMENTS = ["TotalIntensity", "MeanIntensity", "StdIntensity", "MADIntensity", "MedianIntensity",
                     "MinIntensity",  "MaxIntensity", "TotalArea"]
 
 class MeasureImageIntensity(cpm.CPModule):
@@ -171,19 +177,25 @@ class MeasureImageIntensity(cpm.CPModule):
         if pixel_count == 0:
             pixel_sum = 0
             pixel_mean = 0
+            pixel_std = 0
+            pixel_mad = 0
             pixel_median = 0
             pixel_min = 0
             pixel_max = 0
         else:
             pixel_sum = np.sum(pixels)
             pixel_mean = pixel_sum/float(pixel_count)
+            pixel_std = np.std(pixels)
             pixel_median = np.median(pixels)
+            pixel_mad = np.median(np.abs(pixels - pixel_median))
             pixel_min = np.min(pixels)
             pixel_max = np.max(pixels)
         m = workspace.measurements
         m.add_image_measurement(F_TOTAL_INTENSITY%(measurement_name), pixel_sum)
         m.add_image_measurement(F_MEAN_INTENSITY%(measurement_name), pixel_mean)
         m.add_image_measurement(F_MEDIAN_INTENSITY%(measurement_name), pixel_median)
+        m.add_image_measurement(F_STD_INTENSITY%(measurement_name), pixel_std)
+        m.add_image_measurement(F_MAD_INTENSITY%(measurement_name), pixel_mad)
         m.add_image_measurement(F_MAX_INTENSITY%(measurement_name), pixel_max)
         m.add_image_measurement(F_MIN_INTENSITY%(measurement_name), pixel_min)
         m.add_image_measurement(F_TOTAL_AREA%(measurement_name), pixel_count)
@@ -193,6 +205,8 @@ class MeasureImageIntensity(cpm.CPModule):
                 for feature_name, value in (('Total intensity', pixel_sum),
                                             ('Mean intensity', pixel_mean),
                                             ('Median intensity', pixel_median),
+                                            ('Std intensity', pixel_std),
+                                            ('MAD intensity', pixel_mad),
                                             ('Min intensity', pixel_min),
                                             ('Max intensity', pixel_max),
                                             ('Total area', pixel_count))]
@@ -204,6 +218,8 @@ class MeasureImageIntensity(cpm.CPModule):
             for feature, coltype in ((F_TOTAL_INTENSITY, cpmeas.COLTYPE_FLOAT),
                                      (F_MEAN_INTENSITY, cpmeas.COLTYPE_FLOAT),
                                      (F_MEDIAN_INTENSITY, cpmeas.COLTYPE_FLOAT),
+                                     (F_STD_INTENSITY, cpmeas.COLTYPE_FLOAT),
+                                     (F_MAD_INTENSITY, cpmeas.COLTYPE_FLOAT),
                                      (F_MIN_INTENSITY, cpmeas.COLTYPE_FLOAT),
                                      (F_MAX_INTENSITY, cpmeas.COLTYPE_FLOAT),
                                      (F_TOTAL_AREA, cpmeas.COLTYPE_INTEGER)):

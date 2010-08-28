@@ -701,10 +701,8 @@ def enhance_dark_holes(image, min_radius, max_radius, mask=None):
                                                   footprint = se)
         output_image = previous_reconstructed_image - reconstructed_image
         if i >= min_radius:
-            smoothed_image += output_image
+            smoothed_image = np.maximum(smoothed_image,output_image)
         previous_reconstructed_image = reconstructed_image
-    smoothed_image[smoothed_image > 1] = 1
-    smoothed_image[smoothed_image < 0] = 0
     return smoothed_image
 
 def circular_average_filter(image, radius, mask=None):

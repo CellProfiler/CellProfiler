@@ -333,6 +333,10 @@ class Identify(cellprofiler.cpmodule.CPModule):
         if self.threshold_method == TM_MEASUREMENT:
             m = workspace.measurements
             value = m.get_current_image_measurement(self.thresholding_measurement.value)
+            if not self.threshold_range.min is None:
+                value = max(value, self.threshold_range.min)
+            if not self.threshold_range.max is None:
+                value = min(value, self.threshold_range.max)
             return value, value
         object_fraction = self.object_fraction.value
         if object_fraction.endswith("%"):

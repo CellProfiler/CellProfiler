@@ -1140,7 +1140,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
         measurements = workspace.measurements
         pipeline = workspace.pipeline
         image_set_list = workspace.image_set_list
-        image_filename = self.make_full_filename('%s_image.CSV'%(self.base_name(workspace)),workspace)
+        image_filename = self.make_full_filename('%s_%s.CSV'%(self.base_name(workspace),cpmeas.IMAGE),workspace)
         fid_per_image = open(image_filename,"wb")
         columns = self.get_pipeline_measurement_columns(pipeline, 
                                                         image_set_list)

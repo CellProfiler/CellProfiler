@@ -20,7 +20,7 @@ output_file = form["output_file"].value
 queue = (form.has_key("queue") and form["queue"].value) or None
 my_batch = RunBatch.LoadBatch(batch_id)
 
-re_load_line = re.compile("'(.+?)[0-9]+_[0-9]+_(image|object).CSV'\sREPLACE\sINTO\sTABLE\s([A-Za-z0-9_]+)\s")
+re_load_line = re.compile("'(.+?)[0-9]+_[0-9]+_(Image|Object).CSV'\sREPLACE\sINTO\sTABLE\s([A-Za-z0-9_]+)\s")
 re_ignore_line = re.compile("SHOW WARNINGS;")
 table_lines = []
 image_prefix = None
@@ -32,7 +32,7 @@ try:
         match = re_load_line.search(line)
         if match:
             in_table_defs = False
-            if match.groups(1)[1] == 'image':
+            if match.groups(1)[1] == 'Image':
                 image_table = match.groups(1)[2]
                 image_prefix = match.groups(1)[0]
             else :
@@ -43,18 +43,18 @@ try:
 finally:
     sql_script_file.close()    
 
-re_file_name = re.compile("^(.+?)[0-9]+_[0-9]+_(image|object).CSV$")
+re_file_name = re.compile("^(.+?)[0-9]+_[0-9]+_(Image|Object).CSV$")
 image_files = []
 object_files = []
 for file_name in os.listdir(my_batch["data_dir"]):
     match = re_file_name.search(file_name)
     if match:
         if (image_prefix and match.groups(1)[0] == image_prefix 
-            and match.groups(1)[1] == 'image'):
+            and match.groups(1)[1] == 'Image'):
             image_files.append(file_name)
         elif (object_prefix and 
               match.groups(1)[0] == object_prefix and 
-              match.groups(1)[1] == 'object'):
+              match.groups(1)[1] == 'Object'):
             object_files.append(file_name)
 
 batch_script = my_batch["data_dir"]+os.sep+"batch_"+sql_script

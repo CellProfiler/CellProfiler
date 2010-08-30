@@ -180,9 +180,8 @@ else:
                                  value='Run'
                                  onclick='confirm("Are you sure you want to upload to the database using %(filename)s?")' />"""%(globals())
                 print "&nbsp;Queue:<select name='queue'>"
-                print "<option value='short'>Short</option>"
-                print "<option value='broad'>Broad</option>"
-                print "<option value='long'>Long</option>"
+                print "<option value='hour'>Hour</option>"
+                print "<option value='week'>Week</option>"
                 print "<option value='priority'>Priority</option>"
                 print "</select>"
                 print "</span>"

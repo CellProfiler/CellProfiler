@@ -29,7 +29,7 @@ python_path = os.path.split(__file__)[0]
 sys.path.append(python_path)
 from RunBatch import connection, GetJobStatus
 
-def run_sql_file(batch_id, sql_path, stdout_path, queue="broad", project="imaging"):
+def run_sql_file(batch_id, sql_path, stdout_path, queue="hour", project="imaging"):
     """Use the mysql command line to run the given SQL script
     
     batch_id    - sql_file is associated with this batch

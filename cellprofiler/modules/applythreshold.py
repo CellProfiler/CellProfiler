@@ -18,7 +18,7 @@ from cellprofiler.modules.identify import FF_ORIG_THRESHOLD, FF_FINAL_THRESHOLD
 from cellprofiler.modules.identify import FF_SUM_OF_ENTROPIES, FF_WEIGHTED_VARIANCE
 from cellprofiler.modules.identify import get_threshold_measurement_columns
 from cellprofiler.cpmath.threshold import TM_METHODS, TM_MANUAL, TM_MOG, TM_OTSU
-from cellprofiler.cpmath.threshold import TM_PER_OBJECT, TM_BINARY_IMAGE
+from cellprofiler.cpmath.threshold import TM_GLOBAL, TM_PER_OBJECT, TM_BINARY_IMAGE
 
 from cellprofiler.cpmath.cpmorphology import strel_disk
 from scipy.ndimage.morphology import binary_dilation
@@ -149,7 +149,7 @@ class ApplyThreshold(Identify):
                 thresholded_pixels = pixels < local_thresh
                 pixels[input.mask & thresholded_pixels] = 0
                 if self.shift.value:
-                    pixels[input.mask & ~ thresholded_pixels] -= local_thresh
+                    pixels[input.mask & ~ thresholded_pixels] -= local_thresh if self.threshold_modifier == TM_GLOBAL else local_thresh[input.mask & ~ thresholded_pixels]
             elif self.low_or_high == TH_ABOVE_THRESHOLD:
                 undilated = input.mask & (pixels >= local_thresh)
                 dilated = binary_dilation(undilated, 

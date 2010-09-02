@@ -642,13 +642,14 @@ class TrackObjects(cpm.CPModule):
         norm = matplotlib.colors.BoundaryNorm(range(256), 256)
         img = ax.imshow(numpy.ma.array(labels, mask=(labels==0)),
                         cmap=cm, norm=norm)
-        i,j = centers_of_labels(objects.segmented)
-        for n, x, y in zip(object_numbers, j, i):
-            if np.isnan(x) or np.isnan(y):
-                # This happens if there are missing labels
-                continue
-            ax.annotate(str(n), xy=(x,y),color='white',
-                        arrowprops=dict(visible=False))
+        if self.display_type == DT_COLOR_AND_NUMBER:
+            i,j = centers_of_labels(objects.segmented)
+            for n, x, y in zip(object_numbers, j, i):
+                if np.isnan(x) or np.isnan(y):
+                    # This happens if there are missing labels
+                    continue
+                ax.annotate(str(n), xy=(x,y),color='white',
+                            arrowprops=dict(visible=False))
 
     def run_distance(self, workspace, objects):
         '''Track objects based on distance'''

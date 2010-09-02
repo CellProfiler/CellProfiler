@@ -117,6 +117,14 @@ O_SELECT = "Select..."
 
 ##############################################
 #
+# Choices for plate types
+#
+##############################################
+PLATE_NONE = "None"
+PLATE_TYPES = [PLATE_NONE,"96","384","5600"]
+
+##############################################
+#
 # Choices for the output directory
 #
 ##############################################
@@ -193,7 +201,7 @@ def connect_sqlite(db_file):
 class ExportToDatabase(cpm.CPModule):
  
     module_name = "ExportToDatabase"
-    variable_revision_number = 17
+    variable_revision_number = 18
     category = "Data Tools"
 
     def create_settings(self):
@@ -246,7 +254,8 @@ class ExportToDatabase(cpm.CPModule):
                 DEFAULT_OUTPUT_FOLDER_NAME, DEFAULT_INPUT_FOLDER_NAME, 
                 ABSOLUTE_FOLDER_NAME, DEFAULT_OUTPUT_SUBFOLDER_NAME,
                 DEFAULT_INPUT_SUBFOLDER_NAME],
-            doc="""<i>(Used only when saving csvs, or creating a properties file)</i><br>This setting determines where the .csv files are saved if
+            doc="""<i>(Used only when saving csvs, or creating a properties file)</i><br>
+            This setting determines where the .csv files are saved if
             you decide to save measurements to files instead of writing them
             directly to the database. %(IO_FOLDER_CHOICE_HELP_TEXT)s 
             
@@ -276,14 +285,25 @@ class ExportToDatabase(cpm.CPModule):
         if ip.startswith('69.173'): # Broad
             default_prepend = "http://imageweb/images/CPALinks"
         self.properties_image_url_prepend = cps.Text(
-            "Enter an image url prepend if you plan to access your files via http (leave blank if local)",
+            "Enter an image url prepend if you plan to access your files via http",
             default_prepend, 
-            doc = """The image paths written to the database will be the absolute
+            doc = """<i>(Used only if creating a properties file)</i><br>
+            The image paths written to the database will be the absolute
             path the the image files on your computer. If you plan to make these 
             files accessible via the web, you can enter a url prefix here. Eg: 
             If an image is loaded from the path "/cellprofiler/images/" and you use
             a url prepend of "http://mysite.com/", CellProfiler Analyst will look
-            for your file at "http://mysite.com/cellprofiler/images/" """)
+            for your file at "http://mysite.com/cellprofiler/images/" 
+            <p>If you are not using the web to access your files (i.e., they are locally
+            aceesible by your computer), leave this setting blank.""")
+        
+        self.properties_plate_type = cps.Choice("Select the plate type",
+            PLATE_TYPES,
+            doc="""<i>(Used only if creating a properties file)</i><br>
+            If you are using a multi-well plate or microarray, you can select the plate 
+            type here. Supported types in CellProfiler Analyst are 96- and 384-well plates,
+            as well as 5600-spot microarrays. If you are not using a plate or microarray, select
+            <i>None</i>.""")
 
         self.mysql_not_available = cps.Divider("Cannot write to MySQL directly - CSV file output only", line=False, 
             doc= """The MySQLdb python module could not be loaded.  MySQLdb is necessary for direct export.""")
@@ -347,8 +367,7 @@ class ExportToDatabase(cpm.CPModule):
             if you are measuring the area of the Nuclei objects and you check the aggregate
             standard deviation box in this module, <b>ExportToDatabase</b> will create a table in the database called
             "Per_Well_std", with a column called "Mean_Nuclei_AreaShape_Area".  Selecting all three aggregate measurements will create three per-well tables, one for each of the measurements.
-
-<p>The per-well functionality will create the appropriate lines in a .SQL file, which can be run on your Per-Image and Per-Object tables to create the desired per-well table. 
+            <p>The per-well functionality will create the appropriate lines in a .SQL file, which can be run on your Per-Image and Per-Object tables to create the desired per-well table. 
             <p><i>Note:</i> this option is only
             available if you have extracted plate and well metadata from the filename or via a <b>LoadData</b> module.
             It will write out a .sql file with the statements necessary to create the Per_Well
@@ -458,7 +477,7 @@ class ExportToDatabase(cpm.CPModule):
             result += [self.table_prefix]
         result += [self.save_cpa_properties]
         if self.save_cpa_properties.value:
-            result += [self.properties_image_url_prepend]
+            result += [self.properties_image_url_prepend, self.properties_plate_type]
         if needs_default_output_directory:
             result += [self.directory]
         result += [self.wants_agg_mean, self.wants_agg_median,
@@ -492,7 +511,19 @@ class ExportToDatabase(cpm.CPModule):
                 self.objects_choice, self.objects_list, self.max_column_size,
                 self.separate_object_tables, self.properties_image_url_prepend, 
                 self.want_image_thumbnails,self.thumbnail_image_names, 
-                self.auto_scale_thumbnail_intensities]
+                self.auto_scale_thumbnail_intensities,self.properties_plate_type]
+    
+    def help_settings(self):
+        return [self.db_type, self.db_name, self.db_host, self.db_user, self.db_passwd, self.sql_file_prefix, self.sqlite_file, 
+                self.want_table_prefix, self.table_prefix,  
+                self.save_cpa_properties,self.properties_image_url_prepend, self.properties_plate_type,
+                self.directory,
+                self.wants_agg_mean, self.wants_agg_median, self.wants_agg_std_dev, 
+                self.wants_agg_mean_well, self.wants_agg_median_well, self.wants_agg_std_dev_well,
+                self.objects_choice, self.objects_list,
+                self.separate_object_tables,
+                self.max_column_size,
+                self.want_image_thumbnails,self.thumbnail_image_names, self.auto_scale_thumbnail_intensities]
     
     def validate_module(self,pipeline):
         if self.want_table_prefix.value:
@@ -1455,6 +1486,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
         else:
             image_channel_colors = 'red, green, blue, cyan, magenta, yellow, gray, '+('none, ' * 10)[:len(image_names)]
         image_url = self.properties_image_url_prepend.value
+        plate_type = "" if self.properties_plate_type.value == O_NONE else self.properties_plate_type.value
         contents = """#%(date)s
 # ==============================================
 #
@@ -1550,8 +1582,8 @@ image_url_prepend = %(image_url)s
 #   object_name  =  singular object name, plural object name,
 object_name  =  cell, cells,
 
-# What size plates were used?  384 or 96?  This is for use in the PlateViewer
-plate_type  = 
+# What size plates were used?  96, 384 or 5600?  This is for use in the PlateViewer. Leave blank if none
+plate_type  = %(plate_type)s
 
 # ==== Excluded Columns ====
 # OPTIONAL
@@ -1915,6 +1947,13 @@ check_tables = yes
             setting_values = setting_values + [cps.NO]
             variable_revision_number = 17
 
+        if (not from_matlab) and variable_revision_number == 17:
+            #
+            # Added choice for plate type
+            #
+            setting_values = setting_values + [PLATE_NONE]
+            variable_revision_number = 18
+            
         return setting_values, variable_revision_number, from_matlab
     
 class ColumnNameMapping:

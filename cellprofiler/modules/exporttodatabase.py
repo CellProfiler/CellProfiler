@@ -1033,11 +1033,11 @@ class ExportToDatabase(cpm.CPModule):
         else:
             data = []
         fid.write("""
-LOAD DATA LOCAL INFILE '%s_image.CSV' REPLACE INTO TABLE %s
+LOAD DATA LOCAL INFILE '%s_%s.CSV' REPLACE INTO TABLE %s
 FIELDS TERMINATED BY ',' 
 OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
 """ %
-                  (self.base_name(workspace), self.get_table_name(cpmeas.IMAGE)))
+                  (self.base_name(workspace), cpmeas.IMAGE, self.get_table_name(cpmeas.IMAGE)))
 
         for gcot_name, object_name in data:
             fid.write("""

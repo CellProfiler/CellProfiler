@@ -31,6 +31,7 @@ from contrib.english import ordinal
 import cellprofiler.cpimage as cpi
 import cellprofiler.cpmodule as cpm
 import cellprofiler.settings as cps
+import cellprofiler.measurements as cpmeas
 
 O_ADD = "Add"
 O_SUBTRACT = "Subtract"
@@ -46,18 +47,22 @@ O_NONE = "None"
 # Combine is now obsolete - done by Add now, but we need the string for upgrade_settings
 O_COMBINE = "Combine"
 
+IM_IMAGE = "Image"
+IM_MEASUREMENT = "Measurement"
 
 # The number of settings per image
-IMAGE_SETTING_COUNT = 2
+IMAGE_SETTING_COUNT_1 = 2
+IMAGE_SETTING_COUNT = 4
 
 # The number of settings other than for images
+FIXED_SETTING_COUNT_1 = 7
 FIXED_SETTING_COUNT = 7
 
 
 class ImageMath(cpm.CPModule):
     
     category = "Image Processing"
-    variable_revision_number = 1
+    variable_revision_number = 2
     module_name = "ImageMath"
 
     def create_settings(self):
@@ -128,7 +133,23 @@ class ImageMath(cpm.CPModule):
     def add_image(self, removable=True):
         # The text for these settings will be replaced in renumber_settings()
         group = cps.SettingsGroup()
+        group.removable = removable
+        group.append("image_or_measurement", cps.Choice(
+            "Image or measurement?", [IM_IMAGE, IM_MEASUREMENT],
+            doc="""You can perform math operations using two images or you
+            can use a measurement for one of the operands. For instance,
+            to divide the intensity of one image by another, choose Image
+            for both and pick the respective images. To divide the intensity
+            of an image by its median intensity, use <b>MeasureImageIntensity</b>
+            prior to this module to calculate the median intensity, then
+            select "Measurement" and use the median intensity measurement as
+            the denominator"""))
         group.append("image_name", cps.ImageNameSubscriber("", "",doc="""Which image do you want to use for this operation?"""))
+        group.append("measurement", cps.Measurement(
+            "Measurement", lambda : cpmeas.IMAGE,"",
+            doc="""This is a measurement made on the image. The value of the
+            measurement is used for the operand for all of the pixels of the
+            other operand's image."""))
         group.append("factor", cps.Float("", 1,doc="""By what number would you like to multiply the above image? This multiplication
                 is applied before other operations."""))
         if removable:
@@ -146,18 +167,33 @@ class ImageMath(cpm.CPModule):
                   self.truncate_low, self.truncate_high, 
                   self.output_image_name]
         for image in self.images:
-            result += [image.image_name, image.factor]
+            result += [image.image_or_measurement, image.image_name, 
+                       image.factor, image.measurement]
         return result
 
+    @property
+    def operand_count(self):
+        '''# of operands, taking the operation into consideration'''
+        if self.operation.value in (O_INVERT, O_LOG_TRANSFORM, O_NONE):
+            return 1
+        return len(self.images)
+    
     def visible_settings(self):
         result = [self.operation, self.output_image_name, self.divider_top]
         self.renumber_settings()
-        single_image = self.operation.value in (O_INVERT, O_LOG_TRANSFORM, O_NONE)
-        for index, image in enumerate(self.images):
-            if (index >= 1) and single_image:
-            # these operations use the first image only
-                break 
-            result += image.visible_settings()
+        single_image = self.operand_count == 1
+        for index in range(self.operand_count):
+            image = self.images[index]
+            if single_image:
+                result += [image.image_name, image.factor]
+            else:
+                result += [image.image_or_measurement,
+                           image.image_name 
+                           if image.image_or_measurement == IM_IMAGE
+                           else image.measurement, image.factor]
+            if image.removable:
+                result += [image.remover]
+            result += [image.divider]
 
         if single_image:
             result[-1] = self.divider_bottom # this looks better when there's just one image
@@ -171,7 +207,8 @@ class ImageMath(cpm.CPModule):
     def help_settings(self):
         result = [self.operation, self.output_image_name, ]
         for image in self.images:
-            result += [image.image_name, image.factor]
+            result += [image.image_or_measurement, image.image_name, 
+                       image.measurement, image.factor]
         result += [self.exponent, self.after_factor, self.addend,
                   self.truncate_low, self.truncate_high]
         return result
@@ -187,14 +224,18 @@ class ImageMath(cpm.CPModule):
 
 
     def run(self, workspace):
-        image_names = [image.image_name.value for image in self.images]
+        image_names = [image.image_name.value for image in self.images
+                       if image.image_or_measurement == IM_IMAGE]
         image_factors = [image.factor.value for image in self.images]
+        wants_image = [image.image_or_measurement == IM_IMAGE
+                       for image in self.images]
         if self.operation.value in (O_INVERT, O_LOG_TRANSFORM, O_NONE):
             # these only operate on the first image
             image_names = image_names[:1]
             image_factors = image_factors[:1]
 
-        images = [workspace.image_set.get_image(x) for x in image_names]
+        images = [workspace.image_set.get_image(x)
+                  for x in image_names]
         pixel_data = [image.pixel_data for image in images]
         masks = [image.mask if image.has_mask else None for image in images]
 
@@ -208,6 +249,16 @@ class ImageMath(cpm.CPModule):
             if masks[i] is not None:
                 masks[i] = smallest_image.crop_image_similarly(masks[i])
 
+        # weave in the measurements
+        idx = 0
+        measurements = workspace.measurements
+        assert isinstance(measurements, cpmeas.Measurements)
+        for i in range(self.operand_count):
+            if not wants_image[i]:
+                value = measurements.get_current_image_measurement(
+                    self.images[i].measurement.value)
+                pixel_data.insert(i, value)
+                masks.insert(i, True)
         #
         # Multiply images by their factors
         #
@@ -249,6 +300,10 @@ class ImageMath(cpm.CPModule):
         else:
             raise NotImplementedException("The operation %s has not been implemented"%opval)
 
+        # Check to see if there was a measurement & image w/o mask. If so
+        # set mask to none
+        if np.isscalar(output_mask):
+            output_mask = None
         #
         # Post-processing: exponent, multiply, add
         #
@@ -304,6 +359,15 @@ class ImageMath(cpm.CPModule):
                                              sharex = figure.subplot(0,0),
                                              sharey = figure.subplot(0,0))
 
+    def validate_module(self, pipeline):
+        '''Guarantee that at least one operand is an image'''
+        for i in range(self.operand_count):
+            op = self.images[i]
+            if op.image_or_measurement == IM_IMAGE:
+                return
+        raise cps.ValidationError("At least one of the operands must be an image",
+                                  op.image_or_measurement)
+    
     def upgrade_settings(self, setting_values, variable_revision_number, 
                          module_name, from_matlab):
         if (from_matlab and module_name == 'Subtract' and 
@@ -345,7 +409,7 @@ class ImageMath(cpm.CPModule):
             for name, weight in names_and_weights:
                 setting_values += [name, weight]
             module_name = 'ImageMath'
-            variable_revision_number = 2
+            variable_revision_number = 1
             from_matlab = False
         if (from_matlab and module_name == 'InvertIntensity' and
             variable_revision_number == 1):
@@ -464,4 +528,13 @@ class ImageMath(cpm.CPModule):
                 setting_values += [image_name, input_factor]
             from_matlab = False
             variable_revision_number = 1
+        if (not from_matlab) and variable_revision_number == 1:
+            # added image_or_measurement and measurement
+            new_setting_values = setting_values[:FIXED_SETTING_COUNT_1]
+            for i in range(FIXED_SETTING_COUNT_1, len(setting_values),
+                           IMAGE_SETTING_COUNT_1):
+                new_setting_values += [IM_IMAGE, setting_values[i],
+                                       setting_values[i+1], ""]
+            setting_values = new_setting_values
+            variable_revision_number = 2
         return setting_values, variable_revision_number, from_matlab

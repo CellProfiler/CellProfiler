@@ -34,6 +34,8 @@ import cellprofiler.workspace as cpw
 
 import cellprofiler.modules.imagemath as I
 
+MEASUREMENT_NAME = 'mymeasurement'
+
 class TestImageMath(unittest.TestCase):
     def test_01_000_load_subtract(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
@@ -261,7 +263,7 @@ Multiply:[module_num:1|svn_version:\'8913\'|variable_revision_number:1|show_wind
         self.assertEqual(len(module.images),2)
         self.assertAlmostEqual(module.addend.value, .3)
     
-    def run_imagemath(self, images, modify_module_fn=None):
+    def run_imagemath(self, images, modify_module_fn=None, measurement = None):
         '''Run the ImageMath module, returning the image created
         
         images - a list of dictionaries. The dictionary has keys:
@@ -270,6 +272,7 @@ Multiply:[module_num:1|svn_version:\'8913\'|variable_revision_number:1|show_wind
                  cropping - cropping mask for image
         modify_module_fn - a function of the signature, fn(module)
                  that allows the test to modify the module.
+        measurement - an image measurement value
         '''
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
@@ -290,15 +293,18 @@ Multiply:[module_num:1|svn_version:\'8913\'|variable_revision_number:1|show_wind
             modify_module_fn(module)
         pipeline = cpp.Pipeline()
         pipeline.add_module(module)
+        measurements = cpmeas.Measurements()
+        if measurement is not None:
+            measurements.add_image_measurement(MEASUREMENT_NAME, measurement)
         workspace = cpw.Workspace(pipeline, module, image_set, cpo.ObjectSet(),
-                                  cpmeas.Measurements(), image_set_list)
+                                  measurements, image_set_list)
         module.run(workspace)
         return image_set.get_image('outputimage')
     
     def check_expected(self, image, expected, mask=None):
         if mask is None and not image.has_crop_mask:
             self.assertTrue(np.all(np.abs(image.pixel_data - expected <
-                                          np.sqrt(np.finfo(float).eps))))
+                                          np.sqrt(np.finfo(np.float32).eps))))
             self.assertFalse(image.has_mask)
         else:
             self.assertTrue(image.has_mask)
@@ -306,7 +312,7 @@ Multiply:[module_num:1|svn_version:\'8913\'|variable_revision_number:1|show_wind
                 self.assertTrue(np.all(mask == image.mask))
             self.assertTrue(np.all(np.abs(image.pixel_data[image.mask] - 
                                           expected[image.mask]) <
-                                          np.sqrt(np.finfo(float).eps)))
+                                          np.sqrt(np.finfo(np.float32).eps)))
         
     def test_02_01_exponent(self):
         '''Test exponentiation of an image'''
@@ -542,3 +548,37 @@ Multiply:[module_num:1|svn_version:\'8913\'|variable_revision_number:1|show_wind
         expected = np.log2(image)
         output = self.run_imagemath([{ 'pixel_data': image}], fn)
         self.check_expected(output, expected)
+        
+    def test_10_01_with_measurement(self):
+        '''Test multiplying an image by a measurement'''
+        def fn(module):
+            module.operation.value = I.O_MULTIPLY
+            module.images[1].image_or_measurement.value = I.IM_MEASUREMENT
+            module.images[1].measurement.value = MEASUREMENT_NAME
+
+        np.random.seed(101)
+        measurement = 1.23
+        expected = np.random.uniform(size=(10,20)).astype(np.float32) 
+        image = expected / measurement
+        output = self.run_imagemath([{ 'pixel_data':image }],
+                                    modify_module_fn = fn, 
+                                    measurement = measurement)
+        self.check_expected(output, expected)
+
+    def test_10_02_with_measurement_and_mask(self):
+        '''Test a measurement operation on a masked image'''
+        def fn(module):
+            module.operation.value = I.O_MULTIPLY
+            module.images[1].image_or_measurement.value = I.IM_MEASUREMENT
+            module.images[1].measurement.value = MEASUREMENT_NAME
+
+        np.random.seed(102)
+        measurement = 1.52
+        expected = np.random.uniform(size=(10,20)).astype(np.float32) 
+        image = expected / measurement
+        mask = np.random.uniform(size=(10,20)) < .2
+        output = self.run_imagemath([{ 'pixel_data':image, 'mask':mask }],
+                                    modify_module_fn = fn, 
+                                    measurement = measurement)
+        self.check_expected(output, expected, mask)
+        

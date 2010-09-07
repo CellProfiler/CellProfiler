@@ -1494,7 +1494,7 @@ class LoadImages(cpmodule.CPModule):
             finally:
                 dc.Destroy()
             best_total_width = max(best_total_width, total_width)
-        table.SetMinSize((best_total_width, table.GetMinHeight()))
+            table.SetMinSize((best_total_width, table.GetMinHeight()))
         my_frame.Fit()
         my_frame.Show()
     

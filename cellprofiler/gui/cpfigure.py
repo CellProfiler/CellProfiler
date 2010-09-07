@@ -802,17 +802,19 @@ class CPFigureFrame(wx.Frame):
             subplot.imshow(self.normalize_image(image, **kwargs))
         else:
             class CPImageArtist(matplotlib.artist.Artist):
-                def __init__(self, image, frame):
+                def __init__(self, image, frame, kwargs):
                     super(CPImageArtist, self).__init__()
                     self.image = image
                     self.frame = frame
+                    self.kwargs = kwargs
                     #
                     # The radius for the gaussian blur of 1 pixel sd
                     #
                     self.filterrad = 4.0
                     
                 def draw(self, renderer):
-                    image = make_3_channels_float(self.image)
+                    image = self.frame.normalize_image(self.image, 
+                                                       **self.kwargs)
                     magnification = renderer.get_image_magnification()
                     #
                     # Code partially borrowed from matplotlib/image.py
@@ -899,7 +901,7 @@ class CPFigureFrame(wx.Frame):
                     else:
                         gc = renderer.new_gc()
                         renderer.draw_image(gc, l, b, im)
-            subplot.add_artist(CPImageArtist(self.images[(x,y)], self))
+            subplot.add_artist(CPImageArtist(self.images[(x,y)], self, kwargs))
         
         # Also add this menu to the main menu
         if (x,y) in self.subplot_menus:

@@ -68,6 +68,7 @@ from cellprofiler.preferences import \
      DEFAULT_INPUT_SUBFOLDER_NAME, DEFAULT_OUTPUT_SUBFOLDER_NAME, \
      IO_FOLDER_CHOICE_HELP_TEXT, IO_WITH_METADATA_HELP_TEXT
 from cellprofiler.utilities.relpath import relpath
+from cellprofiler.modules.loadimages import C_FILE_NAME, C_PATH_NAME
 
 IF_IMAGE       = "Image"
 IF_MASK        = "Mask"
@@ -861,11 +862,23 @@ class SaveImages(cpm.CPModule):
     
     @property
     def file_name_feature(self):
-        return 'FileName_%s'%(self.image_name.value)
+        '''The file name measurement for the output file'''
+        return '_'.join((C_FILE_NAME, self.image_name.value))
     
     @property
     def path_name_feature(self):
-        return 'PathName_%s'%(self.image_name.value)
+        '''The path name measurement for the output file'''
+        return '_'.join((C_PATH_NAME, self.image_name.value))
+    
+    @property
+    def source_file_name_feature(self):
+        '''The file name measurement for the exemplar disk image'''
+        return '_'.join((C_FILE_NAME, self.file_image_name.value))
+    
+    @property
+    def source_path_name_feature(self):
+        '''The path name measurement for the exemplar disk image'''
+        return '_'.join((C_PATH_NAME, self.file_image_name.value))
     
     def get_measurement_columns(self, pipeline):
         if self.update_file_names.value:
@@ -890,7 +903,7 @@ class SaveImages(cpm.CPModule):
             filename = workspace.measurements.apply_metadata(filename)
             filename = '%s%d'%(filename, measurements.image_set_number)
         else:
-            file_name_feature = 'FileName_%s'%(self.file_image_name)
+            file_name_feature = self.source_file_name_feature
             filename = measurements.get_current_measurement('Image',
                                                             file_name_feature)
             filename = os.path.splitext(filename)[0]
@@ -903,7 +916,7 @@ class SaveImages(cpm.CPModule):
         pathname = self.pathname.get_absolute_path(measurements)
         if self.create_subdirectories:
             image_path = workspace.measurements.get_current_image_measurement(
-                self.path_name_feature)
+                self.source_path_name_feature)
             subdir = relpath(image_path, cpp.get_default_image_directory())
             pathname = os.path.join(pathname, subdir)
         

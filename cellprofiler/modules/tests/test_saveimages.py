@@ -43,6 +43,7 @@ from cellprofiler.utilities.get_proper_case_filename import get_proper_case_file
 
 import cellprofiler.modules.tests as cpmt
 IMAGE_NAME = 'inputimage'
+FILE_IMAGE_NAME = 'fileimage'
 FILE_NAME = 'filenm'
 
 from cellprofiler.utilities import jutil
@@ -1085,15 +1086,15 @@ SaveImages:[module_num:1|svn_version:\'10244\'|variable_revision_number:6|show_w
         m = workspace.measurements
         self.assertTrue(isinstance(m, cpm.Measurements))
         self.assertTrue(isinstance(module, cpm_si.SaveImages))
-        m.add_image_measurement(module.file_name_feature, "img1.tiff")
-        m.add_image_measurement(module.path_name_feature, input_path)
+        m.add_image_measurement("FileName_"+FILE_IMAGE_NAME, "img1.tiff")
+        m.add_image_measurement("PathName_"+FILE_IMAGE_NAME, input_path)
         module.file_name_method.value = cpm_si.FN_FROM_IMAGE
+        module.file_image_name.value = FILE_IMAGE_NAME
         module.file_format.value = cpm_si.FF_TIFF
         module.pathname.dir_choice = cps.DEFAULT_OUTPUT_FOLDER_NAME
         module.create_subdirectories.value = True
         module.run(workspace)
         self.assertTrue(os.path.exists(img_filename))
-        
         
     def test_02_01_prepare_to_create_batch(self):
         '''Test the "prepare_to_create_batch" method'''

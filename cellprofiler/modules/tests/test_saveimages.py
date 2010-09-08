@@ -1508,7 +1508,8 @@ SaveImages:[module_num:1|svn_version:\'10244\'|variable_revision_number:6|show_w
             module.file_format.value = setting['file_format']
             module.bit_depth.value = setting['bit_depth']
             
-            filename = module.get_filename(workspace)
+            filename = module.get_filename(workspace, make_dirs = False,
+                                           check_overwrite = False)
             if os.path.isfile(filename):
                 os.remove(filename)
         

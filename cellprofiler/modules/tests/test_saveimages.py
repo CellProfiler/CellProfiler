@@ -1443,7 +1443,9 @@ SaveImages:[module_num:1|svn_version:\'10244\'|variable_revision_number:6|show_w
             module.save_image_with_bioformats(workspace)
 
             expected = setting['expected']
-            filename = module.get_filename(workspace)
+            filename = module.get_filename(workspace,
+                                           make_dirs = False,
+                                           check_overwrite = False)
             im = cpm_li.load_using_bioformats(filename)
             self.assertTrue(np.all(np.abs(im*65535 - expected) <= 1))
             if os.path.isfile(filename):

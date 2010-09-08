@@ -411,7 +411,8 @@ class SaveImages(cpm.CPModule):
         else:
             raise NotImplementedError(("Saving a %s is not yet supported"%
                                        (self.save_image_or_figure)))
-        workspace.display_data.filename = self.get_filename(workspace)
+        workspace.display_data.filename = self.get_filename(
+            workspace, make_dirs = False, check_overwrite = False)
         
     def is_interactive(self):
         # if we overwrite files, it's safe to run in the background
@@ -453,7 +454,8 @@ class SaveImages(cpm.CPModule):
     def run_movie(self, workspace):
         assert has_bioformats
         d = self.get_dictionary(workspace.image_set_list)
-        out_file = self.get_filename(workspace)
+        out_file = self.get_filename(workspace,
+                                     check_overwrite = False)
         if d["CURRENT_FRAME"] == 0 and os.path.exists(out_file):
             if not self.check_overwrite(out_file):
                 d["CURRENT_FRAME"] = "Ignore"
@@ -573,11 +575,7 @@ class SaveImages(cpm.CPModule):
 
         # get the filename and check overwrite before attaching to java bridge
         filename = self.get_filename(workspace)
-        path, fname =os.path.split(filename)
-        if len(path) and not os.path.isdir(path):
-            os.makedirs(path)
-        if not self.check_overwrite(filename):
-            return
+        path, fname = os.path.split(filename)
         if os.path.isfile(filename):
             # Important: bioformats will append to files by default, so we must
             # delete it explicitly if it exists.
@@ -696,11 +694,6 @@ class SaveImages(cpm.CPModule):
 
         # get the filename and check overwrite
         filename = self.get_filename(workspace)
-        path=os.path.split(filename)[0]
-        if len(path) and not os.path.isdir(path):
-            os.makedirs(path)
-        if not self.check_overwrite(filename):
-            return
         if os.path.isfile(filename):
             # Important: bioformats will append to files by default, so we must
             # delete it explicitly if it exists.
@@ -807,10 +800,6 @@ class SaveImages(cpm.CPModule):
         elif self.save_image_or_figure == IF_CROPPING:
             pixels = image.crop_mask.astype(np.uint8) * 255
             
-        filename = self.get_filename(workspace)
-        path=os.path.split(filename)[0]
-        if len(path) and not os.path.isdir(path):
-            os.makedirs(path)
         if pixels.ndim == 3 and pixels.shape[2] == 4:
             mode = 'RGBA'
         elif pixels.ndim == 3:
@@ -819,8 +808,6 @@ class SaveImages(cpm.CPModule):
             mode = 'L'
         filename = self.get_filename(workspace)
 
-        if not self.check_overwrite(filename):
-            return
         if self.get_file_format() == FF_MAT:
             scipy.io.matlab.mio.savemat(filename,{"Image":pixels},format='5')
         else:
@@ -838,7 +825,7 @@ class SaveImages(cpm.CPModule):
         '''
         if not self.overwrite.value and os.path.isfile(filename):
             if cpp.get_headless():
-                raise 'SaveImages: trying to overwrite %s in headless mode, but Overwrite files is set to "No"'%(filename)
+                raise ValueError('SaveImages: trying to overwrite %s in headless mode, but Overwrite files is set to "No"'%(filename))
             else:
                 import wx
                 over = wx.MessageBox("Do you want to overwrite %s?"%(filename),
@@ -849,7 +836,8 @@ class SaveImages(cpm.CPModule):
         
     def save_filename_measurements(self, workspace):
         if self.update_file_names.value:
-            filename = self.get_filename(workspace)
+            filename = self.get_filename(workspace, make_dirs = False,
+                                         check_overwrite = False)
             pn, fn = os.path.split(filename)
             workspace.measurements.add_measurement('Image',
                                                    self.file_name_feature,
@@ -891,7 +879,7 @@ class SaveImages(cpm.CPModule):
         else:
             return []
         
-    def get_filename(self,workspace):
+    def get_filename(self, workspace, make_dirs=True, check_overwrite=True):
         "Concoct a filename for the current image based on the user settings"
         
         measurements=workspace.measurements
@@ -919,8 +907,13 @@ class SaveImages(cpm.CPModule):
                 self.source_path_name_feature)
             subdir = relpath(image_path, cpp.get_default_image_directory())
             pathname = os.path.join(pathname, subdir)
+        if len(pathname) and not os.path.isdir(pathname) and make_dirs:
+            os.makedirs(pathname)
+        result = os.path.join(pathname, filename)
+        if check_overwrite and not self.check_overwrite(result):
+            return
         
-        return os.path.join(pathname,filename)
+        return result
     
     def get_file_format(self):
         """Return the file format associated with the extension in self.file_format

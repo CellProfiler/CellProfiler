@@ -1247,7 +1247,7 @@ class TrackObjects(cpm.CPModule):
         # The first column of z is the index of the track that ends. The second
         # is the index into P2 of the object to be merged into
         #
-        z = np.array([-1, -1])
+        z = np.zeros((0,2), np.int32)
         while i <len(F):
             y = P1[j, 2]-L[i, 2]
             y = y.astype("int32")
@@ -1257,14 +1257,20 @@ class TrackObjects(cpm.CPModule):
             i = i+1
 
         #calculates actual cost according to the formula given in the supplmenetary notes    
-        AreaLast = Areaprime[L[z[1:len(z), 0], 2].astype("int32"), L[z[1:len(z), 0], 3].astype("int32")]
-        AreaBeforeMerge = Areaprime[P[Q1[z[1:len(z), 1]]-1, 2].astype("int32"), P[Q1[z[1:len(z), 1]]-1, 3].astype("int32")]
-        AreaAtMerge = Areaprime[P1[z[1:len(z), 1], 2].astype("int32"), P1[z[1:len(z), 1], 3].astype("int32")]
+        AreaLast = Areaprime[L[z[:, 0], 2].astype("int32"), 
+                             L[z[:, 0], 3].astype("int32")]
+        AreaBeforeMerge = Areaprime[P[Q1[z[:, 1]]-1, 2].astype("int32"), 
+                                    P[Q1[z[:, 1]]-1, 3].astype("int32")]
+        AreaAtMerge = Areaprime[P1[z[:, 1], 2].astype("int32"), 
+                                P1[z[:, 1], 3].astype("int32")]
         rho = ((AreaLast+AreaBeforeMerge)/AreaAtMerge)**2
         px = np.argwhere(rho < 1)
         if(len(px) > 0):
             rho[px] = np.sqrt((1/rho[px]))
-        rho = np.sqrt((L[z[1:len(z), 0], 0]-P2[z[1:len(z), 1], 0])**2 + (L[z[1:len(z), 0], 1]-P2[z[1:len(z), 1], 1])**2)*rho
+        if len(z) > 0:
+            rho = np.sqrt(np.sum((L[z[:, 0], :2]-P2[z[:, 1], :2])**2, 1)) * rho
+        else:
+            rho = np.zeros(0)
         e = rho
 
         #filters out the costs that are too high
@@ -1273,7 +1279,6 @@ class TrackObjects(cpm.CPModule):
 
         #puts together all the upper blocks
 
-        z = z[1:]
         if len(b) > 0:
             z = z[b].reshape((len(b), 2))
             e = e[b].reshape((len(b)))
@@ -1320,7 +1325,7 @@ class TrackObjects(cpm.CPModule):
             # The second is the index of the track that results from
             # the split.
             #
-            z = np.array([-1, -1])
+            z = np.zeros((0,2), np.int32)
             while i < len(P1):
                 y = F[j, 2]-P2[i, 2]
                 y = y.astype("int32")
@@ -1329,17 +1334,22 @@ class TrackObjects(cpm.CPModule):
                 z = np.vstack((z, y))
                 i = i+1
     
-            AreaFirst = Areaprime[F[z[1:len(z), 1], 2].astype("int32"), F[z[1:len(z), 1], 3].astype("int32")]
-            AreaAfterSplit = Areaprime[P[Q2[z[1:len(z), 0]]+1, 2].astype("int32"), P[Q2[z[1:len(z), 0]]+1, 3].astype("int32")]
-            AreaAtSplit = Areaprime[P2[z[1:len(z), 0], 2].astype("int32"), P2[z[1:len(z), 0], 3].astype("int32")]
+            AreaFirst = Areaprime[F[z[:, 1], 2].astype("int32"), 
+                                  F[z[:, 1], 3].astype("int32")]
+            AreaAfterSplit = Areaprime[P[Q2[z[:, 0]]+1, 2].astype("int32"), 
+                                       P[Q2[z[:, 0]]+1, 3].astype("int32")]
+            AreaAtSplit = Areaprime[P2[z[:, 0], 2].astype("int32"), 
+                                    P2[z[:, 0], 3].astype("int32")]
             rho = ((AreaFirst+AreaAfterSplit)/AreaAtSplit)**2
             x = np.argwhere(rho < 1)
             if(len(x) > 1):
                 rho[x] = (1/rho[x])*(1/rho[x])
-            rho = np.sqrt((F[z[1:len(z), 1], 0]-P2[z[1:len(z), 1], 0])**2 + (F[z[1:len(z), 1], 1]-P2[z[1:len(z), 1], 1])**2)*rho
+            if len(z):
+                rho = np.sqrt(np.sum((F[z[:, 1], :2]-P1[z[:, 0], :2])**2, 1)) * rho
+            else:
+                rho = np.zeros(0)
             e = rho
     
-            z = z[1:]
             b = np.argwhere(e <= para4)
             if len(b) > 0:
                 z = z[b].reshape((len(b), 2))

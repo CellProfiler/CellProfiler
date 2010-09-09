@@ -1473,7 +1473,9 @@ class TrackObjects(cpm.CPModule):
                 score to assign new label numbers so that the new objects
                 that are "better" inherit the old objects' label number
         '''
-        old_object_numbers = self.get_saved_object_numbers(workspace)
+        new_of_old = new_of_old.astype(int)
+        old_of_new = old_of_new.astype(int)
+        old_object_numbers = self.get_saved_object_numbers(workspace).astype(int)
         max_object_number = self.get_max_object_number(workspace)
         old_count = len(new_of_old)
         new_count = len(old_of_new)

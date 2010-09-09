@@ -1320,7 +1320,7 @@ def convex_hull_transform(image, levels=256, mask = None):
     if img_min == img_max:
         return image
     scale = (img_min + 
-             np.arange(levels).astype(image.dtype) / 
+             np.arange(levels).astype(image.dtype) * 
              (img_max - img_min) / float(levels-1))
     image = ((image - img_min) * (levels-1) / (img_max - img_min)).astype(int)
     #

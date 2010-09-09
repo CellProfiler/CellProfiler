@@ -37,7 +37,8 @@ import cellprofiler.cpmath.cpmorphology as cpmm
 from cellprofiler.cpmath.smooth import smooth_with_function_and_mask
 from cellprofiler.cpmath.smooth import circular_gaussian_kernel
 from cellprofiler.cpmath.smooth import fit_polynomial
-from cellprofiler.cpmath.filter import median_filter
+from cellprofiler.cpmath.filter import median_filter, convex_hull_transform
+from cellprofiler.cpmath.cpmorphology import grey_erosion, grey_dilation
 from cellprofiler.cpmath.cpmorphology import fixup_scipy_ndimage_result as fix
 from cellprofiler.cpmath.bg_compensate import backgr, MODE_AUTO, MODE_BRIGHT
 from cellprofiler.cpmath.bg_compensate import MODE_DARK, MODE_GRAY
@@ -52,6 +53,7 @@ EA_ALL_ACROSS      = "All: Across cycles"
 SRC_LOAD_IMAGES    = "Load Images module"
 SRC_PIPELINE       = "Pipeline"
 SM_NONE            = "No smoothing"
+SM_CONVEX_HULL     = "Convex Hull"
 SM_FIT_POLYNOMIAL  = "Fit Polynomial"
 SM_MEDIAN_FILTER   = "Median Filter"
 SM_GAUSSIAN_FILTER = "Gaussian Filter"
@@ -175,7 +177,9 @@ class CorrectIlluminationCalculate(cpm.CPModule):
         
         self.smoothing_method = cps.Choice(
             "Smoothing method",
-            [SM_NONE, SM_FIT_POLYNOMIAL, 
+            [SM_NONE, 
+             SM_CONVEX_HULL,
+             SM_FIT_POLYNOMIAL, 
              SM_MEDIAN_FILTER, 
              SM_GAUSSIAN_FILTER,
              SM_TO_AVERAGE,
@@ -206,6 +210,21 @@ class CorrectIlluminationCalculate(cpm.CPModule):
              iteratively, classifying pixels as background, computing a best
              fit spline to this background and then reclassifying pixels
              as background until the spline converges on its final value.
+             <p>The <i>Convex Hull</i> method algorithm is as follows:
+             <ul><li>Choose 256 evenly-spaced intensity levels between the
+             minimum and maximum intensity for the image</li>
+             <li>Set the intensity of the output image to the minimum intensity
+             of the input image</li>
+             <li>Iterate over the intensity levels, from lowest to highest</li>
+             <ul><li>For a given intensity, find all pixels with 
+             equal or higher intensities</li>
+             <li>Find the convex hull that encloses those pixels</li>
+             <li>Set the intensity of the output image within the convex hull
+             to the current intensity</li>
+             </ul></ul>
+             <br>The Convex Hull method can be used on an image whose objects
+             are darker than their background and whose illumination
+             intensity decreases monotonically from the brightest point.
              ''')
         
         self.automatic_object_width = cps.Choice("Method to calculate smoothing filter size",
@@ -608,9 +627,22 @@ class CorrectIlluminationCalculate(cpm.CPModule):
             return image
         
         pixel_data = image.pixel_data
+        if pixel_data.ndim == 3:
+            output_pixels = np.zeros(pixel_data.shape, pixel_data.dtype)
+            for i in range(pixel_data.shape[2]):
+                output_pixels[:,:,i] = self.smooth_plane(pixel_data[:, :, i],
+                                                         image.mask)
+        else:
+            output_pixels = self.smooth_plane(pixel_data, image.mask)
+        output_image = cpi.Image(output_pixels, parent_image = orig_image)
+        return output_image
+
+    def smooth_plane(self, pixel_data, mask):
+        '''Smooth one 2-d color plane of an image'''
+        
         sigma = self.smoothing_filter_size(pixel_data.shape) / 2.35
         if self.smoothing_method == SM_FIT_POLYNOMIAL:
-            output_pixels = fit_polynomial(pixel_data, image.mask) 
+            output_pixels = fit_polynomial(pixel_data, mask) 
         elif self.smoothing_method == SM_GAUSSIAN_FILTER:
             #
             # Smoothing with the mask is good, even if there's no mask
@@ -621,29 +653,32 @@ class CorrectIlluminationCalculate(cpm.CPModule):
                 return scind.gaussian_filter(image, sigma, 
                                              mode='constant', cval=0)
             output_pixels = smooth_with_function_and_mask(pixel_data, fn,
-                                                          image.mask)
+                                                          mask)
         elif self.smoothing_method == SM_MEDIAN_FILTER:
             filter_sigma = max(1, int(sigma+.5))
-            output_pixels = median_filter(pixel_data, image.mask, filter_sigma)
+            output_pixels = median_filter(pixel_data, mask, filter_sigma)
         elif self.smoothing_method == SM_TO_AVERAGE:
-            if image.has_mask:
-                mean = np.mean(pixel_data[image.mask])
-            else:
-                mean = np.mean(pixel_data)
+            mean = np.mean(pixel_data[mask])
             output_pixels = np.ones(pixel_data.shape, pixel_data.dtype) * mean
         elif self.smoothing_method == SM_SPLINES:
-            if pixel_data.ndim == 3:
-                output_pixels = np.zeros(pixel_data.shape, pixel_data.dtype)
-                for i in range(pixel_data.shape[2]):
-                    output_pixels[:,:,i] = self.smooth_with_splines(
-                        pixel_data[:,:,i], image.mask)
-            else:
-                output_pixels = self.smooth_with_splines(pixel_data, image.mask)
+            output_pixels = self.smooth_with_splines(pixel_data, mask)
+        elif self.smoothing_method == SM_CONVEX_HULL:
+            output_pixels = self.smooth_with_convex_hull(pixel_data, mask)
         else:
             raise ValueError("Unimplemented smoothing method: %s:"%(self.smoothing_method.value))
-        output_image = cpi.Image(output_pixels, parent_image = orig_image)
-        return output_image
+        return output_pixels
     
+    def smooth_with_convex_hull(self, pixel_data, mask):
+        '''Use the convex hull transform to smooth the image'''
+        #
+        # Apply an erosion, then the transform, then a dilation, heuristically
+        # to ignore little spikey noisy things.
+        #
+        image = grey_erosion(pixel_data, 2, mask)
+        image = convex_hull_transform(image, mask = mask)
+        image = grey_dilation(image, 2, mask)
+        return image
+        
     def smooth_with_splines(self, pixel_data, mask):
         if self.automatic_splines:
             # Make the image 200 pixels long on its shortest side

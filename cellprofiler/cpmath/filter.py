@@ -27,6 +27,7 @@ from smooth import smooth_with_function_and_mask
 from cpmorphology import fixup_scipy_ndimage_result as fix
 from cpmorphology import centers_of_labels
 from cpmorphology import grey_erosion, grey_reconstruction
+from cpmorphology import convex_hull_ijv, get_line_pts
 
 def stretch(image, mask=None):
     '''Normalize an image to make the minimum zero and maximum one
@@ -1298,3 +1299,168 @@ def permutations(x):
             a[k+1:] = a[:k:-1].copy()
         yield x[a].tolist()
         
+def convex_hull_transform(image, levels=256, mask = None):
+    '''Perform the convex hull transform of this image
+    
+    image - image composed of integer intensity values
+    levels - # of levels that we separate the image into
+    mask - mask of points to consider or None to consider all points
+    
+    for each intensity value, find the convex hull of pixels at or above
+    that value and color all pixels within the hull with that value.
+    '''
+    # Scale the image into the requisite number of levels
+    if mask is None:
+        img_min = np.min(image)
+        img_max = np.max(image)
+    else:
+        img_min = np.min(image[mask])
+        img_max = np.max(image[mask])
+    img_shape = tuple(image.shape)
+    if img_min == img_max:
+        return image
+    scale = (img_min + 
+             np.arange(levels).astype(image.dtype) / 
+             (img_max - img_min) / float(levels-1))
+    image = ((image - img_min) * (levels-1) / (img_max - img_min)).astype(int)
+    #
+    # Get rid of any levels that have no representatives
+    #
+    unique = np.unique(image[mask])
+    new_values = np.zeros(levels, int)
+    new_values[unique] = np.arange(len(unique))
+    scale = scale[unique]
+    image[mask] = new_values[image[mask]]
+    #
+    # Start by constructing the list of points which are local maxima
+    #
+    min_image = grey_erosion(image, mask=mask, 
+                             footprint = np.ones((3,3), bool)).astype(int)
+    #
+    # Set the borders of the min_image to zero so that the border pixels
+    # will be in all convex hulls below their intensity
+    #
+    min_image[0, :] = 0
+    min_image[-1, :] = 0
+    min_image[:, 0] = 0
+    min_image[:, -1] = 0
+    
+    i,j = np.mgrid[0:image.shape[0], 0:image.shape[1]]
+    mask = image > min_image
+    
+    if mask is not None:
+        mask = mask & (image > min_image)
+    i = i[mask]
+    j = j[mask]
+    min_image = min_image[mask]
+    image = image[mask]
+    #
+    # Each point that is a maximum is a potential vertex in the convex hull
+    # for each value above the minimum. Therefore, it appears
+    #
+    # image - min_image
+    #
+    # times in the i,j,v list of points. So we can do a sum to calculate
+    # the number of points, then use cumsum to figure out the first index
+    # in that array of points for each i,j,v. We can then use cumsum
+    # again on the array of points to assign their levels.
+    #
+    count = image - min_image
+    npoints = np.sum(count)
+    # The index in the big array of the first point to place for each
+    # point
+    first_index_in_big = np.cumsum(count) - count
+    #
+    # For the big array, construct an array of indexes into the small array
+    #
+    index_in_small = np.zeros(npoints, int)
+    index_in_small[first_index_in_big] = 1
+    index_in_small = np.cumsum(index_in_small) - 1
+    #
+    # We're going to do a cumsum to make the big array of levels. Point
+    # n+1 broadcasts its first value into first_index_in_big[n+1].
+    # The value that precedes it is image[n]. Therefore, in order to
+    # get the correct value in cumsum:
+    #
+    # ? + image[n] = min_image[n+1]+1
+    # ? = min_image[n+1] + 1 - image[n]
+    #
+    levels = np.ones(npoints, int)
+    levels[0] = min_image[0] + 1
+    levels[first_index_in_big[1:]] = min_image[1:] - image[:-1] + 1
+    levels = np.cumsum(levels)
+    #
+    # Construct the ijv
+    #
+    ijv = np.column_stack((i[index_in_small], j[index_in_small], levels))
+    #
+    # Get all of the convex hulls
+    #
+    pts, counts = convex_hull_ijv(ijv, np.arange(1, len(unique)))
+    #
+    # Get the points along the lines described by the convex hulls
+    #
+    # There are N points for each label. Draw a line from each to
+    # the next, except for the last which we draw from last to first
+    #
+    labels = pts[:, 0]
+    i = pts[:, 1]
+    j = pts[:, 2]
+    first_index = np.cumsum(counts) - counts
+    last_index = first_index + counts - 1
+    next = np.arange(len(labels)) + 1
+    next[last_index] = first_index
+    index, count, i, j = get_line_pts(i, j, i[next], j[next])
+    #
+    # use a cumsum to get the index of each point from get_line_pts
+    # relative to the labels vector
+    #
+    big_index = np.zeros(len(i), int)
+    big_index[index[1:]] = 1
+    big_index = np.cumsum(big_index)
+    labels = labels[big_index]
+    #
+    # A given i,j might be represented more than once. Take the maximum
+    # label at each i,j. First sort by i,j and label. Then take only values
+    # that have a different i,j than the succeeding value. The last element
+    # is always a winner.
+    #
+    order = np.lexsort((labels, i, j))
+    i = i[order]
+    j = j[order]
+    labels = labels[order]
+    mask = np.hstack((((i[1:] != i[:-1]) | (j[1:] != j[:-1])),[True]))
+    i = i[mask]
+    j = j[mask]
+    labels = labels[mask]
+    #
+    # Now, we have an interesting object. It's ordered by j, then i which
+    # means that we have scans of interesting i at each j. The points
+    # that aren't represented should have the minimum of the values
+    # above and below.
+    #
+    # We can play a cumsum trick to do this, placing the difference
+    # of a point with its previous in the 2-d image, then summing along
+    # each i axis to set empty values to the value of the nearest occupied
+    # value above and a similar trick to set empty values to the nearest
+    # value below. We then take the minimum of the two results.
+    #
+    first = np.hstack(([True], j[1:] != j[:-1]))
+    top = np.zeros(img_shape, labels.dtype)
+    top[i[first], j[first]] = labels[first]
+    top[i[~first], j[~first]] = (labels[1:] - labels[:-1])[~first[1:]]
+    top = np.cumsum(top, 0)
+
+    # From 0 to the location of the first point, set to value of first point
+    bottom = np.zeros(img_shape, labels.dtype)
+    bottom[0, j[first]] = labels[first]
+    # From 1 + the location of the previous point, set to the next point
+    last = np.hstack((first[1:], [True]))
+    bottom[i[:-1][~first[1:]]+1, j[~first]] = (labels[1:] - labels[:-1])[~first[1:]]
+    # Set 1 + the location of the last point to -labels so that all past
+    # the end will be zero (check for i at end...)
+    llast = last & (i < img_shape[0] - 1)
+    bottom[i[llast]+1, j[llast]] = - labels[llast]
+    bottom = np.cumsum(bottom, 0)
+    image = np.minimum(top, bottom)
+    return scale[image]

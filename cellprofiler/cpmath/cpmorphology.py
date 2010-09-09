@@ -285,7 +285,7 @@ def convex_hull_image(image):
 
 def convex_hull(labels, indexes=None):
     """Given a labeled image, return a list of points per object ordered by
-    angle from an interior point, representing the convex hull.
+    angle from an interior point, representing the convex hull.s
     
     labels - the label matrix
     indexes - an array of label #s to be processed, defaults to all non-zero
@@ -307,25 +307,9 @@ def convex_hull(labels, indexes=None):
     if len(indexes) == 0:
         return np.zeros((0,2),int),np.zeros((0,),int)
     #
-    # An array that converts from label # to index in "indexes"
-    anti_indexes = np.zeros((np.max(indexes)+1,),int)
-    anti_indexes[indexes] = range(len(indexes))
-    #
     # Reduce the # of points to consider
     #
     outlines = outline(labels)
-    centers  = scind.center_of_mass(outlines,outlines, indexes)
-    centers = np.array([centers])
-    centers.shape=(indexes.shape[0],2) # if max_label = 1, you get 1d array
-    #
-    # Now make an array with one outline point per row and the following
-    # columns:
-    #
-    # index of label # in indexes array
-    # angle of the point relative to the center
-    # i coordinate of the point
-    # j coordinate of the point
-    #
     coords = np.argwhere(outlines > 0).astype(np.int32)
     if len(coords)==0:
         # Every outline of every image is blank
@@ -335,6 +319,53 @@ def convex_hull(labels, indexes=None):
     i = coords[:,0]
     j = coords[:,1]
     labels_per_point = labels[i,j]
+    pixel_labels = np.column_stack((i,j,labels_per_point))
+    return convex_hull_ijv(pixel_labels, indexes)
+
+def convex_hull_ijv(pixel_labels, indexes):
+    '''Return the convex hull for each label using an ijv labeling
+    
+    pixel_labels: the labeling of the pixels in i,j,v form where
+                  i & j are the coordinates of a pixel and v is
+                  the pixel's label number
+    indexes: the indexes at which to measure the convex hull
+
+    Returns a matrix and a vector. The matrix consists of one row per
+    point in the convex hull. Each row has three columns, the label #,
+    the i coordinate of the point and the j coordinate of the point. The
+    result is organized first by label, then the points are arranged
+    counter-clockwise around the perimeter.
+    The vector is a vector of #s of points in the convex hull per label
+    '''
+    
+    if len(indexes) == 0:
+        return np.zeros((0,2),int),np.zeros((0,),int)
+    #
+    # An array that converts from label # to index in "indexes"
+    anti_indexes = np.zeros((np.max(indexes)+1,),int)
+    anti_indexes[indexes] = range(len(indexes))
+
+    coords = pixel_labels[:,:2]
+    i = coords[:, 0]
+    j = coords[:, 1]
+    labels_per_point = pixel_labels[:,2]
+    #
+    # Calculate the centers for each label
+    #
+    center_i = fixup_scipy_ndimage_result(
+        scind.mean(i, labels_per_point, indexes))
+    center_j = fixup_scipy_ndimage_result(
+        scind.mean(j, labels_per_point, indexes))
+    centers = np.column_stack((center_i, center_j))
+    #
+    # Now make an array with one outline point per row and the following
+    # columns:
+    #
+    # index of label # in indexes array
+    # angle of the point relative to the center
+    # i coordinate of the point
+    # j coordinate of the point
+    #
     anti_indexes_per_point = anti_indexes[labels_per_point]
     centers_per_point = centers[anti_indexes_per_point]
     angle = np.arctan2(i-centers_per_point[:,0],j-centers_per_point[:,1])
@@ -371,7 +402,7 @@ def convex_hull(labels, indexes=None):
     #
     # Initialize the counts of convex hull points to a ridiculous number
     #
-    counts = np.ones((len(indexes),), np.int32) * (np.product(labels.shape)+1)
+    counts = np.iinfo(np.int32).max
     while True:
         #
         # Figure out how many putative convex hull points there are for
@@ -387,12 +418,10 @@ def convex_hull(labels, indexes=None):
         new_counts = scipy.sparse.coo_matrix((v,(a[:,0],v*0)),
                                              shape=(len(indexes),1))
         new_counts = new_counts.toarray().flatten()
-        finish_me = np.logical_and(new_counts > 0,
-                                      np.logical_or(new_counts <= 3,
-                                                       new_counts == counts))
+        finish_me = ((new_counts > 0) & 
+                     ((new_counts <= 3) | (new_counts == counts)))
         indexes_to_finish = np.argwhere(finish_me).astype(np.int32)
-        keep_me = np.logical_and(new_counts > 3,
-                                    new_counts < counts)
+        keep_me = (new_counts > 3) & (new_counts < counts)
         indexes_to_keep = np.argwhere(keep_me).astype(np.int32)
         if len(indexes_to_finish):
             result_counts[finish_me] = new_counts[finish_me]
@@ -491,17 +520,12 @@ def convex_hull(labels, indexes=None):
             sign = np.sign(diff_i) + np.sign(diff_j)*2
             n_minus_one_consider = n_minus_one[consider_me]
             n_plus_one_consider = n_plus_one[consider_me]
-            left_is_worse = np.logical_or(dist[consider_me] >
-                                             dist[n_minus_one_consider],
-                                             sign[consider_me] != 
-                                             sign[n_minus_one_consider])
-            right_is_worse = np.logical_or(dist[consider_me] >
-                                              dist[n_plus_one_consider],
-                                              sign[consider_me] !=
-                                              sign[n_plus_one_consider])
-            to_keep = np.logical_and(np.logical_and(left_is_worse,
-                                                          right_is_worse),
-                                        sign[consider_me] != 0)
+            left_is_worse = (
+                (dist[consider_me] > dist[n_minus_one_consider]) |
+                (sign[consider_me] != sign[n_minus_one_consider]))
+            right_is_worse = ((dist[consider_me] > dist[n_plus_one_consider]) |
+                              (sign[consider_me] != sign[n_plus_one_consider]))
+            to_keep = left_is_worse & right_is_worse & (sign[consider_me] != 0)
             keep_me[consider_me] = to_keep 
         a = a[keep_me,:]
         centers_per_point = centers_per_point[keep_me]

@@ -1638,3 +1638,63 @@ class TestInvN(unittest.TestCase):
         expected = np.array([np.linalg.inv(a[i]) for i in range(len(a))])
         np.testing.assert_almost_equal(result, expected)
         
+class TestConvexHullTransform(unittest.TestCase):
+    def test_01_01_zeros(self):
+        '''The convex hull transform of an array of identical values is itself'''
+        self.assertTrue(np.all(F.convex_hull_transform(np.zeros((10,20))) == 0))
+        
+    def test_01_02_point(self):
+        '''The convex hull transform of 1 foreground pixel is itself'''
+        image = np.zeros((10,20))
+        image[5,10] = 1
+        self.assertTrue(np.all(F.convex_hull_transform(image) == image))
+        
+    def test_01_03_line(self):
+        '''The convex hull transform of a line of foreground pixels is itself'''
+        image = np.zeros((10,20))
+        image[5, 7:14] = 1
+        self.assertTrue(np.all(F.convex_hull_transform(image) == image))
+
+    def test_01_04_convex(self):
+        '''The convex hull transform of a convex figure is itself'''
+        
+        image = np.zeros((10,20))
+        image[2:7, 7:14] = 1
+        self.assertTrue(np.all(F.convex_hull_transform(image) == image))
+        
+    def test_01_05_concave(self):
+        '''The convex hull transform of a concave figure is the convex hull'''
+        expected = np.zeros((10, 20))
+        expected[2:8, 7:14] = 1
+        image = expected.copy()
+        image[4:6, 7:10] = .5
+        self.assertTrue(np.all(F.convex_hull_transform(image) == expected))
+        
+    def test_02_01_two_levels(self):
+        '''Test operation on two grayscale levels'''
+        
+        expected = np.zeros((20, 30))
+        expected[3:18, 3:27] = .5
+        expected[8:15, 10:20] = 1
+        image = expected.copy()
+        image[:,15] = 0
+        image[10,:] = 0
+        # need an odd # of bins in order to have .5 be a bin
+        self.assertTrue(np.all(F.convex_hull_transform(image, 7) == expected))
+        
+    def test_03_01_masked(self):
+        '''Test operation on a masked image'''
+
+        expected = np.zeros((20, 30))
+        expected[3:18, 3:27] = .5
+        expected[8:15, 10:20] = 1
+        image = expected.copy()
+        image[:,15] = 0
+        image[10,:] = 0
+        mask = np.ones((20,30), bool)
+        mask[:,0] = False
+        image[:,0] = .75
+        
+        result = F.convex_hull_transform(image, levels = 7, mask = mask)
+        self.assertTrue(np.all(result == expected))
+        

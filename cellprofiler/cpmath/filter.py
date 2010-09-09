@@ -1346,10 +1346,11 @@ def convex_hull_transform(image, levels=256, mask = None):
     min_image[:, -1] = 0
     
     i,j = np.mgrid[0:image.shape[0], 0:image.shape[1]]
-    mask = image > min_image
-    
     if mask is not None:
         mask = mask & (image > min_image)
+    else:
+        mask = image > min_image
+        
     i = i[mask]
     j = j[mask]
     min_image = min_image[mask]

@@ -354,9 +354,9 @@ def convex_hull_ijv(pixel_labels, indexes):
     # Calculate the centers for each label
     #
     center_i = fixup_scipy_ndimage_result(
-        scind.mean(i, labels_per_point, indexes))
+        scind.mean(i.astype(float), labels_per_point, indexes))
     center_j = fixup_scipy_ndimage_result(
-        scind.mean(j, labels_per_point, indexes))
+        scind.mean(j.astype(float), labels_per_point, indexes))
     centers = np.column_stack((center_i, center_j))
     #
     # Now make an array with one outline point per row and the following

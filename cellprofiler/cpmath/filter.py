@@ -29,6 +29,9 @@ from cpmorphology import centers_of_labels
 from cpmorphology import grey_erosion, grey_reconstruction
 from cpmorphology import convex_hull_ijv, get_line_pts
 
+'''# of points handled in the first pass of the convex hull code'''
+CONVEX_HULL_CHUNKSIZE = 250000
+
 def stretch(image, mask=None):
     '''Normalize an image to make the minimum zero and maximum one
     
@@ -1299,12 +1302,14 @@ def permutations(x):
             a[k+1:] = a[:k:-1].copy()
         yield x[a].tolist()
         
-def convex_hull_transform(image, levels=256, mask = None):
+def convex_hull_transform(image, levels=256, mask = None, 
+                          chunksize = CONVEX_HULL_CHUNKSIZE):
     '''Perform the convex hull transform of this image
     
     image - image composed of integer intensity values
     levels - # of levels that we separate the image into
     mask - mask of points to consider or None to consider all points
+    chunksize - # of points processed in first pass of convex hull
     
     for each intensity value, find the convex hull of pixels at or above
     that value and color all pixels within the hull with that value.
@@ -1372,31 +1377,66 @@ def convex_hull_transform(image, levels=256, mask = None):
     # point
     first_index_in_big = np.cumsum(count) - count
     #
-    # For the big array, construct an array of indexes into the small array
+    # The big array can be quite big, for example if there are lots of
+    # thin, dark objects. We do two passes of convex hull: the convex hull
+    # of the convex hulls of several regions is the convex hull of the whole
+    # so it doesn't matter too much how we break up the array.
     #
-    index_in_small = np.zeros(npoints, int)
-    index_in_small[first_index_in_big] = 1
-    index_in_small = np.cumsum(index_in_small) - 1
+    first_i = np.zeros(0, int)
+    first_j = np.zeros(0, int)
+    first_levels = np.zeros(0, int)
+    chunkstart = 0
+    while chunkstart < len(count):
+        idx = first_index_in_big[chunkstart]
+        iend = idx + chunksize
+        if iend >= npoints:
+            chunkend = len(count)
+            iend = npoints
+        else:
+            chunkend = np.searchsorted(first_index_in_big, iend)
+            if chunkend < len(count):
+                iend = first_index_in_big[chunkend]
+            else:
+                iend = npoints
+        chunk_first_index_in_big = first_index_in_big[chunkstart:chunkend] - idx
+        chunkpoints = iend - idx
+        #
+        # For the big array, construct an array of indexes into the small array
+        #
+        index_in_small = np.zeros(chunkpoints, int)
+        index_in_small[0] = chunkstart
+        index_in_small[chunk_first_index_in_big[1:]] = 1
+        index_in_small = np.cumsum(index_in_small)
+        #
+        # We're going to do a cumsum to make the big array of levels. Point
+        # n+1 broadcasts its first value into first_index_in_big[n+1].
+        # The value that precedes it is image[n]. Therefore, in order to
+        # get the correct value in cumsum:
+        #
+        # ? + image[n] = min_image[n+1]+1
+        # ? = min_image[n+1] + 1 - image[n]
+        #
+        levels = np.ones(chunkpoints, int)
+        levels[0] = min_image[chunkstart] + 1
+        levels[chunk_first_index_in_big[1:]] = \
+            min_image[chunkstart+1:chunkend] - image[chunkstart:chunkend-1] + 1
+        levels = np.cumsum(levels)
+        #
+        # Construct the ijv
+        #
+        ijv = np.column_stack((i[index_in_small], j[index_in_small], levels))
+        #
+        # Get all of the convex hulls
+        #
+        pts, counts = convex_hull_ijv(ijv, np.arange(1, len(unique)))
+        first_i = np.hstack((first_i, pts[:, 1]))
+        first_j = np.hstack((first_j, pts[:, 2]))
+        first_levels = np.hstack((first_levels, pts[:, 0]))
+        chunkstart = chunkend
     #
-    # We're going to do a cumsum to make the big array of levels. Point
-    # n+1 broadcasts its first value into first_index_in_big[n+1].
-    # The value that precedes it is image[n]. Therefore, in order to
-    # get the correct value in cumsum:
+    # Now do the convex hull of the reduced list of points
     #
-    # ? + image[n] = min_image[n+1]+1
-    # ? = min_image[n+1] + 1 - image[n]
-    #
-    levels = np.ones(npoints, int)
-    levels[0] = min_image[0] + 1
-    levels[first_index_in_big[1:]] = min_image[1:] - image[:-1] + 1
-    levels = np.cumsum(levels)
-    #
-    # Construct the ijv
-    #
-    ijv = np.column_stack((i[index_in_small], j[index_in_small], levels))
-    #
-    # Get all of the convex hulls
-    #
+    ijv = np.column_stack((first_i, first_j, first_levels))
     pts, counts = convex_hull_ijv(ijv, np.arange(1, len(unique)))
     #
     # Get the points along the lines described by the convex hulls

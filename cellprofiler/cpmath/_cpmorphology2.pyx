@@ -505,3 +505,7 @@ def extract_from_image_lookup(orig_image, index_i, index_j):
     output = np.zeros(orig_image.shape, orig_image.dtype)
     output[index_i - 1, index_j - 1] = orig_image[index_i - 1, index_j - 1]
     return output
+
+def ptrsize():
+    '''The number of bytes in a pointer'''
+    return sizeof(int *)

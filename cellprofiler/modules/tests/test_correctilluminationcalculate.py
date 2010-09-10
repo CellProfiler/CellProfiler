@@ -100,7 +100,8 @@ class TestCorrectImage_Calculate(unittest.TestCase):
                         for smoothing_method \
                          in (calc.SM_NONE, calc.SM_FIT_POLYNOMIAL, 
                              calc.SM_GAUSSIAN_FILTER, calc.SM_MEDIAN_FILTER, 
-                             calc.SM_TO_AVERAGE, calc.SM_SPLINES):
+                             calc.SM_TO_AVERAGE, calc.SM_SPLINES, 
+                             calc.SM_CONVEX_HULL):
                             module.smoothing_method.value = smoothing_method
                             for ow in (calc.FI_AUTOMATIC, calc.FI_MANUALLY, 
                                        calc.FI_OBJECT_SIZE):
@@ -154,7 +155,8 @@ class TestCorrectImage_Calculate(unittest.TestCase):
                     for smoothing_method \
                      in (calc.SM_NONE, calc.SM_FIT_POLYNOMIAL, 
                          calc.SM_GAUSSIAN_FILTER, calc.SM_MEDIAN_FILTER, 
-                         calc.SM_TO_AVERAGE, calc.SM_SPLINES):
+                         calc.SM_TO_AVERAGE, calc.SM_SPLINES,
+                         calc.SM_CONVEX_HULL):
                         module.smoothing_method.value = smoothing_method
                         for ow in (calc.FI_AUTOMATIC, calc.FI_MANUALLY, 
                                    calc.FI_OBJECT_SIZE):
@@ -209,7 +211,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
                 for smoothing_method \
                  in (calc.SM_NONE, calc.SM_FIT_POLYNOMIAL, 
                      calc.SM_GAUSSIAN_FILTER, calc.SM_MEDIAN_FILTER, 
-                     calc.SM_TO_AVERAGE):
+                     calc.SM_TO_AVERAGE, calc.SM_CONVEX_HULL):
                     module.smoothing_method.value = smoothing_method
                     for ow in (calc.FI_AUTOMATIC, calc.FI_MANUALLY, 
                                calc.FI_OBJECT_SIZE):
@@ -1131,13 +1133,38 @@ CorrectIlluminationCalculate:[module_num:4|svn_version:\'10063\'|variable_revisi
     Image resampling factor:2
     Max # of iterations:40
     Convergence:0.001
+
+CorrectIlluminationCalculate:[module_num:5|svn_version:\'10063\'|variable_revision_number:2|show_window:True|notes:\x5B\x5D]
+    Select the input image:Masked
+    Name the output image:Illum
+    Select how the illumination function is calculated:Background
+    Dilate objects in the final averaged image?:No
+    Dilation radius:1
+    Block size:60
+    Rescale the illumination function?:No
+    Calculate function for each image individually, or based on all images?:Each
+    Smoothing method:Convex Hull
+    Method to calculate smoothing filter size:Automatic
+    Approximate object size:10
+    Smoothing filter size:10
+    Retain the averaged image for use later in the pipeline (for example, in SaveImages)?:No
+    Name the averaged image:IllumBlueAvg
+    Retain the dilated image for use later in the pipeline (for example, in SaveImages)?:No
+    Name the dilated image:IllumBlueDilated
+    Automatically calculate spline parameters?:No
+    Background mode:gray
+    # of spline points:3
+    Background threshold:2
+    Image resampling factor:2
+    Max # of iterations:40
+    Convergence:0.001
 """
         pipeline = cpp.Pipeline()
         def callback(caller,event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
         pipeline.add_listener(callback)
         pipeline.load(StringIO(data))
-        self.assertEqual(len(pipeline.modules()), 4)
+        self.assertEqual(len(pipeline.modules()), 5)
         module = pipeline.modules()[0]
         self.assertTrue(isinstance(module, calc.CorrectIlluminationCalculate))
         self.assertEqual(module.image_name, "Masked")
@@ -1166,7 +1193,10 @@ CorrectIlluminationCalculate:[module_num:4|svn_version:\'10063\'|variable_revisi
         
         self.assertTrue(pipeline.modules()[1].automatic_splines)
         
-        for module, spline_bg_mode in zip(pipeline.modules()[1:], (
+        for module, spline_bg_mode in zip(pipeline.modules()[1:4], (
             calc.MODE_AUTO, calc.MODE_DARK, calc.MODE_GRAY)):
             self.assertTrue(isinstance(module, calc.CorrectIlluminationCalculate))
             self.assertEqual(module.spline_bg_mode, spline_bg_mode)
+
+        module = pipeline.modules()[4]
+        self.assertEqual(module.smoothing_method, calc.SM_CONVEX_HULL)

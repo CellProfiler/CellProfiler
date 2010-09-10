@@ -1698,3 +1698,20 @@ class TestConvexHullTransform(unittest.TestCase):
         result = F.convex_hull_transform(image, levels = 7, mask = mask)
         self.assertTrue(np.all(result == expected))
         
+    def test_04_01_many_chunks(self):
+        '''Test the two-pass chunk looping'''
+        np.random.seed(41)
+        #
+        # Make an image that monotonically decreases from the center
+        #
+        i,j = np.mgrid[-50:51, -50:51].astype(float) / 100.
+        image = 1 - np.sqrt(i**2 + j**2)
+        expected = image.copy()
+        #
+        # Riddle it with holes
+        #
+        holes = np.random.uniform(size=image.shape) < .01
+        image[holes] = 0
+        result = F.convex_hull_transform(image, levels = 256, chunksize=1000)
+        diff = np.abs(result - expected)
+        self.assertTrue(np.sum(diff > 1/256.) <= np.sum(holes))

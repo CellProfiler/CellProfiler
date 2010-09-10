@@ -1093,6 +1093,11 @@ class PipelineController:
             self.__debug_measurements.next_image_set(image_number)
             self.__pipeline_list_view.select_one_module(1)
             self.__movie_viewer.Value = 0
+            for i, (grouping, image_numbers) in enumerate(self.__groupings):
+                if image_number in image_numbers:
+                    self.__grouping_index = i
+                    self.__within_group_index = image_numbers.index(image_number)
+                    break
             
     def on_debug_reload(self, event):
         self.__pipeline.reload_modules()

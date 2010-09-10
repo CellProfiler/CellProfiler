@@ -24,7 +24,10 @@ from _cpmorphology2 import skeletonize_loop, table_lookup_index
 from _cpmorphology2 import grey_reconstruction_loop
 from _cpmorphology2 import _all_connected_components
 from _cpmorphology2 import index_lookup, prepare_for_index_lookup, extract_from_image_lookup
-from _cpmorphology2 import ptrsize
+try:
+    from _cpmorphology2 import ptrsize
+except:
+    pass
 
 eight_connect = scind.generate_binary_structure(2, 2)
 four_connect = scind.generate_binary_structure(2,1)

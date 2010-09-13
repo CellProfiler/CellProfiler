@@ -166,8 +166,8 @@ ALLOW_OUTPUT_FILE_OVERWRITE = 'AllowOutputFileOverwrite'
 PLUGIN_DIRECTORY = 'PluginDirectory'
 SHOW_ANALYSIS_COMPLETE_DLG = "ShowAnalysisCompleteDlg"
 
-def recent_file(index):
-    return FF_RECENTFILES % (index + 1)
+def recent_file(index, category=""):
+    return (FF_RECENTFILES % (index + 1)) + category
 
 def module_directory():
     if not get_config().Exists(MODULEDIRECTORY):
@@ -203,6 +203,7 @@ def set_default_image_directory(path):
     path = str(path)
     __default_image_directory = path
     get_config().Write(DEFAULT_IMAGE_DIRECTORY,path)
+    add_recent_file(path, DEFAULT_IMAGE_DIRECTORY)
     fire_image_directory_changed_event()
     
 def fire_image_directory_changed_event():
@@ -246,6 +247,7 @@ def set_default_output_directory(path):
     assert os.path.isdir(path),'Default Output Folder, "%s", is not a directory'%(path)
     __default_output_directory = path
     get_config().Write(DEFAULT_OUTPUT_DIRECTORY,path)
+    add_recent_file(path, DEFAULT_OUTPUT_DIRECTORY)
     for listener in __output_directory_listeners:
         listener(DirectoryChangedEvent(path))
 
@@ -436,26 +438,26 @@ def get_skip_version():
 def set_skip_version(ver):
     get_config().WriteInt(SKIPVERSION, ver)
     
-__recent_files = None
-def get_recent_files():
+__recent_files = {}
+def get_recent_files(category=""):
     global __recent_files
-    if __recent_files is None:
-        __recent_files = []
+    if __recent_files.get(category, None) is None:
+        __recent_files[category] = []
         for i in range(RECENT_FILE_COUNT):
-            key = recent_file(i)
+            key = recent_file(i, category)
             if get_config().Exists(key):
-                __recent_files.append(get_config().Read(key)) 
-    return __recent_files
+                __recent_files[category].append(get_config().Read(key)) 
+    return __recent_files[category]
 
-def add_recent_file(filename):
-    recent_files = get_recent_files()
+def add_recent_file(filename, category=""):
+    recent_files = get_recent_files(category)
     if filename in recent_files:
         recent_files.remove(filename)
     recent_files.insert(0, filename)
     if len(recent_files) > RECENT_FILE_COUNT:
         del recent_files[-1]
     for i, filename in enumerate(recent_files):
-        get_config().Write(recent_file(i), filename)
+        get_config().Write(recent_file(i, category), filename)
 
 __plugin_directory = None
 def get_plugin_directory():

@@ -36,6 +36,7 @@ class PreferencesView:
         self.__image_edit_box = self.__make_folder_panel(
             self.__image_folder_panel,
             cpprefs.get_default_image_directory(),
+            lambda : cpprefs.get_recent_files(cpprefs.DEFAULT_IMAGE_DIRECTORY),
             'Default Input Folder',
             DEFAULT_IMAGE_FOLDER_HELP,
             [cpprefs.set_default_image_directory,
@@ -45,6 +46,7 @@ class PreferencesView:
         self.__output_edit_box = self.__make_folder_panel(
             self.__output_folder_panel,
             cpprefs.get_default_output_directory(),
+            lambda : cpprefs.get_recent_files(cpprefs.DEFAULT_OUTPUT_DIRECTORY),
             'Default Output Folder',
             DEFAULT_OUTPUT_FOLDER_HELP,
             [cpprefs.set_default_output_directory,
@@ -69,13 +71,21 @@ class PreferencesView:
         cpprefs.remove_image_directory_listener(self.__on_preferences_image_directory_event)
         cpprefs.remove_output_directory_listener(self.__on_preferences_output_directory_event)
         
-    def __make_folder_panel(self, panel, value, text, help_text, actions,
-                            refresh_action = None):
+    def __make_folder_panel(self, panel, value, list_fn, text, help_text, 
+                            actions, refresh_action = None):
         sizer = wx.BoxSizer(wx.HORIZONTAL)
         help_button = wx.Button(panel,-1,'?',(0,0), (30,-1))
         text_static = wx.StaticText(panel,-1,text+':')
-        edit_box = wx.TextCtrl(panel,-1)
-        edit_box.SetValue(value)
+        edit_box = wx.ComboBox(panel, -1, value, choices=list_fn())
+        handle_edits = [True]
+        def fill_list(path):
+            idx = edit_box.GetInsertionPoint()
+            edit_box.SetItems(list_fn())
+            item = edit_box.FindString(path)
+            if item != wx.NOT_FOUND:
+                edit_box.SetSelection(item)
+            edit_box.SetInsertionPoint(idx)
+        actions.append(fill_list)
         browse_bmp = wx.ArtProvider.GetBitmap(wx.ART_FOLDER_OPEN,
                                               wx.ART_CMN_DIALOG,
                                               (16,16))
@@ -114,20 +124,28 @@ class PreferencesView:
                 self.__on_edit_box_change(event, edit_box, text, actions)
             
         def on_edit_box_change(event):
-            if os.path.isdir(edit_box.Value):
-                new_button.Disable()
-                new_button.SetToolTipString("%s is a directory" % 
-                                            edit_box.Value)
-            else:
-                new_button.Enable()
-                new_button.SetToolTipString("Press button to create the %s folder" %
-                                            edit_box.Value)
-            self.__on_edit_box_change(event, edit_box, text, actions)
+            if not handle_edits[0]:
+                return
+            handle_edits[0] = False
+            try:
+                if os.path.isdir(edit_box.Value):
+                    new_button.Disable()
+                    new_button.SetToolTipString("%s is a directory" % 
+                                                edit_box.Value)
+                else:
+                    new_button.Enable()
+                    new_button.SetToolTipString("Press button to create the %s folder" %
+                                                edit_box.Value)
+                self.__on_edit_box_change(event, edit_box, text, actions)
+                event.Skip()
+            finally:
+                handle_edits[0] = True
             
         panel.Bind(wx.EVT_BUTTON, lambda event: self.__on_help(event, help_text),
                    help_button)
         panel.Bind(wx.EVT_BUTTON, lambda event: self.__on_browse(event, edit_box, text), browse_button)
         panel.Bind(wx.EVT_TEXT, on_edit_box_change, edit_box)
+        panel.Bind(wx.EVT_COMBOBOX, on_edit_box_change, edit_box)
         panel.Bind(wx.EVT_BUTTON, on_new_folder, new_button)
         return edit_box
     

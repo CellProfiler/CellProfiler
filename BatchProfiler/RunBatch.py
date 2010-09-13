@@ -306,7 +306,7 @@ def RunOne_2_0(x, run):
          "./python-2.6.sh",
          "CellProfiler.py",
          "-p",'"%(data_dir)s/Batch_data.mat"'%(x),
-         #"-c",
+         "-c",
          "-r","-b",
          "-f","%(start)d"%(x),
          "-l","%(end)d"%(x),

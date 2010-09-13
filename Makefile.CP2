@@ -1,0 +1,502 @@
+#
+# Makefile for CellProfiler 2 prerequisites
+#
+# 0.0.3 - 2010.09.07 (c) Mario Emmenlauer, Biozentrum Basel
+#         - Updated many packages to newest release
+#         - added source pointer URL
+# 0.0.2 - 2010.07.12 (c) Mario Emmenlauer, Biozentrum Basel
+#         - Added missing compile flag --enable-graphics_ctx to wxPython compile
+# 0.0.1 - 2010.07.12 (c) Mario Emmenlauer, Biozentrum Basel, mario.emmenlauer@unibas.ch
+#         - Initial revision
+#
+# See http://cellprofiler.org for more information on CellProfiler
+#
+# This Makefile will download, unpack, compile and install all
+# prerequisites for CP2, except for Java and MySQL. It requires
+# a fairly recent gcc to compile ATLAS with optimal performance.
+# Please disable CPU frequency scaling before compilation.
+#
+# PREREQUISITES:
+# - development files for GTK+:
+#   RedHat: yum install gtk2-devel
+#
+# VARIABLES:
+# - set TGTDIR to where you want to install your python25 directory
+#
+# USAGE:
+# - supply variables that you want to set on the command line, i.e.:
+#   make TGTDIR="$HOME/CP2-Test" ...
+# - invoke 'make' with the name of this Makefile, i.e.:
+#   make -f Makefile.CP2
+#
+MAKE_FLAGS				+= -j4
+SRCDIR					?= $(PWD)
+TGTDIR					?= $(HOME)/usr/CellProfiler2
+
+PYTHONVERSION				= Python-2.5.5
+PYTHONPREFIX				?= $(TGTDIR)
+SITEPKGPREFIX				= $(PYTHONPREFIX)/lib/python2.5/site-packages
+PYPIVERSION				= setuptools-0.6c11-py2.5.egg
+PYPIPREFIX				?= $(TGTDIR)
+PILVERSION				= Imaging-1.1.7
+PILPREFIX				?= $(TGTDIR)
+PILURL					= http://www.pythonware.com/products/pil/
+MYSQLPYTHONVERSION			= 1.2.3
+MYSQLPYTHONURL				= http://sourceforge.net/projects/mysql-python/
+PYTHONNOSEVERSION			= nose-0.11.3
+PYTHONNOSEURL				= http://code.google.com/p/python-nose/downloads/list
+DECORATORVERSION			= decorator-3.2.0
+#CYTHONVERSION				= Cython-0.12.1
+CYTHONVERSION				= Cython-0.13
+CYTHONPREFIX				?= $(TGTDIR)
+CYTHONURL				= http://www.cython.org/#download
+ATLASVERSION				= atlas3.9.25
+ATLASPREFIX				?= $(TGTDIR)
+ATLASURL				= http://sourceforge.net/projects/math-atlas/files/
+LAPACKVERSION				= lapack-3.1.1
+#LAPACKVERSION				= lapack-3.2.2
+LAPACKURL				= http://www.netlib.org/lapack/
+FFTWVERSION				= fftw-3.2.2
+FFTWPREFIX				?= $(TGTDIR)
+#NUMPYVERSION				= numpy-1.4.1
+NUMPYVERSION				= numpy-1.5.0
+NUMPYPREFIX				?= $(TGTDIR)
+NUMPYURL				= http://sourceforge.net/projects/numpy/files/
+#SCIPYVERSION				= scipy-0.8.0b1
+SCIPYVERSION				= scipy-0.8.0
+SCIPYPREFIX				?= $(TGTDIR)
+SCIPYURL				= http://sourceforge.net/projects/scipy/files/
+UMFPACKVERSION				= UMFPACK-5.4.0
+#UMFPACKVERSION				= UMFPACK-5.5.0
+UMFPACKPREFIX				?= $(TGTDIR)
+UMFPACKURL				= http://www.cise.ufl.edu/research/sparse/umfpack/current/
+UFCONFIGVERSION				= UFconfig-3.5.0
+UFCONFIGURL				= http://www.cise.ufl.edu/research/sparse/UFconfig/
+AMDVERSION				= AMD-2.2.1
+AMDURL					= http://www.cise.ufl.edu/research/sparse/amd/current/
+#MATPLOTLIBVERSION			= matplotlib-0.99.3
+MATPLOTLIBVERSION			= matplotlib-1.0.0
+MATPLOTLIBURL				= http://sourceforge.net/projects/matplotlib/files/matplotlib/matplotlib-1.0/
+WXGTKVERSION				= wxGTK-2.8.11
+WXGTKPREFIX				?= $(TGTDIR)
+WXGTKURL				= http://www.wxwidgets.org/downloads/
+WXPYTHONVERSION				= 2.8.11.0
+WXPYTHONPREFIX				?= $(TGTDIR)
+WXPYTHONURL				= http://www.wxpython.org/download.php#sources
+JPEGVERSION				= 8b
+JPEGPREFIX				?= $(TGTDIR)
+ZLIBVERSION				= zlib-1.2.5
+ZLIBPREFIX				?= $(TGTDIR)
+TIFFVERSION				= tiff-3.9.4
+TIFFPREFIX				?= $(TGTDIR)
+
+
+default:				all
+all:					cellprofiler
+
+
+python:					$(PYTHONPREFIX)/bin/python
+$(PYTHONPREFIX)/bin/python:		$(PYTHONVERSION).tar.bz2
+					rm -fr "$(PYTHONVERSION)" && \
+					tar -xjf $< && \
+					cd "$(PYTHONVERSION)" && \
+					./configure --prefix="$(PYTHONPREFIX)" && \
+					$(MAKE) $(MAKEFLAGS) $(MAKE_FLAGS) && \
+					$(MAKE) $(MAKEFLAGS) -j1 install
+
+cython:					$(CYTHONPREFIX)/bin/cython
+$(CYTHONPREFIX)/bin/cython:		$(CYTHONVERSION).tar.gz $(PYTHONPREFIX)/bin/python $(SITEPKGPREFIX)/easy-install.pth
+					rm -fr "$(CYTHONVERSION)" && \
+					tar -xzf $< && \
+					cd "$(CYTHONVERSION)" && \
+					export PATH="$(PYTHONPREFIX)/bin:$(PATH)" && \
+					export LD_LIBRARY_PATH="$(PYTHONPREFIX)/lib:$(LD_LIBRARY_PATH)" && \
+					$(PYTHONPREFIX)/bin/python setup.py install
+
+lapack:					$(SRCDIR)/$(LAPACKVERSION)/lapack_LINUX.a
+$(SRCDIR)/$(LAPACKVERSION)/lapack_LINUX.a:	$(LAPACKVERSION).tgz
+					cpufreq-selector -g performance || true && \
+					rm -fr $(LAPACKVERSION) && \
+					tar -zxf $< && \
+					cd $(LAPACKVERSION) && \
+					cp ./INSTALL/make.inc.LINUX ./make.inc && \
+					perl -pi -e 's/(^OPTS.*)/$$1 -fPIC -m64/g' ./make.inc && \
+					perl -pi -e 's/(^NOOPT.*)/$$1 -fPIC -m64/g' ./make.inc && \
+					perl -pi -e 's/(^FORTRAN.*?)=.*/$$1= gfortran -fPIC -m64/g' ./make.inc && \
+					perl -pi -e 's/(^LOADER.*?)=.*/$$1= gfortran/g' ./make.inc && \
+					cd ./SRC/ && \
+					export PATH="$(PYTHONPREFIX)/bin:$(PATH)" && \
+					export LD_LIBRARY_PATH="$(PYTHONPREFIX)/lib:$(LD_LIBRARY_PATH)" && \
+					$(MAKE) $(MAKE_FLAGS)
+
+atlas:					$(ATLASPREFIX)/lib/libatlas.a
+$(ATLASPREFIX)/lib/libatlas.a:		$(ATLASVERSION).tar.bz2 $(SRCDIR)/$(LAPACKVERSION)/lapack_LINUX.a
+					cpufreq-selector -g performance || true && \
+					rm -fr ./ATLAS && \
+					tar -jxf $< && \
+					cd "./ATLAS/" && \
+					mkdir -p "./$(HOSTTYPE)" && \
+					cd "./$(HOSTTYPE)/" && \
+					export PATH="$(PYTHONPREFIX)/bin:$(PATH)" && \
+					export LD_LIBRARY_PATH="$(PYTHONPREFIX)/lib:$(LD_LIBRARY_PATH)" && \
+					../configure -Fa alg -fPIC -b 64 \
+						-Ss flapack "$(SRCDIR)/$(LAPACKVERSION)/lapack_LINUX.a" \
+						-Ss pmake "make -j4" -Si cputhrchk 0 \
+						--prefix="$(ATLASPREFIX)" && \
+					$(MAKE) && \
+					mkdir tmp && \
+					cd tmp && \
+					ar x ../lib/liblapack.a && \
+					mv ../lib/liblapack.a ../lib/liblapack_ATLAS.a && \
+					cp "$(SRCDIR)/$(LAPACKVERSION)/lapack_LINUX.a" ../lib/liblapack.a && \
+					ar r ../lib/liblapack.a *.o && \
+					cd ../ && \
+					$(MAKE) check && \
+					$(MAKE) install
+
+# && \
+#					chmod 775 $(ATLASPREFIX)/lib/*.so
+#
+#					cd ./lib/ && \
+#					$(MAKE) shared && \
+#					cd ../ && \
+#					../configure -C ic gcc -C if gfortran -Fa alg -fPIC -b 64 \
+#						-Ss flapack "$(S RCDIR)/$(LAPACKVERSION)/lapack_LINUX.a" \
+#						-Ss pmake "make -j4" -Si cputhrchk 0 \
+#						--prefix="$(ATLASPREFIX)" && \
+#
+
+umfpack:				$(UMFPACKPREFIX)/lib/libumfpack.a
+$(UMFPACKPREFIX)/lib/libumfpack.a:	$(UMFPACKVERSION).tar.gz $(UFCONFIGVERSION).tar.gz $(AMDVERSION).tar.gz $(ATLASPREFIX)/lib/libatlas.a
+					rm -fr "UMFPACK" && \
+					rm -fr "UFconfig" && \
+					rm -fr "AMD" && \
+					tar -xzf "$(UMFPACKVERSION).tar.gz" && \
+					tar -xzf "$(UFCONFIGVERSION).tar.gz" && \
+					tar -xzf "$(AMDVERSION).tar.gz" && \
+					perl -pi -e 's/(^CC )=.*/$$1= gcc/g' UFconfig/UFconfig.mk && \
+					perl -pi -e 's/(^CFLAGS .*)/$$1 -m64 -fPIC/g' UFconfig/UFconfig.mk && \
+					perl -pi -e 's/(^F77 )=.*/$$1= gfortran/g' UFconfig/UFconfig.mk && \
+					perl -pi -e 's/(^F77FLAGS )/$$1 -m64 -fPIC/g' UFconfig/UFconfig.mk && \
+					perl -pi -e 's@(^BLAS )=.*@$$1= -L$(ATLASPREFIX)/lib -llapack -lf77blas -lcblas -latlas -lgfortran@g' UFconfig/UFconfig.mk && \
+					perl -pi -e 's@(^LAPACK )=.*@$$1= -L$(ATLASPREFIX)/lib -llapack -lf77blas -lcblas -latlas -lgfortran@g' UFconfig/UFconfig.mk && \
+					cd "UMFPACK" && \
+					export PATH="$(PYTHONPREFIX)/bin:$(PATH)" && \
+					export LD_LIBRARY_PATH="$(PYTHONPREFIX)/lib:$(LD_LIBRARY_PATH)" && \
+					$(MAKE) $(MAKE_FLAGS) && \
+					cp -p "../AMD/Include/amd.h" "$(UMFPACKPREFIX)/include/" && \
+					cp -p "../UFconfig/UFconfig.h" "$(UMFPACKPREFIX)/include/" && \
+					cp -p "../UMFPACK/Include/"*.h "$(UMFPACKPREFIX)/include/" && \
+					cp -p "../AMD/Lib/libamd.a" "$(UMFPACKPREFIX)/lib/" && \
+					cp -p "../UMFPACK/Lib/libumfpack.a" "$(UMFPACKPREFIX)/lib/"
+
+fftw:					$(FFTWPREFIX)/lib/libfftw3.la $(FFTWPREFIX)/lib/libfftw3l.la $(FFTWPREFIX)/lib/libfftw3f.la
+
+$(FFTWPREFIX)/lib/libfftw3.la:		$(FFTWVERSION).tar.gz
+					rm -fr "$(FFTWVERSION)" && \
+					tar -xzf $< && \
+					cd "$(FFTWVERSION)" && \
+					./configure --enable-sse2 --enable-shared --prefix="$(FFTWPREFIX)" && \
+					$(MAKE) $(MAKEFLAGS) $(MAKE_FLAGS) && \
+					$(MAKE) $(MAKEFLAGS) -j1 install
+
+$(FFTWPREFIX)/lib/libfftw3l.la:		$(FFTWVERSION).tar.gz
+					rm -fr "$(FFTWVERSION)" && \
+					tar -xzf $< && \
+					cd "$(FFTWVERSION)" && \
+					./configure --enable-long-double --enable-shared --prefix="$(FFTWPREFIX)" && \
+					$(MAKE) $(MAKEFLAGS) $(MAKE_FLAGS) && \
+					$(MAKE) $(MAKEFLAGS) -j1 install
+
+$(FFTWPREFIX)/lib/libfftw3f.la:		$(FFTWVERSION).tar.gz $(FFTWPREFIX)/lib/libfftw3.la $(FFTWPREFIX)/lib/libfftw3l.la
+					rm -fr "$(FFTWVERSION)" && \
+					tar -xzf $< && \
+					cd "$(FFTWVERSION)" && \
+					./configure --enable-float --enable-sse --enable-shared --prefix="$(FFTWPREFIX)" && \
+					$(MAKE) $(MAKEFLAGS) $(MAKE_FLAGS) && \
+					$(MAKE) $(MAKEFLAGS) -j1 install
+
+numpy:					$(NUMPYPREFIX)/lib/python2.5/site-packages/$(NUMPYVERSION)-py2.5.egg-info
+$(NUMPYPREFIX)/lib/python2.5/site-packages/$(NUMPYVERSION)-py2.5.egg-info:	$(NUMPYVERSION).tar.gz $(PYTHONPREFIX)/bin/python $(UMFPACKPREFIX)/lib/libumfpack.a $(ATLASPREFIX)/lib/libatlas.a $(FFTWPREFIX)/lib/libfftw3f.la $(SITEPKGPREFIX)/easy-install.pth
+					rm -fr $(NUMPYVERSION) && \
+					tar -zxf $(NUMPYVERSION).tar.gz && \
+					cd "$(NUMPYVERSION)" && \
+					cp site.cfg.example site.cfg && \
+					perl -pi -e 's@#(\[DEFAULT\])@$$1@g' site.cfg && \
+					perl -pi -e 's@#(library_dirs.*)@$$1:$(PYTHONPREFIX)/lib@g' site.cfg && \
+					perl -pi -e 's@#(include_dirs.*)@$$1:$(PYTHONPREFIX)/include@g' site.cfg && \
+					perl -pi -e 's@#(\[lapack_opt\])@$$1@g' site.cfg && \
+					perl -pi -e 's@#(libraries = lapack, f77blas, cblas, atlas)@$$1, gfortran@g' site.cfg && \
+					perl -pi -e 's@#(\[amd\])@$$1@g' site.cfg && \
+					perl -pi -e 's@#(amd_libs)@$$1@g' site.cfg && \
+					perl -pi -e 's@#(\[umfpack\])@$$1@g' site.cfg && \
+					perl -pi -e 's@#(umfpack_libs)@$$1@g' site.cfg && \
+					perl -pi -e 's@#(\[fftw\])@$$1@g' site.cfg && \
+					perl -pi -e 's@#(libraries = fftw3)@$$1@g' site.cfg && \
+					perl -pi -e 's@#(\[djbfft\])@$$1@g' site.cfg && \
+					export MKL="None" && \
+					export PATH="$(PYTHONPREFIX)/bin:$(PATH)" && \
+					export LD_LIBRARY_PATH="$(PYTHONPREFIX)/lib:$(LD_LIBRARY_PATH)" && \
+					$(PYTHONPREFIX)/bin/python setup.py build --fcompiler=gfortran && \
+					$(PYTHONPREFIX)/bin/python setup.py install
+
+scipy:					$(SCIPYPREFIX)/lib/python2.5/site-packages/$(SCIPYVERSION)-py2.5.egg-info
+$(SCIPYPREFIX)/lib/python2.5/site-packages/$(SCIPYVERSION)-py2.5.egg-info:	$(SCIPYVERSION).tar.gz $(PYTHONPREFIX)/bin/python $(UMFPACKPREFIX)/lib/libumfpack.a $(ATLASPREFIX)/lib/libatlas.a $(NUMPYPREFIX)/lib/python2.5/site-packages/$(NUMPYVERSION)-py2.5.egg-info $(SITEPKGPREFIX)/easy-install.pth
+					rm -fr $(SCIPYVERSION) && \
+					tar -zxf $(SCIPYVERSION).tar.gz && \
+					cd "$(SCIPYVERSION)" && \
+					export PATH="$(PYTHONPREFIX)/bin:$(PATH)" && \
+					export LD_LIBRARY_PATH="$(PYTHONPREFIX)/lib:$(LD_LIBRARY_PATH)" && \
+					$(PYTHONPREFIX)/bin/python setup.py build --fcompiler=gfortran && \
+					$(PYTHONPREFIX)/bin/python setup.py install
+
+matplotlib:				$(SITEPKGPREFIX)/$(MATPLOTLIBVERSION)-py2.5.egg-info
+$(SITEPKGPREFIX)/$(MATPLOTLIBVERSION)-py2.5.egg-info:	$(MATPLOTLIBVERSION).tar.gz $(NUMPYPREFIX)/lib/python2.5/site-packages/$(NUMPYVERSION)-py2.5.egg-info $(SITEPKGPREFIX)/wxPython_common-$(WXPYTHONVERSION)-py2.5.egg-info
+					rm -fr $(MATPLOTLIBVERSION) && \
+					tar -zxf $< && \
+					cd "$(MATPLOTLIBVERSION)" && \
+					export PATH="$(PYTHONPREFIX)/bin:$(PATH)" && \
+					export LD_LIBRARY_PATH="$(PYTHONPREFIX)/lib:$(LD_LIBRARY_PATH)" && \
+					$(PYTHONPREFIX)/bin/python setup.py build && \
+					$(PYTHONPREFIX)/bin/python setup.py install
+
+pypi:					$(SITEPKGPREFIX)/easy-install.pth
+$(SITEPKGPREFIX)/easy-install.pth:	$(PYPIVERSION) $(PYTHONPREFIX)/bin/python
+					export PATH="$(PYTHONPREFIX)/bin:$(PATH)" && \
+					export LD_LIBRARY_PATH="$(PYTHONPREFIX)/lib:$(LD_LIBRARY_PATH)" && \
+					sh $(PYPIVERSION) --prefix="$(PYTHONPREFIX)"
+
+decorator:				$(SITEPKGPREFIX)/$(DECORATORVERSION)-py2.5.egg
+$(SITEPKGPREFIX)/$(DECORATORVERSION)-py2.5.egg:	$(DECORATORVERSION).tar.gz $(PYTHONPREFIX)/bin/python $(SITEPKGPREFIX)/easy-install.pth
+					rm -fr "$(DECORATORVERSION)" && \
+					tar -xzf $< && \
+					cd "$(DECORATORVERSION)" && \
+					export PATH="$(PYTHONPREFIX)/bin:$(PATH)" && \
+					export LD_LIBRARY_PATH="$(PYTHONPREFIX)/lib:$(LD_LIBRARY_PATH)" && \
+					$(PYTHONPREFIX)/bin/python setup.py install
+
+mysqlpython:				$(SITEPKGPREFIX)/MySQL_python-$(MYSQLPYTHONVERSION)-py2.5-linux-x86_64.egg
+$(SITEPKGPREFIX)/MySQL_python-$(MYSQLPYTHONVERSION)-py2.5-linux-x86_64.egg:	MySQL-python-$(MYSQLPYTHONVERSION).tar.gz $(PYTHONPREFIX)/bin/python $(SITEPKGPREFIX)/easy-install.pth
+					rm -fr "MySQL-python-$(MYSQLPYTHONVERSION)" && \
+					tar -xzf $< && \
+					cd "MySQL-python-$(MYSQLPYTHONVERSION)" && \
+					export PATH="$(PYTHONPREFIX)/bin:$(PATH)" && \
+					export LD_LIBRARY_PATH="$(PYTHONPREFIX)/lib:$(LD_LIBRARY_PATH)" && \
+					$(PYTHONPREFIX)/bin/python setup.py build && \
+					$(PYTHONPREFIX)/bin/python setup.py install
+
+#wxgtk:					$(WXGTKPREFIX)/bin/wx-config
+#$(WXGTKPREFIX)/bin/wx-config:		$(WXGTKVERSION).tar.gz
+wxgtk:					$(WXGTKVERSION).tar.gz
+					rm -fr $(WXGTKVERSION) && \
+					tar -zxf $< && \
+					rm -fr $(WXGTKVERSION)-$(HOSTTYPE) && \
+					mkdir "$(WXGTKVERSION)-$(HOSTTYPE)" && \
+					cd "$(WXGTKVERSION)-$(HOSTTYPE)" && \
+					export PATH="$(PYTHONPREFIX)/bin:$(PATH)" && \
+					export LD_LIBRARY_PATH="$(PYTHONPREFIX)/lib:$(LD_LIBRARY_PATH)" && \
+					../$(WXGTKVERSION)/configure \
+						--with-gtk \
+						--enable-monolithic \
+						--prefix=$(WXGTKPREFIX) && \
+					$(MAKE) $(MAKE_FLAGS) && \
+					$(MAKE) -j1 install
+
+wxwidgets:				wxpython
+wxpython:				$(SITEPKGPREFIX)/wxPython_common-$(WXPYTHONVERSION)-py2.5.egg-info
+$(SITEPKGPREFIX)/wxPython_common-$(WXPYTHONVERSION)-py2.5.egg-info:	wxPython-src-$(WXPYTHONVERSION).tar.bz2 wxgtk
+					rm -fr wxPython-src-$(WXPYTHONVERSION) && \
+					tar -xjf $< && \
+					rm -fr wxPython-src-$(WXPYTHONVERSION)-$(HOSTTYPE) && \
+					mkdir "wxPython-src-$(WXPYTHONVERSION)-$(HOSTTYPE)" && \
+					cd "wxPython-src-$(WXPYTHONVERSION)-$(HOSTTYPE)" && \
+					export PATH="$(PYTHONPREFIX)/bin:$(PATH)" && \
+					export LD_LIBRARY_PATH="$(PYTHONPREFIX)/lib:$(LD_LIBRARY_PATH)" && \
+					../wxPython-src-$(WXPYTHONVERSION)/configure \
+						--with-gtk \
+						--with-opengl \
+						--enable-graphics_ctx \
+						--enable-unicode \
+						--disable-sound \
+						--enable-monolithic \
+						--prefix=$(WXPYTHONPREFIX) && \
+					$(MAKE) $(MAKE_FLAGS) && \
+					$(MAKE) $(MAKE_FLAGS) -C contrib/src/gizmos && \
+					$(MAKE) $(MAKE_FLAGS) -C contrib/src/stc && \
+					$(MAKE) -j1 install && \
+					$(MAKE) -j1 install -C contrib/src/gizmos && \
+					$(MAKE) -j1 install -C contrib/src/stc && \
+					cd "../wxPython-src-$(WXPYTHONVERSION)/wxPython/" && \
+					$(PYTHONPREFIX)/bin/python setup.py build_ext --inplace && \
+					$(PYTHONPREFIX)/bin/python setup.py install
+
+nose:					$(SITEPKGPREFIX)/$(PYTHONNOSEVERSION)-py2.5.egg
+$(SITEPKGPREFIX)/$(PYTHONNOSEVERSION)-py2.5.egg:	$(PYTHONNOSEVERSION).tar.gz
+					rm -fr "$(PYTHONNOSEVERSION)" && \
+					tar -xzf $< && \
+					cd "$(PYTHONNOSEVERSION)" && \
+					export PATH="$(PYTHONPREFIX)/bin:$(PATH)" && \
+					export LD_LIBRARY_PATH="$(PYTHONPREFIX)/lib:$(LD_LIBRARY_PATH)" && \
+					$(PYTHONPREFIX)/bin/python setup.py install
+
+pil:					$(PYTHONPREFIX)/bin/pilfile.py
+$(PYTHONPREFIX)/bin/pilfile.py:		$(PILVERSION).tar.gz $(JPEGPREFIX)/lib/libjpeg.la $(ZLIBPREFIX)/lib/libz.a $(TIFFPREFIX)/lib/libtiff.la
+					rm -fr "$(PILVERSION)" && \
+					tar -xzf $< && \
+					cd "$(PILVERSION)" && \
+					perl -pi -e 's@(^JPEG_ROOT.*?)=.*@$$1= "$(JPEGPREFIX)"@g' setup.py && \
+					perl -pi -e 's@(^ZLIB_ROOT.*?)=.*@$$1= "$(ZLIBPREFIX)"@g' setup.py && \
+					perl -pi -e 's@(^TIFF_ROOT.*?)=.*@$$1= "$(TIFFPREFIX)"@g' setup.py && \
+					export PATH="$(PYTHONPREFIX)/bin:$(PATH)" && \
+					export LD_LIBRARY_PATH="$(PYTHONPREFIX)/lib:$(LD_LIBRARY_PATH)" && \
+					$(PYTHONPREFIX)/bin/python setup.py build && \
+					$(PYTHONPREFIX)/bin/python setup.py install
+
+jpeg:					$(JPEGPREFIX)/lib/libjpeg.la
+$(JPEGPREFIX)/lib/libjpeg.la:		jpegsrc.v$(JPEGVERSION).tar.gz
+					rm -fr "jpeg-$(JPEGVERSION)" && \
+					tar -xzf $< && \
+					cd "jpeg-$(JPEGVERSION)" && \
+					./configure \
+						CC="gcc" CPP="cpp" \
+						--prefix="$(JPEGPREFIX)" && \
+					$(MAKE) $(MAKEFLAGS) $(MAKE_FLAGS) && \
+					$(MAKE) $(MAKEFLAGS) -j1 install
+
+zlib:					$(ZLIBPREFIX)/lib/libz.a
+$(ZLIBPREFIX)/lib/libz.a:		$(ZLIBVERSION).tar.bz2
+					rm -fr "$(ZLIBVERSION)" && \
+					tar -xjf $< && \
+					cd "$(ZLIBVERSION)" && \
+					./configure \
+						--prefix="$(ZLIBPREFIX)" && \
+					$(MAKE) $(MAKEFLAGS) $(MAKE_FLAGS) && \
+					$(MAKE) $(MAKEFLAGS) -j1 install
+
+tiff:					$(TIFFPREFIX)/lib/libtiff.la
+$(TIFFPREFIX)/lib/libtiff.la:		$(TIFFVERSION).tar.gz $(ZLIBPREFIX)/lib/libz.a $(JPEGPREFIX)/lib/libjpeg.la
+					rm -fr "$(TIFFVERSION)" && \
+					tar -xzf $< && \
+					cd "$(TIFFVERSION)" && \
+					./configure \
+						--prefix="$(TIFFPREFIX)" \
+						--enable-cxx \
+						--with-zlib-include-dir="$(ZLIBPREFIX)/include" \
+						--with-zlib-lib-dir="$(ZLIBPREFIX)/lib" \
+						--with-jpeg-include-dir="$(JPEGPREFIX)/include" \
+						--with-jpeg-lib-dir="$(JPEGPREFIX)/lib" && \
+					$(MAKE) $(MAKEFLAGS) $(MAKE_FLAGS) && \
+					$(MAKE) $(MAKEFLAGS) -j1 install
+
+cp:					cellprofiler
+cellprofiler:				$(TGTDIR)/CellProfiler/CellProfiler.py
+$(TGTDIR)/CellProfiler/CellProfiler.py:	$(CYTHONPREFIX)/bin/cython $(SCIPYPREFIX)/lib/python2.5/site-packages/$(SCIPYVERSION)-py2.5.egg-info $(SITEPKGPREFIX)/wxPython_common-$(WXPYTHONVERSION)-py2.5.egg-info $(SITEPKGPREFIX)/$(MATPLOTLIBVERSION)-py2.5.egg-info $(SITEPKGPREFIX)/$(DECORATORVERSION)-py2.5.egg $(SITEPKGPREFIX)/easy-install.pth $(SITEPKGPREFIX)/MySQL_python-$(MYSQLPYTHONVERSION)-py2.5-linux-x86_64.egg $(SITEPKGPREFIX)/$(PYTHONNOSEVERSION)-py2.5.egg $(PYTHONPREFIX)/bin/pilfile.py
+					cd "$(TGTDIR)/" && \
+					rm -fr "./CellProfiler" && \
+					svn co "https://svn.broadinstitute.org/CellProfiler/trunk/CellProfiler" ./CellProfiler && \
+					cd ./CellProfiler && \
+					export PATH="$(PYTHONPREFIX)/bin:$(PATH)" && \
+					export LD_LIBRARY_PATH="$(PYTHONPREFIX)/lib:$(LD_LIBRARY_PATH)" && \
+					$(PYTHONPREFIX)/bin/python CellProfiler.py
+
+#					svn status --no-ignore|grep "^[I?]"|grep -v "command\$"|cut -c8-|while read I ; do rm -fr "$I" ; done
+#
+
+
+clean:
+					rm -fr $(PYTHONVERSION)
+					rm -fr $(CYTHONVERSION)
+					rm -fr $(LAPACKVERSION)
+					rm -fr $(NUMPYVERSION)
+					rm -fr $(SCIPYVERSION)
+					rm -fr jpeg-$(JPEGVERSION)
+					rm -fr $(ZLIBVERSION)
+					rm -fr $(TIFFVERSION)
+					rm -fr $(PILVERSION)
+					rm -fr $(FFTWVERSION)
+					rm -fr ATLAS
+					rm -fr UMFPACK
+					rm -fr UFconfig
+					rm -fr AMD
+					rm -fr $(MATPLOTLIBVERSION)
+					rm -fr $(WXGTKVERSION)
+					rm -fr wxPython-src-$(WXPYTHONVERSION)
+					rm -fr $(DECORATORVERSION)
+					rm -fr $(PYTHONNOSEVERSION)
+					rm -fr MySQL-python-$(MYSQLPYTHONVERSION)
+
+
+distclean:				clean
+					rm -fr $(WXGTKVERSION)-$(HOSTTYPE)
+					rm -fr wxPython-src-$(WXPYTHONVERSION)-$(HOSTTYPE)
+
+
+
+
+$(LAPACKVERSION).tgz:
+					wget -c -t 2 "http://www.netlib.org/lapack/$@"
+
+$(ATLASVERSION).tar.bz2:
+					ATLASVERSIONNR=$$(echo $(ATLASVERSION)|cut -d's' -f2) && \
+					wget -c -t 2 "http://downloads.sourceforge.net/project/math-atlas/Developer%20%28unstable%29/$${ATLASVERSIONNR}/$@"
+
+$(NUMPYVERSION).tar.gz:
+					NUMPYVERSIONNR=$$(echo $(NUMPYVERSION)|cut -d'-' -f2) && \
+					wget -c -t 2 "http://downloads.sourceforge.net/project/numpy/NumPy/$${NUMPYVERSIONNR}/$@"
+
+
+$(SCIPYVERSION).tar.gz:
+					SCIPYVERSIONNR=$$(echo $(SCIPYVERSION)|cut -d'-' -f2) && \
+					wget -c -t 2 "http://downloads.sourceforge.net/project/scipy/scipy/$${SCIPYVERSIONNR}/$@"
+
+$(UMFPACKVERSION).tar.gz:
+					wget -c -t 2 "http://www.cise.ufl.edu/research/sparse/umfpack/$@"
+
+$(UFCONFIGVERSION).tar.gz:
+					wget -c -t 2 "http://www.cise.ufl.edu/research/sparse/UFconfig/$@"
+
+$(AMDVERSION).tar.gz:
+					wget -c -t 2 "http://www.cise.ufl.edu/research/sparse/amd/$@"
+
+$(PYTHONVERSION).tar.bz2:
+					wget -c -t 2 "http://www.python.org/ftp/python/2.5.5/$@"
+
+$(MATPLOTLIBVERSION).tar.gz:
+					MATPLOTLIBVERSIONNR=$$(echo $(MATPLOTLIBVERSION)|cut -d'-' -f2|cut -d'.' -f-2) && \
+					wget -c -t 2 "http://downloads.sourceforge.net/project/matplotlib/matplotlib/matplotlib-$${MATPLOTLIBVERSIONNR}/$@"
+
+$(WXGTKVERSION).tar.gz:
+					wget -c -t 2 "http://prdownloads.sourceforge.net/wxwindows/$@"
+
+wxPython-src-$(WXPYTHONVERSION).tar.bz2:
+					wget -c -t 2 "http://downloads.sourceforge.net/wxpython/$@"
+
+$(FFTWVERSION).tar.gz:			
+					wget -c -t 2 "ftp://ftp.fftw.org/pub/fftw/$@"
+
+$(PYPIVERSION):
+					wget -c -t 2 "http://pypi.python.org/packages/2.5/s/setuptools/$@"
+
+$(DECORATORVERSION).tar.gz:
+					wget -c -t 2 "http://pypi.python.org/packages/source/d/decorator/$@"
+
+MySQL-python-$(MYSQLPYTHONVERSION).tar.gz:
+					wget -c -t 2 "http://downloads.sourceforge.net/project/mysql-python/mysql-python/$(MYSQLPYTHONVERSION)/$@"
+
+$(PYTHONNOSEVERSION).tar.gz:
+					wget -c -t 2 "http://python-nose.googlecode.com/files/$@"
+
+$(PILVERSION).tar.gz:
+					wget -c -t 2 "http://effbot.org/downloads/$@"
+
+jpegsrc.v$(JPEGVERSION).tar.gz:
+					wget -c -t 2 "http://www.ijg.org/files/$@"
+
+$(ZLIBVERSION).tar.bz2:
+					wget -c -t 2 "http://zlib.net/$@"
+
+$(TIFFVERSION).tar.gz:
+					wget -c -t 2 "ftp://ftp.remotesensing.org/pub/libtiff/$@"
+
+$(CYTHONVERSION).tar.gz:
+					wget -c -t 2 "http://pypi.python.org/packages/source/C/Cython/$@"

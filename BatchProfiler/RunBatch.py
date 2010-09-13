@@ -290,6 +290,8 @@ def RunOne_2_0(x, run):
             select="select[model=PC6000]"
     except:
         pass
+    os.environ["CELLPROFILER_USE_XVFB"] = "1"
+    os.environ["DISPLAY"] = "1"
     cmd=["bsub",
          "-q","%(queue)s"%(x),
          "-sp","%(priority)d" % x,
@@ -304,7 +306,8 @@ def RunOne_2_0(x, run):
          "./python-2.6.sh",
          "CellProfiler.py",
          "-p",'"%(data_dir)s/Batch_data.mat"'%(x),
-         "-c","-r","-b",
+         #"-c",
+         "-r","-b",
          "-f","%(start)d"%(x),
          "-l","%(end)d"%(x),
          "-d",'"%(done_file)s"'%(x)]

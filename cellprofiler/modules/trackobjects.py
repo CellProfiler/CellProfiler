@@ -702,6 +702,7 @@ class TrackObjects(cpm.CPModule):
 
     def run_lapdistance(self, workspace, objects):
         '''Track objects based on distance'''
+        m = workspace.measurements
         group_number = m.get_current_image_measurement(cpp.GROUP_NUMBER)
         self.set_group_number(workspace, group_number)
         group_index = m.get_current_image_measurement(cpp.GROUP_INDEX)

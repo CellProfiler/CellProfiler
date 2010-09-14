@@ -1303,7 +1303,8 @@ def permutations(x):
         yield x[a].tolist()
         
 def convex_hull_transform(image, levels=256, mask = None, 
-                          chunksize = CONVEX_HULL_CHUNKSIZE):
+                          chunksize = CONVEX_HULL_CHUNKSIZE,
+                          pass_cutoff = 16):
     '''Perform the convex hull transform of this image
     
     image - image composed of integer intensity values
@@ -1324,10 +1325,23 @@ def convex_hull_transform(image, levels=256, mask = None,
     img_shape = tuple(image.shape)
     if img_min == img_max:
         return image
+    
     scale = (img_min + 
              np.arange(levels).astype(image.dtype) * 
              (img_max - img_min) / float(levels-1))
-    image = ((image - img_min) * (levels-1) / (img_max - img_min)).astype(int)
+    image = ((image - img_min) * (levels-1) / (img_max - img_min))
+    #
+    # If there are more than 16 levels, we do the method first at a coarse
+    # scale. The dark objects can produce points at every level, so doing
+    # two passes can reduce the number of points in the second pass to
+    # only the difference between two levels at the coarse pass.
+    #
+    if levels > pass_cutoff:
+        sub_levels = int(np.sqrt(levels))
+        rough_image = convex_hull_transform(np.floor(image), sub_levels, mask)
+        image = np.maximum(image, rough_image)
+        del rough_image
+    image = image.astype(int)
     #
     # Get rid of any levels that have no representatives
     #

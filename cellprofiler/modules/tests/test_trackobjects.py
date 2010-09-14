@@ -826,6 +826,10 @@ TrackObjects:[module_num:1|svn_version:\'10373\'|variable_revision_number:4|show
             values = [objs[objs[:,0] == i, index] for i in range(nimages)]
             m.add_all_measurements(OBJECT_NAME, feature, values)
         m.add_all_measurements(cpmeas.IMAGE, "ImageNumber", list(range(nimages)))
+        m.add_all_measurements(cpmeas.IMAGE, cpp.GROUP_NUMBER,
+                               [1] * nimages)
+        m.add_all_measurements(cpmeas.IMAGE, cpp.GROUP_INDEX,
+                               list(range(1, nimages+1)))
         m.image_set_number = nimages
         
         image_set_list = cpi.ImageSetList()
@@ -839,6 +843,7 @@ TrackObjects:[module_num:1|svn_version:\'10373\'|variable_revision_number:4|show
         '''Run the second part of LAP on one image of nothing'''
         workspace, module = self.make_lap2_workspace(np.zeros((0,5)), 1)
         self.assertTrue(isinstance(module, T.TrackObjects))
+        module.run_as_data_tool(workspace)
         module.post_group(workspace, np.arange(1))
         labels = workspace.measurements.get_all_measurements(
             OBJECT_NAME, module.measurement_name(T.F_LABEL))

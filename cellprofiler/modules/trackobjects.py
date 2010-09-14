@@ -85,6 +85,7 @@ import scipy.sparse
 
 import cellprofiler.cpmodule as cpm
 import cellprofiler.cpimage as cpi
+import cellprofiler.pipeline as cpp
 import cellprofiler.settings as cps
 import cellprofiler.measurements as cpmeas
 import cellprofiler.preferences as cpprefs
@@ -483,13 +484,21 @@ class TrackObjects(cpm.CPModule):
     def __set(self, field, workspace, value):
         self.get_ws_dictionary(workspace)[field] = value
 
-    def get_image_numbers(self, workspace):
-        '''get the image numbers for the current group'''
-        return self.__get("image_numbers", workspace, np.array([], int))
+    def get_group_number(self, workspace):
+        '''get the current group's group number'''
+        return self.__get("group_number", workspace, None)
     
-    def set_image_numbers(self, workspace, value):
-        self.__set("image_numbers", workspace, value)
-        
+    def set_group_number(self, workspace, value):
+        self.__set("group_number", workspace, value)
+    
+    def get_group_indexes(self, workspace):
+        '''get the group indexes for the current group'''
+        result = self.__get("group_indexes", workspace, None)
+        if result is None:
+            result = []
+            self.__set("group_indexes", workspace, result)
+        return result
+    
     def get_saved_measurements(self, workspace):
         return self.__get("measurements", workspace, np.array([], float))
 
@@ -547,9 +556,9 @@ class TrackObjects(cpm.CPModule):
 
     def prepare_group(self, pipeline, image_set_list, grouping, image_numbers):
         '''Erase any tracking information at the start of a run'''
-        d = self.get_dictionary(image_set_list)
-        d.clear()
-        d["image_numbers"] = np.array(image_numbers).copy()
+        if self.tracking_method == TM_LAP:
+            d = self.get_dictionary(image_set_list)
+            d.clear()
         
         return True
 
@@ -693,6 +702,11 @@ class TrackObjects(cpm.CPModule):
 
     def run_lapdistance(self, workspace, objects):
         '''Track objects based on distance'''
+        group_number = m.get_current_image_measurement(cpp.GROUP_NUMBER)
+        self.set_group_number(workspace, group_number)
+        group_index = m.get_current_image_measurement(cpp.GROUP_INDEX)
+        self.get_group_indexes(workspace).append(group_index)
+
         old_i, old_j = self.get_saved_coordinates(workspace)
         n_old = len(old_i)
         #
@@ -872,9 +886,11 @@ class TrackObjects(cpm.CPModule):
             j = (j+.5).astype(int)
             self.map_objects(workspace, np.zeros((0,),int), 
                              np.zeros(count,int), i,j)
-        workspace.measurements.add_measurement(self.object_name.value,
-                                               self.measurement_name(F_AREA),
-                                               areas)
+        m = workspace.measurements
+        assert isinstance(m, cpmeas.Measurements)
+        m.add_measurement(self.object_name.value,
+                          self.measurement_name(F_AREA),
+                          areas)
         self.save_kalman_measurements(workspace)
         self.set_saved_labels(workspace, objects.segmented)
         
@@ -1016,10 +1032,19 @@ class TrackObjects(cpm.CPModule):
         self.set_saved_measurements(workspace, new_measurements)
 
     def run_as_data_tool(self, workspace):
-        '''Assume that all images belong to the same group'''
-        image_numbers = np.arange(workspace.measurements.image_set_count) + 1
-        self.set_image_numbers(workspace, image_numbers)
-        self.post_group(workspace, {})
+        m = workspace.measurements
+        assert isinstance(m, cpmeas.Measurements)
+        group_numbers = np.array(
+            m.get_all_measurements(cpmeas.IMAGE, cpp.GROUP_NUMBER))
+        group_indexes = np.array(
+            m.get_all_measurements(cpmeas.IMAGE, cpp.GROUP_INDEX))
+        for group_number in np.unique(group_numbers):
+            self.set_group_number(workspace, group_number)
+            gi = group_indexes[group_numbers == group_number]
+            glist = self.get_group_indexes(workspace)
+            del glist[:]
+            glist += group_indexes.tolist()
+            self.post_group(workspace, {})
 
     def flood(self, i, at, a, b, c, d, z):
         z[i] = at
@@ -1084,7 +1109,6 @@ class TrackObjects(cpm.CPModule):
         para8 = self.max_frame_distance.value #max frame difference
 
         m = workspace.measurements
-        image_numbers = self.get_image_numbers(workspace)-m.image_set_start_number # Offset image number by group index
         label = m.get_all_measurements(self.object_name.value, 
                                        self.measurement_name(F_LABEL))
         orig_label = label
@@ -1092,11 +1116,22 @@ class TrackObjects(cpm.CPModule):
         b = m.get_all_measurements(self.object_name.value, M_LOCATION_CENTER_Y)
         Area = m.get_all_measurements(self.object_name.value, 
                                       self.measurement_name(F_AREA))
+        group_numbers = np.array(
+            m.get_all_measurements(cpmeas.IMAGE, cpp.GROUP_NUMBER))
+        group_indices = np.array(
+            m.get_all_measurements(cpmeas.IMAGE, cpp.GROUP_INDEX))
+        my_group_number = self.get_group_number(workspace)
+        my_group_indices = np.array(self.get_group_indexes(workspace))
+        indexes = np.arange(len(group_numbers))
+        mask = group_numbers == my_group_number
+        group_indices = group_indices[mask]
+        indexes = indexes[mask]
+        assert np.all(group_indices == my_group_indices)
         #
         # Reduce the lists to only the ones in the group
         #
         for mlist in (label, a, b, Area):
-            mlist = [mlist[image_number] for image_number in image_numbers]
+            mlist = [mlist[image_number] for image_number in indexes]
         numFrames = len(b)
 
         #Calculates the maximum number of cells in a single frame
@@ -1460,7 +1495,7 @@ class TrackObjects(cpm.CPModule):
         # Replace the labels for the image sets in the group
         # inside the list retrieved from the measurements
         #
-        for i, image_number in enumerate(image_numbers):
+        for i, image_number in enumerate(indexes):
             orig_label[image_number] = newlabel[i]
 
     def map_objects(self, workspace, new_of_old, old_of_new, i,j):

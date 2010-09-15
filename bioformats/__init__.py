@@ -49,7 +49,7 @@ __javacl_jar = os.path.join(__imagej_path, "javacl-1.0-beta-4-shaded.jar")
 __precompiled_headless_jar = os.path.join(__imagej_path, "precompiled_headless.jar")
 __class_path = os.pathsep.join((__loci_jar, __ij_jar, __imglib_jar, 
                                 __javacl_jar))
-if get_headless() or sys.platform == "darwin":
+if sys.platform == "darwin":
     # Start ImageJ headless
     # precompiled_headless.jar contains substitute classes for running
     # headless.

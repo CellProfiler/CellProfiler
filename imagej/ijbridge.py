@@ -149,12 +149,7 @@ def communicate(socket, cmd, data=None):
    msg_size = len(data)
    print '<SERVER> sending msg: [ %s | %s | <DATA: %s bytes> ]'%(msg_size, cmd, len(data))
    nbytes = np.array([msg_size], ">i4").tostring()
-   # Send the number of bytes in the data
-   socket.send(nbytes)
-   # Send the 8 byte command 
-   socket.send(cmd)
-   if len(data) > 0:
-      socket.send(data)
+   socket.send(nbytes + cmd + data)
    
    print '<SERVER> waiting for response...'
    # Get the response size

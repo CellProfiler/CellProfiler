@@ -298,7 +298,8 @@ if __name__ == '__main__':
 
    pixels = np.random.standard_normal((400,600))
    pixels[100:300,200:400] = 0
-   
+   pixels[pixels<0] = 0
+   pixels /= pixels.max()
    t0 = time()
    ipb.inject_image(pixels, 'name ignored')
    print 'time to inject:',time()-t0

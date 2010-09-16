@@ -17,6 +17,35 @@ import imagej.imageplus as ijip
 import struct
 
 
+if hasattr(sys, 'frozen'):
+    __root_path = os.path.split(os.path.abspath(sys.argv[0]))[0]
+else:
+    __root_path = os.path.abspath(os.path.split(__file__)[0])
+    __root_path = os.path.split(__root_path)[0]
+__path = os.path.join(__root_path, 'bioformats')
+__imagej_path = os.path.join(__root_path, 'imagej')
+__loci_jar = os.path.join(__path, "loci_tools.jar")
+__ij_jar = os.path.join(__imagej_path, "ij.jar")
+__imglib_jar = os.path.join(__imagej_path, "imglib.jar")
+__javacl_jar = os.path.join(__imagej_path, "javacl-1.0-beta-4-shaded.jar")
+__precompiled_headless_jar = os.path.join(__imagej_path, "precompiled_headless.jar")
+__class_path = os.pathsep.join((__loci_jar, __ij_jar, __imglib_jar, 
+                                __javacl_jar, __imagej_path))
+
+if sys.platform.startswith("win") and not hasattr(sys, 'frozen'):
+    # Have to find tools.jar
+    from cellprofiler.utilities.setup import find_jdk
+    jdk_path = find_jdk()
+    if jdk_path is not None:
+        __tools_jar = os.path.join(jdk_path, "lib","tools.jar")
+        __class_path += os.pathsep + __tools_jar
+    else:
+        sys.stderr.write("Warning: Failed to find tools.jar\n")
+if os.environ.has_key('CLASSPATH'):
+   __class_path += os.pathsep + os.environ['CLASSPATH']
+os.environ['CLASSPATH'] = __class_path
+
+
 class ij_bridge(object):
    '''This class provides a high-level interface for running ImageJ from
    CellProfiler. It is intended to abstract away whether IJ is being run within
@@ -99,6 +128,9 @@ class in_proc_ij_bridge(ij_bridge):
 
 def read_nbytes(socket, nbytes):
    '''use in place of socket.recv(nbytes)'''
+   assert nbytes >= 0
+   if nbytes == 0:
+      return ''
    data = socket.recv(nbytes)
    while len(data) < nbytes:
       data += socket.recv(nbytes - len(data))
@@ -152,8 +184,6 @@ class inter_proc_ij_bridge(ij_bridge):
    QUIT         = 'quit    '
    
    def __init__(self):
-      os.environ['CLASSPATH'] = '%s:%s'%(os.path.split(__file__)[0], 
-                                         os.environ['CLASSPATH'])
       self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
       self.server_socket.bind(("", 0))
       hostaddr, port = self.server_socket.getsockname()

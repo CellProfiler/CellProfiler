@@ -104,7 +104,6 @@ class ConvertObjectsToImage(cpm.CPModule):
                                          "Original: %s"%self.object_name.value)
         if self.image_mode == IM_BINARY:
             pixel_data = labels != 0
-            pixel_data = pixel_data.astype(float)
             if not workspace.frame is None:
                 figure.subplot_imshow_bw(1,0,pixel_data,self.image_name.value,
                                          sharex=figure.subplot(0,0),

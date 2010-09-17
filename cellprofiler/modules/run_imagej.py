@@ -52,12 +52,8 @@ class RunImageJ(cpm.CPModule):
                 return self.command.choices
             import cellprofiler.utilities.jutil as J
             import imagej.ijbridge as ijbridge
-            ijb = ijbridge.in_proc_ij_bridge()
-            J.attach()
-            try:
-                return sorted(ijb.get_commands())
-            finally:
-                J.detach()
+            ijb = ijbridge.get_ij_bridge()
+            return sorted(ijb.get_commands())
             
         self.command = cps.Choice(
             "Command:", [], value="None", choices_fn = get_command_choices,
@@ -207,8 +203,7 @@ class RunImageJ(cpm.CPModule):
             result += [self.wants_post_group_image]
             if self.wants_post_group_image:
                 result += [self.post_group_output_image]
-        if sys.platform != "darwin":
-            result += [self.pause_before_proceeding, self.show_imagej_button]
+        result += [self.pause_before_proceeding, self.show_imagej_button]
         return result
     
     def on_show_imagej(self):
@@ -217,14 +212,9 @@ class RunImageJ(cpm.CPModule):
         This method shows the ImageJ user interface when the user presses
         the Show ImageJ button.
         '''
-        from cellprofiler.utilities.jutil import attach, detach
         import imagej.ijbridge as ijbridge
-        attach()
-        try:
-            ijb = ijbridge.in_proc_ij_bridge()
-            ijb.show_imagej()
-        finally:
-            detach()
+        ijb = ijbridge.get_ij_bridge()
+        ijb.show_imagej()
         
     def is_interactive(self):
         # On Mac, run in main thread for stability
@@ -255,87 +245,83 @@ class RunImageJ(cpm.CPModule):
                                       must_be_grayscale = True)
         else:
             img = None
-        J.attach()
         
-        # TODO: branch here when using inter-process bridge
-        ijb = ijbridge.in_proc_ij_bridge()
+        ijb = ijbridge.get_ij_bridge()
         
-        try:
-            #
-            # Run a command or macro on the first image of the set
-            #
-            if d[D_FIRST_IMAGE_SET] == image_set.number + 1:
-                if self.prepare_group_choice == CM_COMMAND:
-                    ijb.execute_command(self.prepare_group_command.value,
-                                        self.prepare_group_options.value)
-                elif self.prepare_group_choice == CM_MACRO:
-                    macro = workspace.measurements.apply_metadata(
-                                self.prepare_group_macro.value)
-                    ijb.execute_macro(macro)
-                if (self.prepare_group_choice != CM_NOTHING and 
-                    (not cpprefs.get_headless()) and 
-                    self.pause_before_proceeding):
-                    import wx
-                    wx.MessageBox("Please edit the image in ImageJ and hit OK to proceed",
-                                  "Waiting for ImageJ")
-            #
-            # Install the input image as the current image
-            #
-            if img is not None:
-                ijb.inject_image(img.pixel_data, input_image_name)
-
-            #
-            # Do the per-imageset macro or command
-            #
-            if self.command_or_macro == CM_COMMAND:
-                ijb.execute_command(self.command.value, self.options.value)
-            else:
-                macro = workspace.measurements.apply_metadata(self.macro.value)
+        #
+        # Run a command or macro on the first image of the set
+        #
+        if d[D_FIRST_IMAGE_SET] == image_set.number + 1:
+            if self.prepare_group_choice == CM_COMMAND:
+                ijb.execute_command(self.prepare_group_command.value,
+                                    self.prepare_group_options.value)
+            elif self.prepare_group_choice == CM_MACRO:
+                macro = workspace.measurements.apply_metadata(
+                            self.prepare_group_macro.value)
                 ijb.execute_macro(macro)
-            if (not cpprefs.get_headless()) and self.pause_before_proceeding:
+            if (self.prepare_group_choice != CM_NOTHING and 
+                (not cpprefs.get_headless()) and 
+                self.pause_before_proceeding):
+                import wx
+                wx.MessageBox("Please edit the image in ImageJ and hit OK to proceed",
+                              "Waiting for ImageJ")
+        #
+        # Install the input image as the current image
+        #
+        if img is not None:
+            ijb.inject_image(img.pixel_data, input_image_name)
+
+        #
+        # Do the per-imageset macro or command
+        #
+        if self.command_or_macro == CM_COMMAND:
+            ijb.execute_command(self.command.value, self.options.value)
+        else:
+            macro = workspace.measurements.apply_metadata(self.macro.value)
+            ijb.execute_macro(macro)
+        if (not cpprefs.get_headless()) and self.pause_before_proceeding:
+            import wx
+            wx.MessageBox("Please edit the image in ImageJ and hit OK to proceed",
+                          "Waiting for ImageJ")
+        #
+        # Get the output image
+        #
+        if self.wants_to_get_current_image:
+            output_image_name = self.current_output_image_name.value
+            pixel_data = ijb.get_current_image()
+            image = cpi.Image(pixel_data)
+            image_set.add(output_image_name, image)
+        #
+        # Execute the post-group macro or command
+        #
+        if d[D_LAST_IMAGE_SET] == image_set.number + 1:
+            if self.post_group_choice == CM_COMMAND:
+                ijb.execute_command(self.post_group_command.value, 
+                                    self.post_group_options.value)
+            elif self.post_group_choice == CM_MACRO:
+                macro = workspace.measurements.apply_metadata(
+                            self.post_group_macro.value)
+                ijb.execute_macro(macro)
+            if (self.post_group_choice != CM_NOTHING and 
+                (not cpprefs.get_headless()) and 
+                self.pause_before_proceeding):
                 import wx
                 wx.MessageBox("Please edit the image in ImageJ and hit OK to proceed",
                               "Waiting for ImageJ")
             #
-            # Get the output image
+            # Save the current ImageJ image after executing the post-group
+            # command or macro
             #
-            if self.wants_to_get_current_image:
-                output_image_name = self.current_output_image_name.value
+            if (self.post_group_choice != CM_NOTHING and
+                self.wants_post_group_image):
+                output_image_name = self.post_group_output_image.value
                 pixel_data = ijb.get_current_image()
                 image = cpi.Image(pixel_data)
                 image_set.add(output_image_name, image)
-            #
-            # Execute the post-group macro or command
-            #
-            if d[D_LAST_IMAGE_SET] == image_set.number + 1:
-                if self.post_group_choice == CM_COMMAND:
-                    ijb.execute_command(self.post_group_command.value, 
-                                        self.post_group_options.value)
-                elif self.post_group_choice == CM_MACRO:
-                    macro = workspace.measurements.apply_metadata(
-                                self.post_group_macro.value)
-                    ijb.execute_macro(macro)
-                if (self.post_group_choice != CM_NOTHING and 
-                    (not cpprefs.get_headless()) and 
-                    self.pause_before_proceeding):
-                    import wx
-                    wx.MessageBox("Please edit the image in ImageJ and hit OK to proceed",
-                                  "Waiting for ImageJ")
-                #
-                # Save the current ImageJ image after executing the post-group
-                # command or macro
-                #
-                if (self.post_group_choice != CM_NOTHING and
-                    self.wants_post_group_image):
-                    output_image_name = self.post_group_output_image.value
-                    pixel_data = ijb.get_current_image()
-                    image = cpi.Image(pixel_data)
-                    image_set.add(output_image_name, image)
-                
-        finally:
-            J.detach()
         if self.is_interactive():
             self.display(workspace)
+
+        del(ijb)
             
     def display(self, workspace):
         figure = workspace.create_or_find_figure(title="RunImageJ, image cycle #%d"%(

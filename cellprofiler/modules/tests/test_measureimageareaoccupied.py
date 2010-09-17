@@ -44,7 +44,7 @@ class TestMeasureImageArea(unittest.TestCase):
         pipeline = cpp.Pipeline()
         module = mia.MeasureImageAreaOccupied()
         module.module_num = 1
-        module.objects[0].object_name.value = OBJECTS_NAME
+        module.operands[0].operand_objects.value = OBJECTS_NAME
         pipeline.add_module(module)
         image_set_list = cpi.ImageSetList()
         workspace = cpw.Workspace(pipeline, module, 
@@ -57,10 +57,11 @@ class TestMeasureImageArea(unittest.TestCase):
     def test_00_00_zeros(self):
         workspace = self.make_workspace(np.zeros((10,10),int))
         module = workspace.module
+        module.operands[0].operand_choice.value = "Objects"
         module.run(workspace)
         m = workspace.measurements
         def mn(x):
-            return "AreaOccupied_%s_%s"%(x, module.objects[0].object_name.value)
+            return "AreaOccupied_%s_%s"%(x, module.operands[0].operand_objects.value)
         
         self.assertEqual(m.get_current_measurement("Image",mn("AreaOccupied"))[0], 0)
         self.assertEqual(m.get_current_measurement("Image",mn("TotalArea"))[0],100)
@@ -77,10 +78,11 @@ class TestMeasureImageArea(unittest.TestCase):
         area_occupied = np.sum(labels)
         workspace = self.make_workspace(labels)
         module = workspace.module
+        module.operands[0].operand_choice.value = "Objects"
         module.run(workspace)
         m = workspace.measurements
         def mn(x):
-            return "AreaOccupied_%s_%s"%(x, module.objects[0].object_name.value)
+            return "AreaOccupied_%s_%s"%(x, module.operands[0].operand_objects.value)
         
         self.assertEqual(m.get_current_measurement("Image",mn("AreaOccupied"))[0], area_occupied)
         self.assertEqual(m.get_current_measurement("Image",mn("TotalArea"))[0],100)
@@ -95,17 +97,19 @@ class TestMeasureImageArea(unittest.TestCase):
         total_area = np.sum(mask)
         workspace = self.make_workspace(labels, image)
         module = workspace.module
+        module.operands[0].operand_choice.value = "Objects"
         module.run(workspace)
         m = workspace.measurements
         def mn(x):
-            return "AreaOccupied_%s_%s"%(x, module.objects[0].object_name.value)
+            return "AreaOccupied_%s_%s"%(x, module.operands[0].operand_objects.value)
         
         self.assertEqual(m.get_current_measurement("Image",mn("AreaOccupied"))[0], area_occupied)
         self.assertEqual(m.get_current_measurement("Image",mn("TotalArea"))[0],total_area)
         
     def test_02_01_get_measurement_columns(self):
         module = mia.MeasureImageAreaOccupied()
-        module.objects[0].object_name.value = OBJECTS_NAME
+        module.operands[0].operand_objects.value = OBJECTS_NAME
+        module.operands[0].operand_choice.value = "Objects"
         columns = module.get_measurement_columns(None)
         expected = ((cpmm.IMAGE, "AreaOccupied_AreaOccupied_%s"%OBJECTS_NAME,
                      cpmm.COLTYPE_FLOAT),
@@ -150,7 +154,7 @@ class TestMeasureImageArea(unittest.TestCase):
         self.assertEqual(len(pipeline.modules()), 3)
         module = pipeline.modules()[2]
         self.assertTrue(isinstance(module, mia.MeasureImageAreaOccupied))
-        self.assertEqual(module.objects[0].object_name.value, "Nuclei")
+        self.assertEqual(module.operands[0].operand_objects.value, "Nuclei")
 
     def test_03_02_load_v2(self):
         data = ('eJztW92P2kYQN4Q79RopujylqhrJj7n2QOYalMupvUCg16KGDwWUKIrSds9e'
@@ -189,7 +193,6 @@ class TestMeasureImageArea(unittest.TestCase):
         self.assertEqual(len(pipeline.modules()), 4)
         module = pipeline.modules()[3]
         self.assertTrue(isinstance(module, mia.MeasureImageAreaOccupied))
-        self.assertEqual(len(module.objects), 2)
-        self.assertEqual(module.objects[0].object_name.value, "Nuclei")
-        self.assertEqual(module.objects[1].object_name.value, "Cells")
-        
+        self.assertEqual(len(module.operands), 2)
+        self.assertEqual(module.operands[0].operand_objects.value, "Nuclei")
+#       self.assertEqual(module.operands[1].operand_objects.value, "Cells")

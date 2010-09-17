@@ -42,7 +42,7 @@ class TCPClient {
         assert argv.length == 1;
         System.out.println("Socket to "+argv[0]);
         Socket clientSocket = new Socket("localhost", Integer.valueOf(argv[0]).intValue());
-        
+
         DataOutputStream to_server = new DataOutputStream(clientSocket.getOutputStream());
         DataInputStream from_server = new DataInputStream(clientSocket.getInputStream());
 
@@ -53,7 +53,7 @@ class TCPClient {
             System.out.println("<CLIENT> reading from socket...");
             int msg_size = from_server.readInt();
             System.out.println("<CLIENT> message size: "+msg_size);
-    
+            
             byte[] cmd = new byte[8];
             result = from_server.read(cmd, 0, 8);
             String inp = new String(cmd);
@@ -148,7 +148,6 @@ class InterProcessIJBridge {
             w = in.readInt();
             h = in.readInt();
             byte[] pixels = new byte[w * h];
-            System.out.println(w + " " + h);
             in.readFully(pixels, 0, w * h);
             in.close();
             

@@ -147,8 +147,10 @@ def create_or_find(parent=None, id=-1, title="",
 def close_all(parent):
     windows = [x for x in parent.GetChildren()
                if isinstance(x, CPFigureFrame)]
+        
     for window in windows:
-        window.Destroy()
+        window.on_close(None)
+        
     reset_cpfigure_position()
     try:
         from imagej.windowmanager import close_all_windows

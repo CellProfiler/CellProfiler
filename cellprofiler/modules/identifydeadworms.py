@@ -21,6 +21,8 @@ in pixels along the short axis of the diamond and should be less than
 the width of the worm.
 '''
 
+__version__ = "$Revision$"
+
 import numpy as np
 from scipy.ndimage import binary_erosion, binary_fill_holes
 from scipy.ndimage import mean as mean_of_labels
@@ -223,7 +225,7 @@ class IdentifyDeadWorms(cpm.CPModule):
         object_name = self.object_name.value
         m.add_measurement(object_name, I.M_LOCATION_CENTER_X, center_x)
         m.add_measurement(object_name, I.M_LOCATION_CENTER_Y, center_y)
-        m.add_measurement(object_name, M_ANGLE, angles)
+        m.add_measurement(object_name, M_ANGLE, angles * 180 / np.pi)
         m.add_measurement(object_name, I.M_NUMBER_OBJECT_NUMBER, label_indexes)
         m.add_image_measurement(I.FF_COUNT % object_name, nlabels)
         #

@@ -451,6 +451,7 @@ def get_recent_files(category=""):
 
 def add_recent_file(filename, category=""):
     recent_files = get_recent_files(category)
+    filename = os.path.abspath(filename)
     if filename in recent_files:
         recent_files.remove(filename)
     recent_files.insert(0, filename)

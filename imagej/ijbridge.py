@@ -10,18 +10,19 @@ from subprocess import Popen, PIPE, STDOUT
 import shlex
 import socket
 import cellprofiler.utilities.jutil as J
+import cellprofiler.preferences as cpprefs
 import imagej.macros as ijmacros
 import imagej.windowmanager as ijwm
 import imagej.imageprocessor as ijiproc
 import imagej.imageplus as ijip
 import struct
-
+from cellprofiler.utilities.singleton import Singleton
 
 if hasattr(sys, 'frozen'):
-    __root_path = os.path.split(os.path.abspath(sys.argv[0]))[0]
+   __root_path = os.path.split(os.path.abspath(sys.argv[0]))[0]
 else:
-    __root_path = os.path.abspath(os.path.split(__file__)[0])
-    __root_path = os.path.split(__root_path)[0]
+   __root_path = os.path.abspath(os.path.split(__file__)[0])
+   __root_path = os.path.split(__root_path)[0]
 __path = os.path.join(__root_path, 'bioformats')
 __imagej_path = os.path.join(__root_path, 'imagej')
 __loci_jar = os.path.join(__path, "loci_tools.jar")
@@ -33,18 +34,28 @@ __class_path = os.pathsep.join((__loci_jar, __ij_jar, __imglib_jar,
                                 __javacl_jar, __imagej_path))
 
 if sys.platform.startswith("win") and not hasattr(sys, 'frozen'):
-    # Have to find tools.jar
-    from cellprofiler.utilities.setup import find_jdk
-    jdk_path = find_jdk()
-    if jdk_path is not None:
-        __tools_jar = os.path.join(jdk_path, "lib","tools.jar")
-        __class_path += os.pathsep + __tools_jar
-    else:
-        sys.stderr.write("Warning: Failed to find tools.jar\n")
+   # Have to find tools.jar
+   from cellprofiler.utilities.setup import find_jdk
+   jdk_path = find_jdk()
+   if jdk_path is not None:
+      __tools_jar = os.path.join(jdk_path, "lib","tools.jar")
+      __class_path += os.pathsep + __tools_jar
+   else:
+      sys.stderr.write("Warning: Failed to find tools.jar\n")
 if os.environ.has_key('CLASSPATH'):
    __class_path += os.pathsep + os.environ['CLASSPATH']
 os.environ['CLASSPATH'] = __class_path
 
+
+
+def get_ij_bridge():
+   '''Returns an an ijbridge that will work given the platform and preferences
+   '''
+   if sys.platform.startswith("win") or cpprefs.get_headless():
+      return in_proc_ij_bridge.getInstance()
+   else:
+      return inter_proc_ij_bridge.getInstance()
+   
 
 class ij_bridge(object):
    '''This class provides a high-level interface for running ImageJ from
@@ -79,16 +90,17 @@ class ij_bridge(object):
       raise NotImplementedError
 
 
-class in_proc_ij_bridge(ij_bridge):
+class in_proc_ij_bridge(ij_bridge, Singleton):
    '''Interface for running ImageJ in a the same process as CellProfiler.
    '''
-##   def __init__(self):
-##      J.attach()
-##   def __del__(self):
-##      ''' call del on this object to detach from javabridge. If the object is
-##      declared locally the javabridge will be detached once the program leaves 
-##      it's scope'''
-##      J.detach()
+   def __init__(self):
+      J.attach()
+      
+   def __del__(self):
+      ''' call del on this object to detach from javabridge. If the object is
+      declared locally the javabridge will be detached once the program leaves 
+      it's scope'''
+      J.detach()
       
    def inject_image(self, pixels, name=''):
       '''inject an image into ImageJ for processing'''
@@ -160,11 +172,13 @@ def communicate(socket, cmd, data=None):
    msg = read_nbytes(socket, 8)
    print '<SERVER> response to %s:%s'%(cmd, msg)
    # Get any attached data
-   data = read_nbytes(socket, size)
+   data = ''
+   if size > 0:
+      data = read_nbytes(socket, size)
    return msg, data
    
 
-class inter_proc_ij_bridge(ij_bridge):
+class inter_proc_ij_bridge(ij_bridge, Singleton):
    '''Interface for running ImageJ in a separate process from CellProfiler.
    '''
    # We use a limited vocabulary of command names to talk to ImageJ.
@@ -204,7 +218,7 @@ class inter_proc_ij_bridge(ij_bridge):
       h = struct.unpack('>i4',data[4:8])[0]
       pixels = data[8:]
       if msg.startswith('success'):
-         im = PILImage.fromstring('L', (w,h), pixels)
+         im = PILImage.fromstring('P', (w,h), pixels)
 ##         im.show()
          return pil_to_np(im)
       else:
@@ -289,7 +303,7 @@ def pil_to_np( pilImage ):
      
 if __name__ == '__main__':
    from time import time
-   ipb = inter_proc_ij_bridge()
+   ipb = inter_proc_ij_bridge.getInstance()
 
    pixels = np.random.standard_normal((400,600))
    pixels[100:300,200:400] = 0

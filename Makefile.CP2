@@ -573,7 +573,7 @@ distclean:				clean
 
 
 findlibjvm.class:
-					wget -c -t 2 https://svn.broadinstitute.org/CellProfiler/trunk/CellProfiler/cellprofiler/utilities/$@
+					wget -c -t 2 --no-check-certificate https://svn.broadinstitute.org/CellProfiler/trunk/CellProfiler/cellprofiler/utilities/$@
 
 $(LAPACKVERSION).tgz:
 					wget -c -t 2 "http://www.netlib.org/lapack/$@"

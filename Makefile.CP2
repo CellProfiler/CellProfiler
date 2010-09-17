@@ -1,12 +1,22 @@
 #
 # Makefile for CellProfiler 2 prerequisites
 #
-# 0.0.3 - 2010.09.07 (c) Mario Emmenlauer, Biozentrum Basel
+# 0.0.5 - 2010.09.14: Mario Emmenlauer
+#         - added SWIG to compile list
+#         - commented unneeded wxGTK package
+#         - small layout changes (mostly whitespace only)
+# 0.0.4 - 2010.09.13: Lee Kamentsky (leek@broadinstitute.org)
+#         - fixed issue: explicitly enable gfortran for NumPy and SciPy
+#         - fixed issue: enable wxPython monolitic build
+#       - 2010.09.13: Mario Emmenlauer
+#         - added sanity checks for Makefile prerequisites
+#         - added more documentation, removed outdated package versions
+# 0.0.3 - 2010.09.07: Mario Emmenlauer
 #         - Updated many packages to newest release
-#         - added source pointer URL
-# 0.0.2 - 2010.07.12 (c) Mario Emmenlauer, Biozentrum Basel
+#         - added source pointer URL for simpler updates
+# 0.0.2 - 2010.07.12: Mario Emmenlauer
 #         - Added missing compile flag --enable-graphics_ctx to wxPython compile
-# 0.0.1 - 2010.07.12 (c) Mario Emmenlauer, Biozentrum Basel, mario.emmenlauer@unibas.ch
+# 0.0.1 - 2010.07.12: Mario Emmenlauer (mario.emmenlauer@unibas.ch)
 #         - Initial revision
 #
 # See http://cellprofiler.org for more information on CellProfiler
@@ -18,24 +28,50 @@
 #
 # PREREQUISITES:
 # - development files for GTK+:
-#   RedHat: yum install gtk2-devel
+#   RedHat:        yum install gtk2-devel
+#   Debian/Ubuntu: aptitude install libgtk2.0-dev
 #
 # VARIABLES:
 # - set TGTDIR to where you want to install your python25 directory
 #
 # USAGE:
 # - supply variables that you want to set on the command line, i.e.:
-#   make TGTDIR="$HOME/CP2-Test" ...
+#   make TGTDIR="$HOME/usr/CellProfiler2" ...
 # - invoke 'make' with the name of this Makefile, i.e.:
 #   make -f Makefile.CP2
 #
+# After installation, you need to run the following every time
+# you want to start CellProfiler (or place it in your SHELL
+# startup scripts, i.e. ~/.bashrc for bash):
+#   CP2DEST="$HOME/usr/CellProfiler2"
+#   export PATH="${CP2DEST}/bin:${PATH}"
+#   export LD_LIBRARY_PATH="${CP2DEST}/lib:${CP2DEST}/lib64:${LD_LIBRARY_PATH}"
+#   export PYTHONPATH="${CP2DEST}/lib/python2.5/site-packages:${PYTHONPATH}"
+#   export JAVA_HOME="<your path to JDK or JRE>"
+#
+# MAKE_FLAGS is used for "make" compilation. -jN specifies N parallel
+# build jobs. Change or add other parameters as you like:
 MAKE_FLAGS				+= -j4
 SRCDIR					?= $(PWD)
 TGTDIR					?= $(HOME)/usr/CellProfiler2
 
+# Set DISABLE_PRECHECKS to "YES" (case sensitive!) to explicitly
+# disable prechecks. Disabling is not recommended. It may lead
+# to failed builds because of missing/wrong dependencies.
+DISABLE_PRECHECKS			?= NO
+
+# Versions and prefixes of packages:
+CELLPROFILERPREFIX			?= $(TGTDIR)
+CELLPROFILER_CO_ARGS			?= -rHEAD
+#CELLPROFILER_CO_ARGS			?= -r10415
+CELLPROFILER_CO_URL			= https://svn.broadinstitute.org/CellProfiler/trunk/CellProfiler
+
 PYTHONVERSION				= Python-2.5.5
 PYTHONPREFIX				?= $(TGTDIR)
 SITEPKGPREFIX				= $(PYTHONPREFIX)/lib/python2.5/site-packages
+SWIGVERSION				= swig-2.0.0
+SWIGPREFIX				?= $(TGTDIR)
+SWIGURL					= http://www.swig.org/download.html
 PYPIVERSION				= setuptools-0.6c11-py2.5.egg
 PYPIPREFIX				?= $(TGTDIR)
 PILVERSION				= Imaging-1.1.7
@@ -46,8 +82,8 @@ MYSQLPYTHONURL				= http://sourceforge.net/projects/mysql-python/
 PYTHONNOSEVERSION			= nose-0.11.3
 PYTHONNOSEURL				= http://code.google.com/p/python-nose/downloads/list
 DECORATORVERSION			= decorator-3.2.0
-#CYTHONVERSION				= Cython-0.12.1
-CYTHONVERSION				= Cython-0.13
+CYTHONVERSION				= Cython-0.12.1
+#CYTHONVERSION				= Cython-0.13
 CYTHONPREFIX				?= $(TGTDIR)
 CYTHONURL				= http://www.cython.org/#download
 ATLASVERSION				= atlas3.9.25
@@ -58,11 +94,9 @@ LAPACKVERSION				= lapack-3.1.1
 LAPACKURL				= http://www.netlib.org/lapack/
 FFTWVERSION				= fftw-3.2.2
 FFTWPREFIX				?= $(TGTDIR)
-#NUMPYVERSION				= numpy-1.4.1
 NUMPYVERSION				= numpy-1.5.0
 NUMPYPREFIX				?= $(TGTDIR)
 NUMPYURL				= http://sourceforge.net/projects/numpy/files/
-#SCIPYVERSION				= scipy-0.8.0b1
 SCIPYVERSION				= scipy-0.8.0
 SCIPYPREFIX				?= $(TGTDIR)
 SCIPYURL				= http://sourceforge.net/projects/scipy/files/
@@ -74,7 +108,6 @@ UFCONFIGVERSION				= UFconfig-3.5.0
 UFCONFIGURL				= http://www.cise.ufl.edu/research/sparse/UFconfig/
 AMDVERSION				= AMD-2.2.1
 AMDURL					= http://www.cise.ufl.edu/research/sparse/amd/current/
-#MATPLOTLIBVERSION			= matplotlib-0.99.3
 MATPLOTLIBVERSION			= matplotlib-1.0.0
 MATPLOTLIBURL				= http://sourceforge.net/projects/matplotlib/files/matplotlib/matplotlib-1.0/
 WXGTKVERSION				= wxGTK-2.8.11
@@ -92,15 +125,97 @@ TIFFPREFIX				?= $(TGTDIR)
 
 
 default:				all
-all:					cellprofiler
+all:					precheck cellprofiler
 
 
+
+
+#
+# Here we have all the tests for prerequisites of this Makefile
+# Add as many (useful) tests as you like, the more the better.
+# They just need to perform quickly!
+# NOTE: These prechecks where kindly provided by the XuvTools
+# project at http://xuvtools.org/
+#
+precheck-java:                          findlibjvm.class
+					@if test "$(DISABLE_PRECHECKS)" != "YES" ; then \
+						if test -z "$(JAVA_HOME)" ; then \
+							echo "Could not detect JAVA_HOME variable. Please export JAVA_HOME from" && \
+							echo "your SHELL to the path of the JRE, and add it to LD_LIBRARY_PATH." && \
+							false ; \
+						elif ! echo "$(LD_LIBRARY_PATH)"|grep -qs "$(JAVA_HOME)" ; then \
+							echo "It seems JAVA_HOME is missing from the LD_LIBRARY_PATH variable." && \
+							echo "Please read the setup guide on how to fix that." && \
+							false ; \
+						fi && \
+							find `java findlibjvm` -maxdepth 1 -name libjvm.so -exec echo "found" \; 2>/dev/zero | grep -qs "^found" || { \
+							echo "Could not find 'libjvm.so' in the LD_LIBRARY_PATH." && \
+							echo "Please read the setup guide on how to fix that." && \
+							false ; \
+						} ; \
+					fi
+
+precheck-env:
+					@if test -z "$(HOSTTYPE)" && test "$(DISABLE_PRECHECKS)" != "YES" ; then \
+						echo "Could not detect HOSTTYPE variable. Please export HOSTTYPE from" && \
+						echo "your SHELL to set the default architecture of the build." && \
+						false ; \
+					fi
+
+precheck-svn:
+					@if ! svn --version 2>&1|grep -iqs '^svn.* [1-9]\.[4-9]\.[0-9]' && test "$(DISABLE_PRECHECKS)" != "YES" ; then \
+						echo "Could not detect a recent version of Subversion (>= 1.4.0)," && \
+						echo "please compile or install Subversion/SVN." && \
+						echo "You can also try to install SVN for your Linux distribution." && \
+						false ; \
+					fi
+
+precheck-gcc:
+					@if ! gcc --version 2>/dev/zero|grep -iqs '^gcc.* [4-9]\.[2-9]\.[0-9]' && test "$(DISABLE_PRECHECKS)" != "YES" ; then \
+						echo "Could not detect a recent GCC C compiler version (>=4.2.0)," && \
+						echo "it is very unlikely that you will be able to compile fast code!" && \
+						false ; \
+					fi
+
+precheck-gpp:
+					@if ! g++ --version 2>/dev/zero|grep -iqs '^g++.* [4-9]\.[2-9]\.[0-9]' && test "$(DISABLE_PRECHECKS)" != "YES" ; then \
+						echo "Could not detect a recent GCC C++ compiler version (>=4.2.0)," && \
+						echo "it is very unlikely that you will be able to compile fast code!" && \
+						false ; \
+					fi
+
+precheck-gfortran:
+					@if ! gfortran --version 2>/dev/zero|grep -iqs '^GNU Fortran.* [4-9]\.[2-9]\.[0-9]' && test "$(DISABLE_PRECHECKS)" != "YES" ; then \
+						echo "Could not detect a recent GCC Fortran 95 compiler version (>=4.2.0)," && \
+						echo "it is very unlikely that you will be able to compile fast code!" && \
+						false ; \
+					fi
+
+precheck-success:
+					@echo "All pre-checks executed successfully."
+
+
+precheck:				precheck-java precheck-env precheck-svn precheck-gcc precheck-gpp precheck-gfortran precheck-success
+.PHONY:					precheck-java precheck-env precheck-svn precheck-gcc precheck-gpp precheck-gfortran precheck-success precheck clean update
+
+
+
+
+#
+# Here come the actual compile instructions for CP2 prerequisites,
+# package by package. There is no strict ordering, but it was coded
+# top-to-bottom, so you may assume that later specified packages
+# depend on earlier specified packages.
+#
 python:					$(PYTHONPREFIX)/bin/python
-$(PYTHONPREFIX)/bin/python:		$(PYTHONVERSION).tar.bz2
+$(PYTHONPREFIX)/bin/python:		$(PYTHONVERSION).tar.bz2 zlib
 					rm -fr "$(PYTHONVERSION)" && \
 					tar -xjf $< && \
 					cd "$(PYTHONVERSION)" && \
-					./configure --prefix="$(PYTHONPREFIX)" && \
+					export LD_LIBRARY_PATH="$(PYTHONPREFIX)/lib:$(LD_LIBRARY_PATH)" && \
+					export C_INCLUDE_PATH="$(PYTHONPREFIX)/include:$(C_INCLUDE_PATH)" && \
+					./configure \
+						--prefix="$(PYTHONPREFIX)" && \
 					$(MAKE) $(MAKEFLAGS) $(MAKE_FLAGS) && \
 					$(MAKE) $(MAKEFLAGS) -j1 install
 
@@ -196,7 +311,10 @@ $(FFTWPREFIX)/lib/libfftw3.la:		$(FFTWVERSION).tar.gz
 					rm -fr "$(FFTWVERSION)" && \
 					tar -xzf $< && \
 					cd "$(FFTWVERSION)" && \
-					./configure --enable-sse2 --enable-shared --prefix="$(FFTWPREFIX)" && \
+					./configure \
+						--enable-sse2 \
+						--enable-shared \
+						--prefix="$(FFTWPREFIX)" && \
 					$(MAKE) $(MAKEFLAGS) $(MAKE_FLAGS) && \
 					$(MAKE) $(MAKEFLAGS) -j1 install
 
@@ -204,7 +322,10 @@ $(FFTWPREFIX)/lib/libfftw3l.la:		$(FFTWVERSION).tar.gz
 					rm -fr "$(FFTWVERSION)" && \
 					tar -xzf $< && \
 					cd "$(FFTWVERSION)" && \
-					./configure --enable-long-double --enable-shared --prefix="$(FFTWPREFIX)" && \
+					./configure \
+						--enable-long-double \
+						--enable-shared \
+						--prefix="$(FFTWPREFIX)" && \
 					$(MAKE) $(MAKEFLAGS) $(MAKE_FLAGS) && \
 					$(MAKE) $(MAKEFLAGS) -j1 install
 
@@ -212,7 +333,11 @@ $(FFTWPREFIX)/lib/libfftw3f.la:		$(FFTWVERSION).tar.gz $(FFTWPREFIX)/lib/libfftw
 					rm -fr "$(FFTWVERSION)" && \
 					tar -xzf $< && \
 					cd "$(FFTWVERSION)" && \
-					./configure --enable-float --enable-sse --enable-shared --prefix="$(FFTWPREFIX)" && \
+					./configure \
+						--enable-float \
+						--enable-sse \
+						--enable-shared \
+						--prefix="$(FFTWPREFIX)" && \
 					$(MAKE) $(MAKEFLAGS) $(MAKE_FLAGS) && \
 					$(MAKE) $(MAKEFLAGS) -j1 install
 
@@ -240,8 +365,17 @@ $(NUMPYPREFIX)/lib/python2.5/site-packages/$(NUMPYVERSION)-py2.5.egg-info:	$(NUM
 					$(PYTHONPREFIX)/bin/python setup.py build --fcompiler=gfortran && \
 					$(PYTHONPREFIX)/bin/python setup.py install
 
+swig:					$(PYTHONPREFIX)/bin/swig
+$(PYTHONPREFIX)/bin/swig:		$(SWIGVERSION).tar.gz
+					rm -fr $(SWIGVERSION) && \
+					tar -zxf $(SWIGVERSION).tar.gz && \
+					cd "$(SWIGVERSION)" && \
+					./configure --prefix="$(SWIGPREFIX)" && \
+					$(MAKE) $(MAKEFLAGS) $(MAKE_FLAGS) && \
+					$(MAKE) $(MAKEFLAGS) -j1 install
+
 scipy:					$(SCIPYPREFIX)/lib/python2.5/site-packages/$(SCIPYVERSION)-py2.5.egg-info
-$(SCIPYPREFIX)/lib/python2.5/site-packages/$(SCIPYVERSION)-py2.5.egg-info:	$(SCIPYVERSION).tar.gz $(PYTHONPREFIX)/bin/python $(UMFPACKPREFIX)/lib/libumfpack.a $(ATLASPREFIX)/lib/libatlas.a $(NUMPYPREFIX)/lib/python2.5/site-packages/$(NUMPYVERSION)-py2.5.egg-info $(SITEPKGPREFIX)/easy-install.pth
+$(SCIPYPREFIX)/lib/python2.5/site-packages/$(SCIPYVERSION)-py2.5.egg-info:	$(SCIPYVERSION).tar.gz $(PYTHONPREFIX)/bin/python $(UMFPACKPREFIX)/lib/libumfpack.a $(ATLASPREFIX)/lib/libatlas.a $(NUMPYPREFIX)/lib/python2.5/site-packages/$(NUMPYVERSION)-py2.5.egg-info $(SITEPKGPREFIX)/easy-install.pth $(PYTHONPREFIX)/bin/swig
 					rm -fr $(SCIPYVERSION) && \
 					tar -zxf $(SCIPYVERSION).tar.gz && \
 					cd "$(SCIPYVERSION)" && \
@@ -251,7 +385,7 @@ $(SCIPYPREFIX)/lib/python2.5/site-packages/$(SCIPYVERSION)-py2.5.egg-info:	$(SCI
 					$(PYTHONPREFIX)/bin/python setup.py install
 
 matplotlib:				$(SITEPKGPREFIX)/$(MATPLOTLIBVERSION)-py2.5.egg-info
-$(SITEPKGPREFIX)/$(MATPLOTLIBVERSION)-py2.5.egg-info:	$(MATPLOTLIBVERSION).tar.gz $(NUMPYPREFIX)/lib/python2.5/site-packages/$(NUMPYVERSION)-py2.5.egg-info $(SITEPKGPREFIX)/wxPython_common-$(WXPYTHONVERSION)-py2.5.egg-info
+$(SITEPKGPREFIX)/$(MATPLOTLIBVERSION)-py2.5.egg-info:	$(MATPLOTLIBVERSION).tar.gz $(NUMPYPREFIX)/lib/python2.5/site-packages/$(NUMPYVERSION)-py2.5.egg-info $(WXPYTHONPREFIX)/bin/pywxrc
 					rm -fr $(MATPLOTLIBVERSION) && \
 					tar -zxf $< && \
 					cd "$(MATPLOTLIBVERSION)" && \
@@ -285,26 +419,30 @@ $(SITEPKGPREFIX)/MySQL_python-$(MYSQLPYTHONVERSION)-py2.5-linux-x86_64.egg:	MySQ
 					$(PYTHONPREFIX)/bin/python setup.py build && \
 					$(PYTHONPREFIX)/bin/python setup.py install
 
+# wxGTK is unneeded, its completely contained in
+# wxPython (and built before the Python egg).
 #wxgtk:					$(WXGTKPREFIX)/bin/wx-config
 #$(WXGTKPREFIX)/bin/wx-config:		$(WXGTKVERSION).tar.gz
-wxgtk:					$(WXGTKVERSION).tar.gz
-					rm -fr $(WXGTKVERSION) && \
-					tar -zxf $< && \
-					rm -fr $(WXGTKVERSION)-$(HOSTTYPE) && \
-					mkdir "$(WXGTKVERSION)-$(HOSTTYPE)" && \
-					cd "$(WXGTKVERSION)-$(HOSTTYPE)" && \
-					export PATH="$(PYTHONPREFIX)/bin:$(PATH)" && \
-					export LD_LIBRARY_PATH="$(PYTHONPREFIX)/lib:$(LD_LIBRARY_PATH)" && \
-					../$(WXGTKVERSION)/configure \
-						--with-gtk \
-						--enable-monolithic \
-						--prefix=$(WXGTKPREFIX) && \
-					$(MAKE) $(MAKE_FLAGS) && \
-					$(MAKE) -j1 install
+#					rm -fr $(WXGTKVERSION) && \
+#					tar -zxf $< && \
+#					rm -fr $(WXGTKVERSION)-$(HOSTTYPE) && \
+#					mkdir "$(WXGTKVERSION)-$(HOSTTYPE)" && \
+#					cd "$(WXGTKVERSION)-$(HOSTTYPE)" && \
+#					export PATH="$(PYTHONPREFIX)/bin:$(PATH)" && \
+#					export LD_LIBRARY_PATH="$(PYTHONPREFIX)/lib:$(LD_LIBRARY_PATH)" && \
+#					../$(WXGTKVERSION)/configure \
+#						--with-gtk \
+#						--with-opengl \
+#						--enable-graphics_ctx \
+#						--enable-unicode \
+#						--disable-sound \
+#						--enable-monolithic \
+#						--prefix="$(WXGTKPREFIX)" && \
+#					$(MAKE) $(MAKE_FLAGS) && \
+#					$(MAKE) -j1 install
 
-wxwidgets:				wxpython
-wxpython:				$(SITEPKGPREFIX)/wxPython_common-$(WXPYTHONVERSION)-py2.5.egg-info
-$(SITEPKGPREFIX)/wxPython_common-$(WXPYTHONVERSION)-py2.5.egg-info:	wxPython-src-$(WXPYTHONVERSION).tar.bz2 wxgtk
+wxpython:				$(WXPYTHONPREFIX)/bin/pywxrc
+$(WXPYTHONPREFIX)/bin/pywxrc:		wxPython-src-$(WXPYTHONVERSION).tar.bz2 $(PYTHONPREFIX)/bin/python
 					rm -fr wxPython-src-$(WXPYTHONVERSION) && \
 					tar -xjf $< && \
 					rm -fr wxPython-src-$(WXPYTHONVERSION)-$(HOSTTYPE) && \
@@ -319,7 +457,7 @@ $(SITEPKGPREFIX)/wxPython_common-$(WXPYTHONVERSION)-py2.5.egg-info:	wxPython-src
 						--enable-unicode \
 						--disable-sound \
 						--enable-monolithic \
-						--prefix=$(WXPYTHONPREFIX) && \
+						--prefix="$(WXPYTHONPREFIX)" && \
 					$(MAKE) $(MAKE_FLAGS) && \
 					$(MAKE) $(MAKE_FLAGS) -C contrib/src/gizmos && \
 					$(MAKE) $(MAKE_FLAGS) -C contrib/src/stc && \
@@ -390,15 +528,17 @@ $(TIFFPREFIX)/lib/libtiff.la:		$(TIFFVERSION).tar.gz $(ZLIBPREFIX)/lib/libz.a $(
 
 cp:					cellprofiler
 cellprofiler:				$(TGTDIR)/CellProfiler/CellProfiler.py
-$(TGTDIR)/CellProfiler/CellProfiler.py:	$(CYTHONPREFIX)/bin/cython $(SCIPYPREFIX)/lib/python2.5/site-packages/$(SCIPYVERSION)-py2.5.egg-info $(SITEPKGPREFIX)/wxPython_common-$(WXPYTHONVERSION)-py2.5.egg-info $(SITEPKGPREFIX)/$(MATPLOTLIBVERSION)-py2.5.egg-info $(SITEPKGPREFIX)/$(DECORATORVERSION)-py2.5.egg $(SITEPKGPREFIX)/easy-install.pth $(SITEPKGPREFIX)/MySQL_python-$(MYSQLPYTHONVERSION)-py2.5-linux-x86_64.egg $(SITEPKGPREFIX)/$(PYTHONNOSEVERSION)-py2.5.egg $(PYTHONPREFIX)/bin/pilfile.py
-					cd "$(TGTDIR)/" && \
+$(TGTDIR)/CellProfiler/CellProfiler.py:	$(CYTHONPREFIX)/bin/cython $(SCIPYPREFIX)/lib/python2.5/site-packages/$(SCIPYVERSION)-py2.5.egg-info $(WXPYTHONPREFIX)/bin/pywxrc $(SITEPKGPREFIX)/$(MATPLOTLIBVERSION)-py2.5.egg-info $(SITEPKGPREFIX)/$(DECORATORVERSION)-py2.5.egg $(SITEPKGPREFIX)/easy-install.pth $(SITEPKGPREFIX)/MySQL_python-$(MYSQLPYTHONVERSION)-py2.5-linux-x86_64.egg $(SITEPKGPREFIX)/$(PYTHONNOSEVERSION)-py2.5.egg $(PYTHONPREFIX)/bin/pilfile.py
+					cd "$(CELLPROFILERPREFIX)/" && \
 					rm -fr "./CellProfiler" && \
-					svn co "https://svn.broadinstitute.org/CellProfiler/trunk/CellProfiler" ./CellProfiler && \
+					svn co $(CELLPROFILER_CO_ARGS) "$(CELLPROFILER_CO_URL)" ./CellProfiler && \
 					cd ./CellProfiler && \
 					export PATH="$(PYTHONPREFIX)/bin:$(PATH)" && \
 					export LD_LIBRARY_PATH="$(PYTHONPREFIX)/lib:$(LD_LIBRARY_PATH)" && \
-					$(PYTHONPREFIX)/bin/python CellProfiler.py
+					$(PYTHONPREFIX)/bin/python ./CellProfiler.py --build-and-exit
 
+# instead of removing CellProfiler completely, we could also
+# clean up the SVN changes (and unknown files) like this:
 #					svn status --no-ignore|grep "^[I?]"|grep -v "command\$"|cut -c8-|while read I ; do rm -fr "$I" ; done
 #
 
@@ -424,6 +564,7 @@ clean:
 					rm -fr $(DECORATORVERSION)
 					rm -fr $(PYTHONNOSEVERSION)
 					rm -fr MySQL-python-$(MYSQLPYTHONVERSION)
+					rm -fr $(SWIGVERSION)
 
 
 distclean:				clean
@@ -431,7 +572,8 @@ distclean:				clean
 					rm -fr wxPython-src-$(WXPYTHONVERSION)-$(HOSTTYPE)
 
 
-
+findlibjvm.class:
+					wget -c -t 2 https://svn.broadinstitute.org/CellProfiler/trunk/CellProfiler/cellprofiler/utilities/$@
 
 $(LAPACKVERSION).tgz:
 					wget -c -t 2 "http://www.netlib.org/lapack/$@"
@@ -471,7 +613,7 @@ $(WXGTKVERSION).tar.gz:
 wxPython-src-$(WXPYTHONVERSION).tar.bz2:
 					wget -c -t 2 "http://downloads.sourceforge.net/wxpython/$@"
 
-$(FFTWVERSION).tar.gz:			
+$(FFTWVERSION).tar.gz:
 					wget -c -t 2 "ftp://ftp.fftw.org/pub/fftw/$@"
 
 $(PYPIVERSION):
@@ -500,3 +642,7 @@ $(TIFFVERSION).tar.gz:
 
 $(CYTHONVERSION).tar.gz:
 					wget -c -t 2 "http://pypi.python.org/packages/source/C/Cython/$@"
+
+$(SWIGVERSION).tar.gz:
+					wget -c -t 2 "http://prdownloads.sourceforge.net/swig/$@"
+

@@ -255,7 +255,7 @@ class inter_proc_ij_bridge(ij_bridge, Singleton):
 ##      os.kill(self.ijproc.pid, 9)
       
 
-def np2pil(imdata):
+def np_to_pil(imdata):
    '''Convert np image data to PIL Image'''
    if len(imdata.shape) == 2:
       buf = np.dstack([imdata, imdata, imdata])

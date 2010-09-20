@@ -121,6 +121,57 @@ class TestMeasurements(unittest.TestCase):
         x = cellprofiler.measurements.Measurements()
         x.add_measurement("Image", "Feature","Value" )
         self.assertTrue(x.has_current_measurements('Image', 'Feature'))
+    
+    def test_06_00_00_dont_apply_metadata(self):
+        x = cellprofiler.measurements.Measurements()
+        value = "P12345"
+        expected = "pre_post"
+        x.add_measurement("Image", "Metadata_Plate", value)
+        pattern = "pre_post"
+        self.assertEqual(x.apply_metadata(pattern), expected)
+        
+    def test_06_00_01_dont_apply_metadata_with_slash(self):
+        x = cellprofiler.measurements.Measurements()
+        value = "P12345"
+        expected = "pre\\post"
+        x.add_measurement("Image", "Metadata_Plate", value)
+        pattern = "pre\\\\post"
+        self.assertEqual(x.apply_metadata(pattern), expected)
+        
+    def test_06_01_apply_metadata(self):
+        x = cellprofiler.measurements.Measurements()
+        value = "P12345"
+        expected = "pre_"+value+"_post"
+        x.add_measurement("Image", "Metadata_Plate", value)
+        pattern = r"pre_\g<Plate>_post"
+        self.assertEqual(x.apply_metadata(pattern), expected)
+        
+    def test_06_02_apply_metadata_with_slash(self):
+        x = cellprofiler.measurements.Measurements()
+        value = "P12345"
+        expected = "\\"+value+"_post"
+        x.add_measurement("Image", "Metadata_Plate", value)
+        pattern = r"\\\g<Plate>_post"
+        self.assertEqual(x.apply_metadata(pattern), expected)
+        
+    def test_06_03_apply_metadata_with_two_slashes(self):
+        '''Regression test of img-1144'''
+        x = cellprofiler.measurements.Measurements()
+        plate = "P12345"
+        well = "A01"
+        expected = "\\"+plate+"\\"+well
+        x.add_measurement("Image", "Metadata_Plate", plate)
+        x.add_measurement("Image", "Metadata_Well", well)
+        pattern = r"\\\g<Plate>\\\g<Well>"
+        self.assertEqual(x.apply_metadata(pattern), expected)
+        
+    def test_06_04_apply_metadata_when_user_messes_with_your_head(self):
+        x = cellprofiler.measurements.Measurements()
+        value = "P12345"
+        expected = r"\g<Plate>"
+        x.add_measurement("Image", "Metadata_Plate", value)
+        pattern = r"\\g<Plate>"
+        self.assertEqual(x.apply_metadata(pattern), expected)
 
 if __name__ == "__main__":
     unittest.main()

@@ -386,27 +386,24 @@ class Measurements(object):
         """
         if image_set_index == None:
             image_set_index = self.image_set_index
-        result = ''
-        while True:
-            # Replace double \\ with \
-            m = re.search('\\\\\\\\', pattern)
-            if m:
-                result += pattern[:m.start()]+'\\'
-                pattern = pattern[m.end():]
-                continue
+        result_pieces = []
+        double_backquote = "\\\\"
+        single_backquote = "\\"
+        for piece in pattern.split(double_backquote):
             # Replace a tag
-            m = re.search('\\(\\?[<](.+?)[>]\\)', pattern)
+            m = re.search('\\(\\?[<](.+?)[>]\\)', piece)
             if not m:
-                m = re.search('\\\\g[<](.+?)[>]', pattern)
+                m = re.search('\\\\g[<](.+?)[>]', piece)
                 if not m:
-                    break
-            result += pattern[:m.start()]
+                    result_pieces.append(piece)
+                    continue
+            result = piece[:m.start()]
             measurement = 'Metadata_'+m.groups()[0]
             result += str(self.get_measurement("Image", measurement, 
                                                image_set_index))
-            pattern = pattern[m.end():]
-        result += pattern
-        return result
+            result += piece[m.end():]
+            result_pieces.append(result)
+        return single_backquote.join(result_pieces)
     
     def group_by_metadata(self, tags):
         """Return groupings of image sets with matching metadata tags

@@ -1577,6 +1577,9 @@ class Pipeline(object):
                       to add_measurement)
         third entry: the column data type (for instance, "varchar(255)" or
                      "float")
+        fourth entry (optional): attribute dictionary. This tags
+                     the column with attributes such as MCA_AVAILABLE_POST_GROUP
+                     (column values are only added in post_group).
         '''
         hash =  self.settings_hash()
         if hash != self.__measurement_column_hash:

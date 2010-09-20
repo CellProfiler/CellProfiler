@@ -1403,8 +1403,8 @@ class MeasurementMultiChoice(MultiChoice):
                 if id(setting) == id(self):
                     break
         columns = pipeline.get_measurement_columns(module)
-        self.set_choices([self.make_measurement_choice(object_name, feature)
-                          for object_name, feature, coltype in columns])
+        self.set_choices([self.make_measurement_choice(c[0], c[1])
+                          for c in columns])
         super(MeasurementMultiChoice, self).test_valid(pipeline)
         
 class DoSomething(Setting):

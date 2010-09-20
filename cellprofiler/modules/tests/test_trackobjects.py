@@ -716,57 +716,68 @@ TrackObjects:[module_num:1|svn_version:\'10373\'|variable_revision_number:4|show
         module.object_name.value = OBJECT_NAME
         module.tracking_method.value = T.TM_LAP
         module.model.value = T.M_BOTH
-        columns = module.get_measurement_columns(None)
-        # 1 for area
-        # 2, 2, 4 for the static model
-        # 4, 4, 16 for the velocity model
-        self.assertEqual(len(columns), len(T.F_ALL) + len(T.F_IMAGE_ALL) + 
-                         1 + 2 + 2 + 4 + 4 + 4+ 16)
-        kalman_features = [ 
-            T.kalman_feature(T.F_STATIC_MODEL, T.F_STATE, T.F_X),
-            T.kalman_feature(T.F_STATIC_MODEL, T.F_STATE, T.F_Y),
-            T.kalman_feature(T.F_VELOCITY_MODEL, T.F_STATE, T.F_X),
-            T.kalman_feature(T.F_VELOCITY_MODEL, T.F_STATE, T.F_Y),
-            T.kalman_feature(T.F_VELOCITY_MODEL, T.F_STATE, T.F_VX),
-            T.kalman_feature(T.F_VELOCITY_MODEL, T.F_STATE, T.F_VY),
-            T.kalman_feature(T.F_STATIC_MODEL, T.F_NOISE, T.F_X),
-            T.kalman_feature(T.F_STATIC_MODEL, T.F_NOISE, T.F_Y),
-            T.kalman_feature(T.F_VELOCITY_MODEL, T.F_NOISE, T.F_X),
-            T.kalman_feature(T.F_VELOCITY_MODEL, T.F_NOISE, T.F_Y),
-            T.kalman_feature(T.F_VELOCITY_MODEL, T.F_NOISE, T.F_VX),
-            T.kalman_feature(T.F_VELOCITY_MODEL, T.F_NOISE, T.F_VY),
-            T.kalman_feature(T.F_STATIC_MODEL, T.F_COV, T.F_X, T.F_X),
-            T.kalman_feature(T.F_STATIC_MODEL, T.F_COV, T.F_X, T.F_Y),
-            T.kalman_feature(T.F_STATIC_MODEL, T.F_COV, T.F_Y, T.F_X),
-            T.kalman_feature(T.F_STATIC_MODEL, T.F_COV, T.F_X, T.F_Y),
-            T.kalman_feature(T.F_VELOCITY_MODEL, T.F_COV, T.F_X, T.F_X),
-            T.kalman_feature(T.F_VELOCITY_MODEL, T.F_COV, T.F_X, T.F_Y),
-            T.kalman_feature(T.F_VELOCITY_MODEL, T.F_COV, T.F_X, T.F_VX),
-            T.kalman_feature(T.F_VELOCITY_MODEL, T.F_COV, T.F_X, T.F_VY),
-            T.kalman_feature(T.F_VELOCITY_MODEL, T.F_COV, T.F_Y, T.F_X),
-            T.kalman_feature(T.F_VELOCITY_MODEL, T.F_COV, T.F_Y, T.F_Y),
-            T.kalman_feature(T.F_VELOCITY_MODEL, T.F_COV, T.F_Y, T.F_VX),
-            T.kalman_feature(T.F_VELOCITY_MODEL, T.F_COV, T.F_Y, T.F_VY),
-            T.kalman_feature(T.F_VELOCITY_MODEL, T.F_COV, T.F_VX, T.F_X),
-            T.kalman_feature(T.F_VELOCITY_MODEL, T.F_COV, T.F_VX, T.F_Y),
-            T.kalman_feature(T.F_VELOCITY_MODEL, T.F_COV, T.F_VX, T.F_VX),
-            T.kalman_feature(T.F_VELOCITY_MODEL, T.F_COV, T.F_VX, T.F_VY),
-            T.kalman_feature(T.F_VELOCITY_MODEL, T.F_COV, T.F_VY, T.F_X),
-            T.kalman_feature(T.F_VELOCITY_MODEL, T.F_COV, T.F_VY, T.F_Y),
-            T.kalman_feature(T.F_VELOCITY_MODEL, T.F_COV, T.F_VY, T.F_VX),
-            T.kalman_feature(T.F_VELOCITY_MODEL, T.F_COV, T.F_VY, T.F_VY)]
-        for object_name, features in ((OBJECT_NAME, T.F_ALL + kalman_features),
-                                      (cpmeas.IMAGE, T.F_IMAGE_ALL)):
-            for feature in features:
-                if object_name == OBJECT_NAME:
-                    name = "_".join((T.F_PREFIX, feature))
-                else:
-                    name = "_".join((T.F_PREFIX, feature, 
-                                     OBJECT_NAME))
-                index = [column[1] for column in columns].index(name)
-                self.assertTrue(index != -1)
-                column = columns[index]
-                self.assertEqual(column[0], object_name)
+        for wants in (True, False):
+            module.wants_second_phase = wants
+            columns = module.get_measurement_columns(None)
+            # 1 for area
+            # 2, 2, 4 for the static model
+            # 4, 4, 16 for the velocity model
+            self.assertEqual(len(columns), len(T.F_ALL) + len(T.F_IMAGE_ALL) + 
+                             1 + 2 + 2 + 4 + 4 + 4+ 16)
+            kalman_features = [ 
+                T.kalman_feature(T.F_STATIC_MODEL, T.F_STATE, T.F_X),
+                T.kalman_feature(T.F_STATIC_MODEL, T.F_STATE, T.F_Y),
+                T.kalman_feature(T.F_VELOCITY_MODEL, T.F_STATE, T.F_X),
+                T.kalman_feature(T.F_VELOCITY_MODEL, T.F_STATE, T.F_Y),
+                T.kalman_feature(T.F_VELOCITY_MODEL, T.F_STATE, T.F_VX),
+                T.kalman_feature(T.F_VELOCITY_MODEL, T.F_STATE, T.F_VY),
+                T.kalman_feature(T.F_STATIC_MODEL, T.F_NOISE, T.F_X),
+                T.kalman_feature(T.F_STATIC_MODEL, T.F_NOISE, T.F_Y),
+                T.kalman_feature(T.F_VELOCITY_MODEL, T.F_NOISE, T.F_X),
+                T.kalman_feature(T.F_VELOCITY_MODEL, T.F_NOISE, T.F_Y),
+                T.kalman_feature(T.F_VELOCITY_MODEL, T.F_NOISE, T.F_VX),
+                T.kalman_feature(T.F_VELOCITY_MODEL, T.F_NOISE, T.F_VY),
+                T.kalman_feature(T.F_STATIC_MODEL, T.F_COV, T.F_X, T.F_X),
+                T.kalman_feature(T.F_STATIC_MODEL, T.F_COV, T.F_X, T.F_Y),
+                T.kalman_feature(T.F_STATIC_MODEL, T.F_COV, T.F_Y, T.F_X),
+                T.kalman_feature(T.F_STATIC_MODEL, T.F_COV, T.F_X, T.F_Y),
+                T.kalman_feature(T.F_VELOCITY_MODEL, T.F_COV, T.F_X, T.F_X),
+                T.kalman_feature(T.F_VELOCITY_MODEL, T.F_COV, T.F_X, T.F_Y),
+                T.kalman_feature(T.F_VELOCITY_MODEL, T.F_COV, T.F_X, T.F_VX),
+                T.kalman_feature(T.F_VELOCITY_MODEL, T.F_COV, T.F_X, T.F_VY),
+                T.kalman_feature(T.F_VELOCITY_MODEL, T.F_COV, T.F_Y, T.F_X),
+                T.kalman_feature(T.F_VELOCITY_MODEL, T.F_COV, T.F_Y, T.F_Y),
+                T.kalman_feature(T.F_VELOCITY_MODEL, T.F_COV, T.F_Y, T.F_VX),
+                T.kalman_feature(T.F_VELOCITY_MODEL, T.F_COV, T.F_Y, T.F_VY),
+                T.kalman_feature(T.F_VELOCITY_MODEL, T.F_COV, T.F_VX, T.F_X),
+                T.kalman_feature(T.F_VELOCITY_MODEL, T.F_COV, T.F_VX, T.F_Y),
+                T.kalman_feature(T.F_VELOCITY_MODEL, T.F_COV, T.F_VX, T.F_VX),
+                T.kalman_feature(T.F_VELOCITY_MODEL, T.F_COV, T.F_VX, T.F_VY),
+                T.kalman_feature(T.F_VELOCITY_MODEL, T.F_COV, T.F_VY, T.F_X),
+                T.kalman_feature(T.F_VELOCITY_MODEL, T.F_COV, T.F_VY, T.F_Y),
+                T.kalman_feature(T.F_VELOCITY_MODEL, T.F_COV, T.F_VY, T.F_VX),
+                T.kalman_feature(T.F_VELOCITY_MODEL, T.F_COV, T.F_VY, T.F_VY)]
+            for object_name, features in ((OBJECT_NAME, T.F_ALL + kalman_features),
+                                          (cpmeas.IMAGE, T.F_IMAGE_ALL)):
+                for feature in features:
+                    if object_name == OBJECT_NAME:
+                        name = "_".join((T.F_PREFIX, feature))
+                    else:
+                        name = "_".join((T.F_PREFIX, feature, 
+                                         OBJECT_NAME))
+                    index = [column[1] for column in columns].index(name)
+                    self.assertTrue(index != -1)
+                    column = columns[index]
+                    self.assertEqual(column[0], object_name)
+                    if wants:
+                        self.assertEqual(len(column), 4)
+                        self.assertTrue(column[3].has_key(cpmeas.MCA_AVAILABLE_POST_GROUP))
+                        self.assertTrue(column[3][cpmeas.MCA_AVAILABLE_POST_GROUP])
+                    else:
+                        self.assertTrue(
+                            (len(column) == 3) or
+                            (not column[3].has_key(cpmeas.MCA_AVAILABLE_POST_GROUP)) or
+                            (not column[3][cpmeas.MCA_AVAILABLE_POST_GROUP]))
                 
     def test_06_01_measurements(self):
         '''Test the different measurement pieces'''

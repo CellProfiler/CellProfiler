@@ -943,6 +943,17 @@ class CPFigureFrame(wx.Frame):
     def subplot_imshow_labels(self, x, y, labels, title=None, clear=True, 
                               renumber=True, sharex=None, sharey=None,
                               use_imshow = False):
+        '''Show a labels matrix using the default color map
+        
+        x,y - the subplot's coordinates
+        image - the binary image to show
+        title - the caption for the image
+        clear - clear the axis before showing
+        sharex, sharey - the coordinates of the subplot that dictates
+                panning and zooming, if any
+        use_imshow - Use matplotlib's imshow to display instead of creating
+                     our own artist.
+        '''
         if renumber:
             labels = renumber_labels_for_display(labels)
         if np.all(labels == 0):
@@ -963,6 +974,21 @@ class CPFigureFrame(wx.Frame):
                                  colorbar=False, normalize=True, vmin=0, vmax=1,
                                  sharex=None, sharey=None, 
                                  use_imshow = False):
+        '''Show an intensity image in shades of gray
+        
+        x,y - the subplot's coordinates
+        image - the binary image to show
+        title - the caption for the image
+        clear - clear the axis before showing
+        colorbar - show a colorbar relating intensity to color
+        normalize - True to normalize to all shades of gray, False to
+                    map grays between vmin and vmax
+        vmin, vmax - the minimum and maximum intensities
+        sharex, sharey - the coordinates of the subplot that dictates
+                panning and zooming, if any
+        use_imshow - Use matplotlib's imshow to display instead of creating
+                     our own artist.
+        '''
         if image.dtype.type == np.float64:
             image = image.astype(np.float32)
         return self.subplot_imshow(x, y, image, title, clear, 
@@ -973,6 +999,17 @@ class CPFigureFrame(wx.Frame):
     
     def subplot_imshow_bw(self, x, y, image, title=None, clear=True, 
                           sharex=None, sharey=None, use_imshow = False):
+        '''Show a binary image in black and white
+        
+        x,y - the subplot's coordinates
+        image - the binary image to show
+        title - the caption for the image
+        clear - clear the axis before showing
+        sharex, sharey - the coordinates of the subplot that dictates
+                panning and zooming, if any
+        use_imshow - Use matplotlib's imshow to display instead of creating
+                     our own artist.
+        '''
 #        a = 0.3
 #        b = 0.59
 #        c = 0.11

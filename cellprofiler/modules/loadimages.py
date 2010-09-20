@@ -2162,8 +2162,9 @@ class LoadImages(cpmodule.CPModule):
         category - return measurements made in this category
         '''
         if object_name == cpmeas.IMAGE:
-            return [meas.split('_',1)[1] for ob, meas, dtype in self.get_measurement_columns(pipeline)
-                    if meas.split('_',1)[0]==category]
+            return [c[1].split('_',1)[1] 
+                    for c in self.get_measurement_columns(pipeline)
+                    if c[1].split('_',1)[0]==category]
         return []
     
     def get_measurement_columns(self, pipeline):

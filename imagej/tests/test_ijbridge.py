@@ -79,6 +79,7 @@ class TestIJBridge(unittest.TestCase):
       # and returns 3 channels regardless of what is given to it.
       # Need to look into this and adjust inter-proc bridge accordingly.
       #
+      pass
 ##      ij1 = in_proc_ij_bridge.getInstance()
 ##      ij2 = inter_proc_ij_bridge.getInstance()
 ##      

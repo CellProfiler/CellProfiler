@@ -59,6 +59,9 @@ FILE_NAME_LENGTH = 128
 COLTYPE_VARCHAR_FILE_NAME = COLTYPE_VARCHAR_FORMAT % FILE_NAME_LENGTH
 COLTYPE_VARCHAR_PATH_NAME = COLTYPE_VARCHAR_FORMAT % PATH_NAME_LENGTH
 
+'''Column attribute: only available after post_group is run (True / False)'''
+MCA_AVAILABLE_POST_GROUP ="AvailablePostGroup"
+
 '''The name of the metadata category'''
 C_METADATA = "Metadata"
 
@@ -119,7 +122,8 @@ class Measurements(object):
         measurement_columns - list of 3-tuples: object name, feature, type
         '''
         self.__dictionary = {}
-        for object_name, feature, coltype in measurement_columns:
+        for column in measurement_columns:
+            object_name, feature, coltype = column[:3]
             if not self.__dictionary.has_key(object_name):
                 self.__dictionary[object_name] = {}
             self.__dictionary[object_name][feature] = [ None ]

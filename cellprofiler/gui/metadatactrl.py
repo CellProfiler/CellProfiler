@@ -56,10 +56,13 @@ class MetadataControl(wx.PyControl):
             
         super(MetadataControl, self).__init__(*args, **kwargs)
         columns = pipeline.get_measurement_columns(module)
-        choices = [feature[(len(cpmeas.C_METADATA)+1):]
-                   for object_name, feature, coltype in columns
-                   if object_name == cpmeas.IMAGE and
-                      feature.startswith(cpmeas.C_METADATA)]
+        choices = []
+        for column in columns:
+            object_name, feature, coltype = column[:3]
+            choice = feature[(len(cpmeas.C_METADATA)+1):]
+            if (object_name == cpmeas.IMAGE and
+                feature.startswith(cpmeas.C_METADATA)):
+                choices.append(choice)
         self.__metadata_choices = choices
         self.SetValue(value)
         self.__cursor_pos = len(self.__tokens)

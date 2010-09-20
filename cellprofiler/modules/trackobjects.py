@@ -1640,6 +1640,10 @@ class TrackObjects(cpm.CPModule):
             result += [( self.object_name.value,
                          self.measurement_name(name),
                          coltype) for name in self.get_kalman_feature_names()]
+            if self.wants_second_phase:
+                # Add the post-group attribute to all measurements
+                attributes = { cpmeas.MCA_AVAILABLE_POST_GROUP: True }
+                result = [ ( c[0], c[1], c[2], attributes) for c in result]
         return result
 
     def get_categories(self, pipeline, object_name):

@@ -50,13 +50,18 @@ LONG_IMG_FEATURE = 'image_measurement_with_a_column_name_that_exceeds_64_charact
 LONG_OBJ_FEATURE = 'obj_measurement_with_a_column_name_that_exceeds_64_characters_in_width'
 WIERD_IMG_FEATURE = 'image_measurement_with_"!@%*\n~!\t\ra\+=''and other &*^% in it..........'
 WIERD_OBJ_FEATURE = 'measurement w/"!@%*\n~!\t\ra\+=''and other &*^% in it'
+GROUP_IMG_FEATURE = "group_imagemeasurement"
+GROUP_OBJ_FEATURE = "group_objmeasurement"
+
 OBJ_MEASUREMENT, INT_IMG_MEASUREMENT, FLOAT_IMG_MEASUREMENT, \
     STRING_IMG_MEASUREMENT, LONG_IMG_MEASUREMENT, LONG_OBJ_MEASUREMENT, \
-    WIERD_IMG_MEASUREMENT, WIERD_OBJ_MEASUREMENT = \
+    WIERD_IMG_MEASUREMENT, WIERD_OBJ_MEASUREMENT, \
+    GROUP_IMG_MEASUREMENT, GROUP_OBJ_MEASUREMENT = \
     ['_'.join((M_CATEGORY, x))
      for x in (OBJ_FEATURE, INT_IMG_FEATURE, FLOAT_IMG_FEATURE, 
                STRING_IMG_FEATURE, LONG_IMG_FEATURE, LONG_OBJ_FEATURE,
-               WIERD_IMG_FEATURE, WIERD_OBJ_FEATURE)]
+               WIERD_IMG_FEATURE, WIERD_OBJ_FEATURE,
+               GROUP_IMG_FEATURE, GROUP_OBJ_FEATURE)]
 OBJECT_NAME = 'myobject'
 IMAGE_NAME = 'myimage'
 OBJECT_COUNT_MEASUREMENT = 'Count_%s'%OBJECT_NAME
@@ -700,7 +705,8 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
         
     def make_workspace(self, wants_files, alt_object=False, 
                        long_measurement=False, wierd_measurement=False,
-                       well_metadata = False, image_set_count = 1):
+                       well_metadata = False, image_set_count = 1,
+                       group_measurement = False):
         '''Make a measurements structure with image and object measurements'''
         class TestModule(cpm.CPModule):
             module_name = "TestModule"
@@ -737,6 +743,11 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
                     columns += [
                         (cpmeas.IMAGE, "Metadata_Plate", cpmeas.COLTYPE_VARCHAR_FORMAT % 20),
                         (cpmeas.IMAGE, "Metadata_Well", cpmeas.COLTYPE_VARCHAR_FORMAT % 3)]
+                if group_measurement:
+                    d = { cpmeas.MCA_AVAILABLE_POST_GROUP: True }
+                    columns += [
+                        (cpmeas.IMAGE, GROUP_IMG_MEASUREMENT, cpmeas.COLTYPE_INTEGER, d),
+                        (OBJECT_NAME, GROUP_OBJ_MEASUREMENT, cpmeas.COLTYPE_FLOAT, d)]
                 return columns
             
             def get_categories(self, pipeline, object_name):
@@ -799,6 +810,9 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
             if well_metadata:
                 m.add_image_measurement("Metadata_Plate", PLATE)
                 m.add_image_measurement("Metadata_Well", WELL)
+            if group_measurement:
+                m.add_image_measurement(GROUP_IMG_MEASUREMENT, INT_VALUE)
+                m.add_measurement(OBJECT_NAME, GROUP_OBJ_MEASUREMENT, OBJ_VALUE.copy())
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
         image_set.add(IMAGE_NAME, cpi.Image(np.zeros((10,10))))
@@ -2616,4 +2630,356 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
         finally:
             self.drop_tables(module, ["Per_Image", "Per_%s" % OBJECT_NAME, "Per_%s" % ALTOBJECT_NAME])
             finally_fn()
+            
+    def test_09_01_post_group_single_object_table(self):
+        '''Write out measurements that are only available post-group'''
+        count = 5
+        workspace, module = self.make_workspace(False, image_set_count = count,
+                                                group_measurement = True)
+        self.assertTrue(isinstance(module, E.ExportToDatabase))
+        self.assertTrue(isinstance(workspace, cpw.Workspace))
+        measurements = workspace.measurements
+        self.assertTrue(isinstance(measurements, cpmeas.Measurements))
+        module.wants_agg_mean.value = False
+        module.wants_agg_median.value = False
+        module.wants_agg_std_dev.value = False
+        try:
+            module.separate_object_tables.value = E.OT_COMBINE
+            module.prepare_run(workspace.pipeline, workspace.image_set_list, None)
+            module.prepare_group(workspace.pipeline, workspace.image_set_list, 
+                                 {}, np.arange(count)+1)
+            for i in range(count):
+                workspace.set_image_set_for_testing_only(i+1)
+                measurements.set_image_set_number(i+1)
+                module.run(workspace)
+            self.cursor.execute("use CPUnitTest")
+            #
+            # Read the image data after the run but before group.
+            # It should be null.
+            #
+            image_table = module.table_prefix.value + "Per_Image"
+            statement = ("select ImageNumber, Image_%s from %s order by ImageNumber" %
+                         (GROUP_IMG_MEASUREMENT, image_table))
+            self.cursor.execute(statement)
+            for i in range(count):
+                row = self.cursor.fetchone()
+                self.assertEqual(len(row), 2)
+                self.assertEqual(row[0], i+1)
+                self.assertTrue(row[1] is None)
+            self.assertRaises(StopIteration, self.cursor.next)
+            #
+            # Read the object data too
+            #
+            object_table = module.table_prefix.value + "Per_Object"
+            statement = ("select ImageNumber, ObjectNumber, %s_%s "
+                         "from %sPer_Object order by ImageNumber, ObjectNumber"%
+                         (OBJECT_NAME, GROUP_OBJ_MEASUREMENT, 
+                          module.table_prefix.value))
+            self.cursor.execute(statement)
+            for i in range(count):
+                for j in range(len(OBJ_VALUE)):
+                    row = self.cursor.fetchone()
+                    self.assertEqual(len(row), 3)
+                    self.assertEqual(row[0], i+1)
+                    self.assertEqual(row[1], j+1)
+                    self.assertTrue(row[2] is None)
+            self.assertRaises(StopIteration, self.cursor.next)
+            #
+            # Run post_group and see that the values do show up
+            #
+            module.post_group(workspace, {})
+            image_table = module.table_prefix.value + "Per_Image"
+            statement = ("select ImageNumber, Image_%s from %s" %
+                         (GROUP_IMG_MEASUREMENT, image_table))
+            self.cursor.execute(statement)
+            for i in range(count):
+                row = self.cursor.fetchone()
+                self.assertEqual(len(row), 2)
+                self.assertEqual(row[0], i+1)
+                self.assertEqual(row[1], INT_VALUE)
+            self.assertRaises(StopIteration, self.cursor.next)
+            #
+            # Read the object data
+            #
+            object_table = module.table_prefix.value + "Per_Object"
+            statement = ("select ImageNumber, ObjectNumber, %s_%s "
+                         "from %sPer_Object order by ImageNumber, ObjectNumber"%
+                         (OBJECT_NAME, GROUP_OBJ_MEASUREMENT, 
+                          module.table_prefix.value))
+            self.cursor.execute(statement)
+            for i in range(count):
+                for j in range(len(OBJ_VALUE)):
+                    row = self.cursor.fetchone()
+                    self.assertEqual(len(row), 3)
+                    self.assertEqual(row[0], i+1)
+                    self.assertEqual(row[1], j+1)
+                    self.assertAlmostEqual(row[2], OBJ_VALUE[j])
+            self.assertRaises(StopIteration, self.cursor.next)
+        finally:
+            self.drop_tables(module, ("Per_Image","Per_Object"))
+            
+    def test_09_02_post_group_single_object_table_agg(self):
+        '''Test single object table, post_group aggregation'''
+        count = 5
+        workspace, module = self.make_workspace(False, image_set_count = count,
+                                                group_measurement = True)
+        self.assertTrue(isinstance(module, E.ExportToDatabase))
+        self.assertTrue(isinstance(workspace, cpw.Workspace))
+        measurements = workspace.measurements
+        self.assertTrue(isinstance(measurements, cpmeas.Measurements))
+        module.wants_agg_mean.value = True
+        module.wants_agg_median.value = False
+        module.wants_agg_std_dev.value = False
+        try:
+            module.separate_object_tables.value = E.OT_COMBINE
+            module.prepare_run(workspace.pipeline, workspace.image_set_list, None)
+            module.prepare_group(workspace.pipeline, workspace.image_set_list, 
+                                 {}, np.arange(count)+1)
+            for i in range(count):
+                workspace.set_image_set_for_testing_only(i+1)
+                measurements.set_image_set_number(i+1)
+                module.run(workspace)
+            self.cursor.execute("use CPUnitTest")
+            #
+            # Read the image data after the run but before group.
+            # It should be null.
+            #
+            image_table = module.table_prefix.value + "Per_Image"
+            statement = (
+                ("select ImageNumber, Image_%s, Mean_%s_%s "
+                 "from %s order by ImageNumber") %
+                (GROUP_IMG_MEASUREMENT, OBJECT_NAME, GROUP_OBJ_MEASUREMENT,
+                 image_table))
+            self.cursor.execute(statement)
+            for i in range(count):
+                row = self.cursor.fetchone()
+                self.assertEqual(len(row), 3)
+                self.assertEqual(row[0], i+1)
+                self.assertTrue(row[1] is None)
+                self.assertTrue(row[2] is None)
+            self.assertRaises(StopIteration, self.cursor.next)
+            #
+            # Read the object data too
+            #
+            object_table = module.table_prefix.value + "Per_Object"
+            statement = ("select ImageNumber, ObjectNumber, %s_%s "
+                         "from %sPer_Object order by ImageNumber, ObjectNumber"%
+                         (OBJECT_NAME, GROUP_OBJ_MEASUREMENT, 
+                          module.table_prefix.value))
+            self.cursor.execute(statement)
+            for i in range(count):
+                for j in range(len(OBJ_VALUE)):
+                    row = self.cursor.fetchone()
+                    self.assertEqual(len(row), 3)
+                    self.assertEqual(row[0], i+1)
+                    self.assertEqual(row[1], j+1)
+                    self.assertTrue(row[2] is None)
+            self.assertRaises(StopIteration, self.cursor.next)
+            #
+            # Run post_group and see that the values do show up
+            #
+            module.post_group(workspace, {})
+            image_table = module.table_prefix.value + "Per_Image"
+            statement = (
+                ("select ImageNumber, Image_%s, Mean_%s_%s "
+                 "from %s order by ImageNumber") %
+                (GROUP_IMG_MEASUREMENT, OBJECT_NAME, GROUP_OBJ_MEASUREMENT,
+                 image_table))
+            self.cursor.execute(statement)
+            for i in range(count):
+                row = self.cursor.fetchone()
+                self.assertEqual(len(row), 3)
+                self.assertEqual(row[0], i+1)
+                self.assertEqual(row[1], INT_VALUE)
+                self.assertAlmostEqual(row[2], np.mean(OBJ_VALUE), 4)
+            self.assertRaises(StopIteration, self.cursor.next)
+            #
+            # Read the object data
+            #
+            object_table = module.table_prefix.value + "Per_Object"
+            statement = ("select ImageNumber, ObjectNumber, %s_%s "
+                         "from %sPer_Object order by ImageNumber, ObjectNumber"%
+                         (OBJECT_NAME, GROUP_OBJ_MEASUREMENT, 
+                          module.table_prefix.value))
+            self.cursor.execute(statement)
+            for i in range(count):
+                for j in range(len(OBJ_VALUE)):
+                    row = self.cursor.fetchone()
+                    self.assertEqual(len(row), 3)
+                    self.assertEqual(row[0], i+1)
+                    self.assertEqual(row[1], j+1)
+                    self.assertAlmostEqual(row[2], OBJ_VALUE[j])
+            self.assertRaises(StopIteration, self.cursor.next)
+        finally:
+            self.drop_tables(module, ("Per_Image","Per_Object"))
+
+    def test_09_03_post_group_separate_object_tables(self):
+        '''Write out measurements post_group to separate object tables'''
+        count = 5
+        workspace, module = self.make_workspace(False, image_set_count = count,
+                                                group_measurement = True)
+        self.assertTrue(isinstance(module, E.ExportToDatabase))
+        self.assertTrue(isinstance(workspace, cpw.Workspace))
+        measurements = workspace.measurements
+        self.assertTrue(isinstance(measurements, cpmeas.Measurements))
+        module.wants_agg_mean.value = False
+        module.wants_agg_median.value = False
+        module.wants_agg_std_dev.value = False
+        try:
+            module.separate_object_tables.value = E.OT_PER_OBJECT
+            module.prepare_run(workspace.pipeline, workspace.image_set_list, None)
+            module.prepare_group(workspace.pipeline, workspace.image_set_list, 
+                                 {}, np.arange(count)+1)
+            for i in range(count):
+                workspace.set_image_set_for_testing_only(i+1)
+                measurements.set_image_set_number(i+1)
+                module.run(workspace)
+            self.cursor.execute("use CPUnitTest")
+            #
+            # Read the image data after the run but before group.
+            # It should be null.
+            #
+            image_table = module.table_prefix.value + "Per_Image"
+            statement = ("select ImageNumber, Image_%s from %s order by ImageNumber" %
+                         (GROUP_IMG_MEASUREMENT, image_table))
+            self.cursor.execute(statement)
+            for i in range(count):
+                row = self.cursor.fetchone()
+                self.assertEqual(len(row), 2)
+                self.assertEqual(row[0], i+1)
+                self.assertTrue(row[1] is None)
+            self.assertRaises(StopIteration, self.cursor.next)
+            #
+            # Read the object data too
+            #
+            statement = self.per_object_statement(module, OBJECT_NAME,
+                                                  [GROUP_OBJ_MEASUREMENT])
+            self.cursor.execute(statement)
+            for i in range(count):
+                for j in range(len(OBJ_VALUE)):
+                    row = self.cursor.fetchone()
+                    self.assertEqual(len(row), 3)
+                    self.assertEqual(row[0], i+1)
+                    self.assertEqual(row[1], j+1)
+                    self.assertTrue(row[2] is None)
+            self.assertRaises(StopIteration, self.cursor.next)
+            #
+            # Run post_group and see that the values do show up
+            #
+            module.post_group(workspace, {})
+            image_table = module.table_prefix.value + "Per_Image"
+            statement = ("select ImageNumber, Image_%s from %s" %
+                         (GROUP_IMG_MEASUREMENT, image_table))
+            self.cursor.execute(statement)
+            for i in range(count):
+                row = self.cursor.fetchone()
+                self.assertEqual(len(row), 2)
+                self.assertEqual(row[0], i+1)
+                self.assertEqual(row[1], INT_VALUE)
+            self.assertRaises(StopIteration, self.cursor.next)
+            #
+            # Read the object data
+            #
+            statement = self.per_object_statement(module, OBJECT_NAME,
+                                                  [GROUP_OBJ_MEASUREMENT])
+            self.cursor.execute(statement)
+            for i in range(count):
+                for j in range(len(OBJ_VALUE)):
+                    row = self.cursor.fetchone()
+                    self.assertEqual(len(row), 3)
+                    self.assertEqual(row[0], i+1)
+                    self.assertEqual(row[1], j+1)
+                    self.assertAlmostEqual(row[2], OBJ_VALUE[j])
+            self.assertRaises(StopIteration, self.cursor.next)
+        finally:
+            self.drop_tables(module, ("Per_Image","Per_%s" % OBJECT_NAME))
+            
+    def test_09_04_post_group_separate_table_agg(self):
+        '''Test single object table, post_group aggregation'''
+        count = 5
+        workspace, module = self.make_workspace(False, image_set_count = count,
+                                                group_measurement = True)
+        self.assertTrue(isinstance(module, E.ExportToDatabase))
+        self.assertTrue(isinstance(workspace, cpw.Workspace))
+        measurements = workspace.measurements
+        self.assertTrue(isinstance(measurements, cpmeas.Measurements))
+        module.wants_agg_mean.value = True
+        module.wants_agg_median.value = False
+        module.wants_agg_std_dev.value = False
+        try:
+            module.separate_object_tables.value = E.OT_PER_OBJECT
+            module.prepare_run(workspace.pipeline, workspace.image_set_list, None)
+            module.prepare_group(workspace.pipeline, workspace.image_set_list, 
+                                 {}, np.arange(count)+1)
+            for i in range(count):
+                workspace.set_image_set_for_testing_only(i+1)
+                measurements.set_image_set_number(i+1)
+                module.run(workspace)
+            self.cursor.execute("use CPUnitTest")
+            #
+            # Read the image data after the run but before group.
+            # It should be null.
+            #
+            image_table = module.table_prefix.value + "Per_Image"
+            statement = (
+                ("select ImageNumber, Image_%s, Mean_%s_%s "
+                 "from %s order by ImageNumber") %
+                (GROUP_IMG_MEASUREMENT, OBJECT_NAME, GROUP_OBJ_MEASUREMENT,
+                 image_table))
+            self.cursor.execute(statement)
+            for i in range(count):
+                row = self.cursor.fetchone()
+                self.assertEqual(len(row), 3)
+                self.assertEqual(row[0], i+1)
+                self.assertTrue(row[1] is None)
+                self.assertTrue(row[2] is None)
+            self.assertRaises(StopIteration, self.cursor.next)
+            #
+            # Read the object data too
+            #
+            statement = self.per_object_statement(module, OBJECT_NAME,
+                                                  [GROUP_OBJ_MEASUREMENT])
+            self.cursor.execute(statement)
+            for i in range(count):
+                for j in range(len(OBJ_VALUE)):
+                    row = self.cursor.fetchone()
+                    self.assertEqual(len(row), 3)
+                    self.assertEqual(row[0], i+1)
+                    self.assertEqual(row[1], j+1)
+                    self.assertTrue(row[2] is None)
+            self.assertRaises(StopIteration, self.cursor.next)
+            #
+            # Run post_group and see that the values do show up
+            #
+            module.post_group(workspace, {})
+            image_table = module.table_prefix.value + "Per_Image"
+            statement = (
+                ("select ImageNumber, Image_%s, Mean_%s_%s "
+                 "from %s order by ImageNumber") %
+                (GROUP_IMG_MEASUREMENT, OBJECT_NAME, GROUP_OBJ_MEASUREMENT,
+                 image_table))
+            self.cursor.execute(statement)
+            for i in range(count):
+                row = self.cursor.fetchone()
+                self.assertEqual(len(row), 3)
+                self.assertEqual(row[0], i+1)
+                self.assertEqual(row[1], INT_VALUE)
+                self.assertAlmostEqual(row[2], np.mean(OBJ_VALUE), 4)
+            self.assertRaises(StopIteration, self.cursor.next)
+            #
+            # Read the object data
+            #
+            statement = self.per_object_statement(module, OBJECT_NAME,
+                                                  [GROUP_OBJ_MEASUREMENT])
+            self.cursor.execute(statement)
+            for i in range(count):
+                for j in range(len(OBJ_VALUE)):
+                    row = self.cursor.fetchone()
+                    self.assertEqual(len(row), 3)
+                    self.assertEqual(row[0], i+1)
+                    self.assertEqual(row[1], j+1)
+                    self.assertAlmostEqual(row[2], OBJ_VALUE[j])
+            self.assertRaises(StopIteration, self.cursor.next)
+        finally:
+            self.drop_tables(module, ("Per_Image","Per_Object"))
             

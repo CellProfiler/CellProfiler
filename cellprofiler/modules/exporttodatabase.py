@@ -156,6 +156,14 @@ OT_DICTIONARY = {
 ##############################################
 D_MEASUREMENT_COLUMNS = "MeasurementColumns"
 
+'''The column name for the image number column'''
+C_IMAGE_NUMBER = "ImageNumber"
+
+'''The column name for the object number column'''
+C_OBJECT_NUMBER = "ObjectNumber"
+
+D_IMAGE_SET_INDEX = "ImageSetIndex"
+
 def execute(cursor, query, bindings = None, return_result=True):
     if bindings == None:
         cursor.execute(query)
@@ -666,6 +674,11 @@ class ExportToDatabase(cpm.CPModule):
             self.create_database_tables(self.cursor, pipeline, image_set_list)
         return True
     
+    def prepare_group(self, pipeline, image_set_list, grouping, image_numbers):
+        '''Initialize for writing post-group measurements'''
+        d = self.get_dictionary(image_set_list)
+        d[D_IMAGE_SET_INDEX] = []
+        d[C_IMAGE_NUMBER] = []
 
     def prepare_to_create_batch(self, pipeline, image_set_list, fn_alter_path):
         '''Alter the output directory path for the remote batch host'''
@@ -695,6 +708,16 @@ class ExportToDatabase(cpm.CPModule):
             return
         if self.db_type != DB_MYSQL_CSV:
             workspace.measurements.is_first_image = True
+            #
+            # Modify the columns so that none get written post_group
+            #
+            columns = self.get_pipeline_measurement_columns(
+                workspace.pipeline, workspace.image_set_list)
+            for i in range(len(columns)):
+                column = columns[i]
+                if self.should_write(column, True):
+                    column[3][cpmeas.MCA_AVAILABLE_POST_GROUP] = False
+                    
             for i in range(workspace.measurements.image_set_count):
                 if i > 0:
                     workspace.measurements.next_image_set()
@@ -746,8 +769,27 @@ class ExportToDatabase(cpm.CPModule):
             return
         if (self.db_type == DB_MYSQL or self.db_type == DB_SQLITE):
             if not workspace.pipeline.test_mode:
+                d = self.get_dictionary(workspace.image_set_list)
+                d[D_IMAGE_SET_INDEX].append(workspace.measurements.image_set_index)
+                d[C_IMAGE_NUMBER].append(workspace.measurements.image_set_number)
                 self.write_data_to_db(workspace)
 
+    def post_group(self, workspace, grouping):
+        '''Write out any columns that are only available post-group'''
+        if workspace.pipeline.test_mode:
+            return
+        
+        if self.db_type not in (DB_MYSQL, DB_SQLITE):
+            return
+        
+        d = self.get_dictionary(workspace.image_set_list)
+        for image_set_index, image_number in zip(d[D_IMAGE_SET_INDEX], 
+                                                 d[C_IMAGE_NUMBER]):
+            self.write_data_to_db(workspace,
+                                  post_group = True,
+                                  index = image_set_index,
+                                  image_number = image_number)
+        
     def post_run(self, workspace):
         if self.save_cpa_properties.value:
             self.write_properties(workspace)
@@ -815,9 +857,10 @@ class ExportToDatabase(cpm.CPModule):
         columns = self.get_pipeline_measurement_columns(pipeline, 
                                                         image_set_list)
         mappings = ColumnNameMapping(self.max_column_size.value)
-        mappings.add("ImageNumber")
-        mappings.add("ObjectNumber")
-        for object_name, feature_name, coltype in columns:
+        mappings.add(C_IMAGE_NUMBER)
+        mappings.add(C_OBJECT_NUMBER)
+        for column in columns:
+            object_name, feature_name, coltype = column[:3]
             if self.ignore_feature(object_name, feature_name):
                     continue
             mappings.add("%s_%s"%(object_name,feature_name))
@@ -826,11 +869,14 @@ class ExportToDatabase(cpm.CPModule):
                     mappings.add('%s_%s_%s'%(agg_name, object_name, feature_name))
         return mappings
     
-    def get_aggregate_columns(self, pipeline, image_set_list):
+    def get_aggregate_columns(self, pipeline, image_set_list, post_group = None):
         '''Get object aggregate columns for the PerImage table
         
         pipeline - the pipeline being run
         image_set_list - for cacheing column data
+        post_group - true if only getting aggregates available post-group,
+                     false for getting aggregates available after run,
+                     None to get all
         
         returns a tuple:
         result[0] - object_name = name of object generating the aggregate
@@ -844,7 +890,11 @@ class ExportToDatabase(cpm.CPModule):
         ob_tables = self.get_object_names(pipeline, image_set_list)
         result = []
         for ob_table in ob_tables:
-            for obname, feature, ftype in columns:
+            for column in columns:
+                if ((post_group is not None) and 
+                    not self.should_write(column, post_group)):
+                    continue
+                obname, feature, ftype = column[:3]
                 if (obname==ob_table and 
                     (not self.ignore_feature(obname, feature)) and
                     (not cpmeas.agg_ignore_feature(feature))):
@@ -950,8 +1000,10 @@ class ExportToDatabase(cpm.CPModule):
         statement += 'ImageNumber INTEGER'
 
         mappings = self.get_column_name_mappings(pipeline, image_set_list)
-        for obname, feature, ftype in self.get_pipeline_measurement_columns(
-            pipeline, image_set_list):
+        columns = self.get_pipeline_measurement_columns(
+            pipeline, image_set_list)
+        for column in columns:
+            obname, feature, ftype = column[:3]
             if obname==cpmeas.IMAGE and not self.ignore_feature(obname, feature):
                 feature_name = '%s_%s' % (obname, feature)
                 statement += ',\n%s %s'%(mappings[feature_name], ftype)
@@ -986,7 +1038,8 @@ class ExportToDatabase(cpm.CPModule):
         else:
             ob_tables = [object_name]
         for ob_table in ob_tables:
-            for obname, feature, ftype in column_defs:
+            for column_def in column_defs:
+                obname, feature, ftype = column_def[:3]
                 if obname==ob_table and not self.ignore_feature(obname, feature):
                     feature_name = '%s_%s'%(obname, feature)
                     statement += ',\n%s %s'%(mappings[feature_name], ftype)
@@ -1257,32 +1310,62 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                     csv_writer.writerow(object_row)
             fid.close()
 
-            
-    def write_data_to_db(self, workspace):
+    @staticmethod
+    def should_write(column, post_group):
+        '''Determine if a column should be written in run or post_group
+        
+        column - 3 or 4 tuple column from get_measurement_columns
+        post_group - True if in post_group, false if in run
+        
+        returns True if column should be written
+        '''
+        if len(column) == 3:
+            return not post_group
+        if not hasattr(column[3], "has_key"):
+            return not post_group
+        if not column[3].has_key(cpmeas.MCA_AVAILABLE_POST_GROUP):
+            return not post_group
+        return (post_group if column[3][cpmeas.MCA_AVAILABLE_POST_GROUP] 
+                else not post_group)
+    
+    def write_data_to_db(self, workspace, 
+                         post_group = False, 
+                         index = None,
+                         image_number = None):
         """Write the data in the measurements out to the database
         workspace - contains the measurements
         mappings  - map a feature name to a column name
+        index - index of image set's measurements. Defaults to current.
+        image_number - image number for primary database key. Defaults to current.
         """
         try:            
             zeros_for_nan = False
             measurements = workspace.measurements
+            assert isinstance(measurements, cpmeas.Measurements)
             pipeline = workspace.pipeline
             image_set_list = workspace.image_set_list
             measurement_cols = self.get_pipeline_measurement_columns(pipeline,
                                                                      image_set_list)
             mapping = self.get_column_name_mappings(pipeline, image_set_list)
-            index = measurements.image_set_index
+            if index is None:
+                index = measurements.image_set_index
             
             ###########################################
             #
             # The image table
             #
             ###########################################
-            image_number = measurements.image_set_number
-            image_row = [(image_number, cpmeas.COLTYPE_INTEGER, "ImageNumber")]
+            if image_number is None:
+                image_number = measurements.image_set_number
+            
+            image_row = []
+            if not post_group:
+                image_row += [(image_number, cpmeas.COLTYPE_INTEGER, C_IMAGE_NUMBER)]
             feature_names = set(measurements.get_feature_names(cpmeas.IMAGE))
             for m_col in measurement_cols:
                 if m_col[0] != cpmeas.IMAGE:
+                    continue
+                if not self.should_write(m_col, post_group):
                     continue
                 #
                 # Skip if feature name not in measurements. This
@@ -1292,7 +1375,8 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                 if m_col[1] not in feature_names:
                     continue
                 feature_name = "%s_%s"%(cpmeas.IMAGE, m_col[1])
-                value = measurements.get_current_image_measurement(m_col[1])
+                value = measurements.get_all_measurements(
+                    cpmeas.IMAGE, m_col[1])[index]
                 if isinstance(value, np.ndarray):
                     value=value[0]
                 if isinstance(value, float) and not np.isfinite(value) and zeros_for_nan:
@@ -1301,9 +1385,10 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
             #
             # Aggregates for the image table
             #
-            agg_dict = measurements.compute_aggregate_measurements(index,
-                                                                   self.agg_names)
-            agg_columns = self.get_aggregate_columns(pipeline, image_set_list)
+            agg_dict = measurements.compute_aggregate_measurements(
+                index, self.agg_names)
+            agg_columns = self.get_aggregate_columns(pipeline, image_set_list, 
+                                                     post_group)
             image_row += [(agg_dict[agg[3]], 
                            cpmeas.COLTYPE_FLOAT, 
                            agg[3])
@@ -1312,11 +1397,14 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
             #
             # Delete any prior data for this image
             #
-            # XXX: This shouldn't be neccessary since the table is dropped 
-            #      before writing.
-            stmt = ('DELETE FROM %s WHERE ImageNumber=%d'%
-                    (self.get_table_name(cpmeas.IMAGE), image_number))
-            execute(self.cursor, stmt)
+            # Useful if you rerun a partially-complete batch
+            #
+            if not post_group:
+                stmt = ('DELETE FROM %s WHERE %s=%d'%
+                        (self.get_table_name(cpmeas.IMAGE), 
+                         C_IMAGE_NUMBER,
+                         image_number))
+                execute(self.cursor, stmt)
             
             ########################################
             #
@@ -1333,47 +1421,74 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                 for table_object_name, object_list in data:
                     table_name = self.get_table_name(table_object_name)
                     columns = [column for column in measurement_cols
-                               if column[0] in object_list]
+                               if column[0] in object_list
+                               and self.should_write(column, post_group)]
+                    if post_group and len(columns) == 0:
+                        continue
                     max_count = 0
                     for object_name in object_list:
-                        count = measurements.get_current_image_measurement(
-                            "Count_%s" % object_name)
+                        ftr_count = "Count_%s" % object_name
+                        count = measurements.get_all_measurements(
+                            cpmeas.IMAGE, ftr_count)[index]
                         max_count = max(max_count, int(count))
-                    object_cols = ["ImageNumber"]
+                    object_cols = []
+                    if not post_group:
+                        object_cols += [C_IMAGE_NUMBER]
                     if table_object_name == cpmeas.OBJECT:
-                        object_cols += ["ObjectNumber"]
-                
+                        object_number_column = C_OBJECT_NUMBER
+                        if not post_group:
+                            object_cols += [object_number_column]
+                        object_numbers = np.arange(1, max_count+1)
+                    else:
+                        object_number_column = "_".join((object_name, M_NUMBER_OBJECT_NUMBER))
+                        object_numbers = measurements.get_all_measurements(
+                            object_name, M_NUMBER_OBJECT_NUMBER)[index]
+                    
                     object_cols += [mapping["%s_%s" % (column[0], column[1])]
                                     for column in columns]
                     object_rows = []
                     for j in range(max_count):
-                        object_row = [image_number]
-                        if table_object_name == cpmeas.OBJECT:
+                        if not post_group:
+                            object_row = [image_number]
+                            if table_object_name == cpmeas.OBJECT:
                             # the object number
-                            object_row.append(j+1)
-                        for object_name, feature, coltype in columns:
-                            values = measurements.get_current_measurement(object_name,
-                                                                          feature)
+                                object_row.append(object_numbers[j])
+                        else:
+                            object_row = []
+                            
+                        for column in columns:
+                            object_name, feature, coltype = column[:3]
+                            values = measurements.get_all_measurements(
+                                object_name, feature)[index]
                             if (values is None or len(values) <= j or
                                 np.isnan(values[j])):
                                 value = None
                             else:
                                 value = str(values[j])
                             object_row.append(value)
+                        if post_group:
+                            object_row.append(object_numbers[j])
                         object_rows.append(object_row)
                     #
                     # Delete any prior data for this image
                     #
-                    stmt = ('DELETE FROM %s WHERE ImageNumber=%d'%
-                            (table_name, image_number))
-                    execute(self.cursor, stmt)
-                    #
-                    # Write the object table data
-                    #
-                    stmt = ('INSERT INTO %s (%s) VALUES (%s)'%
-                            (table_name, 
-                             ','.join(object_cols),
-                             ','.join(['%s']*len(object_cols))))
+                    if not post_group:
+                        stmt = ('DELETE FROM %s WHERE %s=%d'%
+                                (table_name, C_IMAGE_NUMBER, image_number))
+                        execute(self.cursor, stmt)
+                        #
+                        # Write the object table data
+                        #
+                        stmt = ('INSERT INTO %s (%s) VALUES (%s)'%
+                                (table_name, 
+                                 ','.join(object_cols),
+                                 ','.join(['%s']*len(object_cols))))
+                    else:
+                        stmt = (
+                            ('UPDATE %s SET\n' % table_name) +
+                            (',\n'.join(["  %s=%%s" % c for c in object_cols])) +
+                            ('\nWHERE %s = %d' % (C_IMAGE_NUMBER, image_number)) +
+                            ('\nAND %s = %%s' % object_number_column))
             
                     if self.db_type == DB_MYSQL:
                         # Write 25 rows at a time (to get under the max_allowed_packet limit)
@@ -1394,11 +1509,20 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                 else float(field[0]) if (field[1] == cpmeas.COLTYPE_FLOAT)
                 else int(field[0]) if (field[1] == cpmeas.COLTYPE_INTEGER)
                 else field[0] for field in image_row]
-            stmt = ('INSERT INTO %s (%s) VALUES (%s)' % 
-                    (image_table, 
-                     ','.join([mapping[colname] for val, dtype, colname in image_row]),
-                     ','.join([replacement] * len(image_row))))
-            execute(self.cursor, stmt, image_row_values)
+            if len(image_row) > 0:
+                if not post_group:
+                    stmt = (
+                        'INSERT INTO %s (%s) VALUES (%s)' % 
+                        (image_table, 
+                         ','.join([mapping[colname] for val, dtype, colname in image_row]),
+                         ','.join([replacement] * len(image_row))))
+                else:
+                    stmt = (
+                        ('UPDATE %s SET\n' % image_table) +
+                        ',\n'.join(["  %s = %s" % (mapping[colname], replacement)
+                                    for val, dtype, colname in image_row]) +
+                        ('\nWHERE %s = %d' % (C_IMAGE_NUMBER, image_number)))
+                execute(self.cursor, stmt, image_row_values)
             self.connection.commit()
         except:
             traceback.print_exc()

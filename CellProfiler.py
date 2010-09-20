@@ -221,7 +221,8 @@ try:
         columns = pipeline.get_measurement_columns()
         print "--- begin measurements ---"
         print "Object,Feature,Type"
-        for object_name, feature, data_type in columns:
+        for column in columns:
+            object_name, feature, data_type = column[:3]
             print "%s,%s,%s" % (object_name, feature, data_type)
         print "--- end measurements ---"
     

@@ -390,18 +390,21 @@ class Measurements(object):
         double_backquote = "\\\\"
         single_backquote = "\\"
         for piece in pattern.split(double_backquote):
-            # Replace a tag
-            m = re.search('\\(\\?[<](.+?)[>]\\)', piece)
-            if not m:
-                m = re.search('\\\\g[<](.+?)[>]', piece)
+            # Replace tags in piece
+            result = ''
+            while(True):
+                # Replace one tag
+                m = re.search('\\(\\?[<](.+?)[>]\\)', piece)
                 if not m:
-                    result_pieces.append(piece)
-                    continue
-            result = piece[:m.start()]
-            measurement = 'Metadata_'+m.groups()[0]
-            result += str(self.get_measurement("Image", measurement, 
-                                               image_set_index))
-            result += piece[m.end():]
+                    m = re.search('\\\\g[<](.+?)[>]', piece)
+                    if not m:
+                        result += piece
+                        break
+                result += piece[:m.start()]
+                measurement = 'Metadata_'+m.groups()[0]
+                result += str(self.get_measurement("Image", measurement, 
+                                                   image_set_index))
+                piece = piece[m.end():]
             result_pieces.append(result)
         return single_backquote.join(result_pieces)
     

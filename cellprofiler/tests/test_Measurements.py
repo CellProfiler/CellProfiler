@@ -172,6 +172,18 @@ class TestMeasurements(unittest.TestCase):
         x.add_measurement("Image", "Metadata_Plate", value)
         pattern = r"\\g<Plate>"
         self.assertEqual(x.apply_metadata(pattern), expected)
+        
+    def test_06_05_apply_metadata_twice(self):
+        '''Regression test of img-1144 (second part)'''
+        x = cellprofiler.measurements.Measurements()
+        plate = "P12345"
+        well = "A01"
+        expected = plate+"_"+well
+        x.add_measurement("Image", "Metadata_Plate", plate)
+        x.add_measurement("Image", "Metadata_Well", well)
+        pattern = r"\g<Plate>_\g<Well>"
+        self.assertEqual(x.apply_metadata(pattern), expected)
+        
 
 if __name__ == "__main__":
     unittest.main()

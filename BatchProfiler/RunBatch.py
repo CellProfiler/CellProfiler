@@ -61,10 +61,13 @@ def CreateBatchRecord(my_batch):
     insert into batch (batch_id, email, data_dir, queue, batch_size, 
                        write_data, timeout, cpcluster, project, memory_limit,
                        priority)
-    values (null,'%(email)s','%(data_dir)s','%(queue)s',%(batch_size)d,
-            %(write_data)d,%(timeout)f,'%(cpcluster)s','%(project)s',
-            %(memory_limit)f, %(priority)d)"""%(my_batch)
-    cursor.execute(cmd)
+    values (null,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"""
+    bindings = [my_batch[x] for x in (
+        'email', 'data_dir', 'queue','batch_size','write_data','timeout',
+        'cpcluster','project','memory_limit', 'priority')]
+    print "command = " +cmd
+    print "bindings = " + str(bindings)
+    cursor.execute(cmd, bindings)
     cursor = connection.cursor()
     cursor.execute("select last_insert_id()")
     my_batch["batch_id"]=cursor.fetchone()[0]
@@ -88,9 +91,9 @@ def pack_group(run):
     if run["group"] is None:
         run["group_or_null"] = "null"
         return
-    run["group_or_null"] = "'"+(','.join(['='.join([encode_group_string(x) 
+    run["group_or_null"] = ','.join(['='.join([encode_group_string(x) 
                                                for x in item])
-                                          for item in run["group"].items()]))+"'"
+                                     for item in run["group"].items()])
 
 def unpack_group(run):
     if run["group_or_null"] is None:
@@ -110,8 +113,10 @@ def CreateRunRecord(batch_id, run):
     cursor = connection.cursor()
     sql="""
     insert into run (run_id, batch_id, bstart,bend,bgroup, status_file_name)
-    values (null,%(batch_id)d,%(start)d,%(end)d,%(group_or_null)s,'%(status_file_name)s')"""%(run)
-    cursor.execute(sql)
+    values (null,%s,%s,%s,%s,%s)"""
+    bindings = [run[x] for x in (
+        'batch_id','start','end','group_or_null','status_file_name')]
+    cursor.execute(sql, bindings)
     cursor.close()
     cursor = connection.cursor()
     cursor.execute("select last_insert_id()")

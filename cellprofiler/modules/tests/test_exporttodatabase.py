@@ -1269,7 +1269,7 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
             finally_fn()
             self.drop_tables(module, ("Per_Image","Per_Object"))
         
-    def test_02_04_write_nulls(self):
+    def test_02_04_01_write_nulls(self):
         workspace, module, output_dir, finally_fn = self.make_workspace(True)
         #
         # Insert a NaN into the float image measurement and one of the
@@ -1345,6 +1345,84 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
             finally_fn()
             self.drop_tables(module, ("Per_Image","Per_Object"))
     
+    def test_02_04_02_write_inf(self):
+        '''regression test of img-1149'''
+        workspace, module, output_dir, finally_fn = self.make_workspace(True)
+        #
+        # Insert inf into the float image measurement and one of the
+        # object measurements
+        #
+        m = workspace.measurements
+        fim = m.get_all_measurements(cpmeas.IMAGE, FLOAT_IMG_MEASUREMENT)
+        fim[0] = np.inf
+        om = m.get_all_measurements(OBJECT_NAME, OBJ_MEASUREMENT)
+        om[0][0] = np.inf
+        try:
+            self.assertTrue(isinstance(module, E.ExportToDatabase))
+            module.db_type = E.DB_MYSQL_CSV
+            module.wants_agg_mean.value = True
+            module.wants_agg_median.value = False
+            module.wants_agg_std_dev.value = False
+            module.objects_choice.value = E.O_ALL
+            module.directory.dir_choice = E.ABSOLUTE_FOLDER_NAME
+            module.directory.custom_path = output_dir
+            module.separate_object_tables.value = E.OT_COMBINE
+            module.post_run(workspace)
+            sql_file = os.path.join(output_dir, "SQL_SETUP.SQL")
+            base_name = "SQL_1_1"
+            image_file = os.path.join(output_dir, base_name+"_image.CSV")
+            object_file = "%s_%s.CSV" % (base_name, cpmeas.OBJECT)
+            object_file = os.path.join(output_dir, object_file)
+            for filename in (sql_file, image_file, object_file):
+                self.assertTrue(os.path.isfile(filename))
+            fd = open(sql_file,'rt')
+            sql_text = fd.read()
+            fd.close()
+            os.chdir(output_dir)
+            for statement in sql_text.split(';'):
+                if len(statement.strip()) == 0:
+                    continue
+                self.cursor.execute(statement)
+            #
+            # Now read the image file from the database
+            #
+            image_table = module.table_prefix.value + "Per_Image"
+            statement = ("select ImageNumber, Image_%s, Image_%s, Image_%s, "
+                         "Image_Count_%s, Mean_%s_%s "
+                         "from %s" %
+                         (INT_IMG_MEASUREMENT, FLOAT_IMG_MEASUREMENT,
+                          STRING_IMG_MEASUREMENT, OBJECT_NAME, OBJECT_NAME,
+                          OBJ_MEASUREMENT, image_table))
+            self.cursor.execute(statement)
+            row = self.cursor.fetchone()
+            self.assertEqual(len(row), 6)
+            self.assertEqual(row[0],1)
+            self.assertAlmostEqual(row[1], INT_VALUE)
+            self.assertTrue(row[2] is None)
+            self.assertEqual(row[3], STRING_VALUE)
+            self.assertEqual(row[4], len(OBJ_VALUE))
+            mask = ~(np.isnan(om[0]) | np.isinf(om[0]))
+            self.assertAlmostEqual(row[5], np.mean(om[0][mask]))
+            self.assertRaises(StopIteration, self.cursor.next)
+            statement = ("select ImageNumber, ObjectNumber, %s_%s "
+                         "from %sPer_Object order by ObjectNumber"%
+                         (OBJECT_NAME, OBJ_MEASUREMENT, module.table_prefix.value))
+            self.cursor.execute(statement)
+            for i, value in enumerate(OBJ_VALUE):
+                row = self.cursor.fetchone()
+                self.assertEqual(len(row), 3)
+                self.assertEqual(row[0], 1)
+                self.assertEqual(row[1], i+1)
+                if i == 0:
+                    self.assertTrue(row[2] is None)
+                else:
+                    self.assertAlmostEqual(row[2], value)
+            self.assertRaises(StopIteration, self.cursor.next)
+        finally:
+            os.chdir(output_dir)
+            finally_fn()
+            self.drop_tables(module, ("Per_Image","Per_Object"))
+
     def test_02_05_mysql_direct_null(self):
         '''Write directly to the mysql DB, not to a file and write nulls'''
         workspace, module = self.make_workspace(False)
@@ -2153,7 +2231,7 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
             finally_fn()
             self.drop_tables(module, ("Per_Image","Per_%s" % OBJECT_NAME))
     
-    def test_05_06_mysql_direct_null(self):
+    def test_05_06_01_mysql_direct_null(self):
         '''Write directly to the mysql DB, not to a file and write nulls'''
         workspace, module = self.make_workspace(False)
         #
@@ -2165,6 +2243,64 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
         fim[0] = np.NaN
         om = m.get_all_measurements(OBJECT_NAME, OBJ_MEASUREMENT)
         om[0][:] = np.NaN
+        try:
+            self.assertTrue(isinstance(module, E.ExportToDatabase))
+            module.db_type = E.DB_MYSQL
+            module.wants_agg_mean.value = True
+            module.wants_agg_median.value = False
+            module.wants_agg_std_dev.value = False
+            module.objects_choice.value = E.O_ALL
+            module.separate_object_tables.value = E.OT_PER_OBJECT
+            module.prepare_run(workspace.pipeline, workspace.image_set_list,None)
+            module.prepare_group(workspace.pipeline, workspace.image_set_list,
+                                 {}, [1])
+            module.run(workspace)
+            self.cursor.execute("use CPUnitTest")
+            #
+            # Now read the image file from the database
+            #
+            image_table = module.table_prefix.value + "Per_Image"
+            statement = ("select ImageNumber, Image_%s, Image_%s, Image_%s, "
+                         "Image_Count_%s, Mean_%s_%s "
+                         "from %s" %
+                         (INT_IMG_MEASUREMENT, FLOAT_IMG_MEASUREMENT,
+                          STRING_IMG_MEASUREMENT, OBJECT_NAME,
+                          OBJECT_NAME, OBJ_MEASUREMENT, image_table))
+            self.cursor.execute(statement)
+            row = self.cursor.fetchone()
+            self.assertEqual(len(row), 6)
+            self.assertEqual(row[0],1)
+            self.assertAlmostEqual(row[1], INT_VALUE)
+            self.assertTrue(row[2] is None)
+            self.assertEqual(row[3], STRING_VALUE)
+            self.assertEqual(row[4], len(OBJ_VALUE))
+            self.assertTrue(row[5] is None)
+            self.assertRaises(StopIteration, self.cursor.next)
+            statement = self.per_object_statement(module, OBJECT_NAME, 
+                                                  [OBJ_MEASUREMENT])
+            self.cursor.execute(statement)
+            for i, value in enumerate(OBJ_VALUE):
+                row = self.cursor.fetchone()
+                self.assertEqual(len(row), 3)
+                self.assertEqual(row[0], 1)
+                self.assertEqual(row[1], i+1)
+                self.assertTrue(row[2] is None)
+            self.assertRaises(StopIteration, self.cursor.next)
+        finally:
+            self.drop_tables(module, ("Per_Image","Per_%s" % OBJECT_NAME))
+                    
+    def test_05_06_02_mysql_direct_inf(self):
+        '''regression test of img-1149: infinite values'''
+        workspace, module = self.make_workspace(False)
+        #
+        # Insert a NaN into the float image measurement and one of the
+        # object measurements
+        #
+        m = workspace.measurements
+        fim = m.get_all_measurements(cpmeas.IMAGE, FLOAT_IMG_MEASUREMENT)
+        fim[0] = np.inf
+        om = m.get_all_measurements(OBJECT_NAME, OBJ_MEASUREMENT)
+        om[0][:] = np.inf
         try:
             self.assertTrue(isinstance(module, E.ExportToDatabase))
             module.db_type = E.DB_MYSQL

@@ -1250,7 +1250,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                         value = "NULL"
                     else:
                         value = '"'+MySQLdb.escape_string(value)+'"'
-                elif np.isnan(value):
+                elif np.isnan(value) or np.isinf(value):
                     value = "NULL"
                     
                 image_row.append(value)
@@ -1302,7 +1302,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                             values = measurements.get_measurement(object_name,
                                                                   feature, i)
                             if (values is None or len(values) <= j or
-                                np.isnan(values[j])):
+                                np.isnan(values[j]) or np.isinf(values[j])):
                                 value = "NULL"
                             else:
                                 value = values[j]
@@ -1461,7 +1461,8 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                             values = measurements.get_all_measurements(
                                 object_name, feature)[index]
                             if (values is None or len(values) <= j or
-                                np.isnan(values[j])):
+                                np.isnan(values[j]) or
+                                np.isinf(values[j])):
                                 value = None
                             else:
                                 value = str(values[j])
@@ -1505,7 +1506,8 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
             replacement = '%s' if self.db_type == DB_MYSQL else "?"
             image_row_values = [
                 None 
-                if ((field[1] == cpmeas.COLTYPE_FLOAT) and (np.isnan(field[0])))
+                if ((field[1] == cpmeas.COLTYPE_FLOAT) and 
+                    (np.isnan(field[0]) or np.isinf(field[0])))
                 else float(field[0]) if (field[1] == cpmeas.COLTYPE_FLOAT)
                 else int(field[0]) if (field[1] == cpmeas.COLTYPE_INTEGER)
                 else field[0] for field in image_row]

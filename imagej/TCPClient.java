@@ -5,8 +5,11 @@ import ij.process.*;
 import ij.Menus;
 import ij.IJ;
 import java.io.*;
+import java.nio.ByteBuffer;
+import java.nio.FloatBuffer;
 import java.util.*;
 import ij.WindowManager;
+import ij.gui.ImageWindow;
 import java.lang.StringBuffer;
 import java.lang.String;
 import java.net.*;
@@ -18,17 +21,7 @@ import java.net.*;
    Usage: java TCPClient port#
 */
 
-class TCPClient {
-    
-    String RESP_SUCCESS = "success ";
-
-    private static char[] concat(char[] A, char[] B) {
-        char[] C = new char[A.length + B.length];
-        System.arraycopy(A, 0, C, 0, A.length);
-        System.arraycopy(B, 0, C, A.length, B.length);
-        return C;
-    }    
-    
+class TCPClient {    
     public static final byte[] intToByteArray(int value) {
         return new byte[] {
                 (byte)(value >>> 24),
@@ -37,6 +30,14 @@ class TCPClient {
                 (byte)value};
     }
 
+    public static byte[] floatArrayToByteArray(float pixels[]){    
+        byte bytes[] = new byte[pixels.length * 4];
+        ByteBuffer bb = ByteBuffer.wrap(bytes);
+        FloatBuffer fb = bb.asFloatBuffer();
+        fb.put(pixels);
+        return bytes;
+    }
+    
     public static void main(String argv[]) throws Exception{
         String output;
         assert argv.length == 1;
@@ -79,15 +80,16 @@ class TCPClient {
                 to_server.flush();
             }
             else if (inp.startsWith("getimg")){
-                byte[] pixels = ijb.get_current_image();
+                float[] pixels = ijb.get_current_image();
+                byte[] bytes = floatArrayToByteArray(pixels);
                 // data size
-                to_server.write(intToByteArray(pixels.length + 8));
+                to_server.write(intToByteArray(bytes.length + 8));
                 // message
                 to_server.writeBytes("success ");
                 // data
                 to_server.write(intToByteArray(ijb.get_current_image_width()));
                 to_server.write(intToByteArray(ijb.get_current_image_height()));
-                to_server.write(pixels);
+                to_server.write(bytes);
                 to_server.flush();
             }
             else if (inp.startsWith("macro")){ 
@@ -138,7 +140,7 @@ class InterProcessIJBridge {
         ij = new ImageJ();
     }
 
-    public void inject_image(byte[] data) {
+    public void inject_image(byte[] data) {        
         System.out.println("<CLIENT> injecting");
         ByteArrayInputStream bis = new ByteArrayInputStream(data);
         DataInputStream in = new DataInputStream(bis);
@@ -147,12 +149,20 @@ class InterProcessIJBridge {
             int h = 0;
             w = in.readInt();
             h = in.readInt();
-            byte[] pixels = new byte[w * h];
-            in.readFully(pixels, 0, w * h);
+            byte[] bytes = new byte[w * h * 4]; // 4 bytes per pixel
+            in.readFully(bytes, 0, w * h *4);
             in.close();
+
+            ByteBuffer bb = ByteBuffer.wrap(bytes);
+            float[] pixels = new float[w * h];
+            for(int i=0; i<w*h; i+=1){
+                pixels[i] = bb.getFloat();
+            }
             
-            ByteProcessor bp = new ByteProcessor(w, h, pixels, null);
-            ImagePlus imageplus = new ImagePlus("", bp);
+            FloatProcessor fp = new FloatProcessor(w, h, pixels, null);
+            ImagePlus imageplus = new ImagePlus("", fp);
+            ImageWindow im_window = imageplus.getWindow();
+            WindowManager.setCurrentWindow(im_window);
             imageplus.show();
         } catch (java.io.IOException e) {
             System.out.println(e);
@@ -172,14 +182,14 @@ class InterProcessIJBridge {
         return imageplus.getHeight();
     }
 
-    public byte[] get_current_image() throws 
+    public float[] get_current_image() throws 
         FileNotFoundException, IOException {
         // We currently only handle returning a single channel.
         ImagePlus imageplus = WindowManager.getCurrentImage();
         ImageProcessor ip = imageplus.getProcessor();
-        // ip.getpixels returns a reference to this image's pixel array. The
-        // array type (byte[], short[], float[] or int[]) depends on image type.
-        return (byte[])ip.getPixels();
+        TypeConverter tc = new TypeConverter(ip, false);
+        ImageProcessor fp = tc.convertToFloat(null);
+        return (float[]) fp.getPixels();
     }
 
     public void execute_macro(String macro_text) {

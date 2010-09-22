@@ -97,14 +97,14 @@ class in_proc_ij_bridge(ij_bridge, Singleton):
       J.attach()
       
    def __del__(self):
-      ''' call del on this object to detach from javabridge. If the object is
+      '''call del on this object to detach from javabridge. If the object is
       declared locally the javabridge will be detached once the program leaves 
       it's scope'''
       J.detach()
       
    def inject_image(self, pixels, name=''):
       '''inject an image into ImageJ for processing'''
-      ij_processor = ijiproc.make_image_processor(pixels * 255.0)
+      ij_processor = ijiproc.make_image_processor((pixels * 255.0).astype('float32'))
       image_plus = ijip.make_imageplus_from_processor(name, ij_processor)
       if sys.platform == "darwin":
          ijwm.set_temp_current_image(image_plus)
@@ -115,7 +115,7 @@ class in_proc_ij_bridge(ij_bridge, Singleton):
       '''returns the WindowManager's current image as a numpy float array'''
       image_plus = ijwm.get_current_image()
       ij_processor = image_plus.getProcessor()
-      pixels = ijiproc.get_image(ij_processor) / 255.0
+      pixels = ijiproc.get_image(ij_processor).astype('float32') / 255.0
       return pixels
    
    def get_commands(self):
@@ -207,7 +207,7 @@ class inter_proc_ij_bridge(ij_bridge, Singleton):
       '''inject an image into ImageJ for processing'''
       data = (np.array([pixels.shape[1]], ">i4").tostring() + 
               np.array([pixels.shape[0]], ">i4").tostring() + 
-              (pixels*255).astype('uint8').tostring())
+              (pixels).astype('>f4').tostring())
       msg, data = communicate(self.client_socket, self.INJECT, data)
       assert msg.startswith('success')
 
@@ -218,9 +218,9 @@ class inter_proc_ij_bridge(ij_bridge, Singleton):
       h = struct.unpack('>i4',data[4:8])[0]
       pixels = data[8:]
       if msg.startswith('success'):
-         im = PILImage.fromstring('P', (w,h), pixels)
-##         im.show()
-         return pil_to_np(im)
+         pixels = np.fromstring(pixels, dtype='>f4').reshape(h,w)
+         pixels = pixels.astype('float32')
+         return pixels
       else:
          raise Exception("Get current image failed to return an image")
 
@@ -277,7 +277,7 @@ def pil_to_np( pilImage ):
    def toarray(im):
       'return a 1D array of floats'
       x_str = im.tostring('raw', im.mode)
-      x = np.fromstring(x_str,np.uint8)
+      x = np.fromstring(x_str,'uint8')
       return x
    
    if pilImage.mode[0] == 'P':

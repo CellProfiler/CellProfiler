@@ -65,8 +65,6 @@ def CreateBatchRecord(my_batch):
     bindings = [my_batch[x] for x in (
         'email', 'data_dir', 'queue','batch_size','write_data','timeout',
         'cpcluster','project','memory_limit', 'priority')]
-    print "command = " +cmd
-    print "bindings = " + str(bindings)
     cursor.execute(cmd, bindings)
     cursor = connection.cursor()
     cursor.execute("select last_insert_id()")
@@ -86,10 +84,10 @@ def decode_group_string(x):
 def pack_group(run):
     '''Convert the 'group' field into the database field'''
     if not run.has_key("group"):
-        run["group_or_null"] = "null"
+        run["group_or_null"] = None
         return
     if run["group"] is None:
-        run["group_or_null"] = "null"
+        run["group_or_null"] = None
         return
     run["group_or_null"] = ','.join(['='.join([encode_group_string(x) 
                                                for x in item])
@@ -99,7 +97,7 @@ def unpack_group(run):
     if run["group_or_null"] is None:
         run["group"] = None
     else:
-        kvs = re.split('(?<!\\\\),',run["group_or_null"][1:-1])
+        kvs = re.split('(?<!\\\\),',run["group_or_null"])
         kvpairs = [[decode_group_string(x) for x in re.split('(?<!\\\\)=',kv)]
                    for kv in kvs]
         run["group"] = dict(kvpairs)
@@ -111,11 +109,19 @@ def CreateRunRecord(batch_id, run):
     run["batch_id"]=batch_id
     pack_group(run)
     cursor = connection.cursor()
-    sql="""
-    insert into run (run_id, batch_id, bstart,bend,bgroup, status_file_name)
-    values (null,%s,%s,%s,%s,%s)"""
-    bindings = [run[x] for x in (
-        'batch_id','start','end','group_or_null','status_file_name')]
+    if run["group_or_null"] is None:
+        sql = ("insert into run "
+               "(run_id, batch_id, bstart, bend, bgroup, status_file_name) "
+               "values (null, %s, %s, %s, null, %s)")
+        binding_names = ('batch_id', 'start', 'end', 'status_file_name')
+    else:
+        sql= ("insert into run "
+              "(run_id, batch_id, bstart,bend,bgroup, status_file_name)"
+              "values (null,%s,%s,%s,%s,%s)")
+        binding_names =  ('batch_id','start','end','group_or_null',
+                          'status_file_name')
+    bindings = [run[x] for x in binding_names]
+
     cursor.execute(sql, bindings)
     cursor.close()
     cursor = connection.cursor()

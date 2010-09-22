@@ -53,7 +53,7 @@ def get_ij_bridge():
    '''
    if sys.platform.startswith("win") or cpprefs.get_headless():
       return in_proc_ij_bridge.getInstance()
-   else:
+   else: # sys.platform == 'darwin':
       return inter_proc_ij_bridge.getInstance()
    
 

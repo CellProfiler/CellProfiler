@@ -5,18 +5,17 @@ process execution of ImageJ can be abstracted and branched cleanly.
 import sys
 import numpy as np
 import os, tempfile
-import Image as PILImage
 from subprocess import Popen, PIPE, STDOUT
 import shlex
 import socket
+import struct
 import cellprofiler.utilities.jutil as J
 import cellprofiler.preferences as cpprefs
+from cellprofiler.utilities.singleton import Singleton
 import imagej.macros as ijmacros
 import imagej.windowmanager as ijwm
 import imagej.imageprocessor as ijiproc
 import imagej.imageplus as ijip
-import struct
-from cellprofiler.utilities.singleton import Singleton
 
 if hasattr(sys, 'frozen'):
    __root_path = os.path.split(os.path.abspath(sys.argv[0]))[0]
@@ -45,7 +44,6 @@ if sys.platform.startswith("win") and not hasattr(sys, 'frozen'):
 if os.environ.has_key('CLASSPATH'):
    __class_path += os.pathsep + os.environ['CLASSPATH']
 os.environ['CLASSPATH'] = __class_path
-
 
 
 def get_ij_bridge():
@@ -193,18 +191,29 @@ class inter_proc_ij_bridge(ij_bridge, Singleton):
    QUIT         = 'quit    '
    
    def __init__(self):
+      self.start_ij()
+      
+   def start_ij(self):
+      try:
+         self.client_socket.close()
+         self.server_socket.close()
+      except: pass
       self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
       self.server_socket.bind(("", 0))
-      hostaddr, port = self.server_socket.getsockname()
+      _, self.port = self.server_socket.getsockname()
       self.server_socket.listen(5)
-      print "ImageJ bridge TCPServer waiting for client on port", port
-      self.ijproc = Popen(shlex.split('java -Xmx512m TCPClient %s'%(port)),
+      self.server_socket.listen(5)
+      print "ImageJ bridge TCPServer waiting for client on port", self.port
+      self.ijproc = Popen(shlex.split('java -Xmx512m TCPClient %s'%(self.port)),
                           stdin=None, stdout=None, stderr=None)
       self.client_socket, address = self.server_socket.accept()
-      print "ImageJ bridge got a connection from", address
+      print "ImageJ bridge got a connection from", address      
    
    def inject_image(self, pixels, name=None):
       '''inject an image into ImageJ for processing'''
+      if self.ijproc.poll() is not None:
+         self.start_ij()
+      assert pixels.ndim == 2, 'Inject image currently only supports single channel images.'
       data = (np.array([pixels.shape[1]], ">i4").tostring() + 
               np.array([pixels.shape[0]], ">i4").tostring() + 
               (pixels).astype('>f4').tostring())
@@ -213,6 +222,8 @@ class inter_proc_ij_bridge(ij_bridge, Singleton):
 
    def get_current_image(self):
       '''returns the WindowManager's current image as a numpy float array'''
+      if self.ijproc.poll() is not None:
+         raise Exception("Can't retrieve current image from ImageJ because the subprocess was closed.")
       msg, data = communicate(self.client_socket, self.GET_IMAGE)
       w = struct.unpack('>i4',data[:4])[0]
       h = struct.unpack('>i4',data[4:8])[0]
@@ -226,11 +237,15 @@ class inter_proc_ij_bridge(ij_bridge, Singleton):
 
    def get_commands(self):
       '''returns a list of the available command strings'''
+      if self.ijproc.poll() is not None:
+         self.start_ij()
       msg, data = communicate(self.client_socket, self.GET_COMMANDS)
       return data.split('\n')
 
    def execute_command(self, command, options=None):
       '''execute the named command within ImageJ'''
+      if self.ijproc.poll() is not None:
+         raise Exception("Can't execute \"%s\" in ImageJ because the subprocess was closed."%(command))
       msg, data = communicate(self.client_socket, self.COMMAND, command)
       assert msg.startswith('success')
 
@@ -238,87 +253,63 @@ class inter_proc_ij_bridge(ij_bridge, Singleton):
       '''execute a macro in ImageJ
       macro_text - the macro program to be run
       '''
+      if self.ijproc.poll() is not None:
+         raise Exception("Can't execute \"%s\" in ImageJ because the subprocess was closed."%(macro_text))
       msg, data = communicate(self.client_socket, self.MACRO, macro_text)
       assert msg.startswith('success')
    
    def show_imagej(self):
       '''show the ImageJ user interface'''
+      if self.ijproc.poll() is not None:
+         self.start_ij()
       msg, data = communicate(self.client_socket, self.SHOW_IMAGEJ)
       assert msg.startswith('success')
       
    def quit(self):
+      '''close the java process'''
+      if self.ijproc.poll() is not None:
+         raise Exception("Can't quit ImageJ because the subprocess was closed.")
       print '<SERVER> quit'
       msg, data = communicate(self.client_socket, self.QUIT)
       self.client_socket.close()
       self.server_socket.close()
-      assert msg.startswith('success')
-##      os.kill(self.ijproc.pid, 9)
+      if not msg.startswith('success'):
+         os.kill(self.ijproc.pid, 9)
       
-
-def np_to_pil(imdata):
-   '''Convert np image data to PIL Image'''
-   if len(imdata.shape) == 2:
-      buf = np.dstack([imdata, imdata, imdata])
-   elif len(imdata.shape) == 3:
-      buf = imdata
-      assert imdata.shape[2] >= 3, 'Cannot convert the given numpy array to PIL'
-   if buf.dtype != 'uint8':
-      buf = (buf * 255.0).astype('uint8')
-   im = PILImage.fromstring(mode='RGB', size=(buf.shape[1],buf.shape[0]),
-                            data=buf.tostring())
-   return im
- 
-def pil_to_np( pilImage ):
-   """
-   load a PIL image and return it as a numpy array of uint8.  For
-   grayscale images, the return array is MxN.  For RGB images, the
-   return value is MxNx3.  For RGBA images the return value is MxNx4
-   """
-   def toarray(im):
-      'return a 1D array of floats'
-      x_str = im.tostring('raw', im.mode)
-      x = np.fromstring(x_str,'uint8')
-      return x
-   
-   if pilImage.mode[0] == 'P':
-      im = pilImage.convert('RGBA')
-      x = toarray(im)
-      x = x.reshape(-1, 4)
-      if np.all(x[:,0] == x):
-         im = pilImage.convert('L')
-      pilImage = im
-
-      if pilImage.mode[0] in ('1', 'L', 'I', 'F'):
-         x = toarray(pilImage)
-         x.shape = pilImage.size[1], -1
-         return x
-      else:
-         x = toarray(pilImage.convert('RGBA'))
-         x.shape = pilImage.size[1], pilImage.size[0], 4
-         # discard alpha if all 1s
-         if (x[:,:,3] == 255).all():
-            return x[:,:,:3]
-         return x
-
      
 if __name__ == '__main__':
+   import wx
    from time import time
+   
+   app = wx.PySimpleApp()
+   PIXELS = np.tile(np.linspace(0,200,200), 300).reshape((300,200)).T
+   PIXELS[50:150,100:200] = 0.0
+   PIXELS[100, 150] = 1.0
    ipb = inter_proc_ij_bridge.getInstance()
 
-   pixels = np.random.standard_normal((400,600))
-   pixels[100:300,200:400] = 0
-   pixels[pixels<0] = 0
-   pixels /= pixels.max()
-   t0 = time()
-   ipb.inject_image(pixels, 'name ignored')
-   print 'time to inject:',time()-t0
-   ipb.get_current_image()
-   ipb.execute_macro('run("Invert");')
-   ipb.execute_command('Add Noise')
-   t0 = time()
-   ipb.get_current_image()
-   print 'time to get image:',time()-t0
-   cmds = ipb.get_commands()
-   print 'ImageJ commands:', cmds
+   f = wx.Frame(None)
+   b1 = wx.Button(f, -1, 'inject')
+   b2 = wx.Button(f, -1, 'get')
+   b3 = wx.Button(f, -1, 'get cmds')
+   b4 = wx.Button(f, -1, 'cmd:add noise')
+   b5 = wx.Button(f, -1, 'macro:invert')
+   b6 = wx.Button(f, -1, 'quit')
+   f.SetSizer(wx.BoxSizer(wx.VERTICAL))
+   f.Sizer.Add(b1)
+   f.Sizer.Add(b2)
+   f.Sizer.Add(b3)
+   f.Sizer.Add(b4)
+   f.Sizer.Add(b5)
+   f.Sizer.Add(b6)
+   b1.Bind(wx.EVT_BUTTON, lambda(x): ipb.inject_image(PIXELS, 'name ignored'))
+   b2.Bind(wx.EVT_BUTTON, lambda(x): ipb.get_current_image())
+   b3.Bind(wx.EVT_BUTTON, lambda(x): ipb.get_commands())
+   b4.Bind(wx.EVT_BUTTON, lambda(x): ipb.execute_command('Add Noise'))
+   b5.Bind(wx.EVT_BUTTON, lambda(x): ipb.execute_macro('run("Invert");'))
+   b6.Bind(wx.EVT_BUTTON, lambda(x): ipb.quit())
+   f.Show()
+   
+   app.MainLoop()
+   
    ipb.quit()
-   J.kill_vm()
+   

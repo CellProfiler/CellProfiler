@@ -13,6 +13,7 @@ import ij.gui.ImageWindow;
 import java.lang.StringBuffer;
 import java.lang.String;
 import java.net.*;
+import java.awt.event.*;
 
 /*
    This is the client program for running ImageJ in a separate process from
@@ -127,6 +128,11 @@ class TCPClient {
             }
             else if (inp.startsWith("showij")){ 
                 ijb.show_imagej();
+                // data size
+                to_server.write(intToByteArray(0));
+                // message
+                to_server.writeBytes("success ");
+                to_server.flush();
             }
         }
     }
@@ -138,6 +144,16 @@ class InterProcessIJBridge {
 
     public InterProcessIJBridge() {
         ij = new ImageJ();
+        //
+        // If ImageJ is closed, kill everything.
+        // Python side will take care of restarting TCPClient and IJ.
+        //
+        IJ.getInstance().addWindowListener(new WindowAdapter() {
+            public void windowClosed(WindowEvent evt) {
+                System.out.println("ImageJ window was closed. Killing TCPClient as well.");
+                java.lang.System.exit(0);
+            }
+        });
     }
 
     public void inject_image(byte[] data) {        

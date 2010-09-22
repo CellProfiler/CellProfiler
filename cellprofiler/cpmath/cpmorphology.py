@@ -407,6 +407,7 @@ def convex_hull_ijv(pixel_labels, indexes):
     # Initialize the counts of convex hull points to a ridiculous number
     #
     counts = np.iinfo(np.int32).max
+    first_pass = True
     while True:
         #
         # Figure out how many putative convex hull points there are for
@@ -422,10 +423,12 @@ def convex_hull_ijv(pixel_labels, indexes):
         new_counts = scipy.sparse.coo_matrix((v,(a[:,0],v*0)),
                                              shape=(len(indexes),1))
         new_counts = new_counts.toarray().flatten()
+        done_count = (2 if first_pass else 3)
         finish_me = ((new_counts > 0) & 
-                     ((new_counts <= 3) | (new_counts == counts)))
+                     ((new_counts <= done_count) | 
+                      (new_counts == counts)))
         indexes_to_finish = np.argwhere(finish_me).astype(np.int32)
-        keep_me = (new_counts > 3) & (new_counts < counts)
+        keep_me = (new_counts > done_count) & (new_counts < counts)
         indexes_to_keep = np.argwhere(keep_me).astype(np.int32)
         if len(indexes_to_finish):
             result_counts[finish_me] = new_counts[finish_me]
@@ -533,6 +536,7 @@ def convex_hull_ijv(pixel_labels, indexes):
             keep_me[consider_me] = to_keep 
         a = a[keep_me,:]
         centers_per_point = centers_per_point[keep_me]
+        first_pass = False
     #
     # Finally, we have to shrink the results. We number each of the
     # points for a label, then only keep those whose indexes are
@@ -1746,7 +1750,7 @@ def calculate_convex_hull_areas(labels,indexes=None):
     # 
     if np.any(counts==2):
         diff_2 = hull[hull_index[counts==2],1:]-hull[hull_index[counts==2]+1,1:]
-        result[counts==2] = np.sqrt(np.sum(diff_2**2))+1
+        result[counts==2] = np.sqrt(np.sum(diff_2**2,1))+1
     if not np.any(counts>=3):
         return result
     #

@@ -50,7 +50,6 @@ class RunImageJ(cpm.CPModule):
         def get_command_choices(pipeline):
             if len(self.command.choices) > 0:
                 return self.command.choices
-            import cellprofiler.utilities.jutil as J
             import imagej.ijbridge as ijbridge
             ijb = ijbridge.get_ij_bridge()
             return sorted(ijb.get_commands())
@@ -234,7 +233,6 @@ class RunImageJ(cpm.CPModule):
     def run(self, workspace):
         '''Run the imageJ command'''
         import imagej.ijbridge as ijbridge
-        import cellprofiler.utilities.jutil as J
         
         image_set = workspace.image_set
         assert isinstance(image_set, cpi.ImageSet)

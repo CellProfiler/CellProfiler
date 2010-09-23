@@ -66,7 +66,7 @@ class TCPClient {
         
             System.out.println("<CLIENT> got " + inp);
             
-            if (inp.startsWith("quit")){
+            if (inp.startsWith("quit")) {
                 to_server.write(intToByteArray(0));
                 to_server.writeBytes("success ");
                 to_server.flush();
@@ -74,13 +74,13 @@ class TCPClient {
                 ijb.quit_imagej();
                 break;
             } 
-            else if (inp.startsWith("inject")){
+            else if (inp.startsWith("inject")) {
                 ijb.inject_image(bites);
                 to_server.write(intToByteArray(0));
                 to_server.writeBytes("success ");
                 to_server.flush();
             }
-            else if (inp.startsWith("getimg")){
+            else if (inp.startsWith("getimg")) {
                 float[] pixels = ijb.get_current_image();
                 byte[] bytes = floatArrayToByteArray(pixels);
                 // data size
@@ -93,22 +93,26 @@ class TCPClient {
                 to_server.write(bytes);
                 to_server.flush();
             }
-            else if (inp.startsWith("macro")){ 
+            else if (inp.startsWith("macro")) {
                 ijb.execute_macro(new String(bites));
                 to_server.write(intToByteArray(0));
                 to_server.writeBytes("success ");
                 to_server.flush();
             }
-            else if (inp.startsWith("command")){ 
-                // TODO: need to handle command "options"
-                ijb.execute_command(new String(bites));
+            else if (inp.startsWith("command")) {
+                String s = new String(bites);
+                String[] parts = s.split(";", 2);
+                if (parts.length == 1) {
+                    ijb.execute_command(parts[0]);
+                } else {
+                    ijb.execute_command(parts[0], parts[1]);
+                }
                 to_server.write(intToByteArray(0));
                 to_server.writeBytes("success ");
                 to_server.flush();
             }
-            else if (inp.startsWith("getcmds")){ 
+            else if (inp.startsWith("getcmds")) { 
                 Enumeration cmds = ijb.get_commands();
-                
                 String cmd_list = "";
                 while (cmds.hasMoreElements()) {
                     String ijcmd = (String)cmds.nextElement();
@@ -126,7 +130,7 @@ class TCPClient {
                 to_server.writeBytes(cmd_list);
                 to_server.flush();
             }
-            else if (inp.startsWith("showij")){ 
+            else if (inp.startsWith("showij")) { 
                 ijb.show_imagej();
                 // data size
                 to_server.write(intToByteArray(0));
@@ -241,7 +245,7 @@ class InterProcessIJBridge {
     }
 
     public void execute_command(String command, String options){
-        IJ.run(command, options);        
+        IJ.run(command, options);
     }
 
     public void quit_imagej(){

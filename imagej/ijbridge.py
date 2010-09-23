@@ -246,7 +246,7 @@ class inter_proc_ij_bridge(ij_bridge, Singleton):
       '''execute the named command within ImageJ'''
       if self.ijproc.poll() is not None:
          raise Exception("Can't execute \"%s\" in ImageJ because the subprocess was closed."%(command))
-      msg, data = communicate(self.client_socket, self.COMMAND, command)
+      msg, data = communicate(self.client_socket, self.COMMAND, command+';'+(options or ''))
       assert msg.startswith('success')
 
    def execute_macro(self, macro_text):
@@ -301,9 +301,13 @@ if __name__ == '__main__':
    f.Sizer.Add(b4)
    f.Sizer.Add(b5)
    f.Sizer.Add(b6)
+
+   def on_getcmds(evt):
+      print ipb.get_commands()
+   
    b1.Bind(wx.EVT_BUTTON, lambda(x): ipb.inject_image(PIXELS, 'name ignored'))
    b2.Bind(wx.EVT_BUTTON, lambda(x): ipb.get_current_image())
-   b3.Bind(wx.EVT_BUTTON, lambda(x): ipb.get_commands())
+   b3.Bind(wx.EVT_BUTTON, on_getcmds)
    b4.Bind(wx.EVT_BUTTON, lambda(x): ipb.execute_command('Add Noise'))
    b5.Bind(wx.EVT_BUTTON, lambda(x): ipb.execute_macro('run("Invert");'))
    b6.Bind(wx.EVT_BUTTON, lambda(x): ipb.quit())

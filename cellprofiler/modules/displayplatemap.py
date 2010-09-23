@@ -1,4 +1,3 @@
-#TODO:
 '''<b>Display Platemap </b> displays a desired measurement in plate map view
 <hr>
 
@@ -7,12 +6,13 @@ multi-well plates common to high-throughput biological screens. The display
 window for this module shows a plate map with each well color-coded according
 to the measurement chosen. 
 
-<p>As the pipeline runs, the measurement information displayed is updated, 
-so value shown for each well is current up to the image
-cycle currently being processed; wells which have no corresponding measurements
-as yet as shown as blank.
+<p>As the pipeline runs, the measurement information displayed is updated, so 
+the value shown for each well is current up to the image cycle currently being 
+processed; wells which have no corresponding measurements as yet as shown as 
+blank.
 
-See also <b>DisplayDensityPlot</b>, <b>DisplayHistogram</b>, <b>DisplayScatterPlot</b>.
+See also <b>DisplayDensityPlot</b>, <b>DisplayHistogram</b>, 
+<b>DisplayScatterPlot</b>.
 '''
 
 #CellProfiler is distributed under the GNU General Public License.
@@ -50,7 +50,7 @@ class DisplayPlatemap(cpm.CPModule):
     
     module_name = "DisplayPlatemap"
     category = "Data Tools"
-    variable_revision_number = 1
+    variable_revision_number = 2
     
     def get_object(self):
         if self.objects_or_image.value == OI_OBJECTS:
@@ -146,7 +146,8 @@ class DisplayPlatemap(cpm.CPModule):
     def settings(self):
         return [self.objects_or_image, self.object, self.plot_measurement,
                 self.plate_name, self.plate_type, self.well_name, 
-                self.well_row, self.well_col, self.agg_method, self.title]
+                self.well_row, self.well_col, self.agg_method, self.title,
+                self.well_format]
 
     def visible_settings(self):
         result = [self.objects_or_image]
@@ -155,6 +156,7 @@ class DisplayPlatemap(cpm.CPModule):
         result += [self.plot_measurement]
         result += [self.plate_type]
         result += [self.plate_name]
+        result += [self.well_format]
         if self.well_format == WF_NAME:
             result += [self.well_name]
         elif self.well_format == WF_ROWCOL:
@@ -216,6 +218,10 @@ class DisplayPlatemap(cpm.CPModule):
 
     def backwards_compatibilize(self, setting_values, variable_revision_number, 
                                 module_name, from_matlab):
+        if variable_revision_number == 1:
+            # Add the wellformat setting
+            setting_values += [WF_NAME]
+            variable_revision_number = 2
         return setting_values, variable_revision_number, from_matlab
         
     

@@ -1044,7 +1044,7 @@ class TrackObjects(cpm.CPModule):
             gi = group_indexes[group_numbers == group_number]
             glist = self.get_group_indexes(workspace)
             del glist[:]
-            glist += group_indexes.tolist()
+            glist += gi.tolist()
             self.post_group(workspace, {})
 
     def flood(self, i, at, a, b, c, d, z):
@@ -1131,8 +1131,10 @@ class TrackObjects(cpm.CPModule):
         #
         # Reduce the lists to only the ones in the group
         #
-        for mlist in (label, a, b, Area):
-            mlist = [mlist[image_number] for image_number in indexes]
+        label = [label[ix] for ix in indexes]
+        a = [a[ix] for ix in indexes]
+        b = [b[ix] for ix in indexes]
+        Area = [Area[ix] for ix in indexes]
         numFrames = len(b)
 
         #Calculates the maximum number of cells in a single frame
@@ -1156,14 +1158,12 @@ class TrackObjects(cpm.CPModule):
         bprime =  np.zeros((numFrames, mlength))
         Areaprime = np.zeros((numFrames, mlength))
 
-        i = 0
-        while i<numFrames:
-            labelprime[i] = np.hstack((label[i], np.zeros(mlength-len(label[i]), dtype=np.int)))
-            aprime[i] = np.hstack((a[i], np.zeros(mlength-len(label[i]))))
-            bprime[i] = np.hstack((b[i], np.zeros(mlength-len(label[i]))))
-            Areaprime[i] = np.hstack((Area[i], np.zeros(mlength-len(label[i]))))
-
-            i = i+1
+        for i, (ll, aa, bb, AA) in enumerate(zip(label, a, b, Area)):
+            llength = len(ll)
+            labelprime[i,:llength] = ll
+            aprime[i,:llength] = aa
+            bprime[i,:llength] = bb
+            Areaprime[i, :llength] = AA
 
         #sets up the arrays F, L, P, and Q
         #F is an array of all the cells that are the starts of segments, L is the ends, P includes all cells

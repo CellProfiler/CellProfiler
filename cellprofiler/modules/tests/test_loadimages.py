@@ -867,7 +867,7 @@ LoadImages:[module_num:1|svn_version:\'9976\'|variable_revision_number:7|show_wi
         pipeline.add_module(load_images)
         pipeline.add_module(check_image)
         pipeline.run()
-    
+
     def test_05_05_load_url(self):
         lip = LI.LoadImagesImageProvider(
             "broad", 
@@ -933,6 +933,13 @@ LoadImages:[module_num:1|svn_version:\'9976\'|variable_revision_number:7|show_wi
         self.assertEqual(pixels.ndim, 3)
         self.assertEqual(tuple(pixels.shape), (64, 64, 5))
 
+    def test_05_09_load_C01(self):
+        """IMG-457: Test loading of a .c01 file"""
+        c01_path = os.path.join(T.testimages_directory(), "icd002235_090127090001_a01f00d1.c01")
+        image = LI.load_using_bioformats(c01_path)
+        self.assertEqual(tuple(image.shape), (512,512))
+        self.assertAlmostEqual(np.sum(image.astype(np.float32)), 2497.4338, 4)
+        
     def test_06_01_file_metadata(self):
         """Test file metadata on two sets of two files
         

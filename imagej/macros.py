@@ -32,7 +32,15 @@ def get_commands():
         if hashtable is None:
             return []
     keys = J.call(hashtable, "keys", "()Ljava/util/Enumeration;")
-    return J.jenumeration_to_string_list(keys)
+    keys = J.jenumeration_to_string_list(keys)
+    values = J.call(hashtable, "values", "()Ljava/util/Collection;")
+    values = [J.to_string(x) for x in J.iterate_java(
+        J.call(values, 'iterator', "()Ljava/util/Iterator;"))]
+    class CommandList(list):
+        def __init__(self):
+            super(CommandList, self).__init__(keys)
+            self.values = values
+    return CommandList()
         
 def execute_command(command, options = None):
     '''Execute the named command within ImageJ'''
@@ -66,6 +74,20 @@ def show_imagej():
     J.call(ij_obj, "setVisible", "(Z)V", True)
     J.call(ij_obj, "toFront", "()V")
     
+def get_user_loader():
+    '''The class loader used to load user plugins'''
+    return J.static_call("ij/IJ", "getClassLoader", "()Ljava/lang/ClassLoader;")
+
+def get_plugin(classname):
+    '''Return an instance of the named plugin'''
+    if classname.startswith("ij."):
+        cls = J.class_for_name(classname)
+    else:
+        cls = J.class_for_name(classname, get_user_loader())
+    cls = J.get_class_wrapper(cls, True)
+    constructor = J.get_constructor_wrapper(cls.getConstructor(None))
+    return constructor.newInstance(None)
+
 if __name__=="__main__":
     import sys
     J.attach()

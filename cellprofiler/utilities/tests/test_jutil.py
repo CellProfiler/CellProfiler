@@ -123,6 +123,11 @@ class TestJutil(unittest.TestCase):
                 self.new_fn()
         my_instance = MyClass()
         
+    def test_01_11_class_for_name(self):
+        c = J.class_for_name('java.lang.String')
+        name = J.call(c, 'getCanonicalName', '()Ljava/lang/String;')
+        self.assertEqual(name, 'java.lang.String')
+    
     def test_02_01_access_object_across_environments(self):
         #
         # Create an object in one environment, close the environment,
@@ -178,24 +183,113 @@ class TestJutil(unittest.TestCase):
         jobjs = self.env.get_object_array_elements(jcontainer)
         jobj = jobjs[0]
         self.assertEqual(J.call(jobj, "intValue", "()I"), my_value)
-        
-    def test_02_04_memory(self):
-        '''Make sure that memory is truly released when an object is dereferenced'''
-        env = self.env
-        self.assertTrue(isinstance(env,J.javabridge.JB_Env))
-        for i in range(25):
-            print "starting pass %d" % (i+1)
-            memory = np.random.uniform(size=1000*1000*10)
-            jarray = env.make_double_array(memory)
-            J.static_call("java/util/Arrays", "sort",
-                          "([D)V", jarray)
-            sorted_memory = env.get_double_array_elements(jarray)
-            np.testing.assert_almost_equal(sorted_memory[0], memory.min())
-            np.testing.assert_almost_equal(sorted_memory[-1], memory.max())
-            del memory
-            del sorted_memory
-            del jarray
-            gc.collect()
+    
+    #def test_02_04_memory(self):
+        #'''Make sure that memory is truly released when an object is dereferenced'''
+        #env = self.env
+        #self.assertTrue(isinstance(env,J.javabridge.JB_Env))
+        #for i in range(25):
+            #print "starting pass %d" % (i+1)
+            #memory = np.random.uniform(size=1000*1000*10)
+            #jarray = env.make_double_array(memory)
+            #J.static_call("java/util/Arrays", "sort",
+                          #"([D)V", jarray)
+            #sorted_memory = env.get_double_array_elements(jarray)
+            #np.testing.assert_almost_equal(sorted_memory[0], memory.min())
+            #np.testing.assert_almost_equal(sorted_memory[-1], memory.max())
+            #del memory
+            #del sorted_memory
+            #del jarray
+            #gc.collect()
             
+    def test_03_01_cw_from_class(self):
+        '''Get a class wrapper from a class'''
+        c = J.get_class_wrapper(J.make_instance('java/lang/Integer', '(I)V',
+                                                14))
+    
+    def test_03_02_cw_from_string(self):
+        '''Get a class wrapper from a string'''
+        c = J.get_class_wrapper("java.lang.Number")
+        
+    def test_03_03_cw_get_classes(self):
+        c = J.get_class_wrapper('java.lang.Number')
+        classes = c.getClasses()
+        self.assertEqual(len(J.get_env().get_object_array_elements(classes)), 0)
+        
+    def test_03_04_cw_get_annotation(self):
+        c = J.get_class_wrapper('java.security.Identity')
+        annotation = c.getAnnotation(J.class_for_name('java.lang.Deprecated'))
+        self.assertTrue(annotation is not None)
+    
+    def test_03_05_cw_get_annotations(self):
+        c = J.get_class_wrapper('java.security.Identity')
+        annotations = c.getAnnotations()
+        annotations = J.get_env().get_object_array_elements(annotations)
+        self.assertEqual(len(annotations), 1)
+        self.assertEqual(J.to_string(annotations[0]),'@java.lang.Deprecated()')
+        
+    def test_03_06_cw_get_constructors(self):
+        c = J.get_class_wrapper('java.lang.String')
+        constructors = c.getConstructors()
+        constructors = J.get_env().get_object_array_elements(constructors)
+        self.assertEqual(len(constructors), 15)
+        
+    def test_03_07_cw_get_fields(self):
+        c = J.get_class_wrapper('java.lang.String')
+        fields = c.getFields()
+        fields = J.get_env().get_object_array_elements(fields)
+        self.assertEqual(len(fields), 1)
+        self.assertEqual(J.call(fields[0], 'getName', '()Ljava/lang/String;'),
+                         "CASE_INSENSITIVE_ORDER")
+        
+    def test_03_08_cw_get_field(self):
+        c = J.get_class_wrapper('java.lang.String')
+        field = c.getField('CASE_INSENSITIVE_ORDER')
+        modifiers = J.call(field, 'getModifiers', '()I')
+        static = J.get_static_field('java/lang/reflect/Modifier','STATIC','I')
+        self.assertEqual((modifiers & static), static)
+        
+    def test_03_09_cw_get_method(self):
+        sclass = J.class_for_name('java.lang.String')
+        iclass = J.get_static_field('java/lang/Integer', 'TYPE', 
+                                    'Ljava/lang/Class;')
+        c = J.get_class_wrapper('java.lang.String')
+        m = c.getMethod('charAt', [ iclass ])
+        self.assertEqual(J.to_string(J.call(m, 'getReturnType', '()Ljava/lang/Class;')), 'char')
+        m = c.getMethod('concat', [ sclass])
+        self.assertEqual(J.to_string(J.call(m, 'getReturnType', '()Ljava/lang/Class;')), 
+                         'class java.lang.String')
+        
+    def test_03_10_cw_get_methods(self):
+        c = J.get_class_wrapper('java.lang.String')
+        mmm = J.get_env().get_object_array_elements(c.getMethods())
+        self.assertTrue(any([J.call(m, 'getName', '()Ljava/lang/String;') == 'concat'
+                             for m in mmm]))
+        
+    def test_03_11_cw_get_constructor(self):
+        c = J.get_class_wrapper('java.lang.String')
+        sclass = J.class_for_name('java.lang.String')
+        constructor = c.getConstructor([sclass])
+        self.assertEqual(J.call(constructor, 'getName', '()Ljava/lang/String;'),
+                         'java.lang.String')
+        
+    def test_04_01_field_get(self):
+        c = J.get_class_wrapper('java.lang.Byte')
+        f = J.get_field_wrapper(c.getField('MAX_VALUE'))
+        v = f.get(None)
+        self.assertEqual(J.to_string(v), '127')
+        
+    def test_04_02_field_name(self):
+        c = J.get_class_wrapper('java.lang.Byte')
+        f = J.get_field_wrapper(c.getField('MAX_VALUE'))
+        self.assertEqual(f.getName(), 'MAX_VALUE')
+        
+    def test_04_03_field_type(self):
+        c = J.get_class_wrapper('java.lang.Byte')
+        f = J.get_field_wrapper(c.getField('MAX_VALUE'))
+        t = f.getType()
+        self.assertEqual(J.to_string(t), 'byte')
+        
+    
 if __name__=="__main__":
     unittest.main()

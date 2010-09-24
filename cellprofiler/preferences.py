@@ -164,6 +164,7 @@ TERTIARY_OUTLINE_COLOR = 'TertiaryOutlineColor'
 JVM_ERROR = 'JVMError'
 ALLOW_OUTPUT_FILE_OVERWRITE = 'AllowOutputFileOverwrite'
 PLUGIN_DIRECTORY = 'PluginDirectory'
+IJ_PLUGIN_DIRECTORY = 'IJPluginDirectory'
 SHOW_ANALYSIS_COMPLETE_DLG = "ShowAnalysisCompleteDlg"
 
 def recent_file(index, category=""):
@@ -482,6 +483,26 @@ def set_plugin_directory(value):
     
     __plugin_directory = value
     get_config().Write(PLUGIN_DIRECTORY, value)
+
+__ij_plugin_directory = None
+def get_ij_plugin_directory():
+    global __ij_plugin_directory
+    
+    if __ij_plugin_directory is not None:
+        return __ij_plugin_directory
+    
+    if get_config().Exists(IJ_PLUGIN_DIRECTORY):
+        __ij_plugin_directory = get_config().Read(IJ_PLUGIN_DIRECTORY)
+    else:
+        # The default is the startup directory
+        return os.path.abspath(os.path.join(os.curdir, "plugins"))
+    return __ij_plugin_directory
+
+def set_ij_plugin_directory(value):
+    global __ij_plugin_directory
+    
+    __ij_plugin_directory = value
+    get_config().Write(IJ_PLUGIN_DIRECTORY, value)
 
 __data_file=None
 

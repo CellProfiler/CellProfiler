@@ -95,6 +95,11 @@ parser.add_option("--plugins-directory",
                   help=("CellProfiler will look for plugin modules in this "
                         "directory."))
 
+parser.add_option("--ij-plugins-directory",
+                  dest="ij_plugins_directory",
+                  help=("CellProfiler will look for ImageJ plugin modules "
+                        "in this directory."))
+
 if not hasattr(sys, 'frozen'):
     parser.add_option("-b", "--do-not_build",
                       dest="build_extensions",
@@ -228,6 +233,8 @@ try:
     
     if options.plugins_directory is not None:
         cpprefs.set_plugin_directory(options.plugins_directory)
+    if options.ij_plugins_directory is not None:
+        cpprefs.set_ij_plugin_directory(options.ij_plugins_directory)
     if options.data_file is not None:
         cpprefs.set_data_file(os.path.abspath(options.data_file))
         

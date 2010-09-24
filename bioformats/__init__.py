@@ -16,7 +16,7 @@ __version__ = "$Revision$"
 
 import os
 import cellprofiler.utilities.jutil as jutil
-from cellprofiler.preferences import get_headless
+from cellprofiler.preferences import get_headless, get_ij_plugin_directory
 import sys
 import traceback
 
@@ -74,6 +74,8 @@ __args = [r"-Djava.class.path="+__class_path,
           #r"-verbose:class",
           #r"-verbose:jni",
           r"-Xmx512m"]
+if get_ij_plugin_directory() is not None:
+    __args.append("-Dplugins.dir="+get_ij_plugin_directory())
 
 #
 # Get the log4j logger setup from a file in the bioformats directory

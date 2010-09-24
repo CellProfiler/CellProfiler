@@ -20,6 +20,10 @@ def get_java_string_class(env):
 It's important to duck-type your class by using "klass" to store the class
 and self.o to store the Java object instance.
 
+The signatures are difficult, but you can cheat. The JSDK has a program,
+'javap', that you can use to print out the signatures of everything
+in a class.
+
 CellProfiler is distributed under the GNU General Public License,
 but this file is licensed under the more permissive BSD license.
 See the accompanying file LICENSE for details.
@@ -533,8 +537,9 @@ def get_nice_args(args, sig):
 def get_nice_arg(arg, sig):
     '''Convert an argument into a Java type when appropriate'''
     env = get_env()
-    if sig[0] == 'L' and not (isinstance(arg, javabridge.JB_Object) or
-                                isinstance(arg, javabridge.JB_Class)):
+    is_java = (isinstance(arg, javabridge.JB_Object) or
+               isinstance(arg, javabridge.JB_Class))
+    if sig[0] == 'L' and not is_java:
         #
         # Check for the standard packing of java objects into class instances
         #
@@ -562,8 +567,7 @@ def get_nice_arg(arg, sig):
             return env.make_float_array(np.ascontiguousarray(arg.flatten(), np.float32))
         elif sig == '[D':
             return env.make_double_array(np.ascontiguousarray(arg.flatten(), np.float64))
-    elif (sig.startswith('L') and sig.endswith(';') and
-          not isinstance(arg, (javabridge.JB_Object, javabridge.JB_Class))):
+    elif sig.startswith('L') and sig.endswith(';') and not is_java:
         #
         # Desperately try to make an instance of it with an integer constructor
         #
@@ -571,6 +575,13 @@ def get_nice_arg(arg, sig):
             return make_instance(sig[1:-1], '(I)V', int(arg))
         elif isinstance(arg, (str, unicode)):
             return make_instance(sig[1:-1], '(Ljava/lang/String;)V', arg)
+    if sig.startswith('[L') and (not is_java) and hasattr(arg, '__iter__'):
+        objs = [get_nice_arg(subarg, sig[1:]) for subarg in arg]
+        k = env.find_class(sig[2:-1])
+        a = env.make_object_array(len(objs), k)
+        for i, obj in enumerate(objs):
+            env.set_object_array_element(a, i, obj)
+        return a
     return arg
 
 def get_nice_result(result, sig):
@@ -587,6 +598,27 @@ def get_nice_result(result, sig):
     if sig == '[B':
         # Convert a byte array into a numpy array
         return env.get_byte_array_elements(result)
+    if isinstance(result, javabridge.JB_Object):
+        #
+        # Do longhand to prevent recursion
+        #
+        rklass = env.get_object_class(result)
+        m = env.get_method_id(rklass, 'getClass', '()Ljava/lang/Class;')
+        rclass = env.call_method(result, m)
+        rkklass = env.get_object_class(rclass)
+        m = env.get_method_id(rkklass, 'isPrimitive', '()Z')
+        is_primitive = env.call_method(rclass, m)
+        if is_primitive:
+            rc = get_class_wrapper(rclass, True)
+            classname = rc.getCanonicalName()
+            if classname == 'boolean':
+                return to_string(result) == 'true'
+            elif classname in ('int', 'byte', 'short', 'long'):
+                return int(to_string(result))
+            elif classname in ('float', 'double'):
+                return float(to_string(result))
+            elif classname == 'char':
+                return to_string(result)
     return result
 
 def to_string(jobject):
@@ -653,6 +685,16 @@ def get_enumeration_wrapper(enumeration):
         nextElement = make_method('nextElement', 
                                   '()Ljava/lang/Object;')
     return Enumeration()
+
+def iterate_java(iterator):
+    '''Make a Python iterator for a Java iterator
+    
+    usage:
+    for x in iterate_java(foo):
+        do_something_with(x)
+    '''
+    while(call(iterator, 'hasNext', '()Z')):
+        yield call(iterator, 'next', '()Ljava/lang/Object;')
         
 def jenumeration_to_string_list(enumeration):
     '''Convert a Java enumeration to a Python list of strings
@@ -708,25 +750,171 @@ def make_instance(class_name, sig, *args):
         raise JavaException(jexception)
     return result
 
-def get_class_wrapper(obj):
+def class_for_name(classname, ldr="system"):
+    '''Return a java.lang.Class for the given name
+    
+    classname: the class name in dotted form, e.g. "java.lang.Class"
+    '''
+    if ldr == "system":
+        ldr = static_call('java/lang/ClassLoader', 'getSystemClassLoader',
+                          '()Ljava/lang/ClassLoader;')
+    return static_call('java/lang/Class', 'forName', 
+                       '(Ljava/lang/String;ZLjava/lang/ClassLoader;)'
+                       'Ljava/lang/Class;', 
+                       classname, True, ldr)
+
+def get_class_wrapper(obj, is_class = False):
     '''Return a wrapper for an object's class (e.g. for reflection)
     
     '''
-    class_object = call(obj, 'getClass','()Ljava/lang/Class;')
+    if is_class:
+        class_object = obj
+    elif isinstance(obj, (str, unicode)):
+        class_object = class_for_name(obj)
+    else:
+        class_object = call(obj, 'getClass','()Ljava/lang/Class;')
     class Klass(object):
         def __init__(self):
             self.o = class_object
+        getAnnotation = make_method('getAnnotation',
+                                    '(Ljava/lang/Class;)Ljava/lang/annotation/Annotation;',
+                                    "Returns this element's annotation if present")
+        getAnnotations = make_method('getAnnotations',
+                                     '()[Ljava/lang/annotation/Annotation;')
+        getCanonicalName = make_method('getCanonicalName',
+                                       '()Ljava/lang/String;',
+                                       'Returns the canonical name of the class')
         getClasses = make_method('getClasses','()[Ljava/lang/Class;',
                                  'Returns an array containing Class objects representing all the public classes and interfaces that are members of the class represented by this Class object.')
+        getConstructor = make_method(
+            'getConstructor', 
+            '([Ljava/lang/Class;)Ljava/lang/reflect/Constructor;',
+            'Return a constructor with the given signature')
         getConstructors = make_method('getConstructors','()[Ljava/lang/reflect/Constructor;')
         getFields = make_method('getFields','()[Ljava/lang/reflect/Field;')
         getField = make_method('getField','(Ljava/lang/String;)Ljava/lang/reflect/Field;')
         getMethod = make_method('getMethod','(Ljava/lang/String;[Ljava/lang/Class;)Ljava/lang/reflect/Method;')
         getMethods = make_method('getMethods','()[Ljava/lang/reflect/Method;')
-        getDeclaredMethod = make_method('getDeclaredMethod',
-                                        '(Ljava/lang/String;[Ljava/lang/Class;)Ljava/lang/reflect/Method;')
+        cast = make_method('cast', '(Ljava/lang/Object;)Ljava/lang/Object;',
+                           'Throw an exception if object is not castable to this class')
+        isPrimitive = make_method('isPrimitive', '()Z',
+                                  'Return True if the class is a primitive such as boolean or int')
     return Klass()
 
+MOD_ABSTRACT  = 'ABSTRACT'
+MOD_FINAL = 'FINAL'
+MOD_INTERFACE = 'INTERFACE'
+MOD_NATIVE = 'NATIVE'
+MOD_PRIVATE = 'PRIVATE'
+MOD_PROTECTED = 'PROTECTED'
+MOD_PUBLIC = 'PUBLIC'
+MOD_STATIC = 'STATIC'
+MOD_STRICT = 'STRICT'
+MOD_SYCHRONIZED = 'SYNCHRONIZED'
+MOD_TRANSIENT = 'TRANSIENT'
+MOD_VOLATILE = 'VOLATILE'
+MOD_ALL = [MOD_ABSTRACT, MOD_FINAL, MOD_INTERFACE, MOD_NATIVE,
+           MOD_PRIVATE, MOD_PROTECTED, MOD_PUBLIC, MOD_STATIC,
+           MOD_STRICT, MOD_SYCHRONIZED, MOD_TRANSIENT, MOD_VOLATILE]
+
+def get_modifier_flags(modifier_flags):
+    '''Parse out the modifiers from the modifier flags from getModifiers'''
+    result = []
+    for mod in MOD_ALL:
+        if modifier_flags & get_static_field('java/lang/reflect/Modifier',
+                                             mod, 'I'):
+            result.append(mod)
+    return result
+
+def get_field_wrapper(field):
+    '''Return a wrapper for the java.lang.reflect.Field class'''
+    class Field(object):
+        def __init__(self):
+            self.o = field
+            
+        get = make_method('get', '(Ljava/lang/Object;)Ljava/lang/Object;',
+                          'Returns the value of the field represented by this '
+                          'Field, on the specified object.')
+        def getAnnotation(self, annotation_class):
+            """Returns this element's annotation for the specified type
+            
+            annotation_class - find annotations of this class
+            
+            returns the annotation or None if not annotated"""
+            
+            if isinstance(annotation_class, (str, unicode)):
+                annotation_class = class_for_name(annotation_class)
+            return call(self.o, 'getAnnotation', 
+                        '(Ljava/lang/Class;)Ljava/lang/annotation/Annotation;',
+                        annotation_class)
+        
+        getBoolean = make_method('getBoolean', '(Ljava/lang/Object;)Z',
+                                 'Read a boolean field from an object')
+        getByte = make_method('getByte', '(Ljava/lang/Object;)B',
+                              'Read a byte field from an object')
+        getChar = make_method('getChar', '(Ljava/lang/Object;)C')
+        getDouble = make_method('getDouble', '(Ljava/lang/Object;)D')
+        getFloat = make_method('getFouble', '(Ljava/lang/Object;)F')
+        getInt = make_method('getInt', '(Ljava/lang/Object;)I')
+        getShort = make_method('getShort', '(Ljava/lang/Object;)S')
+        getLong = make_method('getLong', '(Ljava/lang/Object;)L')
+        getDeclaredAnnotations = make_method(
+            'getDeclaredAnnotations',
+            '()[Ljava/lang/annotation/Annotation;')
+        getGenericType = make_method('getGenericType', 
+                                     '()Ljava/lang/reflect/Type;')
+        def getModifiers(self):
+            return get_modifier_flags(call(self.o, 'getModifiers','()I'))
+        getName = make_method('getName', '()Ljava/lang/String;')
+        
+        getType = make_method('getType', '()Ljava/lang/Class;')
+        set = make_method('set', '(Ljava/lang/Object;Ljava/lang/Object;)V')
+        setBoolean = make_method('setBoolean', '(Ljava/lang/Object;Z)V',
+                                 'Set a boolean field in an object')
+        setByte = make_method('setByte', '(Ljava/lang/Object;B)V',
+                              'Set a byte field in an object')
+        setChar = make_method('setChar', '(Ljava/lang/Object;C)V')
+        setDouble = make_method('setDouble', '(Ljava/lang/Object;D)V')
+        setFloat = make_method('setFloat', '(Ljava/lang/Object;F)V')
+        setInt = make_method('setInt', '(Ljava/lang/Object;I)V')
+        setShort = make_method('setShort', '(Ljava/lang/Object;S)V')
+        setLong = make_method('setLong', '(Ljava/lang/Object;L)V')
+    return Field()
+
+def get_constructor_wrapper(obj):
+    '''Get a wrapper for calling methods on the constructor object'''
+    class Constructor(object):
+        def __init__(self):
+            self.o = obj
+            
+        getParameterTypes = make_method('getParameterTypes',
+                                        '()[Ljava/lang/Class;',
+                                        'Get the types of the constructor parameters')
+        getName = make_method('getName', '()Ljava/lang/String;')
+        newInstance = make_method('newInstance',
+                                  '([Ljava/lang/Object;)Ljava/lang/Object;')
+        getAnnotation = make_method('getAnnotation', 
+                                    '()Ljava/lang/annotation/Annotation;')
+        getModifiers = make_method('getModifiers', '()I')
+    return Constructor()
+        
+def get_method_wrapper(obj):
+    '''Get a wrapper for calling methods on the method object'''
+    class Method(object):
+        def __init__(self):
+            self.o = obj
+            
+        getParameterTypes = make_method('getParameterTypes',
+                                        '()[Ljava/lang/Class;',
+                                        'Get the types of the constructor parameters')
+        getName = make_method('getName', '()Ljava/lang/String;')
+        invoke = make_method('invoke',
+                             '(Ljava/lang/Object;[Ljava/lang/Object;)Ljava/lang/Object;')
+        getAnnotation = make_method('getAnnotation', 
+                                    '()Ljava/lang/annotation/Annotation;')
+        getModifiers = make_method('getModifiers', '()I')
+    return Method()
+        
 def attach_ext_env(env_address):
     '''Attach to an externally supplied Java environment
     

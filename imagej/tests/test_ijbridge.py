@@ -87,7 +87,7 @@ class TestIJBridge(unittest.TestCase):
          return
       ijb =  in_proc_ij_bridge.getInstance()
       cmds = ijb.get_commands()
-      assert set(cmds) == set(IJ_CMDS)
+      assert set(cmds).issuperset(set(IJ_CMDS))
 
    #
    # inter-proc (TCP) tests

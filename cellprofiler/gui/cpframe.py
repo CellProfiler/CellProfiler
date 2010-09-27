@@ -154,7 +154,7 @@ class CPFrame(wx.Frame):
         wx.GetApp().ExitMainLoop()
 
     def __set_properties(self):
-        self.SetTitle("CellProfiler (v.%d)"%(get_revision.version))
+        self.SetTitle("CellProfiler (r%d)"%(get_revision.version))
         self.SetSize((1024, 600))
 
     def __add_menu(self):

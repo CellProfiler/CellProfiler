@@ -59,7 +59,7 @@ class ProgressFrame(wx.Frame):
         self.BackgroundColour = cellprofiler.preferences.get_background_color()
         self.tbicon = wx.TaskBarIcon()
         self.tbicon.SetIcon(get_cp_icon(), "CellProfiler2.0")
-        self.SetTitle("CellProfiler (v.%d)"%(get_revision.version))
+        self.SetTitle("CellProfiler (r%d)"%(get_revision.version))
         self.SetSize((640, 480))
         self.panel = wx.Panel(self, wx.ID_ANY)
         sizer = wx.BoxSizer(wx.VERTICAL)

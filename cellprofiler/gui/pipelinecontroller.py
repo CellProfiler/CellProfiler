@@ -301,13 +301,13 @@ class PipelineController:
         '''Set the title of the parent frame'''
         pathname = cpprefs.get_current_pipeline_path()
         if pathname is None:
-            self.__frame.Title = "CellProfiler (v.%d)"%(get_revision.version)
+            self.__frame.Title = "CellProfiler (r%d)"%(get_revision.version)
             return
         path, file = os.path.split(pathname)
         if self.__dirty_pipeline:
-            self.__frame.Title = "CellProfiler (v.%d): %s* (%s)"%(get_revision.version, file, path)
+            self.__frame.Title = "CellProfiler (r%d): %s* (%s)"%(get_revision.version, file, path)
         else:
-            self.__frame.Title = "CellProfiler (v.%d): %s (%s)"%(get_revision.version, file, path)
+            self.__frame.Title = "CellProfiler (r%d): %s (%s)"%(get_revision.version, file, path)
             
     def __on_clear_pipeline(self,event):
         if wx.MessageBox("Do you really want to remove all modules from the pipeline?",

@@ -352,7 +352,7 @@ class MeasureObjectIntensity(cpm.CPModule):
                         qindex = indices.astype(float) + areas * fraction
                         qfraction = qindex - np.floor(qindex)
                         qindex = qindex.astype(int)
-                        qmask = qindex < areas-1
+                        qmask = qindex < indices + areas-1
                         dest[qmask] = (limg[order[qindex[qmask]]] * (1 - qfraction) +
                                        limg[order[qindex[qmask] + 1]] * qfraction)
                         #

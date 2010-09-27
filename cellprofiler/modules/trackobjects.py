@@ -556,9 +556,8 @@ class TrackObjects(cpm.CPModule):
 
     def prepare_group(self, pipeline, image_set_list, grouping, image_numbers):
         '''Erase any tracking information at the start of a run'''
-        if self.tracking_method == TM_LAP:
-            d = self.get_dictionary(image_set_list)
-            d.clear()
+        d = self.get_dictionary(image_set_list)
+        d.clear()
         
         return True
 

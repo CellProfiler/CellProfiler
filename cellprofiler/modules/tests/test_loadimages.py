@@ -938,7 +938,9 @@ LoadImages:[module_num:1|svn_version:\'9976\'|variable_revision_number:7|show_wi
         c01_path = os.path.join(T.testimages_directory(), "icd002235_090127090001_a01f00d1.c01")
         image = LI.load_using_bioformats(c01_path)
         self.assertEqual(tuple(image.shape), (512,512))
-        self.assertAlmostEqual(np.sum(image.astype(np.float32)), 2497.4338, 4)
+        m = hashlib.md5()
+        m.update((image * 65535).astype(np.uint16))
+        self.assertEqual(m.digest(), 'SER\r\xc4\xd5\x02\x13@P\x12\x99\xe2(e\x85')
         
     def test_06_01_file_metadata(self):
         """Test file metadata on two sets of two files

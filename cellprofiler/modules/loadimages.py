@@ -2416,6 +2416,7 @@ class LoadImagesImageProvider(LoadImagesImageProviderBase):
             imgdata = scipy.io.matlab.mio.loadmat(self.get_full_name(),
                                                   struct_as_record=True)
             img = imgdata["Image"]
+            self.scale = 255.0
         elif (os.path.splitext(filename.lower())[-1] 
               in USE_BIOFORMATS_FIRST and
               has_bioformats):

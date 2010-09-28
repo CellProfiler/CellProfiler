@@ -45,7 +45,8 @@ import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.preferences as cpprefs
 import cellprofiler.settings as cps
-from loadimages import LoadImagesImageProvider
+from loadimages import LoadImagesImageProvider, C_SCALING, C_FILE_NAME
+from loadimages import C_PATH_NAME, C_MD5_DIGEST
 from cellprofiler.gui.help import USING_METADATA_TAGS_REF, USING_METADATA_HELP_REF
 from cellprofiler.preferences import standardize_default_folder_names, \
      DEFAULT_INPUT_FOLDER_NAME, DEFAULT_OUTPUT_FOLDER_NAME, \
@@ -57,11 +58,13 @@ DIR_CUSTOM_WITH_METADATA = "Custom with metadata"
 FILE_TEXT = "Filename of the image to load (Include the extension, e.g., .tif)"
 URL_TEXT = "URL of the image to load (Include the extension, e.g., .tif)"
 
+S_FILE_SETTINGS_COUNT = 3
+
 class LoadSingleImage(cpm.CPModule):
 
     module_name = "LoadSingleImage"
     category = "File Processing"
-    variable_revision_number = 3
+    variable_revision_number = 4
     def create_settings(self):
         """Create the settings during initialization
         
@@ -120,6 +123,21 @@ class LoadSingleImage(cpm.CPModule):
         group.append("image_name", cps.FileImageNameProvider("Name the image that will be loaded", 
                     "OrigBlue", doc = '''What do you want to call the image you are loading? 
                     You can use this name to select the image in downstream modules.'''))
+        group.append("rescale", cps.Binary(
+            "Rescale intensities?",True,
+            doc = """This option determines whether image metadata should be
+            used to rescale the image's intensities. Some image formats
+            save the maximum possible intensity value along with the pixel data.
+            For instance, a microscope might acquire images using a 12-bit
+            A/D converter which outputs intensity values between zero and 4095,
+            but stores the values in a field that can take values up to 65535.
+            Check this setting to rescale the image intensity so that
+            saturated values are rescaled to 1.0 by dividing all pixels
+            in the image by the maximum possible intensity value. Uncheck this 
+            setting to ignore the image metadata and rescale the image
+            to 0 - 1.0 by dividing by 255 or 65535, depending on the number
+            of bits used to store the image."""))
+
         if can_remove:
             group.append("remove", cps.RemoveSettingButton("", "Remove this image", self.file_settings, group))
         self.file_settings.append(group)
@@ -131,7 +149,8 @@ class LoadSingleImage(cpm.CPModule):
             url_based = (self.directory.dir_choice == cps.URL_FOLDER_NAME)
             file_setting.file_name.set_browsable(not url_based)
             file_setting.file_name.text = URL_TEXT if url_based else FILE_TEXT
-            result += [file_setting.file_name, file_setting.image_name]
+            result += [file_setting.file_name, file_setting.image_name,
+                       file_setting.rescale]
         return result
 
     def visible_settings(self):
@@ -143,7 +162,7 @@ class LoadSingleImage(cpm.CPModule):
 
     def prepare_settings(self, setting_values):
         """Adjust the file_settings depending on how many files there are"""
-        count = (len(setting_values)-1)/2
+        count = (len(setting_values)-1) / S_FILE_SETTINGS_COUNT
         del self.file_settings[count:]
         while len(self.file_settings) < count:
             self.add_file()
@@ -184,6 +203,13 @@ class LoadSingleImage(cpm.CPModule):
             result[file_setting.image_name.value] = file_name
                 
         return result
+    
+    def get_file_settings(self, image_name):
+        '''Get the file settings associated with a given image name'''
+        for file_setting in self.file_settings:
+            if file_setting.image_name == image_name:
+                return file_setting
+        return None
             
     def run(self, workspace):
         dict = self.get_file_names(workspace)
@@ -191,18 +217,23 @@ class LoadSingleImage(cpm.CPModule):
         statistics = [("Image name","File")]
         m = workspace.measurements
         for image_name in dict.keys():
-            provider = LoadImagesImageProvider(image_name, root, 
-                                               dict[image_name])
+            file_settings = self.get_file_settings(image_name)
+            provider = LoadImagesImageProvider(
+                image_name, root, dict[image_name], file_settings.rescale.value)
             workspace.image_set.providers.append(provider)
             #
             # Add measurements
             #
-            m.add_measurement('Image','FileName_'+image_name, dict[image_name])
-            m.add_measurement('Image','PathName_'+image_name, root)
-            pixel_data = provider.provide_image(workspace.image_set).pixel_data
+            m.add_measurement('Image',C_FILE_NAME + '_'+image_name, dict[image_name])
+            m.add_measurement('Image',C_PATH_NAME + '_'+image_name, root)
+            image = provider.provide_image(workspace.image_set)
+            pixel_data = image.pixel_data
             digest = hashlib.md5()
             digest.update(np.ascontiguousarray(pixel_data).data)
-            m.add_measurement('Image','MD5Digest_'+image_name, digest.hexdigest())
+            m.add_measurement('Image',C_MD5_DIGEST + '_'+image_name, 
+                              digest.hexdigest())
+            m.add_image_measurement('_'.join((C_SCALING, image_name)),
+                                    image.scale)
             statistics += [(image_name, dict[image_name])]
         if workspace.frame:
             title = "Load single image: image cycle # %d"%(workspace.measurements.image_set_number+1)
@@ -217,10 +248,23 @@ class LoadSingleImage(cpm.CPModule):
             image_name = file_setting.image_name.value
             columns += [(cpmeas.IMAGE, '_'.join((feature, image_name)), coltype)
                         for feature, coltype in (
-                            ('FileName', cpmeas.COLTYPE_VARCHAR_FILE_NAME),
-                            ('PathName', cpmeas.COLTYPE_VARCHAR_PATH_NAME),
-                            ('MD5Digest', cpmeas.COLTYPE_VARCHAR_FORMAT % 32))]
+                            (C_FILE_NAME, cpmeas.COLTYPE_VARCHAR_FILE_NAME),
+                            (C_PATH_NAME, cpmeas.COLTYPE_VARCHAR_PATH_NAME),
+                            (C_MD5_DIGEST, cpmeas.COLTYPE_VARCHAR_FORMAT % 32),
+                            (C_SCALING, cpmeas.COLTYPE_FLOAT)
+                        )]
         return columns
+    
+    def get_categories(self, pipeline, object_name):
+        if object_name == cpmeas.IMAGE:
+            return [C_FILE_NAME, C_MD5_DIGEST, C_PATH_NAME, C_SCALING]
+        return []
+    
+    def get_measurements(self, pipeline, object_name, category):
+        if category in self.get_categories(pipeline, object_name):
+            return [ file_setting.image_name.value 
+                     for file_setting in self.file_settings]
+        return []
     
     def validate_module(self, pipeline):
         '''Keep users from using LoadSingleImage to define image sets'''
@@ -290,6 +334,14 @@ class LoadSingleImage(cpm.CPModule):
                 setting_values = [dir] + zip([custom_dir + '/' + filename for filename in filenames],
                                              imagenames)
             variable_revision_number = 3
+            
+        if variable_revision_number == 3 and (not from_matlab):
+            # Added rescale option
+            new_setting_values = setting_values[:1]
+            for i in range(1, len(setting_values), 2):
+                new_setting_values += setting_values[i:(i+2)] + [cps.YES]
+            setting_values = new_setting_values
+            variable_revision_number = 4
 
         return setting_values, variable_revision_number, from_matlab
 

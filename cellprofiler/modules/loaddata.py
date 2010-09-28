@@ -130,6 +130,8 @@ import cellprofiler.measurements as cpmeas
 import cellprofiler.settings as cps
 import cellprofiler.preferences as cpprefs
 from cellprofiler.modules.loadimages import LoadImagesImageProvider
+from cellprofiler.modules.loadimages import C_FILE_NAME, C_PATH_NAME
+from cellprofiler.modules.loadimages import C_MD5_DIGEST, C_SCALING
 from cellprofiler.preferences import standardize_default_folder_names, \
      DEFAULT_INPUT_FOLDER_NAME, DEFAULT_OUTPUT_FOLDER_NAME, NO_FOLDER_NAME, \
      ABSOLUTE_FOLDER_NAME, IO_FOLDER_CHOICE_HELP_TEXT
@@ -203,7 +205,7 @@ class LoadData(cpm.CPModule):
     
     module_name = "LoadData"
     category = 'File Processing'
-    variable_revision_number = 5
+    variable_revision_number = 6
 
     def create_settings(self):
         self.csv_directory = cps.DirectoryPath(
@@ -244,6 +246,21 @@ class LoadData(cpm.CPModule):
             Check this box to have <b>LoadData</b> load images using the <i>Image_FileName</i> field and the 
             <i>Image_PathName</i> fields (the latter is optional).""")
         
+        self.rescale = cps.Binary(
+            "Rescale intensities?", True,
+            doc = """This option determines whether image metadata should be
+            used to rescale the image's intensities. Some image formats
+            save the maximum possible intensity value along with the pixel data.
+            For instance, a microscope might acquire images using a 12-bit
+            A/D converter which outputs intensity values between zero and 4095,
+            but stores the values in a field that can take values up to 65535.
+            Check this setting to rescale the image intensity so that
+            saturated values are rescaled to 1.0 by dividing all pixels
+            in the image by the maximum possible intensity value. Uncheck this 
+            setting to ignore the image metadata and rescale the image
+            to 0 - 1.0 by dividing by 255 or 65535, depending on the number
+            of bits used to store the image.""")
+
         self.image_directory = cps.DirectoryPath(
             "Base image location",
             dir_choices = DIR_ALL, allow_metadata = False, doc="""
@@ -308,7 +325,7 @@ class LoadData(cpm.CPModule):
                 self.csv_file_name, self.wants_images, self.image_directory,
                 self.wants_rows,
                 self.row_range, self.wants_image_groupings, 
-                self.metadata_fields]
+                self.metadata_fields, self.rescale]
 
     def validate_module(self, pipeline):
         csv_path = self.csv_path
@@ -355,7 +372,8 @@ class LoadData(cpm.CPModule):
             self.csv_file_name.set_browsable(True)
         result += [ self.wants_images ]
         if self.wants_images.value:
-            result += [self.image_directory, self.wants_image_groupings]
+            result += [self.rescale, self.image_directory, 
+                       self.wants_image_groupings]
             if self.wants_image_groupings.value:
                 result += [self.metadata_fields]
                 try:
@@ -378,11 +396,11 @@ class LoadData(cpm.CPModule):
         src_dsc = data['source_description']
 
         def uniquewaves(seq):
-          output = []
-          for x in seq:
-            if x not in output:
-              output.append(x)
-          return output
+            output = []
+            for x in seq:
+                if x not in output:
+                    output.append(x)
+            return output
 
         waves = uniquewaves(src_dsc)
 
@@ -745,7 +763,8 @@ class LoadData(cpm.CPModule):
                         path = path_base
                     file_name_feature = make_file_name_feature(image_name)
                     filename = dictionary[file_name_feature][index]
-                    ip = LoadImagesImageProvider(image_name, path, filename)
+                    ip = LoadImagesImageProvider(
+                        image_name, path, filename, self.rescale.value)
                     image_set.providers.append(ip)
             
     def run(self, workspace):
@@ -811,11 +830,14 @@ class LoadData(cpm.CPModule):
         #
         for image_name in self.other_providers('imagegroup'):
             md5 = hashlib.md5()
-            pixel_data = workspace.image_set.get_image(image_name).pixel_data
+            image = workspace.image_set.get_image(image_name)
+            pixel_data = image.pixel_data
             md5.update(np.ascontiguousarray(pixel_data).data)
             workspace.measurements.add_image_measurement(
-                'MD5Digest_'+image_name,
+                C_MD5_DIGEST + '_'+image_name,
                 md5.hexdigest())
+            workspace.measurements.add_image_measurement(
+                C_SCALING + '_' + image_name, image.scale)
         if not workspace.frame is None:
             workspace.display_data.statistics = statistics
             
@@ -907,10 +929,12 @@ class LoadData(cpm.CPModule):
         image_names = self.other_providers('imagegroup')
         result = [(cpmeas.IMAGE, colname, coltype)
                    for colname, coltype in zip(header, coltypes)
-                   if colname not in previous_fields] 
-        result += [(cpmeas.IMAGE, 'MD5Digest_'+image_name,
-                    cpmeas.COLTYPE_VARCHAR_FORMAT % 32)
-                   for image_name in image_names]
+                   if colname not in previous_fields]
+        for feature, coltype in (
+            (C_MD5_DIGEST, cpmeas.COLTYPE_VARCHAR_FORMAT % 32),
+            (C_SCALING, cpmeas.COLTYPE_FLOAT)):
+            result += [(cpmeas.IMAGE, feature +'_'+image_name, coltype)
+                       for image_name in image_names]
         #
         # Try to make a well column out of well row and well column
         #
@@ -1070,7 +1094,10 @@ class LoadData(cpm.CPModule):
                 image_directory, wants_rows, row_range, wants_image_groupings,
                 metadata_fields]
             variable_revision_number = 5
-
+        if variable_revision_number == 5 and (not from_matlab):
+            # Added rescaling option
+            setting_values = setting_values + [ cps.YES ]
+            variable_revision_number = 6
         return setting_values, variable_revision_number, from_matlab 
 
 LoadText = LoadData

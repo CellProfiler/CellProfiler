@@ -31,6 +31,7 @@ import cellprofiler.cpimage as cpi
 import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo
 import cellprofiler.workspace as cpw
+import cellprofiler.settings as cps
 import cellprofiler.modules.loaddata as L
 from cellprofiler.modules.tests import example_images_directory
 
@@ -55,7 +56,7 @@ class TestLoadData(unittest.TestCase):
     
     def test_01_00_revision(self):
         '''Remember to update this and write another test on new revision'''
-        self.assertEqual(L.LoadData().variable_revision_number, 5)
+        self.assertEqual(L.LoadData().variable_revision_number, 6)
         
     def test_01_01_load_v1(self):
         data = ('eJztV01v2jAYdvgabBPith59mnrootANqeWyMtAEU6EVRdV2qlwwzJITR46'
@@ -142,7 +143,120 @@ class TestLoadData(unittest.TestCase):
         self.assertFalse(module.wants_image_groupings.value)
         
     def test_01_04_load_v4(self):
-        pass
+        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:1
+SVNRevision:9722
+
+LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_window:True|notes:\x5B\x5D]
+    Input data file location:Default Input Folder\x7C.
+    Name of the file:1049_Metadata.csv
+    Load images based on this data?:Yes
+    Base image location:Default Input Folder\x7C.
+    Process just a range of rows?:No
+    Rows to process:10,36
+    Group images by metadata?:No
+    Select metadata fields for grouping:Well
+"""
+        pipeline = cpp.Pipeline()
+        def callback(caller,event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO(data))
+        self.assertEqual(len(pipeline.modules()), 1)
+        module = pipeline.modules()[0]
+        self.assertTrue(isinstance(module, L.LoadData))
+        self.assertEqual(module.csv_file_name, "1049_Metadata.csv")
+        self.assertEqual(module.csv_directory.dir_choice, 
+                         cps.DEFAULT_INPUT_FOLDER_NAME)
+        self.assertTrue(module.wants_images)
+        self.assertTrue(module.rescale)
+        self.assertFalse(module.wants_image_groupings)
+        self.assertFalse(module.wants_rows)
+        self.assertEqual(module.row_range.min, 10)
+        self.assertEqual(module.row_range.max, 36)
+        self.assertEqual(len(module.metadata_fields.selections), 1)
+        self.assertEqual(module.metadata_fields.selections[0], "Well")
+        
+    def test_01_05_load_v5(self):
+        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:1
+SVNRevision:10534
+
+LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5|show_window:True|notes:\x5B\x5D]
+    Input data file location:Elsewhere...\x7Cx\x3A\\projects\\NightlyBuild\\trunk\\ExampleImages\\ExampleSBSImages
+    Name of the file:1049_Metadata.csv
+    Load images based on this data?:Yes
+    Base image location:Default Input Folder\x7C.
+    Process just a range of rows?:No
+    Rows to process:1,100000
+    Group images by metadata?:Yes
+    Select metadata fields for grouping:Column,Row
+"""
+        pipeline = cpp.Pipeline()
+        def callback(caller,event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO(data))
+        self.assertEqual(len(pipeline.modules()), 1)
+        module = pipeline.modules()[0]
+        self.assertTrue(isinstance(module, L.LoadData))
+        self.assertEqual(module.csv_file_name, "1049_Metadata.csv")
+        self.assertEqual(module.csv_directory.dir_choice, 
+                         cps.ABSOLUTE_FOLDER_NAME)
+        self.assertEqual(module.csv_directory.custom_path,
+                         r"x:\projects\NightlyBuild\trunk\ExampleImages\ExampleSBSImages")
+        self.assertTrue(module.wants_images)
+        self.assertEqual(module.image_directory.dir_choice,
+                         cps.DEFAULT_INPUT_FOLDER_NAME)
+        self.assertTrue(module.rescale)
+        self.assertTrue(module.wants_image_groupings)
+        self.assertFalse(module.wants_rows)
+        self.assertEqual(module.row_range.min, 1)
+        self.assertEqual(module.row_range.max, 100000)
+        self.assertEqual(len(module.metadata_fields.selections), 2)
+        self.assertEqual(module.metadata_fields.selections[0], "Column")
+        self.assertEqual(module.metadata_fields.selections[1], "Row")
+        
+    def test_01_06_load_v6(self):
+        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:1
+SVNRevision:10536
+
+LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_window:True|notes:\x5B\x5D]
+    Input data file location:Elsewhere...\x7Cx\x3A\\projects\\NightlyBuild\\trunk\\ExampleImages\\ExampleSBSImages
+    Name of the file:1049_Metadata.csv
+    Load images based on this data?:Yes
+    Base image location:Default Input Folder\x7C.
+    Process just a range of rows?:No
+    Rows to process:1,100000
+    Group images by metadata?:Yes
+    Select metadata fields for grouping:Column,Row
+    Rescale intensities?:Yes
+"""
+        pipeline = cpp.Pipeline()
+        def callback(caller,event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO(data))
+        self.assertEqual(len(pipeline.modules()), 1)
+        module = pipeline.modules()[0]
+        self.assertTrue(isinstance(module, L.LoadData))
+        self.assertEqual(module.csv_file_name, "1049_Metadata.csv")
+        self.assertEqual(module.csv_directory.dir_choice, 
+                         cps.ABSOLUTE_FOLDER_NAME)
+        self.assertEqual(module.csv_directory.custom_path,
+                         r"x:\projects\NightlyBuild\trunk\ExampleImages\ExampleSBSImages")
+        self.assertTrue(module.wants_images)
+        self.assertEqual(module.image_directory.dir_choice,
+                         cps.DEFAULT_INPUT_FOLDER_NAME)
+        self.assertTrue(module.rescale)
+        self.assertTrue(module.wants_image_groupings)
+        self.assertFalse(module.wants_rows)
+        self.assertEqual(module.row_range.min, 1)
+        self.assertEqual(module.row_range.max, 100000)
+        self.assertEqual(len(module.metadata_fields.selections), 2)
+        self.assertEqual(module.metadata_fields.selections[0], "Column")
+        self.assertEqual(module.metadata_fields.selections[1], "Row")
         
     def test_02_01_string_image_measurement(self):
         csv_text = '''"Test_Measurement"
@@ -527,7 +641,33 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
                              file_name)
         finally:
             os.remove(filename)
-
+            
+    def test_10_01_scaling(self):
+        '''Test loading an image scaled and unscaled'''
+        d = os.path.join(example_images_directory(), "ExampleSpecklesImages")
+        file_name = "1-162hrh2ax2.tif"
+        csv_text = ("Image_FileName_MyFile,Image_PathName_MyFile\n"
+                    "%s,%s\n" % (file_name, d))
+        c0_image = []
+        for rescale in (False, True):
+            pipeline, module, filename = self.make_pipeline(csv_text)
+            try:
+                module.rescale.value = rescale
+                def callback(workspace):
+                    imgset = workspace.image_set
+                    image = imgset.get_image("MyFile")
+                    pixels = image.pixel_data
+                    c0_image.append(pixels.copy())
+                c0 = C0()
+                c0.callback = callback
+                c0.module_num = 1
+                pipeline.add_module(c0)
+                pipeline.run()
+            finally:
+                os.remove(filename)
+        unscaled, scaled = c0_image
+        np.testing.assert_almost_equal(unscaled * 65535. / 4095., scaled)
+    
 class C0(cpm.CPModule):
     def create_settings(self):
         module_name = 'C0'

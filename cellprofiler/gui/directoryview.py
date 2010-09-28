@@ -129,7 +129,7 @@ class DirectoryView(object):
         frame.Refresh()
     
     def __display_image(self,filename):
-        lip = LoadImagesImageProvider("dummy", "", filename)
+        lip = LoadImagesImageProvider("dummy", "", filename, True)
         image = lip.provide_image(None).pixel_data
         frame = FIG.CPFigureFrame(self.__list_box.GetTopLevelParent(),
                                   title = filename,

@@ -48,6 +48,8 @@ class Image(object):
                 for a derived image
     file_name - the file name of the file holding the image or None for a
                 derived image
+    scale - the scaling suggested by the initial image format (e.g. 4095 for
+            a 12-bit a/d converter).
     
     Resolution of mask and cropping_mask properties:
     The Image class looks for the mask and cropping_mask in the following 
@@ -69,13 +71,15 @@ class Image(object):
                  masking_objects = None,
                  convert = True,
                  path_name = None,
-                 file_name = None):
+                 file_name = None,
+                 scale = None):
         self.__image = None
         self.__mask = None
         self.__has_mask = False
         self.__parent_image = parent_image
         self.__crop_mask = crop_mask
         self.__masking_objects = masking_objects
+        self.__scale = scale
         if image!=None:
             self.set_image(image, convert)
         if mask!=None:
@@ -311,6 +315,19 @@ class Image(object):
             return None
     
     path_name = property(get_path_name)
+    
+    def get_scale(self):
+        '''The scale at acquisition
+        
+        This is the intensity scale used by the acquisition device. For
+        instance, a microscope might use a 12-bit a/d converter to acquire
+        an image and store that information using the TIF MaxSampleValue
+        tag = 4095.
+        '''
+        if self.__scale is None and self.has_parent_image:
+            return self.parent_image.scale
+        return self.__scale
+    scale = property(get_scale)
     
 def crop_image(image, crop_mask,crop_internal = False):
     """Crop an image to the size of the nonzero portion of a crop mask"""

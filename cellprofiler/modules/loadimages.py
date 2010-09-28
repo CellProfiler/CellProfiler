@@ -119,6 +119,9 @@ C_PATH_NAME = "PathName"
 '''The MD5 digest measurement category'''
 C_MD5_DIGEST = "MD5Digest"
 
+'''The intensity scaling metadata for this file'''
+C_SCALING = "Scaling"
+
 # strings for choice variables
 MS_EXACT_MATCH = 'Text-Exact match'
 MS_REGEXP = 'Text-Regular expressions'
@@ -185,7 +188,7 @@ def default_cpimage_name(index):
 class LoadImages(cpmodule.CPModule):
 
     module_name = "LoadImages"
-    variable_revision_number = 7
+    variable_revision_number = 8
     category = "File Processing"
 
     def create_settings(self):
@@ -657,6 +660,20 @@ class LoadImages(cpmodule.CPModule):
             illumination sources and/or optics. Use this setting to pick
             the channel to associate with the above image name."""))
         
+        group.append("rescale", cps.Binary(
+            "Rescale intensities?", True,
+            doc = """This option determines whether image metadata should be
+            used to rescale the image's intensities. Some image formats
+            save the maximum possible intensity value along with the pixel data.
+            For instance, a microscope might acquire images using a 12-bit
+            A/D converter which outputs intensity values between zero and 4095,
+            but stores the values in a field that can take values up to 65535.
+            Check this setting to rescale the image intensity so that
+            saturated values are rescaled to 1.0 by dividing all pixels
+            in the image by the maximum possible intensity value. Uncheck this 
+            setting to ignore the image metadata and rescale the image
+            to 0 - 1.0 by dividing by 255 or 65535, depending on the number
+            of bits used to store the image."""))
         group.can_remove = can_remove
         if can_remove:
             group.append("remover", cps.RemoveSettingButton(
@@ -733,7 +750,8 @@ class LoadImages(cpmodule.CPModule):
             else:
                 varlist += [fd.order_position]
             if not is_multichannel:
-                varlist += [ fd.channels[0].image_name ]
+                varlist += [ fd.channels[0].image_name, 
+                             fd.channels[0].rescale ]
             varlist += [fd.metadata_choice]
             if self.has_file_metadata(fd):
                 varlist += [fd.file_metadata]
@@ -748,7 +766,8 @@ class LoadImages(cpmodule.CPModule):
                     max_channels = fd.channels_per_group.value
             if is_multichannel:
                 for channel in fd.channels:
-                    varlist += [channel.image_name, channel.channel_number]
+                    varlist += [channel.image_name, channel.channel_number,
+                                channel.rescale]
                     choices = channel.channel_number.choices
                     del choices[:]
                     choices += [ str(x+1) for x in range(max_channels) ]
@@ -795,8 +814,10 @@ class LoadImages(cpmodule.CPModule):
     SLOT_FIRST_IMAGE_V4 = 11
     SLOT_FIRST_IMAGE_V5 = 10
     SLOT_FIRST_IMAGE_V6 = 11
+    SLOT_FIRST_IMAGE_V7 = 11
     SLOT_FIRST_IMAGE = 11
     SLOT_IMAGE_COUNT_V6 = 10
+    SLOT_IMAGE_COUNT_V7 = 10
     SLOT_IMAGE_COUNT = 10
     
     SLOT_OFFSET_COMMON_TEXT = 0
@@ -816,14 +837,18 @@ class LoadImages(cpmodule.CPModule):
     SLOT_OFFSET_PATH_METADATA = 4
     SLOT_OFFSET_CHANNEL_COUNT = 5
     SLOT_OFFSET_CHANNEL_COUNT_V6 = 5
+    SLOT_OFFSET_CHANNEL_COUNT_V7 = 5
     SLOT_OFFSET_WANTS_MOVIE_FRAME_GROUPING = 6
     SLOT_OFFSET_INTERLEAVING = 7
     SLOT_OFFSET_CHANNELS_PER_GROUP = 8
     
     SLOT_OFFSET_IMAGE_NAME = 0
     SLOT_OFFSET_CHANNEL_NUMBER = 1
-    SLOT_CHANNEL_FIELD_COUNT = 2
+    SLOT_OFFSET_RESCALE = 2
+    SLOT_CHANNEL_FIELD_COUNT = 3
     SLOT_CHANNEL_FIELD_COUNT_V6 = 2
+    SLOT_CHANNEL_FIELD_COUNT_V7 = 2
+    SLOT_CHANNEL_FIELD_COUNT_V8 = 3
     
     def settings(self):
         """Return the settings array in a consistent order"""
@@ -840,7 +865,8 @@ class LoadImages(cpmodule.CPModule):
                 image_group.wants_movie_frame_grouping, image_group.interleaving,
                 image_group.channels_per_group ]
             for channel in image_group.channels:
-                setting_values += [channel.image_name, channel.channel_number]
+                setting_values += [channel.image_name, channel.channel_number,
+                                   channel.rescale]
         return setting_values
     
     def prepare_settings(self, setting_values):
@@ -887,6 +913,14 @@ class LoadImages(cpmodule.CPModule):
         if not self.group_by_metadata:
             return False
         return self.has_metadata
+    
+    def get_channel_for_image_name(self, image_name):
+        '''Given an image name, return the channel that holds its settings'''
+        for image_settings in self.images:
+            for channel in image_settings.channels:
+                if channel.image_name == image_name:
+                    return channel
+        return None
     
     def upgrade_settings(self, setting_values, variable_revision_number, module_name, from_matlab):
 
@@ -1058,6 +1092,20 @@ class LoadImages(cpmodule.CPModule):
                 setting_values = setting_values[channel_field_count:]
             return (new_values, 7)
                 
+        def upgrade_new_7_to_8(setting_values):
+            '''Added rescale control'''
+            new_values = list(setting_values[:self.SLOT_FIRST_IMAGE_V7])
+            image_count = int(setting_values[self.SLOT_IMAGE_COUNT_V7])
+            setting_values = setting_values[self.SLOT_FIRST_IMAGE_V7:]
+            for i in range(image_count):
+                new_values += setting_values[:self.SLOT_IMAGE_FIELD_COUNT_V7]
+                channel_count = int(setting_values[self.SLOT_OFFSET_CHANNEL_COUNT_V7])
+                setting_values = setting_values[self.SLOT_IMAGE_FIELD_COUNT_V7:]
+                for j in range(channel_count):
+                    new_values += setting_values[:self.SLOT_CHANNEL_FIELD_COUNT_V7] + [ cps.YES ]
+                    setting_values = setting_values[self.SLOT_CHANNEL_FIELD_COUNT_V7:]
+            return (new_values, 8)
+
         if from_matlab:
             if variable_revision_number == 1:
                 setting_values,variable_revision_number = upgrade_1_to_2(setting_values)
@@ -1084,6 +1132,8 @@ class LoadImages(cpmodule.CPModule):
             setting_values, variable_revision_number = upgrade_new_5_to_6(setting_values)
         if variable_revision_number == 6:
             setting_values, variable_revision_number = upgrade_new_6_to_7(setting_values)
+        if variable_revision_number == 7:
+            setting_values, variable_revision_number = upgrade_new_7_to_8(setting_values)
 
         # Standardize input/output directory name references
         setting_values[self.SLOT_LOCATION] = \
@@ -1334,11 +1384,13 @@ class LoadImages(cpmodule.CPModule):
         for image_name in d.keys():
             values = d[image_name]
             provider, version = values[:2]
+            channel_settings = self.get_channel_for_image_name(image_name)
             if provider == P_IMAGES:
                 if version != V_IMAGES:
                     raise NotImplementedError("Can't restore file information: file image provider version %d not supported"%version)
                 pathname, filename = values[2:]
-                p = LoadImagesImageProvider(image_name, pathname, filename)
+                p = LoadImagesImageProvider(image_name, pathname, filename,
+                                            channel_settings.rescale.value)
             elif provider == P_MOVIES:
                 if version == 1:
                     pathname, frame = values[2:]
@@ -1349,11 +1401,13 @@ class LoadImages(cpmodule.CPModule):
                     raise NotImplementedError("Can't restore file information: file image provider version %d not supported"%version)
                 path,filename = os.path.split(pathname)
                 if self.file_types == FF_STK_MOVIES:
-                    p = LoadImagesSTKFrameProvider(image_name, path, filename,
-                                                   frame, t)
+                    p = LoadImagesSTKFrameProvider(
+                        image_name, path, filename,
+                        frame, t, channel_settings.rescale.value)
                 elif self.file_types == FF_AVI_MOVIES:
-                    p = LoadImagesMovieFrameProvider(image_name, path, filename,
-                                                     int(frame), t)
+                    p = LoadImagesMovieFrameProvider(
+                        image_name, path, filename, int(frame), t, 
+                        channel_settings.rescale.value)
                 else:
                     raise NotImplementedError("File type %s not supported"%self.file_types.value)
             elif provider == P_FLEX:
@@ -1361,8 +1415,10 @@ class LoadImages(cpmodule.CPModule):
                     raise NotImplementedError("Can't restore file information: flex image provider versino %d not supported"%version)
                 pathname, channel, z, t, series = values[2:]
                 path, filename = os.path.split(pathname)
-                p = LoadImagesFlexFrameProvider(image_name, path, filename, 
-                                                int(channel), int(z), int(t), int(series))
+                p = LoadImagesFlexFrameProvider(
+                    image_name, path, filename, 
+                    int(channel), int(z), int(t), int(series), 
+                    channel_settings.rescale.value)
             else:
                 raise NotImplementedError("Can't restore file information: provider %s not supported"%provider)
             image_set.providers.append(p)
@@ -1772,12 +1828,18 @@ class LoadImages(cpmodule.CPModule):
                     row = [name, path, filename]
                 metadata = self.get_filename_metadata(fd, filename, path)
                 m.add_measurement('Image',"_".join((C_FILE_NAME, name)), filename)
-                full_path = os.path.join(self.image_directory(),path)
+                full_path = self.image_directory()
+                if len(path) > 0:
+                    full_path = os.path.join(full_path, path)
                 m.add_measurement('Image',"_".join((C_PATH_NAME, name)), full_path)
-                pixel_data = provider.provide_image(workspace.image_set).pixel_data
+                image = provider.provide_image(workspace.image_set)
+                pixel_data = image.pixel_data
                 digest = hashlib.md5()
                 digest.update(np.ascontiguousarray(pixel_data).data)
-                m.add_measurement('Image',"_".join((C_MD5_DIGEST, name)), digest.hexdigest())
+                m.add_measurement('Image',"_".join((C_MD5_DIGEST, name)),
+                                  digest.hexdigest())
+                m.add_image_measurement("_".join((C_SCALING, name)),
+                                        image.scale)
                 for d in (metadata, image_set_metadata):
                     for key in d:
                         measurement = '_'.join((cpmeas.C_METADATA, key))
@@ -2144,7 +2206,7 @@ class LoadImages(cpmodule.CPModule):
         object_name - return measurements made on this object (or 'Image' for image measurements)
         '''
         if object_name == cpmeas.IMAGE:
-            res = [C_FILE_NAME, C_PATH_NAME, C_MD5_DIGEST]
+            res = [C_FILE_NAME, C_PATH_NAME, C_MD5_DIGEST, C_SCALING]
             has_metadata = (self.file_types in 
                             (FF_AVI_MOVIES, FF_STK_MOVIES, FF_OTHER_MOVIES))
             for fd in self.images:
@@ -2181,6 +2243,8 @@ class LoadImages(cpmodule.CPModule):
                           cpmeas.COLTYPE_VARCHAR_PATH_NAME)]
                 cols += [(cpmeas.IMAGE, "_".join((C_MD5_DIGEST, name)), 
                           cpmeas.COLTYPE_VARCHAR_FORMAT%32)]
+                cols += [(cpmeas.IMAGE, "_".join((C_SCALING, name)),
+                          cpmeas.COLTYPE_FLOAT)]
         
             if self.has_file_metadata(fd):
                 tokens = cpmeas.find_metadata_tokens(fd.file_metadata.value)
@@ -2339,8 +2403,9 @@ class LoadImagesImageProviderBase(cpimage.AbstractImageProvider):
 class LoadImagesImageProvider(LoadImagesImageProviderBase):
     """Provide an image by filename, loading the file as it is requested
     """
-    def __init__(self,name,pathname,filename):
+    def __init__(self, name, pathname, filename, rescale):
         super(LoadImagesImageProvider, self).__init__(name, pathname, filename)
+        self.rescale = rescale
     
     def provide_image(self, image_set):
         """Load an image from a pathname
@@ -2355,31 +2420,44 @@ class LoadImagesImageProvider(LoadImagesImageProviderBase):
               in USE_BIOFORMATS_FIRST and
               has_bioformats):
             try:
-                img = load_using_bioformats(self.get_full_name())
+                img, self.scale = load_using_bioformats(
+                    self.get_full_name(), 
+                    rescale = self.rescale,
+                    wants_max_intensity = True)
             except:
                 traceback.print_exc()
-                img = load_using_PIL(self.get_full_name())
+                img, self.scale = load_using_PIL(self.get_full_name(),
+                                                 rescale = self.rescale,
+                                                 wants_max_intensity = True)
         else:
             # try PIL first, for speed
             try:
-                img = load_using_PIL(self.get_full_name())
+                img, self.scale = load_using_PIL(self.get_full_name(),
+                                                 rescale = self.rescale,
+                                                 wants_max_intensity = True)
             except:
                 if has_bioformats:
-                    img = load_using_bioformats(self.get_full_name())
+                    img, self.scale = load_using_bioformats(self.get_full_name(),
+                                                            rescale = self.rescale,
+                                                            wants_max_intensity = True)
                 else:
                     raise
             
         return cpimage.Image(img,
                              path_name = self.get_pathname(),
-                             file_name = self.get_filename())
+                             file_name = self.get_filename(),
+                             scale = self.scale)
     
 
-def load_using_PIL(path, index=0, seekfn=None):
+def load_using_PIL(path, index=0, seekfn=None, rescale = True, wants_max_intensity = False):
     '''Get the pixel data for an image using PIL
     
     path - path to file
     index - index of the image if stacked image format such as TIFF
     seekfn - a function for seeking to a given image in a stack
+    rescale - True to rescale to MaxSampleValue, false to scale to the bit-depth
+              (for example, 16-bit integers are divided by 65535)
+    max_intensity - if true, the image and max intensity are returned as a tuple
     '''
     if path.lower().endswith(".tif"):
         try:
@@ -2390,6 +2468,8 @@ def load_using_PIL(path, index=0, seekfn=None):
             img = tiffimg.asarray(squeeze=True)
             if img.dtype == np.uint16:
                 img = (img.astype(np.float) - 2**15) / 2**12
+            if wants_max_intensity:
+                return img, 2**12
             return img
     else:
         img = PILImage.open(path)
@@ -2411,21 +2491,32 @@ def load_using_PIL(path, index=0, seekfn=None):
         new_img = imgdata.reshape(img_size)
         # The magic # for maximum sample value is 281
         if img.tag.has_key(281):
-            img = new_img.astype(np.float32) / img.tag[281][0]
+            scale = img.tag[281][0]
         elif np.max(new_img) < 4096:
-            img = new_img.astype(np.float32) / 4095.
+            scale = 4095.
         else:
-            img = new_img.astype(np.float32) / 65535.
+            scale = 65535.
+        if not rescale:
+            img = new_img.astype(np.float32)
+        else:
+            img = new_img.astype(np.float32) / scale
     else:
+        # The magic # for maximum sample value is 281
+        if hasattr(img, "tag") and img.tag.has_key(281):
+            scale = img.tag[281][0]
+        else:
+            scale = 255.
         # There's an apparent bug in the PIL library that causes
         # images to be loaded upside-down. At best, load and save have opposite
         # orientations; in other words, if you load an image and then save it
         # the resulting saved image will be upside-down
         img = img.transpose(PILImage.FLIP_TOP_BOTTOM)
         img = matplotlib.image.pil_to_array(img)
+    if wants_max_intensity:
+        return img, scale
     return img
 
-def load_using_bioformats(path, c=None, z=0, t=0, series=None, rescale = True):
+def load_using_bioformats(path, c=None, z=0, t=0, series=None, rescale = True, wants_max_intensity = False):
     '''Load the given image file using the Bioformats library
     
     path: path to the file
@@ -2519,23 +2610,29 @@ def load_using_bioformats(path, c=None, z=0, t=0, series=None, rescale = True):
             image = image.astype(np.float32) / float(scale)
     finally:
         formatreader.jutil.detach()
+    if wants_max_intensity:
+        return image, scale
     return image
     
 class LoadImagesMovieFrameProvider(LoadImagesImageProviderBase):
     """Provide an image by filename:frame, loading the file as it is requested
     """
-    def __init__(self, name, pathname, filename, frame, t):
+    def __init__(self, name, pathname, filename, frame, t, rescale):
         super(LoadImagesMovieFrameProvider, self).__init__(name, pathname, filename)
         self.__frame = frame
         self.__t = t
+        self.__rescale = rescale
     
     def provide_image(self, image_set):
         """Load an image from a movie frame
         """
-        pixel_data = load_using_bioformats(self.get_full_name(), z=0, 
-                                           t=self.__frame)
+        pixel_data, self.scale = load_using_bioformats(self.get_full_name(), z=0, 
+                                                       t=self.__frame,
+                                                       rescale = self.__rescale,
+                                                       wants_max_intensity = True)
         image = cpimage.Image(pixel_data, path_name = self.get_pathname(),
-                              file_name = self.get_filename())
+                              file_name = self.get_filename(),
+                              scale = self.scale)
         return image
     
     def get_frame(self):
@@ -2547,23 +2644,27 @@ class LoadImagesMovieFrameProvider(LoadImagesImageProviderBase):
 class LoadImagesFlexFrameProvider(LoadImagesImageProviderBase):
     """Provide an image by filename:frame, loading the file as it is requested
     """
-    def __init__(self,name,pathname,filename,channel, z, t, series):
+    def __init__(self,name,pathname,filename,channel, z, t, series, rescale):
         super(LoadImagesFlexFrameProvider, self).__init__(name, pathname, filename)
         self.__channel = channel
         self.__z = z
         self.__t = t
         self.__series    = series
+        self.__rescale = rescale
     
     def provide_image(self, image_set):
         """Load an image from a movie frame
         """
-        pixel_data = load_using_bioformats(self.get_full_name(), 
-                                           c=self.__channel,
-                                           z=self.__z, 
-                                           t=self.__t,
-                                           series=self.__series)
+        pixel_data, self.scale = load_using_bioformats(self.get_full_name(), 
+                                                       c=self.__channel,
+                                                       z=self.__z, 
+                                                       t=self.__t,
+                                                       series=self.__series,
+                                                       rescale = self.__rescale,
+                                                       wants_max_intensity = True)
         image = cpimage.Image(pixel_data, path_name = self.get_pathname(),
-                              file_name = self.get_filename())
+                              file_name = self.get_filename(),
+                              scale = self.scale)
         return image
     
     def get_c(self):
@@ -2584,7 +2685,7 @@ class LoadImagesFlexFrameProvider(LoadImagesImageProviderBase):
     
 class LoadImagesSTKFrameProvider(LoadImagesImageProviderBase):
     """Provide an image by filename:frame from an STK file"""
-    def __init__(self, name, pathname, filename, frame, t):
+    def __init__(self, name, pathname, filename, frame, t, rescale):
         '''Initialize the provider
         
         name - name of the provider for access from image set
@@ -2595,6 +2696,7 @@ class LoadImagesSTKFrameProvider(LoadImagesImageProviderBase):
         super(LoadImagesSTKFrameProvider, self).__init__(name, pathname, filename)
         self.__frame    = frame
         self.__t = t
+        self.rescale = rescale
         
     def provide_image(self, image_set):
         try:
@@ -2621,16 +2723,20 @@ class LoadImagesSTKFrameProvider(LoadImagesImageProviderBase):
                 img.tile = [(coding, location, offset+plane_offset, format)
                             for coding, location, offset, format in img.tile]
                 
-            img = load_using_PIL(self.get_full_name(), self.__frame, seekfn)
+            img, self.scale = load_using_PIL(self.get_full_name(), self.__frame, seekfn,
+                                             rescale = self.rescale, wants_max_intensity = True)
         except:
             if has_bioformats:
-                img = load_using_bioformats(self.get_full_name(),
-                                            z=self.__frame)
+                img, self.scale = load_using_bioformats(self.get_full_name(),
+                                                        z=self.__frame,
+                                                        rescale = self.rescale,
+                                                        wants_max_intensity = True)
             else:
                 raise
         return cpimage.Image(img,
                              path_name = self.get_pathname(),
-                             file_name = self.get_filename())
+                             file_name = self.get_filename(),
+                             scale = self.scale)
     def get_frame(self):
         return self.__frame
 

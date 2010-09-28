@@ -71,7 +71,7 @@ class testLoadImages(unittest.TestCase):
         x=LI.LoadImages()
     
     def test_00_01version(self):
-        self.assertEqual(LI.LoadImages().variable_revision_number, 7,
+        self.assertEqual(LI.LoadImages().variable_revision_number, 8,
                          "LoadImages' version number has changed")
     
     def test_01_01load_image_text_match(self):
@@ -688,6 +688,79 @@ LoadImages:[module_num:1|svn_version:\'9976\'|variable_revision_number:7|show_wi
             (image.channels[1], 3, "Protein")):
             self.assertEqual(channel.channel_number, channel_number)
             self.assertEqual(channel.image_name, image_name)
+
+    def test_03_08_load_v8(self):
+        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:1
+SVNRevision:10530
+
+LoadImages:[module_num:1|svn_version:\'10503\'|variable_revision_number:8|show_window:True|notes:\x5B\'A flex file\'\x5D]
+    File type to be loaded:tif,tiff,flex movies, zvi movies
+    File selection method:Text-Exact match
+    Number of images in each group?:3
+    Type the text that the excluded images have in common:Thumb
+    Analyze all subfolders within the selected folder?:No
+    Input image file location:Default Input Folder\x7CNone
+    Check image sets for missing or duplicate files?:Yes
+    Group images by metadata?:Yes
+    Exclude certain files?:No
+    Specify metadata fields to group by:Series,T,Z
+    Image count:1
+    Text that these images have in common (case-sensitive):.flex
+    Position of this image in each group:1
+    Extract metadata from where?:None
+    Regular expression that finds metadata in the file name:foo
+    Type the regular expression that finds metadata in the subfolder path:bar
+    Channel count:2
+    Group the movie frames?:No
+    Grouping method:Interleaved
+    Number of channels per group:2
+    Name this loaded image:DNA
+    Channel number:1
+    Rescale image?:Yes
+    Name this loaded image:Protein
+    Channel number:3
+    Rescale image?:No
+"""
+        pipeline = cpp.Pipeline()
+        def callback(caller, event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO(data))
+        self.assertEqual(len(pipeline.modules()), 1)
+        
+        module = pipeline.modules()[0]
+        module.notes = "A flex file"
+        self.assertTrue(isinstance(module, LI.LoadImages))
+        self.assertEqual(module.file_types, LI.FF_OTHER_MOVIES)
+        self.assertEqual(module.match_method, LI.MS_EXACT_MATCH)
+        self.assertEqual(module.order_group_size, 3)
+        self.assertEqual(module.match_exclude, "Thumb")
+        self.assertFalse(module.descend_subdirectories)
+        self.assertEqual(module.location.dir_choice, LI.cps.DEFAULT_INPUT_FOLDER_NAME)
+        self.assertTrue(module.check_images)
+        self.assertTrue(module.group_by_metadata)
+        self.assertFalse(module.exclude)
+        self.assertEqual(len(module.metadata_fields.selections), 3)
+        self.assertEqual(module.metadata_fields.selections[0], LI.M_SERIES)
+        self.assertEqual(module.metadata_fields.selections[1], LI.M_T)
+        self.assertEqual(module.metadata_fields.selections[2], LI.M_Z)
+        self.assertEqual(module.image_count.value, 1)
+        self.assertEqual(len(module.images), 1)
+        image = module.images[0]
+        self.assertEqual(image.common_text, ".flex")
+        self.assertEqual(image.order_position, 1)
+        self.assertEqual(image.metadata_choice, LI.M_NONE)
+        self.assertEqual(image.file_metadata, "foo")
+        self.assertEqual(image.path_metadata, "bar")
+        self.assertEqual(image.channel_count.value, 2)
+        self.assertEqual(len(image.channels), 2)
+        for channel, channel_number, image_name, rescale in (
+            (image.channels[0], 1, "DNA", True),
+            (image.channels[1], 3, "Protein", False)):
+            self.assertEqual(channel.channel_number, channel_number)
+            self.assertEqual(channel.image_name, image_name)
+            self.assertEqual(channel.rescale.value, rescale)
         
     def test_04_01_load_save_and_load(self):
         data = 'TUFUTEFCIDUuMCBNQVQtZmlsZSwgUGxhdGZvcm06IFBDV0lOLCBDcmVhdGVkIG9uOiBNb24gSmFuIDA1IDExOjA2OjM5IDIwMDkgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAABSU0PAAAApwEAAHic5VTNTsJAEJ42BdEDwXjQY49eJCIXj8b4A4mCAUK8mYUudZO22/QHwafyEbj5Wu5KC8um0qV6c5LNdGZnvpn9OrtVAFhUAMpMMwU6LKWU2JqwuN3HUUQ8OyyBASeJf8HWEAUEjRw8RE6MQ1hJ6m97EzqY+6utR2rFDu4gVwxm0ondEQ7C7iRNTLafyAw7ffKOYVPSsB6ekpBQL8lP8GXvqi6NpLpVtlrGmgctg4cjwc/jr2Adb2TE14T4WrIGeBad3c7QODJdFI1fVXD2JRxuh42Xt0Z90L4T+rnMwdmTcLjdDYjdw5bSeX7q40LqowgO7+M+wNj7JQ7vp7kjLxUJp5L0c81GWaWPAymf2zfU9GhkxiFWP48qznkOjraBo0Hzj+u3cnAOJRxuE88iU2LFyDGJi+zV7VM5j76Bp0OHFuOhrshD1lzZAZqHY+Sk709VQX9o298Tkaes/Lw+s96Xb3LtgMa+ySjH/n/GK6p92P7fxLkqeq8eKLLawkWQ57mcU1dnX7WMPJV70ChYzyiQZ7DMz+Nl3vOOvJ5uiU8l9X8BnJqT/A=='
@@ -825,7 +898,15 @@ LoadImages:[module_num:1|svn_version:\'9976\'|variable_revision_number:7|show_wi
         pipeline.add_listener(self.error_callback)
         pipeline.add_module(load_images)
         pipeline.add_module(check_image)
-        pipeline.run()
+        m = pipeline.run()
+        self.assertTrue(isinstance(m, measurements.Measurements))
+        fn = m.get_all_measurements(measurements.IMAGE, 'FileName_Orig')
+        self.assertEqual(len(fn), 1)
+        self.assertEqual(fn[0], filename)
+        p = m.get_all_measurements(measurements.IMAGE, 'PathName_Orig')
+        self.assertEqual(p[0], path)
+        scale = m.get_all_measurements(measurements.IMAGE, 'Scaling_Orig')
+        self.assertEqual(scale[0], 255)
 
     def test_05_04_load_JPG(self):
         """Test loading of a .JPG file
@@ -872,7 +953,7 @@ LoadImages:[module_num:1|svn_version:\'9976\'|variable_revision_number:7|show_wi
         lip = LI.LoadImagesImageProvider(
             "broad", 
             "http://www.cellprofiler.org/linked_files",
-            "broad-logo.gif")
+            "broad-logo.gif", True)
         logo = lip.provide_image(None)
         self.assertEqual(logo.pixel_data.shape, (38, 150, 4))
         lip.release_memory()
@@ -1361,11 +1442,13 @@ LoadImages:[module_num:1|svn_version:\'9976\'|variable_revision_number:7|show_wi
         expected_cols = [('Image', 'FileName_DNA', 'varchar(128)'), 
                          ('Image', 'PathName_DNA', 'varchar(256)'),
                          ('Image', 'MD5Digest_DNA', 'varchar(32)'),
+                         ('Image', 'Scaling_DNA', 'float'),
                          ('Image', 'Metadata_WellRow', 'varchar(128)'), 
                          ('Image', 'Metadata_WellCol', 'varchar(128)'), 
                          ('Image', 'FileName_Cytoplasm', 'varchar(128)'), 
                          ('Image', 'PathName_Cytoplasm', 'varchar(256)'), 
                          ('Image', 'MD5Digest_Cytoplasm', 'varchar(32)'),
+                         ('Image', 'Scaling_Cytoplasm', 'float'),
                          ('Image', 'Metadata_Well', 'varchar(128)')]
         returned_cols = module.get_measurement_columns(pipeline)
         # check for duplicates
@@ -1417,7 +1500,7 @@ LoadImages:[module_num:1|svn_version:\'9976\'|variable_revision_number:7|show_wi
         pipeline.load(fd)
         module = pipeline.module(1)
         results = module.get_categories(pipeline, measurements.IMAGE)
-        expected = ['FileName', 'PathName', 'MD5Digest', 'Metadata']
+        expected = ['FileName', 'PathName', 'MD5Digest', 'Metadata', 'Scaling']
         assert set(results) == set(expected)
         
     def test_07_04_get_movie_measurements(self):
@@ -1426,6 +1509,7 @@ LoadImages:[module_num:1|svn_version:\'9976\'|variable_revision_number:7|show_wi
         base_expected_cols = [('Image', 'FileName_DNA', 'varchar(128)'), 
                               ('Image', 'PathName_DNA', 'varchar(256)'),
                               ('Image', 'MD5Digest_DNA', 'varchar(32)'),
+                              ('Image', 'Scaling_DNA', 'float'),
                               ('Image', 'Metadata_T', 'integer')]
         file_expected_cols = [
             ('Image', 'Metadata_WellRow', 'varchar(128)'), 
@@ -1452,7 +1536,7 @@ LoadImages:[module_num:1|svn_version:\'9976\'|variable_revision_number:7|show_wi
                 for column in columns:
                     self.assertTrue(column in expected_cols)
                 categories = module.get_categories(None, measurements.IMAGE)
-                self.assertEqual(len(categories), 4)
+                self.assertEqual(len(categories), 5)
                 category_dict = {}
                 for column in expected_cols:
                     category, feature = column[1].split("_",1)
@@ -1469,12 +1553,13 @@ LoadImages:[module_num:1|svn_version:\'9976\'|variable_revision_number:7|show_wi
                     self.assertTrue(all([feature in expected_features
                                          for feature in features]))
         
-    def test_07_04_get_flex_measurements(self):
+    def test_07_05_get_flex_measurements(self):
         # AVI movies should have time metadata
         module = LI.LoadImages()
         base_expected_cols = [('Image', 'FileName_DNA', 'varchar(128)'), 
                               ('Image', 'PathName_DNA', 'varchar(256)'),
                               ('Image', 'MD5Digest_DNA', 'varchar(32)'),
+                              ('Image', 'Scaling_DNA', 'float'),
                               ('Image', 'Metadata_T', 'integer'),
                               ('Image', 'Metadata_Z', 'integer'),
                               ('Image', 'Metadata_Series', 'integer')]
@@ -1502,7 +1587,7 @@ LoadImages:[module_num:1|svn_version:\'9976\'|variable_revision_number:7|show_wi
             for column in columns:
                 self.assertTrue(column in expected_cols)
             categories = module.get_categories(None, measurements.IMAGE)
-            self.assertEqual(len(categories), 4)
+            self.assertEqual(len(categories), 5)
             category_dict = {}
             for column in expected_cols:
                 category, feature = column[1].split("_",1)
@@ -1943,8 +2028,53 @@ LoadImages:[module_num:1|svn_version:\'9976\'|variable_revision_number:7|show_wi
                 self.assertEqual(tuple(red_image.pixel_data.shape),
                                  tuple(green_image.pixel_data.shape))
                 m.next_image_set()
-                
-    def test_10_1_load_many(self):
+               
+    def test_10_01_load_unscaled(self):
+        '''Load a image with and without rescaling'''
+        path = os.path.join(example_images_directory(), 
+                            "ExampleSpecklesImages")
+        module = LI.LoadImages()
+        module.file_types.value = LI.FF_INDIVIDUAL_IMAGES
+        module.images[0].common_text.value = '1-162hrh2ax2'
+        module.images[0].channels[0].image_name.value = 'MyImage'
+        module.images[0].channels[0].rescale.value = False
+        module.location.dir_choice = LI.ABSOLUTE_FOLDER_NAME
+        module.location.custom_path = path
+        module.module_num = 1
+        pipeline = P.Pipeline()
+        pipeline.add_module(module)
+        pipeline.add_listener(self.error_callback)
+        image_set_list = I.ImageSetList()
+        module.prepare_run(pipeline, image_set_list, None)
+        module.prepare_group(pipeline, image_set_list, (), [1])
+        image_set = image_set_list.get_image_set(0)
+        m = measurements.Measurements()
+        workspace = W.Workspace(pipeline, module, image_set,
+                                cpo.ObjectSet(), m,
+                                image_set_list)
+        module.run(workspace)
+        scales = m.get_all_measurements(measurements.IMAGE,
+                                        LI.C_SCALING + "_MyImage")
+        self.assertEqual(len(scales), 1)
+        self.assertEqual(scales[0], 4095)
+        image = image_set.get_image("MyImage")
+        self.assertTrue(np.all(image.pixel_data <= 1.0/16.0))
+        pixel_data = image.pixel_data
+        module.images[0].channels[0].rescale.value = True
+        image_set_list = I.ImageSetList()
+        module.prepare_run(pipeline, image_set_list, None)
+        module.prepare_group(pipeline, image_set_list, (), [1])
+        image_set = image_set_list.get_image_set(0)
+        m = measurements.Measurements()
+        workspace = W.Workspace(pipeline, module, image_set,
+                                cpo.ObjectSet(), m,
+                                image_set_list)
+        module.run(workspace)
+        image = image_set.get_image("MyImage")
+        np.testing.assert_almost_equal(pixel_data * 65535.0 / 4095.0 , 
+                                       image.pixel_data)
+        
+    def test_11_01_load_many(self):
         '''Load an image many times to ensure that memory is freed each time'''
         path = os.path.join(example_images_directory(), "ExampleSBSImages")
         for i in range(3):

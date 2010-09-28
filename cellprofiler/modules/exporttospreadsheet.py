@@ -561,7 +561,8 @@ class ExportToSpreadsheet(cpm.CPModule):
                 feature_name.startswith('ModuleError_') or 
                 feature_name.startswith('TimeElapsed_') or 
                 feature_name.startswith('ExecutionTime_') or 
-                feature_name.startswith('MD5Digest_') 
+                feature_name.startswith('MD5Digest_') or
+                feature_name.startswith('Scaling_')
                 ):
                 return True
             return False

@@ -525,6 +525,46 @@ class TestMeasureObjects(unittest.TestCase):
             OBJECT_NAME, '_'.join((MOI.INTENSITY, MOI.MEDIAN_INTENSITY, IMAGE_NAME)))
         self.assertEqual(len(values), 1)
         self.assertEqual(expected, values[0])
+        
+    def test_03_08_std_intensity(self):
+        np.random.seed(38)
+        labels = np.ones((40, 30), int)
+        labels[:,15:] = 3
+        labels[20:,:] += 1
+        image = np.random.uniform(size=(40,30)).astype(np.float32)
+        workspace, module = self.make_workspace(labels, image)
+        module.run(workspace)
+        m = workspace.measurements
+        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        values = m.get_current_measurement(
+            OBJECT_NAME, '_'.join((MOI.INTENSITY, MOI.STD_INTENSITY, IMAGE_NAME)))
+        self.assertEqual(len(values), 4)
+        for i in range(1,5):
+            self.assertAlmostEqual(values[i-1], np.std(image[labels==i]))
+            
+    def test_03_09_std_intensity_edge(self):
+        np.random.seed(39)
+        labels = np.ones((40, 30), int)
+        labels[:,15:] = 3
+        labels[20:,:] += 1
+        edge_mask = np.zeros((40, 30), bool)
+        i,j = np.mgrid[0:40, 0:30]
+        for ii in (0,19,20,-1):
+            edge_mask[ii, :] = True
+        for jj in (0, 14, 15, -1):
+            edge_mask[:, jj] = True
+        elabels = labels * edge_mask
+        image = np.random.uniform(size=(40,30)).astype(np.float32)
+        workspace, module = self.make_workspace(labels, image)
+        module.run(workspace)
+        m = workspace.measurements
+        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        values = m.get_current_measurement(
+            OBJECT_NAME, '_'.join((MOI.INTENSITY, MOI.STD_INTENSITY_EDGE, IMAGE_NAME)))
+        self.assertEqual(len(values), 4)
+        for i in range(1,5):
+            self.assertAlmostEqual(values[i-1], np.std(image[elabels==i]))
+        
 
     def test_04_01_wrong_image_size(self):
         '''Regression test of IMG-961 - object and image size differ'''

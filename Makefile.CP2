@@ -1,6 +1,21 @@
 #
 # Makefile for CellProfiler 2 prerequisites
 #
+# CHANGELOG:
+# 0.1.2 - 2010.09.27: Mario Emmenlauer, Lee Kamentsky
+#         - more consequent use of SRCDIR for all archives
+#         - fixed several downloads where version number is part of URL
+# 0.1.1 - 2010.09.25: Mario Emmenlauer
+#         - added MySQL and ncurses (prerequisite)
+#         - use TMPDIR, SRCDIR and PREFIX variables
+#         - fixed several issues
+# 0.1.0 - 2010.09.21: Mario Emmenlauer
+#         - added GTK and its prerequisites (optional target "gtk")
+#         - touch downloaded packages to ensure recompile
+# 0.0.6 - 2010.09.20: Lee Kamentsky, Mario Emmenlauer
+#         - fixed missing zlib dependency from Python
+#         - improved several prechecks (java and environemnt)
+#         - small other/layout changes
 # 0.0.5 - 2010.09.14: Mario Emmenlauer
 #         - added SWIG to compile list
 #         - commented unneeded wxGTK package
@@ -22,21 +37,22 @@
 # See http://cellprofiler.org for more information on CellProfiler
 #
 # This Makefile will download, unpack, compile and install all
-# prerequisites for CP2, except for Java and MySQL. It requires
-# a fairly recent gcc to compile ATLAS with optimal performance.
+# prerequisites for CP2, except for Java. It requires a fairly
+# recent compiler (gcc) to compile ATLAS with optimal performance.
 # Please disable CPU frequency scaling before compilation.
 #
 # PREREQUISITES:
 # - development files for GTK+:
-#   RedHat:        yum install gtk2-devel
+#   RedHat:	yum install gtk2-devel
 #   Debian/Ubuntu: aptitude install libgtk2.0-dev
+#   Generic:       "make gtk" with this Makefile
 #
 # VARIABLES:
-# - set TGTDIR to where you want to install your python25 directory
+# - set PREFIX to where you want to install your CellProfiler2 directory
 #
 # USAGE:
 # - supply variables that you want to set on the command line, i.e.:
-#   make TGTDIR="$HOME/usr/CellProfiler2" ...
+#   make PREFIX="$HOME/usr/CellProfiler2" ...
 # - invoke 'make' with the name of this Makefile, i.e.:
 #   make -f Makefile.CP2
 #
@@ -51,9 +67,10 @@
 #
 # MAKE_FLAGS is used for "make" compilation. -jN specifies N parallel
 # build jobs. Change or add other parameters as you like:
-MAKE_FLAGS				+= -j4
+MAKE_FLAGS				?= -j4
+PREFIX					?= $(HOME)/usr/CellProfiler2
 SRCDIR					?= $(PWD)
-TGTDIR					?= $(HOME)/usr/CellProfiler2
+TMPDIR					?= $(PWD)/tmp
 
 # Set DISABLE_PRECHECKS to "YES" (case sensitive!) to explicitly
 # disable prechecks. Disabling is not recommended. It may lead
@@ -61,22 +78,27 @@ TGTDIR					?= $(HOME)/usr/CellProfiler2
 DISABLE_PRECHECKS			?= NO
 
 # Versions and prefixes of packages:
-CELLPROFILERPREFIX			?= $(TGTDIR)
+CELLPROFILERPREFIX			?= $(PREFIX)
 CELLPROFILER_CO_ARGS			?= -rHEAD
 #CELLPROFILER_CO_ARGS			?= -r10415
 CELLPROFILER_CO_URL			= https://svn.broadinstitute.org/CellProfiler/trunk/CellProfiler
 
 PYTHONVERSION				= Python-2.5.5
-PYTHONPREFIX				?= $(TGTDIR)
+PYTHONPREFIX				?= $(PREFIX)
 SITEPKGPREFIX				= $(PYTHONPREFIX)/lib/python2.5/site-packages
 SWIGVERSION				= swig-2.0.0
-SWIGPREFIX				?= $(TGTDIR)
+SWIGPREFIX				?= $(PREFIX)
 SWIGURL					= http://www.swig.org/download.html
 PYPIVERSION				= setuptools-0.6c11-py2.5.egg
-PYPIPREFIX				?= $(TGTDIR)
+PYPIPREFIX				?= $(PREFIX)
 PILVERSION				= Imaging-1.1.7
-PILPREFIX				?= $(TGTDIR)
+PILPREFIX				?= $(PREFIX)
 PILURL					= http://www.pythonware.com/products/pil/
+NCURSESVERSION				= ncurses-5.7
+NCURSESPREFIX				?= $(PREFIX)
+MYSQLVERSION				= mysql-5.1.50
+MYSQLPREFIX				?= $(PREFIX)
+MYSQLURL				= http://dev.mysql.com/downloads/mysql/
 MYSQLPYTHONVERSION			= 1.2.3
 MYSQLPYTHONURL				= http://sourceforge.net/projects/mysql-python/
 PYTHONNOSEVERSION			= nose-0.11.3
@@ -84,25 +106,25 @@ PYTHONNOSEURL				= http://code.google.com/p/python-nose/downloads/list
 DECORATORVERSION			= decorator-3.2.0
 CYTHONVERSION				= Cython-0.12.1
 #CYTHONVERSION				= Cython-0.13
-CYTHONPREFIX				?= $(TGTDIR)
+CYTHONPREFIX				?= $(PREFIX)
 CYTHONURL				= http://www.cython.org/#download
 ATLASVERSION				= atlas3.9.25
-ATLASPREFIX				?= $(TGTDIR)
+ATLASPREFIX				?= $(PREFIX)
 ATLASURL				= http://sourceforge.net/projects/math-atlas/files/
 LAPACKVERSION				= lapack-3.1.1
 #LAPACKVERSION				= lapack-3.2.2
 LAPACKURL				= http://www.netlib.org/lapack/
 FFTWVERSION				= fftw-3.2.2
-FFTWPREFIX				?= $(TGTDIR)
+FFTWPREFIX				?= $(PREFIX)
 NUMPYVERSION				= numpy-1.5.0
-NUMPYPREFIX				?= $(TGTDIR)
+NUMPYPREFIX				?= $(PREFIX)
 NUMPYURL				= http://sourceforge.net/projects/numpy/files/
 SCIPYVERSION				= scipy-0.8.0
-SCIPYPREFIX				?= $(TGTDIR)
+SCIPYPREFIX				?= $(PREFIX)
 SCIPYURL				= http://sourceforge.net/projects/scipy/files/
 UMFPACKVERSION				= UMFPACK-5.4.0
 #UMFPACKVERSION				= UMFPACK-5.5.0
-UMFPACKPREFIX				?= $(TGTDIR)
+UMFPACKPREFIX				?= $(PREFIX)
 UMFPACKURL				= http://www.cise.ufl.edu/research/sparse/umfpack/current/
 UFCONFIGVERSION				= UFconfig-3.5.0
 UFCONFIGURL				= http://www.cise.ufl.edu/research/sparse/UFconfig/
@@ -110,22 +132,39 @@ AMDVERSION				= AMD-2.2.1
 AMDURL					= http://www.cise.ufl.edu/research/sparse/amd/current/
 MATPLOTLIBVERSION			= matplotlib-1.0.0
 MATPLOTLIBURL				= http://sourceforge.net/projects/matplotlib/files/matplotlib/matplotlib-1.0/
-WXGTKVERSION				= wxGTK-2.8.11
-WXGTKPREFIX				?= $(TGTDIR)
-WXGTKURL				= http://www.wxwidgets.org/downloads/
+#WXPYTHONTOOLKIT				= --with-x11
+WXPYTHONTOOLKIT				= --with-gtk
 WXPYTHONVERSION				= 2.8.11.0
-WXPYTHONPREFIX				?= $(TGTDIR)
+WXPYTHONPREFIX				?= $(PREFIX)
 WXPYTHONURL				= http://www.wxpython.org/download.php#sources
 JPEGVERSION				= 8b
-JPEGPREFIX				?= $(TGTDIR)
+JPEGPREFIX				?= $(PREFIX)
 ZLIBVERSION				= zlib-1.2.5
-ZLIBPREFIX				?= $(TGTDIR)
+ZLIBPREFIX				?= $(PREFIX)
 TIFFVERSION				= tiff-3.9.4
-TIFFPREFIX				?= $(TGTDIR)
+TIFFPREFIX				?= $(PREFIX)
+
+# optional packages:
+GTKVERSION				= gtk+-2.20.1
+GTKPREFIX				= $(PREFIX)
+GLIBVERSION				= glib-2.24.2
+GLIBPREFIX				= $(PREFIX)
+PANGOVERSION				= pango-1.28.1
+PANGOPREFIX				= $(PREFIX)
+PIXMANVERSION				= pixman-0.19.2
+PIXMANPREFIX				= $(PREFIX)
+ATKVERSION				= atk-1.30.0
+ATKPREFIX				= $(PREFIX)
+CAIROVERSION				= cairo-1.10.0
+CAIROPREFIX				= $(PREFIX)
+FONTCFGVERSION				= fontconfig-2.8.0
+FONTCFGPREFIX				= $(PREFIX)
+
 
 
 default:				all
 all:					precheck cellprofiler
+gtk:					precheck libgtk
 
 
 
@@ -134,60 +173,71 @@ all:					precheck cellprofiler
 # Here we have all the tests for prerequisites of this Makefile
 # Add as many (useful) tests as you like, the more the better.
 # They just need to perform quickly!
-# NOTE: These prechecks where kindly provided by the XuvTools
-# project at http://xuvtools.org/
+# NOTE: Some of these prechecks where kindly provided by
+# the XuvTools project at http://xuvtools.org/
 #
-precheck-java:                          findlibjvm.class
+precheck-java:				$(SRCDIR)/findlibjvm.class
 					@if test "$(DISABLE_PRECHECKS)" != "YES" ; then \
 						if test -z "$(JAVA_HOME)" ; then \
-							echo "Could not detect JAVA_HOME variable. Please export JAVA_HOME from" && \
-							echo "your SHELL to the path of the JRE, and add it to LD_LIBRARY_PATH." && \
+							echo "Could not detect JAVA_HOME variable. Please export JAVA_HOME from" ; \
+							echo "your SHELL to the path of the JRE, and add it to LD_LIBRARY_PATH." ; \
 							false ; \
 						elif ! echo "$(LD_LIBRARY_PATH)"|grep -qs "$(JAVA_HOME)" ; then \
-							echo "It seems JAVA_HOME is missing from the LD_LIBRARY_PATH variable." && \
-							echo "Please read the setup guide on how to fix that." && \
+							echo "It seems JAVA_HOME is missing from the LD_LIBRARY_PATH variable." ; \
+							echo "Please read the setup guide on how to fix that." ; \
 							false ; \
-						fi && \
-							find `java findlibjvm` -maxdepth 1 -name libjvm.so -exec echo "found" \; 2>/dev/zero | grep -qs "^found" || { \
-							echo "Could not find 'libjvm.so' in the LD_LIBRARY_PATH." && \
-							echo "Please read the setup guide on how to fix that." && \
-							false ; \
-						} ; \
+						else \
+							cd "$(SRCDIR)" && \
+							LIBJVMPATH=$$(java findlibjvm 2>/dev/zero) && \
+							if ! test -r "$${LIBJVMPATH}/libjvm.so" ; then \
+								echo "Could not find 'libjvm.so' in the following path:" ; \
+								echo "  '$${LIBJVMPATH}'" ; \
+								echo "Please read the setup guide on how to fix that." ; \
+								false ; \
+							fi ; \
+						fi ; \
 					fi
 
 precheck-env:
-					@if test -z "$(HOSTTYPE)" && test "$(DISABLE_PRECHECKS)" != "YES" ; then \
-						echo "Could not detect HOSTTYPE variable. Please export HOSTTYPE from" && \
-						echo "your SHELL to set the default architecture of the build." && \
-						false ; \
+					@if test "$(DISABLE_PRECHECKS)" != "YES" ; then \
+						if test -z "$(HOSTTYPE)" ; then \
+							echo "Could not detect HOSTTYPE variable. Please export HOSTTYPE from" ; \
+							echo "your SHELL to set the default architecture of the build." ; \
+							false ; \
+						elif test -n "$(CPPFLAGS)" -o -n "$(LDFLAGS)" ; then \
+							echo "The CPPFLAGS and/or LDFLAGS variables are set. Likely, numpy" ; \
+							echo "will not compile because external flags override theirs." ; \
+							echo "Please unset these variables unless you know what you are doing." ; \
+							false ; \
+						fi ; \
 					fi
 
 precheck-svn:
 					@if ! svn --version 2>&1|grep -iqs '^svn.* [1-9]\.[4-9]\.[0-9]' && test "$(DISABLE_PRECHECKS)" != "YES" ; then \
-						echo "Could not detect a recent version of Subversion (>= 1.4.0)," && \
-						echo "please compile or install Subversion/SVN." && \
-						echo "You can also try to install SVN for your Linux distribution." && \
+						echo "Could not detect a recent version of Subversion (>= 1.4.0)," ; \
+						echo "please compile or install Subversion/SVN." ; \
+						echo "You can also try to install SVN for your Linux distribution." ; \
 						false ; \
 					fi
 
 precheck-gcc:
 					@if ! gcc --version 2>/dev/zero|grep -iqs '^gcc.* [4-9]\.[2-9]\.[0-9]' && test "$(DISABLE_PRECHECKS)" != "YES" ; then \
-						echo "Could not detect a recent GCC C compiler version (>=4.2.0)," && \
-						echo "it is very unlikely that you will be able to compile fast code!" && \
+						echo "Could not detect a recent GCC C compiler version (>=4.2.0)," ; \
+						echo "it is very unlikely that you will be able to compile fast code!" ; \
 						false ; \
 					fi
 
 precheck-gpp:
 					@if ! g++ --version 2>/dev/zero|grep -iqs '^g++.* [4-9]\.[2-9]\.[0-9]' && test "$(DISABLE_PRECHECKS)" != "YES" ; then \
-						echo "Could not detect a recent GCC C++ compiler version (>=4.2.0)," && \
-						echo "it is very unlikely that you will be able to compile fast code!" && \
+						echo "Could not detect a recent GCC C++ compiler version (>=4.2.0)," ; \
+						echo "it is very unlikely that you will be able to compile fast code!" ; \
 						false ; \
 					fi
 
 precheck-gfortran:
 					@if ! gfortran --version 2>/dev/zero|grep -iqs '^GNU Fortran.* [4-9]\.[2-9]\.[0-9]' && test "$(DISABLE_PRECHECKS)" != "YES" ; then \
-						echo "Could not detect a recent GCC Fortran 95 compiler version (>=4.2.0)," && \
-						echo "it is very unlikely that you will be able to compile fast code!" && \
+						echo "Could not detect a recent GCC Fortran 95 compiler version (>=4.2.0)," ; \
+						echo "it is very unlikely that you will be able to compile fast code!" ; \
 						false ; \
 					fi
 
@@ -208,32 +258,35 @@ precheck:				precheck-java precheck-env precheck-svn precheck-gcc precheck-gpp p
 # depend on earlier specified packages.
 #
 python:					$(PYTHONPREFIX)/bin/python
-$(PYTHONPREFIX)/bin/python:		$(PYTHONVERSION).tar.bz2 zlib
+$(PYTHONPREFIX)/bin/python:		$(SRCDIR)/$(PYTHONVERSION).tar.bz2 $(ZLIBPREFIX)/lib/libz.a
+					mkdir -p "$(TMPDIR)" && cd "$(TMPDIR)" && \
 					rm -fr "$(PYTHONVERSION)" && \
-					tar -xjf $< && \
+					tar -xjf "$(SRCDIR)/$(PYTHONVERSION).tar.bz2" && \
 					cd "$(PYTHONVERSION)" && \
 					export LD_LIBRARY_PATH="$(PYTHONPREFIX)/lib:$(LD_LIBRARY_PATH)" && \
 					export C_INCLUDE_PATH="$(PYTHONPREFIX)/include:$(C_INCLUDE_PATH)" && \
 					./configure \
 						--prefix="$(PYTHONPREFIX)" && \
-					$(MAKE) $(MAKEFLAGS) $(MAKE_FLAGS) && \
-					$(MAKE) $(MAKEFLAGS) -j1 install
+					$(MAKE) $(MAKE_FLAGS) && \
+					$(MAKE) -j1 install
 
 cython:					$(CYTHONPREFIX)/bin/cython
-$(CYTHONPREFIX)/bin/cython:		$(CYTHONVERSION).tar.gz $(PYTHONPREFIX)/bin/python $(SITEPKGPREFIX)/easy-install.pth
+$(CYTHONPREFIX)/bin/cython:		$(SRCDIR)/$(CYTHONVERSION).tar.gz $(PYTHONPREFIX)/bin/python $(PYPIPREFIX)/bin/easy_install
+					mkdir -p "$(TMPDIR)" && cd "$(TMPDIR)" && \
 					rm -fr "$(CYTHONVERSION)" && \
-					tar -xzf $< && \
+					tar -xzf "$(SRCDIR)/$(CYTHONVERSION).tar.gz" && \
 					cd "$(CYTHONVERSION)" && \
 					export PATH="$(PYTHONPREFIX)/bin:$(PATH)" && \
 					export LD_LIBRARY_PATH="$(PYTHONPREFIX)/lib:$(LD_LIBRARY_PATH)" && \
 					$(PYTHONPREFIX)/bin/python setup.py install
 
-lapack:					$(SRCDIR)/$(LAPACKVERSION)/lapack_LINUX.a
-$(SRCDIR)/$(LAPACKVERSION)/lapack_LINUX.a:	$(LAPACKVERSION).tgz
+lapack:					$(TMPDIR)/$(LAPACKVERSION)/lapack_LINUX.a
+$(TMPDIR)/$(LAPACKVERSION)/lapack_LINUX.a:	$(SRCDIR)/$(LAPACKVERSION).tgz
 					cpufreq-selector -g performance || true && \
-					rm -fr $(LAPACKVERSION) && \
-					tar -zxf $< && \
-					cd $(LAPACKVERSION) && \
+					mkdir -p "$(TMPDIR)" && cd "$(TMPDIR)" && \
+					rm -fr "$(LAPACKVERSION)" && \
+					tar -zxf "$(SRCDIR)/$(LAPACKVERSION).tgz" && \
+					cd "$(LAPACKVERSION)" && \
 					cp ./INSTALL/make.inc.LINUX ./make.inc && \
 					perl -pi -e 's/(^OPTS.*)/$$1 -fPIC -m64/g' ./make.inc && \
 					perl -pi -e 's/(^NOOPT.*)/$$1 -fPIC -m64/g' ./make.inc && \
@@ -245,17 +298,18 @@ $(SRCDIR)/$(LAPACKVERSION)/lapack_LINUX.a:	$(LAPACKVERSION).tgz
 					$(MAKE) $(MAKE_FLAGS)
 
 atlas:					$(ATLASPREFIX)/lib/libatlas.a
-$(ATLASPREFIX)/lib/libatlas.a:		$(ATLASVERSION).tar.bz2 $(SRCDIR)/$(LAPACKVERSION)/lapack_LINUX.a
-					cpufreq-selector -g performance || true && \
-					rm -fr ./ATLAS && \
-					tar -jxf $< && \
+$(ATLASPREFIX)/lib/libatlas.a:		$(SRCDIR)/$(ATLASVERSION).tar.bz2 $(TMPDIR)/$(LAPACKVERSION)/lapack_LINUX.a
+					cpufreq-selector -g performance ; \
+					mkdir -p "$(TMPDIR)" && cd "$(TMPDIR)" && \
+					rm -fr "./ATLAS" && \
+					tar -jxf "$(SRCDIR)/$(ATLASVERSION).tar.bz2" && \
 					cd "./ATLAS/" && \
 					mkdir -p "./$(HOSTTYPE)" && \
 					cd "./$(HOSTTYPE)/" && \
 					export PATH="$(PYTHONPREFIX)/bin:$(PATH)" && \
 					export LD_LIBRARY_PATH="$(PYTHONPREFIX)/lib:$(LD_LIBRARY_PATH)" && \
 					../configure -Fa alg -fPIC -b 64 \
-						-Ss flapack "$(SRCDIR)/$(LAPACKVERSION)/lapack_LINUX.a" \
+						-Ss flapack "$(TMPDIR)/$(LAPACKVERSION)/lapack_LINUX.a" \
 						-Ss pmake "make -j4" -Si cputhrchk 0 \
 						--prefix="$(ATLASPREFIX)" && \
 					$(MAKE) && \
@@ -263,32 +317,21 @@ $(ATLASPREFIX)/lib/libatlas.a:		$(ATLASVERSION).tar.bz2 $(SRCDIR)/$(LAPACKVERSIO
 					cd tmp && \
 					ar x ../lib/liblapack.a && \
 					mv ../lib/liblapack.a ../lib/liblapack_ATLAS.a && \
-					cp "$(SRCDIR)/$(LAPACKVERSION)/lapack_LINUX.a" ../lib/liblapack.a && \
+					cp "$(TMPDIR)/$(LAPACKVERSION)/lapack_LINUX.a" ../lib/liblapack.a && \
 					ar r ../lib/liblapack.a *.o && \
 					cd ../ && \
 					$(MAKE) check && \
 					$(MAKE) install
 
-# && \
-#					chmod 775 $(ATLASPREFIX)/lib/*.so
-#
-#					cd ./lib/ && \
-#					$(MAKE) shared && \
-#					cd ../ && \
-#					../configure -C ic gcc -C if gfortran -Fa alg -fPIC -b 64 \
-#						-Ss flapack "$(S RCDIR)/$(LAPACKVERSION)/lapack_LINUX.a" \
-#						-Ss pmake "make -j4" -Si cputhrchk 0 \
-#						--prefix="$(ATLASPREFIX)" && \
-#
-
 umfpack:				$(UMFPACKPREFIX)/lib/libumfpack.a
-$(UMFPACKPREFIX)/lib/libumfpack.a:	$(UMFPACKVERSION).tar.gz $(UFCONFIGVERSION).tar.gz $(AMDVERSION).tar.gz $(ATLASPREFIX)/lib/libatlas.a
+$(UMFPACKPREFIX)/lib/libumfpack.a:	$(SRCDIR)/$(UMFPACKVERSION).tar.gz $(SRCDIR)/$(UFCONFIGVERSION).tar.gz $(SRCDIR)/$(AMDVERSION).tar.gz $(ATLASPREFIX)/lib/libatlas.a
+					mkdir -p "$(TMPDIR)" && cd "$(TMPDIR)" && \
 					rm -fr "UMFPACK" && \
 					rm -fr "UFconfig" && \
 					rm -fr "AMD" && \
-					tar -xzf "$(UMFPACKVERSION).tar.gz" && \
-					tar -xzf "$(UFCONFIGVERSION).tar.gz" && \
-					tar -xzf "$(AMDVERSION).tar.gz" && \
+					tar -xzf "$(SRCDIR)/$(UMFPACKVERSION).tar.gz" && \
+					tar -xzf "$(SRCDIR)/$(UFCONFIGVERSION).tar.gz" && \
+					tar -xzf "$(SRCDIR)/$(AMDVERSION).tar.gz" && \
 					perl -pi -e 's/(^CC )=.*/$$1= gcc/g' UFconfig/UFconfig.mk && \
 					perl -pi -e 's/(^CFLAGS .*)/$$1 -m64 -fPIC/g' UFconfig/UFconfig.mk && \
 					perl -pi -e 's/(^F77 )=.*/$$1= gfortran/g' UFconfig/UFconfig.mk && \
@@ -307,44 +350,48 @@ $(UMFPACKPREFIX)/lib/libumfpack.a:	$(UMFPACKVERSION).tar.gz $(UFCONFIGVERSION).t
 
 fftw:					$(FFTWPREFIX)/lib/libfftw3.la $(FFTWPREFIX)/lib/libfftw3l.la $(FFTWPREFIX)/lib/libfftw3f.la
 
-$(FFTWPREFIX)/lib/libfftw3.la:		$(FFTWVERSION).tar.gz
+$(FFTWPREFIX)/lib/libfftw3.la:		$(SRCDIR)/$(FFTWVERSION).tar.gz
+					mkdir -p "$(TMPDIR)" && cd "$(TMPDIR)" && \
 					rm -fr "$(FFTWVERSION)" && \
-					tar -xzf $< && \
+					tar -xzf "$(SRCDIR)/$(FFTWVERSION).tar.gz" && \
 					cd "$(FFTWVERSION)" && \
 					./configure \
 						--enable-sse2 \
 						--enable-shared \
 						--prefix="$(FFTWPREFIX)" && \
-					$(MAKE) $(MAKEFLAGS) $(MAKE_FLAGS) && \
-					$(MAKE) $(MAKEFLAGS) -j1 install
+					$(MAKE) $(MAKE_FLAGS) && \
+					$(MAKE) -j1 install
 
-$(FFTWPREFIX)/lib/libfftw3l.la:		$(FFTWVERSION).tar.gz
+$(FFTWPREFIX)/lib/libfftw3l.la:		$(SRCDIR)/$(FFTWVERSION).tar.gz
+					mkdir -p "$(TMPDIR)" && cd "$(TMPDIR)" && \
 					rm -fr "$(FFTWVERSION)" && \
-					tar -xzf $< && \
+					tar -xzf "$(SRCDIR)/$(FFTWVERSION).tar.gz" && \
 					cd "$(FFTWVERSION)" && \
 					./configure \
 						--enable-long-double \
 						--enable-shared \
 						--prefix="$(FFTWPREFIX)" && \
-					$(MAKE) $(MAKEFLAGS) $(MAKE_FLAGS) && \
-					$(MAKE) $(MAKEFLAGS) -j1 install
+					$(MAKE) $(MAKE_FLAGS) && \
+					$(MAKE) -j1 install
 
-$(FFTWPREFIX)/lib/libfftw3f.la:		$(FFTWVERSION).tar.gz $(FFTWPREFIX)/lib/libfftw3.la $(FFTWPREFIX)/lib/libfftw3l.la
+$(FFTWPREFIX)/lib/libfftw3f.la:		$(SRCDIR)/$(FFTWVERSION).tar.gz $(FFTWPREFIX)/lib/libfftw3.la $(FFTWPREFIX)/lib/libfftw3l.la
+					mkdir -p "$(TMPDIR)" && cd "$(TMPDIR)" && \
 					rm -fr "$(FFTWVERSION)" && \
-					tar -xzf $< && \
+					tar -xzf "$(SRCDIR)/$(FFTWVERSION).tar.gz" && \
 					cd "$(FFTWVERSION)" && \
 					./configure \
 						--enable-float \
 						--enable-sse \
 						--enable-shared \
 						--prefix="$(FFTWPREFIX)" && \
-					$(MAKE) $(MAKEFLAGS) $(MAKE_FLAGS) && \
-					$(MAKE) $(MAKEFLAGS) -j1 install
+					$(MAKE) $(MAKE_FLAGS) && \
+					$(MAKE) -j1 install
 
 numpy:					$(NUMPYPREFIX)/lib/python2.5/site-packages/$(NUMPYVERSION)-py2.5.egg-info
-$(NUMPYPREFIX)/lib/python2.5/site-packages/$(NUMPYVERSION)-py2.5.egg-info:	$(NUMPYVERSION).tar.gz $(PYTHONPREFIX)/bin/python $(UMFPACKPREFIX)/lib/libumfpack.a $(ATLASPREFIX)/lib/libatlas.a $(FFTWPREFIX)/lib/libfftw3f.la $(SITEPKGPREFIX)/easy-install.pth
-					rm -fr $(NUMPYVERSION) && \
-					tar -zxf $(NUMPYVERSION).tar.gz && \
+$(NUMPYPREFIX)/lib/python2.5/site-packages/$(NUMPYVERSION)-py2.5.egg-info:	$(SRCDIR)/$(NUMPYVERSION).tar.gz $(PYTHONPREFIX)/bin/python $(UMFPACKPREFIX)/lib/libumfpack.a $(ATLASPREFIX)/lib/libatlas.a $(FFTWPREFIX)/lib/libfftw3f.la $(PYPIPREFIX)/bin/easy_install
+					mkdir -p "$(TMPDIR)" && cd "$(TMPDIR)" && \
+					rm -fr "$(NUMPYVERSION)" && \
+					tar -zxf "$(SRCDIR)/$(NUMPYVERSION).tar.gz" && \
 					cd "$(NUMPYVERSION)" && \
 					cp site.cfg.example site.cfg && \
 					perl -pi -e 's@#(\[DEFAULT\])@$$1@g' site.cfg && \
@@ -366,18 +413,20 @@ $(NUMPYPREFIX)/lib/python2.5/site-packages/$(NUMPYVERSION)-py2.5.egg-info:	$(NUM
 					$(PYTHONPREFIX)/bin/python setup.py install
 
 swig:					$(PYTHONPREFIX)/bin/swig
-$(PYTHONPREFIX)/bin/swig:		$(SWIGVERSION).tar.gz
-					rm -fr $(SWIGVERSION) && \
-					tar -zxf $(SWIGVERSION).tar.gz && \
+$(PYTHONPREFIX)/bin/swig:		$(SRCDIR)/$(SWIGVERSION).tar.gz
+					mkdir -p "$(TMPDIR)" && cd "$(TMPDIR)" && \
+					rm -fr "$(SWIGVERSION)" && \
+					tar -zxf "$(SRCDIR)/$(SWIGVERSION).tar.gz" && \
 					cd "$(SWIGVERSION)" && \
 					./configure --prefix="$(SWIGPREFIX)" && \
-					$(MAKE) $(MAKEFLAGS) $(MAKE_FLAGS) && \
-					$(MAKE) $(MAKEFLAGS) -j1 install
+					$(MAKE) $(MAKE_FLAGS) && \
+					$(MAKE) -j1 install
 
 scipy:					$(SCIPYPREFIX)/lib/python2.5/site-packages/$(SCIPYVERSION)-py2.5.egg-info
-$(SCIPYPREFIX)/lib/python2.5/site-packages/$(SCIPYVERSION)-py2.5.egg-info:	$(SCIPYVERSION).tar.gz $(PYTHONPREFIX)/bin/python $(UMFPACKPREFIX)/lib/libumfpack.a $(ATLASPREFIX)/lib/libatlas.a $(NUMPYPREFIX)/lib/python2.5/site-packages/$(NUMPYVERSION)-py2.5.egg-info $(SITEPKGPREFIX)/easy-install.pth $(PYTHONPREFIX)/bin/swig
-					rm -fr $(SCIPYVERSION) && \
-					tar -zxf $(SCIPYVERSION).tar.gz && \
+$(SCIPYPREFIX)/lib/python2.5/site-packages/$(SCIPYVERSION)-py2.5.egg-info:	$(SRCDIR)/$(SCIPYVERSION).tar.gz $(PYTHONPREFIX)/bin/python $(UMFPACKPREFIX)/lib/libumfpack.a $(ATLASPREFIX)/lib/libatlas.a $(NUMPYPREFIX)/lib/python2.5/site-packages/$(NUMPYVERSION)-py2.5.egg-info $(PYPIPREFIX)/bin/easy_install $(PYTHONPREFIX)/bin/swig
+					mkdir -p "$(TMPDIR)" && cd "$(TMPDIR)" && \
+					rm -fr "$(SCIPYVERSION)" && \
+					tar -zxf "$(SRCDIR)/$(SCIPYVERSION).tar.gz" && \
 					cd "$(SCIPYVERSION)" && \
 					export PATH="$(PYTHONPREFIX)/bin:$(PATH)" && \
 					export LD_LIBRARY_PATH="$(PYTHONPREFIX)/lib:$(LD_LIBRARY_PATH)" && \
@@ -385,73 +434,96 @@ $(SCIPYPREFIX)/lib/python2.5/site-packages/$(SCIPYVERSION)-py2.5.egg-info:	$(SCI
 					$(PYTHONPREFIX)/bin/python setup.py install
 
 matplotlib:				$(SITEPKGPREFIX)/$(MATPLOTLIBVERSION)-py2.5.egg-info
-$(SITEPKGPREFIX)/$(MATPLOTLIBVERSION)-py2.5.egg-info:	$(MATPLOTLIBVERSION).tar.gz $(NUMPYPREFIX)/lib/python2.5/site-packages/$(NUMPYVERSION)-py2.5.egg-info $(WXPYTHONPREFIX)/bin/pywxrc
-					rm -fr $(MATPLOTLIBVERSION) && \
-					tar -zxf $< && \
+$(SITEPKGPREFIX)/$(MATPLOTLIBVERSION)-py2.5.egg-info:	$(SRCDIR)/$(MATPLOTLIBVERSION).tar.gz $(NUMPYPREFIX)/lib/python2.5/site-packages/$(NUMPYVERSION)-py2.5.egg-info $(WXPYTHONPREFIX)/bin/pywxrc
+					mkdir -p "$(TMPDIR)" && cd "$(TMPDIR)" && \
+					rm -fr "$(MATPLOTLIBVERSION)" && \
+					tar -zxf "$(SRCDIR)/$(MATPLOTLIBVERSION).tar.gz" && \
 					cd "$(MATPLOTLIBVERSION)" && \
 					export PATH="$(PYTHONPREFIX)/bin:$(PATH)" && \
 					export LD_LIBRARY_PATH="$(PYTHONPREFIX)/lib:$(LD_LIBRARY_PATH)" && \
 					$(PYTHONPREFIX)/bin/python setup.py build && \
 					$(PYTHONPREFIX)/bin/python setup.py install
 
-pypi:					$(SITEPKGPREFIX)/easy-install.pth
-$(SITEPKGPREFIX)/easy-install.pth:	$(PYPIVERSION) $(PYTHONPREFIX)/bin/python
+pypi:					$(PYPIPREFIX)/bin/easy_install
+$(PYPIPREFIX)/bin/easy_install:		$(SRCDIR)/$(PYPIVERSION) $(PYTHONPREFIX)/bin/python
 					export PATH="$(PYTHONPREFIX)/bin:$(PATH)" && \
 					export LD_LIBRARY_PATH="$(PYTHONPREFIX)/lib:$(LD_LIBRARY_PATH)" && \
 					sh $(PYPIVERSION) --prefix="$(PYTHONPREFIX)"
 
 decorator:				$(SITEPKGPREFIX)/$(DECORATORVERSION)-py2.5.egg
-$(SITEPKGPREFIX)/$(DECORATORVERSION)-py2.5.egg:	$(DECORATORVERSION).tar.gz $(PYTHONPREFIX)/bin/python $(SITEPKGPREFIX)/easy-install.pth
+$(SITEPKGPREFIX)/$(DECORATORVERSION)-py2.5.egg:	$(SRCDIR)/$(DECORATORVERSION).tar.gz $(PYTHONPREFIX)/bin/python $(PYPIPREFIX)/bin/easy_install
+					mkdir -p "$(TMPDIR)" && cd "$(TMPDIR)" && \
 					rm -fr "$(DECORATORVERSION)" && \
-					tar -xzf $< && \
+					tar -xzf "$(SRCDIR)/$(DECORATORVERSION).tar.gz" && \
 					cd "$(DECORATORVERSION)" && \
 					export PATH="$(PYTHONPREFIX)/bin:$(PATH)" && \
 					export LD_LIBRARY_PATH="$(PYTHONPREFIX)/lib:$(LD_LIBRARY_PATH)" && \
 					$(PYTHONPREFIX)/bin/python setup.py install
 
+ncurses:				$(NCURSESPREFIX)/lib/libncursesw.a
+$(NCURSESPREFIX)/lib/libncursesw.a:	$(SRCDIR)/$(NCURSESVERSION).tar.gz
+					mkdir -p "$(TMPDIR)" && cd "$(TMPDIR)" && \
+					rm -fr "$(NCURSESVERSION)" && \
+					tar -xzf "$(SRCDIR)/$(NCURSESVERSION).tar.gz" && \
+					cd "$(NCURSESVERSION)" && \
+					./configure \
+						--prefix="$(NCURSESPREFIX)" \
+						--with-shared \
+						--without-ada \
+						--without-debug \
+						--enable-widec && \
+					$(MAKE) $(MAKE_FLAGS) && \
+					$(MAKE) -j1 install
+
+mysql:					$(PYTHONPREFIX)/lib/mysql/libmysqlclient.la
+$(PYTHONPREFIX)/lib/mysql/libmysqlclient.la:	$(SRCDIR)/$(MYSQLVERSION).tar.gz $(ZLIBPREFIX)/lib/libz.a $(NCURSESPREFIX)/lib/libncursesw.a
+					mkdir -p "$(TMPDIR)" && cd "$(TMPDIR)" && \
+					rm -fr "$(MYSQLVERSION)" && \
+					tar -zxf "$(SRCDIR)/$(MYSQLVERSION).tar.gz" && \
+					cd "$(MYSQLVERSION)" && \
+					export CPPFLAGS="-I$(NCURSESPREFIX)/include $(CPPFLAGS)" && \
+					export LDFLAGS="-L$(NCURSESPREFIX)/lib $(LDFLAGS)" && \
+					export LD_LIBRARY_PATH="$(NCURSESPREFIX)/lib:$(LD_LIBRARY_PATH)" && \
+					./configure \
+						--prefix="$(MYSQLPREFIX)" \
+						--disable-community-features \
+						--with-zlib-dir="$(ZLIBPREFIX)" \
+						--without-server \
+						--without-docs && \
+					$(MAKE) $(MAKE_FLAGS) && \
+					$(MAKE) -j1 install
+
 mysqlpython:				$(SITEPKGPREFIX)/MySQL_python-$(MYSQLPYTHONVERSION)-py2.5-linux-x86_64.egg
-$(SITEPKGPREFIX)/MySQL_python-$(MYSQLPYTHONVERSION)-py2.5-linux-x86_64.egg:	MySQL-python-$(MYSQLPYTHONVERSION).tar.gz $(PYTHONPREFIX)/bin/python $(SITEPKGPREFIX)/easy-install.pth
+$(SITEPKGPREFIX)/MySQL_python-$(MYSQLPYTHONVERSION)-py2.5-linux-x86_64.egg:	$(SRCDIR)/MySQL-python-$(MYSQLPYTHONVERSION).tar.gz $(PYTHONPREFIX)/bin/python $(PYPIPREFIX)/bin/easy_install $(PYTHONPREFIX)/lib/mysql/libmysqlclient.la
+					mkdir -p "$(TMPDIR)" && cd "$(TMPDIR)" && \
 					rm -fr "MySQL-python-$(MYSQLPYTHONVERSION)" && \
-					tar -xzf $< && \
+					tar -xzf "$(SRCDIR)/MySQL-python-$(MYSQLPYTHONVERSION).tar.gz" && \
 					cd "MySQL-python-$(MYSQLPYTHONVERSION)" && \
 					export PATH="$(PYTHONPREFIX)/bin:$(PATH)" && \
 					export LD_LIBRARY_PATH="$(PYTHONPREFIX)/lib:$(LD_LIBRARY_PATH)" && \
 					$(PYTHONPREFIX)/bin/python setup.py build && \
 					$(PYTHONPREFIX)/bin/python setup.py install
 
-# wxGTK is unneeded, its completely contained in
-# wxPython (and built before the Python egg).
-#wxgtk:					$(WXGTKPREFIX)/bin/wx-config
-#$(WXGTKPREFIX)/bin/wx-config:		$(WXGTKVERSION).tar.gz
-#					rm -fr $(WXGTKVERSION) && \
-#					tar -zxf $< && \
-#					rm -fr $(WXGTKVERSION)-$(HOSTTYPE) && \
-#					mkdir "$(WXGTKVERSION)-$(HOSTTYPE)" && \
-#					cd "$(WXGTKVERSION)-$(HOSTTYPE)" && \
-#					export PATH="$(PYTHONPREFIX)/bin:$(PATH)" && \
-#					export LD_LIBRARY_PATH="$(PYTHONPREFIX)/lib:$(LD_LIBRARY_PATH)" && \
-#					../$(WXGTKVERSION)/configure \
-#						--with-gtk \
-#						--with-opengl \
-#						--enable-graphics_ctx \
-#						--enable-unicode \
-#						--disable-sound \
-#						--enable-monolithic \
-#						--prefix="$(WXGTKPREFIX)" && \
-#					$(MAKE) $(MAKE_FLAGS) && \
-#					$(MAKE) -j1 install
-
 wxpython:				$(WXPYTHONPREFIX)/bin/pywxrc
-$(WXPYTHONPREFIX)/bin/pywxrc:		wxPython-src-$(WXPYTHONVERSION).tar.bz2 $(PYTHONPREFIX)/bin/python
-					rm -fr wxPython-src-$(WXPYTHONVERSION) && \
-					tar -xjf $< && \
-					rm -fr wxPython-src-$(WXPYTHONVERSION)-$(HOSTTYPE) && \
+$(WXPYTHONPREFIX)/bin/pywxrc:		$(SRCDIR)/wxPython-src-$(WXPYTHONVERSION).tar.bz2 $(PYTHONPREFIX)/bin/python
+					mkdir -p "$(TMPDIR)" && cd "$(TMPDIR)" && \
+					rm -fr "wxPython-src-$(WXPYTHONVERSION)" && \
+					tar -xjf "$(SRCDIR)/wxPython-src-$(WXPYTHONVERSION).tar.bz2" && \
+					rm -fr "wxPython-src-$(WXPYTHONVERSION)-$(HOSTTYPE)" && \
 					mkdir "wxPython-src-$(WXPYTHONVERSION)-$(HOSTTYPE)" && \
 					cd "wxPython-src-$(WXPYTHONVERSION)-$(HOSTTYPE)" && \
 					export PATH="$(PYTHONPREFIX)/bin:$(PATH)" && \
 					export LD_LIBRARY_PATH="$(PYTHONPREFIX)/lib:$(LD_LIBRARY_PATH)" && \
-					../wxPython-src-$(WXPYTHONVERSION)/configure \
-						--with-gtk \
+					if test -f "$(GTKPREFIX)/lib/libgtk-x11-2.0.la" ; then \
+						export CPPFLAGS="-I$(GTKPREFIX)/include $(CPPFLAGS)" && \
+						export LDFLAGS="-L$(GTKPREFIX)/lib $(LDFLAGS)" && \
+						export LD_LIBRARY_PATH="$(GTKPREFIX)/lib:$(LD_LIBRARY_PATH)" ; \
+					fi && \
+					if test -d "$(GLIBPREFIX)/lib/pkgconfig" ; then \
+						export PKG_CONFIG_PATH="$(GLIBPREFIX)/lib/pkgconfig:$(PKG_CONFIG_PATH)" ; \
+					fi && \
+					"../wxPython-src-$(WXPYTHONVERSION)/configure" \
+						$(WXPYTHONTOOLKIT) \
 						--with-opengl \
 						--enable-graphics_ctx \
 						--enable-unicode \
@@ -469,18 +541,20 @@ $(WXPYTHONPREFIX)/bin/pywxrc:		wxPython-src-$(WXPYTHONVERSION).tar.bz2 $(PYTHONP
 					$(PYTHONPREFIX)/bin/python setup.py install
 
 nose:					$(SITEPKGPREFIX)/$(PYTHONNOSEVERSION)-py2.5.egg
-$(SITEPKGPREFIX)/$(PYTHONNOSEVERSION)-py2.5.egg:	$(PYTHONNOSEVERSION).tar.gz
+$(SITEPKGPREFIX)/$(PYTHONNOSEVERSION)-py2.5.egg:	$(SRCDIR)/$(PYTHONNOSEVERSION).tar.gz
+					mkdir -p "$(TMPDIR)" && cd "$(TMPDIR)" && \
 					rm -fr "$(PYTHONNOSEVERSION)" && \
-					tar -xzf $< && \
+					tar -xzf "$(SRCDIR)/$(PYTHONNOSEVERSION).tar.gz" && \
 					cd "$(PYTHONNOSEVERSION)" && \
 					export PATH="$(PYTHONPREFIX)/bin:$(PATH)" && \
 					export LD_LIBRARY_PATH="$(PYTHONPREFIX)/lib:$(LD_LIBRARY_PATH)" && \
 					$(PYTHONPREFIX)/bin/python setup.py install
 
 pil:					$(PYTHONPREFIX)/bin/pilfile.py
-$(PYTHONPREFIX)/bin/pilfile.py:		$(PILVERSION).tar.gz $(JPEGPREFIX)/lib/libjpeg.la $(ZLIBPREFIX)/lib/libz.a $(TIFFPREFIX)/lib/libtiff.la
+$(PYTHONPREFIX)/bin/pilfile.py:		$(SRCDIR)/$(PILVERSION).tar.gz $(JPEGPREFIX)/lib/libjpeg.la $(ZLIBPREFIX)/lib/libz.a $(TIFFPREFIX)/lib/libtiff.la
+					mkdir -p "$(TMPDIR)" && cd "$(TMPDIR)" && \
 					rm -fr "$(PILVERSION)" && \
-					tar -xzf $< && \
+					tar -xzf "$(SRCDIR)/$(PILVERSION).tar.gz" && \
 					cd "$(PILVERSION)" && \
 					perl -pi -e 's@(^JPEG_ROOT.*?)=.*@$$1= "$(JPEGPREFIX)"@g' setup.py && \
 					perl -pi -e 's@(^ZLIB_ROOT.*?)=.*@$$1= "$(ZLIBPREFIX)"@g' setup.py && \
@@ -491,30 +565,33 @@ $(PYTHONPREFIX)/bin/pilfile.py:		$(PILVERSION).tar.gz $(JPEGPREFIX)/lib/libjpeg.
 					$(PYTHONPREFIX)/bin/python setup.py install
 
 jpeg:					$(JPEGPREFIX)/lib/libjpeg.la
-$(JPEGPREFIX)/lib/libjpeg.la:		jpegsrc.v$(JPEGVERSION).tar.gz
+$(JPEGPREFIX)/lib/libjpeg.la:		$(SRCDIR)/jpegsrc.v$(JPEGVERSION).tar.gz
+					mkdir -p "$(TMPDIR)" && cd "$(TMPDIR)" && \
 					rm -fr "jpeg-$(JPEGVERSION)" && \
-					tar -xzf $< && \
+					tar -xzf "$(SRCDIR)/jpegsrc.v$(JPEGVERSION).tar.gz" && \
 					cd "jpeg-$(JPEGVERSION)" && \
 					./configure \
 						CC="gcc" CPP="cpp" \
 						--prefix="$(JPEGPREFIX)" && \
-					$(MAKE) $(MAKEFLAGS) $(MAKE_FLAGS) && \
-					$(MAKE) $(MAKEFLAGS) -j1 install
+					$(MAKE) $(MAKE_FLAGS) && \
+					$(MAKE) -j1 install
 
 zlib:					$(ZLIBPREFIX)/lib/libz.a
-$(ZLIBPREFIX)/lib/libz.a:		$(ZLIBVERSION).tar.bz2
+$(ZLIBPREFIX)/lib/libz.a:		$(SRCDIR)/$(ZLIBVERSION).tar.bz2
+					mkdir -p "$(TMPDIR)" && cd "$(TMPDIR)" && \
 					rm -fr "$(ZLIBVERSION)" && \
-					tar -xjf $< && \
+					tar -xjf "$(SRCDIR)/$(ZLIBVERSION).tar.bz2" && \
 					cd "$(ZLIBVERSION)" && \
 					./configure \
 						--prefix="$(ZLIBPREFIX)" && \
-					$(MAKE) $(MAKEFLAGS) $(MAKE_FLAGS) && \
-					$(MAKE) $(MAKEFLAGS) -j1 install
+					$(MAKE) $(MAKE_FLAGS) && \
+					$(MAKE) -j1 install
 
 tiff:					$(TIFFPREFIX)/lib/libtiff.la
-$(TIFFPREFIX)/lib/libtiff.la:		$(TIFFVERSION).tar.gz $(ZLIBPREFIX)/lib/libz.a $(JPEGPREFIX)/lib/libjpeg.la
+$(TIFFPREFIX)/lib/libtiff.la:		$(SRCDIR)/$(TIFFVERSION).tar.gz $(ZLIBPREFIX)/lib/libz.a $(JPEGPREFIX)/lib/libjpeg.la
+					mkdir -p "$(TMPDIR)" && cd "$(TMPDIR)" && \
 					rm -fr "$(TIFFVERSION)" && \
-					tar -xzf $< && \
+					tar -xzf "$(SRCDIR)/$(TIFFVERSION).tar.gz" && \
 					cd "$(TIFFVERSION)" && \
 					./configure \
 						--prefix="$(TIFFPREFIX)" \
@@ -523,126 +600,335 @@ $(TIFFPREFIX)/lib/libtiff.la:		$(TIFFVERSION).tar.gz $(ZLIBPREFIX)/lib/libz.a $(
 						--with-zlib-lib-dir="$(ZLIBPREFIX)/lib" \
 						--with-jpeg-include-dir="$(JPEGPREFIX)/include" \
 						--with-jpeg-lib-dir="$(JPEGPREFIX)/lib" && \
-					$(MAKE) $(MAKEFLAGS) $(MAKE_FLAGS) && \
-					$(MAKE) $(MAKEFLAGS) -j1 install
+					$(MAKE) $(MAKE_FLAGS) && \
+					$(MAKE) -j1 install
 
 cp:					cellprofiler
-cellprofiler:				$(TGTDIR)/CellProfiler/CellProfiler.py
-$(TGTDIR)/CellProfiler/CellProfiler.py:	$(CYTHONPREFIX)/bin/cython $(SCIPYPREFIX)/lib/python2.5/site-packages/$(SCIPYVERSION)-py2.5.egg-info $(WXPYTHONPREFIX)/bin/pywxrc $(SITEPKGPREFIX)/$(MATPLOTLIBVERSION)-py2.5.egg-info $(SITEPKGPREFIX)/$(DECORATORVERSION)-py2.5.egg $(SITEPKGPREFIX)/easy-install.pth $(SITEPKGPREFIX)/MySQL_python-$(MYSQLPYTHONVERSION)-py2.5-linux-x86_64.egg $(SITEPKGPREFIX)/$(PYTHONNOSEVERSION)-py2.5.egg $(PYTHONPREFIX)/bin/pilfile.py
-					cd "$(CELLPROFILERPREFIX)/" && \
+cellprofiler:				$(CELLPROFILERPREFIX)/CellProfiler/CellProfiler.py
+$(CELLPROFILERPREFIX)/CellProfiler/CellProfiler.py:	$(CYTHONPREFIX)/bin/cython $(SCIPYPREFIX)/lib/python2.5/site-packages/$(SCIPYVERSION)-py2.5.egg-info $(WXPYTHONPREFIX)/bin/pywxrc $(SITEPKGPREFIX)/$(MATPLOTLIBVERSION)-py2.5.egg-info $(SITEPKGPREFIX)/$(DECORATORVERSION)-py2.5.egg $(PYPIPREFIX)/bin/easy_install $(SITEPKGPREFIX)/MySQL_python-$(MYSQLPYTHONVERSION)-py2.5-linux-x86_64.egg $(SITEPKGPREFIX)/$(PYTHONNOSEVERSION)-py2.5.egg $(PYTHONPREFIX)/bin/pilfile.py
+					mkdir -p "$(CELLPROFILERPREFIX)" && \
+					cd "$(CELLPROFILERPREFIX)" && \
 					rm -fr "./CellProfiler" && \
 					svn co $(CELLPROFILER_CO_ARGS) "$(CELLPROFILER_CO_URL)" ./CellProfiler && \
 					cd ./CellProfiler && \
 					export PATH="$(PYTHONPREFIX)/bin:$(PATH)" && \
 					export LD_LIBRARY_PATH="$(PYTHONPREFIX)/lib:$(LD_LIBRARY_PATH)" && \
-					$(PYTHONPREFIX)/bin/python ./CellProfiler.py --build-and-exit
+					"$(PYTHONPREFIX)/bin/python" ./CellProfiler.py --build-and-exit
 
 # instead of removing CellProfiler completely, we could also
 # clean up the SVN changes (and unknown files) like this:
-#					svn status --no-ignore|grep "^[I?]"|grep -v "command\$"|cut -c8-|while read I ; do rm -fr "$I" ; done
+#					svn status --no-ignore|grep "^[I?]"|grep -v "command\$"|cut -c8-|while read I ; do rm -fr "$$I" ; done
 #
 
 
+
+glib:					$(GLIBPREFIX)/lib/libglib-2.0.la
+$(GLIBPREFIX)/lib/libglib-2.0.la:	$(SRCDIR)/$(GLIBVERSION).tar.bz2
+					mkdir -p "$(TMPDIR)" && cd "$(TMPDIR)" && \
+					rm -fr "$(GLIBVERSION)" && \
+					tar -xjf "$(SRCDIR)/$(GLIBVERSION).tar.bz2" && \
+					cd "$(GLIBVERSION)" && \
+					./configure \
+						--prefix="$(GLIBPREFIX)" && \
+					$(MAKE) $(MAKE_FLAGS) && \
+					$(MAKE) -j1 install
+
+pango:					$(PANGOPREFIX)/lib/libpango-1.0.la
+$(PANGOPREFIX)/lib/libpango-1.0.la:	$(SRCDIR)/$(PANGOVERSION).tar.bz2 $(GLIBPREFIX)/lib/libglib-2.0.la $(CAIROPREFIX)/lib/libcairo.la
+					mkdir -p "$(TMPDIR)" && cd "$(TMPDIR)" && \
+					rm -fr "$(PANGOVERSION)" && \
+					tar -xjf "$(SRCDIR)/$(PANGOVERSION).tar.bz2" && \
+					cd "$(PANGOVERSION)" && \
+					export PATH="$(GLIBPREFIX)/bin:$(PATH)" && \
+					export PKG_CONFIG_PATH="$(GLIBPREFIX)/lib/pkgconfig:$(PKG_CONFIG_PATH)" && \
+					./configure \
+						--prefix="$(PANGOPREFIX)" && \
+					$(MAKE) $(MAKE_FLAGS) && \
+					$(MAKE) -j1 install
+
+# && \
+#					cp -p "./pango/pangocairo.h" "$(PANGOPREFIX)/include/pango-1.0/pango/"
+#
+
+pixman:					$(PIXMANPREFIX)/lib/libpixman-1.la
+$(PIXMANPREFIX)/lib/libpixman-1.la:	$(SRCDIR)/$(PIXMANVERSION).tar.gz $(GLIBPREFIX)/lib/libglib-2.0.la
+					mkdir -p "$(TMPDIR)" && cd "$(TMPDIR)" && \
+					rm -fr "$(PIXMANVERSION)" && \
+					tar -xzf "$(SRCDIR)/$(PIXMANVERSION).tar.gz" && \
+					cd "$(PIXMANVERSION)" && \
+					export PATH="$(GLIBPREFIX)/bin:$(PATH)" && \
+					export PKG_CONFIG_PATH="$(GLIBPREFIX)/lib/pkgconfig:$(PKG_CONFIG_PATH)" && \
+					./configure \
+						--prefix="$(PIXMANPREFIX)" && \
+					$(MAKE) $(MAKE_FLAGS) && \
+					$(MAKE) -j1 install
+
+atk:					$(ATKPREFIX)/lib/libatk-1.0.la
+$(ATKPREFIX)/lib/libatk-1.0.la:		$(SRCDIR)/$(ATKVERSION).tar.bz2 $(GLIBPREFIX)/lib/libglib-2.0.la
+					mkdir -p "$(TMPDIR)" && cd "$(TMPDIR)" && \
+					rm -fr "$(ATKVERSION)" && \
+					tar -xjf "$(SRCDIR)/$(ATKVERSION).tar.bz2" && \
+					cd "$(ATKVERSION)" && \
+					export PATH="$(GLIBPREFIX)/bin:$(PATH)" && \
+					export LD_LIBRARY_PATH="$(GLIBPREFIX)/lib:$(LD_LIBRARY_PATH)" && \
+					export PKG_CONFIG_PATH="$(GLIBPREFIX)/lib/pkgconfig:$(PKG_CONFIG_PATH)" && \
+					./configure \
+						--prefix="$(ATKPREFIX)" && \
+					$(MAKE) $(MAKE_FLAGS) && \
+					$(MAKE) -j1 install
+
+cairo:					$(CAIROPREFIX)/lib/libcairo.la
+$(CAIROPREFIX)/lib/libcairo.la:		$(SRCDIR)/$(CAIROVERSION).tar.gz $(GLIBPREFIX)/lib/libglib-2.0.la $(PIXMANPREFIX)/lib/libpixman-1.la $(FONTCFGPREFIX)/lib/libfontconfig.la
+					mkdir -p "$(TMPDIR)" && cd "$(TMPDIR)" && \
+					rm -fr "$(CAIROVERSION)" && \
+					tar -xzf "$(SRCDIR)/$(CAIROVERSION).tar.gz" && \
+					cd "$(CAIROVERSION)" && \
+					export PATH="$(GLIBPREFIX)/bin:$(PATH)" && \
+					export PKG_CONFIG_PATH="$(GLIBPREFIX)/lib/pkgconfig:$(PKG_CONFIG_PATH)" && \
+					./configure \
+						--prefix="$(CAIROPREFIX)" && \
+					$(MAKE) $(MAKE_FLAGS) && \
+					$(MAKE) -j1 install
+
+#						--enable-gl && \
+#
+
+fontconfig:				$(FONTCFGPREFIX)/lib/libfontconfig.la
+$(FONTCFGPREFIX)/lib/libfontconfig.la:	$(SRCDIR)/$(FONTCFGVERSION).tar.gz
+					mkdir -p "$(TMPDIR)" && cd "$(TMPDIR)" && \
+					rm -fr "$(FONTCFGVERSION)" && \
+					tar -xzf "$(SRCDIR)/$(FONTCFGVERSION).tar.gz" && \
+					cd "$(FONTCFGVERSION)" && \
+					export PATH="$(GLIBPREFIX)/bin:$(PATH)" && \
+					export PKG_CONFIG_PATH="$(GLIBPREFIX)/lib/pkgconfig:$(PKG_CONFIG_PATH)" && \
+					./configure \
+						--prefix="$(FONTCFGPREFIX)" && \
+					$(MAKE) $(MAKE_FLAGS) && \
+					$(MAKE) -j1 install
+
+libgtk:					$(GTKPREFIX)/lib/libgtk-x11-2.0.la
+$(GTKPREFIX)/lib/libgtk-x11-2.0.la:	$(SRCDIR)/$(GTKVERSION).tar.bz2 $(GLIBPREFIX)/lib/libglib-2.0.la $(PANGOPREFIX)/lib/libpango-1.0.la $(CAIROPREFIX)/lib/libcairo.la $(ATKPREFIX)/lib/libatk-1.0.la
+					mkdir -p "$(TMPDIR)" && cd "$(TMPDIR)" && \
+					rm -fr "$(GTKVERSION)" && \
+					tar -xjf "$(SRCDIR)/$(GTKVERSION).tar.bz2" && \
+					cd "$(GTKVERSION)" && \
+					export PATH="$(GLIBPREFIX)/bin:$(PANGOPREFIX)/bin:$(PATH)" && \
+					export CPPFLAGS="-I$(GLIBPREFIX)/include $(CPPFLAGS)" && \
+					export LDFLAGS="-L$(GLIBPREFIX)/lib $(LDFLAGS)" && \
+					export LD_LIBRARY_PATH="$(GLIBPREFIX)/lib:$(LD_LIBRARY_PATH)" && \
+					export PKG_CONFIG_PATH="$(GLIBPREFIX)/lib/pkgconfig:$(PANGOPREFIX)/lib/pkgconfig:$(PKG_CONFIG_PATH)" && \
+					./configure \
+						--prefix="$(GTKPREFIX)" \
+						--without-libtiff && \
+					$(MAKE) $(MAKE_FLAGS) && \
+					$(MAKE) -j1 install
+
+
+
+# clean targets
 clean:
-					rm -fr $(PYTHONVERSION)
-					rm -fr $(CYTHONVERSION)
-					rm -fr $(LAPACKVERSION)
-					rm -fr $(NUMPYVERSION)
-					rm -fr $(SCIPYVERSION)
-					rm -fr jpeg-$(JPEGVERSION)
-					rm -fr $(ZLIBVERSION)
-					rm -fr $(TIFFVERSION)
-					rm -fr $(PILVERSION)
-					rm -fr $(FFTWVERSION)
-					rm -fr ATLAS
-					rm -fr UMFPACK
-					rm -fr UFconfig
-					rm -fr AMD
-					rm -fr $(MATPLOTLIBVERSION)
-					rm -fr $(WXGTKVERSION)
-					rm -fr wxPython-src-$(WXPYTHONVERSION)
-					rm -fr $(DECORATORVERSION)
-					rm -fr $(PYTHONNOSEVERSION)
-					rm -fr MySQL-python-$(MYSQLPYTHONVERSION)
-					rm -fr $(SWIGVERSION)
+					rm -fr "$(TMPDIR)/$(PYTHONVERSION)"
+					rm -fr "$(TMPDIR)/$(CYTHONVERSION)"
+					rm -fr "$(TMPDIR)/$(LAPACKVERSION)"
+					rm -fr "$(TMPDIR)/$(NUMPYVERSION)"
+					rm -fr "$(TMPDIR)/$(SCIPYVERSION)"
+					rm -fr "$(TMPDIR)/jpeg-$(JPEGVERSION)"
+					rm -fr "$(TMPDIR)/$(ZLIBVERSION)"
+					rm -fr "$(TMPDIR)/$(TIFFVERSION)"
+					rm -fr "$(TMPDIR)/$(PILVERSION)"
+					rm -fr "$(TMPDIR)/$(FFTWVERSION)"
+					rm -fr "$(TMPDIR)/ATLAS"
+					rm -fr "$(TMPDIR)/UMFPACK"
+					rm -fr "$(TMPDIR)/UFconfig"
+					rm -fr "$(TMPDIR)/AMD"
+					rm -fr "$(TMPDIR)/$(MATPLOTLIBVERSION)"
+					rm -fr "$(TMPDIR)/wxPython-src-$(WXPYTHONVERSION)"
+					rm -fr "$(TMPDIR)/$(DECORATORVERSION)"
+					rm -fr "$(TMPDIR)/$(PYTHONNOSEVERSION)"
+					rm -fr "$(TMPDIR)/MySQL-python-$(MYSQLPYTHONVERSION)"
+					rm -fr "$(TMPDIR)/$(SWIGVERSION)"
+					rm -fr "$(TMPDIR)/$(MYSQLVERSION)"
+					rm -fr "$(TMPDIR)/$(NCURSESVERSION)"
+					rm -fr "$(TMPDIR)/$(GTKVERSION)"
+					rm -fr "$(TMPDIR)/$(GLIBVERSION)"
+					rm -fr "$(TMPDIR)/$(PANGOVERSION)"
+					rm -fr "$(TMPDIR)/$(ATKVERSION)"
+					rm -fr "$(TMPDIR)/$(CAIROVERSION)"
+					rm -fr "$(TMPDIR)/$(FONTCFGVERSION)"
+					rm -fr "$(TMPDIR)/$(PIXMANVERSION)"
 
 
 distclean:				clean
-					rm -fr $(WXGTKVERSION)-$(HOSTTYPE)
-					rm -fr wxPython-src-$(WXPYTHONVERSION)-$(HOSTTYPE)
+					rm -fr "$(TMPDIR)/wxPython-src-$(WXPYTHONVERSION)-$(HOSTTYPE)"
 
 
-findlibjvm.class:
-					wget -c -t 2 --no-check-certificate https://svn.broadinstitute.org/CellProfiler/trunk/CellProfiler/cellprofiler/utilities/$@
 
-$(LAPACKVERSION).tgz:
-					wget -c -t 2 "http://www.netlib.org/lapack/$@"
+#
+# Downloads and fetching of sources
+#
+WGETFLAGS				= --continue --tries=10 --timeout=60 
 
-$(ATLASVERSION).tar.bz2:
+
+$(SRCDIR)/findlibjvm.class:
+					mkdir -p "$(SRCDIR)" && cd "$(SRCDIR)" && \
+					wget $(WGETFLAGS) --no-check-certificate "https://svn.broadinstitute.org/CellProfiler/trunk/CellProfiler/cellprofiler/utilities/findlibjvm.class" && \
+					touch "$@"
+
+$(SRCDIR)/$(LAPACKVERSION).tgz:
+					mkdir -p "$(SRCDIR)" && cd "$(SRCDIR)" && \
+					wget $(WGETFLAGS) "http://www.netlib.org/lapack/$(LAPACKVERSION).tgz" && \
+					touch "$@"
+
+$(SRCDIR)/$(ATLASVERSION).tar.bz2:
+					mkdir -p "$(SRCDIR)" && cd "$(SRCDIR)" && \
 					ATLASVERSIONNR=$$(echo $(ATLASVERSION)|cut -d's' -f2) && \
-					wget -c -t 2 "http://downloads.sourceforge.net/project/math-atlas/Developer%20%28unstable%29/$${ATLASVERSIONNR}/$@"
+					wget $(WGETFLAGS) "http://downloads.sourceforge.net/project/math-atlas/Developer%20%28unstable%29/$${ATLASVERSIONNR}/$(ATLASVERSION).tar.bz2" && \
+					touch "$@"
 
-$(NUMPYVERSION).tar.gz:
+$(SRCDIR)/$(NUMPYVERSION).tar.gz:
+					mkdir -p "$(SRCDIR)" && cd "$(SRCDIR)" && \
 					NUMPYVERSIONNR=$$(echo $(NUMPYVERSION)|cut -d'-' -f2) && \
-					wget -c -t 2 "http://downloads.sourceforge.net/project/numpy/NumPy/$${NUMPYVERSIONNR}/$@"
+					wget $(WGETFLAGS) "http://downloads.sourceforge.net/project/numpy/NumPy/$${NUMPYVERSIONNR}/$(NUMPYVERSION).tar.gz" && \
+					touch "$@"
 
-
-$(SCIPYVERSION).tar.gz:
+$(SRCDIR)/$(SCIPYVERSION).tar.gz:
+					mkdir -p "$(SRCDIR)" && cd "$(SRCDIR)" && \
 					SCIPYVERSIONNR=$$(echo $(SCIPYVERSION)|cut -d'-' -f2) && \
-					wget -c -t 2 "http://downloads.sourceforge.net/project/scipy/scipy/$${SCIPYVERSIONNR}/$@"
+					wget $(WGETFLAGS) "http://downloads.sourceforge.net/project/scipy/scipy/$${SCIPYVERSIONNR}/$(SCIPYVERSION).tar.gz"
 
-$(UMFPACKVERSION).tar.gz:
-					wget -c -t 2 "http://www.cise.ufl.edu/research/sparse/umfpack/$@"
+$(SRCDIR)/$(UMFPACKVERSION).tar.gz:
+					mkdir -p "$(SRCDIR)" && cd "$(SRCDIR)" && \
+					wget $(WGETFLAGS) "http://www.cise.ufl.edu/research/sparse/umfpack/$(UMFPACKVERSION).tar.gz" && \
+					touch "$@"
 
-$(UFCONFIGVERSION).tar.gz:
-					wget -c -t 2 "http://www.cise.ufl.edu/research/sparse/UFconfig/$@"
+$(SRCDIR)/$(UFCONFIGVERSION).tar.gz:
+					mkdir -p "$(SRCDIR)" && cd "$(SRCDIR)" && \
+					wget $(WGETFLAGS) "http://www.cise.ufl.edu/research/sparse/UFconfig/$(UFCONFIGVERSION).tar.gz" && \
+					touch "$@"
 
-$(AMDVERSION).tar.gz:
-					wget -c -t 2 "http://www.cise.ufl.edu/research/sparse/amd/$@"
+$(SRCDIR)/$(AMDVERSION).tar.gz:
+					mkdir -p "$(SRCDIR)" && cd "$(SRCDIR)" && \
+					wget $(WGETFLAGS) "http://www.cise.ufl.edu/research/sparse/amd/$(AMDVERSION).tar.gz" && \
+					touch "$@"
 
-$(PYTHONVERSION).tar.bz2:
-					wget -c -t 2 "http://www.python.org/ftp/python/2.5.5/$@"
+$(SRCDIR)/$(PYTHONVERSION).tar.bz2:
+					mkdir -p "$(SRCDIR)" && cd "$(SRCDIR)" && \
+					PYTHONVERSIONNR=$$(echo $(PYTHONVERSION)|cut -d'-' -f2) && \
+					wget $(WGETFLAGS) "http://www.python.org/ftp/python/$${PYTHONVERSIONNR}/$(PYTHONVERSION).tar.bz2" && \
+					touch "$@"
 
-$(MATPLOTLIBVERSION).tar.gz:
+$(SRCDIR)/$(MATPLOTLIBVERSION).tar.gz:
+					mkdir -p "$(SRCDIR)" && cd "$(SRCDIR)" && \
 					MATPLOTLIBVERSIONNR=$$(echo $(MATPLOTLIBVERSION)|cut -d'-' -f2|cut -d'.' -f-2) && \
-					wget -c -t 2 "http://downloads.sourceforge.net/project/matplotlib/matplotlib/matplotlib-$${MATPLOTLIBVERSIONNR}/$@"
+					wget $(WGETFLAGS) "http://downloads.sourceforge.net/project/matplotlib/matplotlib/matplotlib-$${MATPLOTLIBVERSIONNR}/$(MATPLOTLIBVERSION).tar.gz" && \
+					touch "$@"
 
-$(WXGTKVERSION).tar.gz:
-					wget -c -t 2 "http://prdownloads.sourceforge.net/wxwindows/$@"
+$(SRCDIR)/wxPython-src-$(WXPYTHONVERSION).tar.bz2:
+					mkdir -p "$(SRCDIR)" && cd "$(SRCDIR)" && \
+					wget $(WGETFLAGS) "http://downloads.sourceforge.net/wxpython/wxPython-src-$(WXPYTHONVERSION).tar.bz2" && \
+					touch "$@"
 
-wxPython-src-$(WXPYTHONVERSION).tar.bz2:
-					wget -c -t 2 "http://downloads.sourceforge.net/wxpython/$@"
+$(SRCDIR)/$(FFTWVERSION).tar.gz:
+					mkdir -p "$(SRCDIR)" && cd "$(SRCDIR)" && \
+					wget $(WGETFLAGS) "ftp://ftp.fftw.org/pub/fftw/$(FFTWVERSION).tar.gz" && \
+					touch "$@"
 
-$(FFTWVERSION).tar.gz:
-					wget -c -t 2 "ftp://ftp.fftw.org/pub/fftw/$@"
+$(SRCDIR)/$(PYPIVERSION):
+					mkdir -p "$(SRCDIR)" && cd "$(SRCDIR)" && \
+					PYPIVERSIONNR=$$(echo $(PYTHONVERSION)|cut -d'-' -f2|cut -d'.' -f-2) && \
+					wget $(WGETFLAGS) "http://pypi.python.org/packages/$${PYPIVERSIONNR}/s/setuptools/$(PYPIVERSION)" && \
+					touch "$@"
 
-$(PYPIVERSION):
-					wget -c -t 2 "http://pypi.python.org/packages/2.5/s/setuptools/$@"
+$(SRCDIR)/$(DECORATORVERSION).tar.gz:
+					mkdir -p "$(SRCDIR)" && cd "$(SRCDIR)" && \
+					wget $(WGETFLAGS) "http://pypi.python.org/packages/source/d/decorator/$(DECORATORVERSION).tar.gz" && \
+					touch "$@"
 
-$(DECORATORVERSION).tar.gz:
-					wget -c -t 2 "http://pypi.python.org/packages/source/d/decorator/$@"
+$(SRCDIR)/MySQL-python-$(MYSQLPYTHONVERSION).tar.gz:
+					mkdir -p "$(SRCDIR)" && cd "$(SRCDIR)" && \
+					wget $(WGETFLAGS) "http://downloads.sourceforge.net/project/mysql-python/mysql-python/$(MYSQLPYTHONVERSION)/MySQL-python-$(MYSQLPYTHONVERSION).tar.gz" && \
+					touch "$@"
 
-MySQL-python-$(MYSQLPYTHONVERSION).tar.gz:
-					wget -c -t 2 "http://downloads.sourceforge.net/project/mysql-python/mysql-python/$(MYSQLPYTHONVERSION)/$@"
+$(SRCDIR)/$(PYTHONNOSEVERSION).tar.gz:
+					mkdir -p "$(SRCDIR)" && cd "$(SRCDIR)" && \
+					wget $(WGETFLAGS) "http://python-nose.googlecode.com/files/$(PYTHONNOSEVERSION).tar.gz" && \
+					touch "$@"
 
-$(PYTHONNOSEVERSION).tar.gz:
-					wget -c -t 2 "http://python-nose.googlecode.com/files/$@"
+$(SRCDIR)/$(PILVERSION).tar.gz:
+					mkdir -p "$(SRCDIR)" && cd "$(SRCDIR)" && \
+					wget $(WGETFLAGS) "http://effbot.org/downloads/$(PILVERSION).tar.gz" && \
+					touch "$@"
 
-$(PILVERSION).tar.gz:
-					wget -c -t 2 "http://effbot.org/downloads/$@"
+$(SRCDIR)/jpegsrc.v$(JPEGVERSION).tar.gz:
+					mkdir -p "$(SRCDIR)" && cd "$(SRCDIR)" && \
+					wget $(WGETFLAGS) "http://www.ijg.org/files/jpegsrc.v$(JPEGVERSION).tar.gz" && \
+					touch "$@"
 
-jpegsrc.v$(JPEGVERSION).tar.gz:
-					wget -c -t 2 "http://www.ijg.org/files/$@"
+$(SRCDIR)/$(ZLIBVERSION).tar.bz2:
+					mkdir -p "$(SRCDIR)" && cd "$(SRCDIR)" && \
+					wget $(WGETFLAGS) "http://zlib.net/$(ZLIBVERSION).tar.bz2" && \
+					touch "$@"
 
-$(ZLIBVERSION).tar.bz2:
-					wget -c -t 2 "http://zlib.net/$@"
+$(SRCDIR)/$(TIFFVERSION).tar.gz:
+					mkdir -p "$(SRCDIR)" && cd "$(SRCDIR)" && \
+					wget $(WGETFLAGS) "ftp://ftp.remotesensing.org/pub/libtiff/$(TIFFVERSION).tar.gz" && \
+					touch "$@"
 
-$(TIFFVERSION).tar.gz:
-					wget -c -t 2 "ftp://ftp.remotesensing.org/pub/libtiff/$@"
+$(SRCDIR)/$(CYTHONVERSION).tar.gz:
+					mkdir -p "$(SRCDIR)" && cd "$(SRCDIR)" && \
+					wget $(WGETFLAGS) "http://pypi.python.org/packages/source/C/Cython/$(CYTHONVERSION).tar.gz" && \
+					touch "$@"
 
-$(CYTHONVERSION).tar.gz:
-					wget -c -t 2 "http://pypi.python.org/packages/source/C/Cython/$@"
+$(SRCDIR)/$(SWIGVERSION).tar.gz:
+					mkdir -p "$(SRCDIR)" && cd "$(SRCDIR)" && \
+					wget $(WGETFLAGS) "http://prdownloads.sourceforge.net/swig/$(SWIGVERSION).tar.gz" && \
+					touch "$@"
 
-$(SWIGVERSION).tar.gz:
-					wget -c -t 2 "http://prdownloads.sourceforge.net/swig/$@"
+$(SRCDIR)/$(GTKVERSION).tar.bz2:
+					mkdir -p "$(SRCDIR)" && cd "$(SRCDIR)" && \
+					GTKVERSIONNR=$$(echo $(GTKVERSION)|cut -d'-' -f2|cut -d'.' -f-2) && \
+					wget $(WGETFLAGS) "http://ftp.gnome.org/pub/gnome/sources/gtk+/$${GTKVERSIONNR}/$(GTKVERSION).tar.bz2" && \
+					touch "$@"
 
+$(SRCDIR)/$(GLIBVERSION).tar.bz2:
+					mkdir -p "$(SRCDIR)" && cd "$(SRCDIR)" && \
+					GLIBVERSIONNR=$$(echo $(GLIBVERSION)|cut -d'-' -f2|cut -d'.' -f-2) && \
+					wget $(WGETFLAGS) "http://ftp.gnome.org/pub/gnome/sources/glib/$${GLIBVERSIONNR}/$(GLIBVERSION).tar.bz2" && \
+					touch "$@"
+
+$(SRCDIR)/$(PANGOVERSION).tar.bz2:
+					mkdir -p "$(SRCDIR)" && cd "$(SRCDIR)" && \
+					PANGOVERSIONNR=$$(echo $(PANGOVERSION)|cut -d'-' -f2|cut -d'.' -f-2) && \
+					wget $(WGETFLAGS) "http://ftp.gnome.org/pub/gnome/sources/pango/$${PANGOVERSIONNR}/$(PANGOVERSION).tar.bz2" && \
+					touch "$@"
+
+$(SRCDIR)/$(CAIROVERSION).tar.gz:
+					mkdir -p "$(SRCDIR)" && cd "$(SRCDIR)" && \
+					wget $(WGETFLAGS) "http://cairographics.org/releases/$(CAIROVERSION).tar.gz" && \
+					touch "$@"
+
+$(SRCDIR)/$(ATKVERSION).tar.bz2:
+					mkdir -p "$(SRCDIR)" && cd "$(SRCDIR)" && \
+					ATKVERSIONNR=$$(echo $(ATKVERSION)|cut -d'-' -f2|cut -d'.' -f-2) && \
+					wget $(WGETFLAGS) "http://ftp.gnome.org/pub/GNOME/sources/atk/$${ATKVERSIONNR}/$(ATKVERSION).tar.bz2" && \
+					touch "$@"
+
+$(SRCDIR)/$(PIXMANVERSION).tar.gz:
+					mkdir -p "$(SRCDIR)" && cd "$(SRCDIR)" && \
+					wget $(WGETFLAGS) "http://cairographics.org/releases/$(PIXMANVERSION).tar.gz" && \
+					touch "$@"
+
+$(SRCDIR)/$(FONTCFGVERSION).tar.gz:
+					mkdir -p "$(SRCDIR)" && cd "$(SRCDIR)" && \
+					wget $(WGETFLAGS) "http://fontconfig.org/release/$(FONTCFGVERSION).tar.gz" && \
+					touch "$@"
+
+$(SRCDIR)/$(MYSQLVERSION).tar.gz:
+					mkdir -p "$(SRCDIR)" && cd "$(SRCDIR)" && \
+					wget $(WGETFLAGS) "ftp://mirror.switch.ch/mirror/mysql/Downloads/MySQL-5.1/$(MYSQLVERSION).tar.gz" && \
+					touch "$@"
+
+$(SRCDIR)/$(NCURSESVERSION).tar.gz:
+					mkdir -p "$(SRCDIR)" && cd "$(SRCDIR)" && \
+					wget $(WGETFLAGS) "http://ftp.gnu.org/pub/gnu/ncurses/$(NCURSESVERSION).tar.gz" && \
+					touch "$@"

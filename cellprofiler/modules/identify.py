@@ -158,18 +158,18 @@ class Identify(cellprofiler.cpmodule.CPModule):
             which most of the image is background. It finds the mode of the 
             histogram of the image, which is assumed to be the background of the 
             image, and chooses a threshold at twice that value (which you can 
-            adjust with a Threshold Correction Factor;
-            see below).  Note that the mode is protected from a high number of 
-            saturated pixels by counting only pixels &lt; 0.95. This can be very helpful,
-            for example, if your images vary in overall brightness but the objects of 
-            interest are always twice (or actually, any constant) as bright as the 
-            background of the image. </li>
-            <li><i>Robust background:</i> This method trims the brightest and 
-            dimmest 5% of pixel intensities in the hopes that the remaining pixels 
-            represent a Gaussian of intensity values that are mostly background 
-            pixels. It then calculates the mean and standard deviation of the 
+            adjust with a Threshold Correction Factor; see below).  The calculation 
+	    includes those pixels between 2% and 98% of the intensity range. This thresholding method 
+	    can be helpful if your images vary in overall brightness, but the objects of 
+            interest are consistently N times brighter than the background level of the image. </li>
+            <li><i>Robust background:</i> Much like the Background method, this method is 
+	    also simple and assumes that the background distribution
+	    approximates a Gaussian by trimming the brightest and dimmest 5% of pixel 
+	    intensities. It then calculates the mean and standard deviation of the 
             remaining pixels and calculates the threshold as the mean + 2 times 
-            the standard deviation.</li>
+            the standard deviation. This thresholding method can be helpful if the majority
+	    of the image is background, and the results are often comparable or better than the
+	    Background method.</li>
             <li><i>Ridler-Calvard:</i> This method is simple and its results are
             often very similar to Otsu's. According to
             Sezgin and Sankur's paper (<i>Journal of Electronic Imaging</i>, 2004), Otsu's 

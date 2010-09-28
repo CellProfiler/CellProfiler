@@ -104,15 +104,7 @@ non-smoothed image.
 <p>Using the settings in this module, you can pass object outlines along to the
 module <b>OverlayOutlines</b> and then save them with the <b>SaveImages</b> module. 
 You can also pass along the objects themselves to the object processing module 
-<b>ConvertToImage</b> and then save them with the <b>SaveImages module</b>. This module 
-produces several additional types of objects with names that are automatically 
-passed along with the following naming structure: <ul><li> The unedited segmented 
-image, which includes objects on the edge of the image and objects that are 
-outside the size range, can be saved using the name "UneditedSegmented" + whatever you
-called the objects (e.g., "UneditedSegmentedNuclei"). </li><li> The segmented
-image which excludes objects smaller than your selected size range can be
-saved using the name "SmallRemovedSegmented" + whatever you called the
-objects (e.g., "SmallRemovedSegmentedNuclei").</li></ul>
+<b>ConvertToImage</b> and then save them with the <b>SaveImages module</b>.
 
 See also <b>IdentifySecondaryObjects</b>, <b>IdentifyTertiaryObjects</b>, and <b>IdentifyPrimManual</b>.
 '''

@@ -310,10 +310,10 @@ class MeasureObjectIntensity(cpm.CPModule):
                     mean_intensity_edge = integrated_intensity_edge / ecount
                     std_intensity = fix(nd.mean(
                         (limg - mean_intensity[llabels-1])**2, llabels, lindexes))
-                    std_intensity = np.sqrt(std_intensity / lcount)
+                    std_intensity = np.sqrt(std_intensity)
                     std_intensity_edge = fix(nd.mean(
-                        (eimg - mean_intensity[elabels-1])**2, elabels, lindexes))
-                    std_intensity_edge = np.sqrt(std_intensity_edge / ecount)
+                        (eimg - mean_intensity_edge[elabels-1])**2, elabels, lindexes))
+                    std_intensity_edge = np.sqrt(std_intensity_edge)
                     min_intensity = fix(nd.minimum(limg, llabels, lindexes))
                     min_intensity_edge = fix(nd.minimum(eimg, elabels,
                                                         lindexes))

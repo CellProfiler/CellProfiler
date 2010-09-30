@@ -860,7 +860,74 @@ class test_IdentifyPrimaryObjects(unittest.TestCase):
         # but should be in the lower one because of the serpentine path
         self.assertEqual(objects.segmented[14,9],objects.segmented[9,9])
         
+    def test_02_12_fly(self):
+        '''Run identify on the fly image'''
+        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:1
+SVNRevision:9722
+
+IdentifyPrimaryObjects:[module_num:1|svn_version:\'9633\'|variable_revision_number:6|show_window:True|notes:\x5B\x5D]
+    Select the input image:CropBlue
+    Name the primary objects to be identified:Nuclei
+    Typical diameter of objects, in pixel units (Min,Max):15,40
+    Discard objects outside the diameter range?:Yes
+    Try to merge too small objects with nearby larger objects?:No
+    Discard objects touching the border of the image?:Yes
+    Select the thresholding method:MoG Global
+    Threshold correction factor:1.6
+    Lower and upper bounds on threshold:0,1
+    Approximate fraction of image covered by objects?:0.2
+    Method to distinguish clumped objects:Intensity
+    Method to draw dividing lines between clumped objects:Intensity
+    Size of smoothing filter:10
+    Suppress local maxima that are closer than this minimum allowed distance:5
+    Speed up by using lower-resolution image to find local maxima?:Yes
+    Name the outline image:None
+    Fill holes in identified objects?:Yes
+    Automatically calculate size of smoothing filter?:Yes
+    Automatically calculate minimum allowed distance between local maxima?:Yes
+    Manual threshold:0.0
+    Select binary image:MoG Global
+    Retain outlines of the identified objects?:No
+    Automatically calculate the threshold using the Otsu method?:Yes
+    Enter Laplacian of Gaussian threshold:.5
+    Two-class or three-class thresholding?:Two classes
+    Minimize the weighted variance or the entropy?:Weighted variance
+    Assign pixels in the middle intensity class to the foreground or the background?:Foreground
+    Automatically calculate the size of objects for the Laplacian of Gaussian filter?:Yes
+    Enter LoG filter diameter:5
+    Handling of objects if excessive number of objects identified:Continue
+    Maximum number of objects:500
+"""
+        pipeline = cellprofiler.pipeline.Pipeline()
+        def callback(pipeline, event):
+            self.assertFalse(isinstance(event, (cellprofiler.pipeline.RunExceptionEvent,
+                                                cellprofiler.pipeline.LoadExceptionEvent)))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO.StringIO(data))
+        x = pipeline.modules()[0]
+        self.assertTrue(isinstance(x, ID.IdentifyPrimaryObjects))
         
+        img = fly_image()[300:600,300:600]
+        image = cellprofiler.cpimage.Image(img)
+        #
+        # Make sure it runs both regular and with reduced image
+        #
+        for min_size in (9, 15):
+            #
+            # Exercise clumping / declumping options
+            #
+            x.size_range.min = min_size
+            for unclump_method in (ID.UN_INTENSITY, ID.UN_SHAPE, ID.UN_LOG):
+                x.unclump_method.value = unclump_method
+                for watershed_method in (ID.WA_INTENSITY, ID.WA_DISTANCE, ID.WA_PROPAGATE):
+                    x.watershed_method.value = watershed_method
+                    image_set_list = cellprofiler.cpimage.ImageSetList()
+                    image_set = image_set_list.get_image_set(0)
+                    image_set.add(x.image_name.value, image)
+                    object_set = cellprofiler.objects.ObjectSet()
+                    measurements = cpmeas.Measurements()
+                    x.run(Workspace(pipeline,x,image_set,object_set,measurements,None))
     
     def test_03_01_run_inside_pipeline(self):
         pass # No longer supported

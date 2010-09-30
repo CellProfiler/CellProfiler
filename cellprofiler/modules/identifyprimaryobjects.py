@@ -137,7 +137,7 @@ import cellprofiler.preferences as cpp
 from cellprofiler.cpmath.otsu import otsu
 from cellprofiler.cpmath.cpmorphology import fill_labeled_holes, strel_disk
 from cellprofiler.cpmath.cpmorphology import binary_shrink, relabel
-from cellprofiler.cpmath.cpmorphology import regional_maximum
+from cellprofiler.cpmath.cpmorphology import is_local_maximum
 from cellprofiler.cpmath.filter import stretch, laplacian_of_gaussian
 from cellprofiler.cpmath.watershed import fast_watershed as watershed
 from cellprofiler.cpmath.propagate import propagate
@@ -999,7 +999,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
         # yields fair boundaries when markers compete for pixels.
         #
         labeled_maxima,object_count = \
-            scipy.ndimage.label(maxima_image>0,np.ones((3,3),bool))
+            scipy.ndimage.label(maxima_image, np.ones((3,3), bool))
         if self.watershed_method == WA_PROPAGATE:
             watershed_boundaries, distance =\
                 propagate(np.zeros(labeled_maxima.shape),
@@ -1020,43 +1020,41 @@ class IdentifyPrimaryObjects(cpmi.Identify):
         
         return watershed_boundaries, object_count, reported_maxima_suppression_size
 
-    def get_maxima(self,image,labeled_image,maxima_mask,image_resize_factor):
+    def get_maxima(self, image, labeled_image, maxima_mask, image_resize_factor):
         if image_resize_factor < 1.0:
             shape = np.array(image.shape) * image_resize_factor
             i_j = (np.mgrid[0:shape[0],0:shape[1]].astype(float) / 
                    image_resize_factor)
             resized_image = scipy.ndimage.map_coordinates(image, i_j)
+            resized_labels = scipy.ndimage.map_coordinates(
+                labeled_image, i_j, order=0).astype(labeled_image.dtype)
+                                                           
         else:
-            resized_image = image.copy()
+            resized_image = image
         #
-        # set all pixels that aren't local maxima to zero
+        # find local maxima
         #
-        maxima_image = resized_image
         if maxima_mask is not None:
-            maximum_filtered_image = scipy.ndimage.maximum_filter(maxima_image,
-                                                                  footprint=maxima_mask)
-            maxima_image[resized_image < maximum_filtered_image] = 0
-        #
-        # Get rid of the "maxima" that are really large areas of zero
-        #
-        maxima_image[resized_image == 0] = 0
-        binary_maxima_image = maxima_image > 0
+            binary_maxima_image = is_local_maximum(resized_image,
+                                                   labeled_image,
+                                                   maxima_mask)
+            binary_maxima_image[resized_image <= 0] = 0
+        else:
+            binary_maxima_image = (resized_image > 0) & (labeled_image > 0)
         if image_resize_factor < 1.0:
             inverse_resize_factor = float(image.shape[0]) / float(maxima_image.shape[0])
             i_j = (np.mgrid[0:image.shape[0],
                                0:image.shape[1]].astype(float) / 
                    inverse_resize_factor)
-            binary_maxima_image = scipy.ndimage.map_coordinates(binary_maxima_image.astype(float), i_j) > .5
-            maxima_image = scipy.ndimage.map_coordinates(maxima_image, i_j)
+            binary_maxima_image = scipy.ndimage.map_coordinates(
+                binary_maxima_image.astype(float), i_j) > .5
             assert(binary_maxima_image.shape[0] == image.shape[0])
             assert(binary_maxima_image.shape[1] == image.shape[1])
         
         # Erode blobs of touching maxima to a single point
         
-        binary_maxima_image[labeled_image==0]=0
         shrunk_image = binary_shrink(binary_maxima_image)
-        maxima_image[np.logical_not(shrunk_image)]=0
-        return maxima_image
+        return shrunk_image
     
     def filter_on_size(self,labeled_image,object_count):
         """ Filter the labeled image based on the size range

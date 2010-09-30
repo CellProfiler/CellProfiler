@@ -3407,3 +3407,63 @@ def pairwise_permutations(i, j):
     d_j2 = j[src_idx[d_r] + d_j2_idx]
     
     return (d_i, d_j1, d_j2)
+
+def is_local_maximum(image, labels, footprint):
+    '''Return a boolean array of points that are local maxima
+    
+    image - intensity image
+    labels - find maxima only within labels. Zero is reserved for background.
+    footprint - binary mask indicating the neighborhood to be examined
+                must be a matrix with odd dimensions, center is taken to
+                be the point in question.
+    '''
+    assert((np.all(footprint.shape) & 1) == 1)
+    footprint = (footprint != 0)
+    footprint_extent = (np.array(footprint.shape)-1) / 2
+    result = (labels > 0).copy()
+    #
+    # Create a labels matrix with zeros at the borders that might be
+    # hit by the footprint.
+    #
+    big_labels = np.zeros(np.array(labels.shape) + footprint_extent*2,
+                          labels.dtype)
+    big_labels[[slice(fe,-fe) for fe in footprint_extent]] = labels
+    #
+    # Find the relative indexes of each footprint element
+    #
+    image_strides = np.array(image.strides) / image.dtype.itemsize
+    big_strides = np.array(big_labels.strides) / big_labels.dtype.itemsize
+    result_strides = np.array(result.strides) / result.dtype.itemsize
+    footprint_offsets = np.mgrid[[slice(-fe,fe+1) for fe in footprint_extent]]
+    
+    fp_image_offsets = np.sum(image_strides[:, np.newaxis] *
+                              footprint_offsets[:, footprint], 0)
+    fp_big_offsets = np.sum(big_strides[:, np.newaxis] *
+                            footprint_offsets[:, footprint], 0)
+    #
+    # Get the index of each labeled pixel in the image and big_labels arrays
+    #
+    indexes = np.mgrid[[slice(0,x) for x in labels.shape]][:, labels > 0]
+    image_indexes = np.sum(image_strides[:, np.newaxis] * indexes, 0)
+    big_indexes = np.sum(big_strides[:, np.newaxis] * 
+                         (indexes + footprint_extent[:, np.newaxis]), 0)
+    result_indexes = np.sum(result_strides[:, np.newaxis] * indexes, 0)
+    #
+    # Now operate on the raveled images
+    #
+    big_labels_raveled = big_labels.ravel()
+    image_raveled = image.ravel()
+    result_raveled = result.ravel()
+    #
+    # A hit is a hit if the label at the offset matches the label at the pixel
+    # and if the intensity at the pixel is greater or equal to the intensity
+    # at the offset.
+    #
+    for fp_image_offset, fp_big_offset in zip(fp_image_offsets, fp_big_offsets):
+        same_label = (big_labels_raveled[big_indexes + fp_big_offset] ==
+                      big_labels_raveled[big_indexes])
+        less_than = (image_raveled[image_indexes[same_label]] <
+                     image_raveled[image_indexes[same_label]+ fp_image_offset])
+        result_raveled[result_indexes[same_label][less_than]] = False
+        
+    return result

@@ -93,6 +93,7 @@ BATCH_PROCESSING_HELP_REF = """Help > Using CellProfiler > Other Features > Batc
 TEST_MODE_HELP_REF = """Help > Using CellProfiler > Testing Your Pipeline"""
 METADATA_HELP_REF = """Help > Using CellProfiler > How Data Is Handled > Using Metadata In CellProfiler"""
 IMAGE_TOOLS_HELP_REF = """"Help > How To Use The Image Tools"""
+METADATA_GROUPING_HELP_REF = """Help > Using CellProfiler > How Data Is Handled > Image Grouping """
 
 USING_METADATA_HELP_REF = """ 
 Please see <b>LoadImages</b>, <b>LoadData</b>, or <i>%(METADATA_HELP_REF)s</i> 
@@ -106,6 +107,9 @@ You can insert a previously defined metadata tag by either using:
 The inserted metadata tag will appear in green. To change a previously inserted metadata tag, navigate the cursor to just before the tag and either:
 <ul><li>Use the up and down arrows to cycle through possible values.</li>
 <li>Right-click on the tag to display and select the available values.</li></ul>"""
+
+USING_METADATA_GROUPING_HELP_REF = """Please see <i>%(METADATA_GROUPING_HELP_REF)s</i> for more details on the 
+proper use of metadata for grouping"""%globals()
 
 ##################################################
 #
@@ -533,6 +537,31 @@ for the setting will specify whether tags are applicable; see the module setting
 information on how to use them in the context of the specific module.</p>
 """%globals()
 
+USING_METADATA_GROUPING_HELP = """
+<p>In some instances, you may want to subdivide an image set into groups that share a common feature.
+For example, if you are performing illumination correction, we usually recommend that the illumination
+function be calculated on a per-plate basis, and hence each plate should be processed independently.
+Since running the same pipeline multiple times (one for each grop) would be time-consuming, CellProfiler
+is able to perform image grouping for this purpose. If the image subdivisions are distinguishable by some metadata
+(usually defined within the filename or folder location), grouping will enable you to
+process those images that have the metadata together.</p>
+
+<p>To use grouping, you must define the relevant metadata for each image. This can be done using regular
+expressions in <b>LoadImages</b> or having them pre-defined in a .csv for use in <b>LoadData</b>.</p>
+
+<p>To use image grouping in <b>LoadImages</b>, please note the following:
+<ul>
+<li><i>Metadata tags must be specified for all images listed.</i> You cannot use
+grouping unless an appropriate regular expression is defined for all the images listed
+in the module.</li>
+<li><i>Shared metadata tags must be specified with the same name for each image listed.</i> For example, if you 
+are grouping on the basis of a metadata tag "Plate" in one image channel, you
+must also specify the "Plate" metadata tag in the regular expression for the other channels that you 
+want grouped together.</li>
+</ul>
+<p>%(USING_METADATA_HELP_REF)s</p>
+"""%globals()
+
 MEMORY_AND_SPEED_HELP = """
 <p>CellProfiler includes several options for dealing with out-of-memory
 errors associated with image analysis: </p>
@@ -633,7 +662,7 @@ code, so any changes to the code will be reflected immediately.</li>
 Note that if movies are being loaded, the individual movie is defined as a group automatically.
 Selecting <i>Choose group</i> will allow you to choose the movie file, and <i>Choose image cycle</i> 
 will let you choose the individual movie frame from that file.
-<p>For more information on groups and how to define them, refer to metadata grouping in <b>LoadImages</b>.</p>
+<p>%(USING_METADATA_GROUPING_HELP_REF)s</p>
 </p>
 """%globals()
 
@@ -1158,6 +1187,7 @@ MAIN_HELP = (
         ("Setting the Preferences", PREFERENCES_HELP),
         ("How Data Is Handled",(
             ("Using Metadata In CellProfiler",USING_METADATA_HELP),
+            ("How To Use Image Grouping",USING_METADATA_GROUPING_HELP),
             ("How Measurements Are Named", MEASUREMENT_NOMENCLATURE_HELP))),
         ("How To Build A Pipeline", BUILDING_A_PIPELINE_HELP),
         ("Before The Analysis Run", (

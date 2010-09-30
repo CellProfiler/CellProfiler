@@ -76,8 +76,8 @@ class LoadSingleImage(cpm.CPModule):
             Output Folder, so that the correct image is loaded into the pipeline 
             and typos are avoided. %(IO_FOLDER_CHOICE_HELP_TEXT)s
             
-            <p>%(IO_WITH_METADATA_HELP_TEXT)s %(USING_METADATA_TAGS_REF)s. 
-            For instance, if you have a "Plate" metadata tag, and your single files are 
+            <p>%(IO_WITH_METADATA_HELP_TEXT)s %(USING_METADATA_TAGS_REF)s For instance, 
+            if you have a "Plate" metadata tag, and your single files are 
             organized in subfolders named with the "Plate" tag, you can select one of the 
             subfolder options and then specify a subfolder name of "\g&lt;Plate&gt;" 
             to get the files from the subfolder associated with that image's plate. The module will 

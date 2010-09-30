@@ -98,6 +98,7 @@ from cellprofiler.preferences import \
      DEFAULT_OUTPUT_FOLDER_NAME, ABSOLUTE_FOLDER_NAME, \
      DEFAULT_INPUT_SUBFOLDER_NAME, DEFAULT_OUTPUT_SUBFOLDER_NAME, \
      IO_FOLDER_CHOICE_HELP_TEXT
+from cellprofiler.gui.help import USING_METADATA_GROUPING_HELP_REF
 
 PILImage.init()
 
@@ -284,7 +285,7 @@ class LoadImages(cpmodule.CPModule):
                 loaded based on the order of their location on the hard disk, and they are
                 assigned an identity based on how many images are in each group and what position
                 within each group the file is located (e.g., three images per
-                group; DAPI is always first). <b>This option has not yet been implemented.</b>
+                group; DAPI is always first).
                 
                 </ul>""")
         
@@ -317,31 +318,16 @@ class LoadImages(cpmodule.CPModule):
         
         self.group_by_metadata = cps.Binary('Group images by metadata?',False,doc="""
                 <a name='group_by_metadata'></a>
-                <i>(Used only if metadata is extracted from the image file)</i><br>
+                <i>(Used only if metadata is extracted from the image file or if movies are used)</i><br>
                 In some instances, you may want to process as a group those images that share a particular
                 metadata tag. For example, if you are performing per-plate illumination correction and the
                 plate metadata is part of the image file name, image grouping will enable you to
                 process those images that have the same plate field together (the alternative would be
                 to place the images from each plate in a separate folder). The next setting allows you
-                to select the metadata tags by which to group.
+                to select the metadata tags by which to group.%(USING_METADATA_GROUPING_HELP_REF)s
                 
-                <p>To use grouping correctly, you must do the following:
-                <ul>
-                <li><i>Enable metadata extraction.</i> This must be done on all images to be grouped.</li>
-                <li><i>Specify common metadata tags for each image with the same name.</i> For example, if you 
-                are grouping on the basis of a metadata tag "Plate" in one image channel, you
-                must also specify the "Plate" metadata tag in the regular expression for the other channels that you 
-                want associated together.</li>
-                <li><i>Select only those metadata tags that will have the same value for a given cycle.</i> For example,
-                if an image cycle has "Plate", "Well" and "Wavelength" metadata in the filename, and the "Plate"
-                and "Well" text is identical between channels but the "Wavelength" text differs, you should only 
-                group using the "Plate" and "Well" metadata but not the "Wavelength".</li>
-                </ul>
-                
-                <p>If you are loading an image movie (e.g., TIFs, FLEX, STKs, AVIs, ZVIs), grouping
-                is automatically performed on the basis of the filename. Each movie
-                is already treated as a group since a movie is effectively
-                a self-contained image set, so there is no need to enable it again.""")
+                <p>Plase note that if you are loading a movie file(e.g., TIFs, FLEX, STKs, AVIs, ZVIs), each movie
+                is already treated as a group of images, so there is no need to enable here."""%globals())
         
         self.metadata_fields = cps.MultiChoice('Specify metadata fields to group by',[],doc="""
                 <i>(Used only if grouping images by metadata)</i> <br>
@@ -488,12 +474,23 @@ class LoadImages(cpmodule.CPModule):
             <tr><td>(?P&lt;Site&gt;</td><td>Name the captured field <i>Site</i></td></tr>
             <tr><td>[0-9]</td><td>Capture one digit following</td></tr>
             </table>
+            
             <p>The regular expression can be typed in the upper text box, with 
             a sample file name given in the lower text box. Provided the syntax 
             is correct, the corresponding fields will be highlighted in the same
             color in the two boxes. Press <i>Submit</i> to enter the typed 
             regular expression.</p>
-            <p>Also note that if you use the special fieldnames <i>&lt;WellColumn&gt;</i> and 
+            
+            <p>You can create metadata tags for any portion of the filename or path, but if you are
+            specifying metadata for multiple images in a single <b>LoadImages</b> module, an image cycle can 
+            only have one set of values for each metadata tag. This means that you can only 
+            specify the metadata tags which have the same value across all images listed in the module. For example,
+            in the example above, you might load two wavelengths of data, one named <i>TE12345_A05_s1_w1.tif</i>
+            and the other <i>TE12345_A05_s1_w2.tif</i>, where the number following the <i>w</i> is the wavelength. 
+            In this case, a "Wavelength" tag <i>should not</i> be included in the regular expression
+            because while the "Plate", "Well" and "Site" metadata is identical for both images, the wavelength metadata is not.</p>
+            
+            <p>Note that if you use the special fieldnames <i>&lt;WellColumn&gt;</i> and 
             <i>&lt;WellRow&gt;</i> together, LoadImages will automatically create a <i><i>&lt;Well&gt;</i>
             metadata field by joining the two fieldname values together. For example, 
             if <i>&lt;WellRow&gt;</i> is "A" and <i>&lt;WellColumn&gt;</i> is "01", a field 

@@ -1031,18 +1031,20 @@ class IdentifyPrimaryObjects(cpmi.Identify):
                                                            
         else:
             resized_image = image
+            resized_labels = labeled_image
         #
         # find local maxima
         #
         if maxima_mask is not None:
             binary_maxima_image = is_local_maximum(resized_image,
-                                                   labeled_image,
+                                                   resized_labels,
                                                    maxima_mask)
             binary_maxima_image[resized_image <= 0] = 0
         else:
             binary_maxima_image = (resized_image > 0) & (labeled_image > 0)
         if image_resize_factor < 1.0:
-            inverse_resize_factor = float(image.shape[0]) / float(maxima_image.shape[0])
+            inverse_resize_factor = (float(image.shape[0]) / 
+                                     float(binary_maxima_image.shape[0]))
             i_j = (np.mgrid[0:image.shape[0],
                                0:image.shape[1]].astype(float) / 
                    inverse_resize_factor)

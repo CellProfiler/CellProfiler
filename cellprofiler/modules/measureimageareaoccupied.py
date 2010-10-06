@@ -237,7 +237,7 @@ class MeasureImageAreaOccupied(cpm.CPModule):
         """
         if (object_name == "Image" and category == "AreaOccupied" and
             measurement in ("AreaOccupied","TotalArea")):
-            return [ op.object_name.value for op in self.operands ]
+            return [ op.operand_objects.value for op in self.operands ]
         return []
     
     def upgrade_settings(self, setting_values, variable_revision_number, 
@@ -250,17 +250,21 @@ class MeasureImageAreaOccupied(cpm.CPModule):
         """
         if from_matlab:
             raise NotImplementedError("The MeasureImageAreaOccupied module has changed substantially. \n"
-                                      "You should threshold your image using IdentifyPrimaryObjects\n"
-                                      "and then measure the resulting objects' area using this module.")
+                                      "You should use this module by either:\n"
+                                      "(1) Thresholding your image using an Identify module\n"
+                                      "and then measure the resulting objects' area; or\n"
+                                      "(2) Create a binary image with ApplyThreshold and then measure the\n"
+                                      "resulting foreground image area.")
         if variable_revision_number == 1:
             # We added the ability to process multiple objects in v2, but
             # the settings for v1 miraculously map to v2
             variable_revision_number = 2
         if variable_revision_number == 2:
+            # Permits choice of binary image or objects to measure from
             count = len(setting_values) / 3
             new_setting_values = [str(count)]
             for i in range(0, count):
-                new_setting_values += ['Objects', setting_values[(i*3)], setting_values[(i*3)+1], setting_values[(i*3)+2]]
+                new_setting_values += ['Objects', setting_values[(i*3)], setting_values[(i*3)+1], setting_values[(i*3)+2], 'None']
             setting_values = new_setting_values
             variable_revision_number = 3
         return setting_values, variable_revision_number, from_matlab

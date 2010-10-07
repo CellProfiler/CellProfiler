@@ -32,8 +32,10 @@ import cellprofiler.cpimage as cpi
 import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo
 import cellprofiler.workspace as cpw
+from cellprofiler.cpmath.filter import permutations
 
 import cellprofiler.modules.trackobjects as T
+from cellprofiler.modules.identify import C_COUNT
 
 OBJECT_NAME = "objects"
 
@@ -346,6 +348,10 @@ TrackObjects:[module_num:1|svn_version:\'10373\'|variable_revision_number:4|show
         module.pixel_radius.value = 50
         module.measurement.value = "measurement"
         measurements = cpmeas.Measurements()
+        measurements.add_all_measurements(cpmeas.IMAGE, cpp.GROUP_NUMBER,
+                                          [1] * len(labels_list))
+        measurements.add_all_measurements(cpmeas.IMAGE, cpp.GROUP_INDEX,
+                                          range(1, len(labels_list)+1))
         pipeline = cpp.Pipeline()
         pipeline.add_module(module)
         image_set_list = cpi.ImageSetList()
@@ -442,7 +448,8 @@ TrackObjects:[module_num:1|svn_version:\'10373\'|variable_revision_number:4|show
         self.assertAlmostEqual(m(T.F_DISTANCE_TRAVELED), 0)
         self.assertAlmostEqual(m(T.F_INTEGRATED_DISTANCE), 0)
         self.assertEqual(m(T.F_LABEL), 1)
-        self.assertEqual(m(T.F_PARENT), 1)
+        self.assertEqual(m(T.F_PARENT_OBJECT_NUMBER), 1)
+        self.assertEqual(m(T.F_PARENT_GROUP_INDEX), 1)
         self.assertEqual(m(T.F_LIFETIME), 1)
         def m(feature):
             name = "_".join((T.F_PREFIX, feature, OBJECT_NAME, "1"))
@@ -495,11 +502,11 @@ TrackObjects:[module_num:1|svn_version:\'10373\'|variable_revision_number:4|show
     
     def test_02_04_track_split(self):
         '''Track an object that splits'''
-        labels1 = np.zeros((10,10), int)
-        labels1[1:9,1:9] = 1
+        labels1 = np.zeros((11,9), int)
+        labels1[1:10,1:8] = 1
         labels2 = np.zeros((10,10), int)
-        labels2[1:5,1:9] = 1
-        labels2[5:9,1:9] = 2
+        labels2[1:6,1:8] = 1
+        labels2[6:10,1:8] = 2
         def fn(module, workspace, idx):
             if idx == 0:
                 module.pixel_radius.value = 5
@@ -511,14 +518,15 @@ TrackObjects:[module_num:1|svn_version:\'10373\'|variable_revision_number:4|show
             self.assertEqual(len(values), 2)
             return values
 
-        labels = list(m(T.F_LABEL,2))
+        labels = m(T.F_LABEL,2)
         self.assertEqual(len(labels),2)
-        self.assertTrue(2 in labels)
-        self.assertTrue(3 in labels)
-        parents = m(T.F_PARENT,1)
+        self.assertTrue(np.all(labels == 1))
+        parents = m(T.F_PARENT_OBJECT_NUMBER,1)
         self.assertTrue(np.all(parents == 1))
-        parents = m(T.F_PARENT,2)
-        self.assertTrue(np.all(parents == labels))
+        self.assertTrue(np.all(m(T.F_PARENT_GROUP_INDEX,1) == 1))
+        parents = m(T.F_PARENT_OBJECT_NUMBER,2)
+        self.assertTrue(np.all(parents == np.array([1,2])))
+        self.assertTrue(np.all(m(T.F_PARENT_GROUP_INDEX, 2) == 2))
         def m(feature):
             name = "_".join((T.F_PREFIX, feature, OBJECT_NAME, "5"))
             return measurements.get_all_measurements(cpmeas.IMAGE, name)[1]
@@ -544,7 +552,7 @@ TrackObjects:[module_num:1|svn_version:\'10373\'|variable_revision_number:4|show
             self.assertEqual(len(values), 1)
             return values[0]
         self.assertEqual(m(T.F_LABEL), 2)
-        self.assertEqual(m(T.F_PARENT), 0)
+        self.assertEqual(m(T.F_PARENT_OBJECT_NUMBER), 0)
         def m(feature):
             name = "_".join((T.F_PREFIX, feature, OBJECT_NAME, "1"))
             return measurements.get_current_image_measurement(name)
@@ -571,7 +579,7 @@ TrackObjects:[module_num:1|svn_version:\'10373\'|variable_revision_number:4|show
             self.assertEqual(len(values), 1)
             return values[0]
         self.assertEqual(m(T.F_LABEL), 2)
-        self.assertEqual(m(T.F_PARENT), 2)
+        self.assertEqual(m(T.F_PARENT_OBJECT_NUMBER), 2)
 
     def test_03_01_overlap_positive(self):
         '''Track overlapping objects'''
@@ -590,7 +598,7 @@ TrackObjects:[module_num:1|svn_version:\'10373\'|variable_revision_number:4|show
             self.assertEqual(len(values), 1)
             return values[0]
         self.assertEqual(m(T.F_LABEL), 1)
-        self.assertEqual(m(T.F_PARENT), 1)
+        self.assertEqual(m(T.F_PARENT_OBJECT_NUMBER), 1)
     
     def test_03_02_overlap_negative(self):
         '''Track objects that don't overlap'''
@@ -609,7 +617,7 @@ TrackObjects:[module_num:1|svn_version:\'10373\'|variable_revision_number:4|show
             self.assertEqual(len(values), 1)
             return values[0]
         self.assertEqual(m(T.F_LABEL), 2)
-        self.assertEqual(m(T.F_PARENT), 0)
+        self.assertEqual(m(T.F_PARENT_OBJECT_NUMBER), 0)
     
     def test_03_03_overlap_ambiguous(self):
         '''Track an object that overlaps two parents'''
@@ -629,7 +637,7 @@ TrackObjects:[module_num:1|svn_version:\'10373\'|variable_revision_number:4|show
             self.assertEqual(len(values), 1)
             return values[0]
         self.assertEqual(m(T.F_LABEL), 2)
-        self.assertEqual(m(T.F_PARENT), 2)
+        self.assertEqual(m(T.F_PARENT_OBJECT_NUMBER), 2)
     
     def test_04_01_measurement_positive(self):
         '''Test tracking an object by measurement'''
@@ -648,7 +656,7 @@ TrackObjects:[module_num:1|svn_version:\'10373\'|variable_revision_number:4|show
             self.assertEqual(len(values), 1)
             return values[0]
         self.assertEqual(m(T.F_LABEL), 1)
-        self.assertEqual(m(T.F_PARENT), 1)
+        self.assertEqual(m(T.F_PARENT_OBJECT_NUMBER), 1)
     
     def test_04_02_measurement_negative(self):
         '''Test tracking with too great a jump between successive images'''
@@ -667,7 +675,7 @@ TrackObjects:[module_num:1|svn_version:\'10373\'|variable_revision_number:4|show
             self.assertEqual(len(values), 1)
             return values[0]
         self.assertEqual(m(T.F_LABEL), 2)
-        self.assertEqual(m(T.F_PARENT), 0)
+        self.assertEqual(m(T.F_PARENT_OBJECT_NUMBER), 0)
     
     def test_04_03_ambiguous(self):
         '''Test measurement with ambiguous parent choice'''
@@ -687,7 +695,33 @@ TrackObjects:[module_num:1|svn_version:\'10373\'|variable_revision_number:4|show
             self.assertEqual(len(values), 1)
             return values[0]
         self.assertEqual(m(T.F_LABEL), 2)
-        self.assertEqual(m(T.F_PARENT), 2)
+        self.assertEqual(m(T.F_PARENT_OBJECT_NUMBER), 2)
+        
+    def test_04_04_cross_numbered_objects(self):
+        '''Test labeling when object 1 in one image becomes object 2 in next'''
+        
+        i,j = np.mgrid[0:10,0:20]
+        labels = (i > 5) + (j > 10) * 2
+        pp = permutations([1,2,3,4])
+        def fn(module, workspace, idx):
+            if idx == 0:
+                module.tracking_method.value = T.TM_LAP
+                
+        measurements = self.runTrackObjects([np.array(p)[labels] for p in pp], fn)
+        def m(feature, i):
+            name = "_".join((T.F_PREFIX, feature))
+            values = measurements.get_all_measurements(OBJECT_NAME, name)[i]
+            self.assertEqual(len(values), 4)
+            return values
+        for i, p in enumerate(pp):
+            l = m(T.F_LABEL, i)
+            self.assertTrue(np.all(l == np.array(p)))
+            if i < len(pp)-1:
+                po = m(T.F_PARENT_OBJECT_NUMBER, i+1)
+                self.assertTrue(np.all(po == np.array(p)))
+                pi = m(T.F_PARENT_GROUP_INDEX, i+1)
+                self.assertTrue(np.all(pi == i))
+
         
     def test_05_01_measurement_columns(self):
         '''Test get_measurement_columns function'''
@@ -804,16 +838,21 @@ TrackObjects:[module_num:1|svn_version:\'10373\'|variable_revision_number:4|show
             self.assertEqual(len(scales), 1)
             self.assertEqual(int(scales[0]), 10)
 
-    def make_lap2_workspace(self, objs, nimages):
+    def make_lap2_workspace(self, objs, nimages, group_numbers = None, group_indexes = None):
         '''Make a workspace to test the second half of LAP
         
         objs - a N x 5 array of "objects" composed of the
                following pieces per object
                objs[0] - image set # for object
                objs[1] - label for object
-               objs[2] - x coordinate for object
-               objs[3] - y coordinate for object
-               objs[4] - area for object
+               objs[2] - parent image #
+               objs[3] - parent object #
+               objs[4] - x coordinate for object
+               objs[5] - y coordinate for object
+               objs[6] - area for object
+        nimages - # of image sets
+        group_numbers - group numbers for each image set, defaults to all 1
+        group_indexes - group indexes for each image set, defaults to range
         '''
         module = T.TrackObjects()
         module.module_num = 1
@@ -831,16 +870,76 @@ TrackObjects:[module_num:1|svn_version:\'10373\'|variable_revision_number:4|show
         m = cpmeas.Measurements()
         for index, feature in (
             (1, module.measurement_name(T.F_LABEL)),
-            (2, T.M_LOCATION_CENTER_X),
-            (3, T.M_LOCATION_CENTER_Y),
-            (4, module.measurement_name(T.F_AREA))):
+            (2, module.measurement_name(T.F_PARENT_GROUP_INDEX)),
+            (3, module.measurement_name(T.F_PARENT_OBJECT_NUMBER)),
+            (4, T.M_LOCATION_CENTER_X),
+            (5, T.M_LOCATION_CENTER_Y),
+            (6, module.measurement_name(T.F_AREA))):
             values = [objs[objs[:,0] == i, index] for i in range(nimages)]
             m.add_all_measurements(OBJECT_NAME, feature, values)
         m.add_all_measurements(cpmeas.IMAGE, "ImageNumber", list(range(nimages)))
-        m.add_all_measurements(cpmeas.IMAGE, cpp.GROUP_NUMBER,
-                               [1] * nimages)
-        m.add_all_measurements(cpmeas.IMAGE, cpp.GROUP_INDEX,
-                               list(range(1, nimages+1)))
+        if group_numbers is None:
+            group_numbers = [1] * nimages
+        m.add_all_measurements(cpmeas.IMAGE, cpp.GROUP_NUMBER, group_numbers)
+        if group_indexes is None:
+            group_indexes = list(range(1, nimages+1))
+        m.add_all_measurements(cpmeas.IMAGE, cpp.GROUP_INDEX, group_indexes)
+        if objs.shape[0] > 0:
+            nobjects = np.bincount(objs[:, 0].astype(int))
+        else:
+            nobjects = np.zeros(nimages, int)
+        #
+        # Add blanks of the right sizes for measurements that are recalculated
+        #
+        m.add_all_measurements(cpmeas.IMAGE, '_'.join((C_COUNT, OBJECT_NAME)),
+                               nobjects)
+        for feature in (T.F_DISTANCE_TRAVELED, 
+                        T.F_INTEGRATED_DISTANCE, T.F_TRAJECTORY_X,
+                        T.F_TRAJECTORY_Y, T.F_LINEARITY, T.F_LIFETIME):
+            dtype = int if feature in (
+                T.F_PARENT_OBJECT_NUMBER, T.F_PARENT_GROUP_INDEX, 
+                T.F_LIFETIME) else float
+            m.add_all_measurements(OBJECT_NAME,
+                                   module.measurement_name(feature),
+                                   [np.zeros(n, dtype) for n in nobjects])
+        for feature in (T.F_SPLIT_COUNT, T.F_MERGE_COUNT):
+            m.add_all_measurements(cpmeas.IMAGE,
+                                   module.image_measurement_name(feature),
+                                   [0] * nimages)
+        #
+        # Figure out how many new and lost objects per image set
+        #
+        label_sets = [set() for i in range(nimages)]
+        for row in objs:
+            label_sets[row[0]].add(row[1])
+        #
+        # New objects are ones without matching labels in the previous set
+        #
+        new_objects = ([len(label_sets[0])] + 
+                       [sum([1 for label in next
+                             if (label not in prev) 
+                             or (prev_group_number != next_group_number)])
+                        for prev, next, prev_group_number, next_group_number
+                        in zip(label_sets[:-1], label_sets[1:],
+                               group_numbers[:-1], group_numbers[1:])])
+        m.add_all_measurements(cpmeas.IMAGE,
+                               module.image_measurement_name(T.F_NEW_OBJECT_COUNT),
+                               new_objects)
+
+        #
+        # Lost objects are ones without matching labels in the next set
+        #
+        lost_objects = (
+            [0] + 
+            [sum([1 for label in prev
+                  if (label not in next)
+                  and (prev_image_number == next_image_number)])
+             for prev, next, prev_image_number, next_image_number 
+             in zip(label_sets[:-1], label_sets[1:], 
+                    group_numbers[:-1], group_numbers[1:])])
+        m.add_all_measurements(cpmeas.IMAGE,
+                               module.image_measurement_name(T.F_LOST_OBJECT_COUNT),
+                               lost_objects)
         m.image_set_number = nimages
         
         image_set_list = cpi.ImageSetList()
@@ -850,34 +949,79 @@ TrackObjects:[module_num:1|svn_version:\'10373\'|variable_revision_number:4|show
                                   m, image_set_list)
         return workspace, module
     
+    def check_measurements(self, workspace, d):
+        '''Check measurements against expected values
+        
+        workspace - workspace that was run
+        d - dictionary of feature name and list of expected measurement values
+        '''
+        m = workspace.measurements
+        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        module = workspace.module
+        self.assertTrue(isinstance(module, T.TrackObjects))
+        for feature, expected in d.iteritems():
+            if np.isscalar(expected[0]):
+                mname = module.image_measurement_name(feature)
+                values = m.get_all_measurements(cpmeas.IMAGE, mname)
+                self.assertEqual(len(expected), len(values),
+                                 "Expected # image sets (%d) != actual (%d) for %s" %
+                                 (len(expected), len(values), feature))
+                self.assertTrue(all([v == e for v,e in zip(values, expected)]),
+                                "Values don't match for " + feature)
+            else:
+                mname = module.measurement_name(feature)
+                values = m.get_all_measurements(OBJECT_NAME, mname)
+                self.assertEqual(len(expected), len(values),
+                                 "Expected # image sets (%d) != actual (%d) for %s" %
+                                 (len(expected), len(values), feature))
+                for i, (e, v) in enumerate(zip(expected, values)):
+                    self.assertEqual(len(e), len(v),
+                                     "Expected # of objects (%d) != actual (%d) for %s:%d" %
+                                     (len(e), len(v), feature, i))
+                    np.testing.assert_almost_equal(v, e)
+                
     def test_07_01_lap_none(self):
         '''Run the second part of LAP on one image of nothing'''
-        workspace, module = self.make_lap2_workspace(np.zeros((0,5)), 1)
+        workspace, module = self.make_lap2_workspace(np.zeros((0,7)), 1)
         self.assertTrue(isinstance(module, T.TrackObjects))
         module.run_as_data_tool(workspace)
-        module.post_group(workspace, np.arange(1))
-        labels = workspace.measurements.get_all_measurements(
-            OBJECT_NAME, module.measurement_name(T.F_LABEL))
-        self.assertEqual(len(labels), 1)
-        self.assertEqual(len(labels[0]), 0)
+        self.check_measurements(workspace, {
+            T.F_LABEL: [ np.zeros(0, int) ],
+            T.F_DISTANCE_TRAVELED: [ np.zeros(0) ],
+            T.F_INTEGRATED_DISTANCE: [ np.zeros(0) ],
+            T.F_TRAJECTORY_X: [ np.zeros(0) ],
+            T.F_TRAJECTORY_Y: [ np.zeros(0) ],
+            T.F_NEW_OBJECT_COUNT: [ 0 ],
+            T.F_LOST_OBJECT_COUNT: [ 0 ],
+            T.F_MERGE_COUNT: [ 0 ],
+            T.F_SPLIT_COUNT: [ 0 ]
+        })
         
     def test_07_02_lap_one(self):
         '''Run the second part of LAP on one image of one object'''
         workspace, module = self.make_lap2_workspace(
-            np.array([[0, 1, 100, 100, 25]]), 1)
+            np.array([[0, 1, 0, 0, 100, 100, 25]]), 1)
         self.assertTrue(isinstance(module, T.TrackObjects))
         module.run_as_data_tool(workspace)
-        labels = workspace.measurements.get_all_measurements(
-            OBJECT_NAME, module.measurement_name(T.F_LABEL))
-        self.assertEqual(len(labels), 1)
-        self.assertEqual(len(labels[0]), 1)
-        self.assertEqual(labels[0][0], 1)
+        self.check_measurements(workspace, {
+            T.F_LABEL: [ np.array([1]) ],
+            T.F_PARENT_GROUP_INDEX: [ np.array([0]) ],
+            T.F_PARENT_OBJECT_NUMBER: [ np.array([0]) ],
+            T.F_DISTANCE_TRAVELED: [ np.zeros(1) ],
+            T.F_INTEGRATED_DISTANCE: [ np.zeros(1) ],
+            T.F_TRAJECTORY_X: [ np.zeros(1) ],
+            T.F_TRAJECTORY_Y: [ np.zeros(1) ],
+            T.F_NEW_OBJECT_COUNT: [ 1 ],
+            T.F_LOST_OBJECT_COUNT: [ 0 ],
+            T.F_MERGE_COUNT: [ 0 ],
+            T.F_SPLIT_COUNT: [ 0 ]
+        })
         
     def test_07_03_bridge_gap(self):
         '''Bridge a gap of zero frames between two objects'''
         workspace, module = self.make_lap2_workspace(
-            np.array([[0, 1, 0, 0, 25],
-                      [1, 2, 100, 100, 25]]), 2)
+            np.array([[0, 1, 0, 0, 1, 2, 25],
+                      [2, 2, 0, 0, 101, 102, 25]]), 3)
         self.assertTrue(isinstance(module, T.TrackObjects))
         #
         # The cost of bridging the gap should be 141. We set the alternative
@@ -886,19 +1030,28 @@ TrackObjects:[module_num:1|svn_version:\'10373\'|variable_revision_number:4|show
         module.gap_cost.value = 142
         module.max_gap_score.value = 142
         module.run_as_data_tool(workspace)
-        labels = workspace.measurements.get_all_measurements(
-            OBJECT_NAME, module.measurement_name(T.F_LABEL))
-        self.assertEqual(len(labels), 2)
-        self.assertEqual(len(labels[0]), 1)
-        self.assertEqual(labels[0][0], 1)
-        self.assertEqual(len(labels[1]), 1)
-        self.assertEqual(labels[1][0], 1)
+        distance = np.array([np.sqrt(2 * 100 * 100)])
+        self.check_measurements(workspace, {
+            T.F_LABEL: [ np.array([1]), np.zeros(0), np.array([1]) ],
+            T.F_PARENT_GROUP_INDEX: [ np.array([0]), np.zeros(0), np.array([1]) ],
+            T.F_PARENT_OBJECT_NUMBER: [ np.array([0]), np.zeros(0), np.array([1]) ],
+            T.F_DISTANCE_TRAVELED: [ np.zeros(1), np.zeros(0), distance],
+            T.F_INTEGRATED_DISTANCE: [ np.zeros(1),  np.zeros(0), distance],
+            T.F_TRAJECTORY_X: [ np.zeros(1), np.zeros(0), np.array([100]) ],
+            T.F_TRAJECTORY_Y: [ np.zeros(1), np.zeros(0), np.array([100]) ],
+            T.F_LINEARITY: [ np.array([0]), np.zeros(0), np.array([1])],
+            T.F_LIFETIME: [ np.zeros(1), np.zeros(0), np.ones(1) ],
+            T.F_NEW_OBJECT_COUNT: [ 1, 0, 0 ],
+            T.F_LOST_OBJECT_COUNT: [ 0, 0, 0 ],
+            T.F_MERGE_COUNT: [ 0, 0, 0 ],
+            T.F_SPLIT_COUNT: [ 0, 0, 0 ]
+        })
         
     def test_07_04_maintain_gap(self):
         '''Maintain object identity across a large gap'''
         workspace, module = self.make_lap2_workspace(
-            np.array([[0, 1, 0, 0, 25],
-                      [1, 2, 100, 100, 25]]), 2)
+            np.array([[0, 1, 0, 0,  1, 2, 25],
+                      [2, 2, 0, 0, 101, 102, 25]]), 3)
         self.assertTrue(isinstance(module, T.TrackObjects))
         #
         # The cost of creating the gap should be 140 and the cost of
@@ -907,19 +1060,21 @@ TrackObjects:[module_num:1|svn_version:\'10373\'|variable_revision_number:4|show
         module.gap_cost.value = 140
         module.max_gap_score.value = 142
         module.run_as_data_tool(workspace)
-        labels = workspace.measurements.get_all_measurements(
-            OBJECT_NAME, module.measurement_name(T.F_LABEL))
-        self.assertEqual(len(labels), 2)
-        self.assertEqual(len(labels[0]), 1)
-        self.assertEqual(labels[0][0], 1)
-        self.assertEqual(len(labels[1]), 1)
-        self.assertEqual(labels[1][0], 2)
+        self.check_measurements(workspace, {
+            T.F_LABEL: [ np.array([1]), np.zeros(0), np.array([2]) ],
+            T.F_PARENT_GROUP_INDEX: [ np.array([0]), np.zeros(0), np.array([0]) ],
+            T.F_PARENT_OBJECT_NUMBER: [ np.array([0]), np.zeros(0), np.array([0]) ],
+            T.F_NEW_OBJECT_COUNT: [ 1, 0, 1 ],
+            T.F_LOST_OBJECT_COUNT: [ 0, 1, 0 ],
+            T.F_MERGE_COUNT: [ 0, 0, 0 ],
+            T.F_SPLIT_COUNT: [ 0, 0, 0 ]
+            })
         
     def test_07_05_filter_gap(self):
         '''Filter a gap due to an unreasonable score'''
         workspace, module = self.make_lap2_workspace(
-            np.array([[0, 1, 0, 0, 25],
-                      [1, 2, 100, 100, 25]]), 2)
+            np.array([[0, 1, 0, 0, 1, 2, 25],
+                      [2, 2, 0, 0, 101, 102, 25]]), 3)
         self.assertTrue(isinstance(module, T.TrackObjects))
         #
         # The cost of creating the gap should be 142 and the cost of
@@ -929,22 +1084,20 @@ TrackObjects:[module_num:1|svn_version:\'10373\'|variable_revision_number:4|show
         module.gap_cost.value = 142
         module.max_gap_score.value = 140
         module.run_as_data_tool(workspace)
-        labels = workspace.measurements.get_all_measurements(
-            OBJECT_NAME, module.measurement_name(T.F_LABEL))
-        self.assertEqual(len(labels), 2)
-        self.assertEqual(len(labels[0]), 1)
-        self.assertEqual(labels[0][0], 1)
-        self.assertEqual(len(labels[1]), 1)
-        self.assertEqual(labels[1][0], 2)
+        self.check_measurements(workspace, {
+            T.F_LABEL: [ np.array([1]), np.zeros(0), np.array([2]) ],
+            T.F_PARENT_GROUP_INDEX: [ np.array([0]), np.zeros(0), np.array([0]) ],
+            T.F_PARENT_OBJECT_NUMBER: [ np.array([0]), np.zeros(0), np.array([0]) ]
+            })
         
     def test_07_06_split(self):
         '''Track an object splitting'''
         workspace, module = self.make_lap2_workspace(
-            np.array([[0, 1, 100, 100, 50],
-                      [1, 1, 110, 110, 25],
-                      [1, 2, 90,   90, 25],
-                      [2, 1, 110, 110, 25],
-                      [2, 2, 90,   90, 25]]), 3)
+            np.array([[0, 1, 0, 0, 100, 100, 50],
+                      [1, 1, 1, 1, 110, 110, 25],
+                      [1, 2, 0, 0, 90,   90, 25],
+                      [2, 1, 2, 1, 113, 114, 25],
+                      [2, 2, 2, 2, 86,   87, 25]]), 3)
         self.assertTrue(isinstance(module, T.TrackObjects))
         #
         # The split score should be between 28 and 30.  Set the split
@@ -953,89 +1106,102 @@ TrackObjects:[module_num:1|svn_version:\'10373\'|variable_revision_number:4|show
         module.split_cost.value = 30
         module.max_split_score.value = 30
         module.run_as_data_tool(workspace)
-        labels = workspace.measurements.get_all_measurements(
-            OBJECT_NAME, module.measurement_name(T.F_LABEL))
-        self.assertEqual(len(labels), 3)
-        self.assertEqual(len(labels[0]), 1)
-        self.assertEqual(labels[0][0], 1)
-        self.assertEqual(len(labels[1]), 2)
-        self.assertEqual(labels[1][0], 1)
-        self.assertEqual(labels[1][1], 1)
+        d200 = np.sqrt(200)
+        tot = np.sqrt(13 ** 2 + 14 ** 2)
+        lin = tot / (d200 + 5)
+        self.check_measurements(workspace, {
+            T.F_LABEL: [ np.array([1]), np.array([1,1]), np.array([1,1]) ],
+            T.F_PARENT_GROUP_INDEX: [ np.array([0]), np.array([1,1]), np.array([2,2]) ],
+            T.F_PARENT_OBJECT_NUMBER: [ np.array([0]), np.array([1,1]), np.array([1,2]) ],
+            T.F_DISTANCE_TRAVELED: [ np.zeros(1), np.ones(2)*d200, np.array([tot,tot])],
+            T.F_INTEGRATED_DISTANCE: [ np.zeros(1),  np.ones(2)*d200, np.ones(2)*d200 + 5],
+            T.F_TRAJECTORY_X: [ np.zeros(1), np.array([10,-10]), np.array([3,-4]) ],
+            T.F_TRAJECTORY_Y: [ np.zeros(1), np.array([10,-10]), np.array([4, -3]) ],
+            T.F_LINEARITY: [ np.array([0]), np.array([1,1]), np.array([lin, lin])],
+            T.F_LIFETIME: [ np.zeros(1), np.array([1,1]), np.array([2,2]) ],
+            T.F_NEW_OBJECT_COUNT: [ 1, 0, 0 ],
+            T.F_LOST_OBJECT_COUNT: [ 0, 0, 0 ],
+            T.F_MERGE_COUNT: [ 0, 0, 0 ],
+            T.F_SPLIT_COUNT: [ 0, 1, 0 ]
+            })
         
     def test_07_07_dont_split(self):
         '''Track an object splitting'''
         workspace, module = self.make_lap2_workspace(
-            np.array([[0, 1, 100, 100, 50],
-                      [1, 1, 110, 110, 25],
-                      [1, 2, 90,   90, 25],
-                      [2, 1, 110, 110, 25],
-                      [2, 2, 90,   90, 25]]), 3)
+            np.array([[0, 1, 0, 0, 100, 100, 50],
+                      [1, 1, 1, 1, 110, 110, 25],
+                      [1, 2, 0, 0, 90,   90, 25],
+                      [2, 1, 2, 1, 110, 110, 25],
+                      [2, 2, 2, 2, 90,   90, 25]]), 3)
         self.assertTrue(isinstance(module, T.TrackObjects))
         module.split_cost.value = 28
         module.max_split_score.value = 30
         module.run_as_data_tool(workspace)
-        labels = workspace.measurements.get_all_measurements(
-            OBJECT_NAME, module.measurement_name(T.F_LABEL))
-        self.assertEqual(len(labels), 3)
-        self.assertEqual(len(labels[0]), 1)
-        self.assertEqual(labels[0][0], 1)
-        self.assertEqual(len(labels[1]), 2)
-        self.assertEqual(labels[1][0], 1)
-        self.assertEqual(labels[1][1], 2)
+        self.check_measurements(workspace, {
+            T.F_LABEL: [ np.array([1]), np.array([1,2]), np.array([1,2]) ],
+            T.F_PARENT_GROUP_INDEX: [ np.array([0]), np.array([1,0]), np.array([2,2]) ],
+            T.F_PARENT_OBJECT_NUMBER: [ np.array([0]), np.array([1,0]), np.array([1,2]) ],
+            T.F_LIFETIME: [ np.zeros(1), np.array([1,0]), np.array([2,1]) ],
+            T.F_NEW_OBJECT_COUNT: [ 1, 1, 0 ],
+            T.F_LOST_OBJECT_COUNT: [ 0, 0, 0 ],
+            T.F_MERGE_COUNT: [ 0, 0, 0 ],
+            T.F_SPLIT_COUNT: [ 0, 0, 0 ]
+            })
 
     def test_07_08_split_filter(self):
         '''Prevent a split by setting the filter too low'''
         workspace, module = self.make_lap2_workspace(
-            np.array([[0, 1, 100, 100, 50],
-                      [1, 1, 110, 110, 25],
-                      [1, 2, 90,   90, 25],
-                      [2, 1, 110, 110, 25],
-                      [2, 2, 90,   90, 25]]), 3)
+            np.array([[0, 1, 0, 0, 100, 100, 50],
+                      [1, 1, 1, 1, 110, 110, 25],
+                      [1, 2, 0, 0, 90,   90, 25],
+                      [2, 1, 2, 1, 110, 110, 25],
+                      [2, 2, 2, 2, 90,   90, 25]]), 3)
         self.assertTrue(isinstance(module, T.TrackObjects))
         module.split_cost.value = 30
         module.max_split_score.value = 28
         module.run_as_data_tool(workspace)
-        labels = workspace.measurements.get_all_measurements(
-            OBJECT_NAME, module.measurement_name(T.F_LABEL))
-        self.assertEqual(len(labels), 3)
-        self.assertEqual(len(labels[0]), 1)
-        self.assertEqual(labels[0][0], 1)
-        self.assertEqual(len(labels[1]), 2)
-        self.assertEqual(labels[1][0], 1)
-        self.assertEqual(labels[1][1], 2)
+        self.check_measurements(workspace, {
+            T.F_LABEL: [ np.array([1]), np.array([1,2]), np.array([1,2]) ],
+            T.F_PARENT_GROUP_INDEX: [ np.array([0]), np.array([1,0]), np.array([2,2]) ],
+            T.F_PARENT_OBJECT_NUMBER: [ np.array([0]), np.array([1,0]), np.array([1,2]) ],
+            T.F_LIFETIME: [ np.zeros(1), np.array([1,0]), np.array([2,1]) ],
+            T.F_NEW_OBJECT_COUNT: [ 1, 1, 0 ],
+            T.F_LOST_OBJECT_COUNT: [ 0, 0, 0 ],
+            T.F_MERGE_COUNT: [ 0, 0, 0 ],
+            T.F_SPLIT_COUNT: [ 0, 0, 0 ]
+            })
         
     def test_07_09_merge(self):
         '''Merge two objects into one'''
         workspace, module = self.make_lap2_workspace(
-            np.array([[0, 1, 110, 110, 25],
-                      [0, 2, 90,   90, 25],
-                      [1, 1, 110, 110, 25],
-                      [1, 2, 90,   90, 25],
-                      [2, 1, 100, 100, 50]]), 3)
+            np.array([[0, 1, 0, 0, 110, 110, 25],
+                      [0, 2, 0, 0, 90,   90, 25],
+                      [1, 1, 1, 1, 110, 110, 25],
+                      [1, 2, 1, 2, 90,   90, 25],
+                      [2, 1, 2, 1, 100, 100, 50]]), 3)
         self.assertTrue(isinstance(module, T.TrackObjects))
         module.merge_cost.value = 30
         module.max_merge_score.value = 30
         module.run_as_data_tool(workspace)
-        labels = workspace.measurements.get_all_measurements(
-            OBJECT_NAME, module.measurement_name(T.F_LABEL))
-        self.assertEqual(len(labels), 3)
-        self.assertEqual(len(labels[0]), 2)
-        self.assertEqual(labels[0][0], 1)
-        self.assertEqual(labels[0][1], 1)
-        self.assertEqual(len(labels[1]), 2)
-        self.assertEqual(labels[1][0], 1)
-        self.assertEqual(labels[1][1], 1)
-        self.assertEqual(len(labels[2]), 1)
-        self.assertEqual(labels[2][0], 1)
+        self.check_measurements(workspace, {
+            T.F_LABEL: [ np.array([1,1]), np.array([1,1]), np.array([1]) ],
+            T.F_PARENT_GROUP_INDEX: [ np.array([0,0]), np.array([1,1]), np.array([2]) ],
+            T.F_PARENT_OBJECT_NUMBER: [ np.array([0,0]), np.array([1,2]), np.array([1]) ],
+            T.F_LIFETIME: [ np.zeros(2), np.array([1,1]), np.array([2]) ],
+            T.F_NEW_OBJECT_COUNT: [ 2, 0, 0 ],
+            T.F_LOST_OBJECT_COUNT: [ 0, 0, 0 ],
+            T.F_MERGE_COUNT: [ 0, 0, 1 ],
+            T.F_SPLIT_COUNT: [ 0, 0, 0 ]
+            })
 
     def test_07_10_dont_merge(self):
         '''Don't merge because of low alternative merge cost'''
         workspace, module = self.make_lap2_workspace(
-            np.array([[0, 1, 110, 110, 25],
-                      [0, 2, 90,   90, 25],
-                      [1, 1, 110, 110, 25],
-                      [1, 2, 90,   90, 25],
-                      [2, 1, 100, 100, 50]]), 3)
+            np.array([[0, 1, 0, 0, 110, 110, 25],
+                      [0, 2, 0, 0, 90,   90, 25],
+                      [1, 1, 1, 1, 110, 110, 25],
+                      [1, 2, 1, 2, 90,   90, 25],
+                      [2, 1, 2, 1, 100, 100, 50]]), 3)
         self.assertTrue(isinstance(module, T.TrackObjects))
         #
         # The cost of the merge is 2x 10x sqrt(2) which is between 28 and 29
@@ -1058,11 +1224,11 @@ TrackObjects:[module_num:1|svn_version:\'10373\'|variable_revision_number:4|show
     def test_07_11_filter_merge(self):
         '''Don't merge because of low alternative merge cost'''
         workspace, module = self.make_lap2_workspace(
-            np.array([[0, 1, 110, 110, 25],
-                      [0, 2, 90,   90, 25],
-                      [1, 1, 110, 110, 25],
-                      [1, 2, 90,   90, 25],
-                      [2, 1, 100, 100, 50]]), 3)
+            np.array([[0, 1, 0, 0, 110, 110, 25],
+                      [0, 2, 0, 0, 90,   90, 25],
+                      [1, 1, 1, 1, 110, 110, 25],
+                      [1, 2, 1, 2, 90,   90, 25],
+                      [2, 1, 2, 1, 100, 100, 50]]), 3)
         self.assertTrue(isinstance(module, T.TrackObjects))
         #
         # The cost of the merge is 2x 10x sqrt(2) which is between 28 and 29
@@ -1084,57 +1250,134 @@ TrackObjects:[module_num:1|svn_version:\'10373\'|variable_revision_number:4|show
         
     def test_07_12_img_1111(self):
         '''Regression test of img-1111'''
-        data = np.array([[9,1,225,20,50],
-                         [9,2,116,223,31],
-                         [25,3,43,291,26],
-                         [28,4,410,436,24],
-                         [29,5,293,166,23],
-                         [29,4,409,436,24],
-                         [30,5,293,167,30],
-                         [32,6,293,164,69],
-                         [33,6,292,166,37],
-                         [35,7,290,165,63],
-                         [36,7,290,166,38],
-                         [39,8,287,163,28],
-                         [40,8,287,163,21],
-                         [44,9,54,288,20],
-                         [77,10,514,211,49],
-                         [78,10,514,210,42],
-                         [79,10,514,209,73],
-                         [80,10,514,208,49],
-                         [81,10,515,209,38],
-                         [98,11,650,54,24],
-                         [102,12,586,213,46],
-                         [104,13,586,213,27],
-                         [106,14,587,212,54],
-                         [107,14,587,212,40],
-                         [113,15,17,145,51],
-                         [116,16,45,153,21],
-                         [117,17,53,148,44],
-                         [117,18,90,278,87],
-                         [119,19,295,184,75],
-                         [120,19,295,184,79],
-                         [121,19,295,182,75],
-                         [123,20,636,7,20],
-                         [124,20,635,7,45],
-                         [124,21,133,171,22],
-                         [124,22,417,365,65],
-                         [126,23,125,182,77],
-                         [126,24,358,306,48],
-                         [126,25,413,366,60],
-                         [127,26,141,173,71],
-                         [127,25,413,366,35],
-                         [128,27,131,192,76],
-                         [129,28,156,182,74],
-                         [130,29,147,194,56],
-                         [131,30,152,185,56],
-                         [132,30,154,188,78],
-                         [133,31,142,186,64],
-                         [133,32,91,283,23],
-                         [134,33,150,195,80]])
+        data = np.array([[9,1,0,0,225,20,50],
+                         [9,2,0,0,116,223,31],
+                         [25,3,0,0,43,291,26],
+                         [28,4,0,0,410,436,24],
+                         [29,5,0,0,293,166,23],
+                         [29,4,29,1,409,436,24],
+                         [30,5,30,1,293,167,30],
+                         [32,6,0,0,293,164,69],
+                         [33,6,33,1,292,166,37],
+                         [35,7,0,0,290,165,63],
+                         [36,7,36,1,290,166,38],
+                         [39,8,0,0,287,163,28],
+                         [40,8,40,1,287,163,21],
+                         [44,9,0,0,54,288,20],
+                         [77,10,0,0,514,211,49],
+                         [78,10,78,1,514,210,42],
+                         [79,10,79,1,514,209,73],
+                         [80,10,80,1,514,208,49],
+                         [81,10,81,1,515,209,38],
+                         [98,11,0,0,650,54,24],
+                         [102,12,0,0,586,213,46],
+                         [104,13,0,0,586,213,27],
+                         [106,14,0,0,587,212,54],
+                         [107,14,107,1,587,212,40],
+                         [113,15,0,0,17,145,51],
+                         [116,16,0,0,45,153,21],
+                         [117,17,0,0,53,148,44],
+                         [117,18,0,0,90,278,87],
+                         [119,19,0,0,295,184,75],
+                         [120,19,120,1,295,184,79],
+                         [121,19,121,1,295,182,75],
+                         [123,20,0,0,636,7,20],
+                         [124,20,124,1,635,7,45],
+                         [124,21,0,0,133,171,22],
+                         [124,22,0,0,417,365,65],
+                         [126,23,0,0,125,182,77],
+                         [126,24,0,0,358,306,48],
+                         [126,25,0,0,413,366,60],
+                         [127,26,0,0,141,173,71],
+                         [127,25,127,3,413,366,35],
+                         [128,27,0,0,131,192,76],
+                         [129,28,0,0,156,182,74],
+                         [130,29,0,0,147,194,56],
+                         [131,30,0,0,152,185,56],
+                         [132,30,132,1,154,188,78],
+                         [133,31,0,0,142,186,64],
+                         [133,32,0,0,91,283,23],
+                         [134,33,0,0,150,195,80]])
         data = data[:8,:]
-        workspace, module = self.make_lap2_workspace(data, np.max(data[0,:])+1)
+        workspace, module = self.make_lap2_workspace(data, np.max(data[:,0])+1)
         module.run_as_data_tool(workspace)
+        
+    def test_07_12_multi_group(self):
+        '''Run several tests in different groups'''
+        workspace, module = self.make_lap2_workspace(
+            np.array([[0, 1, 0, 0, 1, 2, 25],
+                      [2, 2, 0, 0, 101, 102, 25],
+                      [3, 1, 0, 0, 100, 100, 50],
+                      [4, 1, 1, 1, 110, 110, 25],
+                      [4, 2, 0, 0, 90,   90, 25],
+                      [5, 1, 2, 1, 113, 114, 25],
+                      [5, 2, 2, 2, 86,   87, 25],
+                      [6, 1, 0, 0, 110, 110, 25],
+                      [6, 2, 0, 0, 90,   90, 25],
+                      [7, 1, 1, 1, 110, 110, 25],
+                      [7, 2, 1, 2, 90,   90, 25],
+                      [8, 1, 2, 1, 104, 102, 50]                      
+                      ]), 9, 
+            group_numbers = [ 1, 1, 1, 2, 2, 2, 3, 3, 3],
+            group_indexes = [ 1, 2, 3, 1, 2, 3, 1, 2, 3]
+        )
+        self.assertTrue(isinstance(module, T.TrackObjects))
+        #
+        # The cost of bridging the gap should be 141. We set the alternative
+        # score to 142 so that bridging wins.
+        #
+        module.gap_cost.value = 142
+        module.max_gap_score.value = 142
+        module.split_cost.value = 30
+        module.max_split_score.value = 30
+        module.merge_cost.value = 30
+        module.max_merge_score.value = 30
+        module.run_as_data_tool(workspace)
+        distance = np.array([np.sqrt(2 * 100 * 100)])
+        d200 = np.sqrt(200)
+        tot = np.sqrt(13 ** 2 + 14 ** 2)
+        lin = tot / (d200 + 5)
+        self.check_measurements(workspace, {
+            T.F_LABEL: [ np.array([1]), np.zeros(0), np.array([1]),
+                         np.array([1]), np.array([1,1]), np.array([1,1]),
+                         np.array([1,1]), np.array([1,1]), np.array([1])],
+            T.F_PARENT_GROUP_INDEX: [ np.array([0]), np.zeros(0), np.array([1]),
+                                       np.array([0]), np.array([1,1]), np.array([2,2]),
+                                       np.array([0,0]), np.array([1,1]), np.array([2])],
+            T.F_PARENT_OBJECT_NUMBER: [ np.array([0]), np.zeros(0), np.array([1]),
+                                        np.array([0]), np.array([1,1]), np.array([1,2]),
+                                        np.array([0,0]), np.array([1,2]), np.array([1])],
+            T.F_DISTANCE_TRAVELED: [ np.zeros(1), np.zeros(0), distance,
+                                     np.zeros(1), np.ones(2)*d200, np.array([tot,tot]),
+                                     np.zeros(2), np.zeros(2), np.array([10])],
+            T.F_INTEGRATED_DISTANCE: [ np.zeros(1),  np.zeros(0), distance,
+                                       np.zeros(1),  np.ones(2)*d200, np.ones(2)*d200 + 5,
+                                       np.zeros(2), np.zeros(2), np.array([10])],
+            T.F_TRAJECTORY_X: [ np.zeros(1), np.zeros(0), np.array([100]),
+                                np.zeros(1), np.array([10,-10]), np.array([3,-4]),
+                                np.zeros(2), np.zeros(2), np.array([-6])],
+            T.F_TRAJECTORY_Y: [ np.zeros(1), np.zeros(0), np.array([100]),
+                                np.zeros(1), np.array([10,-10]), np.array([4, -3]),
+                                np.zeros(2), np.zeros(2), np.array([-8])],
+            T.F_LINEARITY: [ np.array([0]), np.zeros(0), np.array([1]),
+                             np.array([0]), np.array([1,1]), np.array([lin, lin]),
+                             np.array([0,0]), np.array([np.nan, np.nan]), np.ones(1)],
+            T.F_LIFETIME: [ np.zeros(1), np.zeros(0), np.ones(1),
+                            np.zeros(1), np.array([1,1]), np.array([2,2]),
+                            np.zeros(2), np.array([1,1]), np.array([2])],
+            T.F_NEW_OBJECT_COUNT: [ 1, 0, 0,
+                                    1, 0, 0,
+                                    2, 0, 0],
+            T.F_LOST_OBJECT_COUNT: [ 0, 0, 0,
+                                     0, 0, 0,
+                                     0, 0, 0 ],
+            T.F_MERGE_COUNT: [ 0, 0, 0,
+                               0, 0, 0,
+                               0, 0, 1 ],
+            T.F_SPLIT_COUNT: [ 0, 0, 0,
+                               0, 1, 0,
+                               0, 0, 0 ]
+        })
         
     def test_08_01_save_image(self):
         module = T.TrackObjects()
@@ -1144,6 +1387,8 @@ TrackObjects:[module_num:1|svn_version:\'10373\'|variable_revision_number:4|show
         module.wants_image.value = True
         module.image_name.value = "outimage"
         measurements = cpmeas.Measurements()
+        measurements.add_image_measurement(cpp.GROUP_NUMBER, 1)
+        measurements.add_image_measurement(cpp.GROUP_INDEX, 1)
         pipeline = cpp.Pipeline()
         pipeline.add_module(module)
         image_set_list = cpi.ImageSetList()

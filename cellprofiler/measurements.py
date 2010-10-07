@@ -201,6 +201,28 @@ class Measurements(object):
         '''Return the index into the measurements for the current measurement'''
         return self.__image_set_index
     
+    def get_image_number_from_index(self, index):
+        '''Return the image number, given an index into the measurements
+        
+        index - the index of a measurement, such as that returned by
+                get_all_measurements
+                
+        returns the image number for the indexed image set, as it would be
+        stored in the database.
+        '''
+        return index + self.image_set_start_number
+    
+    def get_index_from_image_number(self, image_number):
+        '''Return the index into the measurements for a given image number
+        
+        image_number - the image set's image number as stored in the database
+                       or CSV file
+                       
+        return the index of that image set's measurements, suitable for
+        finding values from get_all_measurements
+        '''
+        return image_number - self.image_set_start_number
+    
     def load(self, measurements_file_name):
         '''Load measurements from a matlab file'''
         handles = loadmat(measurements_file_name, struct_as_record=True)

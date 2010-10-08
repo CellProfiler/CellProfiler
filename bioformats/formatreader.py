@@ -138,6 +138,9 @@ def make_iformat_reader_class():
         setMetadataStore = jutil.make_method('setMetadataStore',
                                              '(Lloci/formats/meta/MetadataStore;)V',
                                              'Sets the default metadata store for this reader.')
+        setMetadataOptions = jutil.make_method('setMetadataOptions',
+                                               '(Lloci/formats/in/MetadataOptions;)V',
+                                               'Sets the metadata options used when reading metadata')
     return IFormatReader
     
 def make_image_reader_class():
@@ -155,6 +158,20 @@ def make_image_reader_class():
                                      "Ljava/lang/Class;" # base
                                      "Ljava/lang/Class;)V", # location in jar
                                      "readers.txt", base_klass, klass)
+    problem_classes = [
+        # BDReader will read all .tif files in an experiment if it's
+        # called to load a .tif.
+        #
+        'loci.formats.in.BDReader'
+        ]
+    for problem_class in problem_classes:
+        # Move to back
+        klass = jutil.class_for_name(problem_class)
+        jutil.call(class_list, 'removeClass', '(Ljava/lang/Class;)V',
+                   klass)
+        jutil.call(class_list, 'addClass', '(Ljava/lang/Class;)V',
+                   klass)
+        
     class ImageReader(IFormatReader):
         new_fn = jutil.make_new(class_name, '(Lloci/formats/ClassList;)V')
         def __init__(self):

@@ -226,6 +226,24 @@ def make_pixel_type_class():
         __pixel_type_class = PixelType()
     return __pixel_type_class
 
+MINIMUM = 'MINIMUM'
+NO_OVERLAYS = 'NO_OVERLAYS'
+ALL = 'ALL'
+
+def get_metadata_options(level):
+    '''Get an instance of the MetadataOptions interface
+    
+    level - MINIMUM, NO_OVERLAYS or ALL to set the metadata retrieval level
+    
+    The object returned can be used in setMetadataOptions in a format reader.
+    '''
+    jlevel = jutil.get_static_field('loci/formats/in/MetadataLevel', level,
+                                    'Lloci/formats/in/MetadataLevel;')
+    return jutil.make_instance('loci/formats/in/DefaultMetadataOptions',
+                               '(Lloci/formats/in/MetadataLevel;)V',
+                               jlevel)
+                               
+
 def PositiveInteger(some_number):
     '''Return an instance of ome.xml.model.primitives.PositiveInteger
     

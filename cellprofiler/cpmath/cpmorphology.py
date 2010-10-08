@@ -2097,11 +2097,11 @@ def grey_reconstruction(image, mask, footprint=None, offset=None):
     # The array is a dstack of the image and the mask; this lets us interleave
     # image and mask pixels when sorting which makes list manipulations easier
     #
-    padding = np.array(footprint.shape)/2
+    padding = (np.array(footprint.shape)/2).astype(int)
     dims = np.zeros(image.ndim+1,int)
     dims[1:] = np.array(image.shape)+2*padding
     dims[0] = 2
-    inside_slices = [slice(1,-1)]*image.ndim
+    inside_slices = [slice(p,-p) for p in padding]
     values = np.ones(dims)*np.min(image)
     values[[0]+inside_slices] = image
     values[[1]+inside_slices] = mask
@@ -2181,7 +2181,7 @@ def grey_reconstruction(image, mask, footprint=None, offset=None):
     # and return the unpadded portion of that result
     #
     values = value_map[values[:image_stride]]
-    values.shape = np.array(image.shape)+2
+    values.shape = np.array(image.shape)+2*padding
     return values[inside_slices]
     
 def opening(image, radius=None, mask=None, footprint=None):

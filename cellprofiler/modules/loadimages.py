@@ -56,6 +56,7 @@ import urlparse
 
 try:
     import bioformats.formatreader as formatreader
+    import bioformats.metadatatools as metadatatools
     formatreader.jutil.attach()
     try:
         FormatTools = formatreader.make_format_tools_class()
@@ -2416,7 +2417,7 @@ class LoadImagesImageProviderBase(cpimage.AbstractImageProvider):
 class LoadImagesImageProvider(LoadImagesImageProviderBase):
     """Provide an image by filename, loading the file as it is requested
     """
-    def __init__(self, name, pathname, filename, rescale):
+    def __init__(self, name, pathname, filename, rescale=True):
         super(LoadImagesImageProvider, self).__init__(name, pathname, filename)
         self.rescale = rescale
     
@@ -2548,6 +2549,8 @@ def load_using_bioformats(path, c=None, z=0, t=0, series=None, rescale = True, w
         formatreader.jutil.attach()
         rdr = ImageReader()
         rdr.setGroupFiles(False)
+        mdoptions = metadatatools.get_metadata_options(metadatatools.ALL)
+        rdr.setMetadataOptions(mdoptions)
         rdr.setId(path)
         width = rdr.getSizeX()
         height = rdr.getSizeY()

@@ -120,8 +120,8 @@ O_SELECT = "Select..."
 # Choices for plate types
 #
 ##############################################
-PLATE_NONE = "None"
-PLATE_TYPES = [PLATE_NONE,"96","384","5600"]
+NONE_CHOICE = "None"
+PLATE_TYPES = [NONE_CHOICE,"96","384","5600"]
 
 ##############################################
 #
@@ -209,7 +209,7 @@ def connect_sqlite(db_file):
 class ExportToDatabase(cpm.CPModule):
  
     module_name = "ExportToDatabase"
-    variable_revision_number = 18
+    variable_revision_number = 19
     category = "Data Tools"
 
     def create_settings(self):
@@ -312,7 +312,21 @@ class ExportToDatabase(cpm.CPModule):
             type here. Supported types in CellProfiler Analyst are 96- and 384-well plates,
             as well as 5600-spot microarrays. If you are not using a plate or microarray, select
             <i>None</i>.""")
-
+        self.properties_plate_metadata = cps.Choice("Select the plate metadata",
+            ["None"],choices_fn = self.get_metadata_choices,
+            doc="""<i>(Used only if creating a properties file)</i><br>
+            If you are using a multi-well plate or microarray, you can select the metadata corresponding
+            to the plate here. If there is no plate metadata associated with the image set, select
+            <i>None</i>. 
+            <p>%(USING_METADATA_HELP_REF)s.</p>"""% globals())
+        self.properties_well_metadata = cps.Choice("Select the well metadata",
+            ["None"],choices_fn = self.get_metadata_choices,
+            doc="""<i>(Used only if creating a properties file)</i><br>
+            If you are using a multi-well plate or microarray, you can select the metadata corresponding
+            to the well here. If there is no well metadata associated with the image set, select
+            <i>None</i>. 
+            <p>%(USING_METADATA_HELP_REF)s.</p>"""% globals())
+        
         self.mysql_not_available = cps.Divider("Cannot write to MySQL directly - CSV file output only", line=False, 
             doc= """The MySQLdb python module could not be loaded.  MySQLdb is necessary for direct export.""")
         
@@ -461,6 +475,17 @@ class ExportToDatabase(cpm.CPModule):
             the thumbnail pixel intensities to the range 0-1, where 0 is 
             black/unsaturated, and 1 is white/saturated.""")
                                                 
+    def get_metadata_choices(self,pipeline):
+        columns = pipeline.get_measurement_columns()
+        choices = ["None"]
+        for column in columns:
+            object_name, feature, coltype = column[:3]
+            choice = feature[(len(cpmeas.C_METADATA)+1):]
+            if (object_name == cpmeas.IMAGE and
+                feature.startswith(cpmeas.C_METADATA)):
+                choices.append(choice)
+        return choices
+                
     def visible_settings(self):
         needs_default_output_directory =\
             (self.db_type != DB_MYSQL or
@@ -485,7 +510,8 @@ class ExportToDatabase(cpm.CPModule):
             result += [self.table_prefix]
         result += [self.save_cpa_properties]
         if self.save_cpa_properties.value:
-            result += [self.properties_image_url_prepend, self.properties_plate_type]
+            result += [self.properties_image_url_prepend, self.properties_plate_type, 
+                       self.properties_plate_metadata, self.properties_well_metadata]
         if needs_default_output_directory:
             result += [self.directory]
         result += [self.wants_agg_mean, self.wants_agg_median,
@@ -519,12 +545,13 @@ class ExportToDatabase(cpm.CPModule):
                 self.objects_choice, self.objects_list, self.max_column_size,
                 self.separate_object_tables, self.properties_image_url_prepend, 
                 self.want_image_thumbnails,self.thumbnail_image_names, 
-                self.auto_scale_thumbnail_intensities,self.properties_plate_type]
+                self.auto_scale_thumbnail_intensities,self.properties_plate_type,
+                self.properties_plate_metadata, self.properties_well_metadata]
     
     def help_settings(self):
         return [self.db_type, self.db_name, self.db_host, self.db_user, self.db_passwd, self.sql_file_prefix, self.sqlite_file, 
                 self.want_table_prefix, self.table_prefix,  
-                self.save_cpa_properties,self.properties_image_url_prepend, self.properties_plate_type,
+                self.save_cpa_properties,self.properties_image_url_prepend, self.properties_plate_type, self.properties_plate_metadata, self.properties_well_metadata,
                 self.directory,
                 self.wants_agg_mean, self.wants_agg_median, self.wants_agg_std_dev, 
                 self.wants_agg_mean_well, self.wants_agg_median_well, self.wants_agg_std_dev_well,
@@ -1613,7 +1640,9 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
         else:
             image_channel_colors = 'red, green, blue, cyan, magenta, yellow, gray, '+('none, ' * 10)[:len(image_names)]
         image_url = self.properties_image_url_prepend.value
-        plate_type = "" if self.properties_plate_type.value == O_NONE else self.properties_plate_type.value
+        plate_type = "" if self.properties_plate_type.value == NONE_CHOICE else self.properties_plate_type.value
+        plate_id = "" if self.properties_plate_metadata.value == NONE_CHOICE else "%s_%s_%s"%(cpmeas.IMAGE, cpmeas.C_METADATA, self.properties_plate_metadata.value)
+        well_id = "" if self.properties_well_metadata.value == NONE_CHOICE else "%s_%s_%s"%(cpmeas.IMAGE, cpmeas.C_METADATA, self.properties_well_metadata.value)
         contents = """#%(date)s
 # ==============================================
 #
@@ -1641,8 +1670,8 @@ object_table  = %(cell_tables)s
 
 image_id      = %(unique_id)s
 object_id     = %(object_id)s
-plate_id      = 
-well_id       = 
+plate_id      = %(plate_id)s
+well_id       = %(well_id)s
 
 # Also specify the column names that contain X and Y coordinates for each
 # object within an image.
@@ -2078,8 +2107,15 @@ check_tables = yes
             #
             # Added choice for plate type
             #
-            setting_values = setting_values + [PLATE_NONE]
+            setting_values = setting_values + [NONE_CHOICE]
             variable_revision_number = 18
+            
+        if (not from_matlab) and variable_revision_number == 18:
+            #
+            # Added choices for plate and well metadata
+            #
+            setting_values = setting_values + [NONE_CHOICE, NONE_CHOICE]
+            variable_revision_number = 19
             
         return setting_values, variable_revision_number, from_matlab
     

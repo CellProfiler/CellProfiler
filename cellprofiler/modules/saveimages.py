@@ -297,25 +297,18 @@ class SaveImages(cpm.CPModule):
                 This affects how images color intensities are displayed. All available colormaps can be seen 
                 <a href="http://www.scipy.org/Cookbook/Matplotlib/Show_colormaps">here</a>.""")
         
-        self.update_file_names = cps.Binary("Update file names within CellProfiler?",False,doc="""
+        self.update_file_names = cps.Binary("Store file and path information to the saved image?",False,doc="""
                 This setting stores filename and pathname data for each of the new files created 
-                via this module, as a per-image measurement. 
-                <p>This setting is useful when exporting measurements to a database, allowing 
+                via this module, as a per-image measurement. Instances in which this information may 
+                be useful include:
+                <ul>
+                <li>Exporting measurements to a database, allowing 
                 access to the saved image. If you are using the machine-learning tools or image
                 viewer in CellProfiler Analyst, for example, you will want to check this box if you want
-                the images you are saving via this module to be displayed along with the original images.</p>
-                <p>This setting also allows downstream modules (e.g., <b>CreateWebPage</b>) to look up the newly
-                saved files on the hard drive. Normally, whatever files are present on
-                the hard drive when CellProfiler processing begins (and when the
-                <b>LoadImages</b> module processes its first cycle) are the only files 
-                recognized within CellProfiler. This setting allows the newly saved files
-                to be accessible to downstream modules. This setting might yield unusual
-                consequences if you are using the <b>SaveImages</b> module to save an image
-                directly as loaded (e.g., using the <b>SaveImages</b> module to convert file
-                formats), because in some places in the output file it will overwrite
-                the file names of the loaded files with the file names of the saved
-                files. Because this function is rarely needed and might introduce
-                complications, the default setting is unchecked.""")
+                the images you are saving via this module to be displayed along with the original images.</li>
+                <li>Allowing downstream modules (e.g., <b>CreateWebPage</b>) to access  
+                the newly saved files.</li>
+                </ul>""")
         
         self.create_subdirectories = cps.Binary("Create subfolders in the output folder?",False,
                                                 doc = """Subfolders will be created to match the input image folder structure.""")

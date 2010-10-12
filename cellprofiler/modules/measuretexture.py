@@ -72,7 +72,17 @@ This results in one score per Theta.</li>
 <li>Save the maximum score over all Theta as the score at the desired scale.</li>
 </ul>
 </p>
-
+<h3>Changes from CellProfiler 1.0</h3>
+CellProfiler 2.0 normalizes the co-occurence matrix of the Haralick features
+per object by basing the intensity levels of the matrix on the maximum and
+minimum intensity observed within each object. CellProfiler 1.0 normalizes
+the co-occurrence matrix based on the maximum and minimum intensity observed
+among all objects in each image. CellProfiler 2.0's measurements should be
+more informative especially for objects whose maximum intensities vary
+substantially because each object will have the full complement of levels;
+in CellProfiler 1.0, only the brightest object would have the full dynamic
+range. Measurements of Haralick features may differ substantially between
+CellProfiler 1.0 and 2.0.
 
 References
 <ul>

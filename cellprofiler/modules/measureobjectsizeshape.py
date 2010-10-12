@@ -55,6 +55,22 @@ calculated, giving in total 30 measurements. While there is no limit to
 the order which can be calculated (and indeed users could add more by
 adjusting the code), the higher order polynomials carry less information.</li>
 </ul>
+<h3>Changes from CellProfiler 1.0</h3>
+The Zernike features are computed within a circle overlaid on each object
+in both CellProfiler 1.0 and 2.0. CellProfiler 1.0 first finds a square that
+fits around the object, then inscribes the circle that fits inside that square.
+CellProfiler 2.0 uses the minimum enclosing circle of the object: the circle
+of smallest diameter that contains all of the object's pixels. The method
+of CellProfiler 1.0 describes a circle that may not enclose all of the object's
+pixels, so the method of CellProfiler 2.0 should be more informative.
+Measures of Zernike moments in CellProfiler 2.0 may differ substantially
+from those produced by CellProfiler 1.0.
+<p>
+References:<br>
+<ul><li>Chrystal, "On the problem to construct the minimum circle enclosing n 
+given points in a plane", Proceedings of the Edinburgh Mathematical Society, 
+vol 3, 1884
+</li></ul>
 
 See also <b>MeasureImageAreaOccupied</b>.
 '''

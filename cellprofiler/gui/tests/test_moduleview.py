@@ -28,7 +28,10 @@ class TestModuleView(unittest.TestCase):
     def set_pipeline(self, module):
         app = wx.GetApp()
         if app is None:
-            app = cellprofiler.cellprofilerapp.CellProfilerApp(redirect=False, check_for_new_version=False)
+            app = wx.PySimpleApp()
+        if not hasattr(app, "frame"):
+            from cellprofiler.gui.cpframe import CPFrame
+            app.frame = CPFrame(None)
         pipeline = app.frame.pipeline 
         while(len(pipeline.modules())):
             pipeline.remove_module(1)

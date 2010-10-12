@@ -25,12 +25,11 @@ import cellprofiler.gui.cpfigure as cpfig
 
 class TestCPFigure(unittest.TestCase):
     def setUp(self):
-        self.app = wx.PySimpleApp()
+        self.app = wx.GetApp()
+        if self.app is None:
+            self.app = wx.PySimpleApp()
         self.frame = wx.Frame(None, title="Hello, world")
         self.frame.Show()
-        
-    def tearDown(self):
-        self.app.Exit()
 
     def test_01_01_imshow_raw(self):
         '''Make sure the image drawn by imshow matches the input image.'''

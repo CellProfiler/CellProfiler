@@ -130,10 +130,10 @@ GROUP_COL_DEFAULT = "ImageNumber, Image_Metadata_Plate, Image_Metadata_Well"
 SETTING_IMAGE_GROUP_COUNT = 29
 
 """Offset of the group specification group count in the settings"""
-SETTING_GROUP_FIELD_GROUP_COUNT = 35
+SETTING_GROUP_FIELD_GROUP_COUNT = 30
 
 """Offset of the filter specification group count in the settings"""
-SETTING_FILTER_FIELD_GROUP_COUNT = 40
+SETTING_FILTER_FIELD_GROUP_COUNT = 31
 
 ##############################################
 #
@@ -733,15 +733,15 @@ class ExportToDatabase(cpm.CPModule):
                 self.want_image_thumbnails,self.thumbnail_image_names, 
                 self.auto_scale_thumbnail_intensities,self.properties_plate_type,
                 self.properties_plate_metadata, self.properties_well_metadata, 
-                self.properties_export_all_image_defaults]
-        result += [self.image_group_count]
+                self.properties_export_all_image_defaults,
+                self.image_group_count, self.group_field_count, self.filter_field_count]
         for group in self.image_groups:
             result += [group.image_cols, group.wants_automatic_image_name, group.image_name,
                        group.image_channel_colors]
-        result += [self.properties_wants_groups, self.group_field_count]
+        result += [self.properties_wants_groups]
         for group in self.group_field_groups:
             result += [group.group_name, group.group_statement]
-        result += [self.properties_wants_filters, self.create_filters_for_plates, self.filter_field_count]
+        result += [self.properties_wants_filters, self.create_filters_for_plates]
         for group in self.filter_field_groups:
             result += [group.filter_name, group.filter_statement]
         return result
@@ -2253,14 +2253,13 @@ check_tables = yes
         if (not from_matlab) and variable_revision_number == 6:
             # Append default values for store_csvs, db_host, db_user, 
             #  db_passwd, and sqlite_file to update to revision 7 
-            new_setting_values = setting_values
-            new_setting_values += [False, 'imgdb01', 'cpuser', '', 'DefaultDB.db']
+            setting_values += [False, 'imgdb01', 'cpuser', '', 'DefaultDB.db']
             variable_revision_number = 7
         
         if (not from_matlab) and variable_revision_number == 7:
             # Added ability to selectively turn on aggregate measurements
             # which were all automatically calculated in version 7
-            new_setting_values = setting_values + [True, True, True]
+            setting_values = setting_values + [True, True, True]
             variable_revision_number = 8
             
         if (not from_matlab) and variable_revision_number == 8:
@@ -2276,6 +2275,7 @@ check_tables = yes
                               [False, False, False] +
                               setting_values[-2:])
             variable_revision_number = 10
+            
         if (not from_matlab) and variable_revision_number == 10:
             #
             # Added a directory choice instead of a checkbox
@@ -2289,6 +2289,7 @@ check_tables = yes
             setting_values = (setting_values[:5] + [directory_choice] +
                               setting_values[6:])
             variable_revision_number = 11
+            
         if (not from_matlab) and variable_revision_number == 11:
             #
             # Added separate "database type" of CSV files and removed
@@ -2301,12 +2302,14 @@ check_tables = yes
             setting_values = ([ db_type ] + setting_values[1:8] +
                               setting_values[9:])
             variable_revision_number = 12
+            
         if (not from_matlab) and variable_revision_number == 12:
             #
             # Added maximum column size
             #
             setting_values = setting_values + ["64"]
             variable_revision_number = 13
+            
         if (not from_matlab) and variable_revision_number == 13:
             #
             # Added single/multiple table choice
@@ -2375,11 +2378,12 @@ check_tables = yes
             #
             # Added configuration of image information, groups, filters in properties file
             #
-            setting_values = setting_values + [cps.YES, "1", "None", cps.YES, "None", "gray"] # Image info
-            setting_values = setting_values + [cps.NO, "1", "", "ImageNumber, Image_Metadata_Plate, Image_Metadata_Well"] # Group specifications
-            setting_values = setting_values + [cps.NO, cps.NO, "0"] # Filter specifications
+            setting_values = setting_values + [cps.YES, "1", "1", "0"] # Hidden counts
+            setting_values = setting_values + ["None", cps.YES, "None", "gray"] # Image info
+            setting_values = setting_values + [cps.NO, "", "ImageNumber, Image_Metadata_Plate, Image_Metadata_Well"] # Group specifications
+            setting_values = setting_values + [cps.NO, cps.NO] # Filter specifications
             variable_revision_number == 20
-    
+            
         return setting_values, variable_revision_number, from_matlab
     
 class ColumnNameMapping:

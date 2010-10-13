@@ -607,7 +607,7 @@ LoadText:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|show_w
     Group images by metadata?:No
     Select metadata fields for grouping:
 
-ExportToDatabase:[module_num:2|svn_version:\'8947\'|variable_revision_number:12|show_window:False|notes:\x5B\x5D]
+ExportToDatabase:[module_num:2|svn_version:\'8947\'|variable_revision_number:13|show_window:False|notes:\x5B\x5D]
     Database type:MySQL
     Database name:DefaultDB
     Add a prefix to table names?:No

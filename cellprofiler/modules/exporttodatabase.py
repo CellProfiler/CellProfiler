@@ -85,6 +85,7 @@ import cellprofiler.settings as cps
 import cellprofiler.preferences as cpprefs
 import cellprofiler.measurements as cpmeas
 from identify import M_NUMBER_OBJECT_NUMBER
+from cellprofiler.modules.loadimages import C_FILE_NAME, C_PATH_NAME
 from cellprofiler.gui.help import USING_METADATA_TAGS_REF, USING_METADATA_HELP_REF
 from cellprofiler.preferences import \
      standardize_default_folder_names, DEFAULT_INPUT_FOLDER_NAME, \
@@ -117,11 +118,22 @@ O_SELECT = "Select..."
 
 ##############################################
 #
-# Choices for plate types
+# Choices for properties file
 #
 ##############################################
 NONE_CHOICE = "None"
 PLATE_TYPES = [NONE_CHOICE,"96","384","5600"]
+COLOR_ORDER = ["red", "green", "blue", "cyan", "magenta", "yellow", "gray", "none"]
+GROUP_COL_DEFAULT = "ImageNumber, Image_Metadata_Plate, Image_Metadata_Well"
+
+"""Offset of the image group count in the settings"""
+SETTING_IMAGE_GROUP_COUNT = 29
+
+"""Offset of the group specification group count in the settings"""
+SETTING_GROUP_FIELD_GROUP_COUNT = 35
+
+"""Offset of the filter specification group count in the settings"""
+SETTING_FILTER_FIELD_GROUP_COUNT = 40
 
 ##############################################
 #
@@ -209,7 +221,7 @@ def connect_sqlite(db_file):
 class ExportToDatabase(cpm.CPModule):
  
     module_name = "ExportToDatabase"
-    variable_revision_number = 19
+    variable_revision_number = 20
     category = "Data Tools"
 
     def create_settings(self):
@@ -265,7 +277,8 @@ class ExportToDatabase(cpm.CPModule):
             doc="""<i>(Used only when saving csvs, or creating a properties file)</i><br>
             This setting determines where the .csv files are saved if
             you decide to save measurements to files instead of writing them
-            directly to the database. %(IO_FOLDER_CHOICE_HELP_TEXT)s 
+            directly to the database. If you request a CellProfiler Analyst properties file,
+            it will also be saved to this location. %(IO_FOLDER_CHOICE_HELP_TEXT)s 
             
             <p>%(IO_WITH_METADATA_HELP_TEXT)s %(USING_METADATA_TAGS_REF)s<br>
             For instance, if you have a metadata tag named 
@@ -312,6 +325,7 @@ class ExportToDatabase(cpm.CPModule):
             type here. Supported types in CellProfiler Analyst are 96- and 384-well plates,
             as well as 5600-spot microarrays. If you are not using a plate or microarray, select
             <i>None</i>.""")
+        
         self.properties_plate_metadata = cps.Choice("Select the plate metadata",
             ["None"],choices_fn = self.get_metadata_choices,
             doc="""<i>(Used only if creating a properties file)</i><br>
@@ -319,6 +333,7 @@ class ExportToDatabase(cpm.CPModule):
             to the plate here. If there is no plate metadata associated with the image set, select
             <i>None</i>. 
             <p>%(USING_METADATA_HELP_REF)s.</p>"""% globals())
+        
         self.properties_well_metadata = cps.Choice("Select the well metadata",
             ["None"],choices_fn = self.get_metadata_choices,
             doc="""<i>(Used only if creating a properties file)</i><br>
@@ -326,6 +341,54 @@ class ExportToDatabase(cpm.CPModule):
             to the well here. If there is no well metadata associated with the image set, select
             <i>None</i>. 
             <p>%(USING_METADATA_HELP_REF)s.</p>"""% globals())
+        
+        self.properties_export_all_image_defaults = cps.Binary(
+            "Include information for all images, using default values?", True,
+            doc="""<i>(Used only if creating a properties file)</i><br>
+            Check this setting to include information in the properties file for all images.
+            Leaving this box checked will do the following:
+            <ul>
+            <li>All images loaded using <b>LoadImages</i>, <i>LoadData</i> or saved in <i>SaveImages</i> will be included.
+            <li>The CellProfiler image name will be used for the <i>image_name</i> field.</li>
+            <li>A channel color listed in the <i>image_channel_colors</i> field will be assigned to the image by default order.</li>
+            </ul>
+            Leave this box unchecked to specify which images should be included or to override the automatic values.""")
+        
+        self.image_groups = []
+        self.image_group_count = cps.HiddenCount(self.image_groups)
+        self.add_image_group()
+        self.add_image_button = cps.DoSomething("", "Add another image",
+                                           self.add_image_group)
+        
+        self.properties_wants_groups = cps.Binary(
+            "Do you want to add group fields?", False,
+            doc = """<i>(Used only if creating a properties file)</i><br>
+            You can define ways of grouping your image data (for example, when several images represent the same experimental 
+            sample), by providing column(s) that identify unique images (the <i>image key</i>) to another set of columns (the <i>group key</i>).
+            <p>Grouping is useful, for example, when you want to aggregate counts for each class of object and their scores 
+            on a per-group basis (e.g.: per-well) instead of on a per-image basis when scoring with Classifier. It will 
+            also provide new options in the Classifier fetch menu so you can fetch objects from images with specific 
+            values for the group columns.</p>""")
+        self.group_field_groups = []
+        self.group_field_count = cps.HiddenCount(self.group_field_groups)
+        self.add_group_field_group()
+        self.add_group_field_button = cps.DoSomething("", "Add another group",
+                                           self.add_group_field_group)
+        
+        self.properties_wants_filters = cps.Binary(
+            "Do you want to add filter fields?", False,
+            doc = """<i>(Used only if creating a properties file)</i><br>
+            You can specify a subset of the images in your experiment by defining a <i>filter</i>. Filters are useful, for 
+            example, for fetching and scoring objects in Classifier or making graphs using the 
+            plotting tools that satisfy a specific metadata contraint. """)
+        self.create_filters_for_plates = cps.Binary(
+            "Automatically create a filter for each plate?",False,
+            doc= """If you have specified a plate metadata tag, checking this setting will create a set of filters
+            in the properties file, one for each plate.""")
+        self.filter_field_groups = []
+        self.filter_field_count = cps.HiddenCount(self.filter_field_groups)
+        self.add_filter_field_button = cps.DoSomething("", "Add another filter",
+                                           self.add_filter_field_group)
         
         self.mysql_not_available = cps.Divider("Cannot write to MySQL directly - CSV file output only", line=False, 
             doc= """The MySQLdb python module could not be loaded.  MySQLdb is necessary for direct export.""")
@@ -337,6 +400,7 @@ class ExportToDatabase(cpm.CPModule):
             "DefaultDB.db", doc = """
             <i>(Used if SQLite selected as database type)</i><br>
             What is the SQLite database filename to which you want to write?""")
+        
         self.wants_agg_mean = cps.Binary("Calculate the per-image mean values of object measurements?", True, doc = """
             <b>ExportToDatabase</b> can calculate population statistics over all the objects in each image
             and store the results in the database. For instance, if
@@ -354,6 +418,7 @@ class ExportToDatabase(cpm.CPModule):
                      WHERE Per_Image.ImageNumber = Per_Object.ImageNumber);</tt>""")
         self.wants_agg_median = cps.Binary("Calculate the per-image median values of object measurements?", False)
         self.wants_agg_std_dev = cps.Binary("Calculate the per-image standard deviation values of object measurements?", False)
+        
         self.wants_agg_mean_well = cps.Binary(
             "Calculate the per-well mean values of object measurements?", False, doc = '''
             <b>ExportToDatabase</b> can calculate statistics over all the objects in each well 
@@ -362,7 +427,7 @@ class ExportToDatabase(cpm.CPModule):
             mean box in this module, <b>ExportToDatabase</b> will create a table in the database called
             "Per_Well_avg", with a column called "Mean_Nuclei_AreaShape_Area". Selecting all three aggregate measurements will create three per-well tables, one for each of the measurements.
 
-<p>The per-well functionality will create the appropriate lines in a .SQL file, which can be run on your Per-Image and Per-Object tables to create the desired per-well table. 
+            <p>The per-well functionality will create the appropriate lines in a .SQL file, which can be run on your Per-Image and Per-Object tables to create the desired per-well table. 
             <p><i>Note:</i> this option is only
             available if you have extracted plate and well metadata from the filename or via a <b>LoadData</b> module.
             It will write out a .sql file with the statements necessary to create the Per_Well
@@ -376,7 +441,7 @@ class ExportToDatabase(cpm.CPModule):
             median box in this module, <b>ExportToDatabase</b> will create a table in the database called
             "Per_Well_median", with a column called "Median_Nuclei_AreaShape_Area". Selecting all three aggregate measurements will create three per-well tables, one for each of the measurements.
 
-<p>The per-well functionality will create the appropriate lines in a .SQL file, which can be run on your Per-Image and Per-Object tables to create the desired per-well table. 
+            <p>The per-well functionality will create the appropriate lines in a .SQL file, which can be run on your Per-Image and Per-Object tables to create the desired per-well table. 
             <p><i>Note:</i> this option is only
             available if you have extracted plate and well metadata from the filename or via a <b>LoadData</b> module.
             It will write out a .sql file with the statements necessary to create the Per_Well
@@ -474,7 +539,89 @@ class ExportToDatabase(cpm.CPModule):
             Check this option if you'd like to automatically rescale 
             the thumbnail pixel intensities to the range 0-1, where 0 is 
             black/unsaturated, and 1 is white/saturated.""")
-                                                
+        
+    def add_image_group(self,can_remove = True):
+        group = cps.SettingsGroup()
+        group.append(
+            "image_cols", cps.Choice("Select an image to include",["None"],choices_fn = self.get_property_file_image_choices,
+            doc="""<i>(Used only if creating a properties file and specifiying the image information)</i><br>
+            Choose image name to include it in the properties file of images."""))
+        
+        group.append(
+            "wants_automatic_image_name", cps.Binary(
+            "Use the image name for the display?", True,
+            doc="""<i>(Used only if creating a properties file and specifiying the image information)</i><br>
+            Use the image name as given above for the displayed name. You can name
+            the file yourself if you leave this box unchecked."""))
+
+        group.append(
+            "image_name", cps.Text(
+            "Image name", "Channel%d"%(len(self.image_groups)+1),
+            doc="""<i>(Used only if creating a properties file, specifiying the image information and naming the image)</i><br>
+            Enter a name for the specified image"""))
+        
+        default_color = (COLOR_ORDER[len(self.image_groups)]
+                     if len(self.image_groups) < len(COLOR_ORDER)
+                     else COLOR_ORDER[0])
+        
+        group.append(
+            "image_channel_colors", cps.Choice(
+            "Channel color", COLOR_ORDER, default_color,
+            doc="""<i>(Used only if creating a properties file and specifiying the image information)</i><br>
+            Enter a color that this channel should be displayed with"""))
+        
+        group.append("remover", cps.RemoveSettingButton("", "Remove this data set", self.image_groups, group))
+        group.append("divider", cps.Divider(line=True))
+        
+        self.image_groups.append(group)
+                             
+    def add_group_field_group(self,can_remove = True):
+        group = cps.SettingsGroup()
+        group.append(
+            "group_name",cps.Text(
+            "Enter the name of the group",'',
+            doc="""<i>(Used only if creating a properties file and specifiying an image data group)</i><br>
+            Enter a name for the group. Only alphanumeric characters and underscores are permitted."""))
+        group.append(
+            "group_statement", cps.Text(
+            "Enter the per-image columns which define the group, separated by commas",GROUP_COL_DEFAULT,
+            doc="""<i>(Used only if creating a properties file and specifiying an image data group)</i><br>
+            To define a group, enter the image key columns followed by group key columns, each separated by commas.
+            <p>In CellProfiler, the image key column is always given the name as <i>ImageNumber</i>; group keys
+            are typically metadata columns which are always prefixed with <i>Image_Metadata_</i>. For example, if you 
+            wanted to be able to group your data by unique plate names and well identifiers, you could define a 
+            group as follows:<br>
+            <code>ImageNumber, Image_Metadata_Plate, Image_Metadata_Well</code><br>
+            <p>Groups are specified as MySQL statements in the properties file, but please note that the full SELECT and  
+            FROM clauses will be added automatically, so there is no need to enter them here.</p>"""))
+        group.append("remover", cps.RemoveSettingButton("", "Remove this group", self.group_field_groups, group))
+        group.append("divider", cps.Divider(line=True))
+        
+        self.group_field_groups.append(group)
+        
+    def add_filter_field_group(self,can_remove = True):
+        group = cps.SettingsGroup()
+        group.append(
+            "filter_name",cps.Text(
+            "Enter the name of the filter",'',
+            doc="""<i>(Used only if creating a properties file and specifiying an image data filter)</i><br>
+            Enter a name for the filter. Only alphanumeric characters and underscores are permitted."""))
+        group.append(
+            "filter_statement", cps.Text(
+            "Enter the MySQL WHERE clause to define a filter",'',
+            doc="""<i>(Used only if creating a properties file and specifiying an image data filter)</i><br>
+            To define a filter, enter a MySQL <i>WHERE</i> clause that returns image-keys for images you want to include.
+            For example, here is a filter that returns only images from plate 1:<br>
+            <code>Image_Metadata_Plate = '1'</code><br>
+            Here is a filter returns only images from with a gene column that starts with CDK:
+            <code>Image_Metadata_Gene REGEXP 'CDK.*'</code><br>
+            <p>Filters are specified as MySQL statements in the properties file, but please note that the full SELECT and  
+            FROM clauses (as well as the WHERE keyword) will be added automatically, so there is no need to enter them here.</p>"""))
+        group.append("remover", cps.RemoveSettingButton("", "Remove this filter", self.filter_field_groups, group))
+        group.append("divider", cps.Divider(line=True))
+        
+        self.filter_field_groups.append(group)
+        
     def get_metadata_choices(self,pipeline):
         columns = pipeline.get_measurement_columns()
         choices = ["None"]
@@ -485,7 +632,27 @@ class ExportToDatabase(cpm.CPModule):
                 feature.startswith(cpmeas.C_METADATA)):
                 choices.append(choice)
         return choices
-                
+    
+    def get_property_file_image_choices(self,pipeline):
+        columns = pipeline.get_measurement_columns()
+        image_names = []
+        for column in columns:
+            object_name, feature, coltype = column[:3]
+            choice = feature[(len(C_FILE_NAME)+1):]
+            if (object_name == cpmeas.IMAGE and (feature.startswith(C_FILE_NAME))):
+                image_names.append(choice)
+        return image_names
+    
+    def prepare_settings(self, setting_values):
+        # These check the groupings of settings avilable in properties file creation
+        for count, sequence, fn in\
+            ((int(setting_values[SETTING_IMAGE_GROUP_COUNT]), self.image_groups, self.add_image_group),
+             (int(setting_values[SETTING_GROUP_FIELD_GROUP_COUNT]), self.group_field_groups, self.add_group_field_group),
+             (int(setting_values[SETTING_FILTER_FIELD_GROUP_COUNT]), self.filter_field_groups, self.add_filter_field_group)):
+            del sequence[count:]
+            while len(sequence) < count:
+                fn()
+            
     def visible_settings(self):
         needs_default_output_directory =\
             (self.db_type != DB_MYSQL or
@@ -511,7 +678,26 @@ class ExportToDatabase(cpm.CPModule):
         result += [self.save_cpa_properties]
         if self.save_cpa_properties.value:
             result += [self.properties_image_url_prepend, self.properties_plate_type, 
-                       self.properties_plate_metadata, self.properties_well_metadata]
+                       self.properties_plate_metadata, self.properties_well_metadata,
+                       self.properties_export_all_image_defaults]
+            if not self.properties_export_all_image_defaults:
+                for group in self.image_groups:
+                    result += [group.image_cols, group.wants_automatic_image_name]
+                    if not group.wants_automatic_image_name:
+                        result += [group.image_name]
+                    result += [group.image_channel_colors, group.remover, group.divider]
+                result += [ self.add_image_button]
+            result += [self.properties_wants_groups]
+            if self.properties_wants_groups:
+                for group in self.group_field_groups:
+                    result += [group.group_name, group.group_statement, group.remover, group.divider]
+                result += [ self.add_group_field_button ]
+            result += [self.properties_wants_filters]
+            if self.properties_wants_filters:
+                result += [self.create_filters_for_plates]
+                for group in self.filter_field_groups:
+                    result += [group.filter_name, group.filter_statement, group.remover, group.divider]
+                result += [ self.add_filter_field_button ]
         if needs_default_output_directory:
             result += [self.directory]
         result += [self.wants_agg_mean, self.wants_agg_median,
@@ -534,7 +720,7 @@ class ExportToDatabase(cpm.CPModule):
         return result
     
     def settings(self):
-        return [self.db_type, self.db_name, self.want_table_prefix,
+        result = [self.db_type, self.db_name, self.want_table_prefix,
                 self.table_prefix, self.sql_file_prefix, 
                 self.directory,
                 self.save_cpa_properties, 
@@ -546,12 +732,25 @@ class ExportToDatabase(cpm.CPModule):
                 self.separate_object_tables, self.properties_image_url_prepend, 
                 self.want_image_thumbnails,self.thumbnail_image_names, 
                 self.auto_scale_thumbnail_intensities,self.properties_plate_type,
-                self.properties_plate_metadata, self.properties_well_metadata]
+                self.properties_plate_metadata, self.properties_well_metadata, 
+                self.properties_export_all_image_defaults]
+        result += [self.image_group_count]
+        for group in self.image_groups:
+            result += [group.image_cols, group.wants_automatic_image_name, group.image_name,
+                       group.image_channel_colors]
+        result += [self.properties_wants_groups, self.group_field_count]
+        for group in self.group_field_groups:
+            result += [group.group_name, group.group_statement]
+        result += [self.properties_wants_filters, self.create_filters_for_plates, self.filter_field_count]
+        for group in self.filter_field_groups:
+            result += [group.filter_name, group.filter_statement]
+        return result
     
     def help_settings(self):
         return [self.db_type, self.db_name, self.db_host, self.db_user, self.db_passwd, self.sql_file_prefix, self.sqlite_file, 
                 self.want_table_prefix, self.table_prefix,  
-                self.save_cpa_properties,self.properties_image_url_prepend, self.properties_plate_type, self.properties_plate_metadata, self.properties_well_metadata,
+                self.save_cpa_properties, self.properties_image_url_prepend, self.properties_plate_type, self.properties_plate_metadata, self.properties_well_metadata,
+                self.properties_export_all_image_defaults,
                 self.directory,
                 self.wants_agg_mean, self.wants_agg_median, self.wants_agg_std_dev, 
                 self.wants_agg_mean_well, self.wants_agg_median_well, self.wants_agg_std_dev_well,
@@ -579,14 +778,16 @@ class ExportToDatabase(cpm.CPModule):
                 raise cps.ValidationError("The database user name has invalid characters",self.db_user)
         else:
             if not re.match("^[A-Za-z][A-Za-z0-9_]+$", self.sql_file_prefix.value):
-                raise cps.ValidationError('Invalid SQL file prefix', self.sql_file_prefix)
+                raise cps.ValidationError("Invalid SQL file prefix", self.sql_file_prefix)
         
         if self.objects_choice == O_SELECT:
             self.objects_list.load_choices(pipeline)
             if len(self.objects_list.choices) == 0:
-                raise cps.ValidationError("Please choose at least one object",
-                                          self.objects_choice)
+                raise cps.ValidationError("Please choose at least one object", self.objects_choice)
             
+        if self.save_cpa_properties:
+            if self.properties_plate_metadata == NONE_CHOICE and (self.properties_wants_filters.value and self.create_filters_for_plates.value):
+                raise cps.ValidationError("You must specify the plate metadata",self.create_filters_for_plates)
 
     def validate_module_warnings(self, pipeline):
         '''Warn user re: Test mode '''
@@ -602,7 +803,16 @@ class ExportToDatabase(cpm.CPModule):
                  "to only one object's data at a time in CPA. Choose %s to write a single\n"
                  "object table.") % OT_COMBINE, self.separate_object_tables)
                 
-
+        '''Warn user re: bad characters in filter/group names'''
+        if self.save_cpa_properties and self.properties_wants_groups:
+            for group in self.group_field_groups:
+                if not re.match("^[A-Za-z0-9_]*$",group.group_name.value):
+                    raise cps.ValidationError("CellProfiler Analyst will not recognize this group name because it has invalid characters.",group.group_name)
+        if self.save_cpa_properties and self.properties_wants_filters:
+            for group in self.filter_field_groups:
+                if not re.match("^[A-Za-z0-9_]*$",group.filter_name.value):
+                    raise cps.ValidationError("CellProfiler Analyst will not recognize this filter name because it has invalid characters.",group.filter_name)
+                
     def make_full_filename(self, file_name, 
                            workspace = None, image_set_index = None):
         """Convert a file name into an absolute path
@@ -1024,7 +1234,7 @@ class ExportToDatabase(cpm.CPModule):
     def get_create_image_table_statement(self, pipeline, image_set_list):
         '''Return a SQL statement that generates the image table'''
         statement = 'CREATE TABLE '+ self.get_table_name(cpmeas.IMAGE) +' (\n'
-        statement += 'ImageNumber INTEGER'
+        statement += '%s INTEGER'%C_IMAGE_NUMBER
 
         mappings = self.get_column_name_mappings(pipeline, image_set_list)
         columns = self.get_pipeline_measurement_columns(
@@ -1037,7 +1247,7 @@ class ExportToDatabase(cpm.CPModule):
         for column in self.get_aggregate_columns(pipeline, image_set_list):
             statement += ',\n%s %s' % (mappings[column[3]], 
                                        cpmeas.COLTYPE_FLOAT)
-        statement += ',\nPRIMARY KEY (ImageNumber) )'
+        statement += ',\nPRIMARY KEY (%s) )'%C_IMAGE_NUMBER
         return statement
         
     def get_create_object_table_statement(self, object_name, pipeline, 
@@ -1051,10 +1261,10 @@ class ExportToDatabase(cpm.CPModule):
         else:
             object_table = self.get_table_name(object_name)
         statement = 'CREATE TABLE '+object_table+' (\n'
-        statement += 'ImageNumber INTEGER\n'
+        statement += '%s INTEGER\n'%C_IMAGE_NUMBER
         if object_name == None:
-            statement += ',ObjectNumber INTEGER'
-            object_pk = 'ObjectNumber'
+            statement += ',%s INTEGER'%C_OBJECT_NUMBER
+            object_pk = C_OBJECT_NUMBER
         else:
             object_pk = "_".join((object_name,M_NUMBER_OBJECT_NUMBER))
         column_defs = self.get_pipeline_measurement_columns(pipeline,
@@ -1070,7 +1280,7 @@ class ExportToDatabase(cpm.CPModule):
                 if obname==ob_table and not self.ignore_feature(obname, feature):
                     feature_name = '%s_%s'%(obname, feature)
                     statement += ',\n%s %s'%(mappings[feature_name], ftype)
-        statement += ',\nPRIMARY KEY (ImageNumber, %s) )' % object_pk
+        statement += ',\nPRIMARY KEY (%s, %s) )' %(C_IMAGE_NUMBER, object_pk)
         return statement
 
         
@@ -1195,11 +1405,11 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
             if len(object_names) == 0:
                 pass
             elif self.separate_object_tables == OT_COMBINE:
-                fid.write("JOIN %s OT ON IT.ImageNumber = OT.ImageNumber\n" %
-                          self.get_table_name(cpmeas.OBJECT))
+                fid.write("JOIN %s OT ON IT.%s = OT.%s\n" %
+                          (self.get_table_name(cpmeas.OBJECT),C_IMAGE_NUMBER,C_IMAGE_NUMBER))
             elif len(object_names) == 1:
-                fid.write("JOIN %s OT1 ON IT.ImageNumber = OT1.ImageNumber\n" %
-                          self.get_table_name(object_names[0]))
+                fid.write("JOIN %s OT1 ON IT.%s = OT1.%s\n" %
+                          (self.get_table_name(object_names[0]),C_IMAGE_NUMBER,C_IMAGE_NUMBER))
             else:
                 #
                 # We make up a table here that lists all of the possible
@@ -1208,22 +1418,22 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                 # between object tables.
                 #
                 fid.write(
-                    "RIGHT JOIN (SELECT DISTINCT ImageNumber, ObjectNumber FROM\n")
-                fid.write("(SELECT ImageNumber, %s_%s as ObjectNumber FROM %s\n" %
-                          (object_names[0], M_NUMBER_OBJECT_NUMBER, 
+                    "RIGHT JOIN (SELECT DISTINCT %s, %s FROM\n"%(C_IMAGE_NUMBER, C_OBJECT_NUMBER))
+                fid.write("(SELECT %s, %s_%s as %s FROM %s\n" %
+                          (C_IMAGE_NUMBER, object_names[0], M_NUMBER_OBJECT_NUMBER, C_OBJECT_NUMBER,
                            self.get_table_name(object_names[0])))
                 for object_name in object_names[1:]:
-                    fid.write("UNION SELECT ImageNumber, %s_%s as ObjectNumber "
+                    fid.write("UNION SELECT %s, %s_%s as %s "
                               "FROM %s\n" % 
-                              (object_name, M_NUMBER_OBJECT_NUMBER, 
+                              (C_IMAGE_NUMBER, object_name, M_NUMBER_OBJECT_NUMBER, C_OBJECT_NUMBER,
                                self.get_table_name(object_name)))
-                fid.write(") N_INNER) N ON IT.ImageNumber = N.ImageNumber\n")
+                fid.write(") N_INNER) N ON IT.%s = N.%s\n"%(C_IMAGE_NUMBER, C_IMAGE_NUMBER))
                 for i, object_name in enumerate(object_names):
                     fid.write("LEFT JOIN %s OT%d " % 
                               (self.get_table_name(object_name), i+1))
-                    fid.write("ON N.ImageNumber = OT%d.ImageNumber " % (i+1))
-                    fid.write("AND N.ObjectNumber = OT%d.%s_%s\n" %
-                              (i+1, object_name, M_NUMBER_OBJECT_NUMBER))
+                    fid.write("ON N.%s = OT%d.%s " % (C_IMAGE_NUMBER, i+1, C_IMAGE_NUMBER))
+                    fid.write("AND N.%s = OT%d.%s_%s\n" %
+                              (C_OBJECT_NUMBER, i+1, object_name, M_NUMBER_OBJECT_NUMBER))
             fid.write("GROUP BY IT.Image_Metadata_Plate, "
                       "IT.Image_Metadata_Well;\n\n""")
                 
@@ -1558,8 +1768,6 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
             self.connection.rollback()
             raise
 
-        
-    
     def write_properties(self, workspace):
         """Write the CellProfiler Analyst properties file"""
         #
@@ -1575,14 +1783,17 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                 if self.ignore_object(object_name):
                     continue
         supposed_primary_object = object_name
-        #
-        # Find all images that have FileName and PathName
-        #
         image_names = []
-        for feature in workspace.measurements.get_feature_names('Image'):
-            match = re.match('^FileName_(.+)$',feature)
-            if match:
-                image_names.append(match.groups()[0])
+        if self.properties_export_all_image_defaults:
+            # Find all images that have FileName and PathName
+            for feature in workspace.measurements.get_feature_names('Image'):
+                match = re.match('^%s_(.+)$'%C_FILE_NAME,feature)
+                if match:
+                    image_names.append(match.groups()[0])
+        else:
+            # Extract the user-specified images
+            for group in self.image_groups:
+                image_names.append(group.image_cols.value)
         
         if self.db_type==DB_SQLITE:
             name = os.path.splitext(self.sqlite_file.value)[0]
@@ -1623,22 +1834,65 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
             cell_tables = '%sPer_Object'%(self.get_table_prefix())
         else:
             cell_tables = '%sPer_%s'%(self.get_table_prefix(),supposed_primary_object)               
-        unique_id = 'ImageNumber'
+        unique_id = C_IMAGE_NUMBER
         object_count = 'Image_Count_%s'%(supposed_primary_object)
         if self.separate_object_tables == OT_COMBINE:
-            object_id = 'ObjectNumber'
+            object_id = C_OBJECT_NUMBER
         else:
             object_id = '%s_Number_Object_Number'%(supposed_primary_object)
         cell_x_loc = '%s_Location_Center_X'%(supposed_primary_object)
         cell_y_loc = '%s_Location_Center_Y'%(supposed_primary_object)
-        image_file_cols = ','.join(['Image_FileName_%s'%(name) for name in image_names])
-        image_path_cols = ','.join(['Image_PathName_%s'%(name) for name in image_names])
-        image_thumbnail_cols = ','.join(['Image_Thumbnail_%s'%(name) for name in self.thumbnail_image_names.get_selections()])
-        image_names = ','.join(image_names)
-        if len(image_names) == 1:
-            image_channel_colors = 'gray,'
+        image_file_cols = ','.join(['%s_%s_%s'%(cpmeas.IMAGE,C_FILE_NAME,name) for name in image_names])
+        image_path_cols = ','.join(['%s_%s_%s'%(cpmeas.IMAGE,C_PATH_NAME,name) for name in image_names])
+        image_thumbnail_cols = ','.join(['%s_Thumbnail_%s'%(cpmeas.IMAGE,name) for name in self.thumbnail_image_names.get_selections()])
+        
+        if self.properties_export_all_image_defaults:
+            # Provide default colors
+            if len(image_names) == 1:
+                image_channel_colors = 'gray,'
+            else:
+                image_channel_colors = 'red, green, blue, cyan, magenta, yellow, gray, '+('none, ' * 10)
+                image_channel_colors = ','.join(image_channel_colors.split(',')[:len(image_names)])
         else:
-            image_channel_colors = 'red, green, blue, cyan, magenta, yellow, gray, '+('none, ' * 10)[:len(image_names)]
+            # Extract user-specified image names
+            image_names = [];
+            for group in self.image_groups:
+                if group.wants_automatic_image_name:
+                    image_names += [group.image_cols.value]
+                else:
+                    image_names += [group.image_name.value]
+                    
+            # Extract user-specified colors
+            image_channel_colors = []
+            for group in self.image_groups:
+                image_channel_colors += [group.image_channel_colors.value]
+            image_channel_colors = ','.join(image_channel_colors)
+        
+        image_names = ','.join(image_names) # Convert to comma-separated list
+            
+        group_statements = ''
+        if self.properties_wants_groups:
+            for group in self.group_field_groups:
+                group_statements += 'group_SQL_' + group.group_name.value + ' = SELECT ' + group.group_statement.value + ' FROM ' + spot_tables + '\n'
+        
+        filter_statements = ''
+        if self.properties_wants_filters:
+            if self.create_filters_for_plates:
+                plate_key = self.properties_plate_metadata.value
+                metadata_groups = workspace.measurements.group_by_metadata([plate_key])
+                for metadata_group in metadata_groups:
+                    plate_text = re.sub("[^A-Za-z0-9_]",'_',metadata_group.get(plate_key)) # Replace any odd characters with underscores
+                    filter_name = 'Plate_%s'%plate_text
+                    filter_statements += 'filter_SQL_' + filter_name + ' = SELECT ImageNumber'\
+                                        ' FROM ' + spot_tables + \
+                                        ' WHERE Image_Metadata_%s' \
+                                        ' = "%s"\n'%(plate_key, metadata_group.get(plate_key))
+                
+            for group in self.filter_field_groups:
+                filter_statements += 'filter_SQL_' + group.filter_name.value + ' = SELECT ImageNumber'\
+                                        ' FROM ' + spot_tables + \
+                                        ' WHERE ' + group.filter_statement.value + '\n'
+        
         image_url = self.properties_image_url_prepend.value
         plate_type = "" if self.properties_plate_type.value == NONE_CHOICE else self.properties_plate_type.value
         plate_id = "" if self.properties_plate_metadata.value == NONE_CHOICE else "%s_%s_%s"%(cpmeas.IMAGE, cpmeas.C_METADATA, self.properties_plate_metadata.value)
@@ -1718,7 +1972,7 @@ image_url_prepend = %(image_url)s
 #   group_SQL_Gene       =  SELECT Per_Image_Table.TableNumber, Per_Image_Table.ImageNumber, Well_ID_Table.gene FROM Per_Image_Table, Well_ID_Table WHERE Per_Image_Table.well=Well_ID_Table.well
 #   group_SQL_Well+Gene  =  SELECT Per_Image_Table.TableNumber, Per_Image_Table.ImageNumber, Well_ID_Table.well, Well_ID_Table.gene FROM Per_Image_Table, Well_ID_Table WHERE Per_Image_Table.well=Well_ID_Table.well
 
-# 
+%(group_statements)s
 
 # ==== Image Filters ====
 # Here you can define image filters to let you select objects from a subset of your experiment when training the classifier.
@@ -1730,7 +1984,7 @@ image_url_prepend = %(image_url)s
 #   filter_SQL_EMPTY  =  SELECT TableNumber, ImageNumber FROM CPA_per_image, Well_ID_Table WHERE CPA_per_image.well=Well_ID_Table.well AND Well_ID_Table.Gene="EMPTY"
 #   filter_SQL_CDKs   =  SELECT TableNumber, ImageNumber FROM CPA_per_image, Well_ID_Table WHERE CPA_per_image.well=Well_ID_Table.well AND Well_ID_Table.Gene REGEXP 'CDK.*'
 
-#
+%(filter_statements)s
 
 # ==== Meta data ====
 # What are your objects called?
@@ -2105,18 +2359,27 @@ check_tables = yes
 
         if (not from_matlab) and variable_revision_number == 17:
             #
-            # Added choice for plate type
+            # Added choice for plate type in properties file
             #
             setting_values = setting_values + [NONE_CHOICE]
             variable_revision_number = 18
             
         if (not from_matlab) and variable_revision_number == 18:
             #
-            # Added choices for plate and well metadata
+            # Added choices for plate and well metadata in properties file
             #
             setting_values = setting_values + [NONE_CHOICE, NONE_CHOICE]
             variable_revision_number = 19
             
+        if (not from_matlab) and variable_revision_number == 19:
+            #
+            # Added configuration of image information, groups, filters in properties file
+            #
+            setting_values = setting_values + [cps.YES, "1", "None", cps.YES, "None", "gray"] # Image info
+            setting_values = setting_values + [cps.NO, "1", "", "ImageNumber, Image_Metadata_Plate, Image_Metadata_Well"] # Group specifications
+            setting_values = setting_values + [cps.NO, cps.NO, "0"] # Filter specifications
+            variable_revision_number == 20
+    
         return setting_values, variable_revision_number, from_matlab
     
 class ColumnNameMapping:

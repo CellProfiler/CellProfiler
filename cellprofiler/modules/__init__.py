@@ -21,6 +21,14 @@ import cellprofiler.cpmodule as cpm
 from cellprofiler.modules.plugins import plugin_list
 from cellprofiler.preferences import get_plugin_directory
 
+try:
+    import vigra
+    import h5py
+    import ilastik.core
+    has_ilastik = True
+except:
+    has_ilastik = False
+    
 # python modules and their corresponding cellprofiler.module classes
 pymodule_to_cpmodule = {'align' : 'Align',
                         'applythreshold' : 'ApplyThreshold',
@@ -97,9 +105,10 @@ pymodule_to_cpmodule = {'align' : 'Align',
                         'trackobjects' : 'TrackObjects',
                         'tile' : 'Tile',
                         'calculateimageoverlap' : 'CalculateImageOverlap',
-                        'unmixcolors': 'UnmixColors',
-                        'classifypixels': 'ClassifyPixels'
+                        'unmixcolors': 'UnmixColors'
                         }
+if has_ilastik:
+    pymodule_to_cpmodule['classifypixels'] = 'ClassifyPixels'
 
 # the builtin CP modules that will be loaded from the cellprofiler.modules directory
 builtin_modules = ['align',
@@ -175,9 +184,10 @@ builtin_modules = ['align',
                    'smooth',
                    'trackobjects',
                    'tile',
-                   'unmixcolors',
-                   'classifypixels'
+                   'unmixcolors'
                    ]
+if has_ilastik:
+    builtin_modules.append('classifypixels')
 
 # CP-Matlab to CP-python module substitutions
 substitutions = {'Average': 'MakeProjection',

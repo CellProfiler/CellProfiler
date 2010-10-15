@@ -42,6 +42,7 @@ See also <b>IdentifyObjectsInGrid</b>.
 __version__="$Revision$"
 
 import numpy as np
+import traceback
 
 import cellprofiler.cpgridinfo as cpg
 import cellprofiler.cpmodule as cpm
@@ -494,6 +495,7 @@ class DefineGrid(cpm.CPModule):
         #               Redisplay
         #               OK
         #               cancel
+        #    status bar
         #
         figure = matplotlib.figure.Figure()
         axes = figure.add_subplot(1,1,1)
@@ -562,6 +564,15 @@ class DefineGrid(cpm.CPModule):
         button_sizer.Add(redisplay_button)
         button_sizer.Add(wx.Button(frame,wx.OK, "OK"))
         button_sizer.Add(wx.Button(frame,wx.CANCEL, "Cancel"))
+        #
+        # Status bar
+        #
+        status_bar = wx.StatusBar(frame, style = 0)
+        top_sizer.Add(status_bar, 0, wx.EXPAND)
+        status_bar.SetFieldsCount(1)
+        SELECT_FIRST_CELL = "Select the center of the first cell"
+        SELECT_SECOND_CELL = "Select the center of the second cell"
+        status_bar.SetStatusText(SELECT_FIRST_CELL)
         status = [wx.OK]
         gridding = [None]
         if self.display_image_name == cps.LEAVE_BLANK:
@@ -570,15 +581,9 @@ class DefineGrid(cpm.CPModule):
             image_shape = workspace.image_set.get_image(
                 self.display_image_name.value).pixel_data.shape[:2]
         def redisplay(event):
-            gridding[0] = self.build_grid_info(int(first_x.Value),
-                                               int(first_y.Value),
-                                               int(first_row.Value),
-                                               int(first_column.Value),
-                                               int(second_x.Value),
-                                               int(second_y.Value),
-                                               int(second_row.Value),
-                                               int(second_column.Value),
-                                               image_shape)
+            if (event is not None) or (gridding[0] is None):
+                do_gridding(first_x.Value, first_y.Value,
+                            second_x.Value, second_y.Value)
             self.display_grid(workspace, gridding[0], axes)
             canvas.draw()
         def cancel(event):
@@ -590,24 +595,60 @@ class DefineGrid(cpm.CPModule):
             frame.SetReturnCode(wx.OK)
             frame.Close(True)
             
+        def on_cell_selection(event):
+            if cell_choice.Selection == 0:
+                status_bar.SetStatusText(SELECT_FIRST_CELL)
+            else:
+                status_bar.SetStatusText(SELECT_SECOND_CELL)
+
+        def do_gridding(x1, y1, x2, y2):
+            try:
+                gridding[0] = self.build_grid_info(int(x1),
+                                                   int(y1),
+                                                   int(first_row.Value),
+                                                   int(first_column.Value),
+                                                   int(x2),
+                                                   int(y2),
+                                                   int(second_row.Value),
+                                                   int(second_column.Value),
+                                                   image_shape)
+            except Exception, e:
+                traceback.print_exc()
+                status_bar.SetStatusText(e.message)
+                return False
+            return True
+            
         def button_release(event):
             if event.inaxes == axes:
                 if cell_choice.Selection == 0:
-                    first_x.Value = str(int(event.xdata))
-                    first_y.Value = str(int(event.ydata))
-                    cell_choice.Selection = 1
+                    new_first_x = str(int(event.xdata))
+                    new_first_y = str(int(event.ydata))
+                    if do_gridding(new_first_x, new_first_y,
+                                   second_x.Value, second_y.Value):
+                        first_x.Value = new_first_x
+                        first_y.Value = new_first_y
+                        cell_choice.Selection = 1
+                        status_bar.SetStatusText(SELECT_SECOND_CELL)
                 else:
-                    second_x.Value = str(int(event.xdata))
-                    second_y.Value = str(int(event.ydata))
-                    cell_choice.Selection = 0
+                    new_second_x = str(int(event.xdata))
+                    new_second_y = str(int(event.ydata))
+                    if do_gridding(first_x.Value, first_y.Value,
+                                   new_second_x, new_second_y):
+                        second_x.Value = new_second_x
+                        second_y.Value = new_second_y
+                        cell_choice.Selection = 0
+                        status_bar.SetStatusText(SELECT_FIRST_CELL)
                 redisplay(None)
         redisplay(None)
         frame.Fit()
         frame.Bind(wx.EVT_BUTTON, redisplay, redisplay_button)
         frame.Bind(wx.EVT_BUTTON, cancel, id=wx.CANCEL)
         frame.Bind(wx.EVT_BUTTON, ok, id=wx.OK)
+        frame.Bind(wx.EVT_RADIOBOX, on_cell_selection, cell_choice)
         canvas.mpl_connect("button_release_event", button_release)
         frame.ShowModal()
+        do_gridding(first_x.Value, first_y.Value,
+                    second_x.Value, second_y.Value)
         frame.Destroy()
         if status[0] != wx.OK:
             raise RuntimeError("Pipeline aborted during grid editing")

@@ -68,14 +68,20 @@ with respect to the first image.""")
                                            M_ALL, doc='''
              Two options for the alignment method are available:<br>
              <ul>
-             <li><i>Mutual Information:</i> Alignment works whether the 
-             images are correlated (bright in one = bright in the other) or 
-             anti-correlated (bright in one = dim in the other). </li>
-             <li><i>Normalized Cross Correlation:</i> Alignment works only 
-             when the images are correlated (bright in one = bright in the 
-             other). When using the cross correlation method, the second 
-             image should serve as a template and be smaller than the first 
-             image selected.</li>
+             <li><i>Normalized Cross Correlation:</i> This is a good means 
+             of alignment in the case of images acquired with the same modality
+             (e.g., all images to be aligned are fluorescent). It allows for a
+             linear relationship between the intensities of the two images, 
+             e.g., the relevant features in the images to be aligned all have
+             varying degrees of brightness.  When using the cross correlation method, 
+             the second image should serve as a template and be smaller than the first 
+             image selected. </li>
+             <li><i>Mutual Information:</i> This more general method works well for aligning
+             images from different modalities that contain the same information, but are 
+             expressed differently. Essentially, alignment is performed by measuring
+             how well one image "explains" the other. For example, a flourescent image 
+             can be aligned to a brightfield image by this method since the relevant 
+             features are bright in one modality where they are dim in the other. </li>
              </ul>''')
         self.wants_cropping = cps.Binary("Crop output images to retain just the aligned regions?",
                                          True, doc='''

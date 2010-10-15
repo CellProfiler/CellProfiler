@@ -168,7 +168,7 @@ UN_LOG                          = "Laplacian of Gaussian"
 UN_NONE                         = "None"
 WATERSHED_VAR                   = 11
 WA_INTENSITY                    = "Intensity"
-WA_DISTANCE                     = "Distance"
+WA_SHAPE                        = "Shape"
 WA_PROPAGATE                    = "Propagate"
 WA_NONE                         = "None"
 SMOOTHING_SIZE_VAR              = 12
@@ -189,7 +189,7 @@ LIMIT_ERASE = "Erase"
 
 class IdentifyPrimaryObjects(cpmi.Identify):
             
-    variable_revision_number = 7
+    variable_revision_number = 8
     category =  "Object Processing"
     module_name = "IdentifyPrimaryObjects"
     
@@ -296,7 +296,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
 
         self.watershed_method = cps.Choice(
             'Method to draw dividing lines between clumped objects', 
-            [WA_INTENSITY, WA_DISTANCE, WA_PROPAGATE, WA_NONE], doc="""\
+            [WA_INTENSITY, WA_SHAPE, WA_PROPAGATE, WA_NONE], doc="""\
             This setting allows you to choose the method that is used to draw the line
             bewteen segmented objects, provided that you have chosen to declump the objects.
             To decide between these methods, you can run Test mode to see the results of each.
@@ -304,7 +304,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             objects are dimmer than the remainder of the objects. Technical description: 
             Using the previously identified local maxima as seeds, this method is a
             watershed (<i>Vincent and Soille, 1991</i>) on the intensity image.</li>
-            <li><i>Distance:</i> Dividing lines between clumped objects are based on the
+            <li><i>Shape:</i> Dividing lines between clumped objects are based on the
             shape of the clump. For example, when a clump contains two objects, the
             dividing line will be placed where indentations occur between the two
             objects. The intensity patterns in the original image are largely irrelevant: the
@@ -595,7 +595,11 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             # Added measurements to threshold method
             setting_values = setting_values + ["None"]
             variable_revision_number = 7
-            
+        if (not from_matlab) and variable_revision_number == 7:
+            # changed DISTANCE to SHAPE
+            if setting_values[11] == "Distance":
+                setting_values[11] = "Shape"
+            variable_revision_number = 8
         return setting_values, variable_revision_number, from_matlab
             
     def help_settings(self):
@@ -979,7 +983,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
         if self.watershed_method == WA_INTENSITY:
             # use the reverse of the image to get valleys at peaks
             watershed_image = 1-image
-        elif self.watershed_method == WA_DISTANCE:
+        elif self.watershed_method == WA_SHAPE:
             if distance_transformed_image == None:
                 distance_transformed_image =\
                     scipy.ndimage.distance_transform_edt(labeled_image>0)
@@ -1009,7 +1013,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             markers = np.zeros(watershed_image.shape,np.int16)
             markers[labeled_maxima>0]=-labeled_maxima[labeled_maxima>0]
             #
-            # Some labels have only one marker in them, some have multiple and
+            # Some labels have only one maker in them, some have multiple and
             # will be split up.
             # 
             watershed_boundaries = watershed(watershed_image,

@@ -517,6 +517,7 @@ class ImageSet(object):
         must_be_rgb - raise an exception if 2-d or if # channels not 3 or 4,
                       discard alpha channel.
         """
+        name = str(name)
         if not self.__images.has_key(name):
             image = self.get_image_provider(name).provide_image(self)
             if cache:

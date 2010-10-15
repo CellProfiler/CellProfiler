@@ -857,10 +857,10 @@ def get_field_wrapper(field):
                               'Read a byte field from an object')
         getChar = make_method('getChar', '(Ljava/lang/Object;)C')
         getDouble = make_method('getDouble', '(Ljava/lang/Object;)D')
-        getFloat = make_method('getFouble', '(Ljava/lang/Object;)F')
+        getFloat = make_method('getFloat', '(Ljava/lang/Object;)F')
         getInt = make_method('getInt', '(Ljava/lang/Object;)I')
         getShort = make_method('getShort', '(Ljava/lang/Object;)S')
-        getLong = make_method('getLong', '(Ljava/lang/Object;)L')
+        getLong = make_method('getLong', '(Ljava/lang/Object;)J')
         getDeclaredAnnotations = make_method(
             'getDeclaredAnnotations',
             '()[Ljava/lang/annotation/Annotation;')
@@ -881,7 +881,7 @@ def get_field_wrapper(field):
         setFloat = make_method('setFloat', '(Ljava/lang/Object;F)V')
         setInt = make_method('setInt', '(Ljava/lang/Object;I)V')
         setShort = make_method('setShort', '(Ljava/lang/Object;S)V')
-        setLong = make_method('setLong', '(Ljava/lang/Object;L)V')
+        setLong = make_method('setLong', '(Ljava/lang/Object;J)V')
     return Field()
 
 def get_constructor_wrapper(obj):

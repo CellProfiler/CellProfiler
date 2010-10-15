@@ -101,6 +101,75 @@ class TestEnhanceOrSuppressSpeckles(unittest.TestCase):
         self.assertEqual(module.filtered_image_name.value, 'MyEnhancedImage')
         self.assertEqual(module.method.value, E.ENHANCE)
         self.assertEqual(module.object_size, 17)
+        
+    def test_01_02_load_v2(self):
+        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:1
+SVNRevision:10583
+
+EnhanceOrSuppressFeatures:[module_num:1|svn_version:\'10300\'|variable_revision_number:2|show_window:True|notes:\x5B\x5D]
+    Select the input image:Initial
+    Name the output image:EnhancedSpeckles
+    Select the operation:Enhance
+    Feature size:11
+    Feature type:Speckles
+    Range of hole sizes:1,10
+
+EnhanceOrSuppressFeatures:[module_num:2|svn_version:\'10300\'|variable_revision_number:2|show_window:True|notes:\x5B\x5D]
+    Select the input image:EnhancedSpeckles
+    Name the output image:EnhancedNeurites
+    Select the operation:Enhance
+    Feature size:9
+    Feature type:Neurites
+    Range of hole sizes:1,10
+
+EnhanceOrSuppressFeatures:[module_num:3|svn_version:\'10300\'|variable_revision_number:2|show_window:True|notes:\x5B\x5D]
+    Select the input image:EnhancedNeurites
+    Name the output image:EnhancedDarkHoles
+    Select the operation:Enhance
+    Feature size:9
+    Feature type:Dark holes
+    Range of hole sizes:4,11
+
+EnhanceOrSuppressFeatures:[module_num:4|svn_version:\'10300\'|variable_revision_number:2|show_window:True|notes:\x5B\x5D]
+    Select the input image:EnhancedDarkHoles
+    Name the output image:EnhancedCircles
+    Select the operation:Enhance
+    Feature size:9
+    Feature type:Circles
+    Range of hole sizes:4,11
+
+EnhanceOrSuppressFeatures:[module_num:5|svn_version:\'10300\'|variable_revision_number:2|show_window:True|notes:\x5B\x5D]
+    Select the input image:EnhancedCircles
+    Name the output image:Suppressed
+    Select the operation:Suppress
+    Feature size:13
+    Feature type:Circles
+    Range of hole sizes:4,11
+"""
+        pipeline = cpp.Pipeline()
+        def callback(caller, event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO(data))
+        self.assertEqual(len(pipeline.modules()),5)
+        for module, (input_name, output_name, operation, feature_size, 
+                     feature_type, min_range, max_range) in zip(
+                         pipeline.modules(), (
+            ("Initial", "EnhancedSpeckles", E.ENHANCE, 11, E.E_SPECKLES, 1,10),
+            ("EnhancedSpeckles", "EnhancedNeurites", E.ENHANCE, 9, E.E_NEURITES, 1,10),
+            ("EnhancedNeurites", "EnhancedDarkHoles", E.ENHANCE, 9, E.E_DARK_HOLES, 4, 11),
+            ("EnhancedDarkHoles", "EnhancedCircles", E.ENHANCE, 9, E.E_CIRCLES, 4, 11),
+            ("EnhancedCircles", "Suppressed", E.SUPPRESS, 13, E.E_CIRCLES, 4, 11))):
+            self.assertEqual(module.module_name,'EnhanceOrSuppressFeatures')
+            self.assertTrue(isinstance(module, E.EnhanceOrSuppressFeatures))
+            self.assertEqual(module.image_name, input_name)
+            self.assertEqual(module.filtered_image_name, output_name)
+            self.assertEqual(module.method, operation)
+            self.assertEqual(module.enhance_method, feature_type)
+            self.assertEqual(module.object_size, feature_size)
+            self.assertEqual(module.hole_size.min, min_range)
+            self.assertEqual(module.hole_size.max, max_range)
     
     def test_02_01_enhance(self):
         '''Enhance an image composed of two circles of different diameters'''
@@ -118,6 +187,7 @@ class TestEnhanceOrSuppressSpeckles(unittest.TestCase):
         workspace, module = self.make_workspace(image,
                                                 np.ones(image.shape, bool))
         module.method.value = E.ENHANCE
+        module.enhance_method = E.E_SPECKLES
         module.object_size.value = 8
         module.run(workspace)
         result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
@@ -462,3 +532,35 @@ class TestEnhanceOrSuppressSpeckles(unittest.TestCase):
             module.run(workspace)
             result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
             self.assertTrue(np.all(result.pixel_data == expected))
+            
+    def test_06_01_enhance_circles(self):
+        i,j = np.mgrid[-15:16,-15:16]
+        circle = np.abs(np.sqrt(i*i+j*j) - 6) <= 1.5
+        workspace, module = self.make_workspace(circle, None)
+        module.method.value = E.ENHANCE
+        module.enhance_method.value = E.E_CIRCLES
+        module.object_size.value = 12
+        module.run(workspace)
+        img = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).pixel_data
+        self.assertEqual(img[15,15], 1)
+        self.assertTrue(np.all(img[np.abs(np.sqrt(i*i+j*j) - 6) < 1.5] < .25))
+        
+    def test_06_02_enhance_masked_circles(self):
+        img = np.zeros((31,62))
+        mask = np.ones((31,62), bool)
+        i,j = np.mgrid[-15:16,-15:16]
+        circle = np.abs(np.sqrt(i*i+j*j) - 6) <= 1.5
+        # Do one circle
+        img[:,:31] = circle
+        # Do a second, but mask it
+        img[:,31:] = circle
+        mask[:,31:][circle] = False
+        workspace, module = self.make_workspace(img, mask)
+        module.method.value = E.ENHANCE
+        module.enhance_method.value = E.E_CIRCLES
+        module.object_size.value = 12
+        module.run(workspace)
+        result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).pixel_data
+        self.assertEqual(result[15,15], 1)
+        self.assertEqual(result[15,15+31], 0)
+        

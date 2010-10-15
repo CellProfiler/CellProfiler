@@ -228,7 +228,7 @@ class RunImageJ(cpm.CPModule):
                 elif field_type == P.FT_FLOAT:
                     result += [cps.Float(label, field.getDouble(plugin))]
                 elif field_type == P.FT_STRING:
-                    result += [cps.Text(label, J.to_string(default))]
+                    result += [cps.Text(label, J.to_string(field.get(plugin)))]
                 else:
                     assert field_type == P.FT_IMAGE
                     result += [cps.ImageNameSubscriber(label, "None")]
@@ -481,9 +481,9 @@ class RunImageJ(cpm.CPModule):
                 del image_plus
                 del processor
             elif field_type == P.FT_INTEGER:
-                field.setLong(plugin, setting.value)
+                field.setInt(plugin, setting.value)
             elif field_type == P.FT_FLOAT:
-                field.setDouble(plugin, setting.value)
+                field.setFloat(plugin, setting.value)
             elif field_type == P.FT_BOOL:
                 field.setBoolean(plugin, setting.value)
             else:

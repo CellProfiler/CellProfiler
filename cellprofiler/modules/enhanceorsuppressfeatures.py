@@ -23,7 +23,7 @@ import cellprofiler.cpmodule as cpm
 import cellprofiler.cpimage as cpi
 import cellprofiler.settings as cps
 from cellprofiler.cpmath.cpmorphology import opening, closing, white_tophat
-from cellprofiler.cpmath.filter import enhance_dark_holes
+from cellprofiler.cpmath.filter import enhance_dark_holes, circular_hough
 from cellprofiler.gui.help import HELP_ON_PIXEL_INTENSITIES
 
 ENHANCE = 'Enhance'
@@ -32,6 +32,7 @@ SUPPRESS = 'Suppress'
 E_SPECKLES = 'Speckles'
 E_NEURITES = 'Neurites'
 E_DARK_HOLES = 'Dark holes'
+E_CIRCLES = 'Circles'
 
 class EnhanceOrSuppressFeatures(cpm.CPModule):
 
@@ -56,7 +57,7 @@ class EnhanceOrSuppressFeatures(cpm.CPModule):
                                         removed.</li></ul>""")
         
         self.enhance_method = cps.Choice('Feature type',
-                                        [E_SPECKLES, E_NEURITES, E_DARK_HOLES],
+                                        [E_SPECKLES, E_NEURITES, E_DARK_HOLES, E_CIRCLES],
                                         doc="""<i>(Used only if Enhance is selected)</i><br>
                                         This module can enhance three kinds of image intensity features:
                                         <ul><li><i>Speckles</i>: A speckle is an area of enhanced intensity
@@ -82,15 +83,25 @@ class EnhanceOrSuppressFeatures(cpm.CPModule):
                                         missing the peaks. Finally, the reconstructed image is subtracted
                                         from the previous reconstructed image. This leaves circular bright
                                         spots with a radius equal to the number of iterations performed.
-                                        </li></ul>
+                                        </li>
+                                        <li><i>Circles</i>: The module calculates the circular Hough transform of
+                                        the image at the diameter given by the feature size. The Hough transform
+                                        will have the highest intensity at points that are centered within a ring
+                                        of high intensity pixels where the ring diameter is the feature size. You
+                                        may want to use the <b>EnhanceEdges</b> module to find the edges of your
+                                        circular object and then process the output by enhancing circles. You can
+                                        use <b>IdentifyPrimaryObjects</b> to find the circle centers and then use
+                                        these centers as seeds in <b>IdentifySecondaryObjects</b> to find whole,
+                                        circular objects using a watershed.</li>
+                                        </ul>
                                         In addition, this module enables you to suppress certain features (such as speckles)
                                         by specifying the feature size.""")
         
         self.object_size = cps.Integer('Feature size',
                                         10,2,doc="""
-                                        <i>(Used only if speckles or neurites are selected, or if suppressing features)</i><br>
+                                        <i>(Used only if circles, speckles or neurites are selected, or if suppressing features)</i><br>
                                         What is the feature size? 
-                                        The diameter of the largest speckle (or the width of the neurites) to be enhanced or suppressed, which
+                                        The diameter of the largest speckle, the width of the circle, or the width of the neurites to be enhanced or suppressed, which
                                         will be used to calculate an adequate filter size. %(HELP_ON_PIXEL_INTENSITIES)s"""%globals())
         
         self.hole_size = cps.IntegerRange('Range of hole sizes',
@@ -148,6 +159,8 @@ class EnhanceOrSuppressFeatures(cpm.CPModule):
                 max_radius = int((self.hole_size.max+1)/2)
                 result = enhance_dark_holes(pixel_data, min_radius,
                                             max_radius, mask)
+            elif self.enhance_method == E_CIRCLES:
+                result = circular_hough(pixel_data, radius + .5, mask=mask)
             else:
                 raise NotImplementedError("Unimplemented enhance method: %s"%
                                           self.enhance_method.value)

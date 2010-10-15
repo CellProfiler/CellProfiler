@@ -464,7 +464,9 @@ class Integer(Text):
     def test_valid(self,pipeline):
         """Return true only if the text value is an integer
         """
-        if not str(self).isdigit():
+        try:
+            int(str(self))
+        except ValueError:
             raise ValidationError('Must be an integer value, was "%s"'%(str(self)),self)
         if self.__minval != None and self.__minval > self.value:
             raise ValidationError('Must be at least %d, was %d'%(self.__minval, self.value),self)

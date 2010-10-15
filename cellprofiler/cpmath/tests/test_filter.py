@@ -16,7 +16,7 @@ __version__="$Revision$"
 
 import base64
 import numpy as np
-from scipy.ndimage import binary_dilation, binary_erosion
+from scipy.ndimage import binary_dilation, binary_erosion, convolve
 import unittest
 
 import cellprofiler.cpmath.filter as F
@@ -1736,4 +1736,32 @@ class TestConvexHullTransform(unittest.TestCase):
                                          pass_cutoff = 256)
         expected = F.convex_hull_transform(image, pass_cutoff = 256)
         np.testing.assert_equal(result, expected)
+        
+class TestCircularHough(unittest.TestCase):
+    def test_01_01_nothing(self):
+        img = np.zeros((10,20))
+        result = F.circular_hough(img, 4)
+        self.assertTrue(np.all(result == 0))
+        
+    def test_01_02_circle(self):
+        i,j = np.mgrid[-15:16,-15:16]
+        circle = np.abs(np.sqrt(i*i+j*j) - 6) <= 1.5
+        expected = convolve(circle.astype(float), circle.astype(float)) / np.sum(circle)
+        img = F.circular_hough(circle, 6)
+        self.assertEqual(img[15,15], 1)
+        self.assertTrue(np.all(img[np.abs(np.sqrt(i*i+j*j) - 6) < 1.5] < .25))
+        
+    def test_01_03_masked(self):
+        img = np.zeros((31,62))
+        mask = np.ones((31,62), bool)
+        i,j = np.mgrid[-15:16,-15:16]
+        circle = np.abs(np.sqrt(i*i+j*j) - 6) <= 1.5
+        # Do one circle
+        img[:,:31] = circle
+        # Do a second, but mask it
+        img[:,31:] = circle
+        mask[:,31:][circle] = False
+        result = F.circular_hough(img, 6, mask=mask)
+        self.assertEqual(result[15,15], 1)
+        self.assertEqual(result[15,15+31], 0)
         

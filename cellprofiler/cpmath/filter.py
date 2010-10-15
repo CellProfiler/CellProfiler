@@ -1519,3 +1519,44 @@ def convex_hull_transform(image, levels=256, mask = None,
     bottom = np.cumsum(bottom, 0)
     image = np.minimum(top, bottom)
     return scale[image]
+
+def circular_hough(img, radius, nangles = None, mask=None):
+    '''Circular Hough transform of an image
+    
+    img - image to be transformed.
+    
+    radius - radius of circle
+    
+    nangles - # of angles to measure, e.g. nangles = 4 means accumulate at
+              0, 90, 180 and 270 degrees.
+    
+    Return the Hough transform of the image which is the accumulators
+    for the transform x + r cos t, y + r sin t.
+    '''
+    a = np.zeros(img.shape)
+    m = np.zeros(img.shape)
+    if nangles == None:
+        # if no angle specified, take the circumference
+        # Round to a multiple of 4 to make it bilaterally stable
+        nangles = int(np.pi * radius + 3.5) & (~ 3)
+    for i in range(nangles):
+        theta = 2*np.pi * float(i) / float(nangles)
+        x = int(np.round(radius * np.cos(theta)))
+        y = int(np.round(radius * np.sin(theta)))
+        xmin = max(0, -x)
+        xmax = min(img.shape[1] - x, img.shape[1])
+        ymin = max(0, -y)
+        ymax = min(img.shape[0] - y, img.shape[0])
+        dest = (slice(ymin, ymax),
+                 slice(xmin, xmax))
+        src = (slice(ymin+y, ymax+y), slice(xmin+x, xmax+x))
+        if mask is not None:
+            a[dest][mask[src]] += img[src][mask[src]]
+            m[dest][mask[src]] += 1
+        else:
+            a[dest] += img[src]
+            m[dest] += 1
+    a[m > 0] /= m[m > 0]
+    return a
+
+        

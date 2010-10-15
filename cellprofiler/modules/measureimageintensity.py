@@ -60,8 +60,11 @@ F_MIN_INTENSITY = 'Intensity_MinIntensity_%s'
 '''Measurement feature name format for the TotalArea measurement'''
 F_TOTAL_AREA = 'Intensity_TotalArea_%s'
 
+'''Measurement feature name format for the PercentMaximal measurement'''
+F_PERCENT_MAXIMAL = 'Intensity_PercentMaximal_%s'
+
 ALL_MEASUREMENTS = ["TotalIntensity", "MeanIntensity", "StdIntensity", "MADIntensity", "MedianIntensity",
-                    "MinIntensity",  "MaxIntensity", "TotalArea"]
+                    "MinIntensity",  "MaxIntensity", "TotalArea", "PercentMaximal"]
 
 class MeasureImageIntensity(cpm.CPModule):
 
@@ -183,6 +186,7 @@ class MeasureImageIntensity(cpm.CPModule):
             pixel_median = 0
             pixel_min = 0
             pixel_max = 0
+            pixel_pct_max = 0
         else:
             pixel_sum = np.sum(pixels)
             pixel_mean = pixel_sum/float(pixel_count)
@@ -191,6 +195,8 @@ class MeasureImageIntensity(cpm.CPModule):
             pixel_mad = np.median(np.abs(pixels - pixel_median))
             pixel_min = np.min(pixels)
             pixel_max = np.max(pixels)
+            pixel_pct_max = (100.0 * float(np.sum(pixels == pixel_max)) /
+                             float(pixel_count))
         m = workspace.measurements
         m.add_image_measurement(F_TOTAL_INTENSITY%(measurement_name), pixel_sum)
         m.add_image_measurement(F_MEAN_INTENSITY%(measurement_name), pixel_mean)
@@ -200,6 +206,7 @@ class MeasureImageIntensity(cpm.CPModule):
         m.add_image_measurement(F_MAX_INTENSITY%(measurement_name), pixel_max)
         m.add_image_measurement(F_MIN_INTENSITY%(measurement_name), pixel_min)
         m.add_image_measurement(F_TOTAL_AREA%(measurement_name), pixel_count)
+        m.add_image_measurement(F_PERCENT_MAXIMAL % (measurement_name), pixel_pct_max)
         return [[im.image_name.value, 
                  im.object_name.value if im.wants_objects.value else "",
                  feature_name, str(value)]
@@ -210,6 +217,7 @@ class MeasureImageIntensity(cpm.CPModule):
                                             ('MAD intensity', pixel_mad),
                                             ('Min intensity', pixel_min),
                                             ('Max intensity', pixel_max),
+                                            ('Pct maximal', pixel_pct_max),
                                             ('Total area', pixel_count))]
     
     def get_measurement_columns(self, pipeline):
@@ -223,7 +231,8 @@ class MeasureImageIntensity(cpm.CPModule):
                                      (F_MAD_INTENSITY, cpmeas.COLTYPE_FLOAT),
                                      (F_MIN_INTENSITY, cpmeas.COLTYPE_FLOAT),
                                      (F_MAX_INTENSITY, cpmeas.COLTYPE_FLOAT),
-                                     (F_TOTAL_AREA, cpmeas.COLTYPE_INTEGER)):
+                                     (F_TOTAL_AREA, cpmeas.COLTYPE_INTEGER),
+                                     (F_PERCENT_MAXIMAL, cpmeas.COLTYPE_FLOAT)):
                 measurement_name = im.image_name.value + (("_" + im.object_name.value) if im.wants_objects.value else "")
                 columns.append((cpmeas.IMAGE, feature % measurement_name, coltype))
         return columns

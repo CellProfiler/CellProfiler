@@ -74,7 +74,8 @@ class TestMeasureImageIntensity(unittest.TestCase):
     def test_01_01_image(self):
         '''Test operation on a single unmasked image'''
         np.random.seed(0)
-        pixels = np.random.uniform(size=(10,10)).astype(np.float32)
+        pixels = np.random.uniform(size=(10,10)).astype(np.float32) * .99
+        pixels[0:2,0:2] = 1
         workspace, module = self.make_workspace({},
                                                 {"my_image": pixels})
         image = workspace.image_set.get_image("my_image")
@@ -90,11 +91,15 @@ class TestMeasureImageIntensity(unittest.TestCase):
                          np.min(pixels))
         self.assertEqual(m.get_current_image_measurement('Intensity_MaxIntensity_my_image'),
                          np.max(pixels))
+        self.assertEqual(m.get_current_image_measurement(
+            'Intensity_PercentMaximal_my_image'), 4.0)
+                         
     
     def test_01_02_image_and_mask(self):
         '''Test operation on a masked image'''
         np.random.seed(0)
-        pixels = np.random.uniform(size=(10,10)).astype(np.float32)
+        pixels = np.random.uniform(size=(10,10)).astype(np.float32) * .99
+        pixels[1:3, 1:3] = 1
         mask = np.zeros((10,10),bool)
         mask[1:9,1:9] = True
         workspace, module = self.make_workspace({},
@@ -109,11 +114,15 @@ class TestMeasureImageIntensity(unittest.TestCase):
                          np.sum(pixels[1:9,1:9]))
         self.assertEqual(m.get_current_measurement(cpmeas.IMAGE, "Intensity_MeanIntensity_my_image"),
                          np.sum(pixels[1:9,1:9])/64.0)
+        self.assertAlmostEqual(m.get_current_measurement(
+            cpmeas.IMAGE, "Intensity_PercentMaximal_my_image"), 400. / 64.)
+                                                         
         
     def test_01_03_image_and_objects(self):
         '''Test operation on an image masked by objects'''
         np.random.seed(0)
-        pixels = np.random.uniform(size=(10,10)).astype(np.float32)
+        pixels = np.random.uniform(size=(10,10)).astype(np.float32) * .99
+        pixels[1:3, 1:3] = 1
         objects = np.zeros((10,10),int)
         objects[1:9,1:5] = 1
         objects[1:9,5:9] = 2
@@ -129,6 +138,8 @@ class TestMeasureImageIntensity(unittest.TestCase):
                          np.sum(pixels[1:9,1:9]))
         self.assertEqual(m.get_current_measurement(cpmeas.IMAGE, "Intensity_MeanIntensity_my_image_my_objects"),
                          np.sum(pixels[1:9,1:9])/64.0)
+        self.assertAlmostEqual(m.get_current_measurement(
+            cpmeas.IMAGE, "Intensity_PercentMaximal_my_image_my_objects"), 400. / 64.)
 
         self.assertEqual(len(m.get_object_names()),1)
         self.assertEqual(m.get_object_names()[0], cpmeas.IMAGE)
@@ -350,7 +361,8 @@ class TestMeasureImageIntensity(unittest.TestCase):
                                      (M.F_MEAN_INTENSITY, cpmeas.COLTYPE_FLOAT),
                                      (M.F_MIN_INTENSITY, cpmeas.COLTYPE_FLOAT),
                                      (M.F_MAX_INTENSITY, cpmeas.COLTYPE_FLOAT),
-                                     (M.F_TOTAL_AREA, cpmeas.COLTYPE_INTEGER)):
+                                     (M.F_TOTAL_AREA, cpmeas.COLTYPE_INTEGER),
+                                     (M.F_PERCENT_MAXIMAL, cpmeas.COLTYPE_FLOAT)):
                 # feature names are now formatting strings
                 feature_name = feature % expected_suffix
                 self.assertTrue(any([(column[1] == feature_name and

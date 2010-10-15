@@ -50,6 +50,7 @@ ID_FILE_RESTART = wx.NewId()
 ID_FILE_PRINT=wx.NewId()
 ID_FILE_OPEN_IMAGE=wx.NewId()
 ID_FILE_RUN_MULTIPLE_PIPELINES = wx.NewId()
+ID_FILE_NEW_CP=wx.NewId()
 
 ID_EDIT_SELECT_ALL = wx.NewId()
 ID_EDIT_COPY = wx.NewId()
@@ -172,6 +173,8 @@ class CPFrame(wx.Frame):
         self.__menu_file.Append(ID_FILE_ANALYZE_IMAGES,'Analyze images\tctrl+N','Run the pipeline on the images in the image directory')
         self.__menu_file.Append(ID_FILE_STOP_ANALYSIS,'Stop analysis','Stop running the pipeline')
         self.__menu_file.Append(ID_FILE_RUN_MULTIPLE_PIPELINES, 'Run multiple pipelines')
+        if os.name=='posix':
+            self.__menu_file.Append(ID_FILE_NEW_CP, 'Open a new CP window')
         self.__menu_file.Append(ID_FILE_RESTART, 'Restart pipeline', 'Restart a pipeline from a saved measurements file.')
         self.__menu_file.AppendSeparator()
         self.__menu_file.Append(ID_OPTIONS_PREFERENCES,"&Preferences...","Set global application preferences")
@@ -241,6 +244,7 @@ class CPFrame(wx.Frame):
         wx.EVT_MENU(self,ID_FILE_EXIT,lambda event: self.Close())
         wx.EVT_MENU(self, ID_FILE_OPEN_IMAGE, self.on_open_image)
         wx.EVT_MENU(self,ID_FILE_WIDGET_INSPECTOR,self.__on_widget_inspector)
+        wx.EVT_MENU(self, ID_FILE_NEW_CP,self.__on_new_cp)
         wx.EVT_MENU(self,ID_HELP_MODULE,self.__on_help_module)
         wx.EVT_MENU(self,ID_HELP_ONLINE_MANUAL,self.__on_help_online_manual)
         wx.EVT_MENU(self,ID_HELP_DEVELOPERS_GUIDE, self.__on_help_developers_guide)
@@ -323,6 +327,10 @@ class CPFrame(wx.Frame):
 
     def __on_close_all(self, event):
         close_all(self)
+    
+    def __on_new_cp(self, event):
+        import os
+        os.system('open -na CellProfiler2.0.app')
 
     def __on_help_online_manual(self, event):
         import webbrowser

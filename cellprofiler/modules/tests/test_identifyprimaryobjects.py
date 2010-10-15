@@ -135,8 +135,8 @@ class test_IdentifyPrimaryObjects(unittest.TestCase):
     def test_01_12_watershed_method(self):
         x = ID.IdentifyPrimAutomatic()
         self.assertEqual(x.watershed_method.value, ID.WA_INTENSITY, "Default should be intensity")
-        x.setting(ID.WATERSHED_VAR+1).set_value(ID.WA_DISTANCE)
-        self.assertEqual(x.watershed_method.value, ID.WA_DISTANCE)
+        x.setting(ID.WATERSHED_VAR+1).set_value(ID.WA_SHAPE)
+        self.assertEqual(x.watershed_method.value, ID.WA_SHAPE)
         
     def test_01_13_smoothing_filter_size(self):
         x = ID.IdentifyPrimAutomatic()
@@ -235,7 +235,7 @@ class test_IdentifyPrimaryObjects(unittest.TestCase):
         x.image_name.value = "my_image"
         x.threshold_range.min = .1
         x.threshold_range.max = 1
-        x.watershed_method.value = ID.WA_DISTANCE
+        x.watershed_method.value = ID.WA_SHAPE
         x.unclump_method.value = ID.UN_INTENSITY
         img = np.zeros((25,25))
         image = cellprofiler.cpimage.Image(img)
@@ -281,7 +281,7 @@ class test_IdentifyPrimaryObjects(unittest.TestCase):
         x.image_name.value = "my_image"
         x.threshold_range.min = .1
         x.threshold_range.max = 1
-        x.watershed_method.value = ID.WA_DISTANCE
+        x.watershed_method.value = ID.WA_SHAPE
         x.unclump_method.value = ID.UN_SHAPE
         img = np.zeros((25,25))
         image = cellprofiler.cpimage.Image(img)
@@ -505,7 +505,7 @@ class test_IdentifyPrimaryObjects(unittest.TestCase):
         x.maxima_suppression_size.value = 3
         x.automatic_suppression.value = False
         x.unclump_method.value = ID.UN_SHAPE
-        x.watershed_method.value = ID.WA_DISTANCE
+        x.watershed_method.value = ID.WA_SHAPE
         img = np.array([[ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                            [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                            [ 0, 0, 0, 0, 0,.5,.5,.5,.5,.5,.5, 0, 0, 0, 0, 0],
@@ -608,7 +608,7 @@ class test_IdentifyPrimaryObjects(unittest.TestCase):
         x.maxima_suppression_size.value = 3.6
         x.automatic_suppression.value = False
         x.unclump_method.value = ID.UN_INTENSITY
-        x.watershed_method.value = ID.WA_DISTANCE
+        x.watershed_method.value = ID.WA_SHAPE
         img = np.array([[ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                            [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                            [ 0, 0, 0, 0, 0,.5,.5,.5,.5,.5,.5, 0, 0, 0, 0, 0],
@@ -662,7 +662,7 @@ class test_IdentifyPrimaryObjects(unittest.TestCase):
         x.maxima_suppression_size.value = 3.6
         x.automatic_suppression.value = False
         x.unclump_method.value = ID.UN_INTENSITY
-        x.watershed_method.value = ID.WA_DISTANCE
+        x.watershed_method.value = ID.WA_SHAPE
         img = np.array([[ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                            [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                            [ 0, 0, 0, 0, 0,.5,.5,.5,.5,.5,.5, 0, 0, 0, 0, 0],
@@ -713,7 +713,7 @@ class test_IdentifyPrimaryObjects(unittest.TestCase):
         x.maxima_suppression_size.value = 3.6
         x.automatic_suppression.value = False
         x.unclump_method.value = ID.UN_INTENSITY
-        x.watershed_method.value = ID.WA_DISTANCE
+        x.watershed_method.value = ID.WA_SHAPE
         img = np.array([[ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                            [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                            [ 0, 0, 0, 0, 0,.5,.5,.5,.5,.5,.5, 0, 0, 0, 0, 0],
@@ -767,7 +767,7 @@ class test_IdentifyPrimaryObjects(unittest.TestCase):
         x.maxima_suppression_size.value = 3.6
         x.automatic_suppression.value = False
         x.unclump_method.value = ID.UN_INTENSITY
-        x.watershed_method.value = ID.WA_DISTANCE
+        x.watershed_method.value = ID.WA_SHAPE
         img = np.array([[ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                            [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                            [ 0, 0, 0, 0, 0,.5,.5,.5,.5,.5,.5, 0, 0, 0, 0, 0],
@@ -920,7 +920,7 @@ IdentifyPrimaryObjects:[module_num:1|svn_version:\'9633\'|variable_revision_numb
             x.size_range.min = min_size
             for unclump_method in (ID.UN_INTENSITY, ID.UN_SHAPE, ID.UN_LOG):
                 x.unclump_method.value = unclump_method
-                for watershed_method in (ID.WA_INTENSITY, ID.WA_DISTANCE, ID.WA_PROPAGATE):
+                for watershed_method in (ID.WA_INTENSITY, ID.WA_SHAPE, ID.WA_PROPAGATE):
                     x.watershed_method.value = watershed_method
                     image_set_list = cellprofiler.cpimage.ImageSetList()
                     image_set = image_set_list.get_image_set(0)
@@ -1195,7 +1195,7 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'8981\'|variable_revision_numb
         self.assertAlmostEqual(module.threshold_range.max, 0.6)
         self.assertEqual(module.object_fraction.value, "0.01")
         self.assertEqual(module.unclump_method, ID.UN_SHAPE)
-        self.assertEqual(module.watershed_method, ID.WA_DISTANCE)
+        self.assertEqual(module.watershed_method, ID.WA_SHAPE)
         self.assertEqual(module.smoothing_filter_size, 10)
         self.assertEqual(module.maxima_suppression_size, 7)
         self.assertFalse(module.should_save_outlines)

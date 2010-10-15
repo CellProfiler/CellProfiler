@@ -51,7 +51,6 @@ class AddModuleFrame(wx.Frame):
         # Other buttons
         getting_started_button = wx.Button(left_panel,-1,'Getting Started')
         wheres_my_module_button = wx.Button(left_panel,-1,"Where's my Module?")
-        browse_button = wx.Button(left_panel,-1,'Browse...')
         done_button = wx.Button(left_panel,-1,'Done')
         # Right-side panel
         self.__module_list_box = wx.ListBox(right_panel,-1)
@@ -70,8 +69,6 @@ class AddModuleFrame(wx.Frame):
         left_sizer.Add(getting_started_button,0,wx.EXPAND)
         left_sizer.AddSpacer(2)
         left_sizer.Add(wheres_my_module_button,0,wx.EXPAND)
-        left_sizer.AddSpacer(2)
-        left_sizer.Add(browse_button,0,wx.EXPAND)
         left_sizer.AddSpacer(2)
         left_sizer.Add(done_button,0,wx.EXPAND |wx.BOTTOM,5)
         left_panel.SetSizer(left_sizer)

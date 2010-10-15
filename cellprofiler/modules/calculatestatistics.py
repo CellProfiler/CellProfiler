@@ -390,6 +390,8 @@ class CalculateStatistics(cpm.CPModule):
             return False
         if feature_name.find("ModuleError") != -1:
             return False
+        if feature_name.find("ExecutionTime") != -1:
+            return False
         if (object_name == cpmeas.IMAGE and 
             feature_name == self.grouping_values):
             # Don't measure the pos/neg controls

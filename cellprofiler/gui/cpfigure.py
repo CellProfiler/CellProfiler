@@ -15,6 +15,7 @@ __version__ = "$Revision$"
 
 import numpy as np
 import os
+import sys
 import uuid
 import wx
 import matplotlib
@@ -349,21 +350,51 @@ class CPFigureFrame(wx.Frame):
     def on_measure_length_mouse_down(self, event):
         pass
 
-    def on_mouse_move(self, event):
+    def on_mouse_move(self, evt):
+        #
+        # LAAAME SAUCE -- Crosshair cursor is all black on Windows making it
+        #    virtually invisible on dark images. Use custom cursor instead.
+        #
+        if (sys.platform.lower().startswith('win') and 
+            evt.inaxes and
+            self.navtoolbar.mode == 'Zoom to rect mode'):  # NOTE: There are no constants for the navbar modes
+            #
+            # Build the crosshair cursor image as a numpy array.
+            # Sadly I can't figure out how to make a white outline since every
+            # value above 127 is apparently transparent.
+            # Soooo the outline is yellow.
+            #
+            # Best docs I could find: http://wxruby.rubyforge.org/doc/cursor.html
+            #
+            buf = np.ones((16,16,3), dtype='uint8') * 255
+            buf[:,:,2] = 1
+            buf[7,1:-1,:] = buf[1:-1,7,:] = 0
+            buf[:6,:6,:] = buf[9:,:6,:] = buf[9:,9:,:] = buf[:6,9:,:] = 255
+            #
+            # NOTE: I tried making an alpha channel and doing 
+            #  wx.ImageFromBuffer(16, 16, buf.tostring(), alpha_buffer.to_string())
+            # ...no good. wx just ignores the channel.
+            #
+            im = wx.ImageFromBuffer(16, 16, buf.tostring())
+            im.SetOptionInt(wx.IMAGE_OPTION_CUR_HOTSPOT_X, 7)
+            im.SetOptionInt(wx.IMAGE_OPTION_CUR_HOTSPOT_Y, 7)
+            cursor = wx.CursorFromImage(im)
+            self.figure.canvas.SetCursor(cursor)
+            
         if self.mouse_down is None:
-            x0 = event.xdata
-            x1 = event.xdata
-            y0 = event.ydata
-            y1 = event.ydata
+            x0 = evt.xdata
+            x1 = evt.xdata
+            y0 = evt.ydata
+            y1 = evt.ydata
         else:
-            x0 = min(self.mouse_down[0], event.xdata)
-            x1 = max(self.mouse_down[0], event.xdata)
-            y0 = min(self.mouse_down[1], event.ydata)
-            y1 = max(self.mouse_down[1], event.ydata)
+            x0 = min(self.mouse_down[0], evt.xdata)
+            x1 = max(self.mouse_down[0], evt.xdata)
+            y0 = min(self.mouse_down[1], evt.ydata)
+            y1 = max(self.mouse_down[1], evt.ydata)
         if self.mouse_mode == MODE_MEASURE_LENGTH:
-            self.on_mouse_move_measure_length(event, x0, y0, x1, y1)
+            self.on_mouse_move_measure_length(evt, x0, y0, x1, y1)
         elif not self.mouse_mode == MODE_MEASURE_LENGTH:
-            self.on_mouse_move_show_pixel_data(event, x0, y0, x1, y1)
+            self.on_mouse_move_show_pixel_data(evt, x0, y0, x1, y1)
     
     def get_pixel_data_fields_for_status_bar(self, im, xi, yi):
         fields = []
@@ -455,7 +486,7 @@ class CPFigureFrame(wx.Frame):
                 if axes == slax:
                     return self.images.get((i, j), None)
         return None
-
+    
     def on_button_release(self,event):
         if not hasattr(self, "subplots"):
             return
@@ -1417,7 +1448,7 @@ if __name__ == "__main__":
     app = wx.PySimpleApp()
     
 ##    f = CPFigureFrame(subplots=(4, 2))
-    f = CPFigureFrame(subplots=(3, 2))
+    f = CPFigureFrame(subplots=(1, 1))
     f.Show()
     
     img = np.random.uniform(.4, .6, size=(100, 50, 3))
@@ -1431,14 +1462,14 @@ if __name__ == "__main__":
 ##    f.subplot_histogram(1, 0, np.random.randn(1000), 50, 'x', title="hist")
 ##    f.subplot_scatter(2, 0, np.random.randn(1000), np.random.randn(1000), title="scatter")
 ##    f.subplot_density(3, 0, np.random.randn(100).reshape((50,2)), title="density")
-    f.subplot_imshow(0, 0, img[:,:,0], "1-channel colormapped", sharex=f.subplot(0,0), sharey=f.subplot(0,0), colormap=matplotlib.cm.jet, colorbar=True)
-    f.subplot_imshow_grayscale(1, 0, img[:,:,0], "1-channel grayscale", sharex=f.subplot(0,0), sharey=f.subplot(0,0))
-    f.subplot_imshow_bw(2, 0, img[:,:,0], "1-channel bw", sharex=f.subplot(0,0), sharey=f.subplot(0,0))
+##    f.subplot_imshow(0, 0, img[:,:,0], "1-channel colormapped", sharex=f.subplot(0,0), sharey=f.subplot(0,0), colormap=matplotlib.cm.jet, colorbar=True)
+    f.subplot_imshow_grayscale(0, 0, img[:,:,0], "1-channel grayscale", sharex=f.subplot(0,0), sharey=f.subplot(0,0))
+##    f.subplot_imshow_bw(2, 0, img[:,:,0], "1-channel bw", sharex=f.subplot(0,0), sharey=f.subplot(0,0))
 ##    f.subplot_imshow_grayscale(2, 0, img[:,:,0], "1-channel raw", normalize=False, colorbar=True)
 ##    f.subplot_imshow_grayscale(3, 0, img[:,:,0], "1-channel minmax=(.5,.6)", vmin=.5, vmax=.6, normalize=False, colorbar=True)
-    f.subplot_imshow(0, 1, img, "rgb")
-    f.subplot_imshow(1, 1, img, "rgb raw", normalize=False, sharex=f.subplot(0,1), sharey=f.subplot(0,1))
-    f.subplot_imshow(2, 1, img, "rgb raw disconnected")
+##    f.subplot_imshow(0, 1, img, "rgb")
+##    f.subplot_imshow(1, 1, img, "rgb raw", normalize=False, sharex=f.subplot(0,1), sharey=f.subplot(0,1))
+##    f.subplot_imshow(2, 1, img, "rgb raw disconnected")
 ##    f.subplot_imshow(2, 1, img, "rgb, log normalized", normalize='log')
 ##    f.subplot_imshow_bw(3, 1, img[:,:,0], "B&W")
 

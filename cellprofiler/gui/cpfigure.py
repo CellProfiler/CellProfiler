@@ -355,27 +355,18 @@ class CPFigureFrame(wx.Frame):
         # LAAAME SAUCE -- Crosshair cursor is all black on Windows making it
         #    virtually invisible on dark images. Use custom cursor instead.
         #
+        print self.navtoolbar.mode
         if (sys.platform.lower().startswith('win') and 
             evt.inaxes and
-            self.navtoolbar.mode == 'Zoom to rect mode'):  # NOTE: There are no constants for the navbar modes
+            'zoom rect' in self.navtoolbar.mode.lower()):  # NOTE: There are no constants for the navbar modes
             #
             # Build the crosshair cursor image as a numpy array.
-            # Sadly I can't figure out how to make a white outline since every
-            # value above 127 is apparently transparent.
-            # Soooo the outline is yellow.
-            #
-            # Best docs I could find: http://wxruby.rubyforge.org/doc/cursor.html
             #
             buf = np.ones((16,16,3), dtype='uint8') * 255
-            buf[:,:,2] = 1
             buf[7,1:-1,:] = buf[1:-1,7,:] = 0
-            buf[:6,:6,:] = buf[9:,:6,:] = buf[9:,9:,:] = buf[:6,9:,:] = 255
-            #
-            # NOTE: I tried making an alpha channel and doing 
-            #  wx.ImageFromBuffer(16, 16, buf.tostring(), alpha_buffer.to_string())
-            # ...no good. wx just ignores the channel.
-            #
-            im = wx.ImageFromBuffer(16, 16, buf.tostring())
+            abuf = np.ones((16,16), dtype='uint8') * 255
+            abuf[:6,:6] = abuf[9:,:6] = abuf[9:,9:] = abuf[:6,9:] = 0
+            im = wx.ImageFromBuffer(16, 16, buf.tostring(), abuf.tostring())
             im.SetOptionInt(wx.IMAGE_OPTION_CUR_HOTSPOT_X, 7)
             im.SetOptionInt(wx.IMAGE_OPTION_CUR_HOTSPOT_Y, 7)
             cursor = wx.CursorFromImage(im)

@@ -1106,6 +1106,11 @@ preference determines whether CellProfiler displays a message box at the
 end of a run. Check this preference to show the message box or uncheck it
 to stop display."""
 
+SHOW_EXITING_TEST_MODE_HELP = """The <i>Show "Exiting test mode"</i>
+preference determines whether CellProfiler displays a message box to inform you
+that a change made to the pipeline will cause test mode to end. Check this preference 
+to show the message box or uncheck it to stop display."""
+
 PRIMARY_OUTLINE_COLOR_HELP = """The <i>Primary Outline Color</i> preference
 sets the color used for the outline of the object of interest in the
 <i>IdentifyPrimaryObjects</i>, <i>IdentifySecondaryObjects</i> and

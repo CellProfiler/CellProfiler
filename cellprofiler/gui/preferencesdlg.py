@@ -200,6 +200,10 @@ class PreferencesDlg(wx.Dialog):
                 ['Show the "Analysis complete" message at the end of a run.',
                  cpprefs.get_show_analysis_complete_dlg,
                  cpprefs.set_show_analysis_complete_dlg,
+                 CHOICE, cphelp.SHOW_ANALYSIS_COMPLETE_HELP],
+                ['Show the "Exiting test mode" message.',
+                 cpprefs.get_show_exiting_test_mode_dlg,
+                 cpprefs.set_show_exiting_test_mode_dlg,
                  CHOICE, cphelp.SHOW_ANALYSIS_COMPLETE_HELP]
                 ]
     

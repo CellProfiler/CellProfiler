@@ -166,6 +166,7 @@ ALLOW_OUTPUT_FILE_OVERWRITE = 'AllowOutputFileOverwrite'
 PLUGIN_DIRECTORY = 'PluginDirectory'
 IJ_PLUGIN_DIRECTORY = 'IJPluginDirectory'
 SHOW_ANALYSIS_COMPLETE_DLG = "ShowAnalysisCompleteDlg"
+SHOW_EXITING_TEST_MODE_DLG = "ShowExitingTestModeDlg"
 
 def recent_file(index, category=""):
     return (FF_RECENTFILES % (index + 1)) + category
@@ -640,12 +641,11 @@ def set_allow_output_file_overwrite(value):
     get_config().Write(ALLOW_OUTPUT_FILE_OVERWRITE, 
                        "True" if value else "False")
 
+# "Analysis complete" preference
 __show_analysis_complete_dlg = None
 
 def get_show_analysis_complete_dlg():
-    '''Return true if the user wants to see the "analysis complete" dialog
-    
-    '''
+    '''Return true if the user wants to see the "analysis complete" dialog'''
     global __show_analysis_complete_dlg
     if __show_analysis_complete_dlg is not None:
         return __show_analysis_complete_dlg
@@ -659,4 +659,22 @@ def set_show_analysis_complete_dlg(value):
     __show_analysis_complete_dlg = value
     get_config().Write(SHOW_ANALYSIS_COMPLETE_DLG, 
                        "True" if value else "False")
-    
+
+# "Existing test mode" preference
+__show_exiting_test_mode_dlg = None
+
+def get_show_exiting_test_mode_dlg():
+    '''Return true if the user wants to see the "exiting test mode" dialog'''
+    global __show_exiting_test_mode_dlg
+    if __show_exiting_test_mode_dlg is not None:
+        return __show_exiting_test_mode_dlg
+    if not get_config().Exists(SHOW_EXITING_TEST_MODE_DLG):
+        return True
+    return get_config().Read(SHOW_EXITING_TEST_MODE_DLG) == "True"
+
+def set_show_exiting_test_mode_dlg(value):
+    '''Set the "exiting test mode" flag'''
+    global __show_exiting_test_mode_dlg
+    __show_exiting_test_mode_dlg = value
+    get_config().Write(SHOW_EXITING_TEST_MODE_DLG, 
+                       "True" if value else "False")

@@ -538,6 +538,8 @@ class PipelineController:
         #
         if self.is_in_debug_mode():
             self.stop_debugging()
+            if cpprefs.get_show_exiting_test_mode_dlg():
+                self.show_exiting_test_mode()
 
     def on_duplicate_module(self, event):
         self.duplicate_modules(self.__get_selected_modules())
@@ -567,6 +569,8 @@ class PipelineController:
         #
         if self.is_in_debug_mode():
             self.stop_debugging()
+            if cpprefs.get_show_exiting_test_mode_dlg():
+                self.show_exiting_test_mode()
         
     def on_module_down(self,event):
         """Move the currently selected modules down"""
@@ -579,6 +583,8 @@ class PipelineController:
         #
         if self.is_in_debug_mode():
             self.stop_debugging()
+            if cpprefs.get_show_exiting_test_mode_dlg():
+                self.show_exiting_test_mode()
             
     def on_undo(self, event):
         wx.BeginBusyCursor()
@@ -600,8 +606,8 @@ class PipelineController:
         #
         # Major event - restart from scratch
         #
-        if self.is_in_debug_mode():
-            self.stop_debugging()
+        #if self.is_in_debug_mode():
+        #    self.stop_debugging()
         
     def __on_module_view_event(self,caller,event):
         assert isinstance(event,cellprofiler.gui.moduleview.SettingEditedEvent), '%s is not an instance of CellProfiler.CellProfilerGUI.ModuleView.SettingEditedEvent'%(str(event))
@@ -620,6 +626,8 @@ class PipelineController:
                 if setting.key() in [x.key() for x in module.settings()]:
                     if module.change_causes_prepare_run(setting):
                         self.stop_debugging()
+                        if cpprefs.get_show_exiting_test_mode_dlg():
+                            self.show_exiting_test_mode()
 
     def status_callback(self, *args):
         self.__frame.preferences_view.on_start_module(*args)
@@ -1191,7 +1199,41 @@ class PipelineController:
         dlg.ShowModal()
         if dont_show_again.Value:
             cpprefs.set_show_analysis_complete_dlg(False)
-
+            
+    def show_exiting_test_mode(self):
+        '''Show the "Analysis complete" dialog'''
+        dlg = wx.Dialog(self.__frame, -1, "Exiting test mode")
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        dlg.SetSizer(sizer)
+        sub_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        sizer.Add(sub_sizer, 1, wx.EXPAND)
+        text_ctrl = wx.StaticText(dlg, 
+                                  label=("You have changed the pipeline so\n"
+                                         "that test mode will now exit.\n"))
+        sub_sizer.Add(
+            text_ctrl,
+            1, wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_CENTER_VERTICAL | 
+            wx.EXPAND | wx.ALL, 10)
+        bitmap = wx.ArtProvider.GetBitmap(wx.ART_INFORMATION,
+                                          wx.ART_CMN_DIALOG,
+                                          size=(32,32))
+        sub_sizer.Add(wx.StaticBitmap(dlg, -1, bitmap), 0,
+                      wx.EXPAND | wx.ALL, 10)
+        dont_show_again = wx.CheckBox(dlg, -1, "Don't show this again")
+        dont_show_again.Value = False
+        sizer.Add(dont_show_again, 0, 
+                  wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL | wx.LEFT, 10)
+        button_sizer = wx.StdDialogButtonSizer()
+        button_sizer.AddButton(wx.Button(dlg, wx.ID_OK))
+        sizer.Add(button_sizer, 0, 
+                  wx.ALIGN_CENTER_HORIZONTAL | wx.EXPAND | wx.ALL, 10)
+        button_sizer.Realize()
+        dlg.Fit()
+        dlg.CenterOnParent()
+        dlg.ShowModal()
+        if dont_show_again.Value:
+            cpprefs.set_show_exiting_test_mode_dlg(False)
+            
     def get_output_file_path(self):
         path = os.path.join(cpprefs.get_default_output_directory(),
                             cpprefs.get_output_file_name())

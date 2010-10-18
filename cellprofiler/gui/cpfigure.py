@@ -355,7 +355,6 @@ class CPFigureFrame(wx.Frame):
         # LAAAME SAUCE -- Crosshair cursor is all black on Windows making it
         #    virtually invisible on dark images. Use custom cursor instead.
         #
-        print self.navtoolbar.mode
         if (sys.platform.lower().startswith('win') and 
             evt.inaxes and
             'zoom rect' in self.navtoolbar.mode.lower()):  # NOTE: There are no constants for the navbar modes

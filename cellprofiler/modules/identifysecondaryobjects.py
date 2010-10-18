@@ -15,12 +15,12 @@ within a secondary object (e.g., nuclei are completely contained within cells
 stained for actin).
 
 In order to identify the edges of secondary objects, this module performs two tasks: 
-            <ol>
-            <li>Finding the dividing lines between secondary objects which touch each other. 
-            <li>Finding the dividing lines between the secondary objects and the
-            background of the image. This is done by thresholding the image stained
-            for secondary objects, except when using the <i>Distance - N</i> option.</li>
-            </ol>
+<ol>
+<li>Finding the dividing lines between secondary objects which touch each other. 
+<li>Finding the dividing lines between the secondary objects and the
+background of the image. This is done by thresholding the image stained
+for secondary objects, except when using the <i>Distance - N</i> option.</li>
+</ol>
 
 <h3>Technical notes:</h3>
 The <i>Propagation</i> algorithm labels from LABELS_IN to LABELS_OUT, steered by
@@ -175,21 +175,23 @@ class IdentifySecondaryObjects(cpmi.Identify):
         self.regularization_factor = cps.Float("Regularization factor",0.05,minval=0,
                                                doc="""\
             <i>(Used only if Propagation method selected)</i> <br>
-            In the range 0 to infinity.
+            The regularization factor &lambda; can be anywhere in the range 0 to infinity.
             This method takes two factors into account when deciding where to draw
             the dividing line between two touching secondary objects: the distance to
             the nearest primary object, and the intensity of the secondary object
             image. The regularization factor controls the balance between these two
             considerations: 
             <ul>
-            <li>A value of 0 means that the distance to the nearest
+            <li>A &lambda; value of 0 means that the distance to the nearest
             primary object is ignored and the decision is made entirely on the
             intensity gradient between the two competing primary objects. </li>
-            <li>Larger values weight the distance between the two values more and more heavily.
-            The regularization factor can be infinitely large, but around 10 or so
-            the intensity image is almost completely ignored and the dividing line
-            will simply be halfway between the two competing primary objects.</li>
-            </ul>""")
+            <li>Larger values of &lambda; put more and more weight on the distance between the two objects.
+            This relationship is such that small changes in &lambda; will have fairly different 
+            results (e.,g 0.01 vs 0.001). However, the intensity image is almost completely 
+            ignored at &lambda; much greater than 1.</li>
+            <li>At infinity, the result will look like %(M_DISTANCE_B)s, masked to the
+            secondary staining image.</li>
+            </ul>"""%globals())
         
         self.use_outlines = cps.Binary("Retain outlines of the identified secondary objects?",False)
         

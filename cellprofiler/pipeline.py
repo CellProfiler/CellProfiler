@@ -234,11 +234,11 @@ def add_all_measurements(handles, measurements):
                     if np.isscalar(ddata) and np.isreal(ddata):
                         feature_measurements[0,i] = np.array([ddata])
                     elif ddata is None:
-                        feature_measurements[0,i] = np.array([0])
+                        feature_measurements[0,i] = np.array([])
                     else:
                         feature_measurements[0,i] = ddata
                 else:
-                    feature_measurements[0, i] = np.array([0])
+                    feature_measurements[0, i] = np.array([])
     if cpmeas.EXPERIMENT in measurements.object_names:
         mapping = map_feature_names(measurements.get_feature_names(cpmeas.EXPERIMENT))
         object_dtype = make_cell_struct_dtype(mapping.keys())

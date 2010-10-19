@@ -20,7 +20,7 @@ Rescaling is especially helpful when converting 12-bit images saved in
 # 
 # Website: http://www.cellprofiler.org
 #
-#__version__="$Revision: 6746 $"
+__version__="$Revision: 6746 $"
 
 import numpy as np
 

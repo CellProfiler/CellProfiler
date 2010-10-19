@@ -13,6 +13,7 @@ Website: http://www.cellprofiler.org
 """
 __version__="$Revision$"
 
+import inspect
 import os
 import wx
 import wx.html
@@ -630,6 +631,14 @@ All rights reserved."""
         self.Layout()
         
     def __on_data_tool(self, event, tool_name):
+        module = instantiate_module(tool_name)
+        args, varargs, varkw, vardef = inspect.getargspec(module.run_as_data_tool)
+        if len(args) + (0 if varargs is None else len(varargs)) == 1:
+            # Data tool doesn't need the data tool frame because it doesn't
+            # take the "workspace" argument
+            #
+            module.run_as_data_tool()
+            return
         dlg = wx.FileDialog(self, "Choose data output file for %s data tool" %
                             tool_name, wildcard="*.mat",
                             style=(wx.FD_OPEN | wx.FILE_MUST_EXIST))

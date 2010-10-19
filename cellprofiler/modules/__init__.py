@@ -90,6 +90,7 @@ pymodule_to_cpmodule = {'align' : 'Align',
                         'measureobjectradialdistribution' : 'MeasureObjectRadialDistribution',
                         'measureneurons': 'MeasureNeurons',
                         'measuretexture' : 'MeasureTexture',
+                        'mergeoutputfiles' : 'MergeOutputFiles',
                         'morph' : 'Morph',
                         'overlayoutlines' : 'OverlayOutlines',
                         'pausecellprofiler': 'PauseCellProfiler',
@@ -170,6 +171,7 @@ builtin_modules = ['align',
                    'measureobjectradialdistribution',
                    'measureneurons',
                    'measuretexture',
+                   'mergeoutputfiles',
                    'morph',
                    'overlayoutlines',
                    'pausecellprofiler',
@@ -256,6 +258,7 @@ svn_revisions = {}
 pymodules = []
 badmodules = []
 datatools = []
+pure_datatools = {}
 
 do_not_override = ['__init__', 'set_settings', 'create_from_handles', 'test_valid', 'module_class']
 should_override = ['create_settings', 'settings', 'run']
@@ -307,6 +310,10 @@ def fill_modules():
                 match = re.match('^\$Revision: ([0-9]+) \$$', m.__version__)
                 if match is not None:
                     svn_revisions[name] = match.groups()[0]
+            if not hasattr(all_modules[name], "settings"):
+                # No settings = pure data tool
+                pure_datatools[name] = all_modules[name]
+                del all_modules[name]
         except Exception, e:
             import traceback
             print traceback.print_exc(e)
@@ -356,6 +363,8 @@ def instantiate_module(module_name):
         module_name = substitutions[module_name]
     module_class = module_name.split('.')[-1]
     if not all_modules.has_key(module_class):
+        if pure_datatools.has_key(module_class):
+            return pure_datatools[module_class]()
         if module_class in unimplemented_modules:
             raise ValueError(("The %s module has not yet been implemented. "
                               "It will be available in a later version "

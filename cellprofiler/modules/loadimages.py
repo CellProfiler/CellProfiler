@@ -808,6 +808,32 @@ class LoadImages(cpmodule.CPModule):
                         "Use regular expressions to match with a matching\n"
                         'expression of ".*" if this is the desired behavior.',
                         image_group.common_text)
+
+    def validate_module_warnings(self, pipeline):
+        '''Check for potentially dangerous settings
+        
+        The best practice is to have a single LoadImages or LoadData module.
+        '''
+        from cellprofiler.modules.loaddata import LoadData
+        for module in pipeline.modules():
+            if id(module) == id(self):
+                return
+            if isinstance(module, LoadData):
+                raise cps.ValidationError(
+                    "Your pipeline has a LoadImages and LoadData module.\n"
+                    "The best practice is to have only a single LoadImages\n"
+                    "or LoadData module. This LoadImages module will match its\n"
+                    "metadata against that of the previous LoadData module\n"
+                    "in an attempt to reconcile the two modules' image\n"
+                    "set lists and this can result in image sets with\n"
+                    "missing images or metadata.", self.add_image)
+            if isinstance(module, LoadImages):
+                raise cps.ValidationError(
+                    "Your pipeline has two or more LoadImages modules.\n"
+                    "The best practice is to have only one LoadImages module.\n"
+                    "Consider loading all of your images using a single\n"
+                    "LoadImages module. You can add additional images using\n"
+                    "the Add button", self.add_image)
     
     #
     # Slots for storing settings in the array

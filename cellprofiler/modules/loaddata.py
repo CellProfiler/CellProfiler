@@ -132,6 +132,7 @@ import cellprofiler.preferences as cpprefs
 from cellprofiler.modules.loadimages import LoadImagesImageProvider
 from cellprofiler.modules.loadimages import C_FILE_NAME, C_PATH_NAME
 from cellprofiler.modules.loadimages import C_MD5_DIGEST, C_SCALING
+from cellprofiler.modules.loadimages import LoadImages
 from cellprofiler.preferences import standardize_default_folder_names, \
      DEFAULT_INPUT_FOLDER_NAME, DEFAULT_OUTPUT_FOLDER_NAME, NO_FOLDER_NAME, \
      ABSOLUTE_FOLDER_NAME, IO_FOLDER_CHOICE_HELP_TEXT
@@ -359,6 +360,31 @@ class LoadData(cpm.CPModule):
         except Exception, e:
             raise cps.ValidationError("The CSV file, %s, is not in the proper format. See this module's help for details on CSV format. (error: %s)" %
                                       (self.csv_path, e), self.csv_file_name)
+    
+    def validate_module_warnings(self, pipeline):
+        '''Check for potentially dangerous settings
+        
+        The best practice is to have a single LoadImages or LoadData module.
+        '''
+        for module in pipeline.modules():
+            if id(module) == id(self):
+                return
+            if isinstance(module, LoadData):
+                raise cps.ValidationError(
+                    "Your pipeline has two or more LoadData modules.\n"
+                    "The best practice is to have only one LoadData module.\n"
+                    "Consider combining the .csv files from all of your\n"
+                    "LoadData modules into one and using only a single\n"
+                    "LoadData module", self.csv_file_name)
+            if isinstance(module, LoadImages):
+                raise cps.ValidationError(
+                    "Your pipeline has a LoadImages and LoadData module.\n"
+                    "The best practice is to have only a single LoadImages\n"
+                    "or LoadData module. This LoadData module will match its\n"
+                    "metadata against that of the previous LoadImages module\n"
+                    "in an attempt to reconcile the two modules' image\n"
+                    "set lists and this can result in image sets with\n"
+                    "missing images or metadata.", self.csv_file_name)
 
     def visible_settings(self):
         result = [self.csv_directory, self.csv_file_name, 

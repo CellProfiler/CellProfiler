@@ -204,7 +204,11 @@ class PreferencesDlg(wx.Dialog):
                 ['Show the "Exiting test mode" message.',
                  cpprefs.get_show_exiting_test_mode_dlg,
                  cpprefs.set_show_exiting_test_mode_dlg,
-                 CHOICE, cphelp.SHOW_ANALYSIS_COMPLETE_HELP]
+                 CHOICE, cphelp.SHOW_ANALYSIS_COMPLETE_HELP],
+                ['Warn if images are different sizes',
+                 cpprefs.get_show_report_bad_sizes_dlg,
+                 cpprefs.set_show_report_bad_sizes_dlg,
+                 CHOICE, cphelp.SHOW_REPORT_BAD_SIZES_DLG_HELP]
                 ]
     
     def get_title_font(self):

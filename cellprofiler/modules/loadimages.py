@@ -98,8 +98,11 @@ from cellprofiler.preferences import \
      standardize_default_folder_names, DEFAULT_INPUT_FOLDER_NAME, \
      DEFAULT_OUTPUT_FOLDER_NAME, ABSOLUTE_FOLDER_NAME, \
      DEFAULT_INPUT_SUBFOLDER_NAME, DEFAULT_OUTPUT_SUBFOLDER_NAME, \
-     IO_FOLDER_CHOICE_HELP_TEXT
+     IO_FOLDER_CHOICE_HELP_TEXT, \
+     get_show_report_bad_sizes_dlg, set_show_report_bad_sizes_dlg, \
+     get_headless
 from cellprofiler.gui.help import USING_METADATA_GROUPING_HELP_REF
+from cellprofiler.gui.errordialog import show_warning
 
 PILImage.init()
 
@@ -1838,6 +1841,8 @@ class LoadImages(cpmodule.CPModule):
         statistics = [header]
         m = workspace.measurements
         image_set_metadata = {}
+        image_size = None
+        first_image_filename = None
         for fd in self.images:
             for channel in fd.channels:
                 image_name = channel.image_name.value
@@ -1880,6 +1885,17 @@ class LoadImages(cpmodule.CPModule):
                                   digest.hexdigest())
                 m.add_image_measurement("_".join((C_SCALING, name)),
                                         image.scale)
+                if image_size is None:
+                    image_size = tuple(pixel_data.shape[:2])
+                    first_image_filename = filename
+                elif image_size != tuple(pixel_data.shape[:2]):
+                    warning = bad_sizes_warning(image_size, first_image_filename,
+                                                pixel_data.shape[:2], filename)
+                    if get_headless():
+                        print warning
+                    elif workspace.frame is not None:
+                        workspace.display_data.warning = warning
+
                 for d in (metadata, image_set_metadata):
                     for key in d:
                         measurement = '_'.join((cpmeas.C_METADATA, key))
@@ -1902,6 +1918,12 @@ class LoadImages(cpmodule.CPModule):
 
     def display(self, workspace):
         if workspace.frame != None:
+            if hasattr(workspace.display_data, "warning"):
+                show_warning("Images have different sizes", 
+                             workspace.display_data.warning,
+                             get_show_report_bad_sizes_dlg,
+                             set_show_report_bad_sizes_dlg)
+
             figure = workspace.create_or_find_figure(title="LoadImages, image cycle #%d"%(
                 workspace.measurements.image_set_number),
                                                  subplots=(1,1))
@@ -2785,3 +2807,20 @@ class LoadImagesSTKFrameProvider(LoadImagesImageProviderBase):
 
     def get_t(self):
         return self.__t
+
+def bad_sizes_warning(first_size, first_filename,
+                      second_size, second_filename):
+    '''Return a warning message about sizes being wrong
+    
+    first_size: tuple of height / width of first image
+    first_filename: file name of first image
+    second_size: tuple of height / width of second image
+    second_filename: file name of second image
+    '''
+    warning = ("Warning: loading image files of different dimensions.\n\n"
+               "%s: width = %d, height = %d\n"
+               "%s: width = %d, height = %d") % (
+                   first_filename, first_size[1], first_size[0],
+                   second_filename, second_size[1], second_size[0])
+    return warning
+        

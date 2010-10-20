@@ -133,6 +133,7 @@ from cellprofiler.modules.loadimages import LoadImagesImageProvider
 from cellprofiler.modules.loadimages import C_FILE_NAME, C_PATH_NAME
 from cellprofiler.modules.loadimages import C_MD5_DIGEST, C_SCALING
 from cellprofiler.modules.loadimages import LoadImages
+from cellprofiler.modules.loadimages import bad_sizes_warning
 from cellprofiler.preferences import standardize_default_folder_names, \
      DEFAULT_INPUT_FOLDER_NAME, DEFAULT_OUTPUT_FOLDER_NAME, NO_FOLDER_NAME, \
      ABSOLUTE_FOLDER_NAME, IO_FOLDER_CHOICE_HELP_TEXT
@@ -798,6 +799,8 @@ class LoadData(cpm.CPModule):
         dictionary = workspace.image_set_list.legacy_fields[self.legacy_field_key]
         statistics = []
         image_set_keys = workspace.image_set.keys
+        image_size = None
+        first_filename = None
         if (len(image_set_keys.keys()) > 1 or
             image_set_keys.keys()[0]!= 'number'):
             # Match keys against each dictionary entry
@@ -864,6 +867,16 @@ class LoadData(cpm.CPModule):
                 md5.hexdigest())
             workspace.measurements.add_image_measurement(
                 C_SCALING + '_' + image_name, image.scale)
+            if image_size is None:
+                image_size = tuple(pixel_data.shape)
+                first_filename = image.file_name
+            elif tuple(pixel_data.shape) != image_size:
+                warning = bad_sizes_warning(image_size, first_filename,
+                                            pixel_data.shape, image.file_name)
+                if workspace.frame is not None:
+                    workspace.display_data.warning = warning
+                else:
+                    print warning
         if not workspace.frame is None:
             workspace.display_data.statistics = statistics
             
@@ -871,6 +884,12 @@ class LoadData(cpm.CPModule):
         return False
     
     def display(self, workspace):
+        if hasattr(workspace.display_data, "warning"):
+            from cellprofiler.gui.errordialog import show_warning
+            show_warning("Images have different sizes",
+                         workspace.display_data.warning,
+                         cpprefs.get_show_report_bad_sizes_dlg,
+                         cpprefs.set_show_report_bad_sizes_dlg)
         figure = workspace.create_or_find_figure(title="LoadData, image cycle #%d"%(
                 workspace.measurements.image_set_number),subplots=(1,1))
         figure.subplot_table(0,0, workspace.display_data.statistics,[.3,.7])

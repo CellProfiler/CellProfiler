@@ -167,6 +167,7 @@ PLUGIN_DIRECTORY = 'PluginDirectory'
 IJ_PLUGIN_DIRECTORY = 'IJPluginDirectory'
 SHOW_ANALYSIS_COMPLETE_DLG = "ShowAnalysisCompleteDlg"
 SHOW_EXITING_TEST_MODE_DLG = "ShowExitingTestModeDlg"
+SHOW_BAD_SIZES_DLG = "ShowBadSizesDlg"
 
 def recent_file(index, category=""):
     return (FF_RECENTFILES % (index + 1)) + category
@@ -677,4 +678,23 @@ def set_show_exiting_test_mode_dlg(value):
     global __show_exiting_test_mode_dlg
     __show_exiting_test_mode_dlg = value
     get_config().Write(SHOW_EXITING_TEST_MODE_DLG, 
+                       "True" if value else "False")
+
+# "Report bad sizes" preference
+__show_report_bad_sizes_dlg = None
+
+def get_show_report_bad_sizes_dlg():
+    '''Return true if the user wants to see the "report bad sizes" dialog'''
+    global __show_report_bad_sizes_dlg
+    if __show_report_bad_sizes_dlg is not None:
+        return __show_report_bad_sizes_dlg
+    if not get_config().Exists(SHOW_BAD_SIZES_DLG):
+        return True
+    return get_config().Read(SHOW_BAD_SIZES_DLG) == "True"
+
+def set_show_report_bad_sizes_dlg(value):
+    '''Set the "exiting test mode" flag'''
+    global __show_report_bad_sizes_dlg
+    __show_report_bad_sizes_dlg = value
+    get_config().Write(SHOW_BAD_SIZES_DLG, 
                        "True" if value else "False")

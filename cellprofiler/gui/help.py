@@ -1111,6 +1111,11 @@ preference determines whether CellProfiler displays a message box to inform you
 that a change made to the pipeline will cause test mode to end. Check this preference 
 to show the message box or uncheck it to stop display."""
 
+SHOW_REPORT_BAD_SIZES_DLG_HELP = """The <i>Show Report Bad Sizes dialog</i>
+preference determines whether CellProfiler will display a warning dialog
+if images of different sizes are loaded together in an image set.
+Check this preference to show the message box or uncheck it to stop display."""
+
 PRIMARY_OUTLINE_COLOR_HELP = """The <i>Primary Outline Color</i> preference
 sets the color used for the outline of the object of interest in the
 <i>IdentifyPrimaryObjects</i>, <i>IdentifySecondaryObjects</i> and

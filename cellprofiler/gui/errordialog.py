@@ -16,7 +16,6 @@ __version__ = "$Revision$"
 from StringIO import StringIO
 import urllib
 import urllib2
-import wx
 import traceback
 import sys
 import platform
@@ -36,6 +35,7 @@ def display_error_dialog(frame, exc, pipeline, message=None, tb = None):
     
     Returns either ED_STOP or ED_CONTINUE indicating how to handle.
     '''
+    import wx
     if message is None:
         message = str(exc)
     
@@ -200,6 +200,59 @@ def on_report(event, dialog, traceback_text, pipeline):
         wx.MessageBox("Failed to upload, server reported code %d"%(e.code))
     except urllib2.URLError, e:
         wx.MessageBox("Failed to upload: %s"%(e.reason))
+
+def show_warning(title, message, get_preference, set_preference):
+    '''Show a silenceable warning message to the user
+    
+    title - title for the dialog box
+    
+    message - message to be displayed
+    
+    get_preference - function that gets a user preference: do you want to
+                     show this warning?
+    
+    set_preference - function that sets the user preference if they choose
+                     not to see the warning again.
+                     
+    The message is printed to the console if headless.
+    '''
+    from cellprofiler.preferences import get_headless
+    
+    if get_headless():
+        print message
+        return
+    
+    if not get_preference():
+        return
+    
+    import wx
+    if wx.GetApp() is None:
+        print message
+        return
+    
+    dlg = wx.Dialog(wx.GetApp().GetTopWindow(), title = title)
+    dlg.Sizer = sizer = wx.BoxSizer(wx.VERTICAL)
+    subsizer = wx.BoxSizer(wx.HORIZONTAL)
+    sizer.Add(subsizer, 0, wx.EXPAND | wx.ALL, 5)
+    subsizer.Add(wx.StaticBitmap(dlg, wx.ID_ANY,
+                                 wx.ArtProvider.GetBitmap(wx.ART_INFORMATION,
+                                                          wx.ART_CMN_DIALOG)),
+                 0, wx.ALIGN_LEFT | wx.ALIGN_TOP | wx.RIGHT, 5)
+    text = wx.StaticText(dlg, wx.ID_ANY, message)
+    subsizer.Add(text, 0, wx.ALIGN_LEFT | wx.ALIGN_TOP | wx.ALL, 5)
+    dont_show = wx.CheckBox(dlg, 
+                            label = "Don't show this message again.")
+    sizer.Add(dont_show, 0, wx.ALIGN_LEFT | wx.ALL, 5)
+    buttons_sizer = wx.StdDialogButtonSizer()
+    buttons_sizer.AddButton(wx.Button(dlg, wx.ID_OK))
+    buttons_sizer.Realize()
+    sizer.Add(buttons_sizer, 0, wx.ALIGN_CENTER_HORIZONTAL | wx.ALL, 5)
+    dlg.Fit()
+    dlg.ShowModal()
+    if dont_show.Value:
+        set_preference(False)
+
+    
     
 if __name__ == "__main__":
     import cellprofiler.pipeline

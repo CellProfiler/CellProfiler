@@ -208,7 +208,8 @@ class LoadImages(cpmodule.CPModule):
                 a smaller file ("lossless") so they are perfectly acceptable for image analysis (e.g., .png, .tif, .gif). 
                 Uncompressed file formats are also fine for image analysis (e.g., .bmp).</li>
                 <li><i>AVI, MOV movies:</i> AVIs (Audio Video Interleave) and MOVs (QuicktTime) files are types of movie files. Only 
-                uncompressed AVIs are supported; supported MOVs are listed <a href="http://www.loci.wisc.edu/bio-formats-format/quicktime-movie">here</a>.</li>
+                uncompressed AVIs are supported; supported MOVs are listed <a href="http://www.loci.wisc.edu/bio-formats-format/quicktime-movie">here</a>.
+                Note that .mov files are not supported on 64-bit systems.</li>
                 <li><i>TIF, TIFF, FLEX movies:</i> A TIF/TIFF movie is a file that contains a series of images as individual frames. 
                 The same is true for the FLEX file format (used by Evotec Opera automated microscopes).</li>
                 <li><i>STK movies:</i> STKs are a proprietary image format used by MetaMorph (Molecular Devices). It is typically

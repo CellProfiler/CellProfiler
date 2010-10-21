@@ -2028,7 +2028,52 @@ LoadImages:[module_num:1|svn_version:\'10503\'|variable_revision_number:8|show_w
                 self.assertEqual(tuple(red_image.pixel_data.shape),
                                  tuple(green_image.pixel_data.shape))
                 m.next_image_set()
-               
+                
+    def test_09_08_load_mov(self):
+        if LI.FF_AVI_MOVIES not in LI.FF:
+            sys.stderr.write("WARNING: MOV movies not supported\n")
+            return
+        avi_path = T.testimages_directory()
+        module = LI.LoadImages()
+        module.file_types.value = LI.FF_AVI_MOVIES
+        module.images[0].common_text.value = 'Control.mov'
+        module.images[0].channels[0].image_name.value = 'MyImage'
+        module.location.dir_choice = LI.ABSOLUTE_FOLDER_NAME
+        module.location.custom_path = avi_path
+        module.module_num = 1
+        pipeline = P.Pipeline()
+        pipeline.add_module(module)
+        pipeline.add_listener(self.error_callback)
+        image_set_list = I.ImageSetList()
+        module.prepare_run(pipeline, image_set_list, None)
+        self.assertEqual(image_set_list.count(), 35)
+        module.prepare_group(pipeline, image_set_list, (), [1,2,3])
+        image_set = image_set_list.get_image_set(0)
+        m = measurements.Measurements()
+        workspace = W.Workspace(pipeline, module, image_set,
+                                cpo.ObjectSet(), m,
+                                image_set_list)
+        module.run(workspace)
+        self.assertTrue('MyImage' in image_set.get_names())
+        image = image_set.get_image('MyImage')
+        img1 = image.pixel_data
+        self.assertEqual(tuple(img1.shape), (476,474,3))
+        t = m.get_current_image_measurement("_".join((measurements.C_METADATA, LI.M_T)))
+        self.assertEqual(t, 0)
+        image_set = image_set_list.get_image_set(1)
+        m.next_image_set()
+        workspace = W.Workspace(pipeline, module, image_set,
+                                cpo.ObjectSet(), m,
+                                image_set_list)
+        module.run(workspace)
+        self.assertTrue('MyImage' in image_set.get_names())
+        image = image_set.get_image('MyImage')
+        img2 = image.pixel_data
+        self.assertEqual(tuple(img2.shape), (476,474,3))
+        self.assertTrue(np.any(img1!=img2))
+        t = m.get_current_image_measurement("_".join((measurements.C_METADATA, LI.M_T)))
+        self.assertEqual(t, 1)
+        
     def test_10_01_load_unscaled(self):
         '''Load a image with and without rescaling'''
         path = os.path.join(example_images_directory(), 

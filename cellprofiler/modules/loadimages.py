@@ -134,16 +134,17 @@ MS_ORDER = 'Order'
 
 FF_INDIVIDUAL_IMAGES = 'individual images'
 FF_STK_MOVIES = 'stk movies'
-FF_AVI_MOVIES = 'avi movies'
-FF_OTHER_MOVIES = 'tif,tiff,flex movies, zvi movies'
-FF_OTHER_MOVIES_OLD = 'tif,tiff,flex movies'
+FF_AVI_MOVIES = 'avi,mov movies'
+FF_AVI_MOVIES_OLD = ['avi movies']
+FF_OTHER_MOVIES = 'tif,tiff,flex,zvi movies'
+FF_OTHER_MOVIES_OLD = ['tif,tiff,flex movies', 'tif,tiff,flex movies, zvi movies']
 
 if has_bioformats:
     FF = [FF_INDIVIDUAL_IMAGES, FF_STK_MOVIES, FF_AVI_MOVIES, FF_OTHER_MOVIES]
 else:
     FF = [FF_INDIVIDUAL_IMAGES, FF_STK_MOVIES]
 
-USE_BIOFORMATS_FIRST = [".tiff", ".tif", ".flex",".stk",".dib",".c01",'.zvi']
+USE_BIOFORMATS_FIRST = [".tiff", ".tif", ".flex",".stk",".dib",".c01",'.zvi','.mov']
 
 # The metadata choices:
 # M_NONE - don't extract metadata
@@ -206,7 +207,8 @@ class LoadImages(cpmodule.CPModule):
                 if at all possible (e.g., .jpg). Other file compression formats retain exactly the original image information but in 
                 a smaller file ("lossless") so they are perfectly acceptable for image analysis (e.g., .png, .tif, .gif). 
                 Uncompressed file formats are also fine for image analysis (e.g., .bmp).</li>
-                <li><i>AVI movies:</i> An AVI (Audio Video Interleave) file is a type of movie file. Only uncompressed AVIs are supported.</li>
+                <li><i>AVI, MOV movies:</i> AVIs (Audio Video Interleave) and MOVs (QuicktTime) files are types of movie files. Only 
+                uncompressed AVIs are supported; supported MOVs are listed <a href="http://www.loci.wisc.edu/bio-formats-format/quicktime-movie">here</a>.</li>
                 <li><i>TIF, TIFF, FLEX movies:</i> A TIF/TIFF movie is a file that contains a series of images as individual frames. 
                 The same is true for the FLEX file format (used by Evotec Opera automated microscopes).</li>
                 <li><i>STK movies:</i> STKs are a proprietary image format used by MetaMorph (Molecular Devices). It is typically
@@ -1182,8 +1184,10 @@ class LoadImages(cpmodule.CPModule):
         setting_values[self.SLOT_LOCATION] = \
             cps.DirectoryPath.upgrade_setting(setting_values[self.SLOT_LOCATION])
         # Upgrade the file type slot
-        if setting_values[self.SLOT_FILE_TYPE] == FF_OTHER_MOVIES_OLD:
+        if setting_values[self.SLOT_FILE_TYPE] in FF_OTHER_MOVIES_OLD:
             setting_values[self.SLOT_FILE_TYPE] = FF_OTHER_MOVIES
+        if setting_values[self.SLOT_FILE_TYPE] in FF_AVI_MOVIES_OLD:
+            setting_values[self.SLOT_FILE_TYPE] = FF_AVI_MOVIES
 
         assert variable_revision_number == self.variable_revision_number, "Cannot read version %d of %s"%(variable_revision_number, self.module_name)
 
@@ -2641,7 +2645,7 @@ def load_using_bioformats(path, c=None, z=0, t=0, series=None, rescale = True, w
             index = rdr.getIndex(z,0,t)
             image = np.frombuffer(rdr.openBytes(index), dtype)
             image.shape = (height, width, 3)
-        elif c is not None:
+        elif c is not None and rdr.getRGBChannelCount() == 1:
             index = rdr.getIndex(z,c,t)
             image = np.frombuffer(rdr.openBytes(index), dtype)
             image.shape = (height, width)

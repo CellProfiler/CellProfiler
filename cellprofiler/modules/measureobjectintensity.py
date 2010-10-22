@@ -353,8 +353,10 @@ class MeasureObjectIntensity(cpm.CPModule):
                         qfraction = qindex - np.floor(qindex)
                         qindex = qindex.astype(int)
                         qmask = qindex < indices + areas-1
-                        dest[qmask] = (limg[order[qindex[qmask]]] * (1 - qfraction) +
-                                       limg[order[qindex[qmask] + 1]] * qfraction)
+                        qi = qindex[qmask]
+                        qf = qfraction[qmask]
+                        dest[qmask] = (limg[order[qi]] * (1 - qf) +
+                                       limg[order[qi + 1]] * qf)
                         #
                         # In some situations (e.g. only 3 points), there may
                         # not be an upper bound.

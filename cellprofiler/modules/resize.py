@@ -29,18 +29,22 @@ R_BY_FACTOR = "Resize by a fraction or multiple of the original size"
 R_TO_SIZE = "Resize by specifying desired final dimensions"
 R_ALL = [R_BY_FACTOR, R_TO_SIZE]
 
+C_IMAGE = "Image"
+C_MANUAL = "Manual"
+C_ALL = [C_MANUAL, C_IMAGE]
+
 I_NEAREST_NEIGHBOR = 'Nearest Neighbor'
 I_BILINEAR = 'Bilinear'
 I_BICUBIC = 'Bicubic'
 
 I_ALL = [I_NEAREST_NEIGHBOR, I_BILINEAR, I_BICUBIC]
 '''The index of the additional image count setting'''
-S_ADDITIONAL_IMAGE_COUNT = 7
+S_ADDITIONAL_IMAGE_COUNT = 9
 
 class Resize(cpm.CPModule):
 
     category = "Image Processing"
-    variable_revision_number = 3
+    variable_revision_number = 4
     module_name = "Resize"
     
     def create_settings(self):
@@ -63,6 +67,15 @@ class Resize(cpm.CPModule):
                                          Numbers less than one (that is, fractions) will shrink the image; 
                                          numbers greater than one (that is, multiples) will enlarge the image.''')
 
+        self.use_manual_or_image = cps.Choice("How do you want to specify the dimensions?",C_ALL, doc = """
+                                        <i>(Used only if resizing by specifying the dimensions)</i><br>
+                                        You have two options on how to resize your image:
+                                        <ul>
+                                        <li><i>Manual:</i> Specify the height and width of the output image.</li>
+                                        <li><i>Image:</i> Specify an image and the input image will be resized
+                                        to the same dimensions.</li>
+                                        </ul>""")
+        
         self.specific_width = cps.Integer("Width of the final image, in pixels", 100, minval=1, doc = '''
                                          <i>(Used only if resizing by specifying desired final dimensions)</i><br>
                                          Enter the desired width of the final image.''')
@@ -70,6 +83,10 @@ class Resize(cpm.CPModule):
         self.specific_height = cps.Integer("Height of the final image, in pixels", 100, minval=1, doc = '''
                                          <i>(Used only if resizing by specifying desired final dimensions)</i><br>
                                          Enter the desired height of the final image.''')
+        
+        self.specific_image = cps.ImageNameSubscriber("Select the image with the desired dimensions", "None", doc = """"
+                                        <i>(Used only if resizing by specifying desired final dimensions using an image)</i><br>
+                                        The input image will be resized to the dimensions of the specified image.""")
 
         self.interpolation = cps.Choice("Interpolation method",
                                         I_ALL, doc = '''<ul><li><i>Nearest Neighbor:</i> Each output pixel is given the intensity of the nearest
@@ -113,6 +130,7 @@ class Resize(cpm.CPModule):
         result = [self.image_name, self.resized_image_name, self.size_method,
                 self.resizing_factor, self.specific_width, 
                 self.specific_height, self.interpolation,
+                self.use_manual_or_image, self.specific_image,
                 self.additional_image_count]
         
         for additional in self.additional_images:
@@ -125,7 +143,11 @@ class Resize(cpm.CPModule):
         if self.size_method == R_BY_FACTOR:
             result.append(self.resizing_factor)
         elif self.size_method == R_TO_SIZE:
-            result += [self.specific_width, self.specific_height]
+            result += [self.use_manual_or_image]
+            if self.use_manual_or_image == C_IMAGE:
+                result += [self.specific_image]
+            elif self.use_manual_or_image == C_MANUAL:
+                result += [self.specific_width, self.specific_height]
         else:
             raise ValueError("Unsupported size method: %s" % 
                              self.size_method.value)
@@ -173,8 +195,11 @@ class Resize(cpm.CPModule):
             factor = self.resizing_factor.value
             shape = (np.array(image_pixels.shape[:2])*factor+.5).astype(int)
         elif self.size_method == R_TO_SIZE:
-            shape = np.array([self.specific_height.value,
-                              self.specific_width.value])
+            if self.use_manual_or_image == C_MANUAL:
+                shape = np.array([self.specific_height.value,
+                                  self.specific_width.value])
+            elif self.use_manual_or_image == C_IMAGE:
+                shape = np.array(workspace.image_set.get_image(self.specific_image.value).pixel_data.shape).astype(int)
         #
         # Little bit of wierdness here. The input pixels are numbered 0 to
         # shape-1 and so are the output pixels. Therefore the affine transform
@@ -262,8 +287,13 @@ class Resize(cpm.CPModule):
         if (not from_matlab) and variable_revision_number == 2:
             # Add additional images to be resized similarly, but if you only had 1,
             # the order didn't change
-            setting_values = setting_values + [ "0"]
+            setting_values = setting_values + ["0"]
             variable_revision_number = 3
             
+        if (not from_matlab) and variable_revision_number == 3:
+            # Add resizing to another image size
+            setting_values = setting_values[:7] + [C_MANUAL, "None"] + setting_values[7:]
+            variable_revision_number = 4
+
         return setting_values, variable_revision_number, from_matlab
         

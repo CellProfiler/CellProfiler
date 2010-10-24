@@ -309,4 +309,19 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
         result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).pixel_data
         self.assertTrue(np.all(np.abs(result-expected) <=
                                np.sqrt(np.finfo(float).eps)))
+        
+    def test_04_04_reshape_using_another_images_dimensions(self):
+        ''''Resize to another image's dimensions'''
+        i,j = np.mgrid[0:10,0:19].astype(float)
+        image = i+j
+        i,j = np.mgrid[0:19,0:10].astype(float)
+        expected =  i+j
+        workspace, module = self.make_workspace(image, R.R_TO_SIZE,
+                                                R.I_BILINEAR)
+        module.use_manual_or_image = R.C_IMAGE
+        module.specific_image.value = 'AnotherImage'
+        workspace.image_set.add(module.specific_image.value, cpi.Image(expected))
+        module.run(workspace)
+        result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).pixel_data
+        self.assertTrue(expected.shape == result.shape)
  

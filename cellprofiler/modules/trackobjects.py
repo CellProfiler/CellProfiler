@@ -331,7 +331,12 @@ class TrackObjects(cpm.CPModule):
             and disappearance of objects, but also because of apparent disappearances due
             to noise and limitations in imaging, you may want to run the second phase 
             which attempts to close temporal gaps between tracked objects and tries to
-            capture merging and splitting events.</p>""")
+            capture merging and splitting events.</p>
+            <p>For additional details on optimizing the LAP settings, refer to Jaqaman K, Danuser G. 
+            "Computational image analysis of cellular dynamics: a case study based on particle 
+            tracking." <i>Cold Spring Harb Protocols</i> 2009(12) 
+            <a href="http://cshprotocols.cshlp.org/cgi/content/full/2009/12/pdb.top65">[link]</a>,
+            in particular the section "Adjustment of control parameters and diagnostics for track evaluation."</p>""")
         
         self.gap_cost = cps.Integer(
             'Gap cost', 40, minval=1, doc = '''

@@ -117,6 +117,11 @@ class Haralick(object):
         self.nobjects = labels.max()
         px = self.P.sum(2) # nobjects x nlevels
         py = self.P.sum(1) # nobjects x nlevels
+        #
+        # Normalize px and py to deal with roundoff errors in sums
+        #
+        px = px / np.sum(px,1)[:,np.newaxis]
+        py = py / np.sum(py,1)[:,np.newaxis]
         self.nlevels = nlevels
         self.levels = np.arange(nlevels)
         self.rlevels = np.tile(self.levels, (self.nobjects, 1))

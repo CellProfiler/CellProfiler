@@ -35,7 +35,7 @@ bounding box.</li>
 <li><i>EulerNumber:</i> The number of objects in the region
 minus the number of holes in those objects, assuming 8-connectivity.</li>
 
-<li><i>MajorAxisLength:</li> The length (in pixels) of the major axis of
+<li><i>MajorAxisLength:</i> The length (in pixels) of the major axis of
 the ellipse that has the same normalized second central moments as the
 region.</li>
 

@@ -17,14 +17,6 @@ region in the image.</li>
 <li><i>FormFactor:</i> Calculated as 4*&pi;*Area/Perimeter<sup>2</sup>. Equals 1 for a 
 perfectly circular object.</li>
 
-<li><i>Eccentricity:</i> The eccentricity of the ellipse that has the
-same second-moments as the region. The eccentricity is the ratio of the
-distance between the foci of the ellipse and its major axis length. The
-value is between 0 and 1. (0 and 1 are degenerate cases; an ellipse whose
-eccentricity is 0 is actually a circle, while an ellipse whose eccentricity
-is 1 is a line segment.) This property is supported only for 2D input
-label matrices.</li>
-
 <li><i>Solidity:</i> The proportion of the pixels in the convex hull that
 are also in the region. Also known as <i>convexity</i>. Computed as Area/ConvexArea.</li>
 
@@ -34,6 +26,19 @@ bounding box.</li>
 
 <li><i>EulerNumber:</i> The number of objects in the region
 minus the number of holes in those objects, assuming 8-connectivity.</li>
+
+<li><i>Center_X, Center_Y:</i> The <i>x</i>- and <i>y</i>-coordinates of the ellipse that has the
+same second-moments as the region. Note that this is not the same as the 
+<i>Location-X</i> and <i>-Y</i> measurements produced by the <b>Identify</b>
+modules, which defines the centroid of the binary region.
+</li>
+
+<li><i>Eccentricity:</i> The eccentricity of the ellipse that has the
+same second-moments as the region. The eccentricity is the ratio of the
+distance between the foci of the ellipse and its major axis length. The
+value is between 0 and 1. (0 and 1 are degenerate cases; an ellipse whose
+eccentricity is 0 is actually a circle, while an ellipse whose eccentricity
+is 1 is a line segment.)</li>
 
 <li><i>MajorAxisLength:</i> The length (in pixels) of the major axis of
 the ellipse that has the same normalized second central moments as the
@@ -111,6 +116,8 @@ F_AREA = "Area"
 F_ECCENTRICITY = 'Eccentricity'
 F_SOLIDITY = 'Solidity'
 F_EXTENT = 'Extent'
+F_CENTER_X = 'Center_X'
+F_CENTER_Y = 'Center_Y'
 F_EULER_NUMBER = 'EulerNumber'
 F_PERIMETER = 'Perimeter'
 F_FORM_FACTOR = 'FormFactor'
@@ -121,7 +128,7 @@ F_ORIENTATION = 'Orientation'
 F_STANDARD = [ F_AREA, F_ECCENTRICITY, F_SOLIDITY, F_EXTENT,
                F_EULER_NUMBER, F_PERIMETER, F_FORM_FACTOR,
                F_MAJOR_AXIS_LENGTH, F_MINOR_AXIS_LENGTH,
-               F_ORIENTATION ]
+               F_ORIENTATION, F_CENTER_X, F_CENTER_Y ]
 class MeasureObjectSizeShape(cpm.CPModule):
 
     module_name = "MeasureObjectSizeShape"
@@ -258,6 +265,10 @@ class MeasureObjectSizeShape(cpm.CPModule):
                                 F_MINOR_AXIS_LENGTH, minor_axis_length)
         self.record_measurement(workspace, object_name, F_ORIENTATION, 
                                 theta * 180 / np.pi)
+        self.record_measurement(workspace, object_name, F_CENTER_X, 
+                                centers[:,0])
+        self.record_measurement(workspace, object_name, F_CENTER_Y, 
+                                centers[:,1])
         #
         # The extent (area / bounding box area)
         #

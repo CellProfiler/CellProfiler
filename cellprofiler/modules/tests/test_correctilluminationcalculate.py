@@ -916,7 +916,7 @@ CorrectIlluminationCalculate:[module_num:3|svn_version:\'9401\'|variable_revisio
     Dilation radius:2
     Block size:65
     Rescale the illumination function?:No
-    Calculate function for each image individually, or based on all images?:All\x3A First cycle 
+    Calculate function for each image individually, or based on all images?:All\x3A First cycle
     Smoothing method:Median Filter
     Method to calculate smoothing filter size:Manually
     Approximate object size:15

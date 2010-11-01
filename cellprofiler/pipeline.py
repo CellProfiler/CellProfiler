@@ -555,7 +555,7 @@ class Pipeline(object):
                 line = fd.next()
                 if line is None:
                     return None
-                line = line.strip()
+                line = line.strip("\r\n")
                 return line
             except StopIteration:
                 return None
@@ -569,7 +569,7 @@ class Pipeline(object):
             line = rl()
             if line is None:
                 raise ValueError("Pipeline file unexpectedly truncated before module section")
-            elif len(line) == 0:
+            elif len(line.strip()) == 0:
                 break
             kwd, value = line.split(':')
             if kwd == H_VERSION:
@@ -600,7 +600,7 @@ class Pipeline(object):
                 split_loc = line.find(':')
                 if split_loc == -1:
                     raise ValueError("Invalid format for module header: %s" % line)
-                module_name = line[:split_loc]
+                module_name = line[:split_loc].strip()
                 attribute_string = line[(split_loc+1):]
                 #
                 # Decode the settings
@@ -611,7 +611,7 @@ class Pipeline(object):
                     if line is None:
                         last_module = True
                         break
-                    if len(line) == 0:
+                    if len(line.strip()) == 0:
                         break
                     if len(line.split(':')) != 2:
                         raise ValueError("Invalid format for setting: %s" % line)

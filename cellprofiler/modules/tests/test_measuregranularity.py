@@ -136,7 +136,7 @@ MeasureGranularity:[module_num:1|svn_version:\'Unknown\'|variable_revision_numbe
     Range of the granular spectrum:20
     Object name:Nuclei
     Object name:Cells
-    Object name:Cytoplasm    
+    Object name:Cytoplasm
 """
         pipeline = cpp.Pipeline()
         def callback(caller,event):

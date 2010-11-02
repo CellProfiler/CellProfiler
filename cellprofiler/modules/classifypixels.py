@@ -1,6 +1,8 @@
 import cellprofiler.cpmodule as cpm
+import cellprofiler.cpmodule as cpm
 import cellprofiler.settings as cps
 import cellprofiler.cpimage  as cpi
+
 
 from cellprofiler.preferences import standardize_default_folder_names, \
      DEFAULT_INPUT_FOLDER_NAME, DEFAULT_OUTPUT_FOLDER_NAME, NO_FOLDER_NAME, \
@@ -29,10 +31,16 @@ except ImportError, h5pyImport:
     raise h5pyImport
     
 # Import ilastik 
+
 try:
-    from ilastik.core import dataMgr, featureMgr, classificationMgr
-    from ilastik.core.features.featureBase import FeatureBase
-    from ilastik.core.classifiers.classifierRandomForestNew import ClassifierRandomForestNew
+    from ilastik.core.dataMgr import DataMgr, DataItemImage
+    from ilastik.modules.classification.core.featureMgr import FeatureMgr
+    from ilastik.modules.classification.core.classificationMgr import ClassificationMgr
+    from ilastik.modules.classification.core.features.featureBase import FeatureBase
+    from ilastik.modules.classification.core.classifiers.classifierRandomForest import ClassifierRandomForest
+    from ilastik.modules.classification.core.classificationMgr import ClassifierPredictThread
+    from ilastik.core.volume import DataAccessor
+    
 except ImportError, ilastikImport:
     print """ilastik import: failed to import the ilastik. Please follow the instructions on 
 "http://www.ilastik.org" to install ilastik"""
@@ -108,16 +116,13 @@ class ClassifyPixels(cpm.CPModule):
         # get input image
         image = workspace.image_set.get_image(self.image_name.value, must_be_color=False) 
         
-        # TODO: workarround, need to get the real scaling factor to 
+        # TODO: workaround, need to get the real scaling factor to 
         # recover raw image domain
         image_ = image.pixel_data * 255
         
-        print "Input Image shape", image_.shape
-        print "Input Image min", image_.min()
-        print "Input Image max", image_.max()
         
         # Create ilastik dataMgr
-        self.dataMgr = dataMgr.DataMgr()
+        self.dataMgr = DataMgr()
         
         # Transform input image to ilastik convention s
         # 3D = (time,x,y,z,channel) 
@@ -130,7 +135,8 @@ class ClassifyPixels(cpm.CPModule):
             image_.shape = image_.shape + (1,)
         
         # Add data item di to dataMgr
-        di = dataMgr.DataItemImage.initFromArray(image_, '')
+        di = DataItemImage('')
+        di.setDataVol(DataAccessor(image_))
         self.dataMgr.append(di, alreadyLoaded=True)
 
         # Load classifier from hdf5
@@ -139,8 +145,9 @@ class ClassifyPixels(cpm.CPModule):
         hf = h5py.File(fileName,'r')
         classifiers = []
         for cid in hf['classifiers']:
-            classifiers.append(ClassifierRandomForestNew.deserialize(fileName, 'classifiers/' + cid))   
-        self.dataMgr.classifiers = classifiers
+            classifiers.append(ClassifierRandomForest.deserialize(fileName, 'classifiers/' + cid))   
+        
+        self.dataMgr.module["Classification"]["classificationMgr"].classifiers = classifiers 
         
         # Restore user selection of feature items from hdf5
         featureItems = []
@@ -149,7 +156,7 @@ class ClassifyPixels(cpm.CPModule):
             featureItems.append(FeatureBase.deserialize(fgrp))
 
         # Create FeatureMgr
-        fm = featureMgr.FeatureMgr(self.dataMgr, featureItems)
+        fm = FeatureMgr(self.dataMgr, featureItems)
 
         # Compute features
         fm.prepareCompute(self.dataMgr)
@@ -157,11 +164,13 @@ class ClassifyPixels(cpm.CPModule):
         fm.joinCompute(self.dataMgr)
         
         # Predict with loaded classifier
-        classificationPredict = classificationMgr.ClassifierPredictThread(self.dataMgr)
+        
+        classificationPredict = ClassifierPredictThread(self.dataMgr)
         classificationPredict.start()
         classificationPredict.wait()
         
         # Produce output image and select the probability map
-        probMap = self.dataMgr[0].prediction[0,0,:,:, int(self.class_sel.value)]
+        probMap = classificationPredict._prediction[0][0,0,:,:, int(self.class_sel.value)]
+        # probMap = classificationPredict._prediction[0]
         temp_image = cpi.Image(probMap, parent_image=image)
         workspace.image_set.add(self.output_image.value, temp_image)   

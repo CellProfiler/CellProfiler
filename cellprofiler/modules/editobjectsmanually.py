@@ -39,6 +39,7 @@ import cellprofiler.preferences as cpprefs
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo
+import cellprofiler.cpimage as cpi
 import cellprofiler.settings as cps
 import cellprofiler.workspace as cpw
 from cellprofiler.cpmath.outline import outline

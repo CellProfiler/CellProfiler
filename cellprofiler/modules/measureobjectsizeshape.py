@@ -27,10 +27,10 @@ bounding box.</li>
 <li><i>EulerNumber:</i> The number of objects in the region
 minus the number of holes in those objects, assuming 8-connectivity.</li>
 
-<li><i>Center_X, Center_Y:</i> The <i>x</i>- and <i>y</i>-coordinates of the ellipse that has the
-same second-moments as the region. Note that this is not the same as the 
+<li><i>Center_X, Center_Y:</i> The <i>x</i>- and <i>y</i>-coordinates of the
+point farthest away from any object edge. Note that this is not the same as the 
 <i>Location-X</i> and <i>-Y</i> measurements produced by the <b>Identify</b>
-modules, which defines the centroid of the binary region.
+modules.
 </li>
 
 <li><i>Eccentricity:</i> The eccentricity of the ellipse that has the
@@ -104,6 +104,7 @@ from cellprofiler.cpmath.cpmorphology import calculate_extents
 from cellprofiler.cpmath.cpmorphology import calculate_perimeters
 from cellprofiler.cpmath.cpmorphology import calculate_solidity
 from cellprofiler.cpmath.cpmorphology import euler_number
+from cellprofiler.cpmath.cpmorphology import distance_to_edge, maximum_position_of_labels
 from cellprofiler.measurements import COLTYPE_FLOAT
 
 """The category of the per-object measurements made by this module"""
@@ -265,10 +266,16 @@ class MeasureObjectSizeShape(cpm.CPModule):
                                 F_MINOR_AXIS_LENGTH, minor_axis_length)
         self.record_measurement(workspace, object_name, F_ORIENTATION, 
                                 theta * 180 / np.pi)
+        
+        #
+        # Calculate the object center as the point in each object farthest away from the edge
+        #
+        d_to_edge = distance_to_edge(objects.segmented)
+        i,j = maximum_position_of_labels(d_to_edge, objects.segmented)
         self.record_measurement(workspace, object_name, F_CENTER_X, 
-                                centers[:,0])
+                                j)
         self.record_measurement(workspace, object_name, F_CENTER_Y, 
-                                centers[:,1])
+                                i)
         #
         # The extent (area / bounding box area)
         #

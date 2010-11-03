@@ -41,8 +41,8 @@ background distributions.</li>
 <li><i>Object features:</i>
 <ul>
 <li><i>Location_X, Location_Y:</i> The pixel (X,Y) coordinates of the primary 
-object centroids. The centroid is calculated from the binary representation of 
-the object.</li>
+object centroids. The centroid is calculated as the center of mass of the binary 
+representation of the object.</li>
 </ul>
 </li>
 </ul>

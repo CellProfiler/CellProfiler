@@ -868,9 +868,9 @@ class LoadData(cpm.CPModule):
             workspace.measurements.add_image_measurement(
                 C_SCALING + '_' + image_name, image.scale)
             if image_size is None:
-                image_size = tuple(pixel_data.shape)
+                image_size = tuple(pixel_data.shape[:2])
                 first_filename = image.file_name
-            elif tuple(pixel_data.shape) != image_size:
+            elif tuple(pixel_data.shape[:2]) != image_size:
                 warning = bad_sizes_warning(image_size, first_filename,
                                             pixel_data.shape, image.file_name)
                 if workspace.frame is not None:

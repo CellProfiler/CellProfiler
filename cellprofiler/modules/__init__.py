@@ -106,7 +106,8 @@ pymodule_to_cpmodule = {'align' : 'Align',
                         'trackobjects' : 'TrackObjects',
                         'tile' : 'Tile',
                         'calculateimageoverlap' : 'CalculateImageOverlap',
-                        'unmixcolors': 'UnmixColors'
+                        'unmixcolors': 'UnmixColors',
+                        'untangleworms': 'UntangleWorms'
                         }
 if has_ilastik:
     pymodule_to_cpmodule['classifypixels'] = 'ClassifyPixels'
@@ -186,7 +187,8 @@ builtin_modules = ['align',
                    'smooth',
                    'trackobjects',
                    'tile',
-                   'unmixcolors'
+                   'unmixcolors',
+                   'untangleworms'
                    ]
 if has_ilastik:
     builtin_modules.append('classifypixels')

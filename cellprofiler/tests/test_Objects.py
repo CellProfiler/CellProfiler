@@ -164,6 +164,65 @@ class TestObjects(unittest.TestCase):
         self.assertEqual(np.product(parents_of_children.shape), 2)
         self.assertEqual(parents_of_children[0],1)
         self.assertEqual(parents_of_children[1],1)
+        
+    def test_06_01_segmented_to_ijv(self):
+        '''Convert the segmented representation to an IJV one'''
+        x = cpo.Objects()
+        np.random.seed(61)
+        labels = np.random.randint(0,10,size=(20,20))
+        x.segmented = labels
+        ijv = x.get_ijv()
+        new_labels = np.zeros(labels.shape, int)
+        new_labels[ijv[:,0],ijv[:,1]] = ijv[:,2]
+        self.assertTrue(np.all(labels == new_labels))
+        
+    def test_06_02_ijv_to_labels_empty(self):
+        '''Convert a blank ijv representation to labels'''
+        x = cpo.Objects()
+        x.ijv = np.zeros((0,3), int)
+        labels = x.get_labels()
+        self.assertEqual(len(labels), 1)
+        self.assertTrue(np.all(labels[0] == 0))
+        
+    def test_06_03_ijv_to_labels_simple(self):
+        '''Convert an ijv representation w/o overlap to labels'''
+        x = cpo.Objects()
+        np.random.seed(63)
+        labels = np.random.randint(0,10,size=(20,20))
+        x.segmented = labels
+        ijv = x.get_ijv()
+        x = cpo.Objects()
+        x.ijv = ijv
+        labels_out = x.get_labels()
+        self.assertEqual(len(labels_out), 1)
+        self.assertTrue(np.all(labels_out[0] == labels))
+        
+    def test_06_04_ijv_to_labels_overlapping(self):
+        '''Convert an ijv representation with overlap to labels'''
+        ijv = np.array([[1,1,1],
+                        [1,2,1],
+                        [2,1,1],
+                        [2,2,1],
+                        [1,3,2],
+                        [2,3,2],
+                        [2,3,3],
+                        [4,4,4],
+                        [4,5,4],
+                        [4,5,5],
+                        [5,5,5]])
+        x = cpo.Objects()
+        x.ijv = ijv
+        labels = x.get_labels()
+        self.assertEqual(len(labels), 2)
+        unique_a = np.unique(labels[0])[1:]
+        unique_b = np.unique(labels[1])[1:]
+        for a in unique_a:
+            self.assertTrue(a not in unique_b)
+        for b in unique_b:
+            self.assertTrue(b not in unique_a)
+        for i, j, v in ijv:
+            mylabels = labels[0] if v in unique_a else labels[1]
+            self.assertEqual(mylabels[i,j], v)
 
 class TestDownsampleLabels(unittest.TestCase):
     def test_01_01_downsample_127(self):

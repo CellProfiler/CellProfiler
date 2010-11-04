@@ -28,6 +28,7 @@ from matplotlib.backends.backend_wxagg import NavigationToolbar2WxAgg as Navigat
 import cellprofiler.utilities.matplotlib_axes_monkey_patch
 from cellprofiler.preferences import update_cpfigure_position, get_next_cpfigure_position, reset_cpfigure_position
 import scipy.misc
+from scipy.sparse import coo_matrix
 from cStringIO import StringIO
 import sys
 
@@ -991,6 +992,49 @@ class CPFigureFrame(wx.Frame):
                                    sharex=sharex, sharey=sharey,
                                    use_imshow = use_imshow)
     
+    def subplot_imshow_ijv(self, x, y, ijv, shape = None, title=None, 
+                           clear=True, renumber=True, sharex=None, sharey=None,
+                           use_imshow = False):
+        '''Show an ijv-style labeling using the default color map
+        
+        x,y - the subplot's coordinates
+        ijv - a pixel-by-pixel labeling where ijv[:,0] is the i coordinate,
+              ijv[:,1] is the j coordinate and ijv[:,2] is the label
+        shape - the shape of the final image. If "none", we try to infer
+                from the maximum I and J
+        title - the caption for the image
+        clear - clear the axis before showing
+        sharex, sharey - the coordinates of the subplot that dictates
+                panning and zooming, if any
+        use_imshow - Use matplotlib's imshow to display instead of creating
+                     our own artist.
+        '''
+        if shape is None:
+            if len(ijv) == 0:
+                shape = [1,1]
+            else:
+                shape = [np.max(ijv[:,0])+1, np.max(ijv[:,1])+1]
+        image = np.zeros(list(shape) + [3], np.uint8)
+        if len(ijv) > 0:
+            cm = matplotlib.cm.get_cmap(cpprefs.get_default_colormap())
+            max_label = np.max(ijv[:,2])
+            if renumber:
+                np.random.seed(0)
+                order = np.random.permutation(max_label)
+            else:
+                order = np.arange(max_label)
+            order = np.hstack(([0], order))
+            colors = matplotlib.cm.ScalarMappable(cmap = cm).to_rgba(order)
+            r,g,b,a = [coo_matrix((colors[ijv[:,2],i],(ijv[:,0],ijv[:,1])),
+                                  shape = shape).toarray()
+                       for i in range(4)]
+            for i, plane in enumerate((r,g,b)):
+                image[a != 0,i] = plane[a != 0] * 255. / a[a != 0]
+        return self.subplot_imshow(x, y, image, title, clear, 
+                                   normalize=False, vmin=None, vmax=None,
+                                   sharex=sharex, sharey=sharey,
+                                   use_imshow = use_imshow)
+        
     def subplot_imshow_grayscale(self, x, y, image, title=None, clear=True,
                                  colorbar=False, normalize=True, vmin=0, vmax=1,
                                  sharex=None, sharey=None, 

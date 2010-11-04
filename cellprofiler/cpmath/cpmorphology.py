@@ -29,7 +29,9 @@ try:
 except:
     pass
 
+'''A structuring element for eight-connecting a neigborhood'''
 eight_connect = scind.generate_binary_structure(2, 2)
+'''A structuring element for four-connecting a neigborhood'''
 four_connect = scind.generate_binary_structure(2,1)
 
 def fill_labeled_holes(image, max_area = None, mask = None):

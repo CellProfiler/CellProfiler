@@ -17,6 +17,8 @@ import decorator
 import numpy as np
 import scipy.sparse
 
+from cellprofiler.cpmath.cpmorphology import all_connected_components
+
 @decorator.decorator
 def memoize_method(function, *args):
     """Cache the result of a method in that class's dictionary
@@ -48,6 +50,7 @@ class Objects(object):
         self.__unedited_segmented = None
         self.__small_removed_segmented = None
         self.__parent_image = None
+        self.__ijv = None
     
     def get_segmented(self):
         """Get the de-facto segmentation of the image into objects: a matrix 
@@ -64,6 +67,134 @@ class Objects(object):
             self.memoize_method_dictionary = {}
     
     segmented = property(get_segmented,set_segmented)
+    
+    def set_ijv(self, ijv):
+        '''Set the segmentation to an IJV object format
+        
+        The ijv format is a list of i,j coordinates in slots 0 and 1
+        and the label at the pixel in slot 2.
+        '''
+        self.__ijv = ijv
+        
+    def get_ijv(self):
+        '''Get the segmentation in IJV object format
+        
+        The ijv format is a list of i,j coordinates in slots 0 and 1
+        and the label at the pixel in slot 2.
+        '''
+        if self.__ijv is None and self.__segmented is not None:
+            i,j = np.argwhere(self.__segmented > 0).transpose()
+            self.__ijv = np.column_stack((i,j,self.__segmented[i,j]))
+        return self.__ijv
+    
+    ijv = property(get_ijv, set_ijv)
+    
+    def get_labels(self):
+        '''Get a set of labels matrices consisting of non-overlapping labels
+        
+        In IJV format, a single pixel might have multiple labels. If you
+        want to use a labels matrix, you have an ambiguous situation and the
+        resolution is to process separate labels matrices consisting of
+        non-overlapping labels.
+        '''
+        if self.__ijv is None:
+            if self.__segmented is None:
+                return []
+            return [self.__segmented]
+        else:
+            def ijv_to_segmented(ijv):
+                if self.has_parent_image:
+                    shape = self.parent_image.pixel_data.shape
+                elif len(ijv) == 0:
+                    # degenerate case, no parent info and no labels
+                    shape = (1,1)
+                else:
+                    shape = np.max(ijv[:,:2], 0) + 1
+                labels = np.zeros(shape, np.int16)
+                labels[ijv[:,0],ijv[:,1]] = ijv[:,2]
+                return labels
+            
+            if len(self.__ijv) == 0:
+                return ijv_to_segmented(self.__ijv)
+            sort_order = np.lexsort((self.__ijv[:,2],
+                                     self.__ijv[:,1], 
+                                     self.__ijv[:,0]))
+            sijv = self.__ijv[sort_order]
+            #
+            # Locations in sorted array where i,j are same consecutively
+            # are locations that have an overlap.
+            #
+            overlap = np.all(sijv[:-1,:2] == sijv[1:,:2],1)
+            prev = sijv[:-1][overlap,2]
+            next = sijv[1:][overlap,2]
+            if len(prev) == 0:
+                return [ ijv_to_segmented(self.__ijv)]
+            #
+            # Now double "prev" and "next" so that if I matches J, J matches I
+            #
+            first = np.hstack((prev, next))
+            second = np.hstack((next, prev))
+            #
+            # And sort these so that we get consecutive lists for each
+            #
+            sort_order = np.lexsort((second, first))
+            first = first[sort_order]
+            second = second[sort_order]
+            #
+            # Bincount each label so we can find the ones that have the
+            # most overlap. See cpmorphology.color_labels and
+            # Welsh, "An upper bound for the chromatic number of a graph and
+            # its application to timetabling problems", The Computer Journal, 10(1)
+            # p 85 (1967)
+            #
+            overlap_counts = np.bincount(first)
+            #
+            # The index to the i'th label's stuff
+            #
+            indexes = np.cumsum(overlap_counts) - overlap_counts
+            #
+            # A vector of a current color per label
+            #
+            v_color = np.zeros(len(overlap_counts), int)
+            #
+            # Assign all non-overlapping to color 1
+            #
+            v_color[overlap_counts == 0] = 1
+            #
+            # The processing order is from most overlapping to least
+            #
+            processing_order = np.lexsort((np.arange(len(overlap_counts)), overlap_counts))
+            processing_order = processing_order[overlap_counts[processing_order] > 0]
+            max_color = 1
+            for index in processing_order:
+                neighbors = second[indexes[index]:indexes[index] + overlap_counts[index]]
+                colors = np.unique(v_color[neighbors])
+                if colors[0] == 0:
+                    if len(colors) == 1:
+                        # all unassigned - put self in group 1
+                        v_color[index] = 1
+                        continue
+                    else:
+                        # otherwise, ignore the unprocessed group and continue
+                        colors = colors[1:]
+                # Match a range against the colors array - the first place
+                # they don't match is the first color we can use
+                crange = np.arange(1, len(colors)+1)
+                misses = crange[colors != crange]
+                if len(misses):
+                    color = misses[0]
+                else:
+                    max_color = len(colors) + 1
+                    color = max_color
+                v_color[index] = color
+            #
+            # Now, get ijv groups by color
+            #
+            result = []
+            for color in range(1, max_color+1):
+                ijv = self.__ijv[v_color[self.__ijv[:,2]] == color]
+                result.append(ijv_to_segmented(ijv))
+            return result
     
     def has_unedited_segmented(self):
         """Return true if there is an unedited segmented matrix."""

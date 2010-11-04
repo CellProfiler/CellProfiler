@@ -183,7 +183,19 @@ class UntangleWorms(cpm.CPModule):
         image = workspace.image_set.get_image(image_name,
                                               must_be_binary = True)
         labels, count = scind.label(image.pixel_data, morph.eight_connect)
-        skeleton = morph.skeletonize(labels > 0)
+        #
+        # Skeletonize once, then remove any points in the skeleton
+        # that are adjacent to the edge of the image, then skeletonize again.
+        #
+        # This gets rid of artifacts that cause combinatoric explosions:
+        #
+        #    * * * * * * * *
+        #      *   *   *
+        #    * * * * * * * * 
+        #
+        skeleton = morph.skeletonize(image.pixel_data)
+        eroded = scind.binary_erosion(image.pixel_data, morph.eight_connect)
+        skeleton = morph.skeletonize(skeleton & eroded)
         #
         # The path skeletons
         #
@@ -1019,7 +1031,8 @@ class UntangleWorms(cpm.CPModule):
                 #
                 next_branch_areas = [ unfinished_branch + [k] 
                                       for k in incident_branch_areas[j]
-                                      if k != end_branch_area]
+                                      if (k != end_branch_area) and
+                                      (k not in unfinished_branch)]
                 paths_list += self.get_all_paths_recur(
                     incident_branch_areas, incident_segments,
                     next_segment, next_branch_areas)
@@ -1194,44 +1207,9 @@ class UntangleWorms(cpm.CPModule):
         costs = costs[order]
         path_segment_matrix = path_segment_matrix[:, order]
         
-        if True:
-            current_best_subset, current_best_cost = self.fast_selection(
-                costs, path_segment_matrix, segment_lengths, 
-                overlap_weight, leftover_weight)
-        else:
-            approx_max_search_n = cps_params.approx_max_search_n
-            # branching_factors(i) is the maximum branching factor at the
-            # ith level of the search tree. Currently, this is set to a
-            # decreasing geometric progression, the product of whose
-            # elements is (roughly) approx_max_search_n, and so that the
-            # number of entries larger than one is num_worms_to_find.
-            #
-            # If searches deeper than the length of branching_factors are to
-            # be performed, deeper branching factors are assumed (by
-            # search_recur) to be the last value of branch_factors.
-            
-            # In this case, probably want to err towards overestimating num_worms_to_find
-            num_worms_to_find += 1
-            if np.isinf(approx_max_search_n):
-                branching_factors = np.inf
-            else:
-                branching_ratio = (
-                    approx_max_search_n ** 
-                    (2.0 / float(num_worms_to_find * (num_worms_to_find - 1))))
-                branching_factors = np.ceil(branching_ratio * np.arange(
-                    num_worms_to_find - 1, -1, -1)).astype(int)
-            
-            current_best_subset, _ = self.search_recur(
-                path_segment_matrix, segment_lengths, costs,
-                overlap_weight, leftover_weight,
-                [], # Current subset
-                0,  # last chosen
-                0,  # current cost
-                np.zeros(len(graph.segments), bool), # Current segment coverings
-                [], # current best subset
-                np.Inf, # current best cost
-                branching_factors,
-                0)
+        current_best_subset, current_best_cost = self.fast_selection(
+            costs, path_segment_matrix, segment_lengths, 
+            overlap_weight, leftover_weight)
         selected_paths =  [paths_and_costs[order[i]][0]
                            for i in current_best_subset]
         path_coords_selected = [ self.path_to_pixel_coords(graph, path)

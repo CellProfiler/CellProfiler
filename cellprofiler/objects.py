@@ -18,6 +18,7 @@ import numpy as np
 import scipy.sparse
 
 from cellprofiler.cpmath.cpmorphology import all_connected_components
+from cellprofiler.cpmath.outline import outline
 
 @decorator.decorator
 def memoize_method(function, *args):
@@ -148,6 +149,10 @@ class Objects(object):
             # p 85 (1967)
             #
             overlap_counts = np.bincount(first)
+            nlabels = len(self.indices)
+            if len(overlap_counts) < nlabels + 1:
+                overlap_counts = np.hstack(
+                    (overlap_counts, [0] * (nlabels - len(overlap_counts) + 1)))
             #
             # The index to the i'th label's stuff
             #
@@ -298,6 +303,53 @@ class Objects(object):
                                                                 child_labels)
         return self.relate_labels(parent_labels, child_labels)
     
+    def make_ijv_outlines(self, colors):
+        '''Make ijv-style color outlines
+        
+        Make outlines, coloring each object differently to distinguish between
+        objects that might overlap.
+        
+        colors: a N x 3 color map to be used to color the outlines
+        '''
+        #
+        # Get planes of non-overlapping objects. The idea here is to use
+        # the most similar colors in the color space for objects that
+        # don't overlap.
+        #
+        all_labels = [outline(label) for label in self.get_labels()]
+        image = np.zeros(list(all_labels[0].shape) + [3], np.float32)
+        #
+        # Find out how many unique labels in each
+        #
+        counts = [np.sum(np.unique(l) != 0) for l in all_labels]
+        if len(counts) == 1 and counts[0] == 0:
+            return image
+        
+        if len(colors) < len(all_labels):
+            # Have to color 2 planes using the same color!
+            # There's some chance that overlapping objects will get
+            # the same color. Give me more colors to work with please.
+            colors = np.vstack([colors] * (1 + len(all_labels) / len(colors)))
+        r = np.random.mtrand.RandomState()
+        alpha = np.zeros(all_labels[0].shape, np.float32)
+        order = np.lexsort([counts])
+        label_colors = []
+        for idx,i in enumerate(order):
+            max_available = len(colors) / (len(all_labels) - idx)
+            ncolors = min(counts[i], max_available)
+            my_colors = colors[:ncolors]
+            colors = colors[ncolors:]
+            my_colors = my_colors[r.permutation(np.arange(ncolors))]
+            my_labels = all_labels[i]
+            unique_labels = np.unique(my_labels[my_labels != 0])
+            color_idx = np.zeros(np.max(unique_labels) + 1, int)
+            color_idx[unique_labels] = np.arange(len(unique_labels)) % ncolors
+            image[my_labels != 0,:] += \
+                 my_colors[color_idx[my_labels[my_labels != 0]],:]
+            alpha[my_labels != 0] += 1
+        image[alpha > 0, :] /= alpha[alpha > 0][:, np.newaxis]
+        return image
+    
     @staticmethod
     def relate_labels(parent_labels, child_labels):
         """Relate the object numbers in one label to the object numbers in another
@@ -358,7 +410,11 @@ class Objects(object):
         """Get the indices for a scipy.ndimage-style function from the segmented labels
         
         """
-        return np.array(range(np.max(self.segmented)), np.int32)+1
+        if self.__ijv is not None:
+            max_label = np.max(self.__ijv[:,2])
+        else:
+            max_label = np.max(self.segmented)
+        return np.arange(max_label).astype(np.int32) + 1
     
     indices = property(get_indices)
      

@@ -32,12 +32,12 @@ WANTS_GRAYSCALE = "Grayscale"
 MAX_IMAGE = "Max of image"
 MAX_POSSIBLE = "Max possible"
 
-COLORS = { "White":  (255,255,255),
+COLORS = { "White":  (1,1,1),
            "Black":  (0,0,0),
-           "Red":    (255,0,0),
-           "Green":  (0,255,0),
-           "Blue":   (0,0,255),
-           "Yellow": (255,255,0) }
+           "Red":    (1,0,0),
+           "Green":  (0,1,0),
+           "Blue":   (0,0,1),
+           "Yellow": (1,1,0) }
 
 COLOR_ORDER = ["Red", "Green", "Blue","Yellow","White","Black"]
 
@@ -191,7 +191,6 @@ class OverlayOutlines(cpm.CPModule):
                 if self.wants_color.value == WANTS_COLOR:
                     figure.subplot_imshow(1, 0, pixel_data,
                                           self.output_image_name.value,
-                                          normalize=False,
                                           sharex = figure.subplot(0,0),
                                           sharey = figure.subplot(0,0))
                 else:
@@ -225,11 +224,8 @@ class OverlayOutlines(cpm.CPModule):
     def run_color(self, workspace):
         image_set = workspace.image_set
         if self.blank_image.value:
-            outline_image = image_set.get_image(
-                self.outlines[0].outline_name.value,
-                must_be_binary = True)
-            mask = outline_image.pixel_data
-            pixel_data = np.zeros((mask.shape[0],mask.shape[1],3))
+            pixel_data = None
+            pdmax = 1
         else:
             image = image_set.get_image(self.image_name.value)
             pixel_data = image.pixel_data
@@ -237,32 +233,53 @@ class OverlayOutlines(cpm.CPModule):
                 pixel_data = np.dstack((pixel_data,pixel_data,pixel_data))
             else:
                 pixel_data = pixel_data.copy()
+            pdmax = float(np.max(pixel_data))
+            if pdmax <= 0:
+                pdmax = 1
         for outline in self.outlines:
-            outline_img = self.get_outline(image_set, outline.outline_name.value)
+            color = COLORS[outline.color.value]
+            outline_img = self.get_outline(image_set, 
+                                           outline.outline_name.value,
+                                           color)
+            if pixel_data is None:
+                pixel_data = np.zeros(list(outline_img.shape[:2]) + [3], np.float32)
             i_max = min(outline_img.shape[0], pixel_data.shape[0])
             j_max = min(outline_img.shape[1], pixel_data.shape[1])
-            outline_img = outline_img[:i_max, :j_max]
+            outline_img = outline_img[:i_max, :j_max,:]
+            window = pixel_data[:i_max, :j_max, :]
+            alpha = outline_img[:,:,3]
+            pixel_data[:i_max, :j_max, :] = (
+                window * (1 - alpha[:,:,np.newaxis]) + 
+                outline_img[:,:,:3] * alpha[:,:,np.newaxis] * pdmax)
             
-            color = COLORS[outline.color.value]
-            for i in range(3):
-                pixel_data[:i_max, :j_max, i] = \
-                    (pixel_data[:i_max,:j_max,i] * 
-                     (1-outline_img) + outline_img * float(color[i])/255.0)
         return pixel_data
     
-    def get_outline(self, image_set, name):
+    def get_outline(self, image_set, name, color):
         '''Get outline, with aliasing and taking widths into account'''
-        mask = image_set.get_image(name, must_be_binary=True).pixel_data
-        output_image = np.zeros(mask.shape)
-        if self.line_width == 1:
-            output_image[mask] = 1
+        pixel_data = image_set.get_image(name).pixel_data
+        if pixel_data.ndim == 2:
+            if len(color) == 3:
+                color = np.hstack((color, [1]))
+            pixel_data = pixel_data > 0
+            output_image = color[np.newaxis, np.newaxis, :] * pixel_data[:,:,np.newaxis]
         else:
-            half_width = self.line_width.value / 2
-            distance_image = distance_transform_edt(~mask)
-            output_image[distance_image <= half_width] = 1
-            alias_mask = ((distance_image > half_width) &
-                          (distance_image < half_width+1))
-            output_image[alias_mask] = half_width+1 - distance_image[alias_mask]
+            output_image = np.dstack([pixel_data[:,:,i] for i in range(3)] +
+                                     [np.sum(pixel_data, 2) > 0])
+        if self.line_width.value > 1:
+            half_line_width = float(self.line_width.value) / 2
+            d, (i,j) = distance_transform_edt(output_image[:,:,3] == 0, 
+                                              return_indices = True)
+            mask = (d > 0) & (d <= half_line_width - .5)
+            output_image[mask,:] = output_image[i[mask], j[mask],:]
+            #
+            # Do a little aliasing here using an alpha channel
+            #
+            mask = ((d > max(0, half_line_width - .5)) & 
+                     (d < half_line_width + .5))
+            d = half_line_width + .5 - d
+            output_image[mask,:3] = output_image[i[mask], j[mask],:3]
+            output_image[mask, 3] = d[mask]
+            
         return output_image
     
     def upgrade_settings(self, setting_values, variable_revision_number, 

@@ -16,6 +16,8 @@ import numpy as np
 import scipy.ndimage
 import unittest
 import cellprofiler.objects as cpo
+import cellprofiler.cpimage as cpi
+from cellprofiler.cpmath.outline import outline
 
 class TestObjects(unittest.TestCase):
     def setUp(self):
@@ -223,6 +225,46 @@ class TestObjects(unittest.TestCase):
         for i, j, v in ijv:
             mylabels = labels[0] if v in unique_a else labels[1]
             self.assertEqual(mylabels[i,j], v)
+            
+    def test_07_00_make_ivj_outlines_empty(self):
+        np.random.seed(70)
+        x = cpo.Objects()
+        x.segmented = np.zeros((10,20), int)
+        image = x.make_ijv_outlines(np.random.uniform(size=(5,3)))
+        self.assertTrue(np.all(image == 0))
+        
+    def test_07_01_make_ijv_outlines(self):
+        np.random.seed(70)
+        x = cpo.Objects()
+        ii,jj = np.mgrid[0:10,0:20]
+        masks = [(ii-ic)**2 + (jj - jc) **2 < r **2 
+                 for ic, jc, r in ((4,5,5), (4,12,5), (6, 8, 5))]
+        i = np.hstack([ii[mask] for mask in masks])
+        j = np.hstack([jj[mask] for mask in masks])
+        v = np.hstack([[k+1] * np.sum(mask) for k, mask in enumerate(masks)])
+        
+        x.ijv = np.column_stack((i,j,v))
+        x.parent_image = cpi.Image(np.zeros((10,20)))
+        colors = np.random.uniform(size=(3, 3)).astype(np.float32)
+        image = x.make_ijv_outlines(colors)
+        i1 = [i for i, color in enumerate(colors) if np.all(color == image[0,5,:])]
+        self.assertEqual(len(i1), 1)
+        i2 = [i for i, color in enumerate(colors) if np.all(color == image[0,12,:])]
+        self.assertEqual(len(i2), 1)
+        i3 = [i for i, color in enumerate(colors) if np.all(color == image[-1,8,:])]
+        self.assertEqual(len(i3), 1)
+        self.assertNotEqual(i1[0], i2[0])
+        self.assertNotEqual(i2[0], i3[0])
+        colors = colors[np.array([i1[0], i2[0], i3[0]])]
+        outlines = np.zeros((10,20,3), np.float32)
+        alpha = np.zeros((10,20))
+        for i, (color, mask) in enumerate(zip(colors, masks)):
+            my_outline = outline(mask)
+            outlines[my_outline] += color
+            alpha[my_outline] += 1
+        alpha[alpha == 0] = 1
+        outlines /= alpha[:,:,np.newaxis]
+        np.testing.assert_almost_equal(outlines, image)
 
 class TestDownsampleLabels(unittest.TestCase):
     def test_01_01_downsample_127(self):

@@ -27,10 +27,13 @@ import urllib2
 
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
+import cellprofiler.cpimage as cpi
 import cellprofiler.objects as cpo
 import cellprofiler.settings as cps
 import cellprofiler.cpmath.cpmorphology as morph
+import cellprofiler.preferences as cpprefs
 from cellprofiler.cpmath.propagate import propagate
+from cellprofiler.cpmath.outline import outline
 
 from cellprofiler.preferences import standardize_default_folder_names, \
      DEFAULT_INPUT_FOLDER_NAME, DEFAULT_OUTPUT_FOLDER_NAME, NO_FOLDER_NAME, \
@@ -77,6 +80,27 @@ class UntangleWorms(cpm.CPModule):
             both of the overlapping worms. The overlapping worm objects share
             these pixels and measurements of both overlapping worms will include
             these pixels in the measurements of both worms.""")
+        
+        self.wants_overlapping_outlines = cps.Binary(
+            "Retain outlines of the overlapping objects?", False,
+            """Check this setting to save an image of the outlines of the
+            objects with overlap. Leave the setting unchecked if you do
+            not need the outline image.""")
+        
+        self.overlapping_outlines_colormap = cps.Colormap(
+            "Outline colormap?",
+            doc = """This setting controls the colormap used when drawing
+            outlines. The outlines are drawn in color to highlight the
+            shapes of each worm in a group of overlapping worms""")
+        
+        self.overlapping_outlines_name = cps.OutlineNameProvider(
+            "Overlapped outline image name:",
+            "OverlappedWormOutlines",
+            doc = """This is the name of the outlines of the
+            overlapped worms. You can use this image to display the untangling
+            results, for instance, by composting the outlines image with
+            the <b>OverlayOutlines</b> module""")
+        
         self.nonoverlapping_objects = cps.ObjectNameProvider(
             "Non-overlapping worms object name:", "NonOverlappingWorms",
             doc = """This setting names the objects representing the worms,
@@ -85,6 +109,19 @@ class UntangleWorms(cpm.CPModule):
             worm or the other. These pixels are excluded from both worms
             in the non-overlapping objects and will not be a part of the
             measurements of either worm.""")
+        
+        self.wants_nonoverlapping_outlines = cps.Binary(
+            "Retain outlines of the non-overlapping worms?", False,
+            """Check this setting to save an image of the outlines of the
+            non-overlapping worms. Leave it unchecked if you do not need
+            the image of the outlines.""")
+        
+        self.nonoverlapping_outlines_name =cps.OutlineNameProvider(
+            "Non-overlapped outlines image name:",
+            "NonoverlappedWormOutlines",
+            doc = """This is the name of the of the outlines of the worms
+            with the overlapping sections removed.""")
+        
         self.training_set_directory = cps.DirectoryPath(
             "Training set file location", support_urls = True,
             doc = """Select the folder containing the training set to be loaded.
@@ -147,15 +184,25 @@ class UntangleWorms(cpm.CPModule):
         return [self.image_name, self.overlap, self.overlap_objects,
                 self.nonoverlapping_objects, self.training_set_directory,
                 self.training_set_file_name, self.wants_training_set_weights,
-                self.override_overlap_weight, 
-                self.override_leftover_weight]
+                self.override_overlap_weight, self.override_leftover_weight,
+                self.wants_overlapping_outlines, 
+                self.overlapping_outlines_colormap, 
+                self.overlapping_outlines_name, 
+                self.wants_nonoverlapping_outlines,
+                self.nonoverlapping_outlines_name]
     
     def visible_settings(self):
         result = [self.image_name, self.overlap]
         if self.overlap in (OO_WITH_OVERLAP, OO_BOTH):
-            result += [self.overlap_objects]
+            result += [self.overlap_objects, self.wants_overlapping_outlines]
+            if self.wants_overlapping_outlines:
+                result += [self.overlapping_outlines_colormap,
+                           self.overlapping_outlines_name]
         if self.overlap in (OO_WITHOUT_OVERLAP, OO_BOTH):
-            result += [self.nonoverlapping_objects]
+            result += [self.nonoverlapping_objects, 
+                       self.wants_nonoverlapping_outlines]
+            if self.wants_nonoverlapping_outlines:
+                result += [self.nonoverlapping_outlines_name]
         result += [self.training_set_directory, self.training_set_file_name,
                    self.wants_training_set_weights]
         if not self.wants_training_set_weights:
@@ -180,8 +227,10 @@ class UntangleWorms(cpm.CPModule):
     def run(self, workspace):
         params = self.read_params(workspace)
         image_name = self.image_name.value
-        image = workspace.image_set.get_image(image_name,
-                                              must_be_binary = True)
+        image_set = workspace.image_set
+        assert isinstance(image_set, cpi.ImageSet)
+        image = image_set.get_image(image_name,
+                                    must_be_binary = True)
         labels, count = scind.label(image.pixel_data, morph.eight_connect)
         #
         # Skeletonize once, then remove any points in the skeleton
@@ -219,6 +268,8 @@ class UntangleWorms(cpm.CPModule):
                     paths = self.get_all_paths(graph)
                     paths_selected = self.cluster_paths_selection(
                         graph, paths, labels, i, params)
+                    del graph
+                    del paths
                     all_path_coords += paths_selected
         ijv = self.worm_descriptor_building(all_path_coords, params,
                                             labels.shape)
@@ -232,6 +283,21 @@ class UntangleWorms(cpm.CPModule):
             o.ijv = ijv
             o.parent_image = image
             object_set.add_objects(o, self.overlap_objects.value)
+            #
+            # Save outlines
+            #
+            if self.wants_overlapping_outlines:
+                from matplotlib.cm import ScalarMappable
+                colormap = self.overlapping_outlines_colormap.value
+                if colormap == cps.DEFAULT:
+                    colormap = cpprefs.get_default_colormap()
+                my_map = ScalarMappable(cmap = colormap)
+                colors = my_map.to_rgba(np.unique(ijv[:,2]))
+                outline_pixels = o.make_ijv_outlines(colors[:,:3])
+                outline_image = cpi.Image(outline_pixels, parent_image = image)
+                image_set.add(self.overlapping_outlines_name.value, 
+                              outline_image)
+                
         if self.overlap in (OO_WITHOUT_OVERLAP, OO_BOTH):
             #
             # Sum up the number of overlaps using a sparse matrix
@@ -248,6 +314,11 @@ class UntangleWorms(cpm.CPModule):
             o.segmented = labels
             o.parent_image = image
             object_set.add_objects(o, self.nonoverlapping_objects.value)
+            if self.wants_nonoverlapping_outlines:
+                outline_pixels = outline(labels)
+                outline_image = cpi.Image(outline_pixels, parent = image)
+                image_set.add(self.nonoverlapping_outlines_name.value,
+                              outline_image)
     
     def is_interactive(self):
         return False
@@ -1422,7 +1493,7 @@ class UntangleWorms(cpm.CPModule):
         if len(all_path_coords) == 0:
             return np.zeros((0,3), int)
         
-        worm_radius = params.cluster_paths_selection.worm_radius
+        worm_radii = params.worm_descriptor_building.radii_from_training
         num_control_points = params.filter.num_control_points
         all_i = []
         all_j = []
@@ -1431,7 +1502,7 @@ class UntangleWorms(cpm.CPModule):
             control_coords = self.sample_control_points(
                 path, cumul_lengths,  num_control_points)
             ii,jj = self.rebuild_worm_from_control_points_approx(
-                control_coords, worm_radius, shape)
+                control_coords, worm_radii, shape)
             all_i.append(ii)
             all_j.append(jj)
         return np.column_stack((
@@ -1442,7 +1513,7 @@ class UntangleWorms(cpm.CPModule):
             
     
     def rebuild_worm_from_control_points_approx(self, control_coords, 
-                                                worm_radius, shape):
+                                                worm_radii, shape):
         '''Rebuild a worm from its control coordinates
          
         Given a worm specified by some control points along its spline,
@@ -1468,19 +1539,38 @@ class UntangleWorms(cpm.CPModule):
                                                 control_coords[1:,0],
                                                 control_coords[1:,1])
         #
+        # Find the control point and within-control-point index of each point
+        #
+        label = np.zeros(len(i), int)
+        label[index[1:]] = 1
+        label = np.cumsum(label)
+        order = np.arange(len(i)) - index[label]
+        frac = order.astype(float) / count[label].astype(float)
+        radius = (worm_radii[label] * (1-frac) + 
+                  worm_radii[label+1] * frac)
+        iworm_radius = int(np.max(np.ceil(radius)))
+        #
         # Get dilation coordinates
         #
-        iworm_radius = int(worm_radius + 1)
         ii, jj = np.mgrid[-iworm_radius:iworm_radius+1,
                           -iworm_radius:iworm_radius+1]
-        mask = ii*ii + jj*jj <= worm_radius * worm_radius
+        dd = np.sqrt((ii*ii + jj*jj).astype(float))
+        mask = ii*ii + jj*jj <= iworm_radius * iworm_radius
         ii = ii[mask]
         jj = jj[mask]
+        dd = dd[mask]
         #
         # All points (with repeats)
         #
         i = (i[:,np.newaxis] + ii[np.newaxis, :]).flatten()
         j = (j[:,np.newaxis] + jj[np.newaxis, :]).flatten()
+        #
+        # We further mask out any dilation coordinates outside of
+        # the radius at our point in question
+        #
+        m = (radius[:,np.newaxis] >= dd[np.newaxis, :]).flatten()
+        i = i[m]
+        j = j[m]
         #
         # Find repeats by sorting and comparing against next
         #

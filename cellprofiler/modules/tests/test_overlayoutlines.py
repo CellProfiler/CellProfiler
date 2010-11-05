@@ -173,6 +173,7 @@ OverlayOutlines:[module_num:5|svn_version:\'9000\'|variable_revision_number:2|sh
     def test_02_01_gray_to_color_outlines(self):
         np.random.seed(0)
         image = np.random.uniform(size=(50,50)).astype(np.float32)
+        image[0,0] = 1
         outline = np.zeros((50,50),bool)
         outline[20:31,20:31] = 1
         outline[21:30,21:30] = 0
@@ -191,6 +192,7 @@ OverlayOutlines:[module_num:5|svn_version:\'9000\'|variable_revision_number:2|sh
     def test_02_02_color_to_color_outlines(self):
         np.random.seed(0)
         image = np.random.uniform(size=(50,50,3)).astype(np.float32)
+        image[0,0] = 1
         outline = np.zeros((50,50),bool)
         outline[20:31,20:31] = 1
         outline[21:30,21:30] = 0
@@ -209,6 +211,7 @@ OverlayOutlines:[module_num:5|svn_version:\'9000\'|variable_revision_number:2|sh
     def test_02_03_blank_to_color_outlines(self):
         np.random.seed(0)
         image = np.random.uniform(size=(50,50,3))
+        image[0,0] = 1
         outline = np.zeros((50,50),bool)
         outline[20:31,20:31] = 1
         outline[21:30,21:30] = 0
@@ -229,6 +232,7 @@ OverlayOutlines:[module_num:5|svn_version:\'9000\'|variable_revision_number:2|sh
         '''Regression test of img-961'''
         np.random.seed(24)
         image = np.random.uniform(size=(50,50)).astype(np.float32)
+        image[0,0] = 1
         outline = np.zeros((60,40),bool)
         outline[20:31,20:31] = 1
         outline[21:30,21:30] = 0
@@ -247,6 +251,7 @@ OverlayOutlines:[module_num:5|svn_version:\'9000\'|variable_revision_number:2|sh
     def test_02_05_wrong_size_color_to_color(self):
         np.random.seed(25)
         image = np.random.uniform(size=(50,50,3)).astype(np.float32)
+        image[0,0] = 1
         outline = np.zeros((60,40),bool)
         outline[20:31,20:31] = 1
         outline[21:30,21:30] = 0

@@ -3223,3 +3223,21 @@ class TestIsLocalMaximum(unittest.TestCase):
         expected = (expected == image)
         result = morph.is_local_maximum(image, labels, footprint)
         self.assertTrue(np.all(result == expected))
+
+class TestAngularDistribution(unittest.TestCase):
+    def test_00_00_angular_dist(self):
+        np.random.seed(0)
+        # random labels from 0 to 9
+        labels = (np.random.uniform(0, 0.95, (1000, 1000)) * 10).astype(np.int)
+        # filled square of 11 (NB: skipped 10)
+        labels[200:300, 600:900] = 11
+        angdist = morph.angular_distribution(labels)
+        # 10 is an empty label
+        assert np.all(angdist[9, :] == 0.0)
+        # check approximation to chord ratio of filled rectangle (roughly 3.16)
+        resolution = angdist.shape[1]
+        angdist2 = angdist[-1, :resolution/2] + angdist[-1, resolution/2:]
+        assert np.abs(3.16 - np.sqrt(angdist2.max() / angdist2.min())) < 0.05
+
+    
+    

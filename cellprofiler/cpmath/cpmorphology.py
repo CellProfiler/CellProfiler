@@ -3469,3 +3469,50 @@ def is_local_maximum(image, labels, footprint):
         result_raveled[result_indexes[same_label][less_than]] = False
         
     return result
+
+def angular_distribution(labels, resolution=100, weights=None):
+    '''For each object in labels, compute the angular distribution
+    around the centers of mass.  Returns an i x j matrix, where i is
+    the number of objects in the label matrix, and j is the resolution
+    of the distribution (default 100), mapped from -pi to pi.
+
+    Optionally, the distributions can be weighted by pixel.
+
+    The algorithm approximates the angular width of pixels relative to
+    the object centers, in an attempt to be accurate for small
+    objects.
+
+    The ChordRatio of an object can be approximated by 
+    >>> angdist = angular_distribution(labels, resolution)
+    >>> angdist2 = angdist[:, :resolution/2] + angdist[:, resolution/2] # map to widths, rather than radii
+    >>> chord_ratio = np.sqrt(angdist2.max(axis=1) / angdist2.min(axis=1)) # sqrt because these are sectors, not triangles
+    '''
+    if weights is None:
+        weights = np.ones(labels.shape)
+    maxlabel = labels.max()
+    ci, cj = centers_of_labels(labels)
+    j, i = np.meshgrid(np.arange(labels.shape[0]), np.arange(labels.shape[1]))
+    # compute deltas from pixels to object centroids, and mask to labels
+    di = i[labels > 0] - ci[labels[labels > 0] - 1]
+    dj = j[labels > 0] - cj[labels[labels > 0] - 1]
+    weights = weights[labels > 0]
+    labels = labels[labels > 0]
+    # find angles, and angular width of pixels
+    angle = np.arctan2(di, dj)
+    # Use pixels of width 2 to get some smoothing
+    width = np.arctan(1.0 / np.sqrt(di**2 + dj**2 + np.finfo(float).eps))
+    # create an onset/offset array of size 3 * resolution
+    lo = np.clip((angle - width) * resolution / (2 * np.pi), -resolution, 2 * resolution).astype(int) + resolution
+    hi = np.clip((angle + width) * resolution / (2 * np.pi), -resolution, 2 * resolution).astype(int) + resolution
+    # make sure every pixel counts at least once
+    hi[lo == hi] += 1
+    # normalize weights by their angular width (adding a bit to avoid 0 / 0)
+    weights /= (hi - lo)
+    onset = scipy.sparse.coo_matrix((weights, (labels - 1, lo)), (maxlabel, 3 * resolution)).toarray()
+    offset = scipy.sparse.coo_matrix((weights, (labels - 1, hi)), (maxlabel, 3 * resolution)).toarray()
+    # sum onset/offset to get actual distribution
+    onoff = onset - offset
+    dist = np.cumsum(onoff, axis=1)
+    dist = dist[:, :resolution] + dist[:, resolution:2*resolution] + dist[:, 2*resolution:]
+    return dist
+

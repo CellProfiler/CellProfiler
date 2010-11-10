@@ -15,6 +15,7 @@ Website: http://www.cellprofiler.org
 __version__ = "$Revision$"
 
 import os
+import re
 import cellprofiler.utilities.jutil as jutil
 from cellprofiler.preferences import get_headless, get_ij_plugin_directory
 import sys
@@ -67,13 +68,21 @@ if sys.platform.startswith("win") and not hasattr(sys, 'frozen'):
         __class_path += os.pathsep + __tools_jar
     else:
         sys.stderr.write("Warning: Failed to find tools.jar\n")
-        
+
+jvm_arg = [x.groups()[0] for x in [
+    re.match('--jvm-heap-size=([0-9]+[gGkKmM])', y) for y in sys.argv]
+           if x is not None]
+if len(jvm_arg) > 0:
+    jvm_arg = jvm_arg[0]
+else:
+    jvm_arg = "512m"
+    
 __args = [r"-Djava.class.path="+__class_path,
           #r"-Djava.ext.dirs=%s"%__path,
           r"-Dloci.bioformats.loaded=true",
           #r"-verbose:class",
           #r"-verbose:jni",
-          r"-Xmx512m"]
+          r"-Xmx%s" % jvm_arg]
 if get_ij_plugin_directory() is not None:
     __args.append("-Dplugins.dir="+get_ij_plugin_directory())
 

@@ -100,6 +100,12 @@ parser.add_option("--ij-plugins-directory",
                   help=("CellProfiler will look for ImageJ plugin modules "
                         "in this directory."))
 
+parser.add_option("--jvm-heap-size",
+                  dest="jvm_heap_size",
+                  help=("This is the amount of memory reserved for the "
+                        "Java Virtual Machine (similar to the java -Xmx switch)."
+                        "Example formats: 512000k, 512m, 1g"))
+
 if not hasattr(sys, 'frozen'):
     parser.add_option("-b", "--do-not_build",
                       dest="build_extensions",
@@ -200,7 +206,6 @@ try:
     #
     # Important to go headless ASAP
     #
-    import cellprofiler.preferences as cpprefs
     if (not options.show_gui) or options.output_html:
         cpprefs.set_headless()
         # What's there to do but run if you're running headless?

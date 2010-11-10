@@ -354,14 +354,16 @@ def convex_hull_ijv(pixel_labels, indexes):
     coords = pixel_labels[:,:2]
     i = coords[:, 0]
     j = coords[:, 1]
-    labels_per_point = pixel_labels[:,2]
+    # This disgusting copy spooge appears to be needed for scipy 0.7.0
+    labels_per_point = np.zeros(len(pixel_labels), int)
+    labels_per_point[:] = pixel_labels[:,2]
     #
     # Calculate the centers for each label
     #
     center_i = fixup_scipy_ndimage_result(
-        scind.mean(i.astype(float), labels_per_point.astype(int), indexes))
+        scind.mean(i.astype(float), labels_per_point, indexes))
     center_j = fixup_scipy_ndimage_result(
-        scind.mean(j.astype(float), labels_per_point.astype(int), indexes))
+        scind.mean(j.astype(float), labels_per_point, indexes))
     centers = np.column_stack((center_i, center_j))
     #
     # Now make an array with one outline point per row and the following

@@ -312,7 +312,7 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
                 #   center of the nucleus or the center of one or the other
                 #   of two touching cells.
                 #
-                i,j = maximum_position_of_labels(d_to_edge, labels)
+                i,j = maximum_position_of_labels(d_to_edge, labels, objects.indices)
                 center_labels = np.zeros(labels.shape, int)
                 center_labels[i,j] = labels[i,j]
                 #

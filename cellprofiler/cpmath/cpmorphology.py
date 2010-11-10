@@ -787,29 +787,36 @@ def centers_of_labels(labels):
         return result
     return result.transpose()
 
-def maximum_position_of_labels(image, labels):
+def maximum_position_of_labels(image, labels, indices):
     '''Return the i,j coordinates of the maximum value within each object
     
     image - measure the maximum within this image
     labels - use the objects within this labels matrix
+    indices - label #s to measure
     
     The result returned is an 2 x n numpy array where n is the number
     of the label minus one, result[0,x] is the i coordinate of the center
     and result[x,1] is the j coordinate of the center.
     '''
     
-    max_labels = np.max(labels)
-    if max_labels == 0:
+    if len(indices) == 0:
         return np.zeros((2,0),int)
     
-    result = scind.maximum_position(image,
-                                    labels,
-                                    np.arange(max_labels)+1)
+    result = scind.maximum_position(image, labels, indices)
     result = np.array(result,int)
     if result.ndim == 1:
         result.shape = (2,1)
         return result
     return result.transpose()
+
+def farthest_from_edge(labels, indices):
+    """Return coords of the pixel in each object farthest from the edge
+    
+    labels - find the centers in this
+    
+    Returns a 2 x n matrix of the i and j positions
+    """
+    return maximum_position_of_labels(distance_to_edge(labels), labels, indices)
 
 def minimum_enclosing_circle(labels, indexes = None, 
                              hull_and_point_count = None):
@@ -1566,26 +1573,74 @@ def ellipse_from_second_moments(image, labels, indexes):
     if len(indexes) == 0:
         return (np.zeros((0,2)), np.zeros((0,)), np.zeros((0,)), 
                 np.zeros((0,)),np.zeros((0,)))
-    i,j = np.mgrid[0:labels.shape[0],0:labels.shape[1]]
+    i,j = np.argwhere(labels != 0).transpose()
+    return ellipse_from_second_moments_ijv(i,j,image[i,j], labels[i,j], indexes)
+
+def ellipse_from_second_moments_ijv(i,j, image, labels, indexes):
+    """Calculate measurements of ellipses equivalent to the second moments of labels
+    
+    i,j - coordinates of each point
+    image  - the intensity at each point
+    labels - for each labeled object, derive an ellipse
+    indexes - sequence of indexes to process
+    
+    returns the following arrays:
+       coordinates of the center of the ellipse
+       eccentricity
+       major axis length
+       minor axis length
+       orientation
+    
+    some definitions taken from "Image Moments-Based Structuring and Tracking
+    of Objects", LOURENA ROCHA, LUIZ VELHO, PAULO CEZAR P. CARVALHO,
+    http://sibgrapi.sid.inpe.br/col/sid.inpe.br/banon/2002/10.23.11.34/doc/35.pdf
+    particularly equation 5 (which has some errors in it).
+    These yield the rectangle with equivalent second moments. I translate
+    to the ellipse by multiplying by 1.154701 which is Matlab's calculation
+    of the major and minor axis length for a square of length X divided
+    by the actual length of the side of a square of that length.
+    
+    eccentricity is the distance between foci divided by the major axis length
+    orientation is the angle of the major axis with respect to the X axis
+    """
+    if len(indexes) == 0:
+        return (np.zeros((0,2)), np.zeros((0,)), np.zeros((0,)), 
+                np.zeros((0,)),np.zeros((0,)))
+    if len(i) == 0:
+        return (np.zeros((len(indexes), 2)),
+                np.ones(len(indexes)),
+                np.zeros(len(indexes)),
+                np.zeros(len(indexes)),
+                np.zeros(len(indexes)))
+    #
+    # Normalize to center of object for stability
+    #
+    nlabels = np.max(indexes)+1
+    m = np.array([[None, 0, None],
+                  [0, None, None],
+                  [None, None, None]], object)
+    if np.all(image == 1):
+        image = 1
+        m[0,0] = intensity = np.bincount(labels)
+    else:
+        m[0,0] = intensity = np.bincount(labels, image)
+    ic = np.bincount(labels, i * image) / intensity
+    jc = np.bincount(labels, j * image) / intensity
+    i = i - ic[labels]
+    j = j - jc[labels]
     #
     # Start by calculating the moments m[p][q] of the image
     # sum(i**p j**q)
     #
-    fix = fixup_scipy_ndimage_result
-    m = {}
-    m[0,0] = fix(scind.sum(image,    labels, indexes))
-    m[1,0] = fix(scind.sum(i*image,  labels, indexes))
-    m[0,1] = fix(scind.sum(j*image,  labels, indexes))
-    m[1,1] = fix(scind.sum(i*j*image,labels, indexes))
-    m[2,0] = fix(scind.sum(i*i*image,labels, indexes))
-    m[0,2] = fix(scind.sum(j*j*image,labels, indexes))
+    # m[1,0] = 0 via normalization
+    # m[0,1] = 0 via normalization
+    m[1,1] = np.bincount(labels, i*j*image)
+    m[2,0] = np.bincount(labels, i*i*image)
+    m[0,2] = np.bincount(labels, j*j*image)
     
-    ic = m[1,0] / m[0,0]
-    jc = m[0,1] / m[0,0]
-    
-    a = m[2,0] / m[0,0] - ic**2
-    b = 2*(m[1,1]/m[0,0] - ic * jc)
-    c = m[0,2] / m[0,0] - jc**2
+    a = m[2,0] / m[0,0]
+    b = 2*m[1,1]/m[0,0]
+    c = m[0,2] / m[0,0]
     
     theta = np.arctan2(b,c-a) / 2
     temp = np.sqrt(b**2+(a-c)**2)
@@ -1601,10 +1656,11 @@ def ellipse_from_second_moments(image, labels, indexes):
     minor_axis_len = (np.sqrt(8*(a+c-temp)) * mystery_multiplier +
                       mystery_constant)
     eccentricity = np.sqrt(1-(minor_axis_len / major_axis_len)**2) 
-    return (np.dstack((ic,jc))[0,:,:],
-            eccentricity,
-            major_axis_len,
-            minor_axis_len,theta)
+    return (np.column_stack((ic[indexes], jc[indexes])),
+            eccentricity[indexes],
+            major_axis_len[indexes],
+            minor_axis_len[indexes],
+            theta[indexes])
 
 def calculate_extents(labels, indexes):
     """Return the area of each object divided by the area of its bounding box"""

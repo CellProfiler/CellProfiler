@@ -90,8 +90,15 @@ MeasureObjectSizeShape:[module_num:1|svn_version:\'1\'|variable_revision_number:
                                   object_set, measurements, image_set_list)
         module.run(workspace)
         
-        a = measurements.get_current_measurement('SomeObjects','AreaShape_Area')
-        self.assertEqual(len(a), 0)
+        for f in (cpmoas.F_AREA, cpmoas.F_CENTER_X, cpmoas.F_CENTER_Y,
+                  cpmoas.F_ECCENTRICITY, cpmoas.F_EULER_NUMBER,
+                  cpmoas.F_EXTENT, cpmoas.F_FORM_FACTOR,
+                  cpmoas.F_MAJOR_AXIS_LENGTH, cpmoas.F_MINOR_AXIS_LENGTH,
+                  cpmoas.F_ORIENTATION, cpmoas.F_PERIMETER,
+                  cpmoas.F_SOLIDITY):
+            m = cpmoas.AREA_SHAPE + "_" + f
+            a = measurements.get_current_measurement('SomeObjects', m)
+            self.assertEqual(len(a), 0)
 
     def test_01_02_run(self):
         """Run with a rectangle, cross and circle"""
@@ -284,6 +291,62 @@ MeasureObjectSizeShape:[module_num:1|svn_version:\'1\'|variable_revision_number:
             "SomeObjects", "_".join((cpmoas.AREA_SHAPE, cpmoas.F_EXTENT)))
         self.assertEqual(len(values), 1)
         self.assertAlmostEqual(values[0], .75)
+        
+    def test_05_01_overlapping(self):
+        '''Test object measurement with two overlapping objects in ijv format'''
+        
+        i,j = np.mgrid[0:10,0:20]
+        m = (i > 1) & (i < 9) & (j > 1) & (j < 19)
+        m1 = m & (i < j)
+        m2 = m & (i < 9 - j)
+        mlist = []
+        olist = []
+        for m in (m1, m2):
+            objects = cpo.Objects()
+            objects.segmented = m.astype(int)
+            olist.append(objects)
+        ijv = np.column_stack((
+            np.hstack([np.argwhere(m)[:,0] for m in (m1, m2)]),
+            np.hstack([np.argwhere(m)[:,1] for m in (m1, m2)]),
+            np.array([1] * np.sum(m1) + [2] * np.sum(m2))))
+        objects = cpo.Objects()
+        objects.ijv = ijv
+        olist.append(objects)
+        for objects in olist:
+            module = cpmoas.MeasureObjectAreaShape()
+            module.object_groups[0].name.value = "SomeObjects"
+            module.calculate_zernikes.value = True
+            object_set = cpo.ObjectSet()
+            object_set.add_objects(objects, "SomeObjects")
+            module.module_num = 1
+            image_set_list = cpi.ImageSetList()
+            measurements = cpmeas.Measurements()
+            mlist.append(measurements)
+            pipeline = cpp.Pipeline()
+            pipeline.add_module(module)
+            def callback(caller, event):
+                self.assertFalse(isinstance(event, cpp.RunExceptionEvent))
+                pipeline.add_listener(callback)
+            workspace = cpw.Workspace(pipeline, module, 
+                                      image_set_list.get_image_set(0),
+                                      object_set, measurements, image_set_list)
+            module.run(workspace)
+        for c in module.get_measurement_columns(None):
+            oname, feature = c[:2]
+            if oname != "SomeObjects":
+                continue
+            measurements = mlist[0]
+            self.assertTrue(isinstance(measurements, cpmeas.Measurements))
+            v1 = measurements.get_current_measurement(oname, feature)
+            self.assertEqual(len(v1), 1)
+            v1 = v1[0]
+            measurements = mlist[1]
+            v2 = measurements.get_current_measurement(oname, feature)
+            self.assertEqual(len(v2), 1)
+            v2 = v2[0]
+            expected = (v1, v2)
+            v = mlist[2].get_current_measurement(oname, feature)
+            self.assertEqual(tuple(v), expected)
             
     def features_and_columns_match(self, measurements, module):
         self.assertEqual(len(measurements.get_object_names()), 2)

@@ -182,9 +182,11 @@ class TestObjects(unittest.TestCase):
         '''Convert a blank ijv representation to labels'''
         x = cpo.Objects()
         x.ijv = np.zeros((0,3), int)
-        labels = x.get_labels()
-        self.assertEqual(len(labels), 1)
-        self.assertTrue(np.all(labels[0] == 0))
+        y = x.get_labels()
+        self.assertEqual(len(y), 1)
+        labels, indices = y[0]
+        self.assertEqual(len(indices), 0)
+        self.assertTrue(np.all(labels == 0))
         
     def test_06_03_ijv_to_labels_simple(self):
         '''Convert an ijv representation w/o overlap to labels'''
@@ -197,7 +199,10 @@ class TestObjects(unittest.TestCase):
         x.ijv = ijv
         labels_out = x.get_labels()
         self.assertEqual(len(labels_out), 1)
-        self.assertTrue(np.all(labels_out[0] == labels))
+        labels_out, indices = labels_out[0]
+        self.assertTrue(np.all(labels_out == labels))
+        self.assertEqual(len(indices), 9)
+        self.assertTrue(np.all(np.unique(indices)==np.arange(1,10)))
         
     def test_06_04_ijv_to_labels_overlapping(self):
         '''Convert an ijv representation with overlap to labels'''
@@ -216,14 +221,14 @@ class TestObjects(unittest.TestCase):
         x.ijv = ijv
         labels = x.get_labels()
         self.assertEqual(len(labels), 2)
-        unique_a = np.unique(labels[0])[1:]
-        unique_b = np.unique(labels[1])[1:]
+        unique_a = np.unique(labels[0][0])[1:]
+        unique_b = np.unique(labels[1][0])[1:]
         for a in unique_a:
             self.assertTrue(a not in unique_b)
         for b in unique_b:
             self.assertTrue(b not in unique_a)
         for i, j, v in ijv:
-            mylabels = labels[0] if v in unique_a else labels[1]
+            mylabels = labels[0][0] if v in unique_a else labels[1][0]
             self.assertEqual(mylabels[i,j], v)
             
     def test_07_00_make_ivj_outlines_empty(self):

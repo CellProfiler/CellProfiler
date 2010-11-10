@@ -96,15 +96,16 @@ import numpy as np
 import scipy.ndimage as scind
 
 import cellprofiler.cpmodule as cpm
+import cellprofiler.objects as cpo
 import cellprofiler.settings as cps
 import cellprofiler.cpmath.zernike as cpmz
 from cellprofiler.cpmath.cpmorphology import fixup_scipy_ndimage_result
-from cellprofiler.cpmath.cpmorphology import ellipse_from_second_moments
+from cellprofiler.cpmath.cpmorphology import ellipse_from_second_moments_ijv
 from cellprofiler.cpmath.cpmorphology import calculate_extents
 from cellprofiler.cpmath.cpmorphology import calculate_perimeters
 from cellprofiler.cpmath.cpmorphology import calculate_solidity
 from cellprofiler.cpmath.cpmorphology import euler_number
-from cellprofiler.cpmath.cpmorphology import distance_to_edge, maximum_position_of_labels
+from cellprofiler.cpmath.cpmorphology import farthest_from_edge
 from cellprofiler.measurements import COLTYPE_FLOAT
 
 """The category of the per-object measurements made by this module"""
@@ -248,16 +249,16 @@ class MeasureObjectSizeShape(cpm.CPModule):
     def run_on_objects(self,object_name, workspace):
         """Run, computing the area measurements for a single map of objects"""
         objects = workspace.get_objects(object_name)
-        #
-        # Compute the area as the sum of 1s over a label matrix
-        #
-        self.perform_ndmeasurement(workspace, scind.sum,
-                                   object_name, F_AREA)
+        assert isinstance(objects, cpo.Objects)
         #
         # Do the ellipse-related measurements
         #
-        centers,eccentricity,major_axis_length,minor_axis_length,theta =\
-            objects.fn_of_ones_label_and_index(ellipse_from_second_moments)
+        i, j, l = objects.ijv.transpose()
+        centers, eccentricity, major_axis_length, minor_axis_length, theta =\
+            ellipse_from_second_moments_ijv(i, j, 1, l, objects.indices)
+        del i
+        del j
+        del l
         self.record_measurement(workspace, object_name,
                                 F_ECCENTRICITY, eccentricity)
         self.record_measurement(workspace, object_name,
@@ -266,58 +267,66 @@ class MeasureObjectSizeShape(cpm.CPModule):
                                 F_MINOR_AXIS_LENGTH, minor_axis_length)
         self.record_measurement(workspace, object_name, F_ORIENTATION, 
                                 theta * 180 / np.pi)
-        
-        #
-        # Calculate the object center as the point in each object farthest away from the edge
-        #
-        d_to_edge = distance_to_edge(objects.segmented)
-        i,j = maximum_position_of_labels(d_to_edge, objects.segmented)
-        self.record_measurement(workspace, object_name, F_CENTER_X, 
-                                j)
-        self.record_measurement(workspace, object_name, F_CENTER_Y, 
-                                i)
-        #
-        # The extent (area / bounding box area)
-        #
-        self.perform_measurement(workspace, calculate_extents,
-                                 object_name, F_EXTENT)
-        #
-        # The perimeter distance
-        #
-        self.perform_measurement(workspace, calculate_perimeters,
-                                 object_name, F_PERIMETER)
-        #
-        # Solidity
-        #
-        self.perform_measurement(workspace, calculate_solidity,
-                                 object_name, F_SOLIDITY)
-        #
-        # Form factor
-        #
-        ff = form_factor(objects)
-        self.record_measurement(workspace, object_name, 
-                                F_FORM_FACTOR, ff)
-        #
-        # Euler number
-        self.perform_measurement(workspace, euler_number,
-                                 object_name, F_EULER_NUMBER)
-        #
-        # Zernike features
-        #
-        if self.calculate_zernikes.value:
-            zernike_numbers = self.get_zernike_numbers()
-            if len(objects.indices) > 0:
-                zernike_features = cpmz.zernike(zernike_numbers, 
-                                                objects.segmented,
-                                                objects.indices)
-            else:
-                zernike_features = np.zeros((0,zernike_numbers.shape[0]))
-            for i in range(zernike_numbers.shape[0]):
-                zernike_number = zernike_numbers[i]
-                zernike_feature = zernike_features[:,i]
-                feature_name = self.get_zernike_name(zernike_number)
-                self.record_measurement(workspace, object_name, feature_name, 
-                                        zernike_feature)
+        is_first = False
+        if len(objects.indices) == 0:
+            nobjects = 0
+        else:
+            nobjects = np.max(objects.indices)
+        mcenter_x = np.zeros(nobjects)
+        mcenter_y = np.zeros(nobjects)
+        mextent = np.zeros(nobjects)
+        mperimeters = np.zeros(nobjects)
+        msolidity = np.zeros(nobjects)
+        euler = np.zeros(nobjects)
+        zernike_numbers = self.get_zernike_numbers()
+        zf = {}
+        for n,m in zernike_numbers:
+            zf[(n,m)] = np.zeros(nobjects)
+        if nobjects > 0:
+            for labels, indices in objects.get_labels():
+                to_indices = indices-1
+                mcenter_y[to_indices], mcenter_x[to_indices] =\
+                         farthest_from_edge(labels, indices)
+                #
+                # The extent (area / bounding box area)
+                #
+                mextent[to_indices] = calculate_extents(labels, indices)
+                #
+                # The perimeter distance
+                #
+                mperimeters[to_indices] = calculate_perimeters(labels, indices)
+                #
+                # Solidity
+                #
+                msolidity[to_indices] = calculate_solidity(labels, indices)
+                #
+                # Euler number
+                #
+                euler[to_indices] = euler_number(labels, indices)
+                #
+                # Zernike features
+                #
+                zf_l = cpmz.zernike(zernike_numbers, labels, indices)
+                for (n,m), z in zip(zernike_numbers, zf_l.transpose()):
+                    zf[(n,m)][to_indices] = z
+            #
+            # Form factor
+            #
+            ff = 4.0 * np.pi * objects.areas / mperimeters**2
+        else:
+            ff = np.zeros(0)
+
+        for f, m in ([(F_AREA, objects.areas),
+                      (F_CENTER_X, mcenter_x),
+                      (F_CENTER_Y, mcenter_y),
+                      (F_EXTENT, mextent),
+                      (F_PERIMETER, mperimeters),
+                      (F_SOLIDITY, msolidity),
+                      (F_FORM_FACTOR, ff),
+                      (F_EULER_NUMBER, euler)] +
+                     [(self.get_zernike_name((n,m)), zf[(n,m)])
+                       for n,m in zernike_numbers]):
+            self.record_measurement(workspace, object_name, f, m) 
             
     def display(self, workspace):
         figure = workspace.create_or_find_figure(title="MeasureObjectSizeShape, image cycle #%d"%(
@@ -426,10 +435,8 @@ class MeasureObjectSizeShape(cpm.CPModule):
 def form_factor(objects):
     """FormFactor = 4/pi*Area/Perimeter^2, equals 1 for a perfectly circular"""
     if len(objects.indices) > 0:
-        areas = fixup_scipy_ndimage_result(
-                    objects.fn_of_ones_label_and_index(scind.sum))
         perimeter = objects.fn_of_label_and_index(calculate_perimeters)
-        return 4.0*np.pi*areas / perimeter**2
+        return 4.0*np.pi*objects.areas / perimeter**2
     else:
         return np.zeros((0,))
 

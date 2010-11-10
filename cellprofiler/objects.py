@@ -97,11 +97,13 @@ class Objects(object):
         want to use a labels matrix, you have an ambiguous situation and the
         resolution is to process separate labels matrices consisting of
         non-overlapping labels.
+        
+        returns a list of label matrixes and the indexes in each
         '''
         if self.__ijv is None:
             if self.__segmented is None:
                 return []
-            return [self.__segmented]
+            return [(self.__segmented, self.indices)]
         else:
             def ijv_to_segmented(ijv):
                 if self.has_parent_image:
@@ -116,7 +118,8 @@ class Objects(object):
                 return labels
             
             if len(self.__ijv) == 0:
-                return ijv_to_segmented(self.__ijv)
+                return [(ijv_to_segmented(self.__ijv), self.indices)]
+            
             sort_order = np.lexsort((self.__ijv[:,2],
                                      self.__ijv[:,1], 
                                      self.__ijv[:,0]))
@@ -129,7 +132,7 @@ class Objects(object):
             prev = sijv[:-1][overlap,2]
             next = sijv[1:][overlap,2]
             if len(prev) == 0:
-                return [ ijv_to_segmented(self.__ijv)]
+                return [(ijv_to_segmented(self.__ijv), self.indices)]
             #
             # Now double "prev" and "next" so that if I matches J, J matches I
             #
@@ -198,7 +201,8 @@ class Objects(object):
             result = []
             for color in range(1, max_color+1):
                 ijv = self.__ijv[v_color[self.__ijv[:,2]] == color]
-                result.append(ijv_to_segmented(ijv))
+                indices = np.arange(len(v_color))[v_color == color]
+                result.append((ijv_to_segmented(ijv), indices))
             return result
     
     def has_unedited_segmented(self):
@@ -316,12 +320,12 @@ class Objects(object):
         # the most similar colors in the color space for objects that
         # don't overlap.
         #
-        all_labels = [outline(label) for label in self.get_labels()]
-        image = np.zeros(list(all_labels[0].shape) + [3], np.float32)
+        all_labels = [(outline(label), indexes) for label, indexes in self.get_labels()]
+        image = np.zeros(list(all_labels[0][0].shape) + [3], np.float32)
         #
         # Find out how many unique labels in each
         #
-        counts = [np.sum(np.unique(l) != 0) for l in all_labels]
+        counts = [np.sum(np.unique(l) != 0) for l, _ in all_labels]
         if len(counts) == 1 and counts[0] == 0:
             return image
         
@@ -331,7 +335,7 @@ class Objects(object):
             # the same color. Give me more colors to work with please.
             colors = np.vstack([colors] * (1 + len(all_labels) / len(colors)))
         r = np.random.mtrand.RandomState()
-        alpha = np.zeros(all_labels[0].shape, np.float32)
+        alpha = np.zeros(all_labels[0][0].shape, np.float32)
         order = np.lexsort([counts])
         label_colors = []
         for idx,i in enumerate(order):
@@ -340,10 +344,9 @@ class Objects(object):
             my_colors = colors[:ncolors]
             colors = colors[ncolors:]
             my_colors = my_colors[r.permutation(np.arange(ncolors))]
-            my_labels = all_labels[i]
-            unique_labels = np.unique(my_labels[my_labels != 0])
-            color_idx = np.zeros(np.max(unique_labels) + 1, int)
-            color_idx[unique_labels] = np.arange(len(unique_labels)) % ncolors
+            my_labels, indexes = all_labels[i]
+            color_idx = np.zeros(np.max(indexes) + 1, int)
+            color_idx[indexes] = np.arange(len(indexes)) % ncolors
             image[my_labels != 0,:] += \
                  my_colors[color_idx[my_labels[my_labels != 0]],:]
             alpha[my_labels != 0] += 1
@@ -411,13 +414,36 @@ class Objects(object):
         
         """
         if self.__ijv is not None:
-            max_label = np.max(self.__ijv[:,2])
+            if len(self.__ijv) == 0:
+                max_label = 0
+            else:
+                max_label = np.max(self.__ijv[:,2])
         else:
             max_label = np.max(self.segmented)
         return np.arange(max_label).astype(np.int32) + 1
     
     indices = property(get_indices)
+    
+    @memoize_method
+    def get_areas(self):
+        """The area of each object"""
+        if len(self.indices) == 0:
+            return np.zeros(0, int)
+        if self.__ijv is not None:
+            return np.bincount(self.__ijv[:,2])[self.indices]
+        else:
+            return np.bincount(self.segmented.ravel())[self.indices]
      
+    areas = property(get_areas)
+    @memoize_method
+    def fn_of_label(self, function):
+        """Call a function taking just a label matrix
+        
+        function - should have a signature like
+            labels - label_matrix
+    """
+        return function(self.segmented)
+    
     @memoize_method
     def fn_of_label_and_index(self, function):
         """Call a function taking a label matrix with the segmented labels

@@ -121,11 +121,11 @@ def zernike(zernike_indexes,labels,indexes):
     # reverse_index[label] gives you the index into indexes of the label
     # and other similarly shaped vectors (like the results)
     #
-    nindexes = np.max(indexes)
     if indexes == None:
         indexes = np.arange(1,nindexes+1,dtype=int)
     else:
         indexes = np.array(indexes)
+    nindexes = len(indexes)
     reverse_indexes = -np.ones((np.max(indexes)+1,),int)
     reverse_indexes[indexes] = np.arange(indexes.shape[0],dtype=int)
     mask = reverse_indexes[labels] != -1

@@ -241,7 +241,7 @@ class TestApplyThreshold(unittest.TestCase):
         for ff, expected in ((I.FF_ORIG_THRESHOLD, .5),
                              (I.FF_FINAL_THRESHOLD, .5),
                              (I.FF_WEIGHTED_VARIANCE, .93),
-                             (I.FF_SUM_OF_ENTROPIES, -11.26)):
+                             (I.FF_SUM_OF_ENTROPIES, -11.35)):
             value = m.get_current_image_measurement(ff%OUTPUT_IMAGE_NAME)
             self.assertAlmostEqual(value, expected, 1)
     

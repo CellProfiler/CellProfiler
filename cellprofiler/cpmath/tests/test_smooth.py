@@ -35,6 +35,24 @@ class TestSmoothWithNoise(unittest.TestCase):
         self.assertTrue(out.shape[1] == 100)
         self.assertTrue(abs(np.sum(out > .5)-5000) < 300) # unless we are 3sd unlucky
         self.assertTrue(np.sum(np.abs(out-.5)< 1.0 / 32.0) > 4700) # unless we are > 3sd unlucky 
+        
+    def test_03_img_1201(self):
+        '''Regression test of img-1201'''
+        #
+        # Using internal knowledge: smooth_with_noise always seeds with 0
+        #
+        np.random.seed(0)
+        r = np.random.normal(size=(10,20))
+        img = np.random.uniform(size=(10,20))
+        for bits in range(8,17):
+            result = cpms.smooth_with_noise(img, bits)
+            im = img.copy()
+            delta = 1.0 / float(2**bits)
+            im[im < delta] = delta
+            expected = np.exp2(np.log2(im) + 
+                               (np.log2(im + 2.0 ** -bits) - np.log2(im)) * r)
+            expected = np.clip(expected, 0, 1)
+            np.testing.assert_almost_equal(result, expected)
 
 class TestSmoothWithFunctionAndMask(unittest.TestCase):
     def function(self, image):

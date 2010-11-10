@@ -27,11 +27,13 @@ def smooth_with_noise(image, bits):
     get either multiplied or divided by a normally distributed # of bits
     """
     
-    np.random.seed(0)
-    r = np.random.normal(size=image.shape)
-    image_copy = np.clip(image, pow(2.0,-bits), 1)
-    result = np.exp(np.log(image_copy)+ 0.5*r *
-                       (-np.log2(image_copy)/bits))
+    rr = np.random.RandomState()
+    rr.seed(0)
+    r = rr.normal(size=image.shape)
+    delta = pow(2.0,-bits)
+    image_copy = np.clip(image, delta, 1)
+    result = np.exp2(np.log2(image_copy + delta) * r + 
+                     (1-r) * np.log2(image_copy))
     result[result>1] = 1
     result[result<0] = 0
     return result

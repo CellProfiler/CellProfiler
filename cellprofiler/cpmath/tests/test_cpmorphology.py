@@ -3223,6 +3223,20 @@ class TestIsLocalMaximum(unittest.TestCase):
         expected = (expected == image)
         result = morph.is_local_maximum(image, labels, footprint)
         self.assertTrue(np.all(result == expected))
+        
+    def test_03_01_disk_1(self):
+        '''regression test of img-1194, footprint = [1]
+        
+        Test is_local_maximum when every point is a local maximum
+        '''
+        np.random.seed(31)
+        image = np.random.uniform(size=(10,20))
+        footprint = morph.strel_disk(.5)
+        self.assertEqual(np.prod(footprint.shape), 1)
+        self.assertEqual(footprint[0,0], 1)
+        result = morph.is_local_maximum(image, np.ones((10,20)), footprint)
+        self.assertTrue(np.all(result))
+        
 
 class TestAngularDistribution(unittest.TestCase):
     def test_00_00_angular_dist(self):

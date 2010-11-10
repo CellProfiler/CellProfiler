@@ -3478,6 +3478,8 @@ def is_local_maximum(image, labels, footprint):
     assert((np.all(footprint.shape) & 1) == 1)
     footprint = (footprint != 0)
     footprint_extent = (np.array(footprint.shape)-1) / 2
+    if np.all(footprint_extent == 0):
+        return labels > 0
     result = (labels > 0).copy()
     #
     # Create a labels matrix with zeros at the borders that might be

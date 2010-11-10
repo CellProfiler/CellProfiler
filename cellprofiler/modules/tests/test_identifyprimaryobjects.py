@@ -1717,7 +1717,7 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'8981\'|variable_revision_numb
         x.threshold_method.value = T.TM_KAPUR_GLOBAL
         local_threshold,threshold = x.get_threshold(image, np.ones(image.shape,bool),None,None)
         self.assertTrue(threshold > 0.015)
-        self.assertTrue(threshold < 0.017)
+        self.assertTrue(threshold < 0.020)
     
     def test_14_01_test_manual_background(self):
         """Test manual background"""

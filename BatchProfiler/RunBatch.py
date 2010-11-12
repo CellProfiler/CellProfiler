@@ -293,7 +293,7 @@ def RunOne_2_0(x, run):
     x["memory_limit_gb2"]=x["memory_limit_gb"]*2
     x["done_file"] = RunDoneFilePath(x, run)
     python_dir = PythonDir(x)
-    select = "select[centos]"
+    select = "select[ostype=CENT5.5]"
     try:
         version = int(os.path.split(python_dir)[1])
         if version < 9970:

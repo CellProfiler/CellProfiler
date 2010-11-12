@@ -206,6 +206,7 @@ try:
     #
     # Important to go headless ASAP
     #
+    import cellprofiler.preferences as cpprefs
     if (not options.show_gui) or options.output_html:
         cpprefs.set_headless()
         # What's there to do but run if you're running headless?

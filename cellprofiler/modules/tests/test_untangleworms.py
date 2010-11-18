@@ -342,7 +342,7 @@ UntangleWorms:[module_num:3|svn_version:\'10598\'|variable_revision_number:1|sho
         self.assertTrue(isinstance(module, U.UntangleWorms))
         self.assertEqual(module.overlap, U.OO_WITHOUT_OVERLAP)
     
-    def make_workspace(self, image, data):
+    def make_workspace(self, image, data=None):
         '''Make a workspace to run the given image and params file
         
         image - a binary image
@@ -362,11 +362,12 @@ UntangleWorms:[module_num:3|svn_version:\'10598\'|variable_revision_number:1|sho
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
         image_set.add(IMAGE_NAME, img)
-        fd = os.fdopen(self.fd, "wb")
-        fd.write(data)
-        fd.flush()
-        fd.close()
-        self.closed = True
+        if data is not None:
+            fd = os.fdopen(self.fd, "wb")
+            fd.write(data)
+            fd.flush()
+            fd.close()
+            self.closed = True
         module.training_set_directory.dir_choice = cps.ABSOLUTE_FOLDER_NAME
         (module.training_set_directory.custom_path,
          module.training_set_file_name.value) = os.path.split(self.filename)
@@ -394,14 +395,13 @@ UntangleWorms:[module_num:3|svn_version:\'10598\'|variable_revision_number:1|sho
         data = zlib.decompress(base64.b64decode(PARAMS))
         workspace, module = self.make_workspace(np.zeros((10,10), bool), data)
         self.assertTrue(isinstance(module, U.UntangleWorms))
+        module.prepare_group(workspace.pipeline, workspace.image_set_list, None, None)
         params = module.read_params(workspace)
         self.assertAlmostEqual(params.min_worm_area, 601.2, 0)
         self.assertAlmostEqual(params.max_area, 1188.5, 0)
-        self.assertEqual(params.find_path.method, "dfs_longest_path")
-        self.assertEqual(params.filter.method, "angle_shape_cost")
-        self.assertAlmostEqual(params.filter.cost_threshold, 200.8174, 3)
-        self.assertEqual(params.filter.num_control_points, 21)
-        np.testing.assert_almost_equal(params.filter.mean_angles, np.array([
+        self.assertAlmostEqual(params.cost_threshold, 200.8174, 3)
+        self.assertEqual(params.num_control_points, 21)
+        np.testing.assert_almost_equal(params.mean_angles, np.array([
             -0.00527796256445404, -0.0315202989978013, -0.00811839821858939,
             -0.0268318268190547, -0.0120476701544335, -0.0202651421433172,
             -0.0182919505672029, -0.00990476055380843, -0.0184558846126189,
@@ -409,7 +409,7 @@ UntangleWorms:[module_num:3|svn_version:\'10598\'|variable_revision_number:1|sho
             0.0170195137830520, 0.00185471766328753, 0.00913261528049730,
             -0.0106805477987750, 0.00473369321673608, -0.00835547063778011,
             -0.00382606935405797, 127.129708001680]))
-        np.testing.assert_almost_equal(params.filter.inv_angles_covariance_matrix, np.array([
+        np.testing.assert_almost_equal(params.inv_angles_covariance_matrix, np.array([
             [16.1831499639022,-5.06131059821028,-7.03307454602146,-2.88853420387429,3.34017866010302,3.45512576204933,-1.09841786238497,-2.79348760430306,-1.85931734891389,-0.652858408126458,-1.22752367898365,4.15573185568687,1.99443112453893,-2.26823701209981,-1.25144655688072,0.321931535265876,0.230928100005575,1.47235070063732,0.487902558505382,-0.0240787101275336],
             [-5.06131059821028,25.7442868663138,-7.04197641326958,-13.5057449289369,-2.23928687231578,4.31232681113232,6.56454500463435,0.336556097291049,0.175759837346977,-2.77098858956934,0.307050758321026,-2.12899901988826,1.32985035426604,2.77299577778623,6.03717697873141,-2.84152938638523,-2.50027246248360,2.88188404703382,-2.94724985136021,-0.00349792622125952],
             [-7.03307454602146,-7.04197641326958,34.8868022738369,-2.41698367836302,-11.9074612429652,-5.03219465159153,0.566581294377262,4.65965515408864,4.40918302814844,2.12317351869194,-1.29767770791342,-4.66814018817306,-1.18082874743096,3.51827877502392,2.85186107108145,-1.26716616779540,-1.09593786866014,-2.32869644778286,3.48194316456812,0.0623642923643842],
@@ -430,29 +430,1484 @@ UntangleWorms:[module_num:3|svn_version:\'10598\'|variable_revision_number:1|sho
             [1.47235070063732,2.88188404703382,-2.32869644778286,-3.04745351430166,1.66577561191334,-2.11793646742091,-1.21462394180208,-4.02463696447393,-1.01589845612927,0.860045694295453,2.88103313127626,2.02174339844234,1.84129317709747,3.32199768047190,-7.12911129084980,-15.0997112563034,-3.87691864187466,28.0765623007788,-8.07326731403660,0.0228470307583052],
             [0.487902558505382,-2.94724985136021,3.48194316456812,2.86603729585242,-3.04240109786268,-1.21519495438964,1.97319648119690,1.21200189852376,2.74166325038759,-5.03379983998103,-0.0202321884301434,1.40192545975918,2.90488161640993,-0.225506641087443,2.74828112041922,3.65384550078426,-6.41814264219731,-8.07326731403660,18.1513394317232,0.0139561765245330],
             [-0.0240787101275336,-0.00349792622125952,0.0623642923643842,0.00665888346219492,0.0462492758625229,-0.00660397622823739,-0.0627444956856546,-0.0276025739334060,0.00616263316699783,-0.00250271852621389,-0.0770486841949908,0.0866552397218132,-0.0294908776237644,0.0431435753786928,0.0251424008457656,-0.00453606919854300,-0.0905326089208310,0.0228470307583052,0.0139561765245330,0.00759059668024605]]))
-        self.assertEqual(params.cluster_graph_building.method,
-                         'large_branch_area_max_skel_length')
-        self.assertAlmostEqual(params.cluster_graph_building.max_radius, 5.0990, 3)
-        self.assertAlmostEqual(params.cluster_graph_building.max_skel_length, 155.4545, 3)
-        self.assertEqual(params.cluster_paths_finding.method, "dfs")
-        self.assertEqual(params.cluster_paths_selection.shape_cost_method,
-                         'angle_shape_model')
-        self.assertEqual(params.cluster_paths_selection.selection_method,
-                         'dfs_prune')
-        self.assertEqual(params.cluster_paths_selection.overlap_leftover_method,
-                         'skeleton_length')
-        self.assertAlmostEqual(params.cluster_paths_selection.min_path_length, 84.401680541266530)
-        self.assertAlmostEqual(params.cluster_paths_selection.max_path_length, 171.8155554421827)
-        self.assertAlmostEqual(params.cluster_paths_selection.median_worm_area, 1007.5)
-        self.assertAlmostEqual(params.cluster_paths_selection.worm_radius, 5.099019527435303)
-        self.assertEqual(params.cluster_paths_selection.overlap_weight, 5)
-        self.assertEqual(params.cluster_paths_selection.leftover_weight, 10)
-        self.assertEqual(params.cluster_paths_selection.approx_max_search_n, 100)
-        self.assertEqual(params.worm_descriptor_building.method, "default")
-        np.testing.assert_almost_equal(params.worm_descriptor_building.radii_from_training, np.array(
+        self.assertAlmostEqual(params.max_radius, 5.0990, 3)
+        self.assertAlmostEqual(params.max_skel_length, 155.4545, 3)
+        self.assertAlmostEqual(params.min_path_length, 84.401680541266530)
+        self.assertAlmostEqual(params.max_path_length, 171.8155554421827)
+        self.assertAlmostEqual(params.median_worm_area, 1007.5)
+        self.assertAlmostEqual(params.worm_radius, 5.099019527435303)
+        self.assertEqual(params.overlap_weight, 5)
+        self.assertEqual(params.leftover_weight, 10)
+        np.testing.assert_almost_equal(params.radii_from_training, np.array(
             [1.19132055711746,2.75003945541382,3.56039281511307,4.05681743049622,4.39353294944763,4.52820824432373,4.66245639991760,4.75254730796814,4.76993056106567,4.78852712249756,4.73509162521362,4.76029792976379,4.75030451583862,4.69090248298645,4.59827183151245,4.55065062236786,4.35989559841156,4.10916972160339,3.58363935613632,2.83766316795349,1.15910302543640]))
 
 
+    def test_02_02_load_xml_params(self):
+        data = r"""<?xml version="1.0" ?>
+<training-data xmlns="http://www.cellprofiler.org/linked_files/schemas/UntangleWorms.xsd">
+  <version>
+    10680
+  </version>
+  <min-area>
+    596.898
+  </min-area>
+  <max-area>
+    1183.0
+  </max-area>
+  <cost-threshold>
+    100
+  </cost-threshold>
+  <num-control-points>
+    21
+  </num-control-points>
+  <max-skel-length>
+    158.038188951
+  </max-skel-length>
+  <min-path-length>
+    76.7075694196
+  </min-path-length>
+  <max-path-length>
+    173.842007846
+  </max-path-length>
+  <median-worm-area>
+    1006.0
+  </median-worm-area>
+  <max-radius>
+    5.07108224265
+  </max-radius>
+  <overlap-weight>
+    5.0
+  </overlap-weight>
+  <leftover-weight>
+    10.0
+  </leftover-weight>
+  <mean-angles>
+    <value>
+      -0.010999071156
+    </value>
+    <value>
+      -0.011369928253
+    </value>
+    <value>
+      -0.0063572663907
+    </value>
+    <value>
+      -0.00537369691481
+    </value>
+    <value>
+      -0.00491960423727
+    </value>
+    <value>
+      -0.00888319810452
+    </value>
+    <value>
+      0.000958176954014
+    </value>
+    <value>
+      -0.00329354759164
+    </value>
+    <value>
+      -0.00182154382306
+    </value>
+    <value>
+      -0.00252850541515
+    </value>
+    <value>
+      0.00583731052007
+    </value>
+    <value>
+      -0.00629326705054
+    </value>
+    <value>
+      -0.000221502806058
+    </value>
+    <value>
+      0.000541997532415
+    </value>
+    <value>
+      7.10858314614e-05
+    </value>
+    <value>
+      -0.000536334650268
+    </value>
+    <value>
+      0.00846699296415
+    </value>
+    <value>
+      0.00229934152116
+    </value>
+    <value>
+      0.013315157629
+    </value>
+    <value>
+      127.475166584
+    </value>
+  </mean-angles>
+  <radii-from-training>
+    <value>
+      1.42515381896
+    </value>
+    <value>
+      2.85816813675
+    </value>
+    <value>
+      3.625274645
+    </value>
+    <value>
+      4.0753094944
+    </value>
+    <value>
+      4.35612078737
+    </value>
+    <value>
+      4.52117778419
+    </value>
+    <value>
+      4.63350649815
+    </value>
+    <value>
+      4.68616131779
+    </value>
+    <value>
+      4.72754363339
+    </value>
+    <value>
+      4.7538931664
+    </value>
+    <value>
+      4.74523602328
+    </value>
+    <value>
+      4.73738576257
+    </value>
+    <value>
+      4.71422245337
+    </value>
+    <value>
+      4.67997686977
+    </value>
+    <value>
+      4.63299502256
+    </value>
+    <value>
+      4.54769060478
+    </value>
+    <value>
+      4.37493539203
+    </value>
+    <value>
+      4.10516708918
+    </value>
+    <value>
+      3.6478380576
+    </value>
+    <value>
+      2.87519387935
+    </value>
+    <value>
+      1.41510654664
+    </value>
+  </radii-from-training>
+  <inv-angles-covariance-matrix>
+    <values>
+      <value>
+        14.4160767437
+      </value>
+      <value>
+        -3.62948521476
+      </value>
+      <value>
+        -5.54563467306
+      </value>
+      <value>
+        -2.03727846881
+      </value>
+      <value>
+        1.28497735663
+      </value>
+      <value>
+        1.69152924813
+      </value>
+      <value>
+        0.155723103489
+      </value>
+      <value>
+        0.0968570278119
+      </value>
+      <value>
+        -0.830941512378
+      </value>
+      <value>
+        -0.212837030458
+      </value>
+      <value>
+        0.343854099462
+      </value>
+      <value>
+        0.541856348331
+      </value>
+      <value>
+        0.0113083798588
+      </value>
+      <value>
+        -0.526926108341
+      </value>
+      <value>
+        0.499035732802
+      </value>
+      <value>
+        -0.714281934407
+      </value>
+      <value>
+        0.407365302927
+      </value>
+      <value>
+        0.0412386837587
+      </value>
+      <value>
+        0.399436023924
+      </value>
+      <value>
+        0.0100796538444
+      </value>
+    </values>
+    <values>
+      <value>
+        -3.62948521476
+      </value>
+      <value>
+        28.3822272923
+      </value>
+      <value>
+        -5.69796350599
+      </value>
+      <value>
+        -12.8940771298
+      </value>
+      <value>
+        -3.24074903822
+      </value>
+      <value>
+        6.60066559736
+      </value>
+      <value>
+        4.7027587735
+      </value>
+      <value>
+        -0.228375351756
+      </value>
+      <value>
+        -0.93975886278
+      </value>
+      <value>
+        -0.404133419773
+      </value>
+      <value>
+        0.461061138309
+      </value>
+      <value>
+        -0.620175812393
+      </value>
+      <value>
+        0.426458145116
+      </value>
+      <value>
+        0.242860102398
+      </value>
+      <value>
+        -1.395472436
+      </value>
+      <value>
+        -0.416345646399
+      </value>
+      <value>
+        -0.744042489471
+      </value>
+      <value>
+        1.2607667493
+      </value>
+      <value>
+        0.0266160618793
+      </value>
+      <value>
+        0.0125632227269
+      </value>
+    </values>
+    <values>
+      <value>
+        -5.54563467306
+      </value>
+      <value>
+        -5.69796350599
+      </value>
+      <value>
+        33.965523631
+      </value>
+      <value>
+        -2.5184071008
+      </value>
+      <value>
+        -11.9739358904
+      </value>
+      <value>
+        -5.55211501206
+      </value>
+      <value>
+        1.54963332447
+      </value>
+      <value>
+        1.51853522595
+      </value>
+      <value>
+        2.94238214784
+      </value>
+      <value>
+        1.58963458609
+      </value>
+      <value>
+        -1.09690230963
+      </value>
+      <value>
+        -3.03348214943
+      </value>
+      <value>
+        -0.499685304962
+      </value>
+      <value>
+        0.0832942797245
+      </value>
+      <value>
+        2.64055890507
+      </value>
+      <value>
+        1.47285696771
+      </value>
+      <value>
+        -0.837591498704
+      </value>
+      <value>
+        -1.32897383529
+      </value>
+      <value>
+        -0.0909573472139
+      </value>
+      <value>
+        -0.00747385975607
+      </value>
+    </values>
+    <values>
+      <value>
+        -2.03727846881
+      </value>
+      <value>
+        -12.8940771298
+      </value>
+      <value>
+        -2.5184071008
+      </value>
+      <value>
+        38.910896265
+      </value>
+      <value>
+        -0.501289252952
+      </value>
+      <value>
+        -16.9651461757
+      </value>
+      <value>
+        -8.5206491768
+      </value>
+      <value>
+        0.599043361039
+      </value>
+      <value>
+        4.0425703374
+      </value>
+      <value>
+        3.46803482473
+      </value>
+      <value>
+        1.5750544267
+      </value>
+      <value>
+        0.828548143764
+      </value>
+      <value>
+        -0.468487536336
+      </value>
+      <value>
+        1.18597661827
+      </value>
+      <value>
+        0.798189409259
+      </value>
+      <value>
+        0.862661371456
+      </value>
+      <value>
+        -0.14246505168
+      </value>
+      <value>
+        -1.3841655628
+      </value>
+      <value>
+        0.236725547536
+      </value>
+      <value>
+        -0.0163619841363
+      </value>
+    </values>
+    <values>
+      <value>
+        1.28497735663
+      </value>
+      <value>
+        -3.24074903822
+      </value>
+      <value>
+        -11.9739358904
+      </value>
+      <value>
+        -0.501289252952
+      </value>
+      <value>
+        50.690805239
+      </value>
+      <value>
+        -2.50730714299
+      </value>
+      <value>
+        -19.7892493084
+      </value>
+      <value>
+        -8.70870454399
+      </value>
+      <value>
+        0.544130042179
+      </value>
+      <value>
+        3.96597772445
+      </value>
+      <value>
+        4.72570280412
+      </value>
+      <value>
+        2.85472249374
+      </value>
+      <value>
+        -2.84084610444
+      </value>
+      <value>
+        -4.25238476559
+      </value>
+      <value>
+        -1.41656624794
+      </value>
+      <value>
+        2.35443215524
+      </value>
+      <value>
+        1.26857012684
+      </value>
+      <value>
+        -0.0117059492945
+      </value>
+      <value>
+        0.193085174503
+      </value>
+      <value>
+        -0.0128948234117
+      </value>
+    </values>
+    <values>
+      <value>
+        1.69152924813
+      </value>
+      <value>
+        6.60066559736
+      </value>
+      <value>
+        -5.55211501206
+      </value>
+      <value>
+        -16.9651461757
+      </value>
+      <value>
+        -2.50730714299
+      </value>
+      <value>
+        49.7744788862
+      </value>
+      <value>
+        2.21292071874
+      </value>
+      <value>
+        -18.9379120677
+      </value>
+      <value>
+        -11.6040186403
+      </value>
+      <value>
+        -0.650553765753
+      </value>
+      <value>
+        3.61258885051
+      </value>
+      <value>
+        2.19212295163
+      </value>
+      <value>
+        -0.250008762357
+      </value>
+      <value>
+        -2.6870585839
+      </value>
+      <value>
+        -1.82043770689
+      </value>
+      <value>
+        0.109737469347
+      </value>
+      <value>
+        0.560938864345
+      </value>
+      <value>
+        0.219973313189
+      </value>
+      <value>
+        -0.590133590346
+      </value>
+      <value>
+        -0.00967309489576
+      </value>
+    </values>
+    <values>
+      <value>
+        0.155723103489
+      </value>
+      <value>
+        4.7027587735
+      </value>
+      <value>
+        1.54963332447
+      </value>
+      <value>
+        -8.5206491768
+      </value>
+      <value>
+        -19.7892493084
+      </value>
+      <value>
+        2.21292071874
+      </value>
+      <value>
+        51.0843827257
+      </value>
+      <value>
+        0.934339159637
+      </value>
+      <value>
+        -16.1389407803
+      </value>
+      <value>
+        -13.597573567
+      </value>
+      <value>
+        -1.54861446638
+      </value>
+      <value>
+        3.38169064096
+      </value>
+      <value>
+        4.06874131702
+      </value>
+      <value>
+        -0.827598209967
+      </value>
+      <value>
+        0.403883540178
+      </value>
+      <value>
+        -2.06739129329
+      </value>
+      <value>
+        -2.88536104019
+      </value>
+      <value>
+        1.06444751058
+      </value>
+      <value>
+        0.425819183522
+      </value>
+      <value>
+        0.0218279774716
+      </value>
+    </values>
+    <values>
+      <value>
+        0.0968570278119
+      </value>
+      <value>
+        -0.228375351756
+      </value>
+      <value>
+        1.51853522595
+      </value>
+      <value>
+        0.599043361039
+      </value>
+      <value>
+        -8.70870454399
+      </value>
+      <value>
+        -18.9379120677
+      </value>
+      <value>
+        0.934339159637
+      </value>
+      <value>
+        53.1553410056
+      </value>
+      <value>
+        3.83284330941
+      </value>
+      <value>
+        -21.8128767252
+      </value>
+      <value>
+        -12.4239738428
+      </value>
+      <value>
+        -0.689818407647
+      </value>
+      <value>
+        4.93635164952
+      </value>
+      <value>
+        4.04304737017
+      </value>
+      <value>
+        1.11729234765
+      </value>
+      <value>
+        -0.61148362918
+      </value>
+      <value>
+        -1.50162558801
+      </value>
+      <value>
+        -1.61722109339
+      </value>
+      <value>
+        0.491305564623
+      </value>
+      <value>
+        0.00813673085389
+      </value>
+    </values>
+    <values>
+      <value>
+        -0.830941512378
+      </value>
+      <value>
+        -0.93975886278
+      </value>
+      <value>
+        2.94238214784
+      </value>
+      <value>
+        4.0425703374
+      </value>
+      <value>
+        0.544130042179
+      </value>
+      <value>
+        -11.6040186403
+      </value>
+      <value>
+        -16.1389407803
+      </value>
+      <value>
+        3.83284330941
+      </value>
+      <value>
+        47.6933352778
+      </value>
+      <value>
+        1.02465850736
+      </value>
+      <value>
+        -18.704856196
+      </value>
+      <value>
+        -9.30970873094
+      </value>
+      <value>
+        1.7845053387
+      </value>
+      <value>
+        2.83710840227
+      </value>
+      <value>
+        3.85412837972
+      </value>
+      <value>
+        -0.420823216821
+      </value>
+      <value>
+        1.56974432254
+      </value>
+      <value>
+        -0.212411753395
+      </value>
+      <value>
+        -0.638990283092
+      </value>
+      <value>
+        -0.00117994378546
+      </value>
+    </values>
+    <values>
+      <value>
+        -0.212837030458
+      </value>
+      <value>
+        -0.404133419773
+      </value>
+      <value>
+        1.58963458609
+      </value>
+      <value>
+        3.46803482473
+      </value>
+      <value>
+        3.96597772445
+      </value>
+      <value>
+        -0.650553765753
+      </value>
+      <value>
+        -13.597573567
+      </value>
+      <value>
+        -21.8128767252
+      </value>
+      <value>
+        1.02465850736
+      </value>
+      <value>
+        55.2260388503
+      </value>
+      <value>
+        4.35803059752
+      </value>
+      <value>
+        -17.4350070993
+      </value>
+      <value>
+        -9.9394563068
+      </value>
+      <value>
+        0.592362874638
+      </value>
+      <value>
+        4.03037893175
+      </value>
+      <value>
+        0.749631051365
+      </value>
+      <value>
+        0.179619159884
+      </value>
+      <value>
+        1.09520337409
+      </value>
+      <value>
+        0.198303530561
+      </value>
+      <value>
+        -0.0128674812863
+      </value>
+    </values>
+    <values>
+      <value>
+        0.343854099462
+      </value>
+      <value>
+        0.461061138309
+      </value>
+      <value>
+        -1.09690230963
+      </value>
+      <value>
+        1.5750544267
+      </value>
+      <value>
+        4.72570280412
+      </value>
+      <value>
+        3.61258885051
+      </value>
+      <value>
+        -1.54861446638
+      </value>
+      <value>
+        -12.4239738428
+      </value>
+      <value>
+        -18.704856196
+      </value>
+      <value>
+        4.35803059752
+      </value>
+      <value>
+        51.04055356
+      </value>
+      <value>
+        3.08936728044
+      </value>
+      <value>
+        -17.5902587966
+      </value>
+      <value>
+        -10.8714973146
+      </value>
+      <value>
+        -0.045009571053
+      </value>
+      <value>
+        4.87264332876
+      </value>
+      <value>
+        1.30470158026
+      </value>
+      <value>
+        -0.320349338202
+      </value>
+      <value>
+        0.55323063623
+      </value>
+      <value>
+        -0.00361862544014
+      </value>
+    </values>
+    <values>
+      <value>
+        0.541856348331
+      </value>
+      <value>
+        -0.620175812393
+      </value>
+      <value>
+        -3.03348214943
+      </value>
+      <value>
+        0.828548143764
+      </value>
+      <value>
+        2.85472249374
+      </value>
+      <value>
+        2.19212295163
+      </value>
+      <value>
+        3.38169064096
+      </value>
+      <value>
+        -0.689818407647
+      </value>
+      <value>
+        -9.30970873094
+      </value>
+      <value>
+        -17.4350070993
+      </value>
+      <value>
+        3.08936728044
+      </value>
+      <value>
+        47.4661853593
+      </value>
+      <value>
+        -1.87723439855
+      </value>
+      <value>
+        -15.2700084763
+      </value>
+      <value>
+        -7.6273108814
+      </value>
+      <value>
+        4.14811581054
+      </value>
+      <value>
+        1.42240471385
+      </value>
+      <value>
+        0.0505728359147
+      </value>
+      <value>
+        -0.0106613679324
+      </value>
+      <value>
+        -0.000211505765068
+      </value>
+    </values>
+    <values>
+      <value>
+        0.0113083798588
+      </value>
+      <value>
+        0.426458145116
+      </value>
+      <value>
+        -0.499685304962
+      </value>
+      <value>
+        -0.468487536336
+      </value>
+      <value>
+        -2.84084610444
+      </value>
+      <value>
+        -0.250008762357
+      </value>
+      <value>
+        4.06874131702
+      </value>
+      <value>
+        4.93635164952
+      </value>
+      <value>
+        1.7845053387
+      </value>
+      <value>
+        -9.9394563068
+      </value>
+      <value>
+        -17.5902587966
+      </value>
+      <value>
+        -1.87723439855
+      </value>
+      <value>
+        47.8240218251
+      </value>
+      <value>
+        2.57791664619
+      </value>
+      <value>
+        -14.5709240372
+      </value>
+      <value>
+        -4.78007676552
+      </value>
+      <value>
+        1.87167780269
+      </value>
+      <value>
+        0.359928009336
+      </value>
+      <value>
+        -1.18561757081
+      </value>
+      <value>
+        0.014074799611
+      </value>
+    </values>
+    <values>
+      <value>
+        -0.526926108341
+      </value>
+      <value>
+        0.242860102398
+      </value>
+      <value>
+        0.0832942797245
+      </value>
+      <value>
+        1.18597661827
+      </value>
+      <value>
+        -4.25238476559
+      </value>
+      <value>
+        -2.6870585839
+      </value>
+      <value>
+        -0.827598209967
+      </value>
+      <value>
+        4.04304737017
+      </value>
+      <value>
+        2.83710840227
+      </value>
+      <value>
+        0.592362874638
+      </value>
+      <value>
+        -10.8714973146
+      </value>
+      <value>
+        -15.2700084763
+      </value>
+      <value>
+        2.57791664619
+      </value>
+      <value>
+        46.696159054
+      </value>
+      <value>
+        -4.74906899066
+      </value>
+      <value>
+        -15.6278488145
+      </value>
+      <value>
+        -4.24795289841
+      </value>
+      <value>
+        2.87455853452
+      </value>
+      <value>
+        3.07635737509
+      </value>
+      <value>
+        0.00532906905096
+      </value>
+    </values>
+    <values>
+      <value>
+        0.499035732802
+      </value>
+      <value>
+        -1.395472436
+      </value>
+      <value>
+        2.64055890507
+      </value>
+      <value>
+        0.798189409259
+      </value>
+      <value>
+        -1.41656624794
+      </value>
+      <value>
+        -1.82043770689
+      </value>
+      <value>
+        0.403883540178
+      </value>
+      <value>
+        1.11729234765
+      </value>
+      <value>
+        3.85412837972
+      </value>
+      <value>
+        4.03037893175
+      </value>
+      <value>
+        -0.045009571053
+      </value>
+      <value>
+        -7.6273108814
+      </value>
+      <value>
+        -14.5709240372
+      </value>
+      <value>
+        -4.74906899066
+      </value>
+      <value>
+        40.1689374127
+      </value>
+      <value>
+        -3.67980915371
+      </value>
+      <value>
+        -10.3797521361
+      </value>
+      <value>
+        -0.841069955948
+      </value>
+      <value>
+        3.27779133415
+      </value>
+      <value>
+        0.0045492369767
+      </value>
+    </values>
+    <values>
+      <value>
+        -0.714281934407
+      </value>
+      <value>
+        -0.416345646399
+      </value>
+      <value>
+        1.47285696771
+      </value>
+      <value>
+        0.862661371456
+      </value>
+      <value>
+        2.35443215524
+      </value>
+      <value>
+        0.109737469347
+      </value>
+      <value>
+        -2.06739129329
+      </value>
+      <value>
+        -0.61148362918
+      </value>
+      <value>
+        -0.420823216821
+      </value>
+      <value>
+        0.749631051365
+      </value>
+      <value>
+        4.87264332876
+      </value>
+      <value>
+        4.14811581054
+      </value>
+      <value>
+        -4.78007676552
+      </value>
+      <value>
+        -15.6278488145
+      </value>
+      <value>
+        -3.67980915371
+      </value>
+      <value>
+        37.0559195085
+      </value>
+      <value>
+        -1.42897044519
+      </value>
+      <value>
+        -7.88598395567
+      </value>
+      <value>
+        -1.9964210551
+      </value>
+      <value>
+        -0.0047454750271
+      </value>
+    </values>
+    <values>
+      <value>
+        0.407365302927
+      </value>
+      <value>
+        -0.744042489471
+      </value>
+      <value>
+        -0.837591498704
+      </value>
+      <value>
+        -0.14246505168
+      </value>
+      <value>
+        1.26857012684
+      </value>
+      <value>
+        0.560938864345
+      </value>
+      <value>
+        -2.88536104019
+      </value>
+      <value>
+        -1.50162558801
+      </value>
+      <value>
+        1.56974432254
+      </value>
+      <value>
+        0.179619159884
+      </value>
+      <value>
+        1.30470158026
+      </value>
+      <value>
+        1.42240471385
+      </value>
+      <value>
+        1.87167780269
+      </value>
+      <value>
+        -4.24795289841
+      </value>
+      <value>
+        -10.3797521361
+      </value>
+      <value>
+        -1.42897044519
+      </value>
+      <value>
+        31.0878364175
+      </value>
+      <value>
+        -3.67706594057
+      </value>
+      <value>
+        -7.74307062767
+      </value>
+      <value>
+        -0.0186367239616
+      </value>
+    </values>
+    <values>
+      <value>
+        0.0412386837587
+      </value>
+      <value>
+        1.2607667493
+      </value>
+      <value>
+        -1.32897383529
+      </value>
+      <value>
+        -1.3841655628
+      </value>
+      <value>
+        -0.0117059492945
+      </value>
+      <value>
+        0.219973313189
+      </value>
+      <value>
+        1.06444751058
+      </value>
+      <value>
+        -1.61722109339
+      </value>
+      <value>
+        -0.212411753395
+      </value>
+      <value>
+        1.09520337409
+      </value>
+      <value>
+        -0.320349338202
+      </value>
+      <value>
+        0.0505728359147
+      </value>
+      <value>
+        0.359928009336
+      </value>
+      <value>
+        2.87455853452
+      </value>
+      <value>
+        -0.841069955948
+      </value>
+      <value>
+        -7.88598395567
+      </value>
+      <value>
+        -3.67706594057
+      </value>
+      <value>
+        17.6561215842
+      </value>
+      <value>
+        -0.53359878584
+      </value>
+      <value>
+        0.00910717515256
+      </value>
+    </values>
+    <values>
+      <value>
+        0.399436023924
+      </value>
+      <value>
+        0.0266160618793
+      </value>
+      <value>
+        -0.0909573472139
+      </value>
+      <value>
+        0.236725547536
+      </value>
+      <value>
+        0.193085174503
+      </value>
+      <value>
+        -0.590133590346
+      </value>
+      <value>
+        0.425819183522
+      </value>
+      <value>
+        0.491305564623
+      </value>
+      <value>
+        -0.638990283092
+      </value>
+      <value>
+        0.198303530561
+      </value>
+      <value>
+        0.55323063623
+      </value>
+      <value>
+        -0.0106613679324
+      </value>
+      <value>
+        -1.18561757081
+      </value>
+      <value>
+        3.07635737509
+      </value>
+      <value>
+        3.27779133415
+      </value>
+      <value>
+        -1.9964210551
+      </value>
+      <value>
+        -7.74307062767
+      </value>
+      <value>
+        -0.53359878584
+      </value>
+      <value>
+        13.2416621872
+      </value>
+      <value>
+        0.00936896857131
+      </value>
+    </values>
+    <values>
+      <value>
+        0.0100796538444
+      </value>
+      <value>
+        0.0125632227269
+      </value>
+      <value>
+        -0.00747385975607
+      </value>
+      <value>
+        -0.0163619841363
+      </value>
+      <value>
+        -0.0128948234117
+      </value>
+      <value>
+        -0.00967309489576
+      </value>
+      <value>
+        0.0218279774715
+      </value>
+      <value>
+        0.00813673085389
+      </value>
+      <value>
+        -0.00117994378545
+      </value>
+      <value>
+        -0.0128674812862
+      </value>
+      <value>
+        -0.00361862544014
+      </value>
+      <value>
+        -0.000211505765068
+      </value>
+      <value>
+        0.014074799611
+      </value>
+      <value>
+        0.00532906905096
+      </value>
+      <value>
+        0.0045492369767
+      </value>
+      <value>
+        -0.0047454750271
+      </value>
+      <value>
+        -0.0186367239616
+      </value>
+      <value>
+        0.00910717515256
+      </value>
+      <value>
+        0.00936896857131
+      </value>
+      <value>
+        0.00505367806039
+      </value>
+    </values>
+  </inv-angles-covariance-matrix>
+</training-data>
+"""
+        workspace, module = self.make_workspace(np.zeros((10,10), bool), data)
+        self.assertTrue(isinstance(module, U.UntangleWorms))
+        module.prepare_group(workspace.pipeline, workspace.image_set_list, None, None)
+        params = module.read_params(workspace)
+        self.assertEqual(params.version, 10680)
+        self.assertAlmostEqual(params.min_worm_area, 596.898)
+        self.assertAlmostEqual(params.max_area, 1183)
+        self.assertAlmostEqual(params.cost_threshold, 100)
+        self.assertEqual(params.num_control_points, 21)
+        self.assertAlmostEqual(params.max_skel_length, 158.038188951)
+        self.assertAlmostEqual(params.min_path_length, 76.7075694196)
+        self.assertAlmostEqual(params.max_path_length, 173.842007846)
+        self.assertAlmostEqual(params.median_worm_area, 1006.0)
+        self.assertAlmostEqual(params.max_radius, 5.07108224265)
+        self.assertEqual(params.overlap_weight, 5)
+        self.assertEqual(params.leftover_weight, 10)
+        expected = np.array([
+            -0.010999071156, -0.011369928253, -0.0063572663907,
+            -0.00537369691481, -0.00491960423727, -0.00888319810452,
+            0.000958176954014, -0.00329354759164, -0.00182154382306,
+            -0.00252850541515, 0.00583731052007, -0.00629326705054,
+            -0.000221502806058, 0.000541997532415, 7.10858314614e-05,
+            -0.000536334650268, 0.00846699296415, 0.00229934152116,
+            0.013315157629, 127.475166584])
+        np.testing.assert_almost_equal(expected, params.mean_angles)
+        expected = np.array([
+            1.42515381896, 2.85816813675, 3.625274645, 4.0753094944, 
+            4.35612078737, 4.52117778419, 4.63350649815, 4.68616131779,
+            4.72754363339, 4.7538931664, 4.74523602328, 4.73738576257,
+            4.71422245337, 4.67997686977, 4.63299502256, 4.54769060478,
+            4.37493539203, 4.10516708918, 3.6478380576, 2.87519387935,
+            1.41510654664])
+        np.testing.assert_almost_equal(expected, params.radii_from_training)
+        expected = np.array(
+            [[14.4160767437, -3.62948521476, -5.54563467306, -2.03727846881, 1.28497735663, 1.69152924813, 0.155723103489, 0.0968570278119, -0.830941512378, -0.212837030458, 0.343854099462, 0.541856348331, 0.0113083798588, -0.526926108341, 0.499035732802, -0.714281934407, 0.407365302927, 0.0412386837587, 0.399436023924, 0.0100796538444],
+             [ -3.62948521476, 28.3822272923, -5.69796350599, -12.8940771298, -3.24074903822, 6.60066559736, 4.7027587735, -0.228375351756, -0.93975886278, -0.404133419773, 0.461061138309, -0.620175812393, 0.426458145116, 0.242860102398, -1.395472436, -0.416345646399, -0.744042489471, 1.2607667493, 0.0266160618793, 0.0125632227269] , 
+             [ -5.54563467306, -5.69796350599, 33.965523631, -2.5184071008, -11.9739358904, -5.55211501206, 1.54963332447, 1.51853522595, 2.94238214784, 1.58963458609, -1.09690230963, -3.03348214943, -0.499685304962, 0.0832942797245, 2.64055890507, 1.47285696771, -0.837591498704, -1.32897383529, -0.0909573472139, -0.00747385975607] ,
+             [ -2.03727846881, -12.8940771298, -2.5184071008, 38.910896265, -0.501289252952, -16.9651461757, -8.5206491768, 0.599043361039, 4.0425703374, 3.46803482473, 1.5750544267, 0.828548143764, -0.468487536336, 1.18597661827, 0.798189409259, 0.862661371456, -0.14246505168, -1.3841655628, 0.236725547536, -0.0163619841363] ,
+             [ 1.28497735663,-3.24074903822, -11.9739358904, -0.501289252952, 50.690805239, -2.50730714299, -19.7892493084, -8.70870454399, 0.544130042179, 3.96597772445, 4.72570280412, 2.85472249374, -2.84084610444, -4.25238476559, -1.41656624794, 2.35443215524, 1.26857012684, -0.0117059492945, 0.193085174503, -0.0128948234117] , 
+             [ 1.69152924813, 6.60066559736, -5.55211501206, -16.9651461757, -2.50730714299, 49.7744788862, 2.21292071874, -18.9379120677, -11.6040186403, -0.650553765753, 3.61258885051, 2.19212295163, -0.250008762357, -2.6870585839, -1.82043770689, 0.109737469347, 0.560938864345, 0.219973313189, -0.590133590346, -0.00967309489576], 
+             [ 0.155723103489, 4.7027587735, 1.54963332447, -8.5206491768, -19.7892493084, 2.21292071874, 51.0843827257, 0.934339159637, -16.1389407803, -13.597573567, -1.54861446638, 3.38169064096, 4.06874131702, -0.827598209967, 0.403883540178, -2.06739129329, -2.88536104019, 1.06444751058, 0.425819183522, 0.0218279774716], 
+             [ 0.0968570278119, -0.228375351756, 1.51853522595, 0.599043361039, -8.70870454399, -18.9379120677, 0.934339159637, 53.1553410056, 3.83284330941, -21.8128767252, -12.4239738428, -0.689818407647, 4.93635164952, 4.04304737017, 1.11729234765, -0.61148362918, -1.50162558801, -1.61722109339, 0.491305564623, 0.00813673085389], 
+             [ -0.830941512378, -0.93975886278, 2.94238214784, 4.0425703374, 0.544130042179, -11.6040186403, -16.1389407803, 3.83284330941, 47.6933352778, 1.02465850736, -18.704856196, -9.30970873094, 1.7845053387, 2.83710840227, 3.85412837972, -0.420823216821, 1.56974432254, -0.212411753395, -0.638990283092, -0.00117994378546], 
+             [ -0.212837030458, -0.404133419773, 1.58963458609, 3.46803482473, 3.96597772445, -0.650553765753, -13.597573567, -21.8128767252, 1.02465850736, 55.2260388503, 4.35803059752, -17.4350070993, -9.9394563068, 0.592362874638, 4.03037893175, 0.749631051365, 0.179619159884, 1.09520337409, 0.198303530561, -0.0128674812863], 
+             [ 0.343854099462, 0.461061138309, -1.09690230963, 1.5750544267, 4.72570280412, 3.61258885051, -1.54861446638, -12.4239738428, -18.704856196, 4.35803059752, 51.04055356, 3.08936728044, -17.5902587966, -10.8714973146, -0.045009571053, 4.87264332876, 1.30470158026, -0.320349338202, 0.55323063623, -0.00361862544014], 
+             [ 0.541856348331, -0.620175812393, -3.03348214943, 0.828548143764, 2.85472249374, 2.19212295163, 3.38169064096, -0.689818407647, -9.30970873094, -17.4350070993, 3.08936728044, 47.4661853593, -1.87723439855, -15.2700084763, -7.6273108814, 4.14811581054, 1.42240471385, 0.0505728359147, -0.0106613679324, -0.000211505765068], 
+             [ 0.0113083798588, 0.426458145116, -0.499685304962, -0.468487536336, -2.84084610444, -0.250008762357, 4.06874131702, 4.93635164952, 1.7845053387, -9.9394563068, -17.5902587966, -1.87723439855, 47.8240218251, 2.57791664619, -14.5709240372, -4.78007676552, 1.87167780269, 0.359928009336, -1.18561757081, 0.014074799611], 
+             [ -0.526926108341, 0.242860102398, 0.0832942797245, 1.18597661827, -4.25238476559, -2.6870585839, -0.827598209967, 4.04304737017, 2.83710840227, 0.592362874638, -10.8714973146, -15.2700084763, 2.57791664619, 46.696159054, -4.74906899066, -15.6278488145, -4.24795289841, 2.87455853452, 3.07635737509, 0.00532906905096], 
+             [ 0.499035732802, -1.395472436, 2.64055890507, 0.798189409259, -1.41656624794, -1.82043770689, 0.403883540178, 1.11729234765, 3.85412837972, 4.03037893175, -0.045009571053, -7.6273108814, -14.5709240372, -4.74906899066, 40.1689374127, -3.67980915371, -10.3797521361, -0.841069955948, 3.27779133415, 0.0045492369767], 
+             [ -0.714281934407, -0.416345646399, 1.47285696771, 0.862661371456, 2.35443215524, 0.109737469347, -2.06739129329, -0.61148362918, -0.420823216821, 0.749631051365, 4.87264332876, 4.14811581054, -4.78007676552, -15.6278488145, -3.67980915371, 37.0559195085, -1.42897044519, -7.88598395567, -1.9964210551, -0.0047454750271], 
+             [ 0.407365302927, -0.744042489471, -0.837591498704, -0.14246505168, 1.26857012684, 0.560938864345, -2.88536104019, -1.50162558801, 1.56974432254, 0.179619159884, 1.30470158026, 1.42240471385, 1.87167780269, -4.24795289841, -10.3797521361, -1.42897044519, 31.0878364175, -3.67706594057, -7.74307062767, -0.0186367239616], 
+             [ 0.0412386837587, 1.2607667493, -1.32897383529, -1.3841655628, -0.0117059492945, 0.219973313189, 1.06444751058, -1.61722109339, -0.212411753395, 1.09520337409, -0.320349338202, 0.0505728359147, 0.359928009336, 2.87455853452, -0.841069955948, -7.88598395567, -3.67706594057, 17.6561215842, -0.53359878584, 0.00910717515256],
+             [ 0.399436023924, 0.0266160618793, -0.0909573472139, 0.236725547536, 0.193085174503, -0.590133590346, 0.425819183522, 0.491305564623, -0.638990283092, 0.198303530561, 0.55323063623, -0.0106613679324, -1.18561757081, 3.07635737509, 3.27779133415, -1.9964210551, -7.74307062767, -0.53359878584, 13.2416621872, 0.00936896857131], 
+             [ 0.0100796538444, 0.0125632227269, -0.00747385975607, -0.0163619841363, -0.0128948234117, -0.00967309489576, 0.0218279774715, 0.00813673085389, -0.00117994378545, -0.0128674812862, -0.00361862544014, -0.000211505765068, 0.014074799611, 0.00532906905096, 0.0045492369767, -0.0047454750271, -0.0186367239616, 0.00910717515256, 0.00936896857131, 0.00505367806039]])
+        np.testing.assert_almost_equal(expected, params.inv_angles_covariance_matrix)
+        
     def test_03_00_trace_segments_none(self):
         '''Test the trace_segments function on a blank image'''
         image = np.zeros((10,20), bool)
@@ -763,8 +2218,8 @@ UntangleWorms:[module_num:3|svn_version:\'10598\'|variable_revision_number:1|sho
     def test_08_01_worm_descriptor_building_one(self):
         module = U.UntangleWorms()
         params = self.make_params(
-            dict(worm_descriptor_building = dict(radii_from_training=np.array([5,5,5])),
-                 filter = dict(num_control_points = 3)))
+            dict(radii_from_training=np.array([5,5,5]),
+                 num_control_points = 3))
         result = module.worm_descriptor_building(
             [np.array([[10,15],[20, 25]])], params, (40, 50))
         expected = np.zeros((40,50), bool)
@@ -782,8 +2237,8 @@ UntangleWorms:[module_num:3|svn_version:\'10598\'|variable_revision_number:1|sho
         '''Test performance if part of the worm is out of bounds'''
         module = U.UntangleWorms()
         params = self.make_params(
-            dict(worm_descriptor_building = dict(radii_from_training=np.array([5,5,5])),
-                 filter = dict(num_control_points = 3)))
+            dict(radii_from_training=np.array([5,5,5]),
+                 num_control_points = 3))
         result = module.worm_descriptor_building(
             [np.array([[1,15],[11, 25]])], params, (40, 27))
         expected = np.zeros((40,27), bool)
@@ -802,8 +2257,8 @@ UntangleWorms:[module_num:3|svn_version:\'10598\'|variable_revision_number:1|sho
         
         module = U.UntangleWorms()
         params = self.make_params(
-            dict(worm_descriptor_building = dict(radii_from_training=np.array([5,5,5])),
-                 filter = dict(num_control_points = 3)))
+            dict(radii_from_training=np.array([5,5,5]),
+                 num_control_points = 3))
         result = module.worm_descriptor_building(
             [np.array([[10,15],[20, 25]]),
              np.array([[10,25],[20, 15]])], params, (40, 50))
@@ -889,6 +2344,7 @@ UntangleWorms:[module_num:3|svn_version:\'10598\'|variable_revision_number:1|sho
         params = zlib.decompress(base64.b64decode(PARAMS))
         workspace, module = self.make_workspace(A02_image, params)
         self.assertTrue(isinstance(module, U.UntangleWorms))
+        module.prepare_group(workspace.pipeline, workspace.image_set_list, None, None)
         module.wants_training_set_weights.value = False
         module.override_leftover_weight.value = 6
         module.override_overlap_weight.value = 3
@@ -899,3 +2355,18 @@ UntangleWorms:[module_num:3|svn_version:\'10598\'|variable_revision_number:1|sho
         self.assertTrue(isinstance(worms, cpo.Objects))
         worm_ijv = worms.get_ijv()
         self.assertEqual(np.max(worm_ijv[:,2]), 15)
+
+    def test_11_01_train_dot(self):
+        # Test training a single pixel
+        # Regression test of bugs regarding this case
+        #
+        image = np.zeros((10,20), bool)
+        image[5,10] = True
+        workspace, module = self.make_workspace(image)
+        self.assertTrue(isinstance(module, U.UntangleWorms))
+        module.mode.value = U.MODE_TRAIN
+        module.prepare_group(workspace.pipeline,
+                             workspace.image_set_list,
+                             None, None)
+        module.run(workspace)
+        

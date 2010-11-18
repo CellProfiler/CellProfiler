@@ -333,18 +333,14 @@ class MetadataControl(wx.PyControl):
         event.Skip()
     
     def hit_test(self, pos):
-        last = 0
-        x = self.xoffset
-        for i, token in enumerate(self.__tokens):
-            text = self.get_text(i, i+1)
-            x += self.GetTextExtent(text)[0]
-            if x > pos:
-                if isinstance(token, self.MetadataToken):
-                    return i
-                if pos - last > x-pos:
-                    return i+1
-                else:
-                    return i
+        text = self.get_text(0, len(self.__tokens))
+        dc = wx.ClientDC(self)
+        dc.Font = self.Font
+        positions = self.get_positions(dc)
+        del dc
+        for i in range(len(self.__tokens)):
+            if pos <= positions[i] and pos < positions[i+1]:
+                return i
         return len(self.__tokens)
     
     def OnLeftDown(self, event):
@@ -388,7 +384,20 @@ class MetadataControl(wx.PyControl):
             token.value = choice
             self.__tokens.insert(index, token)
         self.on_token_change()
-    
+
+    def get_positions(self, dc):
+        '''Get the widths of each of the tokens'''
+        text = self.get_text(0, len(self.__tokens))
+        raw_positions = dc.GetPartialTextExtents(text)
+        positions = [self.padding]
+        ptr = -1
+        for i in range(len(self.__tokens)-1):
+            text = self.get_text(i, i+1)
+            ptr += len(text)
+            positions.append(raw_positions[ptr] + self.padding)
+        positions.append(raw_positions[-1] + self.padding)
+        return positions
+        
     def OnPaint(self, event):
         dc = wx.BufferedPaintDC(self)
         try:
@@ -412,16 +421,18 @@ class MetadataControl(wx.PyControl):
                 dc.SetClippingRect((self.padding, self.padding, 
                                     self.ClientSize[0] - 2*self.padding,
                                     self.ClientSize[1] - 2*self.padding))
-            loc = self.xoffset
+            text = self.get_text(0, len(self.__tokens))
+            positions = self.get_positions(dc)
+                
+            dc.Brush = wx.Brush(metadata_color)
+            dc.Pen = wx.TRANSPARENT_PEN
             for i, token in enumerate(self.__tokens):
                 if isinstance(token, self.MetadataToken):
-                    dc.TextBackground = metadata_color
-                    text = token.value
-                else:
-                    text = self.get_text(i, i+1)
-                    dc.TextBackground = background_color
-                dc.DrawText(text, loc, self.padding)
-                loc += self.GetTextExtent(text)[0]
+                    dc.DrawRectangle(positions[i], self.padding, 
+                                     positions[i+1] - positions[i],
+                                     self.ClientSize[1] - self.padding)
+            dc.BackgroundMode = wx.TRANSPARENT
+            dc.DrawText(text, self.xoffset, self.padding)
         finally:
             dc.Destroy()
     

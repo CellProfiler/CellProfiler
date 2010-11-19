@@ -226,31 +226,90 @@ class UntangleWorms(cpm.CPModule):
             <b>UntangleWorms</b> ignore uncovered foreground.""")
         
         self.min_area_percentile = cps.Float(
-            "Minimum area percentile", 1, 0, 100)
+            "Minimum area percentile", 1, 0, 100,
+            doc="""<b>UntangleWorms</b> will discard single worms whose area
+            is less than a certain minimum. It ranks all worms in the training
+            set according to area and then picks the worm at this percentile.
+            It then computes the minimum area allowed as this worm's area
+            times the minimum area factor.""")
         self.min_area_factor = cps.Float(
-            "Minimum area factor", .9, 0)
+            "Minimum area factor", .9, 0,
+            doc = """This setting is a multiplier that is applied to the
+            area of the worm, selected as described in the documentation
+            for <i>Minimum area percentile</i>.""")
         self.max_area_percentile = cps.Float(
-            "Maximum area percentile", 90, 0, 100)
+            "Maximum area percentile", 90, 0, 100,
+            doc = """<b>UntangleWorms</b> uses a maximum area to distinguish
+            between single worms and clumps of worms. Any blob whose area is
+            less than the maximum area is considered to be a single worm
+            whereas any blob whose area is greater is considered to be two
+            or more worms. <b>UntangleWorms</b> orders all worms in the
+            training set by area and picks the worm at the percentile
+            given by this setting. It then multiplies this worm's area
+            by the <i>Maximum area factor</i> (see below) to get the maximum
+            area""")
         self.max_area_factor = cps.Float(
-            "Maximum area factor", 1.0, 0)
+            "Maximum area factor", 1.0, 0,
+            doc = """The <i>Maximum area factor</i> setting is used to
+            compute the maximum area as decribed above in <i>Maximum area
+            percentile</i>.""")
         self.min_length_percentile = cps.Float(
-            "Minimum length percentile", 1, 0, 100)
+            "Minimum length percentile", 1, 0, 100,
+        doc = """<b>UntangleWorms</b> uses the minimum length to restrict its
+        search for worms in a clump to worms of at least the minimum length.
+        <b>UntangleWorms</b> sorts all worms by length and picks the worm
+        at the percentile indicated by this setting. It then multiplies the
+        length of this worm by the <i>Mininmum length factor</i> (see below)
+        to get the minimum length.""")
         self.min_length_factor = cps.Float(
-            "Minimum length factor", 0.9, 0)
+            "Minimum length factor", 0.9, 0,
+            doc = """<b>UntangleWorms</b> uses the <i>Minimum length factor</i>
+            to compute the minimum length from the training set as described
+            in the documentation above for <i>Minimum length percentile</i>""")
         self.max_length_percentile = cps.Float(
-            "Maximum length percentile", 99, 0, 100)
+            "Maximum length percentile", 99, 0, 100,
+            doc = """<b>UntangleWorms</b> uses the maximum length to restrict
+            its search for worms in a clump to worms of at least the maximum
+            length. It computes this length by sorting all of the training
+            worms by length. It then selects the worm at the <i>Maximum
+            length percentile</i> and multiplies that worm's length by
+            the <i>Maximum length factor</i> to get the maximum length""")
         self.max_length_factor = cps.Float(
-            "Maximum length factor", 1.1, 0)
+            "Maximum length factor", 1.1, 0,
+            doc = """<b>UntangleWorms</b> uses this setting to compute the
+            maximum length as described in <i>Maximum length percentile</i>
+            above""")
         self.max_cost_percentile = cps.Float(
-            "Maximum cost percentile", 90, 0, 100)
+            "Maximum cost percentile", 90, 0, 100,
+            doc = """<b>UntangleWorms</b> computes a shape-based cost for
+            each worm it considers. It will restrict the allowed cost to
+            less than the cost threshold. During training, <b>UntangleWorms</b>
+            computes the shape cost of every worm in the training set. It
+            then orders them by cost and uses <i>Maximum cost percentile</i>
+            to pick the worm at the given percentile. It them multiplies
+            this worm's cost by the <i>Maximum cost factor</i> to compute
+            the cost threshold.""")
         self.max_cost_factor = cps.Float(
-            "Maximum cost factor", 1.2, 0)
+            "Maximum cost factor", 1.2, 0,
+            doc = """<b>UntangleWorms</b> uses this setting to compute the
+            cost threshold as described in <i>Maximum cost percentile</i> 
+            above.""")
         self.num_control_points = cps.Integer(
-            "# of control points", 21, 3, 50)
+            "# of control points", 21, 3, 50,
+            doc = """This setting controls the number of control points that
+            will be sampled when constructing a worm shape from its skeleton.""")
         self.max_radius_percentile = cps.Float(
-            "Maximum radius percentile", 90, 0, 100)
+            "Maximum radius percentile", 90, 0, 100,
+            doc = """<b>UntangleWorms<b> uses the maximum worm radius during
+            worm skeletonization. <b>UntangleWorms</b> sorts the radii of
+            worms in increasing size and selects the worm at this percentile.
+            It then multiplies this worm's radius by the <i>Maximum radius
+            factor</i> (see below) to compute the maximum radius.""")
         self.max_radius_factor = cps.Float(
-            "Maximum radius factor", 1, 0)
+            "Maximum radius factor", 1, 0,
+            doc="""<b>UntangleWorms</b> uses this setting to compute the
+            maximum radius as described in <i>Maximum radius percentile</i>
+            above.""")
         
         
     def settings(self):
@@ -511,7 +570,8 @@ class UntangleWorms(cpm.CPModule):
                 a.set_title("Angles")
                 a = f.add_subplot(1,4,4)
                 a.set_position((Bbox([[.65, .1],[1, .45]])))
-                a.imshow(angles_covariance_matrix[:-1,:-1])
+                a.imshow(angles_covariance_matrix[:-1,:-1], 
+                         interpolation="nearest")
                 a.set_title("Covariance")
                 f.canvas.draw()
                 figure.Refresh()

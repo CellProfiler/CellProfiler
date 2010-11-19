@@ -34,7 +34,7 @@ import cellprofiler.objects as cpo
 import cellprofiler.settings as cps
 import cellprofiler.cpmath.cpmorphology as morph
 import cellprofiler.preferences as cpprefs
-import cellprofiler.modules.identify as I
+import identify as I
 from cellprofiler.cpmath.propagate import propagate
 from cellprofiler.cpmath.outline import outline
 

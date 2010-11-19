@@ -29,12 +29,15 @@ import cellprofiler.objects as cpo
 import cellprofiler.pipeline as cpp
 import cellprofiler.settings as cps
 import cellprofiler.workspace as cpw
+from cellprofiler.cpmath.outline import outline
 
 import cellprofiler.modules.untangleworms as U
 
 IMAGE_NAME = "myimage"
 OVERLAP_OBJECTS_NAME = "overlapobjects"
 NON_OVERLAPPING_OBJECTS_NAME = "nonoverlappingobjects"
+OVERLAPPING_OUTLINES_NAME = "overlapoutlines"
+NON_OVERLAPPING_OUTLINES_NAME = "nonoverlappingoutlines"
 
 A02_binary = ('eJztmHdQU+u2wL+EICWKFJOg0rsiAeGoiFKMICK9t4ChIwgEFKQlJGo4IE0Q'
               'KR4hFPEgoERQCCIQgghKR0UwgBFFQapUlfa23rnvzZs7894fb95/d8/syezs'
@@ -2355,6 +2358,46 @@ UntangleWorms:[module_num:3|svn_version:\'10598\'|variable_revision_number:1|sho
         self.assertTrue(isinstance(worms, cpo.Objects))
         worm_ijv = worms.get_ijv()
         self.assertEqual(np.max(worm_ijv[:,2]), 15)
+
+    def test_10_02_nonoverlapping_outlines(self):
+        params = zlib.decompress(base64.b64decode(PARAMS))
+        workspace, module = self.make_workspace(A02_image, params)
+        self.assertTrue(isinstance(module, U.UntangleWorms))
+        module.prepare_group(workspace.pipeline, workspace.image_set_list, None, None)
+        module.wants_training_set_weights.value = False
+        module.override_leftover_weight.value = 6
+        module.override_overlap_weight.value = 3
+        module.wants_nonoverlapping_outlines.value = True
+        module.nonoverlapping_outlines_name.value = NON_OVERLAPPING_OUTLINES_NAME
+        module.run(workspace)
+        object_set = workspace.object_set
+        self.assertTrue(isinstance(object_set, cpo.ObjectSet))
+        worms = object_set.get_objects(NON_OVERLAPPING_OBJECTS_NAME).segmented
+        outlines = workspace.image_set.get_image(NON_OVERLAPPING_OUTLINES_NAME).pixel_data
+        expected = outline(worms) > 0
+        self.assertTrue(np.all(outlines == expected))
+
+    def test_10_03_overlapping_outlines(self):
+        params = zlib.decompress(base64.b64decode(PARAMS))
+        workspace, module = self.make_workspace(A02_image, params)
+        self.assertTrue(isinstance(module, U.UntangleWorms))
+        module.prepare_group(workspace.pipeline, workspace.image_set_list, None, None)
+        module.wants_training_set_weights.value = False
+        module.override_leftover_weight.value = 6
+        module.override_overlap_weight.value = 3
+        module.wants_overlapping_outlines.value = True
+        module.overlapping_outlines_name.value = OVERLAPPING_OUTLINES_NAME
+        module.run(workspace)
+        object_set = workspace.object_set
+        self.assertTrue(isinstance(object_set, cpo.ObjectSet))
+        worms = object_set.get_objects(OVERLAP_OBJECTS_NAME)
+        outlines = workspace.image_set.get_image(OVERLAPPING_OUTLINES_NAME).pixel_data
+        outlines = np.sum(outlines, 2) > 0 # crunch color dimension
+        i,j,v = worms.ijv.transpose()
+        expected = np.zeros(outlines.shape, bool)
+        expected[i,j] = True
+        # all outlines are in some object...
+        self.assertTrue(np.all(expected[outlines]))
 
     def test_11_01_train_dot(self):
         # Test training a single pixel

@@ -194,7 +194,7 @@ class UntangleWorms(cpm.CPModule):
             get_directory_fn = get_directory_fn,
             set_directory_fn = set_directory_fn,
             browse_msg = "Choose training set",
-            exts = [("Worm training set (*.mat)", "*.mat"),
+            exts = [("Worm training set (*.xml)", "*.xml"),
                     ("All files (*.*)", "*.*")])
         
         self.wants_training_set_weights = cps.Binary(
@@ -668,8 +668,8 @@ class UntangleWorms(cpm.CPModule):
             o.parent_image = image
             object_set.add_objects(o, self.nonoverlapping_objects.value)
             if self.wants_nonoverlapping_outlines:
-                outline_pixels = outline(labels)
-                outline_image = cpi.Image(outline_pixels, parent = image)
+                outline_pixels = outline(labels) > 0
+                outline_image = cpi.Image(outline_pixels, parent_image = image)
                 image_set.add(self.nonoverlapping_outlines_name.value,
                               outline_image)
     
@@ -2015,14 +2015,20 @@ class UntangleWorms(cpm.CPModule):
         file_name = m.apply_metadata(self.training_set_file_name.value)
         d = self.get_dictionary(workspace.image_set_list)[TRAINING_PARAMS]
         if d.has_key(file_name):
-            return d[file_name]
+            result, timestamp = d[file_name]
+            if (timestamp == "URL" or 
+                timestamp == os.stat(os.path.join(path, file_name)).st_mtime):
+                return d[file_name]
+            
         if self.training_set_directory.dir_choice == cps.URL_FOLDER_NAME:
             url = path + "/" + file_name
             fd_or_file = urllib2.urlopen(url)
             is_url = True
+            timestamp = "URL"
         else:
             fd_or_file = os.path.join(path, file_name)
             is_url = False
+            timestamp = os.stat(fd_or_file).st_mtime
         try:
             from xml.dom.minidom import parse
             doc = parse(fd_or_file)
@@ -2145,7 +2151,7 @@ class UntangleWorms(cpm.CPModule):
                 CLUSTER_PATHS_SELECTION, "leftover_weight")
             result.radii_from_training = mp(
                 WORM_DESCRIPTOR_BUILDING, "radii_from_training", kind = VECTOR)
-        d[file_name] = result
+        d[file_name] = (result, timestamp)
         return result
         
         

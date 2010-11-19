@@ -293,7 +293,7 @@ class UntangleWorms(cpm.CPModule):
             if self.mode == MODE_TRAIN:
                 result += [
                     self.min_area_percentile, self.min_area_factor,
-                    self.man_area_percentile, self.max_area_factor,
+                    self.max_area_percentile, self.max_area_factor,
                     self.min_length_percentile, self.min_length_factor,
                     self.max_length_percentile, self.max_length_factor,
                     self.max_cost_percentile, self.max_cost_factor,

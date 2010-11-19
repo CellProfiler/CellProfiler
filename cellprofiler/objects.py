@@ -424,6 +424,11 @@ class Objects(object):
     
     indices = property(get_indices)
     
+    @property
+    def count(self):
+        """The number of objects labeled"""
+        return len(self.indices)
+    
     @memoize_method
     def get_areas(self):
         """The area of each object"""

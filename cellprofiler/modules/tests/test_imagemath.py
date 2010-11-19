@@ -301,12 +301,16 @@ Multiply:[module_num:1|svn_version:\'8913\'|variable_revision_number:1|show_wind
         module.run(workspace)
         return image_set.get_image('outputimage')
     
-    def check_expected(self, image, expected, mask=None):
+    def check_expected(self, image, expected, mask=None, ignore=False):
         if mask is None and not image.has_crop_mask:
             self.assertTrue(np.all(np.abs(image.pixel_data - expected <
                                           np.sqrt(np.finfo(np.float32).eps))))
             self.assertFalse(image.has_mask)
-        else:
+        elif mask is not None and ignore==True:
+            self.assertTrue(np.all(np.abs(image.pixel_data - expected <
+                                          np.sqrt(np.finfo(np.float32).eps))))
+            self.assertTrue(image.has_mask)
+        elif mask is not None and ignore==False:
             self.assertTrue(image.has_mask)
             if not image.has_crop_mask:
                 self.assertTrue(np.all(mask == image.mask))
@@ -445,6 +449,22 @@ Multiply:[module_num:1|svn_version:\'8913\'|variable_revision_number:1|show_wind
             output = self.run_imagemath(images, fn)
             self.check_expected(output, expected)
     
+    def test_03_06_ignore_mask(self):
+        '''Test adding images with masks, but ignoring the masks'''
+        def fn(module):
+            module.operation.value = I.O_ADD
+            module.truncate_high.value = False
+            module.ignore_mask.value = True
+        np.random.seed(0)
+        for n in range(2,5):
+            images = [{ 'pixel_data':np.random.uniform(size=(50,50)).astype(np.float32),
+                        'mask': (np.random.uniform(size=(50,50))>.1) }
+                      for i in range(n)]
+            expected = reduce(np.add,[x['pixel_data'] for x in images])
+            mask = reduce(np.logical_and, [x['mask'] for x in images])
+            output = self.run_imagemath(images, fn)
+            self.check_expected(output, expected, mask, True)
+        
     def test_04_01_subtract(self):
         '''Test subtracting'''
         def fn(module):

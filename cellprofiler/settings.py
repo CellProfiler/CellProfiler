@@ -771,10 +771,10 @@ class Float(Text):
         try:
             # Raises value error inside self.value if not a float
             value = self.get_value(reraise=True)
-            if self.__minval != None and self.__minval > value:
-                raise ValidationError('Must be at least %d, was %d'%(self.__minval, self.value),self)
         except ValueError:
             raise ValidationError('Value not in decimal format', self)
+        if self.__minval != None and self.__minval > value:
+            raise ValidationError('Must be at least %d, was %d'%(self.__minval, self.value),self)
         if self.__maxval != None and self.__maxval < value:
             raise ValidationError('Must be at most %d, was %d'%(self.__maxval, self.value),self)
         

@@ -1,4 +1,5 @@
-'''<b>Image Math</b> performs simple mathematical operations on image intensities
+'''<b>Image Math</b> performs
+ simple mathematical operations on image intensities
 <hr>
 
 This module can perform addition, subtraction, multiplication, division, or averaging
@@ -56,13 +57,13 @@ IMAGE_SETTING_COUNT = 4
 
 # The number of settings other than for images
 FIXED_SETTING_COUNT_1 = 7
-FIXED_SETTING_COUNT = 7
+FIXED_SETTING_COUNT = 8
 
 
 class ImageMath(cpm.CPModule):
     
     category = "Image Processing"
-    variable_revision_number = 2
+    variable_revision_number = 3
     module_name = "ImageMath"
 
     def create_settings(self):
@@ -124,6 +125,7 @@ class ImageMath(cpm.CPModule):
             Values outside the range 0 to 1 might not be handled well by other modules. 
             Here you have the option of setting values greater than 1 to a maximum value of 1.""")
         
+        self.ignore_mask = cps.Binary("Ignore the image masks?", False, doc = """Usually, the smallest mask of all image operands is applied after image math has been completed. Choosing to ignore the masks will set equal to zero all previously masked pixels and operate on the masked images as if no mask had been applied.""")
         self.output_image_name = cps.ImageNameProvider("Name the output image", "ImageAfterMath", doc="""What do you want to call the resulting image?""")
         
         self.add_button = cps.DoSomething("", "Add another image", self.add_image)
@@ -164,7 +166,7 @@ class ImageMath(cpm.CPModule):
 
     def settings(self):
         result = [self.operation, self.exponent, self.after_factor, self.addend,
-                  self.truncate_low, self.truncate_high, 
+                  self.truncate_low, self.truncate_high, self.ignore_mask,
                   self.output_image_name]
         for image in self.images:
             result += [image.image_or_measurement, image.image_name, 
@@ -201,7 +203,7 @@ class ImageMath(cpm.CPModule):
             result += [self.add_button, self.divider_bottom]
 
         result += [self.exponent, self.after_factor, 
-                   self.addend, self.truncate_low, self.truncate_high]
+                   self.addend, self.truncate_low, self.truncate_high, self.ignore_mask]
         return result
 
     def help_settings(self):
@@ -210,7 +212,7 @@ class ImageMath(cpm.CPModule):
             result += [image.image_or_measurement, image.image_name, 
                        image.measurement, image.factor]
         result += [self.exponent, self.after_factor, self.addend,
-                  self.truncate_low, self.truncate_high]
+                  self.truncate_low, self.truncate_high, self.ignore_mask]
         return result
     
     def prepare_settings(self, setting_values):
@@ -238,7 +240,6 @@ class ImageMath(cpm.CPModule):
                   for x in image_names]
         pixel_data = [image.pixel_data for image in images]
         masks = [image.mask if image.has_mask else None for image in images]
-
         #
         # Crop all of the images similarly
         #
@@ -248,7 +249,6 @@ class ImageMath(cpm.CPModule):
             pixel_data[i] = smallest_image.crop_image_similarly(pixel_data[i])
             if masks[i] is not None:
                 masks[i] = smallest_image.crop_image_similarly(masks[i])
-
         # weave in the measurements
         idx = 0
         measurements = workspace.measurements
@@ -285,10 +285,13 @@ class ImageMath(cpm.CPModule):
                 op = np.divide
             for pd, mask in zip(pixel_data[1:], masks[1:]):
                 output_pixel_data = op(output_pixel_data, pd)
-                if output_mask is None:
-                    output_mask = mask
-                elif mask is not None:
-                    output_mask = (output_mask & mask)
+                if self.ignore_mask == True:
+                    continue
+                else:
+                    if output_mask is None:
+                        output_mask = mask
+                    elif mask is not None:
+                        output_mask = (output_mask & mask)
             if opval == O_AVERAGE:
                 output_pixel_data /= sum(image_factors)
         elif opval == O_INVERT:
@@ -537,4 +540,11 @@ class ImageMath(cpm.CPModule):
                                        setting_values[i+1], ""]
             setting_values = new_setting_values
             variable_revision_number = 2
+        if (not from_matlab) and variable_revision_number == 2:
+            # added the ability to ignore the mask
+            new_setting_values = setting_values
+            new_setting_values.insert(6, 'No')
+            setting_values = new_setting_values
+            print setting_values
+            variable_revision_number = 3
         return setting_values, variable_revision_number, from_matlab

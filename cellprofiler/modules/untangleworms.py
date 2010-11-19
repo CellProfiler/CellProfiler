@@ -34,6 +34,7 @@ import cellprofiler.objects as cpo
 import cellprofiler.settings as cps
 import cellprofiler.cpmath.cpmorphology as morph
 import cellprofiler.preferences as cpprefs
+import cellprofiler.modules.identify as I
 from cellprofiler.cpmath.propagate import propagate
 from cellprofiler.cpmath.outline import outline
 
@@ -631,11 +632,21 @@ class UntangleWorms(cpm.CPModule):
             workspace.display_data.ijv = ijv
         object_set = workspace.object_set
         assert isinstance(object_set, cpo.ObjectSet)
+        measurements = workspace.measurements
+        assert isinstance(measurements, cpmeas.Measurements)
         if self.overlap in (OO_WITH_OVERLAP, OO_BOTH):
             o = cpo.Objects()
             o.ijv = ijv
             o.parent_image = image
-            object_set.add_objects(o, self.overlap_objects.value)
+            name = self.overlap_objects.value
+            object_set.add_objects(o, name)
+            I.add_object_count_measurements(measurements, name, o.count)
+            
+            center_x = np.bincount(ijv[:, 2], ijv[:, 1])[o.indices] / o.areas
+            center_y = np.bincount(ijv[:, 2], ijv[:, 0])[o.indices] / o.areas
+            measurements.add_measurement(name, I.M_LOCATION_CENTER_X, center_x)
+            measurements.add_measurement(name, I.M_LOCATION_CENTER_Y, center_y)
+            measurements.add_measurement(name, I.M_NUMBER_OBJECT_NUMBER, o.indices)
             #
             # Save outlines
             #
@@ -666,7 +677,11 @@ class UntangleWorms(cpm.CPModule):
             o = cpo.Objects()
             o.segmented = labels
             o.parent_image = image
-            object_set.add_objects(o, self.nonoverlapping_objects.value)
+            name = self.nonoverlapping_objects.value
+            object_set.add_objects(o, name)
+            I.add_object_count_measurements(measurements, name, o.count)
+            I.add_object_location_measurements(measurements, name, labels, o.count)
+            
             if self.wants_nonoverlapping_outlines:
                 outline_pixels = outline(labels) > 0
                 outline_image = cpi.Image(outline_pixels, parent_image = image)
@@ -2154,6 +2169,40 @@ class UntangleWorms(cpm.CPModule):
         d[file_name] = (result, timestamp)
         return result
         
+    def get_measurement_columns(self, pipeline):
+        '''Return a column of information for each measurement feature'''
+        result = []
+        if self.mode == MODE_UNTANGLE:
+            if self.overlap in (OO_WITH_OVERLAP, OO_BOTH):
+                result += I.get_object_measurement_columns(self.overlap_objects.value)
+            if self.overlap in (OO_WITHOUT_OVERLAP, OO_BOTH):
+                result += I.get_object_measurement_columns(self.nonoverlapping_objects.value)
+        return result
         
-        
-        
+    def get_categories(self, pipeline, object_name):
+        if object_name == cpmeas.IMAGE:
+            return [I.C_COUNT]
+        if ((object_name == self.overlap_objects.value and
+             self.overlap in (OO_BOTH, OO_WITH_OVERLAP)) or
+            (object_name == self.nonoverlapping_objects.value and
+             self.overlap in (OO_BOTH, OO_WITHOUT_OVERLAP))):
+            return [I.C_LOCATION, I.C_NUMBER]
+        return []
+    
+    def get_measurements(self, pipeline, object_name, category):
+        wants_overlapping = self.overlap in (OO_BOTH, OO_WITH_OVERLAP)
+        wants_nonoverlapping = self.overlap in (OO_BOTH, OO_WITHOUT_OVERLAP)
+        result = []
+        if object_name == cpmeas.IMAGE and category == I.C_COUNT:
+            if wants_overlapping:
+                result += [self.overlap_objects.value]
+            if wants_nonoverlapping:
+                result += [self.nonoverlapping_objects.value]
+        if ((wants_overlapping and object_name == self.overlap_objects) or
+            (wants_nonoverlapping and object_name == self.nonoverlapping_objects)):
+            if category == I.C_LOCATION:
+                result += [I.FTR_CENTER_X, FTR_CENTER_Y]
+            elif category == I.C_NUMBER:
+                result += [I.FTR_OBJECT_NUMBER]
+        return result
+    

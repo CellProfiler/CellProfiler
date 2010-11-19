@@ -2358,6 +2358,16 @@ UntangleWorms:[module_num:3|svn_version:\'10598\'|variable_revision_number:1|sho
         self.assertTrue(isinstance(worms, cpo.Objects))
         worm_ijv = worms.get_ijv()
         self.assertEqual(np.max(worm_ijv[:,2]), 15)
+        m = workspace.measurements
+        assert isinstance(m, cpmeas.Measurements)
+        ocount = m.get_current_image_measurement("Count_"+OVERLAP_OBJECTS_NAME)
+        self.assertEqual(ocount, 15)
+        ncount = m.get_current_image_measurement("Count_"+NON_OVERLAPPING_OBJECTS_NAME)
+        self.assertEqual(ncount, 15)
+        columns = module.get_measurement_columns(workspace.pipeline)
+        for column in columns:
+            oname, feature = column[:2]
+            v = m.get_current_measurement(oname, feature)
 
     def test_10_02_nonoverlapping_outlines(self):
         params = zlib.decompress(base64.b64decode(PARAMS))

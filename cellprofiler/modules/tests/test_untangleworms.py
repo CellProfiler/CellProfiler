@@ -32,6 +32,7 @@ import cellprofiler.workspace as cpw
 from cellprofiler.cpmath.outline import outline
 
 import cellprofiler.modules.untangleworms as U
+U.CAROLINAS_HACK = False
 
 IMAGE_NAME = "myimage"
 OVERLAP_OBJECTS_NAME = "overlapobjects"

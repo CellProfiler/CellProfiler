@@ -38,6 +38,8 @@ import identify as I
 from cellprofiler.cpmath.propagate import propagate
 from cellprofiler.cpmath.outline import outline
 
+CAROLINAS_HACK = True
+
 from cellprofiler.preferences import standardize_default_folder_names, \
      DEFAULT_INPUT_FOLDER_NAME, DEFAULT_OUTPUT_FOLDER_NAME, NO_FOLDER_NAME, \
      ABSOLUTE_FOLDER_NAME, IO_FOLDER_CHOICE_HELP_TEXT
@@ -679,11 +681,12 @@ class UntangleWorms(cpm.CPModule):
             #
             # Hack for Carolina: write the ijv outlines to disk
             #
-            path = cpprefs.get_default_output_directory()
-            name = "%d.mat" % measurements.get_image_set_number()
-            from scipy.io import savemat
-            d = dict(i = ijv[:,0], j=ijv[:,1], label=ijv[:,2])
-            savemat(os.path.join(path, name), d)
+            if CAROLINAS_HACK:
+                path = cpprefs.get_default_output_directory()
+                name = "%d.mat" % measurements.get_image_set_number()
+                from scipy.io import savemat
+                d = dict(i = ijv[:,0], j=ijv[:,1], label=ijv[:,2])
+                savemat(os.path.join(path, name), d)
                 
         if self.overlap in (OO_WITHOUT_OVERLAP, OO_BOTH):
             #

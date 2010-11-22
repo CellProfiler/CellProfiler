@@ -64,6 +64,21 @@ TRAINING_PARAMS = "TrainingParams"
 
 ######################################################
 #
+# Features measured
+#
+######################################################
+
+'''Worm untangling measurement category'''
+C_WORM = "Worm"
+
+'''The length of the worm skeleton'''
+F_LENGTH = "Length"
+
+'''The angle at each of the control points'''
+F_ANGLE = "Angle"
+
+######################################################
+#
 # Training file XML tags:
 #
 ######################################################
@@ -661,6 +676,14 @@ class UntangleWorms(cpm.CPModule):
                 outline_image = cpi.Image(outline_pixels, parent_image = image)
                 image_set.add(self.overlapping_outlines_name.value, 
                               outline_image)
+            #
+            # Hack for Carolina: write the ijv outlines to disk
+            #
+            path = cpprefs.get_default_output_directory()
+            name = "%d.mat" % measurements.get_image_set_number()
+            from scipy.io import savemat
+            d = dict(i = ijv[:,0], j=ijv[:,1], label=ijv[:,2])
+            savemat(os.path.join(path, name), d)
                 
         if self.overlap in (OO_WITHOUT_OVERLAP, OO_BOTH):
             #

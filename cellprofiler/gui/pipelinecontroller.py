@@ -1036,7 +1036,7 @@ class PipelineController:
         if len(self.__groupings) < 2:
             wx.MessageBox("There is only one group and it is currently running in test mode","Choose image group")
             return
-        dialog = wx.Dialog(self.__frame, title="Choose an image group")
+        dialog = wx.Dialog(self.__frame, title="Choose an image group", style=wx.RESIZE_BORDER|wx.DEFAULT_DIALOG_STYLE)
         super_sizer = wx.BoxSizer(wx.VERTICAL)
         dialog.SetSizer(super_sizer)
         super_sizer.Add(wx.StaticText(dialog, label = "Select a group set for testing:"),0,wx.EXPAND|wx.ALL,5)
@@ -1055,7 +1055,9 @@ class PipelineController:
         btnsizer.AddButton(wx.Button(dialog, wx.ID_CANCEL))
         btnsizer.Realize()
         super_sizer.Add(btnsizer)
+        super_sizer.Add((2,2))
         dialog.Fit()
+        dialog.CenterOnParent()
         if dialog.ShowModal() == wx.ID_OK:
             self.debug_choose_group(lb.Selection)
     
@@ -1063,7 +1065,7 @@ class PipelineController:
         '''Choose one of the current image sets
         
         '''
-        dialog = wx.Dialog(self.__frame, title="Choose an image cycle")
+        dialog = wx.Dialog(self.__frame, title="Choose an image cycle", style=wx.RESIZE_BORDER|wx.DEFAULT_DIALOG_STYLE)
         super_sizer = wx.BoxSizer(wx.VERTICAL)
         dialog.SetSizer(super_sizer)
         super_sizer.Add(wx.StaticText(dialog, label = "Select an image cycle for testing:"),0,wx.EXPAND|wx.ALL,5)
@@ -1097,7 +1099,9 @@ class PipelineController:
         btnsizer.AddButton(wx.Button(dialog, wx.ID_CANCEL))
         btnsizer.Realize()
         super_sizer.Add(btnsizer)
+        super_sizer.Add((2,2))
         dialog.Fit()
+        dialog.CenterOnParent()
         if dialog.ShowModal() == wx.ID_OK:
             image_number = indexes[lb.Selection]
             self.__debug_measurements.next_image_set(image_number)

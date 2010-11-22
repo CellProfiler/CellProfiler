@@ -2059,7 +2059,7 @@ class UntangleWorms(cpm.CPModule):
             result, timestamp = d[file_name]
             if (timestamp == "URL" or 
                 timestamp == os.stat(os.path.join(path, file_name)).st_mtime):
-                return d[file_name]
+                return d[file_name][0]
             
         if self.training_set_directory.dir_choice == cps.URL_FOLDER_NAME:
             url = path + "/" + file_name

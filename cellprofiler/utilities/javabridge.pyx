@@ -1144,7 +1144,7 @@ cdef class JB_Env:
         if <int> s.o == 0:
            return None
         chars = self.env[0].GetStringUTFChars(self.env, s.o, NULL)
-        result = chars
+        result = str(chars)
         self.env[0].ReleaseStringUTFChars(self.env, s.o, chars)
         return result
 

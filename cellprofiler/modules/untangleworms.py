@@ -62,8 +62,6 @@ MAX_PATHS = 400
 '''Name of the worm training data list inside the image set'''
 TRAINING_DATA = "TrainingData"
 
-TRAINING_PARAMS = "TrainingParams"
-
 ######################################################
 #
 # Features measured
@@ -76,8 +74,14 @@ C_WORM = "Worm"
 '''The length of the worm skeleton'''
 F_LENGTH = "Length"
 
-'''The angle at each of the control points'''
+'''The angle at each of the control points (Worm_Angle_1 for example)'''
 F_ANGLE = "Angle"
+
+'''The X coordinate of a control point (Worm_ControlPointX_14 for example)'''
+F_CONTROL_POINT_X = "ControlPointX"
+
+'''The Y coordinate of a control point (Worm_ControlPointY_14 for example)'''
+F_CONTROL_POINT_Y = "ControlPointY"
 
 ######################################################
 #
@@ -187,6 +191,7 @@ class UntangleWorms(cpm.CPModule):
         
         self.training_set_directory = cps.DirectoryPath(
             "Training set file location", support_urls = True,
+            allow_metadata = False,
             doc = """Select the folder containing the training set to be loaded.
             %(IO_FOLDER_CHOICE_HELP_TEXT)s
             <p>An additional option is the following:
@@ -208,7 +213,6 @@ class UntangleWorms(cpm.CPModule):
         self.training_set_file_name = cps.FilenameText(
             "Training set file name", "TrainingSet.mat",
             doc = "This is the name of the training set file.",
-            metadata = True,
             get_directory_fn = get_directory_fn,
             set_directory_fn = set_directory_fn,
             browse_msg = "Choose training set",
@@ -398,6 +402,9 @@ class UntangleWorms(cpm.CPModule):
         
     def ncontrol_points(self):
         '''# of control points when making a training set'''
+        if self.mode == MODE_UNTANGLE:
+            params = self.read_params()
+            return params.num_control_points
         if not self.wants_training_set_weights:
             return 21
         else:
@@ -407,7 +414,6 @@ class UntangleWorms(cpm.CPModule):
         '''Prepare to process a group of worms'''
         d = self.get_dictionary(image_set_list)
         d[TRAINING_DATA] = []
-        d[TRAINING_PARAMS] = {}
         
     def run(self, workspace):
         '''Run the module on the current image set'''
@@ -596,7 +602,7 @@ class UntangleWorms(cpm.CPModule):
             
     def run_untangle(self, workspace):
         '''Untangle based on the current image set'''
-        params = self.read_params(workspace)
+        params = self.read_params()
         image_name = self.image_name.value
         image_set = workspace.image_set
         assert isinstance(image_set, cpi.ImageSet)
@@ -642,8 +648,9 @@ class UntangleWorms(cpm.CPModule):
                     del graph
                     del paths
                     all_path_coords += paths_selected
-        ijv = self.worm_descriptor_building(all_path_coords, params,
-                                            labels.shape)
+        ijv, all_lengths, all_angles, all_control_coords_x, all_control_coords_y = \
+           self.worm_descriptor_building(all_path_coords, params,
+                                         labels.shape)
         if workspace.frame is not None:
             workspace.display_data.input_image = image.pixel_data
             workspace.display_data.ijv = ijv
@@ -651,11 +658,14 @@ class UntangleWorms(cpm.CPModule):
         assert isinstance(object_set, cpo.ObjectSet)
         measurements = workspace.measurements
         assert isinstance(measurements, cpmeas.Measurements)
+        
+        object_names = []
         if self.overlap in (OO_WITH_OVERLAP, OO_BOTH):
             o = cpo.Objects()
             o.ijv = ijv
             o.parent_image = image
             name = self.overlap_objects.value
+            object_names.append(name)
             object_set.add_objects(o, name)
             I.add_object_count_measurements(measurements, name, o.count)
             
@@ -704,6 +714,7 @@ class UntangleWorms(cpm.CPModule):
             o.segmented = labels
             o.parent_image = image
             name = self.nonoverlapping_objects.value
+            object_names.append(name)
             object_set.add_objects(o, name)
             I.add_object_count_measurements(measurements, name, o.count)
             I.add_object_location_measurements(measurements, name, labels, o.count)
@@ -713,6 +724,16 @@ class UntangleWorms(cpm.CPModule):
                 outline_image = cpi.Image(outline_pixels, parent_image = image)
                 image_set.add(self.nonoverlapping_outlines_name.value,
                               outline_image)
+        for name in object_names:
+            measurements.add_measurement(name, "_".join((C_WORM, F_LENGTH)),
+                                         all_lengths)
+            for values, ftr in ((all_angles, F_ANGLE),
+                                (all_control_coords_x, F_CONTROL_POINT_X),
+                                (all_control_coords_y, F_CONTROL_POINT_Y)):
+                for i in range(values.shape[1]):
+                    feature = "_".join((C_WORM, ftr, str(i+1)))
+                    measurements.add_measurement(name, feature, values[:, i])
+            
     
     def is_interactive(self):
         return False
@@ -1901,8 +1922,14 @@ class UntangleWorms(cpm.CPModule):
 
         params:  the params structure loaded using read_params()
 
-        Outputs: an Nx3 array where the first two indices are the i,j
-        coordinate and the third is the worm's label.
+        Outputs: 
+        
+        * an Nx3 array where the first two indices are the i,j
+          coordinate and the third is the worm's label.
+          
+        * the lengths of each worm
+        * the angles for control points other than the ends
+        * the coordinates of the control points
         '''
         if len(all_path_coords) == 0:
             return np.zeros((0,3), int)
@@ -1911,6 +1938,10 @@ class UntangleWorms(cpm.CPModule):
         num_control_points = params.num_control_points
         all_i = []
         all_j = []
+        all_lengths = []
+        all_angles = []
+        all_control_coords_x = []
+        all_control_coords_y = []
         for path in all_path_coords:
             cumul_lengths = self.calculate_cumulative_lengths(path)
             control_coords = self.sample_control_points(
@@ -1919,11 +1950,20 @@ class UntangleWorms(cpm.CPModule):
                 control_coords, worm_radii, shape)
             all_i.append(ii)
             all_j.append(jj)
-        return np.column_stack((
+            all_lengths.append(cumul_lengths[-1])
+            all_angles.append(self.get_angles(control_coords))
+            all_control_coords_x.append(control_coords[:,1])
+            all_control_coords_y.append(control_coords[:,0])
+        ijv = np.column_stack((
             np.hstack(all_i),
             np.hstack(all_j),
             np.hstack([np.ones(len(ii), int) * (i+1)
                        for i, ii in enumerate(all_i)])))
+        all_lengths = np.array(all_lengths)
+        all_angles = np.vstack(all_angles)
+        all_control_coords_x = np.vstack(all_control_coords_x)
+        all_control_coords_y = np.vstack(all_control_coords_y)
+        return ijv, all_lengths, all_angles, all_control_coords_x, all_control_coords_y
             
     
     def rebuild_worm_from_control_points_approx(self, control_coords, 
@@ -1997,7 +2037,7 @@ class UntangleWorms(cpm.CPModule):
         mask = (i >= 0) & (j >= 0) & (i < shape[0]) & (j < shape[1])
         return i[mask], j[mask]
     
-    def read_params(self, workspace):
+    def read_params(self):
         '''Read the parameters file'''
         #
         # The parameters file is a .mat file with the following structure:
@@ -2050,11 +2090,11 @@ class UntangleWorms(cpm.CPModule):
             1
             '''
             pass
-        m = workspace.measurements
-        assert isinstance(m, cpmeas.Measurements)
-        path = self.training_set_directory.get_absolute_path(m)
-        file_name = m.apply_metadata(self.training_set_file_name.value)
-        d = self.get_dictionary(workspace.image_set_list)[TRAINING_PARAMS]
+        path = self.training_set_directory.get_absolute_path()
+        file_name = self.training_set_file_name.value
+        if not hasattr(self, "training_params"):
+            self.training_params = {}
+        d = self.training_params
         if d.has_key(file_name):
             result, timestamp = d[file_name]
             if (timestamp == "URL" or 
@@ -2199,12 +2239,34 @@ class UntangleWorms(cpm.CPModule):
         '''Return a column of information for each measurement feature'''
         result = []
         if self.mode == MODE_UNTANGLE:
+            object_names = []
             if self.overlap in (OO_WITH_OVERLAP, OO_BOTH):
-                result += I.get_object_measurement_columns(self.overlap_objects.value)
+                object_names.append(self.overlap_objects.value)
             if self.overlap in (OO_WITHOUT_OVERLAP, OO_BOTH):
-                result += I.get_object_measurement_columns(self.nonoverlapping_objects.value)
+                object_names.append(self.nonoverlapping_objects.value)
+            for object_name in object_names:
+                result += I.get_object_measurement_columns(object_name)
+                all_features = ([F_LENGTH] + self.angle_features() + 
+                                self.control_point_features(True)+
+                                self.control_point_features(False))
+                result += [
+                    (object_name, "_".join((C_WORM, f)), cpmeas.COLTYPE_FLOAT)
+                    for f in all_features]
         return result
+
+    def angle_features(self):
+        '''Return a list of angle feature names'''
+        return ["_".join((F_ANGLE, str(n)))
+                for n in range(1, self.ncontrol_points()-1)]
+    
+    def control_point_features(self, get_x):
+        '''Return a list of control point feature names
         
+        get_x - return the X coordinate control point features if true, else y
+        '''
+        return ["_".join((F_CONTROL_POINT_X if get_x else F_CONTROL_POINT_Y, str(n)))
+                for n in range(1, self.ncontrol_points()+1)]
+    
     def get_categories(self, pipeline, object_name):
         if object_name == cpmeas.IMAGE:
             return [I.C_COUNT]
@@ -2212,7 +2274,7 @@ class UntangleWorms(cpm.CPModule):
              self.overlap in (OO_BOTH, OO_WITH_OVERLAP)) or
             (object_name == self.nonoverlapping_objects.value and
              self.overlap in (OO_BOTH, OO_WITHOUT_OVERLAP))):
-            return [I.C_LOCATION, I.C_NUMBER]
+            return [I.C_LOCATION, I.C_NUMBER, C_WORM]
         return []
     
     def get_measurements(self, pipeline, object_name, category):
@@ -2230,5 +2292,21 @@ class UntangleWorms(cpm.CPModule):
                 result += [I.FTR_CENTER_X, FTR_CENTER_Y]
             elif category == I.C_NUMBER:
                 result += [I.FTR_OBJECT_NUMBER]
+            elif category == C_WORM:
+                result += [F_LENGTH, F_ANGLE, F_CONTROL_POINT_X, F_CONTROL_POINT_Y]
         return result
     
+    def get_measurement_scales(self, pipeline, object_name, category, 
+                               measurement, image_name):
+        wants_overlapping = self.overlap in (OO_BOTH, OO_WITH_OVERLAP)
+        wants_nonoverlapping = self.overlap in (OO_BOTH, OO_WITHOUT_OVERLAP)
+        scales = []
+        if (((wants_overlapping and object_name == self.overlap_objects) or
+             (wants_nonoverlapping and object_name == self.nonoverlapping_objects)) and
+            (category == C_WORM)):
+            if measurement == F_ANGLE:
+                scales += [str(n) for n in range(1, self.ncontrol_points()-1)]
+            elif measurement in [F_CONTROL_POINT_X, F_CONTROL_POINT_Y]:
+                scales += [str(n) for n in range(1, self.ncontrol_points()+1)]
+        return scales
+         

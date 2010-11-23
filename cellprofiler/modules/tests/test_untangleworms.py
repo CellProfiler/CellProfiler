@@ -400,7 +400,7 @@ UntangleWorms:[module_num:3|svn_version:\'10598\'|variable_revision_number:1|sho
         workspace, module = self.make_workspace(np.zeros((10,10), bool), data)
         self.assertTrue(isinstance(module, U.UntangleWorms))
         module.prepare_group(workspace.pipeline, workspace.image_set_list, None, None)
-        params = module.read_params(workspace)
+        params = module.read_params()
         self.assertAlmostEqual(params.min_worm_area, 601.2, 0)
         self.assertAlmostEqual(params.max_area, 1188.5, 0)
         self.assertAlmostEqual(params.cost_threshold, 200.8174, 3)
@@ -1859,7 +1859,7 @@ UntangleWorms:[module_num:3|svn_version:\'10598\'|variable_revision_number:1|sho
         workspace, module = self.make_workspace(np.zeros((10,10), bool), data)
         self.assertTrue(isinstance(module, U.UntangleWorms))
         module.prepare_group(workspace.pipeline, workspace.image_set_list, None, None)
-        params = module.read_params(workspace)
+        params = module.read_params()
         self.assertEqual(params.version, 10680)
         self.assertAlmostEqual(params.min_worm_area, 596.898)
         self.assertAlmostEqual(params.max_area, 1183)
@@ -2224,7 +2224,7 @@ UntangleWorms:[module_num:3|svn_version:\'10598\'|variable_revision_number:1|sho
         params = self.make_params(
             dict(radii_from_training=np.array([5,5,5]),
                  num_control_points = 3))
-        result = module.worm_descriptor_building(
+        result, _, _, _, _ = module.worm_descriptor_building(
             [np.array([[10,15],[20, 25]])], params, (40, 50))
         expected = np.zeros((40,50), bool)
         expected[np.arange(10,21),np.arange(15, 26)] = True
@@ -2243,7 +2243,7 @@ UntangleWorms:[module_num:3|svn_version:\'10598\'|variable_revision_number:1|sho
         params = self.make_params(
             dict(radii_from_training=np.array([5,5,5]),
                  num_control_points = 3))
-        result = module.worm_descriptor_building(
+        result, _, _, _, _ = module.worm_descriptor_building(
             [np.array([[1,15],[11, 25]])], params, (40, 27))
         expected = np.zeros((40,27), bool)
         expected[np.arange(1,12),np.arange(15, 26)] = True
@@ -2263,7 +2263,7 @@ UntangleWorms:[module_num:3|svn_version:\'10598\'|variable_revision_number:1|sho
         params = self.make_params(
             dict(radii_from_training=np.array([5,5,5]),
                  num_control_points = 3))
-        result = module.worm_descriptor_building(
+        result, _, _, _, _ = module.worm_descriptor_building(
             [np.array([[10,15],[20, 25]]),
              np.array([[10,25],[20, 15]])], params, (40, 50))
         expected = np.zeros((40,50), bool)

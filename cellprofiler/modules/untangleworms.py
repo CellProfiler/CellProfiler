@@ -43,6 +43,7 @@ CAROLINAS_HACK = True
 from cellprofiler.preferences import standardize_default_folder_names, \
      DEFAULT_INPUT_FOLDER_NAME, DEFAULT_OUTPUT_FOLDER_NAME, NO_FOLDER_NAME, \
      ABSOLUTE_FOLDER_NAME, IO_FOLDER_CHOICE_HELP_TEXT
+from cellprofiler.gui.help import USING_METADATA_GROUPING_HELP_REF
 
 OO_WITH_OVERLAP = "With overlap"
 OO_WITHOUT_OVERLAP = "Without overlap"
@@ -117,32 +118,41 @@ class UntangleWorms(cpm.CPModule):
     def create_settings(self):
         '''Create the settings that parameterize the module'''
         self.mode = cps.Choice(
-            "Train or untangle?", [MODE_UNTANGLE, MODE_TRAIN],
-            doc = """<b>UntangleWorms</b> has two modes: training mode or
-            untangling mode. Training mode creates one training set per group,
-            using all of the worms in the training set as examples. It writes
-            the training file at the end of each group.
-            Untangling mode uses the training file to untangle images of
-            worms. Choose <i>%(MODE_UNTANGLE)s</i> to untangle worms or
-            <i>%(MODE_TRAIN)s</i> to create a training set.""" % globals())
+            "Train or untangle worms?", [MODE_UNTANGLE, MODE_TRAIN],
+            doc = """<b>UntangleWorms</b> has two modes: 
+            <ul>
+            <li><i>%(MODE_TRAIN)s</i> creates one training set per image group,
+            using all of the worms in the training set as examples. It then writes
+            the training file at the end of each image group.</li>
+            <li><i>%(MODE_UNTANGLE)s</i> uses the training file to untangle images of worms.</li>
+            </ul>
+            %(USING_METADATA_GROUPING_HELP_REF)s""" % globals())
+        
         self.image_name = cps.ImageNameSubscriber(
-            "Binary image", "None",
+            "Select the binary image", "None",
             doc = """A binary image where the foreground indicates the worm
             shapes. The binary image can be produced by the <b>ApplyThreshold</b>
             module.""")
+        
         self.overlap = cps.Choice(
-            "Overlap style:", [OO_BOTH, OO_WITH_OVERLAP, OO_WITHOUT_OVERLAP],
+            "Overlap style", [OO_BOTH, OO_WITH_OVERLAP, OO_WITHOUT_OVERLAP],
             doc = """This setting determines which style objects are output.
             If two worms overlap, you have a choice of including the overlapping
             regions in both worms or excluding the overlapping regions from
-            both worms. Choose <i>%(OO_WITH_OVERLAP)s</i> to save objects including
-            overlapping regions, <i>%(OO_WITHOUT_OVERLAP)s</i> to save only
-            the portions of objects that don't overlap or <i>
-            %(OO_BOTH)s</i> to save two versions: with and without overlap.""" %
+            both worms. 
+            <ul>
+            <li>Choose <i>%(OO_WITH_OVERLAP)s</i> to save objects including
+            overlapping regions.</li>
+            <li>Choose <i>%(OO_WITHOUT_OVERLAP)s</i> to save only
+            the portions of objects that do not overlap.
+            <li>Choose <i>%(OO_BOTH)s</i> to save two versions: with and without overlap.</li>
+            </ul>""" %
             globals())
+        
         self.overlap_objects = cps.ObjectNameProvider(
-            "Overlapping worms object name:", "OverlappingWorms",
-            doc = """This setting names the objects representing the overlapping
+            "Name the overlapping worm objects", "OverlappingWorms",
+            doc = """<i>(Used only if untangling and overlap style is "Both" or "With overlap")</i> <br>
+            This setting names the objects representing the overlapping
             worms. When worms cross, they overlap and pixels are shared by
             both of the overlapping worms. The overlapping worm objects share
             these pixels and measurements of both overlapping worms will include
@@ -150,27 +160,31 @@ class UntangleWorms(cpm.CPModule):
         
         self.wants_overlapping_outlines = cps.Binary(
             "Retain outlines of the overlapping objects?", False,
-            """Check this setting to save an image of the outlines of the
+            """<i>(Used only if untangling and overlap style is "Both" or "With overlap")</i> <br>
+            Check this setting to save an image of the outlines of the
             objects with overlap. Leave the setting unchecked if you do
             not need the outline image.""")
         
         self.overlapping_outlines_colormap = cps.Colormap(
             "Outline colormap?",
-            doc = """This setting controls the colormap used when drawing
+            doc = """<i>(Used only if untangling and overlap style is "Both" or "With overlap" and retaining outlines)</i> <br>
+            This setting controls the colormap used when drawing
             outlines. The outlines are drawn in color to highlight the
             shapes of each worm in a group of overlapping worms""")
         
         self.overlapping_outlines_name = cps.OutlineNameProvider(
-            "Overlapped outline image name:",
+            "Name the overlapped outline image",
             "OverlappedWormOutlines",
-            doc = """This is the name of the outlines of the
+            doc = """<i>(Used only if untangling and overlap style is "Both" or "With overlap")</i> <br>
+            This is the name of the outlines of the
             overlapped worms. You can use this image to display the untangling
             results, for instance, by composting the outlines image with
             the <b>OverlayOutlines</b> module""")
         
         self.nonoverlapping_objects = cps.ObjectNameProvider(
-            "Non-overlapping worms object name:", "NonOverlappingWorms",
-            doc = """This setting names the objects representing the worms,
+            "Name the non-overlapping worm objects", "NonOverlappingWorms",
+            doc = """<i>(Used only if untangling and overlap style is "Both" or "Without overlap")</i> <br>
+            This setting names the objects representing the worms,
             excluding those regions where the worms overlap. When worms cross,
             there are pixels that cannot be unambiguously assigned to one
             worm or the other. These pixels are excluded from both worms
@@ -179,14 +193,16 @@ class UntangleWorms(cpm.CPModule):
         
         self.wants_nonoverlapping_outlines = cps.Binary(
             "Retain outlines of the non-overlapping worms?", False,
-            """Check this setting to save an image of the outlines of the
+            """<i>(Used only if untangling and overlap style is "Both" or "Without overlap")</i> <br>
+            Check this setting to save an image of the outlines of the
             non-overlapping worms. Leave it unchecked if you do not need
             the image of the outlines.""")
         
         self.nonoverlapping_outlines_name =cps.OutlineNameProvider(
-            "Non-overlapped outlines image name:",
+            "Name the non-overlapped outlines image",
             "NonoverlappedWormOutlines",
-            doc = """This is the name of the of the outlines of the worms
+            doc = """<i>(Used only if untangling and overlap style is "Both" or "Without overlap")</i> <br>
+            This is the name of the of the outlines of the worms
             with the overlapping sections removed.""")
         
         self.training_set_directory = cps.DirectoryPath(
@@ -203,6 +219,7 @@ class UntangleWorms(cpm.CPModule):
             <i>https://svn.broadinstitute.org/CellProfiler/trunk/ExampleImages/ExampleSBSImages</i>
             as the path location.</li>
             </ul></p>"""%globals())
+        
         def get_directory_fn():
             '''Get the directory for the CSV file name'''
             return self.training_set_directory.get_absolute_path()
@@ -227,7 +244,8 @@ class UntangleWorms(cpm.CPModule):
         
         self.override_overlap_weight = cps.Float(
             "Overlap weight", 5, 0,
-            doc = """This setting controls how much weight is given to overlaps
+            doc = """<i>(Used only if not using training set weights)</i> <br>
+            This setting controls how much weight is given to overlaps
             between worms. <b>UntangleWorms</b> charges a penalty to a
             particular putative grouping of worms that overlap equal to the
             length of the overlapping region times the overlap weight. Increase
@@ -237,7 +255,8 @@ class UntangleWorms(cpm.CPModule):
         
         self.override_leftover_weight = cps.Float(
             "Leftover weight", 10, 0,
-            doc = """This setting controls how much weight is given to 
+            doc = """(Used only if not using training set weights)</i> <br>
+            This setting controls how much weight is given to 
             areas not covered by worms.
             <b>UntangleWorms</b> charges a penalty to a
             particular putative grouping of worms that fail to cover all
@@ -249,19 +268,24 @@ class UntangleWorms(cpm.CPModule):
         
         self.min_area_percentile = cps.Float(
             "Minimum area percentile", 1, 0, 100,
-            doc="""<b>UntangleWorms</b> will discard single worms whose area
+            doc="""<i>(Used only if training)</i> <br>
+            <b>UntangleWorms</b> will discard single worms whose area
             is less than a certain minimum. It ranks all worms in the training
             set according to area and then picks the worm at this percentile.
             It then computes the minimum area allowed as this worm's area
             times the minimum area factor.""")
+        
         self.min_area_factor = cps.Float(
             "Minimum area factor", .9, 0,
-            doc = """This setting is a multiplier that is applied to the
+            doc = """<i>(Used only if training)</i> <br>
+            This setting is a multiplier that is applied to the
             area of the worm, selected as described in the documentation
             for <i>Minimum area percentile</i>.""")
+        
         self.max_area_percentile = cps.Float(
             "Maximum area percentile", 90, 0, 100,
-            doc = """<b>UntangleWorms</b> uses a maximum area to distinguish
+            doc = """<i>(Used only if training)</i> <br>
+            <b>UntangleWorms</b> uses a maximum area to distinguish
             between single worms and clumps of worms. Any blob whose area is
             less than the maximum area is considered to be a single worm
             whereas any blob whose area is greater is considered to be two
@@ -270,40 +294,52 @@ class UntangleWorms(cpm.CPModule):
             given by this setting. It then multiplies this worm's area
             by the <i>Maximum area factor</i> (see below) to get the maximum
             area""")
+        
         self.max_area_factor = cps.Float(
             "Maximum area factor", 1.0, 0,
-            doc = """The <i>Maximum area factor</i> setting is used to
+            doc = """<i>(Used only if training)</i> <br>
+            The <i>Maximum area factor</i> setting is used to
             compute the maximum area as decribed above in <i>Maximum area
             percentile</i>.""")
+        
         self.min_length_percentile = cps.Float(
             "Minimum length percentile", 1, 0, 100,
-        doc = """<b>UntangleWorms</b> uses the minimum length to restrict its
-        search for worms in a clump to worms of at least the minimum length.
-        <b>UntangleWorms</b> sorts all worms by length and picks the worm
-        at the percentile indicated by this setting. It then multiplies the
-        length of this worm by the <i>Mininmum length factor</i> (see below)
-        to get the minimum length.""")
+            doc = """<i>(Used only if training)</i> <br>
+            <b>UntangleWorms</b> uses the minimum length to restrict its
+            search for worms in a clump to worms of at least the minimum length.
+            <b>UntangleWorms</b> sorts all worms by length and picks the worm
+            at the percentile indicated by this setting. It then multiplies the
+            length of this worm by the <i>Mininmum length factor</i> (see below)
+            to get the minimum length.""")
+        
         self.min_length_factor = cps.Float(
             "Minimum length factor", 0.9, 0,
-            doc = """<b>UntangleWorms</b> uses the <i>Minimum length factor</i>
+            doc = """<i>(Used only if training)</i> <br>
+            <b>UntangleWorms</b> uses the <i>Minimum length factor</i>
             to compute the minimum length from the training set as described
             in the documentation above for <i>Minimum length percentile</i>""")
+        
         self.max_length_percentile = cps.Float(
             "Maximum length percentile", 99, 0, 100,
-            doc = """<b>UntangleWorms</b> uses the maximum length to restrict
+            doc = """<i>(Used only if training)</i> <br>
+            <b>UntangleWorms</b> uses the maximum length to restrict
             its search for worms in a clump to worms of at least the maximum
             length. It computes this length by sorting all of the training
             worms by length. It then selects the worm at the <i>Maximum
             length percentile</i> and multiplies that worm's length by
             the <i>Maximum length factor</i> to get the maximum length""")
+        
         self.max_length_factor = cps.Float(
             "Maximum length factor", 1.1, 0,
-            doc = """<b>UntangleWorms</b> uses this setting to compute the
+            doc = """<i>(Used only if training)</i> <br>
+            <b>UntangleWorms</b> uses this setting to compute the
             maximum length as described in <i>Maximum length percentile</i>
             above""")
+        
         self.max_cost_percentile = cps.Float(
             "Maximum cost percentile", 90, 0, 100,
-            doc = """<b>UntangleWorms</b> computes a shape-based cost for
+            doc = """<i>(Used only if training)</i> <br>
+            <b>UntangleWorms</b> computes a shape-based cost for
             each worm it considers. It will restrict the allowed cost to
             less than the cost threshold. During training, <b>UntangleWorms</b>
             computes the shape cost of every worm in the training set. It
@@ -311,25 +347,33 @@ class UntangleWorms(cpm.CPModule):
             to pick the worm at the given percentile. It them multiplies
             this worm's cost by the <i>Maximum cost factor</i> to compute
             the cost threshold.""")
+        
         self.max_cost_factor = cps.Float(
             "Maximum cost factor", 1.2, 0,
-            doc = """<b>UntangleWorms</b> uses this setting to compute the
+            doc = """<i>(Used only if training)</i> <br>
+            <b>UntangleWorms</b> uses this setting to compute the
             cost threshold as described in <i>Maximum cost percentile</i> 
             above.""")
+        
         self.num_control_points = cps.Integer(
-            "# of control points", 21, 3, 50,
-            doc = """This setting controls the number of control points that
+            "Number of control points", 21, 3, 50,
+            doc = """<i>(Used only if training)</i> <br>
+            This setting controls the number of control points that
             will be sampled when constructing a worm shape from its skeleton.""")
+        
         self.max_radius_percentile = cps.Float(
             "Maximum radius percentile", 90, 0, 100,
-            doc = """<b>UntangleWorms<b> uses the maximum worm radius during
+            doc = """<i>(Used only if training)</i> <br>
+            <b>UntangleWorms<b> uses the maximum worm radius during
             worm skeletonization. <b>UntangleWorms</b> sorts the radii of
             worms in increasing size and selects the worm at this percentile.
             It then multiplies this worm's radius by the <i>Maximum radius
             factor</i> (see below) to compute the maximum radius.""")
+        
         self.max_radius_factor = cps.Float(
             "Maximum radius factor", 1, 0,
-            doc="""<b>UntangleWorms</b> uses this setting to compute the
+            doc="""<i>(Used only if training)</i> <br>
+            <b>UntangleWorms</b> uses this setting to compute the
             maximum radius as described in <i>Maximum radius percentile</i>
             above.""")
         
@@ -345,6 +389,24 @@ class UntangleWorms(cpm.CPModule):
                 self.wants_nonoverlapping_outlines,
                 self.nonoverlapping_outlines_name,
                 self.mode, self.min_area_percentile, self.min_area_factor,
+                self.max_area_percentile, self.max_area_factor,
+                self.min_length_percentile, self.min_length_factor,
+                self.max_length_percentile, self.max_length_factor,
+                self.max_cost_percentile, self.max_cost_factor,
+                self.num_control_points, self.max_radius_percentile,
+                self.max_radius_factor]
+    
+    def help_settings(self):
+        return [self.mode, self.image_name, self.overlap, self.overlap_objects,
+                self.nonoverlapping_objects, self.training_set_directory,
+                self.training_set_file_name, self.wants_training_set_weights,
+                self.override_overlap_weight, self.override_leftover_weight,
+                self.wants_overlapping_outlines, 
+                self.overlapping_outlines_colormap, 
+                self.overlapping_outlines_name, 
+                self.wants_nonoverlapping_outlines,
+                self.nonoverlapping_outlines_name,
+                self.min_area_percentile, self.min_area_factor,
                 self.max_area_percentile, self.max_area_factor,
                 self.min_length_percentile, self.min_length_factor,
                 self.max_length_percentile, self.max_length_factor,

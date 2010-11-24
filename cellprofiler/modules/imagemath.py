@@ -545,6 +545,5 @@ class ImageMath(cpm.CPModule):
             new_setting_values = setting_values
             new_setting_values.insert(6, 'No')
             setting_values = new_setting_values
-            print setting_values
             variable_revision_number = 3
         return setting_values, variable_revision_number, from_matlab

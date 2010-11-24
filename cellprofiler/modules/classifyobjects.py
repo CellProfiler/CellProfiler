@@ -23,10 +23,20 @@ measurement per object, based on the object's class.</p>
 
 <h4>Available measurements</h4>
 <ul>
+<li><i>Image features:</i>
+<ul>
+<li><i>NumObjectsPerBin:</i> The number of objects that are classified into each bin.
+<li><i>PctObjectsPerBin:</i> The percentage of total objects that are classified into each bin.
+</ul>
+</li>
+<li><i>Object features:</i>
+<ul>
 <li>Single measurement: Classification (true/false) of the N<sup>th</sup> bin for the M<sup>th</sup> measurement.
 </li>
 <li>Two measurement: Classification of the 1<sup>st</sup> measurement versus the 2<sup>nd</sup> measurement 
 binned into bins above ("high") and below ("low") the cutoff.</li>
+</ul>
+</li>
 </ul>
 
 See also <b>CalculateMath</b> and any of the modules in the <b>Measure</b> category.

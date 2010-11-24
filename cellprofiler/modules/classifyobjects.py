@@ -63,6 +63,8 @@ BC_EVEN = "Evenly spaced bins"
 BC_CUSTOM = "Custom-defined bins"
 
 M_CATEGORY = "Classify"
+F_PCT_PER_BIN = 'PctObjectsPerBin'
+F_NUM_PER_BIN = 'NumObjectsPerBin'
 
 class ClassifyObjects(cpm.CPModule):
     category = "Object Processing"
@@ -508,6 +510,7 @@ class ClassifyObjects(cpm.CPModule):
                                  threshold_method.value)
             in_high_class.append(values >= t)
         feature_names = self.get_feature_name_matrix()
+        num_values = len(values)
         for i in range(2):
             for j in range(2):
                 in_class = ((in_high_class[0].astype(int) == i) &
@@ -515,6 +518,13 @@ class ClassifyObjects(cpm.CPModule):
                 measurements.add_measurement(self.object_name.value,
                                              "_".join((M_CATEGORY, feature_names[i,j])),
                                              in_class.astype(int))
+                num_hits = in_class.sum()
+                measurement_name = '_'.join((M_CATEGORY, feature_names[i,j],F_NUM_PER_BIN))
+                measurements.add_measurement(cpmeas.IMAGE, measurement_name,
+                                             num_hits)
+                measurement_name = '_'.join((M_CATEGORY, feature_names[i,j],F_PCT_PER_BIN))
+                measurements.add_measurement(cpmeas.IMAGE, measurement_name,
+                                         100.0*float(num_hits)/num_values if num_values > 0 else 0)
 
         objects = workspace.object_set.get_objects(self.object_name.value)
         if self.wants_image:
@@ -554,7 +564,13 @@ class ClassifyObjects(cpm.CPModule):
         axes = figure.subplot(1,1)
         axes.hist(object_codes[1:],bins=4, range=(.5,4.5))
         axes.set_xticks((1,2,3,4))
-        axes.set_xticklabels(("low\nlow","high\nlow","low\nhigh","high\nhigh"))
+        if self.wants_custom_names:
+            axes.set_xticklabels((self.low_low_custom_name.value,
+                                  self.high_low_custom_name.value,
+                                  self.low_high_custom_name.value,
+                                  self.high_high_custom_name.value))
+        else:
+            axes.set_xticklabels(("low\nlow","high\nlow","low\nhigh","high\nhigh"))
         axes.set_ylabel("# of %s"%object_name)
         colors = self.get_colors(len(axes.patches))
         #
@@ -593,10 +609,18 @@ class ClassifyObjects(cpm.CPModule):
         ob_idx,th_idx = np.mgrid[0:len(values),0:len(thresholds)-1]
         bin_hits = ((values[ob_idx] > thresholds[th_idx]) &
                     (values[ob_idx] <= thresholds[th_idx+1]))
+        num_values = len(values)
         for bin_idx, feature_name in enumerate(group.bin_feature_names()):
             measurement_name = '_'.join((M_CATEGORY, feature_name))
             measurements.add_measurement(object_name, measurement_name,
                                          bin_hits[:,bin_idx])
+            measurement_name = '_'.join((M_CATEGORY, feature_name,F_NUM_PER_BIN))
+            num_hits = bin_hits[:,bin_idx].sum()
+            measurements.add_measurement(cpmeas.IMAGE, measurement_name,
+                                         num_hits)
+            measurement_name = '_'.join((M_CATEGORY, feature_name,F_PCT_PER_BIN))
+            measurements.add_measurement(cpmeas.IMAGE, measurement_name,
+                                         100.0*float(num_hits)/num_values if num_values > 0 else 0)
         if group.wants_images or (workspace.frame is not None):
             colors = self.get_colors(bin_hits.shape[1])
             object_bins = np.sum(bin_hits * th_idx,1)+1
@@ -819,12 +843,28 @@ class ClassifyObjects(cpm.CPModule):
         columns = []
         if self.contrast_choice == BY_SINGLE_MEASUREMENT:
             for group in self.single_measurements:
+                columns += [(cpmeas.IMAGE, 
+                                '_'.join((M_CATEGORY,feature_name,F_NUM_PER_BIN)),
+                                cpmeas.COLTYPE_INTEGER)
+                            for feature_name in group.bin_feature_names()]
+                columns += [(cpmeas.IMAGE, 
+                                '_'.join((M_CATEGORY,feature_name,F_PCT_PER_BIN)),
+                                cpmeas.COLTYPE_FLOAT)
+                            for feature_name in group.bin_feature_names()]
                 columns += [(group.object_name.value,
                              '_'.join((M_CATEGORY,feature_name)),
                              cpmeas.COLTYPE_INTEGER)
                             for feature_name in group.bin_feature_names()]
         else:
             names = self.get_feature_name_matrix()
+            columns += [(cpmeas.IMAGE, 
+                        '_'.join((M_CATEGORY, name,F_NUM_PER_BIN)),
+                        cpmeas.COLTYPE_INTEGER)
+                        for name in names.flatten()]
+            columns += [(cpmeas.IMAGE, 
+                        '_'.join((M_CATEGORY, name,F_PCT_PER_BIN)),
+                        cpmeas.COLTYPE_FLOAT)
+                        for name in names.flatten()]
             columns += [(self.object_name.value,
                          '_'.join((M_CATEGORY, name)),
                          cpmeas.COLTYPE_INTEGER)
@@ -836,7 +876,8 @@ class ClassifyObjects(cpm.CPModule):
         
         object_name - return measurements made on this object (or 'Image' for image measurements)
         """
-        if ((self.contrast_choice == BY_SINGLE_MEASUREMENT and
+        if ((object_name == cpmeas.IMAGE) or 
+            (self.contrast_choice == BY_SINGLE_MEASUREMENT and
              object_name in [group.object_name.value 
                              for group in self.single_measurements]) or
             (self.contrast_choice == BY_TWO_MEASUREMENTS and
@@ -857,9 +898,19 @@ class ClassifyObjects(cpm.CPModule):
             result = []
             for group in self.single_measurements:
                 if group.object_name == object_name:
-                    result += group.bin_feature_names()
-            return result
-        elif (self.contrast_choice == BY_TWO_MEASUREMENTS and
-              self.object_name == object_name):
-            return self.get_feature_name_matrix().flatten().tolist()
+                    return group.bin_feature_names()
+                elif object_name == cpmeas.IMAGE:
+                    for image_features in (F_NUM_PER_BIN,F_PCT_PER_BIN):
+                        for bin_feature_names in group.bin_feature_names():
+                            result += ['_'.join((bin_feature_names,image_features))]
+                    return result
+        elif self.contrast_choice == BY_TWO_MEASUREMENTS:
+            if self.object_name == object_name:
+                return self.get_feature_name_matrix().flatten().tolist()
+            elif object_name == cpmeas.IMAGE:
+                result = []
+                for image_features in (F_NUM_PER_BIN,F_PCT_PER_BIN):
+                    for bin_feature_names in self.get_feature_name_matrix().flatten().tolist():
+                        result += ['_'.join((bin_feature_names,image_features))]
+                return result
         return []

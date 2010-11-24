@@ -355,15 +355,26 @@ class TestClassifyObjects(unittest.TestCase):
         module.single_measurements[0].wants_high_bin.value = True
         module.single_measurements[0].wants_images.value = True
         
-        expected = dict(Classify_Measurement1_Bin_1 = (0,1,0,1),
+        expected_obj = dict(Classify_Measurement1_Bin_1 = (0,1,0,1),
                         Classify_Measurement1_Bin_2 = (1,0,0,0),
                         Classify_Measurement1_Bin_3 = (0,0,1,0))
+        expected_img = dict(Classify_Measurement1_Bin_1_NumObjectsPerBin = 2,
+                        Classify_Measurement1_Bin_2_NumObjectsPerBin = 1,
+                        Classify_Measurement1_Bin_3_NumObjectsPerBin = 1,
+                        Classify_Measurement1_Bin_1_PctObjectsPerBin = 50.0,
+                        Classify_Measurement1_Bin_2_PctObjectsPerBin = 25.0,
+                        Classify_Measurement1_Bin_3_PctObjectsPerBin = 25.0)
         module.run(workspace)
-        for measurement, expected_values in expected.iteritems():
+        for measurement, expected_values in expected_obj.iteritems():
             values = workspace.measurements.get_current_measurement(OBJECTS_NAME,
                                                                     measurement)
             self.assertEqual(len(values), 4)
             self.assertTrue(np.all(values == np.array(expected_values)))
+        for measurement, expected_values in expected_img.iteritems():
+            values = workspace.measurements.get_current_measurement(cpmeas.IMAGE,
+                                                                    measurement)
+            self.assertTrue(values == expected_values)
+        
         image = workspace.image_set.get_image(IMAGE_NAME)
         pixel_data = image.pixel_data
         self.assertTrue(np.all(pixel_data[labels==0,:] == 0))
@@ -372,15 +383,23 @@ class TestClassifyObjects(unittest.TestCase):
             self.assertTrue(np.all(pixel_data[labels==i+1,:] == color))
             
         columns = module.get_measurement_columns(None)
-        self.assertEqual(len(columns), 3)
-        self.assertEqual(len(set([column[1] for column in columns])), 3) # no duplicates
+        self.assertEqual(len(columns), 9)
+        self.assertEqual(len(set([column[1] for column in columns])), 9) # no duplicates
         for column in columns:
-            self.assertEqual(column[0], OBJECTS_NAME)
-            self.assertTrue(column[1] in expected.keys())
-            self.assertTrue(column[2] == cpmeas.COLTYPE_INTEGER)
+            if column[0] != OBJECTS_NAME: # Must be image
+                self.assertEqual(column[0], cpmeas.IMAGE)
+                self.assertTrue(column[1] in expected_img.keys())
+                self.assertTrue(column[2] == cpmeas.COLTYPE_INTEGER if column[1].endswith(C.F_NUM_PER_BIN) else cpmeas.COLTYPE_FLOAT)
+            else:
+                self.assertEqual(column[0], OBJECTS_NAME)
+                self.assertTrue(column[1] in expected_obj.keys())
+                self.assertTrue(column[2] == cpmeas.COLTYPE_INTEGER)
             
         categories = module.get_categories(None, cpmeas.IMAGE)
-        self.assertEqual(len(categories), 0)
+        self.assertEqual(len(categories), 1)
+        self.assertEqual(categories[0], C.M_CATEGORY)
+        names = module.get_measurements(None, cpmeas.IMAGE, "foo")
+        self.assertEqual(len(names), 0)
         categories = module.get_categories(None, OBJECTS_NAME)
         self.assertEqual(len(categories), 1)
         self.assertEqual(categories[0], C.M_CATEGORY)
@@ -391,7 +410,12 @@ class TestClassifyObjects(unittest.TestCase):
         names = module.get_measurements(None, OBJECTS_NAME, C.M_CATEGORY)
         self.assertEqual(len(names), 3)
         self.assertEqual(len(set(names)), 3)
-        self.assertTrue(all(['_'.join((C.M_CATEGORY, name)) in expected.keys()
+        self.assertTrue(all(['_'.join((C.M_CATEGORY, name)) in expected_obj.keys()
+                             for name in names]))
+        names = module.get_measurements(None, cpmeas.IMAGE, C.M_CATEGORY)
+        self.assertEqual(len(names), 6)
+        self.assertEqual(len(set(names)), 6)
+        self.assertTrue(all(['_'.join((C.M_CATEGORY, name)) in expected_img.keys()
                              for name in names]))
         
     def test_02_03_classify_single_custom(self):
@@ -412,15 +436,25 @@ class TestClassifyObjects(unittest.TestCase):
         module.single_measurements[0].bin_names.value = "Three,Blind,Mice"
         module.single_measurements[0].wants_images.value = True
         
-        expected = dict(Classify_Three = (0,1,0,1),
+        expected_img = dict(Classify_Three_NumObjectsPerBin = 2,
+                            Classify_Three_PctObjectsPerBin = 50.0,
+                            Classify_Blind_NumObjectsPerBin = 1,
+                            Classify_Blind_PctObjectsPerBin = 25.0,
+                            Classify_Mice_NumObjectsPerBin = 1,
+                            Classify_Mice_PctObjectsPerBin = 25.0)
+        expected_obj = dict(Classify_Three = (0,1,0,1),
                         Classify_Blind = (1,0,0,0),
                         Classify_Mice = (0,0,1,0))
         module.run(workspace)
-        for measurement, expected_values in expected.iteritems():
+        for measurement, expected_values in expected_obj.iteritems():
             values = workspace.measurements.get_current_measurement(OBJECTS_NAME,
                                                                     measurement)
             self.assertEqual(len(values), 4)
             self.assertTrue(np.all(values == np.array(expected_values)))
+        for measurement, expected_values in expected_img.iteritems():
+            values = workspace.measurements.get_current_measurement(cpmeas.IMAGE,
+                                                                    measurement)
+            self.assertTrue(values == expected_values)
         image = workspace.image_set.get_image(IMAGE_NAME)
         pixel_data = image.pixel_data
         self.assertTrue(np.all(pixel_data[labels==0,:] == 0))
@@ -429,15 +463,20 @@ class TestClassifyObjects(unittest.TestCase):
             self.assertTrue(np.all(pixel_data[labels==i+1,:] == color))
             
         columns = module.get_measurement_columns(None)
-        self.assertEqual(len(columns), 3)
-        self.assertEqual(len(set([column[1] for column in columns])), 3) # no duplicates
+        self.assertEqual(len(columns), 9)
+        self.assertEqual(len(set([column[1] for column in columns])), 9) # no duplicates
         for column in columns:
-            self.assertEqual(column[0], OBJECTS_NAME)
-            self.assertTrue(column[1] in expected.keys())
-            self.assertTrue(column[2] == cpmeas.COLTYPE_INTEGER)
+            if column[0] != OBJECTS_NAME: # Must be image
+                self.assertEqual(column[0], cpmeas.IMAGE)
+                self.assertTrue(column[1] in expected_img.keys())
+                self.assertTrue(column[2] == cpmeas.COLTYPE_INTEGER if column[1].endswith(C.F_NUM_PER_BIN) else cpmeas.COLTYPE_FLOAT)
+            else:
+                self.assertEqual(column[0], OBJECTS_NAME)
+                self.assertTrue(column[1] in expected_obj.keys())
+                self.assertTrue(column[2] == cpmeas.COLTYPE_INTEGER)
             
         categories = module.get_categories(None, cpmeas.IMAGE)
-        self.assertEqual(len(categories), 0)
+        self.assertEqual(len(categories), 1)
         categories = module.get_categories(None, OBJECTS_NAME)
         self.assertEqual(len(categories), 1)
         self.assertEqual(categories[0], C.M_CATEGORY)
@@ -448,7 +487,12 @@ class TestClassifyObjects(unittest.TestCase):
         names = module.get_measurements(None, OBJECTS_NAME, C.M_CATEGORY)
         self.assertEqual(len(names), 3)
         self.assertEqual(len(set(names)), 3)
-        self.assertTrue(all(['_'.join((C.M_CATEGORY, name)) in expected.keys()
+        self.assertTrue(all(['_'.join((C.M_CATEGORY, name)) in expected_obj.keys()
+                             for name in names]))
+        names = module.get_measurements(None, cpmeas.IMAGE, C.M_CATEGORY)
+        self.assertEqual(len(names), 6)
+        self.assertEqual(len(set(names)), 6)
+        self.assertTrue(all(['_'.join((C.M_CATEGORY, name)) in expected_img.keys()
                              for name in names]))
         
     def test_03_01_two_none(self):
@@ -473,6 +517,7 @@ class TestClassifyObjects(unittest.TestCase):
             for j_min, j_max in ((2,6),(8,11),(13,18)):
                 labels[i_min:i_max,j_min:j_max] = index
                 index += 1
+        num_labels = index-1
         exps = np.exp(np.arange(np.max(labels)))
         m1 = np.random.permutation(exps)
         m2 = np.random.permutation(exps)
@@ -517,13 +562,18 @@ class TestClassifyObjects(unittest.TestCase):
                     module.run(workspace)
                     columns = module.get_measurement_columns(None)
                     for column in columns:
-                        self.assertEqual(column[0], OBJECTS_NAME)
-                        self.assertTrue(column[2] == cpmeas.COLTYPE_INTEGER)
-                    self.assertEqual(len(columns), 4)
-                    self.assertEqual(len(set([column[1] for column in columns])), 4) # no duplicates
+                        if column[0] != OBJECTS_NAME: # Must be image
+                            self.assertEqual(column[0], cpmeas.IMAGE)
+                            self.assertTrue(column[2] == cpmeas.COLTYPE_INTEGER if column[1].endswith(C.F_NUM_PER_BIN) else cpmeas.COLTYPE_FLOAT)
+                        else:
+                            self.assertEqual(column[0], OBJECTS_NAME)
+                            self.assertTrue(column[2] == cpmeas.COLTYPE_INTEGER)
+                
+                    self.assertEqual(len(columns), 12)
+                    self.assertEqual(len(set([column[1] for column in columns])), 12) # no duplicates
                     
                     categories = module.get_categories(None, cpmeas.IMAGE)
-                    self.assertEqual(len(categories), 0)
+                    self.assertEqual(len(categories), 1)
                     categories = module.get_categories(None, OBJECTS_NAME)
                     self.assertEqual(len(categories), 1)
                     self.assertEqual(categories[0], C.M_CATEGORY)
@@ -539,6 +589,12 @@ class TestClassifyObjects(unittest.TestCase):
                                                  (~m1_over) & m2_over,
                                                  m1_over & ~m2_over,
                                                  m1_over & m2_over)):
+                        m = workspace.measurements.get_current_measurement(cpmeas.IMAGE,
+                                                                           '_'.join((m_name,C.F_NUM_PER_BIN)))
+                        self.assertTrue(m==expected.astype(int).sum())
+                        m = workspace.measurements.get_current_measurement(cpmeas.IMAGE,
+                                                                           '_'.join((m_name,C.F_PCT_PER_BIN)))
+                        self.assertTrue(m==100.0*float(expected.astype(int).sum())/num_labels)
                         m = workspace.measurements.get_current_measurement(OBJECTS_NAME,
                                                                            m_name)
                         self.assertTrue(np.all(m==expected.astype(int)))

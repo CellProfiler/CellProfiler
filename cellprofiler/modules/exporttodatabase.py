@@ -1465,7 +1465,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
         image_filename = self.make_full_filename('%s_%s.CSV'%(self.base_name(workspace),cpmeas.IMAGE),workspace)
         fid_per_image = open(image_filename,"wb")
         columns = self.get_pipeline_measurement_columns(pipeline, 
-                                                        image_set_list)
+                                                        image_set_list, remove_postgroup_key = True)
         agg_columns = self.get_aggregate_columns(pipeline, image_set_list)
         for i in range(measurements.image_set_index+1):
             image_row = []
@@ -2092,7 +2092,7 @@ check_tables = yes
         return self.get_table_prefix()+'Per_'+object_name
 
     
-    def get_pipeline_measurement_columns(self, pipeline, image_set_list):
+    def get_pipeline_measurement_columns(self, pipeline, image_set_list, remove_postgroup_key = False):
         '''Get the measurement columns for this pipeline, possibly cached'''
         d = self.get_dictionary(image_set_list)
         if not d.has_key(D_MEASUREMENT_COLUMNS):
@@ -2118,6 +2118,8 @@ check_tables = yes
                     return 1
                 return cmp(x[1], y[1])
             d[D_MEASUREMENT_COLUMNS].sort(cmp=cmpfn)
+        if remove_postgroup_key:
+            d[D_MEASUREMENT_COLUMNS] = [x[:3] for x in d[D_MEASUREMENT_COLUMNS]]
         return d[D_MEASUREMENT_COLUMNS]
 
     def obfuscate(self):

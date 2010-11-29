@@ -943,6 +943,8 @@ class ExportToDatabase(cpm.CPModule):
         if not self.prepare_run(workspace.pipeline, workspace.image_set_list,
                                 workspace.frame):
             return
+        self.prepare_group(workspace.pipeline,
+                           workspace.image_set_list, None, None)
         if self.db_type != DB_MYSQL_CSV:
             workspace.measurements.is_first_image = True
             #

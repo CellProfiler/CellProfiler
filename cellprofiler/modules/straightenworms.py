@@ -63,7 +63,7 @@ class StraightenWorms(cpm.CPModule):
     def create_settings(self):
         '''Create the settings for the module'''
         self.objects_name = cps.ObjectNameSubscriber(
-            'Untangled worms name?', 'OverlappingWorms',
+            'Select the input untangled worm objects', 'OverlappingWorms',
             required_attributes = { ATTR_WORM_MEASUREMENTS:True},
             doc = """This is the name of the objects produced by the
             <b>UntangleWorms</b> module. <b>StraightenWorms</b> can use
@@ -72,13 +72,13 @@ class StraightenWorms(cpm.CPModule):
             to reconstruct the straight worms.""")
         
         self.straightened_objects_name = cps.ObjectNameProvider(
-            "Straightened worms name?", "StraightenedWorms",
+            "Name the output straightened worm objects", "StraightenedWorms",
             doc = """This is the name that will be given to the straightened
             worm objects. These objects can then be used in a subsequent
             measurement module""")
         
         self.width = cps.Integer(
-            "Worm width:", 20, minval = 3,
+            "Worm width", 20, minval = 3,
             doc = """This setting determines the width of the image of each
             worm. The width should be set to at least the maximum width of
             any untangled worm, but can be set to be larger to include the
@@ -121,7 +121,7 @@ class StraightenWorms(cpm.CPModule):
         self.add_image(False)
         
         self.add_image_button = cps.DoSomething(
-            "Add another image", "Add image", self.add_image,
+            "", "Add another image", self.add_image,
             doc = """Press this button to add another image to be straightened""")
         
     def add_image(self, can_delete = True):
@@ -130,18 +130,18 @@ class StraightenWorms(cpm.CPModule):
         group = cps.SettingsGroup()
         group.append("divider", cps.Divider())
         group.append("image_name", cps.ImageNameSubscriber(
-            'Image name', 'None',
+            'Select an input image to straighten', 'None',
             doc = '''This is the name of an image that will be straightened
             similarly to the worm. The straightened image and objects can
             then be used in subsequent modules such as
             <b>MeasureObjectIntensity</b>'''))
         group.append("straightened_image_name", cps.ImageNameProvider(
-            'Straightened image name', 'StraightenedImage',
+            'Name the output straightened image', 'StraightenedImage',
             doc = '''This is the name that will be given to the image
             of the straightened worms.'''))
         if can_delete:
             group.append("remover", cps.RemoveSettingButton(
-                "", "Remove this image", self.images, group))
+                "", "Remove above image", self.images, group))
         self.images.append(group)
         
     def settings(self):

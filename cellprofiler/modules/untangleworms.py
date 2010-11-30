@@ -131,7 +131,7 @@ class UntangleWorms(cpm.CPModule):
             %(USING_METADATA_GROUPING_HELP_REF)s""" % globals())
         
         self.image_name = cps.ImageNameSubscriber(
-            "Select the binary image", "None",
+            "Select the input binary image", "None",
             doc = """A binary image where the foreground indicates the worm
             shapes. The binary image can be produced by the <b>ApplyThreshold</b>
             module.""")
@@ -152,7 +152,7 @@ class UntangleWorms(cpm.CPModule):
             globals())
         
         self.overlap_objects = cps.ObjectNameProvider(
-            "Name the overlapping worm objects", "OverlappingWorms",
+            "Name the output overlapping worm objects", "OverlappingWorms",
             provided_attributes = { ATTR_WORM_MEASUREMENTS:True },
             doc = """<i>(Used only if untangling and overlap style is "Both" or "With overlap")</i> <br>
             This setting names the objects representing the overlapping
@@ -185,7 +185,7 @@ class UntangleWorms(cpm.CPModule):
             the <b>OverlayOutlines</b> module""")
         
         self.nonoverlapping_objects = cps.ObjectNameProvider(
-            "Name the non-overlapping worm objects", "NonOverlappingWorms",
+            "Name the output non-overlapping worm objects", "NonOverlappingWorms",
             provided_attributes = { ATTR_WORM_MEASUREMENTS:True },
             doc = """<i>(Used only if untangling and overlap style is "Both" or "Without overlap")</i> <br>
             This setting names the objects representing the worms,

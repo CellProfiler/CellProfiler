@@ -735,8 +735,12 @@ class UntangleWorms(cpm.CPModule):
             object_set.add_objects(o, name)
             I.add_object_count_measurements(measurements, name, o.count)
             
-            center_x = np.bincount(ijv[:, 2], ijv[:, 1])[o.indices] / o.areas
-            center_y = np.bincount(ijv[:, 2], ijv[:, 0])[o.indices] / o.areas
+            if o.count == 0:
+                center_x = np.zeros(0)
+                center_y = np.zeros(0)
+            else:
+                center_x = np.bincount(ijv[:, 2], ijv[:, 1])[o.indices] / o.areas
+                center_y = np.bincount(ijv[:, 2], ijv[:, 0])[o.indices] / o.areas
             measurements.add_measurement(name, I.M_LOCATION_CENTER_X, center_x)
             measurements.add_measurement(name, I.M_LOCATION_CENTER_Y, center_y)
             measurements.add_measurement(name, I.M_NUMBER_OBJECT_NUMBER, o.indices)
@@ -1997,11 +2001,14 @@ class UntangleWorms(cpm.CPModule):
         * the angles for control points other than the ends
         * the coordinates of the control points
         '''
+        num_control_points = params.num_control_points
         if len(all_path_coords) == 0:
-            return np.zeros((0,3), int)
+            return (np.zeros((0,3), int), np.zeros(0), 
+                    np.zeros((0, num_control_points-2)), 
+                    np.zeros((0, num_control_points)), 
+                    np.zeros((0, num_control_points)))
         
         worm_radii = params.radii_from_training
-        num_control_points = params.num_control_points
         all_i = []
         all_j = []
         all_lengths = []

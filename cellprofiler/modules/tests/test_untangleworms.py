@@ -2214,9 +2214,9 @@ UntangleWorms:[module_num:3|svn_version:\'10598\'|variable_revision_number:1|sho
     def test_08_00_worm_descriptor_building_none(self):
         module = U.UntangleWorms()
         params = self.make_params(
-            dict(cluster_paths_selection = dict(worm_radius=5),
-                 filter = dict(num_control_points = 20)))
-        result = module.worm_descriptor_building([], params, (0,0))
+            dict(worm_radius=5,
+                 num_control_points = 20))
+        result, _, _, _, _ = module.worm_descriptor_building([], params, (0,0))
         self.assertEqual(len(result), 0)
         
     def test_08_01_worm_descriptor_building_one(self):

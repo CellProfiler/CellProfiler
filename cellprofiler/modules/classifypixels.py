@@ -116,10 +116,14 @@ class ClassifyPixels(cpm.CPModule):
         # get input image
         image = workspace.image_set.get_image(self.image_name.value, must_be_color=False) 
         
-        # TODO: workaround, need to get the real scaling factor to 
         # recover raw image domain
-        image_ = image.pixel_data * 255
-        
+        image_ = image.pixel_data * image.get_scale()
+        #
+        # Apply a rescaling that's done similarly in ilastik's dataImpex
+        #
+        image_max = np.max(image_)
+        if (image_max > 255) and (image_max < 4096):
+            image_ = image_ / 4095. * 255.0
         
         # Create ilastik dataMgr
         self.dataMgr = DataMgr()

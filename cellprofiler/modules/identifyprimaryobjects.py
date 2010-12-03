@@ -711,7 +711,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
         #
         if self.fill_holes.value:
             labeled_image = fill_labeled_holes(labeled_image)
-        labeled_image,object_count,maxima_suppression_size = \
+        labeled_image,object_count,maxima_suppression_size,LoG_threshold,LoG_filter_diameter = \
             self.separate_neighboring_objects(img, mask, 
                                               labeled_image,
                                               object_count,
@@ -774,6 +774,11 @@ class IdentifyPrimaryObjects(cpmi.Identify):
                                    "%.1f %%"%(100.0*float(object_area)/
                                               float(total_area))])
                 if self.unclump_method != UN_NONE:
+                    if self.unclump_method == UN_LOG:
+                        statistics.append(["LoG threshold",
+                                   "%.1f"%(LoG_threshold)])
+                        statistics.append(["LoG filter diameter",
+                                   "%.1f"%(LoG_filter_diameter)])
                     statistics.append(["Smoothing filter size",
                                    "%.1f"%(self.calc_smoothing_filter_size())])
                     statistics.append(["Maxima suppression size",
@@ -889,11 +894,13 @@ class IdentifyPrimaryObjects(cpmi.Identify):
         labeled_image - image labeled by scipy.ndimage.label
         object_count  - # of objects in image
         
-        returns revised labeled_image, object count and maxima_suppression_size
+        returns revised labeled_image, object count, maxima_suppression_size, LoG threshold and filter diameter
         """
         if self.unclump_method == UN_NONE or self.watershed_method == WA_NONE:
-            return labeled_image, object_count, 7
+            return labeled_image, object_count, 7, 0.5, 5
         
+        reported_LoG_filter_diameter = 5
+        reported_LoG_threshold = 0.5
         sigma = self.calc_smoothing_filter_size() / 2.35
         blurred_image = self.smooth_image(image, mask, sigma)
         if self.low_res_maxima.value and self.size_range.min > 10:
@@ -924,6 +931,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
                             self.size_range.min * 5)/6
             else:
                 diameter = self.log_diameter.value
+            reported_LoG_filter_diameter = diameter
             sigma = float(diameter) / 2.35
             #
             # Shrink the image to save processing time
@@ -954,6 +962,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
                 log_threshold = otsu(log_image[mask], 0, 1, 256)
             else:
                 log_threshold = self.manual_log_threshold.value
+            reported_LoG_threshold = log_threshold
             log_image[log_image < log_threshold] = log_threshold
             log_image -= log_threshold
             maxima_image = self.get_maxima(log_image, labeled_image,
@@ -1023,7 +1032,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
                                              mask=labeled_image!=0)
             watershed_boundaries = -watershed_boundaries
         
-        return watershed_boundaries, object_count, reported_maxima_suppression_size
+        return watershed_boundaries, object_count, reported_maxima_suppression_size, reported_LoG_threshold, reported_LoG_filter_diameter
 
     def get_maxima(self, image, labeled_image, maxima_mask, image_resize_factor):
         if image_resize_factor < 1.0:

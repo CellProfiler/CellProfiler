@@ -143,8 +143,13 @@ class ClassifyPixels(cpm.CPModule):
         fileName = str(os.path.join(self.h5_directory.get_absolute_path(), self.classifier_file_name.value))
         
         hf = h5py.File(fileName,'r')
+        temp = hf['classifiers'].keys()
+        # If hf is not closed this leads to an error in win64 and mac os x
+        hf.close()
+        del hf
+        
         classifiers = []
-        for cid in hf['classifiers']:
+        for cid in temp:
             classifiers.append(ClassifierRandomForest.deserialize(fileName, 'classifiers/' + cid))   
         
         self.dataMgr.module["Classification"]["classificationMgr"].classifiers = classifiers 

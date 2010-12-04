@@ -198,6 +198,12 @@ class IdentifyObjectsManually(I.Identify):
         zoom_out_button = wx.Button(dialog_box, -1, "Zoom out")
         zoom_out_button.Disable()
         controls_sizer.Add(zoom_out_button, 0, wx.ALIGN_CENTER_HORIZONTAL)
+        erase_last_button = wx.Button(dialog_box, -1, "Erase last")
+        erase_last_button.Disable()
+        controls_sizer.Add(erase_last_button, 0, wx.ALIGN_CENTER_HORIZONTAL)
+        erase_all_button = wx.Button(dialog_box, -1, "Erase all")
+        erase_all_button.Disable()
+        controls_sizer.Add(erase_all_button, 0, wx.ALIGN_CENTER_HORIZONTAL)
         
         zoom_stack = []
         
@@ -221,7 +227,40 @@ class IdentifyObjectsManually(I.Identify):
                 axes.set_ylim(0, pixel_data.shape[0])
             figure.canvas.draw()
             panel.Refresh()
-        
+
+        ##################################
+        #
+        # The erase last button
+        #
+        ##################################
+        def on_erase_last(event):
+            erase_label = labels.max()
+            if erase_label > 0:
+                labels[labels == erase_label] = 0
+                labels[labels > erase_label] -= 1
+                draw()
+                if labels.max() == 0:
+                    erase_last_button.Disable()
+                    erase_all_button.Disable()
+            else:
+                erase_last_button.Disable()
+                erase_all_button.Disable()
+               
+        dialog_box.Bind(wx.EVT_BUTTON, on_erase_last, erase_last_button)
+
+        ##################################
+        #
+        # The erase all button
+        #
+        ##################################
+        def on_erase_all(event):
+            labels[labels > 0] = 0
+            draw()
+            erase_all_button.Disable()
+            erase_last_button.Disable()
+            
+        dialog_box.Bind(wx.EVT_BUTTON, on_erase_all, erase_all_button)
+
         ##################################
         #
         # The zoom-out button
@@ -278,7 +317,9 @@ class IdentifyObjectsManually(I.Identify):
             mask = fill_labeled_holes(mask)
             labels[mask != 0] = new_label
             draw()
-
+            if labels.max() > 0:
+                erase_all_button.Enable()
+                erase_last_button.Enable()
             
         ##################################
         #
@@ -305,6 +346,9 @@ class IdentifyObjectsManually(I.Identify):
                     labels[labels == erase_label] = 0
                     labels[labels > erase_label] -= 1
                 draw()
+                if labels.max() == 0:
+                    erase_all_button.Disable()
+                    erase_last_button.Disable()
             
         figure.canvas.mpl_connect('button_press_event', on_left_mouse_down)
         

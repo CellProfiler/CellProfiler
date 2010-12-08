@@ -2177,7 +2177,7 @@ class TestWeightedVariance(unittest.TestCase):
         img = np.array([[1.0/16.,1.0/8.0],[1.0/4.0,1.0/2.0]])
         threshold = 3.0/16.0
         output = T.weighted_variance(img, np.ones((2,2),bool), threshold)
-        self.assertEqual(output,.25)
+        self.assertAlmostEqual(output,.25)
     
     def test_05_mask(self):
         """Test, masking out one of the background values"""

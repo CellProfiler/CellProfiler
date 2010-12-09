@@ -180,7 +180,8 @@ if do_modify:
                                    "msvcr90.dll",
                                    "msvcm90.dll",
                                    "msvcp90.dll")])]
-    
+else:
+    opts['py2exe']['dll_excludes'] += ["msvcr90.dll", "msvcm90.dll", "msvcp90.dll"]    
 data_files += [('cellprofiler\\icons',
                ['cellprofiler\\icons\\%s'%(x) 
                 for x in os.listdir('cellprofiler\\icons')

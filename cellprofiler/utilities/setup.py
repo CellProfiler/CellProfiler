@@ -120,7 +120,8 @@ def find_javahome():
             jvm_path = os.path.join(path, "bin", jvm_folder, "jvm.dll")
             if os.path.exists(jvm_path):
                 # Problem: have seen JAVA_HOME != jvm_path cause DLL load problems
-                del os.environ["JAVA_HOME"]
+                if os.environ.has_key("JAVA_HOME"):
+                    del os.environ["JAVA_HOME"]
                 return path
     
     if os.environ.has_key('JAVA_HOME'):

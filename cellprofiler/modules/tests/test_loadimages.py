@@ -26,6 +26,7 @@ import sys
 import zlib
 from StringIO import StringIO
 import traceback
+import PIL.Image
 
 from cellprofiler.preferences import set_headless
 set_headless()
@@ -42,6 +43,7 @@ import cellprofiler.workspace as W
 from cellprofiler.modules.tests import example_images_directory
 
 IMAGE_NAME = "image"
+OBJECTS_NAME = "objects"
 
 class testLoadImages(unittest.TestCase):
     def setUp(self):
@@ -71,7 +73,7 @@ class testLoadImages(unittest.TestCase):
         x=LI.LoadImages()
     
     def test_00_01version(self):
-        self.assertEqual(LI.LoadImages().variable_revision_number, 8,
+        self.assertEqual(LI.LoadImages().variable_revision_number, 9,
                          "LoadImages' version number has changed")
     
     def test_01_01load_image_text_match(self):
@@ -280,7 +282,7 @@ LoadImages:[module_num:1|svn_version:\'8913\'|variable_revision_number:1|show_wi
         self.assertFalse(module.load_movies())
         self.assertTrue(module.text_to_exclude(), 'Do not use')
         self.assertEqual(len(module.image_name_vars()),1)
-        self.assertEqual(module.image_name_vars()[0].value,'OrigColor')
+        self.assertEqual(module.image_name_vars()[0],'OrigColor')
         self.assertEqual(module.text_to_find_vars()[0].value,'color.tif')
         self.assertFalse(module.analyze_sub_dirs())
         
@@ -295,11 +297,11 @@ LoadImages:[module_num:1|svn_version:\'8913\'|variable_revision_number:1|show_wi
         self.assertFalse(module.load_movies())
         self.assertTrue(module.text_to_exclude(), 'Do not use')
         self.assertEqual(len(module.image_name_vars()),3)
-        self.assertEqual(module.image_name_vars()[0].value,'OrigRed')
+        self.assertEqual(module.image_name_vars()[0],'OrigRed')
         self.assertEqual(module.text_to_find_vars()[0].value,'s1_w1.TIF')
-        self.assertEqual(module.image_name_vars()[1].value,'OrigGreen')
+        self.assertEqual(module.image_name_vars()[1],'OrigGreen')
         self.assertEqual(module.text_to_find_vars()[1].value,'s1_w2.TIF')
-        self.assertEqual(module.image_name_vars()[2].value,'OrigBlue')
+        self.assertEqual(module.image_name_vars()[2],'OrigBlue')
         self.assertEqual(module.text_to_find_vars()[2].value,'s1_w3.TIF')
         self.assertFalse(module.analyze_sub_dirs())
         self.assertEqual(module.location.dir_choice, 
@@ -761,6 +763,86 @@ LoadImages:[module_num:1|svn_version:\'10503\'|variable_revision_number:8|show_w
             self.assertEqual(channel.channel_number, channel_number)
             self.assertEqual(channel.image_name, image_name)
             self.assertEqual(channel.rescale.value, rescale)
+            self.assertEqual(channel.image_object_choice, LI.IO_IMAGES)
+
+    def test_03_09_load_v9(self):
+        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:1
+SVNRevision:10530
+
+LoadImages:[module_num:1|svn_version:\'10503\'|variable_revision_number:9|show_window:True|notes:\x5B\'A flex file\'\x5D]
+    File type to be loaded:tif,tiff,flex movies, zvi movies
+    File selection method:Text-Exact match
+    Number of images in each group?:3
+    Type the text that the excluded images have in common:Thumb
+    Analyze all subfolders within the selected folder?:No
+    Input image file location:Default Input Folder\x7CNone
+    Check image sets for missing or duplicate files?:Yes
+    Group images by metadata?:Yes
+    Exclude certain files?:No
+    Specify metadata fields to group by:Series,T,Z
+    Image count:1
+    Text that these images have in common (case-sensitive):.flex
+    Position of this image in each group:1
+    Extract metadata from where?:None
+    Regular expression that finds metadata in the file name:foo
+    Type the regular expression that finds metadata in the subfolder path:bar
+    Channel count:2
+    Group the movie frames?:No
+    Grouping method:Interleaved
+    Number of channels per group:2
+    Load images or objects?:Images
+    Name this loaded image:DNA
+    Name this loaded object:Nuclei
+    Channel number:1
+    Rescale image?:Yes
+    Load images or objects?:Objects
+    Name this loaded image:Protein
+    Name this loaded object:Cytoplasm
+    Channel number:3
+    Rescale image?:No
+"""
+        pipeline = cpp.Pipeline()
+        def callback(caller, event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO(data))
+        self.assertEqual(len(pipeline.modules()), 1)
+        
+        module = pipeline.modules()[0]
+        module.notes = "A flex file"
+        self.assertTrue(isinstance(module, LI.LoadImages))
+        self.assertEqual(module.file_types, LI.FF_OTHER_MOVIES)
+        self.assertEqual(module.match_method, LI.MS_EXACT_MATCH)
+        self.assertEqual(module.order_group_size, 3)
+        self.assertEqual(module.match_exclude, "Thumb")
+        self.assertFalse(module.descend_subdirectories)
+        self.assertEqual(module.location.dir_choice, LI.cps.DEFAULT_INPUT_FOLDER_NAME)
+        self.assertTrue(module.check_images)
+        self.assertTrue(module.group_by_metadata)
+        self.assertFalse(module.exclude)
+        self.assertEqual(len(module.metadata_fields.selections), 3)
+        self.assertEqual(module.metadata_fields.selections[0], LI.M_SERIES)
+        self.assertEqual(module.metadata_fields.selections[1], LI.M_T)
+        self.assertEqual(module.metadata_fields.selections[2], LI.M_Z)
+        self.assertEqual(module.image_count.value, 1)
+        self.assertEqual(len(module.images), 1)
+        image = module.images[0]
+        self.assertEqual(image.common_text, ".flex")
+        self.assertEqual(image.order_position, 1)
+        self.assertEqual(image.metadata_choice, LI.M_NONE)
+        self.assertEqual(image.file_metadata, "foo")
+        self.assertEqual(image.path_metadata, "bar")
+        self.assertEqual(image.channel_count.value, 2)
+        self.assertEqual(len(image.channels), 2)
+        for channel, choice, channel_number, image_name, object_name, rescale in (
+            (image.channels[0], LI.IO_IMAGES, 1, "DNA", "Nuclei", True),
+            (image.channels[1], LI.IO_OBJECTS, 3, "Protein", "Cytoplasm", False)):
+            self.assertEqual(channel.image_object_choice, choice)
+            self.assertEqual(channel.channel_number, channel_number)
+            self.assertEqual(channel.image_name, image_name)
+            self.assertEqual(channel.object_name, object_name)
+            self.assertEqual(channel.rescale.value, rescale)
         
     def test_04_01_load_save_and_load(self):
         data = 'TUFUTEFCIDUuMCBNQVQtZmlsZSwgUGxhdGZvcm06IFBDV0lOLCBDcmVhdGVkIG9uOiBNb24gSmFuIDA1IDExOjA2OjM5IDIwMDkgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAABSU0PAAAApwEAAHic5VTNTsJAEJ42BdEDwXjQY49eJCIXj8b4A4mCAUK8mYUudZO22/QHwafyEbj5Wu5KC8um0qV6c5LNdGZnvpn9OrtVAFhUAMpMMwU6LKWU2JqwuN3HUUQ8OyyBASeJf8HWEAUEjRw8RE6MQ1hJ6m97EzqY+6utR2rFDu4gVwxm0ondEQ7C7iRNTLafyAw7ffKOYVPSsB6ekpBQL8lP8GXvqi6NpLpVtlrGmgctg4cjwc/jr2Adb2TE14T4WrIGeBad3c7QODJdFI1fVXD2JRxuh42Xt0Z90L4T+rnMwdmTcLjdDYjdw5bSeX7q40LqowgO7+M+wNj7JQ7vp7kjLxUJp5L0c81GWaWPAymf2zfU9GhkxiFWP48qznkOjraBo0Hzj+u3cnAOJRxuE88iU2LFyDGJi+zV7VM5j76Bp0OHFuOhrshD1lzZAZqHY+Sk709VQX9o298Tkaes/Lw+s96Xb3LtgMa+ySjH/n/GK6p92P7fxLkqeq8eKLLawkWQ57mcU1dnX7WMPJV70ChYzyiQZ7DMz+Nl3vOOvJ5uiU8l9X8BnJqT/A=='
@@ -779,11 +861,11 @@ LoadImages:[module_num:1|svn_version:\'10503\'|variable_revision_number:8|show_w
         self.assertFalse(module.load_movies())
         self.assertTrue(module.text_to_exclude(), 'Do not use')
         self.assertEqual(len(module.image_name_vars()),3)
-        self.assertEqual(module.image_name_vars()[0].value,'OrigRed')
+        self.assertEqual(module.image_name_vars()[0],'OrigRed')
         self.assertEqual(module.text_to_find_vars()[0].value,'s1_w1.TIF')
-        self.assertEqual(module.image_name_vars()[1].value,'OrigGreen')
+        self.assertEqual(module.image_name_vars()[1],'OrigGreen')
         self.assertEqual(module.text_to_find_vars()[1].value,'s1_w2.TIF')
-        self.assertEqual(module.image_name_vars()[2].value,'OrigBlue')
+        self.assertEqual(module.image_name_vars()[2],'OrigBlue')
         self.assertEqual(module.text_to_find_vars()[2].value,'s1_w3.TIF')
         self.assertFalse(module.analyze_sub_dirs())
     
@@ -2104,6 +2186,95 @@ LoadImages:[module_num:1|svn_version:\'10503\'|variable_revision_number:8|show_w
                 self.assertEqual(image.pixel_data.shape[1], 640)
                 image_set_list.purge_image_set(j)
                 gc.collect()
+    
+    def make_objects_workspace(self, image, mode = "L", filename="myfile.tif"):
+        directory = tempfile.mkdtemp()
+        self.directory = directory
+        pilimage = PIL.Image.fromarray(image.astype(np.uint8), mode)
+        pilimage.save(os.path.join(directory, filename))
+        module = LI.LoadImages()
+        module.file_types.value = LI.FF_INDIVIDUAL_IMAGES
+        module.images[0].common_text.value = filename
+        module.images[0].channels[0].image_object_choice.value = LI.IO_OBJECTS
+        module.images[0].channels[0].object_name.value = OBJECTS_NAME
+        module.location.dir_choice = LI.ABSOLUTE_FOLDER_NAME
+        module.location.custom_path = directory
+        module.module_num = 1
+        pipeline = P.Pipeline()
+        pipeline.add_module(module)
+        pipeline.add_listener(self.error_callback)
+        image_set_list = I.ImageSetList()
+        module.prepare_run(pipeline, image_set_list, None)
+        module.prepare_group(pipeline, image_set_list, (), [0])
+        workspace = W.Workspace(pipeline, module, image_set_list.get_image_set(0), 
+                                cpo.ObjectSet(), measurements.Measurements(),
+                                image_set_list)
+        return workspace, module
+    
+    def test_12_01_load_empty_objects(self):
+        workspace, module = self.make_objects_workspace(np.zeros((20,30), int))
+        module.run(workspace)
+        assert isinstance(module, LI.LoadImages)
+        o = workspace.object_set.get_objects(OBJECTS_NAME)
+        self.assertTrue(np.all(o.segmented == 0))
+        columns = module.get_measurement_columns(workspace.pipeline)
+        for object_name, measurement in (
+            (measurements.IMAGE, LI.I.FF_COUNT % OBJECTS_NAME),
+            (OBJECTS_NAME, LI.I.M_LOCATION_CENTER_X),
+            (OBJECTS_NAME, LI.I.M_LOCATION_CENTER_Y),
+            (OBJECTS_NAME, LI.I.M_NUMBER_OBJECT_NUMBER)):
+            self.assertTrue(any(
+                [True for column in columns
+                 if column[0] == object_name and column[1] == measurement]))
+        m = workspace.measurements
+        assert isinstance(m, measurements.Measurements)
+        self.assertEqual(m.get_current_image_measurement(LI.I.FF_COUNT %OBJECTS_NAME), 0)
 
+    def test_12_02_load_indexed_objects(self):
+        r = np.random.RandomState()
+        r.seed(1202)
+        image = r.randint(0, 10, size=(20,30))
+        workspace, module = self.make_objects_workspace(image)
+        module.run(workspace)
+        o = workspace.object_set.get_objects(OBJECTS_NAME)
+        self.assertTrue(np.all(o.segmented == image))
+        m = workspace.measurements
+        assert isinstance(m, measurements.Measurements)
+        self.assertEqual(m.get_current_image_measurement(LI.I.FF_COUNT %OBJECTS_NAME), 9)
+        i,j = np.mgrid[0:image.shape[0], 0:image.shape[1]]
+        c = np.bincount(image.ravel())[1:].astype(float)
+        x = np.bincount(image.ravel(), j.ravel())[1:].astype(float) / c
+        y = np.bincount(image.ravel(), i.ravel())[1:].astype(float) / c
+        v = m.get_current_measurement(OBJECTS_NAME, LI.I.M_NUMBER_OBJECT_NUMBER)
+        self.assertTrue(np.all(v == np.arange(1,10)))
+        v = m.get_current_measurement(OBJECTS_NAME, LI.I.M_LOCATION_CENTER_X)
+        self.assertTrue(np.all(v == x))
+        v = m.get_current_measurement(OBJECTS_NAME, LI.I.M_LOCATION_CENTER_Y)
+        self.assertTrue(np.all(v == y))
+        
+    def test_12_03_load_sparse_objects(self):
+        r = np.random.RandomState()
+        r.seed(1203)
+        image = r.randint(0, 10, size=(20,30))
+        workspace, module = self.make_objects_workspace(image * 10)
+        module.run(workspace)
+        o = workspace.object_set.get_objects(OBJECTS_NAME)
+        self.assertTrue(np.all(o.segmented == image))
+        
+    def test_12_04_load_color_objects(self):
+        r = np.random.RandomState()
+        r.seed(1203)
+        image = r.randint(0, 10, size=(20,30))
+        colors = np.array([[0,0,0], [1, 4, 2], [1, 5, 0],
+                           [2, 0, 0], [3, 0, 0], [4, 0, 0],
+                           [5, 0, 0], [6, 0, 0], [7, 0, 0],
+                           [8, 0, 0], [9, 0, 0]])
+        cimage = colors[image]
+        workspace, module = self.make_objects_workspace(cimage,mode="RGB", 
+                                                        filename="myimage.png")
+        module.run(workspace)
+        o = workspace.object_set.get_objects(OBJECTS_NAME)
+        self.assertTrue(np.all(o.segmented == image))
+        
 if __name__=="main":
     unittest.main()

@@ -2966,9 +2966,34 @@ def find_neighbors(labels):
     v_index[0] = 0
     return (v_count, v_index, v_neighbor)
 
-def color_labels(labels):
+def distance_color_labels(labels):
+    '''Recolor a labels matrix so that adjacent labels have distant numbers
+    
+    '''
+    #
+    # Color labels so adjacent ones are most distant
+    #
+    colors = color_labels(labels, True)
+    #
+    # Order pixels by color, then label #
+    #
+    rlabels =  labels.ravel()
+    order = np.lexsort((rlabels, colors.ravel()))
+    #
+    # Construct color indices with the cumsum trick:
+    # cumsum([0,0,1,0,1]) = [0,0,1,1,2]
+    # and copy back into the color array, using the order.
+    #
+    different = np.hstack([[False], rlabels[order[1:]] != rlabels[order[:-1]]])
+    colors.ravel()[order] = np.cumsum(different)
+    return colors.astype(labels.dtype)
+
+def color_labels(labels, distance_transform = False):
     '''Color a labels matrix so that no adjacent labels have the same color
     
+    distance_transform - if true, distance transform the labels to find out
+         which objects are closest to each other.
+         
     Create a label coloring matrix which assigns a color (1-n) to each pixel
     in the labels matrix such that all pixels similarly labeled are similarly
     colored and so that no similiarly colored, 8-connected pixels have
@@ -2981,8 +3006,14 @@ def color_labels(labels):
     
     returns the color matrix
     '''
+    if distance_transform:
+        i,j = scind.distance_transform_edt(labels == 0, return_distances=False,
+                                           return_indices = True)
+        dt_labels = labels[i,j]
+    else:
+        dt_labels = labels
     # Get the neighbors for each object
-    v_count, v_index, v_neighbor = find_neighbors(labels)
+    v_count, v_index, v_neighbor = find_neighbors(dt_labels)
     # Quickly get rid of labels with no neighbors. Greedily assign
     # all of these a color of 1
     v_color = np.zeros(len(v_count)+1,int) # the color per object - zero is uncolored

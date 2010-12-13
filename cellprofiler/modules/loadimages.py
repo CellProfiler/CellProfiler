@@ -123,6 +123,12 @@ C_FILE_NAME = "FileName"
 '''The PathName measurement category'''
 C_PATH_NAME = "PathName"
 
+'''The FileName measurement category when loading objects'''
+C_OBJECTS_FILE_NAME = "ObjectsFileName"
+
+'''The PathName measurement category when loading objects'''
+C_OBJECTS_PATH_NAME = "ObjectsPathName"
+
 '''The MD5 digest measurement category'''
 C_MD5_DIGEST = "MD5Digest"
 

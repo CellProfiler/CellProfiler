@@ -35,6 +35,7 @@ import sys
 from cellprofiler.gui import get_cp_icon
 from cellprofiler.gui.help import make_help_menu, FIGURE_HELP
 import cellprofiler.preferences as cpprefs
+from cellprofiler.cpmath.cpmorphology import distance_color_labels
 
 g_use_imshow = False
 
@@ -1427,17 +1428,7 @@ def renumber_labels_for_display(labels):
     so a random numbering has more color-distance between labels than a
     straightforward one
     """
-    np.random.seed(0)
-    nlabels = np.max(labels)
-    if nlabels <= 255:
-        label_copy = labels.astype(np.uint8)
-    elif nlabels < 2**16:
-        label_copy = labels.astype(np.uint16)
-    else:
-        label_copy = labels.copy()
-    renumber = np.random.permutation(np.max(label_copy))
-    label_copy[label_copy != 0] = renumber[label_copy[label_copy!=0]-1]+1
-    return label_copy
+    return distance_color_labels(labels)
 
 def only_display_image(figure, shape):
     '''Set up a figure so that the image occupies the entire figure

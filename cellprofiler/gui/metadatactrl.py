@@ -395,7 +395,10 @@ class MetadataControl(wx.PyControl):
             text = self.get_text(i, i+1)
             ptr += len(text)
             positions.append(raw_positions[ptr] + self.padding)
-        positions.append(raw_positions[-1] + self.padding)
+        if len(raw_positions) > 0:
+            positions.append(raw_positions[-1] + self.padding)
+        else:
+            positions.append(self.padding)
         return positions
         
     def OnPaint(self, event):

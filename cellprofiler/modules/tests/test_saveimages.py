@@ -24,6 +24,7 @@ import unittest
 import tempfile
 import traceback
 import zlib
+from scipy.sparse import coo
 
 from cellprofiler.preferences import set_headless
 set_headless()
@@ -43,6 +44,7 @@ from cellprofiler.utilities.get_proper_case_filename import get_proper_case_file
 
 import cellprofiler.modules.tests as cpmt
 IMAGE_NAME = 'inputimage'
+OBJECTS_NAME = 'inputobjects'
 FILE_IMAGE_NAME = 'fileimage'
 FILE_NAME = 'filenm'
 
@@ -450,6 +452,84 @@ SaveImages:[module_num:1|svn_version:\'10244\'|variable_revision_number:6|show_w
         self.assertEqual(module.colormap, "gray")
         self.assertFalse(module.update_file_names)
         self.assertFalse(module.create_subdirectories)
+        
+    def test_00_07_load_v7(self):
+        data = """CellProfiler Pipeline: http://www.cellprofiler.org
+Version:1
+SVNRevision:10782
+
+SaveImages:[module_num:1|svn_version:\'10581\'|variable_revision_number:7|show_window:True|notes:\x5B\x5D]
+    Select the type of image to save:Objects
+    Select the image to save:None
+    Select the objects to save:Nuclei
+    Select the module display window to save:None
+    Select method for constructing file names:Single name
+    Select image name for file prefix:None
+    Enter single file name:\\g<Well>_Nuclei
+    Do you want to add a suffix to the image file name?:No
+    Text to append to the image name:Whatever
+    Select file format to use:png
+    Output file location:Default Output Folder\x7CNone
+    Image bit depth:8
+    Overwrite existing files without warning?:No
+    Select how often to save:Every cycle
+    Rescale the images? :No
+    Save as grayscale or color image?:Grayscale
+    Select colormap:Default
+    Store file and path information to the saved image?:No
+    Create subfolders in the output folder?:No
+
+SaveImages:[module_num:2|svn_version:\'10581\'|variable_revision_number:7|show_window:True|notes:\x5B\x5D]
+    Select the type of image to save:Objects
+    Select the image to save:None
+    Select the objects to save:Nuclei
+    Select the module display window to save:None
+    Select method for constructing file names:Single name
+    Select image name for file prefix:None
+    Enter single file name:\\g<Well>_Nuclei
+    Do you want to add a suffix to the image file name?:No
+    Text to append to the image name:Whatever
+    Select file format to use:png
+    Output file location:Default Output Folder\x7CNone
+    Image bit depth:8
+    Overwrite existing files without warning?:No
+    Select how often to save:Every cycle
+    Rescale the images? :No
+    Save as grayscale or color image?:Color
+    Select colormap:Default
+    Store file and path information to the saved image?:No
+    Create subfolders in the output folder?:No
+"""
+        pipeline = cpp.Pipeline()
+        def callback(caller,event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO(data))        
+        self.assertEqual(len(pipeline.modules()), 2)
+        module = pipeline.modules()[0]
+        self.assertTrue(isinstance(module, cpm_si.SaveImages))
+        self.assertEqual(module.save_image_or_figure, cpm_si.IF_OBJECTS)
+        self.assertEqual(module.objects_name, "Nuclei")
+        self.assertEqual(module.file_name_method, cpm_si.FN_SINGLE_NAME)
+        self.assertEqual(module.file_image_name, "None")
+        self.assertEqual(module.single_file_name, r"\g<Well>_Nuclei")
+        self.assertFalse(module.wants_file_name_suffix)
+        self.assertEqual(module.file_name_suffix, "Whatever")
+        self.assertEqual(module.file_format, cpm_si.FF_PNG)
+        self.assertEqual(module.pathname.dir_choice, cps.DEFAULT_OUTPUT_FOLDER_NAME)
+        self.assertEqual(module.pathname.custom_path, r"None")
+        self.assertEqual(module.bit_depth, 8)
+        self.assertFalse(module.overwrite)
+        self.assertEqual(module.when_to_save, cpm_si.WS_EVERY_CYCLE)
+        self.assertFalse(module.rescale)
+        self.assertEqual(module.gray_or_color, cpm_si.GC_GRAYSCALE)
+        self.assertEqual(module.colormap, "Default")
+        self.assertFalse(module.update_file_names)
+        self.assertFalse(module.create_subdirectories)
+
+        module = pipeline.modules()[1]
+        self.assertTrue(isinstance(module, cpm_si.SaveImages))
+        self.assertEqual(module.gray_or_color, cpm_si.GC_COLOR)
         
     def test_01_01_save_first_to_same_tif(self):
         img1_filename = os.path.join(self.new_image_directory,'img1.tif')
@@ -1132,17 +1212,27 @@ SaveImages:[module_num:1|svn_version:\'10244\'|variable_revision_number:6|show_w
             self.assertEqual(column[0], "Image")
             self.assertTrue(column[1] in ("PathName_MyImage","FileName_MyImage"))
             
-    def make_workspace(self, image, filename = None, path = None, convert=True):
+    def make_workspace(self, image, filename = None, path = None, 
+                       convert=True, save_objects=False):
         '''Make a workspace and module appropriate for running saveimages'''
-        image_set_list = cpi.ImageSetList()
-        image_set = image_set_list.get_image_set(0)
-        img = cpi.Image(image, convert=convert)
-        image_set.add(IMAGE_NAME, img)
-        
         module = cpm_si.SaveImages()
         module.module_num = 1
         module.image_name.value = IMAGE_NAME
+        module.objects_name.value = OBJECTS_NAME
         module.file_image_name.value = IMAGE_NAME
+
+        image_set_list = cpi.ImageSetList()
+        image_set = image_set_list.get_image_set(0)
+        object_set = cpo.ObjectSet()
+        if save_objects:
+            objects = cpo.Objects()
+            objects.segmented = image
+            object_set.add_objects(objects, OBJECTS_NAME)
+            module.save_image_or_figure.value = cpm_si.IF_OBJECTS
+        else:
+            img = cpi.Image(image, convert=convert)
+            image_set.add(IMAGE_NAME, img)
+            module.save_image_or_figure.value = cpm_si.IF_IMAGE
         
         m = cpm.Measurements()
         if filename is not None:
@@ -1157,7 +1247,7 @@ SaveImages:[module_num:1|svn_version:\'10244\'|variable_revision_number:6|show_w
         pipeline.add_module(module)
         
         workspace = cpw.Workspace(pipeline, module, image_set,
-                                  cpo.Objects(), m, image_set_list)
+                                  object_set, m, image_set_list)
         return workspace, module
     
     def test_04_01_save_with_image_name_and_metadata(self):
@@ -1496,9 +1586,7 @@ SaveImages:[module_num:1|svn_version:\'10244\'|variable_revision_number:6|show_w
             # Adjust settings each round and retest
             workspace, module = self.make_workspace(setting['input_image'])
 
-            module.module_num = 1
             module.save_image_or_figure.value = cpm_si.IF_IMAGE
-            module.image_name.value = IMAGE_NAME
             module.pathname.dir_choice = cps.ABSOLUTE_FOLDER_NAME
             module.pathname.custom_path = self.custom_directory
             module.file_name_method.value = cpm_si.FN_SINGLE_NAME
@@ -1525,7 +1613,7 @@ SaveImages:[module_num:1|svn_version:\'10244\'|variable_revision_number:6|show_w
                 
             im = cpm_li.load_using_bioformats(filename)
             
-            assert (np.allclose(im, expected), 
+            assertTrue (np.allclose(im, expected), 
                     'Saved image did not match original when reloaded.\n'
                     'Settings were: \n'
                     '%s\n'
@@ -1534,7 +1622,148 @@ SaveImages:[module_num:1|svn_version:\'10244\'|variable_revision_number:6|show_w
                     'Expected: \n'
                     '%s\n'
                     %(setting, im[:,0], expected[:,0]))
+            
+    def test_07_01_save_objects_grayscale8_tiff(self):
+        if BIOFORMATS_CANT_WRITE:
+            print "WARNING: Skipping test. The current version of bioformats can't be used for writing images on MacOS X."
+            try:
+                import libtiff
+            except:
+                sys.stderr.write("Failed to import libtiff.\n")
+                traceback.print_exc()
+                return
+        r = np.random.RandomState()
+        labels = r.randint(0, 10, size=(30,20))
+        workspace, module = self.make_workspace(labels, save_objects = True)
+        assert isinstance(module, cpm_si.SaveImages)
+        module.update_file_names.value = True
+        module.gray_or_color.value = cpm_si.GC_GRAYSCALE
+        module.pathname.dir_choice = cps.ABSOLUTE_FOLDER_NAME
+        module.pathname.custom_path = self.custom_directory
+        module.file_name_method.value = cpm_si.FN_SINGLE_NAME
+        module.file_format.value = cpm_si.FF_TIFF
+
+        filename = module.get_filename(workspace, make_dirs = False,
+                                       check_overwrite = False)
+        if os.path.isfile(filename):
+            os.remove(filename)
+        module.run(workspace)
+        m = workspace.measurements
+        assert isinstance(m, cpm.Measurements)
+        feature = cpm_si.C_OBJECTS_FILE_NAME + "_" + OBJECTS_NAME
+        m_filename = m.get_current_image_measurement(feature)
+        self.assertEqual(m_filename, os.path.split(filename)[1])
+        feature = cpm_si.C_OBJECTS_PATH_NAME + "_" + OBJECTS_NAME
+        m_pathname = m.get_current_image_measurement(feature)
+        self.assertEqual(m_pathname, os.path.split(filename)[0])
+        image = PILImage.open(filename)
+        im = cpm_li.load_using_bioformats(filename, rescale=False)
+        self.assertTrue(np.all(labels == im))
         
+    def test_07_02_save_objects_grayscale_16_tiff(self):
+        if BIOFORMATS_CANT_WRITE:
+            print "WARNING: Skipping test. The current version of bioformats can't be used for writing images on MacOS X."
+            try:
+                import libtiff
+            except:
+                sys.stderr.write("Failed to import libtiff.\n")
+                traceback.print_exc()
+                return
+        r = np.random.RandomState()
+        labels = r.randint(0, 300, size=(300,300))
+        workspace, module = self.make_workspace(labels, save_objects = True)
+        assert isinstance(module, cpm_si.SaveImages)
+        module.update_file_names.value = True
+        module.gray_or_color.value = cpm_si.GC_GRAYSCALE
+        module.pathname.dir_choice = cps.ABSOLUTE_FOLDER_NAME
+        module.pathname.custom_path = self.custom_directory
+        module.file_name_method.value = cpm_si.FN_SINGLE_NAME
+        module.file_format.value = cpm_si.FF_TIFF
+
+        filename = module.get_filename(workspace, make_dirs = False,
+                                       check_overwrite = False)
+        if os.path.isfile(filename):
+            os.remove(filename)
+        module.run(workspace)
+        m = workspace.measurements
+        assert isinstance(m, cpm.Measurements)
+        feature = cpm_si.C_OBJECTS_FILE_NAME + "_" + OBJECTS_NAME
+        m_filename = m.get_current_image_measurement(feature)
+        self.assertEqual(m_filename, os.path.split(filename)[1])
+        feature = cpm_si.C_OBJECTS_PATH_NAME + "_" + OBJECTS_NAME
+        m_pathname = m.get_current_image_measurement(feature)
+        self.assertEqual(m_pathname, os.path.split(filename)[0])
+        image = PILImage.open(filename)
+        im = cpm_li.load_using_bioformats(filename, rescale=False)
+        self.assertTrue(np.all(labels == im))
+        
+    def test_07_03_save_objects_grayscale_png(self):
+        r = np.random.RandomState()
+        labels = r.randint(0, 10, size=(30,20))
+        workspace, module = self.make_workspace(labels, save_objects = True)
+        assert isinstance(module, cpm_si.SaveImages)
+        module.update_file_names.value = True
+        module.gray_or_color.value = cpm_si.GC_GRAYSCALE
+        module.pathname.dir_choice = cps.ABSOLUTE_FOLDER_NAME
+        module.pathname.custom_path = self.custom_directory
+        module.file_name_method.value = cpm_si.FN_SINGLE_NAME
+        module.file_format.value = cpm_si.FF_PNG
+
+        filename = module.get_filename(workspace, make_dirs = False,
+                                       check_overwrite = False)
+        if os.path.isfile(filename):
+            os.remove(filename)
+        module.run(workspace)
+        m = workspace.measurements
+        assert isinstance(m, cpm.Measurements)
+        feature = cpm_si.C_OBJECTS_FILE_NAME + "_" + OBJECTS_NAME
+        m_filename = m.get_current_image_measurement(feature)
+        self.assertEqual(m_filename, os.path.split(filename)[1])
+        feature = cpm_si.C_OBJECTS_PATH_NAME + "_" + OBJECTS_NAME
+        m_pathname = m.get_current_image_measurement(feature)
+        self.assertEqual(m_pathname, os.path.split(filename)[0])
+        image = PILImage.open(filename)
+        im = cpm_li.load_using_bioformats(filename, rescale=False)
+        self.assertTrue(np.all(labels == im))
+        
+    def test_07_04_save_objects_color_png(self):
+        r = np.random.RandomState()
+        labels = r.randint(0, 10, size=(30,20))
+        workspace, module = self.make_workspace(labels, save_objects = True)
+        assert isinstance(module, cpm_si.SaveImages)
+        module.update_file_names.value = True
+        module.gray_or_color.value = cpm_si.GC_COLOR
+        module.pathname.dir_choice = cps.ABSOLUTE_FOLDER_NAME
+        module.pathname.custom_path = self.custom_directory
+        module.file_name_method.value = cpm_si.FN_SINGLE_NAME
+        module.file_format.value = cpm_si.FF_PNG
+
+        filename = module.get_filename(workspace, make_dirs = False,
+                                       check_overwrite = False)
+        if os.path.isfile(filename):
+            os.remove(filename)
+        module.run(workspace)
+        m = workspace.measurements
+        assert isinstance(m, cpm.Measurements)
+        feature = cpm_si.C_OBJECTS_FILE_NAME + "_" + OBJECTS_NAME
+        m_filename = m.get_current_image_measurement(feature)
+        self.assertEqual(m_filename, os.path.split(filename)[1])
+        feature = cpm_si.C_OBJECTS_PATH_NAME + "_" + OBJECTS_NAME
+        m_pathname = m.get_current_image_measurement(feature)
+        self.assertEqual(m_pathname, os.path.split(filename)[0])
+        im = cpm_li.load_using_bioformats(filename)
+        im.shape = (im.shape[0] * im.shape[1], im.shape[2])
+        order = np.lexsort(im.transpose())
+        different = np.hstack(([False], np.any(im[order[:-1],:] != im[order[1:],:], 1)))
+        indices = np.cumsum(different)
+        im = np.zeros(labels.shape, int)
+        im.ravel()[order] = indices
+        #
+        # There should be a 1-1 correspondence between label #s and indices
+        #
+        x = coo.coo_matrix((np.ones(len(indices)),
+                            (labels.ravel(), im.ravel()))).toarray()
+        self.assertEqual(np.sum(x != 0), 10)
         
 def make_array(encoded,shape,dtype=np.uint8):
     data = base64.b64decode(encoded)

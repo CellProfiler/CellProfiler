@@ -69,13 +69,16 @@ from cellprofiler.preferences import \
      IO_FOLDER_CHOICE_HELP_TEXT, IO_WITH_METADATA_HELP_TEXT
 from cellprofiler.utilities.relpath import relpath
 from cellprofiler.modules.loadimages import C_FILE_NAME, C_PATH_NAME
+from cellprofiler.modules.loadimages import C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME
+from cellprofiler.cpmath.cpmorphology import distance_color_labels
 
 IF_IMAGE       = "Image"
 IF_MASK        = "Mask"
 IF_CROPPING    = "Cropping"
 IF_FIGURE      = "Module window"
 IF_MOVIE       = "Movie"
-IF_ALL = [IF_IMAGE, IF_MASK, IF_CROPPING, IF_MOVIE, IF_FIGURE]
+IF_OBJECTS     = "Objects"
+IF_ALL = [IF_IMAGE, IF_MASK, IF_CROPPING, IF_MOVIE, IF_FIGURE, IF_OBJECTS]
 
 BIT_DEPTH_8 = "8"
 BIT_DEPTH_16 = "16"
@@ -116,10 +119,15 @@ WS_FIRST_CYCLE = "First cycle"
 WS_LAST_CYCLE  = "Last cycle"
 CM_GRAY        = "gray"
 
+GC_GRAYSCALE = "Grayscale"
+GC_COLOR = "Color"
+
+'''Offset to the directory path setting'''
+OFFSET_DIRECTORY_PATH = 10
 class SaveImages(cpm.CPModule):
 
     module_name = "SaveImages"
-    variable_revision_number = 6
+    variable_revision_number = 7
     category = "File Processing"
     
     def create_settings(self):
@@ -142,6 +150,17 @@ class SaveImages(cpm.CPModule):
                 blank, the cropping can be of a different size than the mask.</li>
                 <li><i>Movie:</i> A sequence of images can be saved as a movie file. Currently only AVIs can be written. 
                 Each image becomes a frame of the movie.</li>
+                <li><i>Objects:</i> Objects can be saved as an image. The image
+                is saved as grayscale unless you select a color map other than 
+                gray. Background pixels appear as black and
+                each object is assigned an intensity level corresponding to
+                its object number. The resulting image can be loaded as objects
+                by the <b>LoadImages</b> module. Objects are best saved as .tif
+                files. <b>SaveImages</b> will use an 8-bit .tif file if there
+                are fewer than 256 objects and will use a 16-bit .tif otherwise.
+                Results may be unpredictable if you save using .png and there
+                are more than 255 objects or if you save using one of the other
+                file formats.</li>
                 <li><i>Module display window:</i> The window associated with a module can be saved, which
                 will include all the panels and text within that window. <b>Currently, this option is not yet available.</b></li>
                 </ul>
@@ -152,6 +171,11 @@ class SaveImages(cpm.CPModule):
         self.image_name  = cps.ImageNameSubscriber("Select the image to save","None", doc = """
                 <i>(Used only if saving images, crop masks, and image croppings)</i><br>
                 What did you call the images you want to save?""")
+        
+        self.objects_name = cps.ObjectNameSubscriber(
+            "Select the objects to save", "None",
+            doc = """<i>(Used only if saving objects)</i><br>
+            This setting chooses which objects should be saved.""")
         
         self.figure_name = cps.FigureSubscriber("Select the module display window to save","None",doc="""
                 <i>(Used only if saving module display windows)</i><br>
@@ -290,6 +314,22 @@ class SaveImages(cpm.CPModule):
                 stretch the image data, which may not be desirable in some 
                 circumstances. See <b>RescaleIntensity</b> for other rescaling options.</p>""")
         
+        self.gray_or_color = cps.Choice(
+            "Save as grayscale or color image?",
+            [GC_GRAYSCALE, GC_COLOR],
+            doc = """<i>(Used only when saving objects)</i><br>
+            You can save objects as a grayscale image or as a color image.
+            <b>SaveImages</b> uses a pixel's object number as the grayscale
+            intensity in a grayscale image with background pixels being
+            colored black. It assigns different colors to different objects
+            if you choose to save as a color image. Grayscale images are more
+            suitable if you are going to load the image as objects using
+            <b>LoadImages</b> or some other program that will be used to
+            relate object measurements to the pixels in the image.<br>
+            You should save grayscale images using the .TIF or .MAT formats
+            if possible; otherwise you may have problems saving files
+            with more than 255 objects.""")
+        
         self.colormap = cps.Colormap('Select colormap', 
                                      value = CM_GRAY,
                                      doc= """
@@ -315,13 +355,14 @@ class SaveImages(cpm.CPModule):
     
     def settings(self):
         """Return the settings in the order to use when saving"""
-        return [self.save_image_or_figure, self.image_name, self.figure_name,
+        return [self.save_image_or_figure, self.image_name, 
+                self.objects_name, self.figure_name,
                 self.file_name_method, self.file_image_name,
                 self.single_file_name, self.wants_file_name_suffix, 
                 self.file_name_suffix, self.file_format,
                 self.pathname, self.bit_depth,
                 self.overwrite, self.when_to_save,
-                self.rescale, self.colormap, 
+                self.rescale, self.gray_or_color, self.colormap, 
                 self.update_file_names, self.create_subdirectories]
     
     def visible_settings(self):
@@ -329,6 +370,8 @@ class SaveImages(cpm.CPModule):
         result = [self.save_image_or_figure]
         if self.save_image_or_figure == IF_FIGURE:
             result.append(self.figure_name)
+        elif self.save_image_or_figure == IF_OBJECTS:
+            result.append(self.objects_name)
         else:
             result.append(self.image_name)
 
@@ -359,6 +402,10 @@ class SaveImages(cpm.CPModule):
             self.file_format != FF_MAT):
             result.append(self.rescale)
             result.append(self.colormap)
+        elif self.save_image_or_figure == IF_OBJECTS:
+            result.append(self.gray_or_color)
+            if self.gray_or_color == GC_COLOR:
+                result.append(self.colormap)
         result.append(self.update_file_names)
         result.append(self.create_subdirectories)
         return result
@@ -401,6 +448,8 @@ class SaveImages(cpm.CPModule):
             should_save = self.run_image(workspace)
         elif self.save_image_or_figure == IF_MOVIE:
             should_save = self.run_movie(workspace)
+        elif self.save_image_or_figure == IF_OBJECTS:
+            should_save = self.run_objects(workspace)
         else:
             raise NotImplementedError(("Saving a %s is not yet supported"%
                                        (self.save_image_or_figure)))
@@ -501,7 +550,49 @@ class SaveImages(cpm.CPModule):
             d['CURRENT_FRAME'] += 1
         finally:
             jutil.detach()
-        
+    
+    def run_objects(self, workspace):
+        objects_name = self.objects_name.value
+        objects = workspace.object_set.get_objects(objects_name)
+        filename = self.get_filename(workspace)
+        pixels = objects.segmented
+        if ((self.gray_or_color == GC_GRAYSCALE) and 
+            (self.file_format in (FF_TIF, FF_TIFF))):
+            if (objects.count > 255):
+                if has_bioformats:
+                    self.save_image_with_bioformats(workspace, pixels)
+                else:
+                    self.save_image_with_libtiff(workspace, pixels)
+                return
+        if self.file_format != FF_MAT:
+            if self.gray_or_color == GC_GRAYSCALE:
+                if objects.count > 255:
+                    sys.stderr.write(
+                        "Warning: %s has %d objects, but the file format can "
+                        "only support 255 objects. %s may not be correct\n" %
+                        (objects_name, objects.count, filename))
+                pixels = pixels.astype(np.uint8)
+                mode = "L"
+            else:
+                if self.colormap == cps.DEFAULT:
+                    colormap = cpp.get_default_colormap()
+                else:
+                    colormap = self.colormap.value
+                cm = matplotlib.cm.get_cmap(colormap)
+                
+                mapper = matplotlib.cm.ScalarMappable(cmap=cm)
+                cpixels = mapper.to_rgba(distance_color_labels(pixels), bytes=True)
+                cpixels[pixels == 0,:3] = 0
+                pixels = cpixels
+                mode = 'RGBA'
+        if self.get_file_format() == FF_MAT:
+            scipy.io.matlab.mio.savemat(filename,{"Image":pixels},format='5')
+        else:
+            pil = PILImage.fromarray(pixels,mode)
+            pil.save(filename, self.get_file_format())
+        self.save_filename_measurements(workspace)
+        workspace.display_data.wrote_image = True
+    
     def make_metadata(self, nice_name, width, height, channels, stacks, frames, 
                       bit_depth = BIT_DEPTH_8, channel_names = None):
         '''Make a Bioformats IMetadata for an image'''
@@ -555,13 +646,13 @@ class SaveImages(cpm.CPModule):
             self.save_image(workspace)
         
 
-    def save_image_with_bioformats(self, workspace):
+    def save_image_with_bioformats(self, workspace, pixels = None):
         ''' Saves using bioformats library. Currently used for saving 16-bit
         tiffs. Some code is redundant from save_image, but it's easier to 
         separate the logic completely.
         '''
         assert self.file_format in (FF_TIF, FF_TIFF)
-        assert self.save_image_or_figure == IF_IMAGE
+        assert ((self.save_image_or_figure == IF_IMAGE) or (pixels is not None))
         assert has_bioformats
         
         workspace.display_data.wrote_image = False
@@ -574,11 +665,12 @@ class SaveImages(cpm.CPModule):
             # delete it explicitly if it exists.
             os.remove(filename)
         
-        # Get the image data to be written
-        image = workspace.image_set.get_image(self.image_name.value)
-        pixels = image.pixel_data
+        if pixels is None:
+            # Get the image data to be written
+            image = workspace.image_set.get_image(self.image_name.value)
+            pixels = image.pixel_data
         
-        if self.rescale.value:
+        if (self.rescale.value and (self.save_image_or_figure != IF_OBJECTS)):
             # Normalize intensities for each channel
             pixels = pixels.astype(np.float32)
             if pixels.ndim == 3:
@@ -677,7 +769,7 @@ class SaveImages(cpm.CPModule):
         finally:
             jutil.detach()
                         
-    def save_image_with_libtiff(self, workspace):
+    def save_image_with_libtiff(self, workspace, pixels = None):
         ''' Saves using libtiff.
         '''
         assert self.file_format in (FF_TIF, FF_TIFF)
@@ -692,11 +784,12 @@ class SaveImages(cpm.CPModule):
             # delete it explicitly if it exists.
             os.remove(filename)
         
-        # Get the image data to be written
-        image = workspace.image_set.get_image(self.image_name.value)
-        pixels = image.pixel_data
+        if pixels is None:
+            # Get the image data to be written
+            image = workspace.image_set.get_image(self.image_name.value)
+            pixels = image.pixel_data
         
-        if self.rescale.value:
+        if self.rescale.value and (self.save_image_or_figure != IF_OBJECTS):
             # Normalize intensities for each channel
             pixels = pixels.astype(np.float32)
             if pixels.ndim == 3:
@@ -844,11 +937,15 @@ class SaveImages(cpm.CPModule):
     @property
     def file_name_feature(self):
         '''The file name measurement for the output file'''
+        if self.save_image_or_figure == IF_OBJECTS:
+            return '_'.join((C_OBJECTS_FILE_NAME, self.objects_name.value))
         return '_'.join((C_FILE_NAME, self.image_name.value))
     
     @property
     def path_name_feature(self):
         '''The path name measurement for the output file'''
+        if self.save_image_or_figure == IF_OBJECTS:
+            return '_'.join((C_OBJECTS_PATH_NAME, self.objects_name.value))
         return '_'.join((C_PATH_NAME, self.image_name.value))
     
     @property
@@ -934,6 +1031,11 @@ class SaveImages(cpm.CPModule):
         
         PC_DEFAULT     = "Default output folder"
 
+        #################################
+        #
+        # Matlab legacy
+        #
+        #################################
         if from_matlab and variable_revision_number == 12:
             # self.create_subdirectories.value is already False by default.
             variable_revision_number = 13
@@ -989,7 +1091,12 @@ class SaveImages(cpm.CPModule):
             setting_values = new_setting_values
             from_matlab = False
             variable_revision_number = 1
-            
+           
+        ##########################
+        #
+        # Version 1
+        #
+        ##########################
         if not from_matlab and variable_revision_number == 1:
             # The logic of the question about overwriting was reversed.            
             if setting_values[11] == cps.YES:
@@ -998,6 +1105,11 @@ class SaveImages(cpm.CPModule):
                 setting_values[11] = cps.YES       
             variable_revision_number = 2
             
+        #########################
+        #
+        # Version 2
+        #
+        #########################
         if (not from_matlab) and variable_revision_number == 2:
             # Default image/output directory -> Default Image Folder
             if setting_values[8].startswith("Default output"):
@@ -1008,6 +1120,11 @@ class SaveImages(cpm.CPModule):
                                   [PC_WITH_IMAGE] + setting_values[9:])
             variable_revision_number = 3
             
+        #########################
+        #
+        # Version 3
+        #
+        #########################
         if (not from_matlab) and variable_revision_number == 3:
             # Changed save type from "Figure" to "Module window"
             if setting_values[0] == "Figure":
@@ -1015,6 +1132,11 @@ class SaveImages(cpm.CPModule):
             setting_values = standardize_default_folder_names(setting_values,8)
             variable_revision_number = 4
 
+        #########################
+        #
+        # Version 4
+        #
+        #########################
         if (not from_matlab) and variable_revision_number == 4:
             save_image_or_figure, image_name, figure_name,\
 	    file_name_method, file_image_name, \
@@ -1036,6 +1158,11 @@ class SaveImages(cpm.CPModule):
                 rescale, colormap, update_file_names, create_subdirectories]
             variable_revision_number = 5
             
+        #######################
+        #
+        # Version 5
+        #
+        #######################
         if (not from_matlab) and variable_revision_number == 5:
             setting_values = list(setting_values)
             file_name_method = setting_values[3]
@@ -1053,8 +1180,18 @@ class SaveImages(cpm.CPModule):
             setting_values[7] = file_name_suffix
             variable_revision_number = 6
             
-        setting_values[9] = \
-            SaveImagesDirectoryPath.upgrade_setting(setting_values[9])
+        ######################
+        #
+        # Version 6 - added objects
+        #
+        ######################
+        if (not from_matlab) and (variable_revision_number == 6):
+            setting_values = (
+                setting_values[:2] + ["None"] + setting_values[2:14] +
+                [ GC_GRAYSCALE ] + setting_values[14:])
+            variable_revision_number = 7
+        setting_values[OFFSET_DIRECTORY_PATH] = \
+            SaveImagesDirectoryPath.upgrade_setting(setting_values[OFFSET_DIRECTORY_PATH])
         
         return setting_values, variable_revision_number, from_matlab
     

@@ -2374,7 +2374,8 @@ class LoadImages(cpmodule.CPModule):
         res = []
         object_names = sum(
             [[channel.object_name.value for channel in image.channels
-              if channel.image_or_object_choice == IO_OBJECTS]], [])
+              if channel.image_object_choice == IO_OBJECTS]
+             for image in self.images], [])
         if object_name == cpmeas.IMAGE:
             res += [C_FILE_NAME, C_PATH_NAME, C_MD5_DIGEST, C_SCALING]
             has_metadata = (self.file_types in 
@@ -2399,7 +2400,8 @@ class LoadImages(cpmodule.CPModule):
         result = []
         object_names = sum(
             [[channel.object_name.value for channel in image.channels
-              if channel.image_or_object_choice == IO_OBJECTS]], [])
+              if channel.image_object_choice == IO_OBJECTS]
+             for image in self.images], [])
         if object_name == cpmeas.IMAGE:
             if category == I.C_COUNT:
                 result += object_names

@@ -94,7 +94,7 @@ import cellprofiler.measurements as cpmeas
 from cellprofiler.pipeline import GROUP_INDEX
 import cellprofiler.preferences as preferences
 import cellprofiler.settings as cps
-import cellprofiler.modules.identify as I
+import identify as I
 from cellprofiler.utilities.relpath import relpath
 from cellprofiler.preferences import \
      standardize_default_folder_names, DEFAULT_INPUT_FOLDER_NAME, \

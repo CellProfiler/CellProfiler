@@ -21,6 +21,7 @@ from StringIO import StringIO
 import tempfile
 import unittest
 import zlib
+import PIL.Image
 
 from cellprofiler.preferences import set_headless
 set_headless()
@@ -35,9 +36,11 @@ import cellprofiler.settings as cps
 import cellprofiler.modules.loaddata as L
 from cellprofiler.modules.tests import example_images_directory
 
+OBJECTS_NAME = "objects"
+
 class TestLoadData(unittest.TestCase):
     def make_pipeline(self, csv_text):
-        handle, name = tempfile.mkstemp("csv")
+        handle, name = tempfile.mkstemp(".csv")
         fd = os.fdopen(handle, 'w')
         fd.write(csv_text)
         fd.close()
@@ -560,6 +563,29 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
                             'Failed to find %s'%colname)
         os.remove(filename)
   
+    def test_07_04_objects_measurement_columns(self):
+        csv_text = """%s_%s,%s_%s
+Channel1-01-A-01.tif,/imaging/analysis/trunk/ExampleImages/ExampleSBSImages
+""" % (L.C_OBJECTS_FILE_NAME, OBJECTS_NAME, 
+       L.C_OBJECTS_PATH_NAME, OBJECTS_NAME)
+        pipeline, module, filename = self.make_pipeline(csv_text)
+        columns = module.get_measurement_columns(pipeline)
+        expected_columns = (
+            (cpmeas.IMAGE, L.C_OBJECTS_FILE_NAME + "_" + OBJECTS_NAME),
+            (cpmeas.IMAGE, L.C_OBJECTS_PATH_NAME + "_" + OBJECTS_NAME),
+            (cpmeas.IMAGE, L.I.C_COUNT + "_" + OBJECTS_NAME),
+            (OBJECTS_NAME, L.I.M_LOCATION_CENTER_X),
+            (OBJECTS_NAME, L.I.M_LOCATION_CENTER_Y),
+            (OBJECTS_NAME, L.I.M_NUMBER_OBJECT_NUMBER))
+        for column in columns:
+            self.assertTrue(any([
+                True for object_name, feature in expected_columns
+                if object_name == column[0] and feature == column[1]]))
+        for object_name, feature in expected_columns:
+            self.assertTrue(any([
+                True for column in columns
+                if object_name == column[0] and feature == column[1]]))
+            
     def test_08_01_get_groupings(self):
         '''Test the get_groupings method'''
         dir = os.path.join(example_images_directory(), "ExampleSBSImages")
@@ -667,6 +693,50 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
                 os.remove(filename)
         unscaled, scaled = c0_image
         np.testing.assert_almost_equal(unscaled * 65535. / 4095., scaled)
+        
+    def test_11_01_load_objects(self):
+        r = np.random.RandomState()
+        r.seed(1101)
+        labels = r.randint(0,10, size=(30,20)).astype(np.uint8)
+        handle, name = tempfile.mkstemp(".png")
+        fd = os.fdopen(handle, "wb")
+        img = PIL.Image.fromarray(labels, "L")
+        img.save(fd, "PNG")
+        fd.close()
+        png_path, png_file = os.path.split(name)
+        sbs_dir = os.path.join(example_images_directory(), "ExampleSBSImages")
+        csv_text = """%s_%s,%s_%s,%s_DNA,%s_DNA
+%s,%s,Channel2-01-A-01.tif,%s
+""" % (L.C_OBJECTS_FILE_NAME, OBJECTS_NAME, 
+       L.C_OBJECTS_PATH_NAME, OBJECTS_NAME, 
+       L.C_FILE_NAME, L.C_PATH_NAME, 
+       png_file, png_path, sbs_dir)
+        pipeline, module, csv_name = self.make_pipeline(csv_text)
+        assert isinstance(pipeline, cpp.Pipeline)
+        assert isinstance(module, L.LoadData)
+        module.wants_images.value = True
+        try:
+            image_set_list = pipeline.prepare_run(None)
+            key_names, g = pipeline.get_groupings(image_set_list)
+            self.assertEqual(len(g), 1)
+            module.prepare_group(pipeline, image_set_list, g[0][0], g[0][1])
+            image_set = image_set_list.get_image_set(g[0][1][0]-1)
+            object_set = cpo.ObjectSet()
+            m = cpmeas.Measurements()
+            workspace = cpw.Workspace(pipeline, module, image_set,
+                                      object_set, m, image_set_list)
+            module.run(workspace)
+            objects = object_set.get_objects(OBJECTS_NAME)
+            self.assertTrue(np.all(objects.segmented == labels))
+            self.assertEqual(m.get_current_image_measurement(L.I.FF_COUNT % OBJECTS_NAME), 9)
+            for feature in (L.I.M_LOCATION_CENTER_X, 
+                            L.I.M_LOCATION_CENTER_Y, 
+                            L.I.M_NUMBER_OBJECT_NUMBER):
+                value = m.get_current_measurement(OBJECTS_NAME, feature)
+                self.assertEqual(len(value), 9)
+        finally:
+            os.remove(name)
+            os.remove(csv_name)
     
 class C0(cpm.CPModule):
     def create_settings(self):

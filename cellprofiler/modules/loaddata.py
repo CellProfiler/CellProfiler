@@ -126,14 +126,17 @@ except:
 import matplotlib.mlab
 
 import cellprofiler.cpmodule as cpm
+import cellprofiler.objects as cpo
 import cellprofiler.measurements as cpmeas
 import cellprofiler.settings as cps
 import cellprofiler.preferences as cpprefs
+import identify as I
 from cellprofiler.modules.loadimages import LoadImagesImageProvider
 from cellprofiler.modules.loadimages import C_FILE_NAME, C_PATH_NAME
+from cellprofiler.modules.loadimages import C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME
 from cellprofiler.modules.loadimages import C_MD5_DIGEST, C_SCALING
-from cellprofiler.modules.loadimages import LoadImages
 from cellprofiler.modules.loadimages import bad_sizes_warning
+from cellprofiler.modules.loadimages import convert_image_to_objects
 from cellprofiler.preferences import standardize_default_folder_names, \
      DEFAULT_INPUT_FOLDER_NAME, DEFAULT_OUTPUT_FOLDER_NAME, NO_FOLDER_NAME, \
      ABSOLUTE_FOLDER_NAME, IO_FOLDER_CHOICE_HELP_TEXT
@@ -143,8 +146,6 @@ DIR_OTHER = 'Elsewhere...'
 DIR_ALL = [DEFAULT_INPUT_FOLDER_NAME, DEFAULT_OUTPUT_FOLDER_NAME, 
            NO_FOLDER_NAME, ABSOLUTE_FOLDER_NAME]
 
-PATH_NAME = 'PathName'
-FILE_NAME = 'FileName'
 '''Reserve extra space in pathnames for batch processing name rewrites'''
 PATH_PADDING = 20
 
@@ -166,26 +167,42 @@ def header_to_column(field):
     Image_PathName to PathName so that the output column names
     in the database will be Image_FileName and Image_PathName
     '''
-    for name in (PATH_NAME, FILE_NAME):
+    for name in (C_PATH_NAME, C_FILE_NAME):
         if field.startswith(cpmeas.IMAGE+'_'+name+'_'):
             return field[len(cpmeas.IMAGE)+1:]
     return field
 
 def is_path_name_feature(feature):
     '''Return true if the feature name is a path name'''
-    return feature.startswith(PATH_NAME+'_')
+    return feature.startswith(C_PATH_NAME+'_')
 
 def is_file_name_feature(feature):
     '''Return true if the feature name is a file name'''
-    return feature.startswith(FILE_NAME+'_')
+    return feature.startswith(C_FILE_NAME+'_')
+
+def is_objects_path_name_feature(feature):
+    '''Return true if the feature name is the path to a labels file'''
+    return feature.startswith(C_OBJECTS_PATH_NAME+"_")
+
+def is_objects_file_name_feature(feature):
+    '''Return true if the feature name is a labels file name'''
+    return feature.startswith(C_OBJECTS_FILE_NAME+"_")
 
 def get_image_name(feature):
     '''Extract the image name from a feature name'''
     if is_path_name_feature(feature):
-        return feature[len(PATH_NAME+'_'):]
+        return feature[len(C_PATH_NAME+'_'):]
     if is_file_name_feature(feature):
-        return feature[len(FILE_NAME+'_'):]
+        return feature[len(C_FILE_NAME+'_'):]
     raise ValueError('"%s" is not a path feature or file name feature'%feature)
+
+def get_objects_name(feature):
+    '''Extract the objects name from a feature name'''
+    if is_objects_path_name_feature(feature):
+        return feature[len(C_OBJECTS_PATH_NAME+"_"):]
+    if is_objects_file_name_feature(feature):
+        return feature[len(C_OBJECTS_FILE_NAME+"_"):]
+    raise ValueError('"%s" is not a objects path feature or file name feature'%feature)
 
 def make_path_name_feature(image):
     '''Return the path name feature, given an image name
@@ -193,7 +210,7 @@ def make_path_name_feature(image):
     The path name feature is the name of the measurement that stores
     the image's path name.
     '''
-    return PATH_NAME+'_'+image
+    return C_PATH_NAME+'_'+image
 
 def make_file_name_feature(image):
     '''Return the file name feature, given an image name
@@ -201,8 +218,29 @@ def make_file_name_feature(image):
     The file name feature is the name of the measurement that stores
     the image's file name.
     '''
-    return FILE_NAME+'_'+image
+    return C_FILE_NAME+'_'+image
     
+def make_objects_path_name_feature(objects_name):
+    '''Return the path name feature, given an object name
+
+    The path name feature is the name of the measurement that stores
+    the objects file path name.
+    '''
+    return C_OBJECTS_PATH_NAME+'_'+objects_name
+
+def make_objects_file_name_feature(objects_name):
+    '''Return the file name feature, given an object name
+    
+    The file name feature is the name of the measurement that stores
+    the objects file name.
+    '''
+    return C_OBJECTS_FILE_NAME+'_'+objects_name
+
+def get_object_names(features):
+    '''Get the object names represented by the header features in the data file'''
+    return [ get_objects_name(feature) for feature in features
+             if is_objects_file_name_feature(feature)]
+
 class LoadData(cpm.CPModule):
     
     module_name = "LoadData"
@@ -367,6 +405,8 @@ class LoadData(cpm.CPModule):
         
         The best practice is to have a single LoadImages or LoadData module.
         '''
+        from cellprofiler.modules.loadimages import LoadImages
+        
         for module in pipeline.modules():
             if id(module) == id(self):
                 return
@@ -602,6 +642,16 @@ class LoadData(cpm.CPModule):
                         if is_file_name_feature(field)]
             except Exception,e:
                 return []
+        elif group == 'objectgroup' and self.wants_images:
+            try:
+                # do not load URLs automatically
+                header = self.get_header(do_not_cache=True)
+                return [get_objects_name(field)
+                        for field in header
+                        if is_objects_file_name_feature(field)]
+            except Exception,e:
+                return []
+            
         return []
     
     def is_image_from_file(self, image_name):
@@ -664,6 +714,7 @@ class LoadData(cpm.CPModule):
         dictionary = {}
         metadata = {}
         images = {}
+        objects = {}
         previous_columns = [x for x in pipeline.get_measurement_columns(self)
                             if x[0] == cpmeas.IMAGE and x[1] in header]
         previous_dict = {}
@@ -694,7 +745,7 @@ class LoadData(cpm.CPModule):
                 image = get_image_name(feature)
                 if not images.has_key(image):
                     images[image] = {}
-                images[image][FILE_NAME] = column
+                images[image][C_FILE_NAME] = column
                 dictionary[feature] = column
             elif (self.wants_images.value and
                   is_path_name_feature(feature)):
@@ -702,7 +753,23 @@ class LoadData(cpm.CPModule):
                 image = get_image_name(header[i])
                 if not images.has_key(image):
                     images[image] = {}
-                images[image][PATH_NAME] = column
+                images[image][C_PATH_NAME] = column
+                dictionary[feature] = column
+            elif (self.wants_images.value and
+                  is_objects_file_name_feature(feature)):
+                column = np.array(column)
+                objects_name = get_objects_name(feature)
+                if not objects.has_key(objects_name):
+                    objects[objects_name] = {}
+                objects[objects_name][C_OBJECTS_FILE_NAME] = column
+                dictionary[feature] = column
+            elif (self.wants_images.value and
+                  is_objects_path_name_feature(feature)):
+                column = np.array(column)
+                objects_name = get_objects_name(feature)
+                if not objects.has_key(objects_name):
+                    objects[objects_name] = {}
+                objects[objects_name][C_OBJECTS_PATH_NAME] = column
                 dictionary[feature] = column
             else:
                 dictionary[feature] = best_cast(column)
@@ -712,9 +779,14 @@ class LoadData(cpm.CPModule):
             metadata[cpmeas.FTR_WELL] = dictionary[cpmeas.FTR_WELL]
         
         for image in images.keys():
-            if not images[image].has_key(FILE_NAME):
-                raise ValueError('The CSV file has an Image_PathName_%s metadata column without a corresponding Image_FileName_%s column'%
+            if not images[image].has_key(C_FILE_NAME):
+                raise ValueError('The CSV file has a PathName_%s metadata column without a corresponding FileName_%s column'%
                                  (image,image))
+        for objects_name in objects.keys():
+            if not objects[objects_name].has_key(C_OBJECTS_FILE_NAME):
+                raise ValueError('The CSV file has an ObjectsPathName_%s metadata column without a corresponding ObjectsFileName_%s column'%
+                                 (objects_name,objects_name))
+                
         if self.wants_images:
             #
             # Populate the image set list 
@@ -763,7 +835,8 @@ class LoadData(cpm.CPModule):
         '''
         dictionary = image_set_list.legacy_fields[self.legacy_field_key]
         path_keys = [key for key in dictionary.keys()
-                     if is_path_name_feature(key)]
+                     if is_path_name_feature(key) or
+                     is_objects_path_name_feature(key)]
         for key in path_keys:
             dictionary[key] = np.array([fn_alter_path(path) 
                                         for path in dictionary[key]])
@@ -774,28 +847,38 @@ class LoadData(cpm.CPModule):
     
     def prepare_group(self, pipeline, image_set_list, grouping, image_numbers):
         dictionary = image_set_list.legacy_fields[self.legacy_field_key]
-        path_base = self.image_path
         image_names = self.other_providers('imagegroup')
         if self.wants_images.value:
             for image_number in image_numbers:
                 index = image_number -1
                 image_set = image_set_list.get_image_set(index)
                 for image_name in image_names:
-                    path_name_feature = make_path_name_feature(image_name)
-                    if dictionary.has_key(path_name_feature):
-                        path = dictionary[path_name_feature][index]
-                        if self.image_directory.dir_choice != cps.NO_FOLDER_NAME:
-                            path = os.path.join(path_base, path)
-                    else:
-                        path = path_base
-                    file_name_feature = make_file_name_feature(image_name)
-                    filename = dictionary[file_name_feature][index]
-                    ip = LoadImagesImageProvider(
-                        image_name, path, filename, self.rescale.value)
+                    ip = self.fetch_provider(image_name, dictionary, index)
                     image_set.providers.append(ip)
+
+    def fetch_provider(self, name, dictionary, index, is_image_name = True):
+        path_base = self.image_path
+        if is_image_name:
+            path_name_feature = make_path_name_feature(name)
+            file_name_feature = make_file_name_feature(name)
+        else:
+            path_name_feature = make_objects_path_name_feature(name)
+            file_name_feature = make_objects_file_name_feature(name)
             
+        if dictionary.has_key(path_name_feature):
+            path = dictionary[path_name_feature][index]
+            if self.image_directory.dir_choice != cps.NO_FOLDER_NAME:
+                path = os.path.join(path_base, path)
+        else:
+            path = path_base
+        filename = dictionary[file_name_feature][index]
+        return LoadImagesImageProvider(
+            name, path, filename, self.rescale.value and is_image_name)
+        
     def run(self, workspace):
         '''Populate the image measurements on each run iteration'''
+        m = workspace.measurements
+        assert isinstance(m, cpmeas.Measurements)
         dictionary = workspace.image_set_list.legacy_fields[self.legacy_field_key]
         statistics = []
         image_set_keys = workspace.image_set.keys
@@ -823,7 +906,7 @@ class LoadData(cpm.CPModule):
                 if not failure:
                     break
         else:
-            index = workspace.measurements.image_set_number-1
+            index = m.image_set_number-1
         features = [x[1] for x in 
                     self.get_measurement_columns(workspace.pipeline)
                     if dictionary.has_key(x[1])]
@@ -853,7 +936,7 @@ class LoadData(cpm.CPModule):
                 if isinstance(col, int):
                     col = "%02d" % col
                 well = row + col
-                workspace.measurements.add_image_measurement(md_well, well)
+                m.add_image_measurement(md_well, well)
         #
         # Calculate the MD5 hash of every image
         #
@@ -862,10 +945,10 @@ class LoadData(cpm.CPModule):
             image = workspace.image_set.get_image(image_name)
             pixel_data = image.pixel_data
             md5.update(np.ascontiguousarray(pixel_data).data)
-            workspace.measurements.add_image_measurement(
+            m.add_image_measurement(
                 C_MD5_DIGEST + '_'+image_name,
                 md5.hexdigest())
-            workspace.measurements.add_image_measurement(
+            m.add_image_measurement(
                 C_SCALING + '_' + image_name, image.scale)
             if image_size is None:
                 image_size = tuple(pixel_data.shape[:2])
@@ -877,6 +960,24 @@ class LoadData(cpm.CPModule):
                     workspace.display_data.warning = warning
                 else:
                     print warning
+        #
+        # Process any object tags
+        #
+        if self.wants_images:
+            objects_names = get_object_names(dictionary.keys())
+            for objects_name in objects_names:
+                provider = self.fetch_provider(
+                    objects_name, dictionary, index, is_image_name = False)
+                image = provider.provide_image(workspace.image_set)
+                pixel_data = convert_image_to_objects(image.pixel_data)
+                o = cpo.Objects()
+                o.segmented = pixel_data
+                object_set = workspace.object_set
+                assert isinstance(object_set, cpo.ObjectSet)
+                object_set.add_objects(o, objects_name)
+                I.add_object_count_measurements(m, objects_name, o.count)
+                I.add_object_location_measurements(m, objects_name, pixel_data)
+                
         if not workspace.frame is None:
             workspace.display_data.statistics = statistics
             
@@ -944,15 +1045,18 @@ class LoadData(cpm.CPModule):
                 if already_output[index]:
                     continue
                 if ((not self.wants_images) and
-                    (field.startswith(PATH_NAME) or
-                     field.startswith(FILE_NAME))):
+                    (field.startswith(C_PATH_NAME) or
+                     field.startswith(C_FILE_NAME) or
+                     field.startswith(C_OBJECTS_FILE_NAME) or
+                     field.startswith(C_OBJECTS_PATH_NAME))):
                     continue
                 try:
                     len_field = len(field)
                 except TypeError:
                     field = str(field)
                     len_field = len(field)
-                if field.startswith(PATH_NAME):
+                if (field.startswith(C_PATH_NAME) or 
+                    field.startswith(C_OBJECTS_PATH_NAME)):
                     # Account for possible rewrite of the pathname
                     # in batch data
                     len_field = max(cpmeas.PATH_NAME_LENGTH, 
@@ -980,6 +1084,12 @@ class LoadData(cpm.CPModule):
             (C_SCALING, cpmeas.COLTYPE_FLOAT)):
             result += [(cpmeas.IMAGE, feature +'_'+image_name, coltype)
                        for image_name in image_names]
+        #
+        # Add the object features
+        #
+        if self.wants_images:
+            for object_name in get_object_names(header):
+                result += I.get_object_measurement_columns(object_name)
         #
         # Try to make a well column out of well row and well column
         #
@@ -1026,22 +1136,20 @@ class LoadData(cpm.CPModule):
         return has_well_col and has_well_row
     
     def get_categories(self, pipeline, object_name):
-        if object_name != cpmeas.IMAGE:
-            return []
         try:
             columns = self.get_measurement_columns(pipeline)
-            result = set([column[1].split('_')[0] for column in columns])
+            result = set([column[1].split('_')[0] for column in columns
+                          if column[0] == object_name])
             return list(result)
         except:
             return []
 
     def get_measurements(self, pipeline, object_name, category):
-        if object_name != cpmeas.IMAGE:
-            return []
         try:
             columns = self.get_measurement_columns(pipeline)
             result = [feature for c, feature in
-                      [column[1].split('_',1) for column in columns]
+                      [column[1].split('_',1) for column in columns
+                       if column[0] == object_name]
                       if c == category]
             return result
         except:

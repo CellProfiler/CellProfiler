@@ -548,7 +548,8 @@ class ExportToSpreadsheet(cpm.CPModule):
                             extracted
         workspace - workspace containing the measurements
         """
-        from loaddata import PATH_NAME, FILE_NAME, is_path_name_feature, is_file_name_feature
+        from loaddata import is_path_name_feature, is_file_name_feature
+        from loadimages import C_PATH_NAME, C_FILE_NAME
 
         def ignore_feature(feature_name):
             """Return true if we should ignore a feature"""
@@ -621,11 +622,11 @@ class ExportToSpreadsheet(cpm.CPModule):
                     writer.writerow(written_image_names)
                     
                     # Place the one of the paths and desired info column up front in image feature list
-                    description_feature = [x for x in image_features if x.startswith(PATH_NAME+"_")]
+                    description_feature = [x for x in image_features if x.startswith(C_PATH_NAME+"_")]
                     if self.how_to_specify_gene_name == GP_NAME_METADATA:
                         name_feature = [self.gene_name_column.value]
                     elif self.how_to_specify_gene_name == GP_NAME_FILENAME:
-                        name_feature = [x for x in image_features if x.startswith("_".join((FILE_NAME, self.use_which_image_for_gene_name.value)))]
+                        name_feature = [x for x in image_features if x.startswith("_".join((C_FILE_NAME, self.use_which_image_for_gene_name.value)))]
                     image_features = [name_feature[0],description_feature[0]] + measurement_feature_names
                     
                 # Output all measurements

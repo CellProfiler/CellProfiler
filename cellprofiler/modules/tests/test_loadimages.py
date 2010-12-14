@@ -1685,6 +1685,59 @@ LoadImages:[module_num:1|svn_version:\'10503\'|variable_revision_number:9|show_w
                 self.assertEqual(len(features), len(set(features)))
                 self.assertTrue(all([feature in expected_features
                                      for feature in features]))
+                
+    def test_07_06_get_object_measurement_columns(self):
+        module = LI.LoadImages()
+        channel = module.images[0].channels[0]
+        channel.image_object_choice.value = LI.IO_OBJECTS
+        channel.object_name.value = OBJECTS_NAME
+        columns = module.get_measurement_columns(None)
+        for object_name, feature in (
+            (measurements.IMAGE, LI.C_OBJECTS_FILE_NAME + "_" + OBJECTS_NAME),
+            (measurements.IMAGE, LI.C_OBJECTS_PATH_NAME + "_" + OBJECTS_NAME),
+            (measurements.IMAGE, LI.I.C_COUNT + "_" + OBJECTS_NAME),
+            (OBJECTS_NAME, LI.I.M_LOCATION_CENTER_X),
+            (OBJECTS_NAME, LI.I.M_LOCATION_CENTER_Y),
+            (OBJECTS_NAME, LI.I.M_NUMBER_OBJECT_NUMBER)):
+            self.assertTrue(any([True for column in columns
+                                 if column[0] == object_name and
+                                 column[1] == feature]))
+
+    def test_07_07_get_object_categories(self):
+        module = LI.LoadImages()
+        channel = module.images[0].channels[0]
+        channel.image_object_choice.value = LI.IO_OBJECTS
+        channel.object_name.value = OBJECTS_NAME
+        for object_name, expected_categories in (
+            (measurements.IMAGE, 
+             (LI.C_OBJECTS_FILE_NAME, LI.C_OBJECTS_PATH_NAME, LI.I.C_COUNT)),
+            (OBJECTS_NAME, (LI.I.C_LOCATION, LI.I.C_NUMBER)),
+            ("Foo", [])):
+            categories = module.get_categories(None, object_name)
+            for expected_category in expected_categories:
+                self.assertTrue(expected_category in categories)
+            for category in categories:
+                self.assertTrue(category in expected_categories)
+                
+    def test_07_08_get_object_measurements(self):
+        module = LI.LoadImages()
+        channel = module.images[0].channels[0]
+        channel.image_object_choice.value = LI.IO_OBJECTS
+        channel.object_name.value = OBJECTS_NAME
+        for object_name, expected in (
+            ( measurements.IMAGE, (
+                ( LI.C_OBJECTS_FILE_NAME, [ OBJECTS_NAME ]),
+                ( LI.C_OBJECTS_PATH_NAME, [ OBJECTS_NAME ]),
+                ( LI.I.C_COUNT, [ OBJECTS_NAME ]))),
+            ( OBJECTS_NAME, (
+                (LI.I.C_LOCATION, [ LI.I.FTR_CENTER_X, LI.I.FTR_CENTER_Y ]),
+                (LI.I.C_NUMBER, [ LI.I.FTR_OBJECT_NUMBER ])))):
+            for category, expected_features in expected:
+                features = module.get_measurements(None, object_name, category)
+                for feature in features:
+                    self.assertTrue(feature in expected_features)
+                for expected_feature in expected_features:
+                    self.assertTrue(expected_feature in features)
 
     def test_08_01_get_groupings(self):
         '''Get groupings for the SBS image set'''

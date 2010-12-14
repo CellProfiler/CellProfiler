@@ -1969,11 +1969,8 @@ class LoadImages(cpmodule.CPModule):
                 pixel_data = image.pixel_data
                 metadata = self.get_filename_metadata(fd, filename, path)
                 if wants_images:
-                    m.add_measurement('Image',"_".join((C_FILE_NAME, name)), filename)
-                    full_path = self.image_directory()
-                    if len(path) > 0:
-                        full_path = os.path.join(full_path, path)
-                    m.add_measurement('Image',"_".join((C_PATH_NAME, name)), full_path)
+                    path_name_category = C_PATH_NAME
+                    file_name_category = C_FILE_NAME
                     digest = hashlib.md5()
                     digest.update(np.ascontiguousarray(pixel_data).data)
                     m.add_measurement('Image',"_".join((C_MD5_DIGEST, name)),
@@ -1994,6 +1991,8 @@ class LoadImages(cpmodule.CPModule):
                     #
                     # Save as objects.
                     #
+                    path_name_category = C_OBJECTS_PATH_NAME
+                    file_name_category = C_OBJECTS_FILE_NAME
                     pixel_data = convert_image_to_objects(pixel_data)
                     o = cpo.Objects()
                     o.segmented = pixel_data
@@ -2006,6 +2005,13 @@ class LoadImages(cpmodule.CPModule):
                     I.add_object_count_measurements(m, object_name, o.count)
                     I.add_object_location_measurements(m, object_name, pixel_data)
 
+                m.add_image_measurement(
+                    "_".join((file_name_category, name)), filename)
+                full_path = self.image_directory()
+                if len(path) > 0:
+                    full_path = os.path.join(full_path, path)
+                m.add_image_measurement(
+                    "_".join((path_name_category, name)), full_path)
                 for d in (metadata, image_set_metadata):
                     for key in d:
                         measurement = '_'.join((cpmeas.C_METADATA, key))
@@ -2382,8 +2388,14 @@ class LoadImages(cpmodule.CPModule):
             [[channel.object_name.value for channel in image.channels
               if channel.image_object_choice == IO_OBJECTS]
              for image in self.images], [])
+        has_image_name = any([any(
+            [ True for channel in image.channels 
+              if channel.image_object_choice == IO_IMAGES])
+                              for image in self.images])
+             
         if object_name == cpmeas.IMAGE:
-            res += [C_FILE_NAME, C_PATH_NAME, C_MD5_DIGEST, C_SCALING]
+            if has_image_name:
+                res += [C_FILE_NAME, C_PATH_NAME, C_MD5_DIGEST, C_SCALING]
             has_metadata = (self.file_types in 
                             (FF_AVI_MOVIES, FF_STK_MOVIES, FF_OTHER_MOVIES))
             for fd in self.images:
@@ -2392,7 +2404,7 @@ class LoadImages(cpmodule.CPModule):
             if has_metadata:
                 res += [cpmeas.C_METADATA]
             if len(object_names) > 0:
-                res += [I.C_COUNT]
+                res += [C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME, I.C_COUNT]
         elif object_name in object_names:
             res += [I.C_LOCATION, I.C_NUMBER]
         return res
@@ -2432,17 +2444,21 @@ class LoadImages(cpmodule.CPModule):
                 if not self.channel_wants_images(channel):
                     name = channel.object_name.value
                     cols += I.get_object_measurement_columns(name)
+                    path_name_category = C_OBJECTS_PATH_NAME
+                    file_name_category = C_OBJECTS_FILE_NAME
                 else:
                     name = channel.image_name.value
-                    cols += [(cpmeas.IMAGE, "_".join((C_FILE_NAME, name)), 
-                              cpmeas.COLTYPE_VARCHAR_FILE_NAME)]
-                    cols += [(cpmeas.IMAGE, "_".join((C_PATH_NAME, name)), 
-                              cpmeas.COLTYPE_VARCHAR_PATH_NAME)]
+                    path_name_category = C_PATH_NAME
+                    file_name_category = C_FILE_NAME
                     cols += [(cpmeas.IMAGE, "_".join((C_MD5_DIGEST, name)), 
                               cpmeas.COLTYPE_VARCHAR_FORMAT%32)]
                     cols += [(cpmeas.IMAGE, "_".join((C_SCALING, name)),
                               cpmeas.COLTYPE_FLOAT)]
         
+                cols += [(cpmeas.IMAGE, "_".join((file_name_category, name)), 
+                          cpmeas.COLTYPE_VARCHAR_FILE_NAME)]
+                cols += [(cpmeas.IMAGE, "_".join((path_name_category, name)), 
+                          cpmeas.COLTYPE_VARCHAR_PATH_NAME)]
             if self.has_file_metadata(fd):
                 tokens = cpmeas.find_metadata_tokens(fd.file_metadata.value)
                 cols += [(cpmeas.IMAGE, '_'.join((cpmeas.C_METADATA, token)), 

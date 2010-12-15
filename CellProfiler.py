@@ -31,13 +31,15 @@ if sys.platform.startswith('win'):
 
 if not hasattr(sys, 'frozen'):
     root = os.path.split(__file__)[0]
-    if len(root) == 0:
-        root = os.curdir
-    root = os.path.abspath(root)
-    site_packages = os.path.join(root, 'site-packages')
-    if os.path.exists(site_packages) and os.path.isdir(site_packages):
-        import site
-        site.addsitedir(site_packages)
+else:
+    root = os.path.split(sys.argv[0])[0]
+if len(root) == 0:
+    root = os.curdir
+root = os.path.abspath(root)
+site_packages = os.path.join(root, 'site-packages')
+if os.path.exists(site_packages) and os.path.isdir(site_packages):
+    import site
+    site.addsitedir(site_packages)
 
 import optparse
 usage = """usage: %prog [options] [<measurement-file>])
@@ -117,6 +119,13 @@ if not hasattr(sys, 'frozen'):
                       default=False,
                       action="store_true",
                       help="Build extensions, then exit CellProfiler")
+parser.add_option("--ilastik",
+                  dest = "run_ilastik",
+                  default=False,
+                  action="store_true",
+                  help = ("Run Ilastik instead of CellProfiler. "
+                          "Ilastik is a pixel-based classifier. See "
+                          "www.ilastik.org for more details."))
 parser.add_option("-d", "--done-file",
                   dest="done_file",
                   default=None,
@@ -135,6 +144,18 @@ parser.add_option("--data-file",
                   'use the "From command-line" option')
 options, args = parser.parse_args()
 
+if options.run_ilastik:
+    #
+    # Fake ilastik into thinking it is __main__
+    #
+    import ilastik
+    import imp
+    sys.argv.remove("--ilastik")
+    il_path = ilastik.__path__
+    il_file, il_path, il_description = imp.find_module('ilastikMain', il_path)
+    imp.load_module('__main__', il_file, il_path, il_description)
+    sys.exit()
+    
 # necessary to prevent matplotlib trying to use Tkinter as its backend.
 # has to be done before CellProfilerApp is imported
 from matplotlib import use as mpluse

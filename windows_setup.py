@@ -158,6 +158,43 @@ opts = {
        }
 
 data_files = []
+
+try:
+    import vigra
+    import ilastik
+    vigranumpy_path = os.path.join(vigra.__path__[0],"vigranumpycore.pyd")
+    if os.path.exists(vigranumpy_path):
+        data_files += [(".",[vigranumpy_path])]
+    opts['py2exe']['includes'] += ["vigra", "vigra.impex",
+                                   "h5py","h5py._stub","h5py._conv",
+                                   "h5py.utils","h5py._proxy",
+                                   "PyQt4", "PyQt4.QtOpenGL", "PyQt4.uic",
+                                   "sip"]
+    opts['py2exe']['excludes'] += ["ilastik"]
+    il_path = ilastik.__path__[0]
+    for root, subFolders, files in os.walk(il_path):
+        dest = os.path.join('site-packages','ilastik')
+        if root != il_path:
+            dest = os.path.join(dest, root[(len(il_path)+1):])
+        ilastik_files = [os.path.join(root, f) for f in files 
+                         if f.endswith(".ui") or f.endswith(".png") or
+                         f.endswith(".py")]
+        if len(ilastik_files) > 0:
+            data_files += [(dest, ilastik_files)]
+                                     
+    #
+    # port_v3 is for Python 3.1
+    #
+    opts['py2exe']['excludes'] += ['PyQt4.uic.port_v3']
+    try:
+        import OpenGL.platform.win32
+        opts['py2exe']['includes'] += ['OpenGL.platform.win32', 
+                                       'OpenGL.arrays.*']
+    except:
+        print "This installation will not supply OpenGL support for Ilastik"
+except:
+    print "This installation will not include Ilastik"
+    
 try:
     # Include this package if present
     import scipy.io.matlab.streams
@@ -181,7 +218,8 @@ if do_modify:
                                    "msvcm90.dll",
                                    "msvcp90.dll")])]
 else:
-    opts['py2exe']['dll_excludes'] += ["msvcr90.dll", "msvcm90.dll", "msvcp90.dll"]    
+    opts['py2exe']['dll_excludes'] += ["msvcr90.dll", "msvcm90.dll", "msvcp90.dll"]
+
 data_files += [('cellprofiler\\icons',
                ['cellprofiler\\icons\\%s'%(x) 
                 for x in os.listdir('cellprofiler\\icons')
@@ -221,7 +259,6 @@ data_files += [("jre\\ext", [os.path.join(jdk_dir, "lib", "tools.jar")])]
 setup(console=[{'script':'CellProfiler.py',
                 'icon_resources':[(1,'CellProfilerIcon.ico')]}],
       name='Cell Profiler',
-      #setup_requires=['py2exe'],
       data_files = data_files,
       cmdclass={'msi':CellProfilerMSI
                 },

@@ -238,8 +238,70 @@ def make_format_writer_class(class_name):
                                                 'Sets the metadata retrieval object from which to retrieve standardized metadata')
     return FormatWriter
 
+def getRGBColorSpace():
+    '''Get a Java object that represents an RGB color space
+    
+    See java.awt.color.ColorSpace: this returns the linear RGB color space
+    '''
+    cs_linear_rgb = jutil.get_static_field('java/awt/color/ColorSpace',
+                                           'CS_LINEAR_RGB', 'I')
+    return jutil.static_call('java/awt/color/ColorSpace', 'getInstance',
+                             '(I)Ljava/awt/color/ColorSpace;',
+                             cs_linear_rgb)
 
+def getGrayColorSpace():
+    '''Get a Java object that represents an RGB color space
+    
+    See java.awt.color.ColorSpace: this returns the linear RGB color space
+    '''
+    cs_gray = jutil.get_static_field('java/awt/color/ColorSpace',
+                                           'CS_GRAY', 'I')
+    return jutil.static_call('java/awt/color/ColorSpace', 'getInstance',
+                             '(I)Ljava/awt/color/ColorSpace;',
+                             cs_gray)
 
+'''Constant for color model transparency indicating bitmask transparency'''
+BITMASK = 'BITMASK'
+'''Constant for color model transparency indicting an opaque color model'''
+OPAQUE = 'OPAQUE'
+'''Constant for color model transparency indicating a transparent color model'''
+TRANSPARENT = 'TRANSPARENT'
+'''Constant for color model transfer type indicating byte per pixel'''
+TYPE_BYTE = 'TYPE_BYTE'
+'''Constant for color model transfer type indicating unsigned short per pixel'''
+TYPE_USHORT = 'TYPE_USHORT'
+'''Constant for color model transfer type indicating integer per pixel'''
+TYPE_INT = 'TYPE_INT'
+
+def getColorModel(color_space, 
+                  has_alpha=False, 
+                  is_alpha_premultiplied = False,
+                  transparency = OPAQUE,
+                  transfer_type = TYPE_BYTE):
+    '''Return a java.awt.image.ColorModel color model
+    
+    color_space - a java.awt.color.ColorSpace such as returned by
+    getGrayColorSpace or getRGBColorSpace
+    
+    has_alpha - True if alpha channel is specified
+    
+    is_alpha_premultiplied - True if other channel values have already
+    been reduced by the alpha multiplier, False if the channel values are
+    independent of the multiplier.
+    
+    transparency - one of BITMASK, OPAQUE or TRANSPARENT.
+    
+    transfer_type - one of TYPE_BYTE, TYPE_USHORT, TYPE_INT
+    '''
+    jtransparency = jutil.get_static_field('java/awt/Transparency',
+                                           transparency,
+                                           'I')
+    jtransfer_type = jutil.get_static_field('java/awt/image/DataBuffer',
+                                            transfer_type, 'I')
+    return jutil.make_instance('java/awt/image/ComponentColorModel',
+                               '(Ljava/awt/color/ColorSpace;ZZII)V',
+                               color_space, has_alpha, is_alpha_premultiplied,
+                               jtransparency, jtransfer_type)
 if __name__ == "__main__":
     import wx
     import matplotlib.backends.backend_wxagg as mmmm

@@ -690,7 +690,7 @@ class LoadData(cpm.CPModule):
                     raise ValueError("Row # %d has the wrong number of elements: %d. Expected %d"%
                                      (i,len(row),len(header)))
                 rows.append(row)
-                if i == self.row_range.max - 1:
+                if i >= self.row_range.max:
                     break
                 i += 1
         else:

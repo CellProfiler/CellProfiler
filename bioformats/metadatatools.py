@@ -129,7 +129,7 @@ class MetadataStore(object):
         except jutil.JavaException:
             jutil.call(self.o, 'setPixelsSizeT', 
                        '(Ljava/lang/Integer;II)V', t, imageIndex, binDataIndex)
-
+            
     def setLogicalChannelSamplesPerPixel(self, samplesPerPixel, imageIndex, channelIndex):
         'For a particular LogicalChannel, sets number of channel components in the logical channel.'
         try:

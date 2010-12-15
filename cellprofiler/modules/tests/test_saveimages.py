@@ -1365,7 +1365,7 @@ SaveImages:[module_num:2|svn_version:\'10581\'|variable_revision_number:7|show_w
         self.assertEqual(pixel_data.shape, image.shape)
         self.assertTrue(np.all(np.abs(expected - pixel_data) < .02))
 
-    def run_movie(self, groupings=None, fn = None):
+    def run_movie(self, groupings=None, fn = None, color=False):
         '''Run a pipeline that produces a movie
         
         Returns a list containing the movie frames
@@ -1382,7 +1382,8 @@ SaveImages:[module_num:2|svn_version:\'10581\'|variable_revision_number:7|show_w
             image_set_list.get_image_set(i)
             
         np.random.seed(0)
-        frames = [ np.random.uniform(size=(128,128)) for i in range(nframes)]
+        frames = [ np.random.uniform(size=(128,128,3) if color else (128,128)) 
+                   for i in range(nframes)]
         measurements = cpm.Measurements()
         pipeline = cpp.Pipeline()
         def callback(caller, event):
@@ -1457,6 +1458,18 @@ SaveImages:[module_num:2|svn_version:\'10581\'|variable_revision_number:7|show_w
                 frame = frames[image_number-1]
                 frame_out = cpm_li.load_using_bioformats(path, t=t)
                 self.assertTrue(np.all(np.abs(frame - frame_out) < .05))
+                
+    def test_05_03_save_color_movie(self):
+        '''Regression test of img-1227 - save a color movie saved in b/w
+        
+        also BioFormats crashed when saving in color, requiring update of
+        loci_tools.jar
+        '''
+        frames = self.run_movie(color=True)
+        for i, frame in enumerate(frames):
+            path = os.path.join(self.custom_directory, FILE_NAME + ".avi")
+            frame_out = cpm_li.load_using_bioformats(path, t=i)
+            self.assertTrue(np.all(np.abs(frame - frame_out) < .05))
                 
     def test_06_01_save_image_with_bioformats(self):
         if BIOFORMATS_CANT_WRITE:

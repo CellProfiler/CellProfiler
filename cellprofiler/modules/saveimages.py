@@ -516,8 +516,10 @@ class SaveImages(cpm.CPModule):
             height = pixels.shape[0]
             if pixels.ndim == 2:
                 channels = 1
+                color_space = getGrayColorSpace()
             elif pixels.ndim == 3 and pixels.shape[2] == 3:
                 channels = 3
+                color_space = getRGBColorSpace()
             else:
                 raise 'Image shape is not supported for saving to movie'
             stacks = 1
@@ -597,12 +599,16 @@ class SaveImages(cpm.CPModule):
                       bit_depth = BIT_DEPTH_8, channel_names = None):
         '''Make a Bioformats IMetadata for an image'''
         assert channels in (1,3) or len(channel_names) == channels
+        if (self.save_image_or_figure == IF_MOVIE) and (channels == 3):
+            logical_channels = 3
+        else:
+            logical_channels = 1
         imeta = createOMEXMLMetadata()
         meta = wrap_imetadata_object(imeta)
         meta.createRoot()
         is_big = (sys.byteorder != 'little')
         meta.setPixelsBigEndian(is_big, 0, 0)
-        meta.setPixelsDimensionOrder('XYCZT', 0, 0)
+        meta.setPixelsDimensionOrder('XYZCT', 0, 0)
         try:
             PixelType = make_pixel_type_class()
             if bit_depth == BIT_DEPTH_8:
@@ -623,7 +629,8 @@ class SaveImages(cpm.CPModule):
         meta.setPixelsSizeC(channels, 0, 0)
         meta.setPixelsSizeZ(stacks, 0, 0)
         meta.setPixelsSizeT(frames, 0, 0)
-        meta.setLogicalChannelSamplesPerPixel(1, 0, 0)
+        # Note: now is setChannelSamplesPerPixel, handled in metadatatools
+        meta.setLogicalChannelSamplesPerPixel(logical_channels, 0, 0)
         try:
             meta.setImageID(nice_name, 0)
             meta.setPixelsID(nice_name, 0)

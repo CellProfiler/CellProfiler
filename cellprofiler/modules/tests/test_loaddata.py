@@ -470,7 +470,7 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
         m = pipeline.run()
         self.assertTrue(isinstance(m, cpmeas.Measurements))
         data = m.get_all_measurements(cpmeas.IMAGE, "Test_Measurement")
-        self.assertTrue(np.all(data == np.arange(4,7)))
+        self.assertTrue(np.all(data == np.arange(4,8)))
         os.remove(filename)
 
     def test_06_01_alternate_image_start(self):

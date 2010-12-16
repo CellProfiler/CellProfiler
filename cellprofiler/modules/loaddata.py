@@ -680,10 +680,9 @@ class LoadData(cpm.CPModule):
         if self.wants_rows.value:
             # skip initial rows
             n_to_skip = self.row_range.min-1
-            i=0
             for i in range(n_to_skip):
                 reader.next()
-            i += 1
+            i = self.row_range.min
             rows = []
             for row in reader:
                 if len(row) != len(header):

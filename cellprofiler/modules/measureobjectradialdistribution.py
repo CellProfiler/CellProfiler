@@ -4,15 +4,17 @@ of intensities within each object
 
 Given an image with objects identified, this module measures the
 intensity distribution from each object's center to its boundary 
-within a user-controlled number of bins.
+within a user-controlled number of bins, i.e. rings.
 
 The distribution is measured from the center of the object, where 
-the center is defined as the point farthest from any edge.
+the center is defined as the point farthest from any edge.  The numbering
+is from 1 (innermost) to N (outermost), where N is set by 'Number of bins'.
 Alternatively, if primary objects exist within the object of interest
 (e.g. nuclei within cells), you can choose the center of the the primary
 objects as the center from which to measure the radial distribution.
 This might be useful in cytoplasm-to-nucleus translocation experiments, 
-for example.
+for example.  Note that the ring widths are normalized per-object, 
+i.e. not necessarily a constant width across objects.
 
 <h4>Available measurements</h4>
 <ul>
@@ -206,7 +208,7 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
                 add_fn()
     
     def run(self, workspace):
-        stats = [("Image","Objects","Bin #","Bin count","Fraction","Intensity","COV")]
+        stats = [("Image","Objects","Bin # (innermost=1)","Bin count","Fraction","Intensity","COV")]
         d = {}
         for image in self.images:
             for o in self.objects:
@@ -300,7 +302,7 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
                 ig = i[good]
                 jg = j[good]
                 center_labels = np.zeros(center_labels.shape, int)
-                center_labels[ig,jg] = labels[ig,jg]
+                center_labels[ig,jg] = labels[ig,jg] ## TODO: This is incorrect when objects are annular.  Retrieves label# = 0
                 cl,d_from_center = propagate(np.zeros(center_labels.shape),
                                              center_labels,
                                              labels != 0, 1)

@@ -290,7 +290,7 @@ class StraightenWorms(cpm.CPModule):
                 straightened_pixel_data = np.zeros(
                     (ix.shape[0], ix.shape[1], image.pixel_data.shape[2]))
                 for d in range(image.pixel_data.shape[2]):
-                    straighened_pixel_data[:,:,d] = map_coordinates(
+                    straightened_pixel_data[:,:,d] = map_coordinates(
                         image.pixel_data[:,:,d], [ix, jx])
             straightened_mask = map_coordinates(image.mask, [ix, jx]) > .5
             straightened_image = cpi.Image(straightened_pixel_data,

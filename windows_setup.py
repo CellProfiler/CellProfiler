@@ -173,9 +173,18 @@ try:
     opts['py2exe']['excludes'] += ["ilastik"]
     il_path = ilastik.__path__[0]
     for root, subFolders, files in os.walk(il_path):
+        #
+        # Do not include experimental modules
+        #
+        relative_path = root[(len(il_path)+1):]
+        if any([relative_path.startswith(os.path.join('modules',x))
+                for x in (
+            'automatic_segmentation','object_picking',
+            'connected_components')]):
+            continue
         dest = os.path.join('site-packages','ilastik')
         if root != il_path:
-            dest = os.path.join(dest, root[(len(il_path)+1):])
+            dest = os.path.join(dest, relative_path)
         ilastik_files = [os.path.join(root, f) for f in files 
                          if f.endswith(".ui") or f.endswith(".png") or
                          f.endswith(".py")]

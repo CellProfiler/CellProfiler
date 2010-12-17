@@ -857,6 +857,20 @@ class TestEllipseFromSecondMoments(unittest.TestCase):
         self.assertAlmostEqual(eccentricity[0],0.8627,2)
         self.assertAlmostEqual(centers[0,1],14.1689,2)
         self.assertAlmostEqual(centers[0,0],14.8691,2)
+        
+    def test_02_01_compactness_square(self):
+        image = np.zeros((9,9), int)
+        image[1:8,1:8] = 1
+        compactness = morph.ellipse_from_second_moments(
+            np.ones(image.shape), image, [1], True)[-1]
+        i,j = np.mgrid[0:9, 0:9]
+        v_i = np.var(i[image > 0])
+        v_j = np.var(j[image > 0])
+        v = v_i + v_j
+        area = np.sum(image > 0)
+        expected = 2 * np.pi * v / area
+        self.assertAlmostEqual(compactness, expected)
+        
 
 class TestCalculateExtents(unittest.TestCase):
     def test_00_00_zeros(self):

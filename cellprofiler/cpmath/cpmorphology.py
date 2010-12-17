@@ -1546,7 +1546,7 @@ def all_true(a, indexes):
     hits = cs[augmented_indexes[1:]-1] - cs[augmented_indexes[0:-1]-1]
     return counts == hits
 
-def ellipse_from_second_moments(image, labels, indexes):
+def ellipse_from_second_moments(image, labels, indexes, wants_compactness = False):
     """Calculate measurements of ellipses equivalent to the second moments of labels
     
     image  - the intensity at each point
@@ -1559,6 +1559,7 @@ def ellipse_from_second_moments(image, labels, indexes):
        major axis length
        minor axis length
        orientation
+       compactness (if asked for)
     
     some definitions taken from "Image Moments-Based Structuring and Tracking
     of Objects", LOURENA ROCHA, LUIZ VELHO, PAULO CEZAR P. CARVALHO,
@@ -1571,14 +1572,15 @@ def ellipse_from_second_moments(image, labels, indexes):
     
     eccentricity is the distance between foci divided by the major axis length
     orientation is the angle of the major axis with respect to the X axis
+    compactness is the variance of the radial distribution normalized by the area
     """
     if len(indexes) == 0:
         return (np.zeros((0,2)), np.zeros((0,)), np.zeros((0,)), 
                 np.zeros((0,)),np.zeros((0,)))
     i,j = np.argwhere(labels != 0).transpose()
-    return ellipse_from_second_moments_ijv(i,j,image[i,j], labels[i,j], indexes)
+    return ellipse_from_second_moments_ijv(i,j,image[i,j], labels[i,j], indexes, wants_compactness)
 
-def ellipse_from_second_moments_ijv(i,j, image, labels, indexes):
+def ellipse_from_second_moments_ijv(i,j, image, labels, indexes, wants_compactness = False):
     """Calculate measurements of ellipses equivalent to the second moments of labels
     
     i,j - coordinates of each point
@@ -1606,14 +1608,10 @@ def ellipse_from_second_moments_ijv(i,j, image, labels, indexes):
     orientation is the angle of the major axis with respect to the X axis
     """
     if len(indexes) == 0:
-        return (np.zeros((0,2)), np.zeros((0,)), np.zeros((0,)), 
-                np.zeros((0,)),np.zeros((0,)))
+        return [np.zeros((0,2))] + [np.zeros((0,))] * (5 if wants_compactness else 4)
     if len(i) == 0:
-        return (np.zeros((len(indexes), 2)),
-                np.ones(len(indexes)),
-                np.zeros(len(indexes)),
-                np.zeros(len(indexes)),
-                np.zeros(len(indexes)))
+        return ([np.zeros((len(indexes), 2)), np.ones(len(indexes))] +
+                [np.zeros(len(indexes))] * (4 if wants_compactness else 3))
     #
     # Normalize to center of object for stability
     #
@@ -1657,12 +1655,14 @@ def ellipse_from_second_moments_ijv(i,j, image, labels, indexes):
                       mystery_constant)
     minor_axis_len = (np.sqrt(8*(a+c-temp)) * mystery_multiplier +
                       mystery_constant)
-    eccentricity = np.sqrt(1-(minor_axis_len / major_axis_len)**2) 
-    return (np.column_stack((ic[indexes], jc[indexes])),
-            eccentricity[indexes],
-            major_axis_len[indexes],
-            minor_axis_len[indexes],
-            theta[indexes])
+    eccentricity = np.sqrt(1-(minor_axis_len / major_axis_len)**2)
+    compactness = 2 * np.pi * (a + c) / m[0,0]
+    return ([np.column_stack((ic[indexes], jc[indexes])),
+             eccentricity[indexes],
+             major_axis_len[indexes],
+             minor_axis_len[indexes],
+             theta[indexes]] +
+            ([compactness[indexes]] if wants_compactness else []))
 
 def calculate_extents(labels, indexes):
     """Return the area of each object divided by the area of its bounding box"""

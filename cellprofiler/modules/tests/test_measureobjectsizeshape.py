@@ -95,7 +95,7 @@ MeasureObjectSizeShape:[module_num:1|svn_version:\'1\'|variable_revision_number:
                   cpmoas.F_EXTENT, cpmoas.F_FORM_FACTOR,
                   cpmoas.F_MAJOR_AXIS_LENGTH, cpmoas.F_MINOR_AXIS_LENGTH,
                   cpmoas.F_ORIENTATION, cpmoas.F_PERIMETER,
-                  cpmoas.F_SOLIDITY):
+                  cpmoas.F_SOLIDITY, cpmoas.F_COMPACTNESS):
             m = cpmoas.AREA_SHAPE + "_" + f
             a = measurements.get_current_measurement('SomeObjects', m)
             self.assertEqual(len(a), 0)

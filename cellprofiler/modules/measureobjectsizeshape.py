@@ -52,6 +52,9 @@ region.</li>
 degrees) between the x-axis and the major axis of the ellipse that has the
 same second-moments as the region.</li>
 
+<li><i>Compactness:</i> The variance of the radial distance of the object's
+pixels from the centroid divided by the area.</li>
+
 <li><i>Zernike shape features:</i> Measure shape by describing a binary object (or
 more precisely, a patch with background and an object in the center) in a
 basis of Zernike polynomials, using the coefficients as features <i>(Boland
@@ -126,11 +129,12 @@ F_FORM_FACTOR = 'FormFactor'
 F_MAJOR_AXIS_LENGTH = 'MajorAxisLength'
 F_MINOR_AXIS_LENGTH = 'MinorAxisLength'
 F_ORIENTATION = 'Orientation'
+F_COMPACTNESS = 'Compactness'
 """The non-Zernike features"""
 F_STANDARD = [ F_AREA, F_ECCENTRICITY, F_SOLIDITY, F_EXTENT,
                F_EULER_NUMBER, F_PERIMETER, F_FORM_FACTOR,
                F_MAJOR_AXIS_LENGTH, F_MINOR_AXIS_LENGTH,
-               F_ORIENTATION, F_CENTER_X, F_CENTER_Y ]
+               F_ORIENTATION, F_COMPACTNESS, F_CENTER_X, F_CENTER_Y ]
 class MeasureObjectSizeShape(cpm.CPModule):
 
     module_name = "MeasureObjectSizeShape"
@@ -254,8 +258,9 @@ class MeasureObjectSizeShape(cpm.CPModule):
         # Do the ellipse-related measurements
         #
         i, j, l = objects.ijv.transpose()
-        centers, eccentricity, major_axis_length, minor_axis_length, theta =\
-            ellipse_from_second_moments_ijv(i, j, 1, l, objects.indices)
+        centers, eccentricity, major_axis_length, minor_axis_length, \
+            theta, compactness =\
+            ellipse_from_second_moments_ijv(i, j, 1, l, objects.indices, True)
         del i
         del j
         del l
@@ -267,6 +272,8 @@ class MeasureObjectSizeShape(cpm.CPModule):
                                 F_MINOR_AXIS_LENGTH, minor_axis_length)
         self.record_measurement(workspace, object_name, F_ORIENTATION, 
                                 theta * 180 / np.pi)
+        self.record_measurement(workspace, object_name, F_COMPACTNESS,
+                                compactness)
         is_first = False
         if len(objects.indices) == 0:
             nobjects = 0

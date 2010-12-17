@@ -280,7 +280,7 @@ class UntangleWorms(cpm.CPModule):
             times the minimum area factor.""")
         
         self.min_area_factor = cps.Float(
-            "Minimum area factor", .9, 0,
+            "Minimum area factor", .85, 0,
             doc = """<i>(Used only if training)</i> <br>
             This setting is a multiplier that is applied to the
             area of the worm, selected as described in the documentation
@@ -353,7 +353,7 @@ class UntangleWorms(cpm.CPModule):
             the cost threshold.""")
         
         self.max_cost_factor = cps.Float(
-            "Maximum cost factor", 1.2, 0,
+            "Maximum cost factor", 1.9, 0,
             doc = """<i>(Used only if training)</i> <br>
             <b>UntangleWorms</b> uses this setting to compute the
             cost threshold as described in <i>Maximum cost percentile</i> 
@@ -453,7 +453,7 @@ class UntangleWorms(cpm.CPModule):
         if not self.wants_training_set_weights:
             return self.override_overlap_weight.value
         elif params is None:
-            return 5
+            return 2
         else:
             return params.overlap_weight
         

@@ -1,11 +1,15 @@
+import os
+import sys
 import wx
 import wx.html
 import content
 import webbrowser
+import urllib
 import urllib2
 import cellprofiler.preferences as cpprefs
 from cellprofiler.icons import get_builtin_images_path
 
+MEMORY_SCHEME = "memory:"
 class HtmlClickableWindow(wx.html.HtmlWindow):
     def __init__(self, *args, **kwargs):
         wx.html.HtmlWindow.__init__(self, *args, **kwargs)
@@ -43,8 +47,14 @@ class HtmlClickableWindow(wx.html.HtmlWindow):
 
     def OnOpeningURL(self, type, url):
         if type == wx.html.HTML_URL_IMAGE:
-            if url.startswith('memory:'):
-                return url.replace('memory:', 'file://' + get_builtin_images_path())
+            if url.startswith(MEMORY_SCHEME):
+                path = get_builtin_images_path()
+                full_path = os.path.join(path, url[len(MEMORY_SCHEME):])
+                if sys.platform.startswith("win"):
+                    my_url = full_path
+                else:
+                    my_url = "file:" + urllib.pathname2url(full_path)
+                return my_url
         return wx.html.HTML_OPEN
 
 if __name__ == '__main__':

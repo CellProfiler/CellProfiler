@@ -180,7 +180,7 @@ class AddModuleFrame(wx.Frame):
                
     def __on_wheres_my_module(self,event):
         import webbrowser
-        webbrowser.open("http://cellprofiler.org/forum/viewtopic.php?f=14&t=806&p=3221")
+        webbrowser.open("http://cellprofiler.org/forum/viewtopic.php?f=14&t=806&p=3221#p4486")
                 
     def add_listener(self,listener):
         self.__listeners.append(listener)

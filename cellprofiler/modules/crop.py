@@ -105,7 +105,7 @@ class Crop(cpm.CPModule):
         self.shape=cps.Choice("Select the cropping shape",
                             [SH_RECTANGLE, SH_ELLIPSE, SH_IMAGE,
                              SH_OBJECTS, SH_CROPPING],
-                            SH_ELLIPSE,doc = """
+                            SH_RECTANGLE,doc = """
                             Into which shape would you like to crop? 
                             <ul>
                             <li><i>Rectangle:</i> Self-explanatory</li>
@@ -455,7 +455,8 @@ class Crop(cpm.CPModule):
             return (x,y)
         
         class handle(M.patches.Rectangle):
-            height, width = (10,10)
+            dm = max((10,min(pixel_data.shape)/50))
+            height, width = (dm,dm)
             def __init__(self, x, y, on_move):
                 self.__selected = False
                 self.__color = cpprefs.get_primary_outline_color()
@@ -478,10 +479,8 @@ class Crop(cpm.CPModule):
                     self.set_facecolor(self.__color)
                     
                 else:
-                    print "Select off"
                     self.set_facecolor("none")
                     if current_handle[0] == self:
-                        print "Cancel handle"
                         current_handle[0] = None
                 figure.canvas.draw()
                 dialog_box.Update()
@@ -656,7 +655,7 @@ class Crop(cpm.CPModule):
                     RE_LEFT: pixel_data.shape[1] / 4,
                     RE_TOP: pixel_data.shape[0] / 4,
                     RE_RIGHT: pixel_data.shape[1] * 3 / 4,
-                    RE_BOTTOM: pixel_data.shape[1] * 3 / 4
+                    RE_BOTTOM: pixel_data.shape[0] * 3 / 4
                     }
             rectangle = d[SH_RECTANGLE]
             shape = crop_rectangle((rectangle[RE_LEFT], rectangle[RE_TOP]),

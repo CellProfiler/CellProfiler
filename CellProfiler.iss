@@ -33,7 +33,7 @@ Source: ".\windows\vcredist_x86.exe"; DestDir: "{tmp}"
 
 [Icons]
 Name: "{group}\CellProfiler"; Filename: "{app}\CellProfiler.exe"; WorkingDir: "{app}"
-Name: "{group}\{cm:ProgramOnTheWeb,CellProfiler}"; Filename: "http://www.cellprofiler.org"
+Name: "{group}\Ilastik"; Filename: "{app}\CellProfiler.exe"; Parameters:"--ilastik"; WorkingDir: "{app}"Name: "{group}\{cm:ProgramOnTheWeb,CellProfiler}"; Filename: "http://www.cellprofiler.org"
 Name: "{group}\{cm:UninstallProgram,CellProfiler}"; Filename: "{uninstallexe}"
 Name: "{commondesktop}\CellProfiler"; Filename: "{app}\CellProfiler.exe"; WorkingDir: "{app}"; Tasks: desktopicon
 

@@ -25,21 +25,19 @@ as a per-image measurement along with CellProfiler-calculated data. This is a
 convenient way for you to add data from your own sources to the files exported by
 CellProfiler.</li>
 
-<li><i>Columns whose name begins with Image_FileName.</i>
-A column whose name begins with "Image_FileName" can be used to supply the file 
-name of an image that you want to load.
+<li><i>Columns whose name begins with Image_FileName or Image_PathName.</i>
+A column whose name begins with "Image_FileName" or "Image_PathName" can be used to 
+supply the file name and path name (relative to the base folder) of an image that you want to load.
 The image's name within CellProfiler appears afterward. For instance,
 "Image_FileName_CY3" would supply the file name for the CY3-stained image, and
 choosing the <i>Load images based on this data?</i> option allows the CY3 images to be 
-selected later in the pipeline.</li>
+selected later in the pipeline. "Image_PathName_CY3" would supply the path names
+for the CY3-stained images. The path name column is optional; if all image files are in the base 
+folder, this column is not needed.</li>
 
-<li><i>Columns whose name begins with Image_PathName</i>.
-A column whose name begins with "Image_PathName" can be used to supply the 
-path name of an image that you want to load (relative to the base folder). 
-The image's name within CellProfiler appears
-afterward. For instance, "Image_PathName_CY3" would supply the path names
-for the CY3-stained images. This is optional; if all image files are in the base 
-folder, this column is not needed. </li>
+<li><i>Columns whose name begins with Image_ObjectsFileName or Image_ObjectsPathName</i>.
+The behavior of these columns is identical to that of "Image_FileName" or "Image_PathName"
+except that it is used to specify an image that you want to load as objects. </li>
 
 <li><i>Columns whose name begins with Metadata</i>. A column whose name begins with 
 "Metadata" can be used to group or associate files loaded by <b>LoadData</b>.

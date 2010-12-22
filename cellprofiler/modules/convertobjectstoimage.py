@@ -4,6 +4,10 @@
 This module allows you to take previously identified objects and convert
 them into an image according to a colormap you select, which can then be saved 
 with the <b>SaveImages</b> modules.
+
+<p>If you would like to save your objects but do not need a colormap,
+you can by bypass this module and use the <b>SaveImages</b> module directly 
+by specifying "Objects" as the type of image to save.
 '''
 
 # CellProfiler is distributed under the GNU General Public License.

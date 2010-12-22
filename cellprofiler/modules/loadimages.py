@@ -6,7 +6,9 @@ This module tells CellProfiler where to retrieve images and gives each image a
 meaningful name by which other modules can access it. You can also use <b>LoadImages</b> to extract
 or define the relationships between images and their associated 
 metadata. For example, you could load a group of images (such as three channels that represent the same field 
-of view) together for processing in a single CellProfiler cycle.
+of view) together for processing in a single CellProfiler cycle. Finally, you can use
+this module to retrieve a label matrix and give the collection
+of objects a meaningful name.
 
 <p>When used in combination with a <b>SaveImages</b> module, you can load images in one file format and
 save them in another, using CellProfiler as a file format converter.</p>
@@ -663,11 +665,25 @@ class LoadImages(cpmodule.CPModule):
                 img_index += 1
                 
         group.append("image_object_choice", cps.Choice(
-            'Load as images or objects?', IO_ALL,
+            'Load the input as images or objects?', IO_ALL,
             doc = """
             This setting determines whether you load an image as image data
-            or as segmentation results (objects). MARK will describe how this
-            works"""))
+            or as segmentation results (i.e., objects):
+            <ul>
+            <li><i>Images:</i> The input image will be given a user-specified name by
+            which it will be refered downstream. This is the most common usage for this
+            module.</li>
+            <li><i>Objects:</i> Use this option if the input image is a label matrix 
+            and you want to obtain the objects that it defines. A <i>label matrix</i>
+            is a grayscale or color image in which the connected regions share the
+            same label, and defines how objects are represented in CellProfiler.
+            The labels are integer values greater than or equal to 0. 
+            The elements equal to 0 are the background, whereas the elements equal to 1 
+            make up one object, the elements equal to 2 make up a second object, and so on.
+            This option allows you to use the objects without needing to insert an 
+            <b>Identify</b> module to extract them first. See <b>IdentifyPrimaryObjects</b> 
+            for more details.</li>
+            </ul>"""))
         
         group.append("image_name", cps.FileImageNameProvider(
             'Name this loaded image', 
@@ -696,7 +712,9 @@ class LoadImages(cpmodule.CPModule):
         group.append("object_name", cps.ObjectNameProvider(
             'Name this loaded object',
             "Nuclei",
-            doc = """This is the name for the objects loaded from your image"""))
+            doc = """
+            <i>(Used only if objects are to loaded)</i><br>
+            This is the name for the objects loaded from your image"""))
         
         group.get_image_name = lambda : (
             group.image_name.value if self.channel_wants_images(group)
@@ -751,7 +769,7 @@ class LoadImages(cpmodule.CPModule):
         result += [
             image_group.common_text, 
             image_group.order_position, 
-            image_name.channels[0].image_object_choice,
+            image_group.channels[0].image_object_choice,
             image_group.channels[0].image_name,
             image_group.channels[0].object_name,
             image_group.channels[0].channel_number,

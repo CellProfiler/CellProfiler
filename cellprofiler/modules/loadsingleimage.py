@@ -40,13 +40,17 @@ import numpy as np
 import re
 import os
 
+import cellprofiler.objects as cpo
 import cellprofiler.cpimage as cpi
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.preferences as cpprefs
 import cellprofiler.settings as cps
-from loadimages import LoadImagesImageProvider, C_SCALING, C_FILE_NAME
-from loadimages import C_PATH_NAME, C_MD5_DIGEST
+from loadimages import LoadImagesImageProvider
+from loadimages import C_SCALING, C_FILE_NAME, C_PATH_NAME, C_MD5_DIGEST, C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME
+from loadimages import convert_image_to_objects
+from loadimages import IO_IMAGES, IO_OBJECTS, IO_ALL
+import identify as I
 from cellprofiler.gui.help import USING_METADATA_TAGS_REF, USING_METADATA_HELP_REF
 from cellprofiler.preferences import standardize_default_folder_names, \
      DEFAULT_INPUT_FOLDER_NAME, DEFAULT_OUTPUT_FOLDER_NAME, \
@@ -58,13 +62,14 @@ DIR_CUSTOM_WITH_METADATA = "Custom with metadata"
 FILE_TEXT = "Filename of the image to load (Include the extension, e.g., .tif)"
 URL_TEXT = "URL of the image to load (Include the extension, e.g., .tif)"
 
-S_FILE_SETTINGS_COUNT = 3
+S_FILE_SETTINGS_COUNT_V4 = 3
+S_FILE_SETTINGS_COUNT_V5 = 5
 
 class LoadSingleImage(cpm.CPModule):
 
     module_name = "LoadSingleImage"
     category = "File Processing"
-    variable_revision_number = 4
+    variable_revision_number = 5
     def create_settings(self):
         """Create the settings during initialization
         
@@ -120,24 +125,56 @@ class LoadSingleImage(cpm.CPModule):
                     </ul>
                     <p>Keep in mind that in either case, the image file extension, if any, must be included."""% globals() ))
         
+        group.append("image_object_choice", cps.Choice(
+                    'Load as images or objects?', IO_ALL,
+                    doc = """
+                    This setting determines whether you load an image as image data
+                    or as segmentation results (i.e., objects):
+                    <ul>
+                    <li><i>Images:</i> The input image will be given a user-specified name by
+                    which it will be refered downstream. This is the most common usage for this
+                    module.</li>
+                    <li><i>Objects:</i> Use this option if the input image is a label matrix 
+                    and you want to obtain the objects that it defines. A <i>label matrix</i>
+                    is a grayscale or color image in which the connected regions share the
+                    same label, and defines how objects are represented in CellProfiler.
+                    The labels are integer values greater than or equal to 0. 
+                    The elements equal to 0 are the background, whereas the elements equal to 1 
+                    make up one object, the elements equal to 2 make up a second object, and so on.
+                    This option allows you to use the objects without needing to insert an 
+                    <b>Identify</b> module to extract them first. See <b>IdentifyPrimaryObjects</b> 
+                    for more details.</li>
+                    </ul>"""))
+        
         group.append("image_name", cps.FileImageNameProvider("Name the image that will be loaded", 
-                    "OrigBlue", doc = '''What do you want to call the image you are loading? 
+                    "OrigBlue", doc = '''
+                    <i>(Used only if an image is output)</i><br>
+                    What do you want to call the image you are loading? 
                     You can use this name to select the image in downstream modules.'''))
+        
         group.append("rescale", cps.Binary(
-            "Rescale intensities?",True,
-            doc = """This option determines whether image metadata should be
-            used to rescale the image's intensities. Some image formats
-            save the maximum possible intensity value along with the pixel data.
-            For instance, a microscope might acquire images using a 12-bit
-            A/D converter which outputs intensity values between zero and 4095,
-            but stores the values in a field that can take values up to 65535.
-            Check this setting to rescale the image intensity so that
-            saturated values are rescaled to 1.0 by dividing all pixels
-            in the image by the maximum possible intensity value. Uncheck this 
-            setting to ignore the image metadata and rescale the image
-            to 0 - 1.0 by dividing by 255 or 65535, depending on the number
-            of bits used to store the image."""))
+                    "Rescale intensities?",True,
+                    doc = """
+                    <i>(Used only if an image is output)</i><br>
+                    This option determines whether image metadata should be
+                    used to rescale the image's intensities. Some image formats
+                    save the maximum possible intensity value along with the pixel data.
+                    For instance, a microscope might acquire images using a 12-bit
+                    A/D converter which outputs intensity values between zero and 4095,
+                    but stores the values in a field that can take values up to 65535.
+                    Check this setting to rescale the image intensity so that
+                    saturated values are rescaled to 1.0 by dividing all pixels
+                    in the image by the maximum possible intensity value. Uncheck this 
+                    setting to ignore the image metadata and rescale the image
+                    to 0 - 1.0 by dividing by 255 or 65535, depending on the number
+                    of bits used to store the image."""))
 
+        group.append("object_name", cps.ObjectNameProvider(
+                    'Name this loaded object',
+                    "Nuclei",
+                    doc = """<i>(Used only if objects are output)</i><br>
+                    This is the name for the objects loaded from your image"""))
+        
         if can_remove:
             group.append("remove", cps.RemoveSettingButton("", "Remove this image", self.file_settings, group))
         self.file_settings.append(group)
@@ -149,20 +186,39 @@ class LoadSingleImage(cpm.CPModule):
             url_based = (self.directory.dir_choice == cps.URL_FOLDER_NAME)
             file_setting.file_name.set_browsable(not url_based)
             file_setting.file_name.text = URL_TEXT if url_based else FILE_TEXT
-            result += [file_setting.file_name, file_setting.image_name,
-                       file_setting.rescale]
+            result += [file_setting.file_name, 
+                        file_setting.image_object_choice,
+                        file_setting.image_name,
+                        file_setting.rescale, 
+                        file_setting.object_name]
         return result
-
+    
+    def help_settings(self):
+        result = [self.directory]
+        image_group = self.file_settings[0]
+        result += [image_group.file_name, 
+                    image_group.image_object_choice,
+                    image_group.image_name,
+                    image_group.rescale, 
+                    image_group.object_name]
+        return result
+    
     def visible_settings(self):
         result = [self.directory]
         for file_setting in self.file_settings:
-            result += file_setting.visible_settings()
+            result += [file_setting.file_name,
+                       file_setting.image_object_choice]
+            if self.file_wants_images(file_setting):
+                result += [file_setting.image_name,
+                            file_setting.rescale]
+            else:
+                result += [file_setting.object_name]
         result.append(self.add_button)
         return result 
 
     def prepare_settings(self, setting_values):
         """Adjust the file_settings depending on how many files there are"""
-        count = (len(setting_values)-1) / S_FILE_SETTINGS_COUNT
+        count = (len(setting_values)-1) / S_FILE_SETTINGS_COUNT_V5
         del self.file_settings[count:]
         while len(self.file_settings) < count:
             self.add_file()
@@ -211,6 +267,11 @@ class LoadSingleImage(cpm.CPModule):
                 return file_setting
         return None
             
+    
+    def file_wants_images(self, file_setting):
+        '''True if the file_setting produces images, false if it produces objects'''
+        return file_setting.image_object_choice == IO_IMAGES
+    
     def run(self, workspace):
         dict = self.get_file_names(workspace)
         root = self.get_base_directory(workspace)
@@ -218,23 +279,41 @@ class LoadSingleImage(cpm.CPModule):
         m = workspace.measurements
         for image_name in dict.keys():
             file_settings = self.get_file_settings(image_name)
+            wants_images = self.file_wants_images(file_settings)
             provider = LoadImagesImageProvider(
                 image_name, root, dict[image_name], file_settings.rescale.value)
             workspace.image_set.providers.append(provider)
+            image = provider.provide_image(workspace.image_set)
+            pixel_data = image.pixel_data
+            statistics += [(image_name, dict[image_name])]
             #
             # Add measurements
             #
-            m.add_measurement('Image',C_FILE_NAME + '_'+image_name, dict[image_name])
-            m.add_measurement('Image',C_PATH_NAME + '_'+image_name, root)
-            image = provider.provide_image(workspace.image_set)
-            pixel_data = image.pixel_data
-            digest = hashlib.md5()
-            digest.update(np.ascontiguousarray(pixel_data).data)
-            m.add_measurement('Image',C_MD5_DIGEST + '_'+image_name, 
-                              digest.hexdigest())
-            m.add_image_measurement('_'.join((C_SCALING, image_name)),
-                                    image.scale)
-            statistics += [(image_name, dict[image_name])]
+            if wants_images:
+                m.add_measurement('Image',C_FILE_NAME + '_'+image_name, dict[image_name])
+                m.add_measurement('Image',C_PATH_NAME + '_'+image_name, root)
+                digest = hashlib.md5()
+                digest.update(np.ascontiguousarray(pixel_data).data)
+                m.add_measurement('Image',C_MD5_DIGEST + '_'+image_name, 
+                                  digest.hexdigest())
+                m.add_image_measurement('_'.join((C_SCALING, image_name)),
+                                        image.scale)
+            else:
+                #
+                # Save as objects.
+                #
+                path_name_category = C_OBJECTS_PATH_NAME
+                file_name_category = C_OBJECTS_FILE_NAME
+                pixel_data = convert_image_to_objects(pixel_data)
+                o = cpo.Objects()
+                o.segmented = pixel_data
+                object_set = workspace.object_set
+                assert isinstance(object_set, cpo.ObjectSet)
+                object_name = file_settings.object_name.value
+                object_set.add_objects(o, object_name)
+                provider.release_memory()
+                I.add_object_count_measurements(m, object_name, o.count)
+                I.add_object_location_measurements(m, object_name, pixel_data)
         if workspace.frame:
             title = "Load single image: image cycle # %d"%(workspace.measurements.image_set_number+1)
             figure = workspace.create_or_find_figure(title="LoadSingleImage, image cycle #%d"%(
@@ -245,26 +324,65 @@ class LoadSingleImage(cpm.CPModule):
     def get_measurement_columns(self, pipeline):
         columns = []
         for file_setting in self.file_settings:
-            image_name = file_setting.image_name.value
-            columns += [(cpmeas.IMAGE, '_'.join((feature, image_name)), coltype)
-                        for feature, coltype in (
-                            (C_FILE_NAME, cpmeas.COLTYPE_VARCHAR_FILE_NAME),
-                            (C_PATH_NAME, cpmeas.COLTYPE_VARCHAR_PATH_NAME),
-                            (C_MD5_DIGEST, cpmeas.COLTYPE_VARCHAR_FORMAT % 32),
-                            (C_SCALING, cpmeas.COLTYPE_FLOAT)
-                        )]
+            if not self.file_wants_images(file_setting):
+                name = file_setting.object_name.value
+                columns += I.get_object_measurement_columns(name)
+                path_name_category = C_OBJECTS_PATH_NAME
+                file_name_category = C_OBJECTS_FILE_NAME
+            else:
+                name = file_setting.image_name.value
+                path_name_category = C_PATH_NAME
+                file_name_category = C_FILE_NAME
+                columns += [(cpmeas.IMAGE, "_".join((C_MD5_DIGEST, name)), 
+                              cpmeas.COLTYPE_VARCHAR_FORMAT%32)]
+                columns += [(cpmeas.IMAGE, "_".join((C_SCALING, name)),
+                              cpmeas.COLTYPE_FLOAT)]
+                
+            columns += [(cpmeas.IMAGE, "_".join((file_name_category, name)), 
+                              cpmeas.COLTYPE_VARCHAR_FILE_NAME)]
+            columns += [(cpmeas.IMAGE, "_".join((path_name_category, name)), 
+                              cpmeas.COLTYPE_VARCHAR_PATH_NAME)]
+            
         return columns
     
     def get_categories(self, pipeline, object_name):
+        object_names = sum(
+            [[file_setting.object_name.value for file_setting in self.file_settings if file_setting.image_object_choice == IO_OBJECTS ]], [])
+        has_image_name = any(
+            [ True for file_setting in self.file_settings if file_setting.image_object_choice == IO_IMAGES])
+        res = []
         if object_name == cpmeas.IMAGE:
-            return [C_FILE_NAME, C_MD5_DIGEST, C_PATH_NAME, C_SCALING]
-        return []
+            if has_image_name:
+                res += [C_FILE_NAME, C_MD5_DIGEST, C_PATH_NAME, C_SCALING]
+            if len(object_names) > 0:
+                res += [C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME, I.C_COUNT]
+        elif object_name in object_names:
+            res += [I.C_LOCATION, I.C_NUMBER]
+        return res
     
     def get_measurements(self, pipeline, object_name, category):
-        if category in self.get_categories(pipeline, object_name):
-            return [ file_setting.image_name.value 
-                     for file_setting in self.file_settings]
-        return []
+        '''Return the measurements that this module produces
+        
+        object_name - return measurements made on this object (or 'Image' for image measurements)
+        category - return measurements made in this category
+        '''
+        result = []
+        object_names = sum(
+            [[file_setting.object_name.value for file_setting in self.file_settings if file_setting.image_object_choice == IO_OBJECTS ]], [])
+        
+        if object_name == cpmeas.IMAGE:
+            if category == I.C_COUNT:
+                result += object_names
+            else:
+                result += [c[1].split('_',1)[1] 
+                           for c in self.get_measurement_columns(pipeline)
+                           if c[1].split('_')[0] == category]
+        elif object_name in object_names:
+            if category == I.C_NUMBER:
+                result += [I.FTR_OBJECT_NUMBER]
+            elif category == I.C_LOCATION:
+                result += [I.FTR_CENTER_X, I.FTR_CENTER_Y]
+        return result
     
     def validate_module(self, pipeline):
         '''Keep users from using LoadSingleImage to define image sets'''
@@ -343,5 +461,16 @@ class LoadSingleImage(cpm.CPModule):
             setting_values = new_setting_values
             variable_revision_number = 4
 
+        if variable_revision_number == 4 and (not from_matlab):
+            # Added object loading option
+            new_setting_values = setting_values[:1]
+            for i in range(1, len(setting_values), S_FILE_SETTINGS_COUNT_V4):
+                new_setting_values += [setting_values[i]] + \
+                                        [IO_IMAGES] + \
+                                        setting_values[(i+1):(i+S_FILE_SETTINGS_COUNT_V4)] + \
+                                        ["Nuclei"]
+            setting_values = new_setting_values
+            variable_revision_number = 5
+            
         return setting_values, variable_revision_number, from_matlab
 

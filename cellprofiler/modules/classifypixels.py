@@ -163,6 +163,8 @@ class ClassifyPixels(cpm.CPModule):
         f = h5py.File(fileName,'r')
         for fgrp in f['features'].values():
             featureItems.append(FeatureBase.deserialize(fgrp))
+        f.close()
+        del f
 
         # Create FeatureMgr
         fm = FeatureMgr(self.dataMgr, featureItems)

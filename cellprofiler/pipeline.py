@@ -1391,6 +1391,11 @@ class Pipeline(object):
 
     def clear(self):
         old_modules = self.__modules
+        def undo():
+            for module in old_modules:
+                self.add_module(module)
+        self.__undo_stack.append((undo, 
+                                  "Undo clear"))
         self.__modules = []
         self.notify_listeners(PipelineClearedEvent())
     

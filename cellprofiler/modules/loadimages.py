@@ -213,7 +213,7 @@ def default_cpimage_name(index):
 class LoadImages(cpmodule.CPModule):
 
     module_name = "LoadImages"
-    variable_revision_number = 9
+    variable_revision_number = 10
     category = "File Processing"
 
     def create_settings(self):
@@ -713,8 +713,21 @@ class LoadImages(cpmodule.CPModule):
             'Name this loaded object',
             "Nuclei",
             doc = """
-            <i>(Used only if objects are to loaded)</i><br>
+            <i>(Used only if objects are output)</i><br>
             This is the name for the objects loaded from your image"""))
+        
+        group.append("wants_outlines", cps.Binary('Retain outlines of loaded objects?"', False,
+            doc = """<i>(Used only if objects are output)</i><br>
+            Check this setting if you want to create an image of the outlines
+            of the loaded objects."""))
+        
+        group.append("outlines_name", cps.OutlineNameProvider('Name the outline image','LoadedImageOutlines', doc = '''
+            <i>(Used only if objects are output and outlines are saved)</i> <br> 
+            Enter a name that will allow the outlines to be selected later in the pipeline.
+            <p><i>Special note on saving images:</i> You can use the settings in this module
+            to pass object outlines along to the module <b>OverlayOutlines</b>, and then save
+            them with the <b>SaveImages</b> module.'''))
+        
         
         group.get_image_name = lambda : (
             group.image_name.value if self.channel_wants_images(group)
@@ -772,6 +785,8 @@ class LoadImages(cpmodule.CPModule):
             image_group.channels[0].image_object_choice,
             image_group.channels[0].image_name,
             image_group.channels[0].object_name,
+            image_group.channels[0].wants_outlines,
+            image_group.channels[0].outlines_name,
             image_group.channels[0].channel_number,
             image_group.metadata_choice,
             image_group.file_metadata, 
@@ -831,7 +846,9 @@ class LoadImages(cpmodule.CPModule):
                 if self.channel_wants_images(fd.channels[0]):
                     varlist += [fd.channels[0].image_name, fd.channels[0].rescale]
                 else:
-                    varlist += [fd.channels[0].object_name]
+                    varlist += [fd.channels[0].object_name, fd.channels[0].wants_outlines]
+                    if fd.channels[0].wants_outlines.value:
+                            varlist += [fd.channels[0].outlines_name]
             varlist += [fd.metadata_choice]
             if self.has_file_metadata(fd):
                 varlist += [fd.file_metadata]
@@ -850,7 +867,9 @@ class LoadImages(cpmodule.CPModule):
                     if self.channel_wants_images(channel):
                         varlist += [channel.image_name]
                     else:
-                        varlist += [channel.object_name]
+                        varlist += [channel.object_name, channel.wants_outlines]
+                        if channel.wants_outlines.value:
+                            varlist += [channel.outlines_name]
                     varlist += [channel.channel_number]
                     if self.channel_wants_images(channel):
                         varlist += [channel.rescale]
@@ -928,12 +947,14 @@ class LoadImages(cpmodule.CPModule):
     SLOT_FIRST_IMAGE_V6 = 11
     SLOT_FIRST_IMAGE_V7 = 11
     SLOT_FIRST_IMAGE_V8 = 11
+    SLOT_FIRST_IMAGE_V9 = 11
     SLOT_FIRST_IMAGE = 11
     SLOT_IMAGE_COUNT_V6 = 10
     SLOT_IMAGE_COUNT_V7 = 10
     SLOT_IMAGE_COUNT_V8 = 10
+    SLOT_IMAGE_COUNT_V9 = 10
     SLOT_IMAGE_COUNT = 10
-    
+                
     SLOT_OFFSET_COMMON_TEXT = 0
     SLOT_OFFSET_IMAGE_NAME_V5 = 1
     SLOT_OFFSET_ORDER_POSITION_V5 = 2
@@ -944,8 +965,9 @@ class LoadImages(cpmodule.CPModule):
     SLOT_IMAGE_FIELD_COUNT_V5 = 6
     SLOT_IMAGE_FIELD_COUNT_V7 = 9
     SLOT_IMAGE_FIELD_COUNT_V8 = 9
+    SLOT_IMAGE_FIELD_COUNT_V9 = 9
     SLOT_IMAGE_FIELD_COUNT = 9
-    
+            
     SLOT_OFFSET_ORDER_POSITION = 1
     SLOT_OFFSET_METADATA_CHOICE = 2
     SLOT_OFFSET_FILE_METADATA = 3
@@ -954,6 +976,7 @@ class LoadImages(cpmodule.CPModule):
     SLOT_OFFSET_CHANNEL_COUNT_V6 = 5
     SLOT_OFFSET_CHANNEL_COUNT_V7 = 5
     SLOT_OFFSET_CHANNEL_COUNT_V8 = 5
+    SLOT_OFFSET_CHANNEL_COUNT_V9 = 5
     SLOT_OFFSET_WANTS_MOVIE_FRAME_GROUPING = 6
     SLOT_OFFSET_INTERLEAVING = 7
     SLOT_OFFSET_CHANNELS_PER_GROUP = 8
@@ -962,7 +985,7 @@ class LoadImages(cpmodule.CPModule):
     SLOT_OFFSET_IMAGE_NAME_V8 = 0
     SLOT_OFFSET_IMAGE_NAME_V9 = 1
     SLOT_OFFSET_IMAGE_NAME = 1
-    SLOT_OFFSET_OBJECT_NAME_V9 = 2
+    SLOT_OFFSET_OBJECT_NAME_V9 = 3
     SLOT_OFFSET_OBJECT_NAME = 2
     SLOT_OFFSET_CHANNEL_NUMBER_V8 = 1
     SLOT_OFFSET_CHANNEL_NUMBER_V9 = 3
@@ -970,7 +993,7 @@ class LoadImages(cpmodule.CPModule):
     SLOT_OFFSET_RESCALE_V8 = 2
     SLOT_OFFSET_RESCALE_V9 = 4
     SLOT_OFFSET_RESCALE = 4
-    SLOT_CHANNEL_FIELD_COUNT = 5
+    SLOT_CHANNEL_FIELD_COUNT = 7
     SLOT_CHANNEL_FIELD_COUNT_V6 = 2
     SLOT_CHANNEL_FIELD_COUNT_V7 = 2
     SLOT_CHANNEL_FIELD_COUNT_V8 = 3
@@ -993,7 +1016,8 @@ class LoadImages(cpmodule.CPModule):
             for channel in image_group.channels:
                 setting_values += [
                     channel.image_object_choice, channel.image_name, 
-                    channel.object_name, channel.channel_number,
+                    channel.object_name, channel.wants_outlines,
+                    channel.outlines_name, channel.channel_number,
                     channel.rescale]
         return setting_values
     
@@ -1254,6 +1278,22 @@ class LoadImages(cpmodule.CPModule):
                     setting_values = setting_values[self.SLOT_CHANNEL_FIELD_COUNT_V8:]
             return (new_values, 9)
 
+        def upgrade_new_9_to_10(setting_values):
+            '''Added outlines to object loading'''
+            new_values = list(setting_values[:self.SLOT_FIRST_IMAGE_V9])
+            image_count = int(setting_values[self.SLOT_IMAGE_COUNT_V9])
+            setting_values = setting_values[self.SLOT_FIRST_IMAGE_V9:]
+            for i in range(image_count):
+                new_values += setting_values[:self.SLOT_IMAGE_FIELD_COUNT_V9]
+                channel_count = int(setting_values[self.SLOT_OFFSET_CHANNEL_COUNT_V9])
+                setting_values = setting_values[self.SLOT_IMAGE_FIELD_COUNT_V9:]
+                for j in range(channel_count):
+                    new_values += setting_values[:self.SLOT_OFFSET_OBJECT_NAME_V9] + \
+                                    [cps.NO,"NucleiOutlines"] + \
+                                    setting_values[self.SLOT_OFFSET_OBJECT_NAME_V9:self.SLOT_CHANNEL_FIELD_COUNT_V9]
+                    setting_values = setting_values[self.SLOT_CHANNEL_FIELD_COUNT_V9:]
+            return (new_values, 10)
+            
         if from_matlab:
             if variable_revision_number == 1:
                 setting_values,variable_revision_number = upgrade_1_to_2(setting_values)
@@ -1284,6 +1324,8 @@ class LoadImages(cpmodule.CPModule):
             setting_values, variable_revision_number = upgrade_new_7_to_8(setting_values)
         if variable_revision_number == 8:
             setting_values, variable_revision_number = upgrade_new_8_to_9(setting_values)
+        if variable_revision_number == 9:
+            setting_values, variable_revision_number = upgrade_new_9_to_10(setting_values)
 
         # Standardize input/output directory name references
         setting_values[self.SLOT_LOCATION] = \
@@ -2022,6 +2064,10 @@ class LoadImages(cpmodule.CPModule):
                     row[0] = object_name
                     I.add_object_count_measurements(m, object_name, o.count)
                     I.add_object_location_measurements(m, object_name, pixel_data)
+                    if channel.wants_outlines:
+                        outlines = cellprofiler.cpmath.outline.outline(o.segmented)
+                        outline_image = cpimage.Image(outlines.astype(bool), parent_image = image)
+                        workspace.image_set.add(channel.outlines_name.value, outline_image)
 
                 m.add_image_measurement(
                     "_".join((file_name_category, name)), filename)

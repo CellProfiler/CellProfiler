@@ -44,6 +44,7 @@ from cellprofiler.modules.tests import example_images_directory
 
 IMAGE_NAME = "image"
 OBJECTS_NAME = "objects"
+OUTLINES_NAME = "outlines"
 
 class testLoadImages(unittest.TestCase):
     def setUp(self):
@@ -73,7 +74,7 @@ class testLoadImages(unittest.TestCase):
         x=LI.LoadImages()
     
     def test_00_01version(self):
-        self.assertEqual(LI.LoadImages().variable_revision_number, 9,
+        self.assertEqual(LI.LoadImages().variable_revision_number, 10,
                          "LoadImages' version number has changed")
     
     def test_01_01load_image_text_match(self):
@@ -2250,6 +2251,8 @@ LoadImages:[module_num:1|svn_version:\'10503\'|variable_revision_number:9|show_w
         module.images[0].common_text.value = filename
         module.images[0].channels[0].image_object_choice.value = LI.IO_OBJECTS
         module.images[0].channels[0].object_name.value = OBJECTS_NAME
+        module.images[0].channels[0].wants_outlines.value = True
+        module.images[0].channels[0].outlines_name.value = OUTLINES_NAME
         module.location.dir_choice = LI.ABSOLUTE_FOLDER_NAME
         module.location.custom_path = directory
         module.module_num = 1
@@ -2329,5 +2332,18 @@ LoadImages:[module_num:1|svn_version:\'10503\'|variable_revision_number:9|show_w
         o = workspace.object_set.get_objects(OBJECTS_NAME)
         self.assertTrue(np.all(o.segmented == image))
         
+    def test_12_05_object_outlines(self):
+        image = np.zeros((30,40), int)
+        image[10:15, 20:30] = 1
+        workspace, module = self.make_objects_workspace(image)
+        module.run(workspace)
+        o = workspace.object_set.get_objects(OBJECTS_NAME)
+        self.assertTrue(np.all(o.segmented == image))
+        expected_outlines = image != 0
+        expected_outlines[11:14,21:29] = False
+        image_set = workspace.get_image_set()
+        outlines = image_set.get_image(OUTLINES_NAME)
+        np.testing.assert_equal(outlines.pixel_data, expected_outlines)
+                
 if __name__=="main":
     unittest.main()

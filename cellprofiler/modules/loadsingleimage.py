@@ -189,17 +189,16 @@ class LoadSingleImage(cpm.CPModule):
                     This is the name for the objects loaded from your image"""))
         
         group.append("wants_outlines", cps.Binary(
-            "Do you want to save outlines?", False,
-            doc = """<i>(Used only if objects are output)</i><br>
-            Check this setting if you want to save an image of the outlines
-            of the loaded objects. Leave it unchecked if you don't want
-            to save outlines."""))
+                    "Retain outlines of loaded objects?", False,
+                    doc = """<i>(Used only if objects are output)</i><br>
+                    Check this setting if you want to save an image of the outlines
+                    of the loaded objects."""))
         
         group.append("outlines_name", cps.OutlineNameProvider(
-            'Name the outlines',
-            'NucleiOutlines',
-            doc = """<i>(Used only if objects are output)</i><br>
-            This is the name of the image of the outlines of the objects."""))
+                    'Name the outlines',
+                    'NucleiOutlines',
+                    doc = """<i>(Used only if objects are output)</i><br>
+                    Enter a name that will allow the outlines to be selected later in the pipeline."""))
         
         if can_remove:
             group.append("remove", cps.RemoveSettingButton("", "Remove this image", self.file_settings, group))

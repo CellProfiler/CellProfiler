@@ -163,10 +163,7 @@ class SaveImages(cpm.CPModule):
                 file formats.</li>
                 <li><i>Module display window:</i> The window associated with a module can be saved, which
                 will include all the panels and text within that window. <b>Currently, this option is not yet available.</b></li>
-                </ul>
-                Note that objects cannot be directly saved with the <b>SaveImages</b> module.
-                You must first use the <b>ConvertObjectsToImage</b> module to convert the objects to an image, 
-                followed by <b>SaveImages</b>.""")
+                </ul>""")
         
         self.image_name  = cps.ImageNameSubscriber("Select the image to save","None", doc = """
                 <i>(Used only if saving images, crop masks, and image croppings)</i><br>

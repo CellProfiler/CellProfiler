@@ -104,6 +104,16 @@ if ((get_headless() and not os.environ.has_key("CELLPROFILER_USE_XVFB"))
 
 jutil.start_vm(__args)
 
+jutil.attach()
+try:
+    jutil.static_call("loci/common/Location",
+                      "cacheDirectoryListings",
+                      "(Z)V", True)
+except:
+    print "Bioformats version does not support directory cacheing"
+finally:
+    jutil.detach()
+    
 # if get_headless() or sys.platform=="darwin":
 #     jutil.attach()
 #     jutil.static_call("java/lang/System", "setProperty", '(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;', "java.awt.headless", "true")

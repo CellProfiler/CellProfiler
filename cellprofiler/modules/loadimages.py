@@ -808,7 +808,9 @@ class LoadImages(cpmodule.CPModule):
                 varlist += [self.match_exclude]
         elif self.match_method == MS_ORDER:
             varlist += [self.order_group_size]
-        varlist += [self.descend_subdirectories, self.check_images]
+        varlist += [self.descend_subdirectories]
+        if self.has_metadata and self.do_group_by_metadata:
+            varlist += [self.check_images]
         if self.has_metadata:
             varlist += [self.group_by_metadata]
         if self.do_group_by_metadata:

@@ -14,6 +14,22 @@ unmasked pixels will be measured.
 <li><i>MinIntensity, MaxIntensity:</i> Minimum and maximum of pixel intensity values.</li>
 <li><i>TotalArea:</i> Number of pixels measured.</li>
 </ul>
+
+Note that for publication purposes, the units of
+intensity from microscopy images are usually described as "Intensity
+units" or "Arbitrary intensity units" since microscopes are not 
+calibrated to an absolute scale. Also, it is important to note whether 
+you are reporting either the mean or the integrated intensity, so specify
+"Mean intensity units" or "Integrated intensity units" accordingly.
+
+The default behavior in CellProfiler is to rescale the image intensity 
+from 0 to 1 by dividing all pixels in 
+the image by the maximum possible intensity value. 
+If this is not desired and you prefer to use the number of bits used
+to store the image (e.g., 0-255 or 0-65535), uncheck the "Rescale intensities?"
+setting in <b>LoadImages</b>.
+
+See also <b>LoadImages</b>, <b>MeasureObjectIntensity</b>.
 '''
 # CellProfiler is distributed under the GNU General Public License.
 # See the accompanying file LICENSE for details.

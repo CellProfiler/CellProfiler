@@ -36,7 +36,14 @@ calibrated to an absolute scale. Also, it is important to note whether
 you are reporting either the mean or the integrated intensity, so specify
 "Mean intensity units" or "Integrated intensity units" accordingly.
 
-See also <b>MeasureImageIntensity</b>.
+The default behavior in CellProfiler is to rescale the image intensity 
+from 0 to 1 by dividing all pixels in 
+the image by the maximum possible intensity value. 
+If this is not desired and you prefer to use the number of bits used
+to store the image (e.g., 0-255 or 0-65535), uncheck the "Rescale intensities?"
+setting in <b>LoadImages</b>.
+
+See also <b>LoadImages</b>, <b>MeasureImageIntensity</b>.
 """
 # CellProfiler is distributed under the GNU General Public License.
 # See the accompanying file LICENSE for details.

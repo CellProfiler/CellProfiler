@@ -85,6 +85,12 @@ class Objects(object):
         '''
         if self.__ijv is None and self.__segmented is not None:
             i,j = np.argwhere(self.__segmented > 0).transpose()
+            #
+            # Sort so that same "i" coordinates are close together
+            # so that memory accesses are localized.
+            #
+            order = np.lexsort((j,i))
+            i,j = i[order],j[order]
             self.__ijv = np.column_stack((i,j,self.__segmented[i,j]))
         return self.__ijv
     

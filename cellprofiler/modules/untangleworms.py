@@ -2066,6 +2066,14 @@ class UntangleWorms(cpm.CPModule):
                                                 control_coords[1:,0],
                                                 control_coords[1:,1])
         #
+        # Get rid of the last point for the middle elements - these are
+        # duplicated by the first point in the next line
+        #
+        i = np.delete(i,index[1:])
+        j = np.delete(j,index[1:])
+        index = index - np.arange(len(index))
+        count -= 1
+        #
         # Find the control point and within-control-point index of each point
         #
         label = np.zeros(len(i), int)

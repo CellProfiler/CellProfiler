@@ -345,16 +345,13 @@ class PreferencesView:
         cpprefs.set_output_file_name(self.__output_filename_edit_box.Value)
     
     def __on_preferences_output_filename_event(self,event):
-        old_selection = self.__output_filename_edit_box.Selection
         if self.__output_filename_edit_box.Value != cpprefs.get_output_file_name():
             self.__output_filename_edit_box.Value = cpprefs.get_output_file_name()
-            self.__output_filename_edit_box.SetSelection(*old_selection)
         
     def __on_preferences_output_directory_event(self,event):
         old_selection = self.__output_edit_box.Selection
         if self.__output_edit_box.Value != cpprefs.get_default_output_directory():
             self.__output_edit_box.Value = cpprefs.get_default_output_directory()
-            self.__output_edit_box.SetSelection(*old_selection)
     
     def __on_preferences_image_directory_event(self, event):
         if self.__image_edit_box.Value != cpprefs.get_default_image_directory():

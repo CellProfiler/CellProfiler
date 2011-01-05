@@ -41,13 +41,16 @@ g_use_imshow = False
 
 def log_transform(im):
     '''returns log(image) scaled to the interval [0,1]'''
+    orig = im
     try:
-        (min, max) = (im[im > 0].min(), im.max())
+        im = im.copy()
+        im[np.isnan(im)] = 0
+        (min, max) = (im[im > 0].min(), im[np.isfinite(im)].max())
         if (max > min) and (max > 0):
             return (np.log(im.clip(min, max)) - np.log(min)) / (np.log(max) - np.log(min))
     except:
         pass
-    return im
+    return orig
 
 def auto_contrast(im):
     '''returns image scaled to the interval [0,1]'''
@@ -1211,7 +1214,8 @@ class CPFigureFrame(wx.Frame):
             values = np.log(values[values>0])
             xlabel = 'Log(%s)'%(xlabel or '?')
         # hist apparently doesn't like nans, need to preen them out first
-        self.values = values[~ np.isnan(values)]
+        # (infinities are not much better)
+        values = values[np.isfinite(values)]
         # nothing to plot?
         if values.shape[0] == 0:
             axes = self.subplot(x, y)

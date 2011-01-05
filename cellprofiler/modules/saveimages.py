@@ -42,9 +42,9 @@ try:
     from bioformats.metadatatools import *
     has_bioformats = True
 except:
-    traceback.print_exc()
+    sys.stderr.write(traceback.format_exc())
     sys.stderr.write(
-        "Failed to load bioformats. SaveImages will not be able to save movies.\n")
+        "Failed to load bioformats. SaveImages will not be able to save movies.\n\n")
     has_bioformats = False
 
 try:
@@ -52,8 +52,8 @@ try:
     has_tiff = True
 except:
     if sys.platform == 'darwin':
-        traceback.print_exc()
-        sys.stderr.write("Failed to load pylibtiff.  SaveImages on Mac may not be able to write 16-bit TIFF format")
+        sys.stderr.write(traceback.format_exc())
+        sys.stderr.write("Failed to load pylibtiff.  SaveImages on Mac may not be able to write 16-bit TIFF format\n\n")
     has_tiff = False
 
 

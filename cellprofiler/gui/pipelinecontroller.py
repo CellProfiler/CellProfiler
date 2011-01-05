@@ -492,12 +492,17 @@ class PipelineController:
         #
         d = { "All": [] }
         for module_name in get_module_names():
-            module = cellprofiler.modules.instantiate_module(module_name)
-            category = module.category
-            if not d.has_key(category):
-                d[category] = []
-            d[category].append(module_name)
-            d["All"].append(module_name)
+            try:
+                module = cellprofiler.modules.instantiate_module(module_name)
+                category = module.category
+                if not d.has_key(category):
+                    d[category] = []
+                d[category].append(module_name)
+                d["All"].append(module_name)
+            except:
+                import traceback
+                sys.stderr.write(traceback.format_exc())
+                sys.stderr.write("Unable to instantiate module %s.\n\n"%(module_name))
          
         for category in sorted(d.keys()):
             sub_menu = wx.Menu()

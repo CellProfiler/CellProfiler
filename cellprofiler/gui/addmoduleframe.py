@@ -14,6 +14,7 @@ Website: http://www.cellprofiler.org
 """
 __version = "$Revision$"
 import os
+import sys
 import re
 import wx
 import cellprofiler.preferences
@@ -129,9 +130,14 @@ class AddModuleFrame(wx.Frame):
                 module = cellprofiler.modules.instantiate_module(mn)
                 module.set_module_num(module_num)
                 return module
-            module = cellprofiler.modules.instantiate_module(mn)
-            self.__module_dict[module.category][module.module_name] = loader
-            self.__module_dict['All'][module.module_name] = loader
+            try:
+                module = cellprofiler.modules.instantiate_module(mn)
+                self.__module_dict[module.category][module.module_name] = loader
+                self.__module_dict['All'][module.module_name] = loader
+            except Exception, e:
+                import traceback
+                sys.stderr.write(traceback.format_exc())
+                sys.stderr.write("Unable to instantiate module %s.\n\n"%(mn))
     
     def __set_categories(self):
         self.__module_categories_list_box.AppendItems(self.__module_files)

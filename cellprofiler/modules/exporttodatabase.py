@@ -301,7 +301,10 @@ class ExportToDatabase(cpm.CPModule):
         # Hack: if user is on Broad IP, then plug in the imageweb url prepend
         #
         import socket
-        ip = socket.gethostbyaddr(socket.gethostname())[-1][0]
+        try:
+            ip = socket.gethostbyaddr(socket.gethostname())[-1][0]
+        except:
+            ip = '127.0.0.1'
         default_prepend = ""
         if ip.startswith('69.173'): # Broad
             default_prepend = "http://imageweb/images/CPALinks"

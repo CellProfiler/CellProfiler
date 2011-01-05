@@ -2814,6 +2814,7 @@ def load_using_bioformats(path, c=None, z=0, t=0, series=None, rescale = True, w
         formatreader.jutil.attach()
         rdr = ImageReader()
         rdr.setGroupFiles(False)
+        rdr.allowOpenToCheckType(False)
         mdoptions = metadatatools.get_metadata_options(metadatatools.ALL)
         rdr.setMetadataOptions(mdoptions)
         rdr.setId(path)

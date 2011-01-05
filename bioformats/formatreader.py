@@ -185,6 +185,27 @@ def make_image_reader_class():
                                       '()Lloci/formats/IFormatReader;')
         getMetadataStore = jutil.make_method('getMetadataStore', '()Lloci/formats/meta/MetadataStore;',
                                              'Retrieves the current metadata store for this reader.')
+        def allowOpenToCheckType(self, allow):
+            '''Allow the "isThisType" function to open files
+            
+            For the cluster, you want to tell potential file formats
+            not to open the image file to test if it's their format.
+            '''
+            if not hasattr(self, "allowOpenToCheckType_method"):
+                self.allowOpenToCheckType_method = None
+                class_wrapper = jutil.get_class_wrapper(self.o)
+                methods = class_wrapper.getMethods()
+                for method in jutil.get_env().get_object_array_elements(methods):
+                    m = jutil.get_method_wrapper(method)
+                    if m.getName() == 'allowOpenToCheckType':
+                        self.allowOpenToCheckType_method = m
+            if self.allowOpenToCheckType is not None:
+                object_class = env.find_class('java/lang/Object')
+                boolean_value = jutil.make_instance('java/lang/Boolean', 
+                                                    '(Z)V', allow)
+                args = jutil.get_env().make_object_array(1, object_class)
+                jutil.get_env().set_object_array_element(args, 0, boolean_value)
+                self.allowOpenToCheckType_method.invoke(self.o, args)
     return ImageReader
 
         

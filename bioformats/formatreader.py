@@ -201,10 +201,20 @@ def make_image_reader_class():
                         self.allowOpenToCheckType_method = m
             if self.allowOpenToCheckType is not None:
                 object_class = env.find_class('java/lang/Object')
+                jexception = get_env().exception_occurred()
+                if jexception is not None:
+                    raise JavaException(jexception)
+                
                 boolean_value = jutil.make_instance('java/lang/Boolean', 
                                                     '(Z)V', allow)
                 args = jutil.get_env().make_object_array(1, object_class)
+                jexception = get_env().exception_occurred()
+                if jexception is not None:
+                    raise JavaException(jexception)
                 jutil.get_env().set_object_array_element(args, 0, boolean_value)
+                jexception = get_env().exception_occurred()
+                if jexception is not None:
+                    raise JavaException(jexception)
                 self.allowOpenToCheckType_method.invoke(self.o, args)
     return ImageReader
 

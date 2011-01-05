@@ -2865,7 +2865,9 @@ def load_using_bioformats(path, c=None, z=0, t=0, series=None, rescale = True, w
             image.shape = (height, width)
         elif rdr.getRGBChannelCount() > 1:
             rdr.close()
-            rdr = ChannelSeparator(ImageReader())
+            rdr = ImageReader()
+            rdr.allowOpenToCheckType(False)
+            rdr = ChannelSeparator(rdr)
             rdr.setGroupFiles(False)
             rdr.setId(path)
             red_image, green_image, blue_image = [

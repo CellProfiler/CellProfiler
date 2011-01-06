@@ -13,6 +13,16 @@ images. There are several pre-set dye combinations as well as a custom
 mode that allows a user to calibrate using two images stained with a single
 dye each.
 
+Some commonly known stains must be specified by the individual dye components. For
+example:
+<ul>
+<li>Azan-Mallory: Anilline Blue + Azocarmine + Orange-G</li>
+<li>Giemsa: Methylene Blue or Eosin</li>
+<li>Masson Trichrome: Methyl blue + Ponceau-Fuchsin</li>
+</ul>
+If there are non-stained cells/components that you also want to separate by color,
+choose the stain that closest resembles the color you want, or enter a custom value.
+
 <h3>Technical notes</h3>
 This code is adapted from the ImageJ plugin, <i>Colour_Deconvolution.java</i>
 (described <a href="http://www.dentistry.bham.ac.uk/landinig/software/cdeconv/cdeconv.html">here</a>)
@@ -54,11 +64,11 @@ def html_color(rgb):
     return "#"+color[2:]
     
 CHOICE_HEMATOXYLIN = "Hematoxylin"
-ST_HEMATOXYLIN = (0.650, 0.704, 0.286)
+ST_HEMATOXYLIN = (0.644, 0.717, 0.267)
 COLOR_HEMATOXYLIN = html_color(ST_HEMATOXYLIN)
 
 CHOICE_EOSIN = "Eosin"
-ST_EOSIN = (0.072, 0.990, 0.105)
+ST_EOSIN = (0.093, 0.954, 0.283)
 COLOR_EOSIN = html_color(ST_EOSIN)
 
 CHOICE_DAB = "DAB"
@@ -72,6 +82,10 @@ COLOR_FAST_RED = html_color(ST_FAST_RED)
 CHOICE_FAST_BLUE = "Fast blue"
 ST_FAST_BLUE = (0.749, 0.606, 0.267)
 COLOR_FAST_BLUE = html_color(ST_FAST_BLUE)
+
+CHOICE_METHYL_BLUE = "Methyl blue"
+ST_METHYL_BLUE = (0.799, 0.591, 0.105)
+COLOR_METHYL_BLUE = html_color(ST_METHYL_BLUE)
 
 CHOICE_METHYL_GREEN = "Methyl green"
 ST_METHYL_GREEN = (0.980, 0.144, 0.133)
@@ -101,6 +115,22 @@ CHOICE_HEMATOXYLIN_AND_PAS = "Hematoxylin and PAS"
 ST_HEMATOXYLIN_AND_PAS = ( 0.553, 0.754, 0.354)
 COLOR_HEMATOXYLIN_AND_PAS = html_color(ST_HEMATOXYLIN_AND_PAS)
 
+CHOICE_FEULGEN = "Feulgen"
+ST_FEULGEN = ( 0.464, 0.830, 0.308)
+COLOR_FEULGEN = html_color(ST_FEULGEN)
+
+CHOICE_METHYLENE_BLUE = "Methylene blue and Eosin"
+ST_METHYLENE_BLUE  = ( 0.553, 0.754, 0.354)
+COLOR_METHYLENE_BLUE  = html_color(ST_METHYLENE_BLUE)
+
+CHOICE_ORANGE_G = "Orange-G"
+ST_ORANGE_G  = ( 0.107, 0.368, 0.923)
+COLOR_ORANGE_G  = html_color(ST_ORANGE_G)
+
+CHOICE_PONCEAU_FUCHSIN = "Ponceau Fuchsin"
+ST_PONCEAU_FUCHSIN  = ( 0.107, 0.368, 0.923)
+COLOR_PONCEAU_FUCHSIN  = html_color(ST_PONCEAU_FUCHSIN)
+
 CHOICE_CUSTOM = "Custom"
 
 STAIN_DICTIONARY = {
@@ -112,16 +142,23 @@ STAIN_DICTIONARY = {
     CHOICE_EOSIN: ST_EOSIN,
     CHOICE_FAST_BLUE: ST_FAST_BLUE,
     CHOICE_FAST_RED: ST_FAST_RED,
+    CHOICE_FEULGEN: ST_FEULGEN,
     CHOICE_HEMATOXYLIN: ST_HEMATOXYLIN,
     CHOICE_HEMATOXYLIN_AND_PAS: ST_HEMATOXYLIN_AND_PAS,
+    CHOICE_METHYL_BLUE: ST_METHYL_BLUE,
+    CHOICE_METHYLENE_BLUE: ST_METHYLENE_BLUE,
     CHOICE_METHYL_GREEN: ST_METHYL_GREEN,
-    CHOICE_PAS: ST_PAS }
+    CHOICE_ORANGE_G : ST_ORANGE_G,
+    CHOICE_PAS: ST_PAS,
+    CHOICE_PONCEAU_FUCHSIN: ST_PONCEAU_FUCHSIN}
 
 STAINS_BY_POPULARITY = ( 
     CHOICE_HEMATOXYLIN, CHOICE_EOSIN, CHOICE_DAB,
     CHOICE_PAS, CHOICE_AEC, CHOICE_ALICAN_BLUE, CHOICE_ANILINE_BLUE,
     CHOICE_AZOCARMINE, CHOICE_FAST_BLUE, CHOICE_FAST_RED,
-    CHOICE_HEMATOXYLIN_AND_PAS, CHOICE_METHYL_GREEN)
+    CHOICE_HEMATOXYLIN_AND_PAS, CHOICE_METHYL_GREEN, CHOICE_METHYLENE_BLUE,
+    CHOICE_ORANGE_G, CHOICE_METHYL_BLUE, CHOICE_PONCEAU_FUCHSIN, 
+    CHOICE_METHYL_BLUE, CHOICE_FEULGEN)
 
 FIXED_SETTING_COUNT = 2
 VARIABLE_SETTING_COUNT = 5
@@ -170,19 +207,24 @@ class UnmixColors(cpm.CPModule):
             <tr><td>%(CHOICE_ALICAN_BLUE)s</td><td bgcolor="%(COLOR_ALICAN_BLUE)s">&nbsp;</td><td>Mucopolysaccharides</td></tr>
             <tr><td>%(CHOICE_ANILINE_BLUE)s</td><td bgcolor="%(COLOR_ANILINE_BLUE)s">&nbsp;</td><td>Pollen tubes</td></tr>
             <tr><td>%(CHOICE_AZOCARMINE)s</td><td bgcolor="%(COLOR_AZOCARMINE)s">&nbsp;</td><td>Plasma</td></tr>
-            <tr><td>%(CHOICE_DAB)s</td><td bgcolor="%(COLOR_DAB)s">&nbsp;</td><td>Peroxisomes, Mitochondria</td></tr>
-            <tr><td>%(CHOICE_EOSIN)s</td><td bgcolor="%(COLOR_EOSIN)s">&nbsp;</td><td>Elastic, Collagen and Reticular fibers</td></tr>
+            <tr><td>%(CHOICE_DAB)s</td><td bgcolor="%(COLOR_DAB)s">&nbsp;</td><td>Peroxisomes, mitochondria</td></tr>
+            <tr><td>%(CHOICE_EOSIN)s</td><td bgcolor="%(COLOR_EOSIN)s">&nbsp;</td><td>Elastic, collagen and reticular fibers</td></tr>
             <tr><td>%(CHOICE_FAST_RED)s</td><td bgcolor="%(COLOR_FAST_RED)s">&nbsp;</td><td>Nuclei</td></tr>
             <tr><td>%(CHOICE_FAST_BLUE)s</td><td bgcolor="%(COLOR_FAST_BLUE)s">&nbsp;</td><td>Myelin fibers</td></tr>
+            <tr><td>%(CHOICE_FEULGEN)s</td><td bgcolor="%(COLOR_FEULGEN)s">&nbsp;</td><td>DNA</td></tr>
             <tr><td>%(CHOICE_HEMATOXYLIN)s</td><td bgcolor="%(COLOR_HEMATOXYLIN)s">&nbsp;</td><td>Nucleic acids, endoplasmic reticulum</td></tr>
             <tr><td>%(CHOICE_HEMATOXYLIN_AND_PAS)s</td><td bgcolor="%(COLOR_HEMATOXYLIN_AND_PAS)s">&nbsp;</td><td>Nucleus (stained with both Hematoxylin and PAS)</td></tr>
+            <tr><td>%(CHOICE_METHYL_BLUE)s</td><td bgcolor="%(COLOR_METHYL_BLUE)s">&nbsp;</td><td>Collagen</td></tr>
             <tr><td>%(CHOICE_METHYL_GREEN)s</td><td bgcolor="%(COLOR_METHYL_GREEN)s">&nbsp;</td><td>Chromatin</td></tr>
+            <tr><td>%(CHOICE_METHYLENE_BLUE)s</td><td bgcolor="%(COLOR_METHYLENE_BLUE)s">&nbsp;</td><td>Nuclei</td></tr>
+            <tr><td>%(CHOICE_ORANGE_G)s</td><td bgcolor="%(COLOR_ORANGE_G)s">&nbsp;</td><td>Erythrocytes, pancreas, pituitary</td></tr>
             <tr><td>%(CHOICE_PAS)s</td><td bgcolor="%(COLOR_PAS)s">&nbsp;</td><td>Glycogen, carbohydrates</td></tr>
+            <tr><td>%(CHOICE_PONCEAU_FUCHSIN)s</td><td bgcolor="%(COLOR_PONCEAU_FUCHSIN)s">&nbsp;</td><td>Red counterstain for Masson's trichrome</td></tr>
             </table>
             <br>
-            (Information taken from http://en.wikipedia.org/wiki/Histology#Staining
-            http://en.wikipedia.org/wiki/Staining
-            and http://stainsfile.info.)
+            (Information taken from <a href="http://en.wikipedia.org/wiki/Histology#Staining">here</a>,
+            <a href="http://en.wikipedia.org/wiki/Staining">here</a>, and
+            <a href="http://stainsfile.info">here</a>.)
             <br>
             You can choose <i>%(CHOICE_CUSTOM)s</i> and enter your custom 
             values for the absorbance (or use the estimator to determine values 

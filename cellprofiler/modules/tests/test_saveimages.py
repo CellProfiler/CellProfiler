@@ -1626,7 +1626,7 @@ SaveImages:[module_num:2|svn_version:\'10581\'|variable_revision_number:7|show_w
                 
             im = cpm_li.load_using_bioformats(filename)
             
-            assertTrue (np.allclose(im, expected), 
+            self.assertTrue (np.allclose(im, expected), 
                     'Saved image did not match original when reloaded.\n'
                     'Settings were: \n'
                     '%s\n'

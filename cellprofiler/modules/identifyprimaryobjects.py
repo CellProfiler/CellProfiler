@@ -47,7 +47,7 @@ representation of the object.</li>
 </li>
 </ul>
 
-<h3>Overview of the strategy</h3>
+<h3>Technical notes</h3>
 
 <p>CellProfiler contains a modular
 three-step strategy to identify objects even if they touch each other. It
@@ -94,7 +94,7 @@ Uppsala University, Uppsala.</li>
 segmentation of cell nuclei in tissue sections." <i>J Microsc</i> 215, 67-76.</li>
 </ul>
 
-<h3>Technical note</h3> 
+<h3>Technical notes</h3> 
 The initial step of identifying local maxima is
 performed on the user-controlled heavily smoothed image, the
 foreground/background is  on a hard-coded slightly smoothed image,

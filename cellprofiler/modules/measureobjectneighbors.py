@@ -27,7 +27,7 @@ CellProfiler creates a color image using the color map you choose. Use
 the <b>SaveImages</b> module to save the image to a file. See the settings help 
 for further details on interpreting the output.
 
-<h3>Technical note</h3> 
+<h3>Technical notes</h3> 
 Objects discarded via modules such as <b>IdentifyPrimaryObjects</b> or 
 <b>IdentifySecondaryObjects</b> will still register as a neighbors for the purposes
 of accurate measurement. For instance, if an object touches a single object and 

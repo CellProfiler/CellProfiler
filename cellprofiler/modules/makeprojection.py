@@ -10,7 +10,7 @@ operations. The process of averaging or summing a Z-stack (3D image stack) is kn
 The image is not immediately available in subsequent modules because the
 output of this module is not complete until all image processing cycles have completed.
 
-<h2>Technical notes:</h2>
+<h3>Technical notes</h3>
 This module will create a projection of all images specified in <b>LoadImages</b>. 
 Previously, the module <b>LoadImageDirectory</b> could be used for the same 
 functionality, but on a per-folder basis; i.e., a projection would be created 

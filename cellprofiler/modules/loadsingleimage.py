@@ -9,7 +9,7 @@ particularly useful for loading an image like an illumination correction
 image for use by the <b>CorrectIlluminationApply</b> module, when that single
 image will be used to correct all images in the analysis run.</p>
 
-<h3>Technical note</h3>
+<h3>Technical notes</h3>
 
 For most purposes, you will probably want to use the <b>LoadImages</b> module, not 
 <b>LoadSingleImage</b>. The reason is that <b>LoadSingleImage</b> does not actually 

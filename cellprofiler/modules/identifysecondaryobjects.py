@@ -22,7 +22,7 @@ background of the image. This is done by thresholding the image stained
 for secondary objects, except when using the <i>Distance - N</i> option.</li>
 </ol>
 
-<h3>Technical notes:</h3>
+<h3>Technical notes</h3>
 The <i>Propagation</i> algorithm labels from LABELS_IN to LABELS_OUT, steered by
 IMAGE and limited to MASK. MASK should be a logical array. &lambda; is a
 regularization parameter, larger being closer to Euclidean distance in

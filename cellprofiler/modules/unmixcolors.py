@@ -13,13 +13,16 @@ images. There are several pre-set dye combinations as well as a custom
 mode that allows a user to calibrate using two images stained with a single
 dye each.
 
-This code is adapted from the ImageJ plugin, "Colour_Deconvolution.java"
-(http://www.dentistry.bham.ac.uk/landinig/software/cdeconv/cdeconv.html).
-Colour_Deconvolution.java was adapted from an NIH Image macro written
-by A.C. Ruifrok, who is the author of the paper,
-Ruifrok AC, Johnston DA. Quantification of histochemical staining by color 
-deconvolution. Analytical & Quantitative Cytology & Histology 2001; 23: 291-299.
-which forms the basis for this code.
+<h3>Technical notes</h3>
+This code is adapted from the ImageJ plugin, <i>Colour_Deconvolution.java</i>
+(described <a href="http://www.dentistry.bham.ac.uk/landinig/software/cdeconv/cdeconv.html">here</a>)
+written by A.C. Ruifrok, whose paper forms the basis for this code.
+
+References
+<ul>
+<li>Ruifrok AC, Johnston DA. Quantification of histochemical staining by color 
+deconvolution. Analytical & Quantitative Cytology & Histology 2001; 23: 291-299.</i>
+</ul>
 '''
 # CellProfiler is distributed under the GNU General Public License.
 # See the accompanying file LICENSE for details.

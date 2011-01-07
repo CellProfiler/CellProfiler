@@ -189,7 +189,7 @@ class ExpandOrShrinkObjects(cpm.CPModule):
         if self.operation == O_SHRINK_INF:
             return binary_shrink(labels)
         elif self.operation == O_SHRINK:
-            return thin(labels, iterations = self.iterations.value)
+            return binary_shrink(labels, iterations = self.iterations.value)
         elif self.operation in (O_EXPAND, O_EXPAND_INF):
             if self.operation == O_EXPAND_INF:
                 distance = np.max(labels.shape)
@@ -204,13 +204,13 @@ class ExpandOrShrinkObjects(cpm.CPModule):
             return out_labels
         elif self.operation == O_DIVIDE:
             #
-            # A pixel must be adjacent to some other label and thinnable
-            # in order to be eliminated.
+            # A pixel must be adjacent to some other label and the object
+            # must not disappear.
             #
             adjacent_mask = adjacent(labels)
-            thinnable_mask = thin(labels, iterations=1) != labels
+            thinnable_mask = binary_shrink(labels, 1) != 0
             out_labels = labels.copy()
-            out_labels[adjacent_mask & thinnable_mask] = 0
+            out_labels[adjacent_mask & ~ thinnable_mask] = 0
             return out_labels
         elif self.operation == O_SKELETONIZE:
             return skeletonize_labels(labels)

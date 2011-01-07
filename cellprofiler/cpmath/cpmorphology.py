@@ -133,7 +133,7 @@ def binary_thin(image, strel1, strel2):
 
 binary_shrink_top_right = None
 binary_shrink_bottom_left = None
-def binary_shrink(image, iterations=-1):
+def binary_shrink_old(image, iterations=-1):
     """Shrink an image by repeatedly removing pixels which have partners
        above, to the left, to the right and below until the image doesn't change
        
@@ -156,9 +156,15 @@ def binary_shrink(image, iterations=-1):
     global binary_shrink_top_right, binary_shrink_bottom_left
     if binary_shrink_top_right is None:
         #
-        # Neither of these patterns can remove both of two isolated
+        # None of these patterns can remove both of two isolated
         # eight-connected pixels. Taken together, they can remove any
         # pixel touching a background pixel.
+        #
+        # The top right pixels:
+        # 
+        # 0xx
+        # ..0
+        # ...
         #
         binary_shrink_top_right = make_table(False,
                                              np.array([[0,0,0],
@@ -183,11 +189,31 @@ def binary_shrink(image, iterations=-1):
                                                         [0,0,1]], bool))
         binary_shrink_top_right &= make_table(False,
                                               np.array([[0,0,0],
+                                                        [1,1,0],
+                                                        [0,1,1]], bool),
+                                              np.array([[0,0,1],
+                                                        [1,1,1],
+                                                        [0,1,0]], bool))
+        binary_shrink_top_right &= make_table(False,
+                                              np.array([[0,0,0],
                                                         [0,1,0],
                                                         [0,0,1]], bool),
                                               np.array([[1,1,1],
                                                         [1,1,0],
                                                         [1,0,1]], bool))
+        binary_shrink_top_right &= make_table(False,
+                                              np.array([[0,0,0],
+                                                        [0,1,0],
+                                                        [1,1,1]], bool),
+                                              np.array([[1,1,1],
+                                                        [1,1,0],
+                                                        [0,1,1]], bool))
+        #
+        # bottom left pixels
+        #
+        # ...
+        # 0..
+        # xx0
         binary_shrink_bottom_left = make_table(False,
                                                np.array([[0,1,0],
                                                          [0,1,0],
@@ -210,10 +236,24 @@ def binary_shrink(image, iterations=-1):
                                                           [1,1,1],
                                                           [1,0,0]], bool))
         binary_shrink_bottom_left &= make_table(False,
+                                                np.array([[1,1,0],
+                                                          [0,1,1],
+                                                          [0,0,0]], bool),
+                                                np.array([[0,1,0],
+                                                          [1,1,1],
+                                                          [1,0,0]], bool))
+        binary_shrink_bottom_left &= make_table(False,
                                                 np.array([[1,0,0],
                                                           [0,1,0],
                                                           [0,0,0]], bool),
                                                 np.array([[1,0,1],
+                                                          [0,1,1],
+                                                          [1,1,1]], bool))
+        binary_shrink_bottom_left &= make_table(False,
+                                                np.array([[1,1,1],
+                                                          [0,1,0],
+                                                          [0,0,0]], bool),
+                                                np.array([[1,1,0],
                                                           [0,1,1],
                                                           [1,1,1]], bool))
     orig_image = image
@@ -224,6 +264,119 @@ def binary_shrink(image, iterations=-1):
         pixel_count = len(index_i)
         for table in (binary_shrink_top_right, 
                       binary_shrink_bottom_left):
+            index_i, index_j = index_lookup(index_i, index_j, 
+                                            image, table, 1)
+        if len(index_i) == pixel_count:
+            break
+    image = extract_from_image_lookup(orig_image, index_i, index_j)
+    return image
+
+binary_shrink_ulr_table = None
+binary_shrink_urb_table = None
+binary_shrink_lrl_table = None
+binary_shrink_llt_table = None
+erode_table = None
+def binary_shrink(image, iterations=-1):
+    """Shrink an image by repeatedly removing pixels which have partners
+       above, to the left, to the right and below until the image doesn't change
+       
+       image - binary image to be manipulated
+       iterations - # of times to shrink, -1 to shrink until idempotent
+       
+       There are horizontal/vertical thinners which detect a pixel on
+       an edge with an interior pixel either horizontally or vertically
+       attached like this:
+       0  0  0
+       X  1  X
+       X  1  X
+       and there are much more specific diagonal thinners which detect
+       a pixel on the edge of a diagonal, like this:
+       0  0  0
+       0  1  0
+       0  0  1
+       Rotate each of these 4x to get the four directions for each
+    """
+    global erode_table, binary_shrink_ulr_table, binary_shrink_lrl_table
+    global binary_shrink_urb_table, binary_shrink_llt_table
+    if erode_table is None:
+        #
+        # The erode table hits all patterns that can be eroded without
+        # changing the euler_number
+        erode_table = np.array([pattern_of(index)[1,1] and
+                                (scind.label(pattern_of(index-16))[1] != 1)
+                                for index in range(512)])
+        erode_table[index_of(np.ones((3,3), bool))] = True
+        #
+        # Each other table is more specific: a specific corner or a specific
+        # edge must be on where the corner and edge are not adjacent
+        #
+        binary_shrink_ulr_table = (
+            erode_table | 
+            (make_table(False, np.array([[0,0,0],
+                                         [1,1,0],
+                                         [0,0,0]], bool),
+                        np.array([[0,0,0],
+                                  [1,1,1],
+                                  [0,0,0]],bool)) &
+             make_table(False, np.array([[1,0,0],
+                                         [0,1,0],
+                                         [0,0,0]],bool),
+                        np.array([[1,0,0],
+                                  [0,1,1],
+                                  [0,1,1]],bool))))
+        binary_shrink_urb_table = (
+            erode_table | 
+            (make_table(False, np.array([[0,1,0],
+                                         [0,1,0],
+                                         [0,0,0]], bool),
+                       np.array([[0,1,0],
+                                 [0,1,0],
+                                 [0,1,0]],bool)) &
+             make_table(False, np.array([[0,0,1],
+                                         [0,1,0],
+                                         [0,0,0]],bool),
+                        np.array([[0,0,1],
+                                  [1,1,0],
+                                  [1,1,0]],bool))))
+        binary_shrink_lrl_table = (
+            erode_table |
+            (make_table(False, np.array([[0,0,0],
+                                         [0,1,1],
+                                         [0,0,0]], bool),
+                        np.array([[0,0,0],
+                                  [1,1,1],
+                                  [0,0,0]],bool)) &
+             make_table(False, np.array([[0,0,0],
+                                         [0,1,0],
+                                         [0,0,1]], bool),
+                        np.array([[1,1,0],
+                                  [1,1,0],
+                                  [0,0,1]], bool))))
+        binary_shrink_llt_table = (
+            erode_table | 
+            (make_table(False, np.array([[0,0,0],
+                                         [0,1,0],
+                                         [0,1,0]], bool),
+                        np.array([[0,1,0],
+                                  [0,1,0],
+                                  [0,1,0]],bool)) &
+             make_table(False, np.array([[0,0,0],
+                                         [0,1,0],
+                                         [1,0,0]], bool),
+                        np.array([[0,1,1],
+                                  [0,1,1],
+                                  [1,0,0]], bool))))
+    
+    orig_image = image
+    index_i, index_j, image = prepare_for_index_lookup(image, False)
+    if iterations == -1:
+        iterations = len(index_i)
+    for i in range(iterations):
+        pixel_count = len(index_i)
+        for table in (binary_shrink_ulr_table, 
+                      binary_shrink_urb_table,
+                      binary_shrink_lrl_table,
+                      binary_shrink_llt_table):
             index_i, index_j = index_lookup(index_i, index_j, 
                                             image, table, 1)
         if len(index_i) == pixel_count:

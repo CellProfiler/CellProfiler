@@ -278,6 +278,20 @@ class TestExpandOrShrinkObjects(unittest.TestCase):
         module.run(workspace)
         objects = workspace.object_set.get_objects(OUTPUT_NAME)
         self.assertTrue(np.all(objects.segmented == expected))
+        
+    def test_04_02_dont_divide(self):
+        '''Don't divide an object that would disappear'''
+        labels = np.ones((10,10), int)
+        labels[9,9] = 2
+        expected = labels.copy()
+        expected[8,9] = 0
+        expected[8,8] = 0
+        expected[9,8] = 0
+        workspace, module = self.make_workspace(labels, E.O_DIVIDE)
+        module.run(workspace)
+        objects = workspace.object_set.get_objects(OUTPUT_NAME)
+        self.assertTrue(np.all(objects.segmented == expected))
+        
 
     def test_05_01_shrink(self):
         '''Shrink once'''

@@ -30,12 +30,13 @@ class HtmlClickableWindow(wx.html.HtmlWindow):
                 self.SetPage('')
                 self.BackgroundColour = cpprefs.get_background_color()
         elif href.startswith('load:'):
+            pipeline_filename = href[5:]
             try:
-                wx.CallAfter(wx.GetApp().frame.pipeline.load, urllib2.urlopen(href[5:]))
+                wx.CallAfter(wx.GetApp().frame.pipeline.load, urllib2.urlopen(pipeline_filename))
             except:
                 wx.MessageBox(
-                    'CellProfiler was unable to load href[5:]' %
-                    options.pipeline_filename, "Error loading pipeline",
+                    'CellProfiler was unable to load %s' %
+                    pipeline_filename, "Error loading pipeline",
                     style = wx.OK | wx.ICON_ERROR)
         else:
             newpage = content.find_link(href)

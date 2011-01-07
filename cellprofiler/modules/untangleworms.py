@@ -2201,6 +2201,24 @@ class UntangleWorms(cpm.CPModule):
                 scales += [str(n) for n in range(1, self.ncontrol_points()+1)]
         return scales
          
+    def prepare_to_create_batch(self, pipeline, image_set_list, fn_alter_path):
+        '''Prepare to create a batch file
+        
+        This function is called when CellProfiler is about to create a
+        file for batch processing. It will pickle the image set list's
+        "legacy_fields" dictionary. This callback lets a module prepare for
+        saving.
+        
+        pipeline - the pipeline to be saved
+        image_set_list - the image set list to be saved
+        fn_alter_path - this is a function that takes a pathname on the local
+                        host and returns a pathname on the remote host. It
+                        handles issues such as replacing backslashes and
+                        mapping mountpoints. It should be called for every
+                        pathname stored in the settings or legacy fields.
+        '''
+        self.training_set_directory.alter_for_create_batch_files(fn_alter_path)
+        return True
     
 def read_params(training_set_directory, training_set_file_name, d):
     '''Read a training set parameters  file

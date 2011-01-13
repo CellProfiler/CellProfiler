@@ -386,28 +386,38 @@ def get_mog_threshold(image, mask=None, object_fraction = 0.2):
     # distributions/classes to the data. Note, the code below is general
     # and works for any number of classes. Iterate until parameters don't
     # change anymore.
-    delta = 1
     class_count = np.prod(class_mean.shape)
-    while delta > 0.001:
-        old_class_mean = class_mean.copy()
-        # Update probabilities of a pixel belonging to the background or
-        # object1 or object2
-        pixel_class_prob = np.ndarray((pixel_count,class_count))
-        for k in range(class_count):
-            norm = scipy.stats.norm(class_mean[k],class_std[k])
-            pixel_class_prob[:,k] = class_prob[k] * norm.pdf(cropped_image)
-        pixel_class_normalizer = np.sum(pixel_class_prob,1)+.000000000001
-        for k in range(class_count):
-            pixel_class_prob[:,k] = pixel_class_prob[:,k] / pixel_class_normalizer
-            # Update parameters in Gaussian distributions
-            class_prob[k] = np.mean(pixel_class_prob[:,k])
-            class_mean[k] = (np.sum(pixel_class_prob[:,k] * cropped_image) /
-                             (class_prob[k] * pixel_count))
-            class_std[k] = \
-                math.sqrt(np.sum(pixel_class_prob[:,k] * 
-                                    (cropped_image-class_mean[k])**2)/
-                          (pixel_count * class_prob[k])) + .000001
-        delta = np.sum(np.abs(old_class_mean - class_mean))
+    #
+    # Do a coarse iteration on subsampled data and a fine iteration on the real
+    # data
+    #
+    r = np.random.RandomState()
+    r.seed(cropped_image[:100].tolist())
+    for data in (
+        r.permutation(cropped_image)[0:(len(cropped_image) / 10)],
+        cropped_image):
+        delta = 1
+        pixel_count = len(data)
+        while delta > 0.001:
+            old_class_mean = class_mean.copy()
+            # Update probabilities of a pixel belonging to the background or
+            # object1 or object2
+            pixel_class_prob = np.ndarray((pixel_count,class_count))
+            for k in range(class_count):
+                norm = scipy.stats.norm(class_mean[k],class_std[k])
+                pixel_class_prob[:,k] = class_prob[k] * norm.pdf(data)
+            pixel_class_normalizer = np.sum(pixel_class_prob,1)+.000000000001
+            for k in range(class_count):
+                pixel_class_prob[:,k] = pixel_class_prob[:,k] / pixel_class_normalizer
+                # Update parameters in Gaussian distributions
+                class_prob[k] = np.mean(pixel_class_prob[:,k])
+                class_mean[k] = (np.sum(pixel_class_prob[:,k] * data) /
+                                 (class_prob[k] * pixel_count))
+                class_std[k] = \
+                    math.sqrt(np.sum(pixel_class_prob[:,k] * 
+                                        (data-class_mean[k])**2)/
+                              (pixel_count * class_prob[k])) + .000001
+            delta = np.sum(np.abs(old_class_mean - class_mean))
     # Now the Gaussian distributions are fitted and we can describe the
     # histogram of the pixel intensities as the sum of these Gaussian
     # distributions. To find a threshold we first have to decide if the

@@ -74,6 +74,10 @@ ID_DEBUG_CHOOSE_RANDOM_IMAGE_SET = wx.NewId()
 ID_DEBUG_RELOAD = wx.NewId()
 ID_DEBUG_NUMPY = wx.NewId()
 
+# ~*~
+ID_SAMPLE_INIT = wx.NewId()
+# ~^~
+
 ID_WINDOW = wx.NewId()
 ID_WINDOW_CLOSE_ALL = wx.NewId()
 ID_WINDOW_SHOW_ALL_WINDOWS = wx.NewId()
@@ -210,7 +214,7 @@ class CPFrame(wx.Frame):
         self.__menu_debug.Enable(ID_DEBUG_CHOOSE_GROUP, False)
         self.__menu_debug.Enable(ID_DEBUG_CHOOSE_IMAGE_SET, False)
         self.__menu_debug.Enable(ID_DEBUG_CHOOSE_RANDOM_IMAGE_SET, False)
-        
+
         self.__menu_window = wx.Menu()
         self.__menu_window.Append(ID_WINDOW_CLOSE_ALL, "Close &all open windows\tctrl+L", 
                                   "Close all open module display windows")
@@ -234,6 +238,10 @@ class CPFrame(wx.Frame):
         self.__menu_bar.Append(self.__menu_file,'&File')
         self.__menu_bar.Append(self.menu_edit, '&Edit')
         self.__menu_bar.Append(self.__menu_debug,'&Test')
+        if cellprofiler.preferences.get_show_sampling():
+            self.__menu_sample = wx.Menu()
+            self.__menu_sample.Append(ID_SAMPLE_INIT, 'Initialize sampling', 'Initialize sampling up to current module')
+            self.__menu_bar.Append(self.__menu_sample, '&Sample')
         self.__menu_bar.Append(self.__menu_window, "&Window")
         self.__menu_bar.Append(self.data_tools_menu(), '&Data tools')
         if wx.VERSION <= (2, 8, 10, 1, '') and wx.Platform == '__WXMAC__':

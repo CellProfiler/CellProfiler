@@ -208,7 +208,11 @@ class PreferencesDlg(wx.Dialog):
                 ['Warn if images are different sizes',
                  cpprefs.get_show_report_bad_sizes_dlg,
                  cpprefs.set_show_report_bad_sizes_dlg,
-                 CHOICE, cphelp.SHOW_REPORT_BAD_SIZES_DLG_HELP]
+                 CHOICE, cphelp.SHOW_REPORT_BAD_SIZES_DLG_HELP],
+                ['Show the sampling menu',
+                 cpprefs.get_show_sampling,
+                 cpprefs.set_show_sampling,
+                 CHOICE, "Show the sampling menu - restart after setting"]
                 ]
     
     def get_title_font(self):

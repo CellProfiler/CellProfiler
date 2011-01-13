@@ -168,6 +168,7 @@ IJ_PLUGIN_DIRECTORY = 'IJPluginDirectory'
 SHOW_ANALYSIS_COMPLETE_DLG = "ShowAnalysisCompleteDlg"
 SHOW_EXITING_TEST_MODE_DLG = "ShowExitingTestModeDlg"
 SHOW_BAD_SIZES_DLG = "ShowBadSizesDlg"
+SHOW_SAMPLING = "ShowSampling"
 
 def recent_file(index, category=""):
     return (FF_RECENTFILES % (index + 1)) + category
@@ -440,6 +441,22 @@ def get_skip_version():
 
 def set_skip_version(ver):
     get_config().WriteInt(SKIPVERSION, ver)
+    
+
+__show_sampling = None
+def get_show_sampling():
+    global __show_sampling
+    if __show_sampling is not None:
+        return __show_sampling
+    if not get_config().Exists(SHOW_SAMPLING):
+        __show_sampling = False
+        return False
+    return get_config().ReadBool(SHOW_SAMPLING)
+
+def set_show_sampling(value):
+    global __show_sampling
+    get_config().WriteBool(SHOW_SAMPLING, bool(value))
+    __show_sampling = bool(value)
     
 __recent_files = {}
 def get_recent_files(category=""):

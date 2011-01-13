@@ -34,6 +34,7 @@ from cellprofiler.gui.help import HELP_ON_MODULE_BUT_NONE_SELECTED
 import cellprofiler.utilities.get_revision as get_revision
 from errordialog import display_error_dialog, ED_CONTINUE, ED_STOP
 from runmultiplepipelinesdialog import RunMultplePipelinesDialog
+import cellprofiler.gui.parametersampleframe as psf
 
 RECENT_FILE_MENU_ID = [wx.NewId() for i in range(cpprefs.RECENT_FILE_COUNT)]
 
@@ -47,6 +48,9 @@ class PipelineController:
         self.__frame = frame
         self.__add_module_frame = AddModuleFrame(frame,-1,"Add modules")
         self.__add_module_frame.add_listener(self.on_add_to_pipeline)
+        # ~*~
+        self.__parameter_sample_frame = None
+        # ~^~
         self.__setting_errors = {}
         self.__running_pipeline = None
         self.__dirty_pipeline = False
@@ -86,6 +90,10 @@ class PipelineController:
         wx.EVT_MENU(frame,cpframe.ID_DEBUG_CHOOSE_IMAGE_SET, self.on_debug_choose_image_set)
         wx.EVT_MENU(frame,cpframe.ID_DEBUG_CHOOSE_RANDOM_IMAGE_SET, self.on_debug_random_image_set)
         wx.EVT_MENU(frame,cpframe.ID_DEBUG_RELOAD, self.on_debug_reload)
+
+        # ~*~
+        wx.EVT_MENU(frame, cpframe.ID_SAMPLE_INIT, self.on_sample_init)
+        # ~^~
         
         wx.EVT_MENU(frame,cpframe.ID_WINDOW_SHOW_ALL_WINDOWS, self.on_show_all_windows)
         wx.EVT_MENU(frame,cpframe.ID_WINDOW_HIDE_ALL_WINDOWS, self.on_hide_all_windows)
@@ -1121,6 +1129,32 @@ class PipelineController:
     def on_debug_reload(self, event):
         self.__pipeline.reload_modules()
 
+    # ~*~
+    def on_sample_init(self, event):
+        if self.__module_view != None:
+            if self.__module_view.get_current_module() != None:
+                self.show_parameter_sample_options(
+                    self.__module_view.get_current_module().get_module_num(), event)
+            else:
+                print "No current module"
+
+    def show_parameter_sample_options(self, module_num, event):
+        if self.__parameter_sample_frame == None:
+            selected_module = self.__pipeline.module(module_num)
+            selected_module.test_valid(self.__pipeline)
+
+            top_level_frame = self.__frame
+            self.parameter_sample_frame = psf.ParameterSampleFrame(
+                top_level_frame, selected_module, self.__pipeline, -1)
+            self.parameter_sample_frame.Bind(
+                wx.EVT_CLOSE, self.on_parameter_sample_frame_close)
+            self.parameter_sample_frame.Show(True)
+
+    def on_parameter_sample_frame_close(self, event):
+        event.Skip()
+        self.__parameter_sample_frame = None
+
+    # ~^~
     def on_module_runner_done(self,event):
         '''Run one iteration of the pipeline
         

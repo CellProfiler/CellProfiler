@@ -263,6 +263,11 @@ class ModuleView:
         return self.__module_panel
     
     module_panel = property(get_module_panel)
+
+    # ~*~
+    def get_current_module(self):
+        return self.__module
+    # ~^~
     
     def clear_selection(self):
         if self.__module:

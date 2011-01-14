@@ -1614,8 +1614,8 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'8981\'|variable_revision_numb
         x.threshold_method.value = T.TM_MOG_GLOBAL
         x.object_fraction.value = '0.10'
         local_threshold,threshold = x.get_threshold(image, np.ones(image.shape,bool),None,None)
-        self.assertTrue(threshold > 0.038)
-        self.assertTrue(threshold < 0.041)
+        self.assertTrue(threshold > 0.036)
+        self.assertTrue(threshold < 0.040)
         x.object_fraction.value = '0.20'
         local_threshold,threshold = x.get_threshold(image, np.ones(image.shape,bool),None,None)
         self.assertTrue(threshold > 0.0084)

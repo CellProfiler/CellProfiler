@@ -1,3 +1,4 @@
+# coding: latin-1
 """test_preferences.py - test the preferences module
 
 CellProfiler is distributed under the GNU General Public License.
@@ -53,3 +54,8 @@ class TestPreferences(unittest.TestCase):
                 setting_values[i] = value
                 self.assertEqual(cpprefs.standardize_default_folder_names(
                     setting_values, i)[i], expected)
+
+    def test_01_03_unicode_directory(self):
+        old = cpprefs.get_default_image_directory()
+        cpprefs.set_default_image_directory(u'P125 à 144 Crible Chimiothèque HBEC')
+        cpprefs.set_default_image_directory(old)

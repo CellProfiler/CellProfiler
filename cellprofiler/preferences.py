@@ -196,15 +196,18 @@ def get_default_image_directory():
         __default_image_directory = str(get_proper_case_filename(default_image_directory))
         return __default_image_directory
     else:
-        sys.stderr.write("Warning: current path of %s is not a valid directory. Switching to current directory\n"%
-                         (default_image_directory))
+        try:
+            sys.stderr.write("Warning: current path of %s is not a valid directory. Switching to current directory\n"%
+                             (default_image_directory))
+        except:
+            sys.stderr.write("Can't print name of invalid default image directory")
         default_image_directory = os.path.abspath(os.path.curdir)
         set_default_image_directory(default_image_directory)
         return str(get_proper_case_filename(default_image_directory))
 
 def set_default_image_directory(path):
     global __default_image_directory
-    path = str(path)
+    #path = str(path)
     __default_image_directory = path
     get_config().Write(DEFAULT_IMAGE_DIRECTORY,path)
     add_recent_file(path, DEFAULT_IMAGE_DIRECTORY)

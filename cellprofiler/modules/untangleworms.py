@@ -581,6 +581,16 @@ class UntangleWorms(cpm.CPModule):
             max_radius = this.max_radius_factor.value * mlab.prctile(
                 radial_profiles.flatten(), this.max_radius_percentile.value)
             mean_radial_profile = np.mean(radial_profiles, 1)
+            #
+            # Mirror the angles by negating them. Flip heads and tails
+            # because they are arbitrary.
+            #
+            angles = np.hstack((
+                angles,
+                -angles,
+                angles[::-1,:],
+                -angles[::-1,:]))
+            lengths = np.hstack([lengths]*4)
             feat_vectors = np.vstack((angles, lengths[np.newaxis,:]))
             mean_angles_length = np.mean(feat_vectors, 1)
             fv_adjusted = feat_vectors - mean_angles_length[:, np.newaxis]

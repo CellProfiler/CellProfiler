@@ -1040,6 +1040,8 @@ class Pipeline(object):
                 if not need_to_run_prepare_group:
                     yield None, None, None, lambda workspace: self.post_group(workspace, grouping_keys)
 
+        columns = self.get_measurement_columns()
+        
         with self.prepared_run(self, frame) as image_set_list:
             if image_set_list == None:
                 return
@@ -1068,7 +1070,7 @@ class Pipeline(object):
                     if initial_measurements is None:
                         measurements = cpmeas.Measurements(
                             image_set_start=image_number - 1)
-                        measurements.initialize(self.get_measurement_columns())
+                        measurements.initialize(columns)
                     else:
                         measurements = initial_measurements
                         measurements.next_image_set(image_number, erase=True)

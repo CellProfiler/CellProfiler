@@ -726,6 +726,14 @@ class PipelineController:
                     self.run_next_pipeline(event)
                     return
                 wx.MessageBox(message,title)
+            except Exception, e:
+                # Catastrophic failure on start
+                display_error_dialog(self.__frame,
+                                     e,
+                                     self.__pipeline,
+                                     "Failed to initialize pipeline",
+                                     sys.exc_info()[2])
+                self.stop_running()
     
     def on_restart(self, event):
         '''Restart a pipeline from a measurements file'''

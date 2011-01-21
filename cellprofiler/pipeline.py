@@ -387,8 +387,14 @@ class Pipeline(object):
         
         """
         self.__modules = [];
-        settings = handles[SETTINGS][0,0]
-        module_names = settings[MODULE_NAMES]
+        try:
+            settings = handles[SETTINGS][0,0]
+            module_names = settings[MODULE_NAMES]
+        except Exception,instance:
+            traceback.print_exc()
+            e = LoadExceptionEvent(instance, None)
+            self.notify_listeners(e)
+            return
         module_count = module_names.shape[1]
         real_module_num = 1
         for module_num in range(1,module_count+1):
@@ -520,9 +526,16 @@ class Pipeline(object):
             except MatReadError:
                 sys.stderr.write("Caught exception in Matlab reader\n")
                 traceback.print_exc()
-                raise MatReadError(
+                e = MatReadError(
                     "%s is an unsupported .MAT file, most likely a measurements file.\nYou can load this as a pipeline if you load it as a pipeline using CellProfiler 1.0 and then save it to a different file.\n" %
                     fd_or_filename)
+                self.notify_listeners(LoadExceptionEvent(e, None))
+                return
+            except Exception, e:
+                traceback.print_exc()
+                sys.stderr.write("Tried to load corrupted .MAT file: %s\n" % fd_or_filename)
+                self.notify_listeners(LoadExceptionEvent(e, None))
+                return
         else:
             handles=scipy.io.matlab.mio.loadmat(fd_or_filename, 
                                                 struct_as_record=True)

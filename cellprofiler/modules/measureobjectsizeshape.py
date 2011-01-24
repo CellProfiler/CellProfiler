@@ -390,7 +390,8 @@ class MeasureObjectSizeShape(cpm.CPModule):
         workspace.add_measurement(object_name, 
                                   "%s_%s"%(AREA_SHAPE,feature_name), 
                                   data)
-        if workspace.frame is not None and len(data) > 0:
+        if workspace.frame is not None and np.any(np.isfinite(data)) > 0:
+            data = data[np.isfinite(data)]
             workspace.display_data.statistics.append(
                 (object_name, feature_name, 
                  "%.2f"%np.mean(data),

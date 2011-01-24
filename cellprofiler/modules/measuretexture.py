@@ -135,7 +135,7 @@ F_GABOR = "Gabor"
 class MeasureTexture(cpm.CPModule):
 
     module_name = "MeasureTexture"
-    variable_revision_number = 1
+    variable_revision_number = 2
     category = 'Measurement'
 
     def create_settings(self):
@@ -163,7 +163,15 @@ class MeasureTexture(cpm.CPModule):
                                           self.add_scale_cb)
         self.scale_divider = cps.Divider()
         
+        self.wants_gabor = cps.Binary(
+            "Measure Gabor features?", True, doc =
+            """The Gabor features measure striped texture in an object. They
+            take a substantial time to calculate. Check this setting to
+            measure the Gabor features. Uncheck this setting to skip
+            the Gabor feature calculation if it is not informative for your
+            images""")
         self.gabor_angles = cps.Integer("Number of angles to compute for Gabor",4,2, doc="""
+        <i>(Used only if Gabor features are measured)</i><br>
         How many angles do you want to use for each Gabor texture measurement?
             The default value is 4 which detects bands in the horizontal, vertical and diagonal
             orientations.""")
@@ -176,7 +184,7 @@ class MeasureTexture(cpm.CPModule):
                                 (self.scale_groups, 'scale')]:
             for group in groups:
                 result += [getattr(group, element)]
-        result += [self.gabor_angles]
+        result += [self.wants_gabor, self.gabor_angles]
         return result
 
     def prepare_settings(self,setting_values):
@@ -199,7 +207,9 @@ class MeasureTexture(cpm.CPModule):
             for group in groups:
                 result += group.visible_settings()
             result += [add_button, div]
-        result += [self.gabor_angles]
+        result += [self.wants_gabor]
+        if self.wants_gabor:
+            result += [self.gabor_angles]
         return result
 
     def add_image_cb(self, can_remove = True):
@@ -276,9 +286,15 @@ class MeasureTexture(cpm.CPModule):
         """
         if any([object_name == og.object_name for og in self.object_groups]):
             return [TEXTURE]
+        elif object_name == cpmeas.IMAGE:
+            return [TEXTURE]
         else:
             return []
 
+    def get_features(self):
+        '''Return the feature names for this pipeline's configuration'''
+        return F_HARALICK+([F_GABOR] if self.wants_gabor else [])
+    
     def get_measurements(self, pipeline, object_name, category):
         '''Get the measurements made on the given object in the given category
         
@@ -287,7 +303,7 @@ class MeasureTexture(cpm.CPModule):
         category - measurement category
         '''
         if category in self.get_categories(pipeline, object_name):
-            return F_HARALICK+[F_GABOR]
+            return self.get_features()
         return []
 
     def get_measurement_images(self, pipeline, object_name, category, measurement):
@@ -321,7 +337,7 @@ class MeasureTexture(cpm.CPModule):
     def get_measurement_columns(self, pipeline):
         '''Get column names output for each measurement.'''
         cols = []
-        for feature in F_HARALICK+[F_GABOR]:
+        for feature in self.get_features():
             for im in self.image_groups:
                 for sg in self.scale_groups:
                     cols += [('Image',
@@ -329,7 +345,7 @@ class MeasureTexture(cpm.CPModule):
                               'float')]
                    
         for ob in self.object_groups:
-            for feature in F_HARALICK+[F_GABOR]:
+            for feature in self.get_features():
                 for im in self.image_groups:
                     for sg in self.scale_groups:
                         cols += [(ob.object_name.value,
@@ -349,16 +365,18 @@ class MeasureTexture(cpm.CPModule):
             for scale_group in self.scale_groups:
                 scale = scale_group.scale.value
                 statistics += self.run_image(image_name, scale, workspace)
-                statistics += self.run_image_gabor(image_name, scale, workspace)
+                if self.wants_gabor:
+                    statistics += self.run_image_gabor(image_name, scale, workspace)
                 for object_group in self.object_groups:
                     object_name = object_group.object_name.value
                     statistics += self.run_one(image_name, 
                                                object_name,
                                                scale, workspace)
-                    statistics += self.run_one_gabor(image_name, 
-                                                     object_name, 
-                                                     scale,
-                                                     workspace)
+                    if self.wants_gabor:
+                        statistics += self.run_one_gabor(image_name, 
+                                                         object_name, 
+                                                         scale,
+                                                         workspace)
         if workspace.frame is not None:
             workspace.display_data.statistics = statistics
     
@@ -568,5 +586,10 @@ class MeasureTexture(cpm.CPModule):
                               ["4"])
             variable_revision_number = 1
             from_matlab = False
+        if not from_matlab and variable_revision_number == 1:
+            #
+            # Added "wants_gabor"
+            #
+            setting_values = setting_values[:-1] + [cps.YES] + setting_values[-1:]
+            variable_revision_number = 2
         return setting_values, variable_revision_number, from_matlab
-

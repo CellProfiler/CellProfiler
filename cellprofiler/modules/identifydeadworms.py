@@ -50,7 +50,7 @@ WORM_ALPHA = .25
 
 class IdentifyDeadWorms(cpm.CPModule):
     module_name = "IdentifyDeadWorms"
-    variable_revision_number = 1
+    variable_revision_number = 2
     category = "Other"
     
     def create_settings(self):
@@ -90,11 +90,40 @@ class IdentifyDeadWorms(cpm.CPModule):
             the template will be rotated by 0, 15, 30, 45 ... and 165 degrees.
             The shape is bilaterally symmetric: you get the same shape
             after rotating it 180 degrees.""")
+        self.wants_automatic_distance = cps.Binary(
+            "Automatically calculate distance parameters?", True,
+            doc = """This setting determines whether or not
+            <b>IdentifyDeadWorms</b> automatically calculates the parameters
+            used to determine whether two found-worm centers belong to the
+            same worm. Check this setting to have <b>IdentifyDeadWorms</b>
+            automatically calculate the distance from the worm length
+            and width. Uncheck the setting to set the distances manually.""")
+        self.space_distance = cps.Float(
+            "Spatial distance", 5, minval = 1,
+            doc = """<i>(Only if not automatically calculating distance parameters)</i><br>
+            Worm centers must be at least this far apart for the centers to
+            be considered two separate worms.""")
+        self.angular_distance = cps.Float(
+            "Angular distance", 30, minval = 1,
+            doc = """<i>(Only if not automatically calculating distance parameters)</i><br>
+            <b>IdentifyDeadWorms</b> calculates the worm centers at different
+            angles. Two worm centers are considered to represent different
+            worms if their angular distance is larger than this number. The
+            number is measured in degrees.""")
         
     def settings(self):
         '''The settings as they appear in the pipeline file'''
         return [self.image_name, self.object_name, self.worm_width,
-                self.worm_length, self.angle_count]
+                self.worm_length, self.angle_count, self.wants_automatic_distance,
+                self.space_distance, self.angular_distance]
+    
+    def visible_settings(self):
+        '''The settings as they appear in the user interface'''
+        result = [self.image_name, self.object_name, self.worm_width,
+                self.worm_length, self.angle_count, self.wants_automatic_distance]
+        if not self.wants_automatic_distance:
+            result += [self.space_distance, self.angular_distance]
+        return result
     
     def run(self, workspace):
         '''Run the algorithm on one image set'''
@@ -112,16 +141,10 @@ class IdentifyDeadWorms(cpm.CPModule):
         # We collect the i,j and angle of pairs of points that
         # are 3-d adjacent after erosion.
         #
-        # first - the indexes of the first of the connected pairs
-        # second - the indexes of the second of the connected pairs
-        # count - the number of points in each erosion
         # i - the i coordinate of each point found after erosion
         # j - the j coordinate of each point found after erosion
         # a - the angle of the structuring element for each point found
         #
-        first = np.zeros(0, int)
-        second = np.zeros(0, int)
-        count = np.zeros(0, int)
         i = np.zeros(0, int)
         j = np.zeros(0, int)
         a = np.zeros(0, int)
@@ -137,36 +160,13 @@ class IdentifyDeadWorms(cpm.CPModule):
             # in the erosion
             #
             this_count = np.sum(erosion)
-            count = np.hstack((count, [this_count]))
             i = np.hstack((i, ig[erosion]))
             j = np.hstack((j, jg[erosion]))
             a = np.hstack((a, np.ones(this_count, float) * angle))
-            #
-            # Find all pairs of adjacent points within the plane, including
-            # a point to itself.
-            #
-            first, second = self.find_adjacent_same(
-                erosion, this_idx, this_count, 
-                first, second)
-            if angle_number == 0:
-                first_erosion = erosion
-            else:
-                #
-                # Find all pairs of adjacent points between planes
-                #
-                first, second = self.find_adjacent(
-                    last_erosion, last_idx, count[-2],
-                    erosion, this_idx, this_count,
-                    first, second)
-            last_erosion = erosion
-            last_idx = this_idx
-            this_idx += this_count
         #
-        # Hook the last to the first
+        # Find connections based on distances, not adjacency
         #
-        first, second = self.find_adjacent(
-            first_erosion, 0, count[0],
-            last_erosion, last_idx, count[-1], first, second)
+        first, second = self.find_adjacent_by_distance(i,j,a)
         #
         # Do all connected components.
         #
@@ -412,6 +412,38 @@ class IdentifyDeadWorms(cpm.CPModule):
         match = img1[i1, j1] & img2[i2, j2]
         return numbering1[i1, j1][match], numbering2[i2, j2][match]
     
+    def find_adjacent_by_distance(self, i, j, a):
+        '''Return pairs of worm centers that are deemed adjacent by distance
+        
+        i - i-centers of worms
+        j - j-centers of worms
+        a - angular orientation of worms
+        
+        Returns two vectors giving the indices of the first and second
+        centers that are connected.
+        '''
+        if self.wants_automatic_distance:
+            space_distance = self.worm_width.value
+            angle_distance = np.arctan2(self.worm_width.value,
+                                        self.worm_length.value)
+            angle_distance += np.pi / self.angle_count.value
+        else:
+            space_distance = self.space_distance.value
+            angle_distance = self.angular_distance.value * 180 / np.pi
+        #
+        # Take the cross-product of the centers with themselves.
+        #
+        n = len(i)
+        first,second = np.mgrid[0:n,0:n]
+        first = first.flatten()
+        second = second.flatten()
+        mask = ((np.abs((i[first] - i[second]) ** 2 + 
+                        (j[first] - j[second]) ** 2) <= space_distance ** 2) &
+                ((np.abs(a[first] - a[second]) <= angle_distance) |
+                 (a[first] + np.pi - a[second] <= angle_distance) |
+                 (a[second] + np.pi - a[first] <= angle_distance)))
+        return first[mask], second[mask]
+    
     @staticmethod
     def get_slices(offset):
         '''Get slices to use for a pair of arrays, given an offset
@@ -460,3 +492,11 @@ class IdentifyDeadWorms(cpm.CPModule):
                 return [F_ANGLE]
         return []
     
+    def upgrade_settings(self, setting_values, variable_revision_number, 
+                         module_name, from_matlab):
+        '''Upgrade the settings from a previous revison'''
+        if variable_revision_number == 1:
+            setting_values = setting_values + [
+                cps.YES, 5, 30]
+            variable_revision_number = 2
+        return setting_values, variable_revision_number, from_matlab

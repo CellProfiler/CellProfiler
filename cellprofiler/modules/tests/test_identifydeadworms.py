@@ -40,7 +40,7 @@ class TestIdentifyDeadWorms(unittest.TestCase):
 Version:1
 SVNRevision:10479
 
-IdentifyDeadWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:1|show_window:True|notes:\x5B\x5D]
+IdentifyDeadWorms:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:1|show_window:True|notes:\x5B\x5D]
     Input image:BinaryWorms
     Objects name:DeadWorms
     Worm width:6
@@ -59,6 +59,38 @@ IdentifyDeadWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number
         self.assertEqual(module.worm_width, 6)
         self.assertEqual(module.worm_length, 114)
         self.assertEqual(module.angle_count, 180)
+        self.assertTrue(module.wants_automatic_distance)
+        
+    def test_01_01_load_v2(self):
+        data = '''CellProfiler Pipeline: http://www.cellprofiler.org
+Version:1
+SVNRevision:10479
+
+IdentifyDeadWorms:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_window:True|notes:\x5B\x5D]
+    Input image:BinaryWorms
+    Objects name:DeadWorms
+    Worm width:6
+    Worm length:114
+    Number of angles:180
+    Automatically calculate distance parameters?:No
+    Spatial distance:6
+    Angular distance:45
+'''
+        pipeline = cpp.Pipeline()
+        def callback(caller,event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.load(StringIO(data))
+        self.assertEqual(len(pipeline.modules()), 1)
+        module = pipeline.modules()[0]
+        self.assertTrue(isinstance(module, ID.IdentifyDeadWorms))
+        self.assertEqual(module.image_name, "BinaryWorms")
+        self.assertEqual(module.object_name, "DeadWorms")
+        self.assertEqual(module.worm_width, 6)
+        self.assertEqual(module.worm_length, 114)
+        self.assertEqual(module.angle_count, 180)
+        self.assertFalse(module.wants_automatic_distance)
+        self.assertEqual(module.space_distance, 6)
+        self.assertEqual(module.angular_distance, 45)
         
     def make_workspace(self, pixel_data, mask = None):
         image = cpi.Image(pixel_data, mask)
@@ -188,3 +220,97 @@ IdentifyDeadWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number
         for e in expected:
             self.assertTrue(any(all([x == y for x,y in zip(c,e)])
                                 for c in columns), "could not find "+repr(e))
+
+    def test_04_01_find_adjacent_by_distance_empty(self):
+        workspace, module = self.make_workspace(np.zeros((20, 10), bool))
+        self.assertTrue(isinstance(module, ID.IdentifyDeadWorms))
+        
+        first, second = module.find_adjacent_by_distance(np.zeros(0),
+                                                         np.zeros(0),
+                                                         np.zeros(0))
+        self.assertEqual(len(first), 0)
+        self.assertEqual(len(second), 0)
+        
+    def test_04_02_find_adjacent_by_distance_one(self):
+        workspace, module = self.make_workspace(np.zeros((20, 10), bool))
+        self.assertTrue(isinstance(module, ID.IdentifyDeadWorms))
+        
+        first, second = module.find_adjacent_by_distance(np.zeros(1),
+                                                         np.zeros(1),
+                                                         np.zeros(1))
+        self.assertEqual(len(first), 1)
+        self.assertEqual(first[0], 0)
+        self.assertEqual(len(second), 1)
+        self.assertEqual(second[0], 0)
+        
+    def test_04_03_find_adjacent_by_distance_easy(self):
+        #
+        # Feed "find_adjacent_by_distance" points whose "i" are all
+        # within the space_distance
+        #
+        workspace, module = self.make_workspace(np.zeros((20, 10), bool))
+        self.assertTrue(isinstance(module, ID.IdentifyDeadWorms))
+        module.space_distance.value = 10
+        # Take find_adjacent_by_distance internals into account: consecutive i
+        # will create a single cross-product
+        #
+        i = np.arange(10)
+        j = np.arange(10)
+        # Break into two groups: 0-4 (5x5) and 5-9 (5x5)
+        j[5:] += 10
+        a = np.zeros(10)
+        first, second = module.find_adjacent_by_distance(i,j,a)
+        order = np.lexsort((second, first))
+        first = first[order]
+        second = second[order]
+        self.assertEqual(len(first), 50)
+        self.assertEqual(len(second), 50)
+        for i in range(50):
+            self.assertEqual(first[i], int(i / 5))
+        for i in range(25):
+            self.assertEqual(second[i], i % 5)
+            self.assertEqual(second[i+25], (i % 5) + 5)
+            
+    def test_04_04_find_adjacent_by_distance_hard(self):
+        #
+        # Feed "find_adjacent_by_distance" points whose "i" are not all
+        # within the space_distance
+        #
+        workspace, module = self.make_workspace(np.zeros((20, 10), bool))
+        self.assertTrue(isinstance(module, ID.IdentifyDeadWorms))
+        module.space_distance.value = 10
+        r = np.random.RandomState(44)
+        for idx, scramble in enumerate(
+            [np.arange(13)] + [r.permutation(np.arange(13)) for ii in range(10)]):
+            # Take find_adjacent_by_distance internals into account: non consecutive i
+            # will create two cross-products
+            #
+            i = np.arange(13)
+            j = np.arange(13)
+            # Break into three groups: 0-2 (3x3), 3-6 (4x4) and 7-11 (5x5)
+            # with one loner at end
+            i[3:] += 10
+            i[7:] += 10
+            #
+            # Make last in last group not match by i+j
+            #
+            i[-1] += 7
+            j[-1] += 8
+            a = np.zeros(13)
+            #
+            # Scramble i, j and a
+            #
+            i = i[scramble]
+            j = j[scramble]
+            a = a[scramble]
+            #
+            # a reported value of "n" corresponds to whatever index in scramble
+            # that contains "n"
+            #
+            unscramble = np.zeros(13, int)
+            unscramble[scramble] = np.arange(13)
+            first, second = module.find_adjacent_by_distance(i,j,a)
+            self.assertEqual(len(first), 9+16+25+1)
+            self.assertEqual(len(second), 9+16+25+1)
+            for f,s in zip(first, second):
+                self.assertTrue((i[f] - i[s])**2 + (j[f] - j[s]) ** 2 <= 100)

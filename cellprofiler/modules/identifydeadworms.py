@@ -422,6 +422,8 @@ class IdentifyDeadWorms(cpm.CPModule):
         Returns two vectors giving the indices of the first and second
         centers that are connected.
         '''
+        if len(i) < 2:
+            return (np.zeros(len(i), int), np.zeros(len(i), int))
         if self.wants_automatic_distance:
             space_distance = self.worm_width.value
             angle_distance = np.arctan2(self.worm_width.value,
@@ -431,18 +433,49 @@ class IdentifyDeadWorms(cpm.CPModule):
             space_distance = self.space_distance.value
             angle_distance = self.angular_distance.value * 180 / np.pi
         #
-        # Take the cross-product of the centers with themselves.
+        # Sort by i and break the sorted vector into chunks where
+        # consecutive locations are separated by more than space_distance
         #
-        n = len(i)
-        first,second = np.mgrid[0:n,0:n]
-        first = first.flatten()
-        second = second.flatten()
+        order = np.lexsort((a,j,i))
+        i = i[order]
+        j = j[order]
+        a = a[order]
+        breakpoint = np.hstack(([False],i[1:] - i[:-1] > space_distance))
+        if np.all(~ breakpoint):
+            # No easy win - cross all with all
+            first, second = np.mgrid[0:len(i),0:len(i)]
+        else:
+            # The segment that each belongs to
+            segment_number = np.cumsum(breakpoint)
+            # The number of elements in each segment
+            member_count = np.bincount(segment_number)
+            # The index of the first element in the segment
+            member_idx = np.hstack(([0], np.cumsum(member_count[:-1])))
+            # The index of the first element, for every element in the segment
+            segment_start = member_idx[segment_number]
+            #
+            # Develop the cross-products for each segment. Each segment has
+            # member_count * member_count crosses.
+            #
+            # # of (first,second) pairs in each segment
+            cross_size = member_count **2
+            # Index in final array of first element of each segment
+            segment_idx = np.cumsum(cross_size)
+            # relative location of first "first"
+            first_start_idx = np.cumsum(member_count[segment_number[:-1]])
+            first = np.zeros(segment_idx[-1], int)
+            first[first_start_idx] = 1
+            # The "firsts" array
+            first = np.cumsum(first)
+            first_start_idx = np.hstack(([0], first_start_idx))
+            second = (np.arange(len(first)) - 
+                      first_start_idx[first] + segment_start[first])
         mask = ((np.abs((i[first] - i[second]) ** 2 + 
                         (j[first] - j[second]) ** 2) <= space_distance ** 2) &
                 ((np.abs(a[first] - a[second]) <= angle_distance) |
                  (a[first] + np.pi - a[second] <= angle_distance) |
                  (a[second] + np.pi - a[first] <= angle_distance)))
-        return first[mask], second[mask]
+        return order[first[mask]], order[second[mask]]
     
     @staticmethod
     def get_slices(offset):

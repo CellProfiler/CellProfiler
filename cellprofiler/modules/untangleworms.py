@@ -931,13 +931,28 @@ class UntangleWorms(cpm.CPModule):
         if max_radius is not None:
             #
             # Add any points that are more than the worm diameter to
-            # the branchpoints
+            # the branchpoints. Exclude segments without supporting branchpoints:
+            #
+            # OK:
+            #
+            # * * *       * * *
+            #       * * *
+            # * * *       * * *
+            #
+            # Not OK:
+            #
+            # * * * * * * * * * *
             #
             strel = morph.strel_disk(max_radius)
             far = scind.binary_erosion(binary_im, strel)
             far = scind.binary_opening(far, structure = morph.eight_connect)
+            far_labels, count = scind.label(far)
+            far_counts = np.bincount(far_labels.ravel(), 
+                                     branch_areas_binary.ravel())
+            far[far_counts[far_labels] < 2] = False
             branch_areas_binary |= far
             del far
+            del far_labels
         branch_areas_binary = scind.binary_dilation(
             branch_areas_binary, structure = morph.eight_connect)
         segments_binary = skeleton & ~ branch_areas_binary

@@ -40,6 +40,7 @@ import cellprofiler.pipeline as cpp
 import cellprofiler.settings as cps
 import cellprofiler.preferences as cpprefs
 import cellprofiler.modules.createbatchfiles as cpm_c
+from cellprofiler.cpmath.filter import stretch
 from cellprofiler.utilities.get_proper_case_filename import get_proper_case_filename
 
 import cellprofiler.modules.tests as cpmt
@@ -1623,10 +1624,12 @@ SaveImages:[module_num:2|svn_version:\'10581\'|variable_revision_number:7|show_w
                 expected = setting['input_image'] / 65535.
             elif issubclass(setting['input_image'].dtype.type, np.floating):
                 expected = setting['input_image']
-                
+
+            if setting['rescale']:
+                expected = stretch(expected)                
             im = cpm_li.load_using_bioformats(filename)
             
-            self.assertTrue (np.allclose(im, expected), 
+            self.assertTrue (np.allclose(im, expected, atol=.001), 
                     'Saved image did not match original when reloaded.\n'
                     'Settings were: \n'
                     '%s\n'
@@ -1788,4 +1791,3 @@ def make_file(filename, encoded):
     fid = open(filename,'wb')
     fid.write(data)
     fid.close()
-    

@@ -34,7 +34,6 @@ class AddModuleFrame(wx.Frame):
         """
         kwds["style"] = wx.DEFAULT_FRAME_STYLE
         wx.Frame.__init__(self, *args, **kwds)
-        self.SetSize(wx.Size(425, 360))
         # Top level panels
         left_panel = wx.Panel(self,-1)
         right_panel = wx.Panel(self,-1)
@@ -55,6 +54,8 @@ class AddModuleFrame(wx.Frame):
         done_button = wx.Button(left_panel,-1,'Done')
         # Right-side panel
         self.__module_list_box = wx.ListBox(right_panel,-1)
+        w,h = self.__module_list_box.GetTextExtent("CorrectIllumination_Calculate_Plus")
+        self.__module_list_box.SetMinSize(wx.Size(w,h * 30))
         # Sizers
         top_sizer = wx.BoxSizer(wx.HORIZONTAL)
         top_sizer.AddMany([(left_panel,0,wx.EXPAND|wx.LEFT,5),
@@ -103,7 +104,7 @@ class AddModuleFrame(wx.Frame):
         self.__listeners = []
         self.__module_categories_list_box.Select(0)
         self.__on_category_selected(None)
-        self.Layout()
+        self.Fit()
         
     def __on_close(self,event):
         self.Hide()
@@ -132,8 +133,14 @@ class AddModuleFrame(wx.Frame):
                 return module
             try:
                 module = cellprofiler.modules.instantiate_module(mn)
-                self.__module_dict[module.category][module.module_name] = loader
-                self.__module_dict['All'][module.module_name] = loader
+                categories = ([module.category] 
+                              if isinstance(module.category, str)
+                              else list(module.category)) + ['All']
+                for category in categories:
+                    if category not in self.__module_files:
+                        self.__module_files.insert(-2, category)
+                        self.__module_dict[category] = {}
+                    self.__module_dict[category][module.module_name] = loader
             except Exception, e:
                 import traceback
                 sys.stderr.write(traceback.format_exc())

@@ -503,10 +503,14 @@ class PipelineController:
             try:
                 module = cellprofiler.modules.instantiate_module(module_name)
                 category = module.category
-                if not d.has_key(category):
-                    d[category] = []
-                d[category].append(module_name)
-                d["All"].append(module_name)
+                if isinstance(category, (str,unicode)):
+                    categories = [category, "All"]
+                else:
+                    categories = list(category) + ["All"]
+                for category in categories:
+                    if not d.has_key(category):
+                        d[category] = []
+                    d[category].append(module_name)
             except:
                 import traceback
                 sys.stderr.write(traceback.format_exc())

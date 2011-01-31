@@ -16,7 +16,7 @@ From here, you can...
  </tr>
 <tr>
     <td><i>Try an example pipeline</i></td>
-    <td>You can <a href="load:http://cellprofiler.org/ExampleFlyImages/ExampleFlyURL.cp">load a simple pipeline</a> via http.</td>
+    <td>You can <a href="loadexample:http://cellprofiler.org/ExampleFlyImages/ExampleFlyURL.cp">load a simple pipeline</a> from our website.</td>
 </tr>
 <tr>
     <td><i>Find other examples, read tutorials</i></td>

@@ -38,6 +38,17 @@ class HtmlClickableWindow(wx.html.HtmlWindow):
                     'CellProfiler was unable to load %s' %
                     pipeline_filename, "Error loading pipeline",
                     style = wx.OK | wx.ICON_ERROR)
+        elif href.startswith('loadexample:'):
+            # Same as "Load", but specific for example pipelines so the user can be directed as to what to do next.
+            pipeline_filename = href[12:]
+            try:
+                wx.CallAfter(wx.GetApp().frame.pipeline.load, urllib2.urlopen(pipeline_filename))
+                wx.MessageBox('Now that you have loaded an example pipeline, press the "Analyze images" button to access and process a small image set from the CellProfiler website so you can see how CellProfiler works.', '', wx.ICON_INFORMATION)
+            except:
+                wx.MessageBox(
+                    'CellProfiler was unable to load %s' %
+                    pipeline_filename, "Error loading pipeline",
+                    style = wx.OK | wx.ICON_ERROR)
         else:
             newpage = content.find_link(href)
             if newpage is not None:

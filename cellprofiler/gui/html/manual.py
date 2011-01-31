@@ -137,11 +137,14 @@ def output_module_html(webpage_path):
         except IOError:
             raise ValueError("Could not create directory %s" % module_path)
         
-    for module_name in get_module_names():
+    for module_name in sorted(get_module_names()):
         module = instantiate_module(module_name)
-        if not d.has_key(module.category):
-            d[module.category] = {}
-        d[module.category][module_name] = module
+        if isinstance(module.category, (str,unicode)):
+            module.category = [module.category]
+        for category in module.category:
+            if not d.has_key(category):
+                d[category] = {}
+            d[category][module_name] = module
         result = module.get_help()
         result = result.replace('<body><h1>','<body><h1>Module: ')
         

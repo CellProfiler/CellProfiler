@@ -119,7 +119,7 @@ class RunImageJ(cpm.CPModule):
             "Run before each group?", [CM_NOTHING, CM_COMMAND, CM_MACRO],
             doc="""You can run an ImageJ macro or a command before each group of
             images. This can be useful in order to set up ImageJ before
-            processing a stack of images. Choose <i>%(CM_NOTHING)s</s> if
+            processing a stack of images. Choose <i>%(CM_NOTHING)s</i> if
             you do not want to run a command or macro, <i>%(CM_COMMAND)s</i>
             to choose a command to run or <i>%(CM_MACRO)s</i> to run a macro.
             """ % globals())
@@ -141,7 +141,7 @@ class RunImageJ(cpm.CPModule):
             doc="""You can run an ImageJ macro or a command after each group of
             images. This can be used to do some sort of operation on a whole
             stack of images that have been accumulated by the group operation.
-            Choose <i>%(CM_NOTHING)s</s> if you do not want to run a command or 
+            Choose <i>%(CM_NOTHING)s</i> if you do not want to run a command or 
             macro, <i>%(CM_COMMAND)s</i> to choose a command to run or 
             <i>%(CM_MACRO)s</i> to run a macro.
             """ % globals())

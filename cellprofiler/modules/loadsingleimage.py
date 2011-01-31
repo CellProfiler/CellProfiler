@@ -222,7 +222,7 @@ class LoadSingleImage(cpm.CPModule):
                     image_group.image_name,
                     image_group.rescale, 
                     image_group.objects_name,
-                    image_group.wants_outline,
+                    image_group.wants_outlines,
                     image_group.outlines_name]
         return result
     

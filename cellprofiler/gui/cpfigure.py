@@ -549,8 +549,10 @@ class CPFigureFrame(wx.Frame):
         x - subplot's column
         y - subplot's row
         """
+        fontname = fontname=cpprefs.get_title_font_name()
+            
         self.subplot(x,y).set_title(title,
-                                   fontname=cpprefs.get_title_font_name(),
+                                   fontname=fontname,
                                    fontsize=cpprefs.get_title_font_size())
     
     def clear_subplot(self, x, y):
@@ -961,8 +963,8 @@ class CPFigureFrame(wx.Frame):
                              normalize=True, rgb_mask=[1,1,1],
                              sharex=None, sharey=None,
                              use_imshow=False):
-        return self.subplot_imshow(x, y, image, title=None, clear=True, 
-                                   normalize=True, rgb_mask=[1,1,1], 
+        return self.subplot_imshow(x, y, image, title=title, clear=clear, 
+                                   normalize=normalize, rgb_mask=rgb_mask, 
                                    sharex=sharex, sharey=sharey,
                                    use_imshow = use_imshow)
     

@@ -3,42 +3,24 @@
 
 <b>LabelImages</b> assigns a plate number, well and site number to each image
 set based on the order in which they are processed. You can use <b>Label
-Images</b> to add plate and well metadata for images loaded using
-<b>LoadImages</b>, using the file order instead of the text in the file
-name. <b>LabelImages</b> assumes that you have an identical number of
-image sets per well (the <i>sites</b>), and an identical number of rows and 
-columns of wells per plate with complete file lists for all but the last
-plate and well.
-Files have to be loaded in one of the two following orders to use
-<b>LabelImages</b><br>
+Images</b> to add plate and well metadata for images loaded using <i>File order</i>
+in <b>LoadImages</b>. <b>LabelImages</b> assumes the following are true of the image order:
 <ul>
-<lh>By row</ul>
-<li>All sites for a given well appear consecutively</li>
-<li>All wells for a given row (e.g. A01, A02, A03...) appear consecutively</li>
-<li>All rows for a given column appear consecutively</li>
-<li>All columns for a given plate appear consecutively</li>
+<li>Each well has the same number of images (i.e., sites) per channel.</li>
+<li>Each plate has the same number of rows and columns, so that the total
+number of images per plate is the same. </li>
 </ul>
-<br>
-or
-<br>
+
+<h4>Available measurements</h4>
 <ul>
-<lh>By column</ul>
-<li>All sites for a given well appear consecutively</li>
-<li>All wells for a given column (e.g. A01, B01, C01...) appear consecutively</li>
-<li>All columns for a row column appear consecutively</li>
-<li>All rows for a given plate appear consecutively</li>
+<li><i>Metadata_Plate:</i> The plate number, starting at 1 for the first plate.</li>
+<li><i>Metadata_Well:</i> The well name, e.g., <i>A01</i>.</li>
+<li><i>Metadata_Row:</i> The row name, starting with <i>A</i> for the first row.</li>
+<li><i>Metadata_Column:</i> The column number, starting with 1 for the first column.</li>
+<li><i>Metadata_Site:</i> The site number within the well, starting at 1 for the first site</li>
 </ul>
-<p>
-<b>LabelImages</b> adds the following measurements to the image table:
-<br>
-<table>
-<tr><th>Measurement</th><th>Description</th></tr>
-<tr><td>Metadata_Plate</td><td>The plate number, starting at 1 for the first plate</td></tr>
-<tr><td>Metadata_Well</td><td>The well name, for instance, "A01"</td></tr>
-<tr><td>Metadata_Row</td><td>The row name, for instance, "A"</td></tr>
-<tr><td>Metadata_Column</td><td>The column number</td></tr>
-<tr><td>Metadata_Site</td><td>The site number within the well</td></tr>
-</table>
+
+See also <b>LoadImages</b>.
 '''
 __version__ = "$Revision$"
 
@@ -68,11 +50,17 @@ class LabelImages(cpm.CPModule):
             doc = """The number of rows per plate""")
         self.order = cps.Choice(
             "Order of image data", [O_ROW, O_COLUMN],
-            doc = """This setting controls whether the data is ordered by
-            row and then by column or by column and then by row. Choose, 
-            "%(O_ROW)s", if data appears by row and then by column. Choose,
-            "%(O_COLUMN)s", if data appears by column and then by row. For
-            instance, the ExampleSBSImages sample has files that are named:<br>
+            doc = """This setting specifies how the input data is ordered (assuming
+            that sites within a well are ordered consecutively):
+            <ul>
+            <li><i>%(O_ROW)s:</i>: The data appears by row and then by column. That is,
+            all columns for a given row (e.g. A01, A02, A03...) appear consecutively, for
+            each row in consecutive order.</li>
+            <li><i>%(O_COLUMN)s</i>: The data appears by column and then by row. That is,
+            all rows for a given column (e.g. A01, B01, C01...) appear consecutively, for
+            each column in consecutive order.</li>
+            </ul>
+            <p>For instance, the ExampleSBSImages sample has files that are named:<br>
             Channel1-01-A01.tif<br>
             Channel1-02-A02.tif<br>
             ...<br>

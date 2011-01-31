@@ -1,5 +1,9 @@
-'''OutputExternal.py - Let the user select which images they would like to make
-available to external sources (eg: Java)
+'''<b>Output External</b> specfies which images can be made
+available to external sources (e.g., Java)
+<hr>
+<b>Output External</b> is a helper module for ImageJ. <b>Do not add it to a pipeline.</b>
+
+See also <b>RunImageJ</b>
 '''
 
 # CellProfiler is distributed under the GNU General Public License.

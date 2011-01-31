@@ -1,6 +1,9 @@
-'''InputExternal.py - Let the user create image names that will be pulled from
-external sources (eg: Java)
-'''
+'''<b>Input External</b> specifies the image names that will be pulled from
+external sources (e.g., Java)
+<hr>
+<b>Input External</b> is a helper module for ImageJ. <b>Do not add it to a pipeline.</b>
+
+See also <b>RunImageJ</b>'''
 
 # CellProfiler is distributed under the GNU General Public License.
 # See the accompanying file LICENSE for details.

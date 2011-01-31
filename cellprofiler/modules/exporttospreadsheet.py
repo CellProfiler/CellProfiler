@@ -107,7 +107,7 @@ GP_NAME_OPTIONS = [GP_NAME_METADATA, GP_NAME_FILENAME]
 class ExportToSpreadsheet(cpm.CPModule):
 
     module_name = 'ExportToSpreadsheet'
-    category = "Data Tools"
+    category = ["File Processing","Data Tools"]
     variable_revision_number = 7
     
     def create_settings(self):

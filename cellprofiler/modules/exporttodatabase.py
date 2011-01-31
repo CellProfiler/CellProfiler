@@ -222,7 +222,7 @@ class ExportToDatabase(cpm.CPModule):
  
     module_name = "ExportToDatabase"
     variable_revision_number = 20
-    category = "Data Tools"
+    category = ["File Processing","Data Tools"]
 
     def create_settings(self):
         db_choices = ([DB_MYSQL, DB_MYSQL_CSV, DB_SQLITE] if HAS_MYSQL_DB

@@ -115,7 +115,7 @@ T_VALUE = "value"
 class UntangleWorms(cpm.CPModule):
     
     variable_revision_number = 1
-    category = ["Object Processing","Worm toolbox"]
+    category = ["Object Processing","Worm Toolbox"]
     module_name = "UntangleWorms"
     def create_settings(self):
         '''Create the settings that parameterize the module'''

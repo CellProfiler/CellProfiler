@@ -498,13 +498,10 @@ def copy_labels(labels, segmented):
     labels - labels matrix similarly segmented to "segmented"
     segmented - the newly numbered labels matrix (a subset of pixels are labeled)
     '''
-    max_labels = np.max(labels)
-    labels_new = segmented+max_labels
-    labels_new[segmented==0] = labels[segmented==0]
-    unique_labels = np.unique(labels_new)
-    new_indexes = np.zeros(np.max(unique_labels)+1,int)
-    new_indexes[unique_labels] = np.arange(len(unique_labels))+1
-    labels_new = new_indexes[labels_new]
+    max_labels = np.max(segmented)
+    seglabel = scind.minimum(labels, segmented, np.arange(1, max_labels+1))
+    labels_new = labels.copy()
+    labels_new[segmented != 0] = seglabel[segmented[segmented != 0] - 1]
     return labels_new
 
 RelabelObjects = ReassignObjectNumbers

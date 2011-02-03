@@ -1,3 +1,14 @@
+'''<b>ClassifyPixels</b> classify pixels using Ilastik
+<hr>
+
+ClassifyPixels performs per-pixel classification using the Ilastik application.
+Ilastik is now bundled with the CellProfiler distribution; it applies
+supervised machine learning techniques to images to learn their features.
+A user trains a classifier with Ilastik and then saves the classifier.
+The user then uses the ClassifyPixels module to classify the pixels in an
+image. ClassifyPixels produces an "image" consisting of probabilities that
+the pixel belongs to the chosen class.
+'''
 import cellprofiler.cpmodule as cpm
 import cellprofiler.cpmodule as cpm
 import cellprofiler.settings as cps
@@ -154,8 +165,12 @@ class ClassifyPixels(cpm.CPModule):
         
         classifiers = []
         for cid in temp:
-            classifiers.append(ClassifierRandomForest.deserialize(fileName, 'classifiers/' + cid))   
-        
+            cidpath = 'classifiers/' + cid
+            try:
+                classifiers.append(ClassifierRandomForest.deserialize(fileName, cidpath))
+            except:
+                classifiers.append(ClassifierRandomForest.loadRFfromFile(fileName, cidpath))
+
         self.dataMgr.module["Classification"]["classificationMgr"].classifiers = classifiers 
         
         # Restore user selection of feature items from hdf5
@@ -184,4 +199,23 @@ class ClassifyPixels(cpm.CPModule):
         probMap = classificationPredict._prediction[0][0,0,:,:, int(self.class_sel.value)]
         # probMap = classificationPredict._prediction[0]
         temp_image = cpi.Image(probMap, parent_image=image)
-        workspace.image_set.add(self.output_image.value, temp_image)   
+        workspace.image_set.add(self.output_image.value, temp_image)
+        workspace.display_data.source_image = image.pixel_data
+        workspace.display_data.dest_image = probMap
+
+    def is_interactive(self):
+        return False
+    
+    def display(self, workspace):
+        figure = workspace.create_or_find_figure(subplots = (2,1))
+        source_image = workspace.display_data.source_image
+        dest_image = workspace.display_data.dest_image
+        if source_image.ndim == 3:
+            src_plot = figure.subplot_imshow_color(
+                0, 0, source_image, title = self.image_name.value)
+        else:
+            src_plot = figure.subplot_imshow_grayscale(
+                0, 0, source_image, title = self.image_name.value)
+        figure.subplot_imshow_grayscale(
+            1, 0, dest_image, title = self.output_image.value)
+        

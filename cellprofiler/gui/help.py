@@ -94,6 +94,7 @@ TEST_MODE_HELP_REF = """Help > Using CellProfiler > Testing Your Pipeline"""
 METADATA_HELP_REF = """Help > Using CellProfiler > How Data Is Handled > Using Metadata In CellProfiler"""
 IMAGE_TOOLS_HELP_REF = """"Help > How To Use The Image Tools"""
 METADATA_GROUPING_HELP_REF = """Help > Using CellProfiler > How Data Is Handled > Image Grouping """
+DATA_TOOL_HELP_REF = """Help > Data Tool Help """
 
 USING_METADATA_HELP_REF = """ 
 Please see <b>LoadImages</b>, <b>LoadData</b>, or <i>%(METADATA_HELP_REF)s</i> 
@@ -946,6 +947,24 @@ current test run or next analysis run. The display mode icons next to each modul
 in the pipeline panel will switch to <img src="%(LOCATION_DISPLAYMODE_HIDE_ICON)s"></img>.</li>
 </ul>"""%globals()
 
+MENU_BAR_DATATOOLS_HELP = """
+The <i>Data Tools</i> menu provides tools to allow you
+to plot, view, export or perform specialized analyses on your measurements.
+
+<p>Each data tool has a corresponding module with the same name and 
+functionality. The difference between the data tool and the module is that the
+data tool takes a CellProfiler output file as input, which contains measurements
+from a previously completed analysis run. In contrast, a module uses measurements
+received from the upstream modules during an in-progress analysis run.</p>
+
+<p>Opening a data tool will present a prompt in which the user is asked to provide
+the location of the output file. Once specified, the user is then prompted to
+enter the desired settings. The settings behave identically as those from the 
+corresponding module.</p>
+
+<p>Help for each <i>Data Tool</i> is available under <i>%(DATA_TOOL_HELP_REF)s</i> or the corresponding
+module help.</p>"""%globals()
+
 ####################################################
 #
 # Help for the module figure windows
@@ -1192,7 +1211,8 @@ MAIN_HELP = (
             ("Using The File Menu",MENU_BAR_FILE_HELP),
             ("Using The Edit Menu",MENU_BAR_EDIT_HELP),
             ("Using The Test Menu",TEST_MODE_HELP),
-            ("Using The Window Menu",MENU_BAR_WINDOW_HELP) ) ),
+            ("Using The Window Menu",MENU_BAR_WINDOW_HELP),
+            ("Using The Data Tools Menu",MENU_BAR_DATATOOLS_HELP)) ),
         ("Using Module Display Windows", FIGURE_HELP ),
         ("Setting the Preferences", PREFERENCES_HELP),
         ("How Data Is Handled",(

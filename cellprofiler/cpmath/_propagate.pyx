@@ -54,7 +54,7 @@ cdef inline int get_most_significant(double value) nogil:
         ivalue = pValue[1]
     else:
         ivalue = pValue[0]
-    if ivalue & 0x80000000:
+    if ivalue & 0x80000000u:
         return -<int>(ivalue & 0x7FFFFFFF)
     else:
         return <int>(ivalue & 0x7FFFFFFF)
@@ -79,7 +79,7 @@ cdef inline int get_least_significant(double value) nogil:
     else:
         ivalue1=pValue[0]
         ivalue2=pValue[1]
-    if ivalue1 & 0x80000000:
+    if ivalue1 & 0x80000000u:
         # the number is negative and the sign is reversed here
         return -<int>(ivalue2 >> 1)
     else:

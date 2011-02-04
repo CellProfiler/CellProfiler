@@ -14,6 +14,11 @@ file names and to remove unwanted characters from your file names. This is
 especially useful if you want file names that have numbers in them to appear
 in numerical order when processed by <b>LoadImages</b>.<br>
 
+While this module performs basic renaming operations, if you can extract
+metadata from your images using <b>LoadImages</b>, you may find using
+metadata substitution in <b>SaveImages</b> to be more flexible. Please
+refer to metadata handling for those modules and in Help for more details.
+
 <h3>Examples</h3>
 
 <p>Renumbering can be useful when numbers within image filenames do
@@ -57,6 +62,8 @@ want to:
 <tr><td>1DrosophilaDAPI_010.tif</td> <td>1DrosDP_010.tif</td></tr>
 <tr><td>1DrosophilaDAPI_100.tif</td> <td>1DrosDP_100.tif</td></tr>
 </table>
+
+See also: <b>LoadImages</b>, <b>SaveImages</b>
 '''
 
 __version__="$Revision$"

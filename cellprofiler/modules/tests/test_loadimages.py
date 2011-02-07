@@ -2344,6 +2344,125 @@ LoadImages:[module_num:1|svn_version:\'10503\'|variable_revision_number:9|show_w
         image_set = workspace.get_image_set()
         outlines = image_set.get_image(OUTLINES_NAME)
         np.testing.assert_equal(outlines.pixel_data, expected_outlines)
-                
+        
+    def test_13_01_batch_images(self):
+        module = LI.LoadImages()
+        module.match_method.value = LI.MS_REGEXP
+        module.location.dir_choice = LI.ABSOLUTE_FOLDER_NAME
+        orig_path = os.path.join(T.example_images_directory(),"ExampleSBSImages")
+        module.location.custom_path = orig_path
+        target_path = orig_path.replace("ExampleSBSImages", "ExampleTrackObjects")
+            
+        file_regexp = "^Channel1-[0-9]{2}-[A-P]-[0-9]{2}.tif$"
+        module.images[0].common_text.value = file_regexp
+        module.images[0].channels[0].image_name.value = IMAGE_NAME
+        module.module_num = 1
+        image_set_list = I.ImageSetList()
+        pipeline = P.Pipeline()
+        pipeline.add_listener(self.error_callback)
+        pipeline.add_module(module)
+        module.prepare_run(pipeline, image_set_list, None)
+        def fn_alter_path(pathname, **varargs):
+            is_path = (pathname == orig_path)
+            is_file = re.match(file_regexp, pathname) is not None
+            self.assertTrue(is_path or is_file)
+            if is_path:
+                return target_path
+            else:
+                return pathname
+        module.prepare_to_create_batch(pipeline, image_set_list, fn_alter_path)
+        key_names, group_list = pipeline.get_groupings(image_set_list)
+        self.assertEqual(len(group_list), 1)
+        group_keys, image_numbers = group_list[0]
+        self.assertEqual(len(image_numbers), 96)
+        module.prepare_group(pipeline, image_set_list, group_keys, image_numbers)
+        for image_number in image_numbers:
+            image_set = image_set_list.get_image_set(image_number-1)
+            image_provider = image_set.get_image_provider(IMAGE_NAME)
+            self.assertTrue(isinstance(image_provider, LI.LoadImagesImageProvider))
+            self.assertEqual(image_provider.get_pathname(), target_path)
+    
+    def test_13_02_batch_movies(self):
+        module = LI.LoadImages()
+        module.match_method.value = LI.MS_EXACT_MATCH
+        module.location.dir_choice = LI.ABSOLUTE_FOLDER_NAME
+        module.file_types.value = LI.FF_AVI_MOVIES
+        orig_path = T.testimages_directory()
+        module.location.custom_path = orig_path
+        target_path = os.path.join(orig_path, "Images")
+            
+        file_name = "DrosophilaEmbryo_GFPHistone.avi"
+        module.images[0].common_text.value = file_name
+        module.images[0].channels[0].image_name.value = IMAGE_NAME
+        module.module_num = 1
+        image_set_list = I.ImageSetList()
+        pipeline = P.Pipeline()
+        pipeline.add_listener(self.error_callback)
+        pipeline.add_module(module)
+        module.prepare_run(pipeline, image_set_list, None)
+        def fn_alter_path(pathname, **varargs):
+            is_fullpath = (os.path.join(orig_path, file_name) == pathname)
+            is_path = (orig_path == pathname)
+            self.assertTrue(is_fullpath or is_path)
+            if is_fullpath:
+                return os.path.join(target_path, file_name)
+            else:
+                return target_path
+        module.prepare_to_create_batch(pipeline, image_set_list, fn_alter_path)
+        key_names, group_list = pipeline.get_groupings(image_set_list)
+        self.assertEqual(len(group_list), 1)
+        group_keys, image_numbers = group_list[0]
+        self.assertEqual(len(image_numbers), 65)
+        module.prepare_group(pipeline, image_set_list, group_keys, image_numbers)
+        for image_number in image_numbers:
+            image_set = image_set_list.get_image_set(image_number-1)
+            image_provider = image_set.get_image_provider(IMAGE_NAME)
+            self.assertTrue(isinstance(image_provider, LI.LoadImagesMovieFrameProvider))
+            self.assertEqual(image_provider.get_pathname(), target_path)
+            self.assertEqual(image_provider.get_t(), image_number-1)
+    
+    def test_13_03_batch_flex(self):
+        module = LI.LoadImages()
+        module.match_method.value = LI.MS_EXACT_MATCH
+        module.location.dir_choice = LI.ABSOLUTE_FOLDER_NAME
+        module.file_types.value = LI.FF_OTHER_MOVIES
+        orig_path = T.testimages_directory()
+        module.location.custom_path = orig_path
+        target_path = os.path.join(orig_path, "Images")
+            
+        file_name = "RLM1 SSN3 300308 008015000.flex"
+        module.images[0].common_text.value = file_name
+        module.images[0].channels[0].image_name.value = IMAGE_NAME
+        module.module_num = 1
+        image_set_list = I.ImageSetList()
+        pipeline = P.Pipeline()
+        pipeline.add_listener(self.error_callback)
+        pipeline.add_module(module)
+        module.prepare_run(pipeline, image_set_list, None)
+        def fn_alter_path(pathname, **varargs):
+            is_fullpath = (os.path.join(orig_path, file_name) == pathname)
+            is_path = (orig_path == pathname)
+            self.assertTrue(is_fullpath or is_path)
+            if is_fullpath:
+                return os.path.join(target_path, file_name)
+            else:
+                return target_path
+        module.prepare_to_create_batch(pipeline, image_set_list, fn_alter_path)
+        key_names, group_list = pipeline.get_groupings(image_set_list)
+        self.assertEqual(len(group_list), 4)
+        for i, (group_keys, image_numbers) in enumerate(group_list):
+            self.assertEqual(len(image_numbers), 1)
+            module.prepare_group(pipeline, image_set_list, group_keys, 
+                                 image_numbers)
+            for image_number in image_numbers:
+                image_set = image_set_list.get_image_set(image_number-1)
+                image_provider = image_set.get_image_provider(IMAGE_NAME)
+                self.assertTrue(isinstance(image_provider, LI.LoadImagesFlexFrameProvider))
+                self.assertEqual(image_provider.get_pathname(), target_path)
+                self.assertEqual(image_provider.get_series(), i)
+                self.assertEqual(image_provider.get_t(), 0)
+                self.assertEqual(image_provider.get_z(), 0)
+                self.assertEqual(image_provider.get_c(), 0)
+            
 if __name__=="main":
     unittest.main()

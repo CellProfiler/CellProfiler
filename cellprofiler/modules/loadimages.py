@@ -1551,8 +1551,6 @@ class LoadImages(cpmodule.CPModule):
         version - the version # of the provider, in case the arguments change
         args - string arguments that will be passed to the provider's init fn
         '''
-        if provider == P_MOVIES:
-            raise NotImplementedError("Movie processing has not yet been implemented on the cluster")
         d = self.get_dictionary(image_set)
         d[image_name] = [provider, version] + list(args)
     
@@ -1564,14 +1562,19 @@ class LoadImages(cpmodule.CPModule):
         '''
         d = self.get_dictionary(image_set)
         for image_name in d.keys():
-            values = d[image_name]
+            values = list(d[image_name])
             provider, version = values[:2]
             if provider == P_IMAGES:
                 assert version == V_IMAGES
                 for i in range(2,4):
                     values[i] = fn_alter_path(values[i])
+            elif provider == P_FLEX:
+                values[2] = fn_alter_path(values[2])
+            elif provider == P_MOVIES:
+                values[2] = fn_alter_path(values[2])
             else:
                 raise NotImplementedError("%s not handled by modify_image_set_info"%provider)
+            d[image_name] = tuple(values)
             
     def load_image_set_info(self, image_set):
         '''Load the image set information, creating the providers'''

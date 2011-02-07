@@ -23,7 +23,7 @@ from cellprofiler.modules import get_data_tool_names, instantiate_module
 from cellprofiler.gui import get_cp_icon, get_cp_bitmap
 from cellprofiler.gui.pipelinelistview import PipelineListView
 from cellprofiler.gui.cpfigure import close_all
-from cellprofiler.gui.help import MAIN_HELP, make_help_menu
+from cellprofiler.gui.help import MAIN_HELP, make_help_menu, HELP_ON_MODULE_BUT_NONE_SELECTED
 from cellprofiler.pipeline import Pipeline
 from cellprofiler.gui.pipelinecontroller import PipelineController
 from cellprofiler.gui.moduleview import ModuleView
@@ -403,7 +403,12 @@ All rights reserved."""
         
     def __on_help_module(self,event):
         modules = self.__pipeline_list_view.get_selected_modules()
-        self.do_help_modules(modules)
+        if len(modules) > 0:
+            self.do_help_modules(modules)
+        else:
+            wx.MessageBox(HELP_ON_MODULE_BUT_NONE_SELECTED, 
+                          "No module selected",
+                          style=wx.OK|wx.ICON_INFORMATION)
 
     def __debug_numpy_references(self, event):
         try:

@@ -91,6 +91,12 @@ analysis run and for metadata-specfic options in other modules; see the settings
 <i>Group images by metadata</i> and, if that setting is selected, <i>Select metadata fields for grouping</i>
 for details.</p>
 
+<h2>Loading MetaXpress-acquired images in CellProfiler</h2>
+
+<p>We run a pipeline Pilot Protocol that searches through all files in a directory, looking for matches with the string ".tif".  We split out the path and filename for CP to read, and remove thumbnail images as well as any duplicates or corrupt files.  To make use of our LIMS, we link image data to plate maps printed to a flat file that is updated periodically via a query to the LIMS db.  This information is written to a text file where the headers can easily be formatted to match
+LoadData's input requirements (e.g., Image_FileName_OrigDNA for the column matching to the filename).  Plates split over multiple directories as in common with
+MetaXpress are written to separate files and then merged so the discontinuity is transparent to the user.<p>
+
 <h4>Available measurements</h4>
 <ul>
 <li><i>Pathname, Filename:</i> The full path and the filename of each image, if

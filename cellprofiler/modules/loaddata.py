@@ -91,11 +91,29 @@ analysis run and for metadata-specfic options in other modules; see the settings
 <i>Group images by metadata</i> and, if that setting is selected, <i>Select metadata fields for grouping</i>
 for details.</p>
 
-<h2>Loading MetaXpress-acquired images in CellProfiler</h2>
+<h3>Using MetaXpress-acquired image locations and metadata in CellProfiler</h3>
 
-<p>We run a pipeline Pilot Protocol that searches through all files in a directory, looking for matches with the string ".tif".  We split out the path and filename for CP to read, and remove thumbnail images as well as any duplicates or corrupt files.  To make use of our LIMS, we link image data to plate maps printed to a flat file that is updated periodically via a query to the LIMS db.  This information is written to a text file where the headers can easily be formatted to match
-LoadData's input requirements (e.g., Image_FileName_OrigDNA for the column matching to the filename).  Plates split over multiple directories as in common with
-MetaXpress are written to separate files and then merged so the discontinuity is transparent to the user.<p>
+<p>MetaXpress collects the neccesary information for use in <b>LoadData</b>. However, this data
+is not directly usable by CellProfiler and requires formatting. A 
+<a href="http://accelrys.com/products/pipeline-pilot/">Pipeline Pilot</a> protocol may be used
+which performs the following tasks:
+<ul>
+<li>Searches through all files in an image directory, looking for images that match the string <i>.tif</i>,
+and record the image locations.</li>
+<li>Splits up the image pathname and filename into separate data columns for <b>LoadData</b> to read.</li>
+<li>Removes data rows corresponding to:
+<ul>
+<li>Thumbnail images (cannot be interpreted by CellProfiler)</li>
+<li>Duplicate images (will cause metadata mismatching)</li>
+<li>Corrupt files (will cause failure on image loading) </li>
+</ul></li>
+<li>The image data is linked to plate maps stored as a flat file; this plate map file is updated 
+periodically via queries to a laboratory information management system (LIMS) database. </li>
+<li>The complete image location and metadata is written to a .csv file where the headers can easily 
+be formatted to match <b>LoadData</b>'s input requirements (see column descriptions above). Single 
+plates split across multiple directories (which often occurs in MetaXpress) are written 
+to separate files and then merged, thereby removing the discontinuity.</li>
+</ul>
 
 <h4>Available measurements</h4>
 <ul>

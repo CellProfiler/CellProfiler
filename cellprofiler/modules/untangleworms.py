@@ -762,9 +762,13 @@ class UntangleWorms(cpm.CPModule):
                 colormap = self.overlapping_outlines_colormap.value
                 if colormap == cps.DEFAULT:
                     colormap = cpprefs.get_default_colormap()
-                my_map = ScalarMappable(cmap = colormap)
-                colors = my_map.to_rgba(np.unique(ijv[:,2]))
-                outline_pixels = o.make_ijv_outlines(colors[:,:3])
+                if len(ijv) == 0:
+                    ishape = image.pixel_data.shape
+                    outline_pixels = np.zeros((ishape[0],ishape[1], 3), int)
+                else:
+                    my_map = ScalarMappable(cmap = colormap)
+                    colors = my_map.to_rgba(np.unique(ijv[:,2]))
+                    outline_pixels = o.make_ijv_outlines(colors[:,:3])
                 outline_image = cpi.Image(outline_pixels, parent_image = image)
                 image_set.add(self.overlapping_outlines_name.value, 
                               outline_image)

@@ -49,7 +49,7 @@ os.environ['CLASSPATH'] = __class_path
 def get_ij_bridge():
    '''Returns an an ijbridge that will work given the platform and preferences
    '''
-   if sys.platform.startswith("win") or cpprefs.get_headless():
+   if sys.platform != 'darwin':
       return in_proc_ij_bridge.getInstance()
    else: # sys.platform == 'darwin':
       return inter_proc_ij_bridge.getInstance()

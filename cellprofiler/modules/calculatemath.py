@@ -293,7 +293,10 @@ class CalculateMath(cpm.CPModule):
         elif self.operation == O_DIVIDE:
             if np.isscalar(values[1]):
                 if values[1] == 0:
-                    result = np.NaN
+                    if np.isscalar(values[0]):
+                        result = np.NaN
+                    else:
+                        result = np.array([np.NaN] * len(values[0]))
                 else:
                     result = values[0] / values[1]
             else:

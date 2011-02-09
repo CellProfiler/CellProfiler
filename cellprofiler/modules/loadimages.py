@@ -1855,6 +1855,8 @@ class LoadImages(cpmodule.CPModule):
                                         return False
                                     d[image_name] = (P_FLEX, V_FLEX, pathname, c, z, t, i)
                                 image_set_count += 1
+                rdr.close()
+                del rdr
             finally:
                 formatreader.jutil.detach()
         return True

@@ -22,7 +22,7 @@ __version__="$Revision$"
 ########################
 
 import sys as _sys
-if _sys.version_info.major > 2 or _sys.version_info.minor >= 6:
+if _sys.version_info[0] > 2 or _sys.version_info[1] >= 6:
     from itertools import product
 else:
     def product(*args):

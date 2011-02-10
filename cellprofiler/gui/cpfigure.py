@@ -876,7 +876,7 @@ class CPFigureFrame(wx.Frame):
                         xmax = numcols
                         xslice = slice(0, numcols)
             
-                    if sy > 2:
+                    if sy > 1:
                         y0 = self.axes.viewLim.y1/dyintv * numrows
                         iy0 = max(0, int(y0 - self.filterrad))
                         y1 = self.axes.viewLim.y0/dyintv * numrows

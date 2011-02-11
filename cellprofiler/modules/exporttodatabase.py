@@ -715,7 +715,7 @@ class ExportToDatabase(cpm.CPModule):
         if self.objects_choice != O_NONE:
             result += [self.separate_object_tables]
         result += [self.max_column_size]
-        if self.db_type == DB_MYSQL:
+        if self.db_type in (DB_MYSQL, DB_SQLITE):
             result += [self.want_image_thumbnails]
             if self.want_image_thumbnails:
                 result += [self.thumbnail_image_names, 
@@ -1752,6 +1752,9 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                     (np.isnan(field[0]) or np.isinf(field[0])))
                 else float(field[0]) if (field[1] == cpmeas.COLTYPE_FLOAT)
                 else int(field[0]) if (field[1] == cpmeas.COLTYPE_INTEGER)
+                else buffer(field[0]) 
+                if field[1] in (cpmeas.COLTYPE_BLOB, cpmeas.COLTYPE_LONGBLOB, 
+                                cpmeas.COLTYPE_MEDIUMBLOB)
                 else field[0] for field in image_row]
             if len(image_row) > 0:
                 if not post_group:

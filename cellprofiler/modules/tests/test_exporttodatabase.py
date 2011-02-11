@@ -813,9 +813,11 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
             if group_measurement:
                 m.add_image_measurement(GROUP_IMG_MEASUREMENT, INT_VALUE)
                 m.add_measurement(OBJECT_NAME, GROUP_OBJ_MEASUREMENT, OBJ_VALUE.copy())
+        r = np.random.RandomState()
+        r.seed(image_set_count)
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        image_set.add(IMAGE_NAME, cpi.Image(np.zeros((10,10))))
+        image_set.add(IMAGE_NAME, cpi.Image(r.uniform(size=(512,512))))
         object_set = cpo.ObjectSet()
         objects = cpo.Objects()
         objects.segmented = np.array([[0,1,2,3],[0,1,2,3]])
@@ -2739,32 +2741,83 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
             finally_fn()
             
     def test_08_01_image_thumbnails(self):
-        workspace, module, output_dir, finally_fn = self.make_workspace(True)
+        workspace, module = self.make_workspace(False)
         try:
             self.assertTrue(isinstance(module, E.ExportToDatabase))
-            module.db_type = E.DB_MYSQL
+            module.db_type.value = E.DB_MYSQL
             module.wants_agg_mean.value = False
             module.wants_agg_median.value = False
             module.wants_agg_std_dev.value = False
-            module.objects_choice.value = E.O_ALL
+            module.objects_choice.value = E.O_NONE
             module.max_column_size.value = 50
             module.separate_object_tables.value = E.OT_COMBINE
             module.wants_agg_mean_well.value = False
             module.wants_agg_median_well.value = False
             module.wants_agg_std_dev_well.value = False
-            module.want_image_thumbnails = True
-            print workspace.image_set.get_names()
-            module.thumbnail_image_names.choices = [0]
-            print module.thumbnail_image_names.get_selections()
+            module.want_image_thumbnails.value = True
+            module.thumbnail_image_names.load_choices(workspace.pipeline)
+            module.thumbnail_image_names.value = module.thumbnail_image_names.choices[0]
+            columns = module.get_measurement_columns(workspace.pipeline)
+            self.assertEqual(len(columns), 1)
+            expected_thumbnail_column = "Thumbnail_" + IMAGE_NAME
+            self.assertEqual(columns[0][1], expected_thumbnail_column)
             module.prepare_run(workspace.pipeline, workspace.image_set_list, None)
             module.prepare_group(workspace.pipeline, workspace.image_set_list, {}, [1])
             module.run(workspace)
             module.post_run(workspace)
+            self.cursor.execute("use CPUnitTest")
             
-##            E.execute('SELECT %s FROM Per_Image')
+            image_table = module.table_prefix.value + "Per_Image"
+            stmt = "select Image_%s from %s" % (expected_thumbnail_column, image_table)
+            self.cursor.execute(stmt)
+            result = self.cursor.fetchall()
+            im = PILImage.open(StringIO(result[0][0]))
+            self.assertEqual(tuple(im.size), (200,200))
             
         finally:
-            self.drop_tables(module, ["Per_Image", "Per_%s" % OBJECT_NAME, "Per_%s" % ALTOBJECT_NAME])
+            self.drop_tables(module, ["Per_Image"])
+            
+    def test_08_02_image_thumbnails_sqlite(self):
+        workspace, module, output_dir, finally_fn = self.make_workspace(True)
+        cursor = None
+        connection = None
+        try:
+            self.assertTrue(isinstance(module, E.ExportToDatabase))
+            module.db_type.value = E.DB_SQLITE
+            module.wants_agg_mean.value = False
+            module.wants_agg_median.value = False
+            module.wants_agg_std_dev.value = False
+            module.objects_choice.value = E.O_NONE
+            module.directory.dir_choice = E.ABSOLUTE_FOLDER_NAME
+            module.directory.custom_path = output_dir
+            module.separate_object_tables.value = E.OT_COMBINE
+            module.want_image_thumbnails.value = True
+            module.thumbnail_image_names.load_choices(workspace.pipeline)
+            module.thumbnail_image_names.value = module.thumbnail_image_names.choices[0]
+            columns = module.get_measurement_columns(workspace.pipeline)
+            self.assertEqual(len(columns), 1)
+            expected_thumbnail_column = "Thumbnail_" + IMAGE_NAME
+            self.assertEqual(columns[0][1], expected_thumbnail_column)
+            module.prepare_run(workspace.pipeline, workspace.image_set_list, None)
+            module.prepare_group(workspace.pipeline, workspace.image_set_list, {}, [1])
+            module.run(workspace)
+            module.post_run(workspace)
+            image_table = module.table_prefix.value + "Per_Image"
+            stmt = "select Image_%s from %s" % (expected_thumbnail_column, image_table)
+            cursor, connection = self.get_sqlite_cursor(module)
+            cursor.execute(stmt)
+            result = cursor.fetchall()
+            im = PILImage.open(StringIO(result[0][0]))
+            self.assertEqual(tuple(im.size), (200,200))
+        finally:
+            if cursor is not None:
+                cursor.close()
+            if connection is not None:
+                connection.close()
+            if hasattr(module, "cursor"):
+                module.cursor.close()
+            if hasattr(module, "connection"):
+                module.connection.close()
             finally_fn()
             
     def test_09_01_post_group_single_object_table(self):

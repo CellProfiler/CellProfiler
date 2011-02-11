@@ -43,7 +43,8 @@ class HtmlClickableWindow(wx.html.HtmlWindow):
             pipeline_filename = href[12:]
             try:
                 wx.CallAfter(wx.GetApp().frame.pipeline.load, urllib2.urlopen(pipeline_filename))
-                wx.MessageBox('Now that you have loaded an example pipeline, press the "Analyze images" button to access and process a small image set from the CellProfiler website so you can see how CellProfiler works.', '', wx.ICON_INFORMATION)
+                wx.CallAfter(wx.MessageBox,
+                             'Now that you have loaded an example pipeline, press the "Analyze images" button to access and process a small image set from the CellProfiler website so you can see how CellProfiler works.', '', wx.ICON_INFORMATION)
             except:
                 wx.MessageBox(
                     'CellProfiler was unable to load %s' %

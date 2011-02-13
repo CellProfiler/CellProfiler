@@ -22,6 +22,7 @@ import platform
 
 ED_STOP = "Stop"
 ED_CONTINUE = "Continue"
+ED_SKIP = "Skip"
 
 ERROR_URL = 'http://www.cellprofiler.org/cgi-bin/reporterror.cgi'
 
@@ -143,11 +144,13 @@ def display_error_dialog(frame, exc, pipeline, message=None, tb = None):
     button_sizer = wx.StdDialogButtonSizer()
     yes_button = wx.Button(dialog, wx.ID_YES, "Stop processing...")
     no_button = wx.Button(dialog, wx.ID_NO, "Continue processing...")
+    skip_button = wx.Button(dialog,wx.ID_HELP,'Skip Image, Continue Pipeline')
     button_sizer.AddButton(yes_button)
     button_sizer.AddButton(no_button)
     button_sizer.AddButton(report_button)
+    button_sizer.AddButton(skip_button)
     button_sizer.Realize()
-    sizer.Add(button_sizer, 0, wx.EXPAND | wx.ALL, 3)
+    sizer.Add(button_sizer, 0, wx.EXPAND | wx.ALL, 4)
     result = [None]
     #
     # Handle the "No" button being pressed
@@ -166,6 +169,15 @@ def display_error_dialog(frame, exc, pipeline, message=None, tb = None):
         dialog.Close()
         event.Skip()
     dialog.Bind(wx.EVT_BUTTON, on_yes, yes_button)
+    
+    #
+    # Handle "Skip Image" button being pressed
+    #
+    def on_skip(event):
+        result[0] = ED_SKIP
+        dialog.Close()
+        event.Skip()
+    dialog.Bind(wx.EVT_BUTTON,on_skip,skip_button)
     
     dialog.Fit()
     dialog.ShowModal()

@@ -32,7 +32,7 @@ import cellprofiler.gui.moduleview
 from cellprofiler.gui.movieslider import EVT_TAKE_STEP
 from cellprofiler.gui.help import HELP_ON_MODULE_BUT_NONE_SELECTED
 import cellprofiler.utilities.get_revision as get_revision
-from errordialog import display_error_dialog, ED_CONTINUE, ED_STOP
+from errordialog import display_error_dialog, ED_CONTINUE, ED_STOP, ED_SKIP
 from runmultiplepipelinesdialog import RunMultplePipelinesDialog
 import cellprofiler.gui.parametersampleframe as psf
 
@@ -413,8 +413,8 @@ class PipelineController:
                                           self.__pipeline,
                                           message,
                                           event.tb)
-            if result == ED_CONTINUE:
-                event.cancel_run = False
+            event.cancel_run = result == ED_STOP
+            event.skip_thisset = result == ED_SKIP
                 
         elif isinstance(event, cellprofiler.pipeline.LoadExceptionEvent):
             self.on_load_exception_event(event)

@@ -1176,6 +1176,11 @@ class Pipeline(object):
                         self.notify_listeners(event)
                         if event.cancel_run:
                             return
+                        elif event.skip_thisset:
+                            #Skip this image, continue to others
+                            workspace.set_disposition(cpw.DISPOSITION_SKIP)
+                            should_write_measurements = False
+                            measurements = None
 
                     # Paradox: ExportToDatabase must write these columns in order 
                     #  to complete, but in order to do so, the module needs to 
@@ -1745,6 +1750,7 @@ class RunExceptionEvent(AbstractPipelineEvent):
     def __init__(self, error, module, tb = None):
         self.error     = error
         self.cancel_run = True
+        self.skip_thisset = False
         self.module    = module
         self.tb = tb
     

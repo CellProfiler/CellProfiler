@@ -767,8 +767,8 @@ executable file itself and run it from the installation folder.</li>
 </ol>
 
 <p>Once all the jobs are submitted, the cluster will run each batch individually 
-and output any measurements or images specified in the pipeline. If requested, 
-it will also produce a separate output (i.e., OUT.mat) file containing the data 
+and output any measurements or images specified in the pipeline. Specifying the output filename when
+calling CellProfiler will also produce an output file containing the measurements  
 for that batch of images in the output folder. Check the output from the batch 
 processes to make sure all batches complete. Batches that fail for transient reasons
 can be resubmitted.</p>

@@ -42,8 +42,8 @@ if os.path.exists(site_packages) and os.path.isdir(site_packages):
     site.addsitedir(site_packages)
 
 import optparse
-usage = """usage: %prog [options] [<measurement-file>])
-     where <measurement-file> is the optional filename for measurement output
+usage = """usage: %prog [options] [<output-file>])
+     where <output-file> is the optional filename for the output file of measurements
            when running headless"""
 
 parser = optparse.OptionParser(usage=usage)

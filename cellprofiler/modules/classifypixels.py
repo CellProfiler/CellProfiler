@@ -59,6 +59,9 @@ except ImportError, ilastikImport:
     traceback.print_exc()
     raise ilastikImport
 
+CLASSIFIERS_KEY = "IlastikClassifiers"
+FEATURE_ITEMS_KEY = "IlastikFeatureItems"
+
 class ClassifyPixels(cpm.CPModule):
     module_name = 'ClassifyPixels'
     variable_revision_number = 1
@@ -93,32 +96,6 @@ class ClassifyPixels(cpm.CPModule):
             exts = [("Classfier file (*.h5)","*.h5"),("All files (*.*)","*.*")]
         )
         
-        self.browse_csv_button = cps.DoSomething(
-            "Press to browse file contents", "View...", self.browse_csv)
-    
-    def browse_csv(self):
-        import wx
-        from cellprofiler.gui import get_cp_icon
-        try:
-            fd = self.open_csv()
-        except:
-            wx.MessageBox("Could not read %s" %self.csv_path)
-            return
-        reader = csv.reader(fd)
-        header = reader.next()
-        frame = wx.Frame(wx.GetApp().frame, title=self.csv_path)
-        sizer = wx.BoxSizer(wx.VERTICAL)
-        frame.SetSizer(sizer)
-        list_ctl = wx.ListCtrl(frame, style = wx.LC_REPORT)
-        sizer.Add(list_ctl, 1, wx.EXPAND)
-        for i, field in enumerate(header):
-            list_ctl.InsertColumn(i, field)
-        for line in reader:
-            list_ctl.Append(line)
-        frame.SetMinSize((640,480))
-        frame.SetIcon(get_cp_icon())
-        frame.Fit()
-        frame.Show()
     
     def settings(self):
         return [self.image_name, self.output_image, self.class_sel, self.h5_directory, self.classifier_file_name]
@@ -137,7 +114,7 @@ class ClassifyPixels(cpm.CPModule):
             image_ = image_ / 4095. * 255.0
         
         # Create ilastik dataMgr
-        self.dataMgr = DataMgr()
+        dataMgr = DataMgr()
         
         # Transform input image to ilastik convention s
         # 3D = (time,x,y,z,channel) 
@@ -152,10 +129,51 @@ class ClassifyPixels(cpm.CPModule):
         # Add data item di to dataMgr
         di = DataItemImage('')
         di.setDataVol(DataAccessor(image_))
-        self.dataMgr.append(di, alreadyLoaded=True)
+        dataMgr.append(di, alreadyLoaded=True)
+        dataMgr.module["Classification"]["classificationMgr"].classifiers =\
+            self.get_classifiers(workspace)
 
+        # Create FeatureMgr
+        fm = FeatureMgr(dataMgr, self.get_feature_items(workspace))
+        
+        # Compute features
+
+        fm.prepareCompute(dataMgr)
+        fm.triggerCompute()
+        fm.joinCompute(dataMgr)
+        
+        # Predict with loaded classifier
+        
+        classificationPredict = ClassifierPredictThread(dataMgr)
+        classificationPredict.start()
+        classificationPredict.wait()
+        
+        # Produce output image and select the probability map
+        probMap = classificationPredict._prediction[0][0,0,:,:, int(self.class_sel.value)]
+        # probMap = classificationPredict._prediction[0]
+        temp_image = cpi.Image(probMap, parent_image=image)
+        workspace.image_set.add(self.output_image.value, temp_image)
+        workspace.display_data.source_image = image.pixel_data
+        workspace.display_data.dest_image = probMap
+
+    def get_classifiers(self, workspace):
+        self.parse_classifier_file(workspace)
+        d = self.get_dictionary(workspace.image_set_list)
+        return d[CLASSIFIERS_KEY]
+    
+    def get_feature_items(self, workspace):
+        self.parse_classifier_file(workspace)
+        d = self.get_dictionary(workspace.image_set_list)
+        return d[FEATURE_ITEMS_KEY]
+        
+    def parse_classifier_file(self, workspace):
+        d = self.get_dictionary(workspace.image_set_list)
+        if all([d.has_key(k) for k in (CLASSIFIERS_KEY, FEATURE_ITEMS_KEY)]):
+            return
+        
         # Load classifier from hdf5
-        fileName = str(os.path.join(self.h5_directory.get_absolute_path(), self.classifier_file_name.value))
+        fileName = str(os.path.join(self.h5_directory.get_absolute_path(), 
+                                    self.classifier_file_name.value))
         
         hf = h5py.File(fileName,'r')
         temp = hf['classifiers'].keys()
@@ -171,7 +189,7 @@ class ClassifyPixels(cpm.CPModule):
             except:
                 classifiers.append(ClassifierRandomForest.loadRFfromFile(fileName, cidpath))
 
-        self.dataMgr.module["Classification"]["classificationMgr"].classifiers = classifiers 
+        d[CLASSIFIERS_KEY] = classifiers
         
         # Restore user selection of feature items from hdf5
         featureItems = []
@@ -180,29 +198,9 @@ class ClassifyPixels(cpm.CPModule):
             featureItems.append(FeatureBase.deserialize(fgrp))
         f.close()
         del f
-
-        # Create FeatureMgr
-        fm = FeatureMgr(self.dataMgr, featureItems)
-
-        # Compute features
-        fm.prepareCompute(self.dataMgr)
-        fm.triggerCompute()
-        fm.joinCompute(self.dataMgr)
+        d[FEATURE_ITEMS_KEY] = featureItems
+            
         
-        # Predict with loaded classifier
-        
-        classificationPredict = ClassifierPredictThread(self.dataMgr)
-        classificationPredict.start()
-        classificationPredict.wait()
-        
-        # Produce output image and select the probability map
-        probMap = classificationPredict._prediction[0][0,0,:,:, int(self.class_sel.value)]
-        # probMap = classificationPredict._prediction[0]
-        temp_image = cpi.Image(probMap, parent_image=image)
-        workspace.image_set.add(self.output_image.value, temp_image)
-        workspace.display_data.source_image = image.pixel_data
-        workspace.display_data.dest_image = probMap
-
     def is_interactive(self):
         return False
     
@@ -217,5 +215,5 @@ class ClassifyPixels(cpm.CPModule):
             src_plot = figure.subplot_imshow_grayscale(
                 0, 0, source_image, title = self.image_name.value)
         figure.subplot_imshow_grayscale(
-            1, 0, dest_image, title = self.output_image.value)
-        
+            1, 0, dest_image, title = self.output_image.value,
+            sharex = src_plot, sharey = src_plot)

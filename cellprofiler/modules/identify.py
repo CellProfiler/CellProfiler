@@ -333,6 +333,7 @@ class Identify(cellprofiler.cpmodule.CPModule):
         if self.threshold_method == TM_MEASUREMENT:
             m = workspace.measurements
             value = m.get_current_image_measurement(self.thresholding_measurement.value)
+            value *= self.threshold_correction_factor.value
             if not self.threshold_range.min is None:
                 value = max(value, self.threshold_range.min)
             if not self.threshold_range.max is None:

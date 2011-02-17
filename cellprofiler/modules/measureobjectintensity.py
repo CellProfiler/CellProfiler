@@ -298,7 +298,7 @@ class MeasureObjectIntensity(cpm.CPModule):
                 lmask = masked_labels > 0
                 has_objects = np.any(lmask)
                 if has_objects:
-                    lindexes = np.arange(nobjects)+1
+                    lindexes = np.arange(nobjects, dtype=np.int32)+1
                     emask = masked_outlines > 0
                     limg = img[lmask]
                     eimg = img[emask]

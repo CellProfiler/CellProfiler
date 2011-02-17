@@ -294,7 +294,7 @@ class MeasurementTemplate(cpm.CPModule):
         # First, get an array that lists the whole range of indexes in
         # the labels matrix.
         #
-        indexes = np.arange(1, np.max(labels)+1)
+        indexes = np.arange(1, np.max(labels)+1,dtype=np.int32)
         #
         # Then ask for the minimum_enclosing_circle for each object named
         # in those indexes. MEC returns the i and j coordinate of the center

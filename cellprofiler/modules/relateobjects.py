@@ -342,7 +342,7 @@ class RelateObjects(cpm.CPModule):
             # Get counts and indexes to each run of perimeter points
             #
             counts = fix(scind.sum(np.ones(len(perim_idx)),perim_idx,
-                                   np.arange(1,perim_idx[-1]+1))).astype(int)
+                                   np.arange(1,perim_idx[-1]+1))).astype(np.int32)
             indexes = np.cumsum(counts) - counts
             #
             # For the children, get the index and count of the parent

@@ -90,9 +90,9 @@ def score_zernike(zf, radii, labels, indexes=None):
     each labeled object.
     """
     if indexes == None:
-        indexes = np.arange(1,np.max(labels)+1,dtype=int)
+        indexes = np.arange(1,np.max(labels)+1,dtype=np.int32)
     else:
-        indexes = np.array(indexes)
+        indexes = np.array(indexes, dtype=np.int32)
     radii = np.array(radii)
     k = zf.shape[2]
     n = np.product(radii.shape)
@@ -122,9 +122,9 @@ def zernike(zernike_indexes,labels,indexes):
     # and other similarly shaped vectors (like the results)
     #
     if indexes == None:
-        indexes = np.arange(1,nindexes+1,dtype=int)
+        indexes = np.arange(1,nindexes+1,dtype=np.int32)
     else:
-        indexes = np.array(indexes)
+        indexes = np.array(indexes,dtype=np.int32)
     nindexes = len(indexes)
     reverse_indexes = -np.ones((np.max(indexes)+1,),int)
     reverse_indexes[indexes] = np.arange(indexes.shape[0],dtype=int)

@@ -296,7 +296,7 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
                     labels, center_objects.segmented)
                 pixel_counts = fix(scind.sum(np.ones(center_labels.shape),
                                              center_labels,
-                                             np.arange(1, np.max(center_labels)+1)))
+                                             np.arange(1, np.max(center_labels)+1,dtype=np.int32)))
                 good = pixel_counts > 0
                 i,j = (centers_of_labels(center_labels) + .5).astype(int)
                 ig = i[good]

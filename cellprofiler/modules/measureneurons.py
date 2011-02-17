@@ -197,7 +197,7 @@ class MeasureNeurons(cpm.CPModule):
         seed_objects = workspace.object_set.get_objects(seed_objects_name)
         labels = seed_objects.segmented
         labels_count = np.max(labels)
-        label_range = np.arange(labels_count)+1
+        label_range = np.arange(labels_count,dtype=np.int32)+1
         
         skeleton_image = workspace.image_set.get_image(
             skeleton_name, must_be_binary = True)
@@ -620,9 +620,9 @@ class MeasureNeurons(cpm.CPModule):
             #
             # find magnitudes and lengths for all edges
             #
-            magnitudes = fix(scind.sum(image, edge_labels, np.arange(1, nlabels+1)))
+            magnitudes = fix(scind.sum(image, edge_labels, np.arange(1, nlabels+1,dtype=np.int32)))
             lengths = fix(scind.sum(np.ones(edge_labels.shape),
-                                    edge_labels, np.arange(1, nlabels+1))).astype(int)
+                                    edge_labels, np.arange(1, nlabels+1,dtype=np.int32))).astype(int)
         else:
             magnitudes = np.zeros(0)
             lengths = np.zeros(0, int)

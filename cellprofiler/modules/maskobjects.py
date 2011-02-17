@@ -249,12 +249,12 @@ class MaskObjects(I.Identify):
             labels = labels * mask
         else:
             pixel_counts = fix(scind.sum(mask, labels, 
-                                         np.arange(1, nobjects+1)))
+                                         np.arange(1, nobjects+1,dtype=np.int32)))
             if self.overlap_choice == P_KEEP:
                 keep = pixel_counts > 0
             else:
                 total_pixels = fix(scind.sum(np.ones(labels.shape), labels,
-                                             np.arange(1, nobjects+1)))
+                                             np.arange(1, nobjects+1,dtype=np.int32)))
                 if self.overlap_choice == P_REMOVE:
                     keep = pixel_counts == total_pixels
                 elif self.overlap_choice == P_REMOVE_PERCENTAGE:
@@ -295,7 +295,7 @@ class MaskObjects(I.Identify):
             child_count = np.array([],int)
         else:
             child_count = fix(scind.sum(labels, original_objects.segmented,
-                                        np.arange(1, nobjects+1)))
+                                        np.arange(1, nobjects+1,dtype=np.int32)))
             child_count = (child_count > 0).astype(int)
         m.add_measurement(object_name,
                           I.FF_CHILDREN_COUNT % remaining_object_name,

@@ -290,7 +290,7 @@ class MeasureCorrelation(cpm.CPModule):
             # The correlation is sum((x-mean(x))(y-mean(y)) /
             #                         ((n-1) * std(x) *std(y)))
             #
-            lrange = np.arange(n_objects)+1
+            lrange = np.arange(n_objects,dtype=np.int32)+1
             area  = fix(scind.sum(np.ones_like(labels), labels, lrange))
             mean1 = fix(scind.mean(first_pixels, labels, lrange))
             mean2 = fix(scind.mean(second_pixels, labels, lrange))

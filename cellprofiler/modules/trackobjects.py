@@ -739,7 +739,7 @@ class TrackObjects(cpm.CPModule):
                 kalman_states.append(cpfilter.velocity_kalman_model())
         areas = fix(scipy.ndimage.sum(
             np.ones(objects.segmented.shape), objects.segmented, 
-            np.arange(1, np.max(objects.segmented) + 1)))
+            np.arange(1, np.max(objects.segmented) + 1,dtype=np.int32)))
         areas = areas.astype(int)
 
         if n_old > 0:

@@ -223,7 +223,7 @@ class MeasureObjectNeighbors(cpm.CPModule):
             raise ValueError("Unknown distance method: %s" %
                              self.distance_method.value)
         if nobjects > 1:
-            object_indexes = np.arange(nobjects)+1
+            object_indexes = np.arange(nobjects, dtype=np.int32)+1
             #
             # First, compute the first and second nearest neighbors,
             # and the angles between self and the first and second

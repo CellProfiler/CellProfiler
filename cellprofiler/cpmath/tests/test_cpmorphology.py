@@ -269,7 +269,7 @@ class TestBinaryShrink(unittest.TestCase):
         filled_labels = morph.fill_labeled_holes(labels)
         input = filled_labels > 0
         result = morph.binary_shrink(input)
-        my_sum = scind.sum(result.astype(int),filled_labels,range(nlabels+1))
+        my_sum = scind.sum(result.astype(int),filled_labels,np.array(range(nlabels+1),dtype=np.int32))
         my_sum = np.array(my_sum)
         self.assertTrue(np.all(my_sum[1:] == 1))
         
@@ -292,7 +292,7 @@ class TestBinaryShrink(unittest.TestCase):
         labels[2:8,5:8] = 2
         result = morph.binary_shrink(labels)
         self.assertFalse(np.any(result[labels==0] > 0))
-        my_sum = fix(scind.sum(result>0, labels, np.arange(1,3)))
+        my_sum = fix(scind.sum(result>0, labels, np.arange(1,3,dtype=np.int32)))
         self.assertTrue(np.all(my_sum == 1))
         
 class TestCpmaximum(unittest.TestCase):
@@ -742,7 +742,7 @@ class TestMinimumEnclosingCircle(unittest.TestCase):
             pt_on_edge = np.abs(distance_from_center - radius_per_pt)<epsilon
             count_pt_on_edge = scind.sum(pt_on_edge,
                                                  index,
-                                                 range(s**2))
+                                                 np.array(range(s**2),dtype=np.int32))
             count_pt_on_edge = np.array(count_pt_on_edge)
             #
             # Every dodecagon must have at least 2 points on the edge.
@@ -2337,7 +2337,7 @@ class TestSpur(unittest.TestCase):
         result = morph.spur(image)
         l,count = scind.label(result,scind.generate_binary_structure(2, 2))
         self.assertEqual(count, 5)
-        a = np.array(scind.sum(result,l,np.arange(4)+1))
+        a = np.array(scind.sum(result,l,np.arange(4,dtype=np.int32)+1))
         self.assertTrue(np.all((a==1) | (a==4)))
     
     def test_02_01_spur_edge(self):

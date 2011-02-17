@@ -492,9 +492,9 @@ class MeasureTexture(cpm.CPModule):
                 theta = np.pi * angle / self.gabor_angles.value
                 g = gabor(pixel_data, labels, scale, theta)
                 score_r = fix(scind.sum(g.real, labels,
-                                         np.arange(object_count)+ 1))
+                                         np.arange(object_count, dtype=np.int32)+ 1))
                 score_i = fix(scind.sum(g.imag, labels,
-                                         np.arange(object_count)+ 1))
+                                         np.arange(object_count, dtype=np.int32)+ 1))
                 score = np.sqrt(score_r**2+score_i**2)
                 best_score = np.maximum(best_score, score)
         else:

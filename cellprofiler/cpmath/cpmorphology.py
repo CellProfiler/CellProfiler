@@ -93,7 +93,7 @@ def fill_labeled_holes(image, max_area = None, mask = None):
         #
         hole_areas = scind.sum(np.ones(labeled_holes.shape), 
                                labeled_holes,
-                               np.arange(1,nholes+1))
+                               np.arange(1,nholes+1,dtype=np.int32))
         hole_areas = fixup_scipy_ndimage_result(hole_areas)
         hole_label[1:(nholes+1)][hole_areas > max_area] = 0
     hole_mask = hole_label[labeled_holes] > 0
@@ -991,12 +991,12 @@ def minimum_enclosing_circle(labels, indexes = None,
     """
     if indexes == None:
         if hull_and_point_count is not None:
-            indexes = np.unique(hull_and_point_count[0][:,0])
+            indexes = np.array(np.unique(hull_and_point_count[0][:,0]),dtype=np.int32)
         else:
             max_label = np.max(labels)
-            indexes = np.array(range(1,max_label+1))
+            indexes = np.array(range(1,max_label+1),dtype=np.int32)
     else:
-        indexes = np.array(indexes)
+        indexes = np.array(indexes,dtype=np.int32)
     if indexes.shape[0] == 0:
         return np.zeros((0,2)),np.zeros((0,))
 
@@ -1820,7 +1820,7 @@ def ellipse_from_second_moments_ijv(i,j, image, labels, indexes, wants_compactne
 def calculate_extents(labels, indexes):
     """Return the area of each object divided by the area of its bounding box"""
     fix = fixup_scipy_ndimage_result
-    areas = fix(scind.sum(np.ones(labels.shape),labels,indexes))
+    areas = fix(scind.sum(np.ones(labels.shape),labels,np.array(indexes, dtype=np.int32)))
     y,x = np.mgrid[0:labels.shape[0],0:labels.shape[1]]
     xmin = fix(scind.minimum(x, labels, indexes))
     xmax = fix(scind.maximum(x, labels, indexes))
@@ -1919,7 +1919,7 @@ def calculate_perimeters(labels, indexes):
             m[mask] += 2**exponent
             exponent += 1
     pixel_score = __perimeter_scoring[m]
-    return fixup_scipy_ndimage_result(scind.sum(pixel_score, labels, indexes))
+    return fixup_scipy_ndimage_result(scind.sum(pixel_score, labels, np.array(indexes,dtype=np.int32)))
 
 def calculate_convex_hull_areas(labels,indexes=None):
     """Calulculate the area of the convex hull of each labeled object
@@ -1931,12 +1931,12 @@ def calculate_convex_hull_areas(labels,indexes=None):
                         member and return areas in same order.
     """
     if getattr(indexes,"__getitem__",False):
-        indexes = np.array(indexes)
+        indexes = np.array(indexes,dtype=np.int32)
     elif indexes != None:
-        indexes = np.array([indexes])
+        indexes = np.array([indexes],dtype=np.int32)
     else:
         labels = labels !=0
-        indexes = np.array([1])
+        indexes = np.array([1],dtype=np.int32)
     hull, counts = convex_hull(labels, indexes)
     result = np.zeros((counts.shape[0],))
     #
@@ -2034,6 +2034,9 @@ def calculate_solidity(labels,indexes=None):
     labels - a label matrix
     indexes - the indexes of the labels to measure
     """
+    if indexes:
+        """ Convert to compat 32bit integer """
+        indexes = np.array(indexes,dtype=np.int32)
     areas = scind.sum(np.ones(labels.shape),labels,indexes)
     convex_hull_areas = calculate_convex_hull_areas(labels, indexes)
     return areas / convex_hull_areas
@@ -2047,11 +2050,11 @@ def euler_number(labels, indexes=None):
     """
     if indexes == None:
         labels = labels != 0
-        indexes = np.array([1])
+        indexes = np.array([1],dtype=np.int32)
     elif getattr(indexes,'__getitem__',False):
-        indexes = np.array(indexes)
+        indexes = np.array(indexes,dtype=np.int32)
     else:
-        indexes = np.array([indexes])
+        indexes = np.array([indexes],dtype=np.int32)
     fix = fixup_scipy_ndimage_result
     #
     # The algorithm here is from the following reference:
@@ -3109,7 +3112,7 @@ def find_neighbors(labels):
     #
     v_count = fixup_scipy_ndimage_result(scind.sum(np.ones(v_label.shape),
                                                    v_label,
-                                                   np.arange(max_label)+1))
+                                                   np.arange(max_label,dtype=np.int32)+1))
     v_count = v_count.astype(int)
     #
     # The index into v_neighbor

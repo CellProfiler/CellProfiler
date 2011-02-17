@@ -1083,7 +1083,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
         if self.exclude_size.value and object_count > 0:
             areas = scipy.ndimage.measurements.sum(np.ones(labeled_image.shape),
                                                    labeled_image,
-                                                   range(0,object_count+1))
+                                                   np.array(range(0,object_count+1),dtype=np.int32))
             areas = np.array(areas,dtype=int)
             min_allowed_area = np.pi * (self.size_range.min * self.size_range.min)/4
             max_allowed_area = np.pi * (self.size_range.max * self.size_range.max)/4

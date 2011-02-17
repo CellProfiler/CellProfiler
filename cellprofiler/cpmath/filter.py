@@ -462,7 +462,7 @@ def canny(image, mask, sigma, low_threshold, high_threshold):
     if count == 0:
         return low_mask
     
-    sums = fix(scind.sum(high_mask, labels, np.arange(count)+1))
+    sums = fix(scind.sum(high_mask, labels, np.arange(count,dtype=np.int32)+1))
     good_label = np.zeros((count+1,),bool)
     good_label[1:] = sums > 0
     output_mask = good_label[labels]
@@ -651,7 +651,7 @@ def gabor(image, labels, frequency, theta):
     if nobjects == 0:
         return image
     centers = centers_of_labels(labels)
-    areas = fix(scind.sum(np.ones(image.shape),labels, np.arange(nobjects)+1))
+    areas = fix(scind.sum(np.ones(image.shape),labels, np.arange(nobjects, dtype=np.int32)+1))
     mask = labels > 0
     i,j = np.mgrid[0:image.shape[0],0:image.shape[1]].astype(float)
     i = i[mask]

@@ -80,7 +80,7 @@ def cooccurrence(quantized_image, labels, scale=3):
             R = np.hstack((R, S))
         P = R.reshape(nobjects, nlevels, nlevels)
         pixel_count = fix(scind.sum(equilabel, labels[:,:-scale],
-                                    np.arange(nobjects)+1))
+                                    np.arange(nobjects, dtype=np.int32)+1))
         pixel_count = np.tile(pixel_count[:,np.newaxis,np.newaxis],
                               (1,nlevels,nlevels))
         return (P.astype(float) / pixel_count.astype(float), nlevels)

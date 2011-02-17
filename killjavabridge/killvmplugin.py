@@ -52,6 +52,13 @@ class KillVMPlugin(Plugin):
         
     def finalize(self, result):
         try:
+            import imagej.ijbridge as ijbridge
+            ijb = ijbridge.get_ij_bridge()
+            if isinstance(ijb, ijbridge.inter_proc_ij_bridge):
+                ijb.quit()
+        except:
+            pass
+        try:
             from cellprofiler.utilities.jutil import kill_vm
             kill_vm()
         except:

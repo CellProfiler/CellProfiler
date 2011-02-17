@@ -193,6 +193,10 @@ class inter_proc_ij_bridge(ij_bridge, Singleton):
    def __init__(self):
       self.start_ij()
       
+   def __del__(self):
+      '''call del on this object to close ImageJ and the TCPClient.'''
+      self.quit()
+      
    def start_ij(self):
       try:
          self.client_socket.close()

@@ -74,7 +74,7 @@ class testLoadImages(unittest.TestCase):
         x=LI.LoadImages()
     
     def test_00_01version(self):
-        self.assertEqual(LI.LoadImages().variable_revision_number, 10,
+        self.assertEqual(LI.LoadImages().variable_revision_number, 11,
                          "LoadImages' version number has changed")
     
     def test_01_01load_image_text_match(self):
@@ -506,7 +506,7 @@ LoadImages:[module_num:5|svn_version:\'9497\'|variable_revision_number:5|show_wi
         self.assertEqual(module.match_method, LI.MS_EXACT_MATCH)
         self.assertEqual(module.order_group_size, 3)
         self.assertEqual(module.match_exclude, "Thumb")
-        self.assertFalse(module.descend_subdirectories)
+        self.assertEqual(module.descend_subdirectories,LI.SUB_NONE)
         self.assertEqual(module.location.dir_choice, LI.DEFAULT_INPUT_FOLDER_NAME)
         self.assertTrue(module.check_images)
         self.assertFalse(module.group_by_metadata)
@@ -531,7 +531,7 @@ LoadImages:[module_num:5|svn_version:\'9497\'|variable_revision_number:5|show_wi
         self.assertEqual(module.match_method, LI.MS_REGEXP)
         self.assertEqual(module.location.dir_choice, LI.DEFAULT_OUTPUT_FOLDER_NAME)
         self.assertTrue(module.group_by_metadata)
-        self.assertTrue(module.descend_subdirectories)
+        self.assertEqual(module.descend_subdirectories, LI.SUB_ALL)
         self.assertEqual(len(module.metadata_fields.selections), 2)
         self.assertEqual(module.metadata_fields.selections[0], "Plate")
         self.assertEqual(module.metadata_fields.selections[1], "Run")
@@ -597,7 +597,7 @@ LoadImages:[module_num:1|svn_version:\'9799\'|variable_revision_number:6|show_wi
         self.assertEqual(module.match_method, LI.MS_EXACT_MATCH)
         self.assertEqual(module.order_group_size, 3)
         self.assertEqual(module.match_exclude, "Thumb")
-        self.assertFalse(module.descend_subdirectories)
+        self.assertEqual(module.descend_subdirectories, LI.SUB_NONE)
         self.assertEqual(module.location.dir_choice, LI.cps.DEFAULT_INPUT_FOLDER_NAME)
         self.assertTrue(module.check_images)
         self.assertTrue(module.group_by_metadata)
@@ -667,7 +667,7 @@ LoadImages:[module_num:1|svn_version:\'9976\'|variable_revision_number:7|show_wi
         self.assertEqual(module.match_method, LI.MS_EXACT_MATCH)
         self.assertEqual(module.order_group_size, 3)
         self.assertEqual(module.match_exclude, "Thumb")
-        self.assertFalse(module.descend_subdirectories)
+        self.assertEqual(module.descend_subdirectories, LI.SUB_NONE)
         self.assertEqual(module.location.dir_choice, LI.cps.DEFAULT_INPUT_FOLDER_NAME)
         self.assertTrue(module.check_images)
         self.assertTrue(module.group_by_metadata)
@@ -739,7 +739,7 @@ LoadImages:[module_num:1|svn_version:\'10503\'|variable_revision_number:8|show_w
         self.assertEqual(module.match_method, LI.MS_EXACT_MATCH)
         self.assertEqual(module.order_group_size, 3)
         self.assertEqual(module.match_exclude, "Thumb")
-        self.assertFalse(module.descend_subdirectories)
+        self.assertEqual(module.descend_subdirectories, LI.SUB_NONE)
         self.assertEqual(module.location.dir_choice, LI.cps.DEFAULT_INPUT_FOLDER_NAME)
         self.assertTrue(module.check_images)
         self.assertTrue(module.group_by_metadata)
@@ -817,7 +817,7 @@ LoadImages:[module_num:1|svn_version:\'10503\'|variable_revision_number:9|show_w
         self.assertEqual(module.match_method, LI.MS_EXACT_MATCH)
         self.assertEqual(module.order_group_size, 3)
         self.assertEqual(module.match_exclude, "Thumb")
-        self.assertFalse(module.descend_subdirectories)
+        self.assertEqual(module.descend_subdirectories, LI.SUB_NONE)
         self.assertEqual(module.location.dir_choice, LI.cps.DEFAULT_INPUT_FOLDER_NAME)
         self.assertTrue(module.check_images)
         self.assertTrue(module.group_by_metadata)
@@ -844,6 +844,230 @@ LoadImages:[module_num:1|svn_version:\'10503\'|variable_revision_number:9|show_w
             self.assertEqual(channel.image_name, image_name)
             self.assertEqual(channel.object_name, object_name)
             self.assertEqual(channel.rescale.value, rescale)
+    
+    def test_03_10_load_v10(self):
+        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:1
+SVNRevision:10809
+
+LoadImages:[module_num:1|svn_version:\'10807\'|variable_revision_number:10|show_window:True|notes:\x5B\x5D]
+    File type to be loaded:individual images
+    File selection method:Text-Exact match
+    Number of images in each group?:3
+    Type the text that the excluded images have in common:Whatever
+    Analyze all subfolders within the selected folder?:No
+    Input image file location:Default Input Folder\x7CNone
+    Check image sets for missing or duplicate files?:Yes
+    Group images by metadata?:No
+    Exclude certain files?:No
+    Specify metadata fields to group by:
+    Image count:2
+    Text that these images have in common (case-sensitive):_w1_
+    Position of this image in each group:1
+    Extract metadata from where?:None
+    Regular expression that finds metadata in the file name:^(?P<Plate>.*)_(?P<Well>\x5BA-P\x5D\x5B0-9\x5D{2})_s(?P<Site>\x5B0-9\x5D)
+    Type the regular expression that finds metadata in the subfolder path:.*\x5B\\\\/\x5D(?P<Date>.*)\x5B\\\\/\x5D(?P<Run>.*)$
+    Channel count:1
+    Group the movie frames?:No
+    Grouping method:Interleaved
+    Number of channels per group:3
+    Load the input as images or objects?:Images
+    Name this loaded image:w1
+    Name this loaded object:Nuclei
+    Retain outlines of loaded objects?:Yes
+    Name the outline image:MyOutlines
+    Channel number:1
+    Rescale intensities?:Yes
+    Text that these images have in common (case-sensitive):_w2_
+    Position of this image in each group:2
+    Extract metadata from where?:None
+    Regular expression that finds metadata in the file name:^(?P<Plate>.*)_(?P<Well>\x5BA-P\x5D\x5B0-9\x5D{2})_s(?P<Site>\x5B0-9\x5D)
+    Type the regular expression that finds metadata in the subfolder path:.*\x5B\\\\/\x5D(?P<Date>.*)\x5B\\\\/\x5D(?P<Run>.*)$
+    Channel count:1
+    Group the movie frames?:No
+    Grouping method:Interleaved
+    Number of channels per group:3
+    Load the input as images or objects?:Images
+    Name this loaded image:w2
+    Name this loaded object:Nuclei
+    Retain outlines of loaded objects?:No
+    Name the outline image:MyNucleiOutlines
+    Channel number:1
+    Rescale intensities?:Yes
+"""
+        pipeline = cpp.Pipeline()
+        def callback(caller, event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO(data))
+        self.assertEqual(len(pipeline.modules()), 1)
+        
+        module = pipeline.modules()[0]
+        self.assertTrue(isinstance(module, LI.LoadImages))
+        self.assertEqual(module.file_types, LI.FF_INDIVIDUAL_IMAGES)
+        self.assertEqual(module.match_method, LI.MS_EXACT_MATCH)
+        self.assertEqual(module.order_group_size, 3)
+        self.assertEqual(module.match_exclude, "Whatever")
+        self.assertEqual(module.descend_subdirectories, LI.SUB_NONE)
+        self.assertEqual(module.location.dir_choice, LI.cps.DEFAULT_INPUT_FOLDER_NAME)
+        self.assertTrue(module.check_images)
+        self.assertFalse(module.group_by_metadata)
+        self.assertFalse(module.exclude)
+        self.assertEqual(module.image_count.value, 2)
+        self.assertEqual(len(module.images), 2)
+        image = module.images[0]
+        self.assertEqual(image.common_text, "_w1_")
+        self.assertEqual(image.order_position, 1)
+        self.assertEqual(image.metadata_choice, LI.M_NONE)
+        self.assertEqual(image.channel_count.value, 1)
+        self.assertEqual(len(image.channels), 1)
+        channel = image.channels[0]
+        self.assertEqual(channel.image_object_choice, LI.IO_IMAGES)
+        self.assertEqual(channel.channel_number, 1)
+        self.assertEqual(channel.image_name, "w1")
+        self.assertEqual(channel.object_name, "Nuclei")
+        self.assertTrue(channel.rescale)
+        self.assertTrue(channel.wants_outlines)
+        self.assertEqual(channel.outlines_name, "MyOutlines")
+        self.assertFalse(module.images[1].channels[0].wants_outlines)
+        
+    def test_03_11_load_v11(self):
+        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:1
+SVNRevision:10809
+
+LoadImages:[module_num:1|svn_version:\'10807\'|variable_revision_number:11|show_window:True|notes:\x5B\x5D]
+    File type to be loaded:individual images
+    File selection method:Text-Exact match
+    Number of images in each group?:3
+    Type the text that the excluded images have in common:Whatever
+    Analyze subfolders within the selected folder?:All
+    Input image file location:Default Input Folder\x7CNone
+    Check image sets for missing or duplicate files?:Yes
+    Group images by metadata?:No
+    Exclude certain files?:No
+    Specify metadata fields to group by:
+    Select subfolders to analyze:hello/kitty,fubar
+    Image count:1
+    Text that these images have in common (case-sensitive):_w1_
+    Position of this image in each group:1
+    Extract metadata from where?:None
+    Regular expression that finds metadata in the file name:^(?P<Plate>.*)_(?P<Well>\x5BA-P\x5D\x5B0-9\x5D{2})_s(?P<Site>\x5B0-9\x5D)
+    Type the regular expression that finds metadata in the subfolder path:.*\x5B\\\\/\x5D(?P<Date>.*)\x5B\\\\/\x5D(?P<Run>.*)$
+    Channel count:1
+    Group the movie frames?:No
+    Grouping method:Interleaved
+    Number of channels per group:3
+    Load the input as images or objects?:Images
+    Name this loaded image:w1
+    Name this loaded object:Nuclei
+    Retain outlines of loaded objects?:Yes
+    Name the outline image:MyOutlines
+    Channel number:1
+    Rescale intensities?:Yes
+
+LoadImages:[module_num:2|svn_version:\'10807\'|variable_revision_number:11|show_window:True|notes:\x5B\x5D]
+    File type to be loaded:individual images
+    File selection method:Text-Exact match
+    Number of images in each group?:3
+    Type the text that the excluded images have in common:Whatever
+    Analyze subfolders within the selected folder?:Some
+    Input image file location:Default Input Folder\x7CNone
+    Check image sets for missing or duplicate files?:Yes
+    Group images by metadata?:No
+    Exclude certain files?:No
+    Specify metadata fields to group by:
+    Select subfolders to analyze:hello/kitty,fubar
+    Image count:1
+    Text that these images have in common (case-sensitive):_w1_
+    Position of this image in each group:1
+    Extract metadata from where?:None
+    Regular expression that finds metadata in the file name:^(?P<Plate>.*)_(?P<Well>\x5BA-P\x5D\x5B0-9\x5D{2})_s(?P<Site>\x5B0-9\x5D)
+    Type the regular expression that finds metadata in the subfolder path:.*\x5B\\\\/\x5D(?P<Date>.*)\x5B\\\\/\x5D(?P<Run>.*)$
+    Channel count:1
+    Group the movie frames?:No
+    Grouping method:Interleaved
+    Number of channels per group:3
+    Load the input as images or objects?:Images
+    Name this loaded image:w1
+    Name this loaded object:Nuclei
+    Retain outlines of loaded objects?:Yes
+    Name the outline image:MyOutlines
+    Channel number:1
+    Rescale intensities?:Yes
+
+LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_window:True|notes:\x5B\x5D]
+    File type to be loaded:individual images
+    File selection method:Text-Exact match
+    Number of images in each group?:3
+    Type the text that the excluded images have in common:Whatever
+    Analyze subfolders within the selected folder?:None
+    Input image file location:Default Input Folder\x7CNone
+    Check image sets for missing or duplicate files?:Yes
+    Group images by metadata?:No
+    Exclude certain files?:No
+    Specify metadata fields to group by:
+    Select subfolders to analyze:hello/kitty,fubar
+    Image count:1
+    Text that these images have in common (case-sensitive):_w1_
+    Position of this image in each group:1
+    Extract metadata from where?:None
+    Regular expression that finds metadata in the file name:^(?P<Plate>.*)_(?P<Well>\x5BA-P\x5D\x5B0-9\x5D{2})_s(?P<Site>\x5B0-9\x5D)
+    Type the regular expression that finds metadata in the subfolder path:.*\x5B\\\\/\x5D(?P<Date>.*)\x5B\\\\/\x5D(?P<Run>.*)$
+    Channel count:1
+    Group the movie frames?:No
+    Grouping method:Interleaved
+    Number of channels per group:3
+    Load the input as images or objects?:Images
+    Name this loaded image:w1
+    Name this loaded object:Nuclei
+    Retain outlines of loaded objects?:Yes
+    Name the outline image:MyOutlines
+    Channel number:1
+    Rescale intensities?:Yes
+"""
+        pipeline = cpp.Pipeline()
+        def callback(caller, event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO(data))
+        self.assertEqual(len(pipeline.modules()), 3)
+        
+        module = pipeline.modules()[0]
+        self.assertTrue(isinstance(module, LI.LoadImages))
+        self.assertEqual(module.file_types, LI.FF_INDIVIDUAL_IMAGES)
+        self.assertEqual(module.match_method, LI.MS_EXACT_MATCH)
+        self.assertEqual(module.order_group_size, 3)
+        self.assertEqual(module.match_exclude, "Whatever")
+        self.assertEqual(module.descend_subdirectories, LI.SUB_ALL)
+        self.assertEqual(module.location.dir_choice, LI.cps.DEFAULT_INPUT_FOLDER_NAME)
+        self.assertTrue(module.check_images)
+        self.assertFalse(module.group_by_metadata)
+        self.assertFalse(module.exclude)
+        self.assertEqual(module.image_count.value, 1)
+        self.assertEqual(len(module.images), 1)
+        image = module.images[0]
+        self.assertEqual(image.common_text, "_w1_")
+        self.assertEqual(image.order_position, 1)
+        self.assertEqual(image.metadata_choice, LI.M_NONE)
+        self.assertEqual(image.channel_count.value, 1)
+        self.assertEqual(len(image.channels), 1)
+        channel = image.channels[0]
+        self.assertEqual(channel.image_object_choice, LI.IO_IMAGES)
+        self.assertEqual(channel.channel_number, 1)
+        self.assertEqual(channel.image_name, "w1")
+        self.assertEqual(channel.object_name, "Nuclei")
+        self.assertTrue(channel.rescale)
+        self.assertTrue(channel.wants_outlines)
+        self.assertEqual(channel.outlines_name, "MyOutlines")
+        
+        module = pipeline.modules()[1]
+        self.assertTrue(isinstance(module, LI.LoadImages))
+        self.assertEqual(module.descend_subdirectories, LI.SUB_SOME)
+        
+        module = pipeline.modules()[2]
+        self.assertTrue(isinstance(module, LI.LoadImages))
+        self.assertEqual(module.descend_subdirectories, LI.SUB_NONE)
         
     def test_04_01_load_save_and_load(self):
         data = 'TUFUTEFCIDUuMCBNQVQtZmlsZSwgUGxhdGZvcm06IFBDV0lOLCBDcmVhdGVkIG9uOiBNb24gSmFuIDA1IDExOjA2OjM5IDIwMDkgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAABSU0PAAAApwEAAHic5VTNTsJAEJ42BdEDwXjQY49eJCIXj8b4A4mCAUK8mYUudZO22/QHwafyEbj5Wu5KC8um0qV6c5LNdGZnvpn9OrtVAFhUAMpMMwU6LKWU2JqwuN3HUUQ8OyyBASeJf8HWEAUEjRw8RE6MQ1hJ6m97EzqY+6utR2rFDu4gVwxm0ondEQ7C7iRNTLafyAw7ffKOYVPSsB6ekpBQL8lP8GXvqi6NpLpVtlrGmgctg4cjwc/jr2Adb2TE14T4WrIGeBad3c7QODJdFI1fVXD2JRxuh42Xt0Z90L4T+rnMwdmTcLjdDYjdw5bSeX7q40LqowgO7+M+wNj7JQ7vp7kjLxUJp5L0c81GWaWPAymf2zfU9GhkxiFWP48qznkOjraBo0Hzj+u3cnAOJRxuE88iU2LFyDGJi+zV7VM5j76Bp0OHFuOhrshD1lzZAZqHY+Sk709VQX9o298Tkaes/Lw+s96Xb3LtgMa+ySjH/n/GK6p92P7fxLkqeq8eKLLawkWQ57mcU1dnX7WMPJV70ChYzyiQZ7DMz+Nl3vOOvJ5uiU8l9X8BnJqT/A=='
@@ -1442,7 +1666,7 @@ LoadImages:[module_num:1|svn_version:\'10503\'|variable_revision_number:9|show_w
             load_images.file_types.value = LI.FF_INDIVIDUAL_IMAGES
             load_images.match_method.value = LI.MS_EXACT_MATCH
             load_images.location.dir_choice = LI.ABSOLUTE_FOLDER_NAME
-            load_images.descend_subdirectories.value = True
+            load_images.descend_subdirectories.value = LI.SUB_ALL
             load_images.location.custom_path = directory
             load_images.images[0].common_text.value = ".tif"
             load_images.images[0].channels[0].image_name.value = "my_image"
@@ -1456,6 +1680,78 @@ LoadImages:[module_num:1|svn_version:\'10503\'|variable_revision_number:9|show_w
             m = measurements.Measurements()
             load_images.prepare_group(pipeline, image_set_list, {}, np.arange(1, len(filenames)+1))
             for i, (path, file_name) in enumerate(filenames):
+                if i > 0:
+                    m.next_image_set()
+                image_set = image_set_list.get_image_set(i)
+                w = W.Workspace(pipeline, load_images, image_set,
+                                cpo.ObjectSet(), m, image_set_list)
+                load_images.run(w)
+                image_provider = image_set.get_image_provider("my_image")
+                self.assertEqual(image_provider.get_pathname(), directory)
+                self.assertEqual(image_provider.get_filename(), os.path.join(path, file_name))
+                f = m.get_current_image_measurement("FileName_my_image")
+                self.assertEqual(f, file_name)
+                p = m.get_current_image_measurement("PathName_my_image")
+                self.assertEqual(os.path.join(directory, path), p)
+        finally:
+            for path, directories, file_names in os.walk(directory, False):
+                for file_name in file_names:
+                    p = os.path.join(path, file_name)
+                    try:
+                        os.remove(p)
+                    except:
+                        print "Failed to remove " + p
+                        traceback.print_exc()
+                try:
+                    os.rmdir(path)
+                except:
+                    print "Failed to remove " + path
+                    traceback.print_exc()
+            
+    def test_06_08_some_subfolders(self):
+        '''Test recursion down the list of subfolders, some folders filtered'''
+        directory = tempfile.mkdtemp()
+        filenames = [ ("d1","bar.tif"),
+                      ("d1","foo.tif"),
+                      (os.path.join("d2","d3"), "foo.tif"),
+                      (os.path.join("d2","d4"), "bar.tif"),
+                      (os.path.join("d5","d6","d7"), "foo.tif")]
+        exclusions = [ os.path.join("d2","d3"),
+                       os.path.join("d5","d6") ]
+        expected_filenames = filenames[:2] + [filenames[3]]
+
+        data = base64.b64decode(T.tif_8_1)
+        try:
+            for path, file_name in filenames:
+                d = os.path.join(directory, path)
+                if not os.path.isdir(d):
+                    os.makedirs(d)
+                fd = open(os.path.join(directory, path, file_name),"wb")
+                fd.write(data)
+                fd.close()
+            load_images = LI.LoadImages()
+            load_images.module_num = 1
+            load_images.file_types.value = LI.FF_INDIVIDUAL_IMAGES
+            load_images.match_method.value = LI.MS_EXACT_MATCH
+            load_images.location.dir_choice = LI.ABSOLUTE_FOLDER_NAME
+            load_images.descend_subdirectories.value = LI.SUB_SOME
+            load_images.subdirectory_filter.value = \
+                       load_images.subdirectory_filter.get_value_string(
+                           exclusions)
+            load_images.location.custom_path = directory
+            load_images.images[0].common_text.value = ".tif"
+            load_images.images[0].channels[0].image_name.value = "my_image"
+            load_images.check_images.value = False
+            pipeline = P.Pipeline()
+            pipeline.add_module(load_images)
+            pipeline.add_listener(self.error_callback)
+            image_set_list = I.ImageSetList()
+            self.assertTrue(load_images.prepare_run(pipeline, image_set_list, None))
+            self.assertEqual(image_set_list.count(), len(expected_filenames))
+            m = measurements.Measurements()
+            load_images.prepare_group(pipeline, image_set_list, {}, 
+                                      np.arange(1, len(expected_filenames)+1))
+            for i, (path, file_name) in enumerate(expected_filenames):
                 if i > 0:
                     m.next_image_set()
                 image_set = image_set_list.get_image_set(i)

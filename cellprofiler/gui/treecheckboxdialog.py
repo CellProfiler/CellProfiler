@@ -88,8 +88,9 @@ class TreeCheckboxDialog(wx.Dialog):
         
     def get_item_data(self, item_id):
         x = self.tree_ctrl.GetItemData(item_id)
-        return x.GetData()
-        
+        d = x.GetData()
+        return d
+
     def on_expanding(self, event):
         '''Populate subitems on expansion'''
         item_id = event.GetItem()
@@ -99,24 +100,32 @@ class TreeCheckboxDialog(wx.Dialog):
         
     def populate(self, item_id):
         '''Populate the subitems of a tree'''
-        d = self.get_item_data(item_id)
-        assert len(d) > 1
-        if self.tree_ctrl.GetChildrenCount(item_id, False) == 0:
-            for key in sorted([x for x in d.keys() if x is not None]):
-                d1 = d[key]
-                image_index, selected_index = self.img_idx(d1)
-                sub_id = self.tree_ctrl.AppendItem(item_id, key, image_index,
-                                                   selected_index, 
-                                                   wx.TreeItemData(d1))
-                self.tree_ctrl.SetItemImage(sub_id, image_index,
-                                            wx.TreeItemIcon_Normal)
-                self.tree_ctrl.SetItemImage(sub_id, selected_index, 
-                                            wx.TreeItemIcon_Selected)
-                self.tree_ctrl.SetItemImage(sub_id, image_index,
-                                            wx.TreeItemIcon_Expanded)
-                self.tree_ctrl.SetItemImage(sub_id, selected_index, 
-                                            wx.TreeItemIcon_SelectedExpanded)
-                self.tree_ctrl.SetItemHasChildren(sub_id, len(d1) > 1)
+        try:
+            d = self.get_item_data(item_id)
+            assert len(d) > 1
+            if self.tree_ctrl.GetChildrenCount(item_id, False) == 0:
+                for key in sorted([x for x in d.keys() if x is not None]):
+                    d1 = d[key]
+                    if hasattr(d1, "__call__"):
+                        # call function to get real value
+                        self.SetCursor(wx.StockCursor(wx.CURSOR_WAIT))
+                        d1 = d1()
+                        d[key] = d1
+                    image_index, selected_index = self.img_idx(d1)
+                    sub_id = self.tree_ctrl.AppendItem(item_id, key, image_index,
+                                                       selected_index, 
+                                                       wx.TreeItemData(d1))
+                    self.tree_ctrl.SetItemImage(sub_id, image_index,
+                                                wx.TreeItemIcon_Normal)
+                    self.tree_ctrl.SetItemImage(sub_id, selected_index, 
+                                                wx.TreeItemIcon_Selected)
+                    self.tree_ctrl.SetItemImage(sub_id, image_index,
+                                                wx.TreeItemIcon_Expanded)
+                    self.tree_ctrl.SetItemImage(sub_id, selected_index, 
+                                                wx.TreeItemIcon_SelectedExpanded)
+                    self.tree_ctrl.SetItemHasChildren(sub_id, len(d1) > 1)
+        finally:
+            self.SetCursor(wx.NullCursor)
                 
     def on_left_down(self, event):
         item_id, where = self.tree_ctrl.HitTest(event.Position)
@@ -207,6 +216,14 @@ if __name__ == "__main__":
                     d2 = d1[str(j)] = { None: None }
                     for k in range(5):
                         d2[str(k)] = { None: (k & 1) != 0}
+            def fn():
+                return { 
+                    "Hello":{ 
+                        "There": {None:False}, 
+                        "Kitty":{None:True},
+                        None:None },
+                    None:None }
+            d["KittenKiller"] = fn
                         
             dlg = TreeCheckboxDialog(None, d, size=(640,480), 
                                      style = wx.DEFAULT_DIALOG_STYLE | 

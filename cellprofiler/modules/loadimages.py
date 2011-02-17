@@ -203,6 +203,10 @@ I_INTERLEAVED = "Interleaved"
 '''Separated movies'''
 I_SEPARATED = "Separated"
 
+SUB_NONE = "None"
+SUB_ALL = "All"
+SUB_SOME = "Some"
+
 def default_cpimage_name(index):
     # the usual suspects
     names = ['DNA', 'Actin', 'Protein']
@@ -213,7 +217,7 @@ def default_cpimage_name(index):
 class LoadImages(cpmodule.CPModule):
 
     module_name = "LoadImages"
-    variable_revision_number = 10
+    variable_revision_number = 11
     category = "File Processing"
 
     def create_settings(self):
@@ -333,9 +337,35 @@ class LoadImages(cpmodule.CPModule):
             Enter the number of images that comprise a group. For example, for images given in the order:
             <i>DAPI, FITC, Red; DAPI, FITC, Red;</i> and so on, the number of images that in each group would be 3.""")
         
-        self.descend_subdirectories = cps.Binary('Analyze all subfolders within the selected folder?', False, doc="""
-                If this box is checked, <b>LoadImages</b> will search all the subfolders under your specified image folder location
-                for images matching the criteria above.""")
+        self.descend_subdirectories = cps.Choice(
+            'Analyze all subfolders within the selected folder?', 
+            [SUB_NONE, SUB_ALL, SUB_SOME], 
+            doc="""This setting determines whether <b>LoadImages</b> analyzes
+            just the images in the specified folder or whether it analyzes
+            images in subfolders as well.
+            Choose <i>%(SUB_ALL)s</i>, to search all the subfolders under your 
+            specified image folder location. Choose <i>%(SUB_NONE)s</i> to
+            only analyze folders in the specified location. Choose
+            <i>%(SUB_SOME)s</i> to pick which subfolders to analyze.""" % globals())
+        
+        # Location settings
+        self.location = cps.DirectoryPath(
+            "Input image file location", 
+            dir_choices = [
+                DEFAULT_INPUT_FOLDER_NAME,  DEFAULT_OUTPUT_FOLDER_NAME,
+                ABSOLUTE_FOLDER_NAME, DEFAULT_INPUT_SUBFOLDER_NAME,
+                DEFAULT_OUTPUT_SUBFOLDER_NAME],
+            allow_metadata = False,
+            doc ="""Select the folder containing the images to be loaded. 
+            %(IO_FOLDER_CHOICE_HELP_TEXT)s"""%globals())
+
+        self.subdirectory_filter = cps.SubdirectoryFilter(
+            "Select subfolders to analyze",
+            directory_path = self.location,
+            doc = """Use this control to select some subfolders and exclude
+            others from analysis. Press the button to see the folder tree
+            and check or uncheck the checkboxes to enable or disable analysis
+            of the associated folders""")
         
         self.check_images = cps.Binary('Check image sets for missing or duplicate files?',True,doc="""
                 Selecting this option will examine the filenames for 
@@ -370,17 +400,6 @@ class LoadImages(cpmodule.CPModule):
         
         # Add another image
         self.add_image = cps.DoSomething("", "Add another image", self.add_imagecb)
-        
-        # Location settings
-        self.location = cps.DirectoryPath(
-            "Input image file location", 
-            dir_choices = [
-                DEFAULT_INPUT_FOLDER_NAME,  DEFAULT_OUTPUT_FOLDER_NAME,
-                ABSOLUTE_FOLDER_NAME, DEFAULT_INPUT_SUBFOLDER_NAME,
-                DEFAULT_OUTPUT_SUBFOLDER_NAME],
-            allow_metadata = False,
-            doc ="""Select the folder containing the images to be loaded. 
-            %(IO_FOLDER_CHOICE_HELP_TEXT)s"""%globals())
 
     def add_imagecb(self, can_remove = True):
         'Adds another image to the settings'
@@ -716,7 +735,7 @@ class LoadImages(cpmodule.CPModule):
             <i>(Used only if objects are output)</i><br>
             This is the name for the objects loaded from your image"""))
         
-        group.append("wants_outlines", cps.Binary('Retain outlines of loaded objects?"', False,
+        group.append("wants_outlines", cps.Binary('Retain outlines of loaded objects?', False,
             doc = """<i>(Used only if objects are output)</i><br>
             Check this setting if you want to create an image of the outlines
             of the loaded objects."""))
@@ -775,6 +794,7 @@ class LoadImages(cpmodule.CPModule):
                   self.exclude,
                   self.match_exclude,
                   self.descend_subdirectories, 
+                  self.subdirectory_filter,
                   self.check_images, 
                   self.group_by_metadata, 
                   self.metadata_fields]
@@ -809,6 +829,8 @@ class LoadImages(cpmodule.CPModule):
         elif self.match_method == MS_ORDER:
             varlist += [self.order_group_size]
         varlist += [self.descend_subdirectories]
+        if self.descend_subdirectories == SUB_SOME:
+            varlist += [self.subdirectory_filter]
         if self.has_metadata and self.do_group_by_metadata:
             varlist += [self.check_images]
         if self.has_metadata:
@@ -950,12 +972,14 @@ class LoadImages(cpmodule.CPModule):
     SLOT_FIRST_IMAGE_V7 = 11
     SLOT_FIRST_IMAGE_V8 = 11
     SLOT_FIRST_IMAGE_V9 = 11
-    SLOT_FIRST_IMAGE = 11
+    SLOT_FIRST_IMAGE_V10 = 11
+    SLOT_FIRST_IMAGE = 12
     SLOT_IMAGE_COUNT_V6 = 10
     SLOT_IMAGE_COUNT_V7 = 10
     SLOT_IMAGE_COUNT_V8 = 10
     SLOT_IMAGE_COUNT_V9 = 10
-    SLOT_IMAGE_COUNT = 10
+    SLOT_IMAGE_COUNT_V10 = 10
+    SLOT_IMAGE_COUNT = 11
                 
     SLOT_OFFSET_COMMON_TEXT = 0
     SLOT_OFFSET_IMAGE_NAME_V5 = 1
@@ -1007,7 +1031,7 @@ class LoadImages(cpmodule.CPModule):
             self.file_types, self.match_method, self.order_group_size,
             self.match_exclude, self.descend_subdirectories, self.location,
             self.check_images, self.group_by_metadata, self.exclude,
-            self.metadata_fields, self.image_count]
+            self.metadata_fields, self.subdirectory_filter, self.image_count]
         for image_group in self.images:
             setting_values += [
                 image_group.common_text, image_group.order_position, 
@@ -1295,7 +1319,17 @@ class LoadImages(cpmodule.CPModule):
                                     setting_values[self.SLOT_OFFSET_OBJECT_NAME_V9:self.SLOT_CHANNEL_FIELD_COUNT_V9]
                     setting_values = setting_values[self.SLOT_CHANNEL_FIELD_COUNT_V9:]
             return (new_values, 10)
-            
+        
+        def upgrade_new_10_to_11(setting_values):
+            '''Added subdirectory filter'''
+            new_values = (setting_values[:self.SLOT_IMAGE_COUNT_V10] +
+                          [""] + setting_values[self.SLOT_IMAGE_COUNT_V10:])
+            if new_values[self.SLOT_DESCEND_SUBDIRECTORIES] == cps.YES:
+                new_values[self.SLOT_DESCEND_SUBDIRECTORIES] = SUB_ALL
+            else:
+                new_values[self.SLOT_DESCEND_SUBDIRECTORIES] = SUB_NONE
+            return (new_values, 11)
+                
         if from_matlab:
             if variable_revision_number == 1:
                 setting_values,variable_revision_number = upgrade_1_to_2(setting_values)
@@ -1328,6 +1362,8 @@ class LoadImages(cpmodule.CPModule):
             setting_values, variable_revision_number = upgrade_new_8_to_9(setting_values)
         if variable_revision_number == 9:
             setting_values, variable_revision_number = upgrade_new_9_to_10(setting_values)
+        if variable_revision_number == 10:
+            setting_values, variable_revision_number = upgrade_new_10_to_11(setting_values)
 
         # Standardize input/output directory name references
         setting_values[self.SLOT_LOCATION] = \
@@ -2299,7 +2335,7 @@ class LoadImages(cpmodule.CPModule):
     def analyze_sub_dirs(self):
         """Return True if we should analyze subdirectories in addition to the root image directory
         """
-        return self.descend_subdirectories.value
+        return self.descend_subdirectories != SUB_NONE
     
     def collect_files(self, can_cache = False, frame = None):
         """Collect the files that match the filter criteria
@@ -2329,16 +2365,24 @@ class LoadImages(cpmodule.CPModule):
             import time
             start_time = time.clock()
             if self.analyze_sub_dirs():
+                if self.descend_subdirectories == SUB_SOME:
+                    prohibited = self.subdirectory_filter.get_selections()
+                else:
+                    prohibited = []
                 files = []
-                w = os.walk(root)
-                for node in w:
-                    path = relpath(node[0], root)
+                w = os.walk(root, topdown=True)
+                for dirpath, dirnames, filenames in w:
+                    path = relpath(dirpath, root)
+                    if path in prohibited:
+                        # Don't descend into prohibited directories
+                        del dirnames[:]
+                        continue
                     if path == os.path.curdir:
                         files += [(file_name, file_name) 
-                                  for file_name in node[2]]
+                                  for file_name in filenames]
                     else:
                         files += [(os.path.join(path, file_name), file_name)
-                                  for file_name in node[2]]
+                                  for file_name in filenames]
             else:
                 files = [ (file_name, file_name)
                           for file_name in os.listdir(root)

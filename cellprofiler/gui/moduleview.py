@@ -15,6 +15,7 @@ __version__="$Revision$"
 import matplotlib.cm
 import numpy as np
 import os
+import stat
 import time
 import traceback
 import wx
@@ -355,6 +356,9 @@ class ModuleView:
                 elif isinstance(v, cps.MeasurementMultiChoice):
                     control = self.make_measurement_multichoice_control(
                         v, control_name, control)
+                elif isinstance(v, cps.SubdirectoryFilter):
+                    control = self.make_subdirectory_filter_control(
+                        v, control_name, control)
                 elif isinstance(v, cps.MultiChoice):
                     control = self.make_multichoice_control(v, control_name, 
                                                             control)
@@ -598,6 +602,105 @@ class ModuleView:
                     for object_name in [x for x in d.keys() if x is not None]:
                         selections += collect_state(object_name, None, 
                                                     d[object_name])
+                    proposed_value = v.get_value_string(selections)
+                    setting_edited_event = SettingEditedEvent(v, self.__module, 
+                                                              proposed_value, 
+                                                              event)
+                    self.notify(setting_edited_event)
+                    self.reset_view()
+            control.Bind(wx.EVT_BUTTON, on_press)
+        else:
+            control.Show()
+        return control
+    
+    def make_subdirectory_filter_control(self, v, control_name, control):
+        if control is None:
+            control = wx.Button(self.module_panel, -1,
+                                "Press to select folders")
+            def on_press(event):
+                assert isinstance(v, cps.SubdirectoryFilter)
+                
+                root = v.directory_path.get_absolute_path()
+                self.module_panel.SetCursor(wx.StockCursor(wx.CURSOR_WAIT))
+                try:
+                    def fn_populate(root):
+                        d = { None:True }
+                        try:
+                            for dirname in os.listdir(root):
+                                dirpath = os.path.join(root, dirname)
+                                dirstat = os.stat(dirpath)
+                                if not stat.S_ISDIR(dirstat.st_mode):
+                                    continue
+                                if stat.S_ISLNK(dirstat.st_mode):
+                                    continue
+                                if (stat.S_IREAD & dirstat.st_mode) == 0:
+                                    continue
+                                d[dirname] = lambda dirpath=dirpath: fn_populate(dirpath)
+                        except:
+                            print "Warning: failed to list directory %s" %root
+                        return d
+                                
+                    d = fn_populate(root)
+                    selections = v.get_selections()
+                    def populate_selection(d, selection, root):
+                        s0 = selection[0]
+                        if not d.has_key(s0):
+                            d[s0] = fn_populate(os.path.join(root, s0))
+                        elif hasattr(d[s0], "__call__"):
+                            d[s0] = d[s0]()
+                        if len(selection) == 1:
+                            d[s0][None] = False
+                        else:
+                            if d[s0][None] is False:
+                                # Already filtered out
+                                return
+                            populate_selection(d[s0], selection[1:], 
+                                               os.path.join(root, s0))
+                        # At best, the root is not all true
+                        d[None] = None
+                        # check if the root is now all filtered
+                        for key in d.keys():
+                            if key is None:
+                                continue
+                            if hasattr(d[key], "__call__"):
+                                return
+                            if d[key][None] or d[key][None] is None:
+                                return
+                        d[None] = False
+                    
+                    def split_all(x):
+                        head, tail = os.path.split(x)
+                        if (len(head) == 0) or (len(tail) == 0):
+                            return [x]
+                        else:
+                            return split_all(head) + [tail]
+                        
+                    for selection in selections:
+                        selection_parts = split_all(selection)
+                        populate_selection(d, selection_parts, root)
+                finally:
+                    self.module_panel.SetCursor(wx.NullCursor)
+                    
+                dlg = TreeCheckboxDialog(self.module_panel, d, size=(320,480))
+                dlg.Title = "Select folders"
+                if dlg.ShowModal() == wx.ID_OK:
+                    def collect_state(prefix, d):
+                        if d is None:
+                            return []
+                        if hasattr(d, "__call__") or d[None]:
+                            return []
+                        elif d[None] is False:
+                            return [prefix]
+                        result = []
+                        for key in d.keys():
+                            if key is None:
+                                continue
+                            result += collect_state(os.path.join(prefix, key),
+                                                    d[key])
+                        return result
+                    selections = []
+                    for object_name in [x for x in d.keys() if x is not None]:
+                        selections += collect_state(object_name, d[object_name])
                     proposed_value = v.get_value_string(selections)
                     setting_edited_event = SettingEditedEvent(v, self.__module, 
                                                               proposed_value, 

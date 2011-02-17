@@ -682,6 +682,7 @@ class ModuleView:
                     self.module_panel.SetCursor(wx.NullCursor)
                     
                 dlg = TreeCheckboxDialog(self.module_panel, d, size=(320,480))
+                dlg.set_parent_reflects_child(False)
                 dlg.Title = "Select folders"
                 if dlg.ShowModal() == wx.ID_OK:
                     def collect_state(prefix, d):

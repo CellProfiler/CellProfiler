@@ -30,6 +30,7 @@ class TreeCheckboxDialog(wx.Dialog):
         wx.Dialog.__init__(self, parent, *args, **kwargs)
 
         self.bitmaps = []
+        self.parent_reflects_child = True
         sizer = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(sizer)
         tree_style = wx.TR_DEFAULT_STYLE
@@ -77,6 +78,18 @@ class TreeCheckboxDialog(wx.Dialog):
         sizer.Add(self.CreateStdDialogButtonSizer(wx.CANCEL | wx.OK), 
                   flag=wx.CENTER)
         self.Layout()
+        
+    def set_parent_reflects_child(self, value):
+        '''Set the "parent_reflects_child" flag
+        
+        If you uncheck all of a parent's children, maybe that means
+        that the parent should be unchecked too. But imagine the case
+        where the user is checking and unchecking subdirectories. Perhaps
+        they want the files in the parent, but not in the child. Set this
+        to False to make the parent state be "None" if all children are False.
+        This drives the parent to None instead of False, indicating that
+        files should be picked up from the currenet directory, but not kids.'''
+        self.parent_reflects_child = value
         
     def img_idx(self, d):
         if d[None] is False:
@@ -157,6 +170,8 @@ class TreeCheckboxDialog(wx.Dialog):
                     break
                 
             if d_parent[None] is not state:
+                if state is False and not self.parent_reflects_child:
+                    state = None
                 d_parent[None] = state
                 image_index, selected_index = self.img_idx(d_parent)
                 self.tree_ctrl.SetItemImage(parent_id, image_index, wx.TreeItemIcon_Normal)

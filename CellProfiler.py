@@ -335,9 +335,21 @@ try:
             fd.close()
 finally:
     try:
+        import imagej.ijbridge as ijbridge
+        ijb = ijbridge.get_ij_bridge()
+        if isinstance(ijb, ijbridge.inter_proc_ij_bridge):
+            ijb.quit()
+    except:
+        import traceback
+        traceback.print_exc()
+        print "Caught exception while killing ijbridge."
+
+    try:
         import cellprofiler.utilities.jutil as jutil
         jutil.kill_vm()
     except:
         import traceback
         traceback.print_exc()
         print "Caught exception while killing VM"
+
+        

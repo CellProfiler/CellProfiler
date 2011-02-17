@@ -203,6 +203,7 @@ I_INTERLEAVED = "Interleaved"
 '''Separated movies'''
 I_SEPARATED = "Separated"
 
+'''Subfolder choosing options'''
 SUB_NONE = "None"
 SUB_ALL = "All"
 SUB_SOME = "Some"
@@ -342,11 +343,13 @@ class LoadImages(cpmodule.CPModule):
             [SUB_NONE, SUB_ALL, SUB_SOME], 
             doc="""This setting determines whether <b>LoadImages</b> analyzes
             just the images in the specified folder or whether it analyzes
-            images in subfolders as well.
-            Choose <i>%(SUB_ALL)s</i>, to search all the subfolders under your 
-            specified image folder location. Choose <i>%(SUB_NONE)s</i> to
-            only analyze folders in the specified location. Choose
-            <i>%(SUB_SOME)s</i> to pick which subfolders to analyze.""" % globals())
+            images in subfolders as well:
+            <ul>
+            <li><i>%(SUB_ALL)s</i>: Analyze all matching image files in subfolders under your 
+            specified image folder location. </li>
+            <li><i>%(SUB_NONE)s</i>: Only analyze files in the specified location.</li>
+            <li><i>%(SUB_SOME)s</i>: Select which subfolders to analyze.</li>
+            </ul>""" % globals())
         
         # Location settings
         self.location = cps.DirectoryPath(
@@ -365,7 +368,7 @@ class LoadImages(cpmodule.CPModule):
             doc = """Use this control to select some subfolders and exclude
             others from analysis. Press the button to see the folder tree
             and check or uncheck the checkboxes to enable or disable analysis
-            of the associated folders""")
+            of the associated folders.""")
         
         self.check_images = cps.Binary('Check image sets for missing or duplicate files?',True,doc="""
                 Selecting this option will examine the filenames for 

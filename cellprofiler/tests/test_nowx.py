@@ -1,0 +1,129 @@
+"""test_nowx.py - ensure that there's no dependency on wx when headless
+
+CellProfiler is distributed under the GNU General Public License.
+See the accompanying file LICENSE for details.
+
+Copyright (c) 2003-2009 Massachusetts Institute of Technology
+Copyright (c) 2009-2010 Broad Institute
+All rights reserved.
+
+Please see the AUTHORS file for credits.
+
+Website: http://www.cellprofiler.org
+"""
+__version__="$Revision$"
+
+import tempfile
+import traceback
+import unittest
+
+import __builtin__
+
+def import_all_but_wx(name, 
+                      globals = __builtin__.globals(), 
+                      locals = __builtin__.locals(),
+                      fromlist=[], level=-1,
+                      default_import = __builtin__.__import__):
+    if name == "wx" or name.startswith("wx."):
+        raise ImportError("Not allowed to import wx!")
+    return default_import(name, globals, locals, fromlist, level)
+
+class TestNoWX(unittest.TestCase):
+    def setUp(self):
+        from cellprofiler.preferences import set_headless
+        set_headless()
+        self.old_import = __builtin__.__import__
+        __builtin__.__import__ = import_all_but_wx
+
+    def tearDown(self):
+        __builtin__.__import__ = self.old_import
+
+    def example_dir(self):
+        import os
+        path = os.path.abspath(os.path.split(__file__)[0])
+        # trunk\CellProfiler\cellprofiler\tests
+        for i in range(3):
+            path = os.path.split(path)[0]
+        path = os.path.join(path, "ExampleImages")
+        self.assertTrue(os.path.isdir(path))
+        return path
+    
+    def test_01_01_can_import(self):
+        import os
+        self.assertTrue(hasattr(os, "environ"))
+        
+    def test_01_02_throws_on_wx_import(self):
+        def import_wx():
+            import wx
+        self.assertRaises(ImportError, import_wx)
+        
+    def test_01_03_import_modules(self):
+        '''Import cellprofiler.modules and make sure it doesn't import wx'''
+        import cellprofiler.modules
+        
+    def test_01_04_instantiate_all(self):
+        '''Instantiate each module and make sure none import wx'''
+        import cellprofiler.modules as M
+        for name in M.get_module_names():
+            try:
+                M.instantiate_module(name)
+            except:
+                print "Module %s probably imports wx" % name
+                traceback.print_exc()
+                
+    def test_01_05_load_pipeline(self):
+        import cellprofiler.pipeline as cpp
+        import os
+        pipeline_file = os.path.join(self.example_dir(), 
+                                     "ExampleSBSImages", "ExampleSBS.cp")
+        self.assertTrue(os.path.isfile(pipeline_file), "No ExampleSBS.cp file")
+        pipeline = cpp.Pipeline()
+        def callback(caller, event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(pipeline_file)
+        
+    def test_01_06_run_pipeline(self):
+        import cellprofiler.pipeline as cpp
+        import cellprofiler.cpmodule as cpm
+        import os
+        from cellprofiler.preferences import set_default_image_directory, set_default_output_directory
+        example_sbs_dir = os.path.join(self.example_dir(), 
+                                       "ExampleSBSImages")
+        set_default_image_directory(example_sbs_dir)
+        output_dir = tempfile.mkdtemp()
+        set_default_output_directory(output_dir)
+        try:
+            pipeline_file = os.path.join(example_sbs_dir, "ExampleSBS.cp")
+            pipeline = cpp.Pipeline()
+            def callback(caller, event):
+                self.assertFalse(isinstance(event, (cpp.LoadExceptionEvent,
+                                                    cpp.RunExceptionEvent)))
+            pipeline.add_listener(callback)
+            pipeline.load(pipeline_file)
+            while True:
+                removed_something = False
+                for module in reversed(pipeline.modules()):
+                    self.assertTrue(isinstance(module, cpm.CPModule))
+                    if module.module_name in ("SaveImages", 
+                                              "CalculateStatistics",
+                                              "ExportToSpreadsheet"):
+                        pipeline.remove_module(module.module_num)
+                        removed_something = True
+                        break
+                if not removed_something:
+                    break
+            pipeline.run(image_set_end = 1)
+        finally:
+            for file_name in os.listdir(output_dir):
+                try:
+                    os.remove(file_name)
+                except:
+                    print "Failed to remove %s" % file_name
+                    traceback.print_exc()
+            try:
+                os.rmdir(output_dir)
+            except:
+                print "Failed to remove %s" % output_dir
+                traceback.print_exc()
+        

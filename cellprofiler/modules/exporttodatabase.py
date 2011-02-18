@@ -351,7 +351,7 @@ class ExportToDatabase(cpm.CPModule):
             Check this setting to include information in the properties file for all images.
             Leaving this box checked will do the following:
             <ul>
-            <li>All images loaded using <b>LoadImages</i>, <i>LoadData</i> or saved in <i>SaveImages</i> will be included.
+            <li>All images loaded using <b>LoadImages</b>, <b>LoadData</b> or saved in <b>SaveImages</b> will be included.
             <li>The CellProfiler image name will be used for the <i>image_name</i> field.</li>
             <li>A channel color listed in the <i>image_channel_colors</i> field will be assigned to the image by default order.</li>
             </ul>

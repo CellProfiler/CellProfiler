@@ -2034,7 +2034,7 @@ def calculate_solidity(labels,indexes=None):
     labels - a label matrix
     indexes - the indexes of the labels to measure
     """
-    if indexes:
+    if indexes is not None:
         """ Convert to compat 32bit integer """
         indexes = np.array(indexes,dtype=np.int32)
     areas = scind.sum(np.ones(labels.shape),labels,indexes)

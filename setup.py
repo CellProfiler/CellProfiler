@@ -32,10 +32,15 @@ if sys.platform == "darwin":
 APPNAME = 'CellProfiler2.0'
 APP = ['CellProfiler.py']
 DATA_FILES = [('cellprofiler/icons', glob.glob(os.path.join('.', 'cellprofiler', 'icons', '*.png'))),
-              ('bioformats', ['bioformats/loci_tools.jar'])]
+              ('bioformats', ['bioformats/loci_tools.jar']),
+              ('imagej', ['imagej/TCPClient.class', 'imagej/InterProcessIJBridge.class',
+                          'imagej/InterProcessIJBridge$1.class', 'imagej/ij.jar']),
+              ]
 OPTIONS = {'argv_emulation': True,
-           'packages': ['cellprofiler', 'contrib', 'bioformats'],
-           'includes': ['numpy', 'wx', 'matplotlib','email.iterators', 'smtplib', 'sqlite3', 'libtiff', 'wx.lib.intctrl', 'libtiff.'+tiff_h_name],
+           'packages': ['cellprofiler', 'contrib', 'bioformats', 'imagej'],
+           'includes': ['numpy', 'wx', 'matplotlib','email.iterators', 'smtplib',
+                        'sqlite3', 'libtiff', 'wx.lib.intctrl', 'libtiff.'+tiff_h_name,
+                        'xml.dom.minidom'],
            'excludes': ['pylab', 'nose', 'Tkinter', 'Cython', 'scipy.weave'],
            'resources': ['CellProfilerIcon.png', 'cellprofiler/icons'],
            'iconfile' : 'CellProfilerIcon.icns',

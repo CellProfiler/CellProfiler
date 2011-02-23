@@ -594,7 +594,7 @@ class OmeroLoadImages(cpm.CPModule):
 	def get_categories(self, pipeline, object_name):
 		'''Return the categories that this module produces'''
 		if object_name == cpmeas.IMAGE:
-			return [C_IMAGE, C_PIXELS, C_METADATA]
+			return [C_IMAGE, C_PIXELS, cpmeas.C_METADATA]
 		return []
 	
 	def get_measurements(self, pipeline, object_name, category):

@@ -321,3 +321,10 @@ if __name__ == '__main__':
    
    ipb.quit()
    
+   try:
+      import cellprofiler.utilities.jutil as jutil
+      jutil.kill_vm()
+   except:
+      import traceback
+      traceback.print_exc()
+      print "Caught exception while killing VM"

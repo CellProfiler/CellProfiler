@@ -336,9 +336,8 @@ try:
 finally:
     try:
         import imagej.ijbridge as ijbridge
-        ijb = ijbridge.get_ij_bridge()
-        if isinstance(ijb, ijbridge.inter_proc_ij_bridge):
-            ijb.quit()
+        if ijbridge.inter_proc_ij_bridge._isInstantiated():
+            ijbridge.get_ij_bridge().quit()
     except:
         import traceback
         traceback.print_exc()

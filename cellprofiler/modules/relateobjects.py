@@ -540,10 +540,10 @@ class RelateObjects(cpm.CPModule):
               category == C_DISTANCE):
             result = []
             if self.find_parent_child_distances in (D_BOTH, D_CENTROID):
-                result += [FF_CENTROID % parent_name 
+                result += ['%s_%s' % (FEAT_CENTROID, parent_name)
                            for parent_name in self.get_parent_names()]
             if self.find_parent_child_distances in (D_BOTH, D_MINIMUM):
-                result += [FF_MINIMUM % parent_name
+                result += ['%s_%s' % (FEAT_MINIMUM, parent_name)
                            for parent_name in self.get_parent_names()]
             return result
         return []

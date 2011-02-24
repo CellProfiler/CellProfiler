@@ -38,12 +38,18 @@ M_ALL = (M_MUTUAL_INFORMATION, M_CROSS_CORRELATION)
 A_SIMILARLY = 'Similarly'
 A_SEPARATELY = 'Separately'
 
-MEASUREMENT_FORMAT = "Align_%sshift_%s_vs_%s"
+C_SAME_SIZE = "Keep size"
+C_CROP = "Crop to aligned region"
+C_PAD = "Pad images"
+
+C_ALIGN = "Align"
+
+MEASUREMENT_FORMAT = C_ALIGN + "_%sshift_%s"
 
 class Align(cpm.CPModule):
     module_name = "Align"
     category = 'Image Processing'
-    variable_revision_number = 2
+    variable_revision_number = 3
 
     def create_settings(self):
         self.first_input_image = cps.ImageNameSubscriber("Select the first input image",
@@ -83,13 +89,39 @@ with respect to the first image.""")
              can be aligned to a brightfield image by this method since the relevant 
              features are bright in one modality where they are dim in the other. </li>
              </ul>''')
-        self.wants_cropping = cps.Binary("Crop output images to retain just the aligned regions?",
-                                         True, doc='''
-             If cropping is chosen, all output images are cropped to retain 
-             just those regions that exist in all channels after alignment. 
-             If cropping is not chosen, the unaligned portions of each
-             image are padded (with zeroes) and appear as black space.''')
-    
+        self.crop_mode = cps.Choice(
+            "Crop mode", [C_CROP, C_PAD, C_SAME_SIZE],
+            doc = """The crop mode determines how the output images are cropped
+            or padded after alignment. The alignment phase calculates the
+            areas in each image that are found to be overlapping. In almost
+            all cases, there will be portions of some or all of the images
+            that don't overlap with every other aligned image. These portions
+            have no counterpart in some image and analysis of these regions
+            will not be able to use the information from all images. There
+            are three choices for cropping:
+            <br><ul>
+            <li><i>%(C_CROP)s</i> - crop every image to the region of that
+            image that overlaps with every other image. This makes downstream
+            analysis more accurate and simpler because all of the output images
+            have valid pixel data at all positions in the image but it discards
+            parts of images. Also, the output images may not be the same size
+            as the input images which may cause problems if downstream modules
+            use aligned and unaligned images in combination.</li>
+            <li><i>%(C_PAD)s</i> - align every image and pad with masked black
+            pixels to make each image the same size. This results in larger
+            images, but preserves all information in each of the images. This
+            may be the best choice if images undergo an operation such as
+            smoothing that could use the information that would otherwise be
+            cropped.</li>
+            <li><i>%(C_SAME_SIZE)s</i> - maintain the sizes of the images but
+            align them, masking the unaligned portions. <b>Align</b> finds the
+            global alignment that preserves the most pixels among all the images
+            and then repositions each image within an image of similar size
+            to the input image. This is a reasonable option for alignments
+            with small displacements since it maintains a consistent image
+            size which may be useful if output images from different image sets
+            will be compared against each other after processing.</li></ul""" % globals())
+
     def add_image(self, can_remove = True):
         '''Add an image + associated questions and buttons'''
         group = cps.SettingsGroup()
@@ -121,7 +153,7 @@ with respect to the first image.""")
         self.additional_images.append(group)
 
     def settings(self):
-        result = [self.alignment_method, self.wants_cropping]
+        result = [self.alignment_method, self.crop_mode]
         
         result += [self.first_input_image, self.first_output_image,
                   self.second_input_image, self.second_output_image]
@@ -137,7 +169,7 @@ with respect to the first image.""")
             self.add_image()
 
     def visible_settings(self):
-        result = [self.alignment_method, self.wants_cropping]
+        result = [self.alignment_method, self.crop_mode]
         
         result += [self.first_input_image, self.first_output_image, self.separator_1,
                   self.second_input_image, self.second_output_image]
@@ -149,62 +181,46 @@ with respect to the first image.""")
     def run(self, workspace):
         i_min = np.iinfo(int).max
         j_min = np.iinfo(int).max
-        images = ([self.first_input_image, self.second_input_image] +
-                  [additional.input_image_name 
-                   for additional in self.additional_images])
-        for image in images:
-            img = workspace.image_set.get_image(image.value).pixel_data
-            if img.shape[0] < i_min or img.shape[1] < j_min:
-                most_cropped_image_name = image.value
-                i_min,j_min = img.shape[0:2]
-
         off_x, off_y = self.align(workspace, self.first_input_image.value,
-                                  self.second_input_image.value,
-                                  most_cropped_image_name)
-        statistics = [[0,self.second_input_image.value, 
-                       self.second_output_image.value,
-                       -off_x, -off_y]]
-        self.apply_alignment(workspace,
-                             self.second_input_image.value, 
-                             self.second_output_image.value,
-                             off_x, off_y, most_cropped_image_name)
-        self.crop(workspace, self.first_input_image.value,
-                  self.first_output_image.value,
-                  most_cropped_image_name)
+                                  self.second_input_image.value)
+        names = [
+            (self.first_input_image.value, self.first_output_image.value),
+            (self.second_input_image.value, self.second_output_image.value)]
+        offsets = [ (0, 0), (off_y, off_x)]
+
         for additional in self.additional_images:
+            names.append((additional.input_image_name.value,
+                          additional.output_image_name.value))
             if additional.align_choice == A_SIMILARLY:
-                self.apply_alignment(workspace,
-                                     additional.input_image_name.value, 
-                                     additional.output_image_name.value,
-                                     off_x, off_y, most_cropped_image_name)
-                a_off_x = off_x
-                a_off_y = off_y
+                a_off_x, a_off_y = off_x, off_y
             else:
                 a_off_x, a_off_y = self.align(workspace, 
                                               self.first_input_image.value,
-                                              additional.input_image_name.value,
-                                              most_cropped_image_name)
-                self.apply_alignment(workspace,
-                                     additional.input_image_name.value,
-                                     additional.output_image_name.value,
-                                     a_off_x, a_off_y, most_cropped_image_name)
-            statistics += [[len(statistics),
-                            additional.input_image_name.value,
-                            additional.output_image_name.value,
-                            -a_off_x, -a_off_y]]
+                                              additional.input_image_name.value)
+            offsets.append((a_off_y, a_off_x))
+
+        shapes = [ workspace.image_set.get_image(x).pixel_data.shape[:2]
+                   for x,_ in names]
+        offsets, shapes = self.adjust_offsets(offsets, shapes)
+
+        statistics = [(input_name, output_name, x, y, shape)
+                      for (input_name, output_name), (y, x), shape
+                      in zip(names, offsets, shapes)]
+
+        for input_name, output_name, x, y, shape in statistics:
+            self.apply_alignment(workspace, input_name, output_name, x, y, shape)
+
         #
         # Write the measurements
         #
-        for index, input_name, output_name, t_off_x, t_off_y in statistics:
-            for axis, value in (('X',t_off_x),('Y',t_off_y)):
+        for input_name, output_name, t_off_x, t_off_y, shape in statistics:
+            for axis, value in (('X',-t_off_x),('Y',-t_off_y)):
                 feature = (MEASUREMENT_FORMAT %
-                           (axis, self.first_output_image.value,
-                            output_name))
+                           (axis, output_name))
                 workspace.measurements.add_image_measurement(feature, value)
             
         # save data for display
         workspace.display_data.statistics = statistics
-        workspace.display_data.most_cropped_image_name = most_cropped_image_name
     
     def display(self, workspace):
         '''Display the overlaid images
@@ -218,45 +234,39 @@ with respect to the first image.""")
             4: y offset
         '''
         statistics = workspace.display_data.statistics
-        most_cropped_image_name = workspace.display_data.most_cropped_image_name
         image_set = workspace.image_set
-        crop_image = image_set.get_image(most_cropped_image_name)
-        first_image = image_set.get_image(self.first_input_image.value,
-                                          must_be_grayscale=True)
-        first_pixels = crop_image.crop_image_similarly(first_image.pixel_data)
+        first_input_name = self.first_input_image.value
+        first_output_name = self.first_output_image.value
         figure = workspace.create_or_find_figure(title="Align, image cycle #%d"%(
-                workspace.measurements.image_set_number),subplots=(2,len(statistics)))
-        for i, input_name, output_name, off_x, off_y in statistics:
-            other_image = image_set.get_image(input_name,
-                                              must_be_grayscale=True)
-            other_pixels =\
-                crop_image.crop_image_similarly(other_image.pixel_data)
-            img = np.dstack((first_pixels,
-                             other_pixels,
-                             np.zeros(first_pixels.shape)))
-            title = ("Unaligned images: %s and %s"%
-                     (self.first_input_image.value, input_name))
-            figure.subplot_imshow(0, i, img, title, 
-                                  sharex=figure.subplot(0,0), 
-                                  sharey=figure.subplot(0,0))
-            
-            other_image = image_set.get_image(output_name,
-                                              must_be_grayscale=True)
-            other_pixels = other_image.pixel_data
-            img = np.dstack((first_pixels,
-                             other_pixels,
-                             np.zeros(first_pixels.shape)))
-            title = ("Aligned images: %s and %s\nX offset: %d, Y offset: %d"%
-                     (self.first_output_image.value, output_name,
-                      off_x, off_y))
-            figure.subplot_imshow(1, i, img, title, 
-                                  sharex=figure.subplot(0,0), 
-                                  sharey=figure.subplot(0,0))
+                workspace.measurements.image_set_number),subplots=(2,len(statistics)-1))
+        for j, (input_name, output_name, off_x, off_y, shape) in enumerate(statistics[1:]):
+            unaligned_title = ("Unaligned images: %s and %s"%
+                               (first_input_name, input_name))
+            aligned_title = ("Aligned images: %s and %s\nX offset: %d, Y offset: %d"%
+                             (first_output_name, output_name,
+                              -off_x, -off_y))
+
+            for i, (first_name, other_name, title) in enumerate(
+                (( first_input_name, input_name, unaligned_title),
+                 ( first_output_name, output_name, aligned_title))) :
+                first_image = image_set.get_image(first_name,
+                                                  must_be_grayscale = True)
+                first_pixels = first_image.pixel_data
+                other_image = image_set.get_image(other_name,
+                                                  must_be_grayscale=True)
+                other_pixels = other_image.pixel_data
+                max_shape = np.maximum(first_pixels.shape, other_pixels.shape)
+                img = np.zeros((max_shape[0], max_shape[1], 3))
+                img[:first_pixels.shape[0], :first_pixels.shape[1], 0] = first_pixels
+                img[:other_pixels.shape[0], :other_pixels.shape[1], 1] = other_pixels
+                figure.subplot_imshow(i, j, img, title,
+                                      sharex=figure.subplot(0,0),
+                                      sharey=figure.subplot(0,0))
 
     def is_interactive(self):
         return False
         
-    def align(self, workspace, input1_name, input2_name, most_cropped_image_name):
+    def align(self, workspace, input1_name, input2_name):
         '''Align the second image with the first
         
         Calculate the alignment offset that must be added to indexes in the
@@ -270,13 +280,13 @@ with respect to the first image.""")
         image2 = workspace.image_set.get_image(input2_name,
                                                must_be_grayscale=True)
         image2_pixels = image2.pixel_data
-        cropping_image = workspace.image_set.get_image(most_cropped_image_name)
-        image1_pixels = cropping_image.crop_image_similarly(image1_pixels)
-        image2_pixels = cropping_image.crop_image_similarly(image2_pixels)
         if self.alignment_method == M_CROSS_CORRELATION:
             return self.align_cross_correlation(image1_pixels, image2_pixels)
         else:
-            return self.align_mutual_information(image1_pixels, image2_pixels)
+            image1_mask = image1.mask
+            image2_mask = image2.mask
+            return self.align_mutual_information(image1_pixels, image2_pixels,
+                                                 image1_mask, image2_mask)
     
     def align_cross_correlation(self, pixels1, pixels2):
         '''Align the second image with the first using max cross-correlation
@@ -294,14 +304,18 @@ with respect to the first image.""")
         # for the parts of one image that don't overlap the displaced
         # second image.
         #
-        assert tuple(pixels1.shape)==tuple(pixels2.shape)
-        s = np.array(pixels1.shape)
+        # Since we're going into the frequency domain, if the images are of
+        # different sizes, we can make the FFT shape large enough to capture
+        # the period of the largest image - the smaller just will have zero
+        # amplitude at that frequency.
+        #
+        s = np.maximum(pixels1.shape, pixels2.shape)
         fshape = s*2
         #
         # Calculate the # of pixels at a particular point
         #
-        i,j = np.mgrid[-pixels1.shape[0]:pixels1.shape[0],
-                       -pixels1.shape[1]:pixels1.shape[1]]
+        i,j = np.mgrid[-s[0]:s[0],
+                       -s[1]:s[1]]
         unit = np.abs(i*j).astype(float)
         unit[unit<1]=1 # keeps from dividing by zero in some places
         #
@@ -341,21 +355,25 @@ with respect to the first image.""")
         #
         # The second is done as above but reflected lr and ud
         #
+        p1_si = pixels1.shape[0]
+        p1_sj = pixels1.shape[1]
         p1_sum = np.zeros(fshape)
-        p1_sum[:s[0],:s[1]] = cumsum_quadrant(pixels1, False, False)
-        p1_sum[:s[0],s[1]:] = cumsum_quadrant(pixels1, False, True)
-        p1_sum[s[0]:,:s[1]] = cumsum_quadrant(pixels1, True, False)
-        p1_sum[s[0]:,s[1]:] = cumsum_quadrant(pixels1, True, True)
+        p1_sum[:p1_si,:p1_sj] = cumsum_quadrant(pixels1, False, False)
+        p1_sum[:p1_si,-p1_sj:] = cumsum_quadrant(pixels1, False, True)
+        p1_sum[-p1_si:,:p1_sj] = cumsum_quadrant(pixels1, True, False)
+        p1_sum[-p1_si:,-p1_sj:] = cumsum_quadrant(pixels1, True, True)
         #
         # Divide the sum over the # of elements summed-over
         #
         p1_mean = p1_sum / unit
         
+        p2_si = pixels2.shape[0]
+        p2_sj = pixels2.shape[1]
         p2_sum = np.zeros(fshape)
-        p2_sum[:s[0],:s[1]] = cumsum_quadrant(pixels2, False, False)
-        p2_sum[:s[0],s[1]:] = cumsum_quadrant(pixels2, False, True)
-        p2_sum[s[0]:,:s[1]] = cumsum_quadrant(pixels2, True, False)
-        p2_sum[s[0]:,s[1]:] = cumsum_quadrant(pixels2, True, True)
+        p2_sum[:p2_si,:p2_sj] = cumsum_quadrant(pixels2, False, False)
+        p2_sum[:p2_si,-p2_sj:] = cumsum_quadrant(pixels2, False, True)
+        p2_sum[-p2_si:,:p2_sj] = cumsum_quadrant(pixels2, True, False)
+        p2_sum[-p2_si:,-p2_sj:] = cumsum_quadrant(pixels2, True, True)
         p2_sum = np.fliplr(np.flipud(p2_sum))
         p2_mean = p2_sum / unit
         #
@@ -389,7 +407,7 @@ with respect to the first image.""")
             j = j - fshape[1]
         return j,i
     
-    def align_mutual_information(self, pixels1, pixels2):
+    def align_mutual_information(self, pixels1, pixels2, mask1, mask2):
         '''Align the second image with the first using mutual information
         
         returns the x,y offsets to add to image1's indexes to align it with
@@ -401,10 +419,18 @@ with respect to the first image.""")
         From there, it tries all offsets again and so on until it reaches
         a local maximum.
         '''
-        def mutualinf(x,y):
+        def mutualinf(x, y, maskx, masky):
+            x = x[maskx & masky]
+            y = y[maskx & masky]
             return entropy(x) + entropy(y) - entropy2(x,y)
         
-        best = mutualinf(pixels1, pixels2)
+        maxshape = np.maximum(pixels1.shape, pixels2.shape)
+        pixels1 = reshape_image(pixels1, maxshape)
+        pixels2 = reshape_image(pixels2, maxshape)
+        mask1 = reshape_image(mask1, maxshape)
+        mask2 = reshape_image(mask2, maxshape)
+
+        best = mutualinf(pixels1, pixels2, mask1, mask2)
         i = 0
         j = 0
         while True:
@@ -415,7 +441,8 @@ with respect to the first image.""")
                     if new_i == 0 and new_j == 0:
                         continue
                     p2, p1 = offset_slice(pixels2,pixels1, new_i, new_j)
-                    info = mutualinf(p1,p2)
+                    m2, m1 = offset_slice(mask2, mask1, new_i, new_j)
+                    info = mutualinf(p1, p2, m1, m2)
                     if info > best:
                         best = info
                         i = new_i
@@ -424,67 +451,129 @@ with respect to the first image.""")
                 return j,i
         
     def apply_alignment(self, workspace, input_image_name, output_image_name,
-                        off_x, off_y, most_cropped_image_name):
+                        off_x, off_y, shape):
+        '''Apply an alignment to the input image to result in the output image
+
+        workspace - image set's workspace passed to run
+
+        input_image_name - name of the image to be aligned
+
+        output_image_name - name of the resultant image
+
+        off_x, off_y - offset of the resultant image relative to the origninal
+
+        shape - shape of the resultant image
+        '''
+
         image = workspace.image_set.get_image(input_image_name,
                                               must_be_grayscale = True)
-        most_cropped_image = workspace.image_set.get_image(most_cropped_image_name)
-        
-        '''Create an output image that's offset by the given # of pixels'''
-        pixels = most_cropped_image.crop_image_similarly(image.pixel_data)
-        output_pixels = np.zeros(pixels.shape)
+        output_pixels = np.zeros(shape)
         #
         # Copy the input to the output
         #
-        p1,p2 = offset_slice(pixels, output_pixels, off_y, off_x)
+        p1, p2 = offset_slice(image.pixel_data, output_pixels, off_y, off_x)
         p2[:,:] = p1[:,:]
-        if off_x != 0 or off_y != 0:
-            #
-            # Construct a mask over the zero-filling
-            #
-            mask = np.zeros(output_pixels.shape, bool)
-            p1, m2 = offset_slice(pixels, mask, off_y, off_x)
-            m2[:,:] = True
-            
-            if image.has_mask:
-                mask = (mask & most_cropped_image.crop_image_similarly(image.mask))
-        elif image.has_mask:
-            mask = most_cropped_image.crop_image_similarly(image.mask)
-        else:
-            mask = None
+        output_mask = np.zeros(shape, bool)
+        p1, p2 = offset_slice(image.mask, output_mask, off_y, off_x)
+        p2[:,:] = p1[:,:]
+        if np.all(output_mask):
+            output_mask = None
+        crop_mask = np.zeros(image.pixel_data.shape, bool)
+        p1, p2 = offset_slice(crop_mask, output_pixels, off_y, off_x)
+        p1[:,:] = True
+        if np.all(crop_mask):
+            crop_mask = None
         output_image = cpi.Image(output_pixels, 
-                                 mask = mask, 
-                                 crop_mask = most_cropped_image.crop_mask,
+                                 mask = output_mask,
+                                 crop_mask = crop_mask,
                                  parent_image = image)
         workspace.image_set.add(output_image_name, output_image)
-    
-    def crop(self, workspace, input_image_name, output_image_name,
-             most_cropped_image_name):
-        '''Crop and save an image'''
-        image = workspace.image_set.get_image(input_image_name,
-                                              must_be_grayscale = True)
-        most_cropped_image = workspace.image_set.get_image(most_cropped_image_name)
-        pixels = most_cropped_image.crop_image_similarly(image.pixel_data)
-        if image.has_mask:
-            mask = most_cropped_image.crop_image_similarly(image.mask)
+
+    def adjust_offsets(self, offsets, shapes):
+        '''Adjust the offsets and shapes for output
+
+        workspace - workspace passed to "run"
+
+        offsets - i,j offsets for each image
+
+        shapes - shapes of the input images
+
+        names - pairs of input / output names
+
+        Based on the crop mode, adjust the offsets and shapes to optimize
+        the cropping.
+        '''
+        offsets = np.array(offsets)
+        shapes = np.array(shapes)
+        if self.crop_mode == C_CROP:
+            # modify the offsets so that all are negative
+            max_offset = np.max(offsets, 0)
+            offsets = offsets - max_offset[np.newaxis, :]
+            #
+            # Reduce each shape by the amount chopped off
+            #
+            shapes += offsets
+            #
+            # Pick the smallest in each of the dimensions and repeat for all
+            #
+            shape = np.min(shapes, 0)
+            shapes = np.tile(shape, len(shapes))
+            shapes.shape = offsets.shape
+        elif self.crop_mode == C_PAD:
+            #
+            # modify the offsets so that they are all positive
+            #
+            min_offset = np.min(offsets, 0)
+            offsets = offsets - min_offset[np.newaxis, :]
+            #
+            # Expand each shape by the top-left padding
+            #
+            shapes += offsets
+            #
+            # Pick the largest in each of the dimensions and repeat for all
+            #
+            shape = np.max(shapes, 0)
+            shapes = np.tile(shape, len(shapes))
+            shapes.shape = offsets.shape
         else:
-            mask = None
-        output_image = cpi.Image(pixels, 
-                                 mask = mask,
-                                 crop_mask = most_cropped_image.crop_mask,
-                                 parent_image = image)
-        workspace.image_set.add(output_image_name, output_image)
+            #
+            # Keep same size.
+            #
+            # Find the mean offset and renormalize around it
+            #
+            mean_offsets = (np.mean(offsets, 0) + .5).astype(int)
+            offsets = offsets - mean_offsets[np.newaxis, :]
+        return offsets.tolist(), shapes.tolist()
+
+    def get_categories(self, pipeline, object_name):
+        if object_name == cpmeas.IMAGE:
+            return [C_ALIGN]
+        return []
+
+    def get_measurements(self, pipeline,object_name, category):
+        if object_name == cpmeas.IMAGE and category == C_ALIGN:
+            return ["Xshift", "Yshift"]
+        return []
+
+    def get_measurement_images(self, pipeline, object_name, category, measurement):
+        if measurement in self.get_measurements(pipeline, object_name, category):
+            return ([self.first_output_image.value,
+                     self.second_output_image.value ] +
+                    [ additional.output_image_name.value
+                      for additional in self.additional_images])
+        return []
     
     def get_measurement_columns(self, pipeline):
         '''return the offset measurements'''
         
-        targets = ([self.second_output_image.value] +
+        targets = ([self.first_output_image.value,
+                    self.second_output_image.value] +
                    [additional.output_image_name.value
                     for additional in self.additional_images])
         columns = []
         for axis in ('X','Y'):
             columns += [(cpmeas.IMAGE, 
-                         MEASUREMENT_FORMAT%(axis,self.first_output_image.value,
-                                             target),
+                         MEASUREMENT_FORMAT%(axis, target),
                          cpmeas.COLTYPE_INTEGER)
                          for target in targets]
         return columns
@@ -591,6 +680,14 @@ with respect to the first image.""")
             setting_values = (setting_values[-2:] + setting_values[:-2])
             variable_revision_number = 2
             
+        if (not from_matlab) and variable_revision_number == 2:
+            # wants_cropping changed to crop_mode
+            setting_values = (
+                setting_values[:1] +
+                [ C_CROP if setting_values[1] == cps.YES else C_SAME_SIZE ] +
+                setting_values[2:])
+            variable_revision_number = 3
+
         return setting_values, variable_revision_number, from_matlab
 
 def offset_slice(pixels1, pixels2, i, j):
@@ -599,25 +696,26 @@ def offset_slice(pixels1, pixels2, i, j):
     
     '''
     if i < 0:
+        height = min(pixels1.shape[0] + i, pixels2.shape[0])
         p1_imin = -i
-        p1_imax = pixels1.shape[0]
         p2_imin = 0
-        p2_imax = pixels1.shape[0]+i
     else:
+        height = min(pixels1.shape[0], pixels2.shape[0] - i)
         p1_imin = 0
-        p1_imax = pixels1.shape[0]-i
         p2_imin = i
-        p2_imax = pixels1.shape[0]
+    p1_imax = p1_imin + height
+    p2_imax = p2_imin + height
     if j < 0:
+        width = min(pixels1.shape[1] + j, pixels2.shape[1])
         p1_jmin = -j
-        p1_jmax = pixels1.shape[1]
         p2_jmin = 0
-        p2_jmax = pixels1.shape[1]+j
     else:
+        width = min(pixels1.shape[1], pixels2.shape[1] - j)
         p1_jmin = 0
-        p1_jmax = pixels1.shape[1]-j
         p2_jmin = j
-        p2_jmax = pixels1.shape[1]
+    p1_jmax = p1_jmin + width
+    p2_jmax = p2_jmin + width
+
     p1 = pixels1[p1_imin:p1_imax,p1_jmin:p1_jmax]
     p2 = pixels2[p2_imin:p2_imax,p2_jmin:p2_jmax]
     return (p1,p2)
@@ -670,3 +768,12 @@ def entropy2(x,y):
         return np.log2(n) - np.sum(histogram * np.log2(histogram)) / n
     else:
         return 0
+
+def reshape_image(source, new_shape):
+    '''Reshape an image to a larger shape, padding with zeros'''
+    if tuple(source.shape) == tuple(new_shape):
+        return source
+
+    result = np.zeros(new_shape, source.dtype)
+    result[:source.shape[0], :source.shape[1]] = source
+    return result

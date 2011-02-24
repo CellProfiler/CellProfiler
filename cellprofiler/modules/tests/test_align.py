@@ -189,6 +189,52 @@ Name the second output image:AlignedImage2
         self.assertEqual(module.second_input_image, "Image2")
         self.assertTrue(module.first_output_image, "AlignedImage1")
         self.assertTrue(module.second_output_image, "AlignedImage2")
+
+    def test_01_04_load_v3(self):
+        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:1
+SVNRevision:8945
+
+Align:[module_num:1|svn_version:'8942'|variable_revision_number:3|show_window:True|notes:\x5B\x5D]
+Select the alignment method:Mutual Information
+Crop mode:Keep size
+Select the first input image:Image1
+Name the first output image:AlignedImage1
+Select the second input image:Image2
+Name the second output image:AlignedImage2
+
+Align:[module_num:1|svn_version:'8942'|variable_revision_number:3|show_window:True|notes:\x5B\x5D]
+Select the alignment method:Mutual Information
+Crop mode:Crop to aligned region
+Select the first input image:Image1
+Name the first output image:AlignedImage1
+Select the second input image:Image2
+Name the second output image:AlignedImage2
+
+Align:[module_num:1|svn_version:'8942'|variable_revision_number:3|show_window:True|notes:\x5B\x5D]
+Select the alignment method:Mutual Information
+Crop mode:Pad images
+Select the first input image:Image1
+Name the first output image:AlignedImage1
+Select the second input image:Image2
+Name the second output image:AlignedImage2
+"""
+        pipeline = cpp.Pipeline()
+        def callback(caller, event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO(data))
+        self.assertEqual(len(pipeline.modules()), 3)
+        for module, crop_method in zip(
+            pipeline.modules(),
+            (A.C_SAME_SIZE, A.C_CROP, A.C_PAD)):
+            self.assertTrue(isinstance(module, A.Align))
+            self.assertEqual(module.alignment_method, A.M_MUTUAL_INFORMATION)
+            self.assertEqual(module.crop_mode, crop_method)
+            self.assertEqual(module.first_input_image, "Image1")
+            self.assertEqual(module.second_input_image, "Image2")
+            self.assertTrue(module.first_output_image, "AlignedImage1")
+            self.assertTrue(module.second_output_image, "AlignedImage2")
         
     def test_02_01_crop(self):
         '''Align two images and crop the result'''

@@ -342,9 +342,9 @@ class CalculateStatistics(cpm.CPModule):
         dose_data = np.array(dose_data).flatten()
         v = v_factors(dose_data, data)
         expt_measurements = {
-            "Z'factor": z,
+            "Zfactor": z,
             "Vfactor": v,
-            "OneTailedZ'factor":z_one_tailed
+            "OneTailedZfactor":z_one_tailed
             }
         for dose_group in self.dose_values:
             dose_feature = dose_group.measurement.value
@@ -375,7 +375,7 @@ class CalculateStatistics(cpm.CPModule):
             #
             figure = workspace.create_or_find_figure(title="CalculateStatistics, image cycle #%d"%(
                 workspace.measurements.image_set_number),subplots=(2,2))
-            for ii, key in enumerate(("Z'factor","Vfactor")):
+            for ii, key in enumerate(("Zfactor","Vfactor")):
                 a = expt_measurements[key]
                 indexes = np.lexsort((-a,))
                 stats = [["Object","Feature",key]]

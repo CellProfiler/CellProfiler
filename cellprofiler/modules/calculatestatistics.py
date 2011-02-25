@@ -20,7 +20,7 @@ can be exported as the "Experiment" set of data.
 or for each image (per-image), this module produces <i>per-experiment</i> values; 
 for example, one Z' factor is calculated for each measurement, across the entire analysis run.
 <ul>
-<li><i>Zfactor:</i> The Z'-factor indicates how well separated the positive and negative controls are.
+<li><i>Z'factor:</i> The Z'-factor indicates how well separated the positive and negative controls are.
 A Z'-factor > 0 is potentially screenable; a Z'-factor > 0.5 is considered an excellent assay.
 The formula is 1 - 3*(&#963;<sub>p</sub> + &#963;<sub>n</sub>)/|&#956;<sub>p</sub> - &#956;<sub>n</sub>| 
 where &#963;<sub>p</sub> and &#963;<sub>n</sub> are the standard deviations of the positive and negative controls, 
@@ -31,7 +31,7 @@ calculated as 1 - 6*mean(&#963;)/|&#956;<sub>p</sub> - &#956;<sub>n</sub>| where
 are defined as above.
 <li><i>EC50:</i> The half maximal effective concentration (EC50) is the concentration of a
 treatment required to induce a response which is 50% of the maximal response.</li>
-<li><i>OneTailedZfactor:</i> This measure is an attempt to overcome a limitation of 
+<li><i>OneTailedZ'factor:</i> This measure is an attempt to overcome a limitation of 
 the original Z'-factor formulation (it assumes a Gaussian distribution) and is 
 informative for populations with moderate or high amounts of skewness. In these 
 cases, long tails opposite to the mid-range point lead to a high standard deviation 
@@ -342,9 +342,9 @@ class CalculateStatistics(cpm.CPModule):
         dose_data = np.array(dose_data).flatten()
         v = v_factors(dose_data, data)
         expt_measurements = {
-            "Zfactor": z,
+            "Z'factor": z,
             "Vfactor": v,
-            "OneTailedZfactor":z_one_tailed
+            "OneTailedZ'factor":z_one_tailed
             }
         for dose_group in self.dose_values:
             dose_feature = dose_group.measurement.value
@@ -374,8 +374,8 @@ class CalculateStatistics(cpm.CPModule):
             # Create tables for the top 10 Z and V
             #
             figure = workspace.create_or_find_figure(title="CalculateStatistics, image cycle #%d"%(
-                workspace.measurements.image_set_number),subplots=(2,1))
-            for ii, key in enumerate(("Zfactor","Vfactor")):
+                workspace.measurements.image_set_number),subplots=(2,2))
+            for ii, key in enumerate(("Z'factor","Vfactor")):
                 a = expt_measurements[key]
                 indexes = np.lexsort((-a,))
                 stats = [["Object","Feature",key]]
@@ -383,7 +383,7 @@ class CalculateStatistics(cpm.CPModule):
                            for i in indexes[:10]]
                 figure.subplot_table(ii,0, stats, (.3,.5,.2))
                 figure.set_subplot_title("Top 10 by %s"%key, ii,0)
-                
+
     def include_feature(self, measurements, object_name, feature_name):
         '''Return true if we should analyze a feature'''
         if feature_name.find("Location") != -1:

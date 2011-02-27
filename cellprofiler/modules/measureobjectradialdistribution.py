@@ -166,6 +166,32 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
             group.append("remover", cps.RemoveSettingButton("", "Remove this set of bins", self.bin_counts, group))
         self.bin_counts.append(group)
     
+    def validate_module(self, pipeline):
+        """Make sure chosen objects, images and bins are selected only once"""
+        images = set()
+        for group in self.images:
+            if group.image_name.value in images:
+                raise cps.ValidationError(
+                    "%s has already been selected" %group.image_name.value,
+                    group.image_name)
+            images.add(group.image_name.value)
+            
+        objects = set()
+        for group in self.object_groups:
+            if group.object_name.value in objects:
+                raise cps.ValidationError(
+                    "%s has already been selected" %group.object_name.value,
+                    group.object_name)
+            objects.add(group.object_name.value)
+            
+        bins = set()
+        for group in self.bin_counts:
+            if group.bin_count.value in bins:
+                raise cps.ValidationError(
+                    "%s has already been selected" %group.bin_count.value,
+                    group.bin_count)
+            bins.add(group.bin_count.value)
+            
     def settings(self):
         result = [self.image_count, self.object_count, self.bin_counts_count]
         for x in (self.images, self.objects, self.bin_counts):

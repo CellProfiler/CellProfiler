@@ -44,6 +44,9 @@ F_AREA_OCCUPIED = "AreaOccupied_AreaOccupied_%s"
 '''Measure feature name format for the TotalArea measurement'''
 F_TOTAL_AREA = "AreaOccupied_TotalArea_%s"
 
+O_BINARY_IMAGE = "Binary Image"
+O_OBJECTS = "Objects"
+
 # The number of settings per image or object group
 IMAGE_SETTING_COUNT = 1
 
@@ -56,27 +59,43 @@ class MeasureImageAreaOccupied(cpm.CPModule):
     variable_revision_number = 3
     
     def create_settings(self):
-        """Create the settings variables here and name the module
-        
-        """
-
+        """Create the settings variables here and name the module"""
         self.operands = []
         self.count = cps.HiddenCount(self.operands)
         self.add_operand(can_remove=False)
-        self.add_operand_button = cps.DoSomething("", "Add", self.add_operand)
-        self.remover = cps.DoSomething("", "Remove", self.remove)
+        self.add_operand_button = cps.DoSomething("", "Add another area", self.add_operand)
+        self.remover = cps.DoSomething("", "Remove this area", self.remove)
      
     def add_operand(self, can_remove=True):
         class Operand(object):
             def __init__(self):
                 self.__spacer = cps.Divider(line=True)
-                self.__operand_choice = cps.Choice("Measure the area occupied in a binary image, or in objects?", ["Binary Image", "Objects"], doc = """You can either measure the area occupied by previously-identified objects, or the area occupied by the foreground in a binary (black and white) image.""")
-                self.__operand_objects = cps.ObjectNameSubscriber("Select objects to measure","None", doc = """<i>(Used only if 'Objects' are to be measured)</i> Select the previously identified objects you would like to measure. """)
-                self.__should_save_image = cps.Binary("Retain a binary image of the object regions?", False, doc="""<i>(Used only if 'Objects' are to be measured)</i> This setting is helpful if you would like to use a binary image later in the pipeline, for example in SaveImages.  The image will display the object area that you have measured as the foreground in white and the background in black. """)
-                self.__image_name = cps.ImageNameProvider("Name the output binary image", "Stain",doc="""
-                                        <i>(Used only if the binary image of the objects is to be retained for later use in the pipeline)</i> <br> 
-                                        Specify a name that will allow the binary image of the objects to be selected later in the pipeline.""")
-                self.__binary_name = cps.ImageNameSubscriber("Select a binary image to measure", "None", doc="""<i>(Used only if 'Binary image' is to be measured)</i> This is a binary image created earlier in the pipeline, where you would like to measure the area occupied by the foreground in the image.""")
+                self.__operand_choice = cps.Choice("Measure the area occupied in a binary image, or in objects?", 
+                                                   [O_BINARY_IMAGE, O_OBJECTS], doc = """
+                                                   You can either measure the area occupied by previously-identified 
+                                                   objects, or the area occupied by the foreground in a binary (black 
+                                                   and white) image.""")
+                self.__operand_objects = cps.ObjectNameSubscriber("Select objects to measure",
+                                                    "None", doc = """
+                                                    <i>(Used only if '%(O_OBJECTS)s' are to be measured)</i> <br>
+                                                    Select the previously identified objects you would like to measure. """%globals())
+                self.__should_save_image = cps.Binary("Retain a binary image of the object regions?", 
+                                                    False, doc="""
+                                                    <i>(Used only if '%(O_OBJECTS)s' are to be measured)</i><br>
+                                                    This setting is helpful if you would like to use a binary image 
+                                                    later in the pipeline, for example in SaveImages.  The image will 
+                                                    display the object area that you have measured as the foreground 
+                                                    in white and the background in black. """%globals())
+                self.__image_name = cps.ImageNameProvider("Name the output binary image", 
+                                                    "Stain",doc="""
+                                                    <i>(Used only if the binary image of the objects is to be retained for later use in the pipeline)</i> <br> 
+                                                    Specify a name that will allow the binary image of the objects to be selected later in the pipeline.""")
+                self.__binary_name = cps.ImageNameSubscriber("Select a binary image to measure", 
+                                                    "None", doc="""
+                                                    <i>(Used only if '%(O_BINARY_IMAGE)s' is to be measured)</i><br>
+                                                    This is a binary image created earlier in the pipeline, 
+                                                    where you would like to measure the area occupied by the foreground 
+                                                    in the image."""%globals())
             
             @property
             def spacer(self):
@@ -108,7 +127,7 @@ class MeasureImageAreaOccupied(cpm.CPModule):
 
             @property
             def object(self):
-                if self.operand_choice == "Binary Image":
+                if self.operand_choice == O_BINARY_IMAGE:
                     return self.binary_name.value
                 else:
                     return self.operand_objects.value
@@ -119,6 +138,26 @@ class MeasureImageAreaOccupied(cpm.CPModule):
         del self.operands[-1]
         return self.operands
 
+    def validate_module(self, pipeline):
+        """Make sure chosen objects and images are selected only once"""
+        settings = {}
+        for group in self.operands:
+            if (group.operand_choice.value, group.operand_objects.value) in settings:
+                if group.operand_choice.value == O_OBJECTS:
+                    raise cps.ValidationError(
+                        "%s has already been selected" %group.operand_objects.value,
+                        group.operand_objects)
+            settings[(group.operand_choice.value, group.operand_objects.value)] = True
+            
+        settings = {}
+        for group in self.operands:
+            if (group.operand_choice.value, group.binary_name.value) in settings:
+                if group.operand_choice.value == O_BINARY_IMAGE:
+                    raise cps.ValidationError(
+                        "%s has already been selected" %group.binary_name.value,
+                        group.binary_name)
+            settings[(group.operand_choice.value, group.binary_name.value)] = True
+            
     def settings(self):
         result = [self.count]
         for op in self.operands:                         
@@ -138,7 +177,7 @@ class MeasureImageAreaOccupied(cpm.CPModule):
         for op in self.operands:
             result += [op.spacer]
             result += [op.operand_choice]        
-            result += ([op.operand_objects, op.should_save_image] if op.operand_choice == "Objects" else [op.binary_name])
+            result += ([op.operand_objects, op.should_save_image] if op.operand_choice == O_OBJECTS else [op.binary_name])
             if op.should_save_image:
                 result.append(op.image_name)
         result.append(self.add_operand_button)
@@ -155,9 +194,9 @@ class MeasureImageAreaOccupied(cpm.CPModule):
         m = workspace.measurements
         statistics = [["Objects or Image", "Area Occupied", "Total Area"]]
         for op in self.operands:
-            if op.operand_choice  == "Objects":
+            if op.operand_choice  == O_OBJECTS:
                 statistics += self.measure_objects(op,workspace) 
-            if op.operand_choice == "Binary Image":
+            if op.operand_choice == O_BINARY_IMAGE:
                 statistics += self.measure_images(op,workspace)
         if workspace.frame is not None:
             workspace.display_data.statistics = statistics
@@ -211,7 +250,7 @@ class MeasureImageAreaOccupied(cpm.CPModule):
             for feature, coltype in ((F_AREA_OCCUPIED, cpmeas.COLTYPE_FLOAT),
                                      (F_TOTAL_AREA, cpmeas.COLTYPE_FLOAT)):
                 columns.append((cpmeas.IMAGE, 
-                                feature % (op.operand_objects.value if op.operand_choice == "Objects" else op.binary_name.value), 
+                                feature % (op.operand_objects.value if op.operand_choice == O_OBJECTS else op.binary_name.value), 
                                 coltype))
         return columns
        

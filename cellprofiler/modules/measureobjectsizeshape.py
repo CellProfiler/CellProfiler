@@ -193,6 +193,16 @@ class MeasureObjectSizeShape(cpm.CPModule):
         result.extend([self.add_objects, self.spacer, self.calculate_zernikes])
         return result
     
+    def validate_module(self, pipeline):
+        """Make sure chosen objects are selected only once"""
+        objects = set()
+        for group in self.object_groups:
+            if group.name.value in objects:
+                raise cps.ValidationError(
+                    "%s has already been selected" %group.name.value,
+                    group.name)
+            objects.add(group.name.value)
+            
     def get_categories(self,pipeline, object_name):
         """Get the categories of measurements supplied for the given object name
         

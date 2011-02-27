@@ -148,6 +148,15 @@ class MeasureGranularity(cpm.CPModule):
         self.images.append(group)
         return group
         
+    def validate_module(self, pipeline):
+        '''Make sure settings are compatible. In particular, we make sure that no measurements are duplicated'''
+        measurements, sources = self.get_measurement_columns(pipeline, return_sources=True)
+        d = {}
+        for m, s in zip(measurements, sources):
+            if m in d:
+                raise cps.ValidationError("Measurement %s made twice."%(m[1]), s[0])
+            d[m] = True
+            
     def settings(self):
         result = [ self.image_count]
         for image in self.images:
@@ -325,21 +334,27 @@ class MeasureGranularity(cpm.CPModule):
                 measurements.add_measurement(object_record.name, feature, gss)
         return statistics
     
-    def get_measurement_columns(self, pipeline):
+    def get_measurement_columns(self, pipeline, return_sources=False):
         result = []
+        sources = []
         for image in self.images:
             gslength = image.granular_spectrum_length.value
-            result += [(cpmeas.IMAGE, 
-                        image.granularity_feature(i), 
-                        cpmeas.COLTYPE_FLOAT)
-                        for i in range(1, gslength+1)]
-            for ob in image.objects:
-                result += [(ob.objects_name.value, 
+            for i in range(1, gslength+1):
+                result += [(cpmeas.IMAGE, 
                             image.granularity_feature(i), 
-                            cpmeas.COLTYPE_FLOAT)
-                            for i in range(1, gslength+1)]
-                
-        return result
+                            cpmeas.COLTYPE_FLOAT)]
+                sources += [(image.image_name, image.granularity_feature(i))]
+            for ob in image.objects:
+                for i in range(1, gslength+1):
+                    result += [(ob.objects_name.value, 
+                                image.granularity_feature(i), 
+                                cpmeas.COLTYPE_FLOAT)]
+                    sources += [(ob.objects_name.value, image.granularity_feature(i))]
+
+        if return_sources:
+            return result, sources
+        else:
+            return result
     
     def get_matching_images(self, object_name):
         """Return all image records that match the given object name

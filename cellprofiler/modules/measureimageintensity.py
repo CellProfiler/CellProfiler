@@ -118,6 +118,21 @@ class MeasureImageIntensity(cpm.CPModule):
                                                             "Remove this image", self.images, group))
         self.images.append(group)
                     
+    def validate_module(self, pipeline):
+        """Make sure chosen objects and images are selected only once"""
+        settings = {}
+        for group in self.images:
+            if (group.image_name.value, group.wants_objects.value, group.object_name.value) in settings:
+                if not group.wants_objects.value:
+                    raise cps.ValidationError(
+                        "%s has already been selected" %group.image_name.value,
+                        group.image_name)
+                else:
+                    raise cps.ValidationError(
+                        "%s has already been selected with %s" %(group.object_name.value, group.image_name.value),
+                        group.object_name)
+            settings[(group.image_name.value, group.wants_objects.value, group.object_name.value)] = True
+            
     def settings(self):
         result = []
         for image in self.images:

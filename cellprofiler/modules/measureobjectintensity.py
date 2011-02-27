@@ -216,6 +216,24 @@ class MeasureObjectIntensity(cpm.CPModule):
         while len(self.objects) < object_count:
             self.add_object()
 
+    def validate_module(self, pipeline):
+        """Make sure chosen objects and images are selected only once"""
+        images = set()
+        for group in self.images:
+            if group.name.value in images:
+                raise cps.ValidationError(
+                    "%s has already been selected" %group.name.value,
+                    group.name)
+            images.add(group.name.value)
+            
+        objects = set()
+        for group in self.objects:
+            if group.name.value in objects:
+                raise cps.ValidationError(
+                    "%s has already been selected" %group.name.value,
+                    group.name)
+            objects.add(group.name.value)
+    
     def get_measurement_columns(self, pipeline):
         '''Return the column definitions for measurements made by this module'''
         columns = []

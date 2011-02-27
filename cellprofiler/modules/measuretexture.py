@@ -286,6 +286,33 @@ class MeasureTexture(cpm.CPModule):
             group.append("remover", cps.RemoveSettingButton("", "Remove this scale", self.scale_groups, group))
         self.scale_groups.append(group)
 
+        
+    def validate_module(self, pipeline):
+        """Make sure chosen objects, images and scales are selected only once"""
+        images = set()
+        for group in self.image_groups:
+            if group.image_name.value in images:
+                raise cps.ValidationError(
+                    "%s has already been selected" %group.image_name.value,
+                    group.image_name)
+            images.add(group.image_name.value)
+            
+        objects = set()
+        for group in self.object_groups:
+            if group.object_name.value in objects:
+                raise cps.ValidationError(
+                    "%s has already been selected" %group.object_name.value,
+                    group.object_name)
+            objects.add(group.object_name.value)
+            
+        scales = set()
+        for group in self.scale_groups:
+            if group.scale.value in scales:
+                raise cps.ValidationError(
+                    "%s has already been selected" %group.scale.value,
+                    group.scale)
+            scales.add(group.scale.value)
+            
     def get_categories(self,pipeline, object_name):
         """Get the measurement categories supplied for the given object name.
         

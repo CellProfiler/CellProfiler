@@ -138,6 +138,10 @@ class DisplayScatterPlot(cpm.CPModule):
         if self.source.value == cpmeas.IMAGE:
             xvals = m.get_all_measurements(cpmeas.IMAGE, self.x_axis.value)
             yvals = m.get_all_measurements(cpmeas.IMAGE, self.y_axis.value)
+            xvals, yvals = np.array([
+                (x if np.isscalar(x) else x[0], y if np.isscalar(y) else y[0]) 
+                for x,y in zip(xvals, yvals)
+                if (x is not None) and (y is not None)]).transpose()
             title = '%s'%(self.title.value)
         else:
             xvals = m.get_current_measurement(self.get_x_object(), self.x_axis.value)

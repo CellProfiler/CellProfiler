@@ -3,7 +3,7 @@ shifts in the optical path of a microscope in each channel of a multi-channel
 set of images
 <hr>
 
-For two or more input images, this module determines the optimal alignment 
+ For two or more input images, this module determines the optimal alignment
 among them. Aligning images is useful to obtain proper measurements of the 
 intensities in one channel based on objects identified in another channel, 
 for example. Alignment is often needed when the microscope is not perfectly 

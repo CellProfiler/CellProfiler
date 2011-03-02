@@ -36,6 +36,7 @@ import cellprofiler.modules.identify as I
 INPUT_OBJECTS_NAME = 'inputobjects'
 OUTPUT_OBJECTS_NAME = 'outputobjects'
 IMAGE_NAME = 'image'
+OUTLINE_NAME = 'outlines'
 
 class TestReassignObjectNumbers(unittest.TestCase):
     def test_01_000_load_split(self):
@@ -167,7 +168,9 @@ UnifyObjects:[module_num:1|svn_version:\'8913\'|variable_revision_number:1|show_
     def rruunn(self, labels, relabel_option, distance_threshold = 5,
                minimum_intensity_fraction = .9,
                where_algorithm = R.CA_CLOSEST_POINT,
-               image = None):
+               image = None,
+               wants_outlines = False,
+               outline_name = "None"):
         '''Run the RelabelObjects module
         
         returns the labels matrix and the workspace.
@@ -181,6 +184,8 @@ UnifyObjects:[module_num:1|svn_version:\'8913\'|variable_revision_number:1|show_
         module.minimum_intensity_fraction.value = minimum_intensity_fraction
         module.wants_image.value = (image is not None)
         module.where_algorithm.value = where_algorithm
+        module.wants_outlines.value = wants_outlines
+        module.outlines_name.value = outline_name
         
         pipeline = cpp.Pipeline()
         def callback(caller,event):
@@ -410,3 +415,13 @@ UnifyObjects:[module_num:1|svn_version:\'8913\'|variable_revision_number:1|show_
                                             where_algorithm = R.CA_CLOSEST_POINT)
         self.assertTrue(np.all(labels_out == labels))
                 
+        
+    def test_04_00_save_outlines(self):
+        labels = np.zeros((10,20), int)
+        labels[2:5, 3:8] = 1
+        labels[2:5, 13:18] = 2
+        labels_out, workspace = self.rruunn(labels, R.OPTION_UNIFY,
+                                            distance_threshold = 6, 
+                                            wants_outlines = True, outline_name = OUTLINE_NAME)
+        self.assertTrue(np.all(labels_out[labels != 0] == 1))
+        self.assertTrue(np.all(labels_out[labels == 0] == 0))

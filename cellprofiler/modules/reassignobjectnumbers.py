@@ -47,6 +47,7 @@ import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo
 import cellprofiler.settings as cps
+import cellprofiler.cpimage as cpi
 import cellprofiler.preferences as cpprefs
 from cellprofiler.modules.identify import get_object_measurement_columns
 from cellprofiler.modules.identify import add_object_count_measurements
@@ -54,6 +55,7 @@ from cellprofiler.modules.identify import add_object_location_measurements
 from cellprofiler.modules.identify import FF_CHILDREN_COUNT, FF_PARENT
 import cellprofiler.cpmath.cpmorphology as morph
 from cellprofiler.cpmath.filter import stretch
+import cellprofiler.cpmath.outline
 
 OPTION_UNIFY = "Unify"
 OPTION_SPLIT = "Split"
@@ -64,7 +66,7 @@ CA_CLOSEST_POINT = "Closest point"
 class ReassignObjectNumbers(cpm.CPModule):
     module_name = "ReassignObjectNumbers"
     category = "Object Processing"
-    variable_revision_number = 1
+    variable_revision_number = 2
     
     def create_settings(self):
         self.objects_name = cps.ObjectNameSubscriber(
@@ -156,13 +158,26 @@ class ReassignObjectNumbers(cpm.CPModule):
             pixels that connect two neighboring objects and is roughly the same intensity 
             as the boundary pixels of both (such as an axon connecting two neurons).</li>
             </ul>""")
+        
+        self.wants_outlines = cps.Binary(
+            "Retain outlines of the relabeled objests?", False,
+            doc = """<i>(Used only if objects are output)</i><br>
+            Check this setting if you want to save an image of the outlines
+            of the relabeled objects.""")
+        
+        self.outlines_name = cps.OutlineNameProvider(
+            'Name the outlines',
+            'RelabeledNucleiOutlines',
+            doc = """<i>(Used only if outlined are to be retained)</i><br>
+            Enter a name that will allow the outlines to be selected later in the pipeline.""")
 
     def settings(self):
         return [self.objects_name, self.output_objects_name,
                 self.relabel_option, self.distance_threshold, 
                 self.wants_image, self.image_name, 
                 self.minimum_intensity_fraction,
-                self.where_algorithm]
+                self.where_algorithm, 
+                self.wants_outlines, self.outlines_name]
     
     def visible_settings(self):
         result = [self.objects_name, self.output_objects_name,
@@ -172,6 +187,9 @@ class ReassignObjectNumbers(cpm.CPModule):
             if self.wants_image:
                 result += [self.image_name, self.minimum_intensity_fraction,
                            self.where_algorithm]
+        result += [self.wants_outlines]
+        if self.wants_outlines:
+            result += [self.outlines_name]
         return result
     
     def is_interactive(self):
@@ -230,6 +248,12 @@ class ReassignObjectNumbers(cpm.CPModule):
         measurements.add_measurement(self.output_objects_name.value,
                                      FF_PARENT%self.objects_name.value,
                                      parents_of_children)
+        if self.wants_outlines:
+            outlines = cellprofiler.cpmath.outline.outline(output_labels)
+            outline_image = cpi.Image(outlines.astype(bool))
+            workspace.image_set.add(self.outlines_name.value,
+                                    outline_image)
+                    
         if workspace.frame is not None:
             workspace.display_data.orig_labels = objects.segmented
             workspace.display_data.output_labels = output_objects.segmented
@@ -440,6 +464,11 @@ class ReassignObjectNumbers(cpm.CPModule):
                               "0.9", CA_CENTROIDS]
             from_matlab = False
             variable_revision_number = 1
+            
+        if (not from_matlab) and variable_revision_number == 1:
+            # Added outline options
+            setting_values += [cps.NO, "RelabeledNucleiOutlines"]
+            variable_revision_number = 2
                        
         return setting_values, variable_revision_number, from_matlab
     

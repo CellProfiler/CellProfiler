@@ -177,7 +177,7 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
             images.add(group.image_name.value)
             
         objects = set()
-        for group in self.object_groups:
+        for group in self.objects:
             if group.object_name.value in objects:
                 raise cps.ValidationError(
                     "%s has already been selected" %group.object_name.value,

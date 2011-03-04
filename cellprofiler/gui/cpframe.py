@@ -791,8 +791,8 @@ class CPSizer(wx.PySizer):
 
 cellprofiler_license = """CellProfiler is licensed under the GNU General Public License version 2.
 
-The files in the "CellProfiler/cpmath", "CellProfiler/utilities", and
-"bioformats" subdirectories are licensed under the more permissive BSD
+The files in the "CellProfiler/cpmath" and "CellProfiler/utilities"
+subdirectories are licensed under the more permissive BSD
 license.
 """
 

@@ -12,10 +12,11 @@ LOCATION_COVERPAGE = '/'.join(['images','CPCoverPage.png'])
 LOCATION_WHITEHEADLOGO = '/'.join(['images','WhiteheadInstituteLogo.png'])
 LOCATION_CSAILLOGO = '/'.join(['images','CSAIL_Logo.png'])
 LOCATION_IMAGINGPLATFORMBANNER  = '/'.join(['images','BroadPlusImagingPlusBanner.png'])    
-    
+SVN_REVISION = str(get_revision.version)
+
 def generate_html(webpage_path = None):
     if webpage_path is None:
-        webpage_path = os.path.join('.', 'CellProfiler_Manual_' + str(get_revision.version))
+        webpage_path = os.path.join('.', 'CellProfiler_Manual_' + SVN_REVISION)
         
     if not (os.path.exists(webpage_path) and os.path.isdir(webpage_path)):
         os.mkdir(webpage_path)
@@ -74,6 +75,10 @@ improve and support it.</p>
 </td></tr>
 </table>
 </div>
+
+<b>This manual accompanies version %(SVN_REVISION)s of CellProfiler. The most 
+recent manual is available <a href="http://www.cellprofiler.org/CPmanual/">here</a>.</b>
+
 <h1><a name="table_of_contents">Table of contents</a></h1>"""%globals()
             
     index_fd.write(intro_text)

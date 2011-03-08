@@ -8,9 +8,8 @@ and for calculating mean measurement values for all children that are
 associated with each parent.
 
 <p>An object will be considered a child even if the edge is the only part
-touching a parent object. If an object is touching two parent objects,
-the object will be assigned to the parent that shares the largest
-number of pixels with the child.
+touching a parent object. If an child object is touching multiple parent objects,
+the object will be assigned as a child of all parents that it overlaps with.
 
 <h4>Available measurements</h4>
 <ul>

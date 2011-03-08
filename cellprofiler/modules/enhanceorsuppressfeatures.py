@@ -24,6 +24,7 @@ import cellprofiler.cpimage as cpi
 import cellprofiler.settings as cps
 from cellprofiler.cpmath.cpmorphology import opening, closing, white_tophat
 from cellprofiler.cpmath.filter import enhance_dark_holes, circular_hough
+from cellprofiler.cpmath.filter import variance_transform, line_integration
 from cellprofiler.gui.help import HELP_ON_PIXEL_INTENSITIES
 
 ENHANCE = 'Enhance'
@@ -33,12 +34,14 @@ E_SPECKLES = 'Speckles'
 E_NEURITES = 'Neurites'
 E_DARK_HOLES = 'Dark holes'
 E_CIRCLES = 'Circles'
+E_TEXTURE = 'Texture'
+E_DIC = 'DIC'
 
 class EnhanceOrSuppressFeatures(cpm.CPModule):
 
     module_name = 'EnhanceOrSuppressFeatures'
     category = "Image Processing"
-    variable_revision_number = 2
+    variable_revision_number = 3
     
     def create_settings(self):
         self.image_name = cps.ImageNameSubscriber('Select the input image',
@@ -57,7 +60,7 @@ class EnhanceOrSuppressFeatures(cpm.CPModule):
                                         removed.</li></ul>""")
         
         self.enhance_method = cps.Choice('Feature type',
-                                        [E_SPECKLES, E_NEURITES, E_DARK_HOLES, E_CIRCLES],
+                                        [E_SPECKLES, E_NEURITES, E_DARK_HOLES, E_CIRCLES, E_TEXTURE, E_DIC],
                                         doc="""<i>(Used only if Enhance is selected)</i><br>
                                         This module can enhance three kinds of image intensity features:
                                         <ul><li><i>Speckles</i>: A speckle is an area of enhanced intensity
@@ -93,6 +96,15 @@ class EnhanceOrSuppressFeatures(cpm.CPModule):
                                         use <b>IdentifyPrimaryObjects</b> to find the circle centers and then use
                                         these centers as seeds in <b>IdentifySecondaryObjects</b> to find whole,
                                         circular objects using a watershed.</li>
+                                        <li><i>Texture</i>: <b>EnanceOrSuppressFeatures</b> produces an image
+                                        whose intensity is the variance among nearby pixels. This method weights
+                                        pixel contributions by distance using a Gaussian to calculate the weighting.
+                                        You can use this method to separate foreground from background if the foreground
+                                        is textured and the background is not.
+                                        </li>
+                                        <li><i>DIC</i>: This method recovers the optical density of a DIC image by
+                                        integrating in a direction perpendicular to the shear direction of the image.
+                                        </li>
                                         </ul>
                                         In addition, this module enables you to suppress certain features (such as speckles)
                                         by specifying the feature size.""")
@@ -101,7 +113,8 @@ class EnhanceOrSuppressFeatures(cpm.CPModule):
                                         10,2,doc="""
                                         <i>(Used only if circles, speckles or neurites are selected, or if suppressing features)</i><br>
                                         What is the feature size? 
-                                        The diameter of the largest speckle, the width of the circle, or the width of the neurites to be enhanced or suppressed, which
+                                        The diameter of the largest speckle, the width of the circle
+                                        or the width of the neurites to be enhanced or suppressed, which
                                         will be used to calculate an adequate filter size. %(HELP_ON_PIXEL_INTENSITIES)s"""%globals())
         
         self.hole_size = cps.IntegerRange('Range of hole sizes',
@@ -110,11 +123,50 @@ class EnhanceOrSuppressFeatures(cpm.CPModule):
                                         The range of hole sizes to be enhanced. The algorithm will
                                         identify only holes whose diameters fall between these two 
                                         values""")
+        
+        self.smoothing = cps.Float(
+            'Smoothing scale', value = 2.0, minval = 0.1,
+            doc = """<i>(Used only for the texture or DIC methods)</i><br>
+            For texture, this is the scale of the texture features, roughly
+            in pixels. The algorithm uses the smoothing value entered as
+            the sigma of the Gaussian used to weight nearby pixels by distance
+            in the variance calculation.<br>
+            The DIC method smooths the image in the direction parallel to the
+            shear axis of the image. The line integration method will leave
+            streaks in the image without smoothing as it encounters noisy
+            pixels during the course of the integration. The smoothing takes
+            contributions from nearby pixels which decreases the noise but
+            smooths the resulting image. For DIC, increase the smoothing to
+            eliminate streakiness and decrease the smoothing to sharpen
+            the image.""")
+        self.angle = cps.Float(
+            'Shear angle', value = 0,
+            doc = """<i>(Used only for the DIC method)</i><br>
+            The shear angle is the direction of constant value for the
+            shadows and highlights in a DIC image. The gradients in a DIC
+            image run in the direction perpendicular to the shear angle.
+            For example, if the shadows run diagonally from lower left
+            to upper right and the highlights appear above the shadows,
+            the shear angle is 45 degrees. If the shadows appear on top,
+            the shear angle is 180 + 45 = 225 degrees.
+            """)
+        self.decay = cps.Float(
+            'Decay', value = .95, minval = 0.1, maxval = 1,
+            doc = """<i>(Used only for the DIC method)</i><br>
+            The decay setting applies an exponential decay during the process
+            of integration by multiplying the accumulated sum by the decay
+            at each step. This lets the integration recover from accumulated
+            error during the course of the integration, but it also results
+            in diminished intensities in the middle of large objects.
+            Set the decay to a large value, on the order of 1 - 1/diameter
+            of your objects if the intensities decrease toward the middle.
+            Set the decay to a small value if there appears to be a bias
+            in the integration direction.""")
 
     def settings(self):
         return [ self.image_name, self.filtered_image_name,
                 self.method, self.object_size, self.enhance_method,
-                self.hole_size]
+                self.hole_size, self.smoothing, self.angle, self.decay]
 
 
     def visible_settings(self):
@@ -122,8 +174,14 @@ class EnhanceOrSuppressFeatures(cpm.CPModule):
                   self.method]
         if self.method == ENHANCE:
             result += [self.enhance_method]
-            result += [self.hole_size if self.enhance_method == E_DARK_HOLES
-                       else self.object_size]
+            if self.enhance_method == E_DARK_HOLES:
+                result += [self.hole_size]
+            elif self.enhance_method == E_TEXTURE:
+                result += [self.smoothing]
+            elif self.enhance_method == E_DIC:
+                result += [self.smoothing, self.angle, self.decay]
+            else:
+                result += [self.object_size]
         else:
             result += [self.object_size]
         return result
@@ -161,6 +219,15 @@ class EnhanceOrSuppressFeatures(cpm.CPModule):
                                             max_radius, mask)
             elif self.enhance_method == E_CIRCLES:
                 result = circular_hough(pixel_data, radius + .5, mask=mask)
+            elif self.enhance_method == E_TEXTURE:
+                result = variance_transform(pixel_data,
+                                            self.smoothing.value,
+                                            mask = mask)
+            elif self.enhance_method == E_DIC:
+                result = line_integration(pixel_data, 
+                                          self.angle.value,
+                                          self.decay.value,
+                                          self.smoothing.value)
             else:
                 raise NotImplementedError("Unimplemented enhance method: %s"%
                                           self.enhance_method.value)
@@ -213,6 +280,12 @@ class EnhanceOrSuppressFeatures(cpm.CPModule):
             #
             setting_values = setting_values + [E_SPECKLES, "1,10"]
             variable_revision_number = 2
+        if not from_matlab and variable_revision_number == 2:
+            #
+            # V2 -> V3, added texture and DIC
+            #
+            setting_values = setting_values + [ "2.0", "0", ".95"]
+            variable_revision_number = 3
         return setting_values, variable_revision_number, from_matlab
 
 EnhanceOrSuppressSpeckles = EnhanceOrSuppressFeatures

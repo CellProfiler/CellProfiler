@@ -1765,3 +1765,101 @@ class TestCircularHough(unittest.TestCase):
         self.assertEqual(result[15,15], 1)
         self.assertEqual(result[15,15+31], 0)
         
+class TestLineIntegration(unittest.TestCase):
+    def test_01_01_nothing(self):
+        img = np.zeros((23,17))
+        result = F.line_integration(img, 0, .95, 2.0)
+        np.testing.assert_almost_equal(result, 0)
+        
+    def test_01_02_two_lines(self):
+        img = np.ones((20,30)) * .5
+        img[8,10:20] = 1
+        img[12,10:20] = 0
+        result = F.line_integration(img, 0, 1, 0)
+        expected = np.zeros((20,30))
+        expected[9:12,10:20] = 1
+        expected[8,10:20] = .5
+        expected[12,10:20] = .5
+        np.testing.assert_almost_equal(result, expected)
+        
+    def test_01_03_diagonal_lines(self):
+        img = np.ones((20,30)) * .5
+        i,j = np.mgrid[0:20,0:30]
+        img[(i == j-3) & (i <= 15)] = 1
+        img[(i == j + 3)] = 0
+        expected = np.zeros((20,30), bool)
+        expected[(i >= j-3) & (i <= j+3)] = True
+        result = F.line_integration(img, -45, 1, 0)
+        self.assertTrue(np.mean(result[expected]) > .5)
+        self.assertTrue(np.mean(result[~ expected]) < .25)
+        
+    def test_01_04_decay(self):
+        img = np.ones((25,23)) * .5
+        img[10,10] = 1
+        img[20,10] = 0
+        result = F.line_integration(img, 0, .9, 0)
+        decay_part = result[11:20,10]
+        expected = .9 ** np.arange(1,10) + .9 ** np.arange(9,0,-1)
+        expected = ((expected - np.min(expected)) / 
+                    (np.max(expected) - np.min(expected)))
+        decay_part = ((decay_part - np.min(decay_part)) /
+                      (np.max(decay_part) - np.min(decay_part)))
+        np.testing.assert_almost_equal(decay_part, expected)
+    
+    def test_01_05_smooth(self):
+        img = np.ones((30,20)) * .5
+        img[10,10] = 1
+        img[20,10] = 0
+        result = F.line_integration(img, 0, 1, .5)
+        part = result[15,:]
+        part = (part - np.min(part)) / (np.max(part)-np.min(part))
+        expected = np.exp(- (np.arange(20)-10)**2 * 2)
+        expected = (expected - np.min(expected))/ (np.max(expected) - np.min(expected))
+        np.testing.assert_almost_equal(part, expected)
+
+class TestVarianceTransform(unittest.TestCase):
+    def test_01_00_zeros(self):
+        result = F.variance_transform(np.zeros((30,20)), 1)
+        np.testing.assert_almost_equal(result, 0)
+        
+    def test_01_01_transform(self):
+        r = np.random.RandomState()
+        r.seed(11)
+        img = r.uniform(size=(21,18))
+        sigma = 1.5
+        result = F.variance_transform(img, sigma)
+        #
+        # Calculate the variance for one point
+        #
+        center_i, center_j = 10,9
+        i,j = np.mgrid[-center_i:(img.shape[0]-center_i),
+                       -center_j:(img.shape[1]-center_j)]
+        weight = np.exp(-(i*i+j*j) / (2 * sigma * sigma))
+        weight = weight / np.sum(weight)
+        mean = np.sum(img * weight)
+        norm = img - mean
+        var = np.sum(norm * norm * weight)
+        self.assertAlmostEqual(var, result[center_i, center_j], 5)
+    
+    def test_01_02_transform_masked(self):
+        r = np.random.RandomState()
+        r.seed(12)
+        center_i, center_j = 10,9
+        img = r.uniform(size=(21,18))
+        mask = r.uniform(size=(21,18)) > .25
+        mask[center_i, center_j] = True
+        sigma = 1.7
+        result = F.variance_transform(img, sigma, mask)
+        #
+        # Calculate the variance for one point
+        #
+        i,j = np.mgrid[-center_i:(img.shape[0]-center_i),
+                       -center_j:(img.shape[1]-center_j)]
+        weight = np.exp(-(i*i+j*j) / (2 * sigma * sigma))
+        weight[~mask] = 0
+        weight = weight / np.sum(weight)
+        mean = np.sum(img * weight)
+        norm = img - mean
+        var = np.sum(norm * norm * weight)
+        self.assertAlmostEqual(var, result[center_i, center_j], 5)
+        

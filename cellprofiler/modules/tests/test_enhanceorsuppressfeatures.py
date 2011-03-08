@@ -70,6 +70,11 @@ class TestEnhanceOrSuppressSpeckles(unittest.TestCase):
         self.assertFalse(result is None)
         self.assertTrue(np.all(result.pixel_data == 0))
         
+    def test_01_00_check_version(self):
+        '''Make sure the test covers the latest revision number'''
+        # Create a new test and update this one after changing settings
+        self.assertEqual(E.EnhanceOrSuppressFeatures.variable_revision_number, 3)
+        
     def test_01_01_load_v1(self):
         data = ( 'eJztWNFO2zAUdUqBsUkr28v26Ee60aotQ4NqKu0oEtUIVLRiQohtpnXba'
                  'EkcOQlrNyHtcZ+0x33OHvcJs4NDUhMIbccmpqay2nt9zz3Xx0lsV600dy'
@@ -170,6 +175,56 @@ EnhanceOrSuppressFeatures:[module_num:5|svn_version:\'10300\'|variable_revision_
             self.assertEqual(module.object_size, feature_size)
             self.assertEqual(module.hole_size.min, min_range)
             self.assertEqual(module.hole_size.max, max_range)
+            
+    def test_01_03_test_load_v3(self):
+        data = r'''CellProfiler Pipeline: http://www.cellprofiler.org
+Version:1
+SVNRevision:10999
+
+EnhanceOrSuppressFeatures:[module_num:1|svn_version:\'10591\'|variable_revision_number:3|show_window:True|notes:\x5B\x5D]
+    Select the input image:DNA
+    Name the output image:EnhancedTexture
+    Select the operation:Enhance
+    Feature size:10
+    Feature type:Texture
+    Range of hole sizes:1,10
+    Smoothing scale:3.5
+    Shear angle:45
+    Decay:0.90
+
+EnhanceOrSuppressFeatures:[module_num:2|svn_version:\'10591\'|variable_revision_number:3|show_window:True|notes:\x5B\x5D]
+    Select the input image:EnhancedTexture
+    Name the output image:EnhancedDIC
+    Select the operation:Enhance
+    Feature size:10
+    Feature type:DIC
+    Range of hole sizes:1,10
+    Smoothing scale:1.5
+    Shear angle:135
+    Decay:0.99
+'''
+        pipeline = cpp.Pipeline()
+        def callback(caller, event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO(data))
+        self.assertEqual(len(pipeline.modules()),2)
+        module = pipeline.modules()[0]
+        self.assertTrue(isinstance(module, E.EnhanceOrSuppressFeatures))
+        self.assertEqual(module.image_name, "DNA")
+        self.assertEqual(module.filtered_image_name, "EnhancedTexture")
+        self.assertEqual(module.method, E.ENHANCE)
+        self.assertEqual(module.enhance_method, E.E_TEXTURE)
+        self.assertEqual(module.smoothing, 3.5)
+        self.assertEqual(module.object_size, 10)
+        self.assertEqual(module.hole_size.min, 1)
+        self.assertEqual(module.hole_size.max, 10)
+        self.assertEqual(module.angle, 45)
+        self.assertEqual(module.decay, .9)
+        
+        module = pipeline.modules()[1]
+        self.assertTrue(isinstance(module, E.EnhanceOrSuppressFeatures))
+        self.assertEqual(module.enhance_method, E.E_DIC)
     
     def test_02_01_enhance(self):
         '''Enhance an image composed of two circles of different diameters'''
@@ -563,4 +618,64 @@ EnhanceOrSuppressFeatures:[module_num:5|svn_version:\'10300\'|variable_revision_
         result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).pixel_data
         self.assertEqual(result[15,15], 1)
         self.assertEqual(result[15,15+31], 0)
+        
+    def test_07_01_enhance_dic(self):
+        img = np.ones((21,43)) * .5
+        img[5:15, 10] = 1
+        img[5:15, 15] = 0
+        workspace, module = self.make_workspace(img, np.ones(img.shape))
+        self.assertTrue(isinstance(module, E.EnhanceOrSuppressFeatures))
+        module.method.value = E.ENHANCE
+        module.enhance_method.value = E.E_DIC
+        module.angle.value = 90
+        module.decay.value = 1
+        module.smoothing.value = 0
+        module.run(workspace)
+        result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).pixel_data
+        expected = np.zeros(img.shape)
+        expected[5:15,10] = .5
+        expected[5:15,11:15] = 1
+        expected[5:15,15] = .5
+        np.testing.assert_almost_equal(result, expected)
+        
+        module.decay.value = .9
+        module.run(workspace)
+        result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).pixel_data
+        self.assertTrue(np.all(result[5:15,12:14] < 1))
+        
+        module.decay.value = 1
+        module.smoothing.value = 1
+        result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).pixel_data
+        self.assertTrue(np.all(result[4,11:15] > .1))
+        
+    def test_08_01_enhance_variance(self):
+        r = np.random.RandomState()
+        r.seed(81)
+        img = r.uniform(size=(19,24))
+        sigma = 2.1
+        workspace, module = self.make_workspace(img, np.ones(img.shape))
+        self.assertTrue(isinstance(module, E.EnhanceOrSuppressFeatures))
+        module.method.value = E.ENHANCE
+        module.enhance_method.value = E.E_TEXTURE
+        module.smoothing.value = sigma
+        module.run(workspace)
+        expected = E.variance_transform(img, sigma)
+        result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).pixel_data
+        np.testing.assert_almost_equal(result, expected)
+        
+    def test_08_02_enhance_variance_masked(self):
+        r = np.random.RandomState()
+        r.seed(81)
+        img = r.uniform(size=(19,24))
+        mask = r.uniform(size=img.shape) > .25
+        sigma = 2.1
+        workspace, module = self.make_workspace(img, mask)
+        self.assertTrue(isinstance(module, E.EnhanceOrSuppressFeatures))
+        module.method.value = E.ENHANCE
+        module.enhance_method.value = E.E_TEXTURE
+        module.smoothing.value = sigma
+        module.run(workspace)
+        expected = E.variance_transform(img, sigma, mask)
+        result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).pixel_data
+        np.testing.assert_almost_equal(result[mask], expected[mask])
         

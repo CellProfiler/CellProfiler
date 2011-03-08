@@ -1136,7 +1136,147 @@ def kalman_filter(kalman_state, old_indices, coordinates, q, r):
                                   new_indices,
                                   state_vec, state_cov, noise_var)
     return kalman_state
-                            
+
+def line_integration(image, angle, decay, sigma):
+    '''Integrate the image along the given angle
+    
+    DIC images are the directional derivative of the underlying
+    image. This filter reconstructs the original image by integrating
+    along that direction.
+    
+    image - a 2-dimensional array
+    
+    angle - shear angle in radians. We integrate perpendicular to this angle
+    
+    decay - an exponential decay applied to the integration
+    
+    sigma - the standard deviation of a Gaussian which is used to 
+            smooth the image in the direction parallel to the shear angle.
+    '''
+    #
+    # Normalize the image so that the mean is zero
+    #
+    normalized = image - np.mean(image)
+    #
+    # Rotate the image so the J direction is perpendicular to the shear angle.
+    #
+    rotated = scind.rotate(normalized, -angle)
+    #
+    # Smooth in only the i direction
+    #
+    smoothed = scind.gaussian_filter1d(rotated, sigma)
+    #
+    # We want img_out[:,j+1] to be img_out[:,j] * decay + img[j+1]
+    # Could be done by convolution with a ramp, maybe in FFT domain,
+    # but we just do a bunch of steps here.
+    # 
+    result_fwd = smoothed.copy()
+    for i in range(1,result_fwd.shape[0]):
+        result_fwd[i] += result_fwd[i-1] * decay
+    result_rev = smoothed.copy()
+    for i in reversed(range(result_rev.shape[0]-1)):
+        result_rev[i] += result_rev[i+1] * decay
+    result = (result_fwd - result_rev) / 2
+    #
+    # Rotate and chop result
+    #
+    result = scind.rotate(result, angle)
+    ipad = int((result.shape[0] - image.shape[0]) / 2)
+    jpad = int((result.shape[1] - image.shape[1]) / 2)
+    result = result[ipad:(ipad + image.shape[0]),
+                    jpad:(jpad + image.shape[1])]
+    #
+    # Scale the resultant image similarly to the output.
+    #
+    img_min, img_max = np.min(image), np.max(image)
+    result_min, result_max = np.min(result), np.max(result)
+    if (img_min == img_max) or (result_min == result_max):
+        return np.zeros(result.shape)
+    result = (result - result_min) / (result_max - result_min)
+    result = img_min + result * (img_max - img_min)
+    return result
+
+def variance_transform(img, sigma, mask=None):
+    '''Calculate a weighted variance of the image
+    
+    This function caluclates the variance of an image, weighting the
+    local contributions by a Gaussian.
+    
+    img - image to be transformed
+    sigma - standard deviation of the Gaussian
+    mask - mask of relevant pixels in the image
+    '''
+    if mask is None:
+        mask = np.ones(img.shape, bool)
+    else:
+        img = img.copy()
+        img[~mask] = 0
+    #
+    # This is the Gaussian of the mask... so we can normalize for
+    # pixels near the edge of the mask
+    #
+    gmask = scind.gaussian_filter(mask.astype(float), sigma,
+                                  mode = 'constant')
+    img_mean = scind.gaussian_filter(img, sigma,
+                                     mode = 'constant') / gmask
+    img_squared = scind.gaussian_filter(img ** 2, sigma,
+                                        mode = 'constant') / gmask
+    var = img_squared - img_mean ** 2
+    return var
+    #var = var[kernel_half_width:(kernel_half_width + img.shape[0]),
+              #kernel_half_width:(kernel_half_width + img.shape[0])]
+    #ik = ik.ravel()
+    #jk = jk.ravel()
+    #gk = np.exp(-(ik*ik + jk*jk) / (2 * sigma * sigma))
+    #gk = (gk / np.sum(gk)).astype(np.float32)
+    ## We loop here in chunks of 32 x 32 because the kernel can get large.
+    ## Remove this loop in 2025 when Numpy can grok the big object itself
+    ## and construct the loop and run it on 1,000,000 GPU cores
+    ##
+    #var = np.zeros(img.shape, np.float32)
+    #for ioff in range(0, img.shape[0], 32):
+        #for joff in range(0, img.shape[1], 32):
+            ##
+            ## ib and jb give addresses of the center pixel in the big image
+            ##
+            #iend = min(ioff+32, img.shape[0])
+            #jend = min(joff+32, img.shape[1])
+            #ii = np.arange(ioff, iend)
+            #ib = ii + kernel_half_width
+            #jj = np.arange(joff, jend)
+            #jb = jj + kernel_half_width
+            ##
+            ## Axes 0 and 1 are the axes of the final array and rely on ib and jb
+            ## to find the centers of the kernels in the big image.
+            ##
+            ## Axis 2 iterates over the elements and offsets in the kernel.
+            ##
+            ## We multiply each kernel contribution by the Gaussian gk to weight
+            ## the kernel pixel's contribution. We multiply each contribution
+            ## by its truth value in the mask to cross out border pixels.
+            ##
+            #norm_chunk = (
+                #big_img[
+                    #ib[:,np.newaxis,np.newaxis] + ik[np.newaxis, np.newaxis,:],
+                    #jb[np.newaxis,:,np.newaxis] + jk[np.newaxis, np.newaxis,:]] -
+                #img_mean[ib[:,np.newaxis,np.newaxis], 
+                         #jb[np.newaxis,:,np.newaxis]])
+            
+            #var[ii[:,np.newaxis],jj[np.newaxis,:]] = np.sum(
+                #norm_chunk * norm_chunk *
+                #gk[np.newaxis, np.newaxis,:] *
+                #big_mask[ib[:,np.newaxis,np.newaxis] + 
+                         #ik[np.newaxis, np.newaxis,:],
+                         #jb[np.newaxis,:,np.newaxis] + 
+                         #jk[np.newaxis, np.newaxis,:]], 2)
+    ##
+    ## Finally, we divide by the Gaussian of the mask to normalize for
+    ## pixels without contributions from masked pixels in their kernel.
+    ##
+    #var /= gmask[kernel_half_width:(kernel_half_width+var.shape[0]),
+                 #kernel_half_width:(kernel_half_width+var.shape[1])]
+    #return var
+
 def inv_n(x):
     '''given N matrices, return N inverses'''
     #
@@ -1558,5 +1698,3 @@ def circular_hough(img, radius, nangles = None, mask=None):
             m[dest] += 1
     a[m > 0] /= m[m > 0]
     return a
-
-        

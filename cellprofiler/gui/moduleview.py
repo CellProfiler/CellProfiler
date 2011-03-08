@@ -1068,7 +1068,7 @@ class ModuleView:
                     style = wx.TE_MULTILINE|wx.TE_PROCESS_ENTER
     
                 text = v.value
-                if not isinstance(text, unicode, str):
+                if not isinstance(text, (unicode, str)):
                     text = str(text)
                 control = wx.TextCtrl(self.__module_panel,
                                       -1,

@@ -96,6 +96,11 @@ class Objects(object):
     
     ijv = property(get_ijv, set_ijv)
     
+    @property
+    def has_ijv(self):
+        '''Return true if there is an IJV formulation for the object'''
+        return self.__ijv is not None
+    
     def get_labels(self):
         '''Get a set of labels matrices consisting of non-overlapping labels
         
@@ -302,6 +307,9 @@ class Objects(object):
         each parent. The second gives the mapping of each child to its parent's
         object number.
         """
+        if self.has_ijv or children.has_ijv:
+            return self.relate_ijv(self.ijv, children.ijv)
+        
         parent_labels = self.segmented
         child_labels = children.segmented
         # Apply cropping to the parent if done to the child
@@ -412,6 +420,124 @@ class Objects(object):
         #
         children_per_parent = np.array(children_per_parent[1:].tolist(), int)
         parents_of_children = np.array(parents_of_children[1:].tolist(), int)
+        return children_per_parent, parents_of_children
+    
+    @staticmethod
+    def relate_ijv(parent_ijv, child_ijv):
+        '''Relate parent and child segmentations if represented as IJV
+        
+        parent_ijv - N x 3 vector of i,j coordinate + v label
+        
+        child_ijv - N x 3 vector of labeled points
+        returns a tuple:
+        
+        # of children per parent
+        
+        vector of parents of each child
+        '''
+        if len(parent_ijv) == 0 or len(child_ijv) == 0:
+            return (np.zeros(len(parent_ijv)), np.zeros(len(child_ijv)))
+        max_parent = np.max(parent_ijv[:,2]) + 1
+        max_child = np.max(child_ijv[:,2]) + 1
+        #
+        # Stack the two vectors, negate the child indices to distingush them
+        #
+        child_v_flipper = np.array([1,1,-1])
+        all_ijv = np.vstack([
+            parent_ijv, child_ijv[:,:] * child_v_flipper[np.newaxis,:]])
+        #
+        # Order them by position, then label
+        #
+        order = np.lexsort((all_ijv[:,2], all_ijv[:,1], all_ijv[:,0]))
+        all_ijv = all_ijv[order]
+        #
+        # Find first at each position.
+        #
+        first = np.hstack((
+            [True], ~ np.all(all_ijv[:-1,:2] == all_ijv[1:,:2], 1)))
+        #
+        # Eliminate any first that's followed by another first. These are
+        # unique.
+        #
+        unique = np.hstack((first[:-1] & first[1:], [first[-1]]))
+        if np.all(unique):
+            return (np.zeros(max_parent-1, int),
+                    np.zeros(max_child-1, int))
+        
+        all_ijv = all_ijv[~unique,:]
+        first = first[~unique]
+        #
+        # indices of the firsts and counts at each coordinate
+        #
+        indices = np.argwhere(first).ravel()
+        counts = np.hstack((indices[1:] - indices[:-1], 
+                            [len(all_ijv) - indices[-1]]))
+        #
+        # Find the number of parents in each coordinate.
+        # It's the cumulative count at the last index in each group minus
+        # the count for the previous group.
+        #
+        parent_count = np.cumsum(all_ijv[:,2] > 0)
+        parent_count = np.hstack((parent_count[indices[1:]-1], 
+                                  [parent_count[-1]]))
+        parent_count = np.hstack(([parent_count[0]],
+                                  parent_count[1:] - parent_count[:-1]))
+        no_pairs = (parent_count == 0) | (parent_count == counts)
+        #
+        # Reduce the indices and counts to parent / child pairs
+        #
+        indices = indices[~ no_pairs]
+        counts = counts[~ no_pairs]
+        parent_count = parent_count[~ no_pairs]
+        child_count = counts - parent_count
+        #
+        # Flip the sign of the children, now that we can separate them into
+        # children = indices:indices+child_count
+        # parents = indices + child_count:counts
+        #
+        all_ijv[:,2] = np.abs(all_ijv[:,2])
+        #
+        # There are parent_count + child_count combinations at each.
+        # We want a vector of parents and a vector of children.
+        #
+        combinations = parent_count * child_count
+        combination_indices = np.hstack(([0], np.cumsum(combinations[:-1])))
+        total = combination_indices[-1] + combinations[-1]
+        #
+        # Number the combination slots starting at zero for each coordinate
+        #
+        back_index = np.zeros(total, int)
+        back_index[combination_indices[1:]] = 1
+        back_index = np.cumsum(back_index)
+        slot = np.arange(total) - combination_indices[back_index]
+        #
+        # child_index = slot % child_count
+        # parent_index = slot / child_count
+        #
+        parents = all_ijv[indices[back_index] + 
+                          (slot / child_count[back_index]).astype(int) +
+                          child_count[back_index], 2]
+        children = all_ijv[indices[back_index] + 
+                           slot % child_count[back_index], 2]
+        #
+        # Find the indexes of unique combinations of parents and children
+        #
+        _, first_indexes = np.unique(parents * max_child + children, 
+                                     return_index = True)
+        parents = parents[first_indexes]
+        children = children[first_indexes]
+        children_per_parent = np.bincount(parents)[1:]
+        if len(children_per_parent) < max_parent - 1:
+            nextras = max_parent - len(children_per_parent) - 1
+            children_per_parent = np.hstack((children_per_parent,
+                                             np.zeros(nextras, int)))
+        order = np.lexsort((parents, children))
+        parents = np.hstack(
+            (parents[order], np.ones(max_child-1, int) * max_parent))
+        children = np.hstack((children[order], np.arange(1,max_child)))
+        _, first_indexes = np.unique(children, return_index = True)
+        parents_of_children = parents[first_indexes]
+        parents_of_children[parents_of_children == max_parent] = 0
         return children_per_parent, parents_of_children
     
     @memoize_method

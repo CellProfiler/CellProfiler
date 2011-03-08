@@ -64,10 +64,17 @@ class TestRelateObjects(unittest.TestCase):
                                   cpmeas.Measurements(),
                                   image_set_list)
         o = cpo.Objects()
-        o.segmented = parents
+        if parents.shape[1] == 3:
+            # IJV format
+            o.ijv = parents
+        else:
+            o.segmented = parents
         object_set.add_objects(o, PARENT_OBJECTS)
         o = cpo.Objects()
-        o.segmented = children
+        if children.shape[1] == 3:
+            o.ijv = children
+        else:
+            o.segmented = children
         object_set.add_objects(o, CHILD_OBJECTS)
         return workspace, module
     
@@ -390,6 +397,27 @@ Relate:[module_num:8|svn_version:\'8866\'|variable_revision_number:2|show_window
         self.assertEqual(child_count[0],1)
         self.features_and_columns_match(workspace)
         
+    def test_02_03_relate_ijv(self):
+        '''Regression test of IMG-1317: relating objects in ijv form'''
+        
+        child_ijv = np.array([[5,5,1],[5,5,2],[20,15,3]])
+        parent_ijv = np.array([[5,5,1], [20,15,2]])
+        workspace, module = self.make_workspace(parent_ijv, child_ijv)
+        module.wants_per_parent_means.value = False
+        module.run(workspace)
+        m = workspace.measurements
+        parents_of = m.get_current_measurement(CHILD_OBJECTS, 
+                                               "Parent_%s"%PARENT_OBJECTS)
+        self.assertEqual(np.product(parents_of.shape), 3)
+        self.assertTrue(parents_of[0],1)
+        self.assertEqual(parents_of[1], 1)
+        self.assertEqual(parents_of[2], 2)
+        child_count = m.get_current_measurement(PARENT_OBJECTS,
+                                                "Children_%s_Count"%
+                                                CHILD_OBJECTS)
+        self.assertEqual(np.product(child_count.shape), 2)
+        self.assertEqual(child_count[0],2)
+        self.assertEqual(child_count[1],1)
     
     def test_03_01_mean(self):
         '''Compute the mean for two parents and four children'''

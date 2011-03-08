@@ -12,6 +12,7 @@ Please see the AUTHORS file for credits.
 Website: http://www.cellprofiler.org
 """
 __version__="$Revision$"
+import codecs
 import matplotlib.cm
 import numpy as np
 import os
@@ -1066,16 +1067,19 @@ class ModuleView:
                 if getattr(v, "multiline_display", False):
                     style = wx.TE_MULTILINE|wx.TE_PROCESS_ENTER
     
+                text = v.value
+                if not isinstance(text, unicode, str):
+                    text = str(text)
                 control = wx.TextCtrl(self.__module_panel,
                                       -1,
-                                      str(v),
+                                      text,
                                       name=control_name,
                                       style = style)
             def on_cell_change(event, setting = v, control=control):
                 self.__on_cell_change(event, setting,control)
             self.__module_panel.Bind(wx.EVT_TEXT,on_cell_change,control)
         elif not (v == control.Value):
-            control.Value = str(v)
+            control.Value = v.value
         return control
     
     def make_range_control(self, v, panel):

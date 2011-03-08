@@ -167,6 +167,122 @@ class TestObjects(unittest.TestCase):
         self.assertEqual(parents_of_children[0],1)
         self.assertEqual(parents_of_children[1],1)
         
+    def test_05_07_relate_ijv_none(self):
+        child_counts, parents_of = cpo.Objects.relate_ijv(
+            np.zeros((0,3), int), np.zeros((0,3), int))
+        self.assertEqual(len(child_counts), 0)
+        self.assertEqual(len(parents_of), 0)
+        
+        child_counts, parents_of = cpo.Objects.relate_ijv(
+            np.zeros((0,3), int), np.array([[1,2,3]]))
+        self.assertEqual(len(child_counts), 0)
+        self.assertEqual(len(parents_of), 1)
+        self.assertEqual(parents_of[0], 0)
+        
+        child_counts, parents_of = cpo.Objects.relate_ijv(
+            np.array([[1,2,3]]), np.zeros((0,3), int))
+        self.assertEqual(len(child_counts), 1)
+        self.assertEqual(child_counts[0], 0)
+        self.assertEqual(len(parents_of), 0)
+        
+    def test_05_08_relate_ijv_no_match(self):
+        child_counts, parents_of = cpo.Objects.relate_ijv(
+            np.array([[3,2,1]]), np.array([[5,6,1]]))
+        self.assertEqual(len(child_counts), 1)
+        self.assertEqual(child_counts[0], 0)
+        self.assertEqual(len(parents_of), 1)
+        self.assertEqual(parents_of[0], 0)
+        
+    def test_05_09_relate_ijv_one_match(self):
+        child_counts, parents_of = cpo.Objects.relate_ijv(
+            np.array([[3,2,1]]), np.array([[3,2,1]]))
+        self.assertEqual(len(child_counts), 1)
+        self.assertEqual(child_counts[0], 1)
+        self.assertEqual(len(parents_of), 1)
+        self.assertEqual(parents_of[0], 1)
+        
+    def test_05_10_relate_ijv_many_points_one_match(self):
+        r = np.random.RandomState()
+        r.seed(510)
+        parent_ijv = np.column_stack((
+            r.randint(0,10,size=(100,2)), np.ones(100, int)))
+        child_ijv = np.column_stack((
+            r.randint(0,10,size=(100,2)), np.ones(100, int)))
+        child_counts, parents_of = cpo.Objects.relate_ijv(
+            parent_ijv, child_ijv)
+        self.assertEqual(len(child_counts), 1)
+        self.assertEqual(child_counts[0], 1)
+        self.assertEqual(len(parents_of), 1)
+        self.assertEqual(parents_of[0], 1)
+
+    def test_05_11_relate_many_many(self):
+        r = np.random.RandomState()
+        r.seed(511)
+        parent_ijv = np.column_stack((
+            r.randint(0,10,size=(100,2)), np.ones(100, int)))
+        child_ijv = np.column_stack((
+            r.randint(0,10,size=(100,2)), np.ones(100, int)))
+        parent_ijv[parent_ijv[:,0] >= 5, 2] = 2
+        child_ijv[:,2] = (
+            1 + (child_ijv[:,0] >= 5).astype(int) + 
+            2 * (child_ijv[:,1] >= 5).astype(int))
+        child_counts, parents_of = cpo.Objects.relate_ijv(
+            parent_ijv, child_ijv)
+        self.assertEqual(len(child_counts),2)
+        self.assertEqual(tuple(child_counts), (2,2))
+        self.assertEqual(len(parents_of), 4)
+        self.assertEqual(parents_of[0], 1)
+        self.assertEqual(parents_of[1], 2)
+        self.assertEqual(parents_of[2], 1)
+        self.assertEqual(parents_of[3], 2)
+        
+    def test_05_12_relate_many_parent_missing_child(self):
+        parent_ijv = np.array([[1,0,1], [2,0,2],[3,0,3]])
+        child_ijv = np.array([[1,0,1], [3,0,2]])
+        child_counts, parents_of = cpo.Objects.relate_ijv(
+            parent_ijv, child_ijv)
+        self.assertEqual(len(child_counts),3)
+        self.assertEqual(tuple(child_counts), (1, 0, 1))
+        self.assertEqual(len(parents_of), 2)
+        self.assertEqual(parents_of[0], 1)
+        self.assertEqual(parents_of[1], 3)
+        
+    def test_05_13_relate_many_child_missing_parent(self):
+        child_ijv = np.array([[1,0,1], [2,0,2],[3,0,3]])
+        parent_ijv = np.array([[1,0,1], [3,0,2]])
+        child_counts, parents_of = cpo.Objects.relate_ijv(
+            parent_ijv, child_ijv)
+        self.assertEqual(len(child_counts),2)
+        self.assertEqual(tuple(child_counts), (1, 1))
+        self.assertEqual(len(parents_of), 3)
+        self.assertEqual(parents_of[0], 1)
+        self.assertEqual(parents_of[1], 0)
+        self.assertEqual(parents_of[2], 2)
+        
+    def test_05_14_relate_many_parent_missing_child_end(self):
+        parent_ijv = np.array([[1,0,1], [2,0,2],[3,0,3]])
+        child_ijv = np.array([[1,0,1], [2,0,2]])
+        child_counts, parents_of = cpo.Objects.relate_ijv(
+            parent_ijv, child_ijv)
+        self.assertEqual(len(child_counts),3)
+        self.assertEqual(tuple(child_counts), (1, 1, 0))
+        self.assertEqual(len(parents_of), 2)
+        self.assertEqual(parents_of[0], 1)
+        self.assertEqual(parents_of[1], 2)
+        
+    def test_05_15_relate_many_child_missing_end(self):
+        child_ijv = np.array([[1,0,1], [2,0,2],[3,0,3]])
+        parent_ijv = np.array([[1,0,1], [2,0,2]])
+        child_counts, parents_of = cpo.Objects.relate_ijv(
+            parent_ijv, child_ijv)
+        self.assertEqual(len(child_counts),2)
+        self.assertEqual(tuple(child_counts), (1, 1))
+        self.assertEqual(len(parents_of), 3)
+        self.assertEqual(parents_of[0], 1)
+        self.assertEqual(parents_of[1], 2)
+        self.assertEqual(parents_of[2], 0)
+        
+        
     def test_06_01_segmented_to_ijv(self):
         '''Convert the segmented representation to an IJV one'''
         x = cpo.Objects()

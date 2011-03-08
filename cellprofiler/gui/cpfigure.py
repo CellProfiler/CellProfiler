@@ -299,7 +299,9 @@ class CPFigureFrame(wx.Frame):
     def create_toolbar(self):
         self.navtoolbar = NavigationToolbar(self.figure.canvas)
         self.SetToolBar(self.navtoolbar)
-        self.navtoolbar.DeleteToolByPos(6)
+        if wx.VERSION != (2, 9, 1, 1, ''):
+            # avoid crash on latest wx 2.9
+            self.navtoolbar.DeleteToolByPos(6)
 #        ID_LASSO_TOOL = wx.NewId()
 #        lasso = self.navtoolbar.InsertSimpleTool(5, ID_LASSO_TOOL, lasso_tool.ConvertToBitmap(), '', '', isToggle=True)
 #        self.navtoolbar.Realize()

@@ -1079,7 +1079,10 @@ class ModuleView:
                 self.__on_cell_change(event, setting,control)
             self.__module_panel.Bind(wx.EVT_TEXT,on_cell_change,control)
         elif not (v == control.Value):
-            control.Value = v.value
+            text = v.value
+            if not isinstance(text, (unicode, str)):
+                text = str(text)
+            control.Value = text
         return control
     
     def make_range_control(self, v, panel):

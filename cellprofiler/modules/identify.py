@@ -153,7 +153,7 @@ class Identify(cellprofiler.cpmodule.CPModule):
             to as Mixture of Gaussians modeling. </li>
             <li>When the three Gaussian distributions have been fitted, a decision 
             is made whether the intermediate class more closely models the background pixels 
-            or foreground pixels, based on the estimated fraction provided by the user.</li></ol>
+            or foreground pixels, based on the estimated fraction provided by the user.</li></ol></li>
             <li><i>Background:</i> This method is simple and appropriate for images in 
             which most of the image is background. It finds the mode of the 
             histogram of the image, which is assumed to be the background of the 
@@ -207,7 +207,7 @@ class Identify(cellprofiler.cpmodule.CPModule):
             <li>Select <i>Objects</i> as the shape to crop into.</li>
             <li>Select the parent objects (e.g., <i>Nuclei</i>) as the objects to use as a cropping mask.</li>
             </ul>
-            Finally, in the <b>IdentifyPrimaryObjects</b> module, select the cropped image as input image.</ul>
+            Finally, in the <b>IdentifyPrimaryObjects</b> module, select the cropped image as input image.</li></ul>
             
             <p>Selecting <i>manual thresholding</i> allows you to enter a single value between 0 and 1
             as the threshold value. This setting can be useful when you are certain what the

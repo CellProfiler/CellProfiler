@@ -30,8 +30,8 @@ written by A.C. Ruifrok, whose paper forms the basis for this code.
 
 References
 <ul>
-<li>Ruifrok AC, Johnston DA. Quantification of histochemical staining by color 
-deconvolution. Analytical & Quantitative Cytology & Histology 2001; 23: 291-299.</i>
+<li>Ruifrok AC, Johnston DA. <i>Quantification of histochemical staining by color 
+deconvolution.</i> Analytical & Quantitative Cytology & Histology 2001; 23: 291-299.</li>
 </ul>
 '''
 # CellProfiler is distributed under the GNU General Public License.

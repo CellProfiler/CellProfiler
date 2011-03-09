@@ -16,7 +16,7 @@ stained for actin).
 
 In order to identify the edges of secondary objects, this module performs two tasks: 
 <ol>
-<li>Finding the dividing lines between secondary objects which touch each other. 
+<li>Finding the dividing lines between secondary objects which touch each other.</li> 
 <li>Finding the dividing lines between the secondary objects and the
 background of the image. This is done by thresholding the image stained
 for secondary objects, except when using the <i>Distance - N</i> option.</li>
@@ -156,7 +156,7 @@ class IdentifySecondaryObjects(cpmi.Identify):
             <ul>
             <li><i>%(M_DISTANCE_N)s</i>: In this method, the image of the secondary 
             staining is not used at all; the expanded objects are the 
-            final secondary objects. 
+            final secondary objects.</li> 
             <li><i>%(M_DISTANCE_B)s</i>: Thresholding of the secondary staining image is used to eliminate background
             regions from the secondary objects. This allows the extent of the
             secondary objects to be limited to a certain distance away from the edge

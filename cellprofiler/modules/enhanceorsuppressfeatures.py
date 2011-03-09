@@ -52,12 +52,15 @@ class EnhanceOrSuppressFeatures(cpm.CPModule):
                                         'FilteredBlue',doc="""
                                         What do you want to call the feature-enhanced or suppressed image?""")
         
-        self.method = cps.Choice('Select the operation',
-                                        [ ENHANCE, SUPPRESS],doc="""
-                                        Do you want to enhance or suppress the features you designated?
-                                        <ul><li><i>Enhance</i> produces an image whose intensity is largely composed of
-                                        the features of interest. <li>Choose <i>Suppress</i> to produce an image with the features largely
-                                        removed.</li></ul>""")
+        self.method = cps.Choice(
+            'Select the operation',
+            [ ENHANCE, SUPPRESS],
+            doc="""
+            Do you want to enhance or suppress the features you designated?
+            <ul><li><i>Enhance</i> produces an image whose intensity is largely 
+            composed of the features of interest.</li>
+            <li>Choose <i>Suppress</i> to produce an image with the features largely
+            removed.</li></ul>""")
         
         self.enhance_method = cps.Choice('Feature type',
                                         [E_SPECKLES, E_NEURITES, E_DARK_HOLES, E_CIRCLES, E_TEXTURE, E_DIC],

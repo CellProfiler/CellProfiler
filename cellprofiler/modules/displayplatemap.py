@@ -128,8 +128,8 @@ class DisplayPlatemap(cpm.CPModule):
             Options are:
             <ul>
             <li><i>avg:</i> Average</li>
-            <li><i>stdev(standard deviation)
-            <li><i>median</i>
+            <li><i>stdev:</i> Standard deviation</li>
+            <li><i>median</i></li>
             <li><i>cv%:</i> Coefficient of variation, defined as the ratio of the standard 
             deviation to the mean. This is useful for comparing between data sets with 
             different units or widely different means.</li>

@@ -12,7 +12,7 @@ individual object.
 <ul>
 <li><i>Correlation coefficient:</i> The correlation between a pair of images I and J. 
 Calculated as Pearson's correlation coefficient, for which the formula is
-covariance(I,J)/[std(I) * std(J)].
+covariance(I,J)/[std(I) * std(J)].</li>
 <li><i>Slope:</i> The slope of the least-squares regression between a pair of images
 I and J. Calculated using the model <i>A</i>*I + <i>B</i> = J, where <i>A</i> is the slope.</li>
 </ul>

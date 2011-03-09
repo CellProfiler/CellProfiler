@@ -52,7 +52,8 @@ filters measure the frequency content in different orientations. They are very
 similar to wavelets, and in the current context they work exactly as wavelets, but
 they are not wavelets by a strict mathematical definition. The Gabor
 features detect correlated bands of intensities, for instance, images of
-Venetian blinds would have high scores in the horizontal orientation.
+Venetian blinds would have high scores in the horizontal orientation.</li>
+</ul>
 
 <h3>Technical notes</h3> 
 <p><b>MeasureTexture</b> performs the following algorithm to compute a score

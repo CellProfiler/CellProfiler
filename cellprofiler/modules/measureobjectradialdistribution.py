@@ -18,7 +18,7 @@ i.e. not necessarily a constant width across objects.
 
 <h4>Available measurements</h4>
 <ul>
-<li><i>FracAtD:</i> Fraction of total stain in an object at a given radius.
+<li><i>FracAtD:</i> Fraction of total stain in an object at a given radius.</li>
 <li><i>MeanFrac:</i> Mean fractional intensity at a given radius; calculated
 as fraction of total intensity normalized by fraction of pixels at a given radius.</li>
 <li><i>RadialCV:</i> Coefficient of variation of intensity within a ring, calculated 

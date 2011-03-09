@@ -141,7 +141,7 @@ class DefineGrid(cpm.CPModule):
                         marker spots once for all of the image cycles</li>
                         <li><i>Each Cycle:</i> If the location of the grid will vary from one image cycle 
                         to the next then you should define the location of the marker spots 
-                        for <i>Each Cycle</i> independently.</i>
+                        for <i>Each Cycle</i> independently.</li>
                         </ul>""")
         
         self.auto_or_manual = cps.Choice(

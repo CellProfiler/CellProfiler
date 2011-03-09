@@ -110,7 +110,8 @@ class Crop(cpm.CPModule):
                             <ul>
                             <li><i>Rectangle:</i> Self-explanatory</li>
                             <li><i>Ellipse:</i> Self-explanatory</li>
-                            <li><i>Image:</i> Cropping will occur based on a binary image you specify. A choice box with available images will appear from which 
+                            <li><i>Image:</i> Cropping will occur based on a binary image you specify. A choice box 
+                            with available images will appear from which 
                             you can select an image. To crop into an arbitrary shape that you define, choose 
                             <i>Image</i> and use the <b>LoadSingleImage</b> module to load a black and white image 
                             that you have already prepared from a file. If you have created this image in a 
@@ -145,7 +146,7 @@ class Crop(cpm.CPModule):
                             take to calculate the ellipse shape. For <i>Rectangle</i>, you can click as many
                             points as you like that are in the interior of the region you wish to
                             retain.</li>
-                            <ul>""")
+                            </ul>""")
         
         self.individual_or_once = cps.Choice("Apply which cycle's cropping pattern?",
                             [IO_INDIVIDUALLY, IO_FIRST],
@@ -158,27 +159,31 @@ class Crop(cpm.CPModule):
                             minval=0, doc = """
                             <i>(Used only if Rectangle selected as cropping shape, or if using Plate Fix)</i><br>
                             Specify the left and right positions for the bounding rectangle by selecting one of the following:<br>
-                            <ul><li><i>Absolute</i> to specify these values as absolute pixel
+                            <ul>
+                            <li><i>Absolute</i> to specify these values as absolute pixel
                             coordinates in the original image. For instance, you might enter
                             "25", "225", and "Absolute" to create a 200x200 pixel image that is
                             25 pixels from the top-left corner.</li>
                             <li><i>From edge</i> to specify position relative to the original image's
                             edge. For instance, you might enter "25", "25", and "Edge" to
                             crop 25 pixels from both the left and right edges of the image, irrespective
-                            of the image's original size.</li></ul>""")
+                            of the image's original size.</li>
+                            </ul>""")
         
         self.vertical_limits = cps.IntegerOrUnboundedRange("Top and bottom rectangle positions",
                             minval=0, doc = """
                             <i>(Used only if Rectangle selected as cropping shape, or if using Plate Fix)</i><br>
                             Specify the top and bottom positions for the bounding rectangle by selecting one of the following:<br>
-                            <ul><li><i>Absolute</i> to specify these values as absolute pixel coordinates.
+                            <ul>
+                            <li><i>Absolute</i> to specify these values as absolute pixel coordinates.
                             For instance, you might enter "25", "225", and "Absolute" 
                             to create a 200x200 pixel image that's 25 pixels 
                             from the top-left corner.</li>
                             <li><i>From edge</i> to specify position relative to the image edge.
                             For instance, you might enter "25", "25", and "Edge" to
                             crop 25 pixels from the edges of your images irrespective
-                            of their size.</li></ul>""")
+                            of their size.</li>
+                            </ul>""")
         
         self.ellipse_center = cps.Coordinates("Coordinates of ellipse center",(500,500),doc = """
                             <i>(Used only if Ellipse selected as cropping shape)</i><br>

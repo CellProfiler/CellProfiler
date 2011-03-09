@@ -81,27 +81,20 @@ class ImageMath(cpm.CPModule):
             <p><i>Note:</i> If more than 2 images are chosen, then operations will be 
             performed sequentially from first to last, e.g., for "Divide", (Image1 / Image2) / Image3
             
-            <ul><li><i>Add</i> adds the first image to the second, and so on.
-
-            <li><i>Subtract</i> subtracts the second image from the first.
-            
-            <li><i>Multiply</i> multiplies the first image by the second.
-
-            <li><i>Divide </i> divides the first image by the second.
-            
+            <ul>
+            <li><i>Add</i> adds the first image to the second, and so on.</li>
+            <li><i>Subtract</i> subtracts the second image from the first.</li>
+            <li><i>Multiply</i> multiplies the first image by the second.</li>
+            <li><i>Divide </i> divides the first image by the second.</li>
             <li><i>Average</i> calculates the mean intensity of the images loaded in the module.  
             This is equivalent to the Add option divided by the number of images loaded 
             by this module.  If you would like to average all of the images in 
             an entire pipeline, i.e., across cycles, you should instead use the <b>CorrectIlluminationCalculate</b> module 
             and choose the <i>All</i> (vs. <i>Each</i>) option.</li>
-            
-            <li><i>Maximum </i> returns the element-wise maximum value at each pixel location.            
-            
+            <li><i>Maximum </i> returns the element-wise maximum value at each pixel location.</li>   
             <li><i>Invert</i> subtracts the image intensities from 1. This makes the darkest
             color the brightest and vice-versa.</li>
-
             <li><i>Log transform (base 2)</i> log transforms each pixel's intensity. </li>
-
             <li><i>None</i> is useful if you simply want to select some of the later options in the module, such as adding,
             multiplying, or exponentiating your image by a constant.</li>
             
@@ -109,11 +102,14 @@ class ImageMath(cpm.CPModule):
             """)
         self.divider_top = cps.Divider(line=False)
         
-        self.exponent = cps.Float("Raise the power of the result by", 1, doc="""Enter an exponent to raise the result to *after* the chosen operation""")
+        self.exponent = cps.Float("Raise the power of the result by", 1, doc="""
+            Enter an exponent to raise the result to *after* the chosen operation""")
         
-        self.after_factor = cps.Float("Multiply the result by", 1, doc="""Enter a factor to multiply the result by *after* the chosen operation""")
+        self.after_factor = cps.Float("Multiply the result by", 1, doc="""
+            Enter a factor to multiply the result by *after* the chosen operation""")
         
-        self.addend = cps.Float("Add to result", 0, doc ="""Enter a number to add to the result *after* the chosen operation""")
+        self.addend = cps.Float("Add to result", 0, doc ="""
+            Enter a number to add to the result *after* the chosen operation""")
         
         self.truncate_low = cps.Binary("Set values less than 0 equal to 0?", True, doc="""
             Do you want negative values to be set to 0?

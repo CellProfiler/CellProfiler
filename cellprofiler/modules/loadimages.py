@@ -310,13 +310,14 @@ class LoadImages(cpmodule.CPModule):
                 <li>^[0-9]*$ matches any string that is a natural number or ''</li>
                 <li>^-[0-9]+$|^\+?[0-9]+$ matches any integer</li>
                 </ul>
+                </li>
                 
                 <li><i>Order:</i> Used when image (or movie) files are present in a repeating order,
                 like "DAPI, FITC, Red; DAPI, FITC, Red;" and so on. Images are
                 loaded based on the order of their location on the hard disk, and they are
                 assigned an identity based on how many images are in each group and what position
                 within each group the file is located (e.g., three images per
-                group; DAPI is always first).
+                group; DAPI is always first).</li>
                 
                 </ul>""")
         
@@ -336,7 +337,7 @@ class LoadImages(cpmodule.CPModule):
             doc="""
             <i>(Used only when Order is selected for file loading)</i><br>
             Enter the number of images that comprise a group. For example, for images given in the order:
-            <i>DAPI, FITC, Red; DAPI, FITC, Red;</i> and so on, the number of images that in each group would be 3.""")
+            <i>DAPI, FITC, Red; DAPI, FITC, Red</i> and so on, the number of images that in each group would be 3.""")
         
         self.descend_subdirectories = cps.Choice(
             'Analyze all subfolders within the selected folder?', 
@@ -473,7 +474,7 @@ class LoadImages(cpmodule.CPModule):
             <i>(Used only for the image-loading Order option)</i><br>
             Enter the number in the image order that this image channel 
             occupies. For example, if the order is "DAPI, FITC, Red; 
-            DAPI, FITC, Red;" and so on, the DAPI channel would occupy 
+            DAPI, FITC, Red" and so on, the DAPI channel would occupy 
             position 1."""))
         
         group.append("metadata_choice", cps.Choice(
@@ -518,7 +519,7 @@ class LoadImages(cpmodule.CPModule):
             <tr><td>(?P&lt;Well&gt;</td><td>Name the captured field <i>Well</i></td></tr>
             <tr><td>[A-P]</td><td>Capture exactly one letter between A and P</td></tr>
             <tr><td>[0-9]{1,2}</td><td>Capture one or two digits that follow</td></tr>
-            <tr><td>_s</td><td>Discard the underbar followed by <i>s</s> separating well from site</td></tr>
+            <tr><td>_s</td><td>Discard the underbar followed by <i>s</i> separating well from site</td></tr>
             <tr><td>(?P&lt;Site&gt;</td><td>Name the captured field <i>Site</i></td></tr>
             <tr><td>[0-9]</td><td>Capture one digit following</td></tr>
             </table>
@@ -539,7 +540,7 @@ class LoadImages(cpmodule.CPModule):
             because while the "Plate", "Well" and "Site" metadata is identical for both images, the wavelength metadata is not.</p>
             
             <p>Note that if you use the special fieldnames <i>&lt;WellColumn&gt;</i> and 
-            <i>&lt;WellRow&gt;</i> together, LoadImages will automatically create a <i><i>&lt;Well&gt;</i>
+            <i>&lt;WellRow&gt;</i> together, LoadImages will automatically create a <i>&lt;Well&gt;</i>
             metadata field by joining the two fieldname values together. For example, 
             if <i>&lt;WellRow&gt;</i> is "A" and <i>&lt;WellColumn&gt;</i> is "01", a field 
             <i>&lt;Well&gt;</i> will be "A01". This is useful if your well row and column names are

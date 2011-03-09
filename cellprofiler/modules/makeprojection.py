@@ -22,7 +22,7 @@ metadata, with the following setting specifications in <b>LoadImages</b>:
 <li>Extract metadata from the input image path by using a regular expression to capture
 the subfolder name.</li>
 <li>Enable grouping of image sets by metadata and specify the subfolder metadata token
-as the field by which to group.
+as the field by which to group.</li>
 </ol>
 However, unlike <b>LoadImageDirectory</b>, this per-folder projection is also not 
 immediately available in subsequent modules until all image processing cycles for 

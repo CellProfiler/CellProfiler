@@ -10,7 +10,7 @@ that objects are only considered neighbors if they are directly touching.
 
 <h4>Available measurements</h4>
 <ul>
-<li><i>NumberOfNeighbors:</i> Number of neighbor objects
+<li><i>NumberOfNeighbors:</i> Number of neighbor objects.</li>
 <li><i>PercentTouching:</i> Percent of the object's boundary pixels that touch 
 neighbors, after the objects have been expanded to the specified distance</li>
 <li><i>FirstClosestObjectNumber:</i> The index of the closest object.</li>
@@ -32,7 +32,7 @@ Objects discarded via modules such as <b>IdentifyPrimaryObjects</b> or
 <b>IdentifySecondaryObjects</b> will still register as a neighbors for the purposes
 of accurate measurement. For instance, if an object touches a single object and 
 that object had been discarded, <i>NumberOfNeighbors</i> will be positive, but 
-there will not be a corresponding <i>ClosestObjectNumber<i>.
+there will not be a corresponding <i>ClosestObjectNumber</i>.
 
 See also the <b>Identify</b> modules.
 '''
@@ -97,11 +97,11 @@ class MeasureObjectNeighbors(cpm.CPModule):
             How do you want to determine whether objects are neighbors?
             <ul>
             <li><i>Adjacent</i>: In this mode, two objects must have adjacent 
-            boundary pixels to be neighbors. 
+            boundary pixels to be neighbors. </li>
             <li><i>Expand until adjacent</i>: The objects are expanded until all
             pixels on the object boundaries are touching another. Two objects are 
             neighbors if their any of their boundary pixels are adjacent after 
-            expansion.
+            expansion.</li>
             <li><i>Within a specified distance</i>: Each object is expanded by 
             the number of pixels you specify. Two objects are  
             neighbors if they have adjacent pixels after expansion. </li>
@@ -142,7 +142,8 @@ class MeasureObjectNeighbors(cpm.CPModule):
             that will allow the the image of objects colored by numbers of neighbors 
             to be selected later in the pipeline.""")
         
-        self.count_colormap = cps.Colormap('Select colormap', doc = """<i>(Used only if the image of objects colored by numbers of neighbors 
+        self.count_colormap = cps.Colormap('Select colormap', doc = """
+            <i>(Used only if the image of objects colored by numbers of neighbors 
             is to be retained for later use in the pipeline)</i> <br>
             What colormap do you want to use to color the above image? All available colormaps can be seen 
             <a href="http://www.scipy.org/Cookbook/Matplotlib/Show_colormaps">here</a>.""")
@@ -158,11 +159,12 @@ class MeasureObjectNeighbors(cpm.CPModule):
                                                          'PercentTouching', 
                                                          doc = """
             <i>(Used only if the image of objects colored by percent touching 
-            is to be retained for later use in the pipeline)</i> <br> Specify a name  
-            that will allow the the image of objects colored by percent of touching 
+            is to be retained for later use in the pipeline)</i> <br> 
+            Specify a name that will allow the the image of objects colored by percent of touching 
             pixels to be selected later in the pipeline.""")
         
-        self.touching_colormap = cps.Colormap('Select a colormap', doc ="""<i>(Used only if the image of objects colored by percent touching 
+        self.touching_colormap = cps.Colormap('Select a colormap', doc ="""
+            <i>(Used only if the image of objects colored by percent touching 
             is to be retained for later use in the pipeline)</i> <br>
             What colormap do you want to use to color the above image? All available colormaps can be seen 
             <a href="http://www.scipy.org/Cookbook/Matplotlib/Show_colormaps">here</a>.""")

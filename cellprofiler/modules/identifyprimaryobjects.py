@@ -18,9 +18,12 @@ anything but simply help you distingush the various objects. You can
 change the colormap in <i>File > Preferences</i>.
 
 Steps to prepare images for this module:
-<ul><li>If the objects in your images are dark on a light background, you should invert the images using the Invert operation in the <b>ImageMath</b> module.</li>
+<ul>
+<li>If the objects in your images are dark on a light background, you 
+should invert the images using the Invert operation in the <b>ImageMath</b> module.</li>
 <li>If you are working with color images, they must first be converted to
-grayscale using the <b>ColorToGray</b> module.</li></ul>
+grayscale using the <b>ColorToGray</b> module.</li>
+</ul>
 
 <h4>Available measurements</h4>
 <ul>
@@ -65,7 +68,7 @@ where the primary objects to be identified are nuclei:
 nucleus or two or more clumped nuclei.</li>
 <li>The edges of nuclei are identified, using thresholding if the object 
 is a single, isolated nucleus, and using more advanced options if the 
-object is actually two or more nuclei that touch each other. 
+object is actually two or more nuclei that touch each other. </li>
 <li>Some identified objects are discarded or merged together if
 they fail to meet certain your specified criteria. For example, partial objects
 at the border of the image can
@@ -73,7 +76,8 @@ be discarded, and small objects can be discarded or merged with nearby larger
 ones. A separate module,
 <b>FilterObjects</b>, can further refine the identified nuclei, if
 desired, by excluding objects that are a particular size, shape,
-intensity, or texture.</ol>
+intensity, or texture. </li>
+</ol>
 
 References
 <ul>

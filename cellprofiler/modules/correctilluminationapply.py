@@ -80,11 +80,15 @@ class CorrectIlluminationApply(cpm.CPModule):
                                         [DOS_DIVIDE, DOS_SUBTRACT], doc = '''
                                         This choice depends on how the illumination function was calculated
                                         and on your physical model of the way illumination variation affects the background of images relative to 
-                                        the objects in images; it is also somewhat empirical. <ul><li>Select <i>Subtract</i> if the background signal is significant relative to the real signal
+                                        the objects in images; it is also somewhat empirical. 
+                                        <ul>
+                                        <li><i>Subtract</i>: Use this option if the background signal is significant relative to the real signal
                                         coming from the cells.  If you created the illumination correction function using <i>Background</i>,
-                                        then you will want to choose <i>Subtract</i> here.</li><li>Select <i>Divide</i> if the the signal to background ratio 
+                                        then you will want to choose <i>Subtract</i> here.</li>
+                                        <li><i>Divide</i>: Choose this option if the the signal to background ratio 
                                         is high (the cells are stained very strongly). If you created the illumination correction function using <i>Regular</i>,
-                                        then you will want to choose <i>Divide</i> here.</ul>''')
+                                        then you will want to choose <i>Divide</i> here.</li>
+                                        </ul>''')
 
         image_settings = cps.SettingsGroup()
         image_settings.append("image_name", image_name)

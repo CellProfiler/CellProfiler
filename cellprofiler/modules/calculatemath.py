@@ -184,7 +184,7 @@ class CalculateMath(cpm.CPModule):
                                     O_ALL,doc="""
                                     What arithmetic operation would you like to perform? <i>None</i> is useful if 
                                     you simply want to select some of the later options in the module, such as multiplying
-                                    or exponentiating your image by a constant.</li>""")
+                                    or exponentiating your image by a constant.""")
         
         self.operands = (Operand(0, self.operation), Operand(1, self.operation))
         

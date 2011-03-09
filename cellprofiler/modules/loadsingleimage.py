@@ -130,7 +130,7 @@ class LoadSingleImage(cpm.CPModule):
                     ("All files (*.*)", "*.*")],doc = """
                     The filename can be constructed in one of two ways:
                     <ul>
-                    <li>As a fixed filename (e.g., <i>Exp1_D03f00d0.tif</i>). 
+                    <li>As a fixed filename (e.g., <i>Exp1_D03f00d0.tif</i>). </li>
                     <li>Using the metadata associated with an image set in 
                     <b>LoadImages</b> or <b>LoadData</b>. This is especially useful 
                     if you want your output given a unique label according to the

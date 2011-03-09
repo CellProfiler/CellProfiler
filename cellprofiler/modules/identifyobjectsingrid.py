@@ -19,7 +19,7 @@ you choose to re-use a grid from a previous successful image cycle.
 
 <i>Special note on saving images:</i> You can use the settings in this module to
 pass object outlines along to the <b>OverlayOutlines</b>module and then
-save them with the </b>SaveImages</b> module. You can also pass along objects themselves 
+save them with the <b>SaveImages</b> module. You can also pass along objects themselves 
 to the object processing module <b>ConvertToImage</b> and then save them with the
 <b>SaveImages</b> module.
 

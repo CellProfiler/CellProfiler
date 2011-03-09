@@ -28,7 +28,7 @@ and &#956;<sub>p</sub> and &#956;<sub>n</sub> are the means of the positive and 
 <li><i>Vfactor:</i> The V-factor is a generalization of the Z'-factor, and is 
 calculated as 1 - 6*mean(&#963;)/|&#956;<sub>p</sub> - &#956;<sub>n</sub>| where
 &#963; are the standard deviations of the data, and &#956;<sub>p</sub> and &#956;<sub>n</sub>
-are defined as above.
+are defined as above.</li>
 <li><i>EC50:</i> The half maximal effective concentration (EC50) is the concentration of a
 treatment required to induce a response which is 50% of the maximal response.</li>
 <li><i>OneTailedZfactor:</i> This measure is an attempt to overcome a limitation of 

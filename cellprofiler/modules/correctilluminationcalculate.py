@@ -215,13 +215,13 @@ class CorrectIlluminationCalculate(cpm.CPModule):
              minimum and maximum intensity for the image</li>
              <li>Set the intensity of the output image to the minimum intensity
              of the input image</li>
-             <li>Iterate over the intensity levels, from lowest to highest</li>
+             <li>Iterate over the intensity levels, from lowest to highest<br>
              <ul><li>For a given intensity, find all pixels with 
              equal or higher intensities</li>
              <li>Find the convex hull that encloses those pixels</li>
              <li>Set the intensity of the output image within the convex hull
              to the current intensity</li>
-             </ul></ul>
+             </ul></li></ul>
              <br>The Convex Hull method can be used on an image whose objects
              are darker than their background and whose illumination
              intensity decreases monotonically from the brightest point.

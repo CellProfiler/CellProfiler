@@ -146,7 +146,7 @@ class UntangleWorms(cpm.CPModule):
             <li>Choose <i>%(OO_WITH_OVERLAP)s</i> to save objects including
             overlapping regions.</li>
             <li>Choose <i>%(OO_WITHOUT_OVERLAP)s</i> to save only
-            the portions of objects that do not overlap.
+            the portions of objects that do not overlap.</li>
             <li>Choose <i>%(OO_BOTH)s</i> to save two versions: with and without overlap.</li>
             </ul>""" %
             globals())
@@ -259,7 +259,7 @@ class UntangleWorms(cpm.CPModule):
         
         self.override_leftover_weight = cps.Float(
             "Leftover weight", 10, 0,
-            doc = """(Used only if not using training set weights)</i> <br>
+            doc = """<i>(Used only if not using training set weights)</i> <br>
             This setting controls how much weight is given to 
             areas not covered by worms.
             <b>UntangleWorms</b> charges a penalty to a
@@ -368,7 +368,7 @@ class UntangleWorms(cpm.CPModule):
         self.max_radius_percentile = cps.Float(
             "Maximum radius percentile", 90, 0, 100,
             doc = """<i>(Used only if training)</i> <br>
-            <b>UntangleWorms<b> uses the maximum worm radius during
+            <b>UntangleWorms</b> uses the maximum worm radius during
             worm skeletonization. <b>UntangleWorms</b> sorts the radii of
             worms in increasing size and selects the worm at this percentile.
             It then multiplies this worm's radius by the <i>Maximum radius

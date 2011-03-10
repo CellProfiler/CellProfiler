@@ -98,7 +98,7 @@ convex polygon that fits around all foreground pixels of the image: it is
 the shape that a rubber band would take if stretched around the foreground
 pixels. The convex hull can be used to regularize the boundary of a large,
 single object in an image, for instance, the edge of a well.</td>
-<td>Binary</td>
+<td>Binary</td></tr>
 <tr>
 <td><i>Diag</i></td>
 <td>Fills in pixels whose neighbors are diagnonally connected to 4-connect 

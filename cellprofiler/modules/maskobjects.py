@@ -125,10 +125,10 @@ class MaskObjects(I.Identify):
             <ul><li><i>Keep overlapping region:</i> Choosing this option
             will reduce the size of partially overlapping objects. The part
             of the object that overlaps the region will be retained. The
-            part of the object that is outside of the region will be removed.
+            part of the object that is outside of the region will be removed.</li>
             <li><i>Keep:</i> If you choose this option, <b>MaskObjects</b> 
             will keep the whole object if any part of it overlaps the masking
-            region.</li>
+            region.
             </li><li><i>Remove:</i> Objects that are partially outside
             of the masking region will be completely removed if you choose
             this option.</li>

@@ -12,7 +12,9 @@ that objects are only considered neighbors if they are directly touching.
 <ul>
 <li><i>NumberOfNeighbors:</i> Number of neighbor objects.</li>
 <li><i>PercentTouching:</i> Percent of the object's boundary pixels that touch 
-neighbors, after the objects have been expanded to the specified distance</li>
+neighbors, after the objects have been expanded to the specified distance.
+Note: This measurement is only available if you use the same set of objects
+for both objects and neighbors.</li>
 <li><i>FirstClosestObjectNumber:</i> The index of the closest object.</li>
 <li><i>FirstClosestDistance:</i> The distance to the closest object.</li>
 <li><i>SecondClosestObjectNumber:</i> The index of the second closest object.</li>
@@ -56,10 +58,11 @@ import matplotlib.cm
 import cellprofiler.cpmodule as cpm
 import cellprofiler.cpimage as cpi
 import cellprofiler.measurements as cpmeas
+import cellprofiler.objects as cpo
 import cellprofiler.settings as cps
 import cellprofiler.preferences as cpprefs
 from cellprofiler.cpmath.cpmorphology import fixup_scipy_ndimage_result as fix
-from cellprofiler.cpmath.cpmorphology import strel_disk
+from cellprofiler.cpmath.cpmorphology import strel_disk, centers_of_labels
 
 D_ADJACENT = 'Adjacent'
 D_EXPAND   = 'Expand until adjacent'
@@ -87,10 +90,17 @@ class MeasureObjectNeighbors(cpm.CPModule):
     
     module_name = 'MeasureObjectNeighbors'
     category = "Measurement"
-    variable_revision_number = 1
+    variable_revision_number = 2
 
     def create_settings(self):
         self.object_name = cps.ObjectNameSubscriber('Select objects to measure','None')
+        
+        self.neighbors_name = cps.ObjectNameSubscriber(
+            'Select neighboring objects to measure', 'None',
+            doc = """This is the name of the objects that are potential
+            neighbors of the above objects. You can find the neighbors
+            within the same set of objects by selecting the same objects
+            as above.""")
         
         self.distance_method = cps.Choice('Method to determine neighbors',
                                           D_ALL, D_EXPAND,doc="""
@@ -170,30 +180,47 @@ class MeasureObjectNeighbors(cpm.CPModule):
             <a href="http://www.scipy.org/Cookbook/Matplotlib/Show_colormaps">here</a>.""")
 
     def settings(self):
-        return [self.object_name, self.distance_method, self.distance,
+        return [self.object_name, self.neighbors_name,
+                self.distance_method, self.distance,
                 self.wants_count_image, self.count_image_name,
                 self.count_colormap, self.wants_percent_touching_image,
                 self.touching_image_name, self.touching_colormap]
 
     def visible_settings(self):
-        result = [self.object_name, self.distance_method]
+        result = [self.object_name, self.neighbors_name, self.distance_method]
         if self.distance_method == D_WITHIN:
             result += [self.distance]
         result += [self.wants_count_image]
         if self.wants_count_image.value:
             result += [self.count_image_name, self.count_colormap]
-        result += [self.wants_percent_touching_image]
-        if self.wants_percent_touching_image.value:
-            result += [self.touching_image_name, self.touching_colormap]
+        if self.neighbors_are_objects:
+            result += [self.wants_percent_touching_image]
+            if self.wants_percent_touching_image.value:
+                result += [self.touching_image_name, self.touching_colormap]
         return result
 
+    @property
+    def neighbors_are_objects(self):
+        '''True if the neighbors are taken from the same object set as objects'''
+        return (self.object_name.value == self.neighbors_name.value)
+        
     def run(self, workspace):
         objects = workspace.object_set.get_objects(self.object_name.value)
+        assert isinstance(objects, cpo.Objects)
         labels = objects.small_removed_segmented
         kept_labels = objects.segmented
+        neighbor_objects = workspace.object_set.get_objects(self.neighbors_name.value)
+        assert isinstance(neighbor_objects, cpo.Objects)
+        neighbor_labels = neighbor_objects.small_removed_segmented
         nobjects = np.max(labels)
-        nkept_objects = np.max(kept_labels)
+        nneighbors = np.max(neighbor_labels)
+        nkept_objects = objects.count
         _, object_numbers = objects.relate_labels(labels, kept_labels)
+        if self.neighbors_are_objects:
+            neighbor_numbers = object_numbers
+        else:
+            _, neighbor_numbers = neighbor_objects.relate_labels(
+                neighbor_labels, neighbor_objects.segmented)
         neighbor_count = np.zeros((nobjects,))
         pixel_count = np.zeros((nobjects,))
         first_object_number = np.zeros((nobjects,),int)
@@ -215,6 +242,8 @@ class MeasureObjectNeighbors(cpm.CPModule):
             labels = labels[i,j]
             distance = 1 # dilate once to make touching edges overlap
             scale = S_EXPANDED
+            if self.neighbors_are_objects:
+                neighbor_labels = labels.copy()
         elif self.distance_method == D_WITHIN:
             distance = self.distance.value
             scale = str(distance)
@@ -224,37 +253,35 @@ class MeasureObjectNeighbors(cpm.CPModule):
         else:
             raise ValueError("Unknown distance method: %s" %
                              self.distance_method.value)
-        if nobjects > 1:
+        if nneighbors > (1 if self.neighbors_are_objects else 0):
             object_indexes = np.arange(nobjects, dtype=np.int32)+1
             #
             # First, compute the first and second nearest neighbors,
             # and the angles between self and the first and second
             # nearest neighbors
             #
-            centers = scind.center_of_mass(np.ones(labels.shape), 
-                                           objects.small_removed_segmented, 
-                                           object_indexes)
-            if nobjects == 1:
-                centers = np.array([centers])
-            else:
-                centers = np.array(centers)
+            ocenters = centers_of_labels(
+                objects.small_removed_segmented).transpose()
+            ncenters = centers_of_labels(
+                neighbor_objects.small_removed_segmented).transpose()
             areas = fix(scind.sum(np.ones(labels.shape),labels, object_indexes))
-            i,j = np.mgrid[0:nobjects,0:nobjects]
-            distance_matrix = np.sqrt((centers[i,0]-centers[j,0])**2 +
-                                      (centers[i,1]-centers[j,1])**2)
+            i,j = np.mgrid[0:nobjects,0:nneighbors]
+            distance_matrix = np.sqrt((ocenters[i,0] - ncenters[j,0])**2 +
+                                      (ocenters[i,1] - ncenters[j,1])**2)
             #
             # order[:,0] should be arange(nobjects)
             # order[:,1] should be the nearest neighbor
             # order[:,2] should be the next nearest neighbor
             #
             order = np.lexsort([distance_matrix])
-            first_object_index = order[:,1]
-            first_x_vector = centers[first_object_index,1] - centers[:,1]
-            first_y_vector = centers[first_object_index,0] - centers[:,0]
-            if nobjects > 2:
-                second_object_index = order[:,2]
-                second_x_vector = centers[second_object_index,1] - centers[:,1]
-                second_y_vector = centers[second_object_index,0] - centers[:,0]
+            first_neighbor = 1 if self.neighbors_are_objects else 0
+            first_object_index = order[:, first_neighbor]
+            first_x_vector = ncenters[first_object_index,1] - ocenters[:,1]
+            first_y_vector = ncenters[first_object_index,0] - ocenters[:,0]
+            if nneighbors > first_neighbor+1:
+                second_object_index = order[:, first_neighbor + 1]
+                second_x_vector = ncenters[second_object_index,1] - ocenters[:,1]
+                second_y_vector = ncenters[second_object_index,0] - ocenters[:,0]
                 v1 = np.array((first_x_vector,first_y_vector))
                 v2 = np.array((second_x_vector,second_y_vector))
                 #
@@ -288,28 +315,34 @@ class MeasureObjectNeighbors(cpm.CPModule):
                 index = object_number - 1
                 patch = labels[min_i[index]:max_i[index],
                                min_j[index]:max_j[index]]
+                npatch = neighbor_labels[min_i[index]:max_i[index],
+                                         min_j[index]:max_j[index]]
                 #
                 # Find the neighbors
                 #
                 patch_mask = patch==(index+1)
                 extended = scind.binary_dilation(patch_mask,strel)
-                neighbors = np.setdiff1d(np.unique(patch[extended]),
-                                         [0,index+1])
+                neighbors = np.unique(npatch[extended])
+                neighbors = neighbors[neighbors != 0]
+                if self.neighbors_are_objects:
+                    neighbors = neighbors[neighbors != object_number]
                 neighbor_count[index] = len(neighbors)
-                #
-                # Find the # of overlapping pixels. Dilate the neighbors
-                # and see how many pixels overlap our image
-                #
-                extended = scind.binary_dilation((~ patch_mask) & (patch != 0),
-                                                 strel)
-                overlap = np.sum(patch_mask & extended)
-                pixel_count[index] = overlap
+                if self.neighbors_are_objects:
+                    #
+                    # Find the # of overlapping pixels. Dilate the neighbors
+                    # and see how many pixels overlap our image
+                    #
+                    extended = scind.binary_dilation((~ patch_mask) & (patch != 0),
+                                                     strel)
+                    overlap = np.sum(patch_mask & extended)
+                    pixel_count[index] = overlap
             percent_touching = pixel_count * 100.0 / areas
             #
             # Now convert all measurements from the small-removed to
             # the final number set.
             #
             object_indexes = object_numbers - 1
+            neighbor_indexes = neighbor_numbers - 1
             neighbor_count = neighbor_count[object_indexes]
             percent_touching = percent_touching[object_indexes]
             first_x_vector = first_x_vector[object_indexes]
@@ -322,34 +355,42 @@ class MeasureObjectNeighbors(cpm.CPModule):
             #
             first_object_number = np.zeros(nkept_objects, int)
             second_object_number = np.zeros(nkept_objects, int)
-            if nkept_objects > 1:
-                i,j = np.mgrid[0:nkept_objects,0:nkept_objects]
-                di = centers[object_indexes[i], 0] - centers[object_indexes[j], 0]
-                dj = centers[object_indexes[i], 1] - centers[object_indexes[j], 1]
-                distance_matrix = np.sqrt(di**2 + dj**2)
+            if nkept_objects > (1 if self.neighbors_are_objects else 0):
+                di = (ocenters[object_indexes[:, np.newaxis], 0] - 
+                      ncenters[neighbor_indexes[np.newaxis, :], 0])
+                dj = (ocenters[object_indexes[:, np.newaxis], 1] - 
+                      ncenters[neighbor_indexes[np.newaxis, :], 1])
+                distance_matrix = np.sqrt(di*di + dj*dj)
                 #
                 # order[:,0] should be arange(nobjects)
                 # order[:,1] should be the nearest neighbor
                 # order[:,2] should be the next nearest neighbor
                 #
                 order = np.lexsort([distance_matrix])
-                first_object_number = order[:,1] + 1
-                if nkept_objects > 2:
-                    second_object_number = order[:,2] + 1
+                if self.neighbors_are_objects:
+                    first_object_number = order[:,1] + 1
+                    if nkept_objects > 2:
+                        second_object_number = order[:,2] + 1
+                else:
+                    first_object_number = order[:,0] + 1
+                    if nneighbors > 1:
+                        second_object_number = order[:,1] + 1
         #
         # Record the measurements
         #
         m = workspace.measurements
-        for feature_name, data in \
-            ((M_NUMBER_OF_NEIGHBORS, neighbor_count),
-             (M_PERCENT_TOUCHING, percent_touching),
-             (M_FIRST_CLOSEST_OBJECT_NUMBER, first_object_number),
-             (M_FIRST_CLOSEST_DISTANCE, np.sqrt(first_x_vector**2+first_y_vector**2)),
-             (M_SECOND_CLOSEST_OBJECT_NUMBER, second_object_number),
-             (M_SECOND_CLOSEST_DISTANCE, np.sqrt(second_x_vector**2+second_y_vector**2)),
-             (M_ANGLE_BETWEEN_NEIGHBORS, angle)):
+        features_and_data = [
+            (M_NUMBER_OF_NEIGHBORS, neighbor_count),
+            (M_FIRST_CLOSEST_OBJECT_NUMBER, first_object_number),
+            (M_FIRST_CLOSEST_DISTANCE, np.sqrt(first_x_vector**2+first_y_vector**2)),
+            (M_SECOND_CLOSEST_OBJECT_NUMBER, second_object_number),
+            (M_SECOND_CLOSEST_DISTANCE, np.sqrt(second_x_vector**2+second_y_vector**2)),
+            (M_ANGLE_BETWEEN_NEIGHBORS, angle)]
+        if self.neighbors_are_objects:
+            features_and_data.append((M_PERCENT_TOUCHING, percent_touching))
+        for feature_name, data in features_and_data:
             m.add_measurement(self.object_name.value,
-                              '%s_%s_%s'%(C_NEIGHBORS, feature_name, scale),
+                              self.get_measurement_name(feature_name),
                               data)
         labels = kept_labels
         
@@ -357,9 +398,13 @@ class MeasureObjectNeighbors(cpm.CPModule):
         object_mask = objects.segmented != 0
         object_indexes = objects.segmented[object_mask]-1
         neighbor_count_image[object_mask] = neighbor_count[object_indexes]
+        workspace.display_data.neighbor_count_image = neighbor_count_image
         
-        percent_touching_image = np.zeros(labels.shape)
-        percent_touching_image[object_mask] = percent_touching[object_indexes]
+        if self.neighbors_are_objects:
+            percent_touching_image = np.zeros(labels.shape)
+            percent_touching_image[object_mask] = percent_touching[object_indexes]
+            workspace.display_data.percent_touching_image = percent_touching_image
+        
         image_set = workspace.image_set
         if self.wants_count_image.value:
             neighbor_cm = get_colormap(self.count_colormap.value)
@@ -372,7 +417,7 @@ class MeasureObjectNeighbors(cpm.CPModule):
             image_set.add(self.count_image_name.value, count_image)
         else:
             neighbor_cm = matplotlib.cm.get_cmap(cpprefs.get_default_colormap())
-        if self.wants_percent_touching_image.value:
+        if self.neighbors_are_objects and self.wants_percent_touching_image:
             percent_touching_cm = get_colormap(self.touching_colormap.value)
             sm = matplotlib.cm.ScalarMappable(cmap = percent_touching_cm)
             img = sm.to_rgba(percent_touching_image)[:,:,:3]
@@ -384,25 +429,42 @@ class MeasureObjectNeighbors(cpm.CPModule):
                           touching_image)
         else:
             percent_touching_cm = matplotlib.cm.get_cmap(cpprefs.get_default_colormap())
-        if not workspace.frame is None:
-            figure = workspace.create_or_find_figure(title="MeasureObjectNeighbors, image cycle #%d"%(
-                workspace.measurements.image_set_number),subplots=(2,2))
-            figure.subplot_imshow_labels(0,0,objects.segmented,
-                                         "Original: %s"%self.object_name.value)
-            neighbor_count_image[~ object_mask] = -1
-            neighbor_cm.set_under((0,0,0))
+        workspace.display_data.neighbor_cm = neighbor_cm
+        workspace.display_data.percent_touching_cm = percent_touching_cm
+        workspace.display_data.orig_labels = objects.segmented
+        workspace.display_data.labels = labels
+        workspace.display_data.object_mask = object_mask
+            
+    def is_interactive(self):
+        return False
+    
+    def display(self, workspace):
+        figure = workspace.create_or_find_figure(title="MeasureObjectNeighbors, image cycle #%d"%(
+            workspace.measurements.image_set_number),subplots=(2,2))
+        figure.subplot_imshow_labels(0,0, workspace.display_data.orig_labels,
+                                     "Original: %s"%self.object_name.value)
+        
+        object_mask = workspace.display_data.object_mask
+        labels = workspace.display_data.labels
+        neighbor_count_image = workspace.display_data.neighbor_count_image
+        neighbor_count_image[~ object_mask] = -1
+        neighbor_cm = workspace.display_data.neighbor_cm
+        neighbor_cm.set_under((0,0,0))
+        if self.neighbors_are_objects:
+            percent_touching_cm = workspace.display_data.percent_touching_cm
             percent_touching_cm.set_under((0,0,0))
             percent_touching_image[~ object_mask] = -1
-            if np.any(object_mask):
-                figure.subplot_imshow(0,1, neighbor_count_image,
-                                      "%s colored by # of neighbors" %
-                                      self.object_name.value,
-                                      colormap = neighbor_cm,
-                                      colorbar=True, vmin=0,
-                                      vmax=neighbor_count_image.max(),
-                                      normalize=False,
-                                      sharex = figure.subplot(0,0),
-                                      sharey = figure.subplot(0,0))
+        if np.any(object_mask):
+            figure.subplot_imshow(0,1, neighbor_count_image,
+                                  "%s colored by # of neighbors" %
+                                  self.object_name.value,
+                                  colormap = neighbor_cm,
+                                  colorbar=True, vmin=0,
+                                  vmax=neighbor_count_image.max(),
+                                  normalize=False,
+                                  sharex = figure.subplot(0,0),
+                                  sharey = figure.subplot(0,0))
+            if self.neighbors_are_objects:
                 figure.subplot_imshow(1,1, percent_touching_image,
                                       "%s colored by pct touching"%
                                       self.object_name.value,
@@ -412,46 +474,62 @@ class MeasureObjectNeighbors(cpm.CPModule):
                                       normalize=False,
                                       sharex = figure.subplot(0,0),
                                       sharey = figure.subplot(0,0))
-            else:
-                # No objects - colorbar blows up.
-                figure.subplot_imshow(0,1, neighbor_count_image,
-                                      "%s colored by # of neighbors" %
-                                      self.object_name.value,
-                                      colormap = neighbor_cm,
-                                      sharex = figure.subplot(0,0),
-                                      sharey = figure.subplot(0,0))
+        else:
+            # No objects - colorbar blows up.
+            figure.subplot_imshow(0,1, neighbor_count_image,
+                                  "%s colored by # of neighbors" %
+                                  self.object_name.value,
+                                  colormap = neighbor_cm,
+                                  sharex = figure.subplot(0,0),
+                                  sharey = figure.subplot(0,0))
+            if self.neighbors_are_objects:
                 figure.subplot_imshow(1,1, percent_touching_image,
                                       "%s colored by pct touching"%
                                       self.object_name.value,
                                       colormap = percent_touching_cm,
                                       sharex = figure.subplot(0,0),
                                       sharey = figure.subplot(0,0))
-                
-            if self.distance_method == D_EXPAND:
-                figure.subplot_imshow_labels(1,0, labels,
-                                             "Expanded %s"%
-                                             self.object_name.value,
-                                             sharex = figure.subplot(0,0),
-                                             sharey = figure.subplot(0,0))
+            
+        if self.distance_method == D_EXPAND:
+            figure.subplot_imshow_labels(1,0, labels,
+                                         "Expanded %s"%
+                                         self.object_name.value,
+                                         sharex = figure.subplot(0,0),
+                                         sharey = figure.subplot(0,0))
     
-    def get_measurement_columns(self, pipeline):
-        '''Return column definitions for measurements made by this module'''
+    @property
+    def all_features(self):
+        if self.neighbors_are_objects:
+            return M_ALL
+        else:
+            return filter(lambda x: x != M_PERCENT_TOUCHING, M_ALL)
+
+    def get_measurement_name(self, feature):
         if self.distance_method == D_EXPAND:
             scale = S_EXPANDED
         elif self.distance_method == D_WITHIN:
             scale = str(self.distance.value)
         elif self.distance_method == D_ADJACENT:
             scale = S_ADJACENT
-        coltypes = [cpmeas.COLTYPE_INTEGER 
-                    if feature in (M_NUMBER_OF_NEIGHBORS, 
-                                   M_FIRST_CLOSEST_OBJECT_NUMBER,
-                                   M_SECOND_CLOSEST_OBJECT_NUMBER)
-                    else cpmeas.COLTYPE_FLOAT
-                    for feature in M_ALL]
+        if self.neighbors_are_objects:
+            return "_".join((C_NEIGHBORS, feature, scale))
+        else:
+            return "_".join((C_NEIGHBORS, feature, 
+                             self.neighbors_name.value, scale))
+        
+    def get_measurement_columns(self, pipeline):
+        '''Return column definitions for measurements made by this module'''
+        coltypes = dict([(feature, 
+                          cpmeas.COLTYPE_INTEGER
+                         if feature in (M_NUMBER_OF_NEIGHBORS, 
+                                        M_FIRST_CLOSEST_OBJECT_NUMBER,
+                                        M_SECOND_CLOSEST_OBJECT_NUMBER)
+                         else cpmeas.COLTYPE_FLOAT)
+                         for feature in self.all_features])
         return [(self.object_name.value,
-                 '%s_%s_%s'%(C_NEIGHBORS, feature_name, scale),
-                 coltype)
-                 for feature_name,coltype in zip(M_ALL, coltypes)]
+                 self.get_measurement_name(feature_name),
+                 coltypes[feature_name])
+                 for feature_name in self.all_features]
         
     def get_categories(self, pipeline, object_name):
         if object_name == self.object_name:
@@ -461,12 +539,19 @@ class MeasureObjectNeighbors(cpm.CPModule):
 
     def get_measurements(self, pipeline, object_name, category):
         if object_name == self.object_name and category == C_NEIGHBORS:
-            return M_ALL
+            return filter(lambda x: (x is not M_PERCENT_TOUCHING
+                                     or self.neighbors_are_objects), M_ALL)
         return []
 
+    def get_measurement_objects(self, pipeline, object_name, category,
+                                measurement):
+        if (self.neighbors_are_objects or 
+            measurement not in self.get_measurements(pipeline, object_name, category)):
+            return []
+        return [ self.neighbors_name.value]
+    
     def get_measurement_scales(self, pipeline, object_name, category, measurement, image_name):
-        if (object_name == self.object_name and category == C_NEIGHBORS and
-            measurement in M_ALL):
+        if measurement in self.get_measurements(pipeline, object_name, category):
             if self.distance_method == D_EXPAND:
                 return [S_EXPANDED]
             elif self.distance_method == D_ADJACENT:
@@ -493,6 +578,12 @@ class MeasureObjectNeighbors(cpm.CPModule):
                               cps.DEFAULT]
             from_matlab = False
             variable_revision_number = 1
+        if variable_revision_number == 1:
+            # Added neighbor objects
+            # To upgrade, repeat object_name twice
+            #
+            setting_values = setting_values[:1] * 2 + setting_values[1:]
+            variable_revision_number = 2
         return setting_values, variable_revision_number, from_matlab
     
 def get_colormap(name):

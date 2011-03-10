@@ -31,8 +31,10 @@ import cellprofiler.workspace as cpw
 import cellprofiler.modules.measureobjectneighbors as M
 
 OBJECTS_NAME = 'objectsname'
+NEIGHBORS_NAME = 'neighborsname'
+
 class TestMeasureObjectNeighbors(unittest.TestCase):
-    def make_workspace(self, labels, mode, distance=0):
+    def make_workspace(self, labels, mode, distance=0, neighbors_labels = None):
         '''Make a workspace for testing MeasureObjectNeighbors'''
         module = M.MeasureObjectNeighbors()
         module.object_name.value=OBJECTS_NAME
@@ -51,6 +53,13 @@ class TestMeasureObjectNeighbors(unittest.TestCase):
         objects = cpo.Objects()
         objects.segmented = labels
         object_set.add_objects(objects, OBJECTS_NAME)
+        if neighbors_labels is None:
+            module.neighbors_name.value = OBJECTS_NAME
+        else:
+            module.neighbors_name.value = NEIGHBORS_NAME
+            objects = cpo.Objects()
+            objects.segmented = neighbors_labels
+            object_set.add_objects(objects, NEIGHBORS_NAME)
         return workspace, module
 
     def test_01_01_load_matlab(self):
@@ -124,6 +133,7 @@ class TestMeasureObjectNeighbors(unittest.TestCase):
         module = pipeline.modules()[2]
         self.assertTrue(isinstance(module,M.MeasureObjectNeighbors))
         self.assertEqual(module.object_name, 'Nuclei')
+        self.assertEqual(module.neighbors_name, 'Nuclei')
         self.assertEqual(module.distance_method, M.D_EXPAND)
         self.assertTrue(module.wants_count_image.value)
         self.assertEqual(module.count_image_name.value, "ObjectNeighborCount")
@@ -132,6 +142,42 @@ class TestMeasureObjectNeighbors(unittest.TestCase):
         self.assertEqual(module.touching_image_name.value, "PercentTouching")
         self.assertEqual(module.touching_colormap.value, "Blues")
     
+    def test_01_03_load_v2(self):
+        data = r'''CellProfiler Pipeline: http://www.cellprofiler.org
+Version:1
+SVNRevision:11016
+
+MeasureObjectNeighbors:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_window:True|notes:\x5B\x5D]
+    Select objects to measure:glia
+    Select neighboring objects to measure:neurites
+    Method to determine neighbors:Expand until adjacent
+    Neighbor distance:2
+    Retain the image of objects colored by numbers of neighbors for use later in the pipeline (for example, in SaveImages)?:No
+    Name the output image:countimage
+    Select colormap:pink
+    Retain the image of objects colored by percent of touching pixels for use later in the pipeline (for example, in SaveImages)?:No
+    Name the output image:touchingimage
+    Select a colormap:purple
+'''
+        pipeline = cpp.Pipeline()
+        def callback(caller, event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO(data))
+        self.assertEqual(len(pipeline.modules()), 1)
+        module = pipeline.modules()[0]
+        self.assertTrue(isinstance(module, M.MeasureObjectNeighbors))
+        self.assertEqual(module.object_name, "glia")
+        self.assertEqual(module.neighbors_name, "neurites")
+        self.assertEqual(module.distance_method, M.D_EXPAND)
+        self.assertEqual(module.distance, 2)
+        self.assertFalse(module.wants_count_image)
+        self.assertEqual(module.count_image_name, "countimage")
+        self.assertEqual(module.count_colormap, "pink")
+        self.assertFalse(module.wants_percent_touching_image)
+        self.assertEqual(module.touching_image_name, "touchingimage")
+        self.assertEqual(module.touching_colormap, "purple")
+                         
     def test_02_02_empty(self):
         '''Test a labels matrix with no objects'''
         workspace, module = self.make_workspace(np.zeros((10,10),int),
@@ -458,6 +504,7 @@ class TestMeasureObjectNeighbors(unittest.TestCase):
         '''Test the get_measurement_columns method'''
         module = M.MeasureObjectNeighbors()
         module.object_name.value = OBJECTS_NAME
+        module.neighbors_name.value = OBJECTS_NAME
         module.distance.value = 5
         for distance_method, scale in ((M.D_EXPAND, M.S_EXPANDED),
                                        (M.D_ADJACENT, M.S_ADJACENT),
@@ -470,5 +517,112 @@ class TestMeasureObjectNeighbors(unittest.TestCase):
             for column in columns:
                 self.assertTrue(column[1] in features,"Unexpected column name: %s"%column[1])
 
+    def test_05_02_get_measurement_columns_neighbors(self):
+        module = M.MeasureObjectNeighbors()
+        module.object_name.value = OBJECTS_NAME
+        module.neighbors_name.value = NEIGHBORS_NAME
+        module.distance.value = 5
+        for distance_method, scale in ((M.D_EXPAND, M.S_EXPANDED),
+                                       (M.D_ADJACENT, M.S_ADJACENT),
+                                       (M.D_WITHIN, "5")):
+            module.distance_method.value = distance_method
+            columns = module.get_measurement_columns(None)
+            features = ["%s_%s_%s_%s" % (M.C_NEIGHBORS, feature, NEIGHBORS_NAME, scale)
+                        for feature in M.M_ALL
+                        if feature != M.M_PERCENT_TOUCHING]
+            self.assertEqual(len(columns),len(features))
+            for column in columns:
+                self.assertTrue(column[1] in features,"Unexpected column name: %s"%column[1])
+
                 
-                
+    def test_06_01_neighbors_zeros(self):
+        blank_labels = np.zeros((20,10), int)
+        one_object = np.zeros((20,10), int)
+        one_object[2:-2,2:-2] = 1
+        
+        cases = ((blank_labels, blank_labels, 0, 0),
+                 (blank_labels, one_object, 0, 1),
+                 (one_object, blank_labels, 1, 0))
+        for olabels, nlabels, ocount, ncount in cases:
+            for mode in M.D_ALL:
+                workspace, module = self.make_workspace(
+                    olabels, mode, neighbors_labels = nlabels)
+                self.assertTrue(isinstance(module, M.MeasureObjectNeighbors))
+                module.run(workspace)
+                m = workspace.measurements
+                self.assertTrue(isinstance(m, cpmeas.Measurements))
+                for feature in module.all_features:
+                    v = m.get_current_measurement(
+                        OBJECTS_NAME, module.get_measurement_name(feature))
+                    self.assertEqual(len(v), ocount)
+                    
+    def test_06_02_one_neighbor(self):
+        olabels = np.zeros((20,10), int)
+        olabels[2,2] = 1
+        nlabels = np.zeros((20,10), int)
+        nlabels[-2,-2] = 1
+        for mode in M.D_ALL:
+            workspace, module = self.make_workspace(
+                olabels, mode, distance = 20, neighbors_labels = nlabels)
+            self.assertTrue(isinstance(module, M.MeasureObjectNeighbors))
+            module.run(workspace)
+            m = workspace.measurements
+            self.assertTrue(isinstance(m, cpmeas.Measurements))
+            v = m.get_current_measurement(
+                OBJECTS_NAME, 
+                module.get_measurement_name(M.M_FIRST_CLOSEST_OBJECT_NUMBER))
+            self.assertEqual(len(v), 1)
+            self.assertEqual(v[0], 1)
+            v = m.get_current_measurement(
+                OBJECTS_NAME, 
+                module.get_measurement_name(M.M_SECOND_CLOSEST_OBJECT_NUMBER))
+            self.assertEqual(len(v), 1)
+            self.assertEqual(v[0], 0)
+            v = m.get_current_measurement(
+                OBJECTS_NAME, 
+                module.get_measurement_name(M.M_FIRST_CLOSEST_DISTANCE))
+            self.assertEqual(len(v), 1)
+            self.assertAlmostEqual(v[0], np.sqrt(16**2 + 6**2))
+            v = m.get_current_measurement(
+                OBJECTS_NAME, 
+                module.get_measurement_name(M.M_NUMBER_OF_NEIGHBORS))
+            self.assertEqual(len(v), 1)
+            self.assertEqual(v[0], 0 if mode == M.D_ADJACENT else 1)
+            
+    def test_06_03_two_neighbors(self):
+        olabels = np.zeros((20,10), int)
+        olabels[2, 2] = 1
+        nlabels = np.zeros((20,10), int)
+        nlabels[5, 2] = 2
+        nlabels[2, 6] = 1
+        workspace, module = self.make_workspace(
+            olabels, M.D_EXPAND, distance = 20, neighbors_labels = nlabels)
+        self.assertTrue(isinstance(module, M.MeasureObjectNeighbors))
+        module.run(workspace)
+        m = workspace.measurements
+        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        v = m.get_current_measurement(
+            OBJECTS_NAME, 
+            module.get_measurement_name(M.M_FIRST_CLOSEST_OBJECT_NUMBER))
+        self.assertEqual(len(v), 1)
+        self.assertEqual(v[0], 2)
+        v = m.get_current_measurement(
+            OBJECTS_NAME, 
+            module.get_measurement_name(M.M_SECOND_CLOSEST_OBJECT_NUMBER))
+        self.assertEqual(len(v), 1)
+        self.assertEqual(v[0], 1)
+        v = m.get_current_measurement(
+            OBJECTS_NAME, 
+            module.get_measurement_name(M.M_FIRST_CLOSEST_DISTANCE))
+        self.assertEqual(len(v), 1)
+        self.assertAlmostEqual(v[0], 3)
+        v = m.get_current_measurement(
+            OBJECTS_NAME, 
+            module.get_measurement_name(M.M_SECOND_CLOSEST_DISTANCE))
+        self.assertEqual(len(v), 1)
+        self.assertAlmostEqual(v[0], 4)
+        v = m.get_current_measurement(
+            OBJECTS_NAME, 
+            module.get_measurement_name(M.M_ANGLE_BETWEEN_NEIGHBORS))
+        self.assertEqual(len(v), 1)
+        self.assertAlmostEqual(v[0], 90)

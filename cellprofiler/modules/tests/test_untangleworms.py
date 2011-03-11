@@ -300,6 +300,25 @@ UntangleWorms:[module_num:1|svn_version:\'10598\'|variable_revision_number:1|sho
     Use training set weights?:No
     Overlap weight:3
     Leftover weight:5
+    Retain outlines of the overlapping objects?:No
+    Outline colormap?:Default
+    Name the overlapped outline image:OverlappedWormOutlines
+    Retain outlines of the non-overlapping worms?:No
+    Name the non-overlapped outlines image:NonoverlappedWormOutlines
+    Train or untangle worms?:Train
+    Minimum area percentile:1
+    Minimum area factor:0.85
+    Maximum area percentile:90
+    Maximum area factor:1.0
+    Minimum length percentile:1
+    Minimum length factor:0.9
+    Maximum length percentile:99
+    Maximum length factor:1.1
+    Maximum cost percentile:90
+    Maximum cost factor:1.9
+    Number of control points:21
+    Maximum radius percentile:90
+    Maximum radius factor:1
 
 UntangleWorms:[module_num:2|svn_version:\'10598\'|variable_revision_number:1|show_window:True|notes:\x5B\x5D]
     Binary image:BinaryWorms
@@ -311,6 +330,25 @@ UntangleWorms:[module_num:2|svn_version:\'10598\'|variable_revision_number:1|sho
     Use training set weights?:Yes
     Overlap weight:3
     Leftover weight:5
+    Retain outlines of the overlapping objects?:No
+    Outline colormap?:Default
+    Name the overlapped outline image:OverlappedWormOutlines
+    Retain outlines of the non-overlapping worms?:No
+    Name the non-overlapped outlines image:NonoverlappedWormOutlines
+    Train or untangle worms?:Untangle
+    Minimum area percentile:1
+    Minimum area factor:0.85
+    Maximum area percentile:90
+    Maximum area factor:1.0
+    Minimum length percentile:1
+    Minimum length factor:0.9
+    Maximum length percentile:99
+    Maximum length factor:1.1
+    Maximum cost percentile:90
+    Maximum cost factor:1.9
+    Number of control points:21
+    Maximum radius percentile:90
+    Maximum radius factor:1
 
 UntangleWorms:[module_num:3|svn_version:\'10598\'|variable_revision_number:1|show_window:True|notes:\x5B\x5D]
     Binary image:BinaryWorms
@@ -322,6 +360,25 @@ UntangleWorms:[module_num:3|svn_version:\'10598\'|variable_revision_number:1|sho
     Use training set weights?:Yes
     Overlap weight:3
     Leftover weight:5
+    Retain outlines of the overlapping objects?:No
+    Outline colormap?:Default
+    Name the overlapped outline image:OverlappedWormOutlines
+    Retain outlines of the non-overlapping worms?:No
+    Name the non-overlapped outlines image:NonoverlappedWormOutlines
+    Train or untangle worms?:Untangle
+    Minimum area percentile:1
+    Minimum area factor:0.85
+    Maximum area percentile:90
+    Maximum area factor:1.0
+    Minimum length percentile:1
+    Minimum length factor:0.9
+    Maximum length percentile:99
+    Maximum length factor:1.1
+    Maximum cost percentile:90
+    Maximum cost factor:1.9
+    Number of control points:21
+    Maximum radius percentile:90
+    Maximum radius factor:1
 '''
         pipeline = cpp.Pipeline()
         def callback(caller, event):
@@ -338,13 +395,205 @@ UntangleWorms:[module_num:3|svn_version:\'10598\'|variable_revision_number:1|sho
         self.assertFalse(module.wants_training_set_weights)
         self.assertEqual(module.override_overlap_weight.value, 3)
         self.assertEqual(module.override_leftover_weight.value, 5)
+        self.assertEqual(module.mode, U.MODE_TRAIN)
         module = pipeline.modules()[1]
         self.assertTrue(isinstance(module, U.UntangleWorms))
         self.assertEqual(module.overlap, U.OO_WITH_OVERLAP)
         self.assertTrue(module.wants_training_set_weights)
+        self.assertEqual(module.mode, U.MODE_UNTANGLE)
         module = pipeline.modules()[2]
         self.assertTrue(isinstance(module, U.UntangleWorms))
         self.assertEqual(module.overlap, U.OO_WITHOUT_OVERLAP)
+        self.assertEqual(module.mode, U.MODE_UNTANGLE)
+        self.assertEqual(module.complexity, U.C_ALL)
+        self.assertEqual(module.custom_complexity, 400)
+        
+    def test_01_01_load_v2(self):
+        data = r'''CellProfiler Pipeline: http://www.cellprofiler.org
+Version:1
+SVNRevision:10652
+
+UntangleWorms:[module_num:1|svn_version:\'10598\'|variable_revision_number:2|show_window:True|notes:\x5B\x5D]
+    Binary image:BinaryWorms
+    Overlap style\x3A:Both
+    Overlapping worms object name\x3A:OverlappingWorms
+    Non-overlapping worms object name\x3A:NonOverlappingWorms
+    Training set file location:Elsewhere...\x7CC\x3A\\\\trunk\\\\imaging\\\\worm_identification\\\\streamlined_cluster_resolving
+    Training set file name:params_from_training_data_101020.mat
+    Use training set weights?:No
+    Overlap weight:3
+    Leftover weight:5
+    Retain outlines of the overlapping objects?:No
+    Outline colormap?:Default
+    Name the overlapped outline image:OverlappedWormOutlines
+    Retain outlines of the non-overlapping worms?:No
+    Name the non-overlapped outlines image:NonoverlappedWormOutlines
+    Train or untangle worms?:Untangle
+    Minimum area percentile:1
+    Minimum area factor:0.85
+    Maximum area percentile:90
+    Maximum area factor:1.0
+    Minimum length percentile:1
+    Minimum length factor:0.9
+    Maximum length percentile:99
+    Maximum length factor:1.1
+    Maximum cost percentile:90
+    Maximum cost factor:1.9
+    Number of control points:21
+    Maximum radius percentile:90
+    Maximum radius factor:1
+    Maximum complexity:Process all clusters
+    Custom complexity:399
+
+UntangleWorms:[module_num:2|svn_version:\'10598\'|variable_revision_number:2|show_window:True|notes:\x5B\x5D]
+    Binary image:BinaryWorms
+    Overlap style\x3A:Both
+    Overlapping worms object name\x3A:OverlappingWorms
+    Non-overlapping worms object name\x3A:NonOverlappingWorms
+    Training set file location:Elsewhere...\x7CC\x3A\\\\trunk\\\\imaging\\\\worm_identification\\\\streamlined_cluster_resolving
+    Training set file name:params_from_training_data_101020.mat
+    Use training set weights?:No
+    Overlap weight:3
+    Leftover weight:5
+    Retain outlines of the overlapping objects?:No
+    Outline colormap?:Default
+    Name the overlapped outline image:OverlappedWormOutlines
+    Retain outlines of the non-overlapping worms?:No
+    Name the non-overlapped outlines image:NonoverlappedWormOutlines
+    Train or untangle worms?:Untangle
+    Minimum area percentile:1
+    Minimum area factor:0.85
+    Maximum area percentile:90
+    Maximum area factor:1.0
+    Minimum length percentile:1
+    Minimum length factor:0.9
+    Maximum length percentile:99
+    Maximum length factor:1.1
+    Maximum cost percentile:90
+    Maximum cost factor:1.9
+    Number of control points:21
+    Maximum radius percentile:90
+    Maximum radius factor:1
+    Maximum complexity:Medium
+    Custom complexity:399
+    
+UntangleWorms:[module_num:3|svn_version:\'10598\'|variable_revision_number:2|show_window:True|notes:\x5B\x5D]
+    Binary image:BinaryWorms
+    Overlap style\x3A:Both
+    Overlapping worms object name\x3A:OverlappingWorms
+    Non-overlapping worms object name\x3A:NonOverlappingWorms
+    Training set file location:Elsewhere...\x7CC\x3A\\\\trunk\\\\imaging\\\\worm_identification\\\\streamlined_cluster_resolving
+    Training set file name:params_from_training_data_101020.mat
+    Use training set weights?:No
+    Overlap weight:3
+    Leftover weight:5
+    Retain outlines of the overlapping objects?:No
+    Outline colormap?:Default
+    Name the overlapped outline image:OverlappedWormOutlines
+    Retain outlines of the non-overlapping worms?:No
+    Name the non-overlapped outlines image:NonoverlappedWormOutlines
+    Train or untangle worms?:Untangle
+    Minimum area percentile:1
+    Minimum area factor:0.85
+    Maximum area percentile:90
+    Maximum area factor:1.0
+    Minimum length percentile:1
+    Minimum length factor:0.9
+    Maximum length percentile:99
+    Maximum length factor:1.1
+    Maximum cost percentile:90
+    Maximum cost factor:1.9
+    Number of control points:21
+    Maximum radius percentile:90
+    Maximum radius factor:1
+    Maximum complexity:High
+    Custom complexity:399
+
+UntangleWorms:[module_num:4|svn_version:\'10598\'|variable_revision_number:2|show_window:True|notes:\x5B\x5D]
+    Binary image:BinaryWorms
+    Overlap style\x3A:Both
+    Overlapping worms object name\x3A:OverlappingWorms
+    Non-overlapping worms object name\x3A:NonOverlappingWorms
+    Training set file location:Elsewhere...\x7CC\x3A\\\\trunk\\\\imaging\\\\worm_identification\\\\streamlined_cluster_resolving
+    Training set file name:params_from_training_data_101020.mat
+    Use training set weights?:No
+    Overlap weight:3
+    Leftover weight:5
+    Retain outlines of the overlapping objects?:No
+    Outline colormap?:Default
+    Name the overlapped outline image:OverlappedWormOutlines
+    Retain outlines of the non-overlapping worms?:No
+    Name the non-overlapped outlines image:NonoverlappedWormOutlines
+    Train or untangle worms?:Untangle
+    Minimum area percentile:1
+    Minimum area factor:0.85
+    Maximum area percentile:90
+    Maximum area factor:1.0
+    Minimum length percentile:1
+    Minimum length factor:0.9
+    Maximum length percentile:99
+    Maximum length factor:1.1
+    Maximum cost percentile:90
+    Maximum cost factor:1.9
+    Number of control points:21
+    Maximum radius percentile:90
+    Maximum radius factor:1
+    Maximum complexity:Very high
+    Custom complexity:399
+
+UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|show_window:True|notes:\x5B\x5D]
+    Binary image:BinaryWorms
+    Overlap style\x3A:Both
+    Overlapping worms object name\x3A:OverlappingWorms
+    Non-overlapping worms object name\x3A:NonOverlappingWorms
+    Training set file location:Elsewhere...\x7CC\x3A\\\\trunk\\\\imaging\\\\worm_identification\\\\streamlined_cluster_resolving
+    Training set file name:params_from_training_data_101020.mat
+    Use training set weights?:No
+    Overlap weight:3
+    Leftover weight:5
+    Retain outlines of the overlapping objects?:No
+    Outline colormap?:Default
+    Name the overlapped outline image:OverlappedWormOutlines
+    Retain outlines of the non-overlapping worms?:No
+    Name the non-overlapped outlines image:NonoverlappedWormOutlines
+    Train or untangle worms?:Untangle
+    Minimum area percentile:1
+    Minimum area factor:0.85
+    Maximum area percentile:90
+    Maximum area factor:1.0
+    Minimum length percentile:1
+    Minimum length factor:0.9
+    Maximum length percentile:99
+    Maximum length factor:1.1
+    Maximum cost percentile:90
+    Maximum cost factor:1.9
+    Number of control points:21
+    Maximum radius percentile:90
+    Maximum radius factor:1
+    Maximum complexity:Custom
+    Custom complexity:399
+'''
+        pipeline = cpp.Pipeline()
+        def callback(caller, event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO.StringIO(data))
+        self.assertEqual(len(pipeline.modules()), 5)
+        module = pipeline.modules()[0]
+        self.assertTrue(isinstance(module, U.UntangleWorms))
+        self.assertEqual(module.image_name, "BinaryWorms")
+        self.assertEqual(module.overlap, U.OO_BOTH)
+        self.assertEqual(module.overlap_objects, "OverlappingWorms")
+        self.assertEqual(module.nonoverlapping_objects, "NonOverlappingWorms")
+        self.assertFalse(module.wants_training_set_weights)
+        self.assertEqual(module.override_overlap_weight.value, 3)
+        self.assertEqual(module.override_leftover_weight.value, 5)
+        self.assertEqual(module.custom_complexity, 399)
+        
+        for module, complexity in zip(pipeline.modules(),
+                                      (U.C_ALL, U.C_MEDIUM, U.C_HIGH,
+                                       U.C_VERY_HIGH, U.C_CUSTOM)):
+            self.assertEqual(module.complexity, complexity)
     
     def make_workspace(self, image, data=None):
         '''Make a workspace to run the given image and params file
@@ -2056,7 +2305,13 @@ UntangleWorms:[module_num:3|svn_version:\'10598\'|variable_revision_number:1|sho
         
     def test_05_00_get_all_paths_recur_none(self):
         module = U.UntangleWorms()
-        paths_list = module.get_all_paths_recur([[]], [], [0], [])
+        class Result(object):
+            def __init__(self):
+                self.branch_areas = []
+                self.segments = []
+                self.incidence_matrix = np.zeros((0,0), bool)
+                self.segment_lengths = []
+        paths_list = list(module.get_all_paths_recur(Result(), [], [], 0, 0, 1000))
         self.assertEqual(len(paths_list), 0)
         
     def test_05_01_get_all_paths_recur_one(self):
@@ -2064,7 +2319,15 @@ UntangleWorms:[module_num:3|svn_version:\'10598\'|variable_revision_number:1|sho
         #
         # Branch # 0 connects segment 0 and segment 1
         #
-        paths_list = module.get_all_paths_recur([[0],[0]],[[0,1]],[0],[[0]])
+        class Result(object):
+            def __init__(self):
+                self.incident_branch_areas = [[0],[0]]
+                self.incident_segments = [[0,1]]
+                self.segments = [np.zeros((2,1)),np.zeros((2,1))]
+                self.segment_lengths = [1,1]
+                self.incidence_directions = np.array([[False,True]])
+        paths_list = list(module.get_all_paths_recur(
+            Result(), [0], [[0]], 1, 0, 1000))
         self.assertEqual(len(paths_list), 1)
         path = paths_list[0]
         self.assertTrue(isinstance(path, module.Path))
@@ -2077,8 +2340,16 @@ UntangleWorms:[module_num:3|svn_version:\'10598\'|variable_revision_number:1|sho
         # Branch # 0 connects segment 0 and segment 1
         # Branch # 1 connects segment 1 and 2
         #
-        paths_list = module.get_all_paths_recur([[0],[0,1],[1]],
-                                                [[0,1],[1,2]],[0],[[0]])
+        class Result(object):
+            def __init__(self):
+                self.incident_branch_areas = [[0],[0,1],[1]]
+                self.incident_segments = [[0,1],[1,2]]
+                self.segments = [np.zeros((2,1)),np.zeros((2,1))] * 3
+                self.segment_lengths = [1,1,1]
+                self.incidence_directions = np.array([[False,True,False],
+                                                      [False,True,False]])
+        paths_list = list(module.get_all_paths_recur(Result(),[0],[[0]],
+                                                     1, 0, 1000))
         self.assertEqual(len(paths_list), 2)
         expected = (((0,1),(0,)),((0,1,2),(0,1)))
         sorted_list = tuple(sorted([(tuple(path.segments), tuple(path.branch_areas))
@@ -2090,9 +2361,16 @@ UntangleWorms:[module_num:3|svn_version:\'10598\'|variable_revision_number:1|sho
         #
         # A hopeless tangle where all branches connect to all segments
         #
-        paths_list = module.get_all_paths_recur([list(range(3))]*4,
-                                                [list(range(4))]*3,
-                                                [0],[[i] for i in range(3)])
+        class Result(object):
+            def __init__(self):
+                self.incident_branch_areas = [list(range(3))]*4
+                self.incident_segments = [list(range(4))]*3
+                self.segments = [(np.zeros((2,1)), np.zeros((2,1)))] * 4
+                self.segment_lengths = [1] * 4
+                self.incidence_directions = np.ones((3,4), bool)
+        paths_list = module.get_all_paths_recur(Result(),
+                                                [0],[[i] for i in range(3)],
+                                                1, 0, 1000)
         sorted_list = tuple(sorted([(tuple(path.segments), tuple(path.branch_areas))
                                     for path in paths_list]))
         #
@@ -2131,7 +2409,7 @@ UntangleWorms:[module_num:3|svn_version:\'10598\'|variable_revision_number:1|sho
                 self.branch_areas = []
                 self.segments = []
                 self.incidence_matrix = np.zeros((0,0), bool)
-        path_list = module.get_all_paths(Result())
+        path_list = list(module.get_all_paths(Result(), 0, 1000))
         self.assertEqual(len(path_list), 0)
         
     def test_06_01_get_all_paths_one(self):
@@ -2139,9 +2417,10 @@ UntangleWorms:[module_num:3|svn_version:\'10598\'|variable_revision_number:1|sho
         class Result(object):
             def __init__(self):
                 self.branch_areas = []
-                self.segments = [0]
+                self.segments = [[np.zeros((1,2)),np.zeros((1,2))]]
                 self.incidence_matrix = np.zeros((0,1), bool)
-        path_list = module.get_all_paths(Result())
+                self.incidence_directions = [[True, False]]
+        path_list = list(module.get_all_paths(Result(), 0, 1000))
         self.assertEqual(len(path_list), 1)
         path = path_list[0]
         self.assertTrue(isinstance(path, module.Path))
@@ -2153,9 +2432,10 @@ UntangleWorms:[module_num:3|svn_version:\'10598\'|variable_revision_number:1|sho
         class Result(object):
             def __init__(self):
                 self.branch_areas = [1]
-                self.segments = [0,1]
+                self.segments = [[np.zeros((1,2)),np.zeros((1,2))]] * 2 
                 self.incidence_matrix = np.ones((1,2), bool)
-        path_list = module.get_all_paths(Result())
+                self.incidence_directions = np.array([[True, False]])
+        path_list = list(module.get_all_paths(Result(), 0, 1000))
         self.assertEqual(len(path_list), 3)
         sorted_list = tuple(sorted([(tuple(path.segments), tuple(path.branch_areas))
                                     for path in path_list]))
@@ -2170,10 +2450,13 @@ UntangleWorms:[module_num:3|svn_version:\'10598\'|variable_revision_number:1|sho
         class Result(object):
             def __init__(self):
                 self.branch_areas = [0,1,2]
-                self.segments = [0,1,2,3]
-                self.incidence_matrix = np.random.uniform(size=(3,4)) > .5
+                self.segments = [[np.zeros((1,2)),np.zeros((1,2))]] * 4
+                self.incidence_directions = np.random.uniform(size=(3,4)) > .25
+                self.incidence_matrix = (
+                    self.incidence_directions | 
+                    (np.random.uniform(size=(3,4)) > .25))
         graph = Result()
-        path_list = module.get_all_paths(graph)
+        path_list = module.get_all_paths(graph, 0, 1000)
         for path in path_list:
             self.assertEqual(len(path.segments), len(path.branch_areas)+1)
             if len(path.segments) > 1:

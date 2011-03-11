@@ -935,6 +935,9 @@ class ModuleView:
                     if v.set_directory_fn is not None:
                         v.set_directory_fn(dlg.Directory)
                     v.value = dlg.Filename
+                    setting_edited_event = SettingEditedEvent(
+                        v, self.__module, v.value, event)
+                    self.notify(setting_edited_event)
                     self.reset_view()
                     
             button_control.Bind(wx.EVT_BUTTON, on_press)

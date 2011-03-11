@@ -954,8 +954,9 @@ class IdentifyPrimaryObjects(cpmi.Identify):
                 smask = mask
             normalized_image = 1 - stretch(simage, smask)
             
+            window = max(3, int(diameter * 3 / 2))
             log_image = laplacian_of_gaussian(normalized_image, smask, 
-                                              int(diameter * 3/2), sigma)
+                                              window, sigma)
             if shrunken:
                 i_j = (np.mgrid[0:image.shape[0],
                                 0:image.shape[1]].astype(float) * 

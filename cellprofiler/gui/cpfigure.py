@@ -152,10 +152,13 @@ def create_or_find(parent=None, id=-1, title="",
 
 def close_all(parent):
     windows = [x for x in parent.GetChildren()
-               if isinstance(x, CPFigureFrame)]
+               if isinstance(x, wx.Frame)]
         
     for window in windows:
-        window.on_close(None)
+        if isinstance(window, CPFigureFrame):
+            window.on_close(None)
+        else:
+            window.Destroy()
         
     reset_cpfigure_position()
     try:

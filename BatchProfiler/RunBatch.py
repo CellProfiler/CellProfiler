@@ -349,7 +349,7 @@ def RunOne_2_0(x, run):
     return result
     
 def KillOne(run):
-    p=os.popen(". /broad/lsf/conf/profile.lsf;bkill %(job_id)d"%(run),"r")
+    p=os.popen(". /broad/lsf/conf/profile.lsf;bkill -s 6 %(job_id)d"%(run),"r")
     
 
 def RunTextFile(run):

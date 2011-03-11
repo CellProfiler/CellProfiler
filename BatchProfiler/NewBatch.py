@@ -108,7 +108,7 @@ keys = { 'data_dir':lookup('data_dir', '/imaging/analysis'),
          'batch_size':lookup('batch_size','10'),
          'memory_limit':lookup('memory_limit','2000'),
          'timeout':lookup('timeout','30'),
-         'revision':lookup('revision','10415'),
+         'revision':lookup('revision','10997'),
          'url':myself
          }
 

@@ -17,6 +17,12 @@ import cellprofiler.modules
 import cellprofiler.pipeline as cpp
 from cellprofiler.modules.createbatchfiles import F_BATCH_DATA, CreateBatchFiles
 import RunBatch
+import email.message
+import email.mime.text
+import socket
+
+SENDMAIL="/usr/sbin/sendmail"
+batch_url = "http://%s/batchprofiler/cgi-bin/development/CellProfiler_2.0_test/ViewBatch.py"%(socket.gethostname())
 
 form_data = cgi.FieldStorage()
 myself = os.path.split(__file__)[1]
@@ -98,6 +104,17 @@ def minus_key(d, key):
     d = dict(d)
     del d[key]
     return d
+def SendMail(recipient,body):
+    if os.name != 'nt':
+        pipe=os.popen("%s -t"%(SENDMAIL),"w")
+        pipe.write("To: %s\n"%(recipient))
+        pipe.write("Subject: Batch %d submitted\n"%(batch_id))
+        pipe.write("Content-Type: text/html\n")
+        pipe.write("\n")
+        pipe.write(body)
+        pipe.write("\n")
+        pipe.close()
+    return
 
 keys = { 'data_dir':lookup('data_dir', '/imaging/analysis'),
          'email':lookup('email', 'user@broadinstitute.org'),
@@ -189,8 +206,49 @@ if (form_data.has_key('submit_batch') and
                     "group": None,
                     "status_file_name":status_file_name}
             batch["runs"].append(run)
+
+
+    batch_id = RunBatch.CreateBatchRun(batch)
+
+    email_text=[]
+    email_text.append("<html>")
+    email_text.append("<head><title>Batch # %d</title>"%(batch_id))
+    email_text.append("<style type='text/css'>")
+    email_text.append("""
+table {
+    border-spacing: 0px;
+    border-collapse: collapse;
+}
+td {
+    text-align: left;
+    vertical-align: baseline;
+    padding: 0.1em 0.5em;
+    border: 1px solid #666666;
+}
+""")
+    email_text.append("</style></head>")
+    email_text.append("</head>")
+    email_text.append("<body>")
+    email_text.append("<h1>Results for batch # <a href='%s?batch_id=%d'>%d</a></h1>"%(batch_url,batch_id,batch_id))
+    ##email_text.append("<table>")
+    ##email_text.append("<th><tr><td>First image set</td><td>Last image set</td><td>job #</td></tr></th>")
+    ##for result in results:
+        ##email_text.append("<tr><td>%(start)d</td><td>%(end)d</td><td>%(job)d</td></tr>"%(result))
+        ##email_text.append("<tr><td>%(start)d</td><td>%(end)d</td></tr>"%(result))
+    ##print "result=%s"%(result[job])
+    ##email_text.append("</table>")
+    email_text.append("Data Directory: %s"%(keys["data_dir"]))
+    email_text.append("</body>")
+    email_text.append("</html>")
+    email_text= '\n'.join(email_text)
+
+    SendMail(keys["email"],email_text)
+
+    results = RunBatch.RunAll(batch_id)
+
+
     print '''<html>
-    <head><title>Batch # (batch_id)d</title>
+    <head><title>Batch #%(batch_id)d</title>
     <style type='text/css'>
 table {
     border-spacing: 0px;
@@ -205,8 +263,7 @@ td {
 </style></head>
 </head>
 <body>'''%(locals())
-    batch_id = RunBatch.CreateBatchRun(batch)
-    results = RunBatch.RunAll(batch_id)
+
     print '''
 <h1>Results for batch # <a href='ViewBatch.py?batch_id=%(batch_id)d'>%(batch_id)d</a></h1>
 <table>

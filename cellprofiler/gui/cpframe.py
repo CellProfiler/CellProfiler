@@ -4,7 +4,7 @@ CellProfiler is distributed under the GNU General Public License.
 See the accompanying file LICENSE for details.
 
 Copyright (c) 2003-2009 Massachusetts Institute of Technology
-Copyright (c) 2009-2010 Broad Institute
+Copyright (c) 2009-2011 Broad Institute
 All rights reserved.
 
 Please see the AUTHORS file for credits.
@@ -361,7 +361,7 @@ class CPFrame(wx.Frame):
         sizer.Add(wx.StaticBitmap(dlg, -1, splashbitmap), 0, wx.EXPAND | wx.ALL, 5)
         
         cellprofiler_copyright = """Copyright (c) 2003-2009 Massachusetts Institute of Technology
-Copyright (c) 2009-2010 Broad Institute
+Copyright (c) 2009-2011 Broad Institute
 All rights reserved."""
         copyright_ctl = wx.StaticText(dlg, -1, cellprofiler_copyright)
         sizer.Add(copyright_ctl, 0, wx.ALIGN_LEFT | wx.ALL, 5)
@@ -1140,7 +1140,7 @@ Public License instead of this License.
 
 bsd_license = """
 Copyright (c) 2003-2009 Massachusetts Institute of Technology
-Copyright (c) 2009-2010 Broad Institute
+Copyright (c) 2009-2011 Broad Institute
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without

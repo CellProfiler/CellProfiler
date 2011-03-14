@@ -2044,7 +2044,8 @@ class LoadImages(cpmodule.CPModule):
         image_size = None
         first_image_filename = None
         for fd in self.images:
-            for channel in fd.channels:
+            for channel in (fd.channels if self.is_multichannel 
+                            else fd.channels[:1]):
                 wants_images = self.channel_wants_images(channel)
                 image_name = channel.get_image_name()
                 provider = workspace.image_set.get_image_provider(image_name)

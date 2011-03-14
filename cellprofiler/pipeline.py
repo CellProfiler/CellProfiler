@@ -557,6 +557,7 @@ class Pipeline(object):
                          object.
         See savetxt for more comprehensive documentation.
         '''
+        from cellprofiler.utilities.get_revision import get_revision
         self.__modules = []
         if hasattr(fd_or_filename,'seek') and hasattr(fd_or_filename,'read'):
             fd = fd_or_filename
@@ -591,7 +592,21 @@ class Pipeline(object):
                     raise ValueError("Pipeline file version is %d.\nCellProfiler can only read version %d or less.\nPlease upgrade to the latest version of CellProfiler." %
                                      (version, NATIVE_VERSION))
             elif kwd == H_SVN_REVISION:
-                print "Pipeline saved with CellProfiler SVN revision %s"%value
+                revision = int(value)
+                CURRENT_SVN_REVISION = get_revision()
+                if revision > CURRENT_SVN_REVISION:
+                    import wx
+                    dlg = wx.MessageDialog(
+                            parent = None, 
+                            message = 'Your pipeline SVN revision is %d but you are running CellProfiler SVN revsion %d. \nLoading this pipeline may fail or have unpredictable results. Continue?' %(revision, CURRENT_SVN_REVISION),
+                            caption = 'Pipeline revsion mismatch', 
+                            style = wx.OK|wx.CANCEL|wx.ICON_QUESTION)
+                    if dlg.ShowModal() != wx.ID_OK:
+                        dlg.Destroy()
+                        return None
+                    dlg.Destroy()
+                else:
+                    print "Pipeline saved with CellProfiler SVN revision %s"%value
             elif kwd == H_FROM_MATLAB:
                 from_matlab = bool(value)
             else:

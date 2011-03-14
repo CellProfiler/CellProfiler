@@ -24,8 +24,8 @@ the branchpoints that lie outside the seed objects.</li>
 # CellProfiler is distributed under the GNU General Public License.
 # See the accompanying file LICENSE for details.
 #
-# Developed by the Whitehead Institute for Biomedical Research.
-# Copyright 2003-2010
+# Developed at the Whitehead Institute for Biomedical Research and the Broad Institute
+# Copyright 2003-2011
 #
 # Please see the AUTHORS file for credits.
 #

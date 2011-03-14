@@ -235,6 +235,9 @@ class PipelineListView(object):
             self.__on_pipeline_cleared(pipeline, event)
             self.__first_dirty_module = 0
         elif isinstance(event,cpp.ModuleEditedPipelineEvent):
+            if event.module_num not in [
+                x.module_num for x in self.get_selected_modules()]:
+                self.select_one_module(event.module_num)
             self.__first_dirty_module = min(self.__first_dirty_module, event.module_num - 1)
     
     def notify_directory_change(self):

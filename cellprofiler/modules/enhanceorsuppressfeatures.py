@@ -9,7 +9,7 @@ to the rest of the image, by applying image processing filters to the image. It 
 # See the accompanying file LICENSE for details.
 # 
 # Developed by the Broad Institute
-# Copyright 2003-2010
+# Copyright 2003-2011
 # 
 # Please see the AUTHORS file for credits.
 # 

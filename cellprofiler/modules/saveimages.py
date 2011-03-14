@@ -21,7 +21,7 @@ See also <b>LoadImages</b>, <b>ConserveMemory</b>.
 # See the accompanying file LICENSE for details.
 # 
 # Developed by the Broad Institute
-# Copyright 2003-2010
+# Copyright 2003-2011
 # 
 # Please see the AUTHORS file for credits.
 # 

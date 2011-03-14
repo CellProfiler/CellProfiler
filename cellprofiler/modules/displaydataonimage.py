@@ -15,7 +15,7 @@ CellProfiler 1.0 were merged into DisplayDataOnImage in the CellProfiler 2.0.
 # See the accompanying file LICENSE for details.
 # 
 # Developed by the Broad Institute
-# Copyright 2003-2010
+# Copyright 2003-2011
 # 
 # Please see the AUTHORS file for credits.
 # 

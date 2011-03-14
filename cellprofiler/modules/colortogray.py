@@ -14,7 +14,7 @@ the relative weights will adjust the contribution of the colors relative to each
 # See the accompanying file LICENSE for details.
 # 
 # Developed by the Broad Institute
-# Copyright 2003-2010
+# Copyright 2003-2011
 # 
 # Please see the AUTHORS file for credits.
 # 

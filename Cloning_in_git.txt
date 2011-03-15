@@ -1,0 +1,18 @@
+mkdir CP-from-git
+cd CP-from-git
+git svn init https://svn.broadinstitute.org/CellProfiler/trunk/CellProfiler
+(while ! git svn fetch ; do echo RETRY; done ) > ../gitlog.txt   # SSL can fail fetching large commits
+
+# get rid of a bunch of stuff from the history to make the repository smaller
+git filter-branch --index-filter "git rm --cached --ignore-unmatch -r  2005_01_12_test3OUT.mat CPAnalayst/src/build CellProfiler/DeveloperDropBox CellProfiler/ExampleImages CellProfiler/Outdated CellProfiler/Promotional CellProfiler/Website_CellProfiler CellProfiler/packages CellProfiler/pyCellProfiler/cellprofiler/ffmpeg CellProfiler/pyCellProfiler/packages CellProfilerManual.p* CellProfiler_Manual.p* CellProfiler_old_matlab/pyCellProfiler/packages DeveloperDropBox ExampleImages ImagesForManual Promotional Website_CellProfiler cellprofiler/ffmpeg packages pyCellProfiler/cellprofiler/ffmpeg pyCellProfiler/packages pycellprofiler/ffmpeg watershedanomaly.fig Outdated CPsubfunctions/graphAnalysisToolbox-1.0 windows/vcredist_x64.exe windows/vcredist_x86.exe bioformats/loci_tools.jar imagej/ij.jar watershedanomaly2.fig ForMikeToCompile pyCellProfiler/bioformats/loci_tools.jar imagej/javacl-1.0-beta-4-shaded.jar Modules/IdentifySecPropagateSubfunction.mexmac imagej/imglib.jar" HEAD
+
+# switch to the actual location you want the CP repository
+mkdir ../CP-git
+cd ../CP-git
+git init
+git pull file:///full/path/to/CP-from-git
+
+Now probably need to do something like this:
+http://rip747.wordpress.com/2009/06/17/reviving-a-git-svn-clone/
+https://git.wiki.kernel.org/index.php/GitFaq#How_do_I_mirror_a_SVN_repository_to_git.3F
+http://git.661346.n2.nabble.com/Best-practices-for-maintaining-a-subversion-mirror-td1571673.html

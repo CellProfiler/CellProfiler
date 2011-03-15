@@ -84,14 +84,30 @@ import cellprofiler.cpmodule as cpm
 import cellprofiler.settings as cps
 import cellprofiler.preferences as cpprefs
 import cellprofiler.measurements as cpmeas
+from cellprofiler.pipeline import GROUP_INDEX
 from identify import M_NUMBER_OBJECT_NUMBER
 from cellprofiler.modules.loadimages import C_FILE_NAME, C_PATH_NAME
-from cellprofiler.gui.help import USING_METADATA_TAGS_REF, USING_METADATA_HELP_REF
+from cellprofiler.gui.help import USING_METADATA_TAGS_REF, USING_METADATA_HELP_REF, USING_METADATA_GROUPING_HELP_REF
 from cellprofiler.preferences import \
      standardize_default_folder_names, DEFAULT_INPUT_FOLDER_NAME, \
      DEFAULT_OUTPUT_FOLDER_NAME, DEFAULT_INPUT_SUBFOLDER_NAME, \
      DEFAULT_OUTPUT_SUBFOLDER_NAME, ABSOLUTE_FOLDER_NAME, \
      IO_FOLDER_CHOICE_HELP_TEXT, IO_WITH_METADATA_HELP_TEXT
+
+
+##############################################
+#
+# Keyword for the cached measurement columns
+#
+##############################################
+D_MEASUREMENT_COLUMNS = "MeasurementColumns"
+
+'''The column name for the image number column'''
+C_IMAGE_NUMBER = "ImageNumber"
+
+'''The column name for the object number column'''
+C_OBJECT_NUMBER = "ObjectNumber"
+D_IMAGE_SET_INDEX = "ImageSetIndex"
 
 ##############################################
 #
@@ -126,6 +142,21 @@ PLATE_TYPES = [NONE_CHOICE,"96","384","5600"]
 COLOR_ORDER = ["red", "green", "blue", "cyan", "magenta", "yellow", "gray", "none"]
 GROUP_COL_DEFAULT = "ImageNumber, Image_Metadata_Plate, Image_Metadata_Well"
 
+##############################################
+#
+# Choices for workspace file
+#
+##############################################
+W_DENSITYPLOT = "DensityPlot"
+W_HISTOGRAM = "Histogram"
+W_SCATTERPLOT = "ScatterPlot"
+W_PLATEVIEWER = "PlateViewer"
+W_BOXPLOT = "BoxPlot"
+W_DISPLAY_ALL = [W_SCATTERPLOT, W_HISTOGRAM, W_PLATEVIEWER, W_DENSITYPLOT, W_BOXPLOT]
+W_INDEX = "Index"
+W_TYPE_ALL = [cpmeas.IMAGE, cpmeas.OBJECT, W_INDEX]
+W_INDEX_ALL = [C_IMAGE_NUMBER, GROUP_INDEX]
+
 """Offset of the image group count in the settings"""
 SETTING_IMAGE_GROUP_COUNT = 29
 
@@ -134,6 +165,9 @@ SETTING_GROUP_FIELD_GROUP_COUNT = 30
 
 """Offset of the filter specification group count in the settings"""
 SETTING_FILTER_FIELD_GROUP_COUNT = 31
+
+"""Offset of the workspace specification group count in the settings"""
+SETTING_WORKSPACE_GROUP_COUNT = 32
 
 ##############################################
 #
@@ -160,21 +194,6 @@ OT_DICTIONARY = {
     "One table per object type": OT_PER_OBJECT,
     "Single object table": OT_COMBINE
     }
-
-##############################################
-#
-# Keyword for the cached measurement columns
-#
-##############################################
-D_MEASUREMENT_COLUMNS = "MeasurementColumns"
-
-'''The column name for the image number column'''
-C_IMAGE_NUMBER = "ImageNumber"
-
-'''The column name for the object number column'''
-C_OBJECT_NUMBER = "ObjectNumber"
-
-D_IMAGE_SET_INDEX = "ImageSetIndex"
 
 def execute(cursor, query, bindings = None, return_result=True):
     if bindings == None:
@@ -221,7 +240,7 @@ def connect_sqlite(db_file):
 class ExportToDatabase(cpm.CPModule):
  
     module_name = "ExportToDatabase"
-    variable_revision_number = 20
+    variable_revision_number = 21
     category = ["File Processing","Data Tools"]
 
     def create_settings(self):
@@ -231,8 +250,9 @@ class ExportToDatabase(cpm.CPModule):
         self.db_type = cps.Choice(
             "Database type",
             db_choices, default_db, doc = """
-            What type of database do you want to use? <ul><li><i>MySQL</i>
-            allows the data to be written directly to a MySQL 
+            What type of database do you want to use? 
+            <ul>
+            <li><i>MySQL</i> allows the data to be written directly to a MySQL 
             database. MySQL is open-source software; you may require help from 
             your local Information Technology group to set up a database 
             server.</li>
@@ -246,7 +266,8 @@ class ExportToDatabase(cpm.CPModule):
             SQLite files directly. SQLite is simpler to set up than MySQL and 
             can more readily be run on your local computer rather than requiring a 
             database server. More information about SQLite can be found at 
-            <a href="http://www.sqlite.org/">here</a>. </li></ul>""")
+            <a href="http://www.sqlite.org/">here</a>. </li>
+            </ul>""")
         
         self.db_name = cps.Text(
             "Database name", "DefaultDB",doc = """
@@ -274,11 +295,11 @@ class ExportToDatabase(cpm.CPModule):
                 DEFAULT_OUTPUT_FOLDER_NAME, DEFAULT_INPUT_FOLDER_NAME, 
                 ABSOLUTE_FOLDER_NAME, DEFAULT_OUTPUT_SUBFOLDER_NAME,
                 DEFAULT_INPUT_SUBFOLDER_NAME],
-            doc="""<i>(Used only when saving csvs, or creating a properties file)</i><br>
-            This setting determines where the .csv files are saved if
-            you decide to save measurements to files instead of writing them
-            directly to the database. If you request a CellProfiler Analyst properties file,
-            it will also be saved to this location. %(IO_FOLDER_CHOICE_HELP_TEXT)s 
+            doc="""<i>(Used only when using .csv's or a SQLite database, and/or creating a properties or workspace file)</i><br>
+            This setting determines where the .csv files or SQLite database is saved if
+            you decide to write measurements to files instead of writing them
+            directly to the database. If you request a CellProfiler Analyst properties file
+            or workspace file, it will also be saved to this location. %(IO_FOLDER_CHOICE_HELP_TEXT)s 
             
             <p>%(IO_WITH_METADATA_HELP_TEXT)s %(USING_METADATA_TAGS_REF)s<br>
             For instance, if you have a metadata tag named 
@@ -358,8 +379,8 @@ class ExportToDatabase(cpm.CPModule):
             Leave this box unchecked to specify which images should be included or to override the automatic values.""")
         
         self.image_groups = []
-        self.image_group_count = cps.HiddenCount(self.image_groups)
-        self.add_image_group()
+        self.image_group_count = cps.HiddenCount(self.image_groups,"Properties image group count")
+        self.add_image_group(False)
         self.add_image_button = cps.DoSomething("", "Add another image",
                                            self.add_image_group)
         
@@ -372,26 +393,54 @@ class ExportToDatabase(cpm.CPModule):
             on a per-group basis (e.g.: per-well) instead of on a per-image basis when scoring with Classifier. It will 
             also provide new options in the Classifier fetch menu so you can fetch objects from images with specific 
             values for the group columns.</p>""")
+        
         self.group_field_groups = []
-        self.group_field_count = cps.HiddenCount(self.group_field_groups)
+        self.group_field_count = cps.HiddenCount(self.group_field_groups,"Properties group field count")
         self.add_group_field_group()
         self.add_group_field_button = cps.DoSomething("", "Add another group",
                                            self.add_group_field_group)
         
         self.properties_wants_filters = cps.Binary(
-            "Do you want to add filter fields?", False,
-            doc = """<i>(Used only if creating a properties file)</i><br>
+            "Do you want to add filter fields?", False,doc = 
+            """<i>(Used only if creating a properties file)</i><br>
             You can specify a subset of the images in your experiment by defining a <i>filter</i>. Filters are useful, for 
             example, for fetching and scoring objects in Classifier or making graphs using the 
             plotting tools that satisfy a specific metadata contraint. """)
+        
         self.create_filters_for_plates = cps.Binary(
-            "Automatically create a filter for each plate?",False,
-            doc= """If you have specified a plate metadata tag, checking this setting will create a set of filters
+            "Automatically create a filter for each plate?",False, doc= """
+            <i>(Used only if creating a properties file and specifiying an image data filter)</i><br>
+            If you have specified a plate metadata tag, checking this setting will create a set of filters
             in the properties file, one for each plate.""")
+        
         self.filter_field_groups = []
-        self.filter_field_count = cps.HiddenCount(self.filter_field_groups)
+        self.filter_field_count = cps.HiddenCount(self.filter_field_groups,"Properties filter field count")
         self.add_filter_field_button = cps.DoSomething("", "Add another filter",
                                            self.add_filter_field_group)
+        
+        self.create_workspace_file = cps.Binary(
+            "Create a CellProfiler Analyst workspace file?", False, doc = """
+            You can generate a workspace file for use with 
+            CellProfiler Analyst, a data exploration tool which can 
+            also be downloaded from <a href="http://www.cellprofiler.org/">
+            http://www.cellprofiler.org/</a>. A workspace file allows you 
+            to open a selected set of measurements with the display tools
+            of your choice. This is useful, for example, if you want examine a standard
+            set of quality control image measurements for outliers.""")
+        
+        self.divider = cps.Divider(line=True)
+        self.divider_props = cps.Divider(line=True)
+        self.divider_props_wkspace = cps.Divider(line=True)
+        self.divider_wkspace = cps.Divider(line=True)
+        
+        self.workspace_measurement_groups = []
+        self.workspace_measurement_count = cps.HiddenCount(self.workspace_measurement_groups, "Workspace measurement count")
+        
+        def add_workspace_measurement_group(can_remove = True):
+            self.add_workspace_measurement_group(can_remove)
+            
+        add_workspace_measurement_group(False)
+        self.add_workspace_measurement_button = cps.DoSomething("", "Add another measurement", self.add_workspace_measurement_group)
         
         self.mysql_not_available = cps.Divider("Cannot write to MySQL directly - CSV file output only", line=False, 
             doc= """The MySQLdb python module could not be loaded.  MySQLdb is necessary for direct export.""")
@@ -545,22 +594,25 @@ class ExportToDatabase(cpm.CPModule):
         
     def add_image_group(self,can_remove = True):
         group = cps.SettingsGroup()
+        
+        group.can_remove = can_remove
+        
         group.append(
-            "image_cols", cps.Choice("Select an image to include",["None"],choices_fn = self.get_property_file_image_choices,
-            doc="""<i>(Used only if creating a properties file and specifiying the image information)</i><br>
+            "image_cols", cps.Choice("Select an image to include",["None"],choices_fn = self.get_property_file_image_choices, doc="""
+            <i>(Used only if creating a properties file and specifiying the image information)</i><br>
             Choose image name to include it in the properties file of images."""))
         
         group.append(
             "wants_automatic_image_name", cps.Binary(
-            "Use the image name for the display?", True,
-            doc="""<i>(Used only if creating a properties file and specifiying the image information)</i><br>
+            "Use the image name for the display?", True, doc=
+            """<i>(Used only if creating a properties file and specifiying the image information)</i><br>
             Use the image name as given above for the displayed name. You can name
             the file yourself if you leave this box unchecked."""))
 
         group.append(
             "image_name", cps.Text(
-            "Image name", "Channel%d"%(len(self.image_groups)+1),
-            doc="""<i>(Used only if creating a properties file, specifiying the image information and naming the image)</i><br>
+            "Image name", "Channel%d"%(len(self.image_groups)+1), doc=
+            """<i>(Used only if creating a properties file, specifiying the image information and naming the image)</i><br>
             Enter a name for the specified image"""))
         
         default_color = (COLOR_ORDER[len(self.image_groups)]
@@ -569,12 +621,13 @@ class ExportToDatabase(cpm.CPModule):
         
         group.append(
             "image_channel_colors", cps.Choice(
-            "Channel color", COLOR_ORDER, default_color,
-            doc="""<i>(Used only if creating a properties file and specifiying the image information)</i><br>
-            Enter a color that this channel should be displayed with"""))
+            "Channel color", COLOR_ORDER, default_color, doc="""
+            <i>(Used only if creating a properties file and specifiying the image information)</i><br>
+            Enter a color to display this channel."""))
         
-        group.append("remover", cps.RemoveSettingButton("", "Remove this data set", self.image_groups, group))
-        group.append("divider", cps.Divider(line=True))
+        group.append("remover", cps.RemoveSettingButton("", "Remove this image", self.image_groups, group))
+        
+        group.append("divider", cps.Divider(line=False))
         
         self.image_groups.append(group)
                              
@@ -582,13 +635,13 @@ class ExportToDatabase(cpm.CPModule):
         group = cps.SettingsGroup()
         group.append(
             "group_name",cps.Text(
-            "Enter the name of the group",'',
-            doc="""<i>(Used only if creating a properties file and specifiying an image data group)</i><br>
+            "Enter the name of the group",'',doc="""
+            <i>(Used only if creating a properties file and specifiying an image data group)</i><br>
             Enter a name for the group. Only alphanumeric characters and underscores are permitted."""))
         group.append(
             "group_statement", cps.Text(
-            "Enter the per-image columns which define the group, separated by commas",GROUP_COL_DEFAULT,
-            doc="""<i>(Used only if creating a properties file and specifiying an image data group)</i><br>
+            "Enter the per-image columns which define the group, separated by commas",GROUP_COL_DEFAULT, doc="""
+            <i>(Used only if creating a properties file and specifiying an image data group)</i><br>
             To define a group, enter the image key columns followed by group key columns, each separated by commas.
             <p>In CellProfiler, the image key column is always given the name as <i>ImageNumber</i>; group keys
             are typically metadata columns which are always prefixed with <i>Image_Metadata_</i>. For example, if you 
@@ -604,15 +657,18 @@ class ExportToDatabase(cpm.CPModule):
         
     def add_filter_field_group(self,can_remove = True):
         group = cps.SettingsGroup()
+        
+        group.can_remove = can_remove
+        
         group.append(
             "filter_name",cps.Text(
-            "Enter the name of the filter",'',
-            doc="""<i>(Used only if creating a properties file and specifiying an image data filter)</i><br>
+            "Enter the name of the filter",'',doc="""
+            <i>(Used only if creating a properties file and specifiying an image data filter)</i><br>
             Enter a name for the filter. Only alphanumeric characters and underscores are permitted."""))
         group.append(
             "filter_statement", cps.Text(
-            "Enter the MySQL WHERE clause to define a filter",'',
-            doc="""<i>(Used only if creating a properties file and specifiying an image data filter)</i><br>
+            "Enter the MySQL WHERE clause to define a filter",'',doc="""
+            <i>(Used only if creating a properties file and specifiying an image data filter)</i><br>
             To define a filter, enter a MySQL <i>WHERE</i> clause that returns image-keys for images you want to include.
             For example, here is a filter that returns only images from plate 1:<br>
             <code>Image_Metadata_Plate = '1'</code><br>
@@ -625,6 +681,134 @@ class ExportToDatabase(cpm.CPModule):
         
         self.filter_field_groups.append(group)
         
+    def add_workspace_measurement_group(self, can_remove = True):
+        group = cps.SettingsGroup()
+        self.workspace_measurement_groups.append(group)
+        
+        group.can_remove = can_remove
+        
+        group.append("divider", cps.Divider(line=False))
+        
+        group.append(
+            "measurement_display", cps.Choice(
+            "Select the measurement display tool",
+            W_DISPLAY_ALL, doc="""
+            <i>(Used only when Create workspace file is checked)</i><br>
+            Select what display tool in CPA you want to use to open the 
+            measurements.
+            <ul>
+            <li>%(W_SCATTERPLOT)s</li>
+            <li>%(W_HISTOGRAM)s</li>
+            <li>%(W_DENSITYPLOT)s</li>
+            <li>%(W_PLATEVIEWER)sP</li>
+            <li>%(W_BOXPLOT)s</li>
+            </ul>"""%globals()))
+        
+        def measurement_type_help():
+            return """
+                <i>(Used only when Create workspace file is checked)</i><br>
+                You can plot two types of measurements:
+                <ul>
+                <li><i>Image:</i> For a per-image measurement, one numerical value is 
+                recorded for each image analyzed.
+                Per-image measurements are produced by
+                many modules. Many have <b>MeasureImage</b> in the name but others do not
+                (e.g., the number of objects in each image is a per-image 
+                measurement made by <b>IdentifyObject</b> 
+                modules).</li>
+                <li><i>Object:</i> For a per-object measurement, each identified 
+                object is measured, so there may be none or many 
+                numerical values recorded for each image analyzed. These are usually produced by
+                modules with <b>MeasureObject</b> in the name.</li>
+                </ul>"""%globals()
+        
+        def object_name_help():
+            return """<i>(Used only when Create workspace file is checked)</i><br>
+                Select the object that you want to measure from the list.
+                This should be an object created by a previous module such as
+                <b>IdentifyPrimaryObjects</b>, <b>IdentifySecondaryObjects</b>, or
+                <b>IdentifyTertiaryObjects</b>."""
+            
+        def measurement_name_help():
+            return """<i>(Used only when Create workspace file is checked)</i><br>
+            Select the measurement to be plotted on the desired axis."""
+        
+        def index_name_help():
+            return """<i>(Used only when Create workspace file is checked and an index is plotted)</i><br>
+            Select the index to be plot on the selected axis. Two options are available:
+            <ul>
+            <li><i>%(C_IMAGE_NUMBER)s:</i> In CellProfiler, the unique identifier for each image 
+            is always given this name. Selecting this option allows you to plot a single measurement
+            for each image indexed by the order it was processed.</li>
+            <li><i>%(GROUP_INDEX)s:</i> This identifier is used in cases where grouping is applied.
+            Each image in a group is given an index indicating the order it was processed. Selecting
+            this option allows you to plot a set of measurements grouped by a common index. 
+            %(USING_METADATA_GROUPING_HELP_REF)s
+            </li>
+            </ul>"""%globals()
+            
+        group.append(
+            "x_measurement_type", cps.Choice(
+            "Type of measurement to plot on the x-axis",
+            W_TYPE_ALL, doc = measurement_type_help()))
+
+        group.append(
+            "x_object_name", cps.ObjectNameSubscriber(
+            "Enter the object name","None",
+            doc = object_name_help()))
+        
+        def object_fn_x():
+            if group.x_measurement_type.value in ( cpmeas.IMAGE, cpmeas.EXPERIMENT ):
+                return group.x_measurement_type.value
+            elif group.x_measurement_type.value == cpmeas.OBJECT:
+                return group.x_object_name.value
+            else:
+                raise NotImplementedError("Measurement type %s is not supported"%
+                                              group.x_measurement_type.value)
+                
+        group.append(
+            "x_measurement_name", cps.Measurement(
+            "Select the x-axis measurement", object_fn_x,
+            doc = measurement_name_help()))
+        
+        group.append(
+            "x_index_name", cps.Choice(
+            "Select the x-axis index", W_INDEX_ALL,
+            doc = index_name_help()))
+    
+        group.append(
+            "y_measurement_type", cps.Choice(
+            "Type of measurement to plot on the y-axis",
+            W_TYPE_ALL, doc = measurement_type_help()))
+
+        group.append(
+            "y_object_name", cps.ObjectNameSubscriber(
+            "Enter the object name","None",
+            doc=object_name_help()))
+        
+        def object_fn_y():
+            if group.y_measurement_type.value == cpmeas.IMAGE:
+                return cpmeas.IMAGE
+            elif group.y_measurement_type.value == cpmeas.OBJECT:
+                return group.y_object_name.value
+            else:
+                raise NotImplementedError("Measurement type %s is not supported"%
+                                              group.y_measurement_type.value)
+            
+        group.append(
+            "y_measurement_name", cps.Measurement(
+            "Select the y-axis measurement", object_fn_y, 
+            doc = measurement_name_help()))
+        
+        group.append(
+            "y_index_name", cps.Choice(
+            "Select the x-axis index", W_INDEX_ALL,
+            doc = index_name_help()))
+        
+        if can_remove:
+            group.append("remove_button", cps.RemoveSettingButton(
+                "", "Remove this measurement", self.workspace_measurement_groups, group))
+            
     def get_metadata_choices(self,pipeline):
         columns = pipeline.get_measurement_columns()
         choices = ["None"]
@@ -647,11 +831,12 @@ class ExportToDatabase(cpm.CPModule):
         return image_names
     
     def prepare_settings(self, setting_values):
-        # These check the groupings of settings avilable in properties file creation
+        # These check the groupings of settings avilable in properties and workspace file creation
         for count, sequence, fn in\
             ((int(setting_values[SETTING_IMAGE_GROUP_COUNT]), self.image_groups, self.add_image_group),
              (int(setting_values[SETTING_GROUP_FIELD_GROUP_COUNT]), self.group_field_groups, self.add_group_field_group),
-             (int(setting_values[SETTING_FILTER_FIELD_GROUP_COUNT]), self.filter_field_groups, self.add_filter_field_group)):
+             (int(setting_values[SETTING_FILTER_FIELD_GROUP_COUNT]), self.filter_field_groups, self.add_filter_field_group),
+             (int(setting_values[SETTING_WORKSPACE_GROUP_COUNT]), self.workspace_measurement_groups, self.add_workspace_measurement_group)):
             del sequence[count:]
             while len(sequence) < count:
                 fn()
@@ -659,7 +844,8 @@ class ExportToDatabase(cpm.CPModule):
     def visible_settings(self):
         needs_default_output_directory =\
             (self.db_type != DB_MYSQL or
-             self.save_cpa_properties.value)
+             self.save_cpa_properties.value or
+             self.create_workspace_file.value)
         result = [self.db_type]
         if not HAS_MYSQL_DB:
             result += [self.mysql_not_available]
@@ -678,6 +864,8 @@ class ExportToDatabase(cpm.CPModule):
         result += [self.want_table_prefix]
         if self.want_table_prefix.value:
             result += [self.table_prefix]
+        if self.save_cpa_properties.value:
+            result += [self.divider_props] # Put divider here to make things easier to read
         result += [self.save_cpa_properties]
         if self.save_cpa_properties.value:
             result += [self.properties_image_url_prepend, self.properties_plate_type, 
@@ -685,15 +873,19 @@ class ExportToDatabase(cpm.CPModule):
                        self.properties_export_all_image_defaults]
             if not self.properties_export_all_image_defaults:
                 for group in self.image_groups:
+                    if group.can_remove:
+                        result += [group.divider]
                     result += [group.image_cols, group.wants_automatic_image_name]
                     if not group.wants_automatic_image_name:
                         result += [group.image_name]
-                    result += [group.image_channel_colors, group.remover, group.divider]
+                    result += [group.image_channel_colors, group.remover]
                 result += [ self.add_image_button]
             result += [self.properties_wants_groups]
             if self.properties_wants_groups:
                 for group in self.group_field_groups:
-                    result += [group.group_name, group.group_statement, group.remover, group.divider]
+                    if group.can_remove:
+                        result += [group.divider]
+                    result += [group.group_name, group.group_statement, group.remover]
                 result += [ self.add_group_field_button ]
             result += [self.properties_wants_filters]
             if self.properties_wants_filters:
@@ -701,8 +893,24 @@ class ExportToDatabase(cpm.CPModule):
                 for group in self.filter_field_groups:
                     result += [group.filter_name, group.filter_statement, group.remover, group.divider]
                 result += [ self.add_filter_field_button ]
+        
+        if self.save_cpa_properties.value or self.create_workspace_file.value : # Put divider here to make things easier to read
+            result += [self.divider_props_wkspace] 
+            
+        result += [self.create_workspace_file]
+        if self.create_workspace_file:
+            for workspace_group in self.workspace_measurement_groups:
+                result += self.workspace_visible_settings(workspace_group)
+                if workspace_group.can_remove:
+                    result += [workspace_group.remove_button]
+            result += [self.add_workspace_measurement_button]
+
+        if self.create_workspace_file.value: # Put divider here to make things easier to read
+            result += [self.divider_wkspace] 
+            
         if needs_default_output_directory:
             result += [self.directory]
+            
         result += [self.wants_agg_mean, self.wants_agg_median,
                    self.wants_agg_std_dev]
         if self.db_type != DB_SQLITE:
@@ -722,6 +930,28 @@ class ExportToDatabase(cpm.CPModule):
                            self.auto_scale_thumbnail_intensities]
         return result
     
+    def workspace_visible_settings(self, workspace_group):
+        result = []
+        if workspace_group.can_remove:
+            result += [workspace_group.divider]
+        result += [workspace_group.measurement_display]
+        result += [workspace_group.x_measurement_type]
+        if workspace_group.x_measurement_type == W_INDEX:
+            result += [workspace_group.x_index_name]
+        elif workspace_group.x_measurement_type == cpmeas.OBJECT:
+            result += [workspace_group.x_object_name, workspace_group.x_measurement_name]
+        else:
+            result += [workspace_group.x_measurement_name]
+        if workspace_group.measurement_display.value in (W_SCATTERPLOT, W_DENSITYPLOT):
+            result += [workspace_group.y_measurement_type]
+            if workspace_group.y_measurement_type == W_INDEX:
+                result += [workspace_group.y_index_name]
+            elif workspace_group.y_measurement_type == cpmeas.OBJECT:
+                result += [workspace_group.y_object_name, workspace_group.y_measurement_name]
+            else:
+                result += [workspace_group.y_measurement_name]
+        return result
+    
     def settings(self):
         result = [self.db_type, self.db_name, self.want_table_prefix,
                 self.table_prefix, self.sql_file_prefix, 
@@ -737,24 +967,49 @@ class ExportToDatabase(cpm.CPModule):
                 self.auto_scale_thumbnail_intensities,self.properties_plate_type,
                 self.properties_plate_metadata, self.properties_well_metadata, 
                 self.properties_export_all_image_defaults,
-                self.image_group_count, self.group_field_count, self.filter_field_count]
+                self.image_group_count, self.group_field_count, self.filter_field_count,
+                self.workspace_measurement_count]
+        
+        # Properties: Image groups
         for group in self.image_groups:
             result += [group.image_cols, group.wants_automatic_image_name, group.image_name,
                        group.image_channel_colors]
         result += [self.properties_wants_groups]
+        
+        # Properties: Grouping fields
         for group in self.group_field_groups:
             result += [group.group_name, group.group_statement]
+
+        # Properties: Filter fields
         result += [self.properties_wants_filters, self.create_filters_for_plates]
         for group in self.filter_field_groups:
             result += [group.filter_name, group.filter_statement]
+        
+        # Workspace settings
+        result += [ self.create_workspace_file ]
+        for group in self.workspace_measurement_groups:
+            result += [ group.measurement_display, 
+                        group.x_measurement_type, group.x_object_name, group.x_measurement_name, group.x_index_name,
+                        group.y_measurement_type, group.y_object_name, group.y_measurement_name, group.y_index_name]
+        
         return result
     
     def help_settings(self):
         return [self.db_type, self.db_name, self.db_host, self.db_user, self.db_passwd, self.sql_file_prefix, self.sqlite_file, 
                 self.want_table_prefix, self.table_prefix,  
-                self.save_cpa_properties, self.properties_image_url_prepend, self.properties_plate_type, self.properties_plate_metadata, self.properties_well_metadata,
+                self.save_cpa_properties, self.properties_image_url_prepend, 
+                self.properties_plate_type, self.properties_plate_metadata, self.properties_well_metadata,
                 self.properties_export_all_image_defaults,
+                self.image_groups[0].image_cols, self.image_groups[0].wants_automatic_image_name, self.image_groups[0].image_name,
+                self.image_groups[0].image_channel_colors,
+                self.properties_wants_groups, 
+                self.group_field_groups[0].group_name, self.group_field_groups[0].group_statement,
+                self.properties_wants_filters, self.create_filters_for_plates,
                 self.directory,
+                self.create_workspace_file, 
+                self.workspace_measurement_groups[0].measurement_display, 
+                self.workspace_measurement_groups[0].x_measurement_type, self.workspace_measurement_groups[0].x_object_name, self.workspace_measurement_groups[0].x_measurement_name, 
+                self.workspace_measurement_groups[0].y_measurement_type, self.workspace_measurement_groups[0].y_object_name, self.workspace_measurement_groups[0].y_measurement_name,
                 self.wants_agg_mean, self.wants_agg_median, self.wants_agg_std_dev, 
                 self.wants_agg_mean_well, self.wants_agg_median_well, self.wants_agg_std_dev_well,
                 self.objects_choice, self.objects_list,
@@ -792,6 +1047,10 @@ class ExportToDatabase(cpm.CPModule):
             if self.properties_plate_metadata == NONE_CHOICE and (self.properties_wants_filters.value and self.create_filters_for_plates.value):
                 raise cps.ValidationError("You must specify the plate metadata",self.create_filters_for_plates)
 
+        if self.want_image_thumbnails:
+            if not self.thumbnail_image_names.get_selections():
+                raise cps.ValidationError("Please choose at least one image", self.thumbnail_image_names)
+            
     def validate_module_warnings(self, pipeline):
         '''Warn user re: Test mode '''
         if pipeline.test_mode:
@@ -809,13 +1068,15 @@ class ExportToDatabase(cpm.CPModule):
         '''Warn user re: bad characters in filter/group names'''
         if self.save_cpa_properties and self.properties_wants_groups:
             for group in self.group_field_groups:
-                if not re.match("^[A-Za-z0-9_]*$",group.group_name.value):
+                if not re.match("^[A-Za-z0-9_]*$",group.group_name.value) or group.group_name.value == '':
                     raise cps.ValidationError("CellProfiler Analyst will not recognize this group name because it has invalid characters.",group.group_name)
         if self.save_cpa_properties and self.properties_wants_filters:
             for group in self.filter_field_groups:
-                if not re.match("^[A-Za-z0-9_]*$",group.filter_name.value):
+                if not re.match("^[A-Za-z0-9_]*$",group.filter_name.value) or group.filter_name.value == '':
                     raise cps.ValidationError("CellProfiler Analyst will not recognize this filter name because it has invalid characters.",group.filter_name)
-                
+                if not re.match("^[A-Za-z0-9_]*$",group.filter_statement.value) or group.filter_statement.value == '':
+                    raise cps.ValidationError("CellProfiler Analyst will not recognize this filter statement because it has invalid characters.",group.filter_statement)
+
     def make_full_filename(self, file_name, 
                            workspace = None, image_set_index = None):
         """Convert a file name into an absolute path
@@ -1034,7 +1295,9 @@ class ExportToDatabase(cpm.CPModule):
         
     def post_run(self, workspace):
         if self.save_cpa_properties.value:
-            self.write_properties(workspace)
+            self.write_properties_file(workspace)
+        if self.create_workspace_file.value:
+            self.write_workspace_file(workspace)
         if self.db_type == DB_MYSQL_CSV:
             path = self.directory.get_absolute_path(None if workspace is None
                                                 else workspace.measurements)
@@ -1106,7 +1369,7 @@ class ExportToDatabase(cpm.CPModule):
             if self.ignore_feature(object_name, feature_name):
                     continue
             mappings.add("%s_%s"%(object_name,feature_name))
-            if object_name != 'Image':
+            if object_name != cpmeas.IMAGE:
                 for agg_name in self.agg_names:
                     mappings.add('%s_%s_%s'%(agg_name, object_name, feature_name))
         return mappings
@@ -1776,7 +2039,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
             self.connection.rollback()
             raise
 
-    def write_properties(self, workspace):
+    def write_properties_file(self, workspace):
         """Write the CellProfiler Analyst properties file"""
         #
         # Find the primary object
@@ -1784,17 +2047,18 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
         if self.objects_choice == O_SELECT:
             object_names = (self.objects_list.value).split(',')
             object_name = object_names[-1]
+        elif self.objects_choice == O_NONE:
+            object_name = ""
         else:
-            for object_name in workspace.measurements.get_object_names():
-                if object_name == 'Image':
-                    continue
-                if self.ignore_object(object_name):
-                    continue
+            object_name = [object_name for object_name in workspace.measurements.get_object_names() 
+                           if (object_name is not cpmeas.IMAGE and not self.ignore_object(object_name))]
+            object_name = object_name[0] if len(object_name) > 0 else ""
+                
         supposed_primary_object = object_name
         image_names = []
         if self.properties_export_all_image_defaults:
             # Find all images that have FileName and PathName
-            for feature in workspace.measurements.get_feature_names('Image'):
+            for feature in workspace.measurements.get_feature_names(cpmeas.IMAGE):
                 match = re.match('^%s_(.+)$'%C_FILE_NAME,feature)
                 if match:
                     image_names.append(match.groups()[0])
@@ -1806,7 +2070,11 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
         if self.db_type==DB_SQLITE:
             name = os.path.splitext(self.sqlite_file.value)[0]
         else:
-            name = self.db_name
+            name = self.db_name.value
+        tbl_prefix = self.get_table_prefix()
+        if tbl_prefix is not "":
+            if tbl_prefix.endswith('_'): tbl_prefix = tbl_prefix[:-1]
+            name = "_".join((name, tbl_prefix))
         filename = '%s.properties'%(name)
         file_name = self.make_full_filename(filename,workspace)
         fid = open(file_name,'wt')
@@ -1838,18 +2106,16 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
             db_info += 'db_passwd    = '
         
         spot_tables = '%sPer_Image'%(self.get_table_prefix())
-        if self.separate_object_tables == OT_COMBINE:
+        if self.objects_choice != O_NONE and self.separate_object_tables == OT_COMBINE:
             cell_tables = '%sPer_Object'%(self.get_table_prefix())
-        else:
-            cell_tables = '%sPer_%s'%(self.get_table_prefix(),supposed_primary_object)               
-        unique_id = C_IMAGE_NUMBER
-        object_count = 'Image_Count_%s'%(supposed_primary_object)
-        if self.separate_object_tables == OT_COMBINE:
             object_id = C_OBJECT_NUMBER
         else:
-            object_id = '%s_Number_Object_Number'%(supposed_primary_object)
-        cell_x_loc = '%s_Location_Center_X'%(supposed_primary_object)
-        cell_y_loc = '%s_Location_Center_Y'%(supposed_primary_object)
+            cell_tables = '%sPer_%s'%(self.get_table_prefix(),supposed_primary_object) if supposed_primary_object else ''
+            object_id = '%s_Number_Object_Number'%(supposed_primary_object) if supposed_primary_object else ''
+        unique_id = C_IMAGE_NUMBER
+        object_count = 'Image_Count_%s'%(supposed_primary_object) if supposed_primary_object else ''
+        cell_x_loc = '%s_Location_Center_X'%(supposed_primary_object) if supposed_primary_object else ''
+        cell_y_loc = '%s_Location_Center_Y'%(supposed_primary_object) if supposed_primary_object else ''
         image_file_cols = ','.join(['%s_%s_%s'%(cpmeas.IMAGE,C_FILE_NAME,name) for name in image_names])
         image_path_cols = ','.join(['%s_%s_%s'%(cpmeas.IMAGE,C_PATH_NAME,name) for name in image_names])
         image_thumbnail_cols = ','.join(['%s_Thumbnail_%s'%(cpmeas.IMAGE,name) for name in self.thumbnail_image_names.get_selections()])
@@ -2062,6 +2328,60 @@ check_tables = yes
         fid.write(contents)
         fid.close()
         
+    def write_workspace_file(self, workspace):
+        from cellprofiler.utilities.get_revision import get_revision
+        '''If requested, write a workspace file with selected measurements'''
+        if self.db_type==DB_SQLITE:
+            name = os.path.splitext(self.sqlite_file.value)[0]
+        else:
+            name = self.db_name.value
+        tbl_prefix = self.get_table_prefix()
+        if tbl_prefix is not "":
+            if tbl_prefix.endswith('_'): tbl_prefix = tbl_prefix[:-1]
+            name = "_".join((name, tbl_prefix))
+            
+        filename = '%s.workspace'%(name)
+        file_name = self.make_full_filename(filename,workspace)
+            
+        fd = open(file_name,"wb")
+        header_text = """CellProfiler Analyst workflow
+version: 1
+svn revision: %d\n"""%get_revision()
+        fd.write(header_text)
+        display_tool_text = ""
+        for workspace_group in self.workspace_measurement_groups:
+            display_tool_text += """
+%s"""%workspace_group.measurement_display.value
+            
+            axis_text = "x-axis" if workspace_group.measurement_display.value is not W_PLATEVIEWER else "measurement"
+            if workspace_group.x_measurement_type.value == cpmeas.IMAGE:
+                axis_meas = "_".join((cpmeas.IMAGE, workspace_group.x_measurement_name.value))
+            elif workspace_group.x_measurement_type.value == cpmeas.OBJECT:
+                axis_meas = "_".join((workspace_group.x_object_name.value, workspace_group.x_measurement_name.value))
+            elif workspace_group.x_measurement_type.value == W_INDEX:
+                axis_meas = workspace_group.x_index_name.value
+            axis_table = "x-table" if workspace_group.measurement_display.value in (W_SCATTERPLOT, W_DENSITYPLOT) else "table"
+            table_name = self.get_table_name(cpmeas.OBJECT if workspace_group.x_measurement_type.value == cpmeas.OBJECT else cpmeas.IMAGE)
+            display_tool_text += """
+\t%s: %s
+\t%s: %s"""%(axis_text, axis_meas, axis_table, table_name)
+            
+            if workspace_group.measurement_display.value in (W_SCATTERPLOT, W_DENSITYPLOT):
+                if workspace_group.y_measurement_type.value == cpmeas.IMAGE:
+                    axis_meas = "_".join((cpmeas.IMAGE, workspace_group.y_measurement_name.value))
+                elif workspace_group.y_measurement_type.value == cpmeas.OBJECT:
+                    axis_meas = "_".join((workspace_group.y_object_name.value, workspace_group.y_measurement_name.value))
+                elif workspace_group.y_measurement_type.value == W_INDEX:
+                    axis_meas = workspace_group.y_index_name.value
+                table_name = self.get_table_name(cpmeas.OBJECT if workspace_group.y_measurement_type.value == cpmeas.OBJECT else cpmeas.IMAGE)
+                display_tool_text += """ 
+\ty-axis: %s
+\ty-table: %s"""%(axis_meas, table_name)
+            display_tool_text += "\n"
+                
+        fd.write(display_tool_text)
+        fd.close()
+        
     def get_file_path_width(self, workspace):
         """Compute the file name and path name widths needed in table defs"""
         m = workspace.measurements
@@ -2070,17 +2390,17 @@ check_tables = yes
         #
         FileNameWidth = 128
         PathNameWidth = 128
-        image_features = m.get_feature_names('Image')
+        image_features = m.get_feature_names(cpmeas.IMAGE)
         for feature in image_features:
-            if feature.startswith('FileName'):
+            if feature.startswith(C_FILE_NAME):
                 names = [name 
-                         for name in m.get_all_measurements('Image',feature)
+                         for name in m.get_all_measurements(cpmeas.IMAGE,feature)
                          if name is not None]
                 if len(names) > 0:
                     FileNameWidth = max(FileNameWidth, np.max(map(len,names)))
-            elif feature.startswith('PathName'):
+            elif feature.startswith(C_PATH_NAME):
                 names = [name
-                         for name in m.get_all_measurements('Image',feature)
+                         for name in m.get_all_measurements(cpmeas.IMAGE,feature)
                          if name is not None]
                 if len(names) > 0:
                     PathNameWidth = max(PathNameWidth, np.max(map(len,names)))
@@ -2392,7 +2712,20 @@ check_tables = yes
             setting_values = setting_values + ["None", cps.YES, "None", "gray"] # Image info
             setting_values = setting_values + [cps.NO, "", "ImageNumber, Image_Metadata_Plate, Image_Metadata_Well"] # Group specifications
             setting_values = setting_values + [cps.NO, cps.NO] # Filter specifications
-            variable_revision_number == 20
+            variable_revision_number = 20
+            
+        if (not from_matlab) and variable_revision_number == 20:
+            #
+            # Added configuration of workspace file
+            #
+            setting_values = setting_values[:SETTING_WORKSPACE_GROUP_COUNT] + \
+                            ["1"] + \
+                            setting_values[SETTING_WORKSPACE_GROUP_COUNT:]      # workspace_measurement_count
+            setting_values += [ cps.NO]                                         # create_workspace_file
+            setting_values += [ W_SCATTERPLOT,                                  # measurement_display
+                                cpmeas.IMAGE, cpmeas.IMAGE, "", C_IMAGE_NUMBER, # x_measurement_type, x_object_name, x_measurement_name, x_index_name
+                                cpmeas.IMAGE, cpmeas.IMAGE, "", C_IMAGE_NUMBER] # y_measurement_type, y_object_name, y_measurement_name, y_index_name
+            variable_revision_number == 21
             
         return setting_values, variable_revision_number, from_matlab
     

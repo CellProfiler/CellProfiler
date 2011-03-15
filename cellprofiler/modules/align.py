@@ -119,13 +119,16 @@ class Align(cpm.CPModule):
             cropped.</li>
             <li><i>%(C_SAME_SIZE)s</i> - maintain the sizes of the images but
             align them, masking the unaligned portions with black pixels. 
-            <b>Align</b> finds the
-            global alignment that preserves the most pixels among all the images
-            and then repositions each image within an image of similar size
-            to the input image. This is a reasonable option for alignments
+            <b>Align</b> aligns all images relative to the first. 
+            This is a reasonable option for alignments
             with small displacements since it maintains a consistent image
             size which may be useful if output images from different image sets
-            will be compared against each other after processing.</li>
+            will be compared against each other after processing. The
+            reference image can also be used across image sets. For example,
+            the reference image could be loaded for all image sets in a
+            group to align the entire group's images similarly, then the
+            aligned images could be combined in a module such as
+            <b>MakeProjection</b></li>
             </ul>""" % globals())
                                                                               
     def add_image(self, can_remove = True):
@@ -541,14 +544,6 @@ class Align(cpm.CPModule):
             shape = np.max(shapes, 0)
             shapes = np.tile(shape, len(shapes))
             shapes.shape = offsets.shape
-        else:
-            #
-            # Keep same size.
-            #
-            # Find the mean offset and renormalize around it
-            #
-            mean_offsets = (np.mean(offsets, 0) + .5).astype(int)
-            offsets = offsets - mean_offsets[np.newaxis, :]
         return offsets.tolist(), shapes.tolist()
     
     def get_categories(self, pipeline, object_name):

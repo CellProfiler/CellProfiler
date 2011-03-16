@@ -202,7 +202,7 @@ class StraightenWorms(cpm.CPModule):
             of the worm. Choose <i>%(FLIP_TOP)s</i> if the brightest part of the
             worm should be at the top of the image, <i>%(FLIP_BOTTOM)s</i> if the
             brightest part of the worm should be at the bottom or
-            <i>%(FLIP_NONE)s</i> if the worm should not be aligned.""")
+            <i>%(FLIP_NONE)s</i> if the worm should not be aligned."""%globals())
         
         def image_choices_fn(pipeline):
             '''Return the image choices for the alignment image'''

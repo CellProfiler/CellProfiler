@@ -775,7 +775,7 @@ can be resubmitted.</p>
 
 <p>For additional help on batch processing, please post your questions on 
 the CellProfiler <a href = "http://cellprofiler.org/forum/viewforum.php?f=14">forum</a>.</p>
-"""
+"""%globals()
 
 RUN_MULTIPLE_PIPELINES_HELP = """
 <br>The <b>Run multiple pipelines</b> dialog lets you select several pipelines
@@ -993,10 +993,10 @@ estimates of typical object diameters for use in <b>IdentifyPrimaryObjects</b>.<
 
 <li><b>Subplots:</b> If the module display window has multiple subplots (such as 
 <b>IdentifyPrimaryObjects</b>), the Image Tool options for the individual subplots 
-are displayed here. See <i>%(IMAGE_TOOLS_HELP_REF)</i> for more details.
+are displayed here. See <i>%(IMAGE_TOOLS_HELP_REF)s</i> for more details.
 </li>
 </ul>
-"""
+"""%globals()
 
 MODULE_DISPLAY_INTERACTIVE_NAVIGATION_HELP = """
 All figure windows come with a navigation toolbar, which can be used to navigate through the data set.

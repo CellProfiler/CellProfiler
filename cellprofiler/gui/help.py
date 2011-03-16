@@ -775,7 +775,7 @@ can be resubmitted.</p>
 
 <p>For additional help on batch processing, please post your questions on 
 the CellProfiler <a href = "http://cellprofiler.org/forum/viewforum.php?f=14">forum</a>.</p>
-"""%globals()
+"""
 
 RUN_MULTIPLE_PIPELINES_HELP = """
 <br>The <b>Run multiple pipelines</b> dialog lets you select several pipelines

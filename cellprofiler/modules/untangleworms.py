@@ -236,7 +236,7 @@ class UntangleWorms(cpm.CPModule):
             <ul>
             <li><i>URL</i>: Use the path part of a URL. For instance, your
             training set might be hosted at 
-            <i>http://university.edu/~johndoe/TrainingSet.mat</i>
+            <i>http://university.edu/~johndoe/TrainingSet.xml</i>
             To access this file, you would choose <i>URL</i> and enter
             <i>https://svn.broadinstitute.org/CellProfiler/trunk/ExampleImages/ExampleSBSImages</i>
             as the path location.</li>
@@ -2353,7 +2353,7 @@ def read_params(training_set_directory, training_set_file_name, d):
     d - a dictionary that stores cached parameters
     '''
     #
-    # The parameters file is a .mat file with the following structure:
+    # The parameters file is a .xml file with the following structure:
     #
     # initial_filter
     #     min_worm_area: float

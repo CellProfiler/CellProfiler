@@ -983,7 +983,8 @@ class SaveImages(cpm.CPModule):
         elif self.file_name_method == FN_SEQUENTIAL:
             filename = self.single_file_name.value
             filename = workspace.measurements.apply_metadata(filename)
-            filename = '%s%d'%(filename, measurements.image_set_number)
+            padded_num_string = str(measurements.image_set_number).zfill(int(np.ceil(np.log10(workspace.image_set_list.count()+1))))
+            filename = '%s%s'%(filename, padded_num_string)
         else:
             file_name_feature = self.source_file_name_feature
             filename = measurements.get_current_measurement('Image',

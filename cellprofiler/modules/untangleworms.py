@@ -661,6 +661,8 @@ class UntangleWorms(cpm.CPModule):
             #
             # Write it to disk
             #
+            if workspace.pipeline.test_mode:
+                return
             m = workspace.measurements
             assert isinstance(m, cpmeas.Measurements)
             path = self.training_set_directory.get_absolute_path(m)
@@ -2241,6 +2243,12 @@ class UntangleWorms(cpm.CPModule):
                 raise cps.ValidationError("Can't find file %s" % self.training_set_file_name.value,
                                           self.training_set_file_name)
             
+    def validate_module_warnings(self, pipeline):
+        '''Warn user re: Test mode '''
+        if pipeline.test_mode and self.mode == MODE_TRAIN:
+            raise cps.ValidationError("UntangleWorms will not produce training set output in Test Mode",
+                                      self.training_set_file_name)
+
     def get_measurement_columns(self, pipeline):
         '''Return a column of information for each measurement feature'''
         result = []

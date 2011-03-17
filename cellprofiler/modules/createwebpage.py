@@ -137,7 +137,7 @@ class CreateWebPage(cpm.CPModule):
             </ul>""" % globals())
         
         self.title = cps.Text(
-            "Webpage title", "Image",
+            "Webpage title", "Image", metadata = True,
             doc = """This is the title that appears at the top of the browser
             window. If you have metadata associated with your images, you can name the 
             file using metadata tags. %(USING_METADATA_TAGS_REF)sFor instance, if you 
@@ -224,6 +224,15 @@ class CreateWebPage(cpm.CPModule):
             result += [self.zipfile_name]
         return result
     
+    def validate_module(self, pipeline):
+        '''Make sure metadata tags exist'''
+        for cntrl in (self.web_page_file_name, self.title): 
+            undefined_tags = pipeline.get_undefined_metadata_tags(cntrl.value)
+            if len(undefined_tags) > 0:
+                raise cps.ValidationError("%s is not a defined metadata tag. Check the metadata specifications in your load modules" %
+                                 undefined_tags[0], 
+                                 cntrl)
+                
     def is_interactive(self):
         return False
 

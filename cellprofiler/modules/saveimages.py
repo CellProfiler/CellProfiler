@@ -31,6 +31,7 @@ __version__="$Revision$"
 
 import matplotlib
 import numpy as np
+import re
 import os
 import sys
 import Image as PILImage
@@ -58,7 +59,7 @@ except:
 
 
 import cellprofiler.cpmodule as cpm
-import cellprofiler.measurements
+import cellprofiler.measurements as cpmeas
 import cellprofiler.settings as cps
 import cellprofiler.preferences as cpp
 from cellprofiler.gui.help import USING_METADATA_TAGS_REF, USING_METADATA_HELP_REF
@@ -964,12 +965,12 @@ class SaveImages(cpm.CPModule):
     
     def get_measurement_columns(self, pipeline):
         if self.update_file_names.value:
-            return [(cellprofiler.measurements.IMAGE, 
+            return [(cpmeas.IMAGE, 
                      self.file_name_feature,
-                     cellprofiler.measurements.COLTYPE_VARCHAR_FILE_NAME),
-                    (cellprofiler.measurements.IMAGE,
+                     cpmeas.COLTYPE_VARCHAR_FILE_NAME),
+                    (cpmeas.IMAGE,
                      self.path_name_feature,
-                     cellprofiler.measurements.COLTYPE_VARCHAR_PATH_NAME)]
+                     cpmeas.COLTYPE_VARCHAR_PATH_NAME)]
         else:
             return []
         
@@ -1071,7 +1072,7 @@ class SaveImages(cpm.CPModule):
                 new_setting_values.extend([FN_SINGLE_NAME,setting_values[1][1:],
                                            setting_values[1][1:]])
             else:
-                if len(cellprofiler.measurements.find_metadata_tokens(setting_values[1])):
+                if len(cpmeas.find_metadata_tokens(setting_values[1])):
                     new_setting_values.extend([FN_WITH_METADATA, setting_values[1],
                                                setting_values[1]])
                 else:
@@ -1083,7 +1084,7 @@ class SaveImages(cpm.CPModule):
             elif setting_values[4] == '&':
                 new_setting_values.extend([PC_WITH_IMAGE, "None"])
             else:
-                if len(cellprofiler.measurements.find_metadata_tokens(setting_values[1])):
+                if len(cpmeas.find_metadata_tokens(setting_values[1])):
                     new_setting_values.extend([PC_WITH_METADATA,
                                                setting_values[4]])
                 else:
@@ -1230,6 +1231,16 @@ class SaveImages(cpm.CPModule):
                     raise cps.ValidationError("%s is only available after processing all images in an image group" %
                                               self.image_name.value,
                                               self.when_to_save)
+                
+        # Make sure metadata tags exist
+        if self.file_name_method == FN_SINGLE_NAME or \
+                (self.file_name_method == FN_FROM_IMAGE and self.wants_file_name_suffix.value):
+            text_str = self.single_file_name.value if self.file_name_method == FN_SINGLE_NAME else self.file_name_suffix.value
+            undefined_tags = pipeline.get_undefined_metadata_tags(text_str)
+            if len(undefined_tags) > 0:
+                raise cps.ValidationError("%s is not a defined metadata tag. Check the metadata specifications in your load modules" %
+                                     undefined_tags[0], 
+                                     self.single_file_name if self.file_name_method == FN_SINGLE_NAME else self.file_name_suffix)
     
 class SaveImagesDirectoryPath(cps.DirectoryPath):
     '''A specialized version of DirectoryPath to handle saving in the image dir'''

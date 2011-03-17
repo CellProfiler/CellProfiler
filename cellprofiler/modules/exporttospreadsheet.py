@@ -322,6 +322,16 @@ class ExportToSpreadsheet(cpm.CPModule):
         if (len(self.delimiter.value) != 1 and
             not self.delimiter.value in (DELIMITER_TAB, DELIMITER_COMMA)):
             raise cps.ValidationError("The CSV field delimiter must be a single character", self.delimiter)
+        
+        '''Make sure metadata tags exist'''
+        for group in self.object_groups:
+            if not group.wants_automatic_file_name:
+                text_str = group.file_name.value
+                undefined_tags = pipeline.get_undefined_metadata_tags(text_str)
+                if len(undefined_tags) > 0:
+                    raise cps.ValidationError("%s is not a defined metadata tag. Check the metadata specifications in your load modules" %
+                                     undefined_tags[0], 
+                                     group.file_name)
 
     def validate_module_warnings(self, pipeline):
         '''Warn user re: Test mode '''

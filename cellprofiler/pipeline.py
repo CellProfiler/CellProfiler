@@ -37,6 +37,7 @@ import traceback
 import threading
 import urlparse
 import urllib2
+import re
 
 import cellprofiler.cpmodule
 import cellprofiler.preferences
@@ -1353,6 +1354,30 @@ class Pipeline(object):
                 raise ValueError("No image sets defined for current pipeline!")
         return groupings
     
+    def get_undefined_metadata_tags(self, pattern):
+        """Find metadata tags not defined within the current measurements
+        
+        pattern - a regexp-like pattern that specifies how to insert
+                  metadata into a string. Each token has the form:
+                  "\(?<METADATA_TAG>\)" (matlab-style) or
+                  "\g<METADATA_TAG>" (Python-style)
+        """
+        columns = self.get_measurement_columns()
+        current_metadata = []
+        for column in columns:
+            object_name, feature, coltype = column[:3]
+            if (object_name == cpmeas.IMAGE and feature.startswith(cpmeas.C_METADATA)):
+                current_metadata.append(feature[(len(cpmeas.C_METADATA)+1):])
+            
+        m = re.findall('\\(\\?[<](.+?)[>]\\)', pattern)
+        if not m:
+            m = re.findall('\\\\g[<](.+?)[>]', pattern)
+        if m:
+            undefined_tags = list(set(m).difference(current_metadata))
+            return undefined_tags
+        else:
+            return []
+                
     def prepare_group(self, image_set_list, grouping, image_numbers):
         '''Prepare to start processing a new group
         

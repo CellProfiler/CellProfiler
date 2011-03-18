@@ -1025,7 +1025,10 @@ class IdentifyPrimaryObjects(cpmi.Identify):
                           labeled_maxima,
                           labeled_image != 0, 1.0)
         else:
-            markers = np.zeros(watershed_image.shape,np.int16)
+            markers_dtype = (np.int16 
+                             if object_count < np.iinfo(np.int16).max
+                             else np.int32)
+            markers = np.zeros(watershed_image.shape, markers_dtype)
             markers[labeled_maxima>0]=-labeled_maxima[labeled_maxima>0]
             #
             # Some labels have only one maker in them, some have multiple and

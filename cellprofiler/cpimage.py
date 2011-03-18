@@ -86,6 +86,7 @@ class Image(object):
             self.set_mask(mask)
         self.__file_name = file_name
         self.__path_name = path_name
+        self.__channel_names = None
         
     def get_image(self):
         """Return the primary image"""
@@ -203,7 +204,8 @@ class Image(object):
             return self.crop_image_similarly(self.crop_mask)
         
         if self.has_parent_image:
-            return self.parent_image.mask
+            mask = self.parent_image.mask
+            return self.crop_image_similarly(mask)
         
         return np.ones(self.__image.shape[0:2],dtype=np.bool)
     
@@ -317,6 +319,20 @@ class Image(object):
             return None
     
     path_name = property(get_path_name)
+    
+    def get_channel_names(self):
+        '''The user-defined names of the channels in a channel stack'''
+        return self.__channel_names
+    
+    def set_channel_names(self, names):
+        self.__channel_names = tuple(names)
+
+    channel_names = property(get_channel_names, set_channel_names)
+    
+    @property
+    def has_channel_names(self):
+        '''True if there are channel names on this image'''
+        return self.__channel_names is not None
     
     def get_scale(self):
         '''The scale at acquisition

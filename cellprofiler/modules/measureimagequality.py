@@ -760,6 +760,8 @@ class MeasureImageQuality(cpm.CPModule):
         for image_name in self.images_to_process(image_group, workspace):
             feature = "%s_%s_%s"%(C_IMAGE_QUALITY, C_SCALING, image_name)
             value = workspace.image_set.get_image(image_name).scale
+            if not value:  # Set to NaN if not defined, such as for derived images
+                value = np.NaN
             workspace.add_measurement(cpmeas.IMAGE, feature, value)
             result += [["%s scaling"%image_name, value]]
         return result

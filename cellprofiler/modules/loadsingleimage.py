@@ -455,6 +455,15 @@ class LoadSingleImage(cpm.CPModule):
                 "image file. Please use LoadImages or LoadData instead.",
                 self.directory)
         
+        '''Make sure metadata tags exist'''
+        for group in self.file_settings:
+            text_str = group.file_name.value
+            undefined_tags = pipeline.get_undefined_metadata_tags(text_str)
+            if len(undefined_tags) > 0:
+                raise cps.ValidationError("%s is not a defined metadata tag. Check the metadata specifications in your load modules" %
+                                 undefined_tags[0], 
+                                 group.file_name)
+        
     def upgrade_settings(self, setting_values, variable_revision_number, module_name, from_matlab):
         if from_matlab and variable_revision_number == 4:
             new_setting_values = list(setting_values)

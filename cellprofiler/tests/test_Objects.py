@@ -308,7 +308,9 @@ class TestObjects(unittest.TestCase):
         '''Convert an ijv representation w/o overlap to labels'''
         x = cpo.Objects()
         np.random.seed(63)
-        labels = np.random.randint(0,10,size=(20,20))
+        labels = np.zeros((20,20), int)
+        labels[1:-1,1:-1] = np.random.randint(0,10,size=(18,18))
+        
         x.segmented = labels
         ijv = x.get_ijv()
         x = cpo.Objects()

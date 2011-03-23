@@ -964,6 +964,36 @@ def maximum_position_of_labels(image, labels, indices):
         return result
     return result.transpose()
 
+def median_of_labels(image, labels, indices):
+    if len(indices) == 0:
+        return np.zeros(0)
+    indices = np.array(indices)
+    include = np.zeros(max(np.max(labels), np.max(indices)) + 1, bool)
+    include[indices] = True
+    anti_indices = np.zeros(include.shape, int)
+    anti_indices[indices] = np.arange(len(indices))
+    include = include[labels]
+   
+    labels = anti_indices[labels[include]]
+    image = image[include]
+    if len(labels) == 0:
+        return np.array([np.nan] * len(indices))
+    index = np.lexsort((image, labels))
+    labels, image = labels[index], image[index]
+    counts = np.bincount(labels)
+    last = np.cumsum(counts)
+    first = np.hstack(([0], last[:-1]))
+    middle_low = first + ((counts-1) / 2).astype(int)
+    
+    median = np.zeros(len(indices))
+    odds = (counts % 2) == 1
+    evens = (~ odds) & (counts > 0)
+    median[counts > 0] = image[middle_low[counts > 0]]
+    median[evens] += image[middle_low[evens]+1]
+    median[evens] /= 2
+    median[counts == 0] = np.nan
+    return median
+    
 def farthest_from_edge(labels, indices):
     """Return coords of the pixel in each object farthest from the edge
     

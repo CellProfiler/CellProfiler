@@ -909,6 +909,59 @@ class TestCalculateExtents(unittest.TestCase):
         self.assertAlmostEqual(extents[0], .75)
         self.assertAlmostEqual(extents[1], 1)
         
+class TestMedianOfLabels(unittest.TestCase):
+    def test_00_00_zeros(self):
+        result = morph.median_of_labels(np.zeros((10,10)), 
+                                        np.zeros((10,10), int),
+                                        np.zeros(0, int))
+        self.assertEqual(len(result), 0)
+        
+    def test_00_01_empty(self):
+        result = morph.median_of_labels(np.zeros((10,10)), 
+                                        np.zeros((10,10), int),
+                                        [1])
+        self.assertEqual(len(result), 1)
+        self.assertTrue(np.isnan(result[0]))
+        
+    def test_01_01_one_odd(self):
+        r = np.random.RandomState()
+        r.seed(11)
+        fill = r.uniform(size=25)
+        img = np.zeros((10,10))
+        labels = np.zeros((10,10), int)
+        labels[3:8,3:8] = 1
+        img[labels > 0] = fill
+        result = morph.median_of_labels(img, labels, [ 1 ])
+        self.assertEqual(len(result), 1)
+        self.assertAlmostEqual(result[0], np.median(fill))
+        
+    def test_01_02_one_even(self):
+        r = np.random.RandomState()
+        r.seed(12)
+        fill = r.uniform(size=20)
+        img = np.zeros((10,10))
+        labels = np.zeros((10,10), int)
+        labels[3:8,3:7] = 1
+        img[labels > 0] = fill
+        result = morph.median_of_labels(img, labels, [ 1 ])
+        self.assertEqual(len(result), 1)
+        self.assertAlmostEqual(result[0], np.median(fill))
+        
+    def test_01_03_two(self):
+        r = np.random.RandomState()
+        r.seed(12)
+        img = np.zeros((10,20))
+        labels = np.zeros((10,20), int)
+        labels[3:8,3:7] = 1
+        labels[3:8,13:18] = 2
+        for i, fill in enumerate([r.uniform(size=20), r.uniform(size=25)]):
+            img[labels == i+1] = fill
+        result = morph.median_of_labels(img, labels, [ 1,2 ])
+        self.assertEqual(len(result), 2)
+        self.assertAlmostEqual(result[0], np.median(img[labels==1]))
+        self.assertAlmostEqual(result[1], np.median(img[labels==2]))
+        
+        
 class TestCalculatePerimeters(unittest.TestCase):
     def test_00_00_zeros(self):
         """The perimeters of a zeros matrix should be all zero"""

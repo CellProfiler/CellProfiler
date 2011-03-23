@@ -29,7 +29,29 @@ import cellprofiler.workspace as cpw
 import cellprofiler.objects as cpo
 import cellprofiler.cpimage as cpi
 
+OBJECTS_NAME = "myobjects"
+
 class TestMeasureObjectSizeShape(unittest.TestCase):
+    def make_workspace(self, labels):
+        image_set_list = cpi.ImageSetList()
+        image_set = image_set_list.get_image_set(0)
+        object_set = cpo.ObjectSet()
+        objects = cpo.Objects()
+        objects.segmented = labels
+        object_set.add_objects(objects, OBJECTS_NAME)
+        m = cpmeas.Measurements()
+        module = cpmoas.MeasureObjectAreaShape()
+        module.module_num = 1
+        module.object_groups[0].name.value = OBJECTS_NAME
+        pipeline = cpp.Pipeline()
+        def callback(caller, event):
+            self.assertFalse(isinstance(event, cpp.RunExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.add_module(module)
+        workspace = cpw.Workspace(pipeline, module, image_set, object_set,
+                                  m, image_set_list)
+        return workspace, module
+    
     def test_01_01_load_matlab(self):
         b64data = 'TUFUTEFCIDUuMCBNQVQtZmlsZSwgUGxhdGZvcm06IFBDV0lOLCBDcmVhdGVkIG9uOiBUdWUgTWFyIDEwIDExOjMwOjAyIDIwMDkgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAABSU0PAAAAtwQAAHic7FlPb9MwHHW77k9BTENcOHDoZbdSOduycSx0tOywbuqqSRzd1AtGaVwlztTy6fgIfAQ+CjEkbWJls+OkXUFYsiynfu9nPz//nGX7AIAfJgA7YbsX1ir4U7ajfiVRef8GM0Zc298GNfA6ev49rLfII2jk4FvkBNgHixI/v3Dv6HA+Xfx0SceBg/tokhwcln4wGWHPv7qLgdHP12SGnRvyDYN0iYcN8D3xCXUjfMQvPl3EpUyIu89jvFnqUBF0qIf1VeI5H98Gy/G1DN0OEuMPojrEM/b24wxZrDFBzPrCed5JePYEHt6/8oj9IZRaZR51AV+P8D0PYzexHtk8dgWe3YhngMdK+Kx1dDw6jdchw+8IeN7vB5aDidr8twU873ew4/iK6y+KL7r+rPjnreFFt6T4bQk+y0ccX4aPOI+qj57aB0XjPzV+FflkgC2GXNuJ87NufuQ+mIYXTB5fqvLo+MKAzROouJ7nAp73r8P4yEYsvISUdck8Z3NGpw7yJzn0VeUpel6gBL+Vwm+BbmuorWeHUm9MXBTf35vIk1ePzyG2zPwr43km8PD+OW24lDUCH6+fZ5V+13nPyfJ7l3g+2xC8zF/VFL4K+lTf31fMDxo9h46Qs9AvbmV86/ZZ3nM3iPKQzvuKCY3mGYTa+GMIm6cl4XXzjQxXSeEqwACbvf+r/vslC39kGs0TczN8oKPjJe0lj7eWn2DT2GhflMWj5Y9wf8wC+2uWiM+7r0brVA8HD1N+0L2vYnxbgl/V/XCiqdu6cfH5y6uzAdM6i23e++FYU+cjzXWvH3eohKulcDUAW9B8TOe2hK8sfz90ztaNk6036z3+wmXY9Qmbr0C3h9pPEv6XAj/vE3dM7sk4QE6DTJC9+Mq8yve0snEyXVX3p2jeF9uy+XTW+T5gdIIYsR7hzTtvMY+2JHzrmrdOHNtDc99Cqe+Auro85M+ivGX7pGie+ZfmvSPEiUscp5rA6eqg64uicfPqH7c/Xzz+f8XkPVJ0/35fOrZHg+l/nqzvWXT0FVtsSfQ38qjqo8L3CwAA///tltFOwjAUhjsYiLIYxYhhV156qW+g8UYSjST4AoVVrJF2Kd0Fz8EzeO+liT6BiW/kha3ZslLALmTIJB05+Tlb+U7POe2KAwDYEyYVxN+l4SEcoAGjUXiMSYDCXXHvXFhVWE2YG4+vxP46OFcGzr7GkT7tPaI+V0Dx81XwTHnWNV59mvdvOVn7l/BMuul9yaqmeDtaPOmndc9ez4bGkT6N+BMmaKagRayniZP3+ixqHZbVouVh4th+5pvXquq5bs37vWe12PrX/X4ppfESrhpvW7m/7Hl+TWHQlntxlHJODRx3iuOCS0bDdfzO1I9DLV/ptwNEOL4fdxgeXkScDiHHfZCtv/P+Fya8LupTEkA2VvrRMfBaGq+l8O4Q41jgulGPoQGmROGa5tnUuNK/QXAUMXT7cwxcMAS7DzBEOfHahCMywnw8uw6rc3jqui3FfsPzvAPPrW0peZrWhQPUeTngDCwfvyIur+yUSwvqbOLI+cn9/uW/HcnPu//R+mxO/Imf8l6rv+/nZzC9n0/A4vHJZccXZ7xVq1atbqJ+A7xdhz4='
         data = base64.b64decode(b64data)
@@ -95,7 +117,9 @@ MeasureObjectSizeShape:[module_num:1|svn_version:\'1\'|variable_revision_number:
                   cpmoas.F_EXTENT, cpmoas.F_FORM_FACTOR,
                   cpmoas.F_MAJOR_AXIS_LENGTH, cpmoas.F_MINOR_AXIS_LENGTH,
                   cpmoas.F_ORIENTATION, cpmoas.F_PERIMETER,
-                  cpmoas.F_SOLIDITY, cpmoas.F_COMPACTNESS):
+                  cpmoas.F_SOLIDITY, cpmoas.F_COMPACTNESS,
+                  cpmoas.F_MAXIMUM_RADIUS, cpmoas.F_MEAN_RADIUS,
+                  cpmoas.F_MEDIAN_RADIUS):
             m = cpmoas.AREA_SHAPE + "_" + f
             a = measurements.get_current_measurement('SomeObjects', m)
             self.assertEqual(len(a), 0)
@@ -347,6 +371,19 @@ MeasureObjectSizeShape:[module_num:1|svn_version:\'1\'|variable_revision_number:
             expected = (v1, v2)
             v = mlist[2].get_current_measurement(oname, feature)
             self.assertEqual(tuple(v), expected)
+            
+    def test_06_01_max_radius(self):
+        labels = np.zeros((20,10), int)
+        labels[3:8,3:6] = 1
+        labels[11:19,2:7] = 2
+        workspace, module = self.make_workspace(labels)
+        module.run(workspace)
+        m = workspace.measurements
+        max_radius = m.get_current_measurement(
+            OBJECTS_NAME, cpmoas.AREA_SHAPE + "_" +cpmoas.F_MAXIMUM_RADIUS)
+        self.assertEqual(len(max_radius), 2)
+        self.assertEqual(max_radius[0], 2)
+        self.assertEqual(max_radius[1], 3)
             
     def features_and_columns_match(self, measurements, module):
         self.assertEqual(len(measurements.get_object_names()), 2)

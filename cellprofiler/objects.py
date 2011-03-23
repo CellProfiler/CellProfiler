@@ -111,11 +111,9 @@ class Objects(object):
         
         returns a list of label matrixes and the indexes in each
         '''
-        if self.__ijv is None:
-            if self.__segmented is None:
-                return []
+        if self.__segmented is not None:
             return [(self.__segmented, self.indices)]
-        else:
+        elif self.__ijv is not None:
             def ijv_to_segmented(ijv):
                 if self.has_parent_image:
                     shape = self.parent_image.pixel_data.shape
@@ -123,7 +121,7 @@ class Objects(object):
                     # degenerate case, no parent info and no labels
                     shape = (1,1)
                 else:
-                    shape = np.max(ijv[:,:2], 0) + 1
+                    shape = np.max(ijv[:,:2], 0) + 2 # add a border of "0" to the right
                 labels = np.zeros(shape, np.int16)
                 labels[ijv[:,0],ijv[:,1]] = ijv[:,2]
                 return labels
@@ -215,6 +213,8 @@ class Objects(object):
                 indices = np.arange(len(v_color))[v_color == color]
                 result.append((ijv_to_segmented(ijv), indices))
             return result
+        else:
+            return []
     
     def has_unedited_segmented(self):
         """Return true if there is an unedited segmented matrix."""

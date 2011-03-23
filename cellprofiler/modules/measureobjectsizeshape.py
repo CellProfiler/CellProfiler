@@ -55,6 +55,16 @@ same second-moments as the region.</li>
 <li><i>Compactness:</i> The variance of the radial distance of the object's
 pixels from the centroid divided by the area.</li>
 
+<li><i>MaximumRadius:</i> The maximum distance of any pixel in the object
+to the closest pixel outside of the object. For skinny objects, this
+is 1/2 of the maximum width of the object.</li>
+
+<li><i>MedianRadius:</i> The median distance to the closest pixel outside
+of the object.</li>
+
+<li><i>MeanRadius:</i> The mean distance to the closest pixel outside
+of the object.</li>
+
 <li><i>Zernike shape features:</i> Measure shape by describing a binary object (or
 more precisely, a patch with background and an object in the center) in a
 basis of Zernike polynomials, using the coefficients as features <i>(Boland
@@ -102,13 +112,15 @@ import cellprofiler.cpmodule as cpm
 import cellprofiler.objects as cpo
 import cellprofiler.settings as cps
 import cellprofiler.cpmath.zernike as cpmz
-from cellprofiler.cpmath.cpmorphology import fixup_scipy_ndimage_result
+from cellprofiler.cpmath.cpmorphology import fixup_scipy_ndimage_result as fix
 from cellprofiler.cpmath.cpmorphology import ellipse_from_second_moments_ijv
 from cellprofiler.cpmath.cpmorphology import calculate_extents
 from cellprofiler.cpmath.cpmorphology import calculate_perimeters
 from cellprofiler.cpmath.cpmorphology import calculate_solidity
 from cellprofiler.cpmath.cpmorphology import euler_number
-from cellprofiler.cpmath.cpmorphology import farthest_from_edge
+from cellprofiler.cpmath.cpmorphology import distance_to_edge
+from cellprofiler.cpmath.cpmorphology import maximum_position_of_labels
+from cellprofiler.cpmath.cpmorphology import median_of_labels
 from cellprofiler.measurements import COLTYPE_FLOAT
 
 """The category of the per-object measurements made by this module"""
@@ -130,11 +142,17 @@ F_MAJOR_AXIS_LENGTH = 'MajorAxisLength'
 F_MINOR_AXIS_LENGTH = 'MinorAxisLength'
 F_ORIENTATION = 'Orientation'
 F_COMPACTNESS = 'Compactness'
+F_MAXIMUM_RADIUS = 'MaximumRadius'
+F_MEDIAN_RADIUS = 'MedianRadius'
+F_MEAN_RADIUS = 'MeanRadius'
+
 """The non-Zernike features"""
 F_STANDARD = [ F_AREA, F_ECCENTRICITY, F_SOLIDITY, F_EXTENT,
                F_EULER_NUMBER, F_PERIMETER, F_FORM_FACTOR,
                F_MAJOR_AXIS_LENGTH, F_MINOR_AXIS_LENGTH,
-               F_ORIENTATION, F_COMPACTNESS, F_CENTER_X, F_CENTER_Y ]
+               F_ORIENTATION, F_COMPACTNESS, F_CENTER_X, F_CENTER_Y,
+               F_MAXIMUM_RADIUS, F_MEAN_RADIUS, F_MEDIAN_RADIUS]
+
 class MeasureObjectSizeShape(cpm.CPModule):
 
     module_name = "MeasureObjectSizeShape"
@@ -295,6 +313,9 @@ class MeasureObjectSizeShape(cpm.CPModule):
         mperimeters = np.zeros(nobjects)
         msolidity = np.zeros(nobjects)
         euler = np.zeros(nobjects)
+        max_radius = np.zeros(nobjects)
+        median_radius = np.zeros(nobjects)
+        mean_radius = np.zeros(nobjects)
         zernike_numbers = self.get_zernike_numbers()
         zf = {}
         for n,m in zernike_numbers:
@@ -302,8 +323,15 @@ class MeasureObjectSizeShape(cpm.CPModule):
         if nobjects > 0:
             for labels, indices in objects.get_labels():
                 to_indices = indices-1
+                distances = distance_to_edge(labels)
                 mcenter_y[to_indices], mcenter_x[to_indices] =\
-                         farthest_from_edge(labels, indices)
+                         maximum_position_of_labels(distances, labels, indices)
+                max_radius[to_indices] = fix(scind.maximum(
+                    distances, labels, indices))
+                mean_radius[to_indices] = fix(scind.mean(
+                    distances, labels, indices))
+                median_radius[to_indices] = median_of_labels(
+                    distances, labels, indices)
                 #
                 # The extent (area / bounding box area)
                 #
@@ -340,7 +368,10 @@ class MeasureObjectSizeShape(cpm.CPModule):
                       (F_PERIMETER, mperimeters),
                       (F_SOLIDITY, msolidity),
                       (F_FORM_FACTOR, ff),
-                      (F_EULER_NUMBER, euler)] +
+                      (F_EULER_NUMBER, euler),
+                      (F_MAXIMUM_RADIUS, max_radius),
+                      (F_MEAN_RADIUS, mean_radius),
+                      (F_MEDIAN_RADIUS, median_radius)] +
                      [(self.get_zernike_name((n,m)), zf[(n,m)])
                        for n,m in zernike_numbers]):
             self.record_measurement(workspace, object_name, f, m) 
@@ -396,7 +427,7 @@ class MeasureObjectSizeShape(cpm.CPModule):
     def record_measurement(self,workspace,  
                            object_name, feature_name, result):
         """Record the result of a measurement in the workspace's measurements"""
-        data = fixup_scipy_ndimage_result(result)
+        data = fix(result)
         workspace.add_measurement(object_name, 
                                   "%s_%s"%(AREA_SHAPE,feature_name), 
                                   data)
@@ -457,5 +488,5 @@ def form_factor(objects):
         return 4.0*np.pi*objects.areas / perimeter**2
     else:
         return np.zeros((0,))
-
+    
 MeasureObjectAreaShape = MeasureObjectSizeShape

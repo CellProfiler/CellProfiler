@@ -2375,13 +2375,17 @@ class LoadImages(cpmodule.CPModule):
                 else:
                     prohibited = []
                 files = []
-                w = os.walk(root, topdown=True)
+                w = os.walk(root, topdown=True, followlinks=True)
+                seen_dirs = set()
                 for dirpath, dirnames, filenames in w:
                     path = relpath(dirpath, root)
-                    if path in prohibited:
-                        # Don't descend into prohibited directories
+                    if (path in prohibited) or (os.path.realpath(dirpath) in seen_dirs):
+                        # Don't descend into prohibited directories, and avoid infinite loops from links
                         del dirnames[:]
                         continue
+                    # update list of visited paths
+                    seen_dirs.add(os.path.realpath(dirpath))
+                    dirnames.sort() # try to ensure consistent behavior.  Is this needed?
                     if path == os.path.curdir:
                         files += [(file_name, file_name) 
                                   for file_name in filenames]

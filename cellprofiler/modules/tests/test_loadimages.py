@@ -1661,6 +1661,12 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
                 fd = open(os.path.join(directory, path, file_name),"wb")
                 fd.write(data)
                 fd.close()
+            # test recursive symlinks
+            try:
+                os.symlink(os.path.join(directory, filenames[0][0]),
+                           os.path.join(directory, filenames[-1][0], filenames[0][0]))
+            except Exception, e:
+                print "ignoring symlink exception:", e
             load_images = LI.LoadImages()
             load_images.module_num = 1
             load_images.file_types.value = LI.FF_INDIVIDUAL_IMAGES

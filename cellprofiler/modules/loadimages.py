@@ -2375,7 +2375,10 @@ class LoadImages(cpmodule.CPModule):
                 else:
                     prohibited = []
                 files = []
-                w = os.walk(root, topdown=True, followlinks=True)
+                if sys.version_info.major == 2 and sys.version_info.minor < 6:
+                    w = os.walk(root, topdown=True)
+                else:
+                    w = os.walk(root, topdown=True, followlinks=True)
                 seen_dirs = set()
                 for dirpath, dirnames, filenames in w:
                     path = relpath(dirpath, root)

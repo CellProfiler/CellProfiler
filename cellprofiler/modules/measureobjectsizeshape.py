@@ -59,11 +59,11 @@ pixels from the centroid divided by the area.</li>
 to the closest pixel outside of the object. For skinny objects, this
 is 1/2 of the maximum width of the object.</li>
 
-<li><i>MedianRadius:</i> The median distance to the closest pixel outside
-of the object.</li>
+<li><i>MedianRadius:</i> The median distance of any pixel in the object 
+to the closest pixel outside of the object.</li>
 
-<li><i>MeanRadius:</i> The mean distance to the closest pixel outside
-of the object.</li>
+<li><i>MeanRadius:</i> The mean distance of any pixel in the object
+to the closest pixel outside of the object.</li>
 
 <li><i>Zernike shape features:</i> Measure shape by describing a binary object (or
 more precisely, a patch with background and an object in the center) in a

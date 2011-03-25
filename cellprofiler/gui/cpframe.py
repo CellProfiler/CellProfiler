@@ -339,7 +339,10 @@ class CPFrame(wx.Frame):
     
     def __on_new_cp(self, event):
         import os
-        os.system('open -na CellProfiler2.0.app')
+        if not hasattr(sys, 'frozen'):
+            os.system('open CellProfiler_python.command')
+        else:       
+            os.system('open -na CellProfiler2.0.app')
 
     def __on_help_online_manual(self, event):
         import webbrowser

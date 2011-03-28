@@ -193,6 +193,8 @@ def get_default_image_directory():
     if not get_config().Exists(DEFAULT_IMAGE_DIRECTORY):
         return os.path.abspath(os.path.expanduser('~'))
     default_image_directory = get_config().Read(DEFAULT_IMAGE_DIRECTORY)
+    if default_image_directory is None:
+        default_image_directory = ''
     if os.path.isdir(default_image_directory):
         try:
             __default_image_directory = str(get_proper_case_filename(default_image_directory))
@@ -200,9 +202,11 @@ def get_default_image_directory():
         except UnicodeEncodeError:
             sys.stderr.write("Failed to convert filename to ASCII, please rename directory until this is fixed.\n")
             traceback.print_exc()
-    else:
-        sys.stderr.write(("Warning: current path of %s is not a valid directory. Switching to current directory\n"%
-                          (default_image_directory)).encode(sys.stderr.encoding, 'replace'))
+    try:
+        sys.stderr.write(("Warning: current path of %s is not a valid directory. Switching to home directory\n"%
+                          ('%s'%default_image_directory)).encode(sys.stderr.encoding, 'replace'))
+    except:
+        pass
     default_image_directory = os.path.abspath(os.path.expanduser('~'))
     set_default_image_directory(default_image_directory)
     return str(get_proper_case_filename(default_image_directory))

@@ -835,7 +835,7 @@ class LoadImages(cpmodule.CPModule):
         varlist += [self.descend_subdirectories]
         if self.descend_subdirectories == SUB_SOME:
             varlist += [self.subdirectory_filter]
-        if self.has_metadata and self.do_group_by_metadata:
+        if self.has_metadata and not self.match_method == MS_ORDER:
             varlist += [self.check_images]
         if self.has_metadata:
             varlist += [self.group_by_metadata]

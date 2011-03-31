@@ -83,9 +83,14 @@ class DirectoryView(object):
             # after this window has closed down.
             sys.stderr.write("Warning: GUI not available during directoryview refresh\n")
             return
-        files = [x 
-                 for x in os.listdir(cellprofiler.preferences.get_default_image_directory()) 
-                 if is_image(x) or x.endswith(".cp")]
+        try:
+            files = [x 
+                     for x in os.listdir(cellprofiler.preferences.get_default_image_directory()) 
+                     if is_image(x) or x.endswith(".cp")]
+        except Exception, e:
+            import traceback
+            traceback.print_exc()
+            files = ['Could not refresh files (%s)'%(e.__class__.__name__)]
         files.sort()
         self.__list_box.AppendItems(files)
     

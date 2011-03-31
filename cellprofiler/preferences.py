@@ -190,23 +190,24 @@ def get_default_image_directory():
     global __default_image_directory
     if __default_image_directory is not None:
         return __default_image_directory
+    # I'm not sure what it means for the preference not to exist.  No read-write preferences file?
     if not get_config().Exists(DEFAULT_IMAGE_DIRECTORY):
         return os.path.abspath(os.path.expanduser('~'))
-    default_image_directory = get_config().Read(DEFAULT_IMAGE_DIRECTORY)
-    if default_image_directory is None:
-        default_image_directory = ''
-    if os.path.isdir(default_image_directory):
-        try:
+    # fetch the default.  Note that it might be None
+    default_image_directory = get_config().Read(DEFAULT_IMAGE_DIRECTORY) or ''
+    try:
+        if os.path.isdir(default_image_directory):
             __default_image_directory = str(get_proper_case_filename(default_image_directory))
             return __default_image_directory
-        except UnicodeEncodeError:
-            sys.stderr.write("Failed to convert filename to ASCII, please rename directory until this is fixed.\n")
-            traceback.print_exc()
-    try:
-        sys.stderr.write(("Warning: current path of %s is not a valid directory. Switching to home directory\n"%
-                          ('%s'%default_image_directory)).encode(sys.stderr.encoding, 'replace'))
+    except UnicodeEncodeError:
+        # CellProfiler can't handle Unicode paths, yet
+        sys.stderr.write("CellProfiler cannot use Unicode paths, yet.  Please rename directory %s to only ASCII until this is fixed.\n"%(default_image_directory.encode('ascii', 'replace')))
     except:
-        pass
+        import traceback
+        traceback.print_exc()
+    sys.stderr.write("Warning: current path of %s is not a valid directory. Switching to home directory.\n"%(default_image_directory.encode('ascii', 'replace')))
+    # If the user's home directory is not ascii, we're not going to go hunting for one that is.
+    # Fail ungracefully.
     default_image_directory = os.path.abspath(os.path.expanduser('~'))
     set_default_image_directory(default_image_directory)
     return str(get_proper_case_filename(default_image_directory))

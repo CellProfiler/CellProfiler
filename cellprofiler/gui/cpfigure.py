@@ -1423,11 +1423,16 @@ def format_plate_data_as_array(plate_dict, plate_type):
     alphabet = 'ABCDEFGHIJKLMNOP'
     data = np.zeros(plate_shape)
     data[:] = np.nan
+    display_error = True
     for well, val in plate_dict.items():
         r = alphabet.index(well[0].upper())
         c = int(well[1:]) - 1
-        assert (0 <= r <= data.shape[0]) and (0 <= c <= data.shape[1]), \
-               'A well value (%s) in plate_dict does not fit in the given plate type.'%(well)
+        if r >= data.shape[0] or c >= data.shape[1]:
+            if display_error:
+                sys.stderr.write(
+                    'A well value (%s) does not fit in the given plate type.\n'%(well))
+                display_error = False
+            continue
         data[r,c] = val
     return data
         

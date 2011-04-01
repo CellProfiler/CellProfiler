@@ -181,6 +181,8 @@ class DisplayPlatemap(cpm.CPModule):
             # Construct a dict mapping plates and wells to lists of measurements
             pm_dict = {}
             for plate, well, data in zip(plates, wells, data):
+                if data is None:
+                    continue
                 if plate in pm_dict:
                     if well in pm_dict[plate]:
                         pm_dict[plate][well] += [data]

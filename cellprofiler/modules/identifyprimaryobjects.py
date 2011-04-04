@@ -835,11 +835,12 @@ class IdentifyPrimaryObjects(cpmi.Identify):
                 # Pick arbitrary objects, doing so in a repeatable,
                 # but pseudorandom manner.
                 #
-                np.random.seed(np.sum(labeled_image))
+                r = np.random.RandomState()
+                r.seed(abs(np.sum(labeled_image)))
                 #
                 # Pick an arbitrary ordering of the label numbers
                 #
-                index = np.random.permutation(object_count) + 1
+                index = r.permutation(object_count) + 1
                 #
                 # Pick only maximum_object_count of them
                 #

@@ -119,6 +119,11 @@ if not hasattr(sys, 'frozen'):
                       default=False,
                       action="store_true",
                       help="Build extensions, then exit CellProfiler")
+    parser.add_option("--do-not-fetch",
+                      dest="fetch_external_dependencies",
+                      default=True,
+                      action="store_false",
+                      help="Do not fetch external binary dependencies")
 parser.add_option("--ilastik",
                   dest = "run_ilastik",
                   default=False,
@@ -160,6 +165,9 @@ if options.run_ilastik:
 # has to be done before CellProfilerApp is imported
 from matplotlib import use as mpluse
 mpluse('WXAgg')
+
+if (not hasattr(sys, 'frozen')) and options.fetch_external_dependencies:
+    import external_dependencies
 
 if (not hasattr(sys, 'frozen')) and options.build_extensions:
     import subprocess

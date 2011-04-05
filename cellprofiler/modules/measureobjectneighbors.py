@@ -453,6 +453,7 @@ class MeasureObjectNeighbors(cpm.CPModule):
         if self.neighbors_are_objects:
             percent_touching_cm = workspace.display_data.percent_touching_cm
             percent_touching_cm.set_under((0,0,0))
+            percent_touching_image = workspace.display_data.percent_touching_image 
             percent_touching_image[~ object_mask] = -1
         if np.any(object_mask):
             figure.subplot_imshow(0,1, neighbor_count_image,

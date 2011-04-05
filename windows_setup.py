@@ -20,8 +20,11 @@ import matplotlib
 import tempfile
 import xml.dom.minidom
 
-from cellprofiler.utilities.get_revision import get_revision
+# make sure external dependencies match requirements
+import external_dependencies
+external_dependencies.fetch_external_dependencies('fail')
 
+from cellprofiler.utilities.get_revision import get_revision
 is_win64 = (os.environ["PROCESSOR_ARCHITECTURE"] == "AMD64")
 is_2_6 = sys.version_info[0] >= 2 and sys.version_info[1] >= 6
 vcredist = os.path.join("windows",

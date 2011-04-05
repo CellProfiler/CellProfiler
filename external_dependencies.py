@@ -34,21 +34,31 @@ def fetchfile(filename, url):
     dest = open(filename, 'wb')
     shutil.copyfileobj(src, dest)
 
-# look for each file, check its hash, download if missing or out of date, complain if it failes
-root = os.path.split(__file__)[0]
-for path, hash, url in files:
-    path = os.path.join(root, *path)
-    try:
-        assert os.path.isfile(path)
-        assert filehash(path) == hash
-        continue
-    except Exception, e:
-        # fetch the file
+def fetch_external_dependencies(overwrite=False):
+    # look for each file, check its hash, download if missing, or out
+    # of date if overwrite==True, complain if it fails.  If overwrite
+    # is 'fail', die on mismatches hashes.
+    root = os.path.split(__file__)[0]
+    for path, hash, url in files:
+        path = os.path.join(root, *path)
         try:
-            fetchfile(path, url)
             assert os.path.isfile(path)
-            assert filehash(path) == hash, 'Hashes do not match!'
-        except:
-            import traceback
-            sys.stderr.write(traceback.format_exc())
-            sys.stderr.write("Could not fetch external binary dependency %s from %s.  Some functionality may be missing.  You might try installing it by hand.\n"%(path, url))
+            if overwrite == True:
+                assert filehash(path) == hash
+            else:
+                if filehash(path) != hash:
+                    sys.stderr.write("Warning: hash of depenency %s does not match expected value.\n"%(path))
+                    if overwrite == 'fail':
+                        raise RuntimeError('Mismatched hash for %s'%(path))
+            continue
+        except AssertionError, e:
+            # fetch the file
+            try:
+                fetchfile(path, url)
+                assert os.path.isfile(path)
+                assert filehash(path) == hash, 'Hashes do not match!'
+            except:
+                import traceback
+                sys.stderr.write(traceback.format_exc())
+                sys.stderr.write("Could not fetch external binary dependency %s from %s.  Some functionality may be missing.  You might try installing it by hand.\n"%(path, url))
+                

@@ -28,6 +28,7 @@ from libtiff.libtiff_ctypes import tiff_h_name
 
 # make sure external dependencies match requirements
 import external_dependencies
+external_dependencies.fetch_external_dependencies('fail')
 
 if sys.platform == "darwin":
     os.system("svn info | grep Revision | sed -e 's/Revision:/\"Version/' -e 's/^/VERSION = /' -e 's/$/\"/' > version.py")

@@ -124,6 +124,11 @@ if not hasattr(sys, 'frozen'):
                       default=True,
                       action="store_false",
                       help="Do not fetch external binary dependencies")
+    parser.add_option("--fetch-and-overwrite",
+                      dest="overwrite_external_dependencies",
+                      default=False,
+                      action="store_true",
+                      help="Overwrite external binary depencies if hash does not match")
 parser.add_option("--ilastik",
                   dest = "run_ilastik",
                   default=False,
@@ -168,6 +173,7 @@ mpluse('WXAgg')
 
 if (not hasattr(sys, 'frozen')) and options.fetch_external_dependencies:
     import external_dependencies
+    external_dependencies.fetch_external_dependencies(options.overwrite_external_dependencies)
 
 if (not hasattr(sys, 'frozen')) and options.build_extensions:
     import subprocess

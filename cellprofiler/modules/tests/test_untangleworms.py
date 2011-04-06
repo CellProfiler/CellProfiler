@@ -734,6 +734,9 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
   <leftover-weight>
     10.0
   </leftover-weight>
+  <training-set-size>
+  200
+  </training-set-size>
   <mean-angles>
     <value>
       -0.010999071156

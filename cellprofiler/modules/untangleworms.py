@@ -110,6 +110,7 @@ T_MEDIAN_WORM_AREA = "median-worm-area"
 T_OVERLAP_WEIGHT = "overlap-weight"
 T_LEFTOVER_WEIGHT = "leftover-weight"
 T_RADII_FROM_TRAINING = "radii-from-training"
+T_TRAINING_SET_SIZE = "training-set-size"
 T_VALUES = "values"
 T_VALUE = "value"
 
@@ -672,18 +673,20 @@ class UntangleWorms(cpm.CPModule):
                 T_NAMESPACE, T_TRAINING_DATA, None)
             top = doc.documentElement
             top.setAttribute("xmlns", T_NAMESPACE)
-            for tag, value in ((T_VERSION,  get_revision()),
-                               (T_MIN_AREA, min_area),
-                               (T_MAX_AREA, max_area),
-                               (T_COST_THRESHOLD, max_cost),
-                               (T_NUM_CONTROL_POINTS, num_control_points),
-                               (T_MAX_SKEL_LENGTH, max_skel_length),
-                               (T_MIN_PATH_LENGTH, min_length),
-                               (T_MAX_PATH_LENGTH, max_length),
-                               (T_MEDIAN_WORM_AREA, median_area),
-                               (T_MAX_RADIUS, max_radius),
-                               (T_OVERLAP_WEIGHT, this.override_overlap_weight.value),
-                               (T_LEFTOVER_WEIGHT, this.override_leftover_weight.value)):
+            for tag, value in (
+                (T_VERSION,  get_revision()),
+                (T_MIN_AREA, min_area),
+                (T_MAX_AREA, max_area),
+                (T_COST_THRESHOLD, max_cost),
+                (T_NUM_CONTROL_POINTS, num_control_points),
+                (T_MAX_SKEL_LENGTH, max_skel_length),
+                (T_MIN_PATH_LENGTH, min_length),
+                (T_MAX_PATH_LENGTH, max_length),
+                (T_MEDIAN_WORM_AREA, median_area),
+                (T_MAX_RADIUS, max_radius),
+                (T_OVERLAP_WEIGHT, this.override_overlap_weight.value),
+                (T_LEFTOVER_WEIGHT, this.override_leftover_weight.value),
+                (T_TRAINING_SET_SIZE, nworms)):
                 element = doc.createElement(tag)
                 content = doc.createTextNode(str(value))
                 element.appendChild(content)
@@ -1643,7 +1646,6 @@ class UntangleWorms(cpm.CPModule):
         
         graph_struct.segment_lengths = np.array([
             self.calculate_path_length(x[0]) for x in graph_struct.segments])
-        count = 0
         for j in range(n):
             current_length = graph_struct.segment_lengths[j]
             # Add all finished paths of length 1
@@ -1661,9 +1663,6 @@ class UntangleWorms(cpm.CPModule):
                 segment_list, branch_areas_list, 
                 current_length, min_length, max_length)
             for path in paths_list:
-                count += 1
-                if count % 10000 == 0:
-                    print "%d of %d nodes, %d paths" % (j, n, count)
                 yield path
             
     def build_incidence_lists(self, graph_struct):

@@ -899,6 +899,7 @@ class CPFigureFrame(wx.Frame):
                     im = matplotlib.image.fromarray(
                         image[yslice, xslice, :], 0)
                     im.is_grayscale = False
+                    im.set_interpolation(matplotlib.image.NEAREST)
                     fc = self.axes.patch.get_facecolor()
                     bg = matplotlib.colors.colorConverter.to_rgba(fc, 0)
                     im.set_bg( *bg)

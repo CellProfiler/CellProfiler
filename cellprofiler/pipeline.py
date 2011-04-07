@@ -596,16 +596,22 @@ class Pipeline(object):
                 revision = int(value)
                 CURRENT_SVN_REVISION = get_revision()
                 if revision > CURRENT_SVN_REVISION:
-                    import wx
-                    dlg = wx.MessageDialog(
-                            parent = None, 
-                            message = 'Your pipeline SVN revision is %d but you are running CellProfiler SVN revsion %d. \nLoading this pipeline may fail or have unpredictable results. Continue?' %(revision, CURRENT_SVN_REVISION),
-                            caption = 'Pipeline revsion mismatch', 
-                            style = wx.OK|wx.CANCEL|wx.ICON_QUESTION)
-                    if dlg.ShowModal() != wx.ID_OK:
-                        dlg.Destroy()
-                        return None
-                    dlg.Destroy()
+                    try:
+                        import wx
+                        if wx.GetApp():
+                            dlg = wx.MessageDialog(
+                                parent = None, 
+                                message = 'Your pipeline SVN revision is %d but you are running CellProfiler SVN revsion %d. \nLoading this pipeline may fail or have unpredictable results. Continue?' %(revision, CURRENT_SVN_REVISION),
+                                caption = 'Pipeline revsion mismatch', 
+                                style = wx.OK|wx.CANCEL|wx.ICON_QUESTION)
+                            if dlg.ShowModal() != wx.ID_OK:
+                                dlg.Destroy()
+                                return None
+                            dlg.Destroy()
+                        else:
+                            raise Exception # fall through to sys.stderr.write
+                    except:
+                        sys.stderr.write('Your pipeline SVN revision is %d but you are running CellProfiler SVN revsion %d. \nLoading this pipeline may fail or have unpredictable results.\n' %(revision, CURRENT_SVN_REVISION))
                 else:
                     print "Pipeline saved with CellProfiler SVN revision %s"%value
             elif kwd == H_FROM_MATLAB:

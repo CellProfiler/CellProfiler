@@ -36,6 +36,11 @@ from errordialog import display_error_dialog, ED_CONTINUE, ED_STOP, ED_SKIP
 from runmultiplepipelinesdialog import RunMultplePipelinesDialog
 import cellprofiler.gui.parametersampleframe as psf
 
+# XXX don't hardcode this...  use getenv?
+import cellprofiler.distributed
+
+distributor = cellprofiler.distributed.Distributor()
+
 RECENT_FILE_MENU_ID = [wx.NewId() for i in range(cpprefs.RECENT_FILE_COUNT)]
 
 class PipelineController:
@@ -697,6 +702,8 @@ class PipelineController:
         # Start the pipeline
         #
         ##################################
+        dist = cellprofiler.distributed.Distributor()
+        dist.start_serving(self.__pipeline, 8567)
         output_path = self.get_output_file_path()
         if output_path:
             self.__module_view.disable()

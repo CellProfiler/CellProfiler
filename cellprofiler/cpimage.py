@@ -641,6 +641,7 @@ class ImageSetList(object):
         self.__legacy_fields = {}
         self.__associating_by_key = None
         self.__test_mode = test_mode
+        self.combine_path_and_file = False
     
     @property
     def test_mode(self):

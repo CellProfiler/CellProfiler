@@ -669,6 +669,9 @@ class Pipeline(object):
                                      attribute_string)
                 attribute_strings = attribute_string[1:-1].split('|')
                 variable_revision_number = None
+                # make batch_state decodable from text pipelines
+                array = np.array
+                uint8 = np.uint8
                 for a in attribute_strings:
                     if len(a.split(':')) != 2:
                         raise ValueError("Invalid attribute string: %s" % a)
@@ -770,7 +773,7 @@ class Pipeline(object):
         fd.write("%s:%d\n" % (H_VERSION,NATIVE_VERSION))
         fd.write("%s:%d\n" % (H_SVN_REVISION,get_revision()))
         attributes = ('module_num','svn_version','variable_revision_number',
-                      'show_window','notes')
+                      'show_window','notes','batch_state')
         for module in self.modules():
             if ((modules_to_save is not None) and 
                 module.module_num not in modules_to_save):
@@ -1246,7 +1249,7 @@ class Pipeline(object):
         '''Tell everyone that a run is ending'''
         self.notify_listeners(EndRunEvent())
         
-    def prepare_run(self, frame, test_mode = None):
+    def prepare_run(self, frame, test_mode = None, combine_path_and_file = False):
         """Do "prepare_run" on each module to initialize the image_set_list
         
         returns the image_set_list or None if an exception was thrown
@@ -1254,6 +1257,7 @@ class Pipeline(object):
         if test_mode is None:
             test_mode = self.test_mode
         image_set_list = cellprofiler.cpimage.ImageSetList(test_mode)
+        image_set_list.combine_path_and_file = combine_path_and_file
         
         for module in self.modules():
             try:

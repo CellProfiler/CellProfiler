@@ -234,8 +234,11 @@ if (not hasattr(sys, 'frozen')) and options.build_extensions:
 if options.show_gui and not options.output_html:
     from cellprofiler.cellprofilerapp import CellProfilerApp
     App = CellProfilerApp(0, 
-                          check_for_new_version = True,
-                          show_splashbox = True)
+                          check_for_new_version = (options.pipeline_filename is None),
+                          show_splashbox = (options.pipeline_filename is None))
+    # ... loading a pipeline from the filename can bring up a modal
+    # dialog, which causes a crash on Mac if the splashbox is open or
+    # a second modal dialog is opened.
 
 try:
     #

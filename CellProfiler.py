@@ -61,7 +61,12 @@ parser.add_option("-r", "--run",
                   dest="run_pipeline",
                   default=False,
                   help="Run the given pipeline on startup")
-parser.add_option("-w", "--worker",
+parser.add_option("--distributed",
+                  action="store_true",
+                  dest="run_distributed",
+                  default=False,
+                  help="Distribute pipeline to workers (see --worker)")
+parser.add_option("--worker",
                   dest="worker_mode_URL",
                   default=None,
                   help="Enter worker mode for the CellProfiler distributing work at URL (implies headless)")
@@ -235,6 +240,9 @@ if (not hasattr(sys, 'frozen')) and options.build_extensions:
     if options.build_and_exit:
         exit()
 
+if options.run_distributed:
+    import cellprofiler.distributed as cpdistributed
+    cpdistributed.run_distributed = True
 
 # set up values for worker, which is basically a looping headless
 # pipeline runner with special methods to fetch pipelines and

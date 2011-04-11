@@ -12,6 +12,8 @@ import urllib, urllib2
 import nuageux
 from cellprofiler.modules.mergeoutputfiles import MergeOutputFiles
 
+# whether CP should run distributed, default to False
+run_distributed = False
 
 class Distributor(object):
     def __init__(self):
@@ -95,7 +97,7 @@ class Distributor(object):
                 outfd.seek(0)
                 finished_fds.append(outfd)
                 print "finished image number", finished_job['image_num'][0]
-                unfinished -= 
+                unfinished -= 1
             else:
                 time.sleep(1)
 

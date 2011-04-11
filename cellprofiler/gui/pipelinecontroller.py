@@ -35,11 +35,7 @@ import cellprofiler.utilities.get_revision as get_revision
 from errordialog import display_error_dialog, ED_CONTINUE, ED_STOP, ED_SKIP
 from runmultiplepipelinesdialog import RunMultplePipelinesDialog
 import cellprofiler.gui.parametersampleframe as psf
-
-# XXX don't hardcode this...  use getenv?
-import cellprofiler.distributed
-
-distributor = cellprofiler.distributed.Distributor()
+import cellprofiler.distributed as cpdistributed
 
 RECENT_FILE_MENU_ID = [wx.NewId() for i in range(cpprefs.RECENT_FILE_COUNT)]
 
@@ -702,8 +698,9 @@ class PipelineController:
         # Start the pipeline
         #
         ##################################
-        if os.getenv("CELLPROFILER_DISTRIBUTED"):
-            dist = cellprofiler.distributed.Distributor()
+
+        if cpdistributed.run_distributed:
+            dist = cpdistributed.Distributor()
             dist.start_serving(self.__pipeline, 8567, self.get_output_file_path())
             return
 

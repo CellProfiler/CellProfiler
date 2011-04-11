@@ -208,8 +208,11 @@ def collect_measurements(rdr):
                 tmp_not_nan = tmp_not_nan.astype(int)
             else:
                 tmp_out = np.zeros(len(tmp), np.float32)
-            tmp_out[tmp == 'nan'] = np.nan
-            tmp_out[tmp != 'nan'] = tmp_not_nan
+            if np.any(tmp == 'nan'):
+                tmp_out[tmp == 'nan'] = np.nan
+                tmp_out[tmp != 'nan'] = tmp_not_nan
+            else:
+                tmp_out = tmp_not_nan
             d[field] = tmp_out
         except:
             pass

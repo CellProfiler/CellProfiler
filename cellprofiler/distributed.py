@@ -110,7 +110,6 @@ class Distributor(object):
     def validate_result(self, result):
         return self.pipeline_blob_hash == result['pipeline_hash'][0]
 
-
     def rewrite_to_URL(self, path, **varargs):
         # For now, each image gets an integer, but for debugging,
         # perhaps base64-encoding the path would make debugging
@@ -145,16 +144,8 @@ class Distributor(object):
             print "bad data request", request, e
             return '', 'application/octet-stream'
 
-    def receive_results():
-        # call callback to update progress
-        pass
-
     def image_writer():
         # TO BE DONE
-        pass
-
-    # Worker (client)
-    def do_work():
         pass
 
 class JobInfo(object):

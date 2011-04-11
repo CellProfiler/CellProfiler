@@ -1,10 +1,17 @@
-import nuageux
+import os
+import os.path
+import sys
 import StringIO
 import zlib
 import hashlib
 import time
 import tempfile
-import os
+import traceback
+import urllib, urllib2
+
+import nuageux
+from cellprofiler.modules.mergeoutputfiles import MergeOutputFiles
+
 
 class Distributor(object):
     def __init__(self):
@@ -12,7 +19,7 @@ class Distributor(object):
         self.pipeline = None
         self.URL_map = {}
 
-    def start_serving(self, pipeline, port):
+    def start_serving(self, pipeline, port, output_file):
         # Make sure the previous server has stopped
         if self.work_server:
             self.work_server.stop()
@@ -31,7 +38,7 @@ class Distributor(object):
             raise RuntimeError('Could not create image set list for distributed processing.')
 
         # start server, get base URL
-        self.work_server = nuageux.Server('CellProfiler work server', data_callback=self.data_server)
+        self.work_server = nuageux.Server('CellProfiler work server', data_callback=self.data_server, validate_result=self.validate_result)
         self.server_URL = self.work_server.base_URL()
 
         # call prepare_to_create_batch to turn files into URLs
@@ -64,25 +71,45 @@ class Distributor(object):
 
         # add jobs for each image set
         for img_set_index in range(image_set_list.count()):
-            self.work_server.add_work("%d %s"%(img_set_index, self.pipeline_blob_hash))
+            self.work_server.add_work("%d %s"%(img_set_index + 1, self.pipeline_blob_hash))
         
         # start serving
         self.work_server.start()
 
-        # if headful, call callback periodically, cancel if requested
+        # XXX - if headful, call callback periodically, cancel if requested
         # if headless, we can register a callback for results, and idle until the queue is empty 
         unfinished = image_set_list.count()
+        finished_fds = []
         while unfinished > 0:
-            time.sleep(5)
-            print "idling", unfinished, self.work_server.base_URL()
+            print "idling - ", unfinished, "jobs remain", self.work_server.base_URL()
             finished_job = self.work_server.fetch_result()
-            if finished_job:
-                print "finished_job", finished_job
-                unfinished -= 1
+            if finished_job is not None:
+                if finished_job['pipeline_hash'][0] != self.pipeline_blob_hash:
+                    # out of date result?
+                    print "ignored mismatched pipeline hash", finished_job['pipeline_hash'][0], self.pipeline_blob_hash
+                    continue
+                # store results in a temporary file, in the output directory
+                outfd = tempfile.TemporaryFile(dir=os.path.dirname(output_file))
+                outfd.write(zlib.decompress(finished_job['measurements'][0]))
+                outfd.flush()
+                outfd.seek(0)
+                finished_fds.append(outfd)
+                print "finished image number", finished_job['image_num'][0]
+                unfinished -= 
+            else:
+                time.sleep(1)
+
 
         # when finished, stop serving
         self.work_server.stop()
         os.unlink(pipeline_path)
+
+        # merge output files
+        MergeOutputFiles.merge_files(output_file, finished_fds, force_headless=True)
+
+    def validate_result(self, result):
+        return self.pipeline_blob_hash == result['pipeline_hash'][0]
+
 
     def rewrite_to_URL(self, path, **varargs):
         # For now, each image gets an integer, but for debugging,
@@ -129,3 +156,49 @@ class Distributor(object):
     # Worker (client)
     def do_work():
         pass
+
+class JobInfo(object):
+    def __init__(self, base_url):
+        self.base_url = base_url
+        self.image_set_start = None
+        self.image_set_end = None
+        self.pipeline_hash = None
+        self.pipeline_blob = None
+        self.job_num = None
+
+    def fetch_job(self):
+        try:
+            # fetch the pipeline
+            self.pipeline_blob = urllib2.urlopen(self.base_url + '/data/-1').read()
+            self.pipeline_hash = hashlib.sha1(self.pipeline_blob).hexdigest()
+            # fetch a job
+            work_blob = urllib2.urlopen(self.base_url + '/work').read()
+            if work_blob == 'NOWORK':
+                assert False, "No work to be had..."
+            self.job_num, image_num, pipeline_hash = work_blob.split(' ')
+            self.image_set_start = int(image_num)
+            self.image_set_end = int(image_num)
+            print "fetched work:", work_blob
+            assert pipeline_hash == self.pipeline_hash, "Mismatched hash, probably out of sync with server"
+        except Exception, e:
+            sys.stderr.write("Exception fetching work.\n")
+            traceback.print_exc()
+
+    def work_done(self):
+        return False
+
+    def pipeline_stringio(self):
+        return StringIO.StringIO(zlib.decompress(self.pipeline_blob))
+
+    def report_measurements(self, pipeline, measurements):
+        out_measurements = StringIO.StringIO()
+        pipeline.save_measurements(out_measurements, measurements)
+        nuageux.report_result(self.base_url, self.job_num,
+                              image_num=str(self.image_set_start),
+                              pipeline_hash=self.pipeline_hash,
+                              measurements=zlib.compress(out_measurements.getvalue()))
+
+def fetch_work(base_URL):
+    jobinfo = JobInfo(base_URL)
+    jobinfo.fetch_job()
+    return jobinfo

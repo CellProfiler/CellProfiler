@@ -272,8 +272,8 @@ class MergeOutputFiles(cpm.CPModule):
         list_ctrl.SortItems(sortfn)
         
     @staticmethod
-    def merge_files(destination, sources):
-        is_headless = get_headless()
+    def merge_files(destination, sources, force_headless=False):
+        is_headless = force_headless or get_headless()
         if not is_headless:
             import wx
         if len(sources) == 0:

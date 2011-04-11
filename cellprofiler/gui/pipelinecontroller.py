@@ -702,8 +702,11 @@ class PipelineController:
         # Start the pipeline
         #
         ##################################
-        dist = cellprofiler.distributed.Distributor()
-        dist.start_serving(self.__pipeline, 8567)
+        if os.getenv("CELLPROFILER_DISTRIBUTED"):
+            dist = cellprofiler.distributed.Distributor()
+            dist.start_serving(self.__pipeline, 8567, self.get_output_file_path())
+            return
+
         output_path = self.get_output_file_path()
         if output_path:
             self.__module_view.disable()

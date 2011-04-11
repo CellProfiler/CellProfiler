@@ -794,10 +794,10 @@ class Pipeline(object):
         if needs_close:
             fd.close()
         
-    def save_measurements(self,filename, measurements):
+    def save_measurements(self, filename, measurements):
         """Save the measurements and the pipeline settings in a Matlab file
         
-        filename     - name of file to create
+        filename     - name of file to create, or a file-like object
         measurements - measurements structure that is the result of running the pipeline
         """
         handles = self.build_matlab_handles()
@@ -814,7 +814,7 @@ class Pipeline(object):
         self.savemat(filename, root)
         
     def savemat(self, filename, root):
-        '''Save a handles structure accounting for scipy version compatibility'''
+        '''Save a handles structure accounting for scipy version compatibility to a filename or file-like object'''
         sver = scipy.__version__.split('.')
         if (len(sver) >= 2 and sver[0].isdigit() and int(sver[0]) == 0 and
             sver[1].isdigit() and int(sver[1]) < 8):
@@ -1080,6 +1080,11 @@ class Pipeline(object):
 
         columns = self.get_measurement_columns()
         
+        if image_set_start is not None:
+            assert isinstance(image_set_start, int), "Image set start must be an integer"
+        if image_set_end is not None:
+            assert isinstance(image_set_end, int), "Image set end must be an integer"
+
         with self.prepared_run(self, frame) as image_set_list:
             if image_set_list == None:
                 return
@@ -1088,7 +1093,7 @@ class Pipeline(object):
             num_image_sets = sum([image_number is not None 
                                   for image_number, _, _, _ in group(image_set_list)])
             image_set_count = -1
-            
+
             measurements = None
             last_image_number = None
             for group_number, group_index, image_number, closure in group(image_set_list):

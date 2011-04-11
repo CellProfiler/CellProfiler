@@ -243,7 +243,6 @@ if options.worker_mode_URL is not None:
     import cellprofiler.distributed as cpdistributed
     options.show_gui = False
     options.run_pipeline = True
-    options.pipeline_filename = options.worker_mode_URL + '/-1'
     assert options.groups == None, "groups not supported in distributed processing, yet"
 
 if options.show_gui and not options.output_html:
@@ -266,7 +265,7 @@ try:
         # Might want to change later if there's some headless setup 
         if (not options.output_html) and (not options.print_measurements):
             options.run_pipeline = True
-    
+
     if options.output_html:
         from cellprofiler.gui.html.manual import generate_html
         webpage_path = options.output_directory if options.output_directory else None
@@ -302,7 +301,7 @@ try:
     if options.output_html:
         sys.exit(0) 
     
-    if options.run_pipeline and not options.pipeline_filename:
+    if options.run_pipeline and not (options.pipeline_filename or options.worker_mode_URL):
         raise ValueError("You must specify a pipeline filename to run")
     
     if not options.first_image_set is None:
@@ -342,22 +341,24 @@ try:
                     style = wx.OK | wx.ICON_ERROR)
         App.MainLoop()
     elif options.run_pipeline: # this includes distributed workers
-        continue_looping = True
+        if (options.pipeline_filename is not None) and (not options.pipeline_filename.lower().startswith('http')):
+            options.pipeline_filename = os.path.expanduser(options.pipeline_filename)
+        continue_looping = True # for distributed work
         while continue_looping:
             continue_looping = False # distributed workers will reset this, below, while there is work.
             from cellprofiler.pipeline import Pipeline, EXIT_STATUS
             import cellprofiler.measurements as cpmeas
             pipeline = Pipeline()
-            if not options.pipeline_filename.lower().startswith('http'):
-                options.pipeline_filename = os.path.expanduser(options.pipeline_filename))
-            pipeline.load(options.pipeline_filename)
             if options.worker_mode_URL is not None:
-                jobinfo = cpdistributed.fetch_job(options.worker_mode_URL)
+                jobinfo = cpdistributed.fetch_work(options.worker_mode_URL)
                 if jobinfo.work_done():
-                    break
-                continue_looping = True
+                    break # no more work
+                pipeline.load(jobinfo.pipeline_stringio())
                 image_set_start = jobinfo.image_set_start
                 image_set_end = jobinfo.image_set_end
+                continue_looping = True
+            else:
+                pipeline.load(options.pipeline_filename)
             if options.groups is not None:
                 kvs = [x.split('=') for x in options.groups.split(',')]
                 groups = dict(kvs)
@@ -366,8 +367,8 @@ try:
             measurements = pipeline.run(image_set_start=image_set_start, 
                                         image_set_end=image_set_end,
                                         grouping=groups)
-            if options.worker_mode_URL:
-                cpdistributed.report_measurements(pipeline, measurements, jobinfo)
+            if options.worker_mode_URL is not None:
+                jobinfo.report_measurements(pipeline, measurements)
             elif len(args) > 0:
                 pipeline.save_measurements(args[0], measurements)
                 if options.done_file is not None:
@@ -379,6 +380,11 @@ try:
                     fd = open(options.done_file, "wt")
                     fd.write("%s\n"%done_text)
                     fd.close()
+except Exception, e:
+    import traceback
+    sys.stderr.write("Uncaught exception in CellProfiler.py\n")
+    traceback.print_exc()
+    raise
 finally:
     # Smokey, my friend, you are entering a world of pain.
     try:
@@ -391,11 +397,12 @@ finally:
         print "Caught exception while killing ijbridge."
 
     try:
+        if hasattr(sys, 'flags'):
+            if sys.flags.interactive:
+                assert False, "Don't kill JVM in interactive mode, because it calls exit()"
         import cellprofiler.utilities.jutil as jutil
         jutil.kill_vm()
     except:
         import traceback
         traceback.print_exc()
         print "Caught exception while killing VM"
-
-        

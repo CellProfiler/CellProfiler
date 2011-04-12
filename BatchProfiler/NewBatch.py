@@ -175,7 +175,7 @@ if (form_data.has_key('submit_batch') and
         "data_dir":      form_data["data_dir"].value,
         "write_data":    (form_data.has_key("write_data") and 1) or 0,
         "batch_size":    int(form_data["batch_size"].value),
-        "memory_limit":  float(form_data["memory_limit"].value) if form_data.has_key("memory_limt") else 2000,
+        "memory_limit":  float(form_data["memory_limit"].value) if form_data.has_key("memory_limit") else 2000,
         "timeout":       float(form_data["timeout"].value),
         "cpcluster":     "CellProfiler_2_0:/imaging/analysis/CPCluster/CellProfiler-2.0/%s"%form_data["revision"].value,
         "batch_file":    batch_file,

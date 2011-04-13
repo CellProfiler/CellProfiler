@@ -45,6 +45,11 @@
       <xs:element name="max-radius" type="xs:decimal"/>
       <xs:element name="overlap-weight" type="xs:decimal"/>
       <xs:element name="leftover-weight" type="xs:decimal"/>
+      <xs:element name="training-set-size" type="xs:positiveInteger">
+        <xs:annotation>
+          <xs:documentation>The number of worms analyzed to form the training set.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
       <xs:element name ="mean-angles" type="double-vector">
         <xs:annotation>
           <xs:documentation>The mean angle at each control point.</xs:documentation>

@@ -46,6 +46,7 @@ __version__="$Revision: 10717 %"
 
 import numpy as np
 from scipy.interpolate import interp1d
+from scipy.interpolate.fitpack import bisplrep, dblint
 from scipy.ndimage import map_coordinates, extrema
 from scipy.ndimage import mean as nd_mean
 from scipy.ndimage import standard_deviation as nd_standard_deviation
@@ -56,6 +57,7 @@ import cellprofiler.cpimage as cpi
 import cellprofiler.objects as cpo
 import cellprofiler.settings as cps
 import cellprofiler.cpmath.cpmorphology as morph
+import cellprofiler.cpmath.index as INDEX
 import cellprofiler.preferences as cpprefs
 from cellprofiler.preferences import IO_FOLDER_CHOICE_HELP_TEXT
 from cellprofiler.utilities import product
@@ -513,31 +515,46 @@ class StraightenWorms(cpm.CPModule):
             min_i = np.hstack(([0], min_i))
             max_i = np.hstack(([labels.shape[0]], max_i)) + 1
             heights = max_i - min_i
-            i_frac = (i - min_i[labels]).astype(float) / heights[labels]
+            
+            # # # # # # # # # # # # # # # # #
+            #
+            # Create up to 3 spaces which represent the gridding
+            # of the worm and create a coordinate mapping into
+            # this gridding for each straightened worm
+            #
+            # # # # # # # # # # # # # # # # #
+            griddings = []
             if nbins_vertical > 1:
-                # # # # # # # # # # # # # # # # # # # # # #
-                #
-                # Calculate the bins vertically
-                #
-                # # # # # # # # # # # # # # # # # # # # # #
-                
-                #
-                # Find the bin for each pixel in the straightened image
-                #
-                mbin_i = (i_frac * nbins_vertical).astype(int)
-                
-                #
-                # Multiplex the label and bin number together
-                # 
-                mbin = mbin_i + labels * nbins_vertical
-                mbin[labels == 0] = 0
-                scales = [self.get_scale_name(None, b)
-                          for b in range(nbins_vertical)]
-                self.measure_bins(workspace, mbin, scales, nworms)
+                scales = np.array([self.get_scale_name(None, b)
+                                   for b in range(nbins_vertical)])
+                scales.shape = (nbins_vertical, 1)
+                griddings += [(nbins_vertical, 1, scales)]
             if nbins_horizontal > 1:
+                scales = np.array([self.get_scale_name(b, None)
+                                   for b in range(nbins_horizontal)])
+                scales.shape = (1, nbins_horizontal)
+                griddings += [(1, nbins_horizontal, scales)]
+                if nbins_vertical > 1:
+                    scales = np.array([
+                        [self.get_scale_name(h,v) for h in range(nbins_horizontal)]
+                        for v in range(nbins_vertical)])
+                    griddings += [(nbins_vertical, nbins_horizontal, scales)]
+            
+            for i_dim, j_dim, scales in griddings:
                 # # # # # # # # # # # # # # # # # # # # # #
                 #
-                # Calculate the bins horizontally
+                # Start out mapping every point to a 1x1 space
+                #
+                # # # # # # # # # # # # # # # # # # # # # #
+                labels1 = labels.copy()
+                i,j = np.mgrid[0:labels.shape[0], 0:labels.shape[1]]
+                i_frac = (i - min_i[labels]).astype(float) / heights[labels]
+                i_frac_end = i_frac + 1.0 / heights[labels].astype(float)
+                i_radius_frac = (i - min_i[labels]).astype(float) / (heights[labels] - 1)
+                labels1[(i_frac >= 1) | (i_frac_end <= 0)] = 0
+                # # # # # # # # # # # # # # # # # # # # # #
+                #
+                # Map the horizontal onto the grid.
                 #
                 # # # # # # # # # # # # # # # # # # # # # #
                 radii = np.array(params.radii_from_training)
@@ -550,68 +567,204 @@ class StraightenWorms(cpm.CPModule):
                 # Find which segment (from the training set) per pixel in
                 # a fractional form
                 #
-                i_index = i_frac * (len(radii) - 1)
+                i_index = i_radius_frac * (len(radii) - 1)
                 #
-                # Find the lower index into the training set segment
+                # Interpolate
                 #
-                i_low = np.floor(i_index).astype(int)
+                i_index_frac = i_index - np.floor(i_index)
+                i_index_frac[i_index >= len(radii) - 1] = 1
+                i_index = np.minimum(i_index.astype(int), len(radii) - 2)
+                r = np.ceil((radii[i_index] * (1 - i_index_frac) + 
+                             radii[i_index+1] * i_index_frac))
                 #
-                # Find out how much of the upper index to include
+                # Map the worm width into the space 0-1
                 #
-                i_seg_frac = i_index - i_low
-                del i_index
+                j_frac = (j - j_center + r) / (r * 2 + 1)
+                j_frac_end = j_frac + 1.0 / (r * 2 + 1)
+                labels1[(j_frac >= 1) | (j_frac_end <= 0)] = 0
                 #
-                # Find the radius of the associated worm, per pixel
+                # Map the worms onto the gridding.
                 #
-                p_radii = (radii[i_low] * (1.0 - i_seg_frac) +
-                           radii[i_low+1] * i_seg_frac)
-                del i_low
-                del i_seg_frac
+                i_mapping = np.maximum(i_frac * i_dim, 0)
+                i_mapping_end = np.minimum(i_frac_end * i_dim, i_dim)
+                j_mapping = np.maximum(j_frac * j_dim, 0)
+                j_mapping_end = np.minimum(j_frac_end  * j_dim, j_dim)
+                i_mapping = i_mapping[labels1 > 0]
+                i_mapping_end = i_mapping_end[labels1 > 0]
+                j_mapping = j_mapping[labels1 > 0]
+                j_mapping_end = j_mapping_end[labels1 > 0]
+                labels_1d = labels1[labels1 > 0]
+                i = i[labels1 > 0]
+                j = j[labels1 > 0]
+                
                 #
-                # Find the left edge of the worm, per pixel
+                # There are easy cases and hard cases. The easy cases are
+                # when a pixel in the input space wholly falls in the
+                # output space.
                 #
-                j_start = j_center - p_radii
-                del j_center
+                easy = ((i_mapping.astype(int) == i_mapping_end.astype(int)) &
+                        (j_mapping.astype(int) == j_mapping_end.astype(int)))
+                
+                i_src = i[easy]
+                j_src = j[easy]
+                i_dest = i_mapping[easy].astype(int)
+                j_dest = j_mapping[easy].astype(int)
+                weight = np.ones(i_src.shape)
+                labels_src = labels_1d[easy]
                 #
-                # The bin # is the pixel coordinate minus the start times
-                # the number of bins divided by the width of the worm
+                # The hard cases start in one pixel in the binning space,
+                # possibly continue through one or more intermediate pixels
+                # in horribly degenerate cases and end in a final
+                # partial pixel.
                 #
-                mbin_j = ((j - j_start) * nbins_horizontal / (2 * p_radii)).astype(int)
+                # More horribly, a pixel in the straightened space
+                # might span two or more in the binning space in the I
+                # direction, the J direction or both.
                 #
-                # Account for roundoff errors
-                #
-                mbin_j = np.maximum(np.minimum(mbin_j, nbins_horizontal-1), 0)
-                #
-                # Multiplex bin # and label #
-                #
-                mbin = mbin_j + labels * nbins_horizontal
-                mbin[labels == 0] = 0
-                scales = [self.get_scale_name(b, None)
-                          for b in range(nbins_horizontal)]
-                self.measure_bins(workspace, mbin, scales, nworms)
-                if nbins_vertical > 1:
+                if not np.all(easy):
+                    i = i[~ easy]
+                    j = j[~ easy]
+                    i_mapping = i_mapping[~ easy]
+                    j_mapping = j_mapping[~ easy]
+                    i_mapping_end = i_mapping_end[~ easy]
+                    j_mapping_end = j_mapping_end[~ easy]
+                    labels_1d = labels_1d[~ easy]
                     #
-                    # Checkerboard the worm by multiplexing labels and both
-                    # binnings
+                    # A pixel in the straightened space can be wholly within
+                    # a pixel in the bin space, it can straddle two pixels
+                    # or straddle two and span one or more. It can do different
+                    # things in the I and J direction.
                     #
-                    mbin = mbin_i + ((mbin_j + labels * nbins_horizontal) * 
-                                     nbins_vertical)
-                    del mbin_i
-                    del mbin_j
-                    mbin[labels == 0] = 0
-                    scales = sum([[self.get_scale_name(h, v)
-                                   for v in range(nbins_vertical)]
-                                  for h in range(nbins_horizontal)],[])
-                    self.measure_bins(workspace, mbin, scales, nworms)
+                    # --- The number of pixels wholly spanned ---
+                    #
+                    i_span = np.maximum(np.floor(i_mapping_end) - np.ceil(i_mapping), 0)
+                    j_span = np.maximum(np.floor(j_mapping_end) - np.ceil(j_mapping), 0)
+                    #
+                    # --- The fraction of a pixel covered by the lower straddle
+                    #
+                    i_low_straddle = i_mapping.astype(int) + 1 - i_mapping
+                    j_low_straddle = j_mapping.astype(int) + 1 - j_mapping
+                    #
+                    # Segments that start at exact pixel boundaries and span
+                    # whole pixels have low fractions that are 1. The span
+                    # length needs to have these subtracted from it.
+                    #
+                    i_span[i_low_straddle == 1] -= 1
+                    j_span[j_low_straddle == 1] -= 1
+                    #
+                    # --- the fraction covered by the upper straddle
+                    #
+                    i_high_straddle = i_mapping_end - i_mapping_end.astype(int)
+                    j_high_straddle = j_mapping_end - j_mapping_end.astype(int)
+                    #
+                    # --- the total distance across the binning space
+                    #
+                    i_total = i_low_straddle + i_span + i_high_straddle
+                    j_total = j_low_straddle + j_span + j_high_straddle
+                    #
+                    # --- The fraction in the lower straddle
+                    #
+                    i_low_frac = i_low_straddle / i_total
+                    j_low_frac = j_low_straddle / j_total
+                    #
+                    # --- The fraction in the upper straddle
+                    #
+                    i_high_frac = i_high_straddle / i_total
+                    j_high_frac = j_high_straddle / j_total
+                    #
+                    # later on, the high fraction will overwrite the low fraction
+                    # for i and j hitting on a single pixel in the bin space
+                    #
+                    i_high_frac[(i_mapping.astype(int) == i_mapping_end.astype(int))] = 1
+                    j_high_frac[(j_mapping.astype(int) == j_mapping_end.astype(int))] = 1
+                    #
+                    # --- The fraction in spans
+                    #
+                    i_span_frac = i_span / i_total
+                    j_span_frac = j_span / j_total
+                    #
+                    # --- The number of bins touched by each pixel
+                    #
+                    i_count = (np.ceil(i_mapping_end) - np.floor(i_mapping)).astype(int)
+                    j_count = (np.ceil(j_mapping_end) - np.floor(j_mapping)).astype(int)
+                    #
+                    # --- For I and J, calculate the weights for each pixel
+                    #     along each axis.
+                    #
+                    i_idx = INDEX.Indexes([i_count])
+                    j_idx = INDEX.Indexes([j_count])
+                    i_weights = i_span_frac[i_idx.rev_idx]
+                    j_weights = j_span_frac[j_idx.rev_idx]
+                    i_weights[i_idx.fwd_idx] = i_low_frac
+                    j_weights[j_idx.fwd_idx] = j_low_frac
+                    mask = i_high_frac > 0
+                    i_weights[i_idx.fwd_idx[mask]+ i_count[mask] - 1] = \
+                             i_high_frac[mask]
+                    mask = j_high_frac > 0
+                    j_weights[j_idx.fwd_idx[mask] + j_count[mask] - 1] = \
+                             j_high_frac[mask]
+                    #
+                    # Get indexes for the 2-d array, i_count x j_count
+                    #
+                    idx = INDEX.Indexes([i_count, j_count])
+                    #
+                    # The coordinates in the straightened space
+                    #
+                    i_src_hard = i[idx.rev_idx]
+                    j_src_hard = j[idx.rev_idx]
+                    #
+                    # The coordinates in the bin space
+                    #
+                    i_dest_hard = i_mapping[idx.rev_idx].astype(int) + idx.idx[0]
+                    j_dest_hard = j_mapping[idx.rev_idx].astype(int) + idx.idx[1]
+                    #
+                    # The weights are the i-weight times the j-weight
+                    #
+                    # The i-weight can be found at the nth index of
+                    # i_weights relative to the start of the i_weights
+                    # for the pixel in the straightened space.
+                    #
+                    # The start is found at i_idx.fwd_idx[idx.rev_idx]
+                    # the I offset is found at idx.idx[0]
+                    #
+                    # Similarly for J.
+                    #
+                    weight_hard = (i_weights[i_idx.fwd_idx[idx.rev_idx] +
+                                             idx.idx[0]] *
+                                   j_weights[j_idx.fwd_idx[idx.rev_idx] +
+                                             idx.idx[1]])
+                    i_src = np.hstack((i_src, i_src_hard))
+                    j_src = np.hstack((j_src, j_src_hard))
+                    i_dest = np.hstack((i_dest, i_dest_hard))
+                    j_dest = np.hstack((j_dest, j_dest_hard))
+                    weight = np.hstack((weight, weight_hard))
+                    labels_src = np.hstack((labels_src, labels_1d[idx.rev_idx]))
+                
+                self.measure_bins(workspace, i_src, j_src, i_dest, j_dest,
+                                  weight, labels_src, scales, nworms)
 
-    def measure_bins(self, workspace, mbin, scales, nworms):
+    def measure_bins(self, workspace, i_src, j_src, i_dest, j_dest,
+                     weight, labels_src, scales, nworms):
         '''Measure the intensity in the worm by binning
         
-        mbin - a label matrix giving the bin and worm label at each pixel
-               computed as mbin % nworms = label
-               scales[int(mbin / nworms)] gives scale for measurement
-        scales - names for each of the scales on the measurements, for instance
-                 Vertical_1, Vertical_2...
+        Consider a transformation from the space of images of straightened worms
+        to the space of a grid (the worm gets stretched to fit into the grid).
+        This function takes the coordinates of each labeled pixel in the
+        straightened worm and computes per-grid-cell measurements on
+        the pixels that fall into each grid cell for each straightened image.
+        
+        A pixel might span bins. In this case, it appears once per overlapped
+        bin and it is given a weight proportional to the amount of it's area
+        that falls in the bin.
+        
+        workspace - the workspace for the current image set
+        i_src, j_src - the coordinates of the pixels in the straightened space
+        i_dest, j_dest - the coordinates of the bins for those pixels
+        weight - the fraction of the pixel that falls into the bin
+        labels_src - the label for the pixel
+        scales - the "scale" portion of the measurement for each of the bins
+                 shaped the same as the i_dest, j_dest coordinates
+        nworms - # of labels.
         '''
         image_set = workspace.image_set
         assert(isinstance(image_set, cpi.ImageSet))
@@ -622,19 +775,40 @@ class StraightenWorms(cpm.CPModule):
         for group in self.images:
             image_name = group.straightened_image_name.value
             straightened_image = image_set.get_image(image_name).pixel_data
-            indices = np.arange(nbins, nbins * (nworms + 1))
-            bin_means = nd_mean(straightened_image, mbin, indices)
-            bin_stds = nd_standard_deviation(straightened_image, mbin, indices)
-            bin_means.shape = (nworms, nbins)
-            bin_stds.shape = (nworms, nbins)
-            for b in range(nbins):
-                for values, ftr in (
-                    (bin_means, FTR_MEAN_INTENSITY),
-                    (bin_stds, FTR_STD_INTENSITY)):
-                    measurement = "_".join(
-                        (C_WORM, ftr, image_name, scales[b]))
-                    m.add_measurement(object_name, measurement,
-                                      values[:,b])
+            straightened_image = straightened_image[i_src, j_src]
+            bin_number = (labels_src - 1 + 
+                          nworms * j_dest + 
+                          nworms * scales.shape[1] * i_dest)
+            bin_counts = np.bincount(bin_number)
+            bin_weights = np.bincount(bin_number, weight)
+            bin_means = (np.bincount(bin_number, weight * straightened_image) / 
+                         bin_weights)
+            deviances = straightened_image - bin_means[bin_number]
+            #
+            # Weighted variance = 
+            # sum(weight * (x - mean(x)) ** 2) 
+            # ---------------------------------
+            #  N - 1
+            #  ----- sum(weight)
+            #    N
+            #
+            bin_vars = (np.bincount(bin_number, weight * deviances * deviances) /
+                        (bin_weights * (bin_counts - 1) / bin_counts))
+            bin_stds = np.sqrt(bin_vars)
+            nexpected = np.prod(scales.shape) * nworms
+            bin_means = np.hstack((bin_means, [np.nan] * (nexpected - len(bin_means))))
+            bin_means.shape = (scales.shape[0], scales.shape[1], nworms)
+            bin_stds = np.hstack((bin_stds, [np.nan] * (nexpected - len(bin_stds))))
+            bin_stds.shape = (scales.shape[0], scales.shape[1], nworms)
+            for i in range(scales.shape[0]):
+                for j in range(scales.shape[1]):
+                    for values, ftr in (
+                        (bin_means, FTR_MEAN_INTENSITY),
+                        (bin_stds, FTR_STD_INTENSITY)):
+                        measurement = "_".join(
+                            (C_WORM, ftr, image_name, scales[i][j]))
+                        m.add_measurement(object_name, measurement,
+                                          values[i,j])
         
                 
     def make_objects(self, workspace, labels, nworms):

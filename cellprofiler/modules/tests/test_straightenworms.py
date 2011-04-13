@@ -662,16 +662,50 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
         m = workspace.measurements
         self.assertTrue(isinstance(m, cpmeas.Measurements))
         oo = workspace.object_set.get_objects(OBJECTS_NAME)
-        for i in range(4):
+        #
+        # The worm goes from 20 to 34. Each segment is 15 / 4 = 3 3/4 long
+        #
+        # 20, 21, and 22 are in 1 as is 3/4 of 23
+        # 1/4 of 23 is in 2 as is 24, 25 and 26 and 1/2 of 27
+        # 1/2 of 27 is in 3 as is 28, 29, 30 and 1/4 of 31
+        # 3/4 of 31 is in 4 as is 32, 33, and 34
+        #
+        segments = [
+            [ (20, 1.0), (21, 1.0), (22, 1.0), (23, .75) ],
+            [ (23, .25), (24, 1.0), (25, 1.0), (26, 1.0), (27, .5) ],
+            [ (27, .50), (28, 1.0), (29, 1.0), (30, 1.0), (31, .25) ],
+            [ (31, .75), (32, 1.0), (33, 1.0), (34, 1.0) ]]
+        def weighted_mean(img, segments, mask):
+            accumulator = 0.0
+            weight_accumulator = 0.0
+            for i, w in segments:
+                piece = img[i, mask[i,:]]
+                accumulator += np.sum(piece) * w
+                weight_accumulator += w * np.sum(mask[i,:])
+            return accumulator / weight_accumulator
+        
+        def weighted_std(img, segments, mask):
+            mean = weighted_mean(img, segments, mask)
+            accumulator = 0.0
+            weight_accumulator = 0.0
+            pixel_count = 0.0
+            for i, w in segments:
+                piece = img[i, mask[i,:]]
+                accumulator += np.sum((piece - mean) ** 2) * w
+                weight_accumulator += w * np.sum(mask[i,:])
+                pixel_count += np.sum(mask[i,:])
+            return np.sqrt(accumulator / weight_accumulator / 
+                           (pixel_count - 1) * pixel_count)
+                
+        for i,segment in enumerate(segments):
             for ftr, function in (
-                (S.FTR_MEAN_INTENSITY, np.mean),
-                (S.FTR_STD_INTENSITY, np.std)):
+                (S.FTR_MEAN_INTENSITY, weighted_mean),
+                (S.FTR_STD_INTENSITY, weighted_std)):
                 mname = "_".join((S.C_WORM, ftr,
                                   STRAIGHTENED_IMAGE_NAME, 
                                   module.get_scale_name(None, i)))
                 v = m.get_current_measurement(STRAIGHTENED_OBJECTS_NAME, mname)
-                islice = slice(20+i*4,24+i*4)
-                expected = function(image[islice,:][oo.segmented[islice,:] == 1])
+                expected = function(image, segment, oo.segmented == 1)
                 self.assertEqual(len(v), 1)
                 self.assertAlmostEqual(v[0], expected)
                 
@@ -698,80 +732,50 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
         self.assertTrue(isinstance(m, cpmeas.Measurements))
         oo = workspace.object_set.get_objects(OBJECTS_NAME)
         image = workspace.image_set.get_image(STRAIGHTENED_IMAGE_NAME).pixel_data
-        stripe_bins = np.array(
-            [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 2, 3, 3, 3, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 3, 3, 3, 3, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 3, 3, 3, 3, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 1, 1, 1, 1, 1, 2, 2, 2, 3, 3, 3, 3, 3, 0, 0, 0, 0],
-             [0, 0, 0, 0, 1, 1, 1, 1, 1, 2, 2, 2, 3, 3, 3, 3, 3, 0, 0, 0, 0],
-             [0, 0, 0, 0, 1, 1, 1, 1, 1, 2, 2, 2, 3, 3, 3, 3, 3, 0, 0, 0, 0],
-             [0, 0, 0, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 0, 0, 0],
-             [0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3, 0, 0, 0, 0],
-             [0, 0, 0, 0, 1, 1, 1, 1, 1, 2, 2, 2, 3, 3, 3, 3, 3, 0, 0, 0, 0],
-             [0, 0, 0, 0, 1, 1, 1, 1, 1, 2, 2, 2, 3, 3, 3, 3, 3, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 3, 3, 3, 3, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 2, 3, 3, 3, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]])
-        segment_bins = np.array(
-            [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0],
-             [0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0],
-             [0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0],
-             [0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0],
-             [0, 0, 0, 0, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0, 0, 0, 0],
-             [0, 0, 0, 0, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0, 0, 0, 0],
-             [0, 0, 0, 0, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 4, 4, 4, 4, 4, 4, 4, 4, 4, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 4, 4, 4, 4, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]])
+        f1 = 1.0/3.0
+        f2 = 2.0/3.0
+        stripes = [
+            ( 9, ((10, 11, 2, 1),)),
+            (10, (( 8,  9, 1,  1 ), ( 9, 10, 1, f2), ( 9, 10, 2, f1), (10, 11, 2,  1), (11, 12, 2, f1), (11, 12, 3, f2), (12, 13, 3, 1))),
+            (11, (( 7,  9, 1,  1 ), ( 9, 10, 1, f1), ( 9, 10, 2, f2), (10, 11, 2,  1), (11, 12, 2, f2), (11, 12, 3, f1), (12, 14, 3, 1))),
+            (12, (( 6,  9, 1,  1 ), ( 9, 12, 2,  1), (12, 15, 3, 1 ))),
+            (13, (( 5,  8, 1,  1 ), ( 8, 9,  1, f2), ( 8,  9, 2, f1), ( 9,  12, 2, 1), (12, 13, 2, f1), (12, 13, 3, f2), (13, 16, 3, 1))),
+            (14, (( 4,  8, 1,  1 ), ( 8, 9,  1, f1), ( 8,  9, 2, f2), ( 9,  12, 2, 1), (12, 13, 2, f2), (12, 13, 3, f1), (13, 17, 3, 1))),
+            (15, (( 4,  8, 1,  1 ), ( 8, 13, 2,  1), (13, 17, 3, 1))),
+            (16, (( 3,  8, 1,  1 ), ( 8, 13, 2,  1), (13, 18, 3,  1))),
+            (17, (( 4,  8, 1,  1 ), ( 8, 13, 2,  1), (13, 17, 3, 1))),
+            (18, (( 4,  8, 1,  1 ), ( 8, 9,  1, f1), ( 8,  9, 2, f2), ( 9,  12, 2, 1), (12, 13, 2, f2), (12, 13, 3, f1), (13, 17, 3, 1))),
+            (19, (( 5,  8, 1,  1 ), ( 8, 9,  1, f2), ( 8,  9, 2, f1), ( 9,  12, 2, 1), (12, 13, 2, f1), (12, 13, 3, f2), (13, 16, 3, 1))),
+            (20, (( 6,  9, 1,  1 ), ( 9, 12, 2,  1), (12, 15, 3, 1 ))),
+            (21, (( 7,  9, 1,  1 ), ( 9, 10, 1, f1), ( 9, 10, 2, f2), (10, 11, 2,  1), (11, 12, 2, f2), (11, 12, 3, f1), (12, 14, 3, 1))),
+            (22, (( 8,  9, 1,  1 ), ( 9, 10, 1, f2), ( 9, 10, 2, f1), (10, 11, 2,  1), (11, 12, 2, f1), (11, 12, 3, f2), (12, 13, 3, 1))),
+            (23, ((10, 11, 2,  1 ), )) ]
+        segments = [
+            [ ( 9, 1.0), (10, 1.0), (11, 1.0), (12, .75) ],
+            [ (12, .25), (13, 1.0), (14, 1.0), (15, 1.0), (16, .5) ],
+            [ (16, .50), (17, 1.0), (18, 1.0), (19, 1.0), (20, .25) ],
+            [ (20, .75), (21, 1.0), (22, 1.0), (23, 1.0) ]]
         
-        areas = np.bincount(segment_bins.ravel())
-        expected_means = np.bincount(segment_bins.ravel(), image.ravel()) / areas
-        expected_sds = np.sqrt(np.bincount(
-            segment_bins.ravel(),
-            (image - expected_means[segment_bins]).ravel() ** 2) / areas)
+        i_w = np.zeros((image.shape[0], image.shape[1], 4))
+        j_w = np.zeros((image.shape[0], image.shape[1], 3))
+        mask = np.zeros(image.shape, bool)
+        for i, sstripes in stripes:
+            for jstart, jend, idx, w in sstripes:
+                for j in range(jstart, jend):
+                    j_w[i,j,idx-1] = w
+                    mask[i,j] = True
+                    
+        for idx, segment in enumerate(segments):
+            for i, w in segment:
+                i_w[i, mask[i,:], idx] = w
+
+        s2 = lambda x : np.sum(np.sum(x, 0), 0)
+        weights = s2(i_w)
+        expected_means = s2(image[:,:,np.newaxis] * i_w) / weights
+        counts = s2(i_w > 0)
+        expected_sds = np.sqrt(
+            s2(i_w * (image[:,:,np.newaxis] - expected_means[np.newaxis, np.newaxis, :])**2) / 
+            weights * counts / (counts-1))
         for i in range(4):
             for ftr, expected in ((S.FTR_MEAN_INTENSITY, expected_means),
                                   (S.FTR_STD_INTENSITY, expected_sds)):
@@ -780,12 +784,14 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
                     "_".join((S.C_WORM, ftr, STRAIGHTENED_IMAGE_NAME,
                               module.get_scale_name(None, i))))
                 self.assertEqual(len(value), 1)
-                self.assertAlmostEqual(value[0], expected[i+1])
-        areas = np.bincount(stripe_bins.ravel())
-        expected_means = np.bincount(stripe_bins.ravel(), image.ravel()) / areas
-        expected_sds = np.sqrt(np.bincount(
-            stripe_bins.ravel(), 
-            (image - expected_means[stripe_bins]).ravel() ** 2) / areas)
+                self.assertAlmostEqual(value[0], expected[i])
+        weights = s2(j_w)
+        expected_means = s2(image[:,:,np.newaxis] * j_w) / weights
+        counts = s2(j_w > 0)
+        expected_sds = np.sqrt(
+            s2(j_w * (image[:,:,np.newaxis] - 
+                      expected_means[np.newaxis, np.newaxis, :])**2) / 
+            weights * counts / (counts-1))
         for i in range(3):
             for ftr, expected in ((S.FTR_MEAN_INTENSITY, expected_means),
                                   (S.FTR_STD_INTENSITY, expected_sds)):
@@ -794,16 +800,16 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
                     "_".join((S.C_WORM, ftr, STRAIGHTENED_IMAGE_NAME,
                               module.get_scale_name(i, None))))
                 self.assertEqual(len(value), 1)
-                self.assertAlmostEqual(value[0], expected[i+1])
-        all_bins = stripe_bins + (segment_bins - 1) * 3
-        all_bins = all_bins[stripe_bins != 0]
-        image = image[stripe_bins != 0]
-        areas = np.bincount(all_bins)
-        expected_means = (np.bincount(all_bins, image) / areas)[1:]
-        expected_sds = (np.sqrt(np.bincount(
-            all_bins, (image - expected_means[all_bins-1])** 2) / areas))[1:]
-        expected_means.shape = (4, 3)
-        expected_sds.shape = (4,3)
+                self.assertAlmostEqual(value[0], expected[i])
+
+        ww = i_w[:,:,:,np.newaxis] * j_w[:,:,np.newaxis,:]
+        weights = s2(ww)
+        expected_means = s2(image[:,:,np.newaxis,np.newaxis] * ww) / weights
+        counts = s2(ww > 0)
+        expected_sds = np.sqrt(
+            s2(ww * (image[:,:,np.newaxis,np.newaxis] -
+                     expected_means[np.newaxis, np.newaxis, :, :]) ** 2) /
+               weights * counts / (counts-1))
         for stripe in range(3):
             for segment in range(4):
                 for ftr, expected in ((S.FTR_MEAN_INTENSITY, expected_means),

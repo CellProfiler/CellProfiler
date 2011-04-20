@@ -1125,6 +1125,7 @@ class Pipeline(object):
                 outlines = {}
                 should_write_measurements = True
                 grids = None
+                print "Times reported are CPU times for each module, not wall-clock time"
                 for module in self.modules():
                     gc.collect()
                     if module.should_stop_writing_measurements():

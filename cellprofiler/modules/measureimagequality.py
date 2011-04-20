@@ -91,7 +91,6 @@ O_SELECT = "Select..." #Select the images you want from a list, all treated the 
 C_IMAGE_QUALITY = 'ImageQuality'
 F_FOCUS_SCORE = 'FocusScore'
 F_LOCAL_FOCUS_SCORE = 'LocalFocusScore'
-F_AUTOCORRELATION = 'AutoCorrelation'
 F_CORRELATION = 'Correlation'
 F_POWER_SPECTRUM_SLOPE = 'PowerLogLogSlope'
 F_TOTAL_AREA = 'TotalArea'
@@ -543,12 +542,6 @@ class MeasureImageQuality(cpm.CPModule):
                                         cpmeas.COLTYPE_FLOAT))
                     sources.append([image_group.check_blur, image_name])
                     
-                    columns.append((cpmeas.IMAGE,
-                                        '%s_%s_%s'%(C_IMAGE_QUALITY, F_AUTOCORRELATION,
-                                                    image_name),
-                                        cpmeas.COLTYPE_FLOAT))
-                    sources.append([image_group.check_blur, image_name])
-                    
                     for scale_group in image_group.scale_groups:
                         columns.append((cpmeas.IMAGE,
                                             '%s_%s_%s_%d'%(C_IMAGE_QUALITY, F_LOCAL_FOCUS_SCORE,
@@ -621,7 +614,7 @@ class MeasureImageQuality(cpm.CPModule):
             if self.any_scaling():
                 result += [C_SCALING]
             if self.any_blur():
-                result += [F_FOCUS_SCORE, F_LOCAL_FOCUS_SCORE, F_POWER_SPECTRUM_SLOPE, F_CORRELATION, F_AUTOCORRELATION]
+                result += [F_FOCUS_SCORE, F_LOCAL_FOCUS_SCORE, F_POWER_SPECTRUM_SLOPE, F_CORRELATION]
             if self.any_intensity():
                 result += INTENSITY_FEATURES
             if self.any_saturation():
@@ -652,7 +645,7 @@ class MeasureImageQuality(cpm.CPModule):
         
         if object_name != cpmeas.IMAGE or category != C_IMAGE_QUALITY:
             return []
-        if measurement in (F_FOCUS_SCORE, F_LOCAL_FOCUS_SCORE, F_POWER_SPECTRUM_SLOPE, F_CORRELATION, F_AUTOCORRELATION):
+        if measurement in (F_FOCUS_SCORE, F_LOCAL_FOCUS_SCORE, F_POWER_SPECTRUM_SLOPE, F_CORRELATION):
             result = []
             for image_group in self.image_groups:
                 if image_group.check_blur.value:
@@ -859,16 +852,6 @@ class MeasureImageQuality(cpm.CPModule):
             image = workspace.image_set.get_image(image_name,
                                                   must_be_grayscale = True)
             pixel_data = image.pixel_data
-                
-            # Compute Vollath's autocorrelation function:
-            # sum((f(x,y)*I(x+1,y)) - sum((f(x,y)*I(x+2,y))
-            # Shrinking the image edge by 2 pixels to make things consistent
-            value = np.sum(pixel_data[1:-2,:]*pixel_data[2:-1,:]) - np.sum(pixel_data[1:-2,:]*pixel_data[3:,:])
-            workspace.add_measurement(cpmeas.IMAGE, "%s_%s_%s"%
-                                                             (C_IMAGE_QUALITY, F_AUTOCORRELATION,
-                                                              image_name), 
-                                                              float(value))
-            result += [["%s %s"%(image_name, F_AUTOCORRELATION), "%.2f"%(float(value))]]
             
             # Compute Haralick's correlation texture for the given scales
             image_labels = np.ones(pixel_data.shape, int)

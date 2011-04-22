@@ -59,7 +59,7 @@ class IdentifyDeadWorms(cpm.CPModule):
         Create the settings for the module during initialization.
         """
         self.image_name = cps.ImageNameSubscriber(
-            "Input image", "None",
+            "Select the input image", "None",
             doc="""The name of a binary image from a previous module.
             <b>IdentifyDeadWorms</b> will use this image to establish the
             foreground and background for the fitting operation. You can use
@@ -67,22 +67,26 @@ class IdentifyDeadWorms(cpm.CPModule):
             create the binary mask. You can also use a module such as
             <b>IdentifyPrimaryObjects</b> to label each worm and then use
             <b>ConvertObjectsToImage</b> to make the result a mask.""")
+        
         self.object_name = cps.ObjectNameProvider(
-            "Objects name", "DeadWorms",
+            "Name the dead worm objects to be identified", "DeadWorms",
             doc="""This is the name for the dead worm objects. You can refer
             to this name in subsequent modules such as
             <b>IdentifySecondaryObjects</b>""")
+        
         self.worm_width = cps.Integer(
             "Worm width", 10, minval = 1,
             doc = """This is the width (the short axis), measured in pixels,
             of the diamond used as a template when
             matching against the worm. It should be less than the width
             of a worm.""")
+        
         self.worm_length = cps.Integer(
             "Worm length", 100, minval= 1,
             doc = """This is the length (the long axis), measured in pixels, 
             of the diamond used as a template when matching against the
             worm. It should be less than the length of a worm""")
+        
         self.angle_count = cps.Integer(
             "Number of angles", 32, minval = 1,
             doc = """This is the number of different angles at which the
@@ -90,6 +94,7 @@ class IdentifyDeadWorms(cpm.CPModule):
             the template will be rotated by 0, 15, 30, 45 ... and 165 degrees.
             The shape is bilaterally symmetric: you get the same shape
             after rotating it 180 degrees.""")
+        
         self.wants_automatic_distance = cps.Binary(
             "Automatically calculate distance parameters?", True,
             doc = """This setting determines whether or not
@@ -98,11 +103,13 @@ class IdentifyDeadWorms(cpm.CPModule):
             same worm. Check this setting to have <b>IdentifyDeadWorms</b>
             automatically calculate the distance from the worm length
             and width. Uncheck the setting to set the distances manually.""")
+        
         self.space_distance = cps.Float(
             "Spatial distance", 5, minval = 1,
             doc = """<i>(Only if not automatically calculating distance parameters)</i><br>
             Worm centers must be at least this far apart for the centers to
             be considered two separate worms.""")
+        
         self.angular_distance = cps.Float(
             "Angular distance", 30, minval = 1,
             doc = """<i>(Only if not automatically calculating distance parameters)</i><br>

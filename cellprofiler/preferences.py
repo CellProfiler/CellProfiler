@@ -170,6 +170,7 @@ SHOW_ANALYSIS_COMPLETE_DLG = "ShowAnalysisCompleteDlg"
 SHOW_EXITING_TEST_MODE_DLG = "ShowExitingTestModeDlg"
 SHOW_BAD_SIZES_DLG = "ShowBadSizesDlg"
 SHOW_SAMPLING = "ShowSampling"
+WRITE_MAT = "WriteMAT"
 
 def recent_file(index, category=""):
     return (FF_RECENTFILES % (index + 1)) + category
@@ -731,4 +732,23 @@ def set_show_report_bad_sizes_dlg(value):
     global __show_report_bad_sizes_dlg
     __show_report_bad_sizes_dlg = value
     get_config().Write(SHOW_BAD_SIZES_DLG, 
+                       "True" if value else "False")
+
+# Write .MAT files on output
+__write_MAT_files = None
+
+def get_write_MAT_files():
+    '''Return true to write measurements as .mat files at end of run'''
+    global __write_MAT_files
+    if __write_MAT_files is not None:
+        return __write_MAT_files
+    if not get_config().Exists(WRITE_MAT):
+        return True
+    return get_config().Read(WRITE_MAT) == "True"
+
+def set_write_MAT_files(value):
+    '''Set the "Write MAT files" flag'''
+    global __write_MAT_files
+    __write_MAT_files = value
+    get_config().Write(WRITE_MAT,
                        "True" if value else "False")

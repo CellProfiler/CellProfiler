@@ -1183,7 +1183,7 @@ class PipelineController:
                 event.RequestMore()
             except StopIteration:
                 self.stop_running()
-                if self.__pipeline_measurements != None:
+                if self.__pipeline_measurements != None and cpprefs.get_write_MAT_files():
                     try:
                         self.__pipeline.save_measurements(self.__output_path,
                                                           self.__pipeline_measurements)

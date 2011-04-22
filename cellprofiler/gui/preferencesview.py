@@ -133,10 +133,16 @@ class PreferencesView:
         panel.Bind(wx.EVT_COMBOBOX, on_edit_box_change, edit_box)
         panel.Bind(wx.EVT_BUTTON, on_new_folder, new_button)
         return edit_box
-    
+
+    def __show_output_filename(self, show):
+        for ctrl in (self.__output_filename_text,
+                     self.__output_filename_edit_box,
+                     self.__allow_output_filename_overwrite_check_box):
+            ctrl.Show(show)
+            
     def __make_odds_and_ends_panel(self):
         panel = self.__odds_and_ends_panel
-        output_filename_text = wx.StaticText(panel,-1,'Output Filename:')
+        self.__output_filename_text = wx.StaticText(panel,-1,'Output Filename:')
         self.__output_filename_edit_box = wx.TextCtrl(panel,-1,'DefaultOUT.mat')
         self.__allow_output_filename_overwrite_check_box = \
             wx.CheckBox(panel, label = "Allow overwrite?")
@@ -147,14 +153,28 @@ class PreferencesView:
                 self.__allow_output_filename_overwrite_check_box.Value)
         self.__allow_output_filename_overwrite_check_box.Bind(
             wx.EVT_CHECKBOX, on_allow_checkbox)
+        self.__write_measurements_check_box = \
+            wx.CheckBox(panel, label = "Write measurements?")
+        self.__write_measurements_check_box.Value = \
+            cpprefs.get_write_MAT_files()
+        self.__show_output_filename(cpprefs.get_write_MAT_files())
+        def on_write_MAT_files_checkbox(event):
+            wants_write = self.__write_measurements_check_box.Value
+            cpprefs.set_write_MAT_files(wants_write)
+            self.__show_output_filename(wants_write)
+            panel.Layout()
+            
+        self.__write_measurements_check_box.Bind(
+            wx.EVT_CHECKBOX, on_write_MAT_files_checkbox)
         output_filename_help_button = wx.Button(panel,-1,'?', (0,0), (30,-1))
         self.__analyze_images_button = wx.Button(panel,-1,'Analyze images')
         self.__stop_analysis_button = wx.Button(panel,-1,'Stop analysis')
         sizer = wx.BoxSizer(wx.HORIZONTAL)
         sizer.AddMany([(output_filename_help_button,0,wx.ALIGN_CENTER|wx.ALL,1),
-                       (output_filename_text,0,wx.ALIGN_CENTER,1),
+                       (self.__output_filename_text,0,wx.ALIGN_CENTER,1),
                        (self.__output_filename_edit_box,3,wx.ALL,1),
                        (self.__allow_output_filename_overwrite_check_box, 0, wx.ALIGN_CENTER | wx.ALL, 1),
+                       (self.__write_measurements_check_box, 0, wx.ALIGN_CENTER | wx.ALL, 1),
                        (self.__analyze_images_button,0,wx.ALL,1),
                        (self.__stop_analysis_button, 0, wx.ALL,1)])
         sizer.Hide(self.__stop_analysis_button)

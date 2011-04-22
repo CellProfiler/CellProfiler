@@ -11,9 +11,12 @@ import urllib, urllib2
 
 import nuageux
 from cellprofiler.modules.mergeoutputfiles import MergeOutputFiles
+import cellprofiler.preferences as cpprefs
 
-# whether CP should run distributed, default to False
-run_distributed = False
+# whether CP should run distributed (changed by preferences, or by command line)
+force_run_distributed = False
+def run_distributed():
+    return force_run_distributed or cpprefs.get_run_distributed()
 
 class Distributor(object):
     def __init__(self):

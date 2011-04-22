@@ -241,8 +241,9 @@ if (not hasattr(sys, 'frozen')) and options.build_extensions:
         exit()
 
 if options.run_distributed:
+    # force distributed mode
     import cellprofiler.distributed as cpdistributed
-    cpdistributed.run_distributed = True
+    cpdistributed.force_run_distributed = True
 
 # set up values for worker, which is basically a looping headless
 # pipeline runner with special methods to fetch pipelines and

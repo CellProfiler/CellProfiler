@@ -699,7 +699,7 @@ class PipelineController:
         #
         ##################################
 
-        if cpdistributed.run_distributed:
+        if cpdistributed.run_distributed():
             dist = cpdistributed.Distributor()
             dist.start_serving(self.__pipeline, 8567, self.get_output_file_path())
             return

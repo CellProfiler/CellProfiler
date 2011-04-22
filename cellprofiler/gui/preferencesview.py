@@ -19,11 +19,16 @@ import time
 import numpy as np
 import wx
 import cellprofiler.preferences as cpprefs
+import cellprofiler.distributed as cpdistributed
 from cellprofiler.gui.htmldialog import HTMLDialog
 from cellprofiler.gui.help import \
      DEFAULT_IMAGE_FOLDER_HELP, DEFAULT_OUTPUT_FOLDER_HELP, OUTPUT_FILENAME_HELP
 
 WELCOME_MESSAGE = 'Welcome to CellProfiler'
+
+
+ANALYZE_IMAGES = 'Analyze Images'
+START_WORK_SERVER = 'Start Distributed Computation'
 
 class PreferencesView:
     """View / controller for the preferences that get displayed in the main window
@@ -148,7 +153,10 @@ class PreferencesView:
         self.__allow_output_filename_overwrite_check_box.Bind(
             wx.EVT_CHECKBOX, on_allow_checkbox)
         output_filename_help_button = wx.Button(panel,-1,'?', (0,0), (30,-1))
-        self.__analyze_images_button = wx.Button(panel,-1,'Analyze images')
+        if not cpdistributed.run_distributed():
+            self.__analyze_images_button = wx.Button(panel, -1, ANALYZE_IMAGES)
+        else:
+            self.__analyze_images_button = wx.Button(panel, -1, START_WORK_SERVER)
         self.__stop_analysis_button = wx.Button(panel,-1,'Stop analysis')
         sizer = wx.BoxSizer(wx.HORIZONTAL)
         sizer.AddMany([(output_filename_help_button,0,wx.ALIGN_CENTER|wx.ALL,1),
@@ -166,6 +174,7 @@ class PreferencesView:
         cpprefs.add_output_file_name_listener(self.__on_preferences_output_filename_event)
         cpprefs.add_image_directory_listener(self.__on_preferences_image_directory_event)
         cpprefs.add_output_directory_listener(self.__on_preferences_output_directory_event)
+        cpprefs.add_run_distributed_listener(self.__on_preferences_run_distributed_event)
         panel.Bind(wx.EVT_WINDOW_DESTROY, self.__on_destroy, panel)
     
     def __make_progress_panel(self):
@@ -215,6 +224,7 @@ class PreferencesView:
         cpprefs.remove_image_directory_listener(self.__on_preferences_image_directory_event)
         cpprefs.remove_output_directory_listener(self.__on_preferences_output_directory_event)
         cpprefs.remove_output_file_name_listener(self.__on_preferences_output_filename_event)
+        cpprefs.remove_run_distributed_listener(self.__on_preferences_run_distributed_event)
 
     def attach_to_pipeline_controller(self, pipeline_controller):
         self.__panel.Bind(wx.EVT_BUTTON,
@@ -356,6 +366,11 @@ class PreferencesView:
     def __on_preferences_image_directory_event(self, event):
         if self.__image_edit_box.Value != cpprefs.get_default_image_directory():
             self.__image_edit_box.Value = cpprefs.get_default_image_directory()
+
+    def __on_preferences_run_distributed_event(self, event):
+        self.__analyze_images_button.Label = START_WORK_SERVER if cpdistributed.run_distributed() else ANALYZE_IMAGES
+        self.__analyze_images_button.Size = self.__analyze_images_button.BestSize
+        self.__odds_and_ends_panel.Layout()
 
     def __notify_pipeline_list_view_directory_change(self, path):
         # modules may need revalidation

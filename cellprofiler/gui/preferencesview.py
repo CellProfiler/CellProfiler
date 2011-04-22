@@ -301,6 +301,7 @@ class PreferencesView:
         saved_size = self.__status_text.GetSize()
         self.__status_text.SetLabel(text)
         self.__status_text.SetSize(saved_size)
+        self.__status_text.Update()
     
     def pop_error_text(self,error_text):
         if error_text in self.__errors:

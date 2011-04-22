@@ -37,6 +37,8 @@ from runmultiplepipelinesdialog import RunMultplePipelinesDialog
 import cellprofiler.gui.parametersampleframe as psf
 
 RECENT_FILE_MENU_ID = [wx.NewId() for i in range(cpprefs.RECENT_FILE_COUNT)]
+WRITING_MAT_FILE = "Writing .MAT measurements file..."
+WROTE_MAT_FILE = ".MAT measurements file has been saved"
 
 class PipelineController:
     """Controls the pipeline through the UI
@@ -717,7 +719,7 @@ class PipelineController:
                 # like CreateBatchFiles)
                 #
                 self.stop_running()
-                if self.__pipeline_measurements is not None:
+                if self.__pipeline_measurements is not None and cpprefs.get_write_MAT_files():
                     self.__pipeline.save_measurements(self.__output_path,self.__pipeline_measurements)
                     self.__pipeline_measurements = None
                     self.__output_path = None
@@ -773,7 +775,7 @@ class PipelineController:
                 # like CreateBatchFiles)
                 #
                 self.stop_running()
-                if self.__pipeline_measurements is not None:
+                if self.__pipeline_measurements is not None and cpprefs.get_write_MAT_files():
                     self.__pipeline.save_measurements(self.__output_path,self.__pipeline_measurements)
                     self.__pipeline_measurements = None
                     self.__output_path = None
@@ -1184,9 +1186,12 @@ class PipelineController:
             except StopIteration:
                 self.stop_running()
                 if self.__pipeline_measurements != None and cpprefs.get_write_MAT_files():
+                    self.__frame.preferences_view.set_message_text(
+                        WRITING_MAT_FILE)
                     try:
                         self.__pipeline.save_measurements(self.__output_path,
                                                           self.__pipeline_measurements)
+                        self.__frame.preferences_view.set_message_text(WROTE_MAT_FILE)
                     except IOError, err:
                         while True:
                             result = wx.MessageBox(
@@ -1198,10 +1203,13 @@ class PipelineController:
                             if result == wx.YES:
                                 try:
                                     self.save_measurements()
+                                    self.__frame.preferences_view.set_message_text(WROTE_MAT_FILE)
                                     break
                                 except IOError, err:
+                                    self.__frame.preferences_view.set_message_text("")
                                     pass
                             else:
+                                self.__frame.preferences_view.set_message_text("")
                                 break
                     self.__pipeline_measurements = None
                     self.__output_path = None

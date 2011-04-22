@@ -64,6 +64,7 @@ class PipelineController:
         self.__keys = None
         self.__groupings = None
         self.__grouping_index = None
+        self.__distributor = None
         self.pipeline_list = []
         self.populate_recent_files()
         self.populate_edit_menu(self.__frame.menu_edit_add_module)
@@ -648,8 +649,8 @@ class PipelineController:
                             self.show_exiting_test_mode()
 
     def status_callback(self, *args):
-        self.__frame.preferences_view.on_start_module(*args)
-            
+        self.__frame.preferences_view.on_pipeline_progress(*args)
+
     def on_run_multiple_pipelines(self, event):
         '''Menu handler for run multiple pipelines'''
         dlg = RunMultplePipelinesDialog(
@@ -700,8 +701,23 @@ class PipelineController:
         ##################################
 
         if cpdistributed.run_distributed():
-            dist = cpdistributed.Distributor()
-            dist.start_serving(self.__pipeline, 8567, self.get_output_file_path())
+            try:
+                self.__module_view.disable()
+                self.__frame.preferences_view.on_analyze_images()
+                self.__distributor = cpdistributed.Distributor(self.__frame)
+                self.__distributor.start_serving(self.__pipeline, 8567, self.get_output_file_path(), self.status_callback)
+                if self.__running_pipeline:
+                    self.__running_pipeline.close()
+                self.__running_pipeline = self.__distributor.run_with_yield()
+                self.__pipeline_measurements = self.__running_pipeline.next()
+            except Exception, e:
+                # Catastrophic failure
+                display_error_dialog(self.__frame,
+                                     e,
+                                     self.__pipeline,
+                                     "Failure in distributed work startup",
+                                     sys.exc_info()[2])
+                self.stop_running()
             return
 
         output_path = self.get_output_file_path()
@@ -836,6 +852,9 @@ class PipelineController:
                                               self.__pipeline_measurements)
         
     def stop_running(self):
+        if self.__distributor:
+            self.__distributor.stop_serving()
+            self.__distributor = None
         self.__running_pipeline = False
         self.__pause_pipeline = False
         self.__frame.preferences_view.on_stop_analysis()
@@ -1186,8 +1205,11 @@ class PipelineController:
             self.__need_unpause_event = True
         elif self.__running_pipeline:
             try:
-                self.__pipeline_measurements = self.__running_pipeline.next()
-                event.RequestMore()
+                wx.Yield()
+                # if the user hits "Stop", self.__running_pipeline can go away
+                if self.__running_pipeline:
+                    self.__pipeline_measurements = self.__running_pipeline.next()
+                    event.RequestMore()
             except StopIteration:
                 self.stop_running()
                 if self.__pipeline_measurements != None:

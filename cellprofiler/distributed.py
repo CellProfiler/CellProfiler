@@ -10,6 +10,7 @@ import traceback
 import urllib, urllib2
 
 import nuageux
+from cellprofiler.pipeline import post_module_runner_done_event
 from cellprofiler.modules.mergeoutputfiles import MergeOutputFiles
 import cellprofiler.preferences as cpprefs
 
@@ -19,15 +20,22 @@ def run_distributed():
     return force_run_distributed or cpprefs.get_run_distributed()
 
 class Distributor(object):
-    def __init__(self):
+    def __init__(self, frame=None):
         self.work_server = None
         self.pipeline = None
         self.URL_map = {}
+        self.output_file = None
+        self.status_callback = None
+        self.pipeline_path = None
+        self.frame = frame
 
-    def start_serving(self, pipeline, port, output_file):
+    def start_serving(self, pipeline, port, output_file, status_callback=None):
         # Make sure the previous server has stopped
         if self.work_server:
             self.work_server.stop()
+
+        self.output_file = output_file
+        self.status_callback = status_callback
 
         # make sure createbatchfiles is not in the pipeline
         if 'CreateBatchFiles' in [module.module_name for module in pipeline.modules()]:
@@ -35,7 +43,7 @@ class Distributor(object):
             raise RuntimeException('CreateBatchFiles should not be used with distributed processing.')
 
         # duplicate pipeline
-        self.pipeline = pipeline.copy()
+        pipeline = pipeline.copy()
 
         # create the image list
         image_set_list = pipeline.prepare_run(None, combine_path_and_file=True)
@@ -64,6 +72,7 @@ class Distributor(object):
         module.save_pipeline(pipeline, image_set_list, outf=pipeline_txt)
         pipeline_blob = zlib.compress(pipeline_txt.getvalue())
         pipeline_fd, pipeline_path = tempfile.mkstemp()
+        self.pipeline_path = pipeline_path
         os.write(pipeline_fd, pipeline_blob)
         os.close(pipeline_fd)
 
@@ -79,38 +88,48 @@ class Distributor(object):
             self.work_server.add_work("%d %s"%(img_set_index + 1, self.pipeline_blob_hash))
         
         # start serving
+        self.total_jobs = image_set_list.count()
         self.work_server.start()
 
-        # XXX - if headful, call callback periodically, cancel if requested
-        # if headless, we can register a callback for results, and idle until the queue is empty 
-        unfinished = image_set_list.count()
+    def run_with_yield(self):
+        # this function acts like a CP pipeline object, allowing us to
+        # use the same code path as a non-distributed computation for
+        # tracking results and updating the GUI.
         finished_fds = []
-        while unfinished > 0:
-            print "idling - ", unfinished, "jobs remain", self.work_server.base_URL()
+        while True:
             finished_job = self.work_server.fetch_result()
             if finished_job is not None:
-                if finished_job['pipeline_hash'][0] != self.pipeline_blob_hash:
+                if finished_job['pipeline_hash'][0] == self.pipeline_blob_hash:
+                    # store results in a temporary file, in the output directory
+                    outfd = tempfile.TemporaryFile(dir=os.path.dirname(self.output_file))
+                    outfd.write(zlib.decompress(finished_job['measurements'][0]))
+                    outfd.flush()
+                    outfd.seek(0)
+                    finished_fds.append(outfd)
+                    print "finished image number", finished_job['image_num'][0]
+                    if self.status_callback:
+                        self.status_callback(self.total_jobs, len(finished_fds))
+                else:
                     # out of date result?
                     print "ignored mismatched pipeline hash", finished_job['pipeline_hash'][0], self.pipeline_blob_hash
-                    continue
-                # store results in a temporary file, in the output directory
-                outfd = tempfile.TemporaryFile(dir=os.path.dirname(output_file))
-                outfd.write(zlib.decompress(finished_job['measurements'][0]))
-                outfd.flush()
-                outfd.seek(0)
-                finished_fds.append(outfd)
-                print "finished image number", finished_job['image_num'][0]
-                unfinished -= 1
             else:
-                time.sleep(1)
+                # pretend to be busy
+                time.sleep(0.1)
 
+            if len(finished_fds) == self.total_jobs:
+                # when finished, stop serving
+                self.stop_serving()
+                # merge output files
+                MergeOutputFiles.merge_files(self.output_file, finished_fds, force_headless=True)
+                # stop iteration
+                return
 
-        # when finished, stop serving
-        self.work_server.stop()
-        os.unlink(pipeline_path)
+            # this is part of the pipeline mimicry 
+            if self.frame:
+                post_module_runner_done_event(self.frame)
 
-        # merge output files
-        MergeOutputFiles.merge_files(output_file, finished_fds, force_headless=True)
+            # continue to yield None until the work is finished
+            yield None
 
     def validate_result(self, result):
         return self.pipeline_blob_hash == result['pipeline_hash'][0]
@@ -134,10 +153,9 @@ class Distributor(object):
             self.URL_map[img_index] = path
         return "%s/data/%s"%(self.server_URL, str(img_index))
             
-
-    def stop_serving():
-        pass
-
+    def stop_serving(self):
+        self.work_server.stop()
+        os.unlink(self.pipeline_path)
 
     def data_server(self, request):
         try:

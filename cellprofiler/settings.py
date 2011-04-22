@@ -36,6 +36,7 @@ YES = 'Yes'
 NO = 'No'
 LEAVE_BLANK = 'Leave blank'
 DEFAULT = 'Default'
+NONE = 'None'
 
 '''Names providers and subscribers of images'''
 IMAGE_GROUP = 'imagegroup'

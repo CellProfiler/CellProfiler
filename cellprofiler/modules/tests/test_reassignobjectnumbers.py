@@ -165,12 +165,16 @@ UnifyObjects:[module_num:1|svn_version:\'8913\'|variable_revision_number:1|show_
         self.assertTrue(module.wants_image)
         self.assertEqual(module.image_name, "OrigRGB")
 
-    def rruunn(self, labels, relabel_option, distance_threshold = 5,
+    def rruunn(self, input_labels, relabel_option, 
+               unify_option = R.UNIFY_DISTANCE,
+               distance_threshold = 5,
                minimum_intensity_fraction = .9,
                where_algorithm = R.CA_CLOSEST_POINT,
                image = None,
                wants_outlines = False,
-               outline_name = "None"):
+               outline_name = "None",
+               parent_object = "Parent_object",
+               parent_labels = np.zeros((10,20), int)):
         '''Run the RelabelObjects module
         
         returns the labels matrix and the workspace.
@@ -180,6 +184,8 @@ UnifyObjects:[module_num:1|svn_version:\'8913\'|variable_revision_number:1|show_
         module.objects_name.value = INPUT_OBJECTS_NAME
         module.output_objects_name.value = OUTPUT_OBJECTS_NAME
         module.relabel_option.value = relabel_option
+        module.unify_option.value = unify_option
+        module.parent_object.value = parent_object
         module.distance_threshold.value = distance_threshold
         module.minimum_intensity_fraction.value = minimum_intensity_fraction
         module.wants_image.value = (image is not None)
@@ -202,8 +208,13 @@ UnifyObjects:[module_num:1|svn_version:\'8913\'|variable_revision_number:1|show_
         
         object_set = cpo.ObjectSet()
         o = cpo.Objects()
-        o.segmented = labels
+        o.segmented = input_labels
         object_set.add_objects(o, INPUT_OBJECTS_NAME)
+        
+        parent_object_set = cpo.ObjectSet()
+        p = cpo.Objects()
+        p.segmented = parent_labels
+        object_set.add_objects(p, parent_object)
         
         workspace = cpw.Workspace(pipeline, module, image_set, object_set,
                                   cpmeas.Measurements(), image_set_list)
@@ -425,3 +436,16 @@ UnifyObjects:[module_num:1|svn_version:\'8913\'|variable_revision_number:1|show_
                                             wants_outlines = True, outline_name = OUTLINE_NAME)
         self.assertTrue(np.all(labels_out[labels != 0] == 1))
         self.assertTrue(np.all(labels_out[labels == 0] == 0))
+        
+    def test_05_00_unify_per_parent(self):
+        labels = np.zeros((10,20), int)
+        labels[2:5, 3:8] = 1
+        labels[2:5, 13:18] = 2
+        parent_labels = np.zeros(labels.shape,int)
+        parent_labels[1:6,2:19] = 1;
+        
+        labels_out, workspace = self.rruunn(labels, R.OPTION_UNIFY, 
+                                            unify_option = R.UNIFY_PARENT,
+                                            parent_object = "Parent_object",
+                                            parent_labels = parent_labels)
+        self.assertTrue(np.all(labels_out[labels != 0] == 1))

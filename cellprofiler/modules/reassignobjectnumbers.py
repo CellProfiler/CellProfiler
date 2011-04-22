@@ -52,6 +52,7 @@ import cellprofiler.preferences as cpprefs
 from cellprofiler.modules.identify import get_object_measurement_columns
 from cellprofiler.modules.identify import add_object_count_measurements
 from cellprofiler.modules.identify import add_object_location_measurements
+from cellprofiler.modules.identify import C_PARENT, C_CHILDREN
 from cellprofiler.modules.identify import FF_CHILDREN_COUNT, FF_PARENT
 import cellprofiler.cpmath.cpmorphology as morph
 from cellprofiler.cpmath.filter import stretch
@@ -60,18 +61,21 @@ import cellprofiler.cpmath.outline
 OPTION_UNIFY = "Unify"
 OPTION_SPLIT = "Split"
 
+UNIFY_DISTANCE = "Distance"
+UNIFY_PARENT = "Per-parent"
+
 CA_CENTROIDS = "Centroids"
 CA_CLOSEST_POINT = "Closest point"
 
 class ReassignObjectNumbers(cpm.CPModule):
     module_name = "ReassignObjectNumbers"
     category = "Object Processing"
-    variable_revision_number = 2
+    variable_revision_number = 3
     
     def create_settings(self):
         self.objects_name = cps.ObjectNameSubscriber(
             "Select the input objects",
-            "None",
+            cps.NONE,
             doc="""Select the objects whose object numbers you want to reassign.
             You can use any objects that were created in previous modules, such as 
             <b>IdentifyPrimaryObjects</b> or <b>IdentifySecondaryObjects</b>.""")
@@ -88,10 +92,37 @@ class ReassignObjectNumbers(cpm.CPModule):
             object number. Choose <i>Split</i> to give a unique number to non-adjacent objects
             that currently share the same object number.""")
         
+        self.unify_option = cps.Choice(
+            "Unification to perform",[UNIFY_DISTANCE, UNIFY_PARENT],
+            doc="""
+            <i>(Used only with the Unify option)</i><br>
+            You can unify objects in one of two ways:
+            <ul>
+            <li><i>%(UNIFY_DISTANCE)s: </i> All objects within a certain pixel radius 
+            from each other will be unified</li>
+            <li><i>%(UNIFY_PARENT)s: </i>All objects which share the same parent 
+            relationship to another object will be unified. This is not be confused
+            with using the <b>RelateObjects</b> module, in which the related objects
+            remain as individual objects. See <b>RelateObjects</b> for more details.</li>
+            </ul>
+            """%globals())
+        
+        self.parent_object = cps.Choice(
+            "Select the parent object", [cps.NONE], choices_fn = self.get_parent_choices, doc = """
+            Select the parent object that will be used to
+            unify the child objects. Please note the following:
+            <ul>
+            <li>You must have established a parent-child relationship
+            between the objects using a prior <b>RelateObjects</b> module.</li>
+            <li>Primary objects and their associated secondary objects are
+            already in a one-to-one parent-child relationship, so it makes no
+            sense to unify them here.</li>
+            </ul>""")
+        
         self.distance_threshold = cps.Integer(
             "Maximum distance within which to unify objects",
             0,minval=0, doc="""
-            <i>(Used only with the Unify option)</i><br>
+            <i>(Used only when Unifying by distance)</i><br>
             Objects that are less than or equal to the distance
             you enter here, in pixels, will be unified. If you choose zero 
             (the default), only objects that are touching will be unified. 
@@ -111,7 +142,7 @@ class ReassignObjectNumbers(cpm.CPModule):
             within the grayscale image are met.""")
         
         self.image_name = cps.ImageNameSubscriber(
-            "Select the grayscale image to guide unification", "None",
+            "Select the grayscale image to guide unification", cps.NONE,
             doc="""
             <i>(Used only if a grayscale image is to be used as a guide for unification)</i><br>
             Select the name of an image loaded or created by a previous module.""")
@@ -171,22 +202,43 @@ class ReassignObjectNumbers(cpm.CPModule):
             doc = """<i>(Used only if outlined are to be retained)</i><br>
             Enter a name that will allow the outlines to be selected later in the pipeline.""")
 
+    def get_parent_choices(self,pipeline):
+        columns = pipeline.get_measurement_columns()
+        choices = [cps.NONE]
+        for column in columns:
+            object_name, feature, coltype = column[:3]
+            if (object_name == self.objects_name.value and
+                feature.startswith(C_PARENT)):
+                choices.append(feature[(len(C_PARENT)+1):])
+        return choices
+    
+    def validate_module(self, pipeline):
+        if self.relabel_option == OPTION_UNIFY and self.unify_option == UNIFY_PARENT and self.parent_object.value == cps.NONE:
+            raise cps.ValidationError(
+                    '%s is not a valid object name'%cps.NONE,
+                    self.parent_object)
+
     def settings(self):
         return [self.objects_name, self.output_objects_name,
                 self.relabel_option, self.distance_threshold, 
                 self.wants_image, self.image_name, 
                 self.minimum_intensity_fraction,
                 self.where_algorithm, 
-                self.wants_outlines, self.outlines_name]
+                self.wants_outlines, self.outlines_name,
+                self.unify_option, self.parent_object]
     
     def visible_settings(self):
         result = [self.objects_name, self.output_objects_name,
                   self.relabel_option]
         if self.relabel_option == OPTION_UNIFY:
-            result += [self.distance_threshold, self.wants_image]
-            if self.wants_image:
-                result += [self.image_name, self.minimum_intensity_fraction,
-                           self.where_algorithm]
+            result += [self.unify_option]
+            if self.unify_option == UNIFY_DISTANCE:
+                result += [self.distance_threshold, self.wants_image]
+                if self.wants_image:
+                    result += [self.image_name, self.minimum_intensity_fraction,
+                               self.where_algorithm]
+            elif self.unify_option == UNIFY_PARENT:
+                result += [self.parent_object]
         result += [self.wants_outlines]
         if self.wants_outlines:
             result += [self.outlines_name]
@@ -202,19 +254,24 @@ class ReassignObjectNumbers(cpm.CPModule):
         if self.relabel_option == OPTION_SPLIT:
             output_labels, count = scind.label(labels > 0, np.ones((3,3),bool))
         else:
-            mask = labels > 0
-            if self.distance_threshold.value > 0:
-                #
-                # Take the distance transform of the reverse of the mask
-                # and figure out what points are less than 1/2 of the
-                # distance from an object.
-                #
-                d = scind.distance_transform_edt(~mask)
-                mask = d < self.distance_threshold.value/2+1
-            output_labels, count = scind.label(mask, np.ones((3,3), bool))
-            output_labels[labels == 0] = 0
-            if self.wants_image:
-                output_labels = self.filter_using_image(workspace, mask)
+            if self.unify_option == UNIFY_DISTANCE:
+                mask = labels > 0
+                if self.distance_threshold.value > 0:
+                    #
+                    # Take the distance transform of the reverse of the mask
+                    # and figure out what points are less than 1/2 of the
+                    # distance from an object.
+                    #
+                    d = scind.distance_transform_edt(~mask)
+                    mask = d < self.distance_threshold.value/2+1
+                output_labels, count = scind.label(mask, np.ones((3,3), bool))
+                output_labels[labels == 0] = 0
+                if self.wants_image:
+                    output_labels = self.filter_using_image(workspace, mask)
+            elif self.unify_option == UNIFY_PARENT:
+                parent_objects = workspace.object_set.get_objects(self.parent_object.value)
+                output_labels, count = scind.label(parent_objects.segmented, np.ones((3,3), bool))
+                output_labels[labels == 0] = 0
             
         output_objects = cpo.Objects()
         output_objects.segmented = output_labels
@@ -469,6 +526,11 @@ class ReassignObjectNumbers(cpm.CPModule):
             # Added outline options
             setting_values += [cps.NO, "RelabeledNucleiOutlines"]
             variable_revision_number = 2
+            
+        if (not from_matlab) and variable_revision_number == 1:
+            # Added per-parent unification
+            setting_values += [UNIFY_DISTANCE, cps.NONE]
+            variable_revision_number = 3
                        
         return setting_values, variable_revision_number, from_matlab
     

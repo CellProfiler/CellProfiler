@@ -1,7 +1,8 @@
-'''<b>ClassifyPixels</b> classify pixels using Ilastik
+'''<b>ClassifyPixels</b> classify pixels using ilastik
 <hr>
 
-ClassifyPixels performs per-pixel classification using the Ilastik application.
+ClassifyPixels performs per-pixel classification using the 
+<a href="http://www.ilastik.org/">ilastik</a> application.
 Ilastik is now bundled with the CellProfiler distribution; it applies
 supervised machine learning techniques to images to learn their features.
 A user trains a classifier with Ilastik and then saves the classifier.
@@ -13,7 +14,6 @@ import cellprofiler.cpmodule as cpm
 import cellprofiler.cpmodule as cpm
 import cellprofiler.settings as cps
 import cellprofiler.cpimage  as cpi
-
 
 from cellprofiler.preferences import standardize_default_folder_names, \
      DEFAULT_INPUT_FOLDER_NAME, DEFAULT_OUTPUT_FOLDER_NAME, NO_FOLDER_NAME, \
@@ -68,15 +68,26 @@ class ClassifyPixels(cpm.CPModule):
     category = "Image Processing"
     
     def create_settings(self):
-        self.image_name = cps.ImageNameSubscriber("Select the input image", "None")
+        self.image_name = cps.ImageNameSubscriber(
+            "Select the input image", "None")
         
         # The following settings are used for the combine option
-        self.output_image = cps.ImageNameProvider("Name of the output probability map", "ProbabilityMap")
-        self.class_sel = cps.Integer("Class to choose", 0, 0, 42, doc='''Select the class you want to use. The class number corresponds to the label-class in ilastik''')
+        self.output_image = cps.ImageNameProvider(
+            "Name the output probability map", "ProbabilityMap")
+        
+        self.class_sel = cps.Integer("Select the class", 
+            0, 0, 42, doc=
+            '''Select the class you want to use. The class number 
+            corresponds to the label-class in ilastik''')
         
         self.h5_directory = cps.DirectoryPath(
-            "Input classifier file location", allow_metadata = False,
-            doc ="""Location of the input classifier file""")
+            "Classifier file location",
+            dir_choices = [
+                DEFAULT_OUTPUT_FOLDER_NAME, DEFAULT_INPUT_FOLDER_NAME, 
+                ABSOLUTE_FOLDER_NAME, DEFAULT_INPUT_SUBFOLDER_NAME,
+                DEFAULT_OUTPUT_SUBFOLDER_NAME], allow_metadata = False,
+            doc ="""Select the folder containing the classifier file to be loaded. 
+            %(IO_FOLDER_CHOICE_HELP_TEXT)s"""%globals())
         
         def get_directory_fn():
             '''Get the directory for the CSV file name'''
@@ -87,16 +98,15 @@ class ClassifyPixels(cpm.CPModule):
             self.h5_directory.join_parts(dir_choice, custom_path)
                 
         self.classifier_file_name = cps.FilenameText(
-            "Classfier File",
+            "Classfier file name",
             "None",
-            doc="""Classfier File""",
+            doc="""This is the name of the Classfier file.""",
             get_directory_fn = get_directory_fn,
             set_directory_fn = set_directory_fn,
             browse_msg = "Choose Classifier file",
             exts = [("Classfier file (*.h5)","*.h5"),("All files (*.*)","*.*")]
         )
         
-    
     def settings(self):
         return [self.image_name, self.output_image, self.class_sel, self.h5_directory, self.classifier_file_name]
     

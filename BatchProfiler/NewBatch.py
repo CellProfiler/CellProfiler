@@ -326,7 +326,7 @@ print '''<form action='%(url)s'>
 <tr><th>Queue:</th>
 <td><select id='input_queue' name='queue'>
 '''%(keys)
-for queue in ('hour', 'week', 'broad','short','long','hugemem','preview','priority'):
+for queue in ('hour', 'week', 'priority'):
     selected = 'selected="selected"' if queue == keys['queue'] else ''
     print '''<option value='%(queue)s' %(selected)s>%(queue)s</option>'''%(locals())
 

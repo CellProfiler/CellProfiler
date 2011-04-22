@@ -27,7 +27,12 @@ corresponding grayscale images. Measurements are recorded for each object.
  of the pixels in the object have lower values.</li>
 <li><i>MedianIntensity:</i> The median intensity value within the object</li>
 <li><i>UpperQuartileIntensity:</i> The intensity value of the pixel for which 75%
- of the pixels in the object have lower values.</li></ul>
+ of the pixels in the object have lower values.</li>
+ <li><i>Location_X_CenterMassIntensity, Location_Y_CenterMassIntensity:</i> The 
+pixel (X,Y) coordinates of the intensity weighted centroid (= center of mass = first moment) 
+of all pixels within the object.</li>
+<li><i>Location_X_MaxIntensity, Location_Y_MaxIntensity:</i> The pixel (X,Y) coordinates of 
+the pixel with the maximum intensity within the object.</li></ul>
 
 Note that for publication purposes, the units of
 intensity from microscopy images are usually described as "Intensity
@@ -67,6 +72,7 @@ import cellprofiler.settings as cps
 import cellprofiler.cpmath.outline as cpmo
 from cellprofiler.cpmath.cpmorphology import fixup_scipy_ndimage_result as fix
 from cellprofiler.cpmath.filter import stretch
+from identify import C_LOCATION
 
 INTENSITY = 'Intensity'
 INTEGRATED_INTENSITY = 'IntegratedIntensity'
@@ -83,6 +89,10 @@ MASS_DISPLACEMENT = 'MassDisplacement'
 LOWER_QUARTILE_INTENSITY = 'LowerQuartileIntensity'
 MEDIAN_INTENSITY = 'MedianIntensity'
 UPPER_QUARTILE_INTENSITY = 'UpperQuartileIntensity'
+LOC_CMI_X = 'CenterMassIntensity_X'
+LOC_CMI_Y = 'CenterMassIntensity_Y'
+LOC_MAX_X = 'MaxIntensity_X'
+LOC_MAX_Y = 'MaxIntensity_Y'
 
 ALL_MEASUREMENTS = [INTEGRATED_INTENSITY, MEAN_INTENSITY, STD_INTENSITY,
                         MIN_INTENSITY, MAX_INTENSITY, INTEGRATED_INTENSITY_EDGE,
@@ -90,6 +100,7 @@ ALL_MEASUREMENTS = [INTEGRATED_INTENSITY, MEAN_INTENSITY, STD_INTENSITY,
                         MIN_INTENSITY_EDGE, MAX_INTENSITY_EDGE, 
                         MASS_DISPLACEMENT, LOWER_QUARTILE_INTENSITY,
                         MEDIAN_INTENSITY, UPPER_QUARTILE_INTENSITY]
+ALL_LOCATION_MEASUREMENTS = [LOC_CMI_X, LOC_CMI_Y, LOC_MAX_X, LOC_MAX_Y]
 
 class MeasureObjectIntensity(cpm.CPModule):
 
@@ -239,11 +250,15 @@ class MeasureObjectIntensity(cpm.CPModule):
         columns = []
         for image_name in [im.name for im in self.images]:
             for object_name in [obj.name for obj in self.objects]:
-                for feature in (ALL_MEASUREMENTS):
-                    columns.append((object_name.value,
-                                    "%s_%s_%s"%(INTENSITY, feature,
-                                                image_name.value),
-                                    cpmeas.COLTYPE_FLOAT))
+                for category, features in (
+                    (INTENSITY, ALL_MEASUREMENTS),
+                    (C_LOCATION, ALL_LOCATION_MEASUREMENTS)):
+                    for feature in (features):
+                        columns.append((object_name.value,
+                                        "%s_%s_%s"%(category, feature,
+                                                    image_name.value),
+                                        cpmeas.COLTYPE_FLOAT))
+                
         return columns
             
     def get_categories(self,pipeline, object_name):
@@ -255,23 +270,31 @@ class MeasureObjectIntensity(cpm.CPModule):
         """
         for object_name_variable in [obj.name for obj in self.objects]:
             if object_name_variable.value == object_name:
-                return [INTENSITY]
+                return [INTENSITY, C_LOCATION]
         return []
     
     def get_measurements(self, pipeline, object_name, category):
         """Get the measurements made on the given object in the given category"""
-        if category != INTENSITY:
+        if category == C_LOCATION:
+            all_measurements = ALL_LOCATION_MEASUREMENTS
+        elif category == INTENSITY:
+            all_measurements = ALL_MEASUREMENTS
+        else:
             return []
         for object_name_variable in [obj.name for obj in self.objects]:
             if object_name_variable.value == object_name:
-                return ALL_MEASUREMENTS
+                return all_measurements
         return []
     
     def get_measurement_images(self, pipeline,object_name, category, measurement):
         """Get the images used to make the given measurement in the given category on the given object"""
-        if category != INTENSITY:
-            return []
-        if measurement not in ALL_MEASUREMENTS:
+        if category == INTENSITY:
+            if measurement not in ALL_MEASUREMENTS:
+                return []
+        elif category == C_LOCATION:
+            if measurement not in ALL_LOCATION_MEASUREMENTS:
+                return []
+        else:
             return []
         for object_name_variable in [obj.name for obj in self.objects]:
             if object_name_variable == object_name:
@@ -344,7 +367,12 @@ class MeasureObjectIntensity(cpm.CPModule):
                                                         lindexes))
                     max_intensity = fix(nd.maximum(limg, llabels, lindexes))
                     max_intensity_edge = fix(nd.maximum(eimg, elabels, lindexes))
-                    # The mass displacement is the distance between the center
+                     # Compute the position of the intensity maximum
+                    max_position = np.array( fix(nd.maximum_position(limg, llabels, lindexes)), dtype=int )
+                    max_position = np.reshape( max_position, ( max_position.shape[0], ) )
+                    max_x = mesh_x[ max_position ]
+                    max_y = mesh_y[ max_position ]
+                   # The mass displacement is the distance between the center
                     # of mass of the binary image and of the intensity image. The
                     # center of mass is the average X or Y for the binary image
                     # and the sum of X or Y * intensity / integrated intensity
@@ -403,24 +431,32 @@ class MeasureObjectIntensity(cpm.CPModule):
                     lower_quartile_intensity = np.zeros((nobjects,))
                     median_intensity = np.zeros((nobjects,))
                     upper_quartile_intensity = np.zeros((nobjects,))
+                    cmi_x = np.zeros((nobjects,))
+                    cmi_y = np.zeros((nobjects,))
+                    max_x = np.zeros((nobjects,))
+                    max_y = np.zeros((nobjects,))
                 
                 m = workspace.measurements
-                for feature_name, measurement in \
-                    ((INTEGRATED_INTENSITY, integrated_intensity),
-                     (MEAN_INTENSITY, mean_intensity),
-                     (STD_INTENSITY, std_intensity),
-                     (MIN_INTENSITY, min_intensity),
-                     (MAX_INTENSITY, max_intensity),
-                     (INTEGRATED_INTENSITY_EDGE, integrated_intensity_edge),
-                     (MEAN_INTENSITY_EDGE, mean_intensity_edge),
-                     (STD_INTENSITY_EDGE, std_intensity_edge),
-                     (MIN_INTENSITY_EDGE, min_intensity_edge),
-                     (MAX_INTENSITY_EDGE, max_intensity_edge),
-                     (MASS_DISPLACEMENT, mass_displacement),
-                     (LOWER_QUARTILE_INTENSITY, lower_quartile_intensity),
-                     (MEDIAN_INTENSITY, median_intensity),
-                     (UPPER_QUARTILE_INTENSITY, upper_quartile_intensity)):
-                    measurement_name = "%s_%s_%s"%(INTENSITY,feature_name,
+                for category, feature_name, measurement in \
+                    ((INTENSITY, INTEGRATED_INTENSITY, integrated_intensity),
+                     (INTENSITY, MEAN_INTENSITY, mean_intensity),
+                     (INTENSITY, STD_INTENSITY, std_intensity),
+                     (INTENSITY, MIN_INTENSITY, min_intensity),
+                     (INTENSITY, MAX_INTENSITY, max_intensity),
+                     (INTENSITY, INTEGRATED_INTENSITY_EDGE, integrated_intensity_edge),
+                     (INTENSITY, MEAN_INTENSITY_EDGE, mean_intensity_edge),
+                     (INTENSITY, STD_INTENSITY_EDGE, std_intensity_edge),
+                     (INTENSITY, MIN_INTENSITY_EDGE, min_intensity_edge),
+                     (INTENSITY, MAX_INTENSITY_EDGE, max_intensity_edge),
+                     (INTENSITY, MASS_DISPLACEMENT, mass_displacement),
+                     (INTENSITY, LOWER_QUARTILE_INTENSITY, lower_quartile_intensity),
+                     (INTENSITY, MEDIAN_INTENSITY, median_intensity),
+                     (INTENSITY, UPPER_QUARTILE_INTENSITY, upper_quartile_intensity),
+                     (C_LOCATION, LOC_CMI_X, cmi_x),
+                     (C_LOCATION, LOC_CMI_Y, cmi_y),
+                     (C_LOCATION, LOC_MAX_X, max_x),
+                     (C_LOCATION, LOC_MAX_Y, max_y)):
+                    measurement_name = "%s_%s_%s"%(category,feature_name,
                                                    image_name.value)
                     m.add_measurement(object_name.value,measurement_name, 
                                       measurement)

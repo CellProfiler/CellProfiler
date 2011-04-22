@@ -109,11 +109,13 @@ class TestMeasureObjects(unittest.TestCase):
         moi.objects[0].name.value = 'MyObjects1'
         moi.objects[1].name.value = 'MyObjects2'
         
-        self.assertEqual(moi.get_categories(None, 'MyObjects1'),[MOI.INTENSITY])
+        self.assertEqual(tuple(sorted(moi.get_categories(None, 'MyObjects1'))), tuple(sorted([MOI.INTENSITY, MOI.C_LOCATION])))
         self.assertEqual(moi.get_categories(None, 'Foo'),[])
         measurements = moi.get_measurements(None,'MyObjects1',MOI.INTENSITY)
         self.assertEqual(len(measurements),len(MOI.ALL_MEASUREMENTS))
-        self.assertTrue(all([m in MOI.ALL_MEASUREMENTS for m in measurements]))
+        measurements = moi.get_measurements(None,'MyObjects1',MOI.C_LOCATION)
+        self.assertEqual(len(measurements),len(MOI.ALL_LOCATION_MEASUREMENTS))
+        self.assertTrue(all([m in MOI.ALL_LOCATION_MEASUREMENTS for m in measurements]))
         self.assertTrue(moi.get_measurement_images(None,'MyObjects1',
                                                    MOI.INTENSITY,
                                                    MOI.MAX_INTENSITY),
@@ -127,13 +129,18 @@ class TestMeasureObjects(unittest.TestCase):
         moi.objects[0].name.value = 'MyObjects1'
         moi.objects[1].name.value = 'MyObjects2'
         columns = moi.get_measurement_columns(None)
-        self.assertEqual(len(columns), 2*len(MOI.ALL_MEASUREMENTS))
+        self.assertEqual(len(columns), 2*len(MOI.ALL_MEASUREMENTS) + 2*len(MOI.ALL_LOCATION_MEASUREMENTS))
         for column in columns:
             self.assertTrue(column[0] in ('MyObjects1','MyObjects2'))
             self.assertEqual(column[2], cpmeas.COLTYPE_FLOAT)
-            self.assertEqual(column[1].split('_')[0], MOI.INTENSITY)
-            self.assertTrue(column[1][column[1].find('_')+1:] in 
-                            [m+'_MyImage' for m in MOI.ALL_MEASUREMENTS])
+            category = column[1].split('_')[0]
+            self.assertTrue(category in (MOI.INTENSITY, MOI.C_LOCATION))
+            if category == MOI.INTENSITY:
+                self.assertTrue(column[1][column[1].find('_')+1:] in 
+                                [m+'_MyImage' for m in MOI.ALL_MEASUREMENTS])
+            else:
+                self.assertTrue(column[1][column[1].find('_')+1:] in 
+                                [m+'_MyImage' for m in MOI.ALL_LOCATION_MEASUREMENTS])
 
     def features_and_columns_match(self, measurements, module):
         object_names = [x for x in measurements.get_object_names()
@@ -184,11 +191,13 @@ class TestMeasureObjects(unittest.TestCase):
         pipeline.add_module(io)
         pipeline.add_module(moi)
         m = pipeline.run()
-        for meas_name in MOI.ALL_MEASUREMENTS:
-            feature_name = "%s_%s_%s"%(MOI.INTENSITY, meas_name, 'MyImage')
-            data = m.get_current_measurement('MyObjects',feature_name)
-            self.assertEqual(np.product(data.shape),0,"Got data for feature %s"%(feature_name))
-        self.features_and_columns_match(m, moi)
+        for category, features in ((MOI.INTENSITY, MOI.ALL_MEASUREMENTS),
+                                   (MOI.C_LOCATION, MOI.ALL_LOCATION_MEASUREMENTS)):
+            for meas_name in features:
+                feature_name = "%s_%s_%s"%(category, meas_name, 'MyImage')
+                data = m.get_current_measurement('MyObjects',feature_name)
+                self.assertEqual(np.product(data.shape),0,"Got data for feature %s"%(feature_name))
+            self.features_and_columns_match(m, moi)
         
     def test_03_01_01_masked(self):
         """Make sure we can process a completely masked image
@@ -221,10 +230,10 @@ class TestMeasureObjects(unittest.TestCase):
     def test_03_02_00_one(self):
         """Check measurements on a 3x3 square of 1's"""
         img = np.array([[0,0,0,0,0,0,0],
-                           [0,0,1,1,1,0,0],
-                           [0,0,1,1,1,0,0],
-                           [0,0,1,1,1,0,0],
-                           [0,0,0,0,0,0,0]])
+                        [0,0,1,1,1,0,0],
+                        [0,0,1,1,1,0,0],
+                        [0,0,1,1,1,0,0],
+                        [0,0,0,0,0,0,0]])
         ii = II.InjectImage('MyImage',img.astype(float))
         ii.module_num = 1
         io = II.InjectObjects('MyObjects',img.astype(int))
@@ -239,21 +248,24 @@ class TestMeasureObjects(unittest.TestCase):
         pipeline.add_module(io)
         pipeline.add_module(moi)
         m = pipeline.run()
-        for meas_name,value in ((MOI.INTEGRATED_INTENSITY,9),
-                                (MOI.MEAN_INTENSITY,1),
-                                (MOI.STD_INTENSITY,0),
-                                (MOI.MIN_INTENSITY,1),
-                                (MOI.MAX_INTENSITY,1),
-                                (MOI.INTEGRATED_INTENSITY_EDGE,8),
-                                (MOI.MEAN_INTENSITY_EDGE,1),
-                                (MOI.STD_INTENSITY_EDGE,0),
-                                (MOI.MIN_INTENSITY_EDGE,1),
-                                (MOI.MAX_INTENSITY_EDGE,1),
-                                (MOI.MASS_DISPLACEMENT,0),
-                                (MOI.LOWER_QUARTILE_INTENSITY,1),
-                                (MOI.MEDIAN_INTENSITY,1),
-                                (MOI.UPPER_QUARTILE_INTENSITY,1)):
-            feature_name = "%s_%s_%s"%(MOI.INTENSITY, meas_name, 'MyImage')
+        for category, meas_name,value in (
+            (MOI.INTENSITY, MOI.INTEGRATED_INTENSITY,9),
+            (MOI.INTENSITY, MOI.MEAN_INTENSITY,1),
+            (MOI.INTENSITY, MOI.STD_INTENSITY,0),
+            (MOI.INTENSITY, MOI.MIN_INTENSITY,1),
+            (MOI.INTENSITY, MOI.MAX_INTENSITY,1),
+            (MOI.INTENSITY, MOI.INTEGRATED_INTENSITY_EDGE,8),
+            (MOI.INTENSITY, MOI.MEAN_INTENSITY_EDGE,1),
+            (MOI.INTENSITY, MOI.STD_INTENSITY_EDGE,0),
+            (MOI.INTENSITY, MOI.MIN_INTENSITY_EDGE,1),
+            (MOI.INTENSITY, MOI.MAX_INTENSITY_EDGE,1),
+            (MOI.INTENSITY, MOI.MASS_DISPLACEMENT,0),
+            (MOI.INTENSITY, MOI.LOWER_QUARTILE_INTENSITY,1),
+            (MOI.INTENSITY, MOI.MEDIAN_INTENSITY,1),
+            (MOI.INTENSITY, MOI.UPPER_QUARTILE_INTENSITY,1),
+            (MOI.C_LOCATION, MOI.LOC_CMI_X, 3),
+            (MOI.C_LOCATION, MOI.LOC_CMI_Y, 2)):
+            feature_name = "%s_%s_%s"%(category, meas_name, 'MyImage')
             data = m.get_current_measurement('MyObjects',feature_name)
             self.assertEqual(np.product(data.shape),1)
             self.assertEqual(data[0],value,"%s expected %f != actual %f"%(meas_name, value, data[0]))
@@ -298,6 +310,27 @@ class TestMeasureObjects(unittest.TestCase):
             self.assertEqual(np.product(data.shape),1)
             self.assertEqual(data[0],value,"%s expected %f != actual %f"%(meas_name, value, data[0]))
 
+    def test_03_02_02_intensity_location(self):
+        image = np.array([
+            [ 0,0,0,0,0,0,0 ],
+            [ 0,1,1,1,1,1,0 ],
+            [ 0,1,1,1,1,2,0 ],
+            [ 0,1,1,1,1,1,0 ],
+            [ 0,1,1,1,1,1,0 ],
+            [ 0,1,1,1,1,1,0 ],
+            [ 0,0,0,0,0,0,0 ]]).astype(float) / 2.0
+        labels = (image != 0).astype(int)
+        workspace, module = self.make_workspace(labels, image)
+        self.assertTrue(isinstance(module, MOI.MeasureObjectIntensity))
+        module.run(workspace)
+        for feature, value in ((MOI.LOC_MAX_X, 5),
+                               (MOI.LOC_MAX_Y, 2)):
+            feature_name = "%s_%s_%s"%(MOI.C_LOCATION, feature, 'MyImage')
+            values = workspace.measurements.get_current_measurement(
+                OBJECT_NAME, feature_name)
+            self.assertEqual(len(values), 1)
+            self.assertEqual(values[0], value)
+            
     def test_03_03_00_mass_displacement(self):
         """Check the mass displacement of three squares"""
         

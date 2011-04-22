@@ -40,8 +40,8 @@ class PreferencesDlg(wx.Dialog):
         top_sizer = wx.BoxSizer(wx.VERTICAL)
         sizer = wx.GridBagSizer(len(p),4)
         sizer.SetFlexibleDirection(wx.HORIZONTAL)
-        sizer.AddGrowableCol(1,1)
-        sizer.AddGrowableCol(3,.1)
+        sizer.AddGrowableCol(1, 10)
+        sizer.AddGrowableCol(3, 1)
         top_sizer.Add(sizer,1, wx.EXPAND|wx.ALL, 5)
         index = 0
         controls = []

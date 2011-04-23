@@ -122,6 +122,8 @@ Pilot</a>.
 <li><i>Pathname, Filename:</i> The full path and the filename of each image, if
 image loading was requested by the user.</li>
 <li>Per-image information obtained from the input file provided by the user.</li>
+<li><i>Scaling:</i> The maximum possible intensity value for the image format.</li> 
+<li><i>Height, Width:</i> The height and width of the current image.</li> 
 </ul>
 
 See also <b>LoadImages</b> and <b>CalculateStatistics</b>.
@@ -158,7 +160,7 @@ import identify as I
 from cellprofiler.modules.loadimages import LoadImagesImageProvider
 from cellprofiler.modules.loadimages import C_FILE_NAME, C_PATH_NAME
 from cellprofiler.modules.loadimages import C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME
-from cellprofiler.modules.loadimages import C_MD5_DIGEST, C_SCALING
+from cellprofiler.modules.loadimages import C_MD5_DIGEST, C_SCALING, C_HEIGHT, C_WIDTH
 from cellprofiler.modules.loadimages import bad_sizes_warning
 from cellprofiler.modules.loadimages import convert_image_to_objects
 from cellprofiler.preferences import standardize_default_folder_names, \
@@ -913,7 +915,7 @@ class LoadData(cpm.CPModule):
             for index in range(len(dictionary.values()[0])):
                 failure = False
                 for key in image_set_keys.keys():
-                    md_key = "Metadata_%s"%(key)
+                    md_key = "%s_%s"%(cpmeas.C_METADATA, key)
                     if dictionary.has_key(md_key):
                         column_value = dictionary[md_key][index]
                         isk = image_set_keys[key]
@@ -968,11 +970,14 @@ class LoadData(cpm.CPModule):
             image = workspace.image_set.get_image(image_name)
             pixel_data = image.pixel_data
             md5.update(np.ascontiguousarray(pixel_data).data)
-            m.add_image_measurement(
-                C_MD5_DIGEST + '_'+image_name,
-                md5.hexdigest())
-            m.add_image_measurement(
-                C_SCALING + '_' + image_name, image.scale)
+            m.add_image_measurement("_".join((C_MD5_DIGEST, image_name)),
+                                    md5.hexdigest())
+            m.add_image_measurement("_".join((C_SCALING,image_name)), 
+                                    image.scale)
+            m.add_image_measurement("_".join((C_HEIGHT, image_name)),
+                                    int(pixel_data.shape[0]))
+            m.add_image_measurement("_".join((C_WIDTH, image_name)), 
+                                    int(pixel_data.shape[1]))
             if image_size is None:
                 image_size = tuple(pixel_data.shape[:2])
                 first_filename = image.file_name
@@ -1104,7 +1109,9 @@ class LoadData(cpm.CPModule):
                    if colname not in previous_fields]
         for feature, coltype in (
             (C_MD5_DIGEST, cpmeas.COLTYPE_VARCHAR_FORMAT % 32),
-            (C_SCALING, cpmeas.COLTYPE_FLOAT)):
+            (C_SCALING, cpmeas.COLTYPE_FLOAT),
+            (C_HEIGHT, cpmeas.COLTYPE_INTEGER),
+            (C_WIDTH, cpmeas.COLTYPE_INTEGER)):
             result += [(cpmeas.IMAGE, feature +'_'+image_name, coltype)
                        for image_name in image_names]
         #

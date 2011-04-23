@@ -27,6 +27,8 @@ that finds metadata in the file name</i></a> for the necessary syntax.</p>
 <li><i>Pathname, Filename:</i> The full path and the filename of each image.</li>
 <li><i>Metadata:</i> The metadata information extracted from the path and/or 
 filename, if requested.</li>
+<li><i>Scaling:</i> The maximum possible intensity value for the image format.</li> 
+<li><i>Height, Width:</i> The height and width of the current image.</li> 
 </ul>
 
 See also <b>LoadData</b>, <b>LoadSingleImage</b>, <b>SaveImages</b>.
@@ -136,6 +138,10 @@ C_MD5_DIGEST = "MD5Digest"
 
 '''The intensity scaling metadata for this file'''
 C_SCALING = "Scaling"
+
+'''The dimension metadata for the image'''
+C_HEIGHT = "Height"
+C_WIDTH = "Width"
 
 # strings for choice variables
 MS_EXACT_MATCH = 'Text-Exact match'
@@ -2070,8 +2076,8 @@ class LoadImages(cpmodule.CPModule):
                     for tag, value in ((M_Z, z),
                                        (M_T, t),
                                        (M_SERIES, series)):
-                        measurement = "Metadata_"+tag
-                        if not m.has_current_measurements('Image',measurement):
+                        measurement = "_".join((cpmeas.C_METADATA,tag))
+                        if not m.has_current_measurements(cpmeas.IMAGE, measurement):
                             m.add_image_measurement(measurement, value)
                         image_set_metadata[tag] = value
                     row = [name, path, filename, channel.channel_number.value]
@@ -2089,6 +2095,10 @@ class LoadImages(cpmodule.CPModule):
                                       digest.hexdigest())
                     m.add_image_measurement("_".join((C_SCALING, name)),
                                             image.scale)
+                    m.add_image_measurement("_".join((C_HEIGHT, name)), 
+                                                int(pixel_data.shape[0]))
+                    m.add_image_measurement("_".join((C_WIDTH, name)),
+                                                int(pixel_data.shape[1]))
                     if image_size is None:
                         image_size = tuple(pixel_data.shape[:2])
                         first_image_filename = filename
@@ -2526,7 +2536,7 @@ class LoadImages(cpmodule.CPModule):
              
         if object_name == cpmeas.IMAGE:
             if has_image_name:
-                res += [C_FILE_NAME, C_PATH_NAME, C_MD5_DIGEST, C_SCALING]
+                res += [C_FILE_NAME, C_PATH_NAME, C_MD5_DIGEST, C_SCALING, C_HEIGHT, C_WIDTH]
             has_metadata = (self.file_types in 
                             (FF_AVI_MOVIES, FF_STK_MOVIES, FF_OTHER_MOVIES))
             for fd in self.images:
@@ -2585,6 +2595,9 @@ class LoadImages(cpmodule.CPModule):
                               cpmeas.COLTYPE_VARCHAR_FORMAT%32)]
                     cols += [(cpmeas.IMAGE, "_".join((C_SCALING, name)),
                               cpmeas.COLTYPE_FLOAT)]
+                    cols += [(cpmeas.IMAGE, "_".join((feature, name)),
+                              cpmeas.COLTYPE_INTEGER)
+                                for feature in (C_HEIGHT, C_WIDTH)]
         
                 cols += [(cpmeas.IMAGE, "_".join((file_name_category, name)), 
                           cpmeas.COLTYPE_VARCHAR_FILE_NAME)]
@@ -2618,6 +2631,7 @@ class LoadImages(cpmodule.CPModule):
             cols += [(cpmeas.IMAGE, "_".join((cpmeas.C_METADATA, feature)),
                        cpmeas.COLTYPE_INTEGER)
                      for feature in (M_Z, M_T, M_SERIES)]
+
         return cols
     
     def change_causes_prepare_run(self, setting):

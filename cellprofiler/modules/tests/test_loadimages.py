@@ -1834,7 +1834,11 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
                          ('Image', 'PathName_Cytoplasm', 'varchar(256)'), 
                          ('Image', 'MD5Digest_Cytoplasm', 'varchar(32)'),
                          ('Image', 'Scaling_Cytoplasm', 'float'),
-                         ('Image', 'Metadata_Well', 'varchar(128)')]
+                         ('Image', 'Metadata_Well', 'varchar(128)'),
+                         ('Image', 'Height_DNA', 'integer'),
+                         ('Image', 'Height_Cytoplasm', 'integer'),
+                         ('Image', 'Width_DNA', 'integer'),
+                         ('Image', 'Width_Cytoplasm', 'integer')]
         returned_cols = module.get_measurement_columns(pipeline)
         # check for duplicates
         assert len(returned_cols) == len(set(returned_cols))
@@ -1885,7 +1889,7 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         pipeline.load(fd)
         module = pipeline.module(1)
         results = module.get_categories(pipeline, measurements.IMAGE)
-        expected = ['FileName', 'PathName', 'MD5Digest', 'Metadata', 'Scaling']
+        expected = ['FileName', 'PathName', 'MD5Digest', 'Metadata', 'Scaling', 'Height', 'Width']
         assert set(results) == set(expected)
         
     def test_07_04_get_movie_measurements(self):
@@ -1895,6 +1899,8 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
                               ('Image', 'PathName_DNA', 'varchar(256)'),
                               ('Image', 'MD5Digest_DNA', 'varchar(32)'),
                               ('Image', 'Scaling_DNA', 'float'),
+                              ('Image', 'Height_DNA', 'integer'),
+                              ('Image', 'Width_DNA', 'integer'),
                               ('Image', 'Metadata_T', 'integer')]
         file_expected_cols = [
             ('Image', 'Metadata_WellRow', 'varchar(128)'), 
@@ -1921,7 +1927,7 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
                 for column in columns:
                     self.assertTrue(column in expected_cols)
                 categories = module.get_categories(None, measurements.IMAGE)
-                self.assertEqual(len(categories), 5)
+                self.assertEqual(len(categories), 7)
                 category_dict = {}
                 for column in expected_cols:
                     category, feature = column[1].split("_",1)
@@ -1947,6 +1953,8 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
                               ('Image', 'Scaling_DNA', 'float'),
                               ('Image', 'Metadata_T', 'integer'),
                               ('Image', 'Metadata_Z', 'integer'),
+                              ('Image', 'Height_DNA', 'integer'),
+                              ('Image', 'Width_DNA', 'integer'),
                               ('Image', 'Metadata_Series', 'integer')]
         file_expected_cols = [
             ('Image', 'Metadata_WellRow', 'varchar(128)'), 
@@ -1972,7 +1980,7 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
             for column in columns:
                 self.assertTrue(column in expected_cols)
             categories = module.get_categories(None, measurements.IMAGE)
-            self.assertEqual(len(categories), 5)
+            self.assertEqual(len(categories), 7)
             category_dict = {}
             for column in expected_cols:
                 category, feature = column[1].split("_",1)

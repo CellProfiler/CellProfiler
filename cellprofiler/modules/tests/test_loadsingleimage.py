@@ -381,11 +381,11 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
         workspace, module = self.make_workspace(file_names)
         self.assertTrue(isinstance(module, L.LoadSingleImage))
         columns = module.get_measurement_columns(workspace.pipeline)
-        self.assertEqual(len(columns), 8)
+        self.assertEqual(len(columns), 12)
         self.assertTrue([c[0] == cpmeas.IMAGE for c in columns])
         for image_name in [self.get_image_name(i) for i in range(2)]:
             for feature in (L.C_FILE_NAME, L.C_MD5_DIGEST, L.C_PATH_NAME,
-                            L.C_SCALING):
+                            L.C_SCALING, L.C_HEIGHT, L.C_WIDTH):
                 measurement = "_".join((feature, image_name))
                 self.assertTrue(measurement in [c[1] for c in columns])
                 
@@ -396,9 +396,9 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
         categories = module.get_categories(workspace.pipeline, "Foo")
         self.assertEqual(len(categories), 0)
         categories = module.get_categories(workspace.pipeline, cpmeas.IMAGE)
-        self.assertEqual(len(categories), 4)
+        self.assertEqual(len(categories), 6)
         for category in (L.C_FILE_NAME, L.C_MD5_DIGEST, L.C_PATH_NAME,
-                            L.C_SCALING):
+                            L.C_SCALING, L.C_HEIGHT, L.C_WIDTH):
             self.assertTrue(category in categories)
             
     def test_03_03_measurements(self):
@@ -412,7 +412,7 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
         measurements = module.get_measurements(workspace.pipeline, "foo", L.C_PATH_NAME)
         self.assertEqual(len(measurements), 0)
         categories = module.get_categories(workspace.pipeline, cpmeas.IMAGE)
-        self.assertEqual(len(categories), 4)
+        self.assertEqual(len(categories), 6)
         for category in (categories):
             measurements = module.get_measurements(workspace.pipeline,
                                                    cpmeas.IMAGE, category)

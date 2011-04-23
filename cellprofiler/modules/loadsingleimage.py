@@ -9,6 +9,15 @@ particularly useful for loading an image like an illumination correction
 image for use by the <b>CorrectIlluminationApply</b> module, when that single
 image will be used to correct all images in the analysis run.</p>
 
+<h4>Available measurements</h4>
+<ul>
+<li><i>Pathname, Filename:</i> The full path and the filename of each image.</li>
+<li><i>Metadata:</i> The metadata information extracted from the path and/or 
+filename, if requested.</li>
+<li><i>Scaling:</i> The maximum possible intensity value for the image format.</li> 
+<li><i>Height, Width:</i> The height and width of the current image.</li> 
+</ul>
+
 <h3>Technical notes</h3>
 
 For most purposes, you will probably want to use the <b>LoadImages</b> module, not 
@@ -47,7 +56,7 @@ import cellprofiler.objects as cpo
 import cellprofiler.measurements as cpmeas
 import cellprofiler.preferences as cpprefs
 import cellprofiler.settings as cps
-from loadimages import LoadImagesImageProvider, C_SCALING, C_FILE_NAME
+from loadimages import LoadImagesImageProvider, C_SCALING, C_FILE_NAME, C_HEIGHT, C_WIDTH
 from loadimages import C_PATH_NAME, C_MD5_DIGEST, C_OBJECTS_FILE_NAME
 from loadimages import C_OBJECTS_PATH_NAME, IO_IMAGES, IO_OBJECTS, IO_ALL
 from loadimages import IMAGE_FOR_OBJECTS_F
@@ -332,10 +341,14 @@ class LoadSingleImage(cpm.CPModule):
                 file_name_category = C_FILE_NAME
                 digest = hashlib.md5()
                 digest.update(np.ascontiguousarray(pixel_data).data)
-                m.add_measurement('Image',C_MD5_DIGEST + '_'+image_name, 
-                                  digest.hexdigest())
-                m.add_image_measurement('_'.join((C_SCALING, image_name)),
+                m.add_image_measurement("_".join((C_MD5_DIGEST, image_name)), 
+                                        digest.hexdigest())
+                m.add_image_measurement("_".join((C_SCALING, image_name)),
                                         image.scale)
+                m.add_image_measurement("_".join((C_HEIGHT, image_name)),
+                                            int(pixel_data.shape[0]))
+                m.add_image_measurement("_".join((C_WIDTH, image_name)),
+                                            int(pixel_data.shape[1]))
             else:
                 #
                 # Turn image into objects
@@ -383,7 +396,9 @@ class LoadSingleImage(cpm.CPModule):
                 file_name_category = C_FILE_NAME
                 columns += [
                     (cpmeas.IMAGE, "_".join((C_MD5_DIGEST, image_name)), cpmeas.COLTYPE_VARCHAR_FORMAT % 32),
-                    (cpmeas.IMAGE, "_".join((C_SCALING, image_name)), cpmeas.COLTYPE_FLOAT)]
+                    (cpmeas.IMAGE, "_".join((C_SCALING, image_name)), cpmeas.COLTYPE_FLOAT),
+                    (cpmeas.IMAGE, "_".join((C_HEIGHT, image_name)), cpmeas.COLTYPE_INTEGER),
+                    (cpmeas.IMAGE, "_".join((C_WIDTH, image_name)), cpmeas.COLTYPE_INTEGER)]
             else:
                 image_name = file_setting.objects_name.value
                 path_name_category = C_OBJECTS_PATH_NAME
@@ -413,7 +428,7 @@ class LoadSingleImage(cpm.CPModule):
         result = []
         if object_name == cpmeas.IMAGE:
             if self.wants_images:
-                result += [C_FILE_NAME, C_MD5_DIGEST, C_PATH_NAME, C_SCALING]
+                result += [C_FILE_NAME, C_MD5_DIGEST, C_PATH_NAME, C_SCALING, C_HEIGHT, C_WIDTH]
             if self.wants_objects:
                 result += [C_COUNT, C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME]
         if any([True for file_setting in self.file_settings
@@ -430,7 +445,7 @@ class LoadSingleImage(cpm.CPModule):
         '''
         result = []
         if object_name == cpmeas.IMAGE:
-            if category in (C_FILE_NAME, C_MD5_DIGEST, C_PATH_NAME, C_SCALING):
+            if category in (C_FILE_NAME, C_MD5_DIGEST, C_PATH_NAME, C_SCALING, C_HEIGHT, C_WIDTH):
                 result += [ file_setting.image_name.value
                             for file_setting in self.file_settings
                             if file_setting.image_objects_choice == IO_IMAGES ]

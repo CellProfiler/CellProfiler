@@ -154,7 +154,7 @@ class PreferencesView:
         self.__allow_output_filename_overwrite_check_box.Bind(
             wx.EVT_CHECKBOX, on_allow_checkbox)
         self.__write_measurements_check_box = \
-            wx.CheckBox(panel, label = "Write measurements?")
+            wx.CheckBox(panel, label = "Write output file?")
         self.__write_measurements_check_box.Value = \
             cpprefs.get_write_MAT_files()
         self.__show_output_filename(cpprefs.get_write_MAT_files())

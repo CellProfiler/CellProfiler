@@ -184,7 +184,14 @@ spaces or characters disallowed by your computer's platform.</p>
 an output filename), CellProfiler will prevent you from overwriting this file 
 on a subsequent run by generating a new file name and asking if you want to 
 use it instead. You can override this behavior by checking the <i>Allow 
-overwrite?</i> box to the right.</p>"""
+overwrite?</i> box to the right.</p>
+
+<p>For analysis runs that generate a large number of measurements, you may notice
+that even though the analysis completes, CellProfiler continues to use 
+an inordinate amount of your CPU and RAM. This is because the output file is written
+after the analysis is completed and can take a very long time for a lot of measurements.
+If you do not need this file and/or notice this behavior, uncheck the <i>Write output
+file?</i> box to the right.</p>"""
 
 NEW_FEATURES_HELP = """ 
 A number of new features have been incorporated into this re-engineered Python 

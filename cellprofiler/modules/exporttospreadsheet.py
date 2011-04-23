@@ -560,6 +560,7 @@ class ExportToSpreadsheet(cpm.CPModule):
         """
         from loaddata import is_path_name_feature, is_file_name_feature
         from loadimages import C_PATH_NAME, C_FILE_NAME
+        from loadimages import C_MD5_DIGEST, C_SCALING, C_HEIGHT, C_WIDTH
 
         def ignore_feature(feature_name):
             """Return true if we should ignore a feature"""
@@ -572,8 +573,10 @@ class ExportToSpreadsheet(cpm.CPModule):
                 feature_name.startswith('ModuleError_') or 
                 feature_name.startswith('TimeElapsed_') or 
                 feature_name.startswith('ExecutionTime_') or 
-                feature_name.startswith('MD5Digest_') or
-                feature_name.startswith('Scaling_')
+                feature_name.startswith(C_MD5_DIGEST) or
+                feature_name.startswith(C_SCALING) or
+                feature_name.startswith(C_HEIGHT) or
+                feature_name.startswith(C_WIDTH)
                 ):
                 return True
             return False

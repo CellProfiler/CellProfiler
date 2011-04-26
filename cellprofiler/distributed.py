@@ -9,7 +9,14 @@ import tempfile
 import traceback
 import urllib, urllib2
 
-import nuageux
+try:
+    import nuageux
+    have_nuageux = True
+except:
+    traceback.print_exc()
+    sys.stderr.write("distributed processing disabled (nuageux library not available).\n")
+    have_nuageux = False
+
 from cellprofiler.pipeline import post_module_runner_done_event
 from cellprofiler.modules.mergeoutputfiles import MergeOutputFiles
 import cellprofiler.preferences as cpprefs
@@ -17,7 +24,7 @@ import cellprofiler.preferences as cpprefs
 # whether CP should run distributed (changed by preferences, or by command line)
 force_run_distributed = False
 def run_distributed():
-    return force_run_distributed or cpprefs.get_run_distributed()
+    return have_nuageux and (force_run_distributed or cpprefs.get_run_distributed())
 
 class Distributor(object):
     def __init__(self, frame=None):

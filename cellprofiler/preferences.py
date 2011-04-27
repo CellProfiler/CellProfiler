@@ -171,6 +171,7 @@ SHOW_EXITING_TEST_MODE_DLG = "ShowExitingTestModeDlg"
 SHOW_BAD_SIZES_DLG = "ShowBadSizesDlg"
 SHOW_SAMPLING = "ShowSampling"
 WRITE_MAT = "WriteMAT"
+RUN_DISTRIBUTED = "RunDistributed"
 
 def recent_file(index, category=""):
     return (FF_RECENTFILES % (index + 1)) + category
@@ -225,7 +226,7 @@ def fire_image_directory_changed_event():
     '''Notify listeners of a image directory change'''
     global __default_image_directory
     for listener in __image_directory_listeners:
-        listener(DirectoryChangedEvent(__default_image_directory))
+        listener(PreferenceChangedEvent(__default_image_directory))
 
 __image_directory_listeners = []
 
@@ -241,9 +242,9 @@ def remove_image_directory_listener(listener):
     """
     __image_directory_listeners.remove(listener)
 
-class DirectoryChangedEvent:
-    def __init__(self, path):
-        self.image_directory = path
+class PreferenceChangedEvent:
+    def __init__(self, new_value):
+        self.new_value = new_value
 
 __default_output_directory = None
 def get_default_output_directory():
@@ -271,7 +272,7 @@ def set_default_output_directory(path):
     get_config().Write(DEFAULT_OUTPUT_DIRECTORY,path)
     add_recent_file(path, DEFAULT_OUTPUT_DIRECTORY)
     for listener in __output_directory_listeners:
-        listener(DirectoryChangedEvent(path))
+        listener(PreferenceChangedEvent(path))
 
 __output_directory_listeners = []
 
@@ -362,16 +363,12 @@ __output_filename_listeners = []
 def get_output_file_name():
     return __output_filename
 
-class OutputFilenameEvent:
-    def __init__(self):
-        self.OutputFilename = __output_filename
-
 def set_output_file_name(filename):
     global __output_filename
     filename=str(filename)
     __output_filename = filename
     for listener in __output_filename_listeners:
-        listener(OutputFilenameEvent)
+        listener(PreferenceChangedEvent(filename))
 
 def add_output_file_name_listener(listener):
     __output_filename_listeners.append(listener)
@@ -476,6 +473,35 @@ def set_show_sampling(value):
     get_config().WriteBool(SHOW_SAMPLING, bool(value))
     __show_sampling = bool(value)
     
+__run_distributed = None
+__run_distributed_listeners = []
+
+def get_run_distributed():
+    global __run_distributed
+    if __run_distributed is not None:
+        return __run_distributed
+    if not get_config().Exists(RUN_DISTRIBUTED):
+        __run_distributed = False
+        return False
+    return get_config().ReadBool(RUN_DISTRIBUTED)
+
+def set_run_distributed(value):
+    global __run_distributed
+    get_config().WriteBool(RUN_DISTRIBUTED, bool(value))
+    __run_distributed = bool(value)
+    for listener in __run_distributed_listeners:
+        listener(PreferenceChangedEvent(__run_distributed))
+
+def add_run_distributed_listener(listener):
+    """Add a listener that will be notified when the image directory changes
+    """
+    __run_distributed_listeners.append(listener)
+
+def remove_run_distributed_listener(listener):
+    """Remove a previously-added image directory listener
+    """
+    __run_distributed_listeners.remove(listener)
+
 __recent_files = {}
 def get_recent_files(category=""):
     global __recent_files

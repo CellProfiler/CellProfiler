@@ -61,6 +61,15 @@ parser.add_option("-r", "--run",
                   dest="run_pipeline",
                   default=False,
                   help="Run the given pipeline on startup")
+parser.add_option("--distributed",
+                  action="store_true",
+                  dest="run_distributed",
+                  default=False,
+                  help="Distribute pipeline to workers (see --worker)")
+parser.add_option("--worker",
+                  dest="worker_mode_URL",
+                  default=None,
+                  help="Enter worker mode for the CellProfiler distributing work at URL (implies headless)")
 parser.add_option("-o", "--output-directory",
                   dest="output_directory",
                   default=None,
@@ -165,7 +174,7 @@ if options.run_ilastik:
     il_file, il_path, il_description = imp.find_module('ilastikMain', il_path)
     imp.load_module('__main__', il_file, il_path, il_description)
     sys.exit()
-    
+
 # necessary to prevent matplotlib trying to use Tkinter as its backend.
 # has to be done before CellProfilerApp is imported
 from matplotlib import use as mpluse
@@ -231,11 +240,28 @@ if (not hasattr(sys, 'frozen')) and options.build_extensions:
     if options.build_and_exit:
         exit()
 
+if options.run_distributed:
+    # force distributed mode
+    import cellprofiler.distributed as cpdistributed
+    cpdistributed.force_run_distributed = True
+
+# set up values for worker, which is basically a looping headless
+# pipeline runner with special methods to fetch pipelines and
+# first/last imagesets and for returning results.
+if options.worker_mode_URL is not None:
+    import cellprofiler.distributed as cpdistributed
+    options.show_gui = False
+    options.run_pipeline = True
+    assert options.groups == None, "groups not supported in distributed processing, yet"
+
 if options.show_gui and not options.output_html:
     from cellprofiler.cellprofilerapp import CellProfilerApp
     App = CellProfilerApp(0, 
-                          check_for_new_version = True,
-                          show_splashbox = True)
+                          check_for_new_version = (options.pipeline_filename is None),
+                          show_splashbox = (options.pipeline_filename is None))
+    # ... loading a pipeline from the filename can bring up a modal
+    # dialog, which causes a crash on Mac if the splashbox is open or
+    # a second modal dialog is opened.
 
 try:
     #
@@ -248,7 +274,7 @@ try:
         # Might want to change later if there's some headless setup 
         if (not options.output_html) and (not options.print_measurements):
             options.run_pipeline = True
-    
+
     if options.output_html:
         from cellprofiler.gui.html.manual import generate_html
         webpage_path = options.output_directory if options.output_directory else None
@@ -284,7 +310,7 @@ try:
     if options.output_html:
         sys.exit(0) 
     
-    if options.run_pipeline and not options.pipeline_filename:
+    if options.run_pipeline and not (options.pipeline_filename or options.worker_mode_URL):
         raise ValueError("You must specify a pipeline filename to run")
     
     if not options.first_image_set is None:
@@ -323,31 +349,53 @@ try:
                     options.pipeline_filename, "Error loading pipeline",
                     style = wx.OK | wx.ICON_ERROR)
         App.MainLoop()
-    elif options.run_pipeline:
-        from cellprofiler.pipeline import Pipeline, EXIT_STATUS
-        import cellprofiler.measurements as cpmeas
-        pipeline = Pipeline()
-        pipeline.load(os.path.expanduser(options.pipeline_filename))
-        if options.groups is not None:
-            kvs = [x.split('=') for x in options.groups.split(',')]
-            groups = dict(kvs)
-        else:
-            groups = None
-        measurements = pipeline.run(image_set_start=image_set_start, 
-                                    image_set_end=image_set_end,
-                                    grouping=groups)
-        if len(args) > 0:
-            pipeline.save_measurements(args[0], measurements)
-        if options.done_file is not None:
-            if (measurements is not None and 
-                measurements.has_feature(cpmeas.EXPERIMENT, EXIT_STATUS)):
-                done_text = measurements.get_experiment_measurement(EXIT_STATUS)
+    elif options.run_pipeline: # this includes distributed workers
+        if (options.pipeline_filename is not None) and (not options.pipeline_filename.lower().startswith('http')):
+            options.pipeline_filename = os.path.expanduser(options.pipeline_filename)
+        continue_looping = True # for distributed work
+        while continue_looping:
+            continue_looping = False # distributed workers will reset this, below, while there is work.
+            from cellprofiler.pipeline import Pipeline, EXIT_STATUS
+            import cellprofiler.measurements as cpmeas
+            pipeline = Pipeline()
+            if options.worker_mode_URL is not None:
+                jobinfo = cpdistributed.fetch_work(options.worker_mode_URL)
+                if jobinfo.work_done():
+                    break # no more work
+                pipeline.load(jobinfo.pipeline_stringio())
+                image_set_start = jobinfo.image_set_start
+                image_set_end = jobinfo.image_set_end
+                continue_looping = True
             else:
-                done_text = "Failure"
-            fd = open(options.done_file, "wt")
-            fd.write("%s\n"%done_text)
-            fd.close()
+                pipeline.load(options.pipeline_filename)
+            if options.groups is not None:
+                kvs = [x.split('=') for x in options.groups.split(',')]
+                groups = dict(kvs)
+            else:
+                groups = None
+            measurements = pipeline.run(image_set_start=image_set_start, 
+                                        image_set_end=image_set_end,
+                                        grouping=groups)
+            if options.worker_mode_URL is not None:
+                jobinfo.report_measurements(pipeline, measurements)
+            elif len(args) > 0:
+                pipeline.save_measurements(args[0], measurements)
+                if options.done_file is not None:
+                    if (measurements is not None and 
+                        measurements.has_feature(cpmeas.EXPERIMENT, EXIT_STATUS)):
+                        done_text = measurements.get_experiment_measurement(EXIT_STATUS)
+                    else:
+                        done_text = "Failure"
+                    fd = open(options.done_file, "wt")
+                    fd.write("%s\n"%done_text)
+                    fd.close()
+except Exception, e:
+    import traceback
+    sys.stderr.write("Uncaught exception in CellProfiler.py\n")
+    traceback.print_exc()
+    raise
 finally:
+    # Smokey, my friend, you are entering a world of pain.
     try:
         import imagej.ijbridge as ijbridge
         if ijbridge.inter_proc_ij_bridge._isInstantiated():
@@ -358,11 +406,12 @@ finally:
         print "Caught exception while killing ijbridge."
 
     try:
+        if hasattr(sys, 'flags'):
+            if sys.flags.interactive:
+                assert False, "Don't kill JVM in interactive mode, because it calls exit()"
         import cellprofiler.utilities.jutil as jutil
         jutil.kill_vm()
     except:
         import traceback
         traceback.print_exc()
         print "Caught exception while killing VM"
-
-        

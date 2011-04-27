@@ -213,11 +213,13 @@ class CreateBatchFiles(cpm.CPModule):
             raise cps.ValidationError("CreateBatchFiles will not produce output in Test Mode",
                                       self.wants_default_output_directory)
         
-    def save_pipeline(self, pipeline, image_set_list, frame):
+    def save_pipeline(self, pipeline, image_set_list, frame=None, outf=None):
         '''Save the pipeline in Batch_data.mat
         
         Save the pickled image_set_list state in a setting and put this
         module in batch mode.
+
+        if outf is not None, it is used as a file object destination.
         '''
         from cellprofiler.utilities.get_revision import version
         assert isinstance(image_set_list, cpi.ImageSetList)
@@ -236,21 +238,25 @@ class CreateBatchFiles(cpm.CPModule):
         bizarro_self.default_image_directory.value = \
                     self.alter_path(cpprefs.get_default_image_directory())
         bizarro_self.batch_mode.value = True
-        if self.wants_default_output_directory.value:
-            path = cpprefs.get_default_output_directory()
+
+        if outf is None:
+            if self.wants_default_output_directory.value:
+                path = cpprefs.get_default_output_directory()
+            else:
+                path = cpprefs.get_absolute_path(self.custom_output_directory.value)
+            path = os.path.join(path, F_BATCH_DATA)
+            if os.path.exists(path) and frame is not None:
+                import wx
+                if (wx.MessageBox("%s already exists. Do you want to overwrite it?"%
+                                  path,
+                                  "Overwriting %s" % F_BATCH_DATA,
+                                  wx.YES_NO, frame) == wx.NO):
+                    return
+            pipeline.save(path, format=cpp.FMT_MATLAB) # Matlab... it's like the vestigial hole in the head of CP.
         else:
-            path = cpprefs.get_absolute_path(self.custom_output_directory.value)
-        path = os.path.join(path, F_BATCH_DATA)
-        if os.path.exists(path) and frame is not None:
-            import wx
-            if (wx.MessageBox("%s already exists. Do you want to overwrite it?"%
-                              path,
-                              "Overwriting %s" % F_BATCH_DATA,
-                              wx.YES_NO, frame) == wx.NO):
-                return
-        
-        pipeline.save(path, format=cpp.FMT_MATLAB)
-    
+            pipeline.save(outf, format=cpp.FMT_NATIVE)
+
+
     def in_batch_mode(self):
         '''Tell the system whether we are in batch mode on the cluster'''
         return self.batch_mode.value

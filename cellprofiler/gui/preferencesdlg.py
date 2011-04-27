@@ -212,7 +212,11 @@ class PreferencesDlg(wx.Dialog):
                 ['Show the sampling menu',
                  cpprefs.get_show_sampling,
                  cpprefs.set_show_sampling,
-                 CHOICE, "Show the sampling menu - restart after setting"]
+                 CHOICE, "Show the sampling menu - restart after setting"],
+                ['Use distributed workers (EXPERIMENTAL)',
+                 cpprefs.get_run_distributed,
+                 cpprefs.set_run_distributed,
+                 CHOICE, "Use distributed workers to analyze images.  This is experimental functionality."]
                 ]
     
     def get_title_font(self):

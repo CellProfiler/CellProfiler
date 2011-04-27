@@ -19,11 +19,16 @@ import time
 import numpy as np
 import wx
 import cellprofiler.preferences as cpprefs
+import cellprofiler.distributed as cpdistributed
 from cellprofiler.gui.htmldialog import HTMLDialog
 from cellprofiler.gui.help import \
      DEFAULT_IMAGE_FOLDER_HELP, DEFAULT_OUTPUT_FOLDER_HELP, OUTPUT_FILENAME_HELP
 
 WELCOME_MESSAGE = 'Welcome to CellProfiler'
+
+
+ANALYZE_IMAGES = 'Analyze Images'
+START_WORK_SERVER = 'Start Distributed Computation'
 
 class PreferencesView:
     """View / controller for the preferences that get displayed in the main window
@@ -167,7 +172,10 @@ class PreferencesView:
         self.__write_measurements_check_box.Bind(
             wx.EVT_CHECKBOX, on_write_MAT_files_checkbox)
         output_filename_help_button = wx.Button(panel,-1,'?', (0,0), (30,-1))
-        self.__analyze_images_button = wx.Button(panel,-1,'Analyze images')
+        if not cpdistributed.run_distributed():
+            self.__analyze_images_button = wx.Button(panel, -1, ANALYZE_IMAGES)
+        else:
+            self.__analyze_images_button = wx.Button(panel, -1, START_WORK_SERVER)
         self.__stop_analysis_button = wx.Button(panel,-1,'Stop analysis')
         sizer = wx.BoxSizer(wx.HORIZONTAL)
         sizer.AddMany([(output_filename_help_button,0,wx.ALIGN_CENTER|wx.ALL,1),
@@ -186,6 +194,7 @@ class PreferencesView:
         cpprefs.add_output_file_name_listener(self.__on_preferences_output_filename_event)
         cpprefs.add_image_directory_listener(self.__on_preferences_image_directory_event)
         cpprefs.add_output_directory_listener(self.__on_preferences_output_directory_event)
+        cpprefs.add_run_distributed_listener(self.__on_preferences_run_distributed_event)
         panel.Bind(wx.EVT_WINDOW_DESTROY, self.__on_destroy, panel)
     
     def __make_progress_panel(self):
@@ -235,6 +244,7 @@ class PreferencesView:
         cpprefs.remove_image_directory_listener(self.__on_preferences_image_directory_event)
         cpprefs.remove_output_directory_listener(self.__on_preferences_output_directory_event)
         cpprefs.remove_output_file_name_listener(self.__on_preferences_output_filename_event)
+        cpprefs.remove_run_distributed_listener(self.__on_preferences_run_distributed_event)
 
     def attach_to_pipeline_controller(self, pipeline_controller):
         self.__panel.Bind(wx.EVT_BUTTON,
@@ -265,10 +275,12 @@ class PreferencesView:
         self.__panel.Parent.Layout()
         self.__panel.Layout()
         # begin tracking progress
-        self.__progress_watcher = ProgressWatcher(self.__progress_panel, self.update_progress)
+        self.__progress_watcher = ProgressWatcher(self.__progress_panel,
+                                                  self.update_progress,
+                                                  distributed=cpdistributed.run_distributed())
         
-    def on_start_module(self, *args):
-        self.__progress_watcher.on_start_module(*args)
+    def on_pipeline_progress(self, *args):
+        self.__progress_watcher.on_pipeline_progress(*args)
 
     def pause(self, do_pause):
         self.__progress_watcher.pause(do_pause)
@@ -279,9 +291,8 @@ class PreferencesView:
         self.pause_button.Update()
         self.__progress_panel.Layout()
 
-    def update_progress(self, image_set_index, num_image_sets, current_module_name, 
-                        elapsed_time, remaining_time):
-        self.__current_status.SetLabel('%s, Image Set %d/%d'%(current_module_name, image_set_index + 1, num_image_sets))
+    def update_progress(self, message, elapsed_time, remaining_time):
+        self.__current_status.SetLabel(message)
         self.__progress_bar.Value = (100 * elapsed_time) / (elapsed_time + remaining_time + .00001)
         self.__timer.SetLabel('Time %s/%s'%(secs_to_timestr(elapsed_time), secs_to_timestr(elapsed_time + remaining_time)))
         self.__progress_panel.Layout()
@@ -378,6 +389,11 @@ class PreferencesView:
         if self.__image_edit_box.Value != cpprefs.get_default_image_directory():
             self.__image_edit_box.Value = cpprefs.get_default_image_directory()
 
+    def __on_preferences_run_distributed_event(self, event):
+        self.__analyze_images_button.Label = START_WORK_SERVER if cpdistributed.run_distributed() else ANALYZE_IMAGES
+        self.__analyze_images_button.Size = self.__analyze_images_button.BestSize
+        self.__odds_and_ends_panel.Layout()
+
     def __notify_pipeline_list_view_directory_change(self, path):
         # modules may need revalidation
         if self.__pipeline_list_view is not None:
@@ -388,7 +404,7 @@ class PreferencesView:
 
 class ProgressWatcher:
     """ Tracks pipeline progress and estimates time to completion """
-    def __init__(self, parent, update_callback):
+    def __init__(self, parent, update_callback, distributed=False):
         self.update_callback = update_callback
 
         # start tracking progress
@@ -400,21 +416,42 @@ class ProgressWatcher:
         self.image_set_index = 0
         self.num_image_sets = 1
 
+        # for distributed computation
+        self.num_jobs = 1
+        self.num_received = 0
+
+        self.distributed = distributed
+
         timer_id = wx.NewId()
         self.timer = wx.Timer(parent, timer_id)
         self.timer.Start(500)
-        wx.EVT_TIMER(parent, timer_id, self.update)
-        self.update()
+        if not distributed:
+            wx.EVT_TIMER(parent, timer_id, self.update)
+            self.update()
+        else:
+            wx.EVT_TIMER(parent, timer_id, self.update_distributed)
+            self.update_distributed()
 
     def stop(self):
         self.timer.Stop()
 
     def update(self, event=None):
-        self.update_callback(self.image_set_index,
-                             self.num_image_sets,
-                             self.current_module_name,
+        status = '%s, Image Set %d/%d'%(self.current_module_name, self.image_set_index + 1, self.num_image_sets)
+        self.update_callback(status,
                              self.elapsed_time(),
                              self.remaining_time())
+
+    def update_distributed(self, event=None):
+        status = 'Distributed work: %d/%d completed'%(self.num_received, self.num_jobs)
+        self.update_callback(status,
+                             self.elapsed_time(),
+                             self.remaining_time_distributed())
+
+    def on_pipeline_progress(self, *args):
+        if not self.distributed:
+            self.on_start_module(*args)
+        else:
+            self.on_receive_work(*args)
 
     def on_start_module(self, module, num_modules, image_set_index, 
                         num_image_sets):
@@ -436,9 +473,19 @@ class ProgressWatcher:
             self.end_times = np.zeros(1 + num_modules * num_image_sets)
         module_index = module.module_num - 1  # make it zero-based
         index = image_set_index * num_modules + (module_index - 1)
-        self.end_times[1 + index] = self.adjusted_time()
+        self.end_times[1 + index] = self.elapsed_time()
 
         self.update()
+
+    def on_receive_work(self, num_jobs, num_received):
+        self.num_jobs = num_jobs
+        self.num_received = num_received
+
+        if self.end_times is None:
+            # One extra element at the beginning for the start time
+            self.end_times = np.zeros(1 + num_jobs)
+        self.end_times[num_received] = self.elapsed_time()
+        self.update_distributed()
 
     def pause(self, do_pause):
         if do_pause:
@@ -484,6 +531,16 @@ class ProgressWatcher:
             per_module_estimates[module_index:] *= self.num_image_sets - self.image_set_index
             per_module_estimates[module_index] -= current_module_so_far
             return per_module_estimates.sum()
+
+    def remaining_time_distributed(self):
+        """Return our best estimate of the remaining duration, or None
+        if we have no bases for guessing."""
+        if self.end_times is None:
+            return 2 * self.elapsed_time() # We have not started the first module yet
+        else:
+            expected_per_job = np.median(np.diff(self.end_times[:self.num_received + 1]))
+            return expected_per_job * (self.num_jobs - self.num_received)
+
 
 def secs_to_timestr(duration):
     dur = int(round(duration))

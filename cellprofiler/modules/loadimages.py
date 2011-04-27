@@ -1461,9 +1461,14 @@ class LoadImages(cpmodule.CPModule):
         for i in range(0,image_set_count):
             image_set = image_set_list.get_image_set(i)
             for j in range(len(image_names)):
-                self.save_image_set_info(image_set, image_names[j],
-                                         P_IMAGES, V_IMAGES, 
-                                         root, list_of_lists[j,i])
+                if image_set_list.combine_path_and_file:
+                    self.save_image_set_info(image_set, image_names[j],
+                                             P_IMAGES, V_IMAGES,
+                                             '', os.path.join(root, list_of_lists[j,i]))
+                else:
+                    self.save_image_set_info(image_set, image_names[j],
+                                             P_IMAGES, V_IMAGES,
+                                             root, list_of_lists[j,i])
         return True
     
     def organize_by_metadata(self, pipeline, image_set_list, files, frame):
@@ -1572,9 +1577,15 @@ class LoadImages(cpmodule.CPModule):
             cpimageset = image_set_list.get_image_set(keys)
             for i in range(len(self.images)):
                 path = os.path.join(image_set[1][i][0],image_set[1][i][1])
-                self.save_image_set_info(cpimageset,
-                                         self.images[i].channels[0].image_name.value,
-                                          P_IMAGES, V_IMAGES, root,path)
+                if image_set_list.combine_path_and_file:
+                    self.save_image_set_info(cpimageset,
+                                             self.images[i].channels[0].image_name.value,
+                                             P_IMAGES, V_IMAGES, '', os.path.join(root,path))
+                else:
+                    self.save_image_set_info(cpimageset,
+                                             self.images[i].channels[0].image_name.value,
+                                             P_IMAGES, V_IMAGES, root,path)
+
         return True
     
     def get_dictionary(self, image_set):

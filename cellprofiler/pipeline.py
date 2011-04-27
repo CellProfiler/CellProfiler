@@ -672,6 +672,9 @@ class Pipeline(object):
                                      attribute_string)
                 attribute_strings = attribute_string[1:-1].split('|')
                 variable_revision_number = None
+                # make batch_state decodable from text pipelines
+                array = np.array
+                uint8 = np.uint8
                 for a in attribute_strings:
                     if len(a.split(':')) != 2:
                         raise ValueError("Invalid attribute string: %s" % a)
@@ -773,7 +776,7 @@ class Pipeline(object):
         fd.write("%s:%d\n" % (H_VERSION,NATIVE_VERSION))
         fd.write("%s:%d\n" % (H_SVN_REVISION,get_revision()))
         attributes = ('module_num','svn_version','variable_revision_number',
-                      'show_window','notes')
+                      'show_window','notes','batch_state')
         for module in self.modules():
             if ((modules_to_save is not None) and 
                 module.module_num not in modules_to_save):
@@ -794,10 +797,10 @@ class Pipeline(object):
         if needs_close:
             fd.close()
         
-    def save_measurements(self,filename, measurements):
+    def save_measurements(self, filename, measurements):
         """Save the measurements and the pipeline settings in a Matlab file
         
-        filename     - name of file to create
+        filename     - name of file to create, or a file-like object
         measurements - measurements structure that is the result of running the pipeline
         """
         handles = self.build_matlab_handles()
@@ -814,7 +817,7 @@ class Pipeline(object):
         self.savemat(filename, root)
         
     def savemat(self, filename, root):
-        '''Save a handles structure accounting for scipy version compatibility'''
+        '''Save a handles structure accounting for scipy version compatibility to a filename or file-like object'''
         sver = scipy.__version__.split('.')
         if (len(sver) >= 2 and sver[0].isdigit() and int(sver[0]) == 0 and
             sver[1].isdigit() and int(sver[1]) < 8):
@@ -1080,6 +1083,11 @@ class Pipeline(object):
 
         columns = self.get_measurement_columns()
         
+        if image_set_start is not None:
+            assert isinstance(image_set_start, int), "Image set start must be an integer"
+        if image_set_end is not None:
+            assert isinstance(image_set_end, int), "Image set end must be an integer"
+
         with self.prepared_run(self, frame) as image_set_list:
             if image_set_list == None:
                 return
@@ -1088,7 +1096,7 @@ class Pipeline(object):
             num_image_sets = sum([image_number is not None 
                                   for image_number, _, _, _ in group(image_set_list)])
             image_set_count = -1
-            
+
             measurements = None
             last_image_number = None
             for group_number, group_index, image_number, closure in group(image_set_list):
@@ -1250,7 +1258,7 @@ class Pipeline(object):
         '''Tell everyone that a run is ending'''
         self.notify_listeners(EndRunEvent())
         
-    def prepare_run(self, frame, test_mode = None):
+    def prepare_run(self, frame, test_mode = None, combine_path_and_file = False):
         """Do "prepare_run" on each module to initialize the image_set_list
         
         returns the image_set_list or None if an exception was thrown
@@ -1258,6 +1266,7 @@ class Pipeline(object):
         if test_mode is None:
             test_mode = self.test_mode
         image_set_list = cellprofiler.cpimage.ImageSetList(test_mode)
+        image_set_list.combine_path_and_file = combine_path_and_file
         
         for module in self.modules():
             try:

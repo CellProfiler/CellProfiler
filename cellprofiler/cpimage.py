@@ -24,7 +24,7 @@ from struct import unpack
 from zlib import decompress
 from StringIO import StringIO
 from numpy import fromstring, uint8, uint16
-from cPickle import dump, load
+from cPickle import dump, Unpickler
 
 class Image(object):
     """An image composed of a Numpy array plus secondary attributes such as mask and label matrices
@@ -641,6 +641,7 @@ class ImageSetList(object):
         self.__legacy_fields = {}
         self.__associating_by_key = None
         self.__test_mode = test_mode
+        self.combine_path_and_file = False
     
     @property
     def test_mode(self):
@@ -769,10 +770,14 @@ class ImageSetList(object):
         
         self.__image_sets = []
         self.__image_sets_by_key = {}
-        f = StringIO(state)
-        count = load(f)
-        all_keys = [load(f) for i in range(count)]
-        self.__legacy_fields = load(f)
+
+        # Make a safe unpickler
+        p = Unpickler(StringIO(state))
+        p.find_global = None
+
+        count = p.load()
+        all_keys = [p.load() for i in range(count)]
+        self.__legacy_fields = p.load()
         #
         # Have to do in this order in order for the image set's
         # legacy_fields property to hook to the right legacy_fields

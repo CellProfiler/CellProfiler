@@ -172,7 +172,7 @@ def get_threshold(threshold_method, threshold_modifier, image,
         if not threshold_range_max is None:
             local_threshold[local_threshold > threshold_range_max] = \
             threshold_range_max
-        if threshold_modifier == TM_PER_OBJECT:
+        if (threshold_modifier == TM_PER_OBJECT) and (labels is not None):
             local_threshold[labels == 0] = 1.0
     else:
         if not threshold_range_min is None:

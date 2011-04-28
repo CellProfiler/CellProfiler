@@ -17,7 +17,8 @@ import cellprofiler.cpimage  as cpi
 
 from cellprofiler.preferences import standardize_default_folder_names, \
      DEFAULT_INPUT_FOLDER_NAME, DEFAULT_OUTPUT_FOLDER_NAME, NO_FOLDER_NAME, \
-     ABSOLUTE_FOLDER_NAME, IO_FOLDER_CHOICE_HELP_TEXT
+     ABSOLUTE_FOLDER_NAME, IO_FOLDER_CHOICE_HELP_TEXT, \
+     DEFAULT_INPUT_SUBFOLDER_NAME, DEFAULT_OUTPUT_SUBFOLDER_NAME
      
 import numpy as np
 import sys, os

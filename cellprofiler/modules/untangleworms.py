@@ -17,6 +17,7 @@ worm's pieces together.
 
 __version__="$Revision$"
 
+import logging
 import numpy as np
 import matplotlib.mlab as mlab
 import os
@@ -27,6 +28,8 @@ from scipy.io import loadmat
 import sys
 import xml.dom.minidom as DOM
 import urllib2
+
+logger = logging.getLogger(__name__)
 
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
@@ -2269,16 +2272,24 @@ class UntangleWorms(cpm.CPModule):
 
     def angle_features(self):
         '''Return a list of angle feature names'''
-        return ["_".join((F_ANGLE, str(n)))
-                for n in range(1, self.ncontrol_points()-1)]
+        try:
+            return ["_".join((F_ANGLE, str(n)))
+                    for n in range(1, self.ncontrol_points()-1)]
+        except:
+            logger.error("Failed to get # of control points from training file. Unknown number of angle measurements", exc_info=True)
+            return []
     
     def control_point_features(self, get_x):
         '''Return a list of control point feature names
         
         get_x - return the X coordinate control point features if true, else y
         '''
-        return ["_".join((F_CONTROL_POINT_X if get_x else F_CONTROL_POINT_Y, str(n)))
-                for n in range(1, self.ncontrol_points()+1)]
+        try:
+            return ["_".join((F_CONTROL_POINT_X if get_x else F_CONTROL_POINT_Y, str(n)))
+                    for n in range(1, self.ncontrol_points()+1)]
+        except:
+            logger.error("Failed to get # of control points from training file. Unknown number of control point features", exc_info=True)
+            return []
     
     def get_categories(self, pipeline, object_name):
         if object_name == cpmeas.IMAGE:

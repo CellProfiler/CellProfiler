@@ -406,20 +406,17 @@ try:
                     fd.write("%s\n"%done_text)
                     fd.close()
 except Exception, e:
-    import traceback
-    sys.stderr.write("Uncaught exception in CellProfiler.py\n")
-    traceback.print_exc()
+    logging.root.fatal("Uncaught exception in CellProfiler.py", exc_info=True)
     raise
 finally:
     # Smokey, my friend, you are entering a world of pain.
+    # No &*#@ sherlock.
     try:
         import imagej.ijbridge as ijbridge
         if ijbridge.inter_proc_ij_bridge._isInstantiated():
             ijbridge.get_ij_bridge().quit()
     except:
-        import traceback
-        traceback.print_exc()
-        print "Caught exception while killing ijbridge."
+        logging.root.warning("Caught exception while killing ijbridge.", exc_info=True)
 
     try:
         if hasattr(sys, 'flags'):
@@ -428,6 +425,4 @@ finally:
         import cellprofiler.utilities.jutil as jutil
         jutil.kill_vm()
     except:
-        import traceback
-        traceback.print_exc()
-        print "Caught exception while killing VM"
+        logging.root.warning("Caught exception while killing VM.", exc_info=True)

@@ -33,6 +33,7 @@ this, save either the mask or cropping in <b>SaveImages</b>. See the <b>SaveImag
 
 __version__="$Revision$"
 
+import logging
 import math
 import numpy as np
 import sys
@@ -43,6 +44,8 @@ import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.preferences as cpprefs
 from cellprofiler.cpmath.filter import stretch
+
+logger = logging.getLogger(__name__)
 
 SH_RECTANGLE = "Rectangle"
 SH_ELLIPSE = "Ellipse"
@@ -307,11 +310,11 @@ class Crop(cpm.CPModule):
         if not recalculate_flag:
             if d[D_FIRST_CROPPING].shape != orig_image.pixel_data.shape[:2]:
                 recalculate_flag = True
-                sys.stderr.write("""Image, "%s", size changed from %s to %s during cycle %d, recalculating"""%
-                                 (self.image_name.value, 
-                                  str(d[D_FIRST_CROPPING].shape),
-                                  str(orig_image.pixel_data.shape[:2]),
-                                  workspace.image_set.number+1))
+                logger.warning("""Image, "%s", size changed from %s to %s during cycle %d, recalculating""",
+                               self.image_name.value, 
+                               str(d[D_FIRST_CROPPING].shape),
+                               str(orig_image.pixel_data.shape[:2]),
+                               workspace.image_set.number+1)
         mask = None # calculate the mask after cropping unless set below
         cropping = None
         masking_objects = None

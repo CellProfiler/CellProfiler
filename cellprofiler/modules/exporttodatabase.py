@@ -65,19 +65,21 @@ __version__="$Revision$"
 import csv
 import datetime
 import hashlib
+import logging
 import numpy as np
 import os
 import random
 import re
 import sys
 import traceback
+
+logger = logging.getLogger(__name__)
 try:
     import MySQLdb
     from MySQLdb.cursors import SSCursor
     HAS_MYSQL_DB=True
 except:
-    traceback.print_exc()
-    sys.stderr.write("WARNING: MySQL could not be loaded.\n")
+    logger.warning("MySQL could not be loaded.", exc_info=True)
     HAS_MYSQL_DB=False
 
 import cellprofiler.cpmodule as cpm
@@ -1150,7 +1152,7 @@ class ExportToDatabase(cpm.CPModule):
                         ", ".join(tables_that_exist[:-1]), 
                         tables_that_exist[-1])
                 if cpprefs.get_headless():
-                    sys.stderr.write("Warning: %s already in database, not creating" %table_msg)
+                    logger.warning("%s already in database, not creating" , table_msg)
                     return True
                 import wx
                 dlg = wx.MessageDialog(

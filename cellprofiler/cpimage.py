@@ -16,6 +16,7 @@ Website: http://www.cellprofiler.org
 """
 __version__ = "$Revision$"
 
+import logging
 import numpy as np
 import math
 import sys
@@ -25,6 +26,8 @@ from zlib import decompress
 from StringIO import StringIO
 from numpy import fromstring, uint8, uint16
 from cPickle import dump, Unpickler
+
+logger = logging.getLogger(__name__)
 
 class Image(object):
     """An image composed of a Numpy array plus secondary attributes such as mask and label matrices
@@ -447,7 +450,8 @@ class AbstractImageProvider(object):
     
     def release_memory(self):
         '''Release whatever memory is associated with the image'''
-        sys.stderr.write("Warning: no memory release function implemented for %s image\n"%self.get_name())
+        logger.warning("Warning: no memory release function implemented for %s image",
+                       self.get_name())
 
     name = property(__get_name)
 
@@ -565,7 +569,7 @@ class ImageSet(object):
                 raise ValueError("Image must be RGB, but it had %d channels" %
                                  image.pixel_data.shape[2])
             elif image.pixel_data.shape[2] == 4:
-                sys.stderr.write("Warning: discarding alpha channel.\n")
+                logger.warning("Discarding alpha channel.")
                 return RGBImage(image)
         return image
     

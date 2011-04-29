@@ -378,9 +378,12 @@ in a black background.</td>
 
 __version__ = "$Revision$"
 
+import logging
 import numpy as np
 import scipy.ndimage as scind
 import sys
+
+logger = logging.getLogger(__name__)
 
 import cellprofiler.cpmodule as cpm
 import cellprofiler.settings as cps
@@ -570,8 +573,8 @@ class Morph(cpm.CPModule):
                               F_THIN, F_VBREAK) 
             and not is_binary):
             # Apply a very crude threshold to the image for binary algorithms
-            sys.stderr.write("Warning: converting image to binary for %s\n"%
-                             function_name)
+            logger.warning("Warning: converting image to binary for %s\n"%
+                           function_name)
             pixel_data = pixel_data != 0
 
         if (function_name in (F_BRANCHPOINTS, F_BRIDGE, F_CLEAN, F_DIAG, 

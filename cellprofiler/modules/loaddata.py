@@ -142,9 +142,12 @@ __version = "$Revision$"
 
 import csv
 import hashlib
+import logging
 import numpy as np
 import os
 import sys
+
+logger = logging.getLogger(__name__)
 try:
     from cStringIO import StringIO
 except:
@@ -1205,7 +1208,9 @@ class LoadData(cpm.CPModule):
         DIR_DEFAULT_OUTPUT = 'Default Output Folder'
 
         if from_matlab and variable_revision_number == 2:
-            sys.stderr.write("Warning: the format and purpose of LoadText has changed substantially\n")
+            logging.warning(
+                "Warning: the format and purpose of LoadText "
+                "has changed substantially.")
             text_file_name = setting_values[0]
             field_name = setting_values[1]
             path_name = setting_values[2]

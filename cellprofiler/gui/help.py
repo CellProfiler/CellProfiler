@@ -29,10 +29,13 @@ __version__="$Revision$"
 #
 ########################################################
 
+import logging
 import os
 import sys
 import cellprofiler.icons
 from cellprofiler.utilities.relpath import relpath
+
+logger = logging.getLogger(__name__)
 
 #For some reason, Adobe doesn't like using absolute paths to assemble the PDF.
 #Also, Firefox doesn't like displaying the HTML image links using abs paths either.
@@ -46,7 +49,7 @@ except:
             drive = sys.argv[0][0]
         else:
             drive = __file__[0][0]
-        sys.stderr.write(
+        logger.warning(
             ("Warning: HTML being written with absolute paths. You must\n"
              "change the current drive to %s: to get image links with\n"
              "relative paths.\n") % drive)

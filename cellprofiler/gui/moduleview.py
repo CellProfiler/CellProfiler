@@ -13,6 +13,7 @@ Website: http://www.cellprofiler.org
 """
 __version__="$Revision$"
 import codecs
+import logging
 import matplotlib.cm
 import numpy as np
 import os
@@ -23,6 +24,7 @@ import wx
 import wx.grid
 import sys
 
+logger = logging.getLogger(__name__)
 import cellprofiler.pipeline as cpp
 import cellprofiler.settings as cps
 import cellprofiler.preferences as cpprefs
@@ -770,7 +772,7 @@ class ModuleView:
             image = (sm.to_rgba(j) * 255).astype(np.uint8)
             bitmap = wx.BitmapFromBufferRGBA(128,12,image.tostring())
         except:
-            sys.stderr.write("Failed to create the %s colorbar"%cmap_name)
+            logger.warning("Failed to create the %s colorbar"%cmap_name)
             bitmap = None 
         if not control:
             control = wx.Panel(self.__module_panel,-1,

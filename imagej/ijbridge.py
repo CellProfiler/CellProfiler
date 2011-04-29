@@ -3,6 +3,7 @@ ijbridge provides a high-level interface to ImageJ so in-process and inter-
 process execution of ImageJ can be abstracted and branched cleanly.
 '''
 import sys
+import logging
 import numpy as np
 import os, tempfile
 from subprocess import Popen, PIPE, STDOUT
@@ -17,6 +18,7 @@ import imagej.windowmanager as ijwm
 import imagej.imageprocessor as ijiproc
 import imagej.imageplus as ijip
 
+logger = logging.getLogger(__name__)
 if hasattr(sys, 'frozen'):
    __root_path = os.path.split(os.path.abspath(sys.argv[0]))[0]
 else:
@@ -40,7 +42,7 @@ if sys.platform.startswith("win") and not hasattr(sys, 'frozen'):
       __tools_jar = os.path.join(jdk_path, "lib","tools.jar")
       __class_path += os.pathsep + __tools_jar
    else:
-      sys.stderr.write("Warning: Failed to find tools.jar\n")
+      logger.warning("Failed to find tools.jar\n")
 if os.environ.has_key('CLASSPATH'):
    __class_path += os.pathsep + os.environ['CLASSPATH']
 os.environ['CLASSPATH'] = __class_path

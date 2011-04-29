@@ -33,6 +33,7 @@ modules upon which the flags are based.
 
 __version__="$Revision$"
 
+import logging
 import numpy as np
 import sys
 
@@ -42,6 +43,7 @@ import cellprofiler.settings as cps
 import cellprofiler.workspace as cpw
 from cellprofiler.gui.help import USING_METADATA_TAGS_REF, USING_METADATA_HELP_REF
 
+logger = logging.getLogger(__name__)
 C_ANY = "Flag if any fail"
 C_ALL = "Flag if all fail"
 
@@ -456,7 +458,7 @@ class FlagImage(cpm.CPModule):
             else:
                 wants_maximum = cps.YES
             if new_or_append == "Append existing flag":
-                sys.stderr.write("WARNING: CellProfiler 2.0 can't combine flags from multiple FlagImageForQC modules imported from version 1.0\n")
+                logger.warning("CellProfiler 2.0 can't combine flags from multiple FlagImageForQC modules imported from version 1.0")
             
             new_name_split = new_name.find('_')
             if new_name_split == -1:

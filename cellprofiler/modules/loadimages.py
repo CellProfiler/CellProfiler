@@ -45,6 +45,7 @@ See also <b>LoadData</b>, <b>LoadSingleImage</b>, <b>SaveImages</b>.
 
 __version__="$Revision$"
 
+import logging
 import numpy as np
 import cgi
 import hashlib
@@ -58,6 +59,7 @@ import traceback
 import urllib
 import urlparse
 
+logger = logging.getLogger(__name__)
 try:
     import bioformats.formatreader as formatreader
     import bioformats.metadatatools as metadatatools
@@ -1863,7 +1865,7 @@ class LoadImages(cpmodule.CPModule):
                         nframes = timepoint_count * stack_count * channel_count
                         nchannels = image_settings.channels_per_group.value
                         if nframes % nchannels != 0:
-                            sys.stderr.write(
+                            logger.warning(
                                 ("Warning: the movie, %s, has %d frames divided into "
                                  "%d channels per group.\n"
                                  "%d frames will be discarded.\n") %
@@ -1973,7 +1975,7 @@ class LoadImages(cpmodule.CPModule):
                 group_size = image.channels_per_group.value
                 remainder = frame_count % group_size
                 if remainder > 0:
-                    sys.stderr.write(
+                    logger.warning(
                         ("Warning: the movie, %s, has %d frames divided into "
                          "%d channels per group.\n"
                          "%d frames will be discarded.\n") %
@@ -2942,7 +2944,7 @@ def load_using_bioformats(path, c=None, z=0, t=0, series=None, rescale = True, w
                 scale = formatreader.jutil.call(max_sample_value, 
                                                 'intValue', '()I')
             except:
-                sys.stderr.write("WARNING: failed to get MaxSampleValue for image. Intensities may be improperly scaled\n")
+                logger.warning("WARNING: failed to get MaxSampleValue for image. Intensities may be improperly scaled.")
         if series is not None:
             rdr.setSeries(series)
         if rdr.isRGB() and rdr.isInterleaved():

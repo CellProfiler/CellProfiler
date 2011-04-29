@@ -143,8 +143,9 @@ class AddModuleFrame(wx.Frame):
                     self.__module_dict[category][module.module_name] = loader
             except Exception, e:
                 import traceback
-                sys.stderr.write(traceback.format_exc())
-                sys.stderr.write("Unable to instantiate module %s.\n\n"%(mn))
+                import logging
+                logging.root.error(
+                    "Unable to instantiate module %s.\n\n", mn, exc_info=True)
     
     def __set_categories(self):
         self.__module_categories_list_box.AppendItems(self.__module_files)

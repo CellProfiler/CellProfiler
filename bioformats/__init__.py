@@ -14,12 +14,14 @@ Website: http://www.cellprofiler.org
 '''
 __version__ = "$Revision$"
 
+import logging
 import os
 import re
 import cellprofiler.utilities.jutil as jutil
 from cellprofiler.preferences import get_headless, get_ij_plugin_directory
 import sys
-import traceback
+
+logger = logging.getLogger("bioformats")
 
 # See http://www.loci.wisc.edu/software/bio-formats
 READABLE_FORMATS = ('al3d', 'am', 'amiramesh', 'apl', 'arf', 'avi', 'bmp', 
@@ -67,7 +69,7 @@ if sys.platform.startswith("win") and not hasattr(sys, 'frozen'):
         __tools_jar = os.path.join(jdk_path, "lib","tools.jar")
         __class_path += os.pathsep + __tools_jar
     else:
-        sys.stderr.write("Warning: Failed to find tools.jar\n")
+        logger.warning("Failed to find tools.jar")
 
 jvm_arg = [x.groups()[0] for x in [
     re.match('--jvm-heap-size=([0-9]+[gGkKmM])', y) for y in sys.argv]
@@ -102,8 +104,9 @@ if ((get_headless() and not os.environ.has_key("CELLPROFILER_USE_XVFB"))
     or sys.platform=="darwin"):
     __args += [ r"-Djava.awt.headless=true" ]
 
+logger.debug("JVM arguments: " + " ".join(__args))
 jutil.start_vm(__args)
-
+logger.info("Java virtual machine started.")
 jutil.attach()
 try:
     jutil.static_call("loci/common/Location",
@@ -130,17 +133,16 @@ if __init_logger:
     try:
         jutil.static_call("org/apache/log4j/BasicConfigurator",
                           "configure", "()V")
-        logger = jutil.static_call("org/apache/log4j/Logger",
-                                   "getRootLogger",
-                                   "()Lorg/apache/log4j/Logger;")
+        log4j_logger = jutil.static_call("org/apache/log4j/Logger",
+                                         "getRootLogger",
+                                         "()Lorg/apache/log4j/Logger;")
         warn_level = jutil.get_static_field("org/apache/log4j/Level","WARN",
                                             "Lorg/apache/log4j/Level;")
-        jutil.call(logger, "setLevel", "(Lorg/apache/log4j/Level;)V", 
+        jutil.call(log4j_logger, "setLevel", "(Lorg/apache/log4j/Level;)V", 
                    warn_level)
         del logger
         del warn_level
     except:
-        sys.stderr.write("Failed to initialize log4j\n")
-        traceback.print_exc()
+        logger.error("Failed to initialize log4j\n", exc_info=True)
     finally:
         jutil.detach()

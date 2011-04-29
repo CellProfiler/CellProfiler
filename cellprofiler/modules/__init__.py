@@ -304,7 +304,12 @@ def fill_modules():
         try:
             pymodules.append(m)
             if name in all_modules:
-                sys.stderr.write("Warning, multiple definitions of module %s\n\told in %s\n\tnew in %s\n"%(name, sys.modules[all_modules[name].__module__].__file__, m.__file__))
+                import logging
+                logger = logging.getLogger("cellprofiler.modules")
+                logger.warning(
+                    "Multiple definitions of module %s\n\told in %s\n\tnew in %s", 
+                    name, sys.modules[all_modules[name].__module__].__file__, 
+                    m.__file__)
             all_modules[name] = m.__dict__[name]
             check_module(m.__dict__[name], name)
             # attempt to instantiate

@@ -12,6 +12,7 @@ Website: http://www.cellprofiler.org
 """
 __version__ = "$Revision$"
 
+import logging
 import sys
 import os
 import numpy as np
@@ -161,7 +162,22 @@ parser.add_option("--data-file",
                   default = None,
                   help = "Specify a data file for LoadData modules that "
                   'use the "From command-line" option')
+parser.add_option("-L", "--log-level",
+                  dest = "log_level",
+                  default = logging.WARNING,
+                  help = ("Set the verbosity for logging messages: " +
+                          ("%d or %s for debugging, " % (logging.DEBUG, "DEBUG")) +
+                          ("%d or %s for informational, " % (logging.INFO, "INFO")) +
+                          ("%d or %s for warning, " % (logging.WARNING, "WARNING")) +
+                          ("%d or %s for error, " % (logging.ERROR, "ERROR")) +
+                          ("%d or %s for critical, " % (logging.CRITICAL, "CRITICAL")) +
+                          ("%d or %s for fatal." % (logging.FATAL, "FATAL"))))
+                              
 options, args = parser.parse_args()
+
+logging.root.setLevel(options.log_level)
+logging.root.addHandler(logging.StreamHandler())
+logging.root.info("Welcome to CellProfiler")
 
 if options.run_ilastik:
     #

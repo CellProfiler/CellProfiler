@@ -13,6 +13,7 @@ Website: http://www.cellprofiler.org
 """
 __version__ = "$Revision$"
 
+import logging
 import numpy as np
 import os
 import sys
@@ -1409,7 +1410,6 @@ class CPFigureFrame(wx.Frame):
         
         return plot
         
-
 def format_plate_data_as_array(plate_dict, plate_type):
     ''' Returns an array shaped like the given plate type with the values from
     plate_dict stored in it.  Wells without data will be set to np.NaN
@@ -1430,7 +1430,7 @@ def format_plate_data_as_array(plate_dict, plate_type):
         c = int(well[1:]) - 1
         if r >= data.shape[0] or c >= data.shape[1]:
             if display_error:
-                sys.stderr.write(
+                logging.getLogger("cellprofiler.gui.cpfigure").warning(
                     'A well value (%s) does not fit in the given plate type.\n'%(well))
                 display_error = False
             continue

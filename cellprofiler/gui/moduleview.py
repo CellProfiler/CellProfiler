@@ -1712,7 +1712,9 @@ class ModuleSizer(wx.PySizer):
         controls and help controls.
         """
         try:
-            if self.__rows * self.__cols == 0:
+            if (self.__rows * self.__cols == 0 or 
+                self.Children is None or
+                len(self.Children) == 0):
                 return wx.Size(0,0)
             height = 0
             for j in range(0,self.__rows):

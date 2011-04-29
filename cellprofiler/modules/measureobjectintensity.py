@@ -28,10 +28,10 @@ corresponding grayscale images. Measurements are recorded for each object.
 <li><i>MedianIntensity:</i> The median intensity value within the object</li>
 <li><i>UpperQuartileIntensity:</i> The intensity value of the pixel for which 75%
  of the pixels in the object have lower values.</li>
- <li><i>Location_X_CenterMassIntensity, Location_Y_CenterMassIntensity:</i> The 
+ <li><i>Location_CenterMassIntensity_X, Location_CenterMassIntensity_Y:</i> The 
 pixel (X,Y) coordinates of the intensity weighted centroid (= center of mass = first moment) 
 of all pixels within the object.</li>
-<li><i>Location_X_MaxIntensity, Location_Y_MaxIntensity:</i> The pixel (X,Y) coordinates of 
+<li><i>Location_MaxIntensity_X, Location_MaxIntensity_Y:</i> The pixel (X,Y) coordinates of 
 the pixel with the maximum intensity within the object.</li></ul>
 
 Note that for publication purposes, the units of

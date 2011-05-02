@@ -19,7 +19,9 @@ from cellprofiler.preferences import standardize_default_folder_names, \
      DEFAULT_INPUT_FOLDER_NAME, DEFAULT_OUTPUT_FOLDER_NAME, NO_FOLDER_NAME, \
      ABSOLUTE_FOLDER_NAME, IO_FOLDER_CHOICE_HELP_TEXT, \
      DEFAULT_INPUT_SUBFOLDER_NAME, DEFAULT_OUTPUT_SUBFOLDER_NAME
-     
+  
+import logging
+logger = logging.getLogger(__name__)
 import numpy as np
 import sys, os
 
@@ -27,24 +29,23 @@ import sys, os
 try:
     import vigra
 except ImportError, vigraImport:
-    print """vigra import: failed to import the vigra library. Please follow the instructions on 
-"http://hci.iwr.uni-heidelberg.de/vigra/" to install vigra"""
-    import traceback
-    traceback.print_exc()
+    logger.warning("""vigra import: failed to import the vigra library. Please follow the instructions on 
+"http://hci.iwr.uni-heidelberg.de/vigra/" to install vigra""", exc_info=True)
     raise vigraImport
 
 # Import h5py
 try:
     import h5py
 except ImportError, h5pyImport:
-    print """h5py import: failed to import the h5py library."""
-    import traceback
-    traceback.print_exc()
+    logger.warning("""h5py import: failed to import the h5py library.""", 
+                   exc_info=True)
     raise h5pyImport
     
 # Import ilastik 
 
+old_stdout = sys.stdout
 try:
+    sys.stdout = sys.stderr = open(os.devnull, "w")
     from ilastik.core.dataMgr import DataMgr, DataItemImage
     from ilastik.modules.classification.core.featureMgr import FeatureMgr
     from ilastik.modules.classification.core.classificationMgr import ClassificationMgr
@@ -52,12 +53,12 @@ try:
     from ilastik.modules.classification.core.classifiers.classifierRandomForest import ClassifierRandomForest
     from ilastik.modules.classification.core.classificationMgr import ClassifierPredictThread
     from ilastik.core.volume import DataAccessor
+    sys.stdout = old_stdout
     
 except ImportError, ilastikImport:
-    print """ilastik import: failed to import the ilastik. Please follow the instructions on 
-"http://www.ilastik.org" to install ilastik"""
-    import traceback
-    traceback.print_exc()
+    sys.stdout = old_stdout
+    logger.warning("""ilastik import: failed to import the ilastik. Please follow the instructions on 
+"http://www.ilastik.org" to install ilastik""", exc_info=True)
     raise ilastikImport
 
 CLASSIFIERS_KEY = "IlastikClassifiers"

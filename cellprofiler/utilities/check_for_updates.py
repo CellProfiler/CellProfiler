@@ -16,8 +16,11 @@ Website: http://www.cellprofiler.org
 
 __version__="$Revision$"
 
+import logging
 import threading
 import urllib2
+
+logger = logging.getLogger(__name__)
 
 class VersionChecker(threading.Thread):
     def __init__(self, url, current_version, callback, user_agent):
@@ -39,7 +42,7 @@ class VersionChecker(threading.Thread):
             if new_version > self.current_version:
                 self.callback(new_version, info)
         except Exception, e:
-            print "Exception fetching new version information from %s: %s"%(self.url, e)
+            logger.warning("Exception fetching new version information from %s: %s"%(self.url, e))
             pass # no worries
 
 def check_for_updates(url, current_version, callback, user_agent='CellProfiler_cfu'):

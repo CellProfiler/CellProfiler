@@ -34,6 +34,8 @@ See also any of the <b>MeasureObject</b> modules, <b>MeasureTexture</b>,
 
 __version__ = "$Revision$"
 
+import logging
+logger = logging.getLogger(__name__)
 import numpy as np
 import os
 import scipy.ndimage as scind
@@ -347,7 +349,7 @@ class FilterObjects(cpm.CPModule):
             try:
                 self.get_rules()
             except Exception, instance:
-                traceback.print_exc()
+                logger.warning("Failed to load rules: %s", str(instance), exc_info=True)
                 raise cps.ValidationError(str(instance),
                                           self.rules_file_name)
 

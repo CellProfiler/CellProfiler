@@ -73,7 +73,7 @@ try:
     finally:
         formatreader.jutil.detach()
 except:
-    traceback.print_exc()
+    logger.warning("Failed to load bioformats", exc_info=True)
     has_bioformats = False
 import Image as PILImage
 cached_file_lists = {}
@@ -2769,7 +2769,8 @@ class LoadImagesImageProviderBase(cpimage.AbstractImageProvider):
                 self.__cacheing_tried = False
                 self.__cached_file = None
             except:
-                traceback.print_exc()
+                logger.warning("Could not delete file %s", self.__cached_file,
+                               exc_info=True)
         
 class LoadImagesImageProvider(LoadImagesImageProviderBase):
     """Provide an image by filename, loading the file as it is requested
@@ -2797,7 +2798,9 @@ class LoadImagesImageProvider(LoadImagesImageProviderBase):
                     rescale = self.rescale,
                     wants_max_intensity = True)
             except:
-                traceback.print_exc()
+                logger.warning(
+                    "Failed to load %s with bioformats. Use PIL instead",
+                    self.get_full_name(), exc_info=True)
                 img, self.scale = load_using_PIL(self.get_full_name(),
                                                  rescale = self.rescale,
                                                  wants_max_intensity = True)

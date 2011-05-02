@@ -14,10 +14,13 @@ Website: http://www.cellprofiler.org
 """
 __version__="$Revision$"
 
+import logging
 import os
 import sys
 import subprocess
 import traceback
+
+logger = logging.getLogger(__name__)
 is_win = sys.platform.startswith("win")
 is_win64 = (is_win and (os.environ["PROCESSOR_ARCHITECTURE"] == "AMD64"))
 is_msvc = (is_win and sys.version_info[0] >= 2 and sys.version_info[1] >= 6)
@@ -49,7 +52,7 @@ if not hasattr(sys, 'frozen'):
             #
             java_home = find_javahome()
             jdk_home = find_jdk()
-            print "Using jdk_home = %s"%jdk_home
+            logger.debug("Using jdk_home = %s"%jdk_home)
             include_dirs = [get_include()]
             extra_link_args = None
             libraries = None
@@ -145,8 +148,8 @@ def find_javahome():
                                          for i in range(_winreg.QueryInfoKey(kjava_current)[1])])
             return kjava_current_values['JavaHome']
         except:
-            traceback.print_exc()
-            sys.stderr.write("Failed to find registry entry: %s\n" %looking_for)
+            logger.error("Failed to find registry entry: %s\n" %looking_for,
+                         exc_info=True)
             return None
 
 def find_jdk():

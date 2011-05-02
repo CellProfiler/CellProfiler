@@ -41,9 +41,11 @@ See also <b>IdentifyObjectsInGrid</b>.
 
 __version__="$Revision$"
 
+import logging
 import numpy as np
 import traceback
 
+logger = logging.getLogger(__name__)
 import cellprofiler.cpgridinfo as cpg
 import cellprofiler.cpmodule as cpm
 import cellprofiler.cpimage as cpi
@@ -613,7 +615,7 @@ class DefineGrid(cpm.CPModule):
                                                    int(second_column.Value),
                                                    image_shape)
             except Exception, e:
-                traceback.print_exc()
+                logger.error(e.message, exc_info=True)
                 status_bar.SetStatusText(e.message)
                 return False
             return True

@@ -106,7 +106,7 @@ if ((get_headless() and not os.environ.has_key("CELLPROFILER_USE_XVFB"))
 
 logger.debug("JVM arguments: " + " ".join(__args))
 jutil.start_vm(__args)
-logger.info("Java virtual machine started.")
+logger.debug("Java virtual machine started.")
 jutil.attach()
 try:
     jutil.static_call("loci/common/Location",
@@ -116,7 +116,7 @@ try:
                       "enableListings",
                       "(Z)Z", False)
 except:
-    print "Bioformats version does not support directory cacheing"
+    logger.warning("Bioformats version does not support directory cacheing")
 finally:
     jutil.detach()
     

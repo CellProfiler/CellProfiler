@@ -164,20 +164,25 @@ parser.add_option("--data-file",
                   'use the "From command-line" option')
 parser.add_option("-L", "--log-level",
                   dest = "log_level",
-                  default = logging.WARNING,
+                  default = logging.INFO,
                   help = ("Set the verbosity for logging messages: " +
                           ("%d or %s for debugging, " % (logging.DEBUG, "DEBUG")) +
                           ("%d or %s for informational, " % (logging.INFO, "INFO")) +
                           ("%d or %s for warning, " % (logging.WARNING, "WARNING")) +
                           ("%d or %s for error, " % (logging.ERROR, "ERROR")) +
                           ("%d or %s for critical, " % (logging.CRITICAL, "CRITICAL")) +
-                          ("%d or %s for fatal." % (logging.FATAL, "FATAL"))))
+                          ("%d or %s for fatal." % (logging.FATAL, "FATAL")) +
+                          " Otherwise, the argument is interpreted as the file name of a log configuration file (see http://docs.python.org/library/logging.config.html for file format)"))
                               
 options, args = parser.parse_args()
 
-logging.root.setLevel(options.log_level)
-logging.root.addHandler(logging.StreamHandler())
-logging.root.info("Welcome to CellProfiler")
+try:
+    logging.root.setLevel(options.log_level)
+    logging.root.addHandler(logging.StreamHandler())
+except ValueError:
+    import logging.config
+    logging.config.fileConfig(options.log_level)
+    
 
 if options.run_ilastik:
     #
@@ -322,7 +327,7 @@ try:
         cpprefs.set_data_file(os.path.abspath(options.data_file))
         
     from cellprofiler.utilities.get_revision import version
-    print "Subversion revision: %d"%version
+    logging.root.info("Subversion revision: %d"%version)
     if options.output_html:
         sys.exit(0) 
     

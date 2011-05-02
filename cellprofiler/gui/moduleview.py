@@ -1728,7 +1728,7 @@ class ModuleSizer(wx.PySizer):
         except:
             # This happens, hopefully transiently, on the Mac
             if not self.__printed_exception:
-                traceback.print_exc()
+                logger.error("WX internal error detected", exc_info=True)
                 self.__printed_exception = True
                 return wx.Size(0,0)
 
@@ -1851,7 +1851,7 @@ class ModuleSizer(wx.PySizer):
         except:
             # This happens, hopefully transiently, on the Mac
             if not self.__printed_exception:
-                traceback.print_exc()
+                logger.warning("Detected WX error", exc_info=True)
                 self.__printed_exception = True
 
     def coords(self,idx):

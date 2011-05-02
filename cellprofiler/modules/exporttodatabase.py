@@ -2037,7 +2037,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                 execute(self.cursor, stmt, image_row_values)
             self.connection.commit()
         except:
-            traceback.print_exc()
+            logger.error("Failed to write measurements to database", exc_info=True)
             self.connection.rollback()
             raise
 

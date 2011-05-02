@@ -208,8 +208,7 @@ def get_default_image_directory():
         # CellProfiler can't handle Unicode paths, yet
         logger.error("CellProfiler cannot use Unicode paths, yet.  Please rename directory %s to only ASCII until this is fixed."%(default_image_directory.encode('ascii', 'replace')))
     except:
-        import traceback
-        traceback.print_exc()
+        logger.error("Unknown failure when retrieving the default image directory", exc_info=True)
     logger.warning("Warning: current path of %s is not a valid directory. Switching to home directory."%(default_image_directory.encode('ascii', 'replace')))
     # If the user's home directory is not ascii, we're not going to go hunting for one that is.
     # Fail ungracefully.

@@ -17,9 +17,11 @@ method to use.
 # Website: http://www.cellprofiler.org
 __version__="$Revision$"
 
+import logging
 import numpy as np
 import traceback
 from scipy.ndimage import affine_transform
+logger = logging.getLogger(__name__)
 
 import cellprofiler.cpmodule as cpm
 import cellprofiler.cpimage as cpi
@@ -170,8 +172,10 @@ class Resize(cpm.CPModule):
                                additional_image_setting_count):
                     self.add_image()
         except ValueError:
-            print 'Additional image setting count was "%s" which is not an integer.' % setting_values[S_ADDITIONAL_IMAGE_COUNT]
-            traceback.print_exc()
+            logger.warning(
+                'Additional image setting count was "%s" '
+                'which is not an integer.',
+                setting_values[S_ADDITIONAL_IMAGE_COUNT], exc_info=True)
             pass
 
     def run(self, workspace):

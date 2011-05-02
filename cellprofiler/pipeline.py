@@ -40,7 +40,8 @@ import urlparse
 import urllib2
 import re
 
-logger = logging.getLogger(__name__);
+logger = logging.getLogger(__name__)
+pipeline_stats_logger = logging.getLogger("PipelineStatistics")
 import cellprofiler.cpmodule
 import cellprofiler.preferences
 import cellprofiler.cpimage
@@ -313,7 +314,8 @@ class ModuleRunner(threading.Thread):
         except Exception, instance:
             self.exception = instance
             self.tb = sys.exc_info()[2]
-            traceback.print_exc()
+            logger.warning("Intercepted exception while running module",
+                           exc_info=True)
             if os.getenv('CELLPROFILER_RERAISE') is not None:
                 raise
         if not self.paused:
@@ -394,7 +396,7 @@ class Pipeline(object):
             settings = handles[SETTINGS][0,0]
             module_names = settings[MODULE_NAMES]
         except Exception,instance:
-            traceback.print_exc()
+            logger.error("Failed to load pipeline", exc_info=True)
             e = LoadExceptionEvent(instance, None)
             self.notify_listeners(e)
             return
@@ -409,7 +411,7 @@ class Pipeline(object):
                 module.create_from_handles(handles, module_num)
                 module.module_num = real_module_num
             except Exception,instance:
-                traceback.print_exc()
+                logger.error("Failed to load pipeline", exc_info=True)
                 number_of_variables = settings[NUMBERS_OF_VARIABLES][0,idx]
                 module_settings = [settings[VARIABLE_VALUES][idx, i]
                                    for i in range(number_of_variables)]
@@ -622,7 +624,7 @@ class Pipeline(object):
                         except:
                             logger.error('Your pipeline SVN revision is %d but you are running CellProfiler SVN revsion %d. \nLoading this pipeline may fail or have unpredictable results.\n' %(revision, CURRENT_SVN_REVISION))
                 else:
-                    print "Pipeline saved with CellProfiler SVN revision %s"%value
+                    pipeline_stats_logger.info("Pipeline saved with CellProfiler SVN revision %s" , value)
             elif kwd == H_FROM_MATLAB:
                 from_matlab = bool(value)
             else:
@@ -699,7 +701,7 @@ class Pipeline(object):
                                                 variable_revision_number,
                                                 module_name, from_matlab)
             except Exception, instance:
-                traceback.print_exc()
+                logging.error("Failed to load pipeline", exc_info=True)
                 event = LoadExceptionEvent(instance, module,  module_name,
                                            settings)
                 self.notify_listeners(event)
@@ -1139,7 +1141,7 @@ class Pipeline(object):
                 outlines = {}
                 should_write_measurements = True
                 grids = None
-                print "Times reported are CPU times for each module, not wall-clock time"
+                pipeline_stats_logger.info("Times reported are CPU times for each module, not wall-clock time")
                 for module in self.modules():
                     gc.collect()
                     if module.should_stop_writing_measurements():
@@ -1173,7 +1175,9 @@ class Pipeline(object):
                         try:
                             module.run(workspace)
                         except Exception, instance:
-                            traceback.print_exc()
+                            logger.error(
+                                "Error detected during run of module %s",
+                                module.module_name, exc_info=True)
                             exception = instance
                             tb = sys.exc_traceback
                         yield measurements
@@ -1197,17 +1201,19 @@ class Pipeline(object):
                             tb = worker.tb
                     t1 = sum(os.times()[:-1])
                     delta_sec = max(0,t1-t0)
-                    print ("%s: Image # %d, module %s # %d: %.2f sec%s" %
-                           (start_time.ctime(), image_number, 
-                            module.module_name, module.module_num, 
-                            delta_sec,
-                            "" if module.is_interactive() else " (bg)"))
+                    pipeline_stats_logger.info(
+                        "%s: Image # %d, module %s # %d: %.2f sec%s" %
+                        (start_time.ctime(), image_number, 
+                         module.module_name, module.module_num, 
+                         delta_sec,
+                         "" if module.is_interactive() else " (bg)"))
                     if ((workspace.frame is not None) and
                         (exception is None)):
                         try:
                             module.display(workspace)
                         except Exception, instance:
-                            traceback.print_exc()
+                            logger.error("Failed to display results for module %s",
+                                         module.module_name, exc_info=True)
                             exception = instance
                     workspace.refresh()
                     failure = 0
@@ -1279,7 +1285,8 @@ class Pipeline(object):
                 if not module.prepare_run(self, image_set_list, frame):
                     return None
             except Exception,instance:
-                traceback.print_exc()
+                logging.error("Failed to prepare run for module %s",
+                              module.module_name, exc_info=True)
                 event = RunExceptionEvent(instance, module, sys.exc_info()[2])
                 self.notify_listeners(event)
                 if event.cancel_run:
@@ -1308,7 +1315,9 @@ class Pipeline(object):
             try:
                 module.post_run(workspace)
             except Exception, instance:
-                traceback.print_exc()
+                logging.error(
+                    "Failed to complete post_run processing for module %s.",
+                    module.module_name, exc_info=True)
                 event = RunExceptionEvent(instance, module, sys.exc_info()[2])
                 self.notify_listeners(event)
                 if event.cancel_run:
@@ -1335,7 +1344,8 @@ class Pipeline(object):
                 module.prepare_to_create_batch(self, image_set_list, 
                                                fn_alter_path)
             except Exception, instance:
-                traceback.print_exc()
+                logger.error("Failed to collect batch information for module %s",
+                             module.module_name, exc_info=True)
                 event = RunExceptionEvent(instance, module, sys.exc_info()[2])
                 self.notify_listeners(event)
                 if event.cancel_run:
@@ -1424,7 +1434,8 @@ class Pipeline(object):
                 module.prepare_group(self, image_set_list, grouping, 
                                      image_numbers)
             except Exception, instance:
-                traceback.print_exc()
+                logger.error("Failed to prepare group in module %s",
+                             module.module_name, exc_info=True)
                 event = RunExceptionEvent(instance, module, sys.exc_info()[2])
                 self.notify_listeners(event)
                 if event.cancel_run:
@@ -1440,7 +1451,9 @@ class Pipeline(object):
             try:
                 module.post_group(workspace, grouping)
             except Exception, instance:
-                traceback.print_exc()
+                logging.error(
+                    "Failed during post-group processing for module %s",
+                    module.module_name, exc_info=True)
                 event = RunExceptionEvent(instance, module, sys.exc_info()[2])
                 self.notify_listeners(event)
                 if event.cancel_run:

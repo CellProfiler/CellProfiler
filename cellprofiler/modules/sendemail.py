@@ -12,12 +12,14 @@ processing will continue regardless.'''
 
 __version__ = "$Revision$"
 
+import logging
 import email.message
 import os
 import traceback
 import smtplib
 import sys
 
+logger = logging.getLogger(__name__)
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.settings as cps
@@ -307,7 +309,7 @@ class SendEmail(cpm.CPModule):
             server.sendmail(who_from, who_to, message.as_string())
             return message.as_string()
         except:
-            traceback.print_exc()
+            logger.error("Failed to send mail", exc_info=True)
             return "Failed to send mail"
     
     def prepare_settings(self, setting_values):

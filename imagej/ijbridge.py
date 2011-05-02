@@ -327,6 +327,4 @@ if __name__ == '__main__':
       import cellprofiler.utilities.jutil as jutil
       jutil.kill_vm()
    except:
-      import traceback
-      traceback.print_exc()
-      print "Caught exception while killing VM"
+      logger.warning("Caught exception while killing VM", exc_info=True)

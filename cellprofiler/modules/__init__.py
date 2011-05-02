@@ -13,6 +13,8 @@ Website: http://www.cellprofiler.org
 """
 __version__="$Revision$"
 
+import logging
+logger = logging.getLogger(__name__)
 import re
 import sys
 import os.path
@@ -24,7 +26,12 @@ from cellprofiler.preferences import get_plugin_directory
 try:
     import vigra
     import h5py
-    import ilastik.core
+    old_stdout = sys.stdout
+    sys.stdout = open(os.devnull, "w")
+    try:
+        import ilastik.core
+    finally:
+        sys.stdout = old_stdout
     has_ilastik = True
 except:
     has_ilastik = False
@@ -296,16 +303,13 @@ def fill_modules():
             m = __import__(mod, globals(), locals(), ['__all__'], 0)
             name = find_cpmodule_name(m)
         except Exception, e:
-            import traceback
-            print traceback.print_exc(e)
+            logger.warning("Could not load %s", mod, exc_info=True)
             badmodules.append((mod, e))
             return
 
         try:
             pymodules.append(m)
             if name in all_modules:
-                import logging
-                logger = logging.getLogger("cellprofiler.modules")
                 logger.warning(
                     "Multiple definitions of module %s\n\told in %s\n\tnew in %s", 
                     name, sys.modules[all_modules[name].__module__].__file__, 
@@ -325,8 +329,8 @@ def fill_modules():
                 pure_datatools[name] = all_modules[name]
                 del all_modules[name]
         except Exception, e:
-            import traceback
-            print traceback.print_exc(e)
+            global logger
+            logger.warning("Failed to load %s", name, exc_info=True)
             badmodules.append((mod, e))
             if name in all_modules:
                 del all_modules[name]
@@ -348,7 +352,8 @@ def fill_modules():
 
     datatools.sort()
     if len(badmodules) > 0:
-        print "could not load these modules", badmodules
+        logger.warning("could not load these modules: %s", 
+                       ",".join([x[0] for x in badmodules]))
 
 fill_modules()        
     

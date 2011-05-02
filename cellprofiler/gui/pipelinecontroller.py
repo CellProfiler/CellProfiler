@@ -970,7 +970,8 @@ class PipelineController:
                 self.__pipeline_list_view.select_one_module(module.module_num+1)
             failure=0
         except Exception,instance:
-            traceback.print_exc()
+            logger.error("Failed to run module %s", module.module_name,
+                         exc_info=True)
             event = cellprofiler.pipeline.RunExceptionEvent(instance,module)
             self.__pipeline.notify_listeners(event)
             if event.cancel_run:

@@ -122,7 +122,7 @@ class DirectoryView(object):
             else:
                 self.__display_image(filename)
         except Exception, x:
-            traceback.print_exc()
+            logger.error("Failed to display image", exc_info=True)
             wx.MessageBox("Unable to display %s.\n%s"%
                           (selection, str(x)),"Failed to display image")
     

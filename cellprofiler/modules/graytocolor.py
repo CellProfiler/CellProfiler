@@ -231,7 +231,6 @@ class GrayToColor(cpm.CPModule):
         imgset = workspace.image_set
         rgb_pixel_data = None
         input_image_settings = []
-        channel_names = None
         if self.scheme_choice != SCHEME_STACK:
             for color_scheme_setting in self.color_scheme_settings:
                 if color_scheme_setting.image_name.is_blank:
@@ -255,11 +254,9 @@ class GrayToColor(cpm.CPModule):
                     parent_image_name = color_scheme_setting.image_name.value
                     rgb_pixel_data = np.dstack([pixel_data]*3) * multiplier
         else:
-            channel_names = [sc.image_name.value for sc in self.stack_channels]
-            source_channels = [
-                imgset.get_image(name, must_be_grayscale=True).pixel_data 
-                for name in channel_names]
-            parent_image = imgset.get_image(self.stack_channels[0].image_name)
+            source_channels = [imgset.get_image(sc.image_name, must_be_grayscale=True).pixel_data 
+                               for sc in self.stack_channels]
+            parent_image = source_channels[0]
             for idx, pd in enumerate(source_channels):
                 if pd.shape != source_channels[0].shape:
                     raise ValueError("The %s image and %s image have different sizes (%s vs %s)"%
@@ -268,14 +265,7 @@ class GrayToColor(cpm.CPModule):
                                       source_channels[0].shape,
                                       pd.pixel_data.shape))
             rgb_pixel_data = np.dstack(source_channels)
-
-        ##############
-        # Save image #
-        ##############
-        rgb_image = cpi.Image(rgb_pixel_data, parent_image = parent_image)
-        if channel_names is not None:
-            rgb_image.channel_names = channel_names
-        imgset.add(self.rgb_image_name.value, rgb_image)
+            print "stacked", rgb_pixel_data.shape, len(source_channels)
 
         ###############
         # Draw images #
@@ -291,13 +281,6 @@ class GrayToColor(cpm.CPModule):
                 subplot_indices = ((0,0),(0,1),(1,0))
                 color_subplot = (1,1)
             else:
-                if rgb_pixel_data.shape[2] < 3:
-                    missing = 3 - rgb_pixel_data.shape[2]
-                    rgb_pixel_data = np.array(
-                        [rgb_pixel_data[:,:,i] for i in range(rgb_pixel_data.shape[2])] +
-                        [np.zeros(rgb_pixel_data.shape[:2])] * missing).transpose(1,2,0)
-                elif rgb_pixel_data.shape[2] > 3:
-                    rgb_pixel_data = rgb_pixel_data[:,:,:3]
                 subplots = (1, 1)
                 subplot_indices = []
                 color_subplot = (0, 0)
@@ -319,6 +302,11 @@ class GrayToColor(cpm.CPModule):
                                     title=self.rgb_image_name.value,
                                     sharex = my_frame.subplot(0,0),
                                     sharey = my_frame.subplot(0,0))
+        ##############
+        # Save image #
+        ##############
+        rgb_image = cpi.Image(rgb_pixel_data, parent_image = parent_image)
+        imgset.add(self.rgb_image_name.value, rgb_image)
     
     def upgrade_settings(self,setting_values,variable_revision_number,
                          module_name,from_matlab):

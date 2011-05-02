@@ -20,6 +20,7 @@ import numpy as np
 
 import cellprofiler.cpmodule as cpm
 import cellprofiler.objects as cpo
+import cellprofiler.cpimage as cpi
 import cellprofiler.preferences as cpprefs
 import identify as I
 import cellprofiler.settings as cps

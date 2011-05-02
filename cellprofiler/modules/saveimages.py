@@ -29,6 +29,7 @@ See also <b>LoadImages</b>, <b>ConserveMemory</b>.
 
 __version__="$Revision$"
 
+import logging
 import matplotlib
 import numpy as np
 import re
@@ -37,15 +38,17 @@ import sys
 import Image as PILImage
 import scipy.io.matlab.mio
 import traceback
+
+logger = logging.getLogger(__name__)
 try:
     from bioformats.formatreader import *
     from bioformats.formatwriter import *
     from bioformats.metadatatools import *
     has_bioformats = True
 except:
-    sys.stderr.write(traceback.format_exc())
-    sys.stderr.write(
-        "Failed to load bioformats. SaveImages will not be able to save movies.\n\n")
+    logger.error(
+        "Failed to load bioformats. SaveImages will not be able to save movies.",
+        exc_info = True)
     has_bioformats = False
 
 try:
@@ -53,8 +56,8 @@ try:
     has_tiff = True
 except:
     if sys.platform == 'darwin':
-        sys.stderr.write(traceback.format_exc())
-        sys.stderr.write("Failed to load pylibtiff.  SaveImages on Mac may not be able to write 16-bit TIFF format\n\n")
+        logger.error("Failed to load pylibtiff.  SaveImages on Mac may not be "
+                     "able to write 16-bit TIFF format.")
     has_tiff = False
 
 
@@ -729,7 +732,9 @@ class SaveImages(cpm.CPModule):
                 # Leave the values alone, but cast to unsigned int 16
                 pixels = pixels.astype(np.uint16)
             elif pixels.dtype in (np.uint32, np.uint64, np.int32, np.int64):
-                sys.stderr.write("Warning: converting %s image to 16-bit could result in incorrect values.\n" % repr(pixels.dtype))
+                logger.warning(
+                    "Warning: converting %s image to 16-bit could result in "
+                    "incorrect values.\n" % repr(pixels.dtype))
                 pixels = pixels.astype(np.uint16)
             elif issubclass(pixels.dtype.type, np.floating):
                 # Scale pixel vals to 16 bit

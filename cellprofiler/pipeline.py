@@ -16,6 +16,7 @@ from __future__ import with_statement
 __version__ = "$Revision$"
 
 import hashlib
+import logging
 import gc
 import numpy as np
 import scipy.io.matlab
@@ -39,6 +40,7 @@ import urlparse
 import urllib2
 import re
 
+logger = logging.getLogger(__name__);
 import cellprofiler.cpmodule
 import cellprofiler.preferences
 import cellprofiler.cpimage
@@ -525,16 +527,15 @@ class Pipeline(object):
                 handles=scipy.io.matlab.mio.loadmat(fd_or_filename, 
                                                     struct_as_record=True)
             except MatReadError:
-                sys.stderr.write("Caught exception in Matlab reader\n")
-                traceback.print_exc()
+                logging.error("Caught exception in Matlab reader\n", exc_info=True)
                 e = MatReadError(
                     "%s is an unsupported .MAT file, most likely a measurements file.\nYou can load this as a pipeline if you load it as a pipeline using CellProfiler 1.0 and then save it to a different file.\n" %
                     fd_or_filename)
                 self.notify_listeners(LoadExceptionEvent(e, None))
                 return
             except Exception, e:
-                traceback.print_exc()
-                sys.stderr.write("Tried to load corrupted .MAT file: %s\n" % fd_or_filename)
+                logging.error("Tried to load corrupted .MAT file: %s\n" % fd_or_filename,
+                              exc_info = True)
                 self.notify_listeners(LoadExceptionEvent(e, None))
                 return
         else:
@@ -597,7 +598,12 @@ class Pipeline(object):
                 CURRENT_SVN_REVISION = get_revision()
                 if revision > CURRENT_SVN_REVISION:
                     if cellprofiler.preferences.get_headless():
-                        sys.stderr.write('Your pipeline SVN revision is %d but you are running CellProfiler SVN revsion %d. \nLoading this pipeline may fail or have unpredictable results.\n' %(revision, CURRENT_SVN_REVISION))
+                        logging.warning(
+                            ('Your pipeline SVN revision is %d but you are '
+                             'running CellProfiler SVN revsion %d. '
+                            '\nLoading this pipeline may fail or have '
+                            'unpredictable results.\n') 
+                            % (revision, CURRENT_SVN_REVISION))
                     else:
                         try:
                             import wx
@@ -614,7 +620,7 @@ class Pipeline(object):
                             else:
                                 raise Exception # fall through to sys.stderr.write
                         except:
-                            sys.stderr.write('Your pipeline SVN revision is %d but you are running CellProfiler SVN revsion %d. \nLoading this pipeline may fail or have unpredictable results.\n' %(revision, CURRENT_SVN_REVISION))
+                            logger.error('Your pipeline SVN revision is %d but you are running CellProfiler SVN revsion %d. \nLoading this pipeline may fail or have unpredictable results.\n' %(revision, CURRENT_SVN_REVISION))
                 else:
                     print "Pipeline saved with CellProfiler SVN revision %s"%value
             elif kwd == H_FROM_MATLAB:

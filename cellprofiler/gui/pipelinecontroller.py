@@ -12,6 +12,7 @@ Please see the AUTHORS file for credits.
 Website: http://www.cellprofiler.org
 """
 __version__="$Revision$"
+import logging
 import math
 import numpy
 import wx
@@ -37,6 +38,7 @@ from runmultiplepipelinesdialog import RunMultplePipelinesDialog
 import cellprofiler.gui.parametersampleframe as psf
 import cellprofiler.distributed as cpdistributed
 
+logger = logging.getLogger(__name__)
 RECENT_FILE_MENU_ID = [wx.NewId() for i in range(cpprefs.RECENT_FILE_COUNT)]
 WRITING_MAT_FILE = "Writing .MAT measurements file..."
 WROTE_MAT_FILE = ".MAT measurements file has been saved"
@@ -516,9 +518,8 @@ class PipelineController:
                         d[category] = []
                     d[category].append(module_name)
             except:
-                import traceback
-                sys.stderr.write(traceback.format_exc())
-                sys.stderr.write("Unable to instantiate module %s.\n\n"%(module_name))
+                logger.error("Unable to instantiate module %s.\n\n" % 
+                             module_name, exc_info=True)
          
         for category in sorted(d.keys()):
             sub_menu = wx.Menu()

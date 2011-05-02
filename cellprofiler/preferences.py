@@ -17,6 +17,7 @@ Website: http://www.cellprofiler.org
 """
 __version__="$Revision$"
 
+import logging
 import random
 import cellprofiler
 import os
@@ -24,6 +25,8 @@ import os.path
 import re
 import sys
 import traceback
+
+logger = logging.getLogger(__name__)
 
 from cellprofiler.utilities.get_proper_case_filename import get_proper_case_filename
 
@@ -203,11 +206,11 @@ def get_default_image_directory():
             return __default_image_directory
     except UnicodeEncodeError:
         # CellProfiler can't handle Unicode paths, yet
-        sys.stderr.write("CellProfiler cannot use Unicode paths, yet.  Please rename directory %s to only ASCII until this is fixed.\n"%(default_image_directory.encode('ascii', 'replace')))
+        logger.error("CellProfiler cannot use Unicode paths, yet.  Please rename directory %s to only ASCII until this is fixed."%(default_image_directory.encode('ascii', 'replace')))
     except:
         import traceback
         traceback.print_exc()
-    sys.stderr.write("Warning: current path of %s is not a valid directory. Switching to home directory.\n"%(default_image_directory.encode('ascii', 'replace')))
+    logger.warning("Warning: current path of %s is not a valid directory. Switching to home directory."%(default_image_directory.encode('ascii', 'replace')))
     # If the user's home directory is not ascii, we're not going to go hunting for one that is.
     # Fail ungracefully.
     default_image_directory = os.path.abspath(os.path.expanduser('~'))
@@ -258,8 +261,8 @@ def get_default_output_directory():
         __default_output_directory = str(get_proper_case_filename(__default_output_directory))
         return __default_output_directory
     except UnicodeEncodeError:
-        sys.stderr.write("Failed to convert filename to ASCII, please rename directory until this is fixed.\n")
-        traceback.print_exc()
+        logger.error("Failed to convert filename to ASCII, please rename "
+                     "directory until this is fixed.", exc_info=True)
     __default_output_directory = os.path.abspath(os.path.expanduser('~'))
     set_default_output_directory(default_output_directory)
     return str(get_proper_case_filename(default_output_directory))

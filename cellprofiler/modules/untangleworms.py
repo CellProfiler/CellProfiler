@@ -785,7 +785,7 @@ class UntangleWorms(cpm.CPModule):
                     graph = self.cluster_graph_building(
                         workspace, labels, i, skeleton, params)
                     if len(graph.segments) > self.max_complexity:
-                        sys.stderr.write(
+                        logger.warning(
                             "Warning: rejecting cluster of %d segments.\n" %
                             len(graph.segments))
                         continue

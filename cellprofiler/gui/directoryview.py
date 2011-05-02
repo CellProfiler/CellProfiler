@@ -13,11 +13,13 @@ Please see the AUTHORS file for credits.
 Website: http://www.cellprofiler.org
 """
 __version__="$Revision$"
+import logging
 import os
 import sys
 import traceback
 import wx
 
+logger = logging.getLogger(__name__)
 import scipy.io.matlab
 import matplotlib
 import matplotlib.image
@@ -81,16 +83,17 @@ class DirectoryView(object):
         except wx.PyDeadObjectError:
             # Refresh can get called when the image directory changes, even
             # after this window has closed down.
-            sys.stderr.write("Warning: GUI not available during directoryview refresh\n")
+            logger.warning("Warning: GUI not available during directoryview refresh\n")
             return
         try:
             files = [x 
                      for x in os.listdir(cellprofiler.preferences.get_default_image_directory()) 
                      if is_image(x) or x.endswith(".cp")]
         except Exception, e:
-            sys.stderr.write("Warning: Could not refresh default image directory %s.\n"%(cellprofiler.preferences.get_default_image_directory()))
-            import traceback
-            traceback.print_exc()
+            logger.warning(
+                "Warning: Could not refresh default image directory %s.\n" %
+                (cellprofiler.preferences.get_default_image_directory()),
+                exc_info = True)
             files = ['Could not refresh files (%s)'%(e.__class__.__name__)]
         files.sort()
         self.__list_box.AppendItems(files)

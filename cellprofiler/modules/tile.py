@@ -39,9 +39,12 @@ This module replaces the functionality of the obsolete module <b>PlaceAdjacent</
 '''
 __version__ = "$Revision: 9034 $"
 
+import logging
 import numpy as np
 import scipy.ndimage as scind
 import sys
+
+logger = logging.getLogger(__name__)
 
 import cellprofiler.cpimage as cpi
 import cellprofiler.cpmodule as cpm
@@ -432,7 +435,7 @@ class Tile(cpm.CPModule):
             meander_mode, size_change = setting_values
             
             if size_change != "1":
-                sys.stderr.write(
+                logger.warning(
                     "Discarding rescaling during import of Tile. "
                     "Use the resize module with a factor of %s.\n" % 
                     size_change)
@@ -469,7 +472,7 @@ class Tile(cpm.CPModule):
             horizontal_or_vertical = setting_values[7]
             delete_pipeline = setting_values[8]
             if delete_pipeline == cps.YES:
-                sys.stderr.write(
+                logger.warning(
                     "Ignoring memory option when importing PlaceAdjacent "
                     "into Tile. Use the ConserveMemory module to remove "
                     "the image from memory if desired.\n")

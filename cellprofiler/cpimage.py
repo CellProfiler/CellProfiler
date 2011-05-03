@@ -777,7 +777,7 @@ class ImageSetList(object):
 
         # Make a safe unpickler
         p = Unpickler(StringIO(state))
-        def traceme(module_name, class_name):
+        def find_global(module_name, class_name):
             logger.debug("Pickler wants %s:%s",module_name, class_name)
             if (module_name not in ("numpy", "numpy.core.multiarray")):
                 logger.critical(
@@ -789,7 +789,7 @@ class ImageSetList(object):
             __import__(module_name)
             mod = sys.modules[module_name]
             return getattr(mod, class_name)
-        p.find_global = traceme
+        p.find_global = find_global
 
         count = p.load()
         all_keys = [p.load() for i in range(count)]

@@ -777,7 +777,19 @@ class ImageSetList(object):
 
         # Make a safe unpickler
         p = Unpickler(StringIO(state))
-        p.find_global = None
+        def traceme(module_name, class_name):
+            logger.debug("Pickler wants %s:%s",module_name, class_name)
+            if (module_name not in ("numpy", "numpy.core.multiarray")):
+                logger.critical(
+                    "WARNING WARNING WARNING - your batch file has asked to load %s.%s."
+                    " If this looks in any way suspicious please contact us at www.cellprofiler.org",
+                    module_name, class_name)
+                raise ValueError("Illegal attempt to unpickle class %s.%s", 
+                                 (module_name, class_name))
+            __import__(module_name)
+            mod = sys.modules[module_name]
+            return getattr(mod, class_name)
+        p.find_global = traceme
 
         count = p.load()
         all_keys = [p.load() for i in range(count)]

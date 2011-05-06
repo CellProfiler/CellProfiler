@@ -580,6 +580,14 @@ class TestConvexHull(unittest.TestCase):
         result, counts = morph.convex_hull(labels, np.array([1]))
         self.assertEqual(counts[0], 2)
         
+    def test_06_02_same_point_twice(self):
+        '''Regression test of convex_hull_ijv - same point twice in list'''
+        
+        ii = [79, 11, 65, 73, 42, 26, 46, 48, 14, 53, 73, 42, 59, 12, 59, 65,  7, 66, 84, 70]
+        jj = [47, 97, 98,  0, 91, 49, 42, 85, 63, 19,  0,  9, 71, 15, 50, 98, 14, 46, 89, 47]
+        h, c = morph.convex_hull_ijv(
+            np.column_stack((ii, jj, np.ones(len(ii)))), [1])
+        self.assertTrue(np.any((h[:,1] == 73) & (h[:,2] == 0)))
 
 class TestConvexHullImage(unittest.TestCase):
     def test_00_00_zeros(self):
@@ -3320,5 +3328,140 @@ class TestAngularDistribution(unittest.TestCase):
         angdist2 = angdist[-1, :resolution/2] + angdist[-1, resolution/2:]
         assert np.abs(3.16 - np.sqrt(angdist2.max() / angdist2.min())) < 0.05
 
-    
-    
+class TestFeretDiameter(unittest.TestCase):
+    def test_00_00_none(self):
+        result = morph.feret_diameter(np.zeros((0,3)), np.zeros(0, int), [])
+        self.assertEqual(len(result), 0)
+        
+    def test_00_01_point(self):
+        min_result, max_result = morph.feret_diameter(
+            np.array([[1, 0, 0]]),
+            np.ones(1, int), [1])
+        self.assertEqual(len(min_result), 1)
+        self.assertEqual(min_result[0], 0)
+        self.assertEqual(len(max_result), 1)
+        self.assertEqual(max_result[0], 0)
+        
+    def test_01_02_line(self):
+        min_result, max_result = morph.feret_diameter(
+            np.array([[1, 0, 0], [1, 1, 1]]),
+            np.array([2], int), [1])
+        self.assertEqual(len(min_result), 1)
+        self.assertEqual(min_result[0], 0)
+        self.assertEqual(len(max_result), 1)
+        self.assertEqual(max_result[0], np.sqrt(2))
+        
+    def test_01_03_single(self):
+        r = np.random.RandomState()
+        r.seed(204)
+        niterations = 100
+        iii = r.randint(0, 100, size=(20 * niterations))
+        jjj = r.randint(0, 100, size=(20 * niterations))
+        for iteration in range(100):
+            ii = iii[(iteration * 20):((iteration + 1) * 20)]
+            jj = jjj[(iteration * 20):((iteration + 1) * 20)]
+            chulls, counts = morph.convex_hull_ijv(
+                np.column_stack((ii, jj, np.ones(20, int))), [1])
+            min_result, max_result = morph.feret_diameter(chulls, counts, [1])
+            self.assertEqual(len(min_result), 1)
+            distances = np.sqrt(
+                ((ii[:,np.newaxis] - ii[np.newaxis,:]) ** 2 +
+                 (jj[:,np.newaxis] - jj[np.newaxis,:]) ** 2).astype(float))
+            expected = np.max(distances)
+            if abs(max_result - expected) > .000001:
+                a0,a1 = np.argwhere(distances == expected)[0]
+                self.assertAlmostEqual(
+                    max_result[0], expected,
+                    msg = "Expected %f, got %f, antipodes are %d,%d and %d,%d" %
+                (expected, result, ii[a0], jj[a0], ii[a1], jj[a1]))
+            #
+            # Do a 180 degree sweep, measuring
+            # the Feret diameter at each angle. Stupid but an independent test.
+            #
+            # Draw a line segment from the origin to a point at the given
+            # angle from the horizontal axis
+            #
+            angles = np.pi * np.arange(20).astype(float) / 20.0
+            i = -np.sin(angles)
+            j = np.cos(angles)
+            chull_idx, angle_idx = np.mgrid[0:counts[0],0:20]
+            #
+            # Compose a list of all vertices on the convex hull and all lines
+            #
+            v = chulls[chull_idx.ravel(),1:]
+            pt1 = np.zeros((20 * counts[0], 2))
+            pt2 = np.column_stack([i[angle_idx.ravel()], j[angle_idx.ravel()]])
+            #
+            # For angles from 90 to 180, the parallel line has to be sort of
+            # at negative infinity instead of zero to keep all points on
+            # the same side
+            #
+            pt1[angle_idx.ravel() < 10,1] -= 200
+            pt2[angle_idx.ravel() < 10,1] -= 200
+            pt1[angle_idx.ravel() >= 10,0] += 200
+            pt2[angle_idx.ravel() >= 10,0] += 200
+            distances = np.sqrt(morph.distance2_to_line(v, pt1, pt2))
+            distances.shape = (counts[0], 20)
+            dmin = np.min(distances, 0)
+            dmax = np.max(distances, 0)
+            expected_min = np.min(dmax - dmin)
+            self.assertTrue(min_result[0] <= expected_min)
+            
+    def test_02_01_multiple_objects(self):
+        r = np.random.RandomState()
+        r.seed(204)
+        niterations = 100
+        ii = r.randint(0, 100, size=(20 * niterations))
+        jj = r.randint(0, 100, size=(20 * niterations))
+        vv = np.hstack([np.ones(20) * i for i in range(1,niterations+1)])
+        indexes = np.arange(1, niterations+1)
+        chulls, counts = morph.convex_hull_ijv(
+            np.column_stack((ii, jj, vv)), indexes)
+        min_result, max_result = morph.feret_diameter(chulls, counts, indexes)
+        self.assertEqual(len(max_result), niterations)
+        for i in range(niterations):
+            #
+            # Make sure values are same as single (validated) case.
+            #
+            iii = ii[(20*i):(20*(i+1))]
+            jjj = jj[(20*i):(20*(i+1))]
+            chulls, counts = morph.convex_hull_ijv(
+                np.column_stack((iii, jjj, np.ones(len(iii), int))), [1])
+            expected_min, expected_max = morph.feret_diameter(chulls, counts, [1])
+            self.assertAlmostEqual(expected_min[0], min_result[i])
+            self.assertAlmostEqual(expected_max[0], max_result[i])
+
+
+class TestIsObtuse(unittest.TestCase):
+    def test_00_00_empty(self):
+        result = morph.is_obtuse(np.zeros((0,2)),np.zeros((0,2)),np.zeros((0,2)))
+        self.assertEqual(len(result), 0)
+        
+    def test_01_01_is_obtuse(self):
+        result = morph.is_obtuse(np.array([[-1,1]]),
+                                 np.array([[0,0]]),
+                                 np.array([[1,0]]))
+        self.assertEqual(len(result), 1)
+        self.assertTrue(result[0])
+        
+    def test_01_02_is_not_obtuse(self):
+        result = morph.is_obtuse(np.array([[1,1]]),
+                                 np.array([[0,0]]),
+                                 np.array([[1,0]]))
+        self.assertEqual(len(result), 1)
+        self.assertFalse(result[0])
+        
+    def test_01_03_many(self):
+        r = np.random.RandomState()
+        r.seed(13)
+        p1 = np.random.uniform(size=(100,2))
+        v = np.random.uniform(size=(100,2))
+        p2 = np.random.uniform(size=(100,2))
+        vp1 = np.sqrt(np.sum((v - p1) * (v - p1), 1))
+        vp2 = np.sqrt(np.sum((v - p2) * (v - p2), 1))
+        p1p2 = np.sqrt(np.sum((p1-p2) * (p1-p2), 1))
+        # Law of cosines
+        theta = np.arccos((vp1**2 + vp2**2 - p1p2 **2) / (2 * vp1 * vp2))
+        result = morph.is_obtuse(p1, v, p2)
+        is_obtuse = theta > np.pi / 2
+        np.testing.assert_array_equal(result, is_obtuse)

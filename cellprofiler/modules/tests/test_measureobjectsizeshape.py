@@ -119,7 +119,8 @@ MeasureObjectSizeShape:[module_num:1|svn_version:\'1\'|variable_revision_number:
                   cpmoas.F_ORIENTATION, cpmoas.F_PERIMETER,
                   cpmoas.F_SOLIDITY, cpmoas.F_COMPACTNESS,
                   cpmoas.F_MAXIMUM_RADIUS, cpmoas.F_MEAN_RADIUS,
-                  cpmoas.F_MEDIAN_RADIUS):
+                  cpmoas.F_MEDIAN_RADIUS,
+                  cpmoas.F_MIN_FERET_DIAMETER, cpmoas.F_MAX_FERET_DIAMETER):
             m = cpmoas.AREA_SHAPE + "_" + f
             a = measurements.get_current_measurement('SomeObjects', m)
             self.assertEqual(len(a), 0)

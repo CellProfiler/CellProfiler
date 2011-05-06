@@ -65,6 +65,12 @@ to the closest pixel outside of the object.</li>
 <li><i>MeanRadius:</i> The mean distance of any pixel in the object
 to the closest pixel outside of the object.</li>
 
+<li><i>MinFeretDiameter, MaxFeretDiameter:</i> The Feret diameter is the
+distance between two parallel lines tangent on either side of the object
+(imagine taking a caliper and measuring the object at various angles).
+The minimum and maximum Feret diameters are the smallest and largest possible
+diameters, rotating the calipers along all possible angles.</li>
+
 <li><i>Zernike shape features:</i> Measure shape by describing a binary object (or
 more precisely, a patch with background and an object in the center) in a
 basis of Zernike polynomials, using the coefficients as features <i>(Boland
@@ -121,6 +127,8 @@ from cellprofiler.cpmath.cpmorphology import euler_number
 from cellprofiler.cpmath.cpmorphology import distance_to_edge
 from cellprofiler.cpmath.cpmorphology import maximum_position_of_labels
 from cellprofiler.cpmath.cpmorphology import median_of_labels
+from cellprofiler.cpmath.cpmorphology import feret_diameter
+from cellprofiler.cpmath.cpmorphology import convex_hull_ijv
 from cellprofiler.measurements import COLTYPE_FLOAT
 
 """The category of the per-object measurements made by this module"""
@@ -145,13 +153,16 @@ F_COMPACTNESS = 'Compactness'
 F_MAXIMUM_RADIUS = 'MaximumRadius'
 F_MEDIAN_RADIUS = 'MedianRadius'
 F_MEAN_RADIUS = 'MeanRadius'
+F_MIN_FERET_DIAMETER = 'MinFeretDiameter'
+F_MAX_FERET_DIAMETER = 'MaxFeretDiameter'
 
 """The non-Zernike features"""
 F_STANDARD = [ F_AREA, F_ECCENTRICITY, F_SOLIDITY, F_EXTENT,
                F_EULER_NUMBER, F_PERIMETER, F_FORM_FACTOR,
                F_MAJOR_AXIS_LENGTH, F_MINOR_AXIS_LENGTH,
                F_ORIENTATION, F_COMPACTNESS, F_CENTER_X, F_CENTER_Y,
-               F_MAXIMUM_RADIUS, F_MEAN_RADIUS, F_MEDIAN_RADIUS]
+               F_MAXIMUM_RADIUS, F_MEAN_RADIUS, F_MEDIAN_RADIUS,
+               F_MIN_FERET_DIAMETER, F_MAX_FERET_DIAMETER]
 
 class MeasureObjectSizeShape(cpm.CPModule):
 
@@ -316,11 +327,14 @@ class MeasureObjectSizeShape(cpm.CPModule):
         max_radius = np.zeros(nobjects)
         median_radius = np.zeros(nobjects)
         mean_radius = np.zeros(nobjects)
+        min_feret_diameter = np.zeros(nobjects)
+        max_feret_diameter = np.zeros(nobjects)
         zernike_numbers = self.get_zernike_numbers()
         zf = {}
         for n,m in zernike_numbers:
             zf[(n,m)] = np.zeros(nobjects)
         if nobjects > 0:
+            chulls, chull_counts = convex_hull_ijv(objects.ijv, objects.indices)
             for labels, indices in objects.get_labels():
                 to_indices = indices-1
                 distances = distance_to_edge(labels)
@@ -358,6 +372,12 @@ class MeasureObjectSizeShape(cpm.CPModule):
             # Form factor
             #
             ff = 4.0 * np.pi * objects.areas / mperimeters**2
+            #
+            # Feret diameter
+            #
+            min_feret_diameter, max_feret_diameter = \
+                feret_diameter(chulls, chull_counts, objects.indices)
+            
         else:
             ff = np.zeros(0)
 
@@ -371,7 +391,9 @@ class MeasureObjectSizeShape(cpm.CPModule):
                       (F_EULER_NUMBER, euler),
                       (F_MAXIMUM_RADIUS, max_radius),
                       (F_MEAN_RADIUS, mean_radius),
-                      (F_MEDIAN_RADIUS, median_radius)] +
+                      (F_MEDIAN_RADIUS, median_radius),
+                      (F_MIN_FERET_DIAMETER, min_feret_diameter),
+                      (F_MAX_FERET_DIAMETER, max_feret_diameter)] +
                      [(self.get_zernike_name((n,m)), zf[(n,m)])
                        for n,m in zernike_numbers]):
             self.record_measurement(workspace, object_name, f, m) 

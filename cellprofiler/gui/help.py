@@ -1215,6 +1215,16 @@ preference determines whether CellProfiler will display a warning dialog
 if images of different sizes are loaded together in an image set.
 Check this preference to show the message box or uncheck it to stop display."""
 
+WARN_ABOUT_OLD_PIPELINES_HELP = """
+The <i>Warn if a pipeline was saved in an old version of CellProfiler</i>
+preference determines whether CellProfiler displays a warning dialog
+if you open a pipeline that was saved using an old version of CellProfiler.
+The purpose of this warning is to remind you that, if you save the pipeline
+using the newer version of CellProfiler, people using the old version of
+CellProfiler might not be able to use the new pipeline. Pipelines saved
+by old CellProfiler versions can always be loaded and used by new
+CellProfiler versions."""
+
 PRIMARY_OUTLINE_COLOR_HELP = """The <i>Primary Outline Color</i> preference
 sets the color used for the outline of the object of interest in the
 <i>IdentifyPrimaryObjects</i>, <i>IdentifySecondaryObjects</i> and

@@ -624,6 +624,23 @@ class Pipeline(object):
                         except:
                             logger.error('Your pipeline SVN revision is %d but you are running CellProfiler SVN revsion %d. \nLoading this pipeline may fail or have unpredictable results.\n' %(revision, CURRENT_SVN_REVISION))
                 else:
+                    if ((not cellprofiler.preferences.get_headless()) and
+                        revision < CURRENT_SVN_REVISION):
+                        from cellprofiler.gui.errordialog import show_warning
+                        show_warning(
+        "Pipeline saved with old version of CellProfiler",
+        "Your pipeline was saved using an old version\n"
+        "of CellProfiler (version # %d). The current version\n"
+        "of CellProfiler can load and run this pipeline, but\n"
+        "if you make changes to it and save, the older version\n"
+        "of CellProfiler (perhaps the version your collaborator\n"
+        "has?) may not be able to load it.\n\n"
+        "You can ignore this warning if you do not plan to save\n"
+        "this pipeline or if you will only use it with this or\n"
+        "later versions of CellProfiler." % revision,
+        cellprofiler.preferences.get_warn_about_old_pipeline,
+        cellprofiler.preferences.set_warn_about_old_pipeline)
+                        
                     pipeline_stats_logger.info("Pipeline saved with CellProfiler SVN revision %s" , value)
             elif kwd == H_FROM_MATLAB:
                 from_matlab = bool(value)

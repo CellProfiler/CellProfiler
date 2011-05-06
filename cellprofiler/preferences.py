@@ -175,6 +175,7 @@ SHOW_BAD_SIZES_DLG = "ShowBadSizesDlg"
 SHOW_SAMPLING = "ShowSampling"
 WRITE_MAT = "WriteMAT"
 RUN_DISTRIBUTED = "RunDistributed"
+WARN_ABOUT_OLD_PIPELINE = "WarnAboutOldPipeline"
 
 def recent_file(index, category=""):
     return (FF_RECENTFILES % (index + 1)) + category
@@ -779,4 +780,21 @@ def set_write_MAT_files(value):
     global __write_MAT_files
     __write_MAT_files = value
     get_config().Write(WRITE_MAT,
+                       "True" if value else "False")
+
+__warn_about_old_pipeline = None
+def get_warn_about_old_pipeline():
+    '''Return True if CP should warn the user about old SVN revision pipelines'''
+    global __warn_about_old_pipeline
+    if __warn_about_old_pipeline is not None:
+        return __warn_about_old_pipeline
+    if not get_config().Exists(WARN_ABOUT_OLD_PIPELINE):
+        return True
+    return get_config().Read(WARN_ABOUT_OLD_PIPELINE) == "True"
+
+def set_warn_about_old_pipeline(value):
+    '''Set the "warn about old pipelines" flag'''
+    global __warn_about_old_pipeline
+    __warn_about_old_pipeline = value
+    get_config().Write(WARN_ABOUT_OLD_PIPELINE,
                        "True" if value else "False")

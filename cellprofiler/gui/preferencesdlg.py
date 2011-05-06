@@ -216,7 +216,12 @@ class PreferencesDlg(wx.Dialog):
                 ['Use distributed workers (EXPERIMENTAL)',
                  cpprefs.get_run_distributed,
                  cpprefs.set_run_distributed,
-                 CHOICE, "Use distributed workers to analyze images.  This is experimental functionality."]
+                 CHOICE, "Use distributed workers to analyze images.  This is experimental functionality."],
+                ['Warn if a pipeline was saved in an old version of CellProfiler',
+                 cpprefs.get_warn_about_old_pipeline,
+                 cpprefs.set_warn_about_old_pipeline,
+                 CHOICE,
+                 cphelp.WARN_ABOUT_OLD_PIPELINES_HELP]
                 ]
     
     def get_title_font(self):

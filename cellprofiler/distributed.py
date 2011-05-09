@@ -8,13 +8,14 @@ import time
 import tempfile
 import traceback
 import urllib, urllib2
+import logging
+logger = logging.getLogger(__name__)
 
 try:
     import nuageux
     have_nuageux = True
-except:
-    traceback.print_exc()
-    sys.stderr.write("distributed processing disabled (nuageux library not available).\n")
+except Exception, e:
+    logger.warning("Distributed processing disabled (nuageux library not available).\n",exc_info=True)
     have_nuageux = False
 
 from cellprofiler.pipeline import post_module_runner_done_event
@@ -202,8 +203,7 @@ class JobInfo(object):
             print "fetched work:", work_blob
             assert pipeline_hash == self.pipeline_hash, "Mismatched hash, probably out of sync with server"
         except Exception, e:
-            sys.stderr.write("Exception fetching work.\n")
-            traceback.print_exc()
+            logger.error("Exception fetching work.\n", exc_info=True)
 
     def work_done(self):
         return False

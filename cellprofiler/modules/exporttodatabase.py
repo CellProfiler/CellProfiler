@@ -2252,7 +2252,6 @@ image_url_prepend = %(image_url)s
 
 # ==== Image Filters ====
 # Here you can define image filters to let you select objects from a subset of your experiment when training the classifier.
-# This is OPTIONAL, you may leave "filters = ".
 # FORMAT:
 #   filter_SQL_XXX  =  MySQL select statement that returns image keys you wish to filter out.  This will be associated with the filter name "XXX" from above.
 # EXAMPLE FILTERS:

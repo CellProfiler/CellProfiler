@@ -1714,3 +1714,73 @@ ExportToSpreadsheet:[module_num:5|svn_version:\'9434\'|variable_revision_number:
         finally:
             os.remove(input_filename)
             os.remove(output_csv_filename)
+
+    def test_09_01_relationships_file(self):
+        r = np.random.RandomState()
+        r.seed(91)
+        path = os.path.join(self.output_dir, "my_file.csv")
+        module = E.ExportToSpreadsheet()
+        module.module_num = 1
+        module.prepend_output_filename.value = False
+        module.wants_everything.value = False
+        module.object_groups[0].name.value = E.OBJECT_RELATIONSHIPS
+        module.object_groups[0].file_name.value = path
+        module.object_groups[0].wants_automatic_file_name.value = False
+        m = cpmeas.Measurements()
+        image_set_list = cpi.ImageSetList()
+        for i in range(0,10):
+            image_set = image_set_list.get_image_set(i)
+            m.add_image_measurement(cpp.IMAGE_NUMBER, i+1)
+            m.add_image_measurement(cpp.GROUP_NUMBER, 0)
+            m.add_image_measurement(cpp.GROUP_INDEX, i)
+            if i < 9:
+                m.next_image_set()
+        my_relationship = "BlahBlah"
+        my_object_name1 = "ABC"
+        my_object_name2 = "DEF"
+        my_group_indexes1 = r.randint(1,10, size=10)
+        my_object_numbers1 = r.randint(1,10, size=10)
+        my_group_indexes2 = r.randint(1,10, size=10)
+        my_object_numbers2 = r.randint(1,10, size=10)
+        m.add_relate_measurement(1, my_relationship, 
+                                 my_object_name1, my_object_name2,
+                                 my_group_indexes1, my_object_numbers1, 
+                                 my_group_indexes2, my_object_numbers2)
+        pipeline = cpp.Pipeline()
+        pipeline.add_module(module)
+        workspace = cpw.Workspace(pipeline, module, image_set,
+                                  cpo.ObjectSet(), m,
+                                  image_set_list)
+        fd = None
+        try:
+            module.post_run(workspace)
+            fd = open(path, "rb")
+            rdr = csv.reader(fd)
+            header = rdr.next()
+            for heading, expected in zip(
+                header, ["Module", "Module Number", "Relationship",
+                         "First Object Name", "First Image Number", 
+                         "First Object Number", "Second Object Name",
+                         "Second Image Number", "Second Object Number"]):
+                self.assertEqual(heading, expected)
+            for i in range(len(my_group_indexes1)):
+                (module_name, module_number, relationship, 
+                 object_name_1, image_number_1, object_number_1, 
+                 object_name_2, image_number_2, object_number_2) = rdr.next()
+                self.assertEqual(module_name, module.module_name)
+                self.assertEqual(int(module_number), module.module_num)
+                self.assertEqual(relationship, my_relationship)
+                self.assertEqual(object_name_1, my_object_name1)
+                self.assertEqual(int(image_number_1), my_group_indexes1[i]+1)
+                self.assertEqual(int(object_number_1), my_object_numbers1[i])
+                self.assertEqual(object_name_2, my_object_name2)
+                self.assertEqual(int(image_number_2), my_group_indexes2[i]+1)
+                self.assertEqual(int(object_number_2), my_object_numbers2[i])
+        finally:
+            try:
+                if fd is not None:
+                    fd.close()
+                os.remove(path)
+            except:
+                pass
+        

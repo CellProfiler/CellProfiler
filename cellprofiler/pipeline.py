@@ -53,8 +53,8 @@ from cellprofiler.matlab.cputils import make_cell_struct_dtype, new_string_cell_
 
 '''The measurement name of the image number'''
 IMAGE_NUMBER = "ImageNumber"
-GROUP_NUMBER = "Group_Number"
-GROUP_INDEX = "Group_Index"
+GROUP_NUMBER = cpmeas.GROUP_NUMBER
+GROUP_INDEX = cpmeas.GROUP_INDEX
 CURRENT = 'Current'
 NUMBER_OF_IMAGE_SETS     = 'NumberOfImageSets'
 NUMBER_OF_MODULES        = 'NumberOfModules'
@@ -1149,8 +1149,8 @@ class Pipeline(object):
                     measurements.next_image_set(image_number, erase=True)
                 # This is added by ExportToDatabase
                 #measurements.add_image_measurement(IMAGE_NUMBER, image_number)
-                measurements.add_image_measurement(GROUP_NUMBER, group_number)
-                measurements.add_image_measurement(GROUP_INDEX, group_index)
+                measurements.group_number = group_number
+                measurements.group_index = group_index
                 numberof_windows = 0;
                 slot_number = 0
                 object_set = cellprofiler.objects.ObjectSet()

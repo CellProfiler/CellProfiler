@@ -84,6 +84,9 @@ M_SITE, M_WELL, M_ROW, M_COLUMN, M_PLATE = \
       ['_'.join((C_METADATA, x))
        for x in (FTR_SITE, FTR_WELL, FTR_ROW, FTR_COLUMN, FTR_PLATE)]
 
+GROUP_NUMBER = "Group_Number"
+GROUP_INDEX = "Group_Index"
+
 def get_length_from_varchar(x):
     '''Retrieve the length of a varchar column from its coltype def'''
     m = re.match(r'^varchar\(([0-9]+)\)$', x)
@@ -112,6 +115,7 @@ class Measurements(object):
         self.__is_first_image = True
         self.__image_set_index = 0
         self.__initialized_explicitly = False
+        self.__relationships = {}
     
     def initialize(self, measurement_columns):
         '''Initialize the measurements dictionary with a list of columns
@@ -138,7 +142,7 @@ class Measurements(object):
         self.__image_set_index += 1
         self.__is_first_image = False
         for object_name, object_features in self.__dictionary.iteritems():
-            if object_name in (EXPERIMENT, NEIGHBORS):
+            if object_name in (EXPERIMENT):
                 continue
             for measurements in object_features.values():
                 mlen = len(measurements)
@@ -265,7 +269,95 @@ class Measurements(object):
         if not self.__dictionary.has_key(EXPERIMENT):
             self.__dictionary[EXPERIMENT] = {}
         self.__dictionary[EXPERIMENT][feature_name] = data
+    
+    def get_group_number(self):
+        '''The number of the group currently being processed'''
+        return self.get_current_image_measurement(GROUP_NUMBER)
+    
+    def set_group_number(self, group_number):
+        self.add_image_measurement(GROUP_NUMBER, group_number)
         
+    group_number = property(get_group_number, set_group_number)
+    
+    def get_group_index(self):
+        '''The within-group index of the current image set'''
+        return self.get_current_image_measurement(GROUP_INDEX)
+    
+    def set_group_index(self, group_index):
+        self.add_image_measurement(GROUP_INDEX, group_index)
+
+    group_index = property(get_group_index, set_group_index)
+
+    def add_relate_measurement(
+        self, module_number, 
+        relationship,
+        object_name1, object_name2, 
+        group_indexes1, object_numbers1,
+        group_indexes2, object_numbers2):
+        '''Add object relationships to the measurements
+        
+        module_number - the module that generated the relationship
+        
+        relationship - the relationship of the two objects, for instance,
+                       "Parent" means object # 1 is the parent of object # 2
+        
+        group_number - the group number of the group currently being processed
+        
+        object_name1, object_name2 - the name of the segmentation for the first and second objects
+        
+        group_indexes1, group_indexes2 - for each object, the group index of 
+                                         that object's image set
+                                         
+        object_numbers1, object_numbers2 - for each object, the object number
+                                           in the object's object set
+                                           
+        This method lets the caller store any sort of arbitrary relationship
+        between objects as long as they are in the same group. To record
+        all neighbors within a particular segmentation, call with the same
+        object name for object_name1 and object_name2 and the same group
+        index - that of the current image. Relating would have different object
+        names and TrackObjects would have different group indices.
+        '''
+        key = (module_number, relationship, self.group_number, 
+               object_name1, object_name2)
+        if not self.__relationships.has_key(key):
+            v = self.__relationships[key] = []
+        else:
+            v = self.__relationships[key]
+        value = np.zeros(len(group_indexes1), 
+                         [("group_index1", int, 1),
+                          ("object_number1", int, 1),
+                          ("group_index2", int, 1),
+                          ("object_number2", int , 1)])
+        value = value.view(np.recarray)
+        value.group_index1 = group_indexes1
+        value.group_index2 = group_indexes2
+        value.object_number1 = object_numbers1
+        value.object_number2 = object_numbers2
+        v.append(value)
+        
+    def get_relationship_groups(self):
+        '''Return the keys of each of the relationship groupings.
+        
+        The value returned is a list composed of objects with the following
+        attributes:
+        module_number - the module number of the module used to generate the relationship
+        object_name1 - the object name of the first object in the relationship
+        object_name2 - the object name of the second object in the relationship
+        group_number - the group number of the group in which the objects were analyzed
+        '''
+        
+        return [RelationshipKey(*key) for key in self.__relationships.keys()]
+    
+    def get_relationships(self, module_number, relationship, object_name1, object_name2, group_number):
+        key = (module_number, relationship, group_number, object_name1, object_name2)
+        if not self.__relationships.has_key(key):
+            return np.zeros(0, [("group_index1", int, 1),
+                                ("object_index1", int, 1),
+                                ("group_index2", int, 1),
+                                ("object_index2", int , 1)]).view(np.recarray)
+        return np.hstack(self.__relationships[key]).view(np.recarray)
+    
     def add_measurement(self, object_name, feature_name, data, can_overwrite=False):
         """Add a measurement or, for objects, an array of measurements to the set
         
@@ -616,3 +708,11 @@ def agg_ignore_feature(feature_name):
         return True
     return False
     
+class RelationshipKey:
+    def __init__(self, module_number, relationship, group_number, 
+                 object_name1, object_name2):
+        self.module_number = module_number
+        self.relationship = relationship
+        self.object_name1 = object_name1
+        self.object_name2 = object_name2
+        self.group_number = group_number

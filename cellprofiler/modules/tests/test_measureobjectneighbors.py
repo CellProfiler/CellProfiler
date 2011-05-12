@@ -37,18 +37,23 @@ class TestMeasureObjectNeighbors(unittest.TestCase):
     def make_workspace(self, labels, mode, distance=0, neighbors_labels = None):
         '''Make a workspace for testing MeasureObjectNeighbors'''
         module = M.MeasureObjectNeighbors()
+        module.module_num = 1
         module.object_name.value=OBJECTS_NAME
         module.distance_method.value = mode
         module.distance.value = distance
         pipeline = cpp.Pipeline()
+        pipeline.add_module(module)
         object_set = cpo.ObjectSet()
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
+        measurements = cpmeas.Measurements()
+        measurements.group_index = 1
+        measurements.group_number = 1
         workspace = cpw.Workspace(pipeline,
                                   module,
                                   image_set,
                                   object_set,
-                                  cpmeas.Measurements(),
+                                  measurements,
                                   image_set_list)
         objects = cpo.Objects()
         objects.segmented = labels
@@ -626,3 +631,98 @@ MeasureObjectNeighbors:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
             module.get_measurement_name(M.M_ANGLE_BETWEEN_NEIGHBORS))
         self.assertEqual(len(v), 1)
         self.assertAlmostEqual(v[0], 90)
+        
+    def test_07_01_relationships(self):
+        labels = np.array([
+            [ 0,0,0,0,0,0,0,0,0,0 ],
+            [ 0,1,1,1,0,0,0,2,2,2 ],
+            [ 0,1,1,1,0,0,0,2,2,2 ],
+            [ 0,1,1,1,0,0,0,2,2,2 ],
+            [ 0,0,0,0,3,3,3,0,0,0 ],
+            [ 0,0,0,0,3,3,3,0,0,0 ],
+            [ 0,0,0,0,3,3,3,0,0,0 ],
+            [ 0,4,4,4,0,0,0,5,5,5 ],
+            [ 0,4,4,4,0,0,0,5,5,5 ],
+            [ 0,4,4,4,0,0,0,5,5,5 ],
+            [ 0,0,0,0,0,0,0,0,0,0 ]])
+            
+        workspace, module = self.make_workspace(
+            labels, M.D_WITHIN, 2)
+        module.run(workspace)
+        m = workspace.measurements
+        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        k = m.get_relationship_groups()
+        self.assertEqual(len(k), 1)
+        k = k[0]
+        self.assertTrue(isinstance(k, cpmeas.RelationshipKey))
+        self.assertEqual(k.module_number, 1)
+        self.assertEqual(k.group_number, 1)
+        self.assertEqual(k.object_name1, OBJECTS_NAME)
+        self.assertEqual(k.object_name2, OBJECTS_NAME)
+        self.assertEqual(k.relationship, cpmeas.NEIGHBORS)
+        r = m.get_relationships(
+            k.module_number,
+            k.relationship,
+            k.object_name1,
+            k.object_name2,
+            k.group_number)
+        self.assertEqual(len(r), 8)
+        r = r.view(np.recarray)
+        np.testing.assert_array_equal(np.unique(r.object_number1[r.object_number2==3]),
+                                      np.array([1,2,4,5]))
+        np.testing.assert_array_equal(np.unique(r.object_number2[r.object_number1==3]),
+                                      np.array([1,2,4,5]))
+        
+    def test_07_02_neighbors(self):
+        labels = np.array([
+            [ 0,0,0,0,0,0,0,0,0,0 ],
+            [ 0,1,1,1,0,0,0,2,2,2 ],
+            [ 0,1,1,1,0,0,0,2,2,2 ],
+            [ 0,1,1,1,0,0,0,2,2,2 ],
+            [ 0,0,0,0,3,3,3,0,0,0 ],
+            [ 0,0,0,0,3,3,3,0,0,0 ],
+            [ 0,0,0,0,3,3,3,0,0,0 ],
+            [ 0,4,4,4,0,0,0,5,5,5 ],
+            [ 0,4,4,4,0,0,0,5,5,5 ],
+            [ 0,4,4,4,0,0,0,5,5,5 ],
+            [ 0,0,0,0,0,0,0,0,0,0 ]])
+        
+        nlabels = np.array([
+            [ 0,0,0,0,0,0,0,0,0,0 ],
+            [ 0,0,0,0,0,0,0,0,0,0 ],
+            [ 0,0,0,0,0,0,0,0,0,0 ],
+            [ 0,0,0,0,0,0,0,0,0,0 ],
+            [ 0,1,1,1,0,0,0,0,0,0 ],
+            [ 0,1,1,1,0,0,0,0,0,0 ],
+            [ 0,1,1,1,0,0,0,0,0,0 ],
+            [ 0,0,0,0,0,0,0,0,0,0 ],
+            [ 0,0,0,0,0,0,0,0,0,0 ],
+            [ 0,0,0,0,0,0,0,0,0,0 ],
+            [ 0,0,0,0,0,0,0,0,0,0 ]])
+            
+        workspace, module = self.make_workspace(
+            labels, M.D_WITHIN, 2, nlabels)
+        module.run(workspace)
+        m = workspace.measurements
+        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        k = m.get_relationship_groups()
+        self.assertEqual(len(k), 1)
+        k = k[0]
+        self.assertTrue(isinstance(k, cpmeas.RelationshipKey))
+        self.assertEqual(k.module_number, 1)
+        self.assertEqual(k.group_number, 1)
+        self.assertEqual(k.object_name1, OBJECTS_NAME)
+        self.assertEqual(k.object_name2, NEIGHBORS_NAME)
+        self.assertEqual(k.relationship, cpmeas.NEIGHBORS)
+        r = m.get_relationships(
+            k.module_number,
+            k.relationship,
+            k.object_name1,
+            k.object_name2,
+            k.group_number)
+        self.assertEqual(len(r), 3)
+        r = r.view(np.recarray)
+        self.assertTrue(np.all(r.object_number2 == 1))
+        np.testing.assert_array_equal(np.unique(r.object_number1),
+                                      np.array([1,3,4]))
+        

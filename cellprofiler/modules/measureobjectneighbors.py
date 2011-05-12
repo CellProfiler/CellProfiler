@@ -61,6 +61,7 @@ import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo
 import cellprofiler.settings as cps
 import cellprofiler.preferences as cpprefs
+import cellprofiler.workspace as cpw
 from cellprofiler.cpmath.cpmorphology import fixup_scipy_ndimage_result as fix
 from cellprofiler.cpmath.cpmorphology import strel_disk, centers_of_labels
 
@@ -254,6 +255,8 @@ class MeasureObjectNeighbors(cpm.CPModule):
             raise ValueError("Unknown distance method: %s" %
                              self.distance_method.value)
         if nneighbors > (1 if self.neighbors_are_objects else 0):
+            first_objects = []
+            second_objects = []
             object_indexes = np.arange(nobjects, dtype=np.int32)+1
             #
             # First, compute the first and second nearest neighbors,
@@ -273,7 +276,12 @@ class MeasureObjectNeighbors(cpm.CPModule):
             # order[:,1] should be the nearest neighbor
             # order[:,2] should be the next nearest neighbor
             #
-            order = np.lexsort([distance_matrix])
+            if distance_matrix.shape[1] == 1:
+                # a little buggy, lexsort assumes that a 2-d array of
+                # second dimension = 1 is a 1-d array
+                order = np.zeros(distance_matrix.shape, int)
+            else:
+                order = np.lexsort([distance_matrix])
             first_neighbor = 1 if self.neighbors_are_objects else 0
             first_object_index = order[:, first_neighbor]
             first_x_vector = ncenters[first_object_index,1] - ocenters[:,1]
@@ -326,7 +334,11 @@ class MeasureObjectNeighbors(cpm.CPModule):
                 neighbors = neighbors[neighbors != 0]
                 if self.neighbors_are_objects:
                     neighbors = neighbors[neighbors != object_number]
-                neighbor_count[index] = len(neighbors)
+                nc = len(neighbors)
+                neighbor_count[index] = nc
+                if nc > 0:
+                    first_objects.append(np.ones(nc,int) * object_number)
+                    second_objects.append(neighbors)
                 if self.neighbors_are_objects:
                     #
                     # Find the # of overlapping pixels. Dilate the neighbors
@@ -336,6 +348,24 @@ class MeasureObjectNeighbors(cpm.CPModule):
                                                      strel)
                     overlap = np.sum(patch_mask & extended)
                     pixel_count[index] = overlap
+            if sum([len(x) for x in first_objects]) > 0:
+                first_objects = np.hstack(first_objects)
+                reverse_object_numbers = np.zeros(
+                    max(np.max(object_numbers), np.max(first_objects)) + 1, int)
+                reverse_object_numbers[object_numbers] = np.arange(len(object_numbers)) + 1
+                first_objects = reverse_object_numbers[first_objects]
+    
+                second_objects = np.hstack(second_objects)
+                reverse_neighbor_numbers = np.zeros(
+                    max(np.max(neighbor_numbers), np.max(second_objects)) + 1, int)
+                reverse_neighbor_numbers[neighbor_numbers] = np.arange(len(neighbor_numbers)) + 1
+                second_objects= reverse_neighbor_numbers[second_objects]
+                to_keep = (first_objects > 0) & (second_objects > 0)
+                first_objects = first_objects[to_keep]
+                second_objects  = second_objects[to_keep]
+            else:
+                first_objects = np.zeros(0, int)
+                second_objects = np.zeros(0, int)
             percent_touching = pixel_count * 100.0 / areas
             #
             # Now convert all measurements from the small-removed to
@@ -375,10 +405,17 @@ class MeasureObjectNeighbors(cpm.CPModule):
                     first_object_number = order[:,0] + 1
                     if nneighbors > 1:
                         second_object_number = order[:,1] + 1
+        else:
+            first_objects = np.zeros(0, int)
+            second_objects = np.zeros(0, int)
         #
         # Record the measurements
         #
+        assert(isinstance(workspace, cpw.Workspace))
         m = workspace.measurements
+        assert(isinstance(m, cpmeas.Measurements))
+        image_set = workspace.image_set
+        assert(isinstance(image_set, cpi.ImageSet))
         features_and_data = [
             (M_NUMBER_OF_NEIGHBORS, neighbor_count),
             (M_FIRST_CLOSEST_OBJECT_NUMBER, first_object_number),
@@ -392,6 +429,18 @@ class MeasureObjectNeighbors(cpm.CPModule):
             m.add_measurement(self.object_name.value,
                               self.get_measurement_name(feature_name),
                               data)
+        if len(first_objects) > 0:
+            m.add_relate_measurement(
+                self.module_num, 
+                cpmeas.NEIGHBORS,
+                self.object_name.value,
+                self.object_name.value if self.neighbors_are_objects 
+                else self.neighbors_name.value,
+                m.group_index * np.ones(first_objects.shape, int),
+                first_objects,
+                m.group_index * np.ones(second_objects.shape, int),
+                second_objects)
+                                 
         labels = kept_labels
         
         neighbor_count_image = np.zeros(labels.shape,int)

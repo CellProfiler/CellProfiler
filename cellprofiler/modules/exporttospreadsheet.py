@@ -73,6 +73,9 @@ DELIMITER_TAB = "Tab"
 DELIMITER_COMMA = 'Comma (",")'
 DELIMITERS = (DELIMITER_COMMA,DELIMITER_TAB)
 
+OBJECT_RELATIONSHIPS = "Object relationships"
+RELATIONSHIPS = "Relationships"
+
 """Offset of the first object group in the settings"""
 SETTING_OG_OFFSET = 15
 
@@ -432,7 +435,6 @@ class ExportToSpreadsheet(cpm.CPModule):
         if len(object_names) == 1 and object_names[0] == EXPERIMENT:
             self.make_experiment_file(file_name, workspace)
             return
-        
         tags = cpmeas.find_metadata_tokens(file_name)
         if self.directory.is_custom_choice:
             tags += cpmeas.find_metadata_tokens(self.directory.custom_path)
@@ -444,6 +446,9 @@ class ExportToSpreadsheet(cpm.CPModule):
                 if self.wants_genepattern_file.value:
                     self.make_gct_file(file_name, metadata_group.indexes, 
                                          workspace)
+            elif len(object_names) == 1 and object_names[0] == OBJECT_RELATIONSHIPS:
+                self.make_relationships_file(file_name, metadata_group.indexes, 
+                                             workspace)
             else:
                 self.make_object_file(object_names, file_name, 
                                       metadata_group.indexes, workspace)
@@ -772,6 +777,51 @@ Do you want to save it anyway?""" %
         finally:
             fd.close()
     
+    def make_relationships_file(self, file_name, image_set_indexes, workspace):
+        '''Create a CSV file documenting the relationships between objects'''
+        
+        file_name = self.make_full_filename(file_name, workspace,
+                                            image_set_indexes[0])
+        m = workspace.measurements
+        assert isinstance(m, cpmeas.Measurements)
+        fd = open(file_name, "wb")
+        image_number_map = {}
+        module_map = {}
+        group_numbers = set()
+        for image_index in image_set_indexes:
+            group_number = m.get_measurement(cpmeas.IMAGE, cpp.GROUP_NUMBER, image_index)
+            group_index = m.get_measurement(cpmeas.IMAGE, cpp.GROUP_INDEX, image_index)
+            image_number_map[(group_number, group_index)] = image_index+1
+            group_numbers.add(group_number)
+        for module in workspace.pipeline.modules():
+            module_map[module.module_num] = module.module_name
+            
+        try:
+            writer = csv.writer(fd,delimiter=self.delimiter_char)
+            writer.writerow([
+                "Module", "Module Number", "Relationship",
+                "First Object Name", "First Image Number", "First Object Number",
+                "Second Object Name", "Second Image Number", "Second Object Number"])
+            for key in m.get_relationship_groups():
+                r = m.get_relationships(
+                    key.module_number, key.relationship, 
+                    key.object_name1, key.object_name2,
+                    key.group_number).view(np.recarray)
+                if key.group_number not in group_numbers:
+                    continue
+                for i in range(len(r)):
+                    image_number_1 = image_number_map[
+                        (key.group_number, r.group_index1[i])]
+                    image_number_2 = image_number_map[
+                        (key.group_number, r.group_index2[i])]
+                    module_name = module_map[key.module_number]
+                    writer.writerow([
+                        module_name, key.module_number, key.relationship,
+                        key.object_name1, image_number_1, r.object_number1[i],
+                        key.object_name2, image_number_2, r.object_number2[i]])
+        finally:
+            fd.close()
+        
     def prepare_to_create_batch(self, pipeline, image_set_list, fn_alter_path):
         '''Prepare to create a batch file
         
@@ -914,14 +964,14 @@ Do you want to save it anyway?""" %
 
 def is_object_group(group):
     """True if the group's object name is not one of the static names"""
-    return not group.name.value in (IMAGE, EXPERIMENT)
+    return not group.name.value in (IMAGE, EXPERIMENT, OBJECT_RELATIONSHIPS)
 
 class EEObjectNameSubscriber(cps.ObjectNameSubscriber):
     """ExportToExcel needs to prepend "Image" and "Experiment" to the list of objects
     
     """
     def get_choices(self, pipeline):
-        choices = [ IMAGE, EXPERIMENT]
+        choices = [ IMAGE, EXPERIMENT, OBJECT_RELATIONSHIPS ]
         choices += cps.ObjectNameSubscriber.get_choices(self, pipeline)
         return choices
 

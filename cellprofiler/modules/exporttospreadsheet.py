@@ -203,8 +203,10 @@ class ExportToSpreadsheet(cpm.CPModule):
             "Export all measurements, using default file names?", True,
             doc="""Check this setting to export every measurement.
             <b>ExportToSpreadsheet</b> will create one file per object type,
-            including image and experiment. It will use the object name as
-            the file name, optionally prepending the output file name if
+            as well as per-image, per-experiment and object relationships, 
+            if relevant. 
+            It will use the object name as the file name, 
+            optionally prepending the output file name if
             specified above. Leave this box unchecked to specify which
             objects should be exported or to override the automatic names.""")
         
@@ -217,8 +219,9 @@ class ExportToSpreadsheet(cpm.CPModule):
         group = cps.SettingsGroup()
         group.append(
             "name", EEObjectNameSubscriber("Data to export",
-            doc="""<i>(Used only when Export all measurements? is left unchecked)</i><br>Choose <i>Image</i>, <i>Experiment</i>, or an object name
-            from the list. <b>ExportToSpreadsheet</b> will write out a
+            doc="""<i>(Used only when Export all measurements? is left unchecked)</i><br>
+            Choose <i>Image</i>, <i>Experiment</i>, <i>Object relationships</i> 
+            or an object name from the list. <b>ExportToSpreadsheet</b> will write out a
             file of measurements for the given category."""))
     
         group.append(

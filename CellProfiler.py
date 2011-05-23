@@ -401,15 +401,15 @@ try:
                 jobinfo.report_measurements(pipeline, measurements)
             elif len(args) > 0:
                 pipeline.save_measurements(args[0], measurements)
-                if options.done_file is not None:
-                    if (measurements is not None and 
-                        measurements.has_feature(cpmeas.EXPERIMENT, EXIT_STATUS)):
-                        done_text = measurements.get_experiment_measurement(EXIT_STATUS)
-                    else:
-                        done_text = "Failure"
-                    fd = open(options.done_file, "wt")
-                    fd.write("%s\n"%done_text)
-                    fd.close()
+            if options.done_file is not None:
+                if (measurements is not None and 
+                    measurements.has_feature(cpmeas.EXPERIMENT, EXIT_STATUS)):
+                    done_text = measurements.get_experiment_measurement(EXIT_STATUS)
+                else:
+                    done_text = "Failure"
+                fd = open(options.done_file, "wt")
+                fd.write("%s\n"%done_text)
+                fd.close()
 except Exception, e:
     logging.root.fatal("Uncaught exception in CellProfiler.py", exc_info=True)
     raise

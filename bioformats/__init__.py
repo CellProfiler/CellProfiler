@@ -112,9 +112,6 @@ try:
     jutil.static_call("loci/common/Location",
                       "cacheDirectoryListings",
                       "(Z)V", True)
-    jutil.static_call("loci/common/Location",
-                      "enableListings",
-                      "(Z)Z", False)
 except:
     logger.warning("Bioformats version does not support directory cacheing")
 finally:

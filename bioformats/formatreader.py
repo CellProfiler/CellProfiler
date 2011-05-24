@@ -162,7 +162,7 @@ def make_image_reader_class():
         # BDReader will read all .tif files in an experiment if it's
         # called to load a .tif.
         #
-        'loci.formats.in.BDReader'
+        #'loci.formats.in.BDReader'
         ]
     for problem_class in problem_classes:
         # Move to back
@@ -197,9 +197,9 @@ def make_image_reader_class():
                 methods = class_wrapper.getMethods()
                 for method in jutil.get_env().get_object_array_elements(methods):
                     m = jutil.get_method_wrapper(method)
-                    if m.getName() == 'allowOpenToCheckType':
+                    if m.getName() in ('allowOpenToCheckType', 'setAllowOpenFiles'):
                         self.allowOpenToCheckType_method = m
-            if self.allowOpenToCheckType is not None:
+            if self.allowOpenToCheckType_method is not None:
                 object_class = env.find_class('java/lang/Object')
                 jexception = jutil.get_env().exception_occurred()
                 if jexception is not None:

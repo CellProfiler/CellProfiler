@@ -599,17 +599,16 @@ class SaveImages(cpm.CPModule):
     def make_metadata(self, nice_name, width, height, channels, stacks, frames, 
                       bit_depth = BIT_DEPTH_8, channel_names = None):
         '''Make a Bioformats IMetadata for an image'''
-        assert channels in (1,3) or len(channel_names) == channels
+        imeta = createOMEXMLMetadata()
+        meta = wrap_imetadata_object(imeta)
+        meta.createRoot()
         if (self.save_image_or_figure == IF_MOVIE) and (channels == 3):
             logical_channels = 3
         else:
             logical_channels = 1
-        imeta = createOMEXMLMetadata()
-        meta = wrap_imetadata_object(imeta)
-        meta.createRoot()
         is_big = (sys.byteorder != 'little')
         meta.setPixelsBigEndian(is_big, 0, 0)
-        meta.setPixelsDimensionOrder('XYZCT', 0, 0)
+        meta.setPixelsDimensionOrder('XYCZT', 0, 0)
         try:
             PixelType = make_pixel_type_class()
             if bit_depth == BIT_DEPTH_8:
@@ -630,17 +629,17 @@ class SaveImages(cpm.CPModule):
         meta.setPixelsSizeC(channels, 0, 0)
         meta.setPixelsSizeZ(stacks, 0, 0)
         meta.setPixelsSizeT(frames, 0, 0)
-        # Note: now is setChannelSamplesPerPixel, handled in metadatatools
-        meta.setLogicalChannelSamplesPerPixel(logical_channels, 0, 0)
         try:
             meta.setImageID(nice_name, 0)
             meta.setPixelsID(nice_name, 0)
             if channels == 1:
                 meta.setChannelID(self.image_name.value, 0, 0)
+                meta.setLogicalChannelSamplesPerPixel(logical_channels, 0, 0)
             else:
                 if channel_names is None:
-                    channel_names = ("Red","Green","Blue")
+                    channel_names = ["Channel 0:%d" % (i+1) for i in range(channels)]
                 for i, channel_name in enumerate(channel_names):
+                    meta.setLogicalChannelSamplesPerPixel(logical_channels, 0, i)
                     meta.setChannelID(self.image_name.value + ":" + channel_name,
                                       0, i)
         except jutil.JavaException:
@@ -654,7 +653,7 @@ class SaveImages(cpm.CPModule):
             self.save_image(workspace)
         
 
-    def save_image_with_bioformats(self, workspace, pixels = None):
+    def save_image_with_bioformats(self, workspace, pixels = None, channel_names = None):
         ''' Saves using bioformats library. Currently used for saving 16-bit
         tiffs. Some code is redundant from save_image, but it's easier to 
         separate the logic completely.
@@ -673,10 +672,13 @@ class SaveImages(cpm.CPModule):
             # delete it explicitly if it exists.
             os.remove(filename)
         
+        channel_names = None
         if pixels is None:
             # Get the image data to be written
             image = workspace.image_set.get_image(self.image_name.value)
             pixels = image.pixel_data
+            if image.has_channel_names:
+                channel_names = image.channel_names
         
         if (self.rescale.value and (self.save_image_or_figure != IF_OBJECTS)):
             # Normalize intensities for each channel
@@ -701,10 +703,16 @@ class SaveImages(cpm.CPModule):
             height = pixels.shape[0]
             if pixels.ndim == 2:
                 channels = 1
+                interleaved = None
             elif pixels.ndim == 3 and pixels.shape[2] == 3:
                 channels = 3
+                interleaved = True
+            elif (pixels.ndim == 3 and 
+                  (channel_names is None or pixels.shape[2] <= len(channel_names))):
+                channels = pixels.shape[2]
+                interleaved = False
             else:
-                raise 'Image shape is not supported'
+                raise ValueError('Image shape is not supported')
             stacks = 1
             frames = 1
             is_big_endian = (sys.byteorder.lower() == 'big')
@@ -714,13 +722,15 @@ class SaveImages(cpm.CPModule):
             nice_name = self.image_name.value + ":" + fname
             meta = self.make_metadata(nice_name, width, height, channels, 
                                       stacks, frames, 
-                                      bit_depth = BIT_DEPTH_16)
-            ImageWriter = make_image_writer_class()
-            writer = ImageWriter()    
+                                      bit_depth = BIT_DEPTH_16,
+                                      channel_names = channel_names)
+            klass = "loci/formats/out/OMETiffWriter"
+            ImageWriter = make_ome_tiff_writer_class()
+            writer = ImageWriter()
             writer.setMetadataRetrieve(meta)
+            if interleaved is not None:
+                writer.setInterleaved(interleaved)
             writer.setId(filename)
-            true_writer = writer.getWriter()
-            
             if channels == 1:
                 # Baseline TIFF does not support a planar configuration.
                 # The spec says to ignore planar configuration = 2 if there
@@ -740,35 +750,31 @@ class SaveImages(cpm.CPModule):
                 # Scale pixel vals to 16 bit
                 pixels = (pixels * 65535).astype(np.uint16)
 
-            if len(pixels.shape) == 3 and pixels.shape[2] == 3:  
-                pixels = np.array([pixels[:,:,0], pixels[:,:,1], pixels[:,:,2]])
+            if pixels.ndim == 2:
+                channel_pixels = [ pixels.flatten() ]
+            elif pixels.shape[2] == 3:
+                channel_pixels = [
+                    np.array([pixels[:,:,0], pixels[:,:,1], pixels[:,:,2]]).flatten()]
+            else:
+                channel_pixels = [pixels[:,:,i] for i in range(pixels.shape[2])]
 
-            pixels = pixels.flatten()
-            # split the 16-bit image into byte-sized chunks for saveBytes
-            pixels = np.fromstring(pixels.tostring(), dtype=np.uint8)
-            
-            ifd = jutil.make_instance("loci/formats/tiff/IFD","()V")
-            #
-            # Need to explicitly set the maximum sample value or images
-            # get rescaled inside the TIFF writer.
-            #
-            min_sample_value = jutil.get_static_field(
-                "loci/formats/tiff/IFD", "MIN_SAMPLE_VALUE", "I")
-            jutil.call(ifd, "putIFDValue", "(II)V", min_sample_value, 0)
-            max_sample_value = jutil.get_static_field(
-                "loci/formats/tiff/IFD", "MAX_SAMPLE_VALUE","I")
-            jutil.call(ifd, "putIFDValue","(II)V",
-                       max_sample_value, 65535)
-            try:
-                # A more-modern interface... Bioformats SVN 6230+
-                jutil.call(true_writer, "saveBytes", 
-                           "(I[BLloci/formats/tiff/IFD;)V",
-                           0, env.make_byte_array(pixels), ifd)
-            except jutil.JavaException:
-                # The old method with the "last" flag
-                jutil.call(true_writer, "saveBytes", 
-                           "([BLloci/formats/tiff/IFD;Z)V",
-                           env.make_byte_array(pixels), ifd, True)
+            for i, pixels in enumerate(channel_pixels):
+                # split the 16-bit image into byte-sized chunks for saveBytes
+                pixels = np.fromstring(pixels.tostring(), dtype=np.uint8)
+                
+                ifd = jutil.make_instance("loci/formats/tiff/IFD","()V")
+                #
+                # Need to explicitly set the maximum sample value or images
+                # get rescaled inside the TIFF writer.
+                #
+                min_sample_value = jutil.get_static_field(
+                    "loci/formats/tiff/IFD", "MIN_SAMPLE_VALUE", "I")
+                jutil.call(ifd, "putIFDValue", "(II)V", min_sample_value, 0)
+                max_sample_value = jutil.get_static_field(
+                    "loci/formats/tiff/IFD", "MAX_SAMPLE_VALUE","I")
+                jutil.call(ifd, "putIFDValue","(II)V",
+                           max_sample_value, 65535)
+                writer.saveBytesIFD(i, env.make_byte_array(pixels), ifd)
                 
             writer.close()
         

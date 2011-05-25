@@ -186,6 +186,18 @@ class MetadataRetrieve(object):
                                        'For a particular Pixels, gets number of timepoints.')
     getLogicalChannelSamplesPerPixel = jutil.make_method('getLogicalChannelSamplesPerPixel', '(II)Ljava/lang/Integer;',
                                                          'For a particular LogicalChannel, gets number of channel components in the logical channel.')
+    getChannelName = jutil.make_method('getChannelName',
+                                       '(II)Ljava/lang/String;',
+                                       '''Get the name for a particular channel.
+                                       
+                                       imageIndex - image # to query (use C = 0)
+                                       channelIndex - channel # to query''')
+    getChannelID = jutil.make_method('getChannelID',
+                                     '(II)Ljava/lang/String;',
+                                     '''Get the OME channel ID for a particular channel.
+                                     
+                                     imageIndex - image # to query (use C = 0)
+                                     channelIndex - channel # to query''')
 
 
 def wrap_imetadata_object(o):

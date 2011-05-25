@@ -1523,7 +1523,13 @@ SaveImages:[module_num:2|svn_version:\'10581\'|variable_revision_number:7|show_w
              'file_format'   : cpm_si.FF_TIF, 
              'bit_depth'     : '16',
              'input_image'   : imagefloats / 2 + .1,
-             'expected'      : (imagefloats * 65535.0).astype(np.uint16) }
+             'expected'      : (imagefloats * 65535.0).astype(np.uint16) },
+            # Two-channel image
+            {'rescale'       : False,
+             'file_format'   : cpm_si.FF_TIF,
+             'bit_depth'     : '16',
+             'input_image'   : np.dstack([image16] * 2),
+             'expected'      : np.dstack([image16] * 2) }
         ]
 
         for i, setting in enumerate(test_settings):

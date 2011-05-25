@@ -589,6 +589,8 @@ def get_nice_arg(arg, sig):
 
 def get_nice_result(result, sig):
     '''Convert a result that may be a java object into a string'''
+    if result is None:
+        return None
     env = get_env()
     if sig == 'Ljava/lang/String;':
         return env.get_string_utf(result)
@@ -802,6 +804,8 @@ def get_class_wrapper(obj, is_class = False):
                            'Throw an exception if object is not castable to this class')
         isPrimitive = make_method('isPrimitive', '()Z',
                                   'Return True if the class is a primitive such as boolean or int')
+        newInstance = make_method('newInstance', '()Ljava/lang/Object;',
+                                  'Make a new instance of the object with the default constructor')
     return Klass()
 
 MOD_ABSTRACT  = 'ABSTRACT'

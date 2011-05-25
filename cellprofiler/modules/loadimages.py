@@ -63,7 +63,8 @@ logger = logging.getLogger(__name__)
 try:
     import bioformats.formatreader as formatreader
     import bioformats.metadatatools as metadatatools
-    formatreader.jutil.attach()
+    import cellprofiler.utilities.jutil as jutil
+    jutil.attach()
     try:
         FormatTools = formatreader.make_format_tools_class()
         ImageReader = formatreader.make_image_reader_class()
@@ -71,7 +72,7 @@ try:
             "loci/formats/ChannelSeparator")
         has_bioformats = True
     finally:
-        formatreader.jutil.detach()
+        jutil.detach()
 except:
     logger.warning("Failed to load bioformats", exc_info=True)
     has_bioformats = False
@@ -2784,6 +2785,7 @@ class LoadImagesImageProvider(LoadImagesImageProviderBase):
         """
         self.cache_file()
         filename = self.get_filename()
+        channel_names = []
         if filename.lower().endswith(".mat"):
             imgdata = scipy.io.matlab.mio.loadmat(self.get_full_name(),
                                                   struct_as_record=True)
@@ -2796,7 +2798,8 @@ class LoadImagesImageProvider(LoadImagesImageProviderBase):
                 img, self.scale = load_using_bioformats(
                     self.get_full_name(), 
                     rescale = self.rescale,
-                    wants_max_intensity = True)
+                    wants_max_intensity = True,
+                    channel_names = channel_names)
             except:
                 logger.warning(
                     "Failed to load %s with bioformats. Use PIL instead",
@@ -2818,10 +2821,13 @@ class LoadImagesImageProvider(LoadImagesImageProviderBase):
                 else:
                     raise
             
-        return cpimage.Image(img,
-                             path_name = self.get_pathname(),
-                             file_name = self.get_filename(),
-                             scale = self.scale)
+        image = cpimage.Image(img,
+                              path_name = self.get_pathname(),
+                              file_name = self.get_filename(),
+                              scale = self.scale)
+        if img.ndim == 3 and len(channel_names) == img.shape[2]:
+            image.channel_names = list(channel_names)
+        return image
     
 
 def load_using_PIL(path, index=0, seekfn=None, rescale = True, wants_max_intensity = False):
@@ -2891,12 +2897,15 @@ def load_using_PIL(path, index=0, seekfn=None, rescale = True, wants_max_intensi
         return img, scale
     return img
 
-def load_using_bioformats(path, c=None, z=0, t=0, series=None, rescale = True, wants_max_intensity = False):
+def load_using_bioformats(path, c=None, z=0, t=0, series=None, rescale = True,
+                          wants_max_intensity = False,
+                          channel_names = None):
     '''Load the given image file using the Bioformats library
     
     path: path to the file
     z: the frame index in the z (depth) dimension.
     t: the frame index in the time dimension.
+    channel_names: None if you don't want them, a list which will be filled if you do
     
     Returns either a 2-d (grayscale) or 3-d (2-d + 3 RGB planes) image
     '''
@@ -2906,12 +2915,40 @@ def load_using_bioformats(path, c=None, z=0, t=0, series=None, rescale = True, w
     if sys.platform.startswith("win"):
         path = path.replace("/",os.path.sep)
     try:
-        formatreader.jutil.attach()
-        rdr = ImageReader()
-        rdr.setGroupFiles(False)
-        rdr.allowOpenToCheckType(False)
+        jutil.attach()
+        #
+        # Bypass the ImageReader and scroll through the class list. The
+        # goal here is to ask the FormatHandler if it thinks it could
+        # possibly parse the file, then only give the FormatReader access
+        # to the open file stream so it can't damage the file server.
+        #
+        
+        env = jutil.get_env()
+        class_list = formatreader.get_class_list()
+        stream = jutil.make_instance('loci/common/RandomAccessInputStream',
+                                     '(Ljava/lang/String;)V', path)
+        filename = os.path.split(path)[1]
+        IFormatReader = formatreader.make_iformat_reader_class()
+        for klass in env.get_object_array_elements(class_list.get_classes()):
+            wclass = jutil.get_class_wrapper(klass, True)
+            maybe_rdr = IFormatReader()
+            maybe_rdr.o = wclass.newInstance()
+            maybe_rdr.setGroupFiles(False)
+            if maybe_rdr.suffixNecessary:
+                if not maybe_rdr.isThisTypeSZ(filename, False):
+                    continue
+                if maybe_rdr.suffixSufficient:
+                    rdr = maybe_rdr
+                    break
+            if (maybe_rdr.isThisTypeStream(stream)):
+                rdr = maybe_rdr
+                break
+        if rdr is None:
+            raise ValueError("Could not find a Bio-Formats reader for %s", path)
         mdoptions = metadatatools.get_metadata_options(metadatatools.ALL)
         rdr.setMetadataOptions(mdoptions)
+        metadata = metadatatools.createOMEXMLMetadata()
+        rdr.setMetadataStore(metadata)
         rdr.setId(path)
         width = rdr.getSizeX()
         height = rdr.getSizeY()
@@ -2975,10 +3012,19 @@ def load_using_bioformats(path, c=None, z=0, t=0, series=None, rescale = True, w
                       for i in range(rdr.getSizeC())]
             image = np.dstack(images)
             image.shape = (height, width, rdr.getSizeC())
+            if not channel_names is None:
+                metadata = metadatatools.MetadataRetrieve(metadata)
+                for i in range(rdr.getSizeC()):
+                    index = rdr.getIndex(z, 0, t)
+                    channel_name = metadata.getChannelName(index, i)
+                    if channel_name is None:
+                        channel_name = metadata.getChannelID(index, i)
+                    channel_names.append(channel_name)
         else:
             index = rdr.getIndex(z,0,t)
             image = np.frombuffer(rdr.openBytes(index),dtype)
             image.shape = (height,width)
+            
         rdr.close()
         del rdr
         #
@@ -2989,7 +3035,7 @@ def load_using_bioformats(path, c=None, z=0, t=0, series=None, rescale = True, w
         if rescale:
             image = image.astype(np.float32) / float(scale)
     finally:
-        formatreader.jutil.detach()
+        jutil.detach()
     if wants_max_intensity:
         return image, scale
     return image

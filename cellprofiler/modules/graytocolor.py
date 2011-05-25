@@ -224,19 +224,23 @@ class GrayToColor(cpm.CPModule):
             if all([color_scheme_setting.image_name.is_blank
                     for color_scheme_setting in self.color_scheme_settings]):
                 raise cps.ValidationError("At least one of the images must not be blank",\
-                                              self.color_scheme_settings[0].image_name)
+                                              self.color_scheme_settings[0].image_name.value)
     def run(self,workspace):
         parent_image = None
         parent_image_name = None
         imgset = workspace.image_set
         rgb_pixel_data = None
-        input_image_settings = []
+        input_image_names = []
+        channel_names = []
         if self.scheme_choice != SCHEME_STACK:
             for color_scheme_setting in self.color_scheme_settings:
                 if color_scheme_setting.image_name.is_blank:
+                    channel_names.append("Blank")
                     continue
-                input_image_settings.append(color_scheme_setting.image_name)
-                image = imgset.get_image(color_scheme_setting.image_name.value,
+                image_name = color_scheme_setting.image_name.value
+                input_image_names.append(image_name)
+                channel_names.append(image_name)
+                image = imgset.get_image(image_name,
                                          must_be_grayscale=True)
                 multiplier = (color_scheme_setting.intensities *
                               color_scheme_setting.adjustment_factor.value)
@@ -254,9 +258,11 @@ class GrayToColor(cpm.CPModule):
                     parent_image_name = color_scheme_setting.image_name.value
                     rgb_pixel_data = np.dstack([pixel_data]*3) * multiplier
         else:
-            source_channels = [imgset.get_image(sc.image_name, must_be_grayscale=True).pixel_data 
-                               for sc in self.stack_channels]
-            parent_image = source_channels[0]
+            input_image_names = [sc.image_name.value for sc in self.stack_channels]
+            channel_names = input_image_names
+            source_channels = [imgset.get_image(name, must_be_grayscale=True).pixel_data 
+                               for name in input_image_names]
+            parent_image = imgset.get_image(input_image_names[0])
             for idx, pd in enumerate(source_channels):
                 if pd.shape != source_channels[0].shape:
                     raise ValueError("The %s image and %s image have different sizes (%s vs %s)"%
@@ -265,48 +271,59 @@ class GrayToColor(cpm.CPModule):
                                       source_channels[0].shape,
                                       pd.pixel_data.shape))
             rgb_pixel_data = np.dstack(source_channels)
-            print "stacked", rgb_pixel_data.shape, len(source_channels)
 
         ###############
         # Draw images #
         ###############
         if workspace.frame != None:
-            title = "Gray to color #%d"%(self.module_num)
-            if self.scheme_choice == SCHEME_CMYK:
-                subplots = (3,2)
-                subplot_indices = ((0,0),(0,1),(1,0),(1,1),(2,0))
-                color_subplot = (2,1)
-            elif self.scheme_choice == SCHEME_RGB:
-                subplots = (2,2)
-                subplot_indices = ((0,0),(0,1),(1,0))
-                color_subplot = (1,1)
-            else:
-                subplots = (1, 1)
-                subplot_indices = []
-                color_subplot = (0, 0)
-            my_frame = workspace.create_or_find_figure(title="GrayToColor, image cycle #%d"%(
-                workspace.measurements.image_set_number), subplots = subplots)
-            for i, input_image_setting in enumerate(input_image_settings):
-                x,y = subplot_indices[i]
-                image = imgset.get_image(input_image_setting.value,
-                                         must_be_grayscale=True)
-                my_frame.subplot_imshow_grayscale(x,y,image.pixel_data,
-                                                  title=input_image_setting.value,
-                                                  sharex = my_frame.subplot(0,0),
-                                                  sharey = my_frame.subplot(0,0))
-                my_frame.subplot(x,y).set_visible(True)
-            for x,y in subplot_indices[len(input_image_settings):]:
-                my_frame.subplot(x,y).set_visible(False)
-            my_frame.subplot_imshow(color_subplot[0], color_subplot[1]
-                                    ,rgb_pixel_data,
-                                    title=self.rgb_image_name.value,
-                                    sharex = my_frame.subplot(0,0),
-                                    sharey = my_frame.subplot(0,0))
+            workspace.display_data.input_image_names = input_image_names
+            workspace.display_data.rgb_pixel_data = rgb_pixel_data
+            
         ##############
         # Save image #
         ##############
         rgb_image = cpi.Image(rgb_pixel_data, parent_image = parent_image)
+        rgb_image.channel_names = channel_names
         imgset.add(self.rgb_image_name.value, rgb_image)
+        
+    def is_interactive(self):
+        return False
+    
+    def display(self, workspace):
+        input_image_names = workspace.display_data.input_image_names
+        title = "Gray to color #%d"%(self.module_num)
+        nsubplots = len(input_image_names)
+        imgset = workspace.image_set
+        if self.scheme_choice == SCHEME_CMYK:
+            subplots = (3,2)
+            subplot_indices = ((0,0),(0,1),(1,0),(1,1),(2,0))
+            color_subplot = (2,1)
+        elif self.scheme_choice == SCHEME_RGB:
+            subplots = (2,2)
+            subplot_indices = ((0,0),(0,1),(1,0))
+            color_subplot = (1,1)
+        else:
+            subplots = (min(nsubplots+1,4), int(nsubplots/4) + 1)
+            subplot_indices = [(i % 4, int(i / 4)) for i in range(nsubplots)]
+            color_subplot = (nsubplots % 4, int(nsubplots / 4))
+        my_frame = workspace.create_or_find_figure(title="GrayToColor, image cycle #%d"%(
+            workspace.measurements.image_set_number), subplots = subplots)
+        for i, input_image_name in enumerate(input_image_names):
+            x,y = subplot_indices[i]
+            image = imgset.get_image(input_image_name,
+                                     must_be_grayscale=True)
+            my_frame.subplot_imshow_grayscale(x,y,image.pixel_data,
+                                              title=input_image_name,
+                                              sharex = my_frame.subplot(0,0),
+                                              sharey = my_frame.subplot(0,0))
+            my_frame.subplot(x,y).set_visible(True)
+        for x,y in subplot_indices[len(input_image_names):]:
+            my_frame.subplot(x,y).set_visible(False)
+        my_frame.subplot_imshow(color_subplot[0], color_subplot[1]
+                                ,workspace.display_data.rgb_pixel_data,
+                                title=self.rgb_image_name.value,
+                                sharex = my_frame.subplot(0,0),
+                                sharey = my_frame.subplot(0,0))
     
     def upgrade_settings(self,setting_values,variable_revision_number,
                          module_name,from_matlab):

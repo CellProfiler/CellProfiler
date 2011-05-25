@@ -1125,6 +1125,10 @@ class CPFigureFrame(wx.Frame):
         if is_color_image(image):
             rgb_mask = match_rgbmask_to_image(rgb_mask, image)
             image *= rgb_mask
+            if image.shape[2] == 2:
+                image = np.dstack([image[:,:,0], 
+                                   image[:,:,1], 
+                                   np.zeros(image.shape[:2], image.dtype)])
         if not is_color_image(image):
             mappable = matplotlib.cm.ScalarMappable(cmap=colormap)
             mappable.set_clim(vmin, vmax)

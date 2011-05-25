@@ -97,6 +97,9 @@ def make_iformat_writer_class(class_name):
                                            'Sets whether or not the channels in an image are interleaved.')
         setMetadataRetrieve = jutil.make_method('setMetadataRetrieve', '(Lloci/formats/meta/MetadataRetrieve;)V', 
                                                 'Sets the metadata retrieval object from which to retrieve standardized metadata.')
+        setValidBitsPerPixel = jutil.make_method(
+            'setValidBitsPerPixel', '(I)V',
+            'Sets the number of valid bits per pixel')
         setSeries = jutil.make_method(
             'setSeries', '(I)V',
             '''Set the series for the image file
@@ -154,7 +157,32 @@ def make_image_writer_class():
                                                  'Saves the given byte array to the current file.')
     return ImageWriter
 
-        
+def make_ome_tiff_writer_class():
+    '''Return a class that wraps loci.formats.out.OMETiffWriter'''
+    env = jutil.get_env()
+    class_name = 'loci/formats/out/OMETiffWriter'
+    klass = env.find_class(class_name)
+    base_klass = env.find_class('loci/formats/IFormatWriter')
+    IFormatWriter = make_iformat_writer_class(class_name)
+    class OMETiffWriter(IFormatWriter):
+        new_fn = jutil.make_new(class_name, '()V')
+        def __init__(self):
+            self.new_fn()
+        setId = jutil.make_method('setId', '(Ljava/lang/String;)V', 
+                                  'Sets the current file name.')
+        close = jutil.make_method(
+            'close','()V',
+            'Closes currently open file(s) and frees allocated memory.')
+        saveBytesIFD = jutil.make_method(
+            'saveBytes', '(I[BLloci/formats/tiff/IFD;)V',
+            '''save a byte array to an image channel
+            
+            index - image index
+            bytes - byte array to save
+            ifd - a loci.formats.tiff.IFD instance that gives all of the
+                  IFD values associated with the channel''')
+    return OMETiffWriter
+    
 def make_writer_wrapper_class(class_name):
     '''Make an ImageWriter wrapper class
     

@@ -141,7 +141,101 @@ def make_iformat_reader_class():
         setMetadataOptions = jutil.make_method('setMetadataOptions',
                                                '(Lloci/formats/in/MetadataOptions;)V',
                                                'Sets the metadata options used when reading metadata')
+        isThisTypeS = jutil.make_method(
+            'isThisType',
+            '(Ljava/lang/String;)Z',
+            'Return true if the filename might be handled by this reader')
+        isThisTypeSZ = jutil.make_method(
+            'isThisType',
+            '(Ljava/lang/String;Z)Z',
+            '''Return true if the named file is handled by this reader.
+            
+            filename - name of file
+            
+            allowOpen - True if the reader is allowed to open files
+                        when making its determination
+            ''')
+        isThisTypeStream = jutil.make_method(
+            'isThisType',
+            '(Lloci/common/RandomAccessInputStream;)Z',
+            '''Return true if the stream might be parseable by this reader.
+            
+            stream - the RandomAccessInputStream to be used to read the file contents
+            
+            Note that both isThisTypeS and isThisTypeStream must return true
+            for the type to truly be handled.''')
+        setId = jutil.make_method('setId', '(Ljava/lang/String;)V',
+                                  'Set the name of the data file')
+        getMetadataStore = jutil.make_method('getMetadataStore', '()Lloci/formats/meta/MetadataStore;',
+                                             'Retrieves the current metadata store for this reader.')
+        def get_class_name(self):
+            return jutil.call(jutil.call(self.o, 'getClass', '()Ljava/lang/Class;'),
+                              'getName', '()Ljava/lang/String;')
+        
+        @property
+        def suffixNecessary(self):
+            if self.get_class_name() == 'loci.formats.in.JPKReader':
+                return True;
+            env = jutil.get_env()
+            klass = env.get_object_class(self.o)
+            field_id = env.get_field_id(klass, "suffixNecessary", "Z")
+            if field_id is None:
+                return None
+            return env.get_boolean_field(self.o, field_id)
+            
+        @property
+        def suffixSufficient(self):
+            if self.get_class_name() == 'loci.formats.in.JPKReader':
+                return True;
+            env = jutil.get_env()
+            klass = env.get_object_class(self.o)
+            field_id = env.get_field_id(klass, "suffixSufficient", "Z")
+            if field_id is None:
+                return None
+            return env.get_boolean_field(self.o, field_id)
+            
+            
     return IFormatReader
+
+def get_class_list():
+    '''Return a wrapped instance of loci.formats.ClassList'''
+    #
+    # This uses the reader.txt file from inside the loci_tools.jar
+    #
+    class ClassList(object):
+        remove_class = jutil.make_method(
+            'removeClass', '(Ljava/lang/Class;)V',
+            'Remove the given class from the class list')
+        add_class = jutil.make_method(
+            'addClass', '(Ljava/lang/Class;)V',
+            'Add the given class to the back of the class list')
+        get_classes = jutil.make_method(
+            'getClasses', '()[Ljava/lang/Class;',
+            'Get the classes in the list as an array')
+            
+        def __init__(self):
+            env = jutil.get_env()
+            class_name = 'loci/formats/ImageReader'
+            klass = env.find_class(class_name)
+            base_klass = env.find_class('loci/formats/IFormatReader')
+            self.o = jutil.make_instance("loci/formats/ClassList", 
+                                         "(Ljava/lang/String;"
+                                         "Ljava/lang/Class;" # base
+                                         "Ljava/lang/Class;)V", # location in jar
+                                         "readers.txt", base_klass, klass)
+            problem_classes = [
+                # BDReader will read all .tif files in an experiment if it's
+                # called to load a .tif.
+                #
+                'loci.formats.in.BDReader'
+                ]
+            for problem_class in problem_classes:
+                # Move to back
+                klass = jutil.class_for_name(problem_class)
+                self.remove_class(klass)
+                self.add_class(klass)
+    return ClassList()
+    
     
 def make_image_reader_class():
     '''Return an image reader class for the given Java environment'''
@@ -150,41 +244,17 @@ def make_image_reader_class():
     klass = env.find_class(class_name)
     base_klass = env.find_class('loci/formats/IFormatReader')
     IFormatReader = make_iformat_reader_class()
-    #
-    # This uses the reader.txt file from inside the loci_tools.jar
-    #
-    class_list = jutil.make_instance("loci/formats/ClassList", 
-                                     "(Ljava/lang/String;"
-                                     "Ljava/lang/Class;" # base
-                                     "Ljava/lang/Class;)V", # location in jar
-                                     "readers.txt", base_klass, klass)
-    problem_classes = [
-        # BDReader will read all .tif files in an experiment if it's
-        # called to load a .tif.
-        #
-        #'loci.formats.in.BDReader'
-        ]
-    for problem_class in problem_classes:
-        # Move to back
-        klass = jutil.class_for_name(problem_class)
-        jutil.call(class_list, 'removeClass', '(Ljava/lang/Class;)V',
-                   klass)
-        jutil.call(class_list, 'addClass', '(Ljava/lang/Class;)V',
-                   klass)
+    class_list = get_class_list()
         
     class ImageReader(IFormatReader):
         new_fn = jutil.make_new(class_name, '(Lloci/formats/ClassList;)V')
         def __init__(self):
-            self.new_fn(class_list)
-        setId = jutil.make_method('setId', '(Ljava/lang/String;)V',
-                                  'Set the name of the data file')
+            self.new_fn(class_list.o)
         getFormat = jutil.make_method('getFormat',
                                       '()Ljava/lang/String;',
                                       'Get a string describing the format of this file')
         getReader = jutil.make_method('getReader',
                                       '()Lloci/formats/IFormatReader;')
-        getMetadataStore = jutil.make_method('getMetadataStore', '()Lloci/formats/meta/MetadataStore;',
-                                             'Retrieves the current metadata store for this reader.')
         def allowOpenToCheckType(self, allow):
             '''Allow the "isThisType" function to open files
             

@@ -42,6 +42,7 @@ def display_error_dialog(frame, exc, pipeline, message=None, tb = None):
     
     if tb is None:
         traceback_text = traceback.format_exc()
+        tb = sys.exc_info()[2]
     else:
         traceback_text = "".join(traceback.format_exception(type(exc), exc.message, tb))
     dialog = wx.Dialog(frame, title="Pipeline error")

@@ -384,6 +384,24 @@ class TestApplyThreshold(unittest.TestCase):
         module.run(workspace)
         output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         self.assertTrue(np.all(output.pixel_data == expected))
+
+    def test_04_07_threshold_from_measurement(self):
+        '''Test a binary threshold from previous measurements'''
+        np.random.seed(0)
+        image = np.random.uniform(size=(20,20))
+        workspace, module = self.make_workspace(image)
+        module.binary.value = A.BINARY
+        module.threshold_method.value = T.TM_MANUAL
+        module.manual_threshold.value = .5
+        module.run(workspace)
+
+        module2 = A.ApplyThreshold()
+        module2.image_name.value = OUTPUT_IMAGE_NAME
+        module2.thresholded_image_name.value = OUTPUT_IMAGE_NAME + 'new'
+        module2.binary.value = A.BINARY
+        module2.threshold_method.value = T.TM_MEASUREMENT
+        module2.thresholding_measurement.value = 'Threshold_FinalThreshold_' + OUTPUT_IMAGE_NAME
+        module2.run(workspace)
     
     def test_05_01_otsu_wv(self):
         '''Test the weighted variance version of Otsu'''

@@ -1124,6 +1124,7 @@ class Pipeline(object):
 
             measurements = None
             last_image_number = None
+            pipeline_stats_logger.info("Times reported are CPU times for each module, not wall-clock time")
             for group_number, group_index, image_number, closure in group(image_set_list):
                 if image_number is None:
                     if not closure(workspace):
@@ -1158,7 +1159,6 @@ class Pipeline(object):
                 outlines = {}
                 should_write_measurements = True
                 grids = None
-                pipeline_stats_logger.info("Times reported are CPU times for each module, not wall-clock time")
                 for module in self.modules():
                     gc.collect()
                     if module.should_stop_writing_measurements():

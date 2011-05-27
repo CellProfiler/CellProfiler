@@ -270,6 +270,8 @@ if options.run_distributed:
 # pipeline runner with special methods to fetch pipelines and
 # first/last imagesets and for returning results.
 if options.worker_mode_URL is not None:
+    import cellprofiler.preferences as cpprefs
+    cpprefs.set_headless()
     import cellprofiler.distributed as cpdistributed
     options.show_gui = False
     options.run_pipeline = True

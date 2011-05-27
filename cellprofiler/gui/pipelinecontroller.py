@@ -709,6 +709,7 @@ class PipelineController:
                 self.__frame.preferences_view.on_analyze_images()
                 self.__distributor = cpdistributed.Distributor(self.__frame)
                 self.__distributor.start_serving(self.__pipeline, 8567, self.get_output_file_path(), self.status_callback)
+                print "serving at ", self.__distributor.server_URL
                 if self.__running_pipeline:
                     self.__running_pipeline.close()
                 self.__running_pipeline = self.__distributor.run_with_yield()

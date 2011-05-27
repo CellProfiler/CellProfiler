@@ -128,7 +128,9 @@ class CPModule(object):
         if settings.dtype.fields.has_key(cpp.SHOW_WINDOW):
             self.__show_window = settings[cpp.SHOW_WINDOW][0,idx] != 0
         if settings.dtype.fields.has_key(cpp.BATCH_STATE):
-            self.batch_state = settings[cpp.BATCH_STATE][0,idx]
+            # convert from uint8 to array of one string to avoid long
+            # arrays, which get truncated by numpy repr()
+            self.batch_state = np.array(settings[cpp.BATCH_STATE][0,idx].tostring())
         setting_count=settings[cpp.NUMBERS_OF_VARIABLES][0,idx]
         variable_revision_number = settings[cpp.VARIABLE_REVISION_NUMBERS][0,idx]
         module_name = settings[cpp.MODULE_NAMES][0,idx][0]
@@ -254,7 +256,10 @@ class CPModule(object):
         setting[cpp.VARIABLE_REVISION_NUMBERS][0,module_idx] = self.variable_revision_number
         setting[cpp.MODULE_REVISION_NUMBERS][0,module_idx] = 0
         setting[cpp.SHOW_WINDOW][0,module_idx] = 1 if self.show_window else 0
-        setting[cpp.BATCH_STATE][0,module_idx] = self.batch_state
+        # convert from single-element array with a long string to an
+        # array of uint8, to avoid string encoding isues in .MAT
+        # format.
+        setting[cpp.BATCH_STATE][0,module_idx] = np.fromstring(self.batch_state.tostring(), np.uint8)
     
     def in_batch_mode(self):
         '''Return True if the module knows that the pipeline is in batch mode'''

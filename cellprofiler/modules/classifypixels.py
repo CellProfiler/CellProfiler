@@ -7,8 +7,14 @@ Ilastik is now bundled with the CellProfiler distribution; it applies
 supervised machine learning techniques to images to learn their features.
 A user trains a classifier with Ilastik and then saves the classifier.
 The user then uses the ClassifyPixels module to classify the pixels in an
-image. ClassifyPixels produces an "image" consisting of probabilities that
-the pixel belongs to the chosen class.
+image. 
+
+ClassifyPixels produces an "image" consisting of probabilities that
+the pixel belongs to the chosen class; this image is similar to
+an intensity image that would be produced by fluorescence imaging.
+Provided that the classifier is sufficiently accruate, the image is
+well-suited for input into one of the <b>Identify</b> modules for
+object detection.
 
 Currently, ilastik is only avilable for Windows, and is accessible from
 in the CellProfiler folder under the Start Menu. A 64-bit system is 

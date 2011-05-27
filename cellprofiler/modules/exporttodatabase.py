@@ -2044,19 +2044,18 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
     def write_properties_file(self, workspace):
         """Write the CellProfiler Analyst properties file"""
         #
-        # Find the primary object
+        # Get appropriate object names
         #
         if self.objects_choice == O_SELECT:
             object_names = (self.objects_list.value).split(',')
-            object_name = object_names[-1]
         elif self.objects_choice == O_NONE:
-            object_name = ""
+            object_names = ""
         else:
-            object_name = [object_name for object_name in workspace.measurements.get_object_names() 
+            object_names = [object_name for object_name in workspace.measurements.get_object_names() 
                            if (object_name is not cpmeas.IMAGE and not self.ignore_object(object_name))]
-            object_name = object_name[0] if len(object_name) > 0 else ""
+            ## Defaults to the first object in the list, which is the last one defined in the pipeline
+##            object_names = [object_names[0]] if len(object_names) > 0 else ""
                 
-        supposed_primary_object = object_name
         image_names = []
         if self.properties_export_all_image_defaults:
             # Find all images that have FileName and PathName
@@ -2077,9 +2076,8 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
         if tbl_prefix is not "":
             if tbl_prefix.endswith('_'): tbl_prefix = tbl_prefix[:-1]
             name = "_".join((name, tbl_prefix))
-        filename = '%s.properties'%(name)
-        file_name = self.make_full_filename(filename,workspace)
-        fid = open(file_name,'wt')
+
+        tblname = name
         date = datetime.datetime.now().ctime()
         db_type = (self.db_type == DB_MYSQL and 'mysql') or (self.db_type == DB_SQLITE and 'sqlite') or 'oracle_not_supported'
         db_port = (self.db_type == DB_MYSQL and 3306) or (self.db_type == DB_ORACLE and 1521) or ''
@@ -2108,72 +2106,84 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
             db_info += 'db_passwd    = '
         
         spot_tables = '%sPer_Image'%(self.get_table_prefix())
-        if self.objects_choice != O_NONE and self.separate_object_tables == OT_COMBINE:
-            cell_tables = '%sPer_Object'%(self.get_table_prefix())
-            object_id = C_OBJECT_NUMBER
-        else:
-            cell_tables = '%sPer_%s'%(self.get_table_prefix(),supposed_primary_object) if supposed_primary_object else ''
-            object_id = '%s_Number_Object_Number'%(supposed_primary_object) if supposed_primary_object else ''
-        unique_id = C_IMAGE_NUMBER
-        object_count = 'Image_Count_%s'%(supposed_primary_object) if supposed_primary_object else ''
-        cell_x_loc = '%s_Location_Center_X'%(supposed_primary_object) if supposed_primary_object else ''
-        cell_y_loc = '%s_Location_Center_Y'%(supposed_primary_object) if supposed_primary_object else ''
-        image_file_cols = ','.join(['%s_%s_%s'%(cpmeas.IMAGE,C_FILE_NAME,name) for name in image_names])
-        image_path_cols = ','.join(['%s_%s_%s'%(cpmeas.IMAGE,C_PATH_NAME,name) for name in image_names])
-        image_thumbnail_cols = ','.join(['%s_Thumbnail_%s'%(cpmeas.IMAGE,name) for name in self.thumbnail_image_names.get_selections()])
         
-        if self.properties_export_all_image_defaults:
-            # Provide default colors
-            if len(image_names) == 1:
-                image_channel_colors = 'gray,'
+        for object_name in object_names:
+        
+            if self.objects_choice != O_NONE and self.separate_object_tables == OT_COMBINE:
+                cell_tables = '%sPer_Object'%(self.get_table_prefix())
+                object_id = C_OBJECT_NUMBER
+                filename = '%s.properties'%(tblname)
+                ## Defaults to the first object in the list, which is the last one defined in the pipeline
+##                object_names = [object_names[0]] if len(object_names) > 0 else ""
+                if len(object_names) > 1 and object_name == object_names[1]:
+                    break  ## Stop on second iteration
             else:
-                image_channel_colors = 'red, green, blue, cyan, magenta, yellow, gray, '+('none, ' * 10)
-                image_channel_colors = ','.join(image_channel_colors.split(',')[:len(image_names)])
-        else:
-            # Extract user-specified image names
-            image_names = [];
-            for group in self.image_groups:
-                if group.wants_automatic_image_name:
-                    image_names += [group.image_cols.value]
-                else:
-                    image_names += [group.image_name.value]
-                    
-            # Extract user-specified colors
-            image_channel_colors = []
-            for group in self.image_groups:
-                image_channel_colors += [group.image_channel_colors.value]
-            image_channel_colors = ','.join(image_channel_colors)
-        
-        image_names = ','.join(image_names) # Convert to comma-separated list
-            
-        group_statements = ''
-        if self.properties_wants_groups:
-            for group in self.group_field_groups:
-                group_statements += 'group_SQL_' + group.group_name.value + ' = SELECT ' + group.group_statement.value + ' FROM ' + spot_tables + '\n'
-        
-        filter_statements = ''
-        if self.properties_wants_filters:
-            if self.create_filters_for_plates:
-                plate_key = self.properties_plate_metadata.value
-                metadata_groups = workspace.measurements.group_by_metadata([plate_key])
-                for metadata_group in metadata_groups:
-                    plate_text = re.sub("[^A-Za-z0-9_]",'_',metadata_group.get(plate_key)) # Replace any odd characters with underscores
-                    filter_name = 'Plate_%s'%plate_text
-                    filter_statements += 'filter_SQL_' + filter_name + ' = SELECT ImageNumber'\
-                                        ' FROM ' + spot_tables + \
-                                        ' WHERE Image_Metadata_%s' \
-                                        ' = "%s"\n'%(plate_key, metadata_group.get(plate_key))
+                cell_tables = '%sPer_%s'%(self.get_table_prefix(),object_name) if object_name else ''
+                object_id = '%s_Number_Object_Number'%(object_name) if object_name else ''
+                filename = '%s_%s.properties'%(tblname,object_name)
                 
-            for group in self.filter_field_groups:
-                filter_statements += 'filter_SQL_' + group.filter_name.value + ' = SELECT ImageNumber'\
-                                        ' FROM ' + spot_tables + \
-                                        ' WHERE ' + group.filter_statement.value + '\n'
-        
-        image_url = self.properties_image_url_prepend.value
-        plate_type = "" if self.properties_plate_type.value == NONE_CHOICE else self.properties_plate_type.value
-        plate_id = "" if self.properties_plate_metadata.value == NONE_CHOICE else "%s_%s_%s"%(cpmeas.IMAGE, cpmeas.C_METADATA, self.properties_plate_metadata.value)
-        well_id = "" if self.properties_well_metadata.value == NONE_CHOICE else "%s_%s_%s"%(cpmeas.IMAGE, cpmeas.C_METADATA, self.properties_well_metadata.value)
-        contents = """#%(date)s
+            file_name = self.make_full_filename(filename,workspace)
+            fid = open(file_name,'wt')            
+            unique_id = C_IMAGE_NUMBER
+            object_count = 'Image_Count_%s'%(object_name) if object_name else ''
+            cell_x_loc = '%s_Location_Center_X'%(object_name) if object_name else ''
+            cell_y_loc = '%s_Location_Center_Y'%(object_name) if object_name else ''
+            image_file_cols = ','.join(['%s_%s_%s'%(cpmeas.IMAGE,C_FILE_NAME,name) for name in image_names])
+            image_path_cols = ','.join(['%s_%s_%s'%(cpmeas.IMAGE,C_PATH_NAME,name) for name in image_names])
+            image_thumbnail_cols = ','.join(['%s_Thumbnail_%s'%(cpmeas.IMAGE,name) for name in self.thumbnail_image_names.get_selections()])
+            
+            if self.properties_export_all_image_defaults:
+                # Provide default colors
+                if len(image_names) == 1:
+                    image_channel_colors = 'gray,'
+                else:
+                    image_channel_colors = 'red, green, blue, cyan, magenta, yellow, gray, '+('none, ' * 10)
+                    image_channel_colors = ','.join(image_channel_colors.split(',')[:len(image_names)])
+            else:
+                # Extract user-specified image names
+                image_names = [];
+                for group in self.image_groups:
+                    if group.wants_automatic_image_name:
+                        image_names += [group.image_cols.value]
+                    else:
+                        image_names += [group.image_name.value]
+                        
+                # Extract user-specified colors
+                image_channel_colors = []
+                for group in self.image_groups:
+                    image_channel_colors += [group.image_channel_colors.value]
+                image_channel_colors = ','.join(image_channel_colors)
+            
+            image_names_csl = ','.join(image_names) # Convert to comma-separated list
+                
+            group_statements = ''
+            if self.properties_wants_groups:
+                for group in self.group_field_groups:
+                    group_statements += 'group_SQL_' + group.group_name.value + ' = SELECT ' + group.group_statement.value + ' FROM ' + spot_tables + '\n'
+            
+            filter_statements = ''
+            if self.properties_wants_filters:
+                if self.create_filters_for_plates:
+                    plate_key = self.properties_plate_metadata.value
+                    metadata_groups = workspace.measurements.group_by_metadata([plate_key])
+                    for metadata_group in metadata_groups:
+                        plate_text = re.sub("[^A-Za-z0-9_]",'_',metadata_group.get(plate_key)) # Replace any odd characters with underscores
+                        filter_name = 'Plate_%s'%plate_text
+                        filter_statements += 'filter_SQL_' + filter_name + ' = SELECT ImageNumber'\
+                                            ' FROM ' + spot_tables + \
+                                            ' WHERE Image_Metadata_%s' \
+                                            ' = "%s"\n'%(plate_key, metadata_group.get(plate_key))
+                    
+                for group in self.filter_field_groups:
+                    filter_statements += 'filter_SQL_' + group.filter_name.value + ' = SELECT ImageNumber'\
+                                            ' FROM ' + spot_tables + \
+                                            ' WHERE ' + group.filter_statement.value + '\n'
+            
+            image_url = self.properties_image_url_prepend.value
+            plate_type = "" if self.properties_plate_type.value == NONE_CHOICE else self.properties_plate_type.value
+            plate_id = "" if self.properties_plate_metadata.value == NONE_CHOICE else "%s_%s_%s"%(cpmeas.IMAGE, cpmeas.C_METADATA, self.properties_plate_metadata.value)
+            well_id = "" if self.properties_well_metadata.value == NONE_CHOICE else "%s_%s_%s"%(cpmeas.IMAGE, cpmeas.C_METADATA, self.properties_well_metadata.value)
+            contents = """#%(date)s
 # ==============================================
 #
 # CellProfiler Analyst 2.0 properties file
@@ -2227,7 +2237,7 @@ image_file_cols = %(image_file_cols)s
 image_thumbnail_cols = %(image_thumbnail_cols)s
 
 # Give short names for each of the channels (respectively)...
-image_names = %(image_names)s
+image_names = %(image_names_csl)s
 
 # Specify a default color for each of the channels (respectively)
 # Valid colors are: [red, green, blue, magenta, cyan, yellow, gray, none]
@@ -2325,9 +2335,9 @@ class_table  =
 # your object_table is extremely large.
 
 check_tables = yes
-"""%(locals())
-        fid.write(contents)
-        fid.close()
+    """%(locals())
+            fid.write(contents)
+            fid.close()
         
     def write_workspace_file(self, workspace):
         from cellprofiler.utilities.get_revision import get_revision

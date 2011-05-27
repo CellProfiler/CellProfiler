@@ -9,6 +9,10 @@ A user trains a classifier with Ilastik and then saves the classifier.
 The user then uses the ClassifyPixels module to classify the pixels in an
 image. ClassifyPixels produces an "image" consisting of probabilities that
 the pixel belongs to the chosen class.
+
+Currently, ilastik is only avilable for Windows, and is accessible from
+in the CellProfiler folder under the Start Menu. A 64-bit system is 
+recommended for running ilastik.
 '''
 import cellprofiler.cpmodule as cpm
 import cellprofiler.cpmodule as cpm

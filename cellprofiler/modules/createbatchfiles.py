@@ -231,7 +231,7 @@ class CreateBatchFiles(cpm.CPModule):
         state = image_set_list.save_state()
         state = zlib.compress(state)
         bizarro_self.revision.value = version
-        bizarro_self.batch_state = np.fromstring(state, np.uint8)
+        bizarro_self.batch_state = np.array(state)
         if self.wants_default_output_directory:
             bizarro_self.custom_output_directory.value = \
                         self.alter_path(cpprefs.get_default_output_directory())
@@ -371,8 +371,7 @@ class CreateBatchFiles(cpm.CPModule):
             variable_revision_number = 3
         if (not from_matlab) and variable_revision_number == 3:
             # Pickled image list is now the batch state
-            self.batch_state = np.fromstring(zlib.compress(setting_values[4]),
-                                             np.uint8)
+            self.batch_state = np.array(zlib.compress(setting_values[4]))
             setting_values = setting_values[:4]+setting_values[5:]
             variable_revision_number = 4
         return setting_values, variable_revision_number, from_matlab

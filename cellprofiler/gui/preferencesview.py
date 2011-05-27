@@ -518,7 +518,7 @@ class ProgressWatcher:
             durations = (self.end_times[1:] - self.end_times[:-1]).reshape(self.num_image_sets, self.num_modules)
             per_module_estimates = np.zeros(self.num_modules)
             per_module_estimates[:module_index] = np.median(durations[:self.image_set_index+1,:module_index], 0)
-            current_module_so_far = self.adjusted_time() - self.end_times[1 + index - 1]
+            current_module_so_far = self.elapsed_time() - self.end_times[1 + index - 1]
             if self.image_set_index > 0:
                 per_module_estimates[module_index:] = np.median(durations[:self.image_set_index,module_index:], 0)
                 per_module_estimates[module_index] = max(per_module_estimates[module_index], current_module_so_far)

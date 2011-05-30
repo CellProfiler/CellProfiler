@@ -43,7 +43,7 @@ import cellprofiler.settings as cps
 import cellprofiler.preferences as cpprefs
 
 '''# of settings aside from the mappings'''
-S_FIXED_COUNT = 6
+S_FIXED_COUNT = 7
 '''# of settings per mapping'''
 S_PER_MAPPING = 2
 
@@ -54,17 +54,21 @@ class CreateBatchFiles(cpm.CPModule):
     #
     # How it works:
     #
-    # There are two hidden settings: batch_mode and pickled_image_set_list
+    # There are three hidden settings: batch_mode, pickled_image_set_list, and
+    #     distributed_mode
     # batch_mode controls the mode: False means "save the pipeline" and
     #     True means "run the pipeline"
     # pickled_image_set_list holds the state of the image set list. If
     #     batch_mode is False, we save the state of the image set list in
     #     pickled_image_set_list. If batch_mode is True, we load the state
     #     from pickled_image_set_list.
-    #
+    # distributed_mode indicates whether the pipeline is being
+    #     processed by distributed workers, in which case, the default
+    #     input and output directories are set to the temporary
+    #     directory.
     module_name = "CreateBatchFiles"
     category = 'File Processing'
-    variable_revision_number = 4
+    variable_revision_number = 5
     
     #
     def create_settings(self):
@@ -90,6 +94,7 @@ class CreateBatchFiles(cpm.CPModule):
                 the Unix or Macintosh file separator (slash,&#47;).""")
         
         self.batch_mode = cps.Binary("Hidden: in batch mode", False)
+        self.distributed_mode = cps.Binary("Hidden: in distributed mode", False)
         self.default_image_directory = cps.Setting("Hidden: default input folder at time of save",
                                                    cpprefs.get_default_image_directory())
         self.revision = cps.Integer("Hidden: SVN revision number", 0)
@@ -143,7 +148,7 @@ class CreateBatchFiles(cpm.CPModule):
     def settings(self):
         result = [self.wants_default_output_directory,
                   self.custom_output_directory, self.remote_host_is_windows,
-                  self.batch_mode, 
+                  self.batch_mode, self.distributed_mode,
                   self.default_image_directory, self.revision]
         for mapping in self.mappings:
             result += [mapping.local_directory, mapping.remote_directory]
@@ -267,8 +272,16 @@ class CreateBatchFiles(cpm.CPModule):
         assert isinstance(pipeline, cpp.Pipeline)
         state = zlib.decompress(self.batch_state.tostring())
         image_set_list.load_state(state)
-        cpprefs.set_default_output_directory(self.custom_output_directory.value)
-        cpprefs.set_default_image_directory(self.default_image_directory.value)
+        if self.distributed_mode:
+            import tempfile
+            try:
+                cpprefs.set_default_output_directory(tempfile.gettempdir())
+                cpprefs.set_default_image_directory(tempfile.gettempdir())
+            except:
+                pass
+        else:
+            cpprefs.set_default_output_directory(self.custom_output_directory.value)
+            cpprefs.set_default_image_directory(self.default_image_directory.value)
     
     def turn_off_batch_mode(self):
         '''Remove any indications that we are in batch mode
@@ -374,5 +387,8 @@ class CreateBatchFiles(cpm.CPModule):
             self.batch_state = np.array(zlib.compress(setting_values[4]))
             setting_values = setting_values[:4]+setting_values[5:]
             variable_revision_number = 4
+        if (not from_matlab) and variable_revision_number == 4:
+            setting_values = setting_values[:4] + [False] + setting_values[4:]
+            variable_revision_number = 5
         return setting_values, variable_revision_number, from_matlab
     

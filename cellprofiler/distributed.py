@@ -74,6 +74,7 @@ class Distributor(object):
         module.wants_default_output_directory.set_value(True)
         module.remote_host_is_windows.set_value(False)
         module.batch_mode.set_value(False)
+        module.distributed_mode.set_value(True)
 
         # save and compress the pipeline
         pipeline_txt = StringIO.StringIO()

@@ -94,7 +94,7 @@ class Distributor(object):
         # add jobs for each image set
         for img_set_index in range(image_set_list.count()):
             self.work_server.add_work("%d %s"%(img_set_index + 1, self.pipeline_blob_hash))
-        
+
         # start serving
         self.total_jobs = image_set_list.count()
         self.work_server.start()
@@ -103,20 +103,20 @@ class Distributor(object):
         # this function acts like a CP pipeline object, allowing us to
         # use the same code path as a non-distributed computation for
         # tracking results and updating the GUI.
-        finished_fds = []
+
+        # Returned results are concatenated into this file, which is
+        # passed to MergeOutputFiles in pieces, below.
+        finished_fd = tempfile.TemporaryFile(dir=os.path.dirname(self.output_file))
+        finished_offsets = []
         while True:
             finished_job = self.work_server.fetch_result()
             if finished_job is not None:
                 if finished_job['pipeline_hash'][0] == self.pipeline_blob_hash:
-                    # store results in a temporary file, in the output directory
-                    outfd = tempfile.TemporaryFile(dir=os.path.dirname(self.output_file))
-                    outfd.write(zlib.decompress(finished_job['measurements'][0]))
-                    outfd.flush()
-                    outfd.seek(0)
-                    finished_fds.append(outfd)
-                    print "finished image number", finished_job['image_num'][0]
+                    data_start = finished_fd.tell()
+                    finished_fd.write(finished_job['measurements'][0])
+                    finished_offsets += [(data_start, len(finished_job['measurements'][0]))]
                     if self.status_callback:
-                        self.status_callback(self.total_jobs, len(finished_fds))
+                        self.status_callback(self.total_jobs, len(finished_offsets))
                 else:
                     # out of date result?
                     print "ignored mismatched pipeline hash", finished_job['pipeline_hash'][0], self.pipeline_blob_hash
@@ -124,15 +124,30 @@ class Distributor(object):
                 # pretend to be busy
                 time.sleep(0.1)
 
-            if len(finished_fds) == self.total_jobs:
+            if len(finished_offsets) == self.total_jobs:
                 # when finished, stop serving
                 self.stop_serving()
-                # merge output files
-                MergeOutputFiles.merge_files(self.output_file, finished_fds, force_headless=True)
+                # merge output files.
+                finished_fd.flush()
+                def nth_output_file(n):
+                    start, numbytes = finished_offsets[n]
+                    def create_nth_output():
+                        self.__str__
+                        tmpfile = tempfile.TemporaryFile(dir=os.path.dirname(self.output_file))
+                        finished_fd.seek(start)
+                        tmpfile.write(zlib.decompress(finished_fd.read(numbytes)))
+                        tmpfile.flush()
+                        return tmpfile
+                    creator = create_nth_output
+                    creator.__str__ = lambda _: "%d-th output file"%(n + 1)
+                    return creator
+                MergeOutputFiles.merge_files(self.output_file,
+                                             [nth_output_file(n) for n in range(self.total_jobs)],
+                                             force_headless=True)
                 # stop iteration
                 return
 
-            # this is part of the pipeline mimicry 
+            # this is part of the pipeline mimicry
             if self.frame:
                 post_module_runner_done_event(self.frame)
 
@@ -146,7 +161,7 @@ class Distributor(object):
         # For now, each image gets an integer, but for debugging,
         # perhaps base64-encoding the path would make debugging
         # easier.
-        
+
         # empty path entries should be ignored
         if path == '':
             return ''
@@ -160,10 +175,12 @@ class Distributor(object):
             self.URL_map[path] = img_index
             self.URL_map[img_index] = path
         return "%s/data/%s"%(self.server_URL, str(img_index))
-            
+
     def stop_serving(self):
         self.work_server.stop()
-        os.unlink(self.pipeline_path)
+        if self.pipeline_path:
+            os.unlink(self.pipeline_path)
+            self.pipeline_path = None
 
     def data_server(self, request):
         try:

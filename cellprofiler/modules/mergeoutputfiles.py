@@ -289,18 +289,9 @@ class MergeOutputFiles(cpm.CPModule):
         count = 0
         try:
             pipeline = cpp.Pipeline()
-            has_error = [False]
-            def callback(caller, event):
-                if isinstance(event, cpp.LoadExceptionEvent):
-                    has_error = True
-                    wx.MessageBox(
-                        message = "Could not load %s: %s" % (
-                            sources[0], event.error),
-                        caption = "Failed to load %s" % sources[0])
-                    has_error[0] = True
-            pipeline.load(sources[0])
-            if has_error[0]:
-                return
+            # distributed processing passes a list of functions, not a
+            # list of filenames.
+            pipeline.load(sources[0]() if callable(sources[0]) else sources[0])
             mdest = cpmeas.Measurements()
             image_set_count = 0
             for source in sources:
@@ -309,7 +300,8 @@ class MergeOutputFiles(cpm.CPModule):
                     keep_going, skip = progress.Update(count, "Loading " + source)
                     if not keep_going:
                         return
-                msource = cpmeas.load_measurements(source)
+                # distributed processing passes a list of functions
+                msource = cpmeas.load_measurements(source() if callable(source) else source)
                 source_image_set_count = 0
                 for object_name in msource.get_object_names():
                     if object_name in mdest.get_object_names():
@@ -327,7 +319,7 @@ class MergeOutputFiles(cpm.CPModule):
                                 mdest.add_all_measurements(object_name, feature,
                                                            src_values)
                         else:
-                            source_image_count = max(source_image_set_count, 
+                            source_image_count = max(source_image_set_count,
                                                      len(src_values))
                             if feature in destfeatures:
                                 dest_values = mdest.get_all_measurements(object_name,
@@ -343,7 +335,6 @@ class MergeOutputFiles(cpm.CPModule):
                     #
                     for feature in destset.difference(
                         msource.get_feature_names(object_name)):
-                        
                         dest_values = mdest.get_all_measurements(
                             object_name, feature)
                         dest_values += [None] * source_image_count

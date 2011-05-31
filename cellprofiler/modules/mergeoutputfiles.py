@@ -289,6 +289,21 @@ class MergeOutputFiles(cpm.CPModule):
         count = 0
         try:
             pipeline = cpp.Pipeline()
+            has_error = [False]
+            def callback(caller, event):
+                if isinstance(event, cpp.LoadExceptionEvent):
+                    has_error = True
+                    wx.MessageBox(
+                        message = "Could not load %s: %s" % (
+                            sources[0], event.error),
+                        caption = "Failed to load %s" % sources[0])
+                    has_error[0] = True
+
+            pipline.add_listener(callback)
+            pipeline.load(sources[0])
+            if has_error[0]:
+                return
+
             # distributed processing passes a list of functions, not a
             # list of filenames.
             pipeline.load(sources[0]() if callable(sources[0]) else sources[0])

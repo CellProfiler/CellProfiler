@@ -2772,6 +2772,11 @@ class LoadImagesImageProviderBase(cpimage.AbstractImageProvider):
             except:
                 logger.warning("Could not delete file %s", self.__cached_file,
                                exc_info=True)
+
+    def __del__(self):
+        # using __del__ is all kinds of bad, but we need to remove the
+        # files to keep the system from filling up.
+        self.release_memory()
         
 class LoadImagesImageProvider(LoadImagesImageProviderBase):
     """Provide an image by filename, loading the file as it is requested

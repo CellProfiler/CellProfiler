@@ -71,6 +71,10 @@ parser.add_option("--worker",
                   dest="worker_mode_URL",
                   default=None,
                   help="Enter worker mode for the CellProfiler distributing work at URL (implies headless)")
+parser.add_option("--worker-timeout",
+                  dest="worker_timeout",
+                  default=15*60,
+                  help="Number of seconds the worker will continue trying to find work before exiting.")
 parser.add_option("-o", "--output-directory",
                   dest="output_directory",
                   default=None,
@@ -270,12 +274,19 @@ if options.run_distributed:
 # pipeline runner with special methods to fetch pipelines and
 # first/last imagesets and for returning results.
 if options.worker_mode_URL is not None:
+    import time # for timeout calculationg below
+    import random
     import cellprofiler.preferences as cpprefs
     cpprefs.set_headless()
     import cellprofiler.distributed as cpdistributed
     options.show_gui = False
     options.run_pipeline = True
     assert options.groups == None, "groups not supported in distributed processing, yet"
+    try:
+        worker_timeout = int(options.worker_timeout)
+    except ValueError:
+        logging.root.fatal("Can't convert timeout value '%s' to an integer.", options.worker_timeout)
+        sys.exit(0)
 
 if options.show_gui and not options.output_html:
     from cellprofiler.cellprofilerapp import CellProfilerApp
@@ -375,22 +386,45 @@ try:
     elif options.run_pipeline: # this includes distributed workers
         if (options.pipeline_filename is not None) and (not options.pipeline_filename.lower().startswith('http')):
             options.pipeline_filename = os.path.expanduser(options.pipeline_filename)
-        continue_looping = True # for distributed work
+        last_success = time.time() # timeout checking for distributed workers.
+        continue_looping = True # for distributed workers
         while continue_looping:
-            continue_looping = False # distributed workers will reset this, below, while there is work.
             from cellprofiler.pipeline import Pipeline, EXIT_STATUS
             import cellprofiler.measurements as cpmeas
+            continue_looping = False # distributed workers reset this, below
             pipeline = Pipeline()
-            if options.worker_mode_URL is not None:
-                jobinfo = cpdistributed.fetch_work(options.worker_mode_URL)
-                if jobinfo.work_done():
-                    break # no more work
-                pipeline.load(jobinfo.pipeline_stringio())
-                image_set_start = jobinfo.image_set_start
-                image_set_end = jobinfo.image_set_end
-                continue_looping = True
-            else:
+            if options.worker_mode_URL is None:
+                # normal behavior
                 pipeline.load(options.pipeline_filename)
+            else:
+                # distributed worker
+                continue_looping = True
+                if time.time() - last_success > worker_timeout:
+                    logging.root.info("Worker timed out.  Exiting.")
+                    break
+
+                try:
+                    jobinfo = cpdistributed.fetch_work(options.worker_mode_URL)
+                except:
+                    # no answer from the server, or possibly a timeout
+                    logging.root.info("Failed to fetch work from server.", exc_info=True)
+                    logging.root.info("Retrying...")
+                    time.sleep(20 + random.randint(1, 10)) # avoid hammering server
+                    continue
+
+                if jobinfo.work_done():
+                    time.sleep(20 + random.randint(1, 10)) # avoid hammering server
+                    continue # loop until timeout
+
+                try:
+                    pipeline.load(jobinfo.pipeline_stringio())
+                    image_set_start = jobinfo.image_set_start
+                    image_set_end = jobinfo.image_set_end
+                except:
+                    logging.root.error("Can't parse pipeline for distributed work.", exc_info=True)
+                    logging.root.info("Retrying...")
+                    time.sleep(20 + random.randint(1, 10)) # avoid hammering server
+                    continue
             if options.groups is not None:
                 kvs = [x.split('=') for x in options.groups.split(',')]
                 groups = dict(kvs)
@@ -400,7 +434,17 @@ try:
                                         image_set_end=image_set_end,
                                         grouping=groups)
             if options.worker_mode_URL is not None:
-                jobinfo.report_measurements(pipeline, measurements)
+                try:
+                    assert measurements is not None
+                    assert measurements.has_feature(cpmeas.EXPERIMENT, EXIT_STATUS)
+                    assert measurements.get_experiment_measurement(EXIT_STATUS) != 'Failure'
+                    jobinfo.report_measurements(pipeline, measurements)
+                    last_success = time.time()
+                except:
+                    logging.root.error("Couldn't return results to server", exc_info=True)
+                    logging.root.info("Continuing...")
+                    time.sleep(20 + random.randint(1, 10)) # avoid hammering server
+                    continue
             elif len(args) > 0:
                 pipeline.save_measurements(args[0], measurements)
             if options.done_file is not None:
@@ -417,7 +461,7 @@ except Exception, e:
     raise
 finally:
     # Smokey, my friend, you are entering a world of pain.
-    # No &*#@ sherlock.
+    # No $#!+ sherlock.
     try:
         import imagej.ijbridge as ijbridge
         if ijbridge.inter_proc_ij_bridge._isInstantiated():

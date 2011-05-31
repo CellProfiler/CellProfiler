@@ -8,6 +8,7 @@ import time
 import tempfile
 import traceback
 import urllib, urllib2
+import socket
 import logging
 logger = logging.getLogger(__name__)
 
@@ -207,21 +208,19 @@ class JobInfo(object):
         self.job_num = None
 
     def fetch_job(self):
-        try:
-            # fetch the pipeline
-            self.pipeline_blob = urllib2.urlopen(self.base_url + '/data/-1').read()
-            self.pipeline_hash = hashlib.sha1(self.pipeline_blob).hexdigest()
-            # fetch a job
-            work_blob = urllib2.urlopen(self.base_url + '/work').read()
-            if work_blob == 'NOWORK':
-                assert False, "No work to be had..."
-            self.job_num, image_num, pipeline_hash = work_blob.split(' ')
-            self.image_set_start = int(image_num)
-            self.image_set_end = int(image_num)
-            print "fetched work:", work_blob
-            assert pipeline_hash == self.pipeline_hash, "Mismatched hash, probably out of sync with server"
-        except Exception, e:
-            logger.error("Exception fetching work.\n", exc_info=True)
+        # fetch the pipeline
+        socket.setdefaulttimeout(15) # python >= 2.6, this can be an argument to urlopen
+        self.pipeline_blob = urllib2.urlopen(self.base_url + '/data/-1').read()
+        self.pipeline_hash = hashlib.sha1(self.pipeline_blob).hexdigest()
+        # fetch a job
+        work_blob = urllib2.urlopen(self.base_url + '/work').read()
+        if work_blob == 'NOWORK':
+            assert False, "No work to be had..."
+        self.job_num, image_num, pipeline_hash = work_blob.split(' ')
+        self.image_set_start = int(image_num)
+        self.image_set_end = int(image_num)
+        print "fetched work:", work_blob
+        assert pipeline_hash == self.pipeline_hash, "Mismatched hash, probably out of sync with server"
 
     def work_done(self):
         return False

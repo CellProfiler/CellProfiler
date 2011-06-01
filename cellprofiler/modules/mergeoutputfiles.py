@@ -299,7 +299,7 @@ class MergeOutputFiles(cpm.CPModule):
                         caption = "Failed to load %s" % sources[0])
                     has_error[0] = True
 
-            pipline.add_listener(callback)
+            pipeline.add_listener(callback)
             pipeline.load(sources[0])
             if has_error[0]:
                 return

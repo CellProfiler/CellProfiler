@@ -6,7 +6,7 @@ import subprocess
 import os
 import re
 
-batchprofiler_host = "imgdb01"
+batchprofiler_host = "imgdb02"
 batchprofiler_db = "batchprofiler"
 batchprofiler_user = "cpadmin"
 batchprofiler_password = "cPus3r"

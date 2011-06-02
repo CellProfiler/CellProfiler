@@ -22,7 +22,7 @@ import email.mime.text
 import socket
 
 SENDMAIL="/usr/sbin/sendmail"
-batch_url = "http://%s/batchprofiler/cgi-bin/development/CellProfiler_2.0_test/ViewBatch.py"%(socket.gethostname())
+batch_url = "http://%s/batchprofiler/cgi-bin/development/CellProfiler_2.0/ViewBatch.py"%(socket.gethostname())
 
 form_data = cgi.FieldStorage()
 myself = os.path.split(__file__)[1]

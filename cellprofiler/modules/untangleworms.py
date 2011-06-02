@@ -1093,7 +1093,7 @@ class UntangleWorms(cpm.CPModule):
         order = np.arange(np.prod(segments_binary.shape))
         order.shape = segments_binary.shape
         order[~ endpoints] += np.prod(segments_binary.shape)
-        labelrange = np.arange(num_segments+1)
+        labelrange = np.arange(num_segments+1).astype(int)
         endpoint_loc = scind.minimum_position(order, segments_labeled,
                                               labelrange)
         endpoint_loc = np.array(endpoint_loc, int)
@@ -1113,7 +1113,7 @@ class UntangleWorms(cpm.CPModule):
                 endpoint_labels, footprint = np.ones((3,3), bool))
             dilated_ep_labels[dilated_ep_labels != segments_labeled] = 0
             loop_endpoints = scind.maximum_position(
-                order, dilated_ep_labels, labelrange[1:][loops])
+                order, dilated_ep_labels.astype(int), labelrange[1:][loops])
             loop_endpoints = np.array(loop_endpoints, int)
             segments_binary_temp = segments_binary.copy()
             segments_binary_temp[loop_endpoints[:,0], loop_endpoints[:,1]] = False

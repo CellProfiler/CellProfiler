@@ -2361,8 +2361,14 @@ svn revision: %d\n"""%get_revision()
         fd.write(header_text)
         display_tool_text = ""
         for workspace_group in self.workspace_measurement_groups:
+            display_tool = workspace_group.measurement_display.value
+            # A couple of tools are named a bit differently
+            if workspace_group.measurement_display.value == W_SCATTERPLOT:
+                display_tool = "Scatter"
+            elif workspace_group.measurement_display.value == W_DENSITYPLOT:
+                display_tool = "Density"
             display_tool_text += """
-%s"""%workspace_group.measurement_display.value
+%s"""%display_tool
             
             axis_text = "x-axis" if workspace_group.measurement_display.value is not W_PLATEVIEWER else "measurement"
             if workspace_group.x_measurement_type.value == cpmeas.IMAGE:

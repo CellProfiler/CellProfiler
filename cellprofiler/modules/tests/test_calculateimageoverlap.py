@@ -35,6 +35,14 @@ import cellprofiler.modules.calculateimageoverlap as C
 
 GROUND_TRUTH_IMAGE_NAME = 'groundtruth'
 TEST_IMAGE_NAME = 'test'
+O_IMG = 'Foreground/background segmentation'
+O_OBJ = 'Segmented objects'
+GROUND_TRUTH_OBJ_IMAGE_NAME  = 'DNA'
+ID_OBJ_IMAGE_NAME = 'Protein'
+GROUND_TRUTH_OBJ = 'Nuclei'
+ID_OBJ = 'Protein'
+
+
 
 class TestCalculateImageOverlap(unittest.TestCase):
     def test_01_01_load_matlab(self):
@@ -94,6 +102,7 @@ CalculateImageOverlap:[module_num:1|svn_version:\'9000\'|variable_revision_numbe
         '''
         module = C.CalculateImageOverlap()
         module.module_num = 1
+        module.obj_or_img = O_IMG
         module.ground_truth.value = GROUND_TRUTH_IMAGE_NAME
         module.test_img.value = TEST_IMAGE_NAME
         
@@ -117,6 +126,48 @@ CalculateImageOverlap:[module_num:1|svn_version:\'9000\'|variable_revision_numbe
                                   cpo.ObjectSet(), cpmeas.Measurements(),
                                   image_set_list)
         return workspace, module
+    
+    def make_obj_workspace(self, ground_truth_obj, id_obj, ground_truth, id):
+        '''make a workspace to test comparing objects'''
+        ''' ground truth object and ID object  are dictionaires w/ the following keys'''
+        '''i - i component of pixel coordinates
+        j - j component of pixel coordinates
+        l - label '''
+
+        module = C.CalculateImageOverlap()
+        module.module_num = 1
+        module.obj_or_img.value = O_OBJ
+        module.object_name_GT.value = GROUND_TRUTH_OBJ 
+        module.img_obj_found_in_GT.value = GROUND_TRUTH_OBJ_IMAGE_NAME
+        module.object_name_ID.value = ID_OBJ
+        module.img_obj_found_in_ID.value = ID_OBJ_IMAGE_NAME
+        pipeline = cpp.Pipeline()
+        def callback(caller, event):
+            self.assertFalse(isinstance(event, cpp.RunExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.add_module(module)
+        image_set_list = cpi.ImageSetList()
+        image_set = image_set_list.get_image_set(0)
+        
+        for name, d in ((GROUND_TRUTH_OBJ_IMAGE_NAME, ground_truth),
+                        (ID_OBJ_IMAGE_NAME, id)):
+            image = cpi.Image(d["image"],
+                              mask = d.get("mask"),
+                              crop_mask = d.get("crop_mask"))
+            image_set.add(name, image)
+        object_set = cpo.ObjectSet()
+        for name, d in ((GROUND_TRUTH_OBJ, ground_truth_obj),
+                        (ID_OBJ, id_obj)):
+            object = cpo.Objects()
+            object.segmented = d
+            object.ijv = d
+            object_set.add_objects(object, name)
+        workspace = cpw.Workspace(pipeline, module, image_set,
+                                  object_set, cpmeas.Measurements(),
+                                  image_set_list)
+        return workspace, module
+
+
     
     def test_03_01_zeros(self):
         '''Test ground-truth of zeros and image of zeros'''
@@ -400,3 +451,12 @@ CalculateImageOverlap:[module_num:1|svn_version:\'9000\'|variable_revision_numbe
                                                 C.FTR_FALSE_NEG_RATE)
         self.assertEqual(len(imnames), 0)
         
+    def test_05_01_test_measure_overlap_objects(self):
+        workspace, module = self.make_obj_workspace(
+            np.ones((200,3), int),
+            np.ones((200,3), int),
+            dict(image = np.zeros((20,10), bool)),
+            dict(image = np.zeros((20,10), bool)))
+        module.run(workspace)
+        measurements = workspace.measurements
+        self.assertTrue(isinstance(measurements, cpmeas.Measurements))

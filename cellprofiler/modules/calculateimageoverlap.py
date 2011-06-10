@@ -64,32 +64,55 @@ FTR_FALSE_NEG_RATE = "FalseNegRate"
 FTR_ALL = [FTR_F_FACTOR, FTR_PRECISION, FTR_RECALL,
            FTR_FALSE_POS_RATE, FTR_FALSE_NEG_RATE]
 
+O_OBJ = "Segmented objects"
+O_IMG = "Foreground/background segmentation"
+O_ALL = [O_OBJ, O_IMG]
+
+L_LOAD = "Loaded from a previous run"
+L_CP = "From this CP pipeline"
+
 class CalculateImageOverlap(cpm.CPModule):
     
     category = "Image Processing"
-    variable_revision_number = 1
+    variable_revision_number = 2
     module_name = "CalculateImageOverlap"
 
     def create_settings(self):
+        self.obj_or_img = cps.Choice("Compare segmented objects, or foreground/background?", O_ALL)
         self.ground_truth = cps.ImageNameSubscriber("Select the image to be used as the ground truth basis for calculating the amount of overlap", "None", doc = 
                                                     '''This binary (black and white) image is known as the "ground truth" image.  It can be the product of segmentation performed by hand, or
                                                    the result of another segmentation algorithm whose results you would like to compare.''')
         self.test_img = cps.ImageNameSubscriber("Select the image to be used to test for overlap", "None", doc = ''' This 
                                                 binary (black and white) image is what you will compare with the ground truth image. It is known as the "test image".''')
+        self.object_name_GT = cps.ObjectNameSubscriber("Select the objects to be used as the ground truth basis for calculating the amount of overlap", "None")
+        self.img_obj_found_in_GT = cps.ImageNameSubscriber("Which image did you find these objects in?","None")
+        self.object_name_ID = cps.ObjectNameSubscriber("Select the objects to be tested for overlap against the ground truth", "None")
+        self.img_obj_found_in_ID = cps.ImageNameSubscriber("Which image did you find these objects in?","None")
 
-    
+
     def settings(self):
-        result = [self.ground_truth, self.test_img]
+        result = [self.obj_or_img, self.ground_truth, self.test_img, self.object_name_GT, self.img_obj_found_in_GT,self.object_name_ID, self.img_obj_found_in_ID]
         return result
 
     def visible_settings(self):
-        result = [self.ground_truth, self.test_img]
+        result = [self.obj_or_img]
+        if self.obj_or_img == O_IMG:
+            result += [self.ground_truth, self.test_img]
+        elif self.obj_or_img == O_OBJ:
+            result += [self.object_name_GT, self.img_obj_found_in_GT,self.object_name_ID, self.img_obj_found_in_ID]
         return result
 
     def is_interactive(self):
         return False
     
-    def run(self, workspace):
+
+    def run(self,workspace):
+        if self.obj_or_img == O_IMG:
+            self.measure_image(workspace)
+        elif self.obj_or_img == O_OBJ:
+            self.measure_objects(workspace)
+
+    def measure_image(self, workspace):
         '''Add the image overlap measurements'''
         
         image_set = workspace.image_set
@@ -182,6 +205,166 @@ class CalculateImageOverlap(cpm.CPModule):
                 (FTR_FALSE_POS_RATE, false_positive_rate),
                 (FTR_FALSE_NEG_RATE, false_negative_rate)]
             
+    def measure_objects(self, workspace):
+        image_set = workspace.image_set
+        GT_img = image_set.get_image(self.img_obj_found_in_GT.value)
+        ID_img = image_set.get_image(self.img_obj_found_in_ID.value)
+        ID_pixels = ID_img.pixel_data
+        GT_pixels = GT_img.pixel_data
+        object_name_GT = self.object_name_GT.value
+        objects_GT = workspace.get_objects(object_name_GT)
+        iGT,jGT,lGT = objects_GT.ijv.transpose() 
+        object_name_ID = self.object_name_ID.value
+        objects_ID = workspace.get_objects(object_name_ID)
+        iID, jID, lID = objects_ID.ijv.transpose()
+        ID_obj = max(lID)
+        GT_obj  = max(lGT)
+        intersect_matrix = np.zeros((ID_obj, GT_obj))
+        GT_tot_area = []
+        all_intersect_area = []
+        FN_area = np.zeros((ID_obj, GT_obj))
+
+        xGT, yGT = np.shape(GT_pixels)
+        xID, yID = np.shape(ID_pixels)
+        GT_pixels = np.zeros((xGT, yGT))
+        ID_pixels = np.zeros((xID, yID))
+        total_pixels = xGT*yGT
+
+        for ii in range(0, GT_obj):
+            indices_ii = np.nonzero(lGT == ii)
+            indices_ii = indices_ii[0]
+            iGT_ii = iGT[indices_ii]
+            jGT_ii = jGT[indices_ii]
+            GT_set = set(zip(iGT_ii, jGT_ii))
+            for jj in range(0, ID_obj):
+                indices_jj = np.nonzero(lID==jj)
+                indices_jj = indices_jj[0]
+                iID_jj = iID[indices_jj]
+                jID_jj = jID[indices_jj]
+                ID_set = set(zip(iID_jj, jID_jj))
+                area_overlap = len(GT_set & ID_set)
+                all_intersect_area += [area_overlap]
+                intersect_matrix[jj,ii] = area_overlap
+                FN_area[jj,ii] = len(GT_set) - area_overlap
+            GT_pixels[iGT, jGT] = 1    
+            GT_tot_area += [len(GT_set)]
+
+        dom_ID = []
+
+        for i in range(0, ID_obj):
+            indices_jj = np.nonzero(lID==i)
+            indices_jj = indices_jj[0]
+            id_i = iGT[indices_jj]
+            id_j = jGT[indices_jj]
+            ID_pixels[id_i, id_j] = 1
+
+        for i in intersect_matrix:  # loop through the GT objects first                                
+            if max(i) == 0:
+                id = -1  # we missed the object; arbitrarily assign -1 index                                                          
+            else:
+                id = np.where(i == max(i))[0][0] # what is the ID of the max pixels?                                                            
+            dom_ID += [id]  # for ea GT object, which is the dominating ID?                                                                    
+
+        dom_ID = np.array(dom_ID)
+        
+        for i in range(0, len(intersect_matrix.T)):
+            if len(np.where(dom_ID == i)[0]) > 1:
+                final_id = np.where(intersect_matrix.T[i] == max(intersect_matrix.T[i]))
+                final_id = final_id[0][0]
+                all_id = np.where(dom_ID == i)[0]
+                nonfinal = [x for x in all_id if x != final_id]
+                for n in nonfinal:  # these others cannot be candidates for the corr ID now                                                      
+                    intersect_matrix.T[i][n] = 0
+            else :
+                continue
+
+        TP = []
+        TN = []
+        FN = []
+        for i in range(0,len(dom_ID)):
+            d = dom_ID[i]
+            tp = intersect_matrix[i][d]
+            TP += [tp]
+            tp = intersect_matrix[i][d]
+            fn = FN_area[i][d]
+            tn = total_pixels - tp
+            TP += [tp]
+            TN += [tn]
+            FN += [fn]
+
+        FP = []
+        for i in range(0,len(dom_ID)):
+            d = dom_ID[i]
+            fp = np.sum(intersect_matrix[i][0:d])+np.sum(intersect_matrix[i][(d+1)::])
+            FP += [fp]
+            d = dom_ID[i]
+   
+        FN = np.sum(FN)
+        TN = np.sum(TN)
+        TP = np.sum(TP)
+        FP = np.sum(FP)
+        GT_tot_area = np.sum(GT_tot_area)
+
+        all_intersecting_area = np.sum(all_intersect_area)
+
+        
+        accuracy = TP/all_intersecting_area
+        recall  = TP/GT_tot_area
+        precision = TP/(TP+FP)
+        F_factor = 2*(precision*recall)/(precision+recall)
+        false_positive_rate = FP/(FP+TN)
+        false_negative_rate = FN/(FN+TP)
+
+        m = workspace.measurements
+        m.add_image_measurement(self.measurement_name(FTR_F_FACTOR), F_factor)
+        m.add_image_measurement(self.measurement_name(FTR_PRECISION),
+                                precision)
+        m.add_image_measurement(self.measurement_name(FTR_RECALL), recall)
+        m.add_image_measurement(self.measurement_name(FTR_FALSE_POS_RATE),
+                                false_positive_rate)
+        m.add_image_measurement(self.measurement_name(FTR_FALSE_NEG_RATE),
+                                false_negative_rate)
+        def subscripts(condition1, condition2):
+            x1,y1 = np.where(GT_pixels == condition1)
+            x2,y2 = np.where(ID_pixels == condition2)
+            mask = set(zip(x1,y1)) & set(zip(x2,y2))
+            return list(mask)
+
+        TP_mask = subscripts(1,1)
+        FN_mask = subscripts(1,0)
+        FP_mask = subscripts(0,1)
+        TN_mask = subscripts(0,0)
+
+        TP_pixels = np.zeros((xGT,yGT))
+        FN_pixels = np.zeros((xGT,yGT))
+        FP_pixels = np.zeros((xGT,yGT))
+        TN_pixels = np.zeros((xGT,yGT))
+
+        def maskimg(mask,img):
+            for ea in mask:
+                img[ea] = 1
+            return img
+
+        TP_pixels = maskimg(TP_mask, TP_pixels)
+        FN_pixels = maskimg(FN_mask, FN_pixels)
+        FP_pixels = maskimg(FP_mask, FP_pixels)
+        TN_pixels = maskimg(TN_mask, TN_pixels)
+
+        if workspace.frame is not None:
+            workspace.display_data.true_positives = TP_pixels
+            workspace.display_data.true_negatives = FN_pixels
+            workspace.display_data.false_positives = FP_pixels
+            workspace.display_data.false_negatives = TN_pixels
+            workspace.display_data.statistics = [
+                ("Measurement", "Value"),
+                (FTR_F_FACTOR, F_factor),
+                (FTR_PRECISION, precision),
+                (FTR_RECALL, recall),
+                (FTR_FALSE_POS_RATE, false_positive_rate),
+                (FTR_FALSE_NEG_RATE, false_negative_rate)]
+
+
+
     def display(self, workspace):
         '''Display the image confusion matrix & statistics'''
         figure = workspace.create_or_find_figure(title="CalculateImageOverlap, image cycle #%d"%(
@@ -199,7 +382,13 @@ class CalculateImageOverlap(cpm.CPModule):
                              ratio = (.5, .5))
 
     def measurement_name(self, feature):
-        return '_'.join((C_IMAGE_OVERLAP, feature, self.test_img.value))
+        if self.obj_or_img == O_IMG:
+            name = '_'.join((C_IMAGE_OVERLAP, feature, self.test_img.value))
+        if self.obj_or_img == O_OBJ:
+            name = '_'.join((C_IMAGE_OVERLAP, feature, self.img_obj_found_in_GT.value))
+        return name 
+
+
     
     def get_categories(self, pipeline, object_name):
         '''Return the measurement categories for an object'''
@@ -235,5 +424,9 @@ class CalculateImageOverlap(cpm.CPModule):
             # All settings were identical to CP 2.0 v 1
             from_matlab = False
             variable_revision_number = 1
-            
+        if variable_revision_number == 1:
+            #no object choice before rev 2
+            old_setting_values = setting_values
+            setting_values = [O_IMG, old_setting_values[0], old_setting_values[1]]
+            variable_revision_number = 2
         return setting_values, variable_revision_number, from_matlab

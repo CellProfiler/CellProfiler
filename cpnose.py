@@ -12,6 +12,11 @@ if '--noguitests' in sys.argv:
     for s in dir(wx):
         del wx.__dict__[s]
 
+if '--nojavatests' in sys.argv:
+    sys.argv.remove('--nojavatests')
+    import cellprofiler.utilities.jutil as jutil
+    jutil.start_vm = None
+
 if len(sys.argv) == 0:
     args = ['--testmatch=(?:^)test_.*']
 else:

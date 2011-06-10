@@ -3,7 +3,7 @@
 CellProfiler is distributed under the GNU General Public License.
 See the accompanying file LICENSE for details.
 
-Copyright (c) 2003-2009 Massachusetts Institute of Technology
+Copyright (c) 2003-2009 Massachusetts nstitute of Technology
 Copyright (c) 2009-2011 Broad Institute
 All rights reserved.
 
@@ -95,6 +95,29 @@ M_SITE, M_WELL, M_ROW, M_COLUMN, M_PLATE = \
 GROUP_NUMBER = "Group_Number"
 GROUP_INDEX = "Group_Index"
 
+def wrap_nan(val):
+    # The Experiment and Image tables can contain a mix of integers,
+    # floats, and strings.  Unfortunately, sqlite converts NaN to
+    # None, which ends up breaking things. We store NaN and strings
+    # specially, and deal with them when fetched.
+    if isinstance(val, str) or isinstance(val, unicode):
+        val = u'string:' + val
+    elif np.isnan(val):
+        val = 'float:nan'
+    return val
+
+
+def unwrap_nan(val):
+    if isinstance(val, unicode):
+        # see above
+        if val.startswith('string:'):
+            val = val.split(':', 1)[1]
+        else:
+            val = float('nan')
+    return val
+
+
+
 def get_length_from_varchar(x):
     '''Retrieve the length of a varchar column from its coltype def'''
     m = re.match(r'^varchar\(([0-9]+)\)$', x)
@@ -143,10 +166,10 @@ class Measurements(object):
             # we can't create an empty table, so we create these tables in __add_column_if_missing
             return False
         if table_name == 'Image':
-            cols = '(ImageNumber int PRIMARY KEY)'
+            cols = '([ sqliteImageNumber] int PRIMARY KEY)'
         else:
             # object table
-            cols = '(ImageNumber int, ObjectNumber int, PRIMARY KEY (ImageNumber, ObjectNumber))'
+            cols = '([ sqliteImageNumber] int, [ sqliteObjectNumber] int, PRIMARY KEY ([ sqliteImageNumber], [ sqliteObjectNumber]))'
         try:
             self.db_connection().execute('CREATE TABLE [%s] %s' % (table_name, cols))
         except sqlite3.OperationalError, e:
@@ -163,6 +186,15 @@ class Measurements(object):
             # primary key, but didn't know the column name beforehand.
             self.db_connection().execute('CREATE TABLE [%s] ([%s] PRIMARY KEY)' % (table_name, column_name))
             return
+        if (table_name == EXPERIMENT) or table_name.startswith(RELATIONSHIP):
+            if not (table_name,) in self.db_connection().execute('SELECT tbl_name FROM sqlite_master WHERE type="table"').fetchall():
+                con = self.db_connection()
+                con.execute('CREATE TABLE IF NOT EXISTS [%s] ([%s])' % (table_name, column_name))
+                if table_name == EXPERIMENT:
+                    # create one row for the experiment data
+                    con.execute('INSERT INTO [%s] ([%s]) VALUES (NULL)' % (table_name, column_name))
+                    con.commit()
+                return  # otherwise, fall through to create the column
         try:
             self.db_connection().execute('ALTER TABLE [%s] ADD COLUMN [%s]' % (table_name, column_name))
         except sqlite3.OperationalError, e:
@@ -200,7 +232,7 @@ class Measurements(object):
             for object_name in self.object_names:
                 if object_name in (EXPERIMENT):
                     continue
-                con.execute('DELETE FROM [%s] WHERE ImageNumber=%d' % (object_name, self.__image_set_index))
+                con.execute('DELETE FROM [%s] WHERE [ sqliteImageNumber]=%d' % (object_name, self.__image_set_index))
                 self.__stored_image_numbers.get(object_name, set()).discard(self.__image_set_index)
             con.commit()
 
@@ -380,7 +412,7 @@ class Measurements(object):
         if self.__add_table_if_missing(table_name):
             self.__relationships.append((module_number, relationship, object_name1, object_name2))
             self.__relationship_names.append(table_name)
-            self.__add_column_if_missing(table_name, "group_number", primary_index=True)
+            self.__add_column_if_missing(table_name, "group_number", primary_key=True)
             self.__add_column_if_missing(table_name, "group_index1")
             self.__add_column_if_missing(table_name, "object_number1")
             self.__add_column_if_missing(table_name, "group_index2")
@@ -419,7 +451,7 @@ class Measurements(object):
                                                  ("group_index2", int, 1),
                                                  ("object_index2", int, 1))).view(np.recarray)
 
-    def add_measurement(self, object_name, feature_name, data, can_overwrite=False):
+    def add_measurement(self, object_name, feature_name, data, can_overwrite=False, image_set_index=None):
         """Add a measurement or, for objects, an array of measurements to the set
 
         This is the classic interface - like CPaddmeasurements:
@@ -428,6 +460,8 @@ class Measurements(object):
         Data - the data item to be stored
         """
         can_overwrite = can_overwrite or self.__can_overwrite
+        if image_set_index is None:
+            image_set_index = self.image_set_index
         if can_overwrite or (self.is_first_image and not self.__initialized_explicitly):
             self.__add_table_if_missing(object_name)
             assert can_overwrite or not feature_name in self.get_feature_names(object_name), \
@@ -452,22 +486,25 @@ class Measurements(object):
 
         con = self.db_connection()
         if object_name == EXPERIMENT:
-            con.execute('INSERT INTO [%s] ([%s]) VALUES (?)' % (object_name, feature_name), (data,))
+            self.__add_column_if_missing(object_name, feature_name)
+            data = wrap_nan(data)
+            con.execute('UPDATE [%s] SET [%s] = ?' % (object_name, feature_name), (data,))
         elif object_name == IMAGE:
-            con.execute('INSERT OR IGNORE INTO [%s] (ImageNumber) VALUES (?)' % (object_name), (self.image_set_index,))
+            con.execute('INSERT OR IGNORE INTO [%s] ([ sqliteImageNumber]) VALUES (?)' % (object_name), (image_set_index,))
             if isinstance(data, np.ndarray):
                 assert data.size == 1
                 data = data.astype(object)[0]
             if isinstance(data, np.generic):
                 data = data.astype(object)
-            print data, type(data)
-            con.execute('UPDATE [%s] SET [%s] = ? WHERE ImageNumber = ?' % (object_name, feature_name), (data, self.image_set_index))
+            data = wrap_nan(data)
+            print "writing", image_set_index, IMAGE, feature_name, data
+            con.execute('UPDATE [%s] SET [%s] = ? WHERE [ sqliteImageNumber] = ?' % (object_name, feature_name), (data, image_set_index))
         else:
-            con.executemany('INSERT OR IGNORE INTO [%s] (ImageNumber, ObjectNumber) VALUES (?, ?)' % (object_name),
-                            zip(repeat(self.image_set_index), xrange(1, len(data) + 1)))
-            con.executemany('UPDATE [%s] SET [%s] = ? WHERE ImageNumber = ? AND ObjectNumber = ?' % (object_name, feature_name),
-                            zip(data.astype(object), repeat(self.image_set_index), xrange(1, len(data) + 1)))
-            self.__stored_image_numbers.setdefault(object_name, set()).add(self.image_set_index)
+            con.executemany('INSERT OR IGNORE INTO [%s] ([ sqliteImageNumber], [ sqliteObjectNumber]) VALUES (?, ?)' % (object_name),
+                            zip(repeat(image_set_index), xrange(1, len(data) + 1)))
+            con.executemany('UPDATE [%s] SET [%s] = ? WHERE [ sqliteImageNumber] = ? AND [ sqliteObjectNumber] = ?' % (object_name, feature_name),
+                            zip(data.astype(object), repeat(image_set_index), xrange(1, len(data) + 1)))
+            self.__stored_image_numbers.setdefault(object_name, set()).add(image_set_index)
         con.commit()
 
     def get_object_names(self):
@@ -482,11 +519,11 @@ class Measurements(object):
         """The list of feature names (measurements) for an object
         """
         # PRAGMA table_info returns nothing for nonexistent tables
-        return [c[1] for c in self.db_connection().execute('PRAGMA table_info([%s])' % (object_name)).fetchall() if c[1] not in ('ImageNumber', 'ObjectNumber')]
+        return [c[1] for c in self.db_connection().execute('PRAGMA table_info([%s])' % (object_name)).fetchall() if c[1] not in (' sqliteImageNumber', ' sqliteObjectNumber')]
 
     def has_feature(self, object_name, feature_name):
         """Return true if a particular object has a particular feature"""
-        return feature_name in self.get_feature_names(object)
+        return feature_name in self.get_feature_names(object_name)
 
     def get_current_image_measurement(self, feature_name):
         '''Return the value for the named image measurement
@@ -505,10 +542,10 @@ class Measurements(object):
     def get_measurement(self, object_name, feature_name, image_set_index):
         """Return the value for the named measurement and indicated image set"""
         if object_name == IMAGE:
-            return self.db_connection().execute('SELECT [%s] from [%s] WHERE ImageNumber = ?' % (feature_name, object_name),
-                                                (image_set_index,)).fetchall()[0][0]
+            return unwrap_nan(self.db_connection().execute('SELECT [%s] from [%s] WHERE [ sqliteImageNumber] = ?' % (feature_name, object_name),
+                                                           (image_set_index,)).fetchall()[0][0])
         else:
-            return np.array(self.db_connection().execute('SELECT [%s] from [%s] WHERE ImageNumber = ? ORDER BY ObjectNumber' % (feature_name, object_name),
+            return np.array(self.db_connection().execute('SELECT [%s] from [%s] WHERE [ sqliteImageNumber] = ? ORDER BY [ sqliteObjectNumber]' % (feature_name, object_name),
                                                          (image_set_index,)).fetchall()).astype(float).flatten()
 
     def has_current_measurements(self, object_name, feature_name):
@@ -518,7 +555,7 @@ class Measurements(object):
         """
         # XXX - I think this fails if there are no objects in an image
         try:
-            return len(self.db_connection().execute('SELECT [%s] from [%s] WHERE ImageNumber = ? AND [%s] IS NOT NULL LIMIT 1' % (feature_name, object_name, feature_name),
+            return len(self.db_connection().execute('SELECT [%s] from [%s] WHERE [ sqliteImageNumber] = ? AND [%s] IS NOT NULL LIMIT 1' % (feature_name, object_name, feature_name),
                                                     (self.image_set_index,)).fetchall()) > 0
         except sqlite3.OperationalError, e:
             if ('no such table' in e.message) or ('no such column' in e.message):
@@ -529,11 +566,11 @@ class Measurements(object):
         # XXX - could this be done as an object wrapping the DB and supporting queries via __getitem__?
         try:
             if object_name == EXPERIMENT:
-                return self.db_connection().execute('SELECT [%s] from "%s' % (feature_name, object_name)).fetchall()[0]
+                return unwrap_nan(self.db_connection().execute('SELECT [%s] from "%s' % (feature_name, object_name)).fetchall()[0][0])
             elif object_name == IMAGE:
-                return np.array(self.db_connection().execute('SELECT [%s] from [%s] ORDER BY ImageNumber' % (feature_name, object_name)).fetchall())
+                return [unwrap_nan(v) for (v,) in self.db_connection().execute('SELECT [%s] from [%s] ORDER BY [ sqliteImageNumber]' % (feature_name, object_name)).fetchall()]
             else:
-                vals = np.array(self.db_connection().execute('SELECT ImageNumber, [%s] from [%s] ORDER BY ImageNumber, ObjectNumber' % (feature_name, object_name)).fetchall())
+                vals = np.array(self.db_connection().execute('SELECT [ sqliteImageNumber], [%s] from [%s] ORDER BY [ sqliteImageNumber], [ sqliteObjectNumber]' % (feature_name, object_name)).fetchall(), np.float)
                 return [vals[vals[:, 0] == idx, 1].flatten() for idx in sorted(list(self.__stored_image_numbers[object_name]))]
         except sqlite3.OperationalError, e:
             if 'no such column' in e.message:
@@ -548,13 +585,13 @@ class Measurements(object):
         feature_name - feature to add
         values - list of either values or arrays of values
         '''
-        for idx, val in zip(xrange(len(vals)), vals):
-            self.add_measurement(object_name, feature_name, val, can_overwrite=True)
+        for idx, val in zip(xrange(len(values)), values):
+            self.add_measurement(object_name, feature_name, val, can_overwrite=True, image_set_index=idx)
 
     def get_experiment_measurement(self, feature_name):
         """Retrieve an experiment-wide measurement
         """
-        return self.get_all_measurements(EXPERIMENT, feature_name)
+        return self.get_all_measurements(EXPERIMENT, feature_name) or 'N/A'
 
     def apply_metadata(self, pattern, image_set_index=None):
         """Apply metadata from the current measurements to a pattern

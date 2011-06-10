@@ -828,18 +828,24 @@ class Pipeline(object):
         filename     - name of file to create, or a file-like object
         measurements - measurements structure that is the result of running the pipeline
         """
-        handles = self.build_matlab_handles()
-        add_all_measurements(handles, measurements)
-        handles[CURRENT][NUMBER_OF_IMAGE_SETS][0,0] = float(measurements.image_set_number+1)
-        handles[CURRENT][SET_BEING_ANALYZED][0,0] = float(measurements.image_set_number+1)
-        #
-        # For the output file, you have to bury it a little deeper - the root has to have
-        # a single field named "handles"
-        #
-        root = {'handles':np.ndarray((1,1),dtype=make_cell_struct_dtype(handles.keys()))}
-        for key,value in handles.iteritems():
-            root['handles'][key][0,0]=value
-        self.savemat(filename, root)
+        try:
+            handles = self.build_matlab_handles()
+            add_all_measurements(handles, measurements)
+            handles[CURRENT][NUMBER_OF_IMAGE_SETS][0,0] = float(measurements.image_set_number+1)
+            handles[CURRENT][SET_BEING_ANALYZED][0,0] = float(measurements.image_set_number+1)
+            #
+            # For the output file, you have to bury it a little deeper - the root has to have
+            # a single field named "handles"
+            #
+            root = {'handles':np.ndarray((1,1),dtype=make_cell_struct_dtype(handles.keys()))}
+            for key,value in handles.iteritems():
+                root['handles'][key][0,0]=value
+            self.savemat(filename, root)
+        except:
+            import pdb, sys
+            e, m, tb = sys.exc_info()
+            pdb.post_mortem(tb)
+
         
     def savemat(self, filename, root):
         '''Save a handles structure accounting for scipy version compatibility to a filename or file-like object'''

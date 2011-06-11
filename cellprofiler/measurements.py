@@ -211,11 +211,11 @@ class Measurements(object):
         # of non-null values across columns in the the Image table?
         try:
             cur = self.db_connection().execute('SELECT COUNT(*) FROM %s' % (IMAGE))
+            return cur.fetchall()[0]
         except sqlite3.OperationalError, e:
             if not 'no such table' in e.message:
                 raise
             return 0
-        return cur.fetchall()[0]
 
     def get_is_first_image(self):
         '''True if this is the first image in the set'''
@@ -268,17 +268,6 @@ class Measurements(object):
         stored in the database.
         '''
         return index + self.image_set_start_number
-
-    def get_index_from_image_number(self, image_number):
-        '''Return the index into the measurements for a given image number
-
-        image_number - the image set's image number as stored in the database
-                       or CSV file
-
-        return the index of that image set's measurements, suitable for
-        finding values from get_all_measurements
-        '''
-        return image_number - self.image_set_start_number
 
     def load(self, measurements_file_name):
         '''Load measurements from a matlab file'''

@@ -144,6 +144,8 @@ class Measurements(object):
             if object_name not in self.__measurements_group:
                 self.__measurements_group.create_group(object_name, XXX
             
+
+# http://hdf-forum.184993.n3.nabble.com/hdf-forum-Efficient-Way-to-Write-Compound-Data-td193448.html
         
     
     def __add_column_if_missing(self, table_name, column_name, primary_key=False):

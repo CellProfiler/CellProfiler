@@ -95,29 +95,6 @@ M_SITE, M_WELL, M_ROW, M_COLUMN, M_PLATE = \
 GROUP_NUMBER = "Group_Number"
 GROUP_INDEX = "Group_Index"
 
-def wrap_nan(val):
-    # The Experiment and Image tables can contain a mix of integers,
-    # floats, and strings.  Unfortunately, sqlite converts NaN to
-    # None, which ends up breaking things. We store NaN and strings
-    # specially, and deal with them when fetched.
-    if isinstance(val, str) or isinstance(val, unicode):
-        val = u'string:' + val
-    elif np.isnan(val):
-        val = 'float:nan'
-    return val
-
-
-def unwrap_nan(val):
-    if isinstance(val, unicode):
-        # see above
-        if val.startswith('string:'):
-            val = val.split(':', 1)[1]
-        else:
-            val = float('nan')
-    return val
-
-
-
 def get_length_from_varchar(x):
     '''Retrieve the length of a varchar column from its coltype def'''
     m = re.match(r'^varchar\(([0-9]+)\)$', x)
@@ -139,45 +116,36 @@ class Measurements(object):
                           or None to start at the beginning
         """
         # XXX - clean up on destruction of measurements, allow saving of partial results
-        self.__db_filename = tempfile.mkstemp(prefix='CPmeasurements', suffix='.sqlite', dir=cpprefs.get_default_output_directory())[1]
+        self.__hdf_filename = tempfile.mkstemp(prefix='CPmeasurements', suffix='.hdf5', dir=cpprefs.get_default_output_directory())[1]
+        self.__hdf_file = h5py.File(self.__hdf_filename, 'w')
+        self.__measurements_group = self.__hdf_file.create_group('Measurements')
         self.__image_set_number = (1 if image_set_start is None
                                    else image_set_start + 1)
         self.__image_set_start = image_set_start
         self.__can_overwrite = can_overwrite
         self.__is_first_image = True
-        self.__image_set_index = 0
         self.__stored_image_numbers = {}
         self.__initialized_explicitly = False
         self.__relationships = []
         self.__relationship_names = []
+        self.__object_features = {} # dict mapping objects to sets of features - XXX do we care about order?
+        self.lock = threading.Lock()
 
-    def db_connection(self):
-        # SQLite connections have low overhead, so reconnecting is
-        # fine.  BUT: be aware that pysqlite does not have autocommit
-        # on by default, so it's necessary in some places below to
-        # grab the connection, update some tables, then call commit on
-        # the existing connection.
-        return sqlite3.connect(self.__db_filename)
-
-    def __add_table_if_missing(self, table_name):
-        '''return True if table was added.'''
-        assert not '[' in table_name or ']' in table_name
-        if (table_name == EXPERIMENT) or table_name.startswith(RELATIONSHIP):
-            # we can't create an empty table, so we create these tables in __add_column_if_missing
+    def __add_object_measurement(self, object_name, feature_name, dtype, fail_if_missing=False):
+        '''Add a feature to an object's measurements.
+        Returns True if the feature was not previously added.
+        '''
+        # check if the feature is known
+        if feature_name in self.__object_features.setdefault(object_name, set()):
             return False
-        if table_name == 'Image':
-            cols = '([ sqliteImageNumber] int PRIMARY KEY)'
-        else:
-            # object table
-            cols = '([ sqliteImageNumber] int, [ sqliteObjectNumber] int, PRIMARY KEY ([ sqliteImageNumber], [ sqliteObjectNumber]))'
-        try:
-            self.db_connection().execute('CREATE TABLE [%s] %s' % (table_name, cols))
-        except sqlite3.OperationalError, e:
-            if 'already exists' in e.message:
-                return False
-            raise
-        return True
-
+        assert not fail_if_missing  # fail and do not alter measurements
+        with self.lock:
+            self.__object_features[object_name].add(feature_name)
+            if object_name not in self.__measurements_group:
+                self.__measurements_group.create_group(object_name, XXX
+            
+        
+    
     def __add_column_if_missing(self, table_name, column_name, primary_key=False):
         assert not '[' in table_name or ']' in table_name
         assert not '[' in column_name or ']' in column_name

@@ -52,7 +52,7 @@ import cellprofiler.settings as cps
 from cellprofiler.matlab.cputils import make_cell_struct_dtype, new_string_cell_array, encapsulate_strings_in_arrays
 
 '''The measurement name of the image number'''
-IMAGE_NUMBER = "ImageNumber"
+IMAGE_NUMBER = cpmeas.IMAGE_NUMBER
 GROUP_NUMBER = cpmeas.GROUP_NUMBER
 GROUP_INDEX = cpmeas.GROUP_INDEX
 CURRENT = 'Current'

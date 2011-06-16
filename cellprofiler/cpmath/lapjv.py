@@ -322,22 +322,22 @@ def slow_augment(n, ii, jj, idx, count, x, y, u, v, c):
     #   until i = i*
     #  end
     #end
+    inf = np.sum(c) + 1
     d = np.zeros(n)
     cc = np.zeros((n,n))
-    cc[:,:] = 1000000
+    cc[:,:] = inf
     for i in range(n):
         cc[i,jj[idx[i]:(idx[i]+count[i])]] = c[idx[i]:(idx[i]+count[i])]
     c = cc
     for i in ii:
         print "Processing i=%d" % i
         j = jj[idx[i]:(idx[i] + count[i])]
-        d[j] = c[i,j] - v[j]
-        pred = np.ones(n, int) * n
-        pred[j] = i
+        d = c[i,:] - v
+        pred = np.ones(n, int) * i
         on_deck = []
         ready = []
         scan = []
-        to_do = list(j)
+        to_do = list(range(n))
         try:
             while True:
                 print "Evaluating i=%d, n_scan = %d" % (i, len(scan))

@@ -114,6 +114,7 @@ def reduction_transfer(
             j1 = p_x[i]
             j_count = p_count[i]
             p_c = c_base + p_idx[i]
+            j_at_min = -1
             for j_idx in range(j_count):
                 j_temp = p_j[j_idx]
                 if j_temp != j1:
@@ -121,8 +122,9 @@ def reduction_transfer(
                     if u_temp < min_u:
                         min_u = u_temp
                         j_at_min = j_temp
-            v_base[j1] -= min_u - p_u[i]
-            p_u[i] = min_u
+            if j_at_min != -1:
+                v_base[j1] -= min_u - p_u[i]
+                p_u[i] = min_u
         
 def augmenting_row_reduction(
     int n,
@@ -308,7 +310,7 @@ def augment(
         int *p_pred_base  = <int *>(PyArray_DATA(pred))
         int *p_col        = <int *>(PyArray_DATA(col))
         int *p_done       = <int *>(PyArray_DATA(done))
-        double inf = np.inf
+        double inf = np.sum(c) + 1 # This is larger than any path through.
         double umin, temp, h, u1
     
     ##################################################
@@ -358,6 +360,11 @@ def augment(
             p_j = p_j_base + p_idx_base[i]
             n_j = p_count_base[i]
             p_c = p_c_base + p_idx_base[i]
+            #
+            # Initialize d to "inf" for j that are not in the sparse list
+            #
+            for jjj in range(n):
+                p_d_base[jjj] = inf
             for jjj in range(n_j):
                 j = p_j[jjj]
                 p_d_base[j] = p_c[jjj] - p_v_base[j]

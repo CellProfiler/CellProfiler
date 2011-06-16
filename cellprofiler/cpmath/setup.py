@@ -45,12 +45,16 @@ def configuration():
                   Extension(name="_filter",
                             sources=["_filter.pyx"],
                             include_dirs=['src']+[get_include()],
+                            extra_compile_args=['-O3']),
+                  Extension(name="_lapjv",
+                            sources=["_lapjv.pyx"],
+                            include_dirs=['src']+[get_include()],
                             extra_compile_args=['-O3'])
                   ]
     dict = { "name":"cpmath",
              "description":"algorithms for CellProfiler",
              "maintainer":"Lee Kamentsky",
-             "maintainer_email":"leek@broad.mit.edu",
+             "maintainer_email":"leek@broadinstitute.org",
              "cmdclass": {'build_ext': build_ext},
              "ext_modules": extensions
             }

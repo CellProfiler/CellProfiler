@@ -309,7 +309,7 @@ def augment(
         int *p_col        = <int *>(PyArray_DATA(col))
         int *p_done       = <int *>(PyArray_DATA(done))
         double inf = np.inf
-        double umin, temp, h
+        double umin, temp, h, u1
     
     ##################################################
     #

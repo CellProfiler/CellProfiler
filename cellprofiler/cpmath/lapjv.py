@@ -67,7 +67,6 @@ def lapjv(i, j, costs, wants_dual_variables = False, augmenting_row_reductions =
     returns (x, y), the pairs of assignments that represent the solution
     or (x, y, u, v) if the dual variables are requested.
     '''
-    np.save('c:/temp/lap', np.column_stack((i,j,costs)))
     i = np.atleast_1d(i).astype(int)
     j = np.atleast_1d(j).astype(int)
     costs = np.atleast_1d(costs)
@@ -325,7 +324,7 @@ def slow_augment(n, ii, jj, idx, count, x, y, u, v, c):
     #end
     d = np.zeros(n)
     cc = np.zeros((n,n))
-    cc[:,:] = np.inf
+    cc[:,:] = 1000000
     for i in range(n):
         cc[i,jj[idx[i]:(idx[i]+count[i])]] = c[idx[i]:(idx[i]+count[i])]
     c = cc

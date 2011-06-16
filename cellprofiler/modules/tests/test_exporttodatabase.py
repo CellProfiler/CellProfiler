@@ -2839,7 +2839,7 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
                                  {}, np.arange(count)+1)
             for i in range(count):
                 workspace.set_image_set_for_testing_only(i+1)
-                measurements.set_image_set_number(i+1)
+                measurements.next_image_set(i + 1)
                 module.run(workspace)
             self.cursor.execute("use CPUnitTest")
             #

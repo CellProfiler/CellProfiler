@@ -525,6 +525,7 @@ class ExportToSpreadsheet(cpm.CPModule):
         try:
             writer = csv.writer(fd,delimiter=self.delimiter_char)
             for index in image_set_indexes:
+                print "writing img", index, file_name
                 aggs = []
                 if self.wants_aggregate_means:
                     aggs.append(cpmeas.AGG_MEAN)
@@ -544,7 +545,7 @@ class ExportToSpreadsheet(cpm.CPModule):
                     if image_features is None:
                         return
                     writer.writerow(image_features)
-                row = [ index+1
+                row = [ index
                        if feature_name == IMAGE_NUMBER
                        else agg_measurements[feature_name]
                        if agg_measurements.has_key(feature_name)
@@ -735,6 +736,7 @@ Do you want to save it anyway?""" %
         file_name = self.make_full_filename(file_name, workspace,
                                             image_set_indexes[0])
         fd = open(file_name,"wb")
+        print "opened", file_name, image_set_indexes
         if self.excel_limits:
             row_count = 1
             for img_index in image_set_indexes:
@@ -758,8 +760,9 @@ Do you want to save it anyway?""" %
                 object_count =\
                      np.max([m.get_measurement(IMAGE, "Count_%s"%name, img_index)
                              for name in object_names])
+                print "writing row imgn", img_index, object_count, file_name
                 object_count = int(object_count)
-                columns = [np.repeat(img_index+1, object_count)
+                columns = [np.repeat(img_index, object_count)
                            if feature_name == IMAGE_NUMBER
                            else np.arange(1,object_count+1) 
                            if feature_name == OBJECT_NUMBER

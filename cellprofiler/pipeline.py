@@ -228,11 +228,11 @@ def add_all_measurements(handles, measurements):
         object_measurements = np.ndarray((1,1),dtype=object_dtype)
         npy_measurements[object_name][0,0] = object_measurements
         for field, feature_name in mapping.iteritems():
-            feature_measurements = np.ndarray((1,measurements.image_set_index+1),
+            feature_measurements = np.ndarray((1, measurements.image_set_number),
                                               dtype='object')
             object_measurements[field][0,0] = feature_measurements
             data = measurements.get_all_measurements(object_name,feature_name)
-            for i in range(0,measurements.image_set_index+1):
+            for i in range(0, measurements.image_set_number):
                 if data != None:
                     ddata = data[i]
                     if np.isscalar(ddata) and np.isreal(ddata):
@@ -1000,7 +1000,7 @@ class Pipeline(object):
         #
         # Rewind the measurements to the previous image set
         #
-        measurements.set_image_set_number(image_set_start - 1)
+        measurements.set_image_set_number(image_set_start)
         return self.run_with_yield(frame, 
                                    image_set_start = image_set_start, 
                                    status_callback = status_callback,
@@ -1050,7 +1050,7 @@ class Pipeline(object):
     
     def run(self,
             frame = None, 
-            image_set_start = 0, 
+            image_set_start = 1, 
             image_set_end = None,
             grouping = None):
         """Run the pipeline
@@ -1058,7 +1058,7 @@ class Pipeline(object):
         Run the pipeline, returning the measurements made
         frame - the frame to be used when displaying graphics or None to
                 run headless
-        image_set_start - the index of the first image to be run
+        image_set_start - the image number of the first image to be run
         image_set_end - the index of the last image to be run + 1
         grouping - a dictionary that gives the keys and values in the
                    grouping to run or None to run all groupings
@@ -1070,7 +1070,7 @@ class Pipeline(object):
         return measurements
 
     def run_with_yield(self,frame = None, 
-                       image_set_start = 0, 
+                       image_set_start = 1, 
                        image_set_end = None,
                        grouping = None, run_in_background=True,
                        status_callback=None,
@@ -1093,7 +1093,6 @@ class Pipeline(object):
             if grouping is not None and set(keys) != set(grouping.keys()):
                 raise ValueError("The grouping keys specified on the command line (%s) must be the same as those defined by the modules in the pipeline (%s)"%(
                         ", ".join(grouping.keys()), ", ".join(keys)))
-            
             for group_number, (grouping_keys, image_numbers) in enumerate(groupings):
                 if grouping is not None and grouping != grouping_keys:
                     continue
@@ -1147,7 +1146,7 @@ class Pipeline(object):
                 if measurements is None:
                     if initial_measurements is None:
                         measurements = cpmeas.Measurements(
-                            image_set_start=image_number - 1)
+                            image_set_start=image_number)
                         measurements.initialize(columns)
                     else:
                         measurements = initial_measurements
@@ -1273,7 +1272,6 @@ class Pipeline(object):
                         return
             
             if measurements is not None:
-                measurements.add_experiment_measurement(EXIT_STATUS, "Complete")
                 exit_status = self.post_run(measurements, image_set_list, frame)
                 #
                 # Record the status after post_run

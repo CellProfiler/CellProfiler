@@ -1275,7 +1275,7 @@ class ExportToDatabase(cpm.CPModule):
         if (self.db_type == DB_MYSQL or self.db_type == DB_SQLITE):
             if not workspace.pipeline.test_mode:
                 d = self.get_dictionary(workspace.image_set_list)
-                d[D_IMAGE_SET_INDEX].append(workspace.measurements.image_set_index)
+                d[D_IMAGE_SET_INDEX].append(workspace.measurements.image_set_number)
                 d[C_IMAGE_NUMBER].append(workspace.measurements.image_set_number)
                 self.write_data_to_db(workspace)
 
@@ -1737,7 +1737,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
         columns = self.get_pipeline_measurement_columns(pipeline, 
                                                         image_set_list, remove_postgroup_key = True)
         agg_columns = self.get_aggregate_columns(pipeline, image_set_list)
-        for i in range(measurements.image_set_index+1):
+        for i in range(1, measurements.image_set_number):
             image_row = []
             image_number = i+measurements.image_set_start_number
             image_row.append(image_number)
@@ -1787,7 +1787,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
             file_name = self.make_full_filename(file_name)
             fid = open(file_name, "wb")
             csv_writer = csv.writer(fid, lineterminator='\n')
-            for i in range(measurements.image_set_index+1):
+            for i in range(1, measurements.image_set_number):
                 image_number = i+measurements.image_set_start_number
                 max_count = 0
                 for object_name in object_list:
@@ -1855,7 +1855,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                                                                      image_set_list)
             mapping = self.get_column_name_mappings(pipeline, image_set_list)
             if index is None:
-                index = measurements.image_set_index
+                index = measurements.image_set_number - 1
             
             ###########################################
             #

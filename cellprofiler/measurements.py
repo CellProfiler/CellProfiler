@@ -23,6 +23,8 @@ import numpy as np
 import h5py
 import threading
 import warnings
+import os
+import os.path
 
 AGG_MEAN = "Mean"
 AGG_STD_DEV = "StDev"
@@ -105,7 +107,7 @@ def hdf5_dtype(val):
         return val.dtype
     except:
         if isinstance(val, str) or isinstance(val, unicode):
-            return h5py.special_dtype(str)
+            return h5py.special_dtype(vlen=str)
         return type(val)
 
 def get_length_from_varchar(x):
@@ -130,7 +132,10 @@ class Measurements(object):
         """
         # XXX - document how data is stored in hdf5 (basically, /Measurements/Object/Feature)
         # XXX - clean up on destruction of measurements, allow saving of partial results
-        self.hdf_filename = tempfile.mkstemp(prefix='CPmeasurements', suffix='.hdf5', dir=cpprefs.get_default_output_directory())[1]
+        dir = cpprefs.get_default_output_directory()
+        if not os.path.exists(dir):
+            dir = None
+        self.hdf_filename = tempfile.mkstemp(prefix='CPmeasurements', suffix='.hdf5', dir=dir)[1]
         self.hdf_file = h5py.File(self.hdf_filename, 'w')
         self.__measurements_group = self.hdf_file.create_group(MEASUREMENTS_GROUP_NAME)
         self.lock = threading.RLock()  # h5py is thread safe, but does not support simultaneous read/write
@@ -138,11 +143,23 @@ class Measurements(object):
         self.image_set_number = image_set_start or 1
         self.image_set_start = image_set_start
 
+        # this is a dictionary from object_names to a second
+        # dictionary of imagenumbers to (lo,hi) positions where they
+        # occur in that object's measurements array.  These are useful
+        # for fast selection of relevant regions of data arrays.
+        self.image_numbers_index = {}
+
         self.__can_overwrite = can_overwrite
         self.__is_first_image = True
         self.__initialized_explicitly = False
-        self.__relationships = []
-        self.__relationship_names = []
+        self.__relationships = set()
+        self.__relationship_names = set()
+
+    def __del__(self):
+        try:
+            os.unlink(self.hdf_filename)
+        except Exception, e:
+            pass
 
     # make sure we have the lock acquired
     @property
@@ -157,16 +174,15 @@ class Measurements(object):
         # check if the feature is known
         with self.lock:
             if object_name in self.measurements_group and feature_name in self.measurements_group[object_name]:
-                print "ALREADY", object_name, feature_name
                 return False
-            print "ADDING", object_name, feature_name
             assert not fail_if_missing  # fail and do not alter measurements
             grp = self.measurements_group.require_group(object_name)
             # Create index tables, if needed
             if object_name != EXPERIMENT and IMAGE_NUMBER not in grp:
-                grp.create_dataset(IMAGE_NUMBER, (0,), dtype='uint64', chunks=(1024,), maxshape=(None,))
+                grp.create_dataset(IMAGE_NUMBER, (0,), dtype='uint64', chunks=(1024,), maxshape=(None,), compression='lzf')
+                self.image_numbers_index[object_name] = {}
             if object_name not in (EXPERIMENT, IMAGE) and OBJECT_NUMBER not in grp:
-                grp.create_dataset(OBJECT_NUMBER, (0,), dtype='uint32', chunks=(1024,), maxshape=(None,))
+                grp.create_dataset(OBJECT_NUMBER, (0,), dtype='uint32', chunks=(1024,), maxshape=(None,), compression='lzf')
             # add new measurement
             grp.create_dataset(feature_name, (0,), dtype=dtype, chunks=(1024,), maxshape=(None,))
             return True
@@ -183,9 +199,18 @@ class Measurements(object):
         # clear the old data, if any
         with self.lock:
             del self.hdf_file[MEASUREMENTS_GROUP_NAME]
-            self.measurements_group = self.hdf_file.create_group(MEASUREMENTS_GROUP_NAME)
+            self.__measurements_group = self.hdf_file.create_group(MEASUREMENTS_GROUP_NAME)
+
+            def fix_type(t):
+                if t == 'integer':
+                    return np.int
+                if t.startswith('varchar'):
+                    len = t.split('(')[1][:-1]
+                    return np.dtype('a' + len)
+                return t
 
             for object_name, feature, coltype in measurement_columns:
+                coltype = fix_type(coltype)
                 self.__add_object_measurement(object_name, feature, coltype)
         self.__initialized_explicitly = True
 
@@ -217,7 +242,7 @@ class Measurements(object):
         # of non-null values across columns in the the Image table?
         try:
             with self.lock:
-                return sum(self.measurements_group[IMAGE][IMAGE_NUMBER] > 0)
+                return sum(self.measurements_group[IMAGE][IMAGE_NUMBER][:] > 0)
         except KeyError:
             return 0
 
@@ -236,14 +261,14 @@ class Measurements(object):
     @property
     def image_set_start_number(self):
         '''The first image set (one-based) processed by the pipeline'''
-        if self.__image_set_start is None:
+        if self.image_set_start is None:
             return 1
-        return self.__image_set_start + 1
+        return self.image_set_start
 
     @property
     def has_image_set_start(self):
         '''True if the image set has an explicit start'''
-        return self.__image_set_start is not None
+        return self.image_set_start is not None
 
     def load(self, measurements_file_name):
         '''Load measurements from a matlab file'''
@@ -256,6 +281,7 @@ class Measurements(object):
         for object_name in m.dtype.fields.keys():
             omeas = m[object_name][0, 0]
             for feature_name in omeas.dtype.fields.keys():
+                print feature_name, object_name
                 if object_name == IMAGE:
                     values = [x.flatten()[0] for x in omeas[feature_name][0]]
                 elif object_name == EXPERIMENT:
@@ -306,7 +332,7 @@ class Measurements(object):
 
     def add_relate_measurement(
         self, module_number,
-        relationship, group_number,
+        relationship, 
         object_name1, object_name2,
         group_indexes1, object_numbers1,
         group_indexes2, object_numbers2):
@@ -316,8 +342,6 @@ class Measurements(object):
 
         relationship - the relationship of the two objects, for instance,
                        "Parent" means object # 1 is the parent of object # 2
-
-        group_number - the group number of the group currently being processed
 
         object_name1, object_name2 - the name of the segmentation for the first and second objects
 
@@ -337,22 +361,25 @@ class Measurements(object):
         '''
 
         # XXX - check overwrite?
+
+        # XXX - Should group number be moved out of the measurement name? 
+        group_number = self.group_number
         with self.lock:
-            relationship_group = self.measurements_group.require_group('%s/%02d_%s_%s_%s' % (RELATIONSHIP, module_number, relationship, object_name1, object_name2))
+            relationship_group = self.measurements_group.require_group('%s/%02d_%d_%s_%s_%s' % (RELATIONSHIP, module_number, group_number, relationship, object_name1, object_name2))
             features = ["group_number", "group_index1", "group_index2", "object_number1", "object_number2"]
             if "group_number" not in relationship_group:
                 for name in features:
                     relationship_group.create_dataset(name, (0,), dtype='int32', chunks=(1024,), maxshape=(None,))
             current_size = relationship_group['group_number'].shape[0]
             for name in features:
-                relationship_group[name].resize((current_size + len(group_indexes),))
-            extend = range(current_size, current_size + len(group_indexes))
-            relationship_group['group_number'][extend] = group_number
-            relationship_group['group_index1'][extend] = group_indexes1
-            relationship_group['group_index2'][extend] = group_indexes2
-            relationship_group['object_number1'][extend] = object_numbers1
-            relationship_group['object_number2'][extend] = object_numbers2
-            self.__relationships.add((module_number, relationship, object_name1, object_name2))
+                relationship_group[name].resize((current_size + len(group_indexes1),))
+            relationship_group['group_number'][current_size:] = group_number
+            relationship_group['group_index1'][current_size:] = group_indexes1
+            relationship_group['group_index2'][current_size:] = group_indexes2
+            relationship_group['object_number1'][current_size:] = object_numbers1
+            relationship_group['object_number2'][current_size:] = object_numbers2
+            self.__relationships.add((module_number, group_number, relationship, object_name1, object_name2))
+            self.__relationship_names.add(relationship_group.name)
 
     def get_relationship_groups(self):
         '''Return the keys of each of the relationship groupings.
@@ -360,30 +387,33 @@ class Measurements(object):
         The value returned is a list composed of objects with the following
         attributes:
         module_number - the module number of the module used to generate the relationship
+        group_number - the group number of the relationship
         relationship - the relationship of the two objects
         object_name1 - the object name of the first object in the relationship
         object_name2 - the object name of the second object in the relationship
         '''
 
-        return [RelationshipKey(module_number, relationship, obj1, obj2) for
-                (module_number, relationship, obj1, obj2) in self.__relationships]
+        return [RelationshipKey(module_number, group_number, relationship, obj1, obj2) for
+                (module_number, group_number, relationship, obj1, obj2) in self.__relationships]
 
-    def get_relationships(self, module_number, relationship, group_number, object_name1, object_name2):
-        if not (module_number, relationship, object_name1, object_name2) in self.__relationships:
+    def get_relationships(self, module_number, relationship, object_name1, object_name2, group_number):
+        if not (module_number, group_number, relationship, object_name1, object_name2) in self.__relationships:
             return np.zeros(0, [("group_index1", int, 1),
                                 ("object_number1", int, 1),
                                 ("group_index2", int, 1),
                                 ("object_number2", int, 1)]).view(np.recarray)
         with self.lock:
-            grp = self.measurements_group['%s/%02d_%s_%s_%s' % (RELATIONSHIP, module_number, relationship, object_name1, object_name2)]
-            mask = grp['group_number'][:] == group_number
-            return np.hstack((grp['group_index1'][mask],
-                              grp['object_number1'][mask],
-                              grp['group_index2'][mask],
-                              grp['object_number2'][mask])).astype((("group_index1", int, 1),
-                                                                    ("object_number1", int, 1),
-                                                                    ("group_index2", int, 1),
-                                                                    ("object_number2", int, 1))).view(np.recarray)
+            grp = self.measurements_group['%s/%02d_%d_%s_%s_%s' % (RELATIONSHIP, module_number, group_number, relationship, object_name1, object_name2)]
+            dt = np.dtype([("group_index1", np.int, 1),
+                           ("object_number1", np.int, 1),
+                           ("group_index2", np.int, 1),
+                           ("object_number2", np.int, 1)])
+            temp = np.zeros(grp['group_index1'].shape, dt)
+            temp['group_index1'] = grp['group_index1']
+            temp['object_number1'] = grp['object_number1']
+            temp['group_index2'] = grp['group_index2']
+            temp['object_number2'] = grp['object_number2']
+            return temp.view(np.recarray)
 
     def add_measurement(self, object_name, feature_name, data, can_overwrite=False, image_set_number=None):
         """Add a measurement or, for objects, an array of measurements to the set
@@ -401,7 +431,7 @@ class Measurements(object):
         if feature_name in (IMAGE_NUMBER, OBJECT_NUMBER):
             return
 
-        fail_if_missing = not (can_overwrite or (self.is_first_image and not self.__initialized_explicitly))
+        fail_if_missing = not (can_overwrite or (self.is_first_image and not self.__initialized_explicitly) or (object_name == EXPERIMENT))
         if fail_if_missing:
             assert object_name in self.get_object_names(), \
                 ("Object %s requested for the first time in image set number %d" % \
@@ -412,14 +442,12 @@ class Measurements(object):
 
         if (object_name == IMAGE and feature_name.startswith(C_METADATA)
             and self.has_current_measurements(object_name, feature_name)):
-            assert self.get_current_image_measurement(feature_name) == data
+            assert self.get_current_image_measurement(feature_name) == data, '%s != %s' % (self.get_current_image_measurement(feature_name), data)
         else:
             assert (can_overwrite or not
                     self.has_current_measurements(object_name, feature_name)),\
                     ("Feature %s.%s has already been set for this image cycle" %
                      (object_name, feature_name))
-
-        print object_name, feature_name, data, image_set_number
 
         with self.lock:
             if object_name == EXPERIMENT:
@@ -428,54 +456,45 @@ class Measurements(object):
                 self.measurements_group[EXPERIMENT][feature_name][0] = data
             elif object_name == IMAGE:
                 self.__add_object_measurement(IMAGE, feature_name, hdf5_dtype(data), fail_if_missing=fail_if_missing)
-                self.extend_measurement(IMAGE, feature_name, 1)
-                self.measurements_group[IMAGE][feature_name][-1:] = data  # some data comes in as single-element arrays
-                self.update_imagenumbers(IMAGE, feature_name, image_set_number, 1)
+                slice = self.update_imagenumbers(IMAGE, image_set_number, feature_name, 1)
+                self.measurements_group[IMAGE][feature_name][slice] = np.array(data).astype(self.measurements_group[IMAGE][feature_name].dtype)
             else:
                 self.__add_object_measurement(object_name, feature_name, np.double, fail_if_missing=fail_if_missing)
-                self.extend_measurement(object_name, feature_name, len(data))
                 if len(data) > 0:
-                    self.measurements_group[object_name][feature_name][-len(data):] = data
-                self.update_imagenumbers(object_name, feature_name, image_set_number, len(data))
-                self.update_objectnumbers(object_name, feature_name, len(data))
+                    slice = self.update_imagenumbers(object_name, image_set_number, feature_name, len(data), resize_object_numbers=True)
+                    self.measurements_group[object_name][feature_name][slice] = data.ravel().astype(float)
 
     def extend_measurement(self, object_name, feature_name, num):
         with self.lock:
             d = self.measurements_group[object_name][feature_name]
-            print "RESIZE", object_name, feature_name, d.shape[0] + num, num
             d.resize((d.shape[0] + num,))
 
-    def update_imagenumbers(self, object_name, feature_name, image_set_number, expected_growth):
+    def update_imagenumbers(self, object_name, image_set_number, feature_name, expected_number, resize_object_numbers=False):
         with self.lock:
-            num_measurements = self.measurements_group[object_name][feature_name].shape[0]
-            num_imagenumbers = self.measurements_group[object_name][IMAGE_NUMBER].shape[0]
-            diff = num_measurements - num_imagenumbers
+            # two expected cases:
+            #   - the ImageNumbers already have entries for this image - check they are the right length
+            #   - the ImageNumbers have no entries for this image - add them
             imgnums = self.measurements_group[object_name][IMAGE_NUMBER]
-            if diff > 0:
-                assert diff in (0, expected_growth), "Error: tried to extend imagenumbers by an unexpected amount %d" % (diff)
-                imgnums.resize((num_measurements,))
-                print "RESIZE", object_name, IMAGE_NUMBER, num_measurements, expected_growth
-                imgnums[-diff:] = image_set_number
-            elif expected_growth > 0:
-                # verify that the expected values are present
-                assert all(imgnums[num_measurements - expected_growth:num_measurements] == image_set_number)
-            # even if we didn't extend, record the maximum
-            imgnums.attrs['max_imagenum'] = max(imgnums.attrs.get('max_imagenum', 0), image_set_number)
-
-    def update_objectnumbers(self, object_name, feature_name, expected_growth):
-        with self.lock:
-            num_measurements = self.measurements_group[object_name][feature_name].shape[0]
-            num_objectnumbers = self.measurements_group[object_name][OBJECT_NUMBER].shape[0]
-            diff = num_measurements - num_objectnumbers
-            objnums = self.measurements_group[object_name][OBJECT_NUMBER]
-            if diff > 0:
-                assert diff in (0, expected_growth), "Error: tried to extend objectnumbers by an unexpected amount %d" % (diff)
-                objnums.resize((num_measurements,))
-                print "RESIZE", object_name, OBJECT_NUMBER, num_measurements, expected_growth
-                objnums[-diff:] = range(1, diff + 1)
-            elif expected_growth > 0:
-                # verify that the expected values are present
-                assert all(objnums[num_measurements - expected_growth:num_measurements] == range(1, expected_growth + 1))
+            features = self.measurements_group[object_name][feature_name]
+            # update maximum measured image regardless of what we do below
+            imgnums.attrs['max_imagenum'] = max(image_set_number, imgnums.attrs.get('max_imagenum', 0))
+            if image_set_number in self.image_numbers_index[object_name]:
+                lo, hi = self.image_numbers_index[object_name][image_set_number]
+                assert hi - lo == expected_number
+                if features.shape != imgnums.shape:
+                    features.resize(imgnums.shape)
+                return slice(lo, hi)
+            # add the expected number of new imagenumbers, and resize the feature to be the same size
+            lo = imgnums.shape[0]
+            if expected_number > 0:
+                imgnums.resize((imgnums.shape[0] + expected_number,))
+                imgnums[-expected_number:] = image_set_number
+                features.resize(imgnums.shape)
+                if resize_object_numbers:
+                    self.measurements_group[object_name][OBJECT_NUMBER].resize(imgnums.shape)
+                    self.measurements_group[object_name][OBJECT_NUMBER][-expected_number:] = range(1, expected_number + 1)
+            self.image_numbers_index[object_name][image_set_number] = (lo, lo + expected_number)
+            return slice(lo, lo + expected_number)
 
     def get_object_names(self):
         """The list of object names (including Image) that have measurements
@@ -489,7 +508,10 @@ class Measurements(object):
         """The list of feature names (measurements) for an object
         """
         with self.lock:
-            return [name for name in self.measurements_group[object_name] if not name in (IMAGE_NUMBER, OBJECT_NUMBER)]
+            if object_name in self.measurements_group:
+                return [name for name in self.measurements_group[object_name] if not name in (IMAGE_NUMBER, OBJECT_NUMBER)]
+            else:
+                return []
 
     def has_feature(self, object_name, feature_name):
         """Return true if a particular object has a particular feature"""
@@ -509,11 +531,20 @@ class Measurements(object):
         """
         return self.get_measurement(object_name, feature_name, self.image_set_number)
 
-    def get_measurement(self, object_name, feature_name, image_set_number):
+    def get_measurement(self, object_name, feature_name, image_set_number=None):
         """Return the value for the named measurement and indicated image set"""
+        def unwrap_string(v):
+            # hdf5 returns string columns as a wrapped type
+            if isinstance(v, str):
+                return str(v)
+            return v
         with self.lock:
             if self.measurements_group[object_name][feature_name].shape[0] == 0:
-                return []
+                return np.array([])
+            if object_name == EXPERIMENT:
+                return unwrap_string(self.measurements_group[object_name][feature_name][0])
+            if object_name == IMAGE:
+                return unwrap_string(self.measurements_group[object_name][feature_name][self.measurements_group[object_name][IMAGE_NUMBER][:] == image_set_number][0])
             return self.measurements_group[object_name][feature_name][self.measurements_group[object_name][IMAGE_NUMBER][:] == image_set_number]
 
     def has_current_measurements(self, object_name, feature_name):
@@ -552,7 +583,7 @@ class Measurements(object):
             # I'm happy to hear why this is wrong.
             if imgnums.shape[0] > 0:
                 return [data[imgnums[:] == imnum] for imnum in range(1,  imgnums.attrs.get('max_imagenum', 0) + 1)]
-            return [np.zeros(0)] * imgnums.attrs.get('max_imagenum', 0)
+            return np.array([np.zeros(0)] * imgnums.attrs.get('max_imagenum', 0))
 
     def add_all_measurements(self, object_name, feature_name, values):
         '''Add a list of measurements for all image sets
@@ -562,15 +593,14 @@ class Measurements(object):
         values - list of either values or arrays of values
         '''
         for idx, val in zip(xrange(len(values)), values):
-            print "ADD ALL", object_name, feature_name, idx + 1, val
             self.add_measurement(object_name, feature_name, val, can_overwrite=True, image_set_number=idx + 1)
 
     def get_experiment_measurement(self, feature_name):
         """Retrieve an experiment-wide measurement
         """
-        return self.get_all_measurements(EXPERIMENT, feature_name) or 'N/A'
+        return self.get_measurement(EXPERIMENT, feature_name) or 'N/A'
 
-    def apply_metadata(self, pattern, image_set_index=None):
+    def apply_metadata(self, pattern, image_set_number=None):
         """Apply metadata from the current measurements to a pattern
 
         pattern - a regexp-like pattern that specifies how to insert
@@ -579,12 +609,12 @@ class Measurements(object):
                   "\g<METADATA_TAG>" (Python-style)
         image_name - name of image associated with the metadata (or None
                      if metadata is not associated with an image)
-        image_set_index - # of image set to use to retrieve data.
+        image_set_number - # of image set to use to retrieve data.
                            None for current.
         returns a string with the metadata tags replaced by the metadata
         """
-        if image_set_index == None:
-            image_set_index = self.image_set_index
+        if image_set_number == None:
+            image_set_number = self.image_set_number
         result_pieces = []
         double_backquote = "\\\\"
         single_backquote = "\\"
@@ -602,7 +632,7 @@ class Measurements(object):
                 result += piece[:m.start()]
                 measurement = '%s_%s' % (C_METADATA, m.groups()[0])
                 result += str(self.get_measurement("Image", measurement,
-                                                   image_set_index))
+                                                   image_set_number))
                 piece = piece[m.end():]
             result_pieces.append(result)
         return single_backquote.join(result_pieces)
@@ -613,12 +643,12 @@ class Measurements(object):
         tags - a sequence of tags to match.
 
         Returns a sequence of MetadataGroup objects. Each one represents
-        a set of values for the metadata tags along with the indexes of
+        a set of values for the metadata tags along with the imagenumbers of
         the image sets that match the values
         """
         if len(tags) == 0:
             # if there are no tags, all image sets match each other
-            return [MetadataGroup({}, range(self.image_set_index + 1))]
+            return [MetadataGroup({}, range(1, self.image_set_number + 1))]
 
         #
         # The flat_dictionary has a row of tag values as a key
@@ -626,7 +656,7 @@ class Measurements(object):
         flat_dictionary = {}
         values = [self.get_all_measurements('Image', "%s_%s" % (C_METADATA, tag))
                   for tag in tags]
-        for index in range(self.image_set_index + 1):
+        for index in range(1, self.image_set_number):
             row = tuple([value[index] for value in values])
             if row in flat_dictionary:
                 flat_dictionary[row].append(index)
@@ -794,9 +824,10 @@ def agg_ignore_feature(feature_name):
     return False
 
 class RelationshipKey:
-    def __init__(self, module_number, relationship,
+    def __init__(self, module_number, group_number, relationship,
                  object_name1, object_name2):
         self.module_number = module_number
+        self.group_number = group_number
         self.relationship = relationship
         self.object_name1 = object_name1
         self.object_name2 = object_name2

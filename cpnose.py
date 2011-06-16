@@ -8,6 +8,8 @@ np.seterr(all='ignore')
 
 if '--noguitests' in sys.argv:
     sys.argv.remove('--noguitests')
+    import cellprofiler.preferences as cpprefs
+    cpprefs.set_headless()
     import wx
     for s in dir(wx):
         del wx.__dict__[s]

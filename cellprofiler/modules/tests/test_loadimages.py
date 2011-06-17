@@ -219,7 +219,7 @@ class testLoadImages(unittest.TestCase):
                     m = measurements.Measurements()
                     for i in range(0, nsets):
                         if i > 0:
-                            m.next_image_set(i)
+                            m.next_image_set(i + 1)
                         image_set = image_set_list.get_image_set(i)
                         workspace = W.Workspace(pipeline, l, image_set,
                                                 cpo.ObjectSet(), m,

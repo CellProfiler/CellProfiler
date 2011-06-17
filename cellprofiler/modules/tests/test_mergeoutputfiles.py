@@ -126,7 +126,10 @@ class TestMergeOutputFiles(unittest.TestCase):
             for i in range(5):
                 self.assertEqual(len(ro[i+j*5]), len(mo[i]))
                 np.testing.assert_almost_equal(ro[i+j*5], mo[i])
-                self.assertEqual(len(ro[i + (1 - j)*5]), 0)
+                # no longer the case with hdf5-stored measurements
+                # self.assertEqual(len(ro[i + (1 - j)*5]), 0)
+                r = ro[i + (1 - j)*5]
+                np.testing.assert_almost_equal(r, 0.0 * r)
     
     def test_01_04_different_objects(self):
         np.random.seed(13)

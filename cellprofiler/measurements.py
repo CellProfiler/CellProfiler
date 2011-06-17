@@ -102,6 +102,23 @@ OBJECT_NUMBER = "ObjectNumber"
 GROUP_NUMBER = "Group_Number"
 GROUP_INDEX = "Group_Index"
 
+# h5py is nice, but not being able to make zero-length selections is a pain.
+orig_hdf5_getitem = h5py.Dataset.__getitem__
+def new_getitem(self, args):
+    if isinstance(args, slice) and \
+            args.start is not None and args.start == args.stop:
+        return np.array([], self.dtype)
+    return orig_hdf5_getitem(self, args)
+setattr(h5py.Dataset, orig_hdf5_getitem.__name__, new_getitem)
+
+orig_hdf5_setitem = h5py.Dataset.__setitem__
+def new_setitem(self, args, val):
+    if isinstance(args, slice) and \
+            args.start is not None and args.start == args.stop:
+        return np.array([], self.dtype)[0:0]
+    return orig_hdf5_setitem(self, args, val)
+setattr(h5py.Dataset, orig_hdf5_setitem.__name__, new_setitem)
+
 def hdf5_dtype(val):
     try:
         return val.dtype
@@ -143,10 +160,11 @@ class Measurements(object):
         self.image_set_number = image_set_start or 1
         self.image_set_start = image_set_start
 
-        # this is a dictionary from object_names to a second
-        # dictionary of imagenumbers to (lo,hi) positions where they
-        # occur in that object's measurements array.  These are useful
-        # for fast selection of relevant regions of data arrays.
+        # this is a dictionary from object_names to a second level of
+        # dictionaries mapping imagenumbers to (lo,hi) positions where
+        # they occur in that object's measurements array.  These are
+        # useful for fast selection of relevant regions of data
+        # arrays.
         self.image_numbers_index = {}
 
         self.__can_overwrite = can_overwrite
@@ -230,10 +248,10 @@ class Measurements(object):
                 #
                 # The primary use case for overwriting is for testing, so
                 # I don't think we need to pack the data, ever. -Ray
-                for object_group in self.measurements_group.values():
+                for object_name, object_group in self.measurements_group.iteritems():
                     if IMAGE_NUMBER in object_group:
-                        d = object_group[IMAGE_NUMBER]
-                        d[d[:] == self.image_set_number] = 0
+                        lo, hi = self.image_numbers_index[object_name].pop(self.image_set_number, (0, 0))
+                        object_group[IMAGE_NUMBER][lo:hi] = 0
 
     @property
     def image_set_count(self):
@@ -241,8 +259,7 @@ class Measurements(object):
         # XXX - question for Lee: should this return the minimum number
         # of non-null values across columns in the the Image table?
         try:
-            with self.lock:
-                return sum(self.measurements_group[IMAGE][IMAGE_NUMBER][:] > 0)
+            return len(self.image_numbers_index[IMAGE].keys())
         except KeyError:
             return 0
 
@@ -281,7 +298,6 @@ class Measurements(object):
         for object_name in m.dtype.fields.keys():
             omeas = m[object_name][0, 0]
             for feature_name in omeas.dtype.fields.keys():
-                print feature_name, object_name
                 if object_name == IMAGE:
                     values = [x.flatten()[0] for x in omeas[feature_name][0]]
                 elif object_name == EXPERIMENT:
@@ -332,7 +348,7 @@ class Measurements(object):
 
     def add_relate_measurement(
         self, module_number,
-        relationship, 
+        relationship,
         object_name1, object_name2,
         group_indexes1, object_numbers1,
         group_indexes2, object_numbers2):
@@ -361,8 +377,7 @@ class Measurements(object):
         '''
 
         # XXX - check overwrite?
-
-        # XXX - Should group number be moved out of the measurement name? 
+        # XXX - Should group number be moved out of the measurement name?
         group_number = self.group_number
         with self.lock:
             relationship_group = self.measurements_group.require_group('%s/%02d_%d_%s_%s_%s' % (RELATIONSHIP, module_number, group_number, relationship, object_name1, object_name2))
@@ -440,14 +455,17 @@ class Measurements(object):
                 ("Feature %s.%s added for the first time in image set # %d (%s %s %s)" % \
                      (object_name, feature_name, self.image_set_number, can_overwrite, self.is_first_image, self.__initialized_explicitly))
 
-        if (object_name == IMAGE and feature_name.startswith(C_METADATA)
-            and self.has_current_measurements(object_name, feature_name)):
-            assert self.get_current_image_measurement(feature_name) == data, '%s != %s' % (self.get_current_image_measurement(feature_name), data)
+        # XXX - Why is this here?  To allow repeated columns in Metadata?
+        if (not can_overwrite and
+            object_name == IMAGE and feature_name.startswith(C_METADATA)
+            and self.has_measurements(object_name, feature_name, image_set_number)):
+            assert self.get_measurement(IMAGE, feature_name, image_set_number) == data, '%s != %s at img # %d' % \
+                (self.get_measurement(IMAGE, feature_name, image_set_number), data, image_set_number)
         else:
             assert (can_overwrite or not
-                    self.has_current_measurements(object_name, feature_name)),\
-                    ("Feature %s.%s has already been set for this image cycle" %
-                     (object_name, feature_name))
+                    self.has_measurements(object_name, feature_name, image_set_number)),\
+                    ("Feature %s.%s has already been set for image cycle %d" %
+                     (object_name, feature_name, image_set_number))
 
         with self.lock:
             if object_name == EXPERIMENT:
@@ -457,6 +475,13 @@ class Measurements(object):
             elif object_name == IMAGE:
                 self.__add_object_measurement(IMAGE, feature_name, hdf5_dtype(data), fail_if_missing=fail_if_missing)
                 slice = self.update_imagenumbers(IMAGE, image_set_number, feature_name, 1)
+                # we may need to promote from int to float
+                if np.asanyarray(data).dtype.kind == 'f' and self.measurements_group[IMAGE][feature_name].dtype.kind == 'i':
+                    d = self.measurements_group[IMAGE][feature_name][:].astype(float)
+                    del self.measurements_group[IMAGE][feature_name]
+                    self.__add_object_measurement(IMAGE, feature_name, 'f')
+                    self.measurements_group[IMAGE][feature_name].resize((d.size,))
+                    self.measurements_group[IMAGE][feature_name][:] = d
                 self.measurements_group[IMAGE][feature_name][slice] = np.array(data).astype(self.measurements_group[IMAGE][feature_name].dtype)
             else:
                 self.__add_object_measurement(object_name, feature_name, np.double, fail_if_missing=fail_if_missing)
@@ -543,11 +568,19 @@ class Measurements(object):
                 return np.array([])
             if object_name == EXPERIMENT:
                 return unwrap_string(self.measurements_group[object_name][feature_name][0])
+            lo, hi = self.image_numbers_index[object_name].get(image_set_number, (0,0))
             if object_name == IMAGE:
-                return unwrap_string(self.measurements_group[object_name][feature_name][self.measurements_group[object_name][IMAGE_NUMBER][:] == image_set_number][0])
-            return self.measurements_group[object_name][feature_name][self.measurements_group[object_name][IMAGE_NUMBER][:] == image_set_number]
+                # If the imagenumbers have been extended, but the data
+                # is not in the array, yet, return an empty array
+                if lo == hi or (lo >= self.measurements_group[IMAGE][feature_name].shape[0]):
+                    return np.array([], self.measurements_group[IMAGE][feature_name].dtype)
+                # only one measurement per image number for images
+                return unwrap_string(self.measurements_group[IMAGE][feature_name][lo])
+            if lo >= self.measurements_group[object_name][feature_name].shape[0]:
+                return np.array([])
+            return self.measurements_group[object_name][feature_name][lo:hi]
 
-    def has_current_measurements(self, object_name, feature_name):
+    def has_measurements(self, object_name, feature_name, image_set_number):
         """Return true if the value for the named measurement for the current image set has been set
         object_name  - the name of the objects being measured or "Image"
         feature_name - the name of the measurement feature to be returned
@@ -555,9 +588,13 @@ class Measurements(object):
         # XXX - I think this fails if there are no objects in an image
         # - but the use cases in the code seem to be okay with that.
         try:
-            return len(self.get_current_measurement(object_name, feature_name)) > 0
+            v = self.get_measurement(object_name, feature_name, image_set_number)
+            return v is not None and isinstance(v, str) or v.size > 0
         except:
             return False
+
+    def has_current_measurements(self, object_name, feature_name):
+        return self.has_measurements(object_name, feature_name, self.image_set_number)
 
     def get_all_measurements(self, object_name, feature_name):
         # XXX - could this be done as an object wrapping the DB and supporting queries via __getitem__?
@@ -572,8 +609,6 @@ class Measurements(object):
                 return self.measurements_group[IMAGE][feature_name][:]
 
             # objects...
-            imgnums = self.measurements_group[object_name][IMAGE_NUMBER]
-            data = self.measurements_group[object_name][feature_name]
             # This is a big ugly hack, and I'd like it to go away.  How
             # are the measurements supposed to keep track of which object
             # values to return, particularly if there are gaps in the
@@ -581,9 +616,16 @@ class Measurements(object):
             # measurement data in that case?  I've deprecated this
             # function in favor of get_measurement() for this reason.
             # I'm happy to hear why this is wrong.
-            if imgnums.shape[0] > 0:
-                return [data[imgnums[:] == imnum] for imnum in range(1,  imgnums.attrs.get('max_imagenum', 0) + 1)]
-            return np.array([np.zeros(0)] * imgnums.attrs.get('max_imagenum', 0))
+            data = self.measurements_group[object_name][feature_name]
+            imgnums = self.measurements_group[object_name][IMAGE_NUMBER]
+            idxs = self.image_numbers_index[object_name]
+            def datagetter(imgnum):
+                lo, hi = idxs.get(imgnum, (0,0))
+                try:
+                    return data[lo:hi]
+                except:
+                    return np.zeros((hi - lo))
+            return [datagetter(imgnum) for imgnum in range(1,  imgnums.attrs.get('max_imagenum', 0) + 1)]
 
     def add_all_measurements(self, object_name, feature_name, values):
         '''Add a list of measurements for all image sets
@@ -593,6 +635,8 @@ class Measurements(object):
         values - list of either values or arrays of values
         '''
         for idx, val in zip(xrange(len(values)), values):
+            if val is None:
+                val = np.array([], float)
             self.add_measurement(object_name, feature_name, val, can_overwrite=True, image_set_number=idx + 1)
 
     def get_experiment_measurement(self, feature_name):
@@ -654,14 +698,14 @@ class Measurements(object):
         # The flat_dictionary has a row of tag values as a key
         #
         flat_dictionary = {}
-        values = [self.get_all_measurements('Image', "%s_%s" % (C_METADATA, tag))
+        values = [self.get_all_measurements(IMAGE, "%s_%s" % (C_METADATA, tag)).tolist()
                   for tag in tags]
-        for index in range(1, self.image_set_number):
-            row = tuple([value[index] for value in values])
+        imgnumbers = self.get_all_measurements(IMAGE, IMAGE_NUMBER)
+        for imgnumber, row in zip(imgnumbers, zip(*values)):
             if row in flat_dictionary:
-                flat_dictionary[row].append(index)
+                flat_dictionary[row].append(imgnumber)
             else:
-                flat_dictionary[row] = [index]
+                flat_dictionary[row] = [imgnumber]
         result = []
         for row in flat_dictionary.keys():
             tag_dictionary = {}

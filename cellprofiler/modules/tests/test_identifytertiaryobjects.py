@@ -81,7 +81,7 @@ class TestIdentifyTertiaryObjects(unittest.TestCase):
                         measurements.get_feature_names("Image"))
         value = measurements.get_current_measurement("Image",count_feature)
         self.assertEqual(np.product(value.shape),1)
-        self.assertEqual(value[0], 0)
+        self.assertEqual(value, 0)
         self.assertTrue(TERTIARY in workspace.object_set.get_object_names())
         output_objects = workspace.object_set.get_objects(TERTIARY)
         self.assertTrue(np.all(output_objects.segmented == primary_labels))
@@ -111,7 +111,7 @@ class TestIdentifyTertiaryObjects(unittest.TestCase):
                         measurements.get_feature_names("Image"))
         value = measurements.get_current_measurement("Image",count_feature)
         self.assertEqual(np.product(value.shape),1)
-        self.assertEqual(value[0], 1)
+        self.assertEqual(value, 1)
         
         self.assertTrue(TERTIARY in measurements.get_object_names())
         child_count_feature = "Children_%s_Count"%(TERTIARY)
@@ -162,7 +162,7 @@ class TestIdentifyTertiaryObjects(unittest.TestCase):
         measurements = workspace.measurements
         count_feature = "Count_%s"%(TERTIARY)
         value = measurements.get_current_measurement("Image",count_feature)
-        self.assertEqual(value[0], 2)
+        self.assertEqual(value, 2)
         
         child_count_feature = "Children_%s_Count"%(TERTIARY)
         output_labels = workspace.object_set.get_objects(TERTIARY).segmented

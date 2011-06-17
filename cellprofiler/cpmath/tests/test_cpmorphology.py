@@ -67,7 +67,7 @@ class TestFillLabeledHoles(unittest.TestCase):
             self.assertTrue(np.all(output[x[2][0]:x[2][1],x[3][0]:x[3][1]]==0))
             output[x[2][0]:x[2][1],x[3][0]:x[3][1]] = 1
             self.assertTrue(np.all(output[x[0][0]:x[0][1],x[1][0]:x[1][1]]!=0))
-    
+            
     def test_05_lots_of_objects_with_holes(self):
         image = np.ones((1020,1020))
         for i in range(0,51):
@@ -140,6 +140,30 @@ class TestFillLabeledHoles(unittest.TestCase):
         self.assertEqual(image.dtype.kind, output.dtype.kind)
         self.assertTrue(np.all(output == expected))
 
+class TestFillBackgroundHoles(unittest.TestCase):
+    def test_00_00_00_zeros(self):
+        result = morph.fill_background_holes(np.zeros((10,20), bool))
+        self.assertTrue(not np.any(result))
+        
+    def test_00_00_01_ones(self):
+        result = morph.fill_background_holes(np.ones((10,20), bool))
+        self.assertTrue(np.all(result))
+        
+    def test_01_01_not_a_hole(self):
+        image = np.zeros((10,20), bool)
+        image[5:8,12:15] = True
+        result = morph.fill_background_holes(image)
+        self.assertTrue(np.all(result == image))
+        
+    def test_01_02_a_hole(self):
+        image = np.zeros((10,20), bool)
+        image[5:8,12:15] = True
+        image[6,13] = False
+        result = morph.fill_background_holes(image)
+        self.assertTrue(result[6,13])
+        result[6,13] = False
+        self.assertTrue(np.all(result == image))
+        
 class TestAdjacent(unittest.TestCase):
     def test_00_00_zeros(self):
         result = morph.adjacent(np.zeros((10,10), int))

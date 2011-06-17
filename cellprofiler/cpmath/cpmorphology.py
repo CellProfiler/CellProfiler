@@ -106,6 +106,26 @@ def fill_labeled_holes(image, max_area = None, mask = None):
         output_image[~mask] = image[~mask]
     return output_image
 
+def fill_background_holes(mask):
+    '''Fill all background pixels that are holes inside the foreground
+ 
+    A background pixel is a hole inside a foreground object if there
+    is no path from the background pixel to the edge or to another
+    background pixel on the edge. So we reverse the mask, label it and
+    remove any label that does not touch the edge at some point.
+    
+    mask - a binary image where the false values are filled
+    
+    returns a filled copy of the mask.
+    '''
+    labels, count = scind.label(~mask, structure = four_connect)
+    edge_labels = np.unique(np.hstack([
+        labels[:,0], labels[:,-1], labels[0,:], labels[-1,:]]))
+    table = np.ones(count+1, mask.dtype)
+    table[edge_labels] = False
+    table[0] = True
+    return table[labels]
+
 def adjacent(labels):
     '''Return a binary mask of all pixels which are adjacent to a pixel of 
        a different label.

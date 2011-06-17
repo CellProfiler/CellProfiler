@@ -488,6 +488,33 @@ class test_IdentifyPrimaryObjects(unittest.TestCase):
         self.assertTrue(objects.segmented[10,10] == 0)
         self.assertTrue(objects.segmented[30,30] == 0)
     
+    def test_02_05_01_fill_holes_within_holes(self):
+        'Regression test of img-1431'
+        x = ID.IdentifyPrimAutomatic()
+        x.object_name.value = "my_object"
+        x.image_name.value = "my_image"
+        x.exclude_size.value = False
+        x.fill_holes.value = True
+        x.automatic_smoothing.value = False
+        x.smoothing_filter_size.value = 0
+        x.watershed_method.value = ID.WA_NONE
+        img = np.zeros((40,40))
+        draw_circle(img, (20,20), 10, .5)
+        draw_circle(img, (20,20), 4, 0)
+        img[20,20] = 1
+        image = cellprofiler.cpimage.Image(img)
+        image_set_list = cellprofiler.cpimage.ImageSetList()
+        image_set = image_set_list.get_image_set(0)
+        image_set.providers.append(cellprofiler.cpimage.VanillaImageProvider("my_image",image))
+        object_set = cellprofiler.objects.ObjectSet()
+        measurements = cpmeas.Measurements()
+        pipeline = cellprofiler.pipeline.Pipeline()
+        x.run(Workspace(pipeline,x,image_set,object_set,measurements,None))
+        objects = object_set.get_objects("my_object")
+        self.assertTrue(objects.segmented[20,20] == 1)
+        self.assertTrue(objects.segmented[22,20] == 1)
+        self.assertTrue(objects.segmented[26,20] == 1)
+
     def test_02_06_test_watershed_shape_shape(self):
         """Identify by local_maxima:shape & intensity:shape
         
@@ -1910,19 +1937,19 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'8981\'|variable_revision_numb
                            [0,0,0,0,0,0,0,0,0,0,0,0]], float) / 10.0
         expected = np.array([[0,0,0,0,0,0,0,0,0,0,0,0],
                              [0,0,0,0,0,0,0,0,0,0,0,0],
-                             [0,0,2,2,2,2,2,2,2,2,0,0],
-                             [0,0,2,2,2,2,2,2,2,2,0,0],
-                             [0,0,2,2,2,2,2,2,2,2,0,0],
-                             [0,0,2,0,0,0,0,0,0,2,0,0],
-                             [0,0,2,0,0,0,0,0,0,2,0,0],
-                             [0,0,2,0,0,1,1,0,0,2,0,0],
-                             [0,0,2,0,0,0,0,0,0,2,0,0],
-                             [0,0,2,0,0,0,0,0,0,2,0,0],
-                             [0,0,2,2,2,2,2,2,2,2,0,0],                           
-                             [0,0,2,2,2,2,2,2,2,2,0,0],                           
-                             [0,0,2,2,2,2,2,2,2,2,0,0],                           
-                             [0,0,2,2,2,2,2,2,2,2,0,0],                           
-                             [0,0,2,2,2,2,2,2,2,2,0,0],                           
+                             [0,0,1,1,1,1,1,1,1,1,0,0],
+                             [0,0,1,1,1,1,1,1,1,1,0,0],
+                             [0,0,1,1,1,1,1,1,1,1,0,0],
+                             [0,0,1,1,1,1,1,1,1,1,0,0],
+                             [0,0,1,1,1,1,1,1,1,1,0,0],
+                             [0,0,1,1,1,1,1,1,1,1,0,0],
+                             [0,0,1,1,1,1,1,1,1,1,0,0],
+                             [0,0,1,1,1,1,1,1,1,1,0,0],
+                             [0,0,1,1,1,1,1,1,1,1,0,0],                           
+                             [0,0,1,1,1,1,1,1,1,1,0,0],                           
+                             [0,0,1,1,1,1,1,1,1,1,0,0],                           
+                             [0,0,1,1,1,1,1,1,1,1,0,0],                           
+                             [0,0,1,1,1,1,1,1,1,1,0,0],                           
                              [0,0,0,0,0,0,0,0,0,0,0,0],
                              [0,0,0,0,0,0,0,0,0,0,0,0]])
         mask = np.array([[0,0,0,0,0,0,0,0,0,0,0,0],
@@ -1969,11 +1996,7 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'8981\'|variable_revision_numb
         x.run(workspace)
         my_objects = object_set.get_objects("my_object")
         self.assertTrue(my_objects.segmented[3,3] != 0)
-        if my_objects.unedited_segmented[3,3] == 2:
-            unedited_segmented = my_objects.unedited_segmented
-        else:
-            unedited_segmented = np.array([0,2,1])[my_objects.unedited_segmented]
-        self.assertTrue(np.all(unedited_segmented[mask] == expected[mask]))
+        self.assertTrue(np.all(my_objects.segmented[mask] == expected[mask]))
     
     def test_18_01_truncate_objects(self):
         '''Set up a limit on the # of objects and exceed it'''

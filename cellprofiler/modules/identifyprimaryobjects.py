@@ -140,7 +140,7 @@ import cellprofiler.measurements as cpmeas
 import cellprofiler.settings as cps
 import cellprofiler.preferences as cpp
 from cellprofiler.cpmath.otsu import otsu
-from cellprofiler.cpmath.cpmorphology import fill_labeled_holes, strel_disk
+from cellprofiler.cpmath.cpmorphology import fill_background_holes, strel_disk
 from cellprofiler.cpmath.cpmorphology import binary_shrink, relabel
 from cellprofiler.cpmath.cpmorphology import is_local_maximum
 from cellprofiler.cpmath.filter import stretch, laplacian_of_gaussian
@@ -718,13 +718,14 @@ class IdentifyPrimaryObjects(cpmi.Identify):
                                                               masking_objects, workspace)
         blurred_image = self.smooth_image(img,mask,1)
         binary_image = np.logical_and((blurred_image >= local_threshold),mask)
-        labeled_image,object_count = scipy.ndimage.label(binary_image,
-                                                         np.ones((3,3),bool))
         #
-        # Fill holes if appropriate
+        # Fill background holes inside foreground objects
         #
         if self.fill_holes.value:
-            labeled_image = fill_labeled_holes(labeled_image)
+            binary_image = fill_background_holes(binary_image)
+
+        labeled_image,object_count = scipy.ndimage.label(binary_image,
+                                                         np.ones((3,3),bool))
         labeled_image,object_count,maxima_suppression_size,LoG_threshold,LoG_filter_diameter = \
             self.separate_neighboring_objects(img, mask, 
                                               labeled_image,
@@ -756,12 +757,6 @@ class IdentifyPrimaryObjects(cpmi.Identify):
                                                                 np.ones((3,3),bool))[0]
             object_count = new_object_count
             labeled_image = new_labeled_image
-        #
-        # Fill again - sometimes a small object gets filtered out of the
-        # middle of a larger object
-        #
-        if self.fill_holes.value:
-            labeled_image = fill_labeled_holes(labeled_image)
         
         # Make an outline image
         outline_image = cellprofiler.cpmath.outline.outline(labeled_image)

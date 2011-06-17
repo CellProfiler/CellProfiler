@@ -82,7 +82,8 @@ def get_threshold(threshold_method, threshold_modifier, image,
                   object_fraction = 0.2,
                   two_class_otsu = True,
                   use_weighted_variance = True,
-                  assign_middle_to_foreground = True):
+                  assign_middle_to_foreground = True,
+                  adaptive_window_size = 10):
     """Compute a threshold for an image
     
     threshold_method - one of the TM_ methods above
@@ -145,7 +146,8 @@ def get_threshold(threshold_method, threshold_modifier, image,
                                                  mask, object_fraction,
                                                  two_class_otsu,
                                                  use_weighted_variance,
-                                                 assign_middle_to_foreground)
+                                                 assign_middle_to_foreground,
+                                                 adaptive_window_size)
         local_threshold = local_threshold * threshold_correction_factor
     elif threshold_modifier == TM_PER_OBJECT:
         local_threshold = get_per_object_threshold(threshold_method, image,
@@ -213,7 +215,8 @@ def get_adaptive_threshold(threshold_method, image, threshold,
                            object_fraction = 0.2,
                            two_class_otsu = True,
                            use_weighted_variance = True,
-                           assign_middle_to_foreground = True):
+                           assign_middle_to_foreground = True,
+                           adaptive_window_size = 10):
     
     """Given a global threshold, compute a threshold per pixel
     
@@ -226,9 +229,7 @@ def get_adaptive_threshold(threshold_method, image, threshold,
     # for the X and Y direction, find the # of blocks, given the
     # size constraints
     image_size = np.array(image.shape[:2],dtype=int)
-    block_size = image_size / 10
-    block_size[block_size<50] = 50
-    nblocks = image_size / block_size
+    nblocks = image_size / adaptive_window_size
     #
     # Use a floating point block size to apportion the roundoff
     # roughly equally to each block

@@ -21,14 +21,15 @@ __version__="$Revision: 6746 $"
 from cellprofiler.cpmodule import CPModule
 from cellprofiler import cpimage
 import cellprofiler.settings as cpsetting
-from cellprofiler.modules.identify import Identify, O_BACKGROUND, O_ENTROPY
-from cellprofiler.modules.identify import O_FOREGROUND, O_THREE_CLASS
-from cellprofiler.modules.identify import O_TWO_CLASS, O_WEIGHTED_VARIANCE
-from cellprofiler.modules.identify import FF_ORIG_THRESHOLD, FF_FINAL_THRESHOLD
-from cellprofiler.modules.identify import FF_SUM_OF_ENTROPIES, FF_WEIGHTED_VARIANCE
+from identify import Identify, O_BACKGROUND, O_ENTROPY
+from identify import O_FOREGROUND, O_THREE_CLASS
+from identify import O_TWO_CLASS, O_WEIGHTED_VARIANCE
+from identify import FF_ORIG_THRESHOLD, FF_FINAL_THRESHOLD
+from identify import FF_SUM_OF_ENTROPIES, FF_WEIGHTED_VARIANCE
+from identify import FI_IMAGE_SIZE
 from cellprofiler.modules.identify import get_threshold_measurement_columns
 from cellprofiler.cpmath.threshold import TM_METHODS, TM_MANUAL, TM_MOG, TM_OTSU
-from cellprofiler.cpmath.threshold import TM_GLOBAL, TM_PER_OBJECT, TM_BINARY_IMAGE
+from cellprofiler.cpmath.threshold import TM_GLOBAL, TM_ADAPTIVE, TM_PER_OBJECT, TM_BINARY_IMAGE
 
 from cellprofiler.cpmath.cpmorphology import strel_disk
 from scipy.ndimage.morphology import binary_dilation
@@ -44,7 +45,7 @@ TH_ABOVE_THRESHOLD = "Above threshold"
 class ApplyThreshold(Identify):
 
     module_name = "ApplyThreshold"
-    variable_revision_number = 5
+    variable_revision_number = 6
     category = "Image Processing"
 
     def create_settings(self):
@@ -126,7 +127,10 @@ class ApplyThreshold(Identify):
                 self.shift, self.dilation,
                 self.threshold_method, self.two_class_otsu, self.use_weighted_variance,
                 self.assign_middle_to_foreground,
-                self.object_fraction, self.manual_threshold, self.thresholding_measurement, 
+                self.object_fraction,  
+                self.adaptive_window_method,
+                self.adaptive_window_size,
+                self.manual_threshold, self.thresholding_measurement, 
                 self.threshold_range, self.threshold_correction_factor,
                 self.enclosing_objects_name]
     
@@ -288,5 +292,10 @@ class ApplyThreshold(Identify):
             setting_values = setting_values + ["None"]
             variable_revision_number = 5
                               
+        if (not from_matlab) and variable_revision_number == 5:
+            # Added adaptive thresholding settings
+            setting_values += [FI_IMAGE_SIZE, "10"]
+            variable_revision_number = 6
+            
         return setting_values, variable_revision_number, from_matlab
         

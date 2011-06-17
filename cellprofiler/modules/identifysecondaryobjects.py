@@ -79,6 +79,7 @@ import cellprofiler.preferences as cpprefs
 import cellprofiler.workspace as cpw
 import cellprofiler.settings as cps
 import identify as cpmi
+from identify import FI_IMAGE_SIZE
 import cellprofiler.cpmath.threshold as cpthresh
 import cellprofiler.cpmath.otsu
 from cellprofiler.cpmath.propagate import propagate
@@ -96,7 +97,7 @@ M_DISTANCE_B = "Distance - B"
 class IdentifySecondaryObjects(cpmi.Identify):
 
     module_name = "IdentifySecondaryObjects"
-    variable_revision_number = 7
+    variable_revision_number = 8
     category = "Object Processing"
     
     def create_settings(self):
@@ -262,7 +263,8 @@ class IdentifySecondaryObjects(cpmi.Identify):
                  self.wants_discard_edge, self.wants_discard_primary,
                  self.new_primary_objects_name, self.wants_primary_outlines,
                  self.new_primary_outlines_name, self.thresholding_measurement,
-                 self.fill_holes]
+                 self.fill_holes,
+                 self.adaptive_window_method, self.adaptive_window_size]
     
     def visible_settings(self):
         result = [self.image_name, self.primary_objects, self.objects_name,  
@@ -290,7 +292,9 @@ class IdentifySecondaryObjects(cpmi.Identify):
         return [ self.primary_objects, self.objects_name,   
                  self.method, self.image_name, self.threshold_method, 
                  self.two_class_otsu, self.use_weighted_variance,
-                 self.assign_middle_to_foreground, self.object_fraction, self.manual_threshold,  
+                 self.assign_middle_to_foreground, self.object_fraction, 
+                 self.adaptive_window_method, self.adaptive_window_size, 
+                 self.manual_threshold,  
                  self.binary_image, self.thresholding_measurement,
                  self.threshold_correction_factor, self.threshold_range,
                  self.distance_to_dilate, 
@@ -385,6 +389,11 @@ class IdentifySecondaryObjects(cpmi.Identify):
                           else cps.YES)
             setting_values = setting_values + [fill_holes]
             variable_revision_number = 7
+        
+        if (not from_matlab) and variable_revision_number == 7:
+            # Added adaptive thresholding settings
+            setting_values += [FI_IMAGE_SIZE, "10"]
+            variable_revision_number = 8
             
         return setting_values, variable_revision_number, from_matlab
 

@@ -154,6 +154,7 @@ import cellprofiler.cpmath.threshold as cpthresh
 from identify import FF_FINAL_THRESHOLD, FF_ORIG_THRESHOLD
 from identify import FF_SUM_OF_ENTROPIES, FF_WEIGHTED_VARIANCE
 from identify import draw_outline
+from identify import FI_IMAGE_SIZE
 from cellprofiler.gui.help import HELP_ON_MEASURING_DISTANCES
 
 IMAGE_NAME_VAR                  = 0
@@ -194,7 +195,7 @@ LIMIT_ERASE = "Erase"
 
 class IdentifyPrimaryObjects(cpmi.Identify):
             
-    variable_revision_number = 8
+    variable_revision_number = 9
     category =  "Object Processing"
     module_name = "IdentifyPrimaryObjects"
     
@@ -488,7 +489,8 @@ class IdentifyPrimaryObjects(cpmi.Identify):
                 self.assign_middle_to_foreground,
                 self.wants_automatic_log_diameter, self.log_diameter,
                 self.limit_choice, self.maximum_object_count,
-                self.thresholding_measurement]
+                self.thresholding_measurement,
+                self.adaptive_window_method, self.adaptive_window_size]
     
     def upgrade_settings(self, setting_values, variable_revision_number, 
                          module_name, from_matlab):
@@ -605,6 +607,12 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             if setting_values[11] == "Distance":
                 setting_values[11] = "Shape"
             variable_revision_number = 8
+            
+        if (not from_matlab) and variable_revision_number == 8:
+            # Added adaptive thresholding settings
+            setting_values += [FI_IMAGE_SIZE, "10"]
+            variable_revision_number = 9
+            
         return setting_values, variable_revision_number, from_matlab
             
     def help_settings(self):
@@ -622,6 +630,8 @@ class IdentifyPrimaryObjects(cpmi.Identify):
                 self.use_weighted_variance,
                 self.assign_middle_to_foreground,
                 self.object_fraction, 
+                self.adaptive_window_method,
+                self.adaptive_window_size,
                 self.wants_automatic_log_diameter,
                 self.log_diameter,
                 self.wants_automatic_log_threshold,

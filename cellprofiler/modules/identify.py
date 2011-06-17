@@ -27,7 +27,7 @@ import cellprofiler.cpmath.outline
 import cellprofiler.objects
 from cellprofiler.cpmath.smooth import smooth_with_noise
 from cellprofiler.cpmath.threshold import TM_MANUAL, TM_MEASUREMENT, TM_METHODS, get_threshold
-from cellprofiler.cpmath.threshold import TM_GLOBAL, TM_BINARY_IMAGE, TM_MOG
+from cellprofiler.cpmath.threshold import TM_GLOBAL, TM_ADAPTIVE, TM_BINARY_IMAGE, TM_MOG
 from cellprofiler.cpmath.threshold import TM_OTSU
 from cellprofiler.cpmath.threshold import weighted_variance, sum_of_entropies
 from cellprofiler.gui.help import HELP_ON_PIXEL_INTENSITIES
@@ -40,6 +40,9 @@ O_ENTROPY = 'Entropy'
 
 O_FOREGROUND = 'Foreground'
 O_BACKGROUND = 'Background'
+
+FI_IMAGE_SIZE    = 'Image size'
+FI_CUSTOM        = 'Custom'
 
 '''The location measurement category'''
 C_LOCATION = "Location"
@@ -300,6 +303,25 @@ class Identify(cellprofiler.cpmodule.CPModule):
             <i>(Used only for three-class thresholding)</i><br>
             Choose whether you want the pixels with middle grayscale intensities to be assigned 
             to the foreground class or the background class.""")
+        
+        self.adaptive_window_method = cps.Choice(
+            "Method to calculate adaptive window size",
+            [FI_IMAGE_SIZE, FI_CUSTOM], doc="""
+            <i>(Used only if an adaptive thresholding method is used)</i><br>
+            The adaptive method breaks the image into blocks, computing the threshold 
+            for each block. There are two ways to compute the block size:
+            <ul>
+            <li><i>%(FI_IMAGE_SIZE)s:</i> The block size is one-tenth of the image dimensions,
+            or 50 x 50 pixels, whichever is bigger.</li>
+            <li><i>%(FI_CUSTOM)s:</i> The block size is specified by the user.</li>
+            </ul>"""%globals())
+                                            
+        self.adaptive_window_size = cps.Integer(
+            'Size of adaptive window', 10, doc="""
+            <i>(Used only if an adaptive thresholding method with a %(FI_CUSTOM)s window size 
+            are selected)</i><br>
+            Enter the window for the adaptive method. For example,
+            you may want to use a multiple of the largest expected object size."""%globals())
     
     def get_threshold_visible_settings(self):
         '''Return visible settings related to thresholding'''
@@ -318,6 +340,11 @@ class Identify(cellprofiler.cpmodule.CPModule):
             vv += [self.object_fraction]
         if not self.threshold_method in (TM_MANUAL, TM_BINARY_IMAGE):
             vv += [ self.threshold_correction_factor, self.threshold_range]
+        if self.threshold_modifier == TM_ADAPTIVE:
+            vv += [ self.adaptive_window_method ]
+            if self.adaptive_window_method == FI_CUSTOM:
+                vv += [ self.adaptive_window_size ]
+            
         return vv
         
     def get_threshold(self, image, mask, labels, workspace=None):
@@ -342,6 +369,15 @@ class Identify(cellprofiler.cpmodule.CPModule):
                 value = min(value, self.threshold_range.max)
             return value, value
         object_fraction = self.object_fraction.value
+        
+        if self.adaptive_window_method == FI_IMAGE_SIZE:
+             # The original behavior
+            image_size = np.array(image.shape[:2],dtype=int)
+            block_size = image_size / 10
+            block_size[block_size<50] = 50
+        elif self.adaptive_window_method == FI_CUSTOM:
+            block_size = self.adaptive_window_size.value*np.array([1,1])
+            
         if object_fraction.endswith("%"):
             object_fraction = float(object_fraction[:-1])/100.0
         else:
@@ -358,7 +394,8 @@ class Identify(cellprofiler.cpmodule.CPModule):
             object_fraction = object_fraction,
             two_class_otsu = self.two_class_otsu.value == O_TWO_CLASS,
             use_weighted_variance = self.use_weighted_variance.value == O_WEIGHTED_VARIANCE,
-            assign_middle_to_foreground = self.assign_middle_to_foreground.value == O_FOREGROUND)
+            assign_middle_to_foreground = self.assign_middle_to_foreground.value == O_FOREGROUND,
+            adaptive_window_size = block_size)
     
     def add_threshold_measurements(self, measurements, image, mask, 
                                    local_threshold, global_threshold,

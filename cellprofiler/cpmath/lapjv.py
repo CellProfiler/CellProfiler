@@ -67,6 +67,9 @@ def lapjv(i, j, costs, wants_dual_variables = False, augmenting_row_reductions =
     returns (x, y), the pairs of assignments that represent the solution
     or (x, y, u, v) if the dual variables are requested.
     '''
+    import os
+    if os.environ.has_key("USERNAME") and os.environ["USERNAME"] == "leek":
+        np.save("c:/temp/lapjv",np.column_stack((i,j,costs)))
     i = np.atleast_1d(i).astype(int)
     j = np.atleast_1d(j).astype(int)
     costs = np.atleast_1d(costs)
@@ -341,11 +344,9 @@ def slow_augment(n, ii, jj, idx, count, x, y, u, v, c):
         try:
             while True:
                 print "Evaluating i=%d, n_scan = %d" % (i, len(scan))
-                print ", ".join(["y[%d] = %d" % (iii, y[iii]) for iii in range(n)])
                 if len(scan) == 0:
                     ready += on_deck
                     on_deck = []
-                    print "Todo = " + ", ".join(["d[%d] = %f" % (xx, d[xx]) for xx in to_do])
                     umin = np.min([d[jjj] for jjj in to_do])
                     print "umin = %f" % umin
                     scan = [jjj for jjj in to_do if d[jjj] == umin]

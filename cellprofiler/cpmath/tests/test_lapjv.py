@@ -173,8 +173,9 @@ class TestLAPJV(unittest.TestCase):
                 self.assertAlmostEqual(min_cost, result_cost)
                 
     def test_01_03(self):
-        '''Regression test of a matrix that crashed lapjv'''
-        d = np.array([[  0.        ,   0.        ,   0.        ],
+        '''Regression tests of matrices that crashed lapjv'''
+        dd = [
+            np.array([[  0.        ,   0.        ,   0.        ],
                       [  1.        ,   1.        ,   5.34621029],
                       [  1.        ,   7.        ,  55.        ],
                       [  2.        ,   2.        ,   2.09806089],
@@ -220,10 +221,48 @@ class TestLAPJV(unittest.TestCase):
                       [ 11.        ,   8.        ,   0.        ],
                       [ 11.        ,   9.        ,   0.        ],
                       [ 11.        ,  10.        ,   0.        ],
-                      [ 11.        ,  11.        ,   0.        ]])
-        x,y = LAPJV.lapjv(d[:,0].astype(int), d[:,1].astype(int), d[:,2])
-        c = np.ones((12,12)) * 1000000
-        c[d[:,0].astype(int), d[:,1].astype(int)] = d[:,2]
-        self.assertTrue(np.sum(c[np.arange(12),x]) < 74.5)
-        self.assertTrue(np.sum(c[y,np.arange(12)]) < 74.5)
+                      [ 11.        ,  11.        ,   0.        ]]),
+            np.array([[  0.        ,   0.        ,   0.        ],
+                      [  1.        ,   1.        ,   1.12227977],
+                      [  1.        ,   6.        ,  55.        ],
+                      [  2.        ,   2.        ,  18.66735253],
+                      [  2.        ,   4.        ,  16.2875504 ],
+                      [  2.        ,   7.        ,  55.        ],
+                      [  3.        ,   5.        ,   1.29944194],
+                      [  3.        ,   8.        ,  55.        ],
+                      [  4.        ,   5.        ,  32.61892281],
+                      [  4.        ,   9.        ,  55.        ],
+                      [  5.        ,   1.        ,  55.        ],
+                      [  5.        ,   6.        ,   0.        ],
+                      [  5.        ,   7.        ,   0.        ],
+                      [  5.        ,   8.        ,   0.        ],
+                      [  5.        ,   9.        ,   0.        ],
+                      [  6.        ,   2.        ,  55.        ],
+                      [  6.        ,   6.        ,   0.        ],
+                      [  6.        ,   7.        ,   0.        ],
+                      [  6.        ,   8.        ,   0.        ],
+                      [  6.        ,   9.        ,   0.        ],
+                      [  7.        ,   3.        ,  55.        ],
+                      [  7.        ,   6.        ,   0.        ],
+                      [  7.        ,   7.        ,   0.        ],
+                      [  7.        ,   8.        ,   0.        ],
+                      [  7.        ,   9.        ,   0.        ],
+                      [  8.        ,   4.        ,  55.        ],
+                      [  8.        ,   6.        ,   0.        ],
+                      [  8.        ,   7.        ,   0.        ],
+                      [  8.        ,   8.        ,   0.        ],
+                      [  8.        ,   9.        ,   0.        ],
+                      [  9.        ,   5.        ,  55.        ],
+                      [  9.        ,   6.        ,   0.        ],
+                      [  9.        ,   7.        ,   0.        ],
+                      [  9.        ,   8.        ,   0.        ],
+                      [  9.        ,   9.        ,   0.        ]])]
+        expected_costs = [74.5, 1000000]
+        for d,ec in zip(dd, expected_costs):
+            n = np.max(d[:,0].astype(int))+1
+            x,y = LAPJV.lapjv(d[:,0].astype(int), d[:,1].astype(int), d[:,2])
+            c = np.ones((n,n)) * 1000000
+            c[d[:,0].astype(int), d[:,1].astype(int)] = d[:,2]
+            self.assertTrue(np.sum(c[np.arange(n),x]) < ec)
+            self.assertTrue(np.sum(c[y,np.arange(n)]) < ec)
         

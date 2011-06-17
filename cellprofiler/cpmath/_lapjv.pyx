@@ -108,14 +108,14 @@ def reduction_transfer(
         double *p_c
     
     with nogil:
-        for iii in range(n_i):
+        for iii from 0 <= iii < n_i:
             i = p_i[iii]
             min_u = inf
             j1 = p_x[i]
             j_count = p_count[i]
             p_c = c_base + p_idx[i]
             j_at_min = -1
-            for j_idx in range(j_count):
+            for j_idx from 0 <= j_idx < j_count:
                 j_temp = p_j[j_idx]
                 if j_temp != j1:
                     u_temp = p_c[j_idx] - v_base[j_temp]
@@ -214,7 +214,7 @@ def augmenting_row_reduction(
             u1 = inf
             u2 = inf
             # Find u1 and u2
-            for jjj in range(n_j):
+            for jjj from 0 <= jjj < n_j:
                 j = p_j[jjj]
                 temp = p_c[jjj] - p_v_base[j]
                 if temp < u1:
@@ -295,6 +295,7 @@ def augment(
         int n_i = ii.shape[0]
         int n_j, n_j2
         int j, jjj, j1, jidx
+        int found
         int *p_i_base     = <int *>(ii.data)
         int *p_j_base     = <int *>(jj.data)
         int *p_j, *p_j2
@@ -352,7 +353,7 @@ def augment(
     #  end
     #end
     with nogil:
-        for iii in range(n_i):
+        for iii from 0 <= iii < n_i:
             i = p_i_base[iii]
             #
             # Initialization
@@ -383,8 +384,8 @@ def augment(
                     # minimum to the range, low to up, and the remaining
                     # starting at up.
                     #
-                    for jjj in range(n_j):
-                        j = p_j[jjj]
+                    for jjj in range(up, n_j):
+                        j = p_col[jjj]
                         if p_done[j] == i:
                             continue
                         temp = p_d_base[j]
@@ -392,6 +393,7 @@ def augment(
                             if temp < umin:
                                 up = low
                                 umin = temp
+                            p_col[jjj] = p_col[up]
                             p_col[up] = j
                             up += 1
                     j1 = n
@@ -435,12 +437,24 @@ def augment(
                                 p_col[up] = j
                                 p_done[j] = i
                                 up += 1
+                            #
+                            # We found a better score for this j. Put on
+                            # to_do list if not there.
+                            #
                             p_d_base[j] = h
+                            found = 0
+                            for jidx from 0 <= jidx < n_j:
+                                if p_col[jidx] == j:
+                                    found = 1
+                                    break
+                            if found == 0:
+                                p_col[n_j] = j
+                                n_j += 1
                 if j1 != n:
                     break
                             
             # Augment
-            for jjj in range(last):
+            for jjj from 0 <= jjj < last:
                 j = p_col[jjj]
                 temp = p_v_base[j]
                 p_v_base[j] += p_d_base[j] - umin

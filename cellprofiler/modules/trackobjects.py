@@ -89,7 +89,7 @@ import cellprofiler.pipeline as cpp
 import cellprofiler.settings as cps
 import cellprofiler.measurements as cpmeas
 import cellprofiler.preferences as cpprefs
-import contrib.LAP as LAP
+from cellprofiler.cpmath.lapjv import lapjv
 import cellprofiler.cpmath.filter as cpfilter
 from cellprofiler.cpmath.cpmorphology import fixup_scipy_ndimage_result as fix
 from cellprofiler.cpmath.cpmorphology import centers_of_labels
@@ -806,28 +806,35 @@ class TrackObjects(cpm.CPModule):
             x = np.column_stack((i, j, x))
             t = np.vstack((t, x))
 
-            kk = np.ndarray.astype(t[0:(t.size/3),1], 'int32')
-            cc = t[0:(t.size/3),2]
-
-            a = np.arange(len(old_i)+len(new_i)+2)
-            first = np.bincount(np.ndarray.astype(t[0:(t.size/3),0], 'int32')+1)
-            first = np.cumsum(first)+1
-
-            first[0] = 0
-            kk = np.hstack((np.array((0)), kk))
-            cc = np.hstack((np.array((0.0)), cc))
-
-            x, y =  LAP.LAP(np.ascontiguousarray(kk, np.int32),
-                            np.ascontiguousarray(first, np.int32),
-                            np.ascontiguousarray(cc, np.float), n)
+            if False:
+                kk = np.ndarray.astype(t[0:(t.size/3),1], 'int32')
+                cc = t[0:(t.size/3),2]
+    
+                a = np.arange(len(old_i)+len(new_i)+2)
+                first = np.bincount(np.ndarray.astype(t[0:(t.size/3),0], 'int32')+1)
+                first = np.cumsum(first)+1
+    
+                first[0] = 0
+                kk = np.hstack((np.array((0)), kk))
+                cc = np.hstack((np.array((0.0)), cc))
+    
+                x, y =  LAP.LAP(np.ascontiguousarray(kk, np.int32),
+                                np.ascontiguousarray(first, np.int32),
+                                np.ascontiguousarray(cc, np.float), n)
+            else:
+                # Tack 0 <-> 0 at the start because object #s start at 1
+                i = np.hstack([0,t[:,0].astype(int)])
+                j = np.hstack([0,t[:,1].astype(int)])
+                c = np.hstack([0,t[:,2]])
+                x, y = lapjv(i, j, c)
             a = np.argwhere(x > len(new_i))
             b = np.argwhere(y >len(old_i))
             x[a[0:len(a)]] = 0
             y[b[0:len(b)]] = 0
             a = np.arange(len(old_i))+1
             b = np.arange(len(new_i))+1
-            new_object_numbers = x[a[0:len(a)]]
-            old_object_numbers = y[b[0:len(b)]]
+            new_object_numbers = x[a[0:len(a)]].astype(int)
+            old_object_numbers = y[b[0:len(b)]].astype(int)
 
             ###############################
             # 
@@ -1466,22 +1473,28 @@ class TrackObjects(cpm.CPModule):
         e[0:len(e), 0] = e[0:len(e), 0]+ss_off
  
         d = np.vstack((d, e, f, g, h))
-        #sorts the list of costs, and add one to indices for costs to fit in with LAP
-
-        indices = np.lexsort((d[:,1], d[:,0]))
-        d = d[indices]
-        d[:, 1] = d[:, 1]+1
-        d[:, 0] = d[:, 0]+1
-
-        #gets first, kk, and cc ready for LAP
-
-        counts = np.bincount(np.ndarray.astype(d[:,0], np.int32))
-        first = np.ascontiguousarray(np.hstack((np.cumsum(counts) - counts+1,
-                                                [len(d)+1])), np.int32)
-        kk = np.ascontiguousarray(np.hstack(([0],d[:, 1])), np.int32)
-        cc = np.ascontiguousarray(np.hstack(([0.0], d[:, 2])), np.float)
-
-        x, y =  LAP.LAP(kk, first, cc, len(F)*2+len(P1)*4)
+        if False:
+            #sorts the list of costs, and add one to indices for costs to fit in with LAP
+    
+            indices = np.lexsort((d[:,1], d[:,0]))
+            d = d[indices]
+            d[:, 1] = d[:, 1]+1
+            d[:, 0] = d[:, 0]+1
+    
+            #gets first, kk, and cc ready for LAP
+    
+            counts = np.bincount(np.ndarray.astype(d[:,0], np.int32))
+            first = np.ascontiguousarray(np.hstack((np.cumsum(counts) - counts+1,
+                                                    [len(d)+1])), np.int32)
+            kk = np.ascontiguousarray(np.hstack(([0],d[:, 1])), np.int32)
+            cc = np.ascontiguousarray(np.hstack(([0.0], d[:, 2])), np.float)
+    
+            x, y =  LAP.LAP(kk, first, cc, len(F)*2+len(P1)*4)
+        else:
+            i = d[:,0].astype(int)
+            j = d[:,1].astype(int)
+            c = d[:,2]
+            x,y = lapjv(i,j,c)
 
         #attaches different segments together if they are matches through the IAP
         a = np.zeros(len(F)+1, dtype="int32")
@@ -1489,19 +1502,19 @@ class TrackObjects(cpm.CPModule):
         c = np.zeros(len(F)+1, dtype="int32")-1
         d = np.zeros(len(F)+1, dtype="int32")-1
         z = np.zeros(len(F)+1, dtype="int32")
-        i = 1
-        while i<=len(F):
-            if(y[i] <= len(F)):
+        
+        for i in range(len(F)):
+            if(y[i] < len(F)):
                 #
                 # y[i] gives index of last hooked to first
                 #
-                b[i] = y[i]
-                c[b[i]] = i
+                b[i+1] = y[i]+1
+                c[y[i]+1] = i+1
                 #
                 # Hook our parent image/object number to found parent
                 #
-                my_image_index, my_object_index = F[i-1, 2:]
-                parent_image_index, parent_object_index = L[y[i]-1, 2:]
+                my_image_index, my_object_index = F[i, 2:]
+                parent_image_index, parent_object_index = L[y[i], 2:]
                 parent_image_numbers[my_image_index][my_object_index] = \
                                     group_indices[parent_image_index]
                 parent_object_numbers[my_image_index][my_object_index] = \
@@ -1515,14 +1528,14 @@ class TrackObjects(cpm.CPModule):
                 # the image set after the parent)
                 #
                 lost_object_count[indexes[parent_image_index+1]] -= 1
-            elif(y[i] > ss_off and y[i] <= ss_off+len(P1)):
+            elif(y[i] >= ss_off and y[i] < ss_off+len(P1)):
                 #
                 # Hook split objects to their parent
                 #
-                my_image_index, my_object_index = F[i-1, 2:]
-                parent_image_index, parent_object_index = P2[y[i]-1-ss_off][2:]
-                b[i] = labelprime[parent_image_index, parent_object_index]
-                c[b[i]] = i
+                my_image_index, my_object_index = F[i, 2:]
+                parent_image_index, parent_object_index = P2[y[i]-ss_off][2:]
+                b[i+1] = labelprime[parent_image_index, parent_object_index]
+                c[b[i+1]] = i+1
                 parent_image_numbers[my_image_index][my_object_index] = \
                                     group_indices[parent_image_index]
                 parent_object_numbers[my_image_index][my_object_index] = \
@@ -1536,23 +1549,22 @@ class TrackObjects(cpm.CPModule):
                 #
                 split_count[indexes[my_image_index]] += 1
             else:
-                b[i] = -1
+                b[i+1] = -1
 
-            if(x[i] <= len(F)):
-                a[i] = x[i]
-                d[a[i]] = i
-            elif(x[i] > me_off and x[i] <= me_off+len(P1)):
+            if(x[i] < len(F)):
+                a[i+1] = x[i]+1
+                d[a[i+1]] = i+1
+            elif(x[i] >= me_off and x[i] < me_off+len(P1)):
                 #
                 # Handle merged objects
                 # 
-                my_image_index, my_object_index = P1[x[i]-1-me_off][2:]
-                a[i] = labelprime[my_image_index, my_object_index]
-                d[a[i]] = i
+                my_image_index, my_object_index = P1[x[i]-me_off][2:]
+                a[i+1] = labelprime[my_image_index, my_object_index]
+                d[a[i+1]] = i+1
                 lost_object_count[indexes[my_image_index]] -= 1
                 merge_count[indexes[my_image_index]] += 1
             else:
-                a[i] = -1
-            i = i+1
+                a[i+1] = -1
 
         #
         # At this point a gives the label # of the track that connects

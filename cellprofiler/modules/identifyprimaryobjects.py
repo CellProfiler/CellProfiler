@@ -140,7 +140,7 @@ import cellprofiler.measurements as cpmeas
 import cellprofiler.settings as cps
 import cellprofiler.preferences as cpp
 from cellprofiler.cpmath.otsu import otsu
-from cellprofiler.cpmath.cpmorphology import fill_background_holes, strel_disk
+from cellprofiler.cpmath.cpmorphology import fill_labeled_holes, strel_disk
 from cellprofiler.cpmath.cpmorphology import binary_shrink, relabel
 from cellprofiler.cpmath.cpmorphology import is_local_maximum
 from cellprofiler.cpmath.filter import stretch, laplacian_of_gaussian
@@ -722,7 +722,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
         # Fill background holes inside foreground objects
         #
         if self.fill_holes.value:
-            binary_image = fill_background_holes(binary_image)
+            binary_image = fill_labeled_holes(binary_image)
 
         labeled_image,object_count = scipy.ndimage.label(binary_image,
                                                          np.ones((3,3),bool))

@@ -386,7 +386,8 @@ try:
     elif options.run_pipeline: # this includes distributed workers
         if (options.pipeline_filename is not None) and (not options.pipeline_filename.lower().startswith('http')):
             options.pipeline_filename = os.path.expanduser(options.pipeline_filename)
-        last_success = time.time() # timeout checking for distributed workers.
+        if options.worker_mode_URL is not None:
+            last_success = time.time() # timeout checking for distributed workers.
         continue_looping = True # for distributed workers
         while continue_looping:
             from cellprofiler.pipeline import Pipeline, EXIT_STATUS

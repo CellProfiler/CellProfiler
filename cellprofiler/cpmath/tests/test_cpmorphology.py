@@ -12,7 +12,7 @@ Please see the AUTHORS file for credits.
 
 Website: http://www.cellprofiler.org
 """
-__version__="$Revision$"
+__version__ = "$Revision$"
 
 import base64
 import unittest
@@ -69,15 +69,16 @@ class TestFillLabeledHoles(unittest.TestCase):
             self.assertTrue(np.all(output[x[0][0]:x[0][1],x[1][0]:x[1][1]]!=0))
             
     def test_05_lots_of_objects_with_holes(self):
-        image = np.ones((1020,1020))
+        image = np.ones((1020,1020),bool)
         for i in range(0,51):
-            image[i*20:i*20+20,:]=0
-            image[:,i*20:i*20+20]=0
-        binary_image = scind.gaussian_gradient_magnitude(image,.5) > 0.1
-        labeled_image,nobjects = scind.label(binary_image)
+            image[i*20:i*20+10,:] = ~image[i*20:i*20+10,:]
+            image[:,i*20:i*20+10] = ~ image[:,i*20:i*20+10]
+        image = scind.binary_erosion(image, iterations = 2)
+        erosion = scind.binary_erosion(image, iterations = 2)
+        image = image & ~ erosion
+        labeled_image,nobjects = scind.label(image)
         output = morph.fill_labeled_holes(labeled_image)
-        eroded_image = scind.binary_erosion(image>0,iterations=3)
-        self.assertTrue(np.all(output[eroded_image] > 0))
+        self.assertTrue(np.all(output[erosion] > 0))
     
     def test_06_regression_diamond(self):
         """Check filling the center of a diamond"""
@@ -87,7 +88,7 @@ class TestFillLabeledHoles(unittest.TestCase):
         image[2,3]=1
         image[3,2]=1
         output = morph.fill_labeled_holes(image)
-        where = np.argwhere(image!=output)
+        where = np.argwhere(image != output)
         self.assertEqual(len(where),1)
         self.assertEqual(where[0][0],2)
         self.assertEqual(where[0][1],2)
@@ -123,47 +124,49 @@ class TestFillLabeledHoles(unittest.TestCase):
         """Check filling only the small holes"""
         image = np.zeros((10,20), int)
         image[1:-1,1:-1] = 1
-        image[3:8,4:7] = 0 # A hole with area of 5*3 = 15 and not filled
+        image[3:8,4:7] = 0     # A hole with area of 5*3 = 15 and not filled
         expected = image.copy()
-        image[3:5, 11:18] = 0 # A hole with area 2*7 = 14 is filled
-        output = morph.fill_labeled_holes(image, max_area=14)
+        image[3:5, 11:18] = 0  # A hole with area 2*7 = 14 is filled
+        
+        def small_hole_fn(area, is_foreground):
+            return area <= 14
+        output = morph.fill_labeled_holes(image, size_fn = small_hole_fn)
         self.assertTrue(np.all(output == expected))
         
     def test_09_fill_binary_image(self):
         """Make sure that we can fill a binary image too"""
         image = np.zeros((10,20), bool)
-        image[1:-1,1:-1] = True
-        image[3:8,4:7] = False # A hole with area of 5*3 = 15 and not filled
+        image[1:-1, 1:-1] = True
+        image[3:8, 4:7] = False # A hole with area of 5*3 = 15 and not filled
         expected = image.copy()
         image[3:5, 11:18] = False # A hole with area 2*7 = 14 is filled
-        output = morph.fill_labeled_holes(image, max_area=14)
+        def small_hole_fn(area, is_foreground):
+            return area <= 14
+        output = morph.fill_labeled_holes(image, size_fn = small_hole_fn)
         self.assertEqual(image.dtype.kind, output.dtype.kind)
         self.assertTrue(np.all(output == expected))
+        
+    def test_10_fill_bullseye(self):
+        i,j = np.mgrid[-50:50, -50:50]
+        bullseye = i * i + j * j < 2000
+        bullseye[i * i + j * j < 1000 ] = False
+        bullseye[i * i + j * j < 500 ] = True
+        bullseye[i * i + j * j < 250 ] = False
+        bullseye[i * i + j * j < 100 ] = True
+        labels, count = scind.label(bullseye)
+        result = morph.fill_labeled_holes(labels)
+        self.assertTrue(np.all(result[result != 0] == bullseye[6, 43]))
+        
+    def test_11_dont_fill_if_touches_2(self):
+        labels = np.array([
+            [ 0, 0, 0, 0, 0, 0, 0, 0 ],
+            [ 0, 1, 1, 1, 2, 2, 2, 0 ],
+            [ 0, 1, 1, 0, 0, 2, 2, 0 ],
+            [ 0, 1, 1, 1, 2, 2, 2, 0 ],
+            [ 0, 0, 0, 0, 0, 0, 0, 0 ]])
+        result = morph.fill_labeled_holes(labels)
+        self
 
-class TestFillBackgroundHoles(unittest.TestCase):
-    def test_00_00_00_zeros(self):
-        result = morph.fill_background_holes(np.zeros((10,20), bool))
-        self.assertTrue(not np.any(result))
-        
-    def test_00_00_01_ones(self):
-        result = morph.fill_background_holes(np.ones((10,20), bool))
-        self.assertTrue(np.all(result))
-        
-    def test_01_01_not_a_hole(self):
-        image = np.zeros((10,20), bool)
-        image[5:8,12:15] = True
-        result = morph.fill_background_holes(image)
-        self.assertTrue(np.all(result == image))
-        
-    def test_01_02_a_hole(self):
-        image = np.zeros((10,20), bool)
-        image[5:8,12:15] = True
-        image[6,13] = False
-        result = morph.fill_background_holes(image)
-        self.assertTrue(result[6,13])
-        result[6,13] = False
-        self.assertTrue(np.all(result == image))
-        
 class TestAdjacent(unittest.TestCase):
     def test_00_00_zeros(self):
         result = morph.adjacent(np.zeros((10,10), int))

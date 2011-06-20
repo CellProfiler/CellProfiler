@@ -509,3 +509,91 @@ def extract_from_image_lookup(orig_image, index_i, index_j):
 def ptrsize():
     '''The number of bytes in a pointer'''
     return sizeof(int *)
+
+@cython.boundscheck(False)
+def fill_labeled_holes_loop(
+    np.ndarray[dtype = np.uint32_t, ndim = 1, negative_indices = False] i,
+    np.ndarray[dtype = np.uint32_t, ndim = 1, negative_indices = False] j,
+    np.ndarray[dtype = np.uint32_t, ndim = 1, negative_indices = False] idx,
+    np.ndarray[dtype = np.uint32_t, ndim = 1, negative_indices = False] i_count,
+    np.ndarray[dtype = np.uint8_t,  ndim = 1, negative_indices = False] is_not_hole,
+    np.ndarray[dtype = np.uint32_t, ndim = 1, negative_indices = False] adjacent_non_hole,
+    np.ndarray[dtype = np.uint32_t, ndim = 1, negative_indices = False] to_do,
+    int lcount,
+    int to_do_count):
+    '''Run the graph loop portions of fill_labeled_holes
+    
+    i, j - the labels of pairs of touching objects
+    idx - the index to the j for a particular i
+    i_counts - the number of j for a particular i
+    is_not_hole - on entry, a boolean array with one element per label. On exit,
+                  True if the label is not a hole to be filled.
+    adjacent_non_hole - on entry, an integer array set to zero with one
+                        element per label. On exit, for each hole, the label
+                        that should be used to fill it.
+    to_do - one element per label. The initial non-hole labels (with to_do_count
+            as the number on the list).
+    lcount - all labels with a label # of lcount or below are objects, all above
+             are background.
+    '''
+    cdef:
+        int ii,jj,jidx
+        int n = len(is_not_hole)
+        int *p_idx = <int *>(idx.data)
+        int *p_i_count = <int *>(i_count.data)
+        int *p_to_do = <int *>(to_do.data)
+        char *p_is_not_hole = <char *>(is_not_hole.data)
+        int *p_adjacent_non_hole = <int *>(adjacent_non_hole.data)
+        int *p_i = <int *>(i.data)
+        int *p_j = <int *>(j.data)
+    with nogil:
+        while to_do_count > 0:
+            ii = p_to_do[to_do_count - 1]
+            to_do_count -= 1
+            #
+            # jj are the adjacencies to ii
+            #
+            for jidx from 0 <= jidx < p_i_count[ii]:
+                jj = p_j[p_idx[ii] + jidx]
+                if p_is_not_hole[jj] == 0:
+                    if ii <= lcount:
+                        #
+                        # i labels an object. Label any object that is adjacent to
+                        # a different object.
+                        #
+                        if p_adjacent_non_hole[jj] == 0:
+                            p_adjacent_non_hole[jj] = ii
+                            continue
+                        elif p_adjacent_non_hole[jj] == ii:
+                            continue
+                    elif jj > lcount:
+                        #
+                        # i labels background. Label any foreground object touching it.
+                        #
+                        continue
+                    p_is_not_hole[jj] = 1
+                    p_to_do[to_do_count] = jj
+                    to_do_count += 1
+        #
+        # Now we need to walk the graph of hole objects. There are holes
+        # that are touching non-holes. These are the ones where adjacent_non_hole
+        # is not zero. There are holes that are inside holes (objects inside holes)
+        # and holes that are inside holes that are inside holes (holes inside
+        # objects inside holes) and so on until you get to the bullseye of some
+        # mega-archery-target.
+        #
+        to_do_count = 0
+        for jj from 0 <= jj < n:
+            if p_is_not_hole[jj] != 0 and p_adjacent_non_hole[jj] != 0:
+                p_to_do[to_do_count] = jj
+                to_do_count += 1
+        while to_do_count > 0:
+            ii = p_to_do[to_do_count - 1]
+            to_do_count -= 1
+            for jidx from 0 <= jidx < p_i_count[ii]:
+                jj = p_j[p_idx[ii] + jidx]
+                if p_adjacent_non_hole[jj] == 0:
+                    p_adjacent_non_hole[jj] = p_adjacent_non_hole[ii]
+                    p_to_do[to_do_count] = jj
+                    to_do_count += 1
+    

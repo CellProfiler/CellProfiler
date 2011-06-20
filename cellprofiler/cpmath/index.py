@@ -69,11 +69,13 @@ class Indexes(object):
         self.__length = cs[-1]
         self.__fwd_idx = np.hstack(([0], cs[:-1]))
         self.__rev_idx = np.zeros(self.__length,int)
-        non_empty_indices = np.arange(self.__length)[np.prod(counts, 0) > 0]
+        non_empty_indices = \
+            np.arange(counts.shape[1]).astype(int)[np.prod(counts, 0) > 0]
         if len(non_empty_indices) > 0:
-            distance_to_next = non_empty_indices[1:] - non_empty_indices[:-1]
-            self.__rev_idx[self.__fwd_idx[non_empty_indices[1:]]] = distance_to_next
-            self.__rev_idx = np.cumsum(self.__rev_idx)
+            if len(non_empty_indices) > 1:
+                distance_to_next = non_empty_indices[1:] - non_empty_indices[:-1]
+                self.__rev_idx[self.__fwd_idx[non_empty_indices[1:]]] = distance_to_next
+                self.__rev_idx = np.cumsum(self.__rev_idx)
             self.__idx = []
             indexes = np.arange(self.length) - self.__fwd_idx[self.__rev_idx]
             for i, count in enumerate(counts[:-1]):

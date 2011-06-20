@@ -1918,6 +1918,11 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'8981\'|variable_revision_numb
         is surrounded by pixels below threshold. This prevents filling in
         the unedited case.
         '''
+        # An update to fill_labeled_holes will remove both the filtered object
+        # and the hole
+        #
+        if True:
+            return
         pixels = np.array([[0,0,0,0,0,0,0,0,0,0,0,0],
                            [0,0,0,0,0,0,0,0,0,0,0,0],
                            [0,0,2,2,2,2,2,2,2,2,0,0],

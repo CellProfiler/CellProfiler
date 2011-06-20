@@ -117,6 +117,10 @@ class TestIndexes(unittest.TestCase):
                  ind.idx[1,start:(start + n)]] = np.arange(np.prod(count))
             self.assertEqual(len(np.unique(hits.ravel())), n)
             start += n
+            
+    def test_02_03_one_at_end(self):
+        ind = I.Indexes(np.array([[0,0,1]]))
+        pass
         
         
         

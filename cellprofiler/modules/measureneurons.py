@@ -237,8 +237,10 @@ class MeasureNeurons(cpm.CPModule):
         # a one-pixel image)
         #
         if self.wants_to_fill_holes:
+            def size_fn(area, is_object):
+                return (~ is_object) and (area <= self.maximum_hole_size.value)
             combined_skel = morph.fill_labeled_holes(
-                combined_skel, self.maximum_hole_size.value, ~seed_center)
+                combined_skel, ~seed_center, size_fn)
         #
         # Reskeletonize to make true branchpoints at the ring boundaries
         #

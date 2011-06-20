@@ -702,7 +702,7 @@ class ExportToDatabase(cpm.CPModule):
             <li>%(W_SCATTERPLOT)s</li>
             <li>%(W_HISTOGRAM)s</li>
             <li>%(W_DENSITYPLOT)s</li>
-            <li>%(W_PLATEVIEWER)sP</li>
+            <li>%(W_PLATEVIEWER)s</li>
             <li>%(W_BOXPLOT)s</li>
             </ul>"""%globals()))
         
@@ -2370,7 +2370,7 @@ svn revision: %d\n"""%get_revision()
             display_tool_text += """
 %s"""%display_tool
             
-            axis_text = "x-axis" if workspace_group.measurement_display.value is not W_PLATEVIEWER else "measurement"
+            axis_text = "x-axis" if workspace_group.measurement_display.value != W_PLATEVIEWER else "measurement"
             if workspace_group.x_measurement_type.value == cpmeas.IMAGE:
                 axis_meas = "_".join((cpmeas.IMAGE, workspace_group.x_measurement_name.value))
             elif workspace_group.x_measurement_type.value == cpmeas.OBJECT:

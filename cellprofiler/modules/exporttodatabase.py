@@ -1114,6 +1114,8 @@ class ExportToDatabase(cpm.CPModule):
                                                          self.db_user.value, 
                                                          self.db_passwd.value,
                                                          self.db_name.value)
+            if self.wants_well_tables:
+                per_well = self.write_mysql_table_per_well(pipeline, image_set_list)
         elif self.db_type==DB_SQLITE:
             db_file = self.make_full_filename(self.sqlite_file.value)
             self.connection, self.cursor = connect_sqlite(db_file)
@@ -1133,9 +1135,8 @@ class ExportToDatabase(cpm.CPModule):
                 if self.separate_object_tables == OT_COMBINE:
                     tables.append(self.get_table_name(cpmeas.OBJECT))
                 else:
-                    for object_name in self.objects_choice.choices:
-                        if not self.ignore_object(object_name, True):
-                            tables.append(self.get_table_name(object_name))
+                    for object_name in self.get_object_names(pipeline, image_set_list):
+                        tables.append(self.get_table_name(object_name))
             tables_that_exist = []
             for table in tables:
                 try:
@@ -1307,12 +1308,7 @@ class ExportToDatabase(cpm.CPModule):
                 os.makedirs(path)
             self.write_mysql_table_defs(workspace)
             self.write_csv_data(workspace)
-        elif self.wants_well_tables:
-            if self.db_type != DB_SQLITE:
-                per_well = self.write_mysql_table_per_well(workspace)
         if self.db_type in (DB_MYSQL, DB_SQLITE):
-            # commit changes to db here or in run?
-            print 'Commit'
             self.connection.commit()
 
     
@@ -1608,19 +1604,21 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
 """ % (self.base_name(workspace), object_name,
        self.get_table_name(object_name)))
         if self.wants_well_tables:
-            self.write_mysql_table_per_well(workspace, fid)
+            self.write_mysql_table_per_well(
+                workspace.pipeline, workspace.image_set_list, fid)
         fid.close()
     
-    def write_mysql_table_per_well(self, workspace, fid=None):
+    def write_mysql_table_per_well(self, pipeline, image_set_list, fid=None):
         '''Write SQL statements to generate a per-well table
         
-        workspace - workspace at the end of the run
+        pipeline - the pipeline being run (to get feature names)
+        image_set_list - 
         fid - file handle of file to write or None if statements
               should be written to a separate file.
         '''
         if fid is None:
             file_name = "%s_Per_Well_SETUP.SQL"%(self.sql_file_prefix)
-            path_name = self.make_full_filename(file_name,workspace)
+            path_name = self.make_full_filename(file_name)
             fid = open(path_name,"wt")
             needs_close = True
         else:
@@ -1631,13 +1629,10 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
         # Do in two passes. Pass # 1 makes the column name mappings for the
         # well table. Pass # 2 writes the SQL
         #
-        pipeline = workspace.pipeline
-        image_set_list = workspace.image_set_list
         mappings = self.get_column_name_mappings(pipeline, image_set_list)
         object_names = self.get_object_names(pipeline, image_set_list)
         columns = self.get_pipeline_measurement_columns(pipeline, image_set_list)
         for aggname in self.agg_well_names:
-            measurements = workspace.measurements
             well_mappings = ColumnNameMapping()
             for do_mapping, do_write in ((True, False),(False, True)):
                 if do_write:
@@ -1650,16 +1645,16 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                         object_table_name = "OT"
                     else:
                         object_table_name = "OT%d" % (i+1)
-                    for feature in measurements.get_feature_names(object_name):
-                        if self.ignore_feature(object_name, feature, measurements):
+                    for column in columns:
+                        column_object_name, feature, data_type = column[:3]
+                        if column_object_name != object_name:
+                            continue
+                        if self.ignore_feature(object_name, feature):
                             continue
                         #
                         # Don't take an aggregate on a string column
                         #
-                        if not any([True for column in columns
-                                    if column[0] == object_name and
-                                    column[1] == feature and
-                                    not column[2].startswith(cpmeas.COLTYPE_VARCHAR)]):
+                        if data_type.startswith(cpmeas.COLTYPE_VARCHAR):
                             continue
                         feature_name = "%s_%s"%(object_name,feature)
                         colname = mappings[feature_name]

@@ -654,22 +654,12 @@ class ModuleView:
                         if len(selection) == 1:
                             d[s0][None] = False
                         else:
-                            if d[s0][None] is False:
-                                # Already filtered out
-                                return
-                            populate_selection(d[s0], selection[1:], 
-                                               os.path.join(root, s0))
-                        # At best, the root is not all true
-                        d[None] = None
-                        # check if the root is now all filtered
-                        for key in d.keys():
-                            if key is None:
-                                continue
-                            if hasattr(d[key], "__call__"):
-                                return
-                            if d[key][None] or d[key][None] is None:
-                                return
-                        d[None] = False
+                            if d[s0][None] is not False:
+                                populate_selection(d[s0], selection[1:], 
+                                                   os.path.join(root, s0))
+                        if d[s0][None] is False:
+                            # At best, the root is not all true
+                            d[None] = None
                     
                     def split_all(x):
                         head, tail = os.path.split(x)

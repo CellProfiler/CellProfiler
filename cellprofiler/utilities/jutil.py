@@ -293,9 +293,21 @@ def make_kill_vm():
             return
         while thread_local_env.attach_count > 1:
             detach()
-        #runtime = static_call("java/lang/Runtime","getRuntime",
-        #                      "()Ljava/lang/Runtime;")
-        #call(runtime, "exit", "(I)V", 0)
+        #
+        # -------------------------------------------------------------------
+        # WE MUST / WE MUST NOT CALL EXIT
+        #
+        # MUST: Java never terminates and never closes its threads
+        # MUST NOT: Java never returns from exit
+        #
+        # Don't know why. Don't want to find out.
+        #
+        #--------------------------------------------------------------------
+        #
+        if sys.platform != "linux2":
+            runtime = static_call("java/lang/Runtime","getRuntime",
+                                  "()Ljava/lang/Runtime;")
+            call(runtime, "exit", "(I)V", 0)
         detach()
         kill[0] = True
         wake_event.set()

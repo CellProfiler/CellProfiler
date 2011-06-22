@@ -478,3 +478,4 @@ finally:
         jutil.kill_vm()
     except:
         logging.root.warning("Caught exception while killing VM.", exc_info=True)
+os._exit(0)

@@ -293,9 +293,9 @@ def make_kill_vm():
             return
         while thread_local_env.attach_count > 1:
             detach()
-        runtime = static_call("java/lang/Runtime","getRuntime",
-                              "()Ljava/lang/Runtime;")
-        call(runtime, "exit", "(I)V", 0)
+        #runtime = static_call("java/lang/Runtime","getRuntime",
+        #                      "()Ljava/lang/Runtime;")
+        #call(runtime, "exit", "(I)V", 0)
         detach()
         kill[0] = True
         wake_event.set()

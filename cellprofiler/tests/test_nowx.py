@@ -16,6 +16,7 @@ __version__="$Revision$"
 import tempfile
 import traceback
 import unittest
+from cellprofiler.modules.tests import example_images_directory
 
 import __builtin__
 
@@ -39,14 +40,7 @@ class TestNoWX(unittest.TestCase):
         __builtin__.__import__ = self.old_import
 
     def example_dir(self):
-        import os
-        path = os.path.abspath(os.path.split(__file__)[0])
-        # trunk\CellProfiler\cellprofiler\tests
-        for i in range(3):
-            path = os.path.split(path)[0]
-        path = os.path.join(path, "ExampleImages")
-        self.assertTrue(os.path.isdir(path))
-        return path
+        return example_images_directory()
     
     def test_01_01_can_import(self):
         import os

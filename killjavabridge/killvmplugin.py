@@ -6,6 +6,8 @@ __version__="$Revision$"
 
 from nose.plugins import Plugin
 import os
+import numpy as np
+np.seterr(all='ignore')
 
 class KillVMPlugin(Plugin):
     enabled = False
@@ -60,5 +62,6 @@ class KillVMPlugin(Plugin):
         try:
             from cellprofiler.utilities.jutil import kill_vm
             kill_vm()
+            os._exit(0)
         except:
             pass

@@ -19,29 +19,18 @@ import unittest
 import cellprofiler.utilities.jutil as J
 import imagej.imageplus as I
 import imagej.windowmanager as W
+from cellprofiler.modules.tests import example_images_directory
 
 class TestWindowManager(unittest.TestCase):
-    def setUp(self):
-        self.root_dir = os.path.abspath(os.path.split(__file__)[0])
-        # root/CellProfiler/imagej/tests
-        self.root_dir = os.path.split(self.root_dir)[0]
-        # root/CellProfiler/imagej
-        self.root_dir = os.path.split(self.root_dir)[0]
-        # root/CellProfiler
-        self.root_dir = os.path.split(self.root_dir)[0]
-        J.attach()
-        
-    def tearDown(self):
-        J.detach()
     
     def test_01_01_set_current_image(self):
-        file_name = os.path.join(self.root_dir, "ExampleImages", 
+        file_name = os.path.join(example_images_directory(), 
                                  "ExampleSBSImages", "Channel1-01-A-01.tif")
         ip = I.load_imageplus(file_name)
         W.set_current_image(ip)
         
     def test_01_02_get_id_list(self):
-        file_name = os.path.join(self.root_dir, "ExampleImages", 
+        file_name = os.path.join(example_images_directory(), 
                                  "ExampleSBSImages", "Channel1-01-A-01.tif")
         ip = I.load_imageplus(file_name)
         W.set_current_image(ip)
@@ -49,7 +38,7 @@ class TestWindowManager(unittest.TestCase):
         self.assertTrue(ip.getID() in id_list)
         
     def test_01_03_get_image_by_id(self):
-        file_name = os.path.join(self.root_dir, "ExampleImages", 
+        file_name = os.path.join(example_images_directory(), 
                                  "ExampleSBSImages", "Channel1-01-A-01.tif")
         ip = I.load_imageplus(file_name)
         ip.show()
@@ -57,7 +46,7 @@ class TestWindowManager(unittest.TestCase):
         self.assertEqual(ip_other.getID(), ip.getID())
         
     def test_01_04_get_image_by_name(self):
-        file_name = os.path.join(self.root_dir, "ExampleImages", 
+        file_name = os.path.join(example_images_directory(), 
                                  "ExampleSBSImages", "Channel1-01-A-01.tif")
         ip = I.load_imageplus(file_name)
         title = W.make_unique_name("Whatever")
@@ -68,13 +57,13 @@ class TestWindowManager(unittest.TestCase):
         self.assertEqual(ip_other.getID(), ip.getID())
     
     def test_01_05_set_temp_current_image(self):
-        file_name = os.path.join(self.root_dir, "ExampleImages", 
+        file_name = os.path.join(example_images_directory(), 
                                  "ExampleSBSImages", "Channel1-01-A-01.tif")
         ip = I.load_imageplus(file_name)
         W.set_temp_current_image(ip)
         
     def test_01_06_get_temp_current_image(self):
-        file_name = os.path.join(self.root_dir, "ExampleImages", 
+        file_name = os.path.join(example_images_directory(), 
                                  "ExampleSBSImages", "Channel1-01-A-01.tif")
         ip = I.load_imageplus(file_name)
         W.set_temp_current_image(ip)

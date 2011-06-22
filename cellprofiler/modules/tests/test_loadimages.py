@@ -1588,7 +1588,9 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
                 # The Mac claims to save float times, but stat returns
                 # a float whose fractional part is always 0
                 #
-                if os.stat_float_times() and not sys.platform=="darwin":
+                # Also happens on at least one Centos build.
+                #
+                if os.stat_float_times() and not sys.platform in ("darwin", "linux2"):
                     time.sleep(.1)
                 else:
                     time.sleep(1)

@@ -2425,7 +2425,7 @@ class LoadImages(cpmodule.CPModule):
                                   for file_name in filenames]
             else:
                 files = [ (file_name, file_name)
-                          for file_name in os.listdir(root)
+                          for file_name in sorted(os.listdir(root))
                           if os.path.isfile(os.path.join(root, file_name))]
             how_long = time.clock() - start_time
             cached_file_lists[self.image_directory()] = (how_long, files)

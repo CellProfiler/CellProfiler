@@ -20,23 +20,12 @@ import unittest
 import cellprofiler.utilities.jutil as J
 import imagej.imageplus as I
 import imagej.imageprocessor as IP
+from cellprofiler.modules.tests import example_images_directory
 
 class TestImageProcessor(unittest.TestCase):
-    def setUp(self):
-        self.root_dir = os.path.abspath(os.path.split(__file__)[0])
-        # root/CellProfiler/imagej/tests
-        self.root_dir = os.path.split(self.root_dir)[0]
-        # root/CellProfiler/imagej
-        self.root_dir = os.path.split(self.root_dir)[0]
-        # root/CellProfiler
-        self.root_dir = os.path.split(self.root_dir)[0]
-        J.attach()
-        
-    def tearDown(self):
-        J.detach()
         
     def test_01_01_get_image(self):
-        file_name = os.path.join(self.root_dir, "ExampleImages", 
+        file_name = os.path.join(example_images_directory(), 
                                  "ExampleCometAssay", "CometTails.tif")
         imageplus_obj = I.load_imageplus(file_name)
         pixels = IP.get_image(imageplus_obj.getProcessor())

@@ -11,7 +11,7 @@ as opposed to images that already been corrected for illumination.
 <ul>
 <li><i>FocusScore:</i> A measure of the intensity variance across the image.</li>
 <li><i>LocalFocusScore:</i> A measure of the intensity variance between image sub-regions.</li>
-<li><i>Correlation:</i> A measure of the correlation of the image.</li>
+<li><i>Correlation:</i> A measure of the correlation of the image for a given spatial scale.</li>
 <li><i>PowerLogLogSlope:</i> The slope of the image log-log power spectrum.</li>
 </ul>
 </li>
@@ -29,7 +29,7 @@ as opposed to images that already been corrected for illumination.
 <li><i>MeanIntensity, MedianIntensity:</i> Mean and median of pixel intensity values.</li>
 <li><i>StdIntensity, MADIntensity:</i> Standard deviation and median absolute deviation (MAD) of pixel intensity values.</li>
 <li><i>MinIntensity, MaxIntensity:</i> Minimum and maximum of pixel intensity values.</li>
-<li><i>SNR:</i> Signal-to-noise ratio</li>
+<li><i>TotalArea:</i> Number of pixels measured.</li>
 </ul>
 </li>
 
@@ -37,7 +37,6 @@ as opposed to images that already been corrected for illumination.
 <ul>
 <li><i>Threshold:</i>: The automatically calculated threshold for each image for the 
 thresholding method of choice.</li>
-<li><i>Lower bound:</i> Suggested lower threshold bound.</li>
 </ul>
 </li>
 </ul>
@@ -101,7 +100,6 @@ F_STD_INTENSITY = 'StdIntensity'
 F_MAD_INTENSITY = 'MADIntensity'
 F_MAX_INTENSITY = 'MaxIntensity'
 F_MIN_INTENSITY = 'MinIntensity'
-F_SNR = 'SNR'
 INTENSITY_FEATURES = [F_TOTAL_AREA, F_TOTAL_INTENSITY, F_MEAN_INTENSITY, F_MEDIAN_INTENSITY, F_STD_INTENSITY, F_MAD_INTENSITY, F_MAX_INTENSITY, F_MIN_INTENSITY]
 F_PERCENT_MAXIMAL = 'PercentMaximal'
 F_PERCENT_MINIMAL = 'PercentMinimal'
@@ -166,16 +164,23 @@ class MeasureImageQuality(cpm.CPModule):
             "Calculate blur metrics?",
             True, doc = """
             Check this setting to compute a series of blur metrics. The blur metrics are the
-            following:
+            following, along with recomendations on their use:
             <ul>
             <li><i>Power Spectrum Slope:</i> The power spectrum contains the frequency information
             of the image, and the slope gives a measure of image blur. A higher slope indicates 
-            more lower frequency components, and hence more blur. For in-focus "natural" images, a slope
-            in the range of -2 is typical (Field, 1997).</li>
-            <li><i>Correlation:</i> If an image is blurred, the
-            correlation between neighboring pixels becomes high, producing a high correlation value.
-            This approach was found to give optimal performance for fluorescence microscopy applications
-            (Vollath, 1987)</li>
+            more lower frequency components, and hence more blur (Field, 1997). This metric is 
+            recommended for blur detection in most cases.</li>
+            <li><i>Correlation:</i> This is a measure of the image spatial intensity distribution 
+            computed across sub-regions of an image for a given spatial scale (Haralick, 1973).
+            If an image is blurred, the correlation between neighboring pixels becomes high, 
+            producing a high correlation value. A similar approach was found to give optimal 
+            performance for fluorescence microscopy applications (Vollath, 1987). <br>
+            Some care is required in selecting an appropriate spatial scale because differences 
+            in the spatial scale capture various features: moderate scales capture the 
+            blurring of intracellular features better than small scales and larger scales 
+            are more likely to reflect intercellular confluence than focal blur. A spatial scale
+            no bigger than the feature of interest is recommended, although you can select as
+            many scales as desired.</li>
             <li><i>Focus Score:</i> This score is calculated using a normalized variance, 
             which was the best-ranking algorithm for brightfield, phase contrast, and DIC images (Sun, 2004). 
             Higher focus scores correspond to lower bluriness. <br>
@@ -183,12 +188,15 @@ class MeasureImageQuality(cpm.CPModule):
             image divided by mean image intensity. Since it is tailored for autofocusing 
             applications (difference focus for the same field of view), it assumes that the 
             overall intensity and the number of objects in the image is constant, making it less 
-            useful for comparision images of different fields of view.</li>
+            useful for comparision images of different fields of view. For distinguishing 
+            extremely blurry images, however, it performs well.</li>
             <li><i>Local Focus Score:</i> A local version of the Focus Score, it subdivides the
             image into non-overlapping tiles, computes the normalized variance for each, and 
             takes the mean of these values as the final metric. It is potentially more useful 
             for comparing focus between images of different fields of view, but is subject
-            to the same caveats as the Focus Score.</li>
+            to the same caveats as the Focus Score. It can be useful in differentiating good versus
+            badly segmented images in the cases when badly segmented images usually contain no cell 
+            objects with high background noise.</li>
             </ul>
             <p><b>References</b><br>
             <ul>
@@ -196,6 +204,8 @@ class MeasureImageQuality(cpm.CPModule):
             images and the response properties of cortical cells," <i>Journal of the Optical 
             Society of America. A, Optics, image science, and vision</i>
             4(12):2379-94.</li>
+            <li>Haralick RM (1979) "Statistical and structural approaches to texture,"
+            Proc. IEEE, 67(5):786-804.</li>
             <li>Vollath D (1987) "Automatic focusing by correlative methods," <i>Journal of Microscopy</i>
             147(3):279-288 </li>
             <li>Sun Y, Duthaler S, Nelson B (2004) "Autofocusing in Computer Microscopy:
@@ -254,7 +264,7 @@ class MeasureImageQuality(cpm.CPModule):
         
         group.append("use_all_threshold_methods", cps.Binary(
             "Use all thresholding methods?",
-            True, doc = """
+            False, doc = """
             <i>(Used only if image thresholds are calculcated)</i><br>
             Calculate thresholds using all the available methods. Only the global methods
             are used. <br>
@@ -265,13 +275,7 @@ class MeasureImageQuality(cpm.CPModule):
             parameter and middle class assignment are computed.</li>
             <li><i>Mixture of Gaussians (MoG):</i> Thresholds for image coverage fractions 
             of 0.05, 0.25, 0.75 and 0.95 are computed.</li>
-            </ul>
-            In addition, a signal-to-noise (SNR) metric is calculated, defined as
-            [mean(foreground)-mean(background)]/std(background). Typically, an SNR
-            value > 3 is desirable. 
-            Since the value will depend on how well the foreground and background are defined,  
-            this metric is also an indirect measure of segmentation quality.<br>
-            See the <b>Identify</b> modules for more details on the individual thresholding methods."""))
+            </ul>"""))
         
         group.threshold_groups = []
         
@@ -301,15 +305,17 @@ class MeasureImageQuality(cpm.CPModule):
         group.append("divider", cps.Divider(line=False))
         
         group.append('scale', cps.Integer(
-            "Window size for blur measurements",
+            "Spatial scale for blur measurements",
             len(image_group.scale_groups)*10+10, doc="""
             <i>(Used only if blur measurements are to be calculated)</i> <br> 
-            The Local Focus Score and Correlation are measured within an NxN pixel window 
-            applied to the image. A higher number for the window size measures larger patterns of 
+            The <i>Local Focus Score</i> is measured within an NxN pixel window applied to the image, 
+            whereas the <i>Correlation</i> of a pixel is measured with repsect to its neighbors
+            N pixels away. 
+            A higher number for the window size measures larger patterns of 
             image blur whereas smaller numbers measure more localized patterns of 
-            blur. We suggest selecting a window size that is twice the 
-            typical object diameter. You can measure these metrics over multiple window sizes 
-            by adding different window sizes for each image. """))
+            blur. We suggest selecting a window size that is on the order of the feature of interest 
+            (e.g., the object diameter). You can measure these metrics for multiple window sizes 
+            by selecting adiditonal scales for each image. """))
         
         group.can_remove = can_remove
         if can_remove:
@@ -327,7 +333,7 @@ class MeasureImageQuality(cpm.CPModule):
         group.append("threshold_method", cps.Choice("Select a thresholding method",
             cpthresh.TM_GLOBAL_METHODS,
             cpthresh.TM_OTSU_GLOBAL, doc = """
-            <i>(Used only if thresholds are to be calculated)</i> <br> 
+            <i>(Used only if particular thresholds are to be calculated)</i> <br> 
             This setting allows you to apply automatic thresholding 
             methods used in the <b>Identify</b> modules.
             For more help on thresholding, see the <b>Identify</b> modules."""))
@@ -587,13 +593,9 @@ class MeasureImageQuality(cpm.CPModule):
                     for threshold_group in all_threshold_groups:
                         feature = threshold_group.threshold_feature_name(image_name)
                         columns.append((cpmeas.IMAGE, feature, cpmeas.COLTYPE_FLOAT))
-                        feature = threshold_group.snr_feature_name(image_name)
-                        columns.append((cpmeas.IMAGE, feature, cpmeas.COLTYPE_FLOAT))
                         if image_group.use_all_threshold_methods:
                             sources.append([image_group.use_all_threshold_methods, image_name])
-                            sources.append([image_group.use_all_threshold_methods, image_name])
                         else:
-                            sources.append([threshold_group.threshold_method, image_name])
                             sources.append([threshold_group.threshold_method, image_name])
     
         if return_sources:
@@ -621,7 +623,6 @@ class MeasureImageQuality(cpm.CPModule):
                 result += SATURATION_FEATURES
             if self.any_threshold():
                 thresholds = []
-                snr = []
                 for image_group in self.image_groups:
                     all_threshold_groups = self.build_threshold_parameter_list() \
                                                 if image_group.use_all_threshold_methods.value \
@@ -629,10 +630,7 @@ class MeasureImageQuality(cpm.CPModule):
                     thresholds += [F_THRESHOLD+threshold_group.threshold_algorithm 
                                   for threshold_group in all_threshold_groups
                                   if image_group.calculate_threshold.value]
-                    snr += [F_SNR+threshold_group.threshold_algorithm 
-                                  for threshold_group in all_threshold_groups
-                                  if image_group.calculate_threshold.value]
-                result += sorted(list(set(thresholds))) + sorted(list(set(snr)))
+                result += sorted(list(set(thresholds)))
                 
             return result
         elif object_name == cpmeas.EXPERIMENT and category == C_IMAGE_QUALITY:
@@ -666,7 +664,7 @@ class MeasureImageQuality(cpm.CPModule):
                     result += self.images_to_process(image_group, None, pipeline)
             return result
         
-        if measurement.startswith(F_THRESHOLD) or measurement.startswith(F_SNR):
+        if measurement.startswith(F_THRESHOLD):
             result = []
             for image_group in self.image_groups:
                 all_threshold_groups = self.build_threshold_parameter_list() \
@@ -675,9 +673,6 @@ class MeasureImageQuality(cpm.CPModule):
                 for threshold_group in all_threshold_groups:
                     if (image_group.calculate_threshold.value and
                                 measurement == F_THRESHOLD+threshold_group.threshold_algorithm):
-                        result += self.images_to_process(image_group, None, pipeline)
-                    if (image_group.calculate_threshold.value and
-                                measurement == F_SNR+threshold_group.threshold_algorithm):
                         result += self.images_to_process(image_group, None, pipeline)
             return result
     
@@ -692,15 +687,14 @@ class MeasureImageQuality(cpm.CPModule):
                         if image_names in self.images_to_process(image_group, None, pipeline):
                             result += [scale_group.scale]
                 return result
-            if measurement.startswith(F_THRESHOLD) or measurement.startswith(F_SNR):
+            if measurement.startswith(F_THRESHOLD):
                 result = []
                 for image_group in self.image_groups:
                     all_threshold_groups = self.build_threshold_parameter_list() \
                                                 if image_group.use_all_threshold_methods.value \
                                                 else image_group.threshold_groups
                     result += [ threshold_group.threshold_scale for threshold_group in all_threshold_groups
-                                if ((measurement == F_THRESHOLD+threshold_group.threshold_algorithm or 
-                                     measurement == F_SNR+threshold_group.threshold_algorithm) and
+                                if ((measurement == F_THRESHOLD+threshold_group.threshold_algorithm) and
                                     threshold_group.threshold_scale is not None)]
                 return result
         return []
@@ -998,7 +992,7 @@ class MeasureImageQuality(cpm.CPModule):
         return result
 
     def calculate_thresholds(self, image_group, workspace):
-        '''Calculate a threshold and SNR for this image'''
+        '''Calculate a threshold for this image'''
         result = []
         all_threshold_groups = self.build_threshold_parameter_list() \
                              if image_group.use_all_threshold_methods.value \
@@ -1033,16 +1027,6 @@ class MeasureImageQuality(cpm.CPModule):
                                                 use_weighted_variance = use_weighted_variance,
                                                 assign_middle_to_foreground = assign_middle_to_foreground))
                 
-                background_mask = image.pixel_data < global_threshold
-                foreground_mask = image.pixel_data >= global_threshold
-                if image.has_mask:
-                    background_mask = image.mask & background_mask
-                    foreground_mask = image.mask & foreground_mask
-                bg_std = float(np.std(image.pixel_data[background_mask]))
-                pixel_snr = 0.0 if bg_std == 0 else float(np.mean(image.pixel_data[foreground_mask])-np.mean(image.pixel_data[background_mask]))/bg_std
-                if not np.isfinite(pixel_snr):
-                    pixel_snr = 0.0
-                
                 scale = threshold_group.threshold_scale
                 if scale is None:
                     threshold_description = threshold_method
@@ -1050,10 +1034,7 @@ class MeasureImageQuality(cpm.CPModule):
                     threshold_description = threshold_method + " " + scale
                 workspace.add_measurement(cpmeas.IMAGE, threshold_group.threshold_feature_name(image_name),
                                           global_threshold)
-                workspace.add_measurement(cpmeas.IMAGE, threshold_group.snr_feature_name(image_name),
-                                          pixel_snr)
-                result += [["%s %s threshold"%(image_name, threshold_description), str(global_threshold)],
-                           ["%s %s SNR"%(image_name, threshold_description), str(pixel_snr)]]
+                result += [["%s %s threshold"%(image_name, threshold_description), str(global_threshold)]]
             
         return result
     
@@ -1072,7 +1053,7 @@ class MeasureImageQuality(cpm.CPModule):
 
                     values = [v for v in values if v is not None] # Ignore missing values
                     
-                    for feature in (F_THRESHOLD, F_SNR):
+                    for feature in (F_THRESHOLD,):
                         feature_name = "%s_Mean%s%s_%s"%(C_IMAGE_QUALITY,feature,
                                                      threshold_group.threshold_algorithm,
                                                      image_name)
@@ -1330,18 +1311,6 @@ class ImageQualitySettingsGroup(cps.SettingsGroup):
                                       image_name,
                                       scale)
     
-    def snr_feature_name(self, image_name):
-        '''The feature name of the threshold measurement generated'''
-        scale = self.threshold_scale
-        if scale is None:
-            return "%s_%s%s_%s"%(C_IMAGE_QUALITY, F_SNR, 
-                                 self.threshold_algorithm,
-                                 image_name)
-        else:
-            return "%s_%s%s_%s_%s" % (C_IMAGE_QUALITY, F_SNR,
-                                      self.threshold_algorithm,
-                                      image_name,
-                                      scale)
     @property
     def threshold_scale(self):
         '''The "scale" for the threshold = minor parameterizations'''

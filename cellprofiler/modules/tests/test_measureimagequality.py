@@ -394,7 +394,6 @@ class TestMeasureImageQuality(unittest.TestCase):
         feature = module.image_groups[0].threshold_groups[0].threshold_feature_name(image_name)
         data = np.random.uniform(size=100)
         m.add_all_measurements(cpmeas.IMAGE, feature, data.tolist())
-        m.add_all_measurements(cpmeas.IMAGE, "ImageQuality_LowerBoundThreshold_%s"%(image_name), data.tolist())
         module.post_run(workspace)
             
         # Check threshold algorithms
@@ -434,7 +433,6 @@ class TestMeasureImageQuality(unittest.TestCase):
             dlist[e] = None
             
         m.add_all_measurements(cpmeas.IMAGE, feature, dlist)
-        m.add_all_measurements(cpmeas.IMAGE, "ImageQuality_LowerBoundThreshold_%s"%(image_name), dlist)
         module.post_run(workspace)
             
         # Check threshold algorithms

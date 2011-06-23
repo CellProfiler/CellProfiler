@@ -4,7 +4,25 @@ This module implements the HDF5Dict class, which provides a dict-like
 interface for measurements, backed by an HDF5 file.
 '''
 
+import threading
 import h5py
+
+# h5py is nice, but not being able to make zero-length selections is a pain.
+orig_hdf5_getitem = h5py.Dataset.__getitem__
+def new_getitem(self, args):
+    if isinstance(args, slice) and \
+            args.start is not None and args.start == args.stop:
+        return np.array([], self.dtype)
+    return orig_hdf5_getitem(self, args)
+setattr(h5py.Dataset, orig_hdf5_getitem.__name__, new_getitem)
+
+orig_hdf5_setitem = h5py.Dataset.__setitem__
+def new_setitem(self, args, val):
+    if isinstance(args, slice) and \
+            args.start is not None and args.start == args.stop:
+        return np.array([], self.dtype)[0:0]
+    return orig_hdf5_setitem(self, args, val)
+setattr(h5py.Dataset, orig_hdf5_setitem.__name__, new_setitem)
 
 
 class HDF5Dict():
@@ -59,5 +77,14 @@ class HDF5Dict():
     
     '''
 
-    def __init__(self, hdf5_filename):
+    # XXX - document how data is stored in hdf5 (basically, /Measurements/Object/Feature)
+
+    def __init__(self, hdf5_filename, top_level_group_name="Measurements"):
+        self.hdf_filename = hdf_filename
+        assert not os.path.exists(hdf_filename)  # currently, don't allow overwrite
+        self.hdf_file = h5py.File(self.hdf_filename, 'w')
+        self.top_level_group_name = top_level_group_name
+        self.group = self.hdf_file.create_group(top_level_group_name)
+
+        self.lock = threading.RLock()  # h5py is thread safe, but does not support simultaneous read/write
         

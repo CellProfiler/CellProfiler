@@ -102,31 +102,6 @@ OBJECT_NUMBER = "ObjectNumber"
 GROUP_NUMBER = "Group_Number"
 GROUP_INDEX = "Group_Index"
 
-# h5py is nice, but not being able to make zero-length selections is a pain.
-orig_hdf5_getitem = h5py.Dataset.__getitem__
-def new_getitem(self, args):
-    if isinstance(args, slice) and \
-            args.start is not None and args.start == args.stop:
-        return np.array([], self.dtype)
-    return orig_hdf5_getitem(self, args)
-setattr(h5py.Dataset, orig_hdf5_getitem.__name__, new_getitem)
-
-orig_hdf5_setitem = h5py.Dataset.__setitem__
-def new_setitem(self, args, val):
-    if isinstance(args, slice) and \
-            args.start is not None and args.start == args.stop:
-        return np.array([], self.dtype)[0:0]
-    return orig_hdf5_setitem(self, args, val)
-setattr(h5py.Dataset, orig_hdf5_setitem.__name__, new_setitem)
-
-def hdf5_dtype(val):
-    try:
-        return val.dtype
-    except:
-        if isinstance(val, str) or isinstance(val, unicode):
-            return h5py.special_dtype(vlen=str)
-        return type(val)
-
 def get_length_from_varchar(x):
     '''Retrieve the length of a varchar column from its coltype def'''
     m = re.match(r'^varchar\(([0-9]+)\)$', x)
@@ -147,15 +122,10 @@ class Measurements(object):
         image_set_start - the index of the first image set in the image set list
                           or None to start at the beginning
         """
-        # XXX - document how data is stored in hdf5 (basically, /Measurements/Object/Feature)
         # XXX - clean up on destruction of measurements, allow saving of partial results
         dir = cpprefs.get_default_output_directory()
         if not os.path.exists(dir):
             dir = None
-        self.hdf_filename = tempfile.mkstemp(prefix='CPmeasurements', suffix='.hdf5', dir=dir)[1]
-        self.hdf_file = h5py.File(self.hdf_filename, 'w')
-        self.__measurements_group = self.hdf_file.create_group(MEASUREMENTS_GROUP_NAME)
-        self.lock = threading.RLock()  # h5py is thread safe, but does not support simultaneous read/write
 
         self.image_set_number = image_set_start or 1
         self.image_set_start = image_set_start

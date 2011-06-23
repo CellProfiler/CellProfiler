@@ -221,9 +221,7 @@ if (not hasattr(sys, 'frozen')) and options.build_extensions:
     compile_scripts = [(os.path.join('cellprofiler', 'cpmath', 'setup.py'),
                         cellprofiler.cpmath.setup),
                        (os.path.join('cellprofiler', 'utilities', 'setup.py'),
-                        cellprofiler.utilities.setup),
-                       (os.path.join('contrib', 'setup.py'),
-                        contrib.setup)]
+                        cellprofiler.utilities.setup)]
     current_directory = os.path.abspath(os.curdir)
     old_pythonpath = os.getenv('PYTHONPATH', None)
 

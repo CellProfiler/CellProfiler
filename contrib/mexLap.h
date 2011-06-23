@@ -1,1 +1,0 @@
-double lap(int n, const double cc[], const int kk[], const int first[], int x[], int y[], double u[], double v[]);

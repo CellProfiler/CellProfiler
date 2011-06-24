@@ -62,11 +62,16 @@ parser.add_option("-r", "--run",
                   dest="run_pipeline",
                   default=False,
                   help="Run the given pipeline on startup")
-parser.add_option("--distributed",
-                  action="store_true",
-                  dest="run_distributed",
-                  default=False,
-                  help="Distribute pipeline to workers (see --worker)")
+try:
+    import nuageux
+    parser.add_option("--distributed",
+                      action="store_true",
+                      dest="run_distributed",
+                      default=False,
+                      help="Distribute pipeline to workers (see --worker)")
+except:
+    logging.warn("Distributed support disabled: please install nuageux")
+    
 parser.add_option("--worker",
                   dest="worker_mode_URL",
                   default=None,

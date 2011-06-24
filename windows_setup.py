@@ -161,7 +161,11 @@ opts = {
        }
 
 data_files = []
-
+try:
+    import nuageux
+    opts['py2exe']['includes'] += ['nuageux']
+except:
+    print "Nuageux not installed, no distributed support"
 try:
     import vigra
     import ilastik
@@ -278,6 +282,9 @@ setup(console=[{'script':'CellProfiler.py',
 try:
     import cellprofiler.utilities.jutil as jutil
     jutil.kill_vm()
+    sys.stderr.flush()
+    sys.stdout.flush()
+    os._exit(0)
 except:
     import traceback
     traceback.print_exc()

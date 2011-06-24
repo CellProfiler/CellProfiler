@@ -292,6 +292,8 @@ if options.worker_mode_URL is not None:
         sys.exit(0)
 
 if options.show_gui and not options.output_html:
+    import wx
+    wx.Log.EnableLogging(False)
     from cellprofiler.cellprofilerapp import CellProfilerApp
     App = CellProfilerApp(0, 
                           check_for_new_version = (options.pipeline_filename is None),

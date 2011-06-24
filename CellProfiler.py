@@ -62,6 +62,7 @@ parser.add_option("-r", "--run",
                   dest="run_pipeline",
                   default=False,
                   help="Run the given pipeline on startup")
+distributed_support_enabled = True
 try:
     import nuageux
     parser.add_option("--distributed",
@@ -70,6 +71,7 @@ try:
                       default=False,
                       help="Distribute pipeline to workers (see --worker)")
 except:
+    distributed_support_enabled = False
     logging.warn("Distributed support disabled: please install nuageux")
     
 parser.add_option("--worker",
@@ -268,7 +270,7 @@ if (not hasattr(sys, 'frozen')) and options.build_extensions:
     if options.build_and_exit:
         exit()
 
-if options.run_distributed:
+if distributed_support_enabled and options.run_distributed:
     # force distributed mode
     import cellprofiler.distributed as cpdistributed
     cpdistributed.force_run_distributed = True

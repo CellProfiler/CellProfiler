@@ -117,6 +117,16 @@ class Setting(object):
     
     value = property(__internal_get_value,__internal_set_value)
     
+    def get_value_text(self):
+        '''Get the underlying string value'''
+        return self.__value
+    
+    def set_value_text(self, value):
+        '''Set the underlying string value'''
+        self.__value = value
+        
+    value_text = property(get_value_text, set_value_text)
+    
     def __eq__(self, x):
         # we test explicitly for other Settings to prevent matching if
         # their .values are the same.
@@ -160,7 +170,10 @@ class Setting(object):
     
     @property
     def unicode_value(self):
-        return unicode(self.get_value())
+        return self.get_unicode_value()
+    
+    def get_unicode_value(self):
+        return unicode(self.value_text)
     
 class HiddenCount(Setting):
     """A setting meant only for saving an item count
@@ -191,6 +204,9 @@ class HiddenCount(Setting):
     
     def __str__(self):
         return str(len(self.__sequence))
+    
+    def get_unicode_value(self):
+        return unicode(len(self.__sequence))
 
 class Text(Setting):
     """A setting that displays as an edit box, accepting a string
@@ -452,7 +468,7 @@ class Integer(Text):
     """
     def __init__(self, text, value=0, minval=None, maxval=None, *args, 
                  **kwargs):
-        super(Integer,self).__init__(text, str(value), *args, **kwargs)
+        super(Integer,self).__init__(text, unicode(value), *args, **kwargs)
         self.__default = int(value)
         self.__minval = minval
         self.__maxval = maxval
@@ -460,7 +476,7 @@ class Integer(Text):
     def set_value(self,value):
         """Convert integer to string
         """
-        str_value = str(value)
+        str_value = unicode(value)
         super(Integer,self).set_value(str_value)
         
     def get_value(self):
@@ -476,9 +492,9 @@ class Integer(Text):
         """Return true only if the text value is an integer
         """
         try:
-            int(str(self))
+            int(unicode(self))
         except ValueError:
-            raise ValidationError('Must be an integer value, was "%s"'%(str(self)),self)
+            raise ValidationError('Must be an integer value, was "%s"'%(self.value_text),self)
         if self.__minval != None and self.__minval > self.value:
             raise ValidationError('Must be at least %d, was %d'%(self.__minval, self.value),self)
         if self.__maxval != None and self.__maxval < self.value:
@@ -518,7 +534,7 @@ class IntegerRange(Setting):
     
     def get_value(self):
         """Convert the underlying string to a two-tuple"""
-        values = str(self).split(',')
+        values = self.value_text.split(',')
         if values[0].isdigit():
             min = int(values[0])
         else:
@@ -548,7 +564,7 @@ class IntegerRange(Setting):
     max = property(get_max, set_max)
     
     def test_valid(self, pipeline):
-        values = str(self).split(',')
+        values = self.value_text.split(',')
         if len(values) < 2:
             raise ValidationError("Minimum and maximum values must be separated by a comma",self)
         if len(values) > 2:
@@ -586,7 +602,7 @@ class Coordinates(Setting):
     
     def get_value(self):
         """Convert the underlying string to a two-tuple"""
-        values = str(self).split(',')
+        values = self.value_text.split(',')
         if values[0].isdigit():
             x = int(values[0])
         else:
@@ -610,7 +626,7 @@ class Coordinates(Setting):
     y = property(get_y)
     
     def test_valid(self, pipeline):
-        values = str(self).split(',')
+        values = self.value_text.split(',')
         if len(values) < 2:
             raise ValidationError("X and Y values must be separated by a comma",self)
         if len(values) > 2:
@@ -665,7 +681,7 @@ class IntegerOrUnboundedRange(Setting):
     
     def get_value(self):
         """Convert the underlying string to a two-tuple"""
-        values = str(self).split(',')
+        values = self.value_text.split(',')
         try:
             min = int(values[0])
         except:
@@ -718,11 +734,11 @@ class IntegerOrUnboundedRange(Setting):
         elif self.max is not None:
             return str(abs(self.max))
         else:
-            return str(self).split(',')[1]
+            return self.value_text.split(',')[1]
     display_max = property(get_display_max)
     
     def test_valid(self, pipeline):
-        values = str(self).split(',')
+        values = self.value_text.split(',')
         if len(values) < 2:
             raise ValidationError("Minimum and maximum values must be separated by a comma",self)
         if len(values) > 2:
@@ -750,7 +766,7 @@ class Float(Text):
     """
     def __init__(self, text, value=0, minval=None, maxval=None, *args,
                  **kwargs):
-        super(Float,self).__init__(text, str(value), *args, **kwargs)
+        super(Float,self).__init__(text, unicode(value), *args, **kwargs)
         self.__default = float(value)
         self.__minval = minval
         self.__maxval = maxval
@@ -758,7 +774,7 @@ class Float(Text):
     def set_value(self,value):
         """Convert integer to string
         """
-        str_value = str(value)
+        str_value = unicode(value)
         super(Float,self).set_value(str_value)
         
     def get_value(self, reraise=False):
@@ -822,29 +838,29 @@ class FloatRange(Setting):
     
     def get_value(self):
         """Convert the underlying string to a two-tuple"""
-        values = str(self).split(',')
+        values = self.value_text.split(',')
         return (float(values[0]),float(values[1]))
     
     def get_min(self):
         """The minimum value of the range"""
-        return float(str(self).split(',')[0])
+        return float(self.value_text.split(',')[0])
     
     def set_min(self, value):
-        self.set_value((value, self.max))
+        self.set_value_text((value, self.min))
         
     min = property(get_min, set_min)
     
     def get_max(self):
         """The maximum value of the range"""
-        return float(str(self).split(',')[1])
+        return float(self.value_text.split(',')[1])
     
     def set_max(self, value):
-        self.set_value((self.min, value))
+        self.set_value((self.max, value))
         
     max = property(get_max, set_max)
     
     def test_valid(self, pipeline):
-        values = str(self).split(',')
+        values = self.value_text.split(',')
         if len(values) < 2:
             raise ValidationError("Minimum and maximum values must be separated by a comma",self)
         if len(values) > 2:

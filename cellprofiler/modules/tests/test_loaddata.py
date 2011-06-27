@@ -39,9 +39,12 @@ from cellprofiler.modules.tests import example_images_directory
 OBJECTS_NAME = "objects"
 
 class TestLoadData(unittest.TestCase):
-    def make_pipeline(self, csv_text):
-        handle, name = tempfile.mkstemp(".csv")
-        fd = os.fdopen(handle, 'w')
+    def make_pipeline(self, csv_text, name = None):
+        if name is None:
+            handle, name = tempfile.mkstemp(".csv")
+            fd = os.fdopen(handle, 'w')
+        else:
+            fd = open(name, "w")
         fd.write(csv_text)
         fd.close()
         csv_path, csv_file = os.path.split(name) 
@@ -301,7 +304,7 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
         pipeline, module, filename = self.make_pipeline(csv_text)
         m = pipeline.run()
         data = m.get_current_image_measurement("Test_Measurement")
-        self.assertTrue(isinstance(data, str), "Expected <type 'str'> got %s" %type(data))
+        self.assertTrue(isinstance(data, unicode), "Expected <type 'str'> got %s" %type(data))
         self.assertEqual(data, "1234567890123")
         os.remove(filename)
     
@@ -737,6 +740,69 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
         finally:
             os.remove(name)
             os.remove(csv_name)
+            
+    def test_12_01_load_unicode(self):
+        base_directory = tempfile.mkdtemp()
+        directory = u"\u2211\u03B1"
+        filename = u"\u03B2.jpg"
+        base_path = os.path.join(base_directory, directory)
+        os.mkdir(base_path)
+        path = os.path.join(base_path, filename)
+        csv_filename = u"\u03b3.csv"
+        csv_path = os.path.join(base_path, csv_filename)
+        unicode_value = u"\u03b4.csv"
+        try:
+            r = np.random.RandomState()
+            r.seed(1101)
+            labels = r.randint(0,10, size=(30,20)).astype(np.uint8)
+            img = PIL.Image.fromarray(labels, "L")
+            img.save(path, "PNG")
+            csv_text = ("Image_FileName_MyFile,Image_PathName_MyFile,Metadata_Unicode\n"
+                        "%s,%s,%s\n" % 
+                        (filename.encode('utf8'), base_path.encode('utf8'),
+                         unicode_value.encode('utf8')))
+            pipeline, module, _ = self.make_pipeline(csv_text, csv_path)
+            image_set_list = cpi.ImageSetList()
+            self.assertTrue(module.prepare_run(pipeline, image_set_list, None))
+            self.assertEqual(image_set_list.count(), 1)
+            key_names, group_list = pipeline.get_groupings(image_set_list)
+            self.assertEqual(len(group_list), 1)
+            group_keys, image_numbers = group_list[0]
+            self.assertEqual(len(image_numbers), 1)
+            module.prepare_group(pipeline, image_set_list, group_keys, image_numbers)
+            image_set = image_set_list.get_image_set(image_numbers[0]-1)
+            m = cpmeas.Measurements()
+            workspace = cpw.Workspace(pipeline, module, image_set,
+                                      cpo.ObjectSet(), m, image_set_list)
+            module.run(workspace)
+            pixel_data = image_set.get_image("MyFile").pixel_data
+            self.assertEqual(pixel_data.shape[0], 30)
+            self.assertEqual(pixel_data.shape[1], 20)
+            value = m.get_current_image_measurement("Metadata_Unicode")
+            self.assertEqual(value, unicode_value)
+        finally:
+            if os.path.exists(path):
+                try:
+                    os.unlink(path)
+                except:
+                    pass
+                
+            if os.path.exists(csv_path):
+                try:
+                    os.unlink(csv_path)
+                except:
+                    pass
+            if os.path.exists(base_path):
+                try:
+                    os.rmdir(base_path)
+                except:
+                    pass
+            if os.path.exists(base_directory):
+                try:
+                    os.rmdir(base_directory)
+                except:
+                    pass
+            
     
 class C0(cpm.CPModule):
     def create_settings(self):

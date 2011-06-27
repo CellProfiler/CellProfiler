@@ -1155,6 +1155,47 @@ ExportToSpreadsheet:[module_num:5|svn_version:\'9434\'|variable_revision_number:
         finally:
             fd.close()
             
+    def test_04_05_unicode_image_metadata(self):
+        '''Write image measurements containing unicode characters'''
+        path = os.path.join(self.output_dir, "my_dir", "my_file.csv")
+        cpprefs.set_headless()
+        cpprefs.set_default_output_directory(self.output_dir)
+        module = E.ExportToSpreadsheet()
+        module.module_num = 1
+        module.prepend_output_filename.value = False
+        module.wants_everything.value = False
+        module.directory.dir_choice = E.DEFAULT_OUTPUT_SUBFOLDER_NAME
+        module.directory.custom_path = "./my_dir"
+        module.object_groups[0].name.value = cpmeas.IMAGE
+        module.object_groups[0].file_name.value = "my_file.csv"
+        module.object_groups[0].wants_automatic_file_name.value = False
+        m = cpmeas.Measurements()
+        metadata_value = u"\u2211(Hello, world)"
+        m.add_image_measurement("my_measurement", metadata_value)
+        image_set_list = cpi.ImageSetList()
+        image_set = image_set_list.get_image_set(0)
+        object_set = cpo.ObjectSet()
+        workspace = cpw.Workspace(cpp.Pipeline(),
+                                  module,
+                                  image_set,
+                                  object_set,
+                                  m,
+                                  image_set_list)
+        module.post_run(workspace)
+        try:
+            fd = open(path,"r")
+            reader = csv.reader(fd, delimiter=module.delimiter_char)
+            header = reader.next()
+            self.assertEqual(len(header),2)
+            self.assertEqual(header[0], 'ImageNumber')
+            self.assertEqual(header[1], "my_measurement")
+            row = reader.next()
+            self.assertEqual(row[0],"1")
+            self.assertEqual(unicode(row[1], 'utf8'), metadata_value)
+            self.assertRaises(StopIteration,reader.next)
+        finally:
+            fd.close()
+            
     def test_05_01_aggregate_image_columns(self):
         """Test output of aggregate object data for images"""
         path = os.path.join(self.output_dir, "my_file.csv")

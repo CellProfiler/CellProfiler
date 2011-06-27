@@ -228,6 +228,13 @@ def connect_mysql(host, user, pw, db):
     '''Creates and returns a db connection and cursor.'''
     connection = MySQLdb.connect(host=host, user=user, passwd=pw, db=db)
     cursor = SSCursor(connection)
+    #
+    # Use utf-8 encoding for strings
+    #
+    connection.set_character_set('utf8')
+    execute(cursor, "set names 'utf8'")
+    execute(cursor, "set character set utf8")
+    execute(cursor, "set character_set_connection=utf8")
     return connection, cursor
 
 

@@ -26,6 +26,8 @@ from cellprofiler.preferences import \
      get_default_image_directory, get_default_output_directory, \
      standardize_default_folder_names
 
+from cellprofiler.utilities.utf16encode import utf16encode
+
 '''Matlab CellProfiler uses this string for settings to be excluded'''
 DO_NOT_USE = 'Do not use'
 '''Matlab CellProfiler uses this string for automatically calculated settings'''
@@ -68,7 +70,7 @@ class Setting(object):
     # This should be set to False for UI elements like buttons and dividers
     #
     save_to_pipeline = True
-    def __init__(self,text,value,doc=None, reset_view = False):
+    def __init__(self, text, value, doc=None, reset_view = False):
         """Initialize a setting with the enclosing module and its string value
         
         module - the module containing this setting
@@ -120,7 +122,7 @@ class Setting(object):
         # their .values are the same.
         if isinstance(x, Setting):
             return self .__key == x.__key
-        return self.value == str(x)
+        return self.value == unicode(x)
     
     def __ne__(self, x):
         return not self.__eq__(x)
@@ -146,11 +148,19 @@ class Setting(object):
         pass
     
     def __str__(self):
+        '''Return value as a string. 
+        
+        NOTE: strings are deprecated, use unicode_value instead.
+        '''
         if isinstance(self.__value, unicode):
-            return str(self.__value)
+            return str(utf16encode(self.__value))
         if not isinstance(self.__value,str):
             raise ValidationError("%s was not a string"%(self.__value),self)
         return self.__value
+    
+    @property
+    def unicode_value(self):
+        return unicode(self.get_value())
     
 class HiddenCount(Setting):
     """A setting meant only for saving an item count

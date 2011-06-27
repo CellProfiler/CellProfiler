@@ -25,6 +25,7 @@ import os.path
 import re
 import sys
 import traceback
+from cellprofiler.utilities.utf16encode import utf16encode, utf16decode
 
 logger = logging.getLogger(__name__)
 
@@ -75,7 +76,44 @@ def get_config():
     if not config:
         wx.Config.Set(wx.Config('CellProfiler','BroadInstitute','CellProfilerLocal.cfg','CellProfilerGlobal.cfg',wx.CONFIG_USE_LOCAL_FILE))
         config = wx.Config.Get()
+        if not config.Exists(PREFERENCES_VERSION):
+            for key in ALL_KEYS:
+                if config.Exists(key):
+                    v = config.Read(key)
+                    config_write(key, v)
+            config_write(PREFERENCES_VERSION, str(PREFERENCES_VERSION_NUMBER))
+        else:
+            try:
+                preferences_version_number = int(config_read(PREFERENCES_VERSION))
+                if preferences_version_number != PREFERENCES_VERSION_NUMBER:
+                    logger.warning(
+                        "Preferences version mismatch: expected %d, at %d" %
+                        ( PREFERENCES_VERSION_NUMBER, preferences_version_number))
+            except:
+                logger.warning(
+                    "Preferences version was %s, not a number. Resetting to current version" % preferences_version_number)
+                config_write(PREFERENCES_VERSION, str(PREFERENCES_VERSION))
+            
     return config
+
+def config_read(key):
+    '''Read the given configuration value
+    
+    Decode escaped config sequences too.
+    '''
+    value = get_config().Read(key)
+    if value is None:
+        return None
+    return utf16decode(value)
+
+def config_write(key, value):
+    '''Write the given configuration value
+    
+    Encode escaped config sequences.
+    '''
+    if value is not None:
+        value = utf16encode(value)
+    get_config().Write(key, value)
 
 def cell_profiler_root_directory():
     if __cp_root:
@@ -147,6 +185,8 @@ For <i>%(ABSOLUTE_FOLDER_NAME)s</i>, <i>%(DEFAULT_INPUT_SUBFOLDER_NAME)s</i> and
 images via <b>LoadImages</b> or <b>LoadData</b>, you can name the folder using metadata
 tags."""%globals()
 
+PREFERENCES_VERSION = 'PreferencesVersion'
+PREFERENCES_VERSION_NUMBER = 1
 DEFAULT_IMAGE_DIRECTORY = 'DefaultImageDirectory'
 DEFAULT_OUTPUT_DIRECTORY = 'DefaultOutputDirectory'
 TITLE_FONT_SIZE = 'TitleFontSize'
@@ -180,13 +220,26 @@ WARN_ABOUT_OLD_PIPELINE = "WarnAboutOldPipeline"
 def recent_file(index, category=""):
     return (FF_RECENTFILES % (index + 1)) + category
 
+
+ALL_KEYS = ([ALLOW_OUTPUT_FILE_OVERWRITE, BACKGROUND_COLOR, CHECKFORNEWVERSIONS,
+             COLORMAP, DEFAULT_IMAGE_DIRECTORY, DEFAULT_OUTPUT_DIRECTORY,
+             IJ_PLUGIN_DIRECTORY, MODULEDIRECTORY, PLUGIN_DIRECTORY,
+             PRIMARY_OUTLINE_COLOR, RUN_DISTRIBUTED, SECONDARY_OUTLINE_COLOR,
+             SHOW_ANALYSIS_COMPLETE_DLG, SHOW_BAD_SIZES_DLG, 
+             SHOW_EXITING_TEST_MODE_DLG, SHOW_SAMPLING, SKIPVERSION, STARTUPBLURB,
+             TABLE_FONT_NAME, TABLE_FONT_SIZE, TERTIARY_OUTLINE_COLOR,
+             TITLE_FONT_NAME, TITLE_FONT_SIZE, WARN_ABOUT_OLD_PIPELINE,
+             WRITE_MAT] + 
+            [recent_file(n, category) for n in range(RECENT_FILE_COUNT)
+             for category in ("", DEFAULT_IMAGE_DIRECTORY, DEFAULT_OUTPUT_DIRECTORY)])
+
 def module_directory():
     if not get_config().Exists(MODULEDIRECTORY):
         return os.path.join(cell_profiler_root_directory(), 'Modules')
     return str(get_config().Read(MODULEDIRECTORY))
 
 def set_module_directory(value):
-    get_config().Write(MODULEDIRECTORY, value)
+    config_write(MODULEDIRECTORY, value)
 
 def module_extension():
     return '.m'
@@ -200,14 +253,11 @@ def get_default_image_directory():
     if not get_config().Exists(DEFAULT_IMAGE_DIRECTORY):
         return os.path.abspath(os.path.expanduser('~'))
     # fetch the default.  Note that it might be None
-    default_image_directory = get_config().Read(DEFAULT_IMAGE_DIRECTORY) or ''
+    default_image_directory = config_read(DEFAULT_IMAGE_DIRECTORY) or ''
     try:
         if os.path.isdir(default_image_directory):
-            __default_image_directory = str(get_proper_case_filename(default_image_directory))
+            __default_image_directory = get_proper_case_filename(default_image_directory)
             return __default_image_directory
-    except UnicodeEncodeError:
-        # CellProfiler can't handle Unicode paths, yet
-        logger.error("CellProfiler cannot use Unicode paths, yet.  Please rename directory %s to only ASCII until this is fixed."%(default_image_directory.encode('ascii', 'replace')))
     except:
         logger.error("Unknown failure when retrieving the default image directory", exc_info=True)
     logger.warning("Warning: current path of %s is not a valid directory. Switching to home directory."%(default_image_directory.encode('ascii', 'replace')))
@@ -219,9 +269,8 @@ def get_default_image_directory():
 
 def set_default_image_directory(path):
     global __default_image_directory
-    #path = str(path)
     __default_image_directory = path
-    get_config().Write(DEFAULT_IMAGE_DIRECTORY,path)
+    config_write(DEFAULT_IMAGE_DIRECTORY,path)
     add_recent_file(path, DEFAULT_IMAGE_DIRECTORY)
     fire_image_directory_changed_event()
     
@@ -256,23 +305,15 @@ def get_default_output_directory():
         return __default_output_directory
     if not get_config().Exists(DEFAULT_OUTPUT_DIRECTORY):
         return os.path.abspath(os.path.expanduser('~'))
-    __default_output_directory = get_config().Read(DEFAULT_OUTPUT_DIRECTORY)
-    try:
-        __default_output_directory = str(get_proper_case_filename(__default_output_directory))
-        return __default_output_directory
-    except UnicodeEncodeError:
-        logger.error("Failed to convert filename to ASCII, please rename "
-                     "directory until this is fixed.", exc_info=True)
-    __default_output_directory = os.path.abspath(os.path.expanduser('~'))
-    set_default_output_directory(default_output_directory)
-    return str(get_proper_case_filename(default_output_directory))
+    __default_output_directory = config_read(DEFAULT_OUTPUT_DIRECTORY)
+    __default_output_directory = get_proper_case_filename(__default_output_directory)
+    return __default_output_directory
 
 def set_default_output_directory(path):
     global __default_output_directory
-    path=str(path)
     assert os.path.isdir(path),'Default Output Folder, "%s", is not a directory'%(path)
     __default_output_directory = path
-    get_config().Write(DEFAULT_OUTPUT_DIRECTORY,path)
+    config_write(DEFAULT_OUTPUT_DIRECTORY,path)
     add_recent_file(path, DEFAULT_OUTPUT_DIRECTORY)
     for listener in __output_directory_listeners:
         listener(PreferenceChangedEvent(path))
@@ -294,36 +335,36 @@ def remove_output_directory_listener(listener):
 def get_title_font_size():
     if not get_config().Exists(TITLE_FONT_SIZE):
         return 12
-    title_font_size = get_config().Read(TITLE_FONT_SIZE)
+    title_font_size = config_read(TITLE_FONT_SIZE)
     return float(title_font_size)
 
 def set_title_font_size(title_font_size):
-    get_config().Write(TITLE_FONT_SIZE,str(title_font_size))
+    config_write(TITLE_FONT_SIZE,str(title_font_size))
 
 def get_title_font_name():
     if not get_config().Exists(TITLE_FONT_NAME):
         return "Tahoma"
-    return get_config().Read(TITLE_FONT_NAME)
+    return config_read(TITLE_FONT_NAME)
 
 def set_title_font_name(title_font_name):
-    get_config().Write(TITLE_FONT_NAME, title_font_name)
+    config_write(TITLE_FONT_NAME, title_font_name)
 
 def get_table_font_name():
     if not get_config().Exists(TABLE_FONT_NAME):
         return "Tahoma"
-    return get_config().Read(TABLE_FONT_NAME)
+    return config_read(TABLE_FONT_NAME)
 
 def set_table_font_name(title_font_name):
-    get_config().Write(TABLE_FONT_NAME, title_font_name)
+    config_write(TABLE_FONT_NAME, title_font_name)
     
 def get_table_font_size():
     if not get_config().Exists(TABLE_FONT_SIZE):
         return 9
-    table_font_size = get_config().Read(TABLE_FONT_SIZE)
+    table_font_size = config_read(TABLE_FONT_SIZE)
     return float(table_font_size)
 
 def set_table_font_size(table_font_size):
-    get_config().Write(TABLE_FONT_SIZE,str(table_font_size))
+    config_write(TABLE_FONT_SIZE,str(table_font_size))
 
 def tuple_to_color(t, default = (0,0,0)):
     import wx
@@ -342,24 +383,24 @@ def get_background_color():
     if not get_config().Exists(BACKGROUND_COLOR):
         return tuple_to_color(default_color)
     else:
-        color = get_config().Read(BACKGROUND_COLOR).split(',')
+        color = config_read(BACKGROUND_COLOR).split(',')
         return tuple_to_color(tuple(color), default_color)
 
 def set_background_color(color):
     '''Set the color to be used for window backgrounds
     
     '''
-    get_config().Write(BACKGROUND_COLOR,
+    config_write(BACKGROUND_COLOR,
                        ','.join([str(x) for x in color.Get()]))
 
 def get_pixel_size():
     """The size of a pixel in microns"""
     if not get_config().Exists(PIXEL_SIZE):
         return 1.0
-    return float(get_config().Read(PIXEL_SIZE))
+    return float(config_read(PIXEL_SIZE))
 
 def set_pixel_size(pixel_size):
-    get_config().Write(PIXEL_SIZE,str(pixel_size))
+    config_write(PIXEL_SIZE,str(pixel_size))
 
 __output_filename = 'DefaultOUT.mat'
 __output_filename_listeners = []
@@ -423,10 +464,10 @@ def is_url_path(path):
 def get_default_colormap():
     if not get_config().Exists(COLORMAP):
         return 'jet'
-    return get_config().Read(COLORMAP)
+    return config_read(COLORMAP)
 
 def set_default_colormap(colormap):
-    get_config().Write(COLORMAP, colormap)
+    config_write(COLORMAP, colormap)
 
 __current_pipeline_path = None
 def get_current_pipeline_path():
@@ -513,7 +554,7 @@ def get_recent_files(category=""):
         for i in range(RECENT_FILE_COUNT):
             key = recent_file(i, category)
             if get_config().Exists(key):
-                __recent_files[category].append(get_config().Read(key)) 
+                __recent_files[category].append(config_read(key)) 
     return __recent_files[category]
 
 def add_recent_file(filename, category=""):
@@ -525,7 +566,7 @@ def add_recent_file(filename, category=""):
     if len(recent_files) > RECENT_FILE_COUNT:
         del recent_files[-1]
     for i, filename in enumerate(recent_files):
-        get_config().Write(recent_file(i, category), filename)
+        config_write(recent_file(i, category), filename)
 
 __plugin_directory = None
 def get_plugin_directory():
@@ -535,7 +576,7 @@ def get_plugin_directory():
         return __plugin_directory
     
     if get_config().Exists(PLUGIN_DIRECTORY):
-        __plugin_directory = get_config().Read(PLUGIN_DIRECTORY)
+        __plugin_directory = config_read(PLUGIN_DIRECTORY)
     elif get_headless():
         return None
     else:
@@ -548,7 +589,7 @@ def set_plugin_directory(value):
     global __plugin_directory
     
     __plugin_directory = value
-    get_config().Write(PLUGIN_DIRECTORY, value)
+    config_write(PLUGIN_DIRECTORY, value)
 
 __ij_plugin_directory = None
 def get_ij_plugin_directory():
@@ -558,7 +599,7 @@ def get_ij_plugin_directory():
         return __ij_plugin_directory
     
     if get_config().Exists(IJ_PLUGIN_DIRECTORY):
-        __ij_plugin_directory = get_config().Read(IJ_PLUGIN_DIRECTORY)
+        __ij_plugin_directory = config_read(IJ_PLUGIN_DIRECTORY)
     else:
         # The default is the startup directory
         return os.path.abspath(os.path.join(os.curdir, "plugins"))
@@ -568,7 +609,7 @@ def set_ij_plugin_directory(value):
     global __ij_plugin_directory
     
     __ij_plugin_directory = value
-    get_config().Write(IJ_PLUGIN_DIRECTORY, value)
+    config_write(IJ_PLUGIN_DIRECTORY, value)
 
 __data_file=None
 
@@ -641,30 +682,30 @@ def get_primary_outline_color():
     default = (0,255,0)
     if not get_config().Exists(PRIMARY_OUTLINE_COLOR):
         return tuple_to_color(default)
-    return tuple_to_color(get_config().Read(PRIMARY_OUTLINE_COLOR).split(","))
+    return tuple_to_color(config_read(PRIMARY_OUTLINE_COLOR).split(","))
 
 def set_primary_outline_color(color):
-    get_config().Write(PRIMARY_OUTLINE_COLOR,
+    config_write(PRIMARY_OUTLINE_COLOR,
                        ','.join([str(x) for x in color.Get()]))
 
 def get_secondary_outline_color():
     default = (255,0,0)
     if not get_config().Exists(SECONDARY_OUTLINE_COLOR):
         return tuple_to_color(default)
-    return tuple_to_color(get_config().Read(SECONDARY_OUTLINE_COLOR).split(","))
+    return tuple_to_color(config_read(SECONDARY_OUTLINE_COLOR).split(","))
 
 def set_secondary_outline_color(color):
-    get_config().Write(SECONDARY_OUTLINE_COLOR,
+    config_write(SECONDARY_OUTLINE_COLOR,
                        ','.join([str(x) for x in color.Get()]))
 
 def get_tertiary_outline_color():
     default = (255,255,0)
     if not get_config().Exists(TERTIARY_OUTLINE_COLOR):
         return tuple_to_color(default)
-    return tuple_to_color(get_config().Read(TERTIARY_OUTLINE_COLOR).split(","))
+    return tuple_to_color(config_read(TERTIARY_OUTLINE_COLOR).split(","))
 
 def set_tertiary_outline_color(color):
-    get_config().Write(TERTIARY_OUTLINE_COLOR,
+    config_write(TERTIARY_OUTLINE_COLOR,
                        ','.join([str(x) for x in color.Get()]))
 
 __has_reported_jvm_error = False
@@ -675,10 +716,10 @@ def get_report_jvm_error():
         return False
     if not get_config().Exists(JVM_ERROR):
         return True
-    return get_config().Read(JVM_ERROR) == "True"
+    return config_read(JVM_ERROR) == "True"
 
 def set_report_jvm_error(should_report):
-    get_config().Write(JVM_ERROR, "True" if should_report else "False")
+    config_write(JVM_ERROR, "True" if should_report else "False")
 
 def set_has_reported_jvm_error():
     '''Call this to remember that we showed the user the JVM error'''
@@ -697,13 +738,13 @@ def get_allow_output_file_overwrite():
         return __allow_output_file_overwrite
     if not get_config().Exists(ALLOW_OUTPUT_FILE_OVERWRITE):
         return False
-    return get_config().Read(ALLOW_OUTPUT_FILE_OVERWRITE) == "True"
+    return config_read(ALLOW_OUTPUT_FILE_OVERWRITE) == "True"
 
 def set_allow_output_file_overwrite(value):
     '''Allow overwrite of .MAT file if true, warn user if false'''
     global __allow_output_file_overwrite
     __allow_output_file_overwrite = value
-    get_config().Write(ALLOW_OUTPUT_FILE_OVERWRITE, 
+    config_write(ALLOW_OUTPUT_FILE_OVERWRITE, 
                        "True" if value else "False")
 
 # "Analysis complete" preference
@@ -716,13 +757,13 @@ def get_show_analysis_complete_dlg():
         return __show_analysis_complete_dlg
     if not get_config().Exists(SHOW_ANALYSIS_COMPLETE_DLG):
         return True
-    return get_config().Read(SHOW_ANALYSIS_COMPLETE_DLG) == "True"
+    return config_read(SHOW_ANALYSIS_COMPLETE_DLG) == "True"
 
 def set_show_analysis_complete_dlg(value):
     '''Set the "show analysis complete" flag'''
     global __show_analysis_complete_dlg
     __show_analysis_complete_dlg = value
-    get_config().Write(SHOW_ANALYSIS_COMPLETE_DLG, 
+    config_write(SHOW_ANALYSIS_COMPLETE_DLG, 
                        "True" if value else "False")
 
 # "Existing test mode" preference
@@ -735,13 +776,13 @@ def get_show_exiting_test_mode_dlg():
         return __show_exiting_test_mode_dlg
     if not get_config().Exists(SHOW_EXITING_TEST_MODE_DLG):
         return True
-    return get_config().Read(SHOW_EXITING_TEST_MODE_DLG) == "True"
+    return config_read(SHOW_EXITING_TEST_MODE_DLG) == "True"
 
 def set_show_exiting_test_mode_dlg(value):
     '''Set the "exiting test mode" flag'''
     global __show_exiting_test_mode_dlg
     __show_exiting_test_mode_dlg = value
-    get_config().Write(SHOW_EXITING_TEST_MODE_DLG, 
+    config_write(SHOW_EXITING_TEST_MODE_DLG, 
                        "True" if value else "False")
 
 # "Report bad sizes" preference
@@ -754,13 +795,13 @@ def get_show_report_bad_sizes_dlg():
         return __show_report_bad_sizes_dlg
     if not get_config().Exists(SHOW_BAD_SIZES_DLG):
         return True
-    return get_config().Read(SHOW_BAD_SIZES_DLG) == "True"
+    return config_read(SHOW_BAD_SIZES_DLG) == "True"
 
 def set_show_report_bad_sizes_dlg(value):
     '''Set the "exiting test mode" flag'''
     global __show_report_bad_sizes_dlg
     __show_report_bad_sizes_dlg = value
-    get_config().Write(SHOW_BAD_SIZES_DLG, 
+    config_write(SHOW_BAD_SIZES_DLG, 
                        "True" if value else "False")
 
 # Write .MAT files on output
@@ -773,13 +814,13 @@ def get_write_MAT_files():
         return __write_MAT_files
     if not get_config().Exists(WRITE_MAT):
         return True
-    return get_config().Read(WRITE_MAT) == "True"
+    return config_read(WRITE_MAT) == "True"
 
 def set_write_MAT_files(value):
     '''Set the "Write MAT files" flag'''
     global __write_MAT_files
     __write_MAT_files = value
-    get_config().Write(WRITE_MAT,
+    config_write(WRITE_MAT,
                        "True" if value else "False")
 
 __warn_about_old_pipeline = None
@@ -790,11 +831,11 @@ def get_warn_about_old_pipeline():
         return __warn_about_old_pipeline
     if not get_config().Exists(WARN_ABOUT_OLD_PIPELINE):
         return True
-    return get_config().Read(WARN_ABOUT_OLD_PIPELINE) == "True"
+    return config_read(WARN_ABOUT_OLD_PIPELINE) == "True"
 
 def set_warn_about_old_pipeline(value):
     '''Set the "warn about old pipelines" flag'''
     global __warn_about_old_pipeline
     __warn_about_old_pipeline = value
-    get_config().Write(WARN_ABOUT_OLD_PIPELINE,
+    config_write(WARN_ABOUT_OLD_PIPELINE,
                        "True" if value else "False")

@@ -22,7 +22,7 @@ import numpy.lib.index_tricks
 import cStringIO
 import zlib
 
-import cellprofiler.pipeline
+import cellprofiler.pipeline as cpp
 import cellprofiler.objects
 import cellprofiler.cpmodule
 import cellprofiler.cpimage
@@ -31,7 +31,7 @@ import cellprofiler.measurements
 from cellprofiler.modules.injectimage import InjectImage
 
 def module_directory():
-    d = cellprofiler.pipeline.__file__
+    d = cpp.__file__
     d = os.path.split(d)[0] # ./CellProfiler/pyCellProfiler/cellProfiler
     d = os.path.split(d)[0] # ./CellProfiler/pyCellProfiler
     d = os.path.split(d)[0] # ./CellProfiler
@@ -50,9 +50,9 @@ def image_with_one_cell(size=(100,100)):
 def exploding_pipeline(test):
     """Return a pipeline that fails if the run exception callback is called during a run
     """
-    x = cellprofiler.pipeline.Pipeline()
+    x = cpp.Pipeline()
     def fn(pipeline,event):
-        if isinstance(event,cellprofiler.pipeline.RunExceptionEvent):
+        if isinstance(event,cpp.RunExceptionEvent):
             test.assertFalse(event.error.message)
     x.add_listener(fn)
     return x
@@ -60,7 +60,7 @@ def exploding_pipeline(test):
 class TestPipeline(unittest.TestCase):
     
     def test_00_00_init(self):
-        x = cellprofiler.pipeline.Pipeline()
+        x = cpp.Pipeline()
         
     def test_01_01_load_mat(self):
         '''Regression test of img-942, load a batch data pipeline with notes'''
@@ -227,9 +227,9 @@ class TestPipeline(unittest.TestCase):
                 '5Ohg8lP9UZZPjSjiED21MGR7pU+gIGhOUxqSXMfG3SsoG2kcT+j4Chirzj/5'
                 'QjLVt+yntvsIX+lgMwPD7MbhU02piHSKcpBblPnabBPo1ApnheO/1hLCNkco'
                 '7St67i67b+xJLI94h1/d4HsGhvD8F7MQ7RE=')
-        pipeline = cellprofiler.pipeline.Pipeline()
+        pipeline = cpp.Pipeline()
         def callback(caller,event):
-            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
         pipeline.add_listener(callback)
         pipeline.load(cStringIO.StringIO(zlib.decompress(base64.b64decode(data))))
         module = pipeline.modules()[0]
@@ -325,9 +325,9 @@ InputExternal:[module_num:1|svn_version:\'9859\'|variable_revision_number:1|show
 OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|show_window:True|notes:\x5B\x5D]
     Select an image a name to export:Hi
  """
-        pipeline = cellprofiler.pipeline.Pipeline()
+        pipeline = cpp.Pipeline()
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
         pipeline.add_listener(callback)
         pipeline.load(cStringIO.StringIO(data))
         external_inputs = pipeline.find_external_input_images()
@@ -349,9 +349,9 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
     Select an image a name to export:Hi
     Select an image a name to export:Ho
  """
-        pipeline = cellprofiler.pipeline.Pipeline()
+        pipeline = cpp.Pipeline()
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
         pipeline.add_listener(callback)
         pipeline.load(cStringIO.StringIO(data))
         external_outputs = pipeline.find_external_output_images()
@@ -373,9 +373,9 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
     Select an image a name to export:Hi
     Select an image a name to export:Ho
  """
-        pipeline = cellprofiler.pipeline.Pipeline()
+        pipeline = cpp.Pipeline()
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
         pipeline.add_listener(callback)
         pipeline.load(cStringIO.StringIO(data))
         np.random.seed(73)
@@ -388,7 +388,7 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
         
     def test_09_01_get_measurement_columns(self):
         '''Test the get_measurement_columns method'''
-        x = cellprofiler.pipeline.Pipeline()
+        x = cpp.Pipeline()
         module = MyClassForTest0801()
         module.module_num = 1
         module.my_variable.value = "foo"
@@ -582,11 +582,11 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
         '''
         module = MyClassForTest1101()
         module.module_num = 1
-        pipeline = cellprofiler.pipeline.Pipeline()
+        pipeline = cpp.Pipeline()
         pipeline.add_module(module)
         should_be_true = [False]
         def callback(caller, event):
-            if isinstance(event, cellprofiler.pipeline.RunExceptionEvent):
+            if isinstance(event, cpp.RunExceptionEvent):
                 should_be_true[0] = True
         pipeline.add_listener(callback)
         pipeline.run()
@@ -608,7 +608,7 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
         self.assertTrue(success)
         
     def test_13_01_save_pipeline(self):
-        pipeline = cellprofiler.pipeline.Pipeline()
+        pipeline = cpp.Pipeline()
         cellprofiler.modules.fill_modules()
         module = cellprofiler.modules.instantiate_module("Align")
         module.module_num = 1
@@ -617,9 +617,9 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
         pipeline.save(fd)
         fd.seek(0)
         
-        pipeline = cellprofiler.pipeline.Pipeline()
+        pipeline = cpp.Pipeline()
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
         pipeline.add_listener(callback)
         pipeline.load(fd)
         self.assertEqual(len(pipeline.modules()), 1)
@@ -629,7 +629,7 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
             self.assertEqual(setting_in.value, setting_out.value)
             
     def test_13_02_save_measurements(self):
-        pipeline = cellprofiler.pipeline.Pipeline()
+        pipeline = cpp.Pipeline()
         cellprofiler.modules.fill_modules()
         module = cellprofiler.modules.instantiate_module("Align")
         module.module_num = 1
@@ -665,9 +665,9 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
         self.assertEqual(my_experiment_measurement, my_experiment_measurement_out)
             
         fd.seek(0)
-        pipeline = cellprofiler.pipeline.Pipeline()
+        pipeline = cpp.Pipeline()
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
         pipeline.add_listener(callback)
         pipeline.load(fd)
         self.assertEqual(len(pipeline.modules()), 1)
@@ -677,7 +677,7 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
             self.assertEqual(setting_in.value, setting_out.value)
             
     def test_13_03_save_long_measurements(self):
-        pipeline = cellprofiler.pipeline.Pipeline()
+        pipeline = cpp.Pipeline()
         cellprofiler.modules.fill_modules()
         module = cellprofiler.modules.instantiate_module("Align")
         module.module_num = 1
@@ -700,7 +700,7 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
         pipeline.save_measurements(fd, measurements)
         fd.seek(0)
         measurements = cellprofiler.measurements.load_measurements(fd)
-        reverse_mapping = cellprofiler.pipeline.map_feature_names([m1_name, m2_name, m3_name])
+        reverse_mapping = cpp.map_feature_names([m1_name, m2_name, m3_name])
         mapping = {}
         for key in reverse_mapping.keys():
             mapping[reverse_mapping[key]] = key
@@ -712,7 +712,66 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
             for m_in, m_out in zip(expected, my_measurement_out):
                 self.assertEqual(len(m_in), len(m_out))
                 self.assertTrue(np.all(m_in == m_out))
+                
+    def test_14_01_unicode_save(self):
+        pipeline = cpp.Pipeline()
+        module = MyClassForTest0801()
+        module.my_variable.value = u"\\\u2211"
+        module.module_num = 1
+        module.notes = u"\u03B1\\\u03B2"
+        pipeline.add_module(module)
+        fd = cStringIO.StringIO()
+        pipeline.savetxt(fd)
+        result = fd.getvalue()
+        lines = result.split("\n")
+        self.assertEqual(len(lines), 7)
+        text, value = lines[-2].split(":")
+        #
+        # unicode encoding: 
+        #     backslash: \\
+        #     unicode character: \u
+        #
+        # escape encoding:
+        #     backslash * 2: \\\\
+        #     unicode character: \\
+        #
+        # result = \\\\\\u2211
+        self.assertEqual(value, r"\\\\\\u2211")
+        mline = lines[4]
+        idx0 = mline.find("notes:")
+        mline = mline[(idx0+6):]
+        idx1 = mline.find("|")
+        value = eval(mline[:idx1].decode('string_escape'))
+        self.assertEqual(value, module.notes)
         
+    def test_14_02_unicode_save_and_load(self):
+        #
+        # Put "MyClassForTest0801" into the module list
+        #
+        cellprofiler.modules.fill_modules()
+        cellprofiler.modules.all_modules[MyClassForTest0801.module_name] = \
+                    MyClassForTest0801
+        #
+        # Continue with test
+        #
+        pipeline = cpp.Pipeline()
+        def callback(caller, event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        module = MyClassForTest0801()
+        module.my_variable.value = u"\\\u2211"
+        module.module_num = 1
+        module.notes = u"\u03B1\\\u03B2"
+        pipeline.add_module(module)
+        fd = cStringIO.StringIO()
+        pipeline.savetxt(fd)
+        fd.seek(0)
+        pipeline.loadtxt(fd)
+        self.assertEqual(len(pipeline.modules()), 1)
+        result_module = pipeline.modules()[0]
+        self.assertTrue(isinstance(result_module, MyClassForTest0801))
+        self.assertEqual(module.notes, result_module.notes)
+        self.assertEqual(module.my_variable.value, result_module.my_variable.value)
 
 class MyClassForTest0801(cellprofiler.cpmodule.CPModule):
     def create_settings(self):

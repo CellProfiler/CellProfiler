@@ -49,6 +49,7 @@ import cellprofiler.measurements as cpmeas
 import cellprofiler.objects
 import cellprofiler.workspace as cpw
 import cellprofiler.settings as cps
+from cellprofiler.utilities.utf16encode import utf16encode, utf16decode
 from cellprofiler.matlab.cputils import make_cell_struct_dtype, new_string_cell_array, encapsulate_strings_in_arrays
 
 '''The measurement name of the image number'''
@@ -129,7 +130,7 @@ FMT_MATLAB = "Matlab"
 FMT_NATIVE = "Native"
 
 '''The current pipeline file format version'''
-NATIVE_VERSION = 1
+NATIVE_VERSION = 2
 
 H_VERSION = 'Version'
 H_SVN_REVISION = 'SVNRevision'
@@ -583,6 +584,7 @@ class Pipeline(object):
             raise NotImplementedError('Invalid header: "%s"'%header)
         version = NATIVE_VERSION
         from_matlab = False
+        do_utf16_decode = False
         while True:
             line = rl()
             if line is None:
@@ -595,6 +597,8 @@ class Pipeline(object):
                 if version > NATIVE_VERSION:
                     raise ValueError("Pipeline file version is %d.\nCellProfiler can only read version %d or less.\nPlease upgrade to the latest version of CellProfiler." %
                                      (version, NATIVE_VERSION))
+                elif version > 1:
+                    do_utf16_decode = True
             elif kwd == H_SVN_REVISION:
                 revision = int(value)
                 CURRENT_SVN_REVISION = get_revision()
@@ -679,7 +683,10 @@ class Pipeline(object):
                     if len(line.split(':')) != 2:
                         raise ValueError("Invalid format for setting: %s" % line)
                     text, setting = line.split(':')
-                    settings.append(setting.decode('string_escape'))
+                    setting = setting.decode('string_escape')
+                    if do_utf16_decode:
+                        setting = utf16decode(setting)
+                    settings.append(setting)
                 #
                 # Set up the module
                 #
@@ -802,6 +809,7 @@ class Pipeline(object):
         fd.write("%s:%d\n" % (H_SVN_REVISION,get_revision()))
         attributes = ('module_num','svn_version','variable_revision_number',
                       'show_window','notes','batch_state')
+        notes_idx = 4
         for module in self.modules():
             if ((modules_to_save is not None) and 
                 module.module_num not in modules_to_save):
@@ -817,8 +825,9 @@ class Pipeline(object):
             fd.write('%s:%s\n' % (self.encode_txt(module.module_name),
                                 attribute_string))
             for setting in module.settings():
-                fd.write('    %s:%s\n' % (self.encode_txt(setting.text),
-                                          self.encode_txt(str(setting))))
+                fd.write('    %s:%s\n' % (
+                    self.encode_txt(setting.text),
+                    self.encode_txt(utf16encode(setting.unicode_value))))
         if needs_close:
             fd.close()
         

@@ -803,8 +803,8 @@ class ImageSetList(object):
 
 def make_dictionary_key(key):
     '''Make a dictionary into a stable key for another dictionary'''
-    return ", ".join([":".join([str(y) for y in x])
-                      for x in sorted(key.iteritems())])
+    return u", ".join([u":".join([unicode(y) for y in x])
+                       for x in sorted(key.iteritems())])
 
 def readc01(fname):
     '''Read a Cellomics file into an array

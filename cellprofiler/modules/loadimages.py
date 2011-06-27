@@ -167,8 +167,19 @@ IO_ALL = (IO_IMAGES, IO_OBJECTS)
 '''The format string for naming the image for some objects'''
 IMAGE_FOR_OBJECTS_F = "IMAGE_FOR_%s"
 
+SUPPORTED_IMAGE_EXTENSIONS = set(PILImage.EXTENSION.keys())
+SUPPORTED_IMAGE_EXTENSIONS.add(".mat")
+
+SUPPORTED_MOVIE_EXTENSIONS = set(['.avi', '.mpeg', '.stk','.flex', '.mov', '.tif', 
+                                  '.tiff','.zvi'])
+
 if has_bioformats:
     FF = [FF_INDIVIDUAL_IMAGES, FF_STK_MOVIES, FF_AVI_MOVIES, FF_OTHER_MOVIES]
+    SUPPORTED_IMAGE_EXTENSIONS.update([
+        ".1sc",".2fl",".afm", ".aim", ".avi", ".co1",".flex", ".fli", ".gel", 
+        ".ics", ".ids", ".im", ".img", ".j2k", ".lif", ".lsm", ".mpeg", ".pic", 
+        ".pict", ".ps", ".raw", ".svs", ".stk", ".tga", ".zvi"])
+    SUPPORTED_MOVIE_EXTENSIONS.update(['mng'] )
 else:
     FF = [FF_INDIVIDUAL_IMAGES, FF_STK_MOVIES]
 
@@ -2687,13 +2698,11 @@ def needs_well_metadata(tokens):
 def is_image(filename):
     '''Determine if a filename is a potential image file based on extension'''
     ext = os.path.splitext(filename)[1].lower()
-    if PILImage.EXTENSION.has_key(ext):
-        return True
-    return ext in ('.avi', '.mpeg', '.mat', '.stk','.flex', '.mov', '.c01','.zvi')
+    return ext in SUPPORTED_IMAGE_EXTENSIONS
 
 def is_movie(filename):
     ext = os.path.splitext(filename)[1].lower()
-    return ext in ('.avi', '.mpeg', '.stk','.flex', '.mov', '.tif', '.tiff','.zvi')
+    return ext in SUPPORTED_MOVIE_EXTENSIONS
 
 
 class LoadImagesImageProviderBase(cpimage.AbstractImageProvider):

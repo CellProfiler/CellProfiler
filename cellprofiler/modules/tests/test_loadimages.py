@@ -2775,6 +2775,54 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
                 self.assertEqual(image_provider.get_t(), 0)
                 self.assertEqual(image_provider.get_z(), 0)
                 self.assertEqual(image_provider.get_c(), 0)
+    
+    def test_14_01_load_unicode(self):
+        '''Load an image from a unicode - encoded location'''
+        self.directory = tempfile.mkdtemp()
+        directory = os.path.join(self.directory, u"\u2211a")
+        os.mkdir(directory)
+        filename = u"\u03b1\u00b2.jpg"
+        path = os.path.join(directory, filename)
+        data = base64.b64decode(T.jpg_8_1)
+        fd = open(path,'wb')
+        fd.write(data)
+        fd.close()
+        module = LI.LoadImages()
+        module.module_num = 1
+        module.match_method.value = LI.MS_EXACT_MATCH
+        module.location.dir_choice = LI.ABSOLUTE_FOLDER_NAME
+        module.location.custom_path = directory
+        module.images[0].common_text.value = ".jpg"
+        module.images[0].channels[0].image_name.value = IMAGE_NAME
+        image_set_list = I.ImageSetList()
+        pipeline = cpp.Pipeline()
+        def callback(caller, event):
+            self.assertFalse(isinstance(event, cpp.RunExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.add_module(module)
+        m = measurements.Measurements()
+        self.assertTrue(module.prepare_run(pipeline, image_set_list, None))
+        self.assertEqual(image_set_list.count(), 1)
+        key_names, group_list = pipeline.get_groupings(image_set_list)
+        self.assertEqual(len(group_list), 1)
+        group_keys, image_numbers = group_list[0]
+        self.assertEqual(len(image_numbers), 1)
+        module.prepare_group(pipeline, image_set_list, group_keys, image_numbers)
+        image_set = image_set_list.get_image_set(image_numbers[0]-1)
+        image_provider = image_set.get_image_provider(IMAGE_NAME)
+        self.assertEqual(image_provider.get_filename(), filename)
+        workspace = W.Workspace(pipeline, module, image_set, cpo.ObjectSet(),
+                                m, image_set_list)
+        module.run(workspace)
+        pixel_data = image_set.get_image(IMAGE_NAME).pixel_data
+        self.assertEqual(tuple(pixel_data.shape[:2]), tuple(T.raw_8_1_shape))
+        file_feature = '_'.join((LI.C_FILE_NAME, IMAGE_NAME))
+        file_measurement = m.get_current_image_measurement(file_feature)
+        self.assertEqual(file_measurement, filename)
+        path_feature = '_'.join((LI.C_PATH_NAME, IMAGE_NAME))
+        path_measurement = m.get_current_image_measurement(path_feature)
+        self.assertEqual(os.path.split(directory)[1],
+                         os.path.split(path_measurement)[1])
             
 if __name__=="main":
     unittest.main()

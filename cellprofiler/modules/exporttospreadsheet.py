@@ -498,9 +498,8 @@ class ExportToSpreadsheet(cpm.CPModule):
         try:
             writer = csv.writer(fd,delimiter=self.delimiter_char)
             for feature_name in feature_names:
-                writer.writerow((
-                    feature_name, 
-                    m.get_all_measurements(EXPERIMENT, feature_name)))
+                v = m.get_all_measurements(EXPERIMENT, feature_name)
+                writer.writerow((feature_name, unicode(v).encode('utf8')))
         finally:
             fd.close()
     
@@ -523,7 +522,7 @@ class ExportToSpreadsheet(cpm.CPModule):
                                             image_set_indexes[0])
         fd = open(file_name,"wb")
         try:
-            writer = csv.writer(fd,delimiter=self.delimiter_char)
+            writer = csv.writer(fd, delimiter=self.delimiter_char)
             for index in image_set_indexes:
                 aggs = []
                 if self.wants_aggregate_means:
@@ -553,6 +552,7 @@ class ExportToSpreadsheet(cpm.CPModule):
                 row = ['' if x is None
                        else x if np.isscalar(x) 
                        else x[0] for x in row]
+                row = [unicode(x).encode('utf8') for x in row]
                 writer.writerow(row)
         finally:
             fd.close()

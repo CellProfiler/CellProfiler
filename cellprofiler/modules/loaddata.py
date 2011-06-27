@@ -631,7 +631,7 @@ class LoadData(cpm.CPModule):
         for i, field in enumerate(header):
             list_ctl.InsertColumn(i, field)
         for line in reader:
-            list_ctl.Append(line[:len(header)])
+            list_ctl.Append(unicode(line[:len(header)], 'utf8'))
         frame.SetMinSize((640,480))
         frame.SetIcon(get_cp_icon())
         frame.Fit()
@@ -714,6 +714,8 @@ class LoadData(cpm.CPModule):
             i = self.row_range.min
             rows = []
             for row in reader:
+                row = [unicode(s, 'utf8') if isinstance(s, str) else s
+                       for s in row]
                 if len(row) != len(header):
                     raise ValueError("Row # %d has the wrong number of elements: %d. Expected %d"%
                                      (i,len(row),len(header)))
@@ -722,7 +724,8 @@ class LoadData(cpm.CPModule):
                     break
                 i += 1
         else:
-            rows = [row for row in reader]
+            rows = [[unicode(s, 'utf8') if isinstance(s, str) else s
+                     for s in row] for row in reader]
         fd.close()
         #
         # Check for correct # of columns

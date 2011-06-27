@@ -39,6 +39,7 @@ Website: http://www.cellprofiler.org
 __version__ = "$Revision$"
 
 import atexit
+import codecs
 import gc
 import numpy as np
 import os
@@ -562,7 +563,11 @@ def get_nice_arg(arg, sig):
             return arg.o
     if (sig in ('Ljava/lang/String;','Ljava/lang/Object;') and not
          isinstance(arg, javabridge.JB_Object)):
-        return env.new_string_utf(str(arg))
+        if isinstance(arg, unicode):
+            arg, _ = codecs.utf_8_encode(arg)
+        else:
+            arg = str(arg)
+        return env.new_string_utf(arg)
     if sig == 'Ljava/lang/Integer;' and type(arg) in [int, long, bool]:
         return make_instance('java/lang/Integer', '(I)V', int(arg))
     if sig == 'Ljava/lang/Long' and type(arg) in [int, long, bool]:
@@ -605,7 +610,7 @@ def get_nice_result(result, sig):
         return None
     env = get_env()
     if sig == 'Ljava/lang/String;':
-        return env.get_string_utf(result)
+        return codecs.utf_8_decode(env.get_string_utf(result))[0]
     if sig == 'Ljava/lang/Integer;':
         return call(result, 'intValue', '()I')
     if sig == 'Ljava/lang/Long':

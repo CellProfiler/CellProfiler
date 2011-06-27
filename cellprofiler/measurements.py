@@ -408,10 +408,10 @@ class Measurements(object):
             #
             # These are for convenience - wrap measurement in an numpy array to make it a cell
             #
-            if isinstance(data,unicode):
-                data = str(data)
             if isinstance(data,str):
-                a = np.ndarray((1,1),dtype='S%d'%(max(len(data),1)))
+                data = unicode(data)
+            if isinstance(data,unicode):
+                a = np.ndarray((1,1),dtype='U%d'%(max(len(data),1)))
                 a[0,0]=data
             self.__dictionary[object_name][feature_name][self.image_set_index] = data
     

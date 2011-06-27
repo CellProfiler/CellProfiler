@@ -846,7 +846,7 @@ class FloatRange(Setting):
         return float(self.value_text.split(',')[0])
     
     def set_min(self, value):
-        self.set_value_text((value, self.min))
+        self.set_value_text("%s,%s" % (value, self.max))
         
     min = property(get_min, set_min)
     
@@ -855,7 +855,7 @@ class FloatRange(Setting):
         return float(self.value_text.split(',')[1])
     
     def set_max(self, value):
-        self.set_value((self.max, value))
+        self.set_value("%s,%s" % (self.min, value))
         
     max = property(get_max, set_max)
     

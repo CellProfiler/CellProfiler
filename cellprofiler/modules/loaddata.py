@@ -631,7 +631,8 @@ class LoadData(cpm.CPModule):
         for i, field in enumerate(header):
             list_ctl.InsertColumn(i, field)
         for line in reader:
-            list_ctl.Append(unicode(line[:len(header)], 'utf8'))
+            list_ctl.Append([unicode(s, 'utf8') if isinstance(s, str) else s
+                             for s in line[:len(header)]])
         frame.SetMinSize((640,480))
         frame.SetIcon(get_cp_icon())
         frame.Fit()

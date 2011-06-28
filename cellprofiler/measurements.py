@@ -108,7 +108,7 @@ def get_length_from_varchar(x):
         return None
     return int(m.groups()[0])
 
-class Measurements(HDF5Dict):
+class Measurements(object):
     """Represents measurements made on images and objects
     """
     def __init__(self,
@@ -126,7 +126,7 @@ class Measurements(HDF5Dict):
         if not os.path.exists(dir):
             dir = None
         fd, filename = tempfile.mkstemp(prefix='Cpmeasurements', suffix='.hdf5', dir=dir)
-        HDF5Dict.__init__(self, filename)
+        self.hdf5_dict = HDF5Dict(filename)
         os.close(fd)
 
         self.image_set_number = image_set_start or 1
@@ -148,7 +148,7 @@ class Measurements(HDF5Dict):
         measurement_columns - list of 3-tuples: object name, feature, type
         '''
         # clear the old data, if any
-        self.clear()
+        self.hdf5_dict.clear()
 
         def fix_type(t):
             if t == 'integer':
@@ -166,9 +166,8 @@ class Measurements(HDF5Dict):
                 dims = 1
             else:
                 dims = 2
-            self.add_object(object_name, dims)
-            self.add_feature(object_name, feature)
-            self.get_dataset(object_name, feature, coltype, True)
+            self.hdf5_dict.add_object(object_name)
+            self.hdf5_dict.add_feature(object_name, feature)
         self.__initialized_explicitly = True
 
     def next_image_set(self, explicit_image_set_number=None, erase=False):
@@ -191,8 +190,11 @@ class Measurements(HDF5Dict):
                     self.erase(object_name, self.image_set_number)
 
     def erase(self, object_name, image_set_number):
-        mask = self[object_name, 'ImageNumber', :] == image_set_number
-        HDF5Dict.erase(self, object_name, image_set_number, mask)
+        for feature_name in self.get_feature_names(object_name):
+            del self.hdf5_dict[object_name, feature_name, image_set_number]
+        for feature_name in 'ImageNumber', 'ObjectNumber':
+            if self.hdf5_dict.has_data(object_name, feature_name, image_set_number):
+                del self.hdf5_dict[object_name, feature_name, image_set_number]
 
     @property
     def image_set_count(self):
@@ -200,7 +202,7 @@ class Measurements(HDF5Dict):
         # XXX - question for Lee: should this return the minimum number
         # of non-null values across columns in the the Image table?
         try:
-            return len(self.level1_indices[IMAGE])
+            return len(self.hdf5_dict.get_indices('Image', 'ImageNumber'))
         except KeyError:
             return 0
 
@@ -408,29 +410,40 @@ class Measurements(HDF5Dict):
                     ("Feature %s.%s has already been set for image cycle %d" %
                      (object_name, feature_name, image_set_number))
 
+        def wrap_string(v):
+            if isinstance(v, basestring):
+                return unicode(v).encode('unicode_escape')
+            return v
+            
+
         if object_name == EXPERIMENT:
-            self[EXPERIMENT, feature_name] = data
+            if not np.isscalar(data):
+                data = data[0]
+            self.hdf5_dict[EXPERIMENT, feature_name, 0] = wrap_string(data)
         elif object_name == IMAGE:
             if not np.isscalar(data):
                 data = data[0]
-            self[IMAGE, feature_name, image_set_number] = data
-            self[IMAGE, 'ImageNumber', image_set_number] = image_set_number
+            self.hdf5_dict[IMAGE, feature_name, image_set_number] = wrap_string(data)
+            self.hdf5_dict[IMAGE, 'ImageNumber', image_set_number] = image_set_number
         else:
-            self[object_name, feature_name, image_set_number, :] = data
-            self[object_name, 'ImageNumber', image_set_number, :] = image_set_number
-            self[object_name, 'ObjectNumber', image_set_number, :] = np.arange(1, len(data) + 1)
+            self.hdf5_dict[object_name, feature_name, image_set_number] = data
+            self.hdf5_dict[object_name, 'ImageNumber', image_set_number] = [image_set_number] * len(data)
+            self.hdf5_dict[object_name, 'ObjectNumber', image_set_number] = np.arange(1, len(data) + 1)
 
     def get_object_names(self):
         """The list of object names (including Image) that have measurements
         """
-        return [name for name in self.object_features]
+        return self.hdf5_dict.top_level_names()
 
     object_names = property(get_object_names)
 
     def get_feature_names(self, object_name):
         """The list of feature names (measurements) for an object
         """
-        return [name for name in self.object_features.get(object_name, set()) if name not in ('ImageNumber', 'ObjectNumber')]
+        return [name for name in self.hdf5_dict.second_level_names(object_name) if name not in ('ImageNumber', 'ObjectNumber')]
+
+    def has_feature(self, object_name, feature_name):
+        return self.hdf5_dict.has_feature(object_name, feature_name)
 
     def get_current_image_measurement(self, feature_name):
         '''Return the value for the named image measurement
@@ -451,48 +464,33 @@ class Measurements(HDF5Dict):
         def unwrap_string(v):
             # hdf5 returns string columns as a wrapped type
             if isinstance(v, str):
-                return str(v)
+                return unicode(str(v)).decode('unicode_escape')
             return v
         if object_name == EXPERIMENT:
-            return unwrap_string(self[EXPERIMENT, feature_name])
+            return unwrap_string(self.hdf5_dict[EXPERIMENT, feature_name, 0][0])
         if object_name == IMAGE:
-            return unwrap_string(self[IMAGE, feature_name, image_set_number])
-        return self[object_name, feature_name, image_set_number, :].flatten()
+            return unwrap_string(self.hdf5_dict[IMAGE, feature_name, image_set_number][0])
+        vals = self.hdf5_dict[object_name, feature_name, image_set_number]
+        if vals is None:
+            return []
+        return vals.flatten()
 
     def has_measurements(self, object_name, feature_name, image_set_number):
-        try:
-            if object_name == EXPERIMENT:
-                self[EXPERIMENT, feature_name]
-            elif object_name == IMAGE:
-                self[IMAGE, feature_name, image_set_number]
-            else:
-                self[IMAGE, feature_name, image_set_number, :]
-            return True
-        except:
-            return False
+        if object_name == EXPERIMENT:
+            return self.hdf5_dict.has_data(EXPERIMENT, feature_name, 0)
+        return self.hdf5_dict.has_data(object_name, feature_name, image_set_number)
 
     def has_current_measurements(self, object_name, feature_name):
         return self.has_measurements(object_name, feature_name, self.image_set_number)
 
     def get_all_measurements(self, object_name, feature_name):
-        # XXX - could this be done as an object wrapping the DB and supporting queries via __getitem__?
         warnings.warn("get_all_measurements() is deprecated.  Use get_measurement()", DeprecationWarning, stacklevel=2)
 
-        assert self.has_feature(object_name, feature_name) or feature_name in ('ImageNumber', 'ObjectNumber')
+        assert self.hdf5_dict.has_feature(object_name, feature_name) or feature_name in ('ImageNumber', 'ObjectNumber')
         if object_name == EXPERIMENT:
-            return self[EXPERIMENT, feature_name]
-        if object_name == IMAGE:
-            return self[IMAGE, feature_name, :].flatten()
+            return self.hdf5_dict[EXPERIMENT, feature_name, 0]
 
-        # objects...
-        # This is a big ugly hack, and I'd like it to go away.  How
-        # are the measurements supposed to keep track of which object
-        # values to return, particularly if there are gaps in the
-        # image sequence?  What is the correct form of "all"
-        # measurement data in that case?  I've deprecated this
-        # function in favor of get_measurement() for this reason.
-        # I'm happy to hear why this is wrong.
-        return [self[object_name, feature_name, imgnum, :].flatten() for imgnum in self.level1_indices[object_name]]
+        return [self.get_measurement(object_name, feature_name, idx) for idx in self.hdf5_dict.get_indices(object_name, feature_name)]
 
     def add_all_measurements(self, object_name, feature_name, values):
         '''Add a list of measurements for all image sets
@@ -544,7 +542,6 @@ class Measurements(HDF5Dict):
                 measurement = '%s_%s' % (C_METADATA, m.groups()[0])
                 result += str(self.get_measurement("Image", measurement,
                                                    image_set_number))
-                print result
                 piece = piece[m.end():]
             result_pieces.append(result)
         return single_backquote.join(result_pieces)
@@ -591,7 +588,7 @@ class Measurements(HDF5Dict):
 
         if self.agg_ignore_object(object_name):
             return True
-        if self.has_feature(object_name, "SubObjectFlag"):
+        if self.hdf5_dict.has_feature(object_name, "SubObjectFlag"):
             return True
         return agg_ignore_feature(feature_name)
 

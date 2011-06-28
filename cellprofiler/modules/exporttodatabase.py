@@ -1241,7 +1241,7 @@ class ExportToDatabase(cpm.CPModule):
         self.post_run(workspace)
     
     def run(self, workspace):
-        if self.want_image_thumbnails:
+        if self.db_type in (DB_MYSQL, DB_SQLITE) and self.want_image_thumbnails:
             import Image
             from StringIO import StringIO
             measurements = workspace.measurements
@@ -1356,7 +1356,8 @@ class ExportToDatabase(cpm.CPModule):
             feature_name.startswith('Description_') or 
             feature_name.startswith('ModuleError_') or 
             feature_name.startswith('TimeElapsed_') or 
-            feature_name.startswith('ExecutionTime_')
+            feature_name.startswith('ExecutionTime_') or 
+            (self.db_type not in (DB_MYSQL, DB_SQLITE) and feature_name.startswith('Thumbnail_'))
             ):
             return True
         return False
@@ -1514,7 +1515,7 @@ class ExportToDatabase(cpm.CPModule):
             pipeline, image_set_list)
         for column in columns:
             obname, feature, ftype = column[:3]
-            if obname==cpmeas.IMAGE and not self.ignore_feature(obname, feature):
+            if obname == cpmeas.IMAGE and not self.ignore_feature(obname, feature):
                 feature_name = '%s_%s' % (obname, feature)
                 statement += ',\n%s %s'%(mappings[feature_name], ftype)
         for column in self.get_aggregate_columns(pipeline, image_set_list):

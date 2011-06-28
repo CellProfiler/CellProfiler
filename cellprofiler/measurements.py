@@ -322,8 +322,8 @@ class Measurements(object):
         # XXX - check overwrite?
         # XXX - Should group number be moved out of the measurement name?
         group_number = self.group_number
-        with self.lock:
-            relationship_group = self.top_group.require_group('%s/%02d_%d_%s_%s_%s' % (RELATIONSHIP, module_number, group_number, relationship, object_name1, object_name2))
+        with self.hdf5_dict.lock:
+            relationship_group = self.hdf5_dict.top_group.require_group('%s/%02d_%d_%s_%s_%s' % (RELATIONSHIP, module_number, group_number, relationship, object_name1, object_name2))
             features = ["group_number", "group_index1", "group_index2", "object_number1", "object_number2"]
             if "group_number" not in relationship_group:
                 for name in features:
@@ -360,8 +360,8 @@ class Measurements(object):
                                 ("object_number1", int, 1),
                                 ("group_index2", int, 1),
                                 ("object_number2", int, 1)]).view(np.recarray)
-        with self.lock:
-            grp = self.top_group['%s/%02d_%d_%s_%s_%s' % (RELATIONSHIP, module_number, group_number, relationship, object_name1, object_name2)]
+        with self.hdf5_dict.lock:
+            grp = self.hdf5_dict.top_group['%s/%02d_%d_%s_%s_%s' % (RELATIONSHIP, module_number, group_number, relationship, object_name1, object_name2)]
             dt = np.dtype([("group_index1", np.int, 1),
                            ("object_number1", np.int, 1),
                            ("group_index2", np.int, 1),
@@ -472,7 +472,7 @@ class Measurements(object):
             return unwrap_string(self.hdf5_dict[IMAGE, feature_name, image_set_number][0])
         vals = self.hdf5_dict[object_name, feature_name, image_set_number]
         if vals is None:
-            return []
+            return np.array([])
         return vals.flatten()
 
     def has_measurements(self, object_name, feature_name, image_set_number):
@@ -489,8 +489,10 @@ class Measurements(object):
         assert self.hdf5_dict.has_feature(object_name, feature_name) or feature_name in ('ImageNumber', 'ObjectNumber')
         if object_name == EXPERIMENT:
             return self.hdf5_dict[EXPERIMENT, feature_name, 0]
-
-        return [self.get_measurement(object_name, feature_name, idx) for idx in self.hdf5_dict.get_indices(object_name, feature_name)]
+        vals = [self.get_measurement(object_name, feature_name, idx) for idx in self.hdf5_dict.get_indices(object_name, feature_name)]
+        if object_name == IMAGE:
+            return np.array(vals)
+        return vals
 
     def add_all_measurements(self, object_name, feature_name, values):
         '''Add a list of measurements for all image sets

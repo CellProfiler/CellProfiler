@@ -377,19 +377,8 @@ class MeasureObjectNeighbors(cpm.CPModule):
                 first_objects = np.zeros(0, int)
                 second_objects = np.zeros(0, int)
             percent_touching = pixel_count * 100.0 / areas
-            #
-            # Now convert all measurements from the small-removed to
-            # the final number set.
-            #
             object_indexes = object_numbers - 1
             neighbor_indexes = neighbor_numbers - 1
-            neighbor_count = neighbor_count[object_indexes]
-            percent_touching = percent_touching[object_indexes]
-            first_x_vector = first_x_vector[object_indexes]
-            second_x_vector = second_x_vector[object_indexes]
-            first_y_vector = first_y_vector[object_indexes]
-            second_y_vector = second_y_vector[object_indexes]
-            angle = angle[object_numbers - 1]
             #
             # Have to recompute nearest
             #
@@ -416,8 +405,21 @@ class MeasureObjectNeighbors(cpm.CPModule):
                     if nneighbors > 1:
                         second_object_number = order[:,1] + 1
         else:
+            object_indexes = object_numbers - 1
+            neighbor_indexes = neighbor_numbers - 1
             first_objects = np.zeros(0, int)
             second_objects = np.zeros(0, int)
+        #
+        # Now convert all measurements from the small-removed to
+        # the final number set.
+        #
+        neighbor_count = neighbor_count[object_indexes]
+        percent_touching = percent_touching[object_indexes]
+        first_x_vector = first_x_vector[object_indexes]
+        second_x_vector = second_x_vector[object_indexes]
+        first_y_vector = first_y_vector[object_indexes]
+        second_y_vector = second_y_vector[object_indexes]
+        angle = angle[object_indexes]
         #
         # Record the measurements
         #

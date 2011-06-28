@@ -1336,7 +1336,7 @@ class Pipeline(object):
                                       None,
                                       measurements,
                                       image_set_list,
-                                      frame)
+                                      frame if module.show_window else None)
             workspace.refresh()
             try:
                 module.post_run(workspace)

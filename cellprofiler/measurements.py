@@ -414,15 +414,18 @@ class Measurements(object):
             if isinstance(v, basestring):
                 return unicode(v).encode('unicode_escape')
             return v
-            
 
         if object_name == EXPERIMENT:
-            if not np.isscalar(data):
+            if not np.isscalar(data) and data is not None:
                 data = data[0]
+            if data is None:
+                data = []
             self.hdf5_dict[EXPERIMENT, feature_name, 0] = wrap_string(data)
         elif object_name == IMAGE:
             if not np.isscalar(data) and data is not None:
                 data = data[0]
+            if data is None:
+                data = []
             self.hdf5_dict[IMAGE, feature_name, image_set_number] = wrap_string(data)
             self.hdf5_dict[IMAGE, 'ImageNumber', image_set_number] = image_set_number
         else:
@@ -488,8 +491,8 @@ class Measurements(object):
 
         assert self.hdf5_dict.has_feature(object_name, feature_name) or feature_name in ('ImageNumber', 'ObjectNumber')
         if object_name == EXPERIMENT:
-            return self.hdf5_dict[EXPERIMENT, feature_name, 0]
-        vals = [self.get_measurement(object_name, feature_name, idx) for idx in self.hdf5_dict.get_indices(object_name, feature_name)]
+            return self.hdf5_dict[EXPERIMENT, feature_name, 0][0]
+        vals = [self.get_measurement(object_name, feature_name, idx) for idx in self.hdf5_dict.get_indices(object_name, 'ImageNumber')]
         if object_name == IMAGE:
             return np.array(vals)
         return vals
@@ -503,8 +506,10 @@ class Measurements(object):
         '''
         for idx, val in zip(xrange(len(values)), values):
             if val is None:
-                val = np.array([], float)
-            self.add_measurement(object_name, feature_name, val, can_overwrite=True, image_set_number=idx + 1)
+                if self.hdf5_dict.has_feature(object_name, feature_name):
+                    del self.hdf5_dict[object_name, feature_name, idx + 1]
+            else:
+                self.add_measurement(object_name, feature_name, val, can_overwrite=True, image_set_number=idx + 1)
 
     def get_experiment_measurement(self, feature_name):
         """Retrieve an experiment-wide measurement

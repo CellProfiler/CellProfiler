@@ -421,7 +421,7 @@ class Measurements(object):
                 data = data[0]
             self.hdf5_dict[EXPERIMENT, feature_name, 0] = wrap_string(data)
         elif object_name == IMAGE:
-            if not np.isscalar(data):
+            if not np.isscalar(data) and data is not None:
                 data = data[0]
             self.hdf5_dict[IMAGE, feature_name, image_set_number] = wrap_string(data)
             self.hdf5_dict[IMAGE, 'ImageNumber', image_set_number] = image_set_number

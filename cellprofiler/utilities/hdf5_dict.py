@@ -128,6 +128,10 @@ class HDF5Dict(object):
                 self.add_object(object_name)
             self.add_feature(object_name, feature_name)
 
+        # overwriting?
+        if self.has_data(*idxs):
+            self.__delitem__(idxs)
+
         # find the destination for the data, and check that its
         # the right size for the values.  This may extend the
         # _index and data arrays.
@@ -141,8 +145,15 @@ class HDF5Dict(object):
             return
 
         with self.lock:
-            # XXX - promote int to float
             dataset = self.get_dataset(object_name, feature_name)
+            if dataset.dtype.kind == 'i' and np.asanyarray(val).dtype.kind == 'f':
+                # it's possible we have only stored integers and now need to promote to float
+                vals = dataset[:].astype(float)
+                del self.top_group[object_name][feature_name]['data']
+                dataset = self.top_group[object_name][feature_name].create_dataset('data', (vals.size,), dtype=float,
+                                                                                   compression='gzip', chunks=(1000,), maxshape=(None,))
+                dataset[:] = vals
+
             if np.isscalar(val):
                 dataset[dest] = val
             else:

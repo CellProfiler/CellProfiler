@@ -1605,7 +1605,6 @@ class TrackObjects(cpm.CPModule):
         if max_object_count == 0:
             return
         max_image_number = np.max(indexes) + 1
-        print "MAX IMAGE", max_image_number
         def w(a):
             '''Wrap a measurement array as a numpy sparse array
             

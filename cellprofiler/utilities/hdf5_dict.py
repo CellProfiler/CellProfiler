@@ -13,8 +13,8 @@ import time
 # h5py is nice, but not being able to make zero-length selections is a pain.
 orig_hdf5_getitem = h5py.Dataset.__getitem__
 def new_getitem(self, args):
-    if isinstance(args, slice) and \
-            args.start is not None and args.start == args.stop:
+    if (isinstance(args, slice) and \
+            args.start is not None and args.start == args.stop):
         return np.array([], self.dtype)
     return orig_hdf5_getitem(self, args)
 setattr(h5py.Dataset, orig_hdf5_getitem.__name__, new_getitem)
@@ -30,6 +30,9 @@ setattr(h5py.Dataset, orig_hdf5_setitem.__name__, new_setitem)
 def infer_hdf5_type(val):
     if isinstance(val, str) or np.sctype2char(np.asanyarray(val).dtype) == 'S':
         return h5py.special_dtype(vlen=str)
+    val = np.asanyarray(val)
+    if val.size == 0:
+        return int
     return np.asanyarray(val).dtype
 
 
@@ -137,22 +140,26 @@ class HDF5Dict(object):
         # _index and data arrays.
         dest = self.find_index_or_slice(idxs, val)
 
-        # it's possible we're not actually storing anything.  In
-        # this case, we can't infer a type, so return without
-        # actually doing anything further.
-        # XXX - unless we're passed a numpy array with a given type
-        if dest is None:
-            return
-
         with self.lock:
             dataset = self.get_dataset(object_name, feature_name)
-            if dataset.dtype.kind == 'i' and np.asanyarray(val).dtype.kind == 'f':
-                # it's possible we have only stored integers and now need to promote to float
-                vals = dataset[:].astype(float)
-                del self.top_group[object_name][feature_name]['data']
-                dataset = self.top_group[object_name][feature_name].create_dataset('data', (vals.size,), dtype=float,
-                                                                                   compression='gzip', chunks=(1000,), maxshape=(None,))
-                dataset[:] = vals
+            if dataset.dtype.kind == 'i':
+                if np.asanyarray(val).dtype.kind == 'f':
+                    # it's possible we have only stored integers and now need to promote to float
+                    if dataset.shape[0] > 0:
+                        vals = dataset[:].astype(float)
+                    else:
+                        vals = np.array([])
+                    del self.top_group[object_name][feature_name]['data']
+                    dataset = self.top_group[object_name][feature_name].create_dataset('data', (vals.size,), dtype=float,
+                                                                                       compression='gzip', chunks=(1000,), maxshape=(None,))
+                    if vals.size > 0:
+                        dataset[:] = vals
+                elif np.asanyarray(val).dtype.kind in ('S', 'a', 'U'):
+                    # we created the dataset without any data, so didn't know the type before
+                    sz = dataset.shape[0]
+                    del self.top_group[object_name][feature_name]['data']
+                    dataset = self.top_group[object_name][feature_name].create_dataset('data', (sz,), dtype=h5py.special_dtype(vlen=str),
+                                                                                       compression='gzip', chunks=(1000,), maxshape=(None,))
 
             if np.isscalar(val):
                 dataset[dest] = val
@@ -180,7 +187,7 @@ class HDF5Dict(object):
             del self.indices[object_name, feature_name][num_idx]
             # reserved value of -1 means deleted
             idx = self.top_group[object_name][feature_name]['index']
-            idx[idx[:, 0] == num_idx, 0] = -1
+            idx[np.flatnonzero(idx[:, 0] == num_idx), 0] = -1
 
     def has_data(self, object_name, feature_name, num_idx):
         return num_idx in self.indices.get((object_name, feature_name), [])
@@ -209,7 +216,8 @@ class HDF5Dict(object):
         indexes "idxs", and check that values could be stored in that
         linear index or slice.  If the linear index does not exist for
         the given idxs, then it will be created with sufficient size
-        to store values (which must not be None, in this case).
+        to store values (which must not be None, in this case).  If
+        the dataset does not exist, it will be created by this method.
         '''
         with self.lock:
             object_name, feature_name, num_idx = idxs
@@ -219,8 +227,6 @@ class HDF5Dict(object):
                 return None  # no data
             if num_idx not in index:
                 grow_by = np.asanyarray(values).ravel().size
-                if grow_by == 0:
-                    return None  # can't infer type
                 # create the measurements if needed
                 feature_group = self.top_group.require_group(object_name).require_group(feature_name)
                 if not 'data' in feature_group:
@@ -253,8 +259,11 @@ class HDF5Dict(object):
     def get_indices(self, object_name, feature_name):
         # CellProfiler expects these in write order
         with self.lock:
-            idxs = self.top_group[object_name][feature_name]['index'][:, 0][:]
-            return idxs[idxs != -1]
+            if 'index' in self.top_group[object_name][feature_name]:
+                idxs = self.top_group[object_name][feature_name]['index'][:, 0][:]
+                return idxs[idxs != -1]
+            else:
+                return []
 
     def top_level_names(self):
         with self.lock:
@@ -274,3 +283,6 @@ if __name__ == '__main__':
     h['Image', 'f1', 2] = 6
     h['Image', 'f2', 1] = 6
     print h['Image', 'f2', 1]
+    print h['Object1', 'objfeature1', 1]
+    h['Object1', 'objfeature1', 2] = 3.0
+    print h['Object1', 'objfeature1', 1]

@@ -120,14 +120,19 @@ class TestMergeOutputFiles(unittest.TestCase):
         result = self.execute_merge_files(mm)
         self.assertAlmostEqual(result.get_experiment_measurement("baz"),
                                mm[0].get_experiment_measurement("baz"))
-        for j in range(2):
-            ro = result.get_all_measurements("myobjects", "bar%d" % j)
-            mo = mm[j].get_all_measurements("myobjects", "bar%d" % j)
-            for i in range(5):
-                self.assertEqual(len(ro[i+j*5]), len(mo[i]))
-                np.testing.assert_almost_equal(ro[i+j*5], mo[i])
-                self.assertEqual(len(ro[i + (1 - j)*5]), 0)
-    
+        for imgidx in range(10):
+            imgnum = imgidx + 1
+            if imgidx < 5:
+                ro = result.get_measurement("myobjects", "bar0", imgnum)
+                mo = mm[0].get_measurement("myobjects", "bar0", imgnum)
+                np.testing.assert_almost_equal(ro, mo)
+                self.assertEqual(len(result.get_measurement("myobjects", "bar1", imgnum)), 0)
+            else:
+                ro = result.get_measurement("myobjects", "bar1", imgnum)
+                mo = mm[1].get_measurement("myobjects", "bar1", imgnum - 5)
+                np.testing.assert_almost_equal(ro, mo)
+                self.assertEqual(len(result.get_measurement("myobjects", "bar0", imgnum)), 0)
+
     def test_01_04_different_objects(self):
         np.random.seed(13)
         mm = []
@@ -140,11 +145,15 @@ class TestMergeOutputFiles(unittest.TestCase):
         result = self.execute_merge_files(mm)
         self.assertAlmostEqual(result.get_experiment_measurement("baz"),
                                mm[0].get_experiment_measurement("baz"))
-        for j in range(2):
-            ro = result.get_all_measurements("myobjects%d" % j, "bar")
-            mo = mm[j].get_all_measurements("myobjects%d" % j, "bar")
-            for i in range(5):
-                self.assertEqual(len(ro[i+j*5]), len(mo[i]))
-                np.testing.assert_almost_equal(ro[i+j*5], mo[i])
-                self.assertEqual(len(ro[i + (1 - j)*5]), 0)
-                
+        for imgidx in range(10):
+            imgnum = imgidx + 1
+            if imgidx < 5:
+                ro = result.get_measurement("myobjects0", "bar", imgnum)
+                mo = mm[0].get_measurement("myobjects0", "bar", imgnum)
+                np.testing.assert_almost_equal(ro, mo)
+                self.assertEqual(len(result.get_measurement("myobjects1", "bar", imgnum)), 0)
+            else:
+                ro = result.get_measurement("myobjects1", "bar", imgnum)
+                mo = mm[1].get_measurement("myobjects1", "bar", imgnum - 5)
+                np.testing.assert_almost_equal(ro, mo)
+                self.assertEqual(len(result.get_measurement("myobjects0", "bar", imgnum)), 0)

@@ -332,17 +332,23 @@ class MergeOutputFiles(cpm.CPModule):
                             #
                             if not feature in destfeatures:
                                 mdest.add_all_measurements(object_name, feature,
-                                                           src_values)
+                                                           [src_values])
                         else:
                             source_image_count = max(source_image_set_count,
                                                      len(src_values))
                             if feature in destfeatures:
                                 dest_values = mdest.get_all_measurements(object_name,
                                                                          feature)
+                                if not isinstance(dest_values, list):
+                                    dest_values = dest_values.tolist()
                             else:
                                 dest_values = [None] * image_set_count
-                                mdest.add_all_measurements(object_name, feature, dest_values)
-                            dest_values += src_values
+
+                            if isinstance(src_values, list):
+                                dest_values += src_values
+                            else:
+                                dest_values += src_values.tolist()
+                            mdest.add_all_measurements(object_name, feature, dest_values)
                     destset = set(destfeatures)
                     #
                     # These are features that are in the destination, but not
@@ -364,6 +370,7 @@ class MergeOutputFiles(cpm.CPModule):
                         dest_values = mdest.get_all_measurements(
                             object_name, feature)
                         dest_values += [None] * source_image_count
+                        mdest.add_all_measurements(object_name, feature, dest_values)
                 image_set_count += source_image_count
             mdest.image_set_number = image_set_count
             if not is_headless:

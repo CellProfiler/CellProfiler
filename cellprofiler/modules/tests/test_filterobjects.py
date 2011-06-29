@@ -1236,7 +1236,7 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
         module.run(workspace)
         image_features = m.get_feature_names(cpm.IMAGE)
         result_features = m.get_feature_names("my_result")
-        object_features = m.get_feature_names("my_object")
+        object_features = m.get_feature_names("my_objects")
         columns = module.get_measurement_columns(workspace.pipeline)
         self.assertEqual(len(columns), 6)
         for feature in image_features:
@@ -1248,9 +1248,10 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
                                   column[1] == feature)
                                  for column in columns]))
         for feature in object_features:
-            self.assertTrue(any([(column[0] == "my_object" and
-                                  column[1] == feature)
-                                 for column in columns]))
+            if feature != 'my_measurement':
+                self.assertTrue(any([(column[0] == "my_objects" and
+                                      column[1] == feature)
+                                     for column in columns]))
         
         for column in columns:
             self.assertTrue(column[0] in (cpm.IMAGE, "my_result", "my_objects"))

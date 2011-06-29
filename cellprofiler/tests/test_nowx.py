@@ -111,9 +111,9 @@ class TestNoWX(unittest.TestCase):
         finally:
             for file_name in os.listdir(output_dir):
                 try:
-                    os.remove(file_name)
-                except:
-                    print "Failed to remove %s" % file_name
+                    os.remove(os.path.join(output_dir, file_name))
+                except Exception, e:
+                    print "Failed to remove %s" % os.path.join(output_dir, file_name), e
                     traceback.print_exc()
             try:
                 os.rmdir(output_dir)

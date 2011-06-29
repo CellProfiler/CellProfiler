@@ -1141,8 +1141,8 @@ class TrackObjects(cpm.CPModule):
         para8 = self.max_frame_distance.value #max frame difference
 
         m = workspace.measurements
-        label = m.get_all_measurements(self.object_name.value, 
-                                       self.measurement_name(F_LABEL))
+        label = [v.astype(int) for v in m.get_all_measurements(self.object_name.value, 
+                                                               self.measurement_name(F_LABEL))]
         orig_label = label
         a = m.get_all_measurements(self.object_name.value, M_LOCATION_CENTER_X)
         b = m.get_all_measurements(self.object_name.value, M_LOCATION_CENTER_Y)
@@ -1616,7 +1616,7 @@ class TrackObjects(cpm.CPModule):
         max_object_count = np.max([len(x) for x in parent_object_numbers])
         if max_object_count == 0:
             return
-        max_image_number = np.max(m.get_image_number_from_index(indexes))
+        max_image_number = np.max(indexes) + 1
         def w(a):
             '''Wrap a measurement array as a numpy sparse array
             

@@ -610,7 +610,7 @@ def get_nice_result(result, sig):
         return None
     env = get_env()
     if sig == 'Ljava/lang/String;':
-        return codecs.utf_8_decode(env.get_string_utf(result))[0]
+        return codecs.utf_8_decode(env.get_string_utf(result), 'replace')[0]
     if sig == 'Ljava/lang/Integer;':
         return call(result, 'intValue', '()I')
     if sig == 'Ljava/lang/Long':

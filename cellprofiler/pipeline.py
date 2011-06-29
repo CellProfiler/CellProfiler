@@ -231,18 +231,14 @@ def add_all_measurements(handles, measurements):
             feature_measurements = np.ndarray((1, measurements.image_set_number),
                                               dtype='object')
             object_measurements[field][0,0] = feature_measurements
-            data = measurements.get_all_measurements(object_name,feature_name)
             for i in range(0, measurements.image_set_number):
-                if data != None:
-                    ddata = data[i]
-                    if np.isscalar(ddata) and np.isreal(ddata):
-                        feature_measurements[0,i] = np.array([ddata])
-                    elif ddata is None:
-                        feature_measurements[0,i] = np.array([])
-                    else:
-                        feature_measurements[0,i] = ddata
+                ddata = measurements.get_measurement(object_name, feature_name, i + 1)
+                if np.isscalar(ddata) and np.isreal(ddata):
+                    feature_measurements[0,i] = np.array([ddata])
+                elif ddata is None:
+                    feature_measurements[0,i] = np.array([])
                 else:
-                    feature_measurements[0, i] = np.array([])
+                    feature_measurements[0,i] = ddata
     if cpmeas.EXPERIMENT in measurements.object_names:
         mapping = map_feature_names(measurements.get_feature_names(cpmeas.EXPERIMENT))
         object_dtype = make_cell_struct_dtype(mapping.keys())

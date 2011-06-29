@@ -405,14 +405,6 @@ class Measurements(object):
                         self.has_current_measurements(object_name, feature_name)),\
                        ("Feature %s.%s has already been set for this image cycle" %
                         (object_name,feature_name))
-            #
-            # These are for convenience - wrap measurement in an numpy array to make it a cell
-            #
-            if isinstance(data,str):
-                data = unicode(data)
-            if isinstance(data,unicode):
-                a = np.ndarray((1,1),dtype='U%d'%(max(len(data),1)))
-                a[0,0]=data
             self.__dictionary[object_name][feature_name][self.image_set_index] = data
     
     def get_object_names(self):

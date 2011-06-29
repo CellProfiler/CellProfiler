@@ -1248,9 +1248,10 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
                                   column[1] == feature)
                                  for column in columns]))
         for feature in object_features:
-            self.assertTrue(any([(column[0] == "my_objects" and
-                                  column[1] == feature)
-                                 for column in columns]))
+            if feature != 'my_measurement':
+                self.assertTrue(any([(column[0] == "my_objects" and
+                                      column[1] == feature)
+                                     for column in columns]))
         
         for column in columns:
             self.assertTrue(column[0] in (cpm.IMAGE, "my_result", "my_objects"))

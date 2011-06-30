@@ -882,7 +882,7 @@ TrackObjects:[module_num:1|svn_version:\'10373\'|variable_revision_number:4|show
             group_numbers = [1] * nimages
         m.add_all_measurements(cpmeas.IMAGE, cpp.GROUP_NUMBER, group_numbers)
         if group_indexes is None:
-            group_indexes = list(range(1, nimages+1))
+            group_indexes = list(range(0, nimages))
         m.add_all_measurements(cpmeas.IMAGE, cpp.GROUP_INDEX, group_indexes)
         if objs.shape[0] > 0:
             nobjects = np.bincount(objs[:, 0].astype(int))

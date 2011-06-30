@@ -1606,143 +1606,95 @@ class TrackObjects(cpm.CPModule):
         '''
         m = workspace.measurements
         object_name = self.object_name.value
+
         assert isinstance(m, cpmeas.Measurements)
-        parent_object_numbers = m.get_all_measurements(
-            object_name, self.measurement_name(F_PARENT_OBJECT_NUMBER))
-        parent_image_numbers = m.get_all_measurements(
-            object_name, self.measurement_name(F_PARENT_GROUP_INDEX))
-        group_indexes = m.get_all_measurements( cpmeas.IMAGE,
-                                                cpp.GROUP_INDEX)
-        max_object_count = np.max([len(x) for x in parent_object_numbers])
-        if max_object_count == 0:
-            return
-        max_image_number = np.max(indexes) + 1
-        def w(a):
-            '''Wrap a measurement array as a numpy sparse array
-            
-            Elements in the array can be addressed correctly by image number
-            and object number.
-            '''
-            result = scipy.sparse.lil_matrix((max_image_number+1, 
-                                              max_object_count+2), 
-                                             dtype = a[0].dtype)
-            for index in indexes:
-                row = a[index]
-                nobjects = len(row)
-                if nobjects > 0:
-                    group_index = group_indexes[index]
-                    result[group_index, 1:(len(row)+1)] = row
-            return result
-            
+
+        class wrapped(object):
+            '''make an indexable version of a measurement, with parent and ancestor fetching'''
+            def __init__(self, feature_name):
+                self.feature_name = feature_name
+            def __getitem__(self, index):
+                # cache for speed?
+                return m.get_measurement(object_name, self.feature_name, index_to_imgnum[index])
+            def __setitem__(self, index, val):
+                m.add_measurement(object_name, self.feature_name, val, image_set_number=index_to_imgnum[index], can_overwrite=True)
+            def get_parent(self, index, no_parent=None):
+                parent_indices, parent_objnums = parent_refs[index]
+                if np.isscalar(no_parent) or (no_parent is None):
+                    no_parent = [no_parent] * len(parent_objnums)
+                return np.array([self[pi][po - 1] if (po > 0) else nop
+                                 for pi, po, nop in zip(parent_indices, parent_objnums, no_parent)])
+            def get_ancestor(self, index):
+                ancestor_indices, ancestor_objnums = ancestor_refs[index]
+                return np.array([self[ai][ao - 1] for ai, ao in zip(ancestor_indices, ancestor_objnums)])
+
+        
+        index_to_imgnum = dict(zip(m.get_all_measurements(cpmeas.IMAGE, cpmeas.GROUP_INDEX),
+                                   m.get_all_measurements(cpmeas.IMAGE, cpmeas.IMAGE_NUMBER)))
+
+        # build parent and ancestor dictionaries
+        parent_group_index = wrapped(self.measurement_name(F_PARENT_GROUP_INDEX))
+        parent_object_number = wrapped(self.measurement_name(F_PARENT_OBJECT_NUMBER))
+        parent_refs = dict([(index, (parent_group_index[index], parent_object_number[index])) \
+                                for index in indexes])
+        def get_ancestor(index, objnum):
+            pi, po = parent_refs[index]
+            if po[objnum - 1] > 0 and (pi[objnum - 1] != index):
+                return get_ancestor(pi[objnum - 1], po[objnum - 1])
+            return index, objnum
+        ancestor_refs = {}
+        for index in indexes:
+            num_objects = len(parent_refs[index][0])
+            ancestor_refs[index] = zip(*map(get_ancestor, [index] * num_objects, 1 + np.arange(num_objects)))
+
         #
         # Recalculate the trajectories
         #
-        old_dists = m.get_all_measurements(
-            object_name, self.measurement_name(F_DISTANCE_TRAVELED))
-        old_integrated = m.get_all_measurements(
-            object_name, self.measurement_name(F_INTEGRATED_DISTANCE))
-        w_integrated = w(old_integrated)
-        x = w(m.get_all_measurements(object_name, M_LOCATION_CENTER_X))
-        y = w(m.get_all_measurements(object_name, M_LOCATION_CENTER_Y))
-        old_trajectory_x = m.get_all_measurements(
-            object_name, self.measurement_name(F_TRAJECTORY_X))
-        old_trajectory_y = m.get_all_measurements(
-            object_name, self.measurement_name(F_TRAJECTORY_Y))
-        old_linearity = m.get_all_measurements(
-            object_name, self.measurement_name(F_LINEARITY))
-        w_linearity = w(old_linearity)
-        old_lifetime = m.get_all_measurements(
-            object_name, self.measurement_name(F_LIFETIME))
-        w_lifetime = w(old_lifetime)
-        #
-        # Maintain the first position for a lineage in first_x and first_y
-        #
-        first_x = scipy.sparse.lil_matrix((max_image_number+1,
-                                           max_object_count+2), 
-                                          dtype = float)
-        first_y = scipy.sparse.lil_matrix((max_image_number+1,
-                                           max_object_count+2),
-                                          dtype = float)
-        lifetime = scipy.sparse.lil_matrix((max_image_number+1,
-                                            max_object_count+2), 
-                                           dtype = float)
-        for index in indexes:
-            po = parent_object_numbers[index]
-            pi = parent_image_numbers[index]
-            has_parent = (po != 0)
-            pi = pi[has_parent]
-            po = po[has_parent]
-            
-            group_index = group_indexes[index]
-            nobjects = len(po)
+        x = wrapped(M_LOCATION_CENTER_X)
+        y = wrapped(M_LOCATION_CENTER_Y)
+        trajectory_x = wrapped(self.measurement_name(F_TRAJECTORY_X))
+        trajectory_y = wrapped(self.measurement_name(F_TRAJECTORY_Y))
+        integrated = wrapped(self.measurement_name(F_INTEGRATED_DISTANCE))
+        dists = wrapped(self.measurement_name(F_DISTANCE_TRAVELED))
+        linearity = wrapped(self.measurement_name(F_LINEARITY))
+        lifetimes = wrapped(self.measurement_name(F_LIFETIME))
 
-            has_parent_objnum = np.argwhere(has_parent).flatten() + 1
-            has_no_parent_objnum = np.argwhere(~ has_parent).flatten() + 1
-            #
-            # Parent = 0 indicates first appearance in the lineage
-            #            otherwise copy from last parent.
-            #
-            if len(has_no_parent_objnum) > 0:
-                first_x[group_index, has_no_parent_objnum] = \
-                       x[group_index, has_no_parent_objnum]
-                first_y[group_index, has_no_parent_objnum] = \
-                       y[group_index, has_no_parent_objnum]
-            if len(has_parent_objnum) == 0:
-                continue
-            this_first_x = first_x[pi, po]
-            first_x[group_index, has_parent_objnum] = this_first_x
-            this_first_y = first_y[pi, po]
-            first_y[group_index, has_parent_objnum] = this_first_y
+        for index in indexes:
             #
             # Distances traveled from step to step
             #
-            this_x = x[group_index, has_parent_objnum].toarray()[0]
-            this_y = y[group_index, has_parent_objnum].toarray()[0]
-            last_x = x[pi, po].toarray()[0]
-            last_y = y[pi, po].toarray()[0]
+            this_x = x[index]
+            if len(this_x) == 0:
+                continue
+            this_y = y[index]
+            last_x = x.get_parent(index, no_parent=this_x)
+            last_y = y.get_parent(index, no_parent=this_y)
             x_diff = this_x - last_x
             y_diff = this_y - last_y
-            otx = old_trajectory_x[index]
-            otx[~ has_parent] = 0
-            otx[has_parent] = x_diff
-            oty = old_trajectory_y[index]
-            oty[~ has_parent] = 0
-            oty[has_parent] = y_diff
+            trajectory_x[index] = x_diff
+            trajectory_y[index] = y_diff
             #
             # Integrated distance = accumulated distance for lineage
             #
-            oid = old_integrated[index]
-            lid = w_integrated[pi, po].toarray().flatten()
-            oid[~ has_parent] = 0
-            integrated_distance = np.sqrt(x_diff * x_diff + y_diff * y_diff) + lid
-            oid[has_parent] = integrated_distance
-            w_integrated[group_index, has_parent_objnum] = integrated_distance
+            integrated[index] = integrated.get_parent(index, no_parent=0) + \
+                np.sqrt(x_diff * x_diff + y_diff * y_diff)
             #
             # Total distance = crow-fly distance from initial ancestor
             #
-            x_tot_diff = this_x - this_first_x.toarray()[0]
-            y_tot_diff = this_y - this_first_y.toarray()[0]
-            tot_distance = np.sqrt(x_tot_diff * x_tot_diff + 
+            x_tot_diff = this_x - x.get_ancestor(index)
+            y_tot_diff = this_y - y.get_ancestor(index)
+            tot_distance = np.sqrt(x_tot_diff * x_tot_diff +
                                    y_tot_diff * y_tot_diff)
-            old_dist = old_dists[index]
-            old_dist[~ has_parent] = 0
-            old_dist[has_parent] = tot_distance
             #
             # Linearity = ratio of crow-fly distance and integrated
             # distance. NaN for new cells is ok.
             #
-            linearity = old_linearity[index]
-            linearity[~ has_parent] = np.NaN
-            linearity[has_parent] = tot_distance / integrated_distance
+            linearity[index] = tot_distance / integrated[index]
             #
             # Add 1 to lifetimes / zero for new
             #
-            lifetime = old_lifetime[index]
-            lifetime[~ has_parent] = 0
-            this_lifetime = w_lifetime[pi, po].toarray()[0] + 1
-            lifetime[has_parent] = this_lifetime
-            w_lifetime[group_index, has_parent_objnum] = this_lifetime
-        
+            lifetimes[index] = lifetimes.get_parent(index, no_parent=-1) + 1
+
     def map_objects(self, workspace, new_of_old, old_of_new, i,j):
         '''Record the mapping of old to new objects and vice-versa
 

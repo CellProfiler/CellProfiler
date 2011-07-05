@@ -220,7 +220,7 @@ if (not hasattr(sys, 'frozen')) and options.build_extensions:
     import subprocess
     import cellprofiler.cpmath.setup
     import cellprofiler.utilities.setup
-    import contrib.setup
+    #import contrib.setup
     from distutils.dep_util import newer_group
     #
     # Check for dependencies and compile if necessary

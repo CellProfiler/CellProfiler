@@ -443,18 +443,25 @@ try:
             else:
                 groups = None
             
+            import time
             if(options.multi_processing):
                 import cellprofiler.multiprocess_server as multiprocess_server
                 output_file = os.path.join(cpprefs.get_default_output_directory(),
                             cpprefs.get_output_file_name())
+                start_time = time.time()
                 measurements = multiprocess_server.run_multi(pipeline,image_set_start = image_set_start,
                                                        image_set_end = image_set_end,
                                                        grouping = groups,
                                                        output_file = output_file )
+                end_time = time.time()
             else:
+                start_time = time.time()
                 measurements = pipeline.run(image_set_start=image_set_start, 
                                         image_set_end=image_set_end,
                                         grouping=groups)
+                end_time = time.time()
+            elapsed_time = end_time - start_time
+            print 'Elapsed Time: %s' % (elapsed_time)
             if options.worker_mode_URL is not None:
                 try:
                     assert measurements is not None

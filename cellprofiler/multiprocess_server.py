@@ -5,7 +5,7 @@ processing in parallel
 
 import multiprocessing
 import StringIO
-import zlib
+#import zlib
 import tempfile
 import os
 import logging
@@ -83,11 +83,12 @@ def run_multi(pipeline,output_file,image_set_start = 1,image_set_end = None,grou
         
     #print 'jobnums: %s' % jobnums
     
-    def callback(info):
-        completed[info[0]] = info[1]
+    def callback(info_array):
+        for info in info_array:
+            completed[info[0]] = info[1]
         
     #For testing may want to run sequentially
-    if(False): 
+    if(True): 
         pool = multiprocessing.Pool(multiprocessing.cpu_count())
         
         #XXX Believe we can't count on these to be ordered,
@@ -97,9 +98,10 @@ def run_multi(pipeline,output_file,image_set_start = 1,image_set_end = None,grou
         pool.close()
         pool.join()
     else:
+        results =  []
         for job in job_list:
-            res = single_job(job)
-            callback(res)
+            results.append(single_job(job))
+        callback(results)
             
     #print 'completed: %s' % (completed)
     
@@ -119,7 +121,7 @@ def single_job(jobinfo):
             image_set_end = jobinfo.image_set_end
         except:
             logging.root.error("Can't parse pipeline for distributed work.", exc_info=True)
-            return [jobinfo.job_num,{'measurements':['FAILURE']}]
+            return [jobinfo.job_num,'FAILURE']
 
         measurements = pipeline.run(image_set_start=image_set_start, 
                                     image_set_end=image_set_end,
@@ -133,15 +135,3 @@ def single_job(jobinfo):
  
 if __name__ == '__main__':
     pass
-#
-#    pipeline = Pipeline()
-#    pipeline_filename = "/home/jacob/Programming/CellProfiler_custom/examples/ExampleWoundHealingImages/ExampleWoundHealing.cp"
-#    pipeline.load(pipeline_filename)
-#    image_set_start = 1
-#    image_set_end = None
-#    groups = None
-#    output_file = "/home/jacob/Programming/CellProfiler_custom/output"
-#    measurements = multiprocess_server.run_multi(pipeline,image_set_start = image_set_start,
-#                                                       image_set_end = image_set_end,
-#                                                       grouping = groups,
-#                                                       output_file = output_file )

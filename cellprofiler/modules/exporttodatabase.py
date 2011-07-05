@@ -405,7 +405,7 @@ class ExportToDatabase(cpm.CPModule):
         
         self.group_field_groups = []
         self.group_field_count = cps.HiddenCount(self.group_field_groups,"Properties group field count")
-        self.add_group_field_group()
+        self.add_group_field_group(False)
         self.add_group_field_button = cps.DoSomething("", "Add another group",
                                            self.add_group_field_group)
         
@@ -642,6 +642,7 @@ class ExportToDatabase(cpm.CPModule):
                              
     def add_group_field_group(self,can_remove = True):
         group = cps.SettingsGroup()
+        group.can_remove = can_remove
         group.append(
             "group_name",cps.Text(
             "Enter the name of the group",'',doc="""
@@ -887,20 +888,27 @@ class ExportToDatabase(cpm.CPModule):
                     result += [group.image_cols, group.wants_automatic_image_name]
                     if not group.wants_automatic_image_name:
                         result += [group.image_name]
-                    result += [group.image_channel_colors, group.remover]
+                    result += [group.image_channel_colors]
+                    if group.can_remove:
+                        result += [group.remover]
                 result += [ self.add_image_button]
             result += [self.properties_wants_groups]
             if self.properties_wants_groups:
                 for group in self.group_field_groups:
                     if group.can_remove:
                         result += [group.divider]
-                    result += [group.group_name, group.group_statement, group.remover]
+                    result += [group.group_name, group.group_statement]
+                    if group.can_remove:
+                        result += [group.remover]
                 result += [ self.add_group_field_button ]
             result += [self.properties_wants_filters]
             if self.properties_wants_filters:
                 result += [self.create_filters_for_plates]
                 for group in self.filter_field_groups:
-                    result += [group.filter_name, group.filter_statement, group.remover, group.divider]
+                    result += [group.filter_name, group.filter_statement]
+                    if group.can_remove:
+                        result += [group.remover]
+                    result += [group.divider]
                 result += [ self.add_filter_field_button ]
         
         if self.save_cpa_properties.value or self.create_workspace_file.value : # Put divider here to make things easier to read

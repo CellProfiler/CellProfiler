@@ -201,6 +201,7 @@ class Distributor(object):
 class JobInfo(object):
     def __init__(self, base_url):
         self.base_url = base_url
+        self._local = self.base_url[0:4] == 'file'
         self.image_set_start = None
         self.image_set_end = None
         self.pipeline_hash = None
@@ -209,8 +210,9 @@ class JobInfo(object):
 
     def fetch_job(self):
         # fetch the pipeline
-        socket.setdefaulttimeout(15) # python >= 2.6, this can be an argument to urlopen
-        self.pipeline_blob = urllib2.urlopen(self.base_url + '/data/-1').read()
+        #socket.setdefaulttimeout(15) # python >= 2.6, this can be an argument to urlopen
+        #self.pipeline_blob = urllib2.urlopen(self.base_url + '/data/-1').read()
+        self._get_pipeline_blob()
         self.pipeline_hash = hashlib.sha1(self.pipeline_blob).hexdigest()
         # fetch a job
         work_blob = urllib2.urlopen(self.base_url + '/work').read()
@@ -225,8 +227,20 @@ class JobInfo(object):
     def work_done(self):
         return False
 
+    def _get_pipeline_blob(self):
+        if(self._local):
+            self.pipeline_blob = urllib2.urlopen(self.base_url).read()
+        else:
+            socket.setdefaulttimeout(15) # python >= 2.6, this can be an argument to urlopen
+            self.pipeline_blob = urllib2.urlopen(self.base_url + '/data/-1').read()
+
     def pipeline_stringio(self):
-        return StringIO.StringIO(zlib.decompress(self.pipeline_blob))
+        if(not self.pipeline_blob):
+            self._get_pipeline_blob()
+        if(self._local):
+            return StringIO.StringIO(self.pipeline_blob)
+        else:
+            return StringIO.StringIO(zlib.decompress(self.pipeline_blob))
 
     def report_measurements(self, pipeline, measurements):
         out_measurements = StringIO.StringIO()

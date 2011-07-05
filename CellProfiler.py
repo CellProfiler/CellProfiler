@@ -62,6 +62,11 @@ parser.add_option("-r", "--run",
                   dest="run_pipeline",
                   default=False,
                   help="Run the given pipeline on startup")
+parser.add_option("-m","--multi-processing",
+                  dest = "multi_processing",
+                  action = "store_true",
+                  default = False,
+                  help = "Process in parallel on all cpus in local machine") 
 distributed_support_enabled = True
 try:
     import nuageux
@@ -437,7 +442,17 @@ try:
                 groups = dict(kvs)
             else:
                 groups = None
-            measurements = pipeline.run(image_set_start=image_set_start, 
+            
+            if(options.multi_processing):
+                import cellprofiler.multiprocess_server as multiprocess_server
+                output_file = os.path.join(cpprefs.get_default_output_directory(),
+                            cpprefs.get_output_file_name())
+                measurements = multiprocess_server.run_multi(pipeline,image_set_start = image_set_start,
+                                                       image_set_end = image_set_end,
+                                                       grouping = groups,
+                                                       output_file = output_file )
+            else:
+                measurements = pipeline.run(image_set_start=image_set_start, 
                                         image_set_end=image_set_end,
                                         grouping=groups)
             if options.worker_mode_URL is not None:

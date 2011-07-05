@@ -22,6 +22,8 @@ def run_multi(pipeline,output_file,image_set_start = 1,image_set_end = None,grou
     """
     
     #XXX We copied this from distributed.start_server(), may not be necessary
+    #XXX Would be nice to be able to handle SaveToSpreadsheet and other modules of similar nature properly
+    
     # make sure createbatchfiles is not in the pipeline
     if 'CreateBatchFiles' in [module.module_name for module in pipeline.modules()]:
        # XXX - should offer to ignore?
@@ -54,9 +56,6 @@ def run_multi(pipeline,output_file,image_set_start = 1,image_set_end = None,grou
     #pipeline_blob = zlib.compress(pipeline_txt.getvalue())
     pipeline_blob = pipeline_txt.getvalue()
     pipeline_fd, pipeline_path = tempfile.mkstemp()
-    
-    #print pipeline_path
-    
     os.write(pipeline_fd, pipeline_blob)
     os.close(pipeline_fd)
 
@@ -91,7 +90,7 @@ def run_multi(pipeline,output_file,image_set_start = 1,image_set_end = None,grou
     if(True): 
         pool = multiprocessing.Pool(multiprocessing.cpu_count())
         
-        #XXX Believe we can't count on these to be ordered,
+        #XXX Believe we can't count on the results to be ordered,
         #but not sure
         pool.map_async(single_job,job_list,callback = callback)
         
@@ -102,15 +101,13 @@ def run_multi(pipeline,output_file,image_set_start = 1,image_set_end = None,grou
         for job in job_list:
             results.append(single_job(job))
         callback(results)
-            
-    #print 'completed: %s' % (completed)
-    
-    def nth_output_file(n):
-        return completed[n]
-    
+
     MergeOutputFiles.merge_files(output_file,
-                             [nth_output_file(n) for n in completed],
+                             [completed[n] for n in completed],
                              force_headless=True)
+    
+    #Cleanup; delete temp pipeline file 
+    os.remove(pipeline_path)
     
 def single_job(jobinfo):
 

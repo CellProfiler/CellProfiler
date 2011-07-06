@@ -408,35 +408,42 @@ try:
             if options.worker_mode_URL is None:
                 # normal behavior
                 pipeline.load(options.pipeline_filename)
-            else:
-                # distributed worker
-                continue_looping = True
-                if time.time() - last_success > worker_timeout:
-                    logging.root.info("Worker timed out.  Exiting.")
-                    break
-
-                try:
-                    jobinfo = cpdistributed.fetch_work(options.worker_mode_URL)
-                except:
-                    # no answer from the server, or possibly a timeout
-                    logging.root.info("Failed to fetch work from server.", exc_info=True)
-                    logging.root.info("Retrying...")
-                    time.sleep(20 + random.randint(1, 10)) # avoid hammering server
+                if not options.multi_processing:
+                    # distributed worker
+                    continue_looping = True
+                    if time.time() - last_success > worker_timeout:
+                        logging.root.info("Worker timed out.  Exiting.")
+                        break
+    
+                    try:
+                        jobinfo = cpdistributed.fetch_work(options.worker_mode_URL)
+                    except:
+                        # no answer from the server, or possibly a timeout
+                        logging.root.info("Failed to fetch work from server.", exc_info=True)
+                        logging.root.info("Retrying...")
+                        time.sleep(20 + random.randint(1, 10)) # avoid hammering server
+                        continue
+    
+                    if jobinfo.work_done():
+                        time.sleep(20 + random.randint(1, 10)) # avoid hammering server
+                        continue # loop until timeout
+    
+                    try:
+                        pipeline.load(jobinfo.pipeline_stringio())
+                        image_set_start = jobinfo.image_set_start
+                        image_set_end = jobinfo.image_set_end
+                    except:
+                        logging.root.error("Can't parse pipeline for distributed work.", exc_info=True)
+                        logging.root.info("Retrying...")
+                        time.sleep(20 + random.randint(1, 10)) # avoid hammering server
+                        continue
+                else:
+                    print 'Running multiple workers'
+                    continue_looping = False
+                    donejobs = multiprocess_server.run_multiple_workers(options.worker_mode_URL)
+                    print 'Finished job numbers: %s' % donejobs
                     continue
-
-                if jobinfo.work_done():
-                    time.sleep(20 + random.randint(1, 10)) # avoid hammering server
-                    continue # loop until timeout
-
-                try:
-                    pipeline.load(jobinfo.pipeline_stringio())
-                    image_set_start = jobinfo.image_set_start
-                    image_set_end = jobinfo.image_set_end
-                except:
-                    logging.root.error("Can't parse pipeline for distributed work.", exc_info=True)
-                    logging.root.info("Retrying...")
-                    time.sleep(20 + random.randint(1, 10)) # avoid hammering server
-                    continue
+                
             if options.groups is not None:
                 kvs = [x.split('=') for x in options.groups.split(',')]
                 groups = dict(kvs)
@@ -444,21 +451,21 @@ try:
                 groups = None
             
             import time
-            if(options.multi_processing):
+            if(options.worker_mode_URL is None and options.multi_processing):
                 import cellprofiler.multiprocess_server as multiprocess_server
                 output_file = os.path.join(cpprefs.get_default_output_directory(),
-                            cpprefs.get_output_file_name())
+                        cpprefs.get_output_file_name())
                 start_time = time.time()
                 measurements = multiprocess_server.run_multi(pipeline,image_set_start = image_set_start,
-                                                       image_set_end = image_set_end,
-                                                       grouping = groups,
-                                                       output_file = output_file )
+                                                   image_set_end = image_set_end,
+                                                   grouping = groups,
+                                                   output_file = output_file )
                 end_time = time.time()
             else:
                 start_time = time.time()
                 measurements = pipeline.run(image_set_start=image_set_start, 
-                                        image_set_end=image_set_end,
-                                        grouping=groups)
+                                    image_set_end=image_set_end,
+                                    grouping=groups)
                 end_time = time.time()
             elapsed_time = end_time - start_time
             print 'Elapsed Time: %s' % (elapsed_time)

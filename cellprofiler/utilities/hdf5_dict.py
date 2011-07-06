@@ -235,24 +235,38 @@ class HDF5Dict(object):
             index = self.indices[object_name, feature_name]
             if (num_idx not in index) and (values is None):
                 return None  # no data
-            if num_idx not in index:
-                grow_by = np.asanyarray(values).ravel().size
-                # create the measurements if needed
+            if values is not None:
+                data_size = np.asanyarray(values).ravel().size
                 feature_group = self.top_group.require_group(object_name).require_group(feature_name)
-                if not 'data' in feature_group:
-                    feature_group.create_dataset('data', (0,), dtype=infer_hdf5_type(values),
-                                                 compression='gzip', chunks=(1000,), maxshape=(None,))
-                    feature_group.create_dataset('index', (0, 3), dtype=int, compression='gzip',
-                                                 chunks=(1000, 3), maxshape=(None, 3))
-                # grow data and index
-                ds = feature_group['data']
-                hdf5_index = feature_group['index']
-                cur_size = ds.shape[0]
-                ds.resize((cur_size + grow_by,))
-                hdf5_index.resize((hdf5_index.shape[0] + 1, 3))
-                # store locations for new data
-                hdf5_index[-1, :] = (num_idx, cur_size, cur_size + grow_by)
-                index[num_idx] = slice(cur_size, cur_size + grow_by)
+                if num_idx in index:
+                    sl = index[num_idx]
+                    if data_size > (sl.stop - sl.start):
+                        hdf5_index = feature_group['index']
+                        hdf5_index[np.flatnonzero(hdf5_index[:, 0] == num_idx), 0] = -1
+                        del index[num_idx]
+                    elif data_size < (sl.stop - sl.start):
+                        hdf5_index = feature_group['index']
+                        loc = np.flatnonzero(hdf5_index[:, 0] == num_idx)
+                        hdf5_index[loc, 2] = hdf5_index[loc, 1] + data_size
+                        index[num_idx] = slice(sl.start, sl.start + data_size)
+                if num_idx not in index:
+                    grow_by = data_size
+                    # create the measurements if needed
+
+                    if not 'data' in feature_group:
+                        feature_group.create_dataset('data', (0,), dtype=infer_hdf5_type(values),
+                                                     compression='gzip', chunks=(1000,), maxshape=(None,))
+                        feature_group.create_dataset('index', (0, 3), dtype=int, compression='gzip',
+                                                     chunks=(1000, 3), maxshape=(None, 3))
+                    # grow data and index
+                    ds = feature_group['data']
+                    hdf5_index = feature_group['index']
+                    cur_size = ds.shape[0]
+                    ds.resize((cur_size + grow_by,))
+                    hdf5_index.resize((hdf5_index.shape[0] + 1, 3))
+                    # store locations for new data
+                    hdf5_index[-1, :] = (num_idx, cur_size, cur_size + grow_by)
+                    index[num_idx] = slice(cur_size, cur_size + grow_by)
             return index[num_idx]
 
     def clear(self):
@@ -296,3 +310,7 @@ if __name__ == '__main__':
     print h['Object1', 'objfeature1', 1]
     h['Object1', 'objfeature1', 2] = 3.0
     print h['Object1', 'objfeature1', 1]
+    h['Object1', 'objfeature1', 1] = [1, 2, 3]
+    h['Object1', 'objfeature1', 1] = [1, 2, 3, 5, 6]
+    h['Object1', 'objfeature1', 1] = [9, 4.0, 2.5]
+    print     h['Object1', 'objfeature1', 1]

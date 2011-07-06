@@ -444,17 +444,20 @@ class ExportToSpreadsheet(cpm.CPModule):
         metadata_groups = workspace.measurements.group_by_metadata(tags)
         for metadata_group in metadata_groups:
             if len(object_names) == 1 and object_names[0] == IMAGE:
-                self.make_image_file(file_name, metadata_group.indexes, 
+                self.make_image_file(file_name, 
+                                     metadata_group.image_numbers, 
                                      workspace)
                 if self.wants_genepattern_file.value:
-                    self.make_gct_file(file_name, metadata_group.indexes, 
-                                         workspace)
+                    self.make_gct_file(file_name, 
+                                       metadata_group.image_numbers, 
+                                       workspace)
             elif len(object_names) == 1 and object_names[0] == OBJECT_RELATIONSHIPS:
-                self.make_relationships_file(file_name, metadata_group.indexes, 
+                self.make_relationships_file(file_name, 
+                                             metadata_group.image_numbers, 
                                              workspace)
             else:
                 self.make_object_file(object_names, file_name, 
-                                      metadata_group.indexes, workspace)
+                                      metadata_group.image_numbers, workspace)
     
     def make_full_filename(self, file_name, 
                            workspace = None, image_set_number = None):

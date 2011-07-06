@@ -307,6 +307,32 @@ class CalculateStatistics(cpm.CPModule):
     def run_as_data_tool(self, workspace):
         self.post_run(workspace)
         
+    def get_image_measurements(self, measurements, feature_name):
+        assert isinstance(measurements, cpmeas.Measurements)
+        image_numbers = measurements.get_image_numbers()
+        result = np.zeros(len(image_numbers))
+        for i, image_number in enumerate(image_numbers):
+            value = measurements.get_measurement(
+                cpmeas.IMAGE, feature_name, image_number)
+            result[i] = value if np.isscalar(value) else value[0]
+        return result
+    
+    def aggregate_measurement(self, measurements, object_name, feature_name):
+        assert isinstance(measurements, cpmeas.Measurements)
+        image_numbers = measurements.get_image_numbers()
+        result = np.zeros(len(image_numbers))
+        for i, image_number in enumerate(image_numbers):
+            values = measurements.get_measurement(
+                object_name, feature_name, image_number)
+            if np.isscalar(values):
+                result[i] = values
+            elif np.any(np.isfinite(values)):
+                values = np.array(values)
+                result[i] = np.mean(values[np.isfinite(values)])
+            else:
+                result[i] = np.nan
+        return result
+    
     def post_run(self, workspace):
         """Do post-processing after the run completes
         
@@ -317,28 +343,29 @@ class CalculateStatistics(cpm.CPModule):
         all_objects = [x for x in measurements.get_object_names()
                        if x not in [cpmeas.EXPERIMENT, cpmeas.NEIGHBORS]]
         feature_set = []
+        image_numbers = measurements.get_image_numbers()
         for object_name in all_objects:
-            all_features = [x for x in measurements.get_feature_names(object_name)
-                            if self.include_feature(measurements, object_name, x)]
+            all_features = [
+                x for x in measurements.get_feature_names(object_name)
+                if self.include_feature(
+                    measurements, object_name, x, image_numbers)]
             feature_set += [(object_name, feature_name) 
                             for feature_name in all_features]
-        grouping_data = np.array(measurements.get_all_measurements(
-            cpmeas.IMAGE,self.grouping_values.value))
+        grouping_data = self.get_image_measurements(
+            measurements, self.grouping_values.value)
         grouping_data = grouping_data.flatten()
         data = np.zeros((len(grouping_data), len(feature_set)))
         for i, (object_name, feature_name) in enumerate(feature_set):
-            fdata = measurements.get_all_measurements(object_name, feature_name)
-            fdata = np.array([e if not isinstance(e, np.ndarray)
-                              else np.mean(e[~np.isnan(e)]) for e in fdata])
-            data[:,i] = fdata
+            data[:,i] = self.aggregate_measurement(
+                measurements, object_name, feature_name)
     
         z, z_one_tailed, OrderedUniqueDoses, OrderedAverageValues = \
              z_factors(grouping_data, data)
         #
         # For now, use first dose value only
         #
-        dose_data = measurements.get_all_measurements(
-            cpmeas.IMAGE,self.dose_values[0].measurement.value)
+        dose_data = self.get_image_measurements(
+            measurements, self.dose_values[0].measurement.value)
         dose_data = np.array(dose_data).flatten()
         v = v_factors(dose_data, data)
         expt_measurements = {
@@ -348,10 +375,8 @@ class CalculateStatistics(cpm.CPModule):
             }
         for dose_group in self.dose_values:
             dose_feature = dose_group.measurement.value
-            dose_data = measurements.get_all_measurements(cpmeas.IMAGE,
-                                                          dose_feature)
-            dose_data = np.array(dose_data)
-            dose_data = dose_data.flatten()
+            dose_data = self.get_image_measurements(
+                measurements, dose_feature)
             ec50_coeffs = calculate_ec50(dose_data, data, 
                                          dose_group.log_transform.value)
             if len(self.dose_values) == 1:
@@ -384,7 +409,8 @@ class CalculateStatistics(cpm.CPModule):
                 figure.subplot_table(ii,0, stats, (.3,.5,.2))
                 figure.set_subplot_title("Top 10 by %s"%key, ii,0)
                 
-    def include_feature(self, measurements, object_name, feature_name):
+    def include_feature(self, measurements, object_name, feature_name, 
+                        image_numbers):
         '''Return true if we should analyze a feature'''
         if feature_name.find("Location") != -1:
             return False
@@ -399,17 +425,17 @@ class CalculateStatistics(cpm.CPModule):
         if (object_name == cpmeas.IMAGE and
             feature_name in [g.measurement.value for g in self.dose_values]):
             return False
-        all_measurements = measurements.get_all_measurements(object_name, 
-                                                             feature_name)
-        if len(all_measurements) == 0:
+        if len(image_numbers) == 0:
             return False
-        if np.isscalar(all_measurements[0]):
-            return not (isinstance(all_measurements[0], str),
-                        isinstance(all_measurements[0], unicode))
+        v = measurements.get_measurement(object_name, 
+                                         feature_name,
+                                         image_numbers[0])
+        if np.isscalar(v):
+            return not (isinstance(v, (str, unicode)))
         #
         # Make sure the measurement isn't a string or other oddity
         #
-        return all_measurements[0].dtype.kind not in "OSU"
+        return v[0].dtype.kind not in "OSU"
         
     def upgrade_settings(self, setting_values, variable_revision_number, 
                          module_name, from_matlab):

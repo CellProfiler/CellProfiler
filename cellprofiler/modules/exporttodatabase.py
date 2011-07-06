@@ -1208,11 +1208,7 @@ class ExportToDatabase(cpm.CPModule):
         if self.want_image_thumbnails:
             cols = []
             for name in self.thumbnail_image_names.get_selections():
-                # NOTE: We currently use type BLOB which can only store 64K
-                #   This is sufficient for images up to 256 x 256 px
-                #   If larger thumbnails are to be stored, this may have to be
-                #   bumped to a MEDIUMBLOB.
-                cols += [(cpmeas.IMAGE, "Thumbnail_%s"%(name), cpmeas.COLTYPE_BLOB)]
+                cols += [(cpmeas.IMAGE, "Thumbnail_%s"%(name), cpmeas.COLTYPE_LONGBLOB)]
             return cols
         return []
             
@@ -1748,9 +1744,8 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
         columns = self.get_pipeline_measurement_columns(pipeline, 
                                                         image_set_list, remove_postgroup_key = True)
         agg_columns = self.get_aggregate_columns(pipeline, image_set_list)
-        for i in range(1, measurements.image_set_number):
+        for image_number in measurements.get_image_numbers():
             image_row = []
-            image_number = i+measurements.image_set_start_number
             image_row.append(image_number)
             for object_name, feature, coltype in columns:
                 if object_name != cpmeas.IMAGE:
@@ -1758,7 +1753,8 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                 if self.ignore_feature(object_name, feature, measurements):
                     continue
                 feature_name = "%s_%s" % (object_name,feature)
-                value = measurements.get_measurement(cpmeas.IMAGE, feature, i)
+                value = measurements.get_measurement(
+                    cpmeas.IMAGE, feature, image_number)
                 if isinstance(value, np.ndarray):
                     value = value[0]
                 if coltype.startswith(cpmeas.COLTYPE_VARCHAR):
@@ -1776,7 +1772,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
             # Add the aggregate measurements
             #
             agg_dict = measurements.compute_aggregate_measurements(
-                i, self.agg_names)
+                image_number, self.agg_names)
             image_row += [agg_dict[col[3]] for col in agg_columns]
             fid_per_image.write(','.join([str(x) for x in image_row])+"\n")
         fid_per_image.close()
@@ -1798,13 +1794,11 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
             file_name = self.make_full_filename(file_name)
             fid = open(file_name, "wb")
             csv_writer = csv.writer(fid, lineterminator='\n')
-            for i in range(1, measurements.image_set_number):
-                image_number = i+measurements.image_set_start_number
+            for image_number in measurements.get_image_numbers():
                 max_count = 0
                 for object_name in object_list:
-                    count = measurements.get_measurement(cpmeas.IMAGE,
-                                                         "Count_%s" % 
-                                                         object_name, i)
+                    count = measurements.get_measurement(
+                        cpmeas.IMAGE, "Count_%s" % object_name, image_number)
                     max_count = max(max_count, int(count))
                 for j in range(max_count):
                     object_row = [image_number]
@@ -1817,8 +1811,8 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                         for object_name_to_check, feature, coltype in columns:
                             if object_name_to_check != object_name:
                                 continue
-                            values = measurements.get_measurement(object_name,
-                                                                  feature, i)
+                            values = measurements.get_measurement(
+                                object_name, feature, image_number)
                             if (values is None or len(values) <= j or
                                 np.isnan(values[j]) or np.isinf(values[j])):
                                 value = "NULL"
@@ -1893,8 +1887,8 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                 if m_col[1] not in feature_names:
                     continue
                 feature_name = "%s_%s"%(cpmeas.IMAGE, m_col[1])
-                value = measurements.get_all_measurements(
-                    cpmeas.IMAGE, m_col[1])[index]
+                value = measurements.get_measurement(
+                    cpmeas.IMAGE, m_col[1], image_number)
                 if isinstance(value, np.ndarray):
                     value=value[0]
                 if isinstance(value, float) and not np.isfinite(value) and zeros_for_nan:
@@ -1904,7 +1898,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
             # Aggregates for the image table
             #
             agg_dict = measurements.compute_aggregate_measurements(
-                index, self.agg_names)
+                image_number, self.agg_names)
             agg_columns = self.get_aggregate_columns(pipeline, image_set_list, 
                                                      post_group)
             image_row += [(agg_dict[agg[3]], 
@@ -1946,8 +1940,8 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                     max_count = 0
                     for object_name in object_list:
                         ftr_count = "Count_%s" % object_name
-                        count = measurements.get_all_measurements(
-                            cpmeas.IMAGE, ftr_count)[index]
+                        count = measurements.get_measurement(
+                            cpmeas.IMAGE, ftr_count, image_number)
                         max_count = max(max_count, int(count))
                     object_cols = []
                     if not post_group:
@@ -1959,8 +1953,8 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                         object_numbers = np.arange(1, max_count+1)
                     else:
                         object_number_column = "_".join((object_name, M_NUMBER_OBJECT_NUMBER))
-                        object_numbers = measurements.get_all_measurements(
-                            object_name, M_NUMBER_OBJECT_NUMBER)[index]
+                        object_numbers = measurements.get_measurement(
+                            object_name, M_NUMBER_OBJECT_NUMBER, image_number)
                     
                     object_cols += [mapping["%s_%s" % (column[0], column[1])]
                                     for column in columns]
@@ -1976,8 +1970,8 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                             
                         for column in columns:
                             object_name, feature, coltype = column[:3]
-                            values = measurements.get_all_measurements(
-                                object_name, feature)[index]
+                            values = measurements.get_measurement(
+                                object_name, feature, image_number)
                             if (values is None or len(values) <= j or
                                 np.isnan(values[j]) or
                                 np.isinf(values[j])):

@@ -465,6 +465,10 @@ CalculateStatistics:[module_num:1|svn_version:\'9495\'|variable_revision_number:
                     filename = "EC49_"+feature_name[5:]+".pdf"
                     self.assertTrue(os.path.isfile(os.path.join(temp_dir, filename)))
         finally:
+            try:
+                workspace.measurements.hdf5_dict.hdf5_file.close()
+            except:
+                pass
             for filename in os.listdir(temp_dir):
                 path = os.path.join(temp_dir, filename)
                 os.remove(path)

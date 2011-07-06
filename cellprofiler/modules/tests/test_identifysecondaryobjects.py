@@ -306,7 +306,7 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'10220\'|variable_revision_n
         self.assertTrue("Count_%s" % OUTPUT_OBJECTS_NAME in m.get_feature_names("Image"))
         counts = m.get_current_measurement("Image", "Count_%s" % OUTPUT_OBJECTS_NAME)
         self.assertEqual(np.product(counts.shape), 1)
-        self.assertEqual(counts[0],0)
+        self.assertEqual(counts,0)
         columns = module.get_measurement_columns(workspace.pipeline)
         for object_name in (cpm.IMAGE, OUTPUT_OBJECTS_NAME,INPUT_OBJECTS_NAME):
             ocolumns =[x for x in columns if x[0] == object_name]
@@ -330,7 +330,7 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'10220\'|variable_revision_n
         objects_out = workspace.object_set.get_objects(OUTPUT_OBJECTS_NAME)
         counts = m.get_current_measurement("Image", "Count_%s" % OUTPUT_OBJECTS_NAME)
         self.assertEqual(np.product(counts.shape), 1)
-        self.assertEqual(counts[0],1)
+        self.assertEqual(counts,1)
         expected = np.zeros((10,10),int)
         expected[2:7,2:7] = 1
         self.assertTrue(np.all(objects_out.segmented==expected))
@@ -361,7 +361,7 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'10220\'|variable_revision_n
         self.assertTrue("Count_%s" % OUTPUT_OBJECTS_NAME in m.get_feature_names("Image"))
         counts = m.get_current_measurement("Image", "Count_%s" % OUTPUT_OBJECTS_NAME)
         self.assertEqual(np.product(counts.shape), 1)
-        self.assertEqual(counts[0],2)
+        self.assertEqual(counts, 2)
         objects_out = workspace.object_set.get_objects(OUTPUT_OBJECTS_NAME)
         expected = np.zeros((10,10),int)
         expected[2:7,2:7] = 1
@@ -404,7 +404,7 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'10220\'|variable_revision_n
         self.assertTrue("Count_%s" % OUTPUT_OBJECTS_NAME in m.get_feature_names("Image"))
         counts = m.get_current_measurement("Image", "Count_%s" % OUTPUT_OBJECTS_NAME)
         self.assertEqual(np.product(counts.shape), 1)
-        self.assertEqual(counts[0],2)
+        self.assertEqual(counts, 2)
         objects_out = o_s.get_objects(OUTPUT_OBJECTS_NAME)
         expected = np.zeros((10,20),int)
         expected[2:7,2:10] = 1
@@ -429,7 +429,7 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'10220\'|variable_revision_n
         objects_out = workspace.object_set.get_objects(OUTPUT_OBJECTS_NAME)
         counts = m.get_current_measurement("Image", "Count_%s" % OUTPUT_OBJECTS_NAME)
         self.assertEqual(np.product(counts.shape), 1)
-        self.assertEqual(counts[0],1)
+        self.assertEqual(counts, 1)
         expected = np.zeros((10,20),int)
         expected[2:7,2:7] = 1
         self.assertTrue(np.all(objects_out.segmented==expected))
@@ -466,7 +466,7 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'10220\'|variable_revision_n
         self.assertTrue("Count_%s" % OUTPUT_OBJECTS_NAME in m.get_feature_names("Image"))
         counts = m.get_current_measurement("Image", "Count_%s" % OUTPUT_OBJECTS_NAME)
         self.assertEqual(np.product(counts.shape), 1)
-        self.assertEqual(counts[0],0)
+        self.assertEqual(counts, 0)
     
     def test_03_02_one_object_watershed_gradient(self):
         p = cpp.Pipeline()
@@ -497,7 +497,7 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'10220\'|variable_revision_n
         self.assertTrue("Count_%s" % OUTPUT_OBJECTS_NAME in m.get_feature_names("Image"))
         counts = m.get_current_measurement("Image", "Count_%s" % OUTPUT_OBJECTS_NAME)
         self.assertEqual(np.product(counts.shape), 1)
-        self.assertEqual(counts[0],1)
+        self.assertEqual(counts, 1)
         objects_out = o_s.get_objects(OUTPUT_OBJECTS_NAME)
         expected = np.zeros((10,10),int)
         expected[2:7,2:7] = 1
@@ -546,7 +546,7 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'10220\'|variable_revision_n
         self.assertTrue("Count_%s" % OUTPUT_OBJECTS_NAME in m.get_feature_names("Image"))
         counts = m.get_current_measurement("Image", "Count_%s" % OUTPUT_OBJECTS_NAME)
         self.assertEqual(np.product(counts.shape), 1)
-        self.assertEqual(counts[0],2)
+        self.assertEqual(counts, 2)
         objects_out = o_s.get_objects(OUTPUT_OBJECTS_NAME)
         expected = np.zeros((10,20),int)
         expected[2:7,2:7] = 1
@@ -569,7 +569,7 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'10220\'|variable_revision_n
         self.assertTrue("Count_%s" % OUTPUT_OBJECTS_NAME in m.get_feature_names("Image"))
         counts = m.get_current_measurement("Image", "Count_%s" % OUTPUT_OBJECTS_NAME)
         self.assertEqual(np.product(counts.shape), 1)
-        self.assertEqual(counts[0],1)
+        self.assertEqual(counts, 1)
         objects_out = workspace.object_set.get_objects(OUTPUT_OBJECTS_NAME)
         expected = np.zeros((20,10),int)
         expected[2:7,2:7] = 1
@@ -608,7 +608,7 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'10220\'|variable_revision_n
         self.assertTrue("Count_%s" % OUTPUT_OBJECTS_NAME in m.get_feature_names("Image"))
         counts = m.get_current_measurement("Image", "Count_%s" % OUTPUT_OBJECTS_NAME)
         self.assertEqual(np.product(counts.shape), 1)
-        self.assertEqual(counts[0],0)
+        self.assertEqual(counts, 0)
     
     def test_04_02_one_object_watershed_image(self):
         p = cpp.Pipeline()
@@ -639,7 +639,7 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'10220\'|variable_revision_n
         self.assertTrue("Count_%s" % OUTPUT_OBJECTS_NAME in m.get_feature_names("Image"))
         counts = m.get_current_measurement("Image", "Count_%s" % OUTPUT_OBJECTS_NAME)
         self.assertEqual(np.product(counts.shape), 1)
-        self.assertEqual(counts[0],1)
+        self.assertEqual(counts, 1)
         objects_out = o_s.get_objects(OUTPUT_OBJECTS_NAME)
         expected = np.zeros((10,10),int)
         expected[2:7,2:7] = 1
@@ -681,7 +681,7 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'10220\'|variable_revision_n
         self.assertTrue("Count_%s" % OUTPUT_OBJECTS_NAME in m.get_feature_names("Image"))
         counts = m.get_current_measurement("Image", "Count_%s" % OUTPUT_OBJECTS_NAME)
         self.assertEqual(np.product(counts.shape), 1)
-        self.assertEqual(counts[0],2)
+        self.assertEqual(counts, 2)
         objects_out = o_s.get_objects(OUTPUT_OBJECTS_NAME)
         expected = np.zeros((10,20),int)
         expected[2:7,2:7] = 1
@@ -704,7 +704,7 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'10220\'|variable_revision_n
         self.assertTrue("Count_%s" % OUTPUT_OBJECTS_NAME in m.get_feature_names("Image"))
         counts = m.get_current_measurement("Image", "Count_%s" % OUTPUT_OBJECTS_NAME)
         self.assertEqual(np.product(counts.shape), 1)
-        self.assertEqual(counts[0],1)
+        self.assertEqual(counts, 1)
         objects_out = workspace.object_set.get_objects(OUTPUT_OBJECTS_NAME)
         expected = np.zeros((20,10),int)
         expected[2:7,2:7] = 1
@@ -735,7 +735,7 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'10220\'|variable_revision_n
         self.assertTrue("Count_%s" % OUTPUT_OBJECTS_NAME in m.get_feature_names("Image"))
         counts = m.get_current_measurement("Image", "Count_%s" % OUTPUT_OBJECTS_NAME)
         self.assertEqual(np.product(counts.shape), 1)
-        self.assertEqual(counts[0],0)
+        self.assertEqual(counts, 0)
     
     def test_05_02_one_object_distance_n(self):
         p = cpp.Pipeline()
@@ -766,7 +766,7 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'10220\'|variable_revision_n
         self.assertTrue("Count_%s" % OUTPUT_OBJECTS_NAME in m.get_feature_names("Image"))
         counts = m.get_current_measurement("Image", "Count_%s" % OUTPUT_OBJECTS_NAME)
         self.assertEqual(np.product(counts.shape), 1)
-        self.assertEqual(counts[0],1)
+        self.assertEqual(counts, 1)
         objects_out = o_s.get_objects(OUTPUT_OBJECTS_NAME)
         expected = np.zeros((10,10),int)
         expected[2:7,2:7] = 1
@@ -805,7 +805,7 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'10220\'|variable_revision_n
         self.assertTrue("Count_%s" % OUTPUT_OBJECTS_NAME in m.get_feature_names("Image"))
         counts = m.get_current_measurement("Image", "Count_%s" % OUTPUT_OBJECTS_NAME)
         self.assertEqual(np.product(counts.shape), 1)
-        self.assertEqual(counts[0],2)
+        self.assertEqual(counts, 2)
         objects_out = o_s.get_objects(OUTPUT_OBJECTS_NAME)
         expected = np.zeros((10,20),int)
         expected[:,:10] = 1
@@ -826,7 +826,7 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'10220\'|variable_revision_n
         self.assertTrue("Count_%s" % OUTPUT_OBJECTS_NAME in m.get_feature_names("Image"))
         counts = m.get_current_measurement("Image", "Count_%s" % OUTPUT_OBJECTS_NAME)
         self.assertEqual(np.product(counts.shape), 1)
-        self.assertEqual(counts[0],1)
+        self.assertEqual(counts, 1)
         objects_out = workspace.object_set.get_objects(OUTPUT_OBJECTS_NAME)
         expected = np.zeros((20,10),int)
         expected[2:7,2:7] = 1
@@ -867,7 +867,7 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'10220\'|variable_revision_n
         self.assertTrue("Count_%s" % OUTPUT_OBJECTS_NAME in m.get_feature_names("Image"))
         counts = m.get_current_measurement("Image", "Count_%s" % OUTPUT_OBJECTS_NAME)
         self.assertEqual(np.product(counts.shape), 1)
-        self.assertEqual(counts[0],1)
+        self.assertEqual(counts, 1)
         objects_out = o_s.get_objects(OUTPUT_OBJECTS_NAME)
         outlines_out = workspace.image_set.get_image("my_outlines",
                                                      must_be_binary=True).pixel_data
@@ -916,7 +916,7 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'10220\'|variable_revision_n
         self.assertTrue(count_feature in m.get_feature_names("Image"))
         counts = m.get_current_measurement("Image", count_feature)
         self.assertEqual(np.product(counts.shape), 1)
-        self.assertEqual(counts[0],1)
+        self.assertEqual(counts, 1)
         objects_out = o_s.get_objects(OUTPUT_OBJECTS_NAME)
         outlines_out = workspace.image_set.get_image("newprimaryoutlines",
                                                      must_be_binary=True)

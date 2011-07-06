@@ -304,7 +304,7 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
         pipeline, module, filename = self.make_pipeline(csv_text)
         m = pipeline.run()
         data = m.get_current_image_measurement("Test_Measurement")
-        self.assertTrue(isinstance(data, unicode), "Expected <type 'str'> got %s" %type(data))
+        self.assertTrue(isinstance(data, unicode), "Expected <type 'unicode'> got %s" %type(data))
         self.assertEqual(data, "1234567890123")
         os.remove(filename)
     

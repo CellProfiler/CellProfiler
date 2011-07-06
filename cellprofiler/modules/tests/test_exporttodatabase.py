@@ -13,7 +13,6 @@ Website: http://www.cellprofiler.org
 '''
 
 __version__="$Revision$"
-
 import base64
 import numpy as np
 np.random.seed(9804)
@@ -26,6 +25,7 @@ import traceback
 import unittest
 import uuid
 import zlib
+import socket
 
 from cellprofiler.preferences import set_headless
 set_headless()
@@ -81,9 +81,12 @@ class TestExportToDatabase(unittest.TestCase):
     def setUp(self):
         self.__cursor = None
         self.__connection = None
+        self.__at_broad = socket.gethostbyaddr(socket.gethostname())[0].endswith('broadinstitute.org')
     
     @property
     def connection(self):
+        if not self.__at_broad:
+            self.skipTest("Skipping actual DB work, not at the Broad.")
         if self.__connection is None:
             import MySQLdb
             from MySQLdb.cursors import SSCursor
@@ -95,6 +98,8 @@ class TestExportToDatabase(unittest.TestCase):
     
     @property
     def cursor(self):
+        if not self.__at_broad:
+            self.skipTest("Skipping actual DB work, not at the Broad.")
         if self.__cursor is None:
             import MySQLdb
             from MySQLdb.cursors import SSCursor
@@ -894,7 +899,9 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
             try:
                 self.cursor.execute("drop table %s.%s" %
                                     (module.db_name.value, table_name))
-            except:
+            except unittest.SkipTest:
+                raise
+            except Exception:
                 traceback.print_exc()
                 print "Failed to drop table %s"%table_name
             
@@ -1103,6 +1110,8 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
             module.wants_agg_std_dev.value = False
             module.objects_choice.value = E.O_ALL
             module.separate_object_tables.value = E.OT_COMBINE
+            if not self.__at_broad:
+                self.skipTest("Skipping actual DB work, not at the Broad.")
             module.prepare_run(workspace.pipeline, workspace.image_set_list,None)
             module.prepare_group(workspace.pipeline, workspace.image_set_list,
                                  {}, [1])
@@ -2772,7 +2781,7 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
             stmt = "select Image_%s from %s" % (expected_thumbnail_column, image_table)
             self.cursor.execute(stmt)
             result = self.cursor.fetchall()
-            im = PILImage.open(StringIO(result[0][0]))
+            im = PILImage.open(StringIO(result[0][0].decode('base64')))
             self.assertEqual(tuple(im.size), (200,200))
             
         finally:
@@ -2808,7 +2817,7 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
             cursor, connection = self.get_sqlite_cursor(module)
             cursor.execute(stmt)
             result = cursor.fetchall()
-            im = PILImage.open(StringIO(result[0][0]))
+            im = PILImage.open(StringIO(str(result[0][0]).decode('base64')))
             self.assertEqual(tuple(im.size), (200,200))
         finally:
             if cursor is not None:
@@ -2840,7 +2849,7 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
                                  {}, np.arange(count)+1)
             for i in range(count):
                 workspace.set_image_set_for_testing_only(i+1)
-                measurements.set_image_set_number(i+1)
+                measurements.next_image_set(i + 1)
                 module.run(workspace)
             self.cursor.execute("use CPUnitTest")
             #

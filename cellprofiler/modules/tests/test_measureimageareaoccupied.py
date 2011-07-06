@@ -63,8 +63,8 @@ class TestMeasureImageArea(unittest.TestCase):
         def mn(x):
             return "AreaOccupied_%s_%s"%(x, module.operands[0].operand_objects.value)
         
-        self.assertEqual(m.get_current_measurement("Image",mn("AreaOccupied"))[0], 0)
-        self.assertEqual(m.get_current_measurement("Image",mn("TotalArea"))[0],100)
+        self.assertEqual(m.get_current_measurement("Image",mn("AreaOccupied")), 0)
+        self.assertEqual(m.get_current_measurement("Image",mn("TotalArea")), 100)
         
         columns = module.get_measurement_columns(workspace.pipeline)
         features = m.get_feature_names(cpmm.IMAGE)
@@ -84,8 +84,8 @@ class TestMeasureImageArea(unittest.TestCase):
         def mn(x):
             return "AreaOccupied_%s_%s"%(x, module.operands[0].operand_objects.value)
         
-        self.assertEqual(m.get_current_measurement("Image",mn("AreaOccupied"))[0], area_occupied)
-        self.assertEqual(m.get_current_measurement("Image",mn("TotalArea"))[0],100)
+        self.assertEqual(m.get_current_measurement("Image",mn("AreaOccupied")), area_occupied)
+        self.assertEqual(m.get_current_measurement("Image",mn("TotalArea")), 100)
     
     def test_01_02_object_with_cropping(self):
         labels = np.zeros((10,10),int)
@@ -103,8 +103,8 @@ class TestMeasureImageArea(unittest.TestCase):
         def mn(x):
             return "AreaOccupied_%s_%s"%(x, module.operands[0].operand_objects.value)
         
-        self.assertEqual(m.get_current_measurement("Image",mn("AreaOccupied"))[0], area_occupied)
-        self.assertEqual(m.get_current_measurement("Image",mn("TotalArea"))[0],total_area)
+        self.assertEqual(m.get_current_measurement("Image",mn("AreaOccupied")), area_occupied)
+        self.assertEqual(m.get_current_measurement("Image",mn("TotalArea")), total_area)
         
     def test_02_01_get_measurement_columns(self):
         module = mia.MeasureImageAreaOccupied()

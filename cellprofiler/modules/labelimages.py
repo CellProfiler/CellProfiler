@@ -81,7 +81,7 @@ class LabelImages(cpm.CPModule):
     def run(self, workspace):
         '''Run one image set'''
         m = workspace.measurements
-        well_count, site_index = divmod(m.image_set_index, self.site_count.value)
+        well_count, site_index = divmod(m.image_set_number - 1, self.site_count.value)
         if self.order == O_ROW:
             row_count, column_index = divmod(well_count, self.column_count.value)
             plate_index, row_index = divmod(row_count, self.row_count.value)

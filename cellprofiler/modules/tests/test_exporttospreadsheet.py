@@ -1381,7 +1381,8 @@ ExportToSpreadsheet:[module_num:5|svn_version:\'9434\'|variable_revision_number:
             for index, row in enumerate(reader):
                 self.assertEqual(row[d["ImageNumber"]],  "1")
                 self.assertEqual(int(row[d["ObjectNumber"]]), index+1)
-                self.assertEqual(int(row[d["Number_Object_Number"]]), index+1)
+                # all object values get written as floats
+                self.assertEqual(int(float(row[d["Number_Object_Number"]])), index+1)
                 self.assertAlmostEqual(float(row[d["my_measurement"]]),
                                        data[index])
         finally:
@@ -1824,4 +1825,4 @@ ExportToSpreadsheet:[module_num:5|svn_version:\'9434\'|variable_revision_number:
                 os.remove(path)
             except:
                 pass
-        
+

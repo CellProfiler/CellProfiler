@@ -95,6 +95,7 @@ from cellprofiler.cpmath.cpmorphology import fixup_scipy_ndimage_result as fix
 from cellprofiler.cpmath.cpmorphology import centers_of_labels
 from cellprofiler.cpmath.cpmorphology import associate_by_distance
 from cellprofiler.cpmath.cpmorphology import all_connected_components
+from cellprofiler.cpmath.index import Indexes
 from identify import M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y
 from cellprofiler.gui.help import HELP_ON_MEASURING_DISTANCES
 
@@ -111,11 +112,7 @@ DT_ALL = [DT_COLOR_AND_NUMBER, DT_COLOR_ONLY]
 F_PREFIX = "TrackObjects"
 F_LABEL = "Label"
 F_PARENT_OBJECT_NUMBER = "ParentObjectNumber"
-'''The group index gives the index of the object's image within the group
-
-The ImageNumber is unstable, with regard to groups - it could jump around
-'''
-F_PARENT_GROUP_INDEX = "ParentGroupIndex"
+F_PARENT_IMAGE_NUMBER = "ParentImageNumber"
 F_TRAJECTORY_X = "TrajectoryX"
 F_TRAJECTORY_Y = "TrajectoryY"
 F_DISTANCE_TRAVELED = "DistanceTraveled"
@@ -161,7 +158,7 @@ F_AREA = "Area"
 
 F_ALL_COLTYPE_ALL = [(F_LABEL, cpmeas.COLTYPE_INTEGER),
                      (F_PARENT_OBJECT_NUMBER, cpmeas.COLTYPE_INTEGER),
-                     (F_PARENT_GROUP_INDEX, cpmeas.COLTYPE_INTEGER),
+                     (F_PARENT_IMAGE_NUMBER, cpmeas.COLTYPE_INTEGER),
                      (F_TRAJECTORY_X, cpmeas.COLTYPE_INTEGER),
                      (F_TRAJECTORY_Y, cpmeas.COLTYPE_INTEGER),
                      (F_DISTANCE_TRAVELED, cpmeas.COLTYPE_FLOAT),
@@ -495,21 +492,22 @@ class TrackObjects(cpm.CPModule):
     def __set(self, field, workspace, value):
         self.get_ws_dictionary(workspace)[field] = value
 
-    def get_group_number(self, workspace):
-        '''get the current group's group number'''
-        return self.__get("group_number", workspace, None)
-    
-    def set_group_number(self, workspace, value):
-        self.__set("group_number", workspace, value)
-    
-    def get_group_indexes(self, workspace):
-        '''get the group indexes for the current group'''
-        result = self.__get("group_indexes", workspace, None)
-        if result is None:
-            result = []
-            self.__set("group_indexes", workspace, result)
-        return result
-    
+    def get_group_image_numbers(self, workspace):
+        m = workspace.measurements
+        assert isinstance(m, cpmeas.Measurements)
+        d = self.get_ws_dictionary(workspace)
+        group_number = m.get_group_number()
+        if not d.has_key("group_number") or d["group_number"] != group_number:
+            d["group_number"] = group_number
+            group_indexes = np.array([
+                (m.get_measurement(cpmeas.IMAGE, cpmeas.GROUP_INDEX, i), i)
+                for i in m.get_image_numbers()
+                if m.get_measurement(cpmeas.IMAGE, cpmeas.GROUP_NUMBER, i) ==
+                group_number], int)
+            order = np.lexsort([group_indexes[:, 0]])
+            d["group_image_numbers"] = group_indexes[order, 1]
+        return d["group_image_numbers"]
+        
     def get_saved_measurements(self, workspace):
         return self.__get("measurements", workspace, np.array([], float))
 
@@ -717,10 +715,6 @@ class TrackObjects(cpm.CPModule):
     def run_lapdistance(self, workspace, objects):
         '''Track objects based on distance'''
         m = workspace.measurements
-        group_number = m.get_current_image_measurement(cpp.GROUP_NUMBER)
-        self.set_group_number(workspace, group_number)
-        group_index = m.get_current_image_measurement(cpp.GROUP_INDEX)
-        self.get_group_indexes(workspace).append(group_index)
 
         old_i, old_j = self.get_saved_coordinates(workspace)
         n_old = len(old_i)
@@ -1056,26 +1050,18 @@ class TrackObjects(cpm.CPModule):
     def run_as_data_tool(self, workspace):
         m = workspace.measurements
         assert isinstance(m, cpmeas.Measurements)
-        #
-        # The parent object numbers, image numbers and labels all
-        # come from the .mat file as floats. Convert them into ints.
-        #
-        for feature in (F_PARENT_GROUP_INDEX, F_PARENT_OBJECT_NUMBER,
-                        F_LABEL, F_LIFETIME):
-            values = m.get_all_measurements(self.object_name.value,
-                                            self.measurement_name(feature))
-            for i in range(len(values)):
-                values[i] = values[i].astype(int)
-        group_numbers = np.array(
-            m.get_all_measurements(cpmeas.IMAGE, cpp.GROUP_NUMBER))
-        group_indexes = np.array(
-            m.get_all_measurements(cpmeas.IMAGE, cpp.GROUP_INDEX))
-        for group_number in np.unique(group_numbers):
-            self.set_group_number(workspace, group_number)
-            gi = group_indexes[group_numbers == group_number]
-            glist = self.get_group_indexes(workspace)
-            del glist[:]
-            glist += gi.tolist()
+        group_numbers = {}
+        for i in m.get_image_numbers():
+            group_number = m.get_measurement(cpmeas.IMAGE, 
+                                             cpmeas.GROUP_NUMBER, i)
+            group_index = m.get_measurement(cpmeas.IMAGE,
+                                            cpmeas.GROUP_INDEX, i)
+            if ((not group_numbers.has_key(group_number)) or
+                (group_numbers[group_number][1] > group_index)):
+                group_numbers[group_number] = (i, group_index)
+
+        for group_number in sorted(group_numbers.keys()):
+            m.image_set_number = group_numbers[group_number][0]
             self.post_group(workspace, {})
 
     def flood(self, i, at, a, b, c, d, z):
@@ -1141,120 +1127,82 @@ class TrackObjects(cpm.CPModule):
         para8 = self.max_frame_distance.value #max frame difference
 
         m = workspace.measurements
-        label = m.get_all_measurements(self.object_name.value, 
-                                       self.measurement_name(F_LABEL))
-        orig_label = label
-        a = m.get_all_measurements(self.object_name.value, M_LOCATION_CENTER_X)
-        b = m.get_all_measurements(self.object_name.value, M_LOCATION_CENTER_Y)
-        Area = m.get_all_measurements(self.object_name.value, 
-                                      self.measurement_name(F_AREA))
-        group_numbers = np.array(
-            m.get_all_measurements(cpmeas.IMAGE, cpp.GROUP_NUMBER), int)
-        group_indices = np.array(
-            m.get_all_measurements(cpmeas.IMAGE, cpp.GROUP_INDEX), int)
-        parent_object_numbers = m.get_all_measurements(
-            self.object_name.value, self.measurement_name(F_PARENT_OBJECT_NUMBER))
-        parent_image_numbers = m.get_all_measurements(
-            self.object_name.value, self.measurement_name(F_PARENT_GROUP_INDEX))
-        new_object_count = m.get_all_measurements(
-            cpmeas.IMAGE, self.image_measurement_name(F_NEW_OBJECT_COUNT))
-        lost_object_count = m.get_all_measurements(
-            cpmeas.IMAGE, self.image_measurement_name(F_LOST_OBJECT_COUNT))
-        merge_count = m.get_all_measurements(
-            cpmeas.IMAGE, self.image_measurement_name(F_MERGE_COUNT))
-        split_count = m.get_all_measurements(
-            cpmeas.IMAGE, self.image_measurement_name(F_SPLIT_COUNT))
-        my_group_number = self.get_group_number(workspace)
-        my_group_indices = np.array(self.get_group_indexes(workspace))
-        indexes = np.arange(len(group_numbers))
-        mask = group_numbers == my_group_number
-        group_indices = group_indices[mask]
-        indexes = indexes[mask]
-        assert np.all(group_indices == my_group_indices)
+        assert(isinstance(m, cpmeas.Measurements))
+        image_numbers = self.get_group_image_numbers(workspace)
+        object_name = self.object_name.value
+        label, object_numbers, a, b, Area, \
+             parent_object_numbers, parent_image_numbers = [
+            [m.get_measurement(object_name, feature, i).astype(mtype)
+             for i in image_numbers]
+            for feature, mtype in (
+                (self.measurement_name(F_LABEL), int),
+                (cpmeas.OBJECT_NUMBER, int),
+                (M_LOCATION_CENTER_X, float),
+                (M_LOCATION_CENTER_Y, float),
+                (self.measurement_name(F_AREA), float),
+                (self.measurement_name(F_PARENT_OBJECT_NUMBER), int),
+                (self.measurement_name(F_PARENT_IMAGE_NUMBER), int)
+            )]
+        group_indices, new_object_count, lost_object_count, merge_count, \
+                     split_count = [
+            np.array([m.get_measurement(cpmeas.IMAGE, feature, i)
+                      for i in image_numbers], int)
+            for feature in (cpmeas.GROUP_INDEX,
+                            self.image_measurement_name(F_NEW_OBJECT_COUNT),
+                            self.image_measurement_name(F_LOST_OBJECT_COUNT),
+                            self.image_measurement_name(F_MERGE_COUNT),
+                            self.image_measurement_name(F_SPLIT_COUNT))]
         #
-        # Reduce the lists to only the ones in the group
+        # Map image number to group index and vice versa
         #
-        label = [label[ix] for ix in indexes]
-        a = [a[ix] for ix in indexes]
-        b = [b[ix] for ix in indexes]
-        Area = [Area[ix] for ix in indexes]
-        numFrames = len(b)
-        parent_image_numbers = [parent_image_numbers[ix] for ix in indexes]
-        parent_object_numbers = [parent_object_numbers[ix] for ix in indexes]
-
-        #Calculates the maximum number of cells in a single frame
-
-        i = 0
-        mlength = 0
-        while i<numFrames:
-            if(mlength < len(label[i])):
-                mlength = len(label[i])
-            i = i+1
-        #
-        # Quit if there's nothing to do
-        #
-        if mlength == 0:
-            return
-
-        #converts the ragged array into a two-dimensional array    
-
-        labelprime = np.zeros((numFrames, mlength), dtype=np.int)
-        aprime =  np.zeros((numFrames, mlength))
-        bprime =  np.zeros((numFrames, mlength))
-        Areaprime = np.zeros((numFrames, mlength))
-
-        for i, (ll, aa, bb, AA) in enumerate(zip(label, a, b, Area)):
-            llength = len(ll)
-            labelprime[i,:llength] = ll
-            aprime[i,:llength] = aa
-            bprime[i,:llength] = bb
-            Areaprime[i, :llength] = AA
+        image_number_group_index = np.zeros(np.max(image_numbers) + 1, int)
+        image_number_group_index[image_numbers] = np.array(group_indices, int)
+        group_index_image_number = np.zeros(np.max(group_indices) + 1, int)
+        group_index_image_number[group_indices] = image_numbers
+        
+        if all([len(lll) == 0 for lll in label]):
+            return # Nothing to do
 
         #sets up the arrays F, L, P, and Q
         #F is an array of all the cells that are the starts of segments
-        #  F[:,:2] are the coordinates
-        #  F[:,2] is the image index
-        #  F[:,3] is the object index
+        #  F[:, :2] are the coordinates
+        #  F[:, 2] is the image index
+        #  F[:, 3] is the object index
+        #  F[:, 4] is the object number
+        #  F[:, 5] is the label
+        #  F[:, 6] is the area
+        #  F[:, 7] is the index into P
         #L is the ends
         #P includes all cells
-        #Q[i] is the segment that P[i] belongs to
 
-        N = np.amax(labelprime)
-        length = np.zeros(N, dtype=np.int)
-        F = np.zeros((N, 4), dtype=np.int)
-        L = np.zeros((N, 4), dtype=np.int)
-        P = np.zeros((0, 4), dtype=np.int)
+        X = 0
+        Y = 1
+        IIDX = 2
+        OIIDX = 3
+        ONIDX = 4
+        LIDX = 5
+        AIDX = 6
+        PIDX = 7
+        P = np.vstack([
+           np.column_stack((x, y, np.ones(len(x)) * i, np.arange(len(x)),
+                            o, l, area, np.zeros(len(x))))
+           for i, (x, y, o, l, area) 
+           in enumerate(zip(a, b, object_numbers, label, Area))])
+        count_per_label = np.bincount(P[:, LIDX].astype(int))
+        idx = np.hstack([0, np.cumsum(count_per_label)])
+        unique_label = np.unique(P[:, LIDX].astype(int))
+        order = np.lexsort((P[:, OIIDX], P[:, IIDX], P[:, LIDX]))
+        P = P[order, :]
+        P[:, PIDX] = np.arange(len(P))
+        F = P[idx[unique_label], :]
+        L = P[idx[unique_label + 1] - 1, :]
+        
+        # Creates P1 and P2, which is P without the starts and ends 
+        # of segments respectively, representing possible
+        # points of merges and splits respectively
 
-        Q = np.zeros(0)
-
-        i = 1
-        while i <= N:
-            l = np.argwhere(labelprime == i)
-            j = np.arange(len(l))
-            x = aprime[l[j, 0], l[j, 1]]
-            y = bprime[l[j, 0], l[j, 1]]
-
-            t = np.column_stack((x, y, l))
-
-            F[i-1] = t[0]
-            L[i-1] = t[len(l)-1]
-            length[i-1] = len(l)
-
-            P = np.vstack((P, t))
-            Q = np.hstack((Q, np.zeros(length[i-1], dtype=np.int)+i))
-
-            i = i+1
-
-        #Creates P1 and P2, which is P without the starts and ends of segments respectively, representing possible
-        #points of merges and splits respectively
-
-        Q = np.arange(len(P))
-        t = np.cumsum(length)-length
-        P1 = np.delete(P, t, 0)
-        Q1 = np.delete(Q, t, 0)
-        t = t+length-1
-        P2 = np.delete(P, t, 0)
-        Q2 = np.delete(Q, t, 0)
+        P1 = np.delete(P, idx[:-1], 0)
+        P2 = np.delete(P, idx[1:] - 1, 0)
         
         ##################################################
         #
@@ -1281,14 +1229,14 @@ class TrackObjects(cpm.CPModule):
         #creates the upper-left block
 
         i, j = np.mgrid[0:len(F),0:len(F)]
-        d = np.sqrt((L[i, 0]-F[j, 0])**2 + (L[i, 1]-F[j, 1])**2)
+        d = np.sqrt((L[i, X] - F[j, X])**2 + (L[i, Y] - F[j, Y])**2)
 
         #removes the possibility of gaps that have too large of a frame difference
 
-        y = F[j, 2]-L[i, 2]
+        y = F[j, IIDX] - L[i, IIDX]
         x = np.argwhere(y > para8)
         i = np.arange(len(x))
-        d[x[i,0], x[i,1]] = para1+1
+        d[x[i, 0], x[i, 1]] = para1 + 1
         x = np.argwhere(y <= 0)
         i = np.arange(len(x))
         d[x[i,0], x[i,1]] = para1+1
@@ -1335,20 +1283,18 @@ class TrackObjects(cpm.CPModule):
         #
         z = np.zeros((0,2), np.int32)
         while i <len(F):
-            y = P1[j, 2]-L[i, 2]
+            y = P1[j, IIDX] - L[i, IIDX]
             y = y.astype("int32")
             x = np.argwhere((y <= para8) & (y > 0))
             y = np.column_stack((np.zeros(len(x), dtype="int32")+i, x))
             z = np.vstack((z, y))
             i = i+1
 
-        #calculates actual cost according to the formula given in the supplmenetary notes    
-        AreaLast = Areaprime[L[z[:, 0], 2].astype("int32"), 
-                             L[z[:, 0], 3].astype("int32")]
-        AreaBeforeMerge = Areaprime[P[Q1[z[:, 1]]-1, 2].astype("int32"), 
-                                    P[Q1[z[:, 1]]-1, 3].astype("int32")]
-        AreaAtMerge = Areaprime[P1[z[:, 1], 2].astype("int32"), 
-                                P1[z[:, 1], 3].astype("int32")]
+        # calculates actual cost according to the formula given in the 
+        # supplmenetary notes    
+        AreaLast = L[z[:, 0], AIDX]
+        AreaBeforeMerge = P[P1[z[:, 1], PIDX].astype(int) - 1, AIDX]
+        AreaAtMerge = P1[z[:, 1], AIDX]
         rho = ((AreaLast+AreaBeforeMerge)/AreaAtMerge)**2
         px = np.argwhere(rho < 1)
         if(len(px) > 0):
@@ -1413,19 +1359,16 @@ class TrackObjects(cpm.CPModule):
             #
             z = np.zeros((0,2), np.int32)
             while i < len(P1):
-                y = F[j, 2]-P2[i, 2]
+                y = F[j, IIDX] - P2[i, IIDX]
                 y = y.astype("int32")
                 x = np.argwhere((y <= para8) & (y > 0))
                 y = np.column_stack((np.zeros(len(x), dtype="int32")+i, x))
                 z = np.vstack((z, y))
                 i = i+1
     
-            AreaFirst = Areaprime[F[z[:, 1], 2].astype("int32"), 
-                                  F[z[:, 1], 3].astype("int32")]
-            AreaAfterSplit = Areaprime[P[Q2[z[:, 0]]+1, 2].astype("int32"), 
-                                       P[Q2[z[:, 0]]+1, 3].astype("int32")]
-            AreaAtSplit = Areaprime[P2[z[:, 0], 2].astype("int32"), 
-                                    P2[z[:, 0], 3].astype("int32")]
+            AreaFirst = F[z[:, 1], AIDX]
+            AreaAfterSplit = P[ P2[z[:, 0], PIDX].astype(int) + 1, AIDX]
+            AreaAtSplit = P2[z[:, 0], AIDX]
             rho = ((AreaFirst+AreaAfterSplit)/AreaAtSplit)**2
             x = np.argwhere(rho < 1)
             if(len(x) > 1):
@@ -1473,28 +1416,10 @@ class TrackObjects(cpm.CPModule):
         e[0:len(e), 0] = e[0:len(e), 0]+ss_off
  
         d = np.vstack((d, e, f, g, h))
-        if False:
-            #sorts the list of costs, and add one to indices for costs to fit in with LAP
-    
-            indices = np.lexsort((d[:,1], d[:,0]))
-            d = d[indices]
-            d[:, 1] = d[:, 1]+1
-            d[:, 0] = d[:, 0]+1
-    
-            #gets first, kk, and cc ready for LAP
-    
-            counts = np.bincount(np.ndarray.astype(d[:,0], np.int32))
-            first = np.ascontiguousarray(np.hstack((np.cumsum(counts) - counts+1,
-                                                    [len(d)+1])), np.int32)
-            kk = np.ascontiguousarray(np.hstack(([0],d[:, 1])), np.int32)
-            cc = np.ascontiguousarray(np.hstack(([0.0], d[:, 2])), np.float)
-    
-            x, y =  LAP.LAP(kk, first, cc, len(F)*2+len(P1)*4)
-        else:
-            i = d[:,0].astype(int)
-            j = d[:,1].astype(int)
-            c = d[:,2]
-            x,y = lapjv(i,j,c)
+        i = d[:,0].astype(int)
+        j = d[:,1].astype(int)
+        c = d[:,2]
+        x,y = lapjv(i,j,c)
 
         #attaches different segments together if they are matches through the IAP
         a = np.zeros(len(F)+1, dtype="int32")
@@ -1513,41 +1438,46 @@ class TrackObjects(cpm.CPModule):
                 #
                 # Hook our parent image/object number to found parent
                 #
-                my_image_index, my_object_index = F[i, 2:]
-                parent_image_index, parent_object_index = L[y[i], 2:]
+                my_image_index = int(F[i, IIDX])
+                my_object_index = int(F[i, OIIDX])
+                parent_image_index = int(L[y[i], IIDX])
+                parent_object_number = int(L[y[i], ONIDX])
                 parent_image_numbers[my_image_index][my_object_index] = \
-                                    group_indices[parent_image_index]
+                                    image_numbers[parent_image_index]
                 parent_object_numbers[my_image_index][my_object_index] = \
-                                     parent_object_index + 1
+                                     parent_object_number
                 #
                 # One less new object
                 #
-                new_object_count[indexes[my_image_index]] -= 1
+                new_object_count[my_image_index] -= 1
                 #
                 # One less lost object (the lost object is recorded in
                 # the image set after the parent)
                 #
-                lost_object_count[indexes[parent_image_index+1]] -= 1
+                lost_object_count[parent_image_index + 1] -= 1
             elif(y[i] >= ss_off and y[i] < ss_off+len(P1)):
                 #
                 # Hook split objects to their parent
                 #
-                my_image_index, my_object_index = F[i, 2:]
-                parent_image_index, parent_object_index = P2[y[i]-ss_off][2:]
-                b[i+1] = labelprime[parent_image_index, parent_object_index]
+                p2_idx = y[i] - ss_off
+                my_image_index = int(F[i, IIDX])
+                my_object_index = int(F[i, OIIDX])
+                parent_image_index = int(P2[p2_idx, IIDX])
+                parent_object_number = int(P2[p2_idx, ONIDX])
+                b[i+1] = P2[p2_idx, LIDX]
                 c[b[i+1]] = i+1
                 parent_image_numbers[my_image_index][my_object_index] = \
-                                    group_indices[parent_image_index]
+                                    image_numbers[parent_image_index]
                 parent_object_numbers[my_image_index][my_object_index] = \
-                                     parent_object_index + 1
+                                     parent_object_number
                 #
                 # one less new object
                 #
-                new_object_count[indexes[my_image_index]] -= 1
+                new_object_count[my_image_index] -= 1
                 #
                 # one more split object
                 #
-                split_count[indexes[my_image_index]] += 1
+                split_count[my_image_index] += 1
             else:
                 b[i+1] = -1
 
@@ -1558,11 +1488,13 @@ class TrackObjects(cpm.CPModule):
                 #
                 # Handle merged objects
                 # 
-                my_image_index, my_object_index = P1[x[i]-me_off][2:]
-                a[i+1] = labelprime[my_image_index, my_object_index]
+                p1_idx = x[i]-me_off
+                my_image_index = int(P1[p1_idx, IIDX])
+                my_object_index = int(P1[p1_idx, OIIDX])
+                a[i+1] = P1[p1_idx, LIDX]
                 d[a[i+1]] = i+1
-                lost_object_count[indexes[my_image_index]] -= 1
-                merge_count[indexes[my_image_index]] += 1
+                lost_object_count[my_image_index] -= 1
+                merge_count[my_image_index] += 1
             else:
                 a[i+1] = -1
 
@@ -1593,156 +1525,185 @@ class TrackObjects(cpm.CPModule):
         # Replace the labels for the image sets in the group
         # inside the list retrieved from the measurements
         #
-        for i, image_number in enumerate(indexes):
-            orig_label[image_number] = newlabel[i]
+        for i, image_number in enumerate(image_numbers):
+            m.add_measurement(object_name, 
+                              self.measurement_name(F_LABEL),
+                              newlabel[i], can_overwrite = True,
+                              image_set_number = image_number)
+            m.add_measurement(object_name, 
+                              self.measurement_name(F_PARENT_IMAGE_NUMBER),
+                              parent_image_numbers[i],
+                              can_overwrite = True,
+                              image_set_number = image_number)
+            m.add_measurement(object_name, 
+                              self.measurement_name(F_PARENT_OBJECT_NUMBER),
+                              parent_object_numbers[i],
+                              can_overwrite = True,
+                              image_set_number = image_number)
+            m.add_measurement(cpmeas.IMAGE,
+                              self.image_measurement_name(F_LOST_OBJECT_COUNT),
+                              lost_object_count[i], True, image_number)
+            m.add_measurement(cpmeas.IMAGE,
+                              self.image_measurement_name(F_NEW_OBJECT_COUNT),
+                              new_object_count[i], True, image_number)
+            m.add_measurement(cpmeas.IMAGE,
+                              self.image_measurement_name(F_MERGE_COUNT),
+                              merge_count[i], True, image_number)
+            m.add_measurement(cpmeas.IMAGE,
+                              self.image_measurement_name(F_SPLIT_COUNT),
+                              split_count[i], True, image_number)
 
-        self.recalculate_group(workspace, indexes)
+        self.recalculate_group(workspace, image_numbers)
         
-    def recalculate_group(self, workspace, indexes):
+    def recalculate_group(self, workspace, image_numbers):
         '''Recalculate all measurements once post_group has run
         
         workspace - the workspace being operated on
-        indexes - the indexes of the group's image sets' measurements
+        image_numbers - the image numbers of the group's image sets' measurements
         '''
         m = workspace.measurements
         object_name = self.object_name.value
+
         assert isinstance(m, cpmeas.Measurements)
-        parent_object_numbers = m.get_all_measurements(
-            object_name, self.measurement_name(F_PARENT_OBJECT_NUMBER))
-        parent_image_numbers = m.get_all_measurements(
-            object_name, self.measurement_name(F_PARENT_GROUP_INDEX))
-        group_indexes = m.get_all_measurements( cpmeas.IMAGE,
-                                                cpp.GROUP_INDEX)
-        max_object_count = np.max([len(x) for x in parent_object_numbers])
-        if max_object_count == 0:
-            return
-        max_image_number = np.max(m.get_image_number_from_index(indexes))
-        def w(a):
-            '''Wrap a measurement array as a numpy sparse array
-            
-            Elements in the array can be addressed correctly by image number
-            and object number.
-            '''
-            result = scipy.sparse.lil_matrix((max_image_number+1, 
-                                              max_object_count+2), 
-                                             dtype = a[0].dtype)
-            for index in indexes:
-                row = a[index]
-                nobjects = len(row)
-                if nobjects > 0:
-                    group_index = group_indexes[index]
-                    result[group_index, 1:(len(row)+1)] = row
-            return result
-            
+
+        image_index = np.zeros(np.max(image_numbers)+1, int)
+        image_index[image_numbers] = np.arange(len(image_numbers))
+        image_index[0] = -1
+        index_to_imgnum = np.array(image_numbers)
+        
+        parent_image_numbers, parent_object_numbers = [
+            [ m.get_measurement(
+                object_name, self.measurement_name(feature), image_number)
+              for image_number in image_numbers]
+            for feature in (F_PARENT_IMAGE_NUMBER, F_PARENT_OBJECT_NUMBER)]
+        
+        #
+        # Do all_connected_components on the graph of parents to find groups
+        # that share the same ancestor
+        #
+        count = np.array([len(x) for x in parent_image_numbers])
+        idx = Indexes(count)
+        parent_image_numbers = np.hstack(parent_image_numbers).astype(int)
+        parent_object_numbers = np.hstack(parent_object_numbers).astype(int)
+        parent_image_indexes = image_index[parent_image_numbers]
+        parent_object_indexes = parent_object_numbers - 1
+        i = np.arange(idx.length)
+        i = i[parent_image_numbers != 0]
+        j = idx.fwd_idx[parent_image_indexes[i]] + parent_object_indexes[i]
+        # Link self to self too
+        i = np.hstack((i, np.arange(idx.length)))
+        j = np.hstack((j, np.arange(idx.length)))
+        labels = all_connected_components(i, j)
+        nlabels = np.max(labels) + 1
+        #
+        # Set the ancestral index for each label
+        #
+        ancestral_index = np.zeros(nlabels, int)
+        ancestral_index[labels[parent_image_numbers == 0]] =\
+            np.argwhere(parent_image_numbers == 0).flatten().astype(int)
+        ancestral_image_index = idx.rev_idx[ancestral_index]
+        ancestral_object_index = \
+            ancestral_index - idx.fwd_idx[ancestral_image_index]
+        #
+        # Blow these up to one per object for convenience
+        #
+        ancestral_index = ancestral_index[labels]
+        ancestral_image_index = ancestral_image_index[labels]
+        ancestral_object_index = ancestral_object_index[labels]
+
+        def start(image_index):
+            '''Return the start index in the array for the given image index'''
+            return idx.fwd_idx[image_index]
+        def end(image_index):
+            '''Return the end index in the array for the given image index'''
+            return start(image_index) + idx.counts[0][image_index]
+        def slyce(image_index):
+            return slice(start(image_index), end(image_index))
+        
+        class wrapped(object):
+            '''make an indexable version of a measurement, with parent and ancestor fetching'''
+            def __init__(self, feature_name):
+                self.feature_name = feature_name
+                self.backing_store = np.hstack([
+                    m.get_measurement(object_name, feature_name, i)
+                    for i in image_numbers])
+            def __getitem__(self, index):
+                return self.backing_store[slyce(index)]
+            def __setitem__(self, index, val):
+                self.backing_store[slyce(index)] = val
+                m.add_measurement(object_name, self.feature_name, val, 
+                                  image_set_number = image_numbers[index], 
+                                  can_overwrite=True)
+                
+            def get_parent(self, index, no_parent=None):
+                result = np.zeros(idx.counts[0][index], 
+                                  self.backing_store.dtype)
+                my_slice = slyce(index)
+                mask = parent_image_numbers[my_slice] != 0
+                if not np.all(mask):
+                    if np.isscalar(no_parent) or (no_parent is None):
+                        result[~mask] = no_parent
+                    else:
+                        result[~mask] = no_parent[~mask]
+                if np.any(mask):
+                    result[mask] = self.backing_store[
+                        idx.fwd_idx[parent_image_indexes[my_slice][mask]] +
+                        parent_object_indexes[my_slice][mask]]
+                return result
+
+            def get_ancestor(self, index):
+                return self.backing_store[ancestral_index[slyce(index)]]
+        
         #
         # Recalculate the trajectories
         #
-        old_dists = m.get_all_measurements(
-            object_name, self.measurement_name(F_DISTANCE_TRAVELED))
-        old_integrated = m.get_all_measurements(
-            object_name, self.measurement_name(F_INTEGRATED_DISTANCE))
-        w_integrated = w(old_integrated)
-        x = w(m.get_all_measurements(object_name, M_LOCATION_CENTER_X))
-        y = w(m.get_all_measurements(object_name, M_LOCATION_CENTER_Y))
-        old_trajectory_x = m.get_all_measurements(
-            object_name, self.measurement_name(F_TRAJECTORY_X))
-        old_trajectory_y = m.get_all_measurements(
-            object_name, self.measurement_name(F_TRAJECTORY_Y))
-        old_linearity = m.get_all_measurements(
-            object_name, self.measurement_name(F_LINEARITY))
-        w_linearity = w(old_linearity)
-        old_lifetime = m.get_all_measurements(
-            object_name, self.measurement_name(F_LIFETIME))
-        w_lifetime = w(old_lifetime)
-        #
-        # Maintain the first position for a lineage in first_x and first_y
-        #
-        first_x = scipy.sparse.lil_matrix((max_image_number+1,
-                                           max_object_count+2), 
-                                          dtype = float)
-        first_y = scipy.sparse.lil_matrix((max_image_number+1,
-                                           max_object_count+2),
-                                          dtype = float)
-        lifetime = scipy.sparse.lil_matrix((max_image_number+1,
-                                            max_object_count+2), 
-                                           dtype = float)
-        for index in indexes:
-            po = parent_object_numbers[index]
-            pi = parent_image_numbers[index]
-            has_parent = (po != 0)
-            pi = pi[has_parent]
-            po = po[has_parent]
-            
-            group_index = group_indexes[index]
-            nobjects = len(po)
+        x = wrapped(M_LOCATION_CENTER_X)
+        y = wrapped(M_LOCATION_CENTER_Y)
+        trajectory_x = wrapped(self.measurement_name(F_TRAJECTORY_X))
+        trajectory_y = wrapped(self.measurement_name(F_TRAJECTORY_Y))
+        integrated = wrapped(self.measurement_name(F_INTEGRATED_DISTANCE))
+        dists = wrapped(self.measurement_name(F_DISTANCE_TRAVELED))
+        linearity = wrapped(self.measurement_name(F_LINEARITY))
+        lifetimes = wrapped(self.measurement_name(F_LIFETIME))
 
-            has_parent_objnum = np.argwhere(has_parent).flatten() + 1
-            has_no_parent_objnum = np.argwhere(~ has_parent).flatten() + 1
-            #
-            # Parent = 0 indicates first appearance in the lineage
-            #            otherwise copy from last parent.
-            #
-            if len(has_no_parent_objnum) > 0:
-                first_x[group_index, has_no_parent_objnum] = \
-                       x[group_index, has_no_parent_objnum]
-                first_y[group_index, has_no_parent_objnum] = \
-                       y[group_index, has_no_parent_objnum]
-            if len(has_parent_objnum) == 0:
-                continue
-            this_first_x = first_x[pi, po]
-            first_x[group_index, has_parent_objnum] = this_first_x
-            this_first_y = first_y[pi, po]
-            first_y[group_index, has_parent_objnum] = this_first_y
+        for image_number in image_numbers:
             #
             # Distances traveled from step to step
             #
-            this_x = x[group_index, has_parent_objnum].toarray()[0]
-            this_y = y[group_index, has_parent_objnum].toarray()[0]
-            last_x = x[pi, po].toarray()[0]
-            last_y = y[pi, po].toarray()[0]
+            index = image_index[image_number]
+            this_x = x[index]
+            if len(this_x) == 0:
+                continue
+            this_y = y[index]
+            last_x = x.get_parent(index, no_parent=this_x)
+            last_y = y.get_parent(index, no_parent=this_y)
             x_diff = this_x - last_x
             y_diff = this_y - last_y
-            otx = old_trajectory_x[index]
-            otx[~ has_parent] = 0
-            otx[has_parent] = x_diff
-            oty = old_trajectory_y[index]
-            oty[~ has_parent] = 0
-            oty[has_parent] = y_diff
+            trajectory_x[index] = x_diff
+            trajectory_y[index] = y_diff
             #
             # Integrated distance = accumulated distance for lineage
             #
-            oid = old_integrated[index]
-            lid = w_integrated[pi, po].toarray().flatten()
-            oid[~ has_parent] = 0
-            integrated_distance = np.sqrt(x_diff * x_diff + y_diff * y_diff) + lid
-            oid[has_parent] = integrated_distance
-            w_integrated[group_index, has_parent_objnum] = integrated_distance
+            integrated[index] = integrated.get_parent(index, no_parent=0) + \
+                np.sqrt(x_diff * x_diff + y_diff * y_diff)
             #
             # Total distance = crow-fly distance from initial ancestor
             #
-            x_tot_diff = this_x - this_first_x.toarray()[0]
-            y_tot_diff = this_y - this_first_y.toarray()[0]
-            tot_distance = np.sqrt(x_tot_diff * x_tot_diff + 
+            x_tot_diff = this_x - x.get_ancestor(index)
+            y_tot_diff = this_y - y.get_ancestor(index)
+            tot_distance = np.sqrt(x_tot_diff * x_tot_diff +
                                    y_tot_diff * y_tot_diff)
-            old_dist = old_dists[index]
-            old_dist[~ has_parent] = 0
-            old_dist[has_parent] = tot_distance
+            dists[index] = tot_distance
             #
             # Linearity = ratio of crow-fly distance and integrated
             # distance. NaN for new cells is ok.
             #
-            linearity = old_linearity[index]
-            linearity[~ has_parent] = np.NaN
-            linearity[has_parent] = tot_distance / integrated_distance
+            linearity[index] = tot_distance / integrated[index]
             #
             # Add 1 to lifetimes / zero for new
             #
-            lifetime = old_lifetime[index]
-            lifetime[~ has_parent] = 0
-            this_lifetime = w_lifetime[pi, po].toarray()[0] + 1
-            lifetime[has_parent] = this_lifetime
-            w_lifetime[group_index, has_parent_objnum] = this_lifetime
-        
+            lifetimes[index] = lifetimes.get_parent(index, no_parent=-1) + 1
+
     def map_objects(self, workspace, new_of_old, old_of_new, i,j):
         '''Record the mapping of old to new objects and vice-versa
 
@@ -1755,7 +1716,7 @@ class TrackObjects(cpm.CPModule):
         '''
         m = workspace.measurements
         assert isinstance(m, cpmeas.Measurements)
-        group_index = m.get_current_image_measurement(cpp.GROUP_INDEX)
+        image_number = m.get_current_image_measurement(cpp.IMAGE_NUMBER)
         new_of_old = new_of_old.astype(int)
         old_of_new = old_of_new.astype(int)
         old_object_numbers = self.get_saved_object_numbers(workspace).astype(int)
@@ -1769,9 +1730,10 @@ class TrackObjects(cpm.CPModule):
         parents[parents != 0] =\
                old_object_numbers[(old_of_new[parents!=0]-1)].astype(parents.dtype)
         self.add_measurement(workspace, F_PARENT_OBJECT_NUMBER, old_of_new)
-        parent_group_indexes = np.zeros(len(old_of_new))
-        parent_group_indexes[parents != 0] = group_index-1
-        self.add_measurement(workspace, F_PARENT_GROUP_INDEX, parent_group_indexes)
+        parent_image_numbers = np.zeros(len(old_of_new))
+        parent_image_numbers[parents != 0] = image_number - 1
+        self.add_measurement(workspace, F_PARENT_IMAGE_NUMBER, 
+                             parent_image_numbers)
         #
         # Assign object IDs to the new objects
         #

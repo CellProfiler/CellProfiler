@@ -52,8 +52,9 @@ def exploding_pipeline(test):
     """
     x = cpp.Pipeline()
     def fn(pipeline,event):
-        if isinstance(event,cpp.RunExceptionEvent):
-            test.assertFalse(event.error.message)
+        if isinstance(event, cpp.RunExceptionEvent):
+            import traceback
+            test.assertFalse(event.error.message, "".join(traceback.format_tb(event.tb)))
     x.add_listener(fn)
     return x
          
@@ -689,9 +690,9 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
         m3_name = "druxKJDSALKJDSAWQOIULKJFASOIUQELKJFAOIUQRLKFDSAOIURQLKFDSAQOIRALFAJ" 
         my_measurement = [np.random.uniform(size=np.random.randint(3,25))
                           for i in range(20)]
-        my_other_measurement = [np.random.uniform(size=np.random.randint(3,25))
+        my_other_measurement = [np.random.uniform(size=my_measurement[i].size)
                                             for i in range(20)]
-        my_final_measurement = [np.random.uniform(size=np.random.randint(3,25))
+        my_final_measurement = [np.random.uniform(size=my_measurement[i].size)
                                 for i in range(20)]
         measurements.add_all_measurements("Foo",m1_name, my_measurement)
         measurements.add_all_measurements("Foo",m2_name, my_other_measurement)

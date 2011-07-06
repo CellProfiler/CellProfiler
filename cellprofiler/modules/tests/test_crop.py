@@ -98,14 +98,12 @@ class TestCrop(unittest.TestCase):
         self.assertTrue(feature in [x[1] for x in columns])
         self.assertTrue(feature in m.get_feature_names('Image'))
         values = m.get_current_measurement('Image',feature)
-        self.assertEqual(len(values),1)
-        self.assertAlmostEqual(values[0],10*10)
+        self.assertAlmostEqual(values,10*10)
         feature = 'Crop_AreaRetainedAfterCropping_%s'%(OUTPUT_IMAGE)
         self.assertTrue(feature in [x[1] for x in columns])
         self.assertTrue(feature in m.get_feature_names('Image'))
         values = m.get_current_measurement('Image',feature)
-        self.assertEqual(len(values),1)
-        self.assertEqual(values[0],0)
+        self.assertEqual(values,0)
     
     def test_00_01_zeros_and_remove_all(self):
         """Test cropping and removing rows and columns on a blank image"""

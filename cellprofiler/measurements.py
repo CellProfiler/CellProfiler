@@ -323,6 +323,7 @@ class Measurements(object):
         # XXX - Should group number be moved out of the measurement name?
         group_number = self.group_number
         with self.hdf5_dict.lock:
+            self.hdf5_dict.top_group.require_group(RELATIONSHIP)
             relationship_group = self.hdf5_dict.top_group.require_group('%s/%02d_%d_%s_%s_%s' % (RELATIONSHIP, module_number, group_number, relationship, object_name1, object_name2))
             features = ["group_number", "group_index1", "group_index2", "object_number1", "object_number2"]
             if "group_number" not in relationship_group:
@@ -566,25 +567,26 @@ class Measurements(object):
         tags - a sequence of tags to match.
 
         Returns a sequence of MetadataGroup objects. Each one represents
-        a set of values for the metadata tags along with the imagenumbers of
+        a set of values for the metadata tags along with the image numbers of
         the image sets that match the values
         """
         if len(tags) == 0:
             # if there are no tags, all image sets match each other
-            return [MetadataGroup({}, range(1, self.image_set_number + 1))]
+            return [MetadataGroup({}, self.get_image_numbers())]
 
         #
         # The flat_dictionary has a row of tag values as a key
         #
         flat_dictionary = {}
-        values = [self.get_all_measurements(IMAGE, "%s_%s" % (C_METADATA, tag)).tolist()
-                  for tag in tags]
-        imgnumbers = self.get_all_measurements(IMAGE, IMAGE_NUMBER)
-        for imgnumber, row in zip(imgnumbers, zip(*values)):
-            if row in flat_dictionary:
-                flat_dictionary[row].append(imgnumber)
-            else:
-                flat_dictionary[row] = [imgnumber]
+        for image_number in self.get_image_numbers():
+            values = [self.get_measurement(
+                IMAGE, "%s_%s" % (C_METADATA, tag), image_number)
+                      for tag in tags]
+            values = [ x if np.isscalar(x) else x[0] for x in values]
+            key = tuple(values)
+            if not flat_dictionary.has_key(key):
+                flat_dictionary[key] = []
+            flat_dictionary[key].append(image_number)
         result = []
         for row in flat_dictionary.keys():
             tag_dictionary = {}
@@ -655,13 +657,13 @@ class MetadataGroup(dict):
     group will have image set indexes of the images taken of a particular
     well
     """
-    def __init__(self, tag_dictionary, indexes):
+    def __init__(self, tag_dictionary, image_numbers):
         super(MetadataGroup, self).__init__(tag_dictionary)
-        self.__indexes = indexes
+        self.__image_numbers = image_numbers
 
     @property
-    def indexes(self):
-        return self.__indexes
+    def image_numbers(self):
+        return self.__image_numbers
 
     def __setitem__(self, tag, value):
         raise NotImplementedError("The dictionary is read-only")

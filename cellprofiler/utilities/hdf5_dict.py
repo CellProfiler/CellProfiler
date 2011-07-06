@@ -145,13 +145,9 @@ class HDF5Dict(object):
                 self.add_object(object_name)
             self.add_feature(object_name, feature_name)
 
-        # overwriting?
-        if self.has_data(*idxs):
-            self.__delitem__(idxs)
-
         # find the destination for the data, and check that its
         # the right size for the values.  This may extend the
-        # _index and data arrays.
+        # _index and data arrays. It may also overwrite the old value.
         dest = self.find_index_or_slice(idxs, val)
 
         with self.lock:

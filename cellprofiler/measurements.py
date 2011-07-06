@@ -258,11 +258,11 @@ class Measurements(object):
         #
         self.image_set_number = self.image_set_count + 1
 
-    def add_image_measurement(self, feature_name, data):
+    def add_image_measurement(self, feature_name, data, can_overwrite = False):
         """Add a measurement to the "Image" category
 
         """
-        self.add_measurement(IMAGE, feature_name, data)
+        self.add_measurement(IMAGE, feature_name, data, can_overwrite)
 
     def add_experiment_measurement(self, feature_name, data):
         """Add an experiment measurement to the measurement
@@ -275,8 +275,8 @@ class Measurements(object):
         '''The number of the group currently being processed'''
         return self.get_current_image_measurement(GROUP_NUMBER)
 
-    def set_group_number(self, group_number):
-        self.add_image_measurement(GROUP_NUMBER, group_number)
+    def set_group_number(self, group_number, can_overwrite=False):
+        self.add_image_measurement(GROUP_NUMBER, group_number, can_overwrite)
 
     group_number = property(get_group_number, set_group_number)
 
@@ -444,6 +444,13 @@ class Measurements(object):
         """The list of feature names (measurements) for an object
         """
         return [name for name in self.hdf5_dict.second_level_names(object_name) if name not in ('ImageNumber', 'ObjectNumber')]
+    
+    def get_image_numbers(self):
+        '''Return the image numbers from the Image table'''
+        image_numbers = np.array(
+            self.hdf5_dict.get_indices(IMAGE, IMAGE_NUMBER), int)
+        image_numbers.sort()
+        return image_numbers
 
     def has_feature(self, object_name, feature_name):
         return self.hdf5_dict.has_feature(object_name, feature_name)

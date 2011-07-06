@@ -1,3 +1,13 @@
 *.jar
 *~
 *.pyc
+*.pyd
+cellprofiler/cpmath/_cpmorphology2.c
+cellprofiler/cpmath/_filter.c
+cellprofiler/cpmath/_lapjv.c
+cellprofiler/cpmath/_propagate.c
+cellprofiler/cpmath/_watershed.c
+cellprofiler/cpmath/build
+cellprofiler/utilities/build
+cellprofiler/utilities/javabridge.c
+

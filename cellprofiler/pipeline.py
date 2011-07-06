@@ -1147,7 +1147,7 @@ class Pipeline(object):
                     if initial_measurements is None:
                         measurements = cpmeas.Measurements(
                             image_set_start=image_number)
-                        measurements.initialize(columns)
+                        measurements.initialize([c[:3] for c in columns])
                     else:
                         measurements = initial_measurements
                         measurements.next_image_set(image_number, erase=True)

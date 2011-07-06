@@ -5,12 +5,12 @@ processing in parallel
 
 import multiprocessing
 import StringIO
-#import zlib
+import zlib
 import tempfile
 import os
 import logging
 
-from cellprofiler.distributed import JobInfo
+from cellprofiler.distributed import JobInfo,fetch_work
 from cellprofiler.modules.mergeoutputfiles import MergeOutputFiles
 from cellprofiler.pipeline import Pipeline
 
@@ -25,6 +25,27 @@ def worker_looper(url):
         else: 
             has_work = False
     return job_nums
+ 
+def single_job(jobinfo):
+
+        pipeline = Pipeline()
+        try:
+            pipeline.load(jobinfo.pipeline_stringio())
+            image_set_start = jobinfo.image_set_start
+            image_set_end = jobinfo.image_set_end
+        except:
+            logging.root.error("Can't parse pipeline for distributed work.", exc_info=True)
+            return [jobinfo.job_num,'FAILURE']
+
+        measurements = pipeline.run(image_set_start=image_set_start, 
+                                    image_set_end=image_set_end,
+                                    grouping= jobinfo.grouping)
+        
+        #out_measurements = StringIO.StringIO()
+        #pipeline.save_measurements(out_measurements, measurements)
+        
+        jobinfo.report_measurements(pipeline, measurements)
+        return jobinfo.job_num
 
 def run_multiple_workers(url,num_workers = None):
     if(not num_workers):
@@ -42,9 +63,9 @@ def run_multiple_workers(url,num_workers = None):
     pool.join()
     
     return outjobs
+
+
     
-
-
 def run_multi(pipeline,output_file,image_set_start = 1,image_set_end = None,grouping = None):
     """
     Run the pipeline with the provided parameters on as many processes as
@@ -139,27 +160,7 @@ def run_multi(pipeline,output_file,image_set_start = 1,image_set_end = None,grou
     
     #Cleanup; delete temp pipeline file 
     os.remove(pipeline_path)
-    
-def single_job(jobinfo):
 
-        pipeline = Pipeline()
-        try:
-            pipeline.load(jobinfo.pipeline_stringio())
-            image_set_start = jobinfo.image_set_start
-            image_set_end = jobinfo.image_set_end
-        except:
-            logging.root.error("Can't parse pipeline for distributed work.", exc_info=True)
-            return [jobinfo.job_num,'FAILURE']
-
-        measurements = pipeline.run(image_set_start=image_set_start, 
-                                    image_set_end=image_set_end,
-                                    grouping= jobinfo.grouping)
-        
-        out_measurements = StringIO.StringIO()
-        pipeline.save_measurements(out_measurements, measurements)
-        
-        #jobinfo.report_measurements(pipeline, measurements)
-        return [jobinfo.job_num,out_measurements]
  
 if __name__ == '__main__':
     pass

@@ -62,6 +62,11 @@ parser.add_option("-r", "--run",
                   dest="run_pipeline",
                   default=False,
                   help="Run the given pipeline on startup")
+parser.add_option("-m","--multi-processing",
+                  dest = "multi_processing",
+                  action = "store_true",
+                  default = False,
+                  help = "Process in parallel on all cpus in local machine") 
 distributed_support_enabled = True
 try:
     import nuageux
@@ -220,7 +225,7 @@ if (not hasattr(sys, 'frozen')) and options.build_extensions:
     import subprocess
     import cellprofiler.cpmath.setup
     import cellprofiler.utilities.setup
-    import contrib.setup
+    #import contrib.setup
     from distutils.dep_util import newer_group
     #
     # Check for dependencies and compile if necessary
@@ -438,9 +443,26 @@ try:
                 groups = dict(kvs)
             else:
                 groups = None
-            measurements = pipeline.run(image_set_start=image_set_start, 
+            
+            import time
+            if(options.multi_processing):
+                import cellprofiler.multiprocess_server as multiprocess_server
+                output_file = os.path.join(cpprefs.get_default_output_directory(),
+                            cpprefs.get_output_file_name())
+                start_time = time.time()
+                measurements = multiprocess_server.run_multi(pipeline,image_set_start = image_set_start,
+                                                       image_set_end = image_set_end,
+                                                       grouping = groups,
+                                                       output_file = output_file )
+                end_time = time.time()
+            else:
+                start_time = time.time()
+                measurements = pipeline.run(image_set_start=image_set_start, 
                                         image_set_end=image_set_end,
                                         grouping=groups)
+                end_time = time.time()
+            elapsed_time = end_time - start_time
+            print 'Elapsed Time: %s' % (elapsed_time)
             if options.worker_mode_URL is not None:
                 try:
                     assert measurements is not None

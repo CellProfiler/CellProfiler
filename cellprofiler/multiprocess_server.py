@@ -14,6 +14,37 @@ from cellprofiler.distributed import JobInfo
 from cellprofiler.modules.mergeoutputfiles import MergeOutputFiles
 from cellprofiler.pipeline import Pipeline
 
+def worker_looper(url):
+    has_work = True
+    job_nums = []
+    while has_work:
+        jobinfo = fetch_work(url)
+        if(jobinfo):
+            num = single_job(jobinfo)
+            job_nums.append(num)
+        else: 
+            has_work = False
+    return job_nums
+
+def run_multiple_workers(url,num_workers = None):
+    if(not num_workers):
+        num_workers = multiprocessing.cpu_count()
+        
+    pool = multiprocessing.Pool(num_workers)
+        
+    outjobs = []
+    def callback(jobs):
+        outjobs.extend(jobs)
+    #XXX Believe we can't count on the results to be ordered,
+    #but not sure
+    pool.apply_async(worker_looper,url,callback = callback)
+    pool.close()
+    pool.join()
+    
+    return outjobs
+    
+
+
 def run_multi(pipeline,output_file,image_set_start = 1,image_set_end = None,grouping = None):
     """
     Run the pipeline with the provided parameters on as many processes as

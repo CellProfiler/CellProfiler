@@ -41,7 +41,7 @@ def make_cell_struct_dtype(fields):
     
     fields - the names of the fields in the struct
     """
-    return numpy.dtype([(x,'|O4') for x in fields])
+    return numpy.dtype([(str(x),'|O4') for x in fields])
 
 def get_int_from_matlab(proxy):
     """Given a proxy to an integer in Matlab, return the integer

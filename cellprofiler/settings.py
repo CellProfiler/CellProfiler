@@ -309,7 +309,7 @@ class DirectoryPath(Text):
             ABSOLUTE_FOLDER_NAME, DEFAULT_INPUT_SUBFOLDER_NAME,
             DEFAULT_OUTPUT_SUBFOLDER_NAME, URL_FOLDER_NAME]
     
-    def get_absolute_path(self, measurements=None, image_set_index = None):
+    def get_absolute_path(self, measurements=None, image_set_number = None):
         '''Return the absolute path specified by the setting
         
         Concoct an absolute path based on the directory choice,
@@ -334,7 +334,7 @@ class DirectoryPath(Text):
         if self.allow_metadata:
             if measurements is not None:
                 custom_path = measurements.apply_metadata(self.custom_path,
-                                                          image_set_index)
+                                                          image_set_number)
             else:
                 # For UI, get the path up to the metadata.
                 custom_path = self.custom_path

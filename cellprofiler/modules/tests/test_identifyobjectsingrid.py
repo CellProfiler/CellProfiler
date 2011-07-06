@@ -205,7 +205,7 @@ class TestIdentifyObjectsInGrid(unittest.TestCase):
         ym = m.get_current_measurement(OUTPUT_OBJECTS_NAME, 'Location_Center_Y')
         self.assertTrue(np.all(ym == y_locations[1:]))
         count = m.get_current_image_measurement('Count_%s'%OUTPUT_OBJECTS_NAME)
-        self.assertEqual(count[0], gridding.rows * gridding.columns)
+        self.assertEqual(count, gridding.rows * gridding.columns)
         
         columns = module.get_measurement_columns(workspace.pipeline)
         self.assertEqual(len(columns), 4)
@@ -334,7 +334,7 @@ class TestIdentifyObjectsInGrid(unittest.TestCase):
         ym = m.get_current_measurement(OUTPUT_OBJECTS_NAME, 'Location_Center_Y')
         self.assertTrue(np.all(ym == y_locations[1:]))
         count = m.get_current_image_measurement('Count_%s'%OUTPUT_OBJECTS_NAME)
-        self.assertEqual(count[0], gridding.rows * gridding.columns)
+        self.assertEqual(count, gridding.rows * gridding.columns)
 
     def test_03_02_natural_circle_edges(self):
         #
@@ -398,7 +398,7 @@ class TestIdentifyObjectsInGrid(unittest.TestCase):
         ym = m.get_current_measurement(OUTPUT_OBJECTS_NAME, 'Location_Center_Y')
         self.assertTrue(np.all(ym == y_locations[1:]))
         count = m.get_current_image_measurement('Count_%s'%OUTPUT_OBJECTS_NAME)
-        self.assertEqual(count[0], gridding.rows * gridding.columns)
+        self.assertEqual(count, gridding.rows * gridding.columns)
 
     def test_03_03_img_891(self):
         '''Regression test of img-891, last spot filtered out'''
@@ -452,7 +452,7 @@ class TestIdentifyObjectsInGrid(unittest.TestCase):
         ym = m.get_current_measurement(OUTPUT_OBJECTS_NAME, 'Location_Center_Y')
         self.assertTrue(np.all(ym[:-1] == y_locations[1:-1]))
         count = m.get_current_image_measurement('Count_%s'%OUTPUT_OBJECTS_NAME)
-        self.assertEqual(count[0], gridding.rows * gridding.columns)
+        self.assertEqual(count, gridding.rows * gridding.columns)
         
     def test_04_01_natural(self):
         # Use natural objects.
@@ -531,7 +531,7 @@ class TestIdentifyObjectsInGrid(unittest.TestCase):
         ym = m.get_current_measurement(OUTPUT_OBJECTS_NAME, 'Location_Center_Y')
         self.assertTrue(np.all(ym == y_locations[1:]))
         count = m.get_current_image_measurement('Count_%s'%OUTPUT_OBJECTS_NAME)
-        self.assertEqual(count[0], gridding.rows * gridding.columns)
+        self.assertEqual(count, gridding.rows * gridding.columns)
         
     
 

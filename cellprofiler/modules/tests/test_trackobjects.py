@@ -449,7 +449,7 @@ TrackObjects:[module_num:1|svn_version:\'10373\'|variable_revision_number:4|show
         self.assertAlmostEqual(m(T.F_INTEGRATED_DISTANCE), 0)
         self.assertEqual(m(T.F_LABEL), 1)
         self.assertEqual(m(T.F_PARENT_OBJECT_NUMBER), 1)
-        self.assertEqual(m(T.F_PARENT_GROUP_INDEX), 1)
+        self.assertEqual(m(T.F_PARENT_IMAGE_NUMBER), 1)
         self.assertEqual(m(T.F_LIFETIME), 1)
         def m(feature):
             name = "_".join((T.F_PREFIX, feature, OBJECT_NAME, "1"))
@@ -514,7 +514,7 @@ TrackObjects:[module_num:1|svn_version:\'10373\'|variable_revision_number:4|show
         measurements = self.runTrackObjects((labels1,labels2, labels2), fn)
         def m(feature, idx):
             name = "_".join((T.F_PREFIX, feature, "5"))
-            values = measurements.get_all_measurements(OBJECT_NAME, name)[idx]
+            values = measurements.get_measurement(OBJECT_NAME, name, idx + 1)
             self.assertEqual(len(values), 2)
             return values
 
@@ -523,10 +523,10 @@ TrackObjects:[module_num:1|svn_version:\'10373\'|variable_revision_number:4|show
         self.assertTrue(np.all(labels == 1))
         parents = m(T.F_PARENT_OBJECT_NUMBER,1)
         self.assertTrue(np.all(parents == 1))
-        self.assertTrue(np.all(m(T.F_PARENT_GROUP_INDEX,1) == 1))
+        self.assertTrue(np.all(m(T.F_PARENT_IMAGE_NUMBER, 1) == 1))
         parents = m(T.F_PARENT_OBJECT_NUMBER,2)
         self.assertTrue(np.all(parents == np.array([1,2])))
-        self.assertTrue(np.all(m(T.F_PARENT_GROUP_INDEX, 2) == 2))
+        self.assertTrue(np.all(m(T.F_PARENT_IMAGE_NUMBER, 2) == 2))
         def m(feature):
             name = "_".join((T.F_PREFIX, feature, OBJECT_NAME, "5"))
             return measurements.get_all_measurements(cpmeas.IMAGE, name)[1]
@@ -719,7 +719,7 @@ TrackObjects:[module_num:1|svn_version:\'10373\'|variable_revision_number:4|show
             if i < len(pp)-1:
                 po = m(T.F_PARENT_OBJECT_NUMBER, i+1)
                 self.assertTrue(np.all(po == np.array(p)))
-                pi = m(T.F_PARENT_GROUP_INDEX, i+1)
+                pi = m(T.F_PARENT_IMAGE_NUMBER, i+2)
                 self.assertTrue(np.all(pi == i))
 
         
@@ -868,78 +868,74 @@ TrackObjects:[module_num:1|svn_version:\'10373\'|variable_revision_number:4|show
         pipeline.add_module(module)
         
         m = cpmeas.Measurements()
-        for index, feature in (
-            (1, module.measurement_name(T.F_LABEL)),
-            (2, module.measurement_name(T.F_PARENT_GROUP_INDEX)),
-            (3, module.measurement_name(T.F_PARENT_OBJECT_NUMBER)),
-            (4, T.M_LOCATION_CENTER_X),
-            (5, T.M_LOCATION_CENTER_Y),
-            (6, module.measurement_name(T.F_AREA))):
-            values = [objs[objs[:,0] == i, index] for i in range(nimages)]
-            m.add_all_measurements(OBJECT_NAME, feature, values)
-        m.add_all_measurements(cpmeas.IMAGE, "ImageNumber", list(range(nimages)))
-        if group_numbers is None:
-            group_numbers = [1] * nimages
-        m.add_all_measurements(cpmeas.IMAGE, cpp.GROUP_NUMBER, group_numbers)
-        if group_indexes is None:
-            group_indexes = list(range(1, nimages+1))
-        m.add_all_measurements(cpmeas.IMAGE, cpp.GROUP_INDEX, group_indexes)
         if objs.shape[0] > 0:
             nobjects = np.bincount(objs[:, 0].astype(int))
         else:
             nobjects = np.zeros(nimages, int)
-        #
-        # Add blanks of the right sizes for measurements that are recalculated
-        #
-        m.add_all_measurements(cpmeas.IMAGE, '_'.join((C_COUNT, OBJECT_NAME)),
-                               nobjects)
-        for feature in (T.F_DISTANCE_TRAVELED, 
-                        T.F_INTEGRATED_DISTANCE, T.F_TRAJECTORY_X,
-                        T.F_TRAJECTORY_Y, T.F_LINEARITY, T.F_LIFETIME):
-            dtype = int if feature in (
-                T.F_PARENT_OBJECT_NUMBER, T.F_PARENT_GROUP_INDEX, 
-                T.F_LIFETIME) else float
-            m.add_all_measurements(OBJECT_NAME,
+        for i in range(nimages):
+            m.next_image_set(i+1)
+            for index, feature, dtype in (
+                (1, module.measurement_name(T.F_LABEL), int),
+                (2, module.measurement_name(T.F_PARENT_IMAGE_NUMBER), int),
+                (3, module.measurement_name(T.F_PARENT_OBJECT_NUMBER), int),
+                (4, T.M_LOCATION_CENTER_X, float),
+                (5, T.M_LOCATION_CENTER_Y, float),
+                (6, module.measurement_name(T.F_AREA), float)):
+                values = objs[objs[:,0] == i, index].astype(dtype)
+                m.add_measurement(OBJECT_NAME, feature, values, i+1)
+            m.add_measurement(cpmeas.IMAGE, "ImageNumber", i+1)
+            m.add_measurement(cpmeas.IMAGE, cpp.GROUP_NUMBER, 
+                               1 if group_numbers is None else group_numbers[i], i+1)
+            m.add_measurement(cpmeas.IMAGE, cpp.GROUP_INDEX, 
+                              i if group_indexes is None else group_indexes[i], i+1 )
+            #
+            # Add blanks of the right sizes for measurements that are recalculated
+            #
+            m.add_measurement(cpmeas.IMAGE, '_'.join((C_COUNT, OBJECT_NAME)),
+                               nobjects[i], i+1)
+            for feature in (T.F_DISTANCE_TRAVELED, 
+                            T.F_INTEGRATED_DISTANCE, T.F_TRAJECTORY_X,
+                            T.F_TRAJECTORY_Y, T.F_LINEARITY, T.F_LIFETIME):
+                dtype = int if feature in (
+                    T.F_PARENT_OBJECT_NUMBER, T.F_PARENT_IMAGE_NUMBER, 
+                    T.F_LIFETIME) else float
+                m.add_measurement(OBJECT_NAME,
                                    module.measurement_name(feature),
-                                   [np.zeros(n, dtype) for n in nobjects])
-        for feature in (T.F_SPLIT_COUNT, T.F_MERGE_COUNT):
-            m.add_all_measurements(cpmeas.IMAGE,
-                                   module.image_measurement_name(feature),
-                                   [0] * nimages)
+                                   np.zeros(nobjects[i], dtype), i+1)
+            for feature in (T.F_SPLIT_COUNT, T.F_MERGE_COUNT):
+                m.add_measurement(cpmeas.IMAGE,
+                                  module.image_measurement_name(feature),
+                                  0, i+1)
         #
         # Figure out how many new and lost objects per image set
         #
         label_sets = [set() for i in range(nimages)]
         for row in objs:
             label_sets[row[0]].add(row[1])
+        if group_numbers is None:
+            group_numbers = np.ones(nimages, int)
+        if group_indexes is None:
+            group_indexes = np.arange(nimages) + 1
         #
         # New objects are ones without matching labels in the previous set
         #
-        new_objects = ([len(label_sets[0])] + 
-                       [sum([1 for label in next
-                             if (label not in prev) 
-                             or (prev_group_number != next_group_number)])
-                        for prev, next, prev_group_number, next_group_number
-                        in zip(label_sets[:-1], label_sets[1:],
-                               group_numbers[:-1], group_numbers[1:])])
-        m.add_all_measurements(cpmeas.IMAGE,
-                               module.image_measurement_name(T.F_NEW_OBJECT_COUNT),
-                               new_objects)
-
-        #
-        # Lost objects are ones without matching labels in the next set
-        #
-        lost_objects = (
-            [0] + 
-            [sum([1 for label in prev
-                  if (label not in next)
-                  and (prev_image_number == next_image_number)])
-             for prev, next, prev_image_number, next_image_number 
-             in zip(label_sets[:-1], label_sets[1:], 
-                    group_numbers[:-1], group_numbers[1:])])
-        m.add_all_measurements(cpmeas.IMAGE,
-                               module.image_measurement_name(T.F_LOST_OBJECT_COUNT),
-                               lost_objects)
+        for i in range(0, nimages):
+            if group_indexes[i] == 1:
+                new_objects = len(label_sets[i])
+                lost_objects = 0
+            else:
+                new_objects = sum([1 for label in label_sets[i]
+                                   if label not in label_sets[i-1]])
+                lost_objects = sum([1 for label in label_sets[i-1]
+                                    if label not in label_sets[i]])
+            m.add_measurement(
+                cpmeas.IMAGE, 
+                module.image_measurement_name(T.F_NEW_OBJECT_COUNT),
+                new_objects, True, i+1)
+            m.add_measurement(
+                cpmeas.IMAGE, 
+                module.image_measurement_name(T.F_LOST_OBJECT_COUNT),
+                lost_objects, True, i+1)
         m.image_set_number = nimages
         
         image_set_list = cpi.ImageSetList()
@@ -1005,7 +1001,7 @@ TrackObjects:[module_num:1|svn_version:\'10373\'|variable_revision_number:4|show
         module.run_as_data_tool(workspace)
         self.check_measurements(workspace, {
             T.F_LABEL: [ np.array([1]) ],
-            T.F_PARENT_GROUP_INDEX: [ np.array([0]) ],
+            T.F_PARENT_IMAGE_NUMBER: [ np.array([0]) ],
             T.F_PARENT_OBJECT_NUMBER: [ np.array([0]) ],
             T.F_DISTANCE_TRAVELED: [ np.zeros(1) ],
             T.F_INTEGRATED_DISTANCE: [ np.zeros(1) ],
@@ -1033,13 +1029,13 @@ TrackObjects:[module_num:1|svn_version:\'10373\'|variable_revision_number:4|show
         distance = np.array([np.sqrt(2 * 100 * 100)])
         self.check_measurements(workspace, {
             T.F_LABEL: [ np.array([1]), np.zeros(0), np.array([1]) ],
-            T.F_PARENT_GROUP_INDEX: [ np.array([0]), np.zeros(0), np.array([1]) ],
-            T.F_PARENT_OBJECT_NUMBER: [ np.array([0]), np.zeros(0), np.array([1]) ],
+            T.F_PARENT_IMAGE_NUMBER: [ np.array([0]), np.zeros(0, int), np.array([1]) ],
+            T.F_PARENT_OBJECT_NUMBER: [ np.array([0]), np.zeros(0, int), np.array([1]) ],
             T.F_DISTANCE_TRAVELED: [ np.zeros(1), np.zeros(0), distance],
             T.F_INTEGRATED_DISTANCE: [ np.zeros(1),  np.zeros(0), distance],
             T.F_TRAJECTORY_X: [ np.zeros(1), np.zeros(0), np.array([100]) ],
             T.F_TRAJECTORY_Y: [ np.zeros(1), np.zeros(0), np.array([100]) ],
-            T.F_LINEARITY: [ np.array([0]), np.zeros(0), np.array([1])],
+            T.F_LINEARITY: [ np.array([np.nan]), np.zeros(0), np.array([1])],
             T.F_LIFETIME: [ np.zeros(1), np.zeros(0), np.ones(1) ],
             T.F_NEW_OBJECT_COUNT: [ 1, 0, 0 ],
             T.F_LOST_OBJECT_COUNT: [ 0, 0, 0 ],
@@ -1062,7 +1058,7 @@ TrackObjects:[module_num:1|svn_version:\'10373\'|variable_revision_number:4|show
         module.run_as_data_tool(workspace)
         self.check_measurements(workspace, {
             T.F_LABEL: [ np.array([1]), np.zeros(0), np.array([2]) ],
-            T.F_PARENT_GROUP_INDEX: [ np.array([0]), np.zeros(0), np.array([0]) ],
+            T.F_PARENT_IMAGE_NUMBER: [ np.array([0]), np.zeros(0), np.array([0]) ],
             T.F_PARENT_OBJECT_NUMBER: [ np.array([0]), np.zeros(0), np.array([0]) ],
             T.F_NEW_OBJECT_COUNT: [ 1, 0, 1 ],
             T.F_LOST_OBJECT_COUNT: [ 0, 1, 0 ],
@@ -1086,7 +1082,7 @@ TrackObjects:[module_num:1|svn_version:\'10373\'|variable_revision_number:4|show
         module.run_as_data_tool(workspace)
         self.check_measurements(workspace, {
             T.F_LABEL: [ np.array([1]), np.zeros(0), np.array([2]) ],
-            T.F_PARENT_GROUP_INDEX: [ np.array([0]), np.zeros(0), np.array([0]) ],
+            T.F_PARENT_IMAGE_NUMBER: [ np.array([0]), np.zeros(0), np.array([0]) ],
             T.F_PARENT_OBJECT_NUMBER: [ np.array([0]), np.zeros(0), np.array([0]) ]
             })
         
@@ -1111,13 +1107,13 @@ TrackObjects:[module_num:1|svn_version:\'10373\'|variable_revision_number:4|show
         lin = tot / (d200 + 5)
         self.check_measurements(workspace, {
             T.F_LABEL: [ np.array([1]), np.array([1,1]), np.array([1,1]) ],
-            T.F_PARENT_GROUP_INDEX: [ np.array([0]), np.array([1,1]), np.array([2,2]) ],
+            T.F_PARENT_IMAGE_NUMBER: [ np.array([0]), np.array([1,1]), np.array([2,2]) ],
             T.F_PARENT_OBJECT_NUMBER: [ np.array([0]), np.array([1,1]), np.array([1,2]) ],
             T.F_DISTANCE_TRAVELED: [ np.zeros(1), np.ones(2)*d200, np.array([tot,tot])],
             T.F_INTEGRATED_DISTANCE: [ np.zeros(1),  np.ones(2)*d200, np.ones(2)*d200 + 5],
             T.F_TRAJECTORY_X: [ np.zeros(1), np.array([10,-10]), np.array([3,-4]) ],
             T.F_TRAJECTORY_Y: [ np.zeros(1), np.array([10,-10]), np.array([4, -3]) ],
-            T.F_LINEARITY: [ np.array([0]), np.array([1,1]), np.array([lin, lin])],
+            T.F_LINEARITY: [ np.array([np.nan]), np.array([1,1]), np.array([lin, lin])],
             T.F_LIFETIME: [ np.zeros(1), np.array([1,1]), np.array([2,2]) ],
             T.F_NEW_OBJECT_COUNT: [ 1, 0, 0 ],
             T.F_LOST_OBJECT_COUNT: [ 0, 0, 0 ],
@@ -1139,7 +1135,7 @@ TrackObjects:[module_num:1|svn_version:\'10373\'|variable_revision_number:4|show
         module.run_as_data_tool(workspace)
         self.check_measurements(workspace, {
             T.F_LABEL: [ np.array([1]), np.array([1,2]), np.array([1,2]) ],
-            T.F_PARENT_GROUP_INDEX: [ np.array([0]), np.array([1,0]), np.array([2,2]) ],
+            T.F_PARENT_IMAGE_NUMBER: [ np.array([0]), np.array([1,0]), np.array([2,2]) ],
             T.F_PARENT_OBJECT_NUMBER: [ np.array([0]), np.array([1,0]), np.array([1,2]) ],
             T.F_LIFETIME: [ np.zeros(1), np.array([1,0]), np.array([2,1]) ],
             T.F_NEW_OBJECT_COUNT: [ 1, 1, 0 ],
@@ -1162,7 +1158,7 @@ TrackObjects:[module_num:1|svn_version:\'10373\'|variable_revision_number:4|show
         module.run_as_data_tool(workspace)
         self.check_measurements(workspace, {
             T.F_LABEL: [ np.array([1]), np.array([1,2]), np.array([1,2]) ],
-            T.F_PARENT_GROUP_INDEX: [ np.array([0]), np.array([1,0]), np.array([2,2]) ],
+            T.F_PARENT_IMAGE_NUMBER: [ np.array([0]), np.array([1,0]), np.array([2,2]) ],
             T.F_PARENT_OBJECT_NUMBER: [ np.array([0]), np.array([1,0]), np.array([1,2]) ],
             T.F_LIFETIME: [ np.zeros(1), np.array([1,0]), np.array([2,1]) ],
             T.F_NEW_OBJECT_COUNT: [ 1, 1, 0 ],
@@ -1185,7 +1181,7 @@ TrackObjects:[module_num:1|svn_version:\'10373\'|variable_revision_number:4|show
         module.run_as_data_tool(workspace)
         self.check_measurements(workspace, {
             T.F_LABEL: [ np.array([1,1]), np.array([1,1]), np.array([1]) ],
-            T.F_PARENT_GROUP_INDEX: [ np.array([0,0]), np.array([1,1]), np.array([2]) ],
+            T.F_PARENT_IMAGE_NUMBER: [ np.array([0,0]), np.array([1,1]), np.array([2]) ],
             T.F_PARENT_OBJECT_NUMBER: [ np.array([0,0]), np.array([1,2]), np.array([1]) ],
             T.F_LIFETIME: [ np.zeros(2), np.array([1,1]), np.array([2]) ],
             T.F_NEW_OBJECT_COUNT: [ 2, 0, 0 ],
@@ -1308,15 +1304,15 @@ TrackObjects:[module_num:1|svn_version:\'10373\'|variable_revision_number:4|show
             np.array([[0, 1, 0, 0, 1, 2, 25],
                       [2, 2, 0, 0, 101, 102, 25],
                       [3, 1, 0, 0, 100, 100, 50],
-                      [4, 1, 1, 1, 110, 110, 25],
+                      [4, 1, 4, 1, 110, 110, 25],
                       [4, 2, 0, 0, 90,   90, 25],
-                      [5, 1, 2, 1, 113, 114, 25],
-                      [5, 2, 2, 2, 86,   87, 25],
+                      [5, 1, 5, 1, 113, 114, 25],
+                      [5, 2, 5, 2, 86,   87, 25],
                       [6, 1, 0, 0, 110, 110, 25],
                       [6, 2, 0, 0, 90,   90, 25],
-                      [7, 1, 1, 1, 110, 110, 25],
-                      [7, 2, 1, 2, 90,   90, 25],
-                      [8, 1, 2, 1, 104, 102, 50]                      
+                      [7, 1, 7, 1, 110, 110, 25],
+                      [7, 2, 7, 2, 90,   90, 25],
+                      [8, 1, 8, 1, 104, 102, 50]                      
                       ]), 9, 
             group_numbers = [ 1, 1, 1, 2, 2, 2, 3, 3, 3],
             group_indexes = [ 1, 2, 3, 1, 2, 3, 1, 2, 3]
@@ -1341,9 +1337,9 @@ TrackObjects:[module_num:1|svn_version:\'10373\'|variable_revision_number:4|show
             T.F_LABEL: [ np.array([1]), np.zeros(0), np.array([1]),
                          np.array([1]), np.array([1,1]), np.array([1,1]),
                          np.array([1,1]), np.array([1,1]), np.array([1])],
-            T.F_PARENT_GROUP_INDEX: [ np.array([0]), np.zeros(0), np.array([1]),
-                                       np.array([0]), np.array([1,1]), np.array([2,2]),
-                                       np.array([0,0]), np.array([1,1]), np.array([2])],
+            T.F_PARENT_IMAGE_NUMBER: [ np.array([0]), np.zeros(0), np.array([1]),
+                                       np.array([0]), np.array([4,4]), np.array([5,5]),
+                                       np.array([0,0]), np.array([7,7]), np.array([8])],
             T.F_PARENT_OBJECT_NUMBER: [ np.array([0]), np.zeros(0), np.array([1]),
                                         np.array([0]), np.array([1,1]), np.array([1,2]),
                                         np.array([0,0]), np.array([1,2]), np.array([1])],
@@ -1359,9 +1355,9 @@ TrackObjects:[module_num:1|svn_version:\'10373\'|variable_revision_number:4|show
             T.F_TRAJECTORY_Y: [ np.zeros(1), np.zeros(0), np.array([100]),
                                 np.zeros(1), np.array([10,-10]), np.array([4, -3]),
                                 np.zeros(2), np.zeros(2), np.array([-8])],
-            T.F_LINEARITY: [ np.array([0]), np.zeros(0), np.array([1]),
-                             np.array([0]), np.array([1,1]), np.array([lin, lin]),
-                             np.array([0,0]), np.array([np.nan, np.nan]), np.ones(1)],
+            T.F_LINEARITY: [ np.array([np.nan]), np.zeros(0), np.array([1]),
+                             np.array([np.nan]), np.array([1,1]), np.array([lin, lin]),
+                             np.array([np.nan, np.nan]), np.array([np.nan, np.nan]), np.ones(1)],
             T.F_LIFETIME: [ np.zeros(1), np.zeros(0), np.ones(1),
                             np.zeros(1), np.array([1,1]), np.array([2,2]),
                             np.zeros(2), np.array([1,1]), np.array([2])],

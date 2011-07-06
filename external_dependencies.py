@@ -10,7 +10,7 @@ import sys
 
 # The list of files (relative path) to fetch, their SHA1, and their source URL.
 files = [
-    [['bioformats', 'loci_tools.jar'], '4774568a265ce5643fad92e93cb51f60cd514c07', 'https://svn.broadinstitute.org/CellProfiler/!svn/bc/11215/trunk/CellProfiler/bioformats/loci_tools.jar'],
+    [['bioformats', 'loci_tools.jar'], 'a1d08a9dfb648eb86290a036fe0b5a4e47f2c44a', 'https://svn.broadinstitute.org/CellProfiler/!svn/bc/11312/trunk/CellProfiler/bioformats/loci_tools.jar'],
     [['imagej', 'ij.jar'], 'f675dc28e38a9a2612e55db049f4d4bb47d774b1', 'https://svn.broadinstitute.org/CellProfiler/!svn/bc/11073/trunk/CellProfiler/imagej/ij.jar'],
     [['imagej', 'imglib.jar'], '7e0e68aa371706012e224df0b31925317a3dc284', 'https://svn.broadinstitute.org/CellProfiler/!svn/bc/11073/trunk/CellProfiler/imagej/imglib.jar'],
     [['imagej', 'javacl-1.0-beta-4-shaded.jar'], '62b3b41c4759652595070534d79d1294eeba8139', 'https://svn.broadinstitute.org/CellProfiler/!svn/bc/11073/trunk/CellProfiler/imagej/javacl-1.0-beta-4-shaded.jar'],

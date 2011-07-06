@@ -68,6 +68,7 @@ class PipelineController:
         self.__keys = None
         self.__groupings = None
         self.__grouping_index = None
+        self.__within_group_index = None
         self.__distributor = None
         self.pipeline_list = []
         self.populate_recent_files()

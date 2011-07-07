@@ -222,9 +222,21 @@ class CPFigureFrame(wx.Frame):
         self.remove_menu = []
         sizer = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(sizer)
-        self.figure = figure= matplotlib.figure.Figure()
-        self.panel  = matplotlib.backends.backend_wxagg.FigureCanvasWxAgg(self,-1,self.figure)
-        sizer.Add(self.panel,1,wx.EXPAND) 
+        if cpprefs.get_use_more_figure_space():
+            matplotlib.rcParams.update(dict([('figure.subplot.left', 0.025),
+                                             ('figure.subplot.right', 0.975),
+                                             ('figure.subplot.top', 0.975),
+                                             ('figure.subplot.bottom', 0.025),
+                                             ('figure.subplot.wspace', 0.05),
+                                             ('figure.subplot.hspace', 0.05),
+                                             ('axes.labelsize', 'x-small'),
+                                             ('xtick.labelsize', 'x-small'),
+                                             ('ytick.labelsize', 'x-small')]))
+        else:
+            matplotlib.rcdefaults()
+        self.figure = figure = matplotlib.figure.Figure()
+        self.panel = matplotlib.backends.backend_wxagg.FigureCanvasWxAgg(self, -1, self.figure)
+        sizer.Add(self.panel, 1, wx.EXPAND) 
         self.status_bar = self.CreateStatusBar()
         wx.EVT_PAINT(self, self.on_paint)
         wx.EVT_CLOSE(self, self.on_close)

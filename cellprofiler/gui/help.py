@@ -1225,6 +1225,11 @@ CellProfiler might not be able to use the new pipeline. Pipelines saved
 by old CellProfiler versions can always be loaded and used by new
 CellProfiler versions."""
 
+USE_MORE_FIGURE_SPACE_HELP = """
+The <i>Use more figure space</i> preference reduces the padding space
+and font sizes in module display figures.  It is suggested that you
+also set the <i>Title font</i> preference to a smaller value."""
+
 PRIMARY_OUTLINE_COLOR_HELP = """The <i>Primary Outline Color</i> preference
 sets the color used for the outline of the object of interest in the
 <i>IdentifyPrimaryObjects</i>, <i>IdentifySecondaryObjects</i> and

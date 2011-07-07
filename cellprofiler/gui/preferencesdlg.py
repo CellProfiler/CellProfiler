@@ -221,8 +221,13 @@ class PreferencesDlg(wx.Dialog):
                  cpprefs.get_warn_about_old_pipeline,
                  cpprefs.set_warn_about_old_pipeline,
                  CHOICE,
-                 cphelp.WARN_ABOUT_OLD_PIPELINES_HELP]
-                ]
+                 cphelp.WARN_ABOUT_OLD_PIPELINES_HELP],
+                ['Use more figure space',
+                 cpprefs.get_use_more_figure_space,
+                 cpprefs.set_use_more_figure_space,
+                 CHOICE,
+                 cphelp.USE_MORE_FIGURE_SPACE_HELP
+                ]]
     
     def get_title_font(self):
         return "%s,%f"%(cpprefs.get_title_font_name(),

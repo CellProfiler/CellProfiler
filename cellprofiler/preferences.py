@@ -216,6 +216,7 @@ SHOW_SAMPLING = "ShowSampling"
 WRITE_MAT = "WriteMAT"
 RUN_DISTRIBUTED = "RunDistributed"
 WARN_ABOUT_OLD_PIPELINE = "WarnAboutOldPipeline"
+USE_MORE_FIGURE_SPACE = "UseMoreFigureSpace"
 
 def recent_file(index, category=""):
     return (FF_RECENTFILES % (index + 1)) + category
@@ -229,7 +230,7 @@ ALL_KEYS = ([ALLOW_OUTPUT_FILE_OVERWRITE, BACKGROUND_COLOR, CHECKFORNEWVERSIONS,
              SHOW_EXITING_TEST_MODE_DLG, SHOW_SAMPLING, SKIPVERSION, STARTUPBLURB,
              TABLE_FONT_NAME, TABLE_FONT_SIZE, TERTIARY_OUTLINE_COLOR,
              TITLE_FONT_NAME, TITLE_FONT_SIZE, WARN_ABOUT_OLD_PIPELINE,
-             WRITE_MAT] + 
+             WRITE_MAT, USE_MORE_FIGURE_SPACE] + 
             [recent_file(n, category) for n in range(RECENT_FILE_COUNT)
              for category in ("", DEFAULT_IMAGE_DIRECTORY, DEFAULT_OUTPUT_DIRECTORY)])
 
@@ -838,4 +839,21 @@ def set_warn_about_old_pipeline(value):
     global __warn_about_old_pipeline
     __warn_about_old_pipeline = value
     config_write(WARN_ABOUT_OLD_PIPELINE,
+                       "True" if value else "False")
+
+__use_more_figure_space = None
+def get_use_more_figure_space():
+    '''Return True if CP should use more of the figure space'''
+    global __use_more_figure_space
+    if __use_more_figure_space is not None:
+        return __use_more_figure_space
+    if not get_config().Exists(USE_MORE_FIGURE_SPACE):
+        return False
+    return config_read(USE_MORE_FIGURE_SPACE) == "True"
+
+def set_use_more_figure_space(value):
+    '''Set the "use more figure space" flag'''
+    global __use_more_figure_space
+    __use_more_figure_space = value
+    config_write(USE_MORE_FIGURE_SPACE,
                        "True" if value else "False")

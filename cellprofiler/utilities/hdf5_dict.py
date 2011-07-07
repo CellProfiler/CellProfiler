@@ -161,7 +161,7 @@ class HDF5Dict(object):
                         vals = np.array([])
                     del self.top_group[object_name][feature_name]['data']
                     dataset = self.top_group[object_name][feature_name].create_dataset('data', (vals.size,), dtype=float,
-                                                                                       compression='gzip', chunks=(1000,), maxshape=(None,))
+                                                                                       compression='lzf', shuffle=True, chunks=(1000,), maxshape=(None,))
                     if vals.size > 0:
                         dataset[:] = vals
                 elif np.asanyarray(val).dtype.kind in ('S', 'a', 'U'):
@@ -169,7 +169,7 @@ class HDF5Dict(object):
                     sz = dataset.shape[0]
                     del self.top_group[object_name][feature_name]['data']
                     dataset = self.top_group[object_name][feature_name].create_dataset('data', (sz,), dtype=h5py.special_dtype(vlen=str),
-                                                                                       compression='gzip', chunks=(1000,), maxshape=(None,))
+                                                                                       compression='lzf', shuffle=True, chunks=(1000,), maxshape=(None,))
 
             if np.isscalar(val):
                 dataset[dest] = val
@@ -255,8 +255,8 @@ class HDF5Dict(object):
 
                     if not 'data' in feature_group:
                         feature_group.create_dataset('data', (0,), dtype=infer_hdf5_type(values),
-                                                     compression='gzip', chunks=(1000,), maxshape=(None,))
-                        feature_group.create_dataset('index', (0, 3), dtype=int, compression='gzip',
+                                                     compression='lzf', shuffle=True, chunks=(1000,), maxshape=(None,))
+                        feature_group.create_dataset('index', (0, 3), dtype=int, compression='lzf', shuffle=True,
                                                      chunks=(1000, 3), maxshape=(None, 3))
                     # grow data and index
                     ds = feature_group['data']

@@ -428,11 +428,13 @@ class Measurements(object):
             if data is None:
                 data = []
             self.hdf5_dict[IMAGE, feature_name, image_set_number] = wrap_string(data)
-            self.hdf5_dict[IMAGE, 'ImageNumber', image_set_number] = image_set_number
+            if not self.hdf5_dict.has_data(object_name, 'ImageNumber', image_set_number):
+                self.hdf5_dict[IMAGE, 'ImageNumber', image_set_number] = image_set_number
         else:
             self.hdf5_dict[object_name, feature_name, image_set_number] = data
-            self.hdf5_dict[object_name, 'ImageNumber', image_set_number] = [image_set_number] * len(data)
-            self.hdf5_dict[object_name, 'ObjectNumber', image_set_number] = np.arange(1, len(data) + 1)
+            if not self.hdf5_dict.has_data(object_name, 'ObjectNumber', image_set_number):
+                self.hdf5_dict[object_name, 'ImageNumber', image_set_number] = [image_set_number] * len(data)
+                self.hdf5_dict[object_name, 'ObjectNumber', image_set_number] = np.arange(1, len(data) + 1)
 
     def get_object_names(self):
         """The list of object names (including Image) that have measurements

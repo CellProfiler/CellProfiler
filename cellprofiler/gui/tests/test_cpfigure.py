@@ -19,6 +19,8 @@ import unittest
 
 import wx
 import matplotlib
+from cellprofiler.preferences import set_headless
+set_headless()
 import cellprofiler.gui.cpfigure as cpfig
 
 

@@ -14,18 +14,25 @@ from cellprofiler.distributed import JobInfo,fetch_work
 from cellprofiler.modules.mergeoutputfiles import MergeOutputFiles
 from cellprofiler.pipeline import Pipeline
 
-def worker_looper(url):
+#import logging
+#logger = multiprocessing.log_to_stderr()
+#logger.setLevel(logging.INFO)
+
+def worker_looper(url,job_nums,lock):
     has_work = True
-    job_nums = []
     while has_work:
-        jobinfo = fetch_work(url)
+        with lock:
+            jobinfo = fetch_work(url)
         if(jobinfo):
-            num = single_job(jobinfo)
-            job_nums.append(num)
+            if(jobinfo.job_num in job_nums):
+                #Assume we have more processes than image sets
+                #and have looped around
+                break
+            job_nums.append(jobinfo.job_num)
+            num,code = single_job(jobinfo)                
         else: 
             has_work = False
-    return job_nums
- 
+    
 def single_job(jobinfo):
 
         pipeline = Pipeline()
@@ -39,33 +46,61 @@ def single_job(jobinfo):
 
         measurements = pipeline.run(image_set_start=image_set_start, 
                                     image_set_end=image_set_end,
-                                    grouping= jobinfo.grouping)
+                                    grouping= None)
         
         #out_measurements = StringIO.StringIO()
         #pipeline.save_measurements(out_measurements, measurements)
         
         jobinfo.report_measurements(pipeline, measurements)
-        return jobinfo.job_num
+        return [jobinfo.job_num,'SUCCESS']
+    
+def single_job_local(jobinfo):
+
+        pipeline = Pipeline()
+        try:
+            pipeline.load(jobinfo.pipeline_stringio())
+            image_set_start = jobinfo.image_set_start
+            image_set_end = jobinfo.image_set_end
+        except:
+            logging.root.error("Can't parse pipeline for distributed work.", exc_info=True)
+            return [jobinfo.job_num,'FAILURE']
+
+        measurements = pipeline.run(image_set_start=image_set_start, 
+                                    image_set_end=image_set_end,
+                                    grouping= None)
+        
+        out_measurements = StringIO.StringIO()
+        pipeline.save_measurements(out_measurements, measurements)   
+        #jobinfo.report_measurements(pipeline, measurements)
+        return out_measurements
+
 
 def run_multiple_workers(url,num_workers = None):
     if(not num_workers):
         num_workers = multiprocessing.cpu_count()
-        
-    pool = multiprocessing.Pool(num_workers)
-        
-    outjobs = []
-    def callback(jobs):
-        outjobs.extend(jobs)
-    #XXX Believe we can't count on the results to be ordered,
-    #but not sure
-    pool.apply_async(worker_looper,url,callback = callback)
-    pool.close()
-    pool.join()
     
-    return outjobs
+    if(True):
+        pool = multiprocessing.Pool(num_workers)
+        
+        urls = [url for i in range(0,num_workers)]
+        
+        manager = multiprocessing.Manager()
+        #donejobs = manager.Queue()
+        jobs = manager.list()
+        lock = manager.Lock()
+            
+        for url in urls:
+            pool.apply_async(worker_looper,args=(url,jobs,lock))
+        pool.close()
+        pool.join()
 
+        donejobs = sorted(jobs)
+        
+    else:
+        donejobs = worker_looper(url)
+        
+    return donejobs
 
-    
 def run_multi(pipeline,output_file,image_set_start = 1,image_set_end = None,grouping = None):
     """
     Run the pipeline with the provided parameters on as many processes as
@@ -144,7 +179,7 @@ def run_multi(pipeline,output_file,image_set_start = 1,image_set_end = None,grou
         
         #XXX Believe we can't count on the results to be ordered,
         #but not sure
-        pool.map_async(single_job,job_list,callback = callback)
+        pool.map_async(single_job_local,job_list,callback = callback)
         
         pool.close()
         pool.join()

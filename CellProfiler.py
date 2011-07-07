@@ -408,6 +408,7 @@ try:
             if options.worker_mode_URL is None:
                 # normal behavior
                 pipeline.load(options.pipeline_filename)
+            else:
                 if not options.multi_processing:
                     # distributed worker
                     continue_looping = True
@@ -438,12 +439,13 @@ try:
                         time.sleep(20 + random.randint(1, 10)) # avoid hammering server
                         continue
                 else:
-                    print 'Running multiple workers'
+                    print 'Running multiple workers in distributed workflow'
                     continue_looping = False
+                    import cellprofiler.multiprocess_server as multiprocess_server
                     donejobs = multiprocess_server.run_multiple_workers(options.worker_mode_URL)
                     print 'Finished job numbers: %s' % donejobs
                     continue
-                
+            
             if options.groups is not None:
                 kvs = [x.split('=') for x in options.groups.split(',')]
                 groups = dict(kvs)
@@ -451,7 +453,7 @@ try:
                 groups = None
             
             import time
-            if(options.worker_mode_URL is None and options.multi_processing):
+            if(False):#options.worker_mode_URL is None and options.multi_processing):
                 import cellprofiler.multiprocess_server as multiprocess_server
                 output_file = os.path.join(cpprefs.get_default_output_directory(),
                         cpprefs.get_output_file_name())

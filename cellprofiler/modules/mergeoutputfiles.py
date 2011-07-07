@@ -300,7 +300,7 @@ class MergeOutputFiles(cpm.CPModule):
                     has_error[0] = True
 
             pipeline.add_listener(callback)
-            pipeline.load(sources[0])
+            #pipeline.load(sources[0])
             if has_error[0]:
                 return
 

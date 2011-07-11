@@ -188,7 +188,7 @@ class ApplyThreshold(Identify):
                 ("Feature","Value")]
             
             for column in self.get_measurement_columns(workspace.pipeline):
-                value = workspace.measurements.get_current_image_measurement(column[1])[0]
+                value = workspace.measurements.get_current_image_measurement(column[1])
                 statistics += [(column[1].split('_')[1], str(value))]
                 
     def display(self, workspace):

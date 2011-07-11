@@ -769,18 +769,21 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             statistics.append(["# of identified objects",
                                "%d"%(object_count)])
             if object_count > 0:
-                areas = scipy.ndimage.histogram(labeled_image,1,object_count+1,object_count)
+                areas = scipy.ndimage.sum(np.ones(labeled_image.shape), labeled_image, np.arange(1, object_count + 1))
                 areas.sort()
-                low_diameter  = (math.sqrt(float(areas[object_count/10])/np.pi)*2)
-                high_diameter = (math.sqrt(float(areas[object_count*9/10])/np.pi)*2)
+                low_diameter  = (math.sqrt(float(areas[object_count / 10]) / np.pi) * 2)
+                median_diameter = (math.sqrt(float(areas[object_count / 2]) / np.pi) * 2)
+                high_diameter = (math.sqrt(float(areas[object_count * 9 / 10]) / np.pi) * 2)
                 statistics.append(["10th pctile diameter",
-                                   "%.1f pixels"%(low_diameter)])
+                                   "%.1f pixels" % (low_diameter)])
+                statistics.append(["median diameter",
+                                   "%.1f pixels" % (median_diameter)])
                 statistics.append(["90th pctile diameter",
-                                   "%.1f pixels"%(high_diameter)])
-                object_area = np.sum(labeled_image > 0)
+                                   "%.1f pixels" % (high_diameter)])
+                object_area = np.sum(areas)
                 total_area  = np.product(labeled_image.shape[:2])
                 statistics.append(["Area covered by objects",
-                                   "%.1f %%"%(100.0*float(object_area)/
+                                   "%.1f %%" % (100.0 * float(object_area) /
                                               float(total_area))])
                 if self.unclump_method != UN_NONE:
                     if self.unclump_method == UN_LOG:

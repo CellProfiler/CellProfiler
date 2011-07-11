@@ -187,7 +187,7 @@ class DataToolFrame(wx.Frame):
         self.measurements = cpmeas.Measurements(can_overwrite = True)
         self.measurements.load(measurements_file_name)
         # Start on the first image
-        self.measurements.set_image_set_number(1)
+        self.measurements.next_image_set(1)
         
     def on_run(self, event):
         image_set_list = cpi.ImageSetList()

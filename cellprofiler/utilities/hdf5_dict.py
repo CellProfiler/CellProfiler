@@ -221,8 +221,9 @@ class HDF5Dict(object):
         return (object_name, feature_name) in self.indices
 
     def add_feature(self, object_name, feature_name):
-        feature_group = self.top_group[object_name].require_group(feature_name)
-        self.indices.setdefault((object_name, feature_name), {})
+        with self.lock:
+            feature_group = self.top_group[object_name].require_group(feature_name)
+            self.indices.setdefault((object_name, feature_name), {})
 
     def find_index_or_slice(self, idxs, values=None):
         '''Find the linear indexes or slice for a particular set of

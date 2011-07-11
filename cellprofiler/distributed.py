@@ -22,6 +22,9 @@ except Exception, e:
 from cellprofiler.pipeline import post_module_runner_done_event
 from cellprofiler.modules.mergeoutputfiles import MergeOutputFiles
 import cellprofiler.preferences as cpprefs
+import cellprofiler.cpimage as cpi
+import cellprofiler.workspace as cpw
+import cellprofiler.measurements as cpmeas
 
 # whether CP should run distributed (changed by preferences, or by command line)
 force_run_distributed = False
@@ -55,7 +58,13 @@ class Distributor(object):
         pipeline = pipeline.copy()
 
         # create the image list
-        image_set_list = pipeline.prepare_run(None, combine_path_and_file=True)
+        image_set_list = cpi.ImageSetList()
+        image_set_list.combine_path_and_file = True
+        measurements = cpmeas.Measurements()
+        workspace = cpw.Workspace(pipeline, None, None, None, measurements,
+                                  image_set_list)
+                                  
+        image_set_list = pipeline.prepare_run(workspace)
         if not image_set_list:
             raise RuntimeError('Could not create image set list for distributed processing.')
 
